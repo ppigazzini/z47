@@ -143,7 +143,6 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 // Constants blob accessors (offsets verified vs generated constantPointers.h)
 // ---------------------------------------------------------------------------
 
-
 // ---------------------------------------------------------------------------
 // decNumber primitives / real_t macro reproductions. The ones used inline as
 // expression arguments (realDivide/realMultiply/realAdd/realSubtract/

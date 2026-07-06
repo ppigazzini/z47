@@ -161,8 +161,3 @@ extern fn getSystemFlag(sf: c_int) bool;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
 extern fn setLineDelay(delay: u16) void;
-
-
-
-
-

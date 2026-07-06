@@ -3,7 +3,6 @@ const real_trig_owned = @import("math_real_trig.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
-
 fn coshReal() callconv(.c) void {
     math_command_wrappers.sinhCoshReal(runtime.trigCos);
 }

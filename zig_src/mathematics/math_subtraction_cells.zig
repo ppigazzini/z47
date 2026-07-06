@@ -52,7 +52,7 @@ pub export const subtraction: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
     buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
+    return buffer[0..slice.len :0];
 }
 
 // real34Subtract / real34ChangeSign are C macros over decQuad; reproduced inline.

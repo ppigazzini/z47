@@ -86,8 +86,6 @@ extern const commonBugScreenMessages: [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EA
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
 
-
-
 // libc.
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;

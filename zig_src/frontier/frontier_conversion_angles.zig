@@ -20,7 +20,6 @@ const consts = abi.constants;
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -63,14 +62,10 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(reg: calcRegister_t) u32;
 extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 
-
 const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
-
-
-
 
 extern fn decContextClearStatus(ctx: *realContext_t, mask: u32) *realContext_t;
 

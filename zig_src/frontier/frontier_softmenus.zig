@@ -139,7 +139,6 @@ const ON_PIXEL: i32 = 0x303030;
 const LCD_SET_VALUE: c_int = 0;
 const LCD_EMPTY_VALUE: c_int = 255;
 
-
 // Probe-resolved enum/macro constants from c47.h (identical across sim/dmcp).
 const AC_LOWER = 1;
 const AC_UPPER = 0;
@@ -730,8 +729,6 @@ extern fn fnGetSystemFlag(systemFlag: u16) void;
 // File-local bug-screen message (TO_QSPI const char[] in C).
 const bugScreenIdMustNotBe0: [*:0]const u8 = "In function showSoftmenu: id must not be 0!";
 
-
-
 // ---------------------------------------------------------------------------
 // Runtime extern functions.
 // ---------------------------------------------------------------------------
@@ -807,7 +804,7 @@ extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 // Menu tables (probe-generated, byte-faithful; per-target gates applied).
 // ===========================================================================
 // menu_HOME and menu_MyPFN are referenced by name from functions (createHOME/createPFN)
-pub export const menu_HOME linksection(code_section) = [_]i16{ (if (dmcp_build) @as(i16,1830) else 1873), (if (dmcp_build) @as(i16,1795) else 60), (if (dmcp_build) @as(i16,108) else 58), (if (dmcp_build) @as(i16,63) else 67), (if (dmcp_build) @as(i16,67) else 65), (if (dmcp_build) @as(i16,65) else 1795), 1868, 122, (if (dmcp_build) @as(i16,1405) else 108), 1703, (if (dmcp_build) @as(i16,2083) else 1816), (if (dmcp_build) @as(i16,1816) else 2083), 94, 93, (if (dmcp_build) @as(i16,1622) else -2229), (if (option_vector) @as(i16,-1925) else 0), 1949, 1946 };
+pub export const menu_HOME linksection(code_section) = [_]i16{ (if (dmcp_build) @as(i16, 1830) else 1873), (if (dmcp_build) @as(i16, 1795) else 60), (if (dmcp_build) @as(i16, 108) else 58), (if (dmcp_build) @as(i16, 63) else 67), (if (dmcp_build) @as(i16, 67) else 65), (if (dmcp_build) @as(i16, 65) else 1795), 1868, 122, (if (dmcp_build) @as(i16, 1405) else 108), 1703, (if (dmcp_build) @as(i16, 2083) else 1816), (if (dmcp_build) @as(i16, 1816) else 2083), 94, 93, (if (dmcp_build) @as(i16, 1622) else -2229), (if (option_vector) @as(i16, -1925) else 0), 1949, 1946 };
 const menu_MyPFN linksection(code_section) = [_]i16{ 1, 2, 3, 4, 1458, -1356, 0, 0, 0, 0, -1342, -1365, 2404, 0, 0, 0, -2403, -1357 };
 
 const menu_1stDeriv linksection(code_section) = [_]i16{ 0, 0, 0, 0, -2374, 2377 };
@@ -817,8 +814,8 @@ const menu_ADV linksection(code_section) = [_]i16{ 1671, 1672, 1476, 1475, -1381
 const menu_AIMCATALOG linksection(code_section) = [_]i16{ -1350, -1377, -1375, -1378, -1374, 1958 };
 const menu_ALPHA linksection(code_section) = [_]i16{ -1377, -1375, -1378, -1374, 1952, 1953, -1350, 2420, 2419, 1411, 1954, 1955, 1858, 2029, 2191, 1729, 1926, 1928 };
 const menu_ALPHA_OMEGA linksection(code_section) = [_]i16{ 602, 603, 604, 605, 606, 1810, 607, 608, 609, 610, 612, 613, 614, 615, 616, 617, 618, 1809, 619, 620, 620, 621, 622, 624, 625, 626, 627, 1811, 0, 0, 0, 0, 0, 0, 0, 0, 611, 0, 0, 623, 0, 0 };
-const menu_AMORT linksection(code_section) = if ((!(dmcp_build and old_hw))) [_]i16{2716, 2717, 2718, 2719, 2720, 2721, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2052} else [_]i16{};
-const menu_ASN_N linksection(code_section) = [_]i16{ 1906, 1904, 1898, (if (dmcp_build) @as(i16,1978) else 1918), (if (dmcp_build) @as(i16,1979) else 1900), 1894, (if (dmcp_build) @as(i16,1915) else 1975), (if (dmcp_build) @as(i16,0) else 1977), (if (dmcp_build) @as(i16,0) else 1976), (if (dmcp_build) @as(i16,0) else 1974), 0, 1914 };
+const menu_AMORT linksection(code_section) = if ((!(dmcp_build and old_hw))) [_]i16{ 2716, 2717, 2718, 2719, 2720, 2721, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2052 } else [_]i16{};
+const menu_ASN_N linksection(code_section) = [_]i16{ 1906, 1904, 1898, (if (dmcp_build) @as(i16, 1978) else 1918), (if (dmcp_build) @as(i16, 1979) else 1900), 1894, (if (dmcp_build) @as(i16, 1915) else 1975), (if (dmcp_build) @as(i16, 0) else 1977), (if (dmcp_build) @as(i16, 0) else 1976), (if (dmcp_build) @as(i16, 0) else 1974), 0, 1914 };
 const menu_AUDIO linksection(code_section) = [_]i16{ 1414, 1624, 2202, 2203, 2200, 2201, 0, 0, 0, 0, 0, 2198 };
 const menu_AngleConv_43S linksection(code_section) = [_]i16{ 115, 119, 117, 116, 118, -1367, 0, 0, 0, 0, 1741, 1910, 1445, 1557, 1480, 0, 0, 0 };
 const menu_BASE linksection(code_section) = [_]i16{ 1834, 1833, 1832, 1831, 1872, 120, 124, 125, 126, 123, 0, 2553, 1838, 1837, 1836, 1835, 112, -1881, 550, 551, 552, 553, 554, 555, 1993, 1992, 1991, 1990, 2004, 2003, 1998, 1997, 1996, 1995, 112, -1881 };
@@ -827,7 +824,7 @@ const menu_BITSET linksection(code_section) = [_]i16{ 550, 551, 552, 553, 554, 5
 const menu_BLUE_C47 linksection(code_section) = [_]i16{ 105, -1323, -1363, -2102, -1328, 1723, 1706, 1666, 63, 1830, 1850, 1849, 1422, 1872, 1909, 1741, 1, 4, 1871, 101, 1729, 0, 0, 0, 1405, 1622, -1339, -1365, -1322, 0, 0, 0, 0, 0, 0, 0, 0, -1927, -1376, -1342, -1341, 0, 1935, -1317, -1320, -1353, -1340, 0, 1560, -1921, -1331, -1372, -2107, 0 };
 const menu_Base2 linksection(code_section) = [_]i16{ 550, 551, 552, 553, 554, 555, 124, 125, 126, 123, 100, 102, -1923, 414, 415, 1831, 1833, 1834, 550, 551, 552, 553, 554, 555, 1857, 1852, 1851, 0, 0, 2553, -1923, 422, 408, 407, 405, -1881 };
 const menu_Binom linksection(code_section) = [_]i16{ 1208, 0, 1209, 1210, 0, 1211, 1248, 0, 1249, 1250, 0, 1251, 2316, 2317, 0, 0, 0, 0 };
-const menu_CASHFL linksection(code_section) = [_]i16{  };
+const menu_CASHFL linksection(code_section) = [_]i16{};
 const menu_CATALOG linksection(code_section) = [_]i16{ -1330, -1322, -1319, -1355, -1370, -1345, 0, 0, 0, 0, 0, 1958 };
 const menu_CHARS linksection(code_section) = [_]i16{ -1350, -1377, -1375, -1378, -1374, 0 };
 const menu_CLK linksection(code_section) = [_]i16{ 1438, 1454, 1621, 1862, 1863, 1622, 1439, 1911, 1843, 1910, 1741, 1504, 1681, 1644, 1842, 1688, 1686, 2550, 1942, 1943, 1619, 1453, 1528, 1649, 1592, 1597, 1633, 1440, 1521, 1647, 1438, 1621, 2505, 1841, 1840, 1839, 1471, 1495, 2147, 2148, 2149, 2150, 2504, 0, 0, 2501, 2502, 2503 };
@@ -852,9 +849,9 @@ const menu_DELETE linksection(code_section) = [_]i16{ 1419, 2241, 2242, 1426, 14
 const menu_DELITM linksection(code_section) = [_]i16{ 0, 0, 0, -1355, -1370, -1345 };
 const menu_DISP linksection(code_section) = [_]i16{ 1473, 1587, 1460, 1867, 1866, 1410, 1744, 2056, 1888, 2551, 1876, 1877, 2159, 2160, 2161, 2154, 1896, 1619, 1865, 1899, 1450, 2006, 1689, 2500, 1936, 1937, 0, 1798, 1944, 1945, 1950, 1951, 0, 0, 2549, 2195, 1591, 1593, 1594, 1595, 1598, 1599, 0, 0, 0, 0, 0, 1596, 0, 0, 0, 0, 0, 0 };
 const menu_DISTR linksection(code_section) = [_]i16{ -1252, -1272, -1262, -1222, -1217, -1267, -1277, -2600, -1212, -1286, -1242, -1247, 0, -2605, -1227, -1232, -1257, -1207 };
-const menu_Dev linksection(code_section) = [_]i16{ (if (strip_21_hp35) @as(i16,0) else 2626), 2627, 2628, 2629, 0, 0 };
+const menu_Dev linksection(code_section) = [_]i16{ (if (strip_21_hp35) @as(i16, 0) else 2626), 2627, 2628, 2629, 0, 0 };
 const menu_DisUniform linksection(code_section) = [_]i16{ 2606, 0, 2607, 2608, 0, 2609, 0, 0, 0, 0, 0, 0, 2333, 2334, 0, 0, 0, 0 };
-const menu_EE linksection(code_section) = [_]i16{ 1830, 1795, (if (dmcp_build) @as(i16,1848) else 58), 1705, 1703, 1428, 115, 119, 1828, 1829, 1827, 2623, 1445, 1557, 1931, 2041, 1949, 1946, 1824, 1825, 1823, 1826, 2586, 2587, 1820, 1822, 1818, 1813, 1812, -2597, 1819, 1821, 1817, 1814, 1815, 2624 };
+const menu_EE linksection(code_section) = [_]i16{ 1830, 1795, (if (dmcp_build) @as(i16, 1848) else 58), 1705, 1703, 1428, 115, 119, 1828, 1829, 1827, 2623, 1445, 1557, 1931, 2041, 1949, 1946, 1824, 1825, 1823, 1826, 2586, 2587, 1820, 1822, 1818, 1813, 1812, -2597, 1819, 1821, 1817, 1814, 1815, 2624 };
 const menu_EIMCATALOG linksection(code_section) = [_]i16{ -2228, -1322, -1319, 0, 0, 1958 };
 const menu_EQN linksection(code_section) = [_]i16{ 1465, 1464, -1336, -1335, -1380, -1361, 1463, 0, 0, 0, 0, -1388 };
 const menu_EXP linksection(code_section) = [_]i16{ 59, 60, 1794, 68, 1614, 72, 62, 63, 61, 64, 1575, 65, 78, 75, 80, 84, 82, 86 };
@@ -881,10 +878,10 @@ const menu_INFO linksection(code_section) = [_]i16{ 1631, 1905, 1677, 1501, 1515
 const menu_INTS linksection(code_section) = [_]i16{ 550, 551, 552, 553, 554, 555, 100, 122, 102, 1680, 120, 90, 1443, 1441, 1442, 1701, 66, 89 };
 const menu_IO linksection(code_section) = [_]i16{ 1590, 2387, 1586, 1510, 1511, 1552, 1567, 2388, 1509, 1513, 1512, -1315, 1576, 1933, 2389, 0, 1405, -2390 };
 const menu_Inl_Tst linksection(code_section) = [_]i16{ 1884, 0, 0, 1882, 1885, 1886 };
-const menu_KEYS linksection(code_section) = [_]i16{ -1920, -2235, -2234, 1411, 1729, 1958, (if (dmcp_build) @as(i16,2391) else 1959), (if (dmcp_build) @as(i16,2393) else 1916), (if (dmcp_build) @as(i16,2394) else 0), (if (dmcp_build) @as(i16,2392) else 0), 0, 0 };
+const menu_KEYS linksection(code_section) = [_]i16{ -1920, -2235, -2234, 1411, 1729, 1958, (if (dmcp_build) @as(i16, 2391) else 1959), (if (dmcp_build) @as(i16, 2393) else 1916), (if (dmcp_build) @as(i16, 2394) else 0), (if (dmcp_build) @as(i16, 2392) else 0), 0, 0 };
 const menu_LOOP linksection(code_section) = [_]i16{ 8, 10, 9, 5, 7, 6, 91, 0, 0, 0, 0, 92 };
 const menu_Logis linksection(code_section) = [_]i16{ 1243, 0, 1244, 1245, 0, 1246, 0, 0, 0, 0, 0, 0, 2326, 2328, 0, 0, 0, 0 };
-const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, (if (option_vector) @as(i16,-2106) else 0), 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 0, 0, 1705, 2727, 1578, 2710, 1702, (if (option_vector) @as(i16,-2106) else 1428), 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, 1457, 1456, 1535, 1646, 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
+const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, (if (option_vector) @as(i16, -2106) else 0), 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 0, 0, 1705, 2727, 1578, 2710, 1702, (if (option_vector) @as(i16, -2106) else 1428), 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, 1457, 1456, 1535, 1646, 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
 const menu_MODE linksection(code_section) = [_]i16{ 1445, 1557, 1480, 2197, 1949, 1946, 2043, 2044, 0, 1853, 1917, 1941, 0, 0, 0, 0, 0, 0, 1938, 1939, 1856, 1940, 1949, 1946, 1890, 1887, 1889, 1891, 121, 1941, 0, 0, 0, 0, 0, 0, 2038, 1797, 1855, 1897, 2058, 2059, 2064, 2060, 2062, 1924, 1796, 1859, 2063, 2065, 2061, 2039, 1861, 1854 };
 const menu_MODEL linksection(code_section) = [_]i16{ 1299, 1298, 1300, 1302, 1516, 1759, 1307, 1306, 1305, 1304, 1303, 0, 1309, 1308, 1310, 1435, 0, 1301 };
 const menu_MULTSTK linksection(code_section) = [_]i16{ 2588, 2589, 2587, 2585, 2586, 2595, 2593, 2594, 2622, 2620, 2621, 0 };
@@ -905,8 +902,8 @@ const menu_PLOT_SCATR linksection(code_section) = [_]i16{ 1756, 1758, 0, 0, 0, 0
 const menu_PLOT_STAT linksection(code_section) = [_]i16{ 2014, 2015, 0, 0, 0, 0, 2007, 2042, 0, 0, 0, 0, 2034, 2035, 0, 0, 0, 0, 2010, 2162, 0, 0, 0, 0, 2009, 2011, 0, 0, 0, 0, 1980, 1405, 0, 0, 0, 0, 2025, 2024, 0, 0, 0, 0, 2026, 2027, 0, 0, 0, 0, 2013, 2012, 0, 0, 0, 0 };
 const menu_PREF linksection(code_section) = [_]i16{ 2043, 2044, 2197, 1853, 1917, 1941, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1938, 1939, 1856, 1940, 121, 1941, 1890, 1887, 1889, 1891, 0, 0, 0, 0, 0, 0, 0, 0, 2038, 1797, 1855, 1897, 2058, 2059, 2064, 2060, 2062, 1924, 1796, 1859, 2063, 2065, 2061, 2039, 1861, 1854 };
 const menu_PREFIX linksection(code_section) = [_]i16{ 1805, 1806, 1807, 1808, 1892, 1864, 1804, 1803, 1802, 1801, 1800, 1573, 2533, 2534, 2535, 2536, 2537, 2053 };
-const menu_PRINT linksection(code_section) = [_]i16{ 1708, 1716, 1676, 1714, 2682, 1713, 2687, 2688, 2697, 0, 2695, 2693, -2681, 0, 2689, 2690, 2691, 2692, 1708, 1720, 1707, 1715, 2696, 1718, 2687, 2688, 2694, 1799, 1719, 1711, -2681, (if (dmcp_build) @as(i16,0) else 2699), 2689, 2690, 2691, 2692 };
-const menu_PROB linksection(code_section) = [_]i16{ 1559, 1675, 49, 50, 108, (if (strip_15) @as(i16,0) else -1237), 1589, 0, 0, 0, 0, 0 };
+const menu_PRINT linksection(code_section) = [_]i16{ 1708, 1716, 1676, 1714, 2682, 1713, 2687, 2688, 2697, 0, 2695, 2693, -2681, 0, 2689, 2690, 2691, 2692, 1708, 1720, 1707, 1715, 2696, 1718, 2687, 2688, 2694, 1799, 1719, 1711, -2681, (if (dmcp_build) @as(i16, 0) else 2699), 2689, 2690, 2691, 2692 };
+const menu_PROB linksection(code_section) = [_]i16{ 1559, 1675, 49, 50, 108, (if (strip_15) @as(i16, 0) else -1237), 1589, 0, 0, 0, 0, 0 };
 const menu_Pareto linksection(code_section) = [_]i16{ 1287, 0, 1288, 1289, 0, 1290, 1291, 0, 1292, 1293, 0, 1294, 2326, 2327, 2329, 0, 0, 0 };
 const menu_Poiss linksection(code_section) = [_]i16{ 1258, 0, 1259, 1260, 0, 1261, 0, 0, 0, 0, 0, 0, 2321, 0, 0, 0, 0, 0 };
 const menu_Printer linksection(code_section) = [_]i16{ 2683, 2684, 0, 0, 1712, 1710 };
@@ -914,7 +911,7 @@ const menu_REGR linksection(code_section) = [_]i16{ 1516, 1433, 1618, 1434, 1643
 const menu_RESETS linksection(code_section) = [_]i16{ 2021, 2022, 2054, 2055, 0, 2023, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const menu_RIBBONS linksection(code_section) = [_]i16{ 2506, 2513, 2507, 2508, 2509, 2511, 0, 0, 2514, 2515, 2510, 2512, 0, 0, 0, 0, 0, 0 };
 const menu_Reg linksection(code_section) = [_]i16{ 2336, 2337, 2338, 2339, 2340, 2341, 538, 535, 531, 532, 533, 534, 536, 537, 527, 528, 529, 530, 2342, 2343, 2344, 2345, 2346, 2347, 2348, 2349, 0, 0, 0, 0 };
-const menu_SHOW linksection(code_section) = [_]i16{  };
+const menu_SHOW linksection(code_section) = [_]i16{};
 const menu_STAT linksection(code_section) = [_]i16{ 433, 1640, 1585, 1673, 1605, 1747, 434, 1642, 1617, 1674, 1607, 1746, 435, 1641, 1667, 1669, 1668, -2080, 1654, 2075, 2074, 2076, 1653, 1616, 0, 2082, 2077, 2078, 0, 2079, 0, 0, 0, 0, 0, 1429 };
 const menu_STK linksection(code_section) = [_]i16{ 37, 40, 39, 1502, 42, 1428, 1544, 127, 1650, 1651, 1625, 1694, 2595, 0, 0, 0, 0, -2597 };
 pub export const menu_SYSFL linksection(code_section) = [_]i16{ 524, 2288, 2289, 477, 497, 498, 493, 494, 523, 2276, 2292, 474, 2253, 2272, 468, 2255, 467, 472, 473, 2257, 465, 2261, 504, 491, 2256, 2286, 2287, 2285, 470, 505, 2252, 492, 2280, 2281, 2283, 480, 499, 500, 2259, 2258, 2275, 525, 476, 484, 466, 2273, 2251, 490, 2279, 2282, 2254, 496, 475, 2260, 2265, 2266, 2277, 2262, 2268, 2271, 2267, 2270, 2269, 2263, 2264, 469, 471, 488, 506, 479, 511, 521, 510, 509, 507, 512, 513, 514, 516, 520, 519, 522, 517, 518, 508, 515, 2274, 2284, 2293, 485, 501, 481, 486, 487, 463, 503, 483, 502, 526, 489, 464, 478, 2278, 495, 2290, 2291, 482 };
@@ -953,10 +950,10 @@ const menu_Uniform linksection(code_section) = [_]i16{ 2601, 0, 2602, 2603, 0, 2
 const menu_UnitConv linksection(code_section) = [_]i16{ -1329, -1351, -2047, -1373, -1316, -1371, -1358, -2222, -2046, -2045, -1337, -1901, -1860, 0, 0, 0, 0, -1359 };
 const menu_VARS linksection(code_section) = [_]i16{ -2230, -1324, -1360, -1314, -1338, -2232, -2231, -1343, -1325, -1366, -1332, -1364 };
 const menu_VECCONV linksection(code_section) = [_]i16{ 2475, 2477, 2498, 2497, 2702, 2703, 0, 0, 0, 0, 0, 0, 2493, 2494, 0, 0, 2700, 2701 };
-const menu_VECT linksection(code_section) = [_]i16{ 1850, 2471, 2470, 2496, (if (option_vector) @as(i16,-2499) else 0), (if (dmcp_build) @as(i16,1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 2479, 2480, 2481, 1850, 1849, 2492, 2495, (if (option_vector) @as(i16,-2499) else 0), (if (dmcp_build) @as(i16,1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 0, 2490, 2491 };
+const menu_VECT linksection(code_section) = [_]i16{ 1850, 2471, 2470, 2496, (if (option_vector) @as(i16, -2499) else 0), (if (dmcp_build) @as(i16, 1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 2479, 2480, 2481, 1850, 1849, 2492, 2495, (if (option_vector) @as(i16, -2499) else 0), (if (dmcp_build) @as(i16, 1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 0, 2490, 2491 };
 const menu_Weibl linksection(code_section) = [_]i16{ 1268, 0, 1269, 1270, 0, 1271, 0, 0, 0, 0, 0, 0, 2331, 2332, 0, 0, 0, 0 };
-const menu_XFN linksection(code_section) = [_]i16{ 107, 33, 1477, 1472, 1408, 2083, 1670, 1703, 2385, 1816, 1679, 108, 1478, 1479, -2414, (if ((!(dmcp_build and old_hw))) @as(i16,-2596) else 0), 1416, 1417, 1662, 1663, 1488, 1489, 1664, 1508, 1635, 1636, 1637, 1487, 1661, 1507, -1397, -1352, 1492, 1665, 1466, 1467, 104, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-const menu_XXFCNS linksection(code_section) = [_]i16{ 2554, 2555, 2573, 2574, 2575, 2576, 1445, 1557, 2561, 2558, 2559, 2560, 2579, 2582, 2563, 2564, 2565, 2566, (if (dmcp_build) @as(i16,2583) else 2577), (if (dmcp_build) @as(i16,2572) else 2562), (if (dmcp_build) @as(i16,2562) else 2572), (if (dmcp_build) @as(i16,2571) else 2568), (if (dmcp_build) @as(i16,2568) else 2567), (if (dmcp_build) @as(i16,2567) else 2556), (if (dmcp_build) @as(i16,2580) else 2578), (if (dmcp_build) @as(i16,2577) else 2571), (if (dmcp_build) @as(i16,2578) else 2583), (if (dmcp_build) @as(i16,2584) else 2570), (if (dmcp_build) @as(i16,2570) else 2569), (if (dmcp_build) @as(i16,2569) else 2557), 2579, (if (dmcp_build) @as(i16,0) else 2584), 0, 0, (if (dmcp_build) @as(i16,2556) else 0), (if (dmcp_build) @as(i16,2557) else 2580), 2588, 2589, 2587, 2586, 2585, 0, 0, 0, 0, 0, 0, 0, 1865, 1899, 0, 0, 0, 0 };
+const menu_XFN linksection(code_section) = [_]i16{ 107, 33, 1477, 1472, 1408, 2083, 1670, 1703, 2385, 1816, 1679, 108, 1478, 1479, -2414, (if ((!(dmcp_build and old_hw))) @as(i16, -2596) else 0), 1416, 1417, 1662, 1663, 1488, 1489, 1664, 1508, 1635, 1636, 1637, 1487, 1661, 1507, -1397, -1352, 1492, 1665, 1466, 1467, 104, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+const menu_XXFCNS linksection(code_section) = [_]i16{ 2554, 2555, 2573, 2574, 2575, 2576, 1445, 1557, 2561, 2558, 2559, 2560, 2579, 2582, 2563, 2564, 2565, 2566, (if (dmcp_build) @as(i16, 2583) else 2577), (if (dmcp_build) @as(i16, 2572) else 2562), (if (dmcp_build) @as(i16, 2562) else 2572), (if (dmcp_build) @as(i16, 2571) else 2568), (if (dmcp_build) @as(i16, 2568) else 2567), (if (dmcp_build) @as(i16, 2567) else 2556), (if (dmcp_build) @as(i16, 2580) else 2578), (if (dmcp_build) @as(i16, 2577) else 2571), (if (dmcp_build) @as(i16, 2578) else 2583), (if (dmcp_build) @as(i16, 2584) else 2570), (if (dmcp_build) @as(i16, 2570) else 2569), (if (dmcp_build) @as(i16, 2569) else 2557), 2579, (if (dmcp_build) @as(i16, 0) else 2584), 0, 0, (if (dmcp_build) @as(i16, 2556) else 0), (if (dmcp_build) @as(i16, 2557) else 2580), 2588, 2589, 2587, 2586, 2585, 0, 0, 0, 0, 0, 0, 0, 1865, 1899, 0, 0, 0, 0 };
 const menu_YESNO linksection(code_section) = [_]i16{ 0, 2245, 0, 0, 2246, 0 };
 const menu_alphaFN linksection(code_section) = [_]i16{ 1722, 1645, 1660, 1652, 1655, 1932, 1658, 1659, 1656, 1657, 2543, 2544, 2538, 2539, 0, 2540, 2541, 2542 };
 const menu_alphaMATH linksection(code_section) = [_]i16{ 824, 949, 825, 947, 950, 826, 834, 829, 814, 815, 831, 836, 830, 821, 857, 855, 819, 817, 832, 920, 921, 922, 867, 866, 845, 932, 933, 956, 957, 958, 837, 943, 942, 948, 944, 847, 1161, 925, 1149, 927, 2429, 812, 835, 846, 876, 880, 1165, 955, 930, 919, 918, 1155, 644, 1159, 1160, 888, 2032, 1168, 916, 848, 936, 938, 937, 939, 2430, 2431, 627, 905, 909, 910, 2447, 2444, 906, 907, 911, 912, 913, 914, 908, 935, 934, 1167, 1158, 904, 886, 926, 889, 890, 891, 1156, 964, 967, 852, 851, 923, 924, 963, 966, 2421, 1076, 1075, 1077, 962, 965, 903, 1004, 1003, 1006, 2437, 2438, 2439, 797, 799, 2440, 2443, 2441, 796, 798, 800, 2442, 0, 0, 0, 761, 2445, 2446 };
@@ -2149,7 +2146,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
         ((tmpF >= 0 and tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 100000.0) else @as(f32, 1000000.0))) or
             (tmpF < 0 and -tmpF < (if (itemMod == VAR_NPPER or itemMod == VAR_PMT) @as(f32, 10000.0) else @as(f32, 100000.0)))))
     {
-        abi.fmtCStr(tmpS, "{d}", .{ @as(c_int, @intFromFloat(tmpF)) });
+        abi.fmtCStr(tmpS, "{d}", .{@as(c_int, @intFromFloat(tmpF))});
     } else {
         if (tmpF > 0 and tmpF < 1.0e-34) {
             _ = strcpy(tmpS, concat2(STD_GAUSS_WHITE_R, STD_SUB_0));
@@ -2191,7 +2188,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
     if (stringByteLength(tmpSS) < 4) {
         abi.fmtCStr(tmpS, "\xa0\x04{s}", .{@as([*:0]const u8, tmpSS)});
     } else {
-        abi.fmtCStr(tmpS, "{s}", .{ @as([*:0]const u8, tmpSS) });
+        abi.fmtCStr(tmpS, "{s}", .{@as([*:0]const u8, tmpSS)});
     }
     _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), tmpSS_via(tmpS));
 }
@@ -2406,7 +2403,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName))});
                 },
                 PRINTER_MARTEL => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{ @as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName)) });
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName))});
                 },
                 PRINTER_OTHER => {
                     abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName))});
@@ -2449,20 +2446,78 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
     // Each cluster of case labels is gated by its build option; an itemNr
     // matching an enabled cluster (or 9999) returns true. Mirrors the upstream
     // savedspace() #if-gated switch.
-    if (comptime (dmcp_build and old_hw)) { switch (itemNr) { -2382 => return 1, else => {} } }
-    if (comptime strip_ortho_bessel_ellip) { switch (itemNr) { -1352, 1483, 1505, 1506, 1550, 1623, 1627, 1484 => return 1, else => {} } }
+    if (comptime (dmcp_build and old_hw)) {
+        switch (itemNr) {
+            -2382 => return 1,
+            else => {},
+        }
+    }
+    if (comptime strip_ortho_bessel_ellip) {
+        switch (itemNr) {
+            -1352, 1483, 1505, 1506, 1550, 1623, 1627, 1484 => return 1,
+            else => {},
+        }
+    }
     // gate defined_SAVE_SPACE_DM42_20_TIMER_ never defined for any frontier build -> omitted
-    if (comptime strip_ortho_bessel_ellip) { switch (itemNr) { 1492, 1665 => return 1, else => {} } }
+    if (comptime strip_ortho_bessel_ellip) {
+        switch (itemNr) {
+            1492, 1665 => return 1,
+            else => {},
+        }
+    }
     // gate defined_SAVE_SPACE_DM42_12PRIME_ never defined for any frontier build -> omitted
-    if (comptime strip_ortho_bessel_ellip) { switch (itemNr) { -1397, 1682, 1683, 1684, 1726, 1727, 1728, 1584, 1763, 1764, 1765, 2104, 2105, 2599, 2598, 2395 => return 1, else => {} } }
-    if (comptime (!option_vector)) { switch (itemNr) { 2492, 2495, 2490, 2491, 2471, 2470, 2496, 2479, 2480, 2481 => return 1, else => {} } }
-    if (comptime (!option_elec)) { switch (itemNr) { 1931, 2041, 1824, 1825, 1823, 1826, 1820, 1822, 1818, 1813, 1812, 1819, 1821, 1817, 1814, 1815 => return 1, else => {} } }
-    if (comptime (dmcp_build and old_hw)) { switch (itemNr) { 2583, 2572, 2562, 2571, 2568, 2567, 2580, 2577, 2578, 2584, 2570, 2569, 2579, 2556, 2557 => return 1, else => {} } }
-    if (comptime strip_17b) { switch (itemNr) { -1212, 1213, 1214, 1215, 1216, -1272, 1273, 1274, 1275, 1276, -1217, 1218, 1219, 1220, 1221, -1267, 1268, 1269, 1270, 1271, -1242, 1243, 1244, 1245, 1246, -1262, 1263, 1264, 1265, 1266 => return 1, else => {} } }
-    if (comptime strip_17c) { switch (itemNr) { -1247, 1282, 1283, 1284, 1285, -1286, 1287, 1288, 1289, 1290, 1291, 1292, 1293, 1294, -2600, 2601, 2602, 2603, 2604, -2605, 2606, 2607, 2608, 2609 => return 1, else => {} } }
-    if (comptime strip_16) { switch (itemNr) { -1252, 1253, 1254, 1255, 1256, 1238, 1239, 1240, 1241, -1277, 1278, 1279, 1280, 1281 => return 1, else => {} } }
-    if (comptime strip_17) { switch (itemNr) { -1222, -1207, -1232, -1257, -1227, 1223, 1224, 1225, 1226, 1208, 1209, 1210, 1211, 1248, 1249, 1250, 1251, 1233, 1234, 1235, 1236, 1258, 1259, 1260, 1261, 1228, 1229, 1230, 1231 => return 1, else => {} } }
-    switch (itemNr) { 9999 => return 1, else => {} }
+    if (comptime strip_ortho_bessel_ellip) {
+        switch (itemNr) {
+            -1397, 1682, 1683, 1684, 1726, 1727, 1728, 1584, 1763, 1764, 1765, 2104, 2105, 2599, 2598, 2395 => return 1,
+            else => {},
+        }
+    }
+    if (comptime (!option_vector)) {
+        switch (itemNr) {
+            2492, 2495, 2490, 2491, 2471, 2470, 2496, 2479, 2480, 2481 => return 1,
+            else => {},
+        }
+    }
+    if (comptime (!option_elec)) {
+        switch (itemNr) {
+            1931, 2041, 1824, 1825, 1823, 1826, 1820, 1822, 1818, 1813, 1812, 1819, 1821, 1817, 1814, 1815 => return 1,
+            else => {},
+        }
+    }
+    if (comptime (dmcp_build and old_hw)) {
+        switch (itemNr) {
+            2583, 2572, 2562, 2571, 2568, 2567, 2580, 2577, 2578, 2584, 2570, 2569, 2579, 2556, 2557 => return 1,
+            else => {},
+        }
+    }
+    if (comptime strip_17b) {
+        switch (itemNr) {
+            -1212, 1213, 1214, 1215, 1216, -1272, 1273, 1274, 1275, 1276, -1217, 1218, 1219, 1220, 1221, -1267, 1268, 1269, 1270, 1271, -1242, 1243, 1244, 1245, 1246, -1262, 1263, 1264, 1265, 1266 => return 1,
+            else => {},
+        }
+    }
+    if (comptime strip_17c) {
+        switch (itemNr) {
+            -1247, 1282, 1283, 1284, 1285, -1286, 1287, 1288, 1289, 1290, 1291, 1292, 1293, 1294, -2600, 2601, 2602, 2603, 2604, -2605, 2606, 2607, 2608, 2609 => return 1,
+            else => {},
+        }
+    }
+    if (comptime strip_16) {
+        switch (itemNr) {
+            -1252, 1253, 1254, 1255, 1256, 1238, 1239, 1240, 1241, -1277, 1278, 1279, 1280, 1281 => return 1,
+            else => {},
+        }
+    }
+    if (comptime strip_17) {
+        switch (itemNr) {
+            -1222, -1207, -1232, -1257, -1227, 1223, 1224, 1225, 1226, 1208, 1209, 1210, 1211, 1248, 1249, 1250, 1251, 1233, 1234, 1235, 1236, 1258, 1259, 1260, 1261, 1228, 1229, 1230, 1231 => return 1,
+            else => {},
+        }
+    }
+    switch (itemNr) {
+        9999 => return 1,
+        else => {},
+    }
     return 0;
 }
 

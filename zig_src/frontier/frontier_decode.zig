@@ -190,10 +190,22 @@ pub export const supDigit linksection(code_section) = [24]u8{
 // "??" then STD_BASE_1 .. STD_BASE_16 ("\xa4\x60" .. "\xa4\x6f").
 pub export const baseChars linksection(code_section) = [36]u8{
     '?',  '?',
-    0xa4, 0x60, 0xa4, 0x61, 0xa4, 0x62, 0xa4, 0x63,
-    0xa4, 0x64, 0xa4, 0x65, 0xa4, 0x66, 0xa4, 0x67,
-    0xa4, 0x68, 0xa4, 0x69, 0xa4, 0x6a, 0xa4, 0x6b,
-    0xa4, 0x6c, 0xa4, 0x6d, 0xa4, 0x6e, 0xa4, 0x6f,
+    0xa4, 0x60,
+    0xa4, 0x61,
+    0xa4, 0x62,
+    0xa4, 0x63,
+    0xa4, 0x64,
+    0xa4, 0x65,
+    0xa4, 0x66,
+    0xa4, 0x67,
+    0xa4, 0x68,
+    0xa4, 0x69,
+    0xa4, 0x6a,
+    0xa4, 0x6b,
+    0xa4, 0x6c,
+    0xa4, 0x6d,
+    0xa4, 0x6e,
+    0xa4, 0x6f,
     0,    0,
 };
 // STD_SUP_r STD_SUP_g STD_DEGREE "??" STD_SUP_pir.
@@ -232,15 +244,8 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn getSystemFlag(sf: c_int) bool;
 
-
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-
-
-
-
-
-
 
 extern fn decQuadFromString(r: *align(1) real34_t, s: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
 extern fn abs(x: c_int) c_int;

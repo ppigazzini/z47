@@ -195,12 +195,9 @@ extern fn getFlag(flag: u16) bool_t;
 extern fn getSystemFlag(flag: c_int) bool_t;
 extern fn clearSystemFlag(flag: c_uint) void;
 
-
 extern fn getFreeRamMemory() u32;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
-
-
 
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -509,7 +506,9 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
                 }
 
                 abi.fmtBufZ(tmpString[0..2560], "{d}", .{@as(i32, f)});
-                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(25 * @rem(@as(i32, f), 16) + 5 + 4 * @as(i32, @intFromBool(f <= 9)), ), @intCast(22 * @divTrunc(@as(i32, f), 16) + 175), if (getFlag(@bitCast(FIRST_LOCAL_FLAG + f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(
+                    25 * @rem(@as(i32, f), 16) + 5 + 4 * @as(i32, @intFromBool(f <= 9)),
+                ), @intCast(22 * @divTrunc(@as(i32, f), 16) + 175), if (getFlag(@bitCast(FIRST_LOCAL_FLAG + f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
             }
         }
     }

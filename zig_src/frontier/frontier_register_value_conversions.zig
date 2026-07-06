@@ -143,7 +143,6 @@ const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN; // 0x70
 // Constant blob
 // ---------------------------------------------------------------------------
 
-
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
@@ -175,25 +174,18 @@ extern fn adjustResult(result: calcRegister_t, drop_y: bool, set_cpx: bool, op1:
 extern fn saveLastX() bool;
 extern fn liftStack() void;
 
-
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-
 
 extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linked: *real34Matrix_t) void;
 
-
-
-
-
 extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *realContext_t) void;
 extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn clearSystemFlag(flag: c_uint) void;
-
 
 // real linkable helpers.
 
@@ -256,26 +248,26 @@ extern fn decNumberToIntegralValue(r: *real_t, a: *const real_t, ctx: *realConte
 // GMP externs
 // ---------------------------------------------------------------------------
 // GMP exports its symbols with the __gmpz_ prefix (mpz_* are header macros).
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_init2"(p: *mpz_struct, bits: c_ulong) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_add_ui"(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn @"__gmpz_mul_ui"(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn @"__gmpz_mul_2exp"(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn @"__gmpz_fdiv_ui"(op: *const mpz_struct, c: c_ulong) c_ulong;
-extern fn @"__gmpz_get_str"(str: [*c]u8, radix: c_int, op: *const mpz_struct) [*c]u8;
-extern fn @"__gmpz_sizeinbase"(op: *const mpz_struct, base: c_int) usize;
-const mpz_init = @"__gmpz_init";
-const mpz_init2 = @"__gmpz_init2";
-const mpz_clear = @"__gmpz_clear";
-const mpz_set_ui = @"__gmpz_set_ui";
-const mpz_add_ui = @"__gmpz_add_ui";
-const mpz_mul_ui = @"__gmpz_mul_ui";
-const mpz_mul_2exp = @"__gmpz_mul_2exp";
-const mpz_fdiv_ui = @"__gmpz_fdiv_ui";
-const mpz_get_str = @"__gmpz_get_str";
-const mpz_sizeinbase = @"__gmpz_sizeinbase";
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_init2(p: *mpz_struct, bits: c_ulong) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
+extern fn __gmpz_add_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+extern fn __gmpz_mul_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+extern fn __gmpz_mul_2exp(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, c: c_ulong) c_ulong;
+extern fn __gmpz_get_str(str: [*c]u8, radix: c_int, op: *const mpz_struct) [*c]u8;
+extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
+const mpz_init = __gmpz_init;
+const mpz_init2 = __gmpz_init2;
+const mpz_clear = __gmpz_clear;
+const mpz_set_ui = __gmpz_set_ui;
+const mpz_add_ui = __gmpz_add_ui;
+const mpz_mul_ui = __gmpz_mul_ui;
+const mpz_mul_2exp = __gmpz_mul_2exp;
+const mpz_fdiv_ui = __gmpz_fdiv_ui;
+const mpz_get_str = __gmpz_get_str;
+const mpz_sizeinbase = __gmpz_sizeinbase;
 
 // ---------------------------------------------------------------------------
 // DMCP / PC date path
@@ -1089,11 +1081,11 @@ pub export fn sci_fmt(buf: [*c]u8, n: c_int, x_arg: f64) callconv(.c) void {
     i += 1;
 
     const divs = [_]u64{
-        1000000000000000,  100000000000000, 10000000000000,
-        1000000000000,     100000000000,    10000000000,
-        1000000000,        100000000,       10000000,
-        1000000,           100000,          10000,
-        1000,              100,             10,
+        1000000000000000, 100000000000000, 10000000000000,
+        1000000000000,    100000000000,    10000000000,
+        1000000000,       100000000,       10000000,
+        1000000,          100000,          10000,
+        1000,             100,             10,
     };
 
     var j: usize = 1;

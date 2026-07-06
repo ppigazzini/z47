@@ -190,25 +190,14 @@ pub fn keyPressedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
 
         switch (key_strip) {
             GDK_KEY_f => {
-                if (shortcut_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
-                if (shortcut_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
-                if (shortcut_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTf) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == KEY_fg) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[27].primary else standard_keys[27].primary) == KEY_fg) btnClicked(widget, "27");
+                if (shortcut_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else if (shortcut_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else if (shortcut_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTf) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == KEY_fg) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[27].primary else standard_keys[27].primary) == KEY_fg) btnClicked(widget, "27");
 
                 previousEventStateP = key_event.state;
                 previousEventKeyP = key_event.keyval;
                 return 0;
             },
             GDK_KEY_g => {
-                if (shortcut_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
-                if (shortcut_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
-                if (shortcut_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTg) btnClicked(widget, "10") else {
+                if (shortcut_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else if (shortcut_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else if (shortcut_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTg) btnClicked(widget, "10") else {
                     shiftF = false;
                     shiftG = !shiftG;
                     refreshStatusBar();
@@ -266,17 +255,7 @@ pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
         GDK_KEY_Shift_L, GDK_KEY_Shift_R => {
             event_command_shift = 0;
             if (SHIFT_State != 0) {
-                if (shortcut_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
-                if (shortcut_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
-                if (shortcut_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
-                if (shortcut_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else
-                if (shortcut_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else
-                if (shortcut_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[0].primary else standard_keys[0].primary) == KEY_fg) btnClicked(widget, "00") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == KEY_fg) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[27].primary else standard_keys[27].primary) == KEY_fg) btnClicked(widget, "27") else {
+                if (shortcut_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else if (shortcut_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else if (shortcut_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else if (shortcut_owned.checkNormal(0, ITM_SHIFTf)) btnClicked(widget, "00") else if (shortcut_owned.checkNormal(10, ITM_SHIFTf)) btnClicked(widget, "10") else if (shortcut_owned.checkNormal(11, ITM_SHIFTf)) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == ITM_SHIFTf) btnClicked(widget, "10") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[0].primary else standard_keys[0].primary) == KEY_fg) btnClicked(widget, "00") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[10].primary else standard_keys[10].primary) == KEY_fg) btnClicked(widget, "10") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == KEY_fg) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[27].primary else standard_keys[27].primary) == KEY_fg) btnClicked(widget, "27") else {
                     shiftF = !shiftF;
                     shiftG = false;
                     refreshStatusBar();
@@ -288,13 +267,7 @@ pub fn keyReleasedImpl(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaqu
 
         GDK_KEY_Control_L, GDK_KEY_Control_R => {
             if (CTRL_State != 0) {
-                if (shortcut_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else
-                if (shortcut_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else
-                if (shortcut_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else
-                if (shortcut_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else
-                if (shortcut_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else
-                if (shortcut_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else
-                if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else {
+                if (shortcut_owned.checkNormal(0, KEY_fg)) btnClicked(widget, "00") else if (shortcut_owned.checkNormal(10, KEY_fg)) btnClicked(widget, "10") else if (shortcut_owned.checkNormal(11, KEY_fg)) btnClicked(widget, "11") else if (shortcut_owned.checkNormal(0, ITM_SHIFTg)) btnClicked(widget, "00") else if (shortcut_owned.checkNormal(10, ITM_SHIFTg)) btnClicked(widget, "10") else if (shortcut_owned.checkNormal(11, ITM_SHIFTg)) btnClicked(widget, "11") else if ((if (getSystemFlag(FLAG_USER)) kbd_usr[11].primary else standard_keys[11].primary) == ITM_SHIFTg) btnClicked(widget, "11") else {
                     shiftF = false;
                     shiftG = !shiftG;
                     refreshStatusBar();

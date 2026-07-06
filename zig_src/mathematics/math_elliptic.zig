@@ -695,7 +695,6 @@ fn _ellipticFE_lambda_mu(phi: *const real_t, psi: *const real_t, m: *const real_
     }
 }
 
-
 inline fn carlsonTol(realContext: *realContext_t) *align(1) const real_t {
     return if (realContext.digits <= 39) const_1e_37() else const_1e_49();
 }
@@ -775,7 +774,6 @@ fn carlsonRD(x0: *const real_t, y0: *const real_t, z0: *const real_t, res: *real
     realDivide(&fac, res, res, realContext);
     realFMA(const_3Off(), &sum, res, res, realContext);
 }
-
 
 fn _ellipticF(phi: *const real_t, m: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     var s: real_t = undefined;

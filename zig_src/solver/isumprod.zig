@@ -29,37 +29,37 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(rop: *mpz_struct, op: c_ulong) void;
-extern fn @"__gmpz_cmp"(op1: *const mpz_struct, op2: *const mpz_struct) c_int;
-extern fn @"__gmpz_cmp_ui"(op1: *const mpz_struct, op2: c_ulong) c_int;
-extern fn @"__gmpz_tdiv_q"(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
-extern fn @"__gmpz_fdiv_ui"(op: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn __gmpz_cmp(op1: *const mpz_struct, op2: *const mpz_struct) c_int;
+extern fn __gmpz_cmp_ui(op1: *const mpz_struct, op2: c_ulong) c_int;
+extern fn __gmpz_tdiv_q(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
 }
 inline fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
-    return @"__gmpz_cmp"(op1, op2);
+    return __gmpz_cmp(op1, op2);
 }
 inline fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
-    return @"__gmpz_cmp_ui"(op, u);
+    return __gmpz_cmp_ui(op, u);
 }
 inline fn longIntegerDivide(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_tdiv_q"(result, op1, op2);
+    __gmpz_tdiv_q(result, op1, op2);
 }
 inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
-    return @truncate(@"__gmpz_fdiv_ui"(op, u));
+    return @truncate(__gmpz_fdiv_ui(op, u));
 }
 
 // Real linkable longInteger functions (integers.c). longInteger_t decays to *mpz_struct.

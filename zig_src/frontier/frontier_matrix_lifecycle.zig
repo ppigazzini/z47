@@ -29,9 +29,4 @@ pub fn restore() void {
 
 extern var matrixIndex: u16;
 
-
-
-
-
-
 extern fn getMatrixFromRegister(regist: u16) void;

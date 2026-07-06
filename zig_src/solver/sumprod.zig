@@ -38,18 +38,18 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_fdiv_ui"(op: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
-    return @truncate(@"__gmpz_fdiv_ui"(op, u));
+    return @truncate(__gmpz_fdiv_ui(op, u));
 }
 
 // ---------------------------------------------------------------------------

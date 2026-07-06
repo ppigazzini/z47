@@ -100,20 +100,8 @@ extern var temporaryInformation: u8;
 extern var programRunStop: u8;
 extern var thereIsSomethingToUndo: bool;
 
-
-
-
-
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn clearRegister(regist: i16) void;
 
-
-
-
-
-
-
-
 extern fn fnDeleteAllVariables(confirmation: u16) void;
 extern fn fnClFAll(confirmation: u16) void;
-

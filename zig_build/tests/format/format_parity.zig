@@ -247,15 +247,15 @@ pub fn main() !void {
         var zbuf: [128]u8 = undefined;
         const precs = [_]usize{ 1, 16, 20, 0, 2, 6 };
         const edges = [_]f64{
-            0.0,                          -0.0,
-            1.0,                          -1.0,
-            0.1,                          0.2,
-            0.3,                          3.14159,
-            1e-34,                        9.999999e-35,
-            2.5e100,                      6.022e23,
-            1234567890123.456,            std.math.floatMin(f64),
-            std.math.floatTrueMin(f64),   std.math.floatMax(f64),
-            1.0 / 3.0,                    -7.77e-12,
+            0.0,                        -0.0,
+            1.0,                        -1.0,
+            0.1,                        0.2,
+            0.3,                        3.14159,
+            1e-34,                      9.999999e-35,
+            2.5e100,                    6.022e23,
+            1234567890123.456,          std.math.floatMin(f64),
+            std.math.floatTrueMin(f64), std.math.floatMax(f64),
+            1.0 / 3.0,                  -7.77e-12,
             9.999999999999999e99,
         };
         var prng = std.Random.DefaultPrng.init(0xC47F10A7);
@@ -287,14 +287,14 @@ pub fn main() !void {
         var zbuf: [512]u8 = undefined;
         const precs = [_]usize{ 6, 0, 2 };
         const edges = [_]f64{
-            0.0,             -0.0,
-            1.0,             -1.0,
-            0.5,             1.5,
-            0.001,           0.0000005,
-            123.456,         -123.456,
-            0.1,             0.2,
-            0.3,             1.0 / 3.0,
-            2.0 / 3.0,       9999999.9999995,
+            0.0,                    -0.0,
+            1.0,                    -1.0,
+            0.5,                    1.5,
+            0.001,                  0.0000005,
+            123.456,                -123.456,
+            0.1,                    0.2,
+            0.3,                    1.0 / 3.0,
+            2.0 / 3.0,              9999999.9999995,
             std.math.floatMin(f64),
         };
         var prng = std.Random.DefaultPrng.init(0xF13ED0);
@@ -324,11 +324,11 @@ pub fn main() !void {
         var cbuf: [64]u8 = undefined;
         var zbuf: [64]u8 = undefined;
         const edges = [_]f64{
-            1e-34,   9.9e-35, 1.0,    0.9999,
-            0.5,     0.1,     0.05,   0.01,
-            0.001,   1e-4,    9.9e-5, 1e-5,
-            0.123,   0.15,    0.25,   0.35,
-            0.55,    0.95,    0.099,  0.15e-30,
+            1e-34, 9.9e-35, 1.0,    0.9999,
+            0.5,   0.1,     0.05,   0.01,
+            0.001, 1e-4,    9.9e-5, 1e-5,
+            0.123, 0.15,    0.25,   0.35,
+            0.55,  0.95,    0.099,  0.15e-30,
         };
         for (edges) |v| {
             const c = cFmt(&cbuf, "%5.G", v);

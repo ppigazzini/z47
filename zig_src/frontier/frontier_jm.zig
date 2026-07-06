@@ -121,7 +121,6 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 
-
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn adjustResult(result: calcRegister_t, dropY: bool_t, setCpxRes: bool_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
@@ -142,7 +141,6 @@ const FnU16 = *const fn (p: u16) callconv(.c) void;
 const c_fnSwapX = @extern(FnU16, .{ .name = "fnSwapX" });
 const c_fnRCL = @extern(FnU16, .{ .name = "fnRCL" });
 const c_fn3Sto = @extern(FnU16, .{ .name = "fn3Sto" });
-
 
 extern fn fnToRect2(p: u16) void;
 

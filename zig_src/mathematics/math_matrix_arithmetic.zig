@@ -20,7 +20,6 @@ const nim_register_line = runtime.REGISTER_X;
 // realMatrixInit / complexMatrixInit are owned by
 // math_matrix_lifecycle.zig (B1); resolve the canonical symbols here.
 
-
 const realElems = abi.matrixRealElems;
 const constRealElems = abi.matrixConstRealElems;
 const complexElems = abi.matrixComplexElems;

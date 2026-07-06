@@ -49,37 +49,37 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_set"(rop: *mpz_struct, op: *const mpz_struct) void;
-extern fn @"__gmpz_set_ui"(rop: *mpz_struct, op: c_ulong) void;
-extern fn @"__gmpz_set_si"(rop: *mpz_struct, op: c_long) void;
-extern fn @"__gmpz_set_str"(rop: *mpz_struct, str: [*:0]const u8, base: c_int) c_int;
-extern fn @"__gmpz_get_ui"(op: *const mpz_struct) c_ulong;
-extern fn @"__gmpz_get_si"(op: *const mpz_struct) c_long;
-extern fn @"__gmpz_cmp"(op1: *const mpz_struct, op2: *const mpz_struct) c_int;
-extern fn @"__gmpz_cmp_ui"(op: *const mpz_struct, v: c_ulong) c_int;
-extern fn @"__gmpz_abs"(rop: *mpz_struct, op: *const mpz_struct) void;
-extern fn @"__gmpz_add_ui"(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_sub_ui"(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_mul_ui"(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_mul_2exp"(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_tdiv_q"(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
-extern fn @"__gmpz_tdiv_q_ui"(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) c_ulong;
-extern fn @"__gmpz_fdiv_ui"(op: *const mpz_struct, d: c_ulong) c_ulong;
-extern fn @"__gmpz_mod"(r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
-extern fn @"__gmpz_gcd"(rop: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
-extern fn @"__gmpz_gcd_ui"(rop: ?*mpz_struct, op: *const mpz_struct, v: c_ulong) c_ulong;
-extern fn @"__gmpz_sqrt"(rop: *mpz_struct, op: *const mpz_struct) void;
-extern fn @"__gmpz_ui_pow_ui"(rop: *mpz_struct, base: c_ulong, exp: c_ulong) void;
-extern fn @"__gmpz_perfect_square_p"(op: *const mpz_struct) c_int;
-extern fn @"__gmpz_probab_prime_p"(op: *const mpz_struct, reps: c_int) c_int;
-extern fn @"__gmpz_divexact"(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
-extern fn @"__gmpz_divexact_ui"(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) void;
-extern fn @"__gmpz_divisible_ui_p"(op: *const mpz_struct, d: c_ulong) c_int;
-extern fn @"__gmpz_fits_uint_p"(op: *const mpz_struct) c_int;
-extern fn @"__gmpz_fits_ulong_p"(op: *const mpz_struct) c_int;
-extern fn @"__gmpz_sizeinbase"(op: *const mpz_struct, base: c_int) usize;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn __gmpz_set_si(rop: *mpz_struct, op: c_long) void;
+extern fn __gmpz_set_str(rop: *mpz_struct, str: [*:0]const u8, base: c_int) c_int;
+extern fn __gmpz_get_ui(op: *const mpz_struct) c_ulong;
+extern fn __gmpz_get_si(op: *const mpz_struct) c_long;
+extern fn __gmpz_cmp(op1: *const mpz_struct, op2: *const mpz_struct) c_int;
+extern fn __gmpz_cmp_ui(op: *const mpz_struct, v: c_ulong) c_int;
+extern fn __gmpz_abs(rop: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_add_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_sub_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_mul_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_mul_2exp(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_tdiv_q(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_tdiv_q_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_mod(r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_gcd(rop: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_gcd_ui(rop: ?*mpz_struct, op: *const mpz_struct, v: c_ulong) c_ulong;
+extern fn __gmpz_sqrt(rop: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_ui_pow_ui(rop: *mpz_struct, base: c_ulong, exp: c_ulong) void;
+extern fn __gmpz_perfect_square_p(op: *const mpz_struct) c_int;
+extern fn __gmpz_probab_prime_p(op: *const mpz_struct, reps: c_int) c_int;
+extern fn __gmpz_divexact(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_divexact_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) void;
+extern fn __gmpz_divisible_ui_p(op: *const mpz_struct, d: c_ulong) c_int;
+extern fn __gmpz_fits_uint_p(op: *const mpz_struct) c_int;
+extern fn __gmpz_fits_ulong_p(op: *const mpz_struct) c_int;
+extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
 
 // The overflow-guarded long-integer operators live in the integers owner. They
 // take *mpz_struct (the [1]mpz_struct array decays to a pointer in C).
@@ -92,31 +92,31 @@ extern fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) void;
 // longInteger* helper wrappers (longIntegerType.h inlines / macros).
 // ---------------------------------------------------------------------------
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
-    @"__gmpz_set"(destination, source);
+    __gmpz_set(destination, source);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn int32ToLongInteger(source: i32, destination: *mpz_struct) void {
-    @"__gmpz_set_si"(destination, source);
+    __gmpz_set_si(destination, source);
 }
 inline fn stringToLongInteger(source: [*:0]const u8, radix: i32, destination: *mpz_struct) i32 {
-    return @"__gmpz_set_str"(destination, source, radix);
+    return __gmpz_set_str(destination, source, radix);
 }
 inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
     // __gmpz_get_ui returns c_ulong (32-bit on Win64 LLP64, 64-bit elsewhere);
     // truncate the low 32 bits directly. @bitCast to a fixed-width usize would
     // size-mismatch against the 32-bit c_ulong on Win64.
-    return @truncate(@"__gmpz_get_ui"(op));
+    return @truncate(__gmpz_get_ui(op));
 }
 inline fn longIntegerToInt32(op: *const mpz_struct) i32 {
-    return @truncate(@"__gmpz_get_si"(op));
+    return @truncate(__gmpz_get_si(op));
 }
 inline fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
@@ -141,95 +141,95 @@ inline fn longIntegerSign(op: *const mpz_struct) i32 {
     return if (op._mp_size < 0) -1 else if (op._mp_size > 0) 1 else 0;
 }
 inline fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
-    return @"__gmpz_cmp"(op1, op2);
+    return __gmpz_cmp(op1, op2);
 }
 inline fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
-    return @"__gmpz_cmp_ui"(op, u);
+    return __gmpz_cmp_ui(op, u);
 }
 inline fn longIntegerDivide(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_tdiv_q"(result, op1, op2);
+    __gmpz_tdiv_q(result, op1, op2);
 }
 inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
-    _ = @"__gmpz_tdiv_q_ui"(result, op, u);
+    _ = __gmpz_tdiv_q_ui(result, op, u);
 }
 inline fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_mod"(result, op1, op2);
+    __gmpz_mod(result, op1, op2);
 }
 inline fn longIntegerModuloUInt(op: *const mpz_struct, u: u32) u32 {
-    return @truncate(@"__gmpz_fdiv_ui"(op, u));
+    return @truncate(__gmpz_fdiv_ui(op, u));
 }
 inline fn longIntegerSquareRoot(op: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_sqrt"(result, op);
+    __gmpz_sqrt(result, op);
 }
 inline fn longIntegerPerfectSquare(op: *const mpz_struct) i32 {
-    return @"__gmpz_perfect_square_p"(op);
+    return __gmpz_perfect_square_p(op);
 }
 inline fn longIntegerMultiplyUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
-    @"__gmpz_mul_ui"(result, op, u);
+    __gmpz_mul_ui(result, op, u);
 }
 inline fn longIntegerAddUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
-    @"__gmpz_add_ui"(result, op, u);
+    __gmpz_add_ui(result, op, u);
 }
 inline fn longIntegerSubtractUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
-    @"__gmpz_sub_ui"(result, op, u);
+    __gmpz_sub_ui(result, op, u);
 }
 inline fn longIntegerPowerUIntUInt(base: u32, exponent: u32, result: *mpz_struct) void {
-    @"__gmpz_ui_pow_ui"(result, base, exponent);
+    __gmpz_ui_pow_ui(result, base, exponent);
 }
 inline fn longIntegerGcd(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_gcd"(result, op1, op2);
+    __gmpz_gcd(result, op1, op2);
 }
 inline fn longIntegerProbabPrime(op: *const mpz_struct) i32 {
-    return @"__gmpz_probab_prime_p"(op, 25);
+    return __gmpz_probab_prime_p(op, 25);
 }
 inline fn longIntegerIsPrime(op: *const mpz_struct) i32 {
-    return @"__gmpz_probab_prime_p"(op, 25);
+    return __gmpz_probab_prime_p(op, 25);
 }
 
 // longIntegerPower (power.c): result = base ^ exponent (overflow-guarded).
 
 // The mpz_* names used directly by prime.c.
 inline fn mpz_fits_uint_p(op: *const mpz_struct) bool {
-    return @"__gmpz_fits_uint_p"(op) != 0;
+    return __gmpz_fits_uint_p(op) != 0;
 }
 inline fn mpz_fits_ulong_p(op: *const mpz_struct) bool {
-    return @"__gmpz_fits_ulong_p"(op) != 0;
+    return __gmpz_fits_ulong_p(op) != 0;
 }
 inline fn mpz_get_ui(op: *const mpz_struct) c_ulong {
-    return @"__gmpz_get_ui"(op);
+    return __gmpz_get_ui(op);
 }
 inline fn mpz_divisible_ui_p(op: *const mpz_struct, d: c_ulong) bool {
-    return @"__gmpz_divisible_ui_p"(op, d) != 0;
+    return __gmpz_divisible_ui_p(op, d) != 0;
 }
 inline fn mpz_divexact_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) void {
-    @"__gmpz_divexact_ui"(q, n, d);
+    __gmpz_divexact_ui(q, n, d);
 }
 inline fn mpz_divexact(q: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
-    @"__gmpz_divexact"(q, n, d);
+    __gmpz_divexact(q, n, d);
 }
 inline fn mpz_gcd_ui(rop: *mpz_struct, op: *const mpz_struct, d: c_ulong) void {
-    _ = @"__gmpz_gcd_ui"(rop, op, d);
+    _ = __gmpz_gcd_ui(rop, op, d);
 }
 inline fn mpz_abs(rop: *mpz_struct, op: *const mpz_struct) void {
-    @"__gmpz_abs"(rop, op);
+    __gmpz_abs(rop, op);
 }
 inline fn mpz_mul_2exp(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void {
-    @"__gmpz_mul_2exp"(rop, op, v);
+    __gmpz_mul_2exp(rop, op, v);
 }
 inline fn mpz_add_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void {
-    @"__gmpz_add_ui"(rop, op, v);
+    __gmpz_add_ui(rop, op, v);
 }
 inline fn mpz_init(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn mpz_clear(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn mpz_mod(rop: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void {
-    @"__gmpz_mod"(rop, n, d);
+    __gmpz_mod(rop, n, d);
 }
 inline fn mpz_sizeinbase(op: *const mpz_struct, base: c_int) usize {
-    return @"__gmpz_sizeinbase"(op, base);
+    return __gmpz_sizeinbase(op, base);
 }
 
 // ---------------------------------------------------------------------------
@@ -436,14 +436,10 @@ const Factors_3_Pollard: bool = true;
 
 // SQUFOF multipliers
 const multipliers_squfof = [_]c_int{
-    1,        3,        5,        7,        11,       13,
-    3 * 5,    3 * 7,    3 * 11,   3 * 13,
-    5 * 7,    5 * 11,   5 * 13,
-    7 * 11,   7 * 13,
-    11 * 13,
-    3 * 5 * 7,  3 * 5 * 11,  3 * 5 * 13,
-    3 * 7 * 11, 3 * 7 * 13,  3 * 11 * 13,
-    5 * 7 * 11, 5 * 7 * 13,
+    1,              3,          5,          7,           11,         13,
+    3 * 5,          3 * 7,      3 * 11,     3 * 13,      5 * 7,      5 * 11,
+    5 * 13,         7 * 11,     7 * 13,     11 * 13,     3 * 5 * 7,  3 * 5 * 11,
+    3 * 5 * 13,     3 * 7 * 11, 3 * 7 * 13, 3 * 11 * 13, 5 * 7 * 11, 5 * 7 * 13,
     3 * 5 * 7 * 11,
 };
 

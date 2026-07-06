@@ -103,11 +103,3 @@ extern var calcModel: u8;
 
 extern fn fnClearFlag(flag: u16) void;
 extern fn fnSetFlag(flag: u16) void;
-
-
-
-
-
-
-
-

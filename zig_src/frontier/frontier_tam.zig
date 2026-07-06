@@ -1416,7 +1416,6 @@ inline fn fnGetSystemFlag_ptr() FnPtr {
 extern var itemToBeAssigned: i16;
 const CMP_NAME: i32 = 3;
 
-
 // ===========================================================================
 // tamEnterMode
 // ===========================================================================

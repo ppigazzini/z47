@@ -1,14 +1,6 @@
 const runtime = @import("keyboard_state_parity_runtime.zig");
 const shared = @import("z47_keyboard_state_shared").implementation(runtime);
 
-
-
-
-
-
-
-
-
 pub export fn caseReplacements(id: u8, lower_case_selected: runtime.bool_t, item: i16, item_out: *i16) runtime.bool_t {
     _ = id;
     return shared.caseReplacements(lower_case_selected, item, item_out);

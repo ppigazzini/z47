@@ -320,9 +320,6 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool_t;
 
-
-
-
 extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn realCompareLessThan(n1: *const real_t, n2: *const real_t) bool_t;
 extern fn decQuadZero(r: *real34_t) *real34_t;

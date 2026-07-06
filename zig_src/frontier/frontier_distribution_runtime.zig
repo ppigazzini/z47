@@ -94,8 +94,6 @@ extern fn PowerReal(y: *const real_t, x: *const real_t, result: *real_t, real_co
 extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 
-
-
 extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;

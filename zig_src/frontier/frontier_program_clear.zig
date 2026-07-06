@@ -90,8 +90,4 @@ extern var currentLocalStepNumber: u16;
 extern var beginOfCurrentProgram: [*]u8;
 extern var endOfCurrentProgram: [*]u8;
 
-
-
 extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
-
-

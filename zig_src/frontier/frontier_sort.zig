@@ -27,9 +27,6 @@ const font_t = abi.Font;
 
 extern const standardFont: font_t;
 
-
-
-
 const UnSupSubRange = struct {
     low: u16,
     num: u16,

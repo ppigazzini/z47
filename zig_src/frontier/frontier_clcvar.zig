@@ -40,10 +40,10 @@ const complex34Matrix_t = abi.Complex34Matrix;
 // GMP mpz_struct (limb width == pointer width on every z47 target).
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-const mpz_init = @"__gmpz_init";
-const mpz_clear = @"__gmpz_clear";
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+const mpz_init = __gmpz_init;
+const mpz_clear = __gmpz_clear;
 
 const item_t = abi.Item;
 
@@ -140,17 +140,11 @@ extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 
-
-
-
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-
-
 
 extern fn decQuadZero(r: *align(1) real34_t) *align(1) real34_t;
 

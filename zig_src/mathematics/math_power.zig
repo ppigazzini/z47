@@ -91,28 +91,28 @@ inline fn realIsPositive(source: *const real_t) bool {
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_set"(rop: *mpz_struct, op: *const mpz_struct) void;
-extern fn @"__gmpz_set_ui"(rop: *mpz_struct, op: c_ulong) void;
-extern fn @"__gmpz_cmp_si"(op: *const mpz_struct, v: c_long) c_int;
-extern fn @"__gmpz_fdiv_q_2exp"(q: *mpz_struct, n: *const mpz_struct, b: c_ulong) void;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
+extern fn __gmpz_fdiv_q_2exp(q: *mpz_struct, n: *const mpz_struct, b: c_ulong) void;
 
 // Overflow-guarded long-integer operators (integers owner).
 extern fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct) void;
 extern fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) void;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
-    @"__gmpz_set"(destination, source);
+    __gmpz_set(destination, source);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
@@ -124,10 +124,10 @@ inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }
 inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
-    return @"__gmpz_cmp_si"(op, sint);
+    return __gmpz_cmp_si(op, sint);
 }
 inline fn longIntegerDivide2(op: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_fdiv_q_2exp"(result, op, 1);
+    __gmpz_fdiv_q_2exp(result, op, 1);
 }
 
 // Declared against the local mpz_struct (identical ABI; just a pointer).

@@ -334,7 +334,6 @@ inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t,
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
 
-
 // screen / drawing primitives (real linkable c47 functions)
 
 // stats/curvefit helpers
@@ -1159,7 +1158,7 @@ pub export fn formatCore(value_in: f64, digits: c_int, handle_zero: bool_t, buf:
     }
 
     if (handle_zero and value == 0.0) {
-        abi.fmtCStr(buf, "{s}0.0", .{ @as([*:0]const u8, sign) });
+        abi.fmtCStr(buf, "{s}0.0", .{@as([*:0]const u8, sign)});
     } else {
         var value34: real34_t = undefined;
         var valueR: real_t = undefined;
@@ -1640,7 +1639,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 
     if (isValidDraw) {
         if (softmenuMenuItem0() != -MNU_PLOT_SCATR) {
-            abi.fmtBufZ(&ss, "{d}", .{ @as(c_uint, NN) });
+            abi.fmtBufZ(&ss, "{d}", .{@as(c_uint, NN)});
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
             abi.fmtBufZ(&ss, STD_SPACE_PUNCTUATION ++ STD_SPACE_PUNCTUATION ++ "n=", .{});
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
@@ -1779,7 +1778,6 @@ extern var softmenuStack: [8]softmenuStack_t;
 inline fn softmenuMenuItem0() i16 {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
 }
-
 
 // ===========================================================================
 // fnPlotCloseSmi

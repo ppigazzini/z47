@@ -133,10 +133,7 @@ inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     }
 }
 
-
-
 // from the now-Zig register-value-conversions owner.
-
 
 // real34 compares (mathematics/comparisonReals.c).
 extern fn real34CompareLessEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;

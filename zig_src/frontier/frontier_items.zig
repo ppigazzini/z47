@@ -627,7 +627,7 @@ pub export fn getItemCatalogName(itemNr: i16) callconv(.c) [*c]u8 {
         tbPtr[0] = 0;
         itemName = tmpStringLabelOrVariableName;
     } else if (itemNr >= ASSIGN_RESERVED_VARIABLES) { // Reserved variable
-        itemName = @constCast(@ptrCast(&allReservedVariables[@intCast(itemNr - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]));
+        itemName = @ptrCast(@constCast(&allReservedVariables[@intCast(itemNr - ASSIGN_RESERVED_VARIABLES)].reservedVariableName[1]));
     } else if (itemNr >= ASSIGN_NAMED_VARIABLES) { // User variable
         itemName = @ptrCast(&allNamedVariables[@intCast(itemNr - ASSIGN_NAMED_VARIABLES)].variableName[1]);
     } else if (itemNr <= ASSIGN_USER_MENU) { // User menu

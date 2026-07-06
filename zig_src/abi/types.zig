@@ -65,7 +65,6 @@ pub const SubroutineLevelHeader = extern struct {
     ptrToPreviousLevel: u16,
 };
 
-
 /// Keyboard key descriptor (keyboard.h calcKey_t), all i16 slots.
 pub const CalcKey = extern struct {
     keyId: i16,

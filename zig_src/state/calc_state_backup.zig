@@ -13,12 +13,21 @@ const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.s
 const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id")) build_options.calc_model_user_id else 46;
 
 const FILE_OK: c_int = 1;
-const ioPathBackup: c_int = 4; const ioModeWrite: c_int = 1;
+const ioPathBackup: c_int = 4;
+const ioModeWrite: c_int = 1;
 const BACKUP_VERSION: u32 = 1015; // C saveRestoreBackup.c:14 (FLAG_SIGZEROS bump)
-const INVALID_VARIABLE: i16 = 2199; const CM_CONFIRMATION: u8 = 11;
-const USER_C47: u16 = 46; const USER_DM42: u16 = 45; const USER_R47: u16 = 66;
-const USER_R47f_g: u16=61; const USER_R47fg_g: u16=64; const USER_R47fg_bk: u16=63; const USER_R47bk_fg: u16=62;
-const FREE_MEM_REGION_SIZE: u32 = 4; const REGISTER_HEADER_SIZE: u32 = 4; const NUMBER_OF_GLOBAL_REGISTERS: u32 = 137;
+const INVALID_VARIABLE: i16 = 2199;
+const CM_CONFIRMATION: u8 = 11;
+const USER_C47: u16 = 46;
+const USER_DM42: u16 = 45;
+const USER_R47: u16 = 66;
+const USER_R47f_g: u16 = 61;
+const USER_R47fg_g: u16 = 64;
+const USER_R47fg_bk: u16 = 63;
+const USER_R47bk_fg: u16 = 62;
+const FREE_MEM_REGION_SIZE: u32 = 4;
+const REGISTER_HEADER_SIZE: u32 = 4;
+const NUMBER_OF_GLOBAL_REGISTERS: u32 = 137;
 
 const Font = opaque {};
 extern const tinyFont: Font;
@@ -41,13 +50,17 @@ extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // realToStr
 extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // real34ToString
 extern fn decQuadIsInfinite(src: [*c]const u8) u32; // real34IsInfinite
 const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
-extern fn ioFileOpen(path: c_int, mode: c_int) c_int; extern fn ioFileClose() void;
+extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
+extern fn ioFileClose() void;
 extern fn refreshScreen(source: u16) void;
-extern var calcModel: u8; extern var calcMode: u8; extern var previousCalcMode: u8;
+extern var calcModel: u8;
+extern var calcMode: u8;
+extern var previousCalcMode: u8;
 extern var graphVariabl1: i16;
 extern var freeMemoryRegions: ?*anyopaque; // pointer on host (NEW_HW)
 extern var allocatedMemoryRegions: [4]u8; // array on host (!DMCP_BUILD) -> &[0]
-extern var numberOfFreeMemoryRegions: i32; extern var numberOfAllocatedMemoryRegions: i32;
+extern var numberOfFreeMemoryRegions: i32;
+extern var numberOfAllocatedMemoryRegions: i32;
 extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
 extern var ram: [*c]u32;
 extern var globalFlags: [16]u8;
@@ -265,7 +278,9 @@ extern var firstFreeProgramByte: [*c]u8;
 extern var firstDisplayedStep: [*c]u8;
 extern var currentStep: [*c]u8;
 
-fn geometry() progmem.Geometry { return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW, .old_hw = state_old_hw }; }
+fn geometry() progmem.Geometry {
+    return .{ .ram_base = @intFromPtr(ram), .ram_size_in_blocks = if (state_old_hw) progmem.RAM_SIZE_IN_BLOCKS_OLD_HW else progmem.RAM_SIZE_IN_BLOCKS_NEW_HW, .old_hw = state_old_hw };
+}
 fn streq(a: [*c]const u8, b: [*c]const u8) bool {
     return strcmp(a, b) == 0;
 }
@@ -355,11 +370,11 @@ fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]co
         save(v);
         var addr: u32 = 0;
         while (addr < size) : (addr += 32) {
-            abi.fmtCStr(v, "{x:0>5}  ", .{ @as(c_uint, addr) });
+            abi.fmtCStr(v, "{x:0>5}  ", .{@as(c_uint, addr)});
             var b: u32 = 0;
             while (b < 32) : (b += 1) {
                 if (addr + b < size) {
-                    abi.fmtCStr(v + 7 + 3 * b, "{x:0>2} ", .{ @as(c_uint, buf[addr + b]) });
+                    abi.fmtCStr(v + 7 + 3 * b, "{x:0>2} ", .{@as(c_uint, buf[addr + b])});
                 } else {
                     _ = strcpy(v + 7 + 3 * b, "   ");
                 }
@@ -369,7 +384,7 @@ fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]co
             while (b < 32) : (b += 1) {
                 if (addr + b < size) {
                     const ch = buf[addr + b];
-                    abi.fmtCStr(v + 105 + b, "{c}", .{ @as(u8, @intCast(@as(c_int, if (ch >= ' ' and ch != 0x7f) ch else ' '))) });
+                    abi.fmtCStr(v + 105 + b, "{c}", .{@as(u8, @intCast(@as(c_int, if (ch >= ' ' and ch != 0x7f) ch else ' ')))});
                 } else {
                     _ = strcpy(v + 105 + b, " ");
                 }
@@ -379,23 +394,34 @@ fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]co
         }
     }
 }
-fn c47ptr(p: [*c]const u8) u32 { return progmem.toC47memptr(geometry(), @intFromPtr(p)); }
-fn offWithin(p: [*c]const u8) u32 { return progmem.offsetWithinBlock(geometry(), @intFromPtr(p)); }
+fn c47ptr(p: [*c]const u8) u32 {
+    return progmem.toC47memptr(geometry(), @intFromPtr(p));
+}
+fn offWithin(p: [*c]const u8) u32 {
+    return progmem.offsetWithinBlock(geometry(), @intFromPtr(p));
+}
 
 pub fn saveCalc() void {
     const ok = (calc_model_user_id == USER_R47 and (calcModel == USER_R47f_g or calcModel == USER_R47fg_g or calcModel == USER_R47fg_bk or calcModel == USER_R47bk_fg)) or
         (calc_model_user_id == USER_C47 and (calcModel == USER_C47 or calcModel == USER_DM42));
     if (!ok) return;
     if (ioFileOpen(ioPathBackup, ioModeWrite) != FILE_OK) return;
-    if (calcMode == CM_CONFIRMATION) { calcMode = previousCalcMode; refreshScreen(90); }
-    var bv: u32 = BACKUP_VERSION; sv(&bv, 4, "backupVersion", "uint32");
-    var rsib: u32 = geometry().ram_size_in_blocks; sv(&rsib, 4, "ramSizeInBlocks", "uint32");
+    if (calcMode == CM_CONFIRMATION) {
+        calcMode = previousCalcMode;
+        refreshScreen(90);
+    }
+    var bv: u32 = BACKUP_VERSION;
+    sv(&bv, 4, "backupVersion", "uint32");
+    var rsib: u32 = geometry().ram_size_in_blocks;
+    sv(&rsib, 4, "ramSizeInBlocks", "uint32");
     sv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
     sv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
     sv(&numberOfAllocatedMemoryRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
     sv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
     sv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
-    sv(&calcMode, 1, "calcMode", "uint8"); sv(&previousCalcMode, 1, "previousCalcMode", "uint8"); sv(&calcModel, 1, "calcModel", "uint8");
+    sv(&calcMode, 1, "calcMode", "uint8");
+    sv(&previousCalcMode, 1, "previousCalcMode", "uint8");
+    sv(&calcModel, 1, "calcModel", "uint8");
     sv(&globalFlags[0], 16, "globalFlags", "hexDump");
     sv(&errorMessage[0], 512, "errorMessage", "hexDump");
     sv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
@@ -601,27 +627,88 @@ pub fn saveCalc() void {
     sv(&printerState[0], 1, "printerState.print_on", "bool");
     sv(&printerState[8], 4, "printerState.printer_model", "uint8");
     sv(&printerState[12], 2, "printerState.delay", "uint16");
-    { var cf: i8 = cursorFontId(); sv(&cf, 1, "cursorFont", "int8"); }
-    graphVariabl1 = INVALID_VARIABLE; sv(&graphVariabl1, 2, "graphVariabl1", "int16");
-    { var v: u32 = c47ptr(allNamedVariables); sv(&v, 4, "allNamedVariables", "c47Ptr"); }
-    { var v: u32 = c47ptr(allFormulae); sv(&v, 4, "allFormulae", "c47Ptr"); }
-    { var v: u32 = c47ptr(userMenus); sv(&v, 4, "userMenus", "c47Ptr"); }
-    { var v: u32 = c47ptr(userKeyLabel); sv(&v, 4, "userKeyLabel", "c47Ptr"); }
-    { var v: u32 = c47ptr(statisticalSumsPointer); sv(&v, 4, "statisticalSumsPointer", "c47Ptr"); }
-    { var v: u32 = c47ptr(savedStatisticalSumsPointer); sv(&v, 4, "savedStatisticalSumsPointer", "c47Ptr"); }
-    { var v: u32 = c47ptr(labelList); sv(&v, 4, "labelList", "c47Ptr"); }
-    { var v: u32 = c47ptr(programList); sv(&v, 4, "programList", "c47Ptr"); }
-    { var v: u32 = c47ptr(currentSubroutineLevelData); sv(&v, 4, "currentSubroutineLevelData", "c47Ptr"); }
-    { var v: u32 = c47ptr(currentLocalFlags); sv(&v, 4, "currentLocalFlags", "c47Ptr"); }
-    { var v: u32 = c47ptr(currentLocalRegisters); sv(&v, 4, "currentLocalRegisters", "c47Ptr"); }
-    { var v: u32 = c47ptr(beginOfProgramMemory); sv(&v, 4, "beginOfProgramMemory", "c47Ptr"); }
-    { var v: u32 = offWithin(beginOfProgramMemory); sv(&v, 4, "beginOfProgramMemoryOffset", "uint32"); }
-    { var v: u32 = c47ptr(firstFreeProgramByte); sv(&v, 4, "firstFreeProgramByte", "c47Ptr"); }
-    { var v: u32 = offWithin(firstFreeProgramByte); sv(&v, 4, "firstFreeProgramByteOffset", "uint32"); }
-    { var v: u32 = c47ptr(firstDisplayedStep); sv(&v, 4, "firstDisplayedStep", "c47Ptr"); }
-    { var v: u32 = offWithin(firstDisplayedStep); sv(&v, 4, "firstDisplayedStepOffset", "uint32"); }
-    { var v: u32 = c47ptr(currentStep); sv(&v, 4, "currentStep", "c47Ptr"); }
-    { var v: u32 = offWithin(currentStep); sv(&v, 4, "currentStepOffset", "uint32"); }
+    {
+        var cf: i8 = cursorFontId();
+        sv(&cf, 1, "cursorFont", "int8");
+    }
+    graphVariabl1 = INVALID_VARIABLE;
+    sv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    {
+        var v: u32 = c47ptr(allNamedVariables);
+        sv(&v, 4, "allNamedVariables", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(allFormulae);
+        sv(&v, 4, "allFormulae", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(userMenus);
+        sv(&v, 4, "userMenus", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(userKeyLabel);
+        sv(&v, 4, "userKeyLabel", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(statisticalSumsPointer);
+        sv(&v, 4, "statisticalSumsPointer", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(savedStatisticalSumsPointer);
+        sv(&v, 4, "savedStatisticalSumsPointer", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(labelList);
+        sv(&v, 4, "labelList", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(programList);
+        sv(&v, 4, "programList", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(currentSubroutineLevelData);
+        sv(&v, 4, "currentSubroutineLevelData", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(currentLocalFlags);
+        sv(&v, 4, "currentLocalFlags", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(currentLocalRegisters);
+        sv(&v, 4, "currentLocalRegisters", "c47Ptr");
+    }
+    {
+        var v: u32 = c47ptr(beginOfProgramMemory);
+        sv(&v, 4, "beginOfProgramMemory", "c47Ptr");
+    }
+    {
+        var v: u32 = offWithin(beginOfProgramMemory);
+        sv(&v, 4, "beginOfProgramMemoryOffset", "uint32");
+    }
+    {
+        var v: u32 = c47ptr(firstFreeProgramByte);
+        sv(&v, 4, "firstFreeProgramByte", "c47Ptr");
+    }
+    {
+        var v: u32 = offWithin(firstFreeProgramByte);
+        sv(&v, 4, "firstFreeProgramByteOffset", "uint32");
+    }
+    {
+        var v: u32 = c47ptr(firstDisplayedStep);
+        sv(&v, 4, "firstDisplayedStep", "c47Ptr");
+    }
+    {
+        var v: u32 = offWithin(firstDisplayedStep);
+        sv(&v, 4, "firstDisplayedStepOffset", "uint32");
+    }
+    {
+        var v: u32 = c47ptr(currentStep);
+        sv(&v, 4, "currentStep", "c47Ptr");
+    }
+    {
+        var v: u32 = offWithin(currentStep);
+        sv(&v, 4, "currentStepOffset", "uint32");
+    }
     sv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
     ioFileClose();
 }
@@ -765,50 +852,151 @@ extern fn defineCurrentProgramFromGlobalStepNumber(global_step: i16) void;
 extern fn defineCurrentStep() void;
 extern fn defineFirstDisplayedStep() void;
 extern fn defineCurrentProgramFromCurrentStep() void;
-extern fn getSystemFlag(sf: i32) bool; extern fn setSystemFlag(sf: c_uint) void; extern fn clearSystemFlag(sf: c_uint) void;
+extern fn getSystemFlag(sf: i32) bool;
+extern fn setSystemFlag(sf: c_uint) void;
+extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
-const ioModeRead: c_int = 0; const CONFIRMED: u16 = 9877; const loadAutoSav: bool = true;
-const FLAG_FRACT: c_uint = 32775; const FLAG_IRFRAC: c_uint = 32839; const MNU_HOME: i16 = 1921;
+const ioModeRead: c_int = 0;
+const CONFIRMED: u16 = 9877;
+const loadAutoSav: bool = true;
+const FLAG_FRACT: c_uint = 32775;
+const FLAG_IRFRAC: c_uint = 32839;
+const MNU_HOME: i16 = 1921;
 const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 
-fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void { restoreStateValue(buffer, size, name, type_str); }
-fn toPcmem(blk: u32) [*c]u8 { return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk))); }
-fn rdU16(p: [*c]const u8) u16 { return @as(u16, p[0]) | (@as(u16, p[1]) << 8); }
-fn programStep(idx: u16) i32 { const base = programList + @as(usize, idx) * 16; return @as(*const i32, @ptrCast(@alignCast(base))).*; }
+fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
+    restoreStateValue(buffer, size, name, type_str);
+}
+fn toPcmem(blk: u32) [*c]u8 {
+    return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk)));
+}
+fn rdU16(p: [*c]const u8) u16 {
+    return @as(u16, p[0]) | (@as(u16, p[1]) << 8);
+}
+fn programStep(idx: u16) i32 {
+    const base = programList + @as(usize, idx) * 16;
+    return @as(*const i32, @ptrCast(@alignCast(base))).*;
+}
 
 pub fn restoreCalc() void {
     doFnReset(CONFIRMED, loadAutoSav);
     if (backupOpenParse() != FILE_OK) return;
-    var backupVersion: u32 = 0; rv(&backupVersion, 4, "backupVersion", "uint32");
-    var ramSizeInBlocks: u32 = 0; rv(&ramSizeInBlocks, 4, "ramSizeInBlocks", "uint32");
-    if (ramSizeInBlocks != geometry().ram_size_in_blocks) { backupFreeParams(); return; }
-    if (backupVersion == 0 or backupVersion < 1011) { backupFreeParams(); return; }
+    var backupVersion: u32 = 0;
+    rv(&backupVersion, 4, "backupVersion", "uint32");
+    var ramSizeInBlocks: u32 = 0;
+    rv(&ramSizeInBlocks, 4, "ramSizeInBlocks", "uint32");
+    if (ramSizeInBlocks != geometry().ram_size_in_blocks) {
+        backupFreeParams();
+        return;
+    }
+    if (backupVersion == 0 or backupVersion < 1011) {
+        backupFreeParams();
+        return;
+    }
     rv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
     rv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
     rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
     rv(&numberOfAllocatedMemoryRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
     rv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
     rv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
-    rv(&calcMode, 1, "calcMode", "uint8"); rv(&previousCalcMode, 1, "previousCalcMode", "uint8"); rv(&calcModel, 1, "calcModel", "uint8");
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "allNamedVariables", "c47Ptr"); allNamedVariables = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "allFormulae", "c47Ptr"); allFormulae = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "userMenus", "c47Ptr"); userMenus = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "userKeyLabel", "c47Ptr"); userKeyLabel = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "statisticalSumsPointer", "c47Ptr"); statisticalSumsPointer = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "savedStatisticalSumsPointer", "c47Ptr"); savedStatisticalSumsPointer = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "labelList", "c47Ptr"); labelList = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "programList", "c47Ptr"); programList = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentSubroutineLevelData", "c47Ptr"); currentSubroutineLevelData = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentLocalFlags", "c47Ptr"); currentLocalFlags = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentLocalRegisters", "c47Ptr"); currentLocalRegisters = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "beginOfProgramMemory", "c47Ptr"); beginOfProgramMemory = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "beginOfProgramMemoryOffset", "uint32"); beginOfProgramMemory += ramPtr; }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstFreeProgramByte", "c47Ptr"); firstFreeProgramByte = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstFreeProgramByteOffset", "uint32"); firstFreeProgramByte += ramPtr; }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstDisplayedStep", "c47Ptr"); firstDisplayedStep = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "firstDisplayedStepOffset", "uint32"); firstDisplayedStep += ramPtr; }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentStep", "c47Ptr"); currentStep = toPcmem(ramPtr); }
-    { var ramPtr: u32 = 0; rv(&ramPtr, 4, "currentStepOffset", "uint32"); currentStep += ramPtr; }
+    rv(&calcMode, 1, "calcMode", "uint8");
+    rv(&previousCalcMode, 1, "previousCalcMode", "uint8");
+    rv(&calcModel, 1, "calcModel", "uint8");
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "allNamedVariables", "c47Ptr");
+        allNamedVariables = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "allFormulae", "c47Ptr");
+        allFormulae = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "userMenus", "c47Ptr");
+        userMenus = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "userKeyLabel", "c47Ptr");
+        userKeyLabel = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "statisticalSumsPointer", "c47Ptr");
+        statisticalSumsPointer = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "savedStatisticalSumsPointer", "c47Ptr");
+        savedStatisticalSumsPointer = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "labelList", "c47Ptr");
+        labelList = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "programList", "c47Ptr");
+        programList = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "currentSubroutineLevelData", "c47Ptr");
+        currentSubroutineLevelData = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "currentLocalFlags", "c47Ptr");
+        currentLocalFlags = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "currentLocalRegisters", "c47Ptr");
+        currentLocalRegisters = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "beginOfProgramMemory", "c47Ptr");
+        beginOfProgramMemory = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "beginOfProgramMemoryOffset", "uint32");
+        beginOfProgramMemory += ramPtr;
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "firstFreeProgramByte", "c47Ptr");
+        firstFreeProgramByte = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "firstFreeProgramByteOffset", "uint32");
+        firstFreeProgramByte += ramPtr;
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "firstDisplayedStep", "c47Ptr");
+        firstDisplayedStep = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "firstDisplayedStepOffset", "uint32");
+        firstDisplayedStep += ramPtr;
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "currentStep", "c47Ptr");
+        currentStep = toPcmem(ramPtr);
+    }
+    {
+        var ramPtr: u32 = 0;
+        rv(&ramPtr, 4, "currentStepOffset", "uint32");
+        currentStep += ramPtr;
+    }
     rv(&globalFlags[0], 16, "globalFlags", "hexDump");
     rv(&errorMessage[0], 512, "errorMessage", "hexDump");
     rv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
@@ -1014,10 +1202,15 @@ pub fn restoreCalc() void {
     rv(&printerState[0], 1, "printerState.print_on", "bool");
     rv(&printerState[8], 4, "printerState.printer_model", "uint8");
     rv(&printerState[12], 2, "printerState.delay", "uint16");
-    graphVariabl1 = INVALID_VARIABLE; rv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    graphVariabl1 = INVALID_VARIABLE;
+    rv(&graphVariabl1, 2, "graphVariabl1", "int16");
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
     if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreBackup.c:1153-1155
-    if (getSystemFlag(@intCast(FLAG_FRACT))) { setSystemFlag(FLAG_FRACT); } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) { setSystemFlag(FLAG_IRFRAC); }
+    if (getSystemFlag(@intCast(FLAG_FRACT))) {
+        setSystemFlag(FLAG_FRACT);
+    } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {
+        setSystemFlag(FLAG_IRFRAC);
+    }
     backupFreeParams();
     scanLabelsAndPrograms();
     {
@@ -1027,5 +1220,7 @@ pub fn restoreCalc() void {
         const gsn = @as(i32, cls) + (if (step < 0) -step else step) - 1;
         defineCurrentProgramFromGlobalStepNumber(@intCast(gsn));
     }
-    defineCurrentStep(); defineFirstDisplayedStep(); defineCurrentProgramFromCurrentStep();
+    defineCurrentStep();
+    defineFirstDisplayedStep();
+    defineCurrentProgramFromCurrentStep();
 }

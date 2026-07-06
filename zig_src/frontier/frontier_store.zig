@@ -186,7 +186,6 @@ extern var timeDisplayFormatDigits: u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
-
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
@@ -197,9 +196,6 @@ extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: ca
 extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
-
-
-
 
 extern fn getMatrixDims(regist: calcRegister_t, funcName: [*:0]const u8, rows: *u16, cols: *u16) bool;
 extern fn getDimensionArg(rows: *u32, cols: *u32) bool;
@@ -212,18 +208,12 @@ extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn liftStack() void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-
-
-
-
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_cmp_si"(op: *const mpz_struct, c: c_long) c_int;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_cmp_si(op: *const mpz_struct, c: c_long) c_int;
 extern fn decQuadZero(r: *real34_t) *real34_t;
 
 // stats.c owner exports.
-
-
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -252,7 +242,7 @@ inline fn real34SetZero(dst: *align(1) real34_t) void {
     dst.* = tmp;
 }
 inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
-    return @"__gmpz_cmp_si"(op, sint);
+    return __gmpz_cmp_si(op, sint);
 }
 // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA on a complex34_t element.
 inline fn variableReal34(elem: *align(1) complex34_t) *align(1) real34_t {
@@ -439,7 +429,7 @@ fn _storeValue(regist: u16) void {
                     moreInfoOnError("In function _storeValue:", "Invalid value for GRAMOD", null);
                 }
             }
-            @"__gmpz_clear"(&x[0]); // longIntegerFree
+            __gmpz_clear(&x[0]); // longIntegerFree
         }
     } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.dataType == dtReal34) {
         copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);

@@ -260,25 +260,25 @@ extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional
 extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *align(1) real_t, ctxt: *realContext_t) void;
 
 // longInteger helpers.
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(rop: *mpz_struct, op: c_ulong) void;
-extern fn @"__gmpz_set_str"(rop: *mpz_struct, str: [*:0]const u8, base: c_int) c_int;
-extern fn @"__gmpz_get_str"(str: ?[*]u8, base: c_int, op: *const mpz_struct) [*]u8;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn __gmpz_set_str(rop: *mpz_struct, str: [*:0]const u8, base: c_int) c_int;
+extern fn __gmpz_get_str(str: ?[*]u8, base: c_int, op: *const mpz_struct) [*]u8;
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn stringToLongInteger(source: [*:0]const u8, radix: c_int, destination: *mpz_struct) c_int {
-    return @"__gmpz_set_str"(destination, source, radix);
+    return __gmpz_set_str(destination, source, radix);
 }
 inline fn longIntegerToString(source: *const mpz_struct, radix: c_int, destination: [*]u8) void {
-    _ = @"__gmpz_get_str"(destination, radix, source);
+    _ = __gmpz_get_str(destination, radix, source);
 }
 inline fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;

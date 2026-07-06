@@ -166,7 +166,6 @@ inline fn const_100() *align(1) const real_t {
     return consts.c7532();
 }
 
-
 inline fn const34_0() *align(1) const real34_t {
     return consts.q16200();
 }

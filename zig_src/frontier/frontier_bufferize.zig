@@ -3159,10 +3159,10 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                             strBase[1] = 0;
                         } else if (atoi(strBase) >= 2) {
                             {
-                        done = true;
-                        if (nimExitCloseFromGoto()) return;
-                        break :sw;
-                    }
+                                done = true;
+                                if (nimExitCloseFromGoto()) return;
+                                break :sw;
+                            }
                         }
                     },
                     else => {

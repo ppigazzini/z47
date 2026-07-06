@@ -178,12 +178,6 @@ extern const standardFont: font_t;
 // Function externs
 // ---------------------------------------------------------------------------
 
-
-
-
-
-
-
 extern fn clearSystemFlag(flag: c_uint) void;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn getSystemFlag(flag: c_int) bool_t;

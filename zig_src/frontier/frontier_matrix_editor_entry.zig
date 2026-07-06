@@ -83,16 +83,6 @@ extern var nimBufferDisplay: [*]u8;
 extern var scrollRow: u16;
 extern var scrollColumn: u16;
 
-
-
-
-
-
 extern fn saveStatsMatrix() void;
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getMatrixFromRegister(regist: u16) void;
-
-
-
-
-

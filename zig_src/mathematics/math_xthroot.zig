@@ -105,24 +105,24 @@ const angularMode_t = runtime.angularMode_t;
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(rop: *mpz_struct, op: c_ulong) void;
-extern fn @"__gmpz_get_si"(op: *const mpz_struct) c_long;
-extern fn @"__gmpz_cmp_ui"(op: *const mpz_struct, v: c_ulong) c_int;
-extern fn @"__gmpz_root"(rop: *mpz_struct, op: *const mpz_struct, n: c_ulong) c_int;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn __gmpz_get_si(op: *const mpz_struct) c_long;
+extern fn __gmpz_cmp_ui(op: *const mpz_struct, v: c_ulong) c_int;
+extern fn __gmpz_root(rop: *mpz_struct, op: *const mpz_struct, n: c_ulong) c_int;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn longIntegerToInt32(op: *const mpz_struct) i32 {
-    return @truncate(@"__gmpz_get_si"(op));
+    return @truncate(__gmpz_get_si(op));
 }
 inline fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
@@ -140,10 +140,10 @@ inline fn longIntegerChangeSign(op: *mpz_struct) void {
     op._mp_size = -op._mp_size;
 }
 inline fn longIntegerCompareUInt(op: *const mpz_struct, u: u32) i32 {
-    return @"__gmpz_cmp_ui"(op, u);
+    return __gmpz_cmp_ui(op, u);
 }
 inline fn longIntegerRoot(op: *const mpz_struct, n: u32, result: *mpz_struct) i32 {
-    return @"__gmpz_root"(result, op, n);
+    return __gmpz_root(result, op, n);
 }
 
 // Declared against the local mpz_struct (identical ABI; just a pointer).

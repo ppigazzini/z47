@@ -18,7 +18,7 @@ const std_cross = "\x80\xd7";
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
     buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
+    return buffer[0..slice.len :0];
 }
 
 fn reportNotSquare(rows: u16, cols: u16) void {

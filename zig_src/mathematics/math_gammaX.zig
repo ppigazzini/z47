@@ -27,7 +27,6 @@ inline fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
 
-
 // WP34S_GammaP from the wp34s owner.
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;

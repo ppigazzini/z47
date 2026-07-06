@@ -92,7 +92,6 @@ pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
 
-
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
 }

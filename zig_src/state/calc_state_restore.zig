@@ -201,7 +201,9 @@ extern const kbd_std_R47f_g: [37]calcKey_t;
 extern const kbd_std_R47bk_fg: [37]calcKey_t;
 extern const kbd_std_R47fg_bk: [37]calcKey_t;
 extern const kbd_std_R47fg_g: [37]calcKey_t;
-fn isAtEndOfProgram(step: [*c]const u8) bool { return checkOpCodeOfStep(step, @intCast(ITM_END)); }
+fn isAtEndOfProgram(step: [*c]const u8) bool {
+    return checkOpCodeOfStep(step, @intCast(ITM_END));
+}
 fn normKey00Key() i16 {
     return switch (@as(u16, calcModel)) {
         USER_C47, USER_DM42 => 0,
@@ -309,9 +311,15 @@ extern var firstWeekOfYearDay: u8;
 
 // printerState fields are enum-typed; set each through an enum-free trampoline.
 extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u16}
-fn setPrinterOn(v: u8) void { printerState[0] = v; }
-fn setPrinterModel(v: u8) void { printerState[8] = v; }
-fn setPrinterDelay(v: u16) void { @as(*u16, @ptrCast(@alignCast(&printerState[12]))).* = v; }
+fn setPrinterOn(v: u8) void {
+    printerState[0] = v;
+}
+fn setPrinterModel(v: u8) void {
+    printerState[8] = v;
+}
+fn setPrinterDelay(v: u16) void {
+    @as(*u16, @ptrCast(@alignCast(&printerState[12]))).* = v;
+}
 
 fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
     return strcmp(line, name) == 0;

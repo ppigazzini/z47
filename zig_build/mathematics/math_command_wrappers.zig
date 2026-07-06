@@ -43,7 +43,6 @@ pub const RuntimeObjectOptions = struct {
     error_tracing: ?bool = null,
 };
 
-
 fn addRuntimeObject(
     b: *std.Build,
     target: std.Build.ResolvedTarget,

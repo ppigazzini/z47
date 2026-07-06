@@ -147,7 +147,6 @@ extern var ctxtReal34: realContext_t;
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const registerFlagLetters = @extern([*c]const u8, .{ .name = "registerFlagLetters" });
 
-
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -158,11 +157,7 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
-
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-
-
-
+extern fn __gmpz_clear(p: *mpz_struct) void;
 
 extern fn standardScreenDump() void;
 
@@ -194,7 +189,7 @@ inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
@@ -339,12 +334,12 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
                 const imagPart: *const real34_t = @ptrCast(@as([*]u8, @ptrCast(&complex34[0])) + REAL34_SIZE_IN_BYTES);
                 real34Reduce(imagPart, &reduced);
                 if (real34IsNegative(&reduced)) {
-                    abi.fmtCStr(buf + len, " - {s}x", .{ @as([*:0]const u8, complexUnit()) });
+                    abi.fmtCStr(buf + len, " - {s}x", .{@as([*:0]const u8, complexUnit())});
                     len += 5;
                     real34SetPositiveSign(&reduced);
                     real34ToString(&reduced, buf + len);
                 } else {
-                    abi.fmtCStr(buf + len + strlen(buf + len), " + {s}x", .{ @as([*:0]const u8, complexUnit()) });
+                    abi.fmtCStr(buf + len + strlen(buf + len), " + {s}x", .{@as([*:0]const u8, complexUnit())});
                     len += 5;
                     real34ToString(&reduced, buf + len);
                 }
@@ -363,7 +358,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
 
             var n: i32 = ERROR_MESSAGE_LENGTH - 100;
             if (forPrinter != 0) {
-                abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d}", .{ @as(c_int, @intCast(base)) });
+                abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d}", .{@as(c_int, @intCast(base))});
             } else {
                 abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d} (word size = {d})", .{ @as(c_int, @intCast(base)), @as(c_uint, shortIntegerWordSize) });
             }
@@ -437,7 +432,7 @@ pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardStr
         },
 
         else => {
-            abi.fmtCStr(buf, "In function copyRegisterXToClipboard, the data type {d} is unknown! Please try to reproduce and submit a bug.", .{ getRegisterDataType(regist) });
+            abi.fmtCStr(buf, "In function copyRegisterXToClipboard, the data type {d} is unknown! Please try to reproduce and submit a bug.", .{getRegisterDataType(regist)});
         },
     }
 

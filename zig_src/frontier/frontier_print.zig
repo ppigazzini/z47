@@ -403,10 +403,8 @@ extern fn setSystemFlagChanged(sf: i32) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
 
-
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
-
 
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 
@@ -414,18 +412,9 @@ extern fn sendByteIR(byte: u8) void;
 extern fn getLineDelay() u32;
 extern fn setLineDelay(delay: u16) void;
 
-
-
-
-
-
-
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-
-
-
 
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
 
@@ -433,21 +422,7 @@ extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWith
 extern fn getRegParam(f: ?*bool_t, s: *u16, n: *u16, d: ?*u16) u8;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-
-
-
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-
-
-
-
-
-
-
-
-
-
-
 
 // isAtEndOfProgram is a static inline in manage.h: frontier_manage.checkOpCodeOfStep(step, ITM_END).
 const ITM_END: u16 = 1458;
@@ -455,9 +430,7 @@ inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
     return frontier_manage.checkOpCodeOfStep(step, ITM_END);
 }
 
-
 // renamed-away in the bridge; owned by other owners. Extern, NOT re-exported.
-
 
 // real34 / decimal helpers. int32ToReal34 / real34ToString / real34IsZero are
 // decQuad* macros in C; bind the underlying decQuad symbols and wrap.
@@ -485,12 +458,11 @@ extern fn decQuadReduce(r: *real34_t, op: *const real34_t, ctx: *realContext_t) 
 extern fn decQuadToInt32(src: *const real34_t, ctx: *realContext_t, mode: c_int) i32;
 
 // GMP (for _getUnicodeValue)
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_get_ui"(p: *const mpz_struct) c_ulong;
-extern fn @"__gmpz_cmp_ui"(p: *const mpz_struct, v: c_ulong) c_int;
-extern fn @"__gmpz_set_si"(p: *mpz_struct, v: c_long) void;
-
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_get_ui(p: *const mpz_struct) c_ulong;
+extern fn __gmpz_cmp_ui(p: *const mpz_struct, v: c_ulong) c_int;
+extern fn __gmpz_set_si(p: *mpz_struct, v: c_long) void;
 
 // complex34Copy(source, dest): macro = real34Copy two halves. dest is a complex34
 // register data pointer (real34_t* in our reg34 typing); copy 32 bytes.
@@ -564,16 +536,16 @@ inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
-    return @truncate(@"__gmpz_get_ui"(op));
+    return @truncate(__gmpz_get_ui(op));
 }
 inline fn longIntegerCompareUInt(op: *const mpz_struct, v: u32) i32 {
-    return @"__gmpz_cmp_ui"(op, v);
+    return __gmpz_cmp_ui(op, v);
 }
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
@@ -1451,7 +1423,7 @@ fn printRegImpl(regist: u16, label: [*c]const u8, eq: bool_t, where: print_area_
             var shortInt: u64 = regShortInt(@bitCast(regist)).* & shortIntegerMask;
             const base: i16 = @intCast(getRegisterShortIntegerBase(@bitCast(regist)));
             var n: i16 = @as(i16, @intCast(ERROR_MESSAGE_LENGTH)) - 100;
-            abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d:0>2}", .{ @as(u32, @intCast(@as(c_int, base))) });
+            abi.fmtCStr(errorMessage + @as(usize, @intCast(n)), "#{d:0>2}", .{@as(u32, @intCast(@as(c_int, base)))});
             n -= 1;
             if (shortInt == 0) {
                 errorMessage[@intCast(n)] = '0';
@@ -1643,13 +1615,13 @@ fn _getRegisterLabel(registerNo: u16, label: [*c]u8) void {
         label[0] = frontier_screen_snap.letteredRegisterName(@bitCast(registerNo));
         label[1] = 0;
     } else if (registerNo < REGISTER_X) {
-        abi.fmtCStr(label, "R{d:0>2}", .{ @as(u32, @intCast(@as(c_int, registerNo))) });
+        abi.fmtCStr(label, "R{d:0>2}", .{@as(u32, @intCast(@as(c_int, registerNo)))});
     } else if (FIRST_LOCAL_REGISTER <= registerNo and registerNo <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(label, "R.{d:0>3}", .{ @as(u32, @intCast(@as(c_int, registerNo) - 100)) });
+        abi.fmtCStr(label, "R.{d:0>3}", .{@as(u32, @intCast(@as(c_int, registerNo) - 100))});
     } else if (FIRST_NAMED_VARIABLE <= registerNo and registerNo <= LAST_NAMED_VARIABLE) {
-        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]u8, &allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName) + 1) });
+        abi.fmtCStr(label, "{s}", .{@as([*:0]const u8, @as([*c]u8, &allNamedVariables[registerNo - FIRST_NAMED_VARIABLE].variableName) + 1)});
     } else if (FIRST_NAMED_RESERVED_VARIABLE <= registerNo and registerNo <= LAST_RESERVED_VARIABLE) {
-        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]const u8, &allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1) });
+        abi.fmtCStr(label, "{s}", .{@as([*:0]const u8, @as([*c]const u8, &allReservedVariables[registerNo - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1)});
     }
 }
 
@@ -1946,9 +1918,9 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                         }
                     } else if ((func == ITM_OPEN_MENU) and !tam.indirect) {
                         if (param == MNU_DYNAMIC) {
-                            abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ std.mem.sliceTo(&buffer, 0) });
+                            abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{std.mem.sliceTo(&buffer, 0)});
                         } else {
-                            abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ itemCatName(@intCast(tam.value)) });
+                            abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{itemCatName(@intCast(tam.value))});
                         }
                     } else if (tam.mode == TM_SHUFFLE) {
                         abi.fmtBufZ(&traceBuffer, " {c}{c}{c}{c}", .{ shuffleReg[param & 0x03], shuffleReg[(param & 0x0c) >> 2], shuffleReg[(param & 0x30) >> 4], shuffleReg[(param & 0xc0) >> 6] });
@@ -1996,9 +1968,9 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                         } else if (param & 0x8000 != 0) {
                             param &= 0x3fff;
                             if (param < 64) {
-                                abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ itemSoftName(@as(usize, @intCast(@as(c_int, param) + SFL_TDM24))) });
+                                abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{itemSoftName(@as(usize, @intCast(@as(c_int, param) + SFL_TDM24)))});
                             } else {
-                                abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{ itemSoftName(@as(usize, @intCast(@as(c_int, param) + SFL_MONIT - 64))) });
+                                abi.fmtBufZ(&traceBuffer, " " ++ STD_LEFT_SINGLE_QUOTE ++ "{s}" ++ STD_RIGHT_SINGLE_QUOTE, .{itemSoftName(@as(usize, @intCast(@as(c_int, param) + SFL_MONIT - 64)))});
                             }
                         }
                     } else if ((tam.mode == TM_CMP) and (param == TEMP_REGISTER_1) and !tam.indirect) {
@@ -2013,12 +1985,12 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
                             }
-                            abi.fmtBufZ(&traceBuffer, "{s}", .{ itemSoftName(@as(usize, @intCast(ITM_REG_X + @as(c_int, param) - REGISTER_X))) });
+                            abi.fmtBufZ(&traceBuffer, "{s}", .{itemSoftName(@as(usize, @intCast(ITM_REG_X + @as(c_int, param) - REGISTER_X)))});
                         } else if (param <= REGISTER_W) {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
                             }
-                            abi.fmtBufZ(&traceBuffer, "{s}", .{ itemSoftName(@as(usize, @intCast(ITM_REG_M + @as(c_int, param) - REGISTER_M))) });
+                            abi.fmtBufZ(&traceBuffer, "{s}", .{itemSoftName(@as(usize, @intCast(ITM_REG_M + @as(c_int, param) - REGISTER_M)))});
                         } else if ((param >= FIRST_LOCAL_REGISTER) and (param <= LAST_LOCAL_REGISTER)) {
                             if (!tam.indirect) {
                                 _ = strcat(tmpString, " ");
@@ -2145,7 +2117,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
                     printAdvance(0);
                 }
                 printAdvance(0);
-                abi.fmtBufZ(tmpString[0..2560], " {d:0>2}", .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
+                abi.fmtBufZ(tmpString[0..2560], " {d:0>2}", .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
                 _ = strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
                 printLineImpl(tmpString, 0);
             } else if (!startOfLine) {
@@ -2156,7 +2128,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
                 }
             }
         } else {
-            abi.fmtBufZ(tmpString[0..2560], "{d:0>2}", .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
+            abi.fmtBufZ(tmpString[0..2560], "{d:0>2}", .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
             _ = strcat(tmpString, if (isLabel) STD_BLACK_RIGHT_TRIANGLE else " ");
             printLineImpl(tmpString, 0);
         }
@@ -2213,7 +2185,7 @@ pub export fn fnP_GetDelay(unusedButMandatoryParameter: u16) callconv(.c) void {
         var delay: longInteger_t = undefined;
         liftStack();
         longIntegerInit(&delay[0]);
-        @"__gmpz_set_si"(&delay[0], @intCast(getLineDelay()));
+        __gmpz_set_si(&delay[0], @intCast(getLineDelay()));
         frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&delay[0], REGISTER_X);
         longIntegerFree(&delay[0]);
     }
@@ -2457,13 +2429,13 @@ pub fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8, label
         label[0] = frontier_screen_snap.letteredRegisterName(@bitCast(register_no));
         label[1] = 0;
     } else if (register_no < REGISTER_X) {
-        abi.fmtCStr(label, "R{d:0>2}", .{ @as(c_uint, register_no) });
+        abi.fmtCStr(label, "R{d:0>2}", .{@as(c_uint, register_no)});
     } else if (FIRST_LOCAL_REGISTER <= register_no and register_no <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(label, "R.{d:0>3}", .{ @as(c_uint, register_no) - 100 });
+        abi.fmtCStr(label, "R.{d:0>3}", .{@as(c_uint, register_no) - 100});
     } else if (FIRST_NAMED_VARIABLE <= register_no and register_no <= LAST_NAMED_VARIABLE) {
-        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]u8, &allNamedVariables[register_no - FIRST_NAMED_VARIABLE].variableName) + 1) });
+        abi.fmtCStr(label, "{s}", .{@as([*:0]const u8, @as([*c]u8, &allNamedVariables[register_no - FIRST_NAMED_VARIABLE].variableName) + 1)});
     } else if (FIRST_NAMED_RESERVED_VARIABLE <= register_no and register_no <= LAST_RESERVED_VARIABLE) {
-        abi.fmtCStr(label, "{s}", .{ @as([*:0]const u8, @as([*c]const u8, &allReservedVariables[register_no - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1) });
+        abi.fmtCStr(label, "{s}", .{@as([*:0]const u8, @as([*c]const u8, &allReservedVariables[register_no - FIRST_RESERVED_VARIABLE].reservedVariableName) + 1)});
     }
 }
 

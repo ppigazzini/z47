@@ -4,7 +4,6 @@ const runtime = @import("calc_state_runtime.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
-
 pub fn load(load_mode: u16, do_load: *const fn (load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void) void {
     runtime.showLoadingStatus();
     if (load_mode == runtime.LM_STATE_LOAD) {

@@ -77,6 +77,6 @@ pub fn ui64ToString(value: u64, out: [*c]u8) void {
     if (v1 != 0) {
         abi.fmtCStr(out, "0x{x}{x:0>8}", .{ @as(c_uint, v1), @as(c_uint, v0) });
     } else {
-        abi.fmtCStr(out, "0x{x}", .{ @as(c_uint, v0) });
+        abi.fmtCStr(out, "0x{x}", .{@as(c_uint, v0)});
     }
 }

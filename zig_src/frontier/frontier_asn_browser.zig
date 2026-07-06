@@ -119,8 +119,6 @@ const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 // Function externs
 // ---------------------------------------------------------------------------
 
-
-
 extern fn getSystemFlag(flag: c_int) bool_t;
 extern fn clearSystemFlag(flag: c_uint) void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -132,7 +130,6 @@ fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     const l: u32 = @intCast(strlen(source));
     return @as([*c]u8, @ptrCast(frontier_char_string.xcopy(dest, source, l + 1))) + l;
 }
-
 
 // lcd_fill_rect / bitblt24 are DMCP SDK fixed-address library calls on firmware
 // (LIBRARY_FN_BASE + offset); on host they are real symbols.

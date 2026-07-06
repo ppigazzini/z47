@@ -134,8 +134,3 @@ fn wrapOverflowCol(rows: u16, cols: u16) void {
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
-
-
-
-
-

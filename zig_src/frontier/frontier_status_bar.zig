@@ -284,16 +284,8 @@ extern fn didSystemFlagChange(sf: i32) bool_t;
 extern fn setSystemFlagChanged(sf: i32) void;
 extern fn setAllSystemFlagChanged() void;
 
-
-
 extern fn showShiftState() void;
 extern fn refreshModeGui() void;
-
-
-
-
-
-
 
 // libc.
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;

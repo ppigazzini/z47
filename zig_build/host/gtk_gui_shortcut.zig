@@ -184,7 +184,8 @@ pub fn shortCutCommand(
     if ((shiftF or shiftG) and
         !(shift[0] == 0 and keyForBtnClicked[0] != '-') and
         !(shiftF and shift[0] == 'f' and keyForBtnClicked[0] != '-') and
-        !(shiftG and shift[0] == 'g' and keyForBtnClicked[0] != '-')) {
+        !(shiftG and shift[0] == 'g' and keyForBtnClicked[0] != '-'))
+    {
         return false;
     }
 

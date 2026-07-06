@@ -45,12 +45,12 @@ const angularMode_t = c_int;
 // GMP mpz_struct (limb width == pointer width on every z47 target).
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
-const mpz_init = @"__gmpz_init";
-const mpz_clear = @"__gmpz_clear";
-const mpz_set_ui = @"__gmpz_set_ui";
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
+const mpz_init = __gmpz_init;
+const mpz_clear = __gmpz_clear;
+const mpz_set_ui = __gmpz_set_ui;
 
 comptime {
     if (@sizeOf(real_t) != 60) @compileError("real_t must be 60 bytes");
@@ -156,13 +156,8 @@ extern fn setSystemFlag(flag: c_uint) void;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
-
-
-
-
 extern fn fnStatR(RR: *real_t, SXY: *real_t, SX: *real_t, SY: *real_t) void;
 extern fn fnStatSMI(SMI: *real_t) void;
-
 
 extern fn realExp(rhs: *align(1) const real_t, res: *real_t, set: *realContext_t) void;
 extern fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) void;

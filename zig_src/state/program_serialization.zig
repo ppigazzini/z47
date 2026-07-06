@@ -51,4 +51,3 @@ pub export fn fnLoadProgram(unusedButMandatoryParameter: u16) void {
     _ = unusedButMandatoryParameter;
     loadProgram();
 }
-
