@@ -45,6 +45,26 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -930,35 +950,9 @@ extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn resetShiftState() void;
-extern fn fnRefreshState() void;
-extern fn refreshScreen(source: u16) void;
-extern fn showSoftmenu(menu: i16) void;
-extern fn runFunction(func: i16) void;
-extern fn reallyRunFunction(func: i16, param: u16) void;
-extern fn calcModeAim(unusedButMandatoryParameter: u16) void;
-extern fn calcModeNim(unusedButMandatoryParameter: u16) void;
-extern fn calcModeNormal() void;
-extern fn popSoftmenu() void;
-extern fn setLastintegerBasetoZero() void;
-extern fn displayBugScreen(msg: [*c]const u8) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
-extern fn light_ASB_icon() void;
-extern fn kill_ASB_icon() void;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
-extern fn fnTimerStop(nr: u8) void;
-extern fn setCatalogLastPos() void;
-extern fn currentSoftmenuScrolls() bool_t;
-extern fn isAlphabeticSoftmenu() bool_t;
-extern fn isJMAlphaOnlySoftmenu() bool_t;
 extern fn isDyadicFunction(item: u16) bool;
-extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
-extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
-extern fn stringLastGlyph(str: [*c]const u8) i16;
-extern fn stringNextGlyphNoEndCheck_JM(str: [*c]const u8, pos: i16) i16;
-extern fn stringWidthWithLimitC47(str: [*c]const u8, mode: c_int, comp: c_int, limitWidth: u32, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) u32;
 extern fn stringToInt16(str: [*c]const u8) i16;
 extern fn stringToInt32(str: [*c]const u8) i32;
 extern fn toInt32(str: [*c]const u8) i32;
@@ -982,51 +976,22 @@ extern fn decQuadFromString(r: *align(1) real34_t, str: [*c]const u8, ctx: *real
 inline fn stringToReal34(str: [*c]const u8, dst: *align(1) real34_t) void {
     _ = decQuadFromString(dst, str, &ctxtReal34);
 }
-extern fn isValidNumber(ss: [*c]const u8, template: [*c]const u8) bool_t;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn exponentToDisplayString(exponent: i32, displayString: [*c]u8, displayValueString: [*c]u8, nimMode: bool_t) void;
-extern fn supNumberToDisplayString(supNumber: i32, displayString: [*c]u8, displayValueString: [*c]u8, insertGap: bool_t) void;
-extern fn subNumberToDisplayString(subNumber: i32, displayString: [*c]u8, displayValueString: [*c]u8) void;
-extern fn getShortIntegerModeName(im: u16) [*c]const u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn convertLongIntegerToLongIntegerRegister(longInteger: [*c]const mpz_struct, regist: calcRegister_t) void;
-extern fn convertReal34RegisterToDateRegister(source: calcRegister_t, destination: calcRegister_t, handleYY: bool_t) void;
-extern fn checkDateRange(date34: *const real34_t) void;
-extern fn hmmssInRegisterToSeconds(regist: calcRegister_t) void;
-extern fn real34FromDmsToDeg(angleDms: *const real34_t, angleDec: *real34_t) void;
-extern fn convertAngleFromTo(angle: *real_t, fromAngularMode: angularMode_t, toAngularMode: angularMode_t, realContext: *realContext_t) void;
 extern fn realPolarToRectangular(magnitude: *const real_t, theta: *const real_t, real: *real_t, imag: *real_t, realContext: *realContext_t) void;
-extern fn fnCvtFromCurrentAngularMode(toAngularMode: u16) void;
-extern fn fnAngularModeJM(unusedButMandatoryParameter: u16) void;
 extern fn fnToPolar2(unusedButMandatoryParameter: u16) void;
 extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
 extern fn real34CompareEqual(number1: *const real34_t, number2: *const real34_t) bool_t;
 extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool_t;
-extern fn pemCloseNumberInput() void;
 extern fn saveForUndo() void;
 extern fn undo() void;
 extern fn chsShoI() void;
-extern fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) void;
-extern fn tamProcessInput(item: u16) void;
-extern fn mimEnter(commit: bool_t) void;
-extern fn mimAddNumber(item: i16) void;
-extern fn mimRunFunction(func: i16, param: u16) void;
-extern fn getIRegisterAsInt(asArrayPointer: bool_t) i16;
-extern fn getJRegisterAsInt(asArrayPointer: bool_t) i16;
-extern fn setIRegisterAsInt(asArrayPointer: bool_t, toStore: i16) void;
-extern fn setJRegisterAsInt(asArrayPointer: bool_t, toStore: i16) void;
-extern fn incOffset() void;
 
 // IR_PRINTING (always enabled): printTrace family.
-extern fn printTrace(item1: i16, item2: i16) void;
-extern fn printTraceX(where: c_int) void;
-extern fn printTraceMatElement(where: u16) void;
 
 // real34 arithmetic = decQuad*/decNumber* (libdecnumber, &ctxtReal34 inline).
 extern fn decQuadFromInt32(r: *real34_t, v: i32) *real34_t;
@@ -1057,7 +1022,6 @@ extern fn atoi(s: [*c]const u8) c_int;
 extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 extern fn printf(fmt: [*c]const u8, ...) c_int;
-extern fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) void;
 
 // PC_BUILD-only debug hook (referenced only under !dmcp_build).
 const jm_show_calc_state = if (!dmcp_build) @extern(*const fn (comment: [*c]u8) callconv(.c) void, .{ .name = "jm_show_calc_state" }) else {};
@@ -1841,8 +1805,8 @@ pub export fn fnAim(unusedButMandatoryParameter: u16) callconv(.c) void {
         T_cursorPos = 0;
         aimBuffer[0] = 0;
     }
-    setLastintegerBasetoZero();
-    calcModeAim(NOPARAM);
+    frontier_screen.setLastintegerBasetoZero();
+    frontier_calc_mode.calcModeAim(NOPARAM);
     if (programRunStop != PGM_RUNNING) {
         entryStatus |= 0x01;
         setSystemFlag(FLAG_ALPIN);
@@ -1901,20 +1865,20 @@ pub export fn findFirstItem(twoLetters: [*c]const u8) callconv(.c) i32 {
         last = dynamicSoftmenu[@intCast(menuId)].numItems - 1;
 
         middle = first + @divTrunc(last - first, 2);
-        middleString = getNthString(dynamicSoftmenu[@intCast(menuId)].menuContent, middle);
+        middleString = frontier_softmenus.getNthString(dynamicSoftmenu[@intCast(menuId)].menuContent, middle);
 
         while (first + 1 < last) {
-            if (compareString(twoLetters, middleString, CMP_CLEANED_STRING_ONLY) <= 0) {
+            if (frontier_sort.compareString(twoLetters, middleString, CMP_CLEANED_STRING_ONLY) <= 0) {
                 last = middle;
             } else {
                 first = middle;
                 firstString = middleString;
             }
             middle = first + @divTrunc(last - first, 2);
-            middleString = getNthString(dynamicSoftmenu[@intCast(menuId)].menuContent, middle);
+            middleString = frontier_softmenus.getNthString(dynamicSoftmenu[@intCast(menuId)].menuContent, middle);
         }
 
-        if (compareString(twoLetters, firstString, CMP_CLEANED_STRING_ONLY) <= 0) {
+        if (frontier_sort.compareString(twoLetters, firstString, CMP_CLEANED_STRING_ONLY) <= 0) {
             return first;
         } else {
             return last;
@@ -1927,14 +1891,14 @@ pub export fn findFirstItem(twoLetters: [*c]const u8) callconv(.c) i32 {
         }
         var middle: [*c]const i16 = first + ((last - first) / 2);
         while ((last - first) > 1) {
-            if (compareString(twoLetters, &indexOfItems[@intCast(absInt(middle[0]))].itemCatalogName, CMP_CLEANED_STRING_ONLY) <= 0) {
+            if (frontier_sort.compareString(twoLetters, &indexOfItems[@intCast(absInt(middle[0]))].itemCatalogName, CMP_CLEANED_STRING_ONLY) <= 0) {
                 last = middle;
             } else {
                 first = middle;
             }
             middle = first + ((last - first) / 2);
         }
-        if (compareString(twoLetters, &indexOfItems[@intCast(absInt(first[0]))].itemCatalogName, CMP_CLEANED_STRING_ONLY) <= 0) {
+        if (frontier_sort.compareString(twoLetters, &indexOfItems[@intCast(absInt(first[0]))].itemCatalogName, CMP_CLEANED_STRING_ONLY) <= 0) {
             return @intCast(first - softmenu[@intCast(menuId)].softkeyItem);
         } else {
             return @intCast(last - softmenu[@intCast(menuId)].softkeyItem);
@@ -1948,8 +1912,8 @@ pub export fn findFirstItem(twoLetters: [*c]const u8) callconv(.c) i32 {
 pub export fn resetAlphaSelectionBuffer() callconv(.c) void {
     asmBuffer[0] = 0;
     fnKeyInCatalog = 0;
-    fnTimerStop(TO_ASM_ACTIVE);
-    kill_ASB_icon();
+    frontier_timer.fnTimerStop(TO_ASM_ACTIVE);
+    frontier_status_bar.kill_ASB_icon();
 }
 
 // ---------------------------------------------------------------------------
@@ -2003,15 +1967,15 @@ pub export fn validShortIntegerInX() callconv(.c) bool_t {
 // closeAim
 // ---------------------------------------------------------------------------
 pub export fn closeAim() callconv(.c) void {
-    calcModeNormal();
-    popSoftmenu();
+    frontier_calc_mode.calcModeNormal();
+    frontier_softmenus.popSoftmenu();
 
     if (aimBuffer[0] == 0) {
         undo();
     } else {
         const len: i16 = @intCast(stringByteLength(aimBuffer) + 1);
         reallocateRegister(REGISTER_X, dtString, toBlocks(@intCast(len)), amNone);
-        _ = xcopy(regString(REGISTER_X), aimBuffer, @intCast(len));
+        _ = frontier_char_string.xcopy(regString(REGISTER_X), aimBuffer, @intCast(len));
         aimBuffer[0] = 0;
         setSystemFlag(FLAG_ASLIFT);
     }
@@ -2033,7 +1997,7 @@ pub export fn insertAlphaCharacter(item: u16, currentCursor: *i16) callconv(.c) 
     while (@intFromPtr(aimBottomPos) >= @intFromPtr(aimCursorPos)) : (aimBottomPos -= 1) {
         (aimBottomPos + itemLen)[0] = aimBottomPos[0];
     }
-    _ = xcopy(aimCursorPos, addChar, itemLen);
+    _ = frontier_char_string.xcopy(aimCursorPos, addChar, itemLen);
     switch (item) {
         ITM_ROOT_SIGN => {
             currentCursor.* += 2;
@@ -2042,7 +2006,7 @@ pub export fn insertAlphaCharacter(item: u16, currentCursor: *i16) callconv(.c) 
             currentCursor.* += 1;
         },
         else => {
-            currentCursor.* += @intCast(stringGlyphLength(&indexOfItems[item].itemSoftmenuName));
+            currentCursor.* += @intCast(frontier_char_string.stringGlyphLength(&indexOfItems[item].itemSoftmenuName));
         },
     }
 }
@@ -2053,7 +2017,7 @@ pub export fn insertAlphaCharacter(item: u16, currentCursor: *i16) callconv(.c) 
 pub export fn deleteAlphaCharacter(currentCursor: *i16) callconv(.c) void {
     var dstPos: [*c]u8 = aimBuffer;
     var srcPos: [*c]u8 = undefined;
-    const lstPos: [*c]u8 = aimBuffer + @as(usize, @intCast(stringNextGlyph(aimBuffer, stringLastGlyph(aimBuffer))));
+    const lstPos: [*c]u8 = aimBuffer + @as(usize, @intCast(frontier_char_string.stringNextGlyph(aimBuffer, frontier_char_string.stringLastGlyph(aimBuffer))));
     currentCursor.* -= 1;
     var i: i16 = 0;
     while (i < currentCursor.*) : (i += 1) {
@@ -2079,7 +2043,7 @@ pub export fn fnAlphaCursorLeft(unusedButMandatoryParameter: u16) callconv(.c) v
 
 pub export fn fnAlphaCursorRight(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    const glyphLen: u16 = @truncate(@as(u32, @bitCast(stringGlyphLength(aimBuffer))));
+    const glyphLen: u16 = @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(aimBuffer))));
     if (@as(i32, alphaCursor) < @as(i32, glyphLen)) {
         alphaCursor += 1;
     }
@@ -2092,7 +2056,7 @@ pub export fn fnAlphaCursorHome(unusedButMandatoryParameter: u16) callconv(.c) v
 
 pub export fn fnAlphaCursorEnd(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    alphaCursor = @bitCast(@as(u16, @truncate(@as(u32, @bitCast(stringGlyphLength(aimBuffer))))));
+    alphaCursor = @bitCast(@as(u16, @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(aimBuffer))))));
 }
 
 // ---------------------------------------------------------------------------
@@ -2277,17 +2241,17 @@ pub export fn nimFractionToDisplayBuffer(buffer: [*c]const u8, displayBuffer: [*
         index = 0;
     }
 
-    supNumberToDisplayString(toInt32(buffer + @as(usize, @intCast(index)) + 1), displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null, 1);
+    frontier_display.supNumberToDisplayString(toInt32(buffer + @as(usize, @intCast(index)) + 1), displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null, 1);
 
     _ = strcat(displayBuffer, "/");
 
     while (buffer[@intCast(index)] != '/') : (index += 1) {}
     index += 1;
     if (buffer[@intCast(index)] == '+') { // There is an imaginary part
-        subNumberToDisplayString(@bitCast(lastDenominator), displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null);
+        frontier_display.subNumberToDisplayString(@bitCast(lastDenominator), displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null);
     } else if (buffer[@intCast(index)] != 0) {
         const denominator: i32 = toInt32(buffer + @as(usize, @intCast(index)));
-        subNumberToDisplayString(denominator, displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null);
+        frontier_display.subNumberToDisplayString(denominator, displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null);
         while (buffer[@intCast(index)] >= '0' and buffer[@intCast(index)] <= '9') : (index += 1) {}
         if (buffer[@intCast(index)] == '+') {
             lastDenominator = @bitCast(denominator);
@@ -2302,7 +2266,7 @@ pub export fn nimRealToDisplayBuffer(buffer: [*c]const u8, exponentLocation: i16
     nimBufferToDisplayBuffer(buffer, displayBuffer);
 
     if (nimNumberPart == NP_REAL_EXPONENT or nimNumberPart == NP_COMPLEX_EXPONENT) {
-        exponentToDisplayString(stringToInt32(buffer + @as(usize, @intCast(exponentLocation))), displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null, 1);
+        frontier_display.exponentToDisplayString(stringToInt32(buffer + @as(usize, @intCast(exponentLocation))), displayBuffer + @as(usize, @intCast(stringByteLength(displayBuffer))), null, 1);
         if (buffer[@intCast(exponentLocation + 1)] == 0 and buffer[@intCast(exponentLocation)] == '-') {
             _ = strcat(displayBuffer, STD_SUP_MINUS);
         } else if (buffer[@intCast(exponentLocation + 1)] == '0' and buffer[@intCast(exponentLocation)] == '+') {
@@ -2340,7 +2304,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     i = 1;
     while (i < posSpace) : (i += 1) {
         if (source[@intCast(i)] < '0' or source[@intCast(i)] > '9') { // This should never happen
-            displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             moreInfoOnErr("In function nimFractionToReal34:", "there is a non numeric character in the integer part of the fraction!");
             return;
         }
@@ -2358,7 +2322,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     i = posSpace + 1;
     while (i < posSlash) : (i += 1) {
         if (source[@intCast(i)] < '0' or source[@intCast(i)] > '9') { // This should never happen
-            displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             moreInfoOnErr("In function nimFractionToReal34:", "there is a non numeric character in the numerator part of the fraction!");
             return;
         }
@@ -2368,7 +2332,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
         i = posSlash + 1;
         while (i < lg) : (i += 1) {
             if (source[@intCast(i)] < '0' or source[@intCast(i)] > '9') {
-                displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 moreInfoOnErr("In function nimFractionToReal34:", "there is a non numeric character in the denominator part of the fraction!");
                 return;
             }
@@ -2393,7 +2357,7 @@ pub export fn nimFractionToReal34(source: [*c]u8, dest: *real34_t) callconv(.c) 
     }
 
     if (denom == 0 and getSystemFlag(FLAG_SPCRES) == 0) {
-        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         moreInfoOnErr3("In function nimFractionToReal34:", "the denominator of the fraction should not be 0!", "Unless D flag (Danger) is set.");
         return;
     }
@@ -2442,7 +2406,7 @@ pub export fn closeNimWithComplex(dest_r: *real34_t, dest_i: *real34_t) callconv
             var theta: real_t = undefined;
             real34ToReal(dest_r, &magnitude);
             real34ToReal(dest_i, &theta);
-            convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
+            frontier_conversion_angles.convertAngleFromTo(&theta, currentAngularMode, amRadian, &ctxtReal39);
             if (realCompareLessThan(&magnitude, const_0) != 0) {
                 realSetPositiveSign(&magnitude);
                 realAdd(&theta, const39_pi, &theta, &ctxtReal39);
@@ -2492,11 +2456,11 @@ pub export fn closeNim() callconv(.c) void {
         }
         nimNumberPart = NP_INT_BASE;
     } else {
-        setLastintegerBasetoZero();
+        frontier_screen.setLastintegerBasetoZero();
     }
 
     if (calcMode == CM_PEM) {
-        pemCloseNumberInput();
+        frontier_manage.pemCloseNumberInput();
         return;
     }
 
@@ -2532,7 +2496,7 @@ pub export fn closeNim() callconv(.c) void {
                 }
 
                 if ((aimBuffer[0] != '-' or aimBuffer[1] != 0) and (aimBuffer[@intCast(lastChar)] != '-')) {
-                    calcModeNormal();
+                    frontier_calc_mode.calcModeNormal();
 
                     if (nimNumberPart == NP_INT_10) {
                         var lgInt: longInteger_t = undefined;
@@ -2542,12 +2506,12 @@ pub export fn closeNim() callconv(.c) void {
                             reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(getRegisterAngularMode(REGISTER_X)));
                             stringToReal34(aimBuffer, reg34(REGISTER_X));
                             if (xangularMode == amDMS) {
-                                real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
+                                frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
                             }
                         } else {
                             longIntegerInit(&lgInt);
                             _ = stringToLongInteger(aimBuffer + @as(usize, if (aimBuffer[0] == '+') 1 else 0), 10, &lgInt);
-                            convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+                            frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
                             longIntegerFree(&lgInt);
                         }
                     } else if (nimNumberPart == NP_INT_BASE) {
@@ -2573,7 +2537,7 @@ pub export fn closeNim() callconv(.c) void {
                         ii = posHash + 1;
                         while (ii < lg) : (ii += 1) {
                             if (aimBuffer[@intCast(ii)] < '0' or aimBuffer[@intCast(ii)] > '9') {
-                                displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                                 moreInfoOnErr("In function closeNIM:", "there is a non numeric character in the base of the integer!");
                                 break :closeNim_exit;
                             }
@@ -2581,7 +2545,7 @@ pub export fn closeNim() callconv(.c) void {
 
                         base = stringToInt32(aimBuffer + @as(usize, @intCast(posHash)) + 1);
                         if (base < 2 or base > 16) {
-                            displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                             moreInfoOnErr("In function closeNIM:", "the base of the integer must be from 2 to 16!");
                             break :closeNim_exit;
                         }
@@ -2590,7 +2554,7 @@ pub export fn closeNim() callconv(.c) void {
                         while (ii < posHash) : (ii += 1) {
                             const digitVal: i32 = if (aimBuffer[@intCast(ii)] > '9') @as(i32, aimBuffer[@intCast(ii)]) - 'A' + 10 else @as(i32, aimBuffer[@intCast(ii)]) - '0';
                             if (digitVal >= base) {
-                                displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                                frontier_error.displayCalcErrorMessage(ERROR_INVALID_INTEGER_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                                 if (comptime extra_info) {
                                     if (comptime !dmcp_build) {
                                         abi.fmtBufZ(errorMessage[0..512], "digit {c} is not allowed in base {d}!", .{ aimBuffer[@intCast(ii)], @as(i32, base) });
@@ -2612,7 +2576,7 @@ pub export fn closeNim() callconv(.c) void {
                             longInteger2Pow(shortIntegerWordSize, &maxVal);
                         } else {
                             _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerWordSize", @as(c_int, shortIntegerWordSize));
-                            displayBugScreen(errorMessage);
+                            frontier_error.displayBugScreen(errorMessage);
                             longIntegerFree(&maxVal);
                             longIntegerFree(&value);
                             break :closeNim_exit;
@@ -2639,14 +2603,14 @@ pub export fn closeNim() callconv(.c) void {
                         }
 
                         if (longIntegerCompare(&value, &minVal) < 0 or longIntegerCompare(&value, &maxVal) > 0) {
-                            displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            frontier_error.displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                             if (comptime extra_info) {
                                 if (comptime !dmcp_build) {
                                     var strMin: [22]u8 = undefined;
                                     var strMax: [22]u8 = undefined;
-                                    longIntegerToAllocatedString(&minVal[0], &strMin, @intCast(strMin.len));
-                                    longIntegerToAllocatedString(&maxVal[0], &strMax, @intCast(strMax.len));
-                                    abi.fmtBufZ(errorMessage[0..512], "For word size of {d} bit{s} and integer mode {s},", .{ @as(i32, shortIntegerWordSize), std.mem.span(if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, "")), std.mem.span(getShortIntegerModeName(shortIntegerMode)) });
+                                    frontier_display.longIntegerToAllocatedString(&minVal[0], &strMin, @intCast(strMin.len));
+                                    frontier_display.longIntegerToAllocatedString(&maxVal[0], &strMax, @intCast(strMax.len));
+                                    abi.fmtBufZ(errorMessage[0..512], "For word size of {d} bit{s} and integer mode {s},", .{ @as(i32, shortIntegerWordSize), std.mem.span(if (shortIntegerWordSize > 1) @as([*c]const u8, "s") else @as([*c]const u8, "")), std.mem.span(frontier_debug.getShortIntegerModeName(shortIntegerMode)) });
                                     abi.fmtCStr(errorMessage + ERROR_MESSAGE_LENGTH / 2, "the entered number must be from {s} to {s}!", .{ std.mem.sliceTo(&strMin, 0), std.mem.sliceTo(&strMax, 0) });
                                     moreInfoOnError("In function closeNIM:", errorMessage, errorMessage + ERROR_MESSAGE_LENGTH / 2, null);
                                 }
@@ -2660,7 +2624,7 @@ pub export fn closeNim() callconv(.c) void {
                         reallocateRegister(REGISTER_X, dtShortInteger, 0, @intCast(base));
 
                         var strValue: [22]u8 = undefined;
-                        longIntegerToAllocatedString(&value[0], &strValue, @intCast(strValue.len));
+                        frontier_display.longIntegerToAllocatedString(&value[0], &strValue, @intCast(strValue.len));
 
                         var val: u64 = strtoull(@as([*c]const u8, &strValue) + @as(usize, if (longIntegerIsNegative(&value)) 1 else 0), null, 10);
 
@@ -2678,13 +2642,13 @@ pub export fn closeNim() callconv(.c) void {
                             }
                         } else {
                             _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "closeNIM", "shortIntegerMode", @as(c_int, shortIntegerMode));
-                            displayBugScreen(errorMessage);
+                            frontier_error.displayBugScreen(errorMessage);
                             regShortInteger(REGISTER_X).* = 0;
                         }
 
                         regShortInteger(REGISTER_X).* = val;
                         lastIntegerBase = @intCast(base);
-                        fnRefreshState();
+                        frontier_radio_button_catalog.fnRefreshState();
                         aimBuffer[0] = 0; // Clear the NIM input buffer once written successfully.
 
                         longIntegerFree(&maxVal);
@@ -2698,9 +2662,9 @@ pub export fn closeNim() callconv(.c) void {
 
                             if (calcMode != CM_NIM and lastErrorCode == 0) {
                                 if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
-                                    convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                                    frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
                                 }
-                                hmmssInRegisterToSeconds(REGISTER_X);
+                                frontier_date_time.hmmssInRegisterToSeconds(REGISTER_X);
                                 if (lastErrorCode == 0) {
                                     setSystemFlag(FLAG_ASLIFT);
                                 } else {
@@ -2712,8 +2676,8 @@ pub export fn closeNim() callconv(.c) void {
                             stringToReal34(aimBuffer, reg34(REGISTER_X));
 
                             if (calcMode != CM_NIM and lastErrorCode == 0) {
-                                convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
-                                checkDateRange(reg34(REGISTER_X));
+                                frontier_register_value_conversions.convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem != 0);
+                                frontier_date_time.checkDateRange(reg34(REGISTER_X));
                                 temporaryInformation = TI_DAY_OF_WEEK;
 
                                 if (lastErrorCode == 0) {
@@ -2733,7 +2697,7 @@ pub export fn closeNim() callconv(.c) void {
                                 reallocateRegister(REGISTER_X, dtReal34, 0, @intCast(xangularMode));
                                 stringToReal34(aimBuffer, reg34(REGISTER_X));
                                 if (xangularMode == amDMS) {
-                                    real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
+                                    frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
                                 }
                             }
                         }
@@ -2745,7 +2709,7 @@ pub export fn closeNim() callconv(.c) void {
                         closeNimWithComplex(reg34(REGISTER_X), regImag34(REGISTER_X));
                     } else {
                         abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected {s} value!", .{ "closeNIM", @as(c_int, nimNumberPart), "nimNumberPart" });
-                        displayBugScreen(errorMessage);
+                        frontier_error.displayBugScreen(errorMessage);
                     }
                 }
             }
@@ -2756,7 +2720,7 @@ pub export fn closeNim() callconv(.c) void {
 
         // IR_PRINTING (always enabled).
         if ((lastItem != ITM_ms) and (lastItem != ITM_dotD) and (lastItem != ITM_DRG)) {
-            printTraceX(LINE_NOLF);
+            frontier_print.printTraceX(LINE_NOLF);
         }
         lastItem = 0;
     } // closeNim_exit
@@ -2776,11 +2740,11 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
     }
 
     if (item == NOPARAM) {
-        displayBugScreen(bugScreenNoParam);
+        frontier_error.displayBugScreen(bugScreenNoParam);
     } else {
         screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_SHIFT_STATUS);
         currentSolverStatus &= ~@as(u16, SOLVER_STATUS_READY_TO_EXECUTE);
-        if (calcMode == CM_NORMAL and fnKeyInCatalog != 0 and (isAlphabeticSoftmenu() != 0 or isJMAlphaOnlySoftmenu() != 0) and tam.mode == 0) {
+        if (calcMode == CM_NORMAL and fnKeyInCatalog != 0 and (frontier_softmenus.isAlphabeticSoftmenu() != 0 or frontier_softmenus.isJMAlphaOnlySoftmenu() != 0) and tam.mode == 0) {
             fnAim(NOPARAM);
         } else if ((fnKeyInCatalog != 0 or catalog == 0 or catalog == CATALOG_MVAR) and (((calcMode == CM_AIM or calcMode == CM_EIM) and tam.mode == 0) or tam.alpha)) {
             item = convertItemToSubOrSup(item, nextChar);
@@ -2788,7 +2752,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 insertAlphaCharacter(item, &alphaCursor);
             } else if (stringByteLength(aimBuffer) + (if (item == ITM_poly_SIGN) @as(i32, 24) else stringByteLength(&indexOfItems[item].itemSoftmenuName)) >= AIM_BUFFER_LENGTH) {
                 abi.fmtBufZ(errorMessage[0..512], "In function addItemToBuffer:the AIM input buffer is full! {d} bytes for now", .{@as(i32, AIM_BUFFER_LENGTH)});
-                displayBugScreen(errorMessage);
+                frontier_error.displayBugScreen(errorMessage);
             } else if (calcMode == CM_EIM) {
                 const addChar0: [*c]const u8 = if (item == ITM_EEXCHR) "E" else if (item == ITM_PAIR_OF_PARENTHESES) "()" else if (item == ITM_VERTICAL_BAR) "||" else if (item == ITM_MAGNITUDE) "||" else if (item == ITM_ROOT_SIGN) STD_SQUARE_ROOT ++ "()" else if (item == ITM_SQUAREROOTX) STD_SQUARE_ROOT ++ "()" else if (item == ITM_CUBEROOT) STD_CUBE_ROOT ++ "()" else if (item == ITM_XTHROOT) STD_xTH_ROOT ++ "(:)" else if (item == ITM_EXP) STD_EulerE ++ "^()" else if (item == ITM_ALOG_SIGN) STD_EulerE ++ "^()" else if (item == ITM_LG_SIGN) "LOG()" else if (item == ITM_LN_SIGN) "LN()" else if (item == ITM_LOG2) "LB()" else if (item == ITM_SIN_SIGN) "SIN()" else if (item == ITM_COS_SIGN) "COS()" else if (item == ITM_TAN_SIGN) "TAN()" else if (item == ITM_OBELUS) STD_SLASH else if (item == ITM_poly_SIGN) "a4" ++ STD_DOT ++ "x^4+a3" ++ STD_DOT ++ "x^3+a2" ++ STD_DOT ++ "x^2+a1" ++ STD_DOT ++ "x+a0" else if (item == ITM_op_j_SIGN) complexUnit() else if (item == ITM_zetaX) STD_zeta ++ "()" else if (item == ITM_GAMMAX) STD_GAMMA ++ "()" else if (item == ITM_XFACT) "!" else if (item == ITM_M1X) "(-1)^()" else if (item == ITM_COMB) "COMB(:)" else if (item == ITM_PERM) "PERM(:)" else if (item >= FIRST_CONSTANT and item <= LAST_CONSTANT) @as([*c]const u8, &indexOfItems[item].itemCatalogName) else if (item >= ITM_SUP_0 and item <= ITM_SUP_9) @as([*c]const u8, &NumMsg[item - ITM_SUP_0].noStr) else "";
 
@@ -2813,7 +2777,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                     if (addChar0[0] == '^') {
                         if (scrLock == NC_SUPERSCRIPT) {
                             scrLock = NC_NORMAL;
-                            fnRefreshState();
+                            frontier_radio_button_catalog.fnRefreshState();
                         }
                     }
                 }
@@ -2828,9 +2792,9 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 while (@intFromPtr(aimBottomPos) >= @intFromPtr(aimCursorPos)) : (aimBottomPos -= 1) {
                     (aimBottomPos + itemLen)[0] = aimBottomPos[0];
                 }
-                _ = xcopy(aimCursorPos, &addChar, itemLen);
+                _ = frontier_char_string.xcopy(aimCursorPos, &addChar, itemLen);
                 if (jj != 0) {
-                    xCursor +%= @bitCast(@as(i32, stringGlyphLength(&addChar) - jj));
+                    xCursor +%= @bitCast(@as(i32, frontier_char_string.stringGlyphLength(&addChar) - jj));
                 } else {
                     switch (item) {
                         ITM_poly_SIGN => {
@@ -2856,34 +2820,34 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                         },
                         ITM_XFACT => {},
                         else => {
-                            xCursor +%= @intCast(stringGlyphLength(&addChar));
+                            xCursor +%= @intCast(frontier_char_string.stringGlyphLength(&addChar));
                         },
                     }
                 }
-            } else if (stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH - 1 and stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, 1, 1) < SCREEN_WIDTH * MAXLINES - 16) {
+            } else if (stringByteLength(aimBuffer) <= AIM_BUFFER_LENGTH - 1 and frontier_screen.stringWidthWithLimitC47(aimBuffer, stdNoEnlarge, nocompress, SCREEN_WIDTH * MAXLINES - 16, 1, 1) < SCREEN_WIDTH * MAXLINES - 16) {
                 // TEXT_MULTILINE_EDIT (always defined): insert mid-string.
                 var ix: u16 = 0;
                 var in: u16 = 0;
                 while (ix < @as(u16, @bitCast(T_cursorPos)) and in < @as(u16, @bitCast(T_cursorPos))) {
-                    in = @bitCast(stringNextGlyphNoEndCheck_JM(aimBuffer, @bitCast(in)));
+                    in = @bitCast(frontier_char_string.stringNextGlyphNoEndCheck_JM(aimBuffer, @bitCast(in)));
                     ix += 1;
                 }
                 T_cursorPos = @bitCast(in);
                 var ixaa: [AIM_BUFFER_LENGTH]u8 = undefined;
-                _ = xcopy(&ixaa, aimBuffer, in);
+                _ = frontier_char_string.xcopy(&ixaa, aimBuffer, in);
                 ixaa[in] = 0;
 
                 const nq: u16 = @intCast(stringByteLength(&indexOfItems[item].itemSoftmenuName));
-                _ = xcopy(@as([*c]u8, &ixaa) + in, &indexOfItems[item].itemSoftmenuName, nq + 1);
+                _ = frontier_char_string.xcopy(@as([*c]u8, &ixaa) + in, &indexOfItems[item].itemSoftmenuName, nq + 1);
                 ixaa[in + nq] = 0;
 
                 const nr: u16 = @intCast(stringByteLength(aimBuffer + in));
-                _ = xcopy(@as([*c]u8, &ixaa) + in + nq, aimBuffer + in, nr + 1);
+                _ = frontier_char_string.xcopy(@as([*c]u8, &ixaa) + in + nq, aimBuffer + in, nr + 1);
                 ixaa[in + nq + nr] = 0;
 
-                _ = xcopy(aimBuffer, &ixaa, @intCast(stringByteLength(&ixaa) + 1));
+                _ = frontier_char_string.xcopy(aimBuffer, &ixaa, @intCast(stringByteLength(&ixaa) + 1));
 
-                T_cursorPos = stringNextGlyph(aimBuffer, T_cursorPos);
+                T_cursorPos = frontier_char_string.stringNextGlyph(aimBuffer, T_cursorPos);
                 switch (item) {
                     ITM_LG_SIGN, ITM_SIN_SIGN, ITM_COS_SIGN, ITM_TAN_SIGN, ITM_ROOT_SIGN => {
                         T_cursorPos += 2;
@@ -2897,7 +2861,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                     else => {},
                 }
 
-                incOffset();
+                frontier_screen.incOffset();
             }
         }
 
@@ -2906,25 +2870,25 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
 
         if (catalog != 0 and catalog != CATALOG_MVAR and fnKeyInCatalog == 0) {
             if (item == ITM_BACKSPACE) {
-                calcModeNormal();
+                frontier_calc_mode.calcModeNormal();
                 return;
-            } else if (stringGlyphLength(&indexOfItems[item].itemSoftmenuName) == 1 and stringGlyphLength(&asmBuffer) <= Scroll_Asm and item != ITM_CR and item != ITM_ROOT_SIGN and currentSoftmenuScrolls() != 0) {
+            } else if (frontier_char_string.stringGlyphLength(&indexOfItems[item].itemSoftmenuName) == 1 and frontier_char_string.stringGlyphLength(&asmBuffer) <= Scroll_Asm and item != ITM_CR and item != ITM_ROOT_SIGN and frontier_softmenus.currentSoftmenuScrolls() != 0) {
                 _ = stringCopy(@as([*c]u8, &asmBuffer) + @as(usize, @intCast(stringByteLength(&asmBuffer))), &indexOfItems[item].itemSoftmenuName);
 
                 softmenuStack[0].firstItem = @intCast(findFirstItem(&asmBuffer));
-                setCatalogLastPos();
+                frontier_softmenus.setCatalogLastPos();
                 fnTimerStart(TO_ASM_ACTIVE, TO_ASM_ACTIVE, 3000);
-                light_ASB_icon();
+                frontier_status_bar.light_ASB_icon();
             }
             if (calcMode == CM_PEM) {
                 hourGlassIconEnabled = 0;
             }
         } else if (tam.mode != 0) {
             if ((item == ITM_INDIRECT_X) or (item == ITM_INDIRECT_Y) or (item == ITM_INDIRECT_Z) or (item == ITM_INDIRECT_T)) {
-                tamProcessInput(ITM_INDIRECTION);
-                tamProcessInput(item - (ITM_INDIRECT_X - ITM_REG_X));
+                frontier_tam.tamProcessInput(ITM_INDIRECTION);
+                frontier_tam.tamProcessInput(item - (ITM_INDIRECT_X - ITM_REG_X));
             } else {
-                tamProcessInput(item);
+                frontier_tam.tamProcessInput(item);
             }
         } else if (calcMode == CM_NIM) {
             addItemToNimBuffer(@bitCast(item));
@@ -2934,54 +2898,54 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
             }
 
             if (item == ITM_RIGHT_ARROW) {
-                mimEnter(1);
-                setJRegisterAsInt(1, getJRegisterAsInt(1) + 1);
-                refreshScreen(51);
-                printTrace(@bitCast(item), @bitCast(item));
-                printTraceMatElement(LINE_FULL_U);
+                frontier.mimEnter(true);
+                frontier.setJRegisterAsInt(true, frontier.getJRegisterAsInt(true) + 1);
+                frontier_screen.refreshScreen(51);
+                frontier_print.printTrace(@bitCast(item), @bitCast(item));
+                frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_LEFT_ARROW) {
-                mimEnter(1);
-                setJRegisterAsInt(1, getJRegisterAsInt(1) - 1);
-                refreshScreen(52);
-                printTrace(@bitCast(item), @bitCast(item));
-                printTraceMatElement(LINE_FULL_U);
+                frontier.mimEnter(true);
+                frontier.setJRegisterAsInt(true, frontier.getJRegisterAsInt(true) - 1);
+                frontier_screen.refreshScreen(52);
+                frontier_print.printTrace(@bitCast(item), @bitCast(item));
+                frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_UP_ARROW) {
-                mimEnter(1);
-                setIRegisterAsInt(1, getIRegisterAsInt(1) - 1);
-                refreshScreen(53);
-                printTrace(@bitCast(item), @bitCast(item));
-                printTraceMatElement(LINE_FULL_U);
+                frontier.mimEnter(true);
+                frontier.setIRegisterAsInt(true, frontier.getIRegisterAsInt(true) - 1);
+                frontier_screen.refreshScreen(53);
+                frontier_print.printTrace(@bitCast(item), @bitCast(item));
+                frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_DOWN_ARROW) {
-                mimEnter(1);
-                setIRegisterAsInt(1, getIRegisterAsInt(1) + 1);
-                refreshScreen(54);
-                printTrace(@bitCast(item), @bitCast(item));
-                printTraceMatElement(LINE_FULL_U);
+                frontier.mimEnter(true);
+                frontier.setIRegisterAsInt(true, frontier.getIRegisterAsInt(true) + 1);
+                frontier_screen.refreshScreen(54);
+                frontier_print.printTrace(@bitCast(item), @bitCast(item));
+                frontier_print.printTraceMatElement(LINE_FULL_U);
             }
 
             if (@as(i16, @bitCast(item)) < 0) {
-                showSoftmenu(@bitCast(item));
-                refreshScreen(55);
+                frontier_softmenus.showSoftmenu(@bitCast(item));
+                frontier_screen.refreshScreen(55);
                 return;
             }
 
             switch (item) {
                 ITM_SHOW => {
-                    mimEnter(1);
+                    frontier.mimEnter(true);
                     temporaryInformation = TI_SHOW_REGISTER;
                 },
                 ITM_OFF => {
-                    runFunction(ITM_OFF);
+                    frontier_items.runFunction(ITM_OFF);
                 },
                 else => {
                     if (isFunctionInMim(@bitCast(item), 0)) {
-                        mimAddNumber(@bitCast(item));
+                        frontier.mimAddNumber(@bitCast(item));
                     } else if (isFunctionInMim(@bitCast(item), 1)) {
                         lastErrorCode = ERROR_NONE;
-                        mimEnter(1);
-                        runFunction(@bitCast(item));
+                        frontier.mimEnter(true);
+                        frontier_items.runFunction(@bitCast(item));
                     } else if (isFunctionInMim(@bitCast(item), 2)) {
-                        mimRunFunction(@bitCast(item), indexOfItems[item].param);
+                        frontier.mimRunFunction(@bitCast(item), indexOfItems[item].param);
                     }
                 },
             }
@@ -3013,7 +2977,7 @@ fn nimExitCloseFromGoto() bool {
         return true; // closeNim rejected buffer; skip display rebuild (caller must return)
     }
     if (calcMode != CM_NIM and lastErrorCode == 0) {
-        printTrace(ITM_ENTER, NOPARAM);
+        frontier_print.printTrace(ITM_ENTER, NOPARAM);
         setSystemFlag(FLAG_ASLIFT);
         return true;
     }
@@ -3049,31 +3013,31 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
     if (calcMode == CM_NORMAL) {
         switch (item) {
             ITM_EXPONENT => {
-                calcModeNim(NOPARAM);
+                frontier_calc_mode.calcModeNim(NOPARAM);
                 aimBuffer[0] = '+';
                 aimBuffer[1] = '1';
                 aimBuffer[2] = '.';
                 aimBuffer[3] = 0;
                 nimNumberPart = NP_REAL_FLOAT_PART;
-                setLastintegerBasetoZero();
+                frontier_screen.setLastintegerBasetoZero();
             },
             ITM_PERIOD => {
-                calcModeNim(NOPARAM);
+                frontier_calc_mode.calcModeNim(NOPARAM);
                 aimBuffer[0] = '+';
                 aimBuffer[1] = '0';
                 aimBuffer[2] = 0;
                 nimNumberPart = NP_INT_10;
-                setLastintegerBasetoZero();
+                frontier_screen.setLastintegerBasetoZero();
             },
             ITM_0, ITM_1, ITM_2, ITM_3, ITM_4, ITM_5, ITM_6, ITM_7, ITM_8, ITM_9, ITM_A, ITM_B, ITM_C, ITM_D, ITM_E, ITM_F => {
-                calcModeNim(NOPARAM);
+                frontier_calc_mode.calcModeNim(NOPARAM);
                 aimBuffer[0] = '+';
                 aimBuffer[1] = 0;
                 nimNumberPart = NP_EMPTY;
             },
             else => {
                 abi.fmtBufZ(errorMessage[0..512], "In function addItemToNimBuffer:{d} is an unexpected item value when initializing NIM!", .{@as(i32, item)});
-                displayBugScreen(errorMessage);
+                frontier_error.displayBugScreen(errorMessage);
                 return;
             },
         }
@@ -3228,7 +3192,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (aimBuffer[strlen(aimBuffer) - 1] == 'i') {
                     _ = strcat(aimBuffer, "0");
                 }
-                setLastintegerBasetoZero();
+                frontier_screen.setLastintegerBasetoZero();
                 switch (nimNumberPart) {
                     NP_INT_10 => {
                         _ = strcat(aimBuffer, ".");
@@ -3293,7 +3257,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (aimBuffer[strlen(aimBuffer) - 1] == 'i') {
                     _ = strcat(aimBuffer, "1");
                 }
-                setLastintegerBasetoZero();
+                frontier_screen.setLastintegerBasetoZero();
                 switch (nimNumberPart) {
                     NP_INT_10 => {
                         _ = strcat(aimBuffer, "."); // fallthrough
@@ -3323,7 +3287,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
             ITM_HASH_JM, ITM_toINT => { // #
                 done = true;
-                setLastintegerBasetoZero();
+                frontier_screen.setLastintegerBasetoZero();
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_INT_16) {
                     _ = strcat(aimBuffer, "#");
                     nimNumberPart = NP_INT_BASE;
@@ -3377,7 +3341,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 }
                 lastChar = @intCast(strlen(aimBuffer) - 1);
                 done = true;
-                setLastintegerBasetoZero();
+                frontier_screen.setLastintegerBasetoZero();
                 switch (nimNumberPart) {
                     NP_REAL_EXPONENT => {
                         if ((aimBuffer[@intCast(lastChar)] == '+' or aimBuffer[@intCast(lastChar)] == '-') and aimBuffer[@intCast(lastChar - 1)] == 'e') {
@@ -3412,8 +3376,8 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[strlen(aimBuffer) - 1] == 'i') {
                     done = true;
                     _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
-                    reallyRunFunction(ITM_EXIT1, NOPARAM);
-                    setLastintegerBasetoZero();
+                    frontier_items.reallyRunFunction(ITM_EXIT1, NOPARAM);
+                    frontier_screen.setLastintegerBasetoZero();
                 }
             },
 
@@ -3533,7 +3497,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
                 if ((calcMode != CM_MIM) and (lastChar == -1 or (lastChar == 0 and aimBuffer[0] == '+'))) {
                     screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
-                    calcModeNormal();
+                    frontier_calc_mode.calcModeNormal();
                     undo();
                 }
             },
@@ -3547,7 +3511,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 }
                 if (calcMode != CM_NIM and lastErrorCode == 0) {
                     // IR_PRINTING: Close NIM ended with entering the value on the stack
-                    printTrace(ITM_ENTER, NOPARAM);
+                    frontier_print.printTrace(ITM_ENTER, NOPARAM);
                     setSystemFlag(FLAG_ASLIFT);
                     if (item == ITM_EXIT1) {
                         saveForUndo();
@@ -3629,19 +3593,19 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
             ITM_DMS => {
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART) {
                     done = true;
-                    setLastintegerBasetoZero();
+                    frontier_screen.setLastintegerBasetoZero();
                     screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
                     closeNim();
                     if (calcMode != CM_NIM and lastErrorCode == 0) {
                         if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
-                            convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
                         }
-                        real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
+                        frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
                         setRegisterAngularMode(REGISTER_X, amDMS);
                         setSystemFlag(FLAG_ASLIFT);
                         // IR_PRINTING
-                        printTraceX(LINE_NOLF);
-                        printTrace(ITM_ENTER, NOPARAM);
+                        frontier_print.printTraceX(LINE_NOLF);
+                        frontier_print.printTrace(ITM_ENTER, NOPARAM);
                         return;
                     }
                 }
@@ -3656,7 +3620,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
 
                     const tmplen: i16 = @intCast(stringByteLength(aimBuffer));
-                    if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and getSystemFlag(FLAG_YMD) == 0 and ((tmplen == 8 and (isValidNumber(aimBuffer, "sdd.dddd") != 0)) or (tmplen == 7 and (isValidNumber(aimBuffer, "sd.dddd") != 0)))) {
+                    if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and getSystemFlag(FLAG_YMD) == 0 and ((tmplen == 8 and (frontier_char_string.isValidNumber(aimBuffer, "sdd.dddd"))) or (tmplen == 7 and (frontier_char_string.isValidNumber(aimBuffer, "sd.dddd"))))) {
                         aimBuffer[@intCast(tmplen)] = aimBuffer[@intCast(tmplen - 2)];
                         aimBuffer[@intCast(tmplen + 1)] = aimBuffer[@intCast(tmplen - 1)];
                         aimBuffer[@intCast(tmplen - 2)] = '0';
@@ -3666,14 +3630,14 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
 
                     closeNim();
                     if (calcMode != CM_NIM and lastErrorCode == 0 and getRegisterDataType(REGISTER_X) != dtDate) {
-                        convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem);
-                        checkDateRange(reg34(REGISTER_X));
+                        frontier_register_value_conversions.convertReal34RegisterToDateRegister(REGISTER_X, REGISTER_X, YYSystem != 0);
+                        frontier_date_time.checkDateRange(reg34(REGISTER_X));
                         temporaryInformation = TI_DAY_OF_WEEK;
                         if (lastErrorCode == 0) {
                             setSystemFlag(FLAG_ASLIFT);
                             // IR_PRINTING
-                            printTraceX(LINE_NOLF);
-                            printTrace(ITM_ENTER, NOPARAM);
+                            frontier_print.printTraceX(LINE_NOLF);
+                            frontier_print.printTrace(ITM_ENTER, NOPARAM);
                         } else {
                             undo();
                         }
@@ -3688,18 +3652,18 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
             ITM_ms => {
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT) {
                     done = true;
-                    setLastintegerBasetoZero();
+                    frontier_screen.setLastintegerBasetoZero();
                     screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
                     closeNim();
                     if (calcMode != CM_NIM and lastErrorCode == 0 and getRegisterDataType(REGISTER_X) != dtTime) {
                         if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
-                            convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
                         }
-                        hmmssInRegisterToSeconds(REGISTER_X);
+                        frontier_date_time.hmmssInRegisterToSeconds(REGISTER_X);
                         if (lastErrorCode == 0) {
                             setSystemFlag(FLAG_ASLIFT);
-                            printTraceX(LINE_NOLF);
-                            printTrace(ITM_ENTER, NOPARAM);
+                            frontier_print.printTraceX(LINE_NOLF);
+                            frontier_print.printTrace(ITM_ENTER, NOPARAM);
                         } else {
                             undo();
                         }
@@ -3712,10 +3676,10 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT) {
                     done = true;
                     closeNim();
-                    fnAngularModeJM(amDMS);
+                    frontier_addons.fnAngularModeJM(amDMS);
                     // IR_PRINTING
-                    printTrace(ITM_DMS2, NOPARAM);
-                    printTraceX(LINE_FULL_C);
+                    frontier_print.printTrace(ITM_DMS2, NOPARAM);
+                    frontier_print.printTraceX(LINE_FULL_C);
                 }
             },
 
@@ -3727,21 +3691,21 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     if (calcMode != CM_NIM and lastErrorCode == 0) {
                         copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
                         if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
-                            convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                            frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
                         }
                         if (getRegisterDataType(REGISTER_X) == dtReal34 and getRegisterAngularMode(REGISTER_X) == amNone) {
                             if (currentAngularMode == amDMS) {
-                                fnCvtFromCurrentAngularMode(amDMS);
+                                frontier_conversion_angles.fnCvtFromCurrentAngularMode(amDMS);
                             } else if (currentAngularMode == amMultPi) {
-                                fnCvtFromCurrentAngularMode(amMultPi);
+                                frontier_conversion_angles.fnCvtFromCurrentAngularMode(amMultPi);
                             } else {
                                 setRegisterAngularMode(REGISTER_X, currentAngularMode);
                             }
                         }
                         if (lastErrorCode == 0) {
                             setSystemFlag(FLAG_ASLIFT);
-                            printTraceX(LINE_NOLF);
-                            printTrace(ITM_ENTER, NOPARAM);
+                            frontier_print.printTraceX(LINE_NOLF);
+                            frontier_print.printTrace(ITM_ENTER, NOPARAM);
                         } else {
                             undo();
                         }
@@ -3817,7 +3781,7 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 },
                 else => {
                     abi.fmtBufZ(errorMessage[0..512], "In function addItemToNimBuffer: {d} is an unexpected nimNumberPart value while converting buffer to display!", .{@as(i32, nimNumberPart)});
-                    displayBugScreen(errorMessage);
+                    frontier_error.displayBugScreen(errorMessage);
                 },
             }
             const _len: u16 = @intCast(stringByteLength(nimBufferDisplay));
@@ -3869,10 +3833,10 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
             if (calcMode != CM_NIM) {
                 if (item == ITM_CONSTpi or (item >= 0 and indexOfItems[@intCast(item)].func == fnConstantPtr())) {
                     setSystemFlag(FLAG_ASLIFT);
-                    setLastintegerBasetoZero();
+                    frontier_screen.setLastintegerBasetoZero();
                 }
                 if (lastErrorCode == 0) {
-                    showFunctionName(item, 1000, null);
+                    frontier_screen.showFunctionName(item, 1000, null);
                 }
             }
         }
