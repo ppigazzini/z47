@@ -68,6 +68,39 @@ const irfracOption_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_asn_browser = @import("frontier_asn_browser.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_units = @import("frontier_conversion_units.zig"); // M-callconv: Zig-to-Zig
+const frontier_curve_fitting = @import("frontier_curve_fitting.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_flag_browser = @import("frontier_flag_browser.zig"); // M-callconv: Zig-to-Zig
+const frontier_font_browser = @import("frontier_font_browser.zig"); // M-callconv: Zig-to-Zig
+const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
+const frontier_graphs = @import("frontier_graphs.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_lbl_gto_xeq = @import("frontier_lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_browser = @import("frontier_register_browser.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -1060,44 +1093,12 @@ fn pencilWhite(x: u32, y: u32) callconv(.c) void {
 // First-party / runtime / libc externs.
 // ---------------------------------------------------------------------------
 extern fn getSystemFlag(sf: c_int) bool_t;
-extern fn isItemConversion(itemNr: i16) bool;
-extern fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) void;
-extern fn expandAbbreviations(msg1: [*c]u8) void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
-extern fn getRegisterAsRealQuiet(regist: calcRegister_t, r: *real_t) bool_t;
-extern fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) void;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: [*c]mpz_struct) void;
 extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn currentMenu() i16;
-extern fn menu(level: c_int) i16;
-extern fn fnRefreshState() void;
-extern fn refreshStatusBar() void;
-extern fn forceSBupdate() void;
-extern fn showFracMode() void;
-extern fn showMatrixEditor() void;
-extern fn fnShowTimerApp() void;
-extern fn fnStatList() void;
-extern fn graph_plotmem() void;
-extern fn graphPlotstat(sel: u16) void;
-extern fn graphDrawLRline(sel: u16) void;
-extern fn showHideHourGlass() void;
-extern fn fnAsnViewer(p: u16) void;
-extern fn calcModeNormal() void;
-extern fn flagBrowser(p: u16) void;
-extern fn fontBrowser(p: u16) void;
-extern fn registerBrowser(p: u16) void;
-extern fn fnPem(p: u16) void;
-extern fn fnExitAllMenus(p: u16) void;
-extern fn fnP_Alpha(p: u16) void;
-extern fn fnP_All_Regs(p: u16) void;
-extern fn showSoftmenu(id: i16) void;
-extern fn showSoftmenuCurrentPart() void;
-extern fn popSoftmenu() void;
 extern var calcModel: u8;
 extern var lastKeyItemDetermined: i16;
 // addItemToBuffer pointer for comparison against indexOfItems[].func.
@@ -1111,95 +1112,26 @@ inline fn calcModeAimGui() void {
 }
 const keypress_long_f: i16 = 0; // #define keypress_long_f false
 extern fn fnDisplayStack(numberOfStackLines: u16) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
-extern fn displayBugScreen(msg: [*c]const u8) void;
-extern fn getConfirmationTiId() u16;
-extern fn lastFuncNo() i16;
-extern fn lastFuncCatalogName() [*c]u8;
-extern fn lastFuncSoftmenuName() [*c]u8;
-extern fn getCurveFitModeName(selection: u16) [*c]const u8;
-extern fn getCurveFitModeFormula(selection: u16) [*c]const u8;
-extern fn eatSpacesEnd(str: [*c]const u8) [*c]u8;
-extern fn lrCountOnes(selection: u16) i16;
-extern fn lastSTORCL() calcRegister_t;
-extern fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWidth: i16, font: *const font_t, a: [*c]i16, b: [*c]i16, c: [*c]i16, cols: u32, allInt: [*c]const bool_t) i16;
-extern fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, prefixWidth: i16, font: *const font_t, a: [*c]i16, b: [*c]i16, c: [*c]i16, d: [*c]i16, e: [*c]i16, f: [*c]i16, cols: u32, am: angularMode_t, polar: bool_t) i16;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
-extern fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, toDisplay: bool_t, regXposition: bool_t) void;
-extern fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i16, am: angularMode_t, polarMode: bool_t, regXposition: bool_t) void;
-extern fn real34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn complex34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u8) bool_t;
-extern fn getJulianDayOfWeek(regist: calcRegister_t) c_int;
-extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, nonFancy: bool_t) void;
-extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, baseOverride: u8) void;
-extern fn real34ToDisplayString(value34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) void;
-extern fn complex34ToDisplayString(complex34: *const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t, tagAngle: u16, tagPolar: bool_t) void;
-extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, max_Width: i16, maxExp: i16, allowLARGELI: bool_t) void;
-extern fn longIntegerToHexDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, base: u32, maxWidth: i16) void;
-extern fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, max_Width: i16, base: u32, removeTrailingRadix: bool_t) void;
-extern fn findTwoChars(str: [*c]const u8, c1: u8, c2: u8, pos: *u16) bool_t;
-extern fn getRegisterAsLongInt(regist: calcRegister_t, lgInt: [*c]mpz_struct, err: ?*bool_t) bool_t;
-extern fn julianDayToInternalDate(jd: *const real34_t, dest: *real34_t) void;
 extern fn real34CompareLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
 extern fn real34CompareLessEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
 extern fn real34CompareAbsLessThan(a: *align(1) const real34_t, b: *align(1) const real34_t) bool_t;
 extern fn real34IsAnInteger(x: *align(1) const real34_t) bool_t;
-extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool_t) u32;
 extern fn realIsAnInteger(r: *const real_t) bool_t;
-extern fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) void;
 extern fn findNamedVariable(name: [*c]const u8) calcRegister_t;
-extern fn findNamedLabel(name: [*c]const u8) calcRegister_t;
-extern fn reallyRunFunction(item: i16, regist: calcRegister_t) void;
-extern fn runFunction(item: i16) void;
 extern fn processKeyAction(item: i16) void;
-extern fn insertUserItemInProgram(item: i16, funcParam: [*c]const u8) void;
-extern fn addItemToBuffer(item: i16) void;
-extern fn addItemToNimBuffer(item: i16) void;
-extern fn closeNim() void;
 extern fn fnKeyBackspace(p: u16) void;
-extern fn fnSkip(p: u16) void;
 extern fn fnInc(regist: calcRegister_t) void;
-extern fn fnStopProgram(p: u16) void;
-extern fn assignToKey(kc: [*c]const u8) void;
-extern fn leaveTamModeIfEnabled() void;
-extern fn updateAssignTamBuffer() void;
-extern fn setCurrentUserMenu(item: i16, funcParam: [*c]const u8) void;
-extern fn isAlphabeticSoftmenu() bool_t;
 extern fn openHOMEorMyM(keypress: i16) void;
 extern fn resetShiftState() void;
-extern fn resetAlphaSelectionBuffer() void;
 extern fn showShiftState() void;
 extern fn nameFunction(keyOffset: i16, sf: bool_t, sg: bool_t) i16;
-extern fn dynmenuGetLabel(menuitem: i16) [*c]u8;
-extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-extern fn charCodeFromString(ch: [*c]const u8, offset: ?*u16) u16;
-extern fn findGlyph(font: *const font_t, charCode: u16) i16;
-extern fn findGlyphExact(font: *const font_t, charCode: u16) i16;
-extern fn generateNotFoundGlyph(font: i16, charCode: u16) void;
-extern fn charCodeHPReplacement(charCode: *u16) void;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
-extern fn stringAfterPixels(str: [*c]const u8, font: *const font_t, width: i16, a: bool_t, b: bool_t) [*c]u8;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
-extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: i32) i32;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 extern fn refresh_gui() void;
-extern fn showDateTime() bool_t;
 extern fn dmcpResetAutoOff() void;
-extern fn fnPollTimerApp() void;
 extern fn checkBattery() void;
-extern fn fnUpdateTimerApp() void;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
-extern fn fnTimerStop(nr: u8) void;
-extern fn fnTimerGetStatus(nr: u8) u8;
-extern fn getUptimeMs() u32;
-extern fn exitKeyWaiting() bool_t;
-extern fn maxfgLines(y: i16) bool_t;
-extern fn plotrect(x1: i16, y1: i16, x2: i16, y2: i16) void;
 // On DMCP_BUILD these are static-inline wrappers in lcd.h over lcd_forced_refresh
 // (LIBRARY_FN_BASE+52, lft_ifc.h:59) / lcd_refresh_lines (+56); on host they are
 // real first-party symbols.
@@ -1254,7 +1186,6 @@ extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 extern fn strstr(h: [*c]const u8, n: [*c]const u8) [*c]u8;
 extern fn memcpy(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 extern fn pow(x: f64, y: f64) f64;
 extern fn log10(x: f64) f64;
 
@@ -1440,10 +1371,10 @@ inline fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
-// COPY_REGISTER_STRING_TO(dest, regist) = xcopy(dest, REGISTER_STRING_DATA(regist), len+1)
+// COPY_REGISTER_STRING_TO(dest, regist) = frontier_char_string.xcopy(dest, REGISTER_STRING_DATA(regist), len+1)
 inline fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
     const src = REGISTER_STRING_DATA(regist);
-    _ = xcopy(dest, src, @intCast(strlen(src) + 1));
+    _ = frontier_char_string.xcopy(dest, src, @intCast(strlen(src) + 1));
 }
 
 // ---------------------------------------------------------------------------
@@ -1565,13 +1496,13 @@ pub export fn setLastintegerBasetoZero() callconv(.c) void {
         refreshNIMdone = 0;
         refreshScreen(56);
     }
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 pub export fn execTimerApp(timerType: u16) callconv(.c) void {
     _ = timerType;
     fnTimerStart(TO_TIMER_APP, TO_TIMER_APP, TIMER_APP_PERIOD);
-    fnUpdateTimerApp();
+    frontier_timer.fnUpdateTimerApp();
 }
 
 pub export fn refreshFn(timerType: u16) callconv(.c) void {
@@ -1589,13 +1520,13 @@ pub export fn refreshFn(timerType: u16) callconv(.c) void {
     }
     if (timerType == TO_ASM_ACTIVE) {
         if (catalog != 0) {
-            resetAlphaSelectionBuffer();
+            frontier_bufferize.resetAlphaSelectionBuffer();
         }
     }
 }
 
 pub export fn toggle6UnderLines(y: i16) callconv(.c) void {
-    if (maxfgLines(y) != 0 or getSystemFlag(FLAG_FGLNFUL) != 0) {
+    if (frontier_softmenus.maxfgLines(y) != 0 or getSystemFlag(FLAG_FGLNFUL) != 0) {
         underline_softkey(0b111111, @intCast(y));
     } else {
         underline_softkey(0, 3);
@@ -1696,7 +1627,7 @@ pub export fn FN_handler_StepToF(time: u32) callconv(.c) void {
     var varCatalogItem: [*c]const u8 = "SF:F";
     const Dyn = nameFunction(FN_key_pressed - 37, shiftF, shiftG);
     if (dynamicMenuItem > -1) { // !DEBUGSFN (DEBUGSFN=false)
-        varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
+        varCatalogItem = frontier_softmenus.dynmenuGetLabel(dynamicMenuItem);
     }
     showFunctionName(Dyn, 0, varCatalogItem);
     FN_timed_out_to_RELEASE_EXEC = 1;
@@ -1714,7 +1645,7 @@ pub export fn FN_handler_StepToG(time: u32) callconv(.c) void {
     var varCatalogItem: [*c]const u8 = "SF:G";
     const Dyn = nameFunction(FN_key_pressed - 37, shiftF, shiftG);
     if (dynamicMenuItem > -1) {
-        varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
+        varCatalogItem = frontier_softmenus.dynmenuGetLabel(dynamicMenuItem);
     }
     showFunctionName(Dyn, 0, varCatalogItem);
     FN_timed_out_to_RELEASE_EXEC = 1;
@@ -1730,7 +1661,7 @@ pub export fn FN_handler_StepToNOP() callconv(.c) void {
     FN_timed_out_to_NOP_or_Executed = 1;
     underline_softkey(@as(u16, 1) << @intCast(FN_key_pressed - 38), 3);
     FN_timeouts_in_progress = 0;
-    fnTimerStop(TO_FN_LONG);
+    frontier_timer.fnTimerStop(TO_FN_LONG);
 }
 
 // IS_BASEBLANK_(menuId) (defines.h:2341): menuId==0 && !FLAG_BASE_MYM && !FLAG_BASE_HOME.
@@ -1742,7 +1673,7 @@ inline fn IS_BASEBLANK_(menuId: i16) bool {
 
 pub export fn FN_handler() callconv(.c) void {
     if ((FN_state == ST_1_PRESS1 or FN_state == ST_3_PRESS2) and FN_timeouts_in_progress != 0 and (FN_key_pressed != 0) and !IS_BASEBLANK_(softmenuStack[0].softmenuId)) {
-        if (fnTimerGetStatus(TO_FN_LONG) == TMR_COMPLETED) {
+        if (frontier_timer.fnTimerGetStatus(TO_FN_LONG) == TMR_COMPLETED) {
             FN_handle_timed_out_to_EXEC = 0;
             if (shiftF == 0 and shiftG == 0) {
                 if (LongPressF == RBX_F1234) {
@@ -1773,9 +1704,9 @@ fn _assignLongPressKey(keyCode: c_int) void {
     kc[2] = 0;
     shiftF = 0;
     shiftG = 1;
-    assignToKey(&kc);
+    frontier_assign.assignToKey(&kc);
     itemToBeAssigned = 0;
-    leaveTamModeIfEnabled();
+    frontier_tam.leaveTamModeIfEnabled();
     keyActionProcessed = 1;
     calcMode = previousCalcMode;
     shiftF = 0;
@@ -1786,39 +1717,39 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
     var funcParam: [*c]const u8 = "";
 
     keyStateCode = @intCast((if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + 2);
-    funcParam = getNthString(userKeyLabel, @intCast(keyCode * 6 + @as(c_int, keyStateCode)));
+    funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(keyCode * 6 + @as(c_int, keyStateCode)));
     if (item == ITM_RCL and getSystemFlag(FLAG_USER) != 0 and funcParam[0] != 0) {
         const variable = findNamedVariable(funcParam);
         if (variable != INVALID_VARIABLE) {
             if (calcMode == CM_PEM) {
-                insertUserItemInProgram(item, funcParam);
+                frontier_manage.insertUserItemInProgram(item, @constCast(funcParam));
             } else {
-                reallyRunFunction(item, variable);
+                frontier_items.reallyRunFunction(item, @intCast(variable));
             }
         } else {
-            displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(funcParam)});
                 moreInfoOnError("In function _executeItem:", errorMessage, null, null);
             }
         }
     } else if (item == ITM_XEQ and getSystemFlag(FLAG_USER) != 0 and funcParam[0] != 0) {
-        const label = findNamedLabel(funcParam);
+        const label = frontier_manage.findNamedLabel(funcParam);
         if (label != INVALID_VARIABLE) {
             if (calcMode == CM_PEM) {
-                insertUserItemInProgram(item, funcParam);
+                frontier_manage.insertUserItemInProgram(item, @constCast(funcParam));
             } else {
-                reallyRunFunction(item, label);
+                frontier_items.reallyRunFunction(item, @intCast(label));
             }
         } else {
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(funcParam)});
                 moreInfoOnError("In function _executeItem:", errorMessage, null, null);
             }
         }
     } else {
-        runFunction(item);
+        frontier_items.runFunction(item);
     }
 }
 
@@ -1832,10 +1763,10 @@ fn clearShiftTemporaryIndications(condition: bool_t) void {
 
 pub export fn Shft_handler() callconv(.c) void {
     if (Shft_LongPress_f_g != 0) {
-        if (fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
+        if (frontier_timer.fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
             Shft_LongPress_f_g = 0;
-            fnTimerStop(TO_3S_CTFF);
-            fnTimerStop(TO_FG_LONG);
+            frontier_timer.fnTimerStop(TO_3S_CTFF);
+            frontier_timer.fnTimerStop(TO_FG_LONG);
             // LONGPRESS_CFG
             {
                 if ((shiftF != 0 or shiftG != 0) and (calcMode != CM_EIM) and (calcMode != CM_MIM)) {
@@ -1851,7 +1782,7 @@ pub export fn Shft_handler() callconv(.c) void {
                     } else if (tam.alpha or tam.mode == 0) {
                         if (calcMode == CM_NIM and item != ITM_ms and item != ITM_CC and item != ITM_op_j and item != ITM_op_j_pol and item != ITM_dotD and item != ITM_HASH_JM and item != ITM_toINT and item != ITM_BACKSPACE and indexOfItems[@intCast(item)].func != addItemToBufferPtr) {
                             delayCloseNim = 0;
-                            closeNim();
+                            frontier_bufferize.closeNim();
                             screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
                         }
                         // USER mode
@@ -1861,7 +1792,7 @@ pub export fn Shft_handler() callconv(.c) void {
                                 processKeyAction(item);
                             } else if (calcMode != CM_PEM and indexOfItems[@intCast(item)].func == addItemToBufferPtr) {
                                 clearShiftTemporaryIndications(@intFromBool(shiftG != 0 or shiftF != 0));
-                                addItemToNimBuffer(item);
+                                frontier_bufferize.addItemToNimBuffer(item);
                             } else {
                                 clearShiftTemporaryIndications(@intFromBool((item != ITM_SNAP) and (shiftG != 0 or shiftF != 0)));
                                 _executeItem(item, keyCode);
@@ -1870,43 +1801,43 @@ pub export fn Shft_handler() callconv(.c) void {
                             clearShiftTemporaryIndications(@intFromBool(shiftG != 0 or shiftF != 0));
                             var funcParam: [*c]const u8 = "";
                             keyStateCode = @intCast((if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + 2);
-                            funcParam = getNthString(userKeyLabel, @intCast(keyCode * 6 + @as(c_int, keyStateCode)));
-                            setCurrentUserMenu(item, funcParam);
+                            funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(keyCode * 6 + @as(c_int, keyStateCode)));
+                            _ = frontier_softmenus.setCurrentUserMenu(item, @constCast(funcParam));
                             if (shiftF != 0) {
-                                if (getSystemFlag(FLAG_ALPHA) != 0 and ((currentMenu() == -MNU_MyAlpha) or (currentMenu() == -MNU_AIMCATALOG) or isAlphabeticSoftmenu() != 0)) {
-                                    popSoftmenu();
+                                if (getSystemFlag(FLAG_ALPHA) != 0 and ((frontier_softmenus.currentMenu() == -MNU_MyAlpha) or (frontier_softmenus.currentMenu() == -MNU_AIMCATALOG) or frontier_softmenus.isAlphabeticSoftmenu() != 0)) {
+                                    frontier_softmenus.popSoftmenu();
                                 }
                                 if (tam.alpha) {
-                                    showSoftmenu(-MNU_TAMALPHA);
+                                    frontier_softmenus.showSoftmenu(-MNU_TAMALPHA);
                                 } else if ((calcMode == CM_AIM) or getSystemFlag(FLAG_ALPHA) != 0 or ((calcMode == CM_ASSIGN) and (previousCalcMode == CM_AIM))) {
-                                    showSoftmenu(-MNU_ALPHA);
+                                    frontier_softmenus.showSoftmenu(-MNU_ALPHA);
                                 } else if (getSystemFlag(FLAG_USER) != 0 and (key.gShifted != ITM_NULL)) {
-                                    showSoftmenu(key.gShifted);
+                                    frontier_softmenus.showSoftmenu(key.gShifted);
                                 } else {
-                                    showSoftmenu(-MNU_HOME);
+                                    frontier_softmenus.showSoftmenu(-MNU_HOME);
                                 }
-                                showSoftmenuCurrentPart();
+                                frontier_softmenus.showSoftmenuCurrentPart();
                             } else {
                                 var baseOverrideOnce: bool_t = 1;
                                 BASE_OVERRIDEONCE = baseOverrideOnce;
                                 if ((calcMode == CM_AIM) or getSystemFlag(FLAG_ALPHA) != 0 or ((calcMode == CM_ASSIGN) and (previousCalcMode == CM_AIM)) or tam.alpha) {
-                                    showSoftmenu(-MNU_MyAlpha);
+                                    frontier_softmenus.showSoftmenu(-MNU_MyAlpha);
                                 } else if (getSystemFlag(FLAG_USER) != 0 and (key.gShifted != ITM_NULL)) {
-                                    showSoftmenu(key.gShifted);
+                                    frontier_softmenus.showSoftmenu(key.gShifted);
                                 } else if (getSystemFlag(FLAG_BASE_MYM) != 0 or getSystemFlag(FLAG_BASE_HOME) != 0) {
-                                    showSoftmenu(-MNU_MyMenu);
+                                    frontier_softmenus.showSoftmenu(-MNU_MyMenu);
                                 } else {
                                     baseOverrideOnce = 0;
                                     BASE_OVERRIDEONCE = baseOverrideOnce;
-                                    fnExitAllMenus(0);
+                                    frontier_softmenus.fnExitAllMenus(0);
                                 }
                                 BASE_OVERRIDEONCE = baseOverrideOnce;
-                                showSoftmenuCurrentPart();
+                                frontier_softmenus.showSoftmenuCurrentPart();
                                 BASE_OVERRIDEONCE = baseOverrideOnce;
                             }
                         }
                     } else if (tam.mode != 0 and indexOfItems[@intCast(item)].func == addItemToBufferPtr) {
-                        addItemToBuffer(item);
+                        frontier_bufferize.addItemToBuffer(@intCast(item));
                     }
                     shiftF = 0;
                     shiftG = 0;
@@ -1923,8 +1854,8 @@ pub export fn Shft_handler() callconv(.c) void {
         }
     } else if (Shft_timeouts != 0) { // fg longpress
         clearShiftTemporaryIndications(shiftG);
-        if (fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
-            fnTimerStop(TO_3S_CTFF);
+        if (frontier_timer.fnTimerGetStatus(TO_FG_LONG) == TMR_COMPLETED) {
+            frontier_timer.fnTimerStop(TO_3S_CTFF);
             if (shiftF == 0 and shiftG == 0) {
                 shiftF = 1;
                 fnTimerStart(TO_FG_LONG, TO_FG_LONG, JM_TO_FG_LONG);
@@ -1956,19 +1887,19 @@ pub export fn Shft_handler() callconv(.c) void {
 }
 
 pub export fn LongpressKey_handler() callconv(.c) void {
-    if (fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
+    if (frontier_timer.fnTimerGetStatus(TO_CL_LONG) == TMR_COMPLETED) {
         if (JM_auto_longpress_enabled != 0) {
             var funcParam: [*c]const u8 = undefined;
             const keyStateCodeLocal: c_int = (if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + (if (LongPressM == RBX_M124) @as(c_int, 1) else if (longpressDelayedkey3 != 0) @as(c_int, 1) else 2);
-            funcParam = getNthString(userKeyLabel, @intCast(@as(c_int, currentKeyCode) * 6 + keyStateCodeLocal));
+            funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(@as(c_int, currentKeyCode) * 6 + keyStateCodeLocal));
 
             if (calcMode == CM_NORMAL and programRunStop == PGM_STOPPED and (isArrowUp(currentKeyCode) != 0)) {
                 aimBuffer[0] = 0;
-                fnSkip(0);
+                frontier_next_step.fnSkip(0);
                 refreshRegisterLine(REGISTER_T);
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     FN_timeouts_in_progress = 0;
-                    fnTimerStop(TO_FN_LONG);
+                    frontier_timer.fnTimerStop(TO_FN_LONG);
                     return;
                 }
             } else if (calcMode == CM_NORMAL and programRunStop == PGM_SINGLE_STEP and (isArrowDown(currentKeyCode) != 0)) {
@@ -1976,7 +1907,7 @@ pub export fn LongpressKey_handler() callconv(.c) void {
                 refreshRegisterLine(REGISTER_T);
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     FN_timeouts_in_progress = 0;
-                    fnTimerStop(TO_FN_LONG);
+                    frontier_timer.fnTimerStop(TO_FN_LONG);
                     return;
                 }
             } else if (calcMode == CM_NORMAL and (programRunStop == PGM_STOPPED or programRunStop == PGM_SINGLE_STEP) and currentKeyCode == 35) {
@@ -1984,7 +1915,7 @@ pub export fn LongpressKey_handler() callconv(.c) void {
                 lastKeyItemDetermined = 0;
                 if (JM_auto_longpress_enabled == ITM_NOP) {
                     FN_timeouts_in_progress = 0;
-                    fnTimerStop(TO_FN_LONG);
+                    frontier_timer.fnTimerStop(TO_FN_LONG);
                     return;
                 }
             }
@@ -1997,9 +1928,9 @@ pub export fn LongpressKey_handler() callconv(.c) void {
                     return;
                 }
                 fnKeyBackspace(NOPARAM);
-                addItemToBuffer(JM_auto_longpress_enabled);
+                frontier_bufferize.addItemToBuffer(@intCast(JM_auto_longpress_enabled));
                 FN_timeouts_in_progress = 0;
-                fnTimerStop(TO_FN_LONG);
+                frontier_timer.fnTimerStop(TO_FN_LONG);
                 if (calcMode == CM_AIM) {
                     refreshRegisterLine(AIM_REGISTER_LINE);
                 } else if (calcMode == CM_EIM or tam.alpha) {
@@ -2063,7 +1994,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     var enlarge: bool_t = 0;
     if (combinationFonts == stdnumEnlarge or combinationFonts == numHalf) {
         if (maxiC == 1 and font == &numericFont) {
-            glyphId = findGlyph(font, charCode);
+            glyphId = frontier_fonts.findGlyph(font, charCode);
             if (glyphId < 0) {
                 enlarge = 1;
                 font = &standardFont;
@@ -2077,7 +2008,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
 
     // !GENERATE_CATALOGS
     if (checkHP() and font == &numericFont and HPFONT()) {
-        charCodeHPReplacement(&charCode);
+        frontier_char_string.charCodeHPReplacement(&charCode);
     }
 
     glyph = null;
@@ -2085,21 +2016,21 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     // A miss returns -1 so it never aliases glyph 0, and font stays == numericFont
     // so the numDouble/HP identity logic below is unaffected. (C screen.c:1164)
     if (getSystemFlag(FLAG_BOLD) != 0 and font == &numericFont) {
-        const boldId = findGlyphExact(&numericFontBold, charCode);
+        const boldId = frontier_fonts.findGlyphExact(&numericFontBold, charCode);
         if (boldId >= 0) {
             glyph = &numericFontBold.glyphsPtr()[@intCast(boldId)];
         }
     }
 
     if (glyph == null) {
-        glyphId = findGlyph(font, charCode);
+        glyphId = frontier_fonts.findGlyph(font, charCode);
         if (glyphId >= 0) {
             glyph = &font.glyphsPtr()[@intCast(glyphId)];
         } else if (glyphId == -1) {
-            generateNotFoundGlyph(-1, charCode);
+            frontier_fonts.generateNotFoundGlyph(-1, charCode);
             glyph = glyphNotFound;
         } else if (glyphId == -2) {
-            generateNotFoundGlyph(-2, charCode);
+            frontier_fonts.generateNotFoundGlyph(-2, charCode);
             glyph = glyphNotFound;
         } else {
             glyph = null;
@@ -2108,7 +2039,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
 
     if (glyph == null) {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected value returned by findGlyph!", .{ "showGlyphCode", glyphId });
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
         return 0;
     }
     const g = glyph.?;
@@ -2197,14 +2128,14 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
 }
 
 pub export fn showGlyph(ch: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, noPreClear: bool_t) callconv(.c) u32 {
-    return showGlyphCode(charCodeFromString(ch, null), font, x, y, videoMode, showLeadingCols, showEndingCols, noPreClear);
+    return showGlyphCode(frontier_char_string.charCodeFromString(ch, null), font, x, y, videoMode, showLeadingCols, showEndingCols, noPreClear);
 }
 
 noinline fn getGlyphBounds(ch: [*c]const u8, offset: ?*u16, font: *const font_t, col: *u32, row: *u32) void {
-    const glyphId = findGlyph(font, charCodeFromString(ch, offset));
+    const glyphId = frontier_fonts.findGlyph(font, frontier_char_string.charCodeFromString(ch, offset));
     if (glyphId < 0) {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected value returned by findGlyph!", .{ "getGlyphBounds", glyphId });
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
         return;
     }
     const glyph = &font.glyphsPtr()[@intCast(glyphId)];
@@ -2261,7 +2192,7 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
         if (LF != 0 and x > SCREEN_WIDTH - 20 and noShow == 0) {
             noShow = 1;
             var tmp: u16 = ch;
-            if (x +% showGlyphCode(charCodeFromString(string, &tmp), font, 0, 0, videoMode, slc, sec, 0) -% compressString > SCREEN_WIDTH) {
+            if (x +% showGlyphCode(frontier_char_string.charCodeFromString(string, &tmp), font, 0, 0, videoMode, slc, sec, 0) -% compressString > SCREEN_WIDTH) {
                 x = orgX;
                 prevX = x;
                 y +%= if (font == &tinyFont) @as(u32, 8) else 20;
@@ -2269,13 +2200,13 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
             noShow = 0;
         }
 
-        x = showGlyphCode(charCodeFromString(string, &ch), font, x, y -% raiseString, videoMode, slc, sec, 0) -% compressString;
+        x = showGlyphCode(frontier_char_string.charCodeFromString(string, &ch), font, x, y -% raiseString, videoMode, slc, sec, 0) -% compressString;
         if (resStr) |rs| { // for stringAfterPixelsC47
             if (x > width) {
                 if (showEndingCols == 0) {
                     const tmpX: u32 = x;
                     ch = @intCast(rs.* - string);
-                    x = showGlyphCode(charCodeFromString(string, &ch), font, prevX, y -% raiseString, videoMode, 1, 0, 0) -% compressString;
+                    x = showGlyphCode(frontier_char_string.charCodeFromString(string, &ch), font, prevX, y -% raiseString, videoMode, 1, 0, 0) -% compressString;
                     if (x <= width) {
                         rs.* = @constCast(string + ch);
                     }
@@ -2288,8 +2219,8 @@ noinline fn _doShowString(string: [*c]const u8, font: *const font_t, x_in: u32, 
             }
         }
         var tmp2: u16 = ch;
-        while (LF != 0 and (charCodeFromString(string, &tmp2) == 0x0A)) {
-            _ = charCodeFromString(string, &ch);
+        while (LF != 0 and (frontier_char_string.charCodeFromString(string, &tmp2) == 0x0A)) {
+            _ = frontier_char_string.charCodeFromString(string, &ch);
             x = orgX;
             prevX = x;
             y +%= if (font == &tinyFont) @as(u32, 8) else 20;
@@ -2478,7 +2409,7 @@ const line_tiny: i32 = 10;
 pub export fn showDispSmall(offset: u16, _h1: u8) callconv(.c) void {
     const line_hMultiLineEdOffset: u32 = @intCast(Y_POSITION_OF_REGISTER_T_LINE);
     if (tmpString[offset] != 0) {
-        const w = stringWidth(tmpString + offset, if (temporaryInformation == TI_SHOW_REGISTER_SMALL) &standardFont else &tinyFont, 1, 1);
+        const w = frontier_char_string.stringWidth(tmpString + offset, if (temporaryInformation == TI_SHOW_REGISTER_SMALL) &standardFont else &tinyFont, true, true);
         _ = showString(tmpString + offset, if (temporaryInformation == TI_SHOW_REGISTER_SMALL) &standardFont else &tinyFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, @intCast(line_hMultiLineEdOffset)) + (if (temporaryInformation == TI_SHOW_REGISTER_SMALL) line_small else line_tiny) * @as(i32, _h1)), vmNormal, 1, 1);
     }
 }
@@ -2513,7 +2444,7 @@ pub export fn showDisp(offset: u16, _h1: u8) callconv(.c) void {
         _ = showStringC47(tmpString + offset, numSmall, DO_compress, @as(u32, SCREEN_WIDTH) - w, @intCast(line_hMultiLineEdOffset + line_h1 * @as(i32, _h1)), vmNormal, 1, 1);
         return;
     }
-    const w2 = stringWidth(tmpString + offset + 2, &standardFont, 1, 1);
+    const w2 = frontier_char_string.stringWidth(tmpString + offset + 2, &standardFont, true, true);
     if (w2 < SCREEN_WIDTH) {
         _ = showString(tmpString + offset + 2, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w2), @intCast(line_hMultiLineEdOffset + line_h1 * @as(i32, _h1)), vmNormal, 1, 1);
         return;
@@ -2546,7 +2477,7 @@ pub export fn showStringEdC47(lastline_in: u32, offset: i16, edcursor: i16, stri
 
     yincr = 35;
     xMultiLineEdOffset = 0;
-    if (stringWidth(string + @as(usize, @intCast(offset)), &numericFont, showLeadingCols, showEndingCols) > SCREEN_WIDTH - 50) {
+    if (frontier_char_string.stringWidth(string + @as(usize, @intCast(offset)), &numericFont, showLeadingCols != 0, showEndingCols != 0) > SCREEN_WIDTH - 50) {
         multiEdLines = 3;
         yMultiLineEdOffset = 1;
         screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
@@ -2612,14 +2543,14 @@ pub export fn showStringEdC47(lastline_in: u32, offset: i16, edcursor: i16, stri
             ch += 1;
         }
         glyph = null;
-        glyphId = findGlyph(font, charCode);
+        glyphId = frontier_fonts.findGlyph(font, charCode);
         if (glyphId >= 0) {
             glyph = &font.glyphsPtr()[@intCast(glyphId)];
         } else if (glyphId == -1) {
-            generateNotFoundGlyph(-1, charCode);
+            frontier_fonts.generateNotFoundGlyph(-1, charCode);
             glyph = glyphNotFound;
         } else if (glyphId == -2) {
-            generateNotFoundGlyph(-2, charCode);
+            frontier_fonts.generateNotFoundGlyph(-2, charCode);
             glyph = glyphNotFound;
         } else {
             glyph = null;
@@ -2676,7 +2607,7 @@ pub export fn incOffset() callconv(.c) void {
         @as(i32, @intCast(stringWidthC47(aimBuffer + @as(usize, @intCast(T_cursorPos)), combinationFonts, nocompress, 1, 1))) >
         @as(i32, SCREEN_WIDTH) * @as(i32, multiEdLines) - 45)
     {
-        displayAIMbufferoffset = stringNextGlyph(aimBuffer, displayAIMbufferoffset);
+        displayAIMbufferoffset = frontier_char_string.stringNextGlyph(aimBuffer, displayAIMbufferoffset);
     }
 }
 
@@ -2686,7 +2617,7 @@ fn _force_refresh(modeArg: u8) bool_t {
     var now: u16 = 0;
     var itIsTime: bool_t = 0;
     if (modeArg != force or blockForcedRefreshes) {
-        now = @truncate(getUptimeMs() >> 4);
+        now = @truncate(frontier_timer.getUptimeMs() >> 4);
         itIsTime = @intFromBool(((now >> 6) & 0x0001) == @as(u16, @intFromBool(secTick1 != 0)));
         if (itIsTime != 0) {
             secTick1 = @intFromBool(secTick1 == 0);
@@ -2734,7 +2665,7 @@ fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool
     var tmps: [100]u8 = undefined;
     var ret_value: bool_t = 0;
 
-    if ((modeArg != timed and !blockForcedRefreshes) or (((@as(u16, @truncate(getUptimeMs())) >> 10) & 0x0001) == @as(u16, @intFromBool(halfSecTick3 != 0)))) {
+    if ((modeArg != timed and !blockForcedRefreshes) or (((@as(u16, @truncate(frontier_timer.getUptimeMs())) >> 10) & 0x0001) == @as(u16, @intFromBool(halfSecTick3 != 0)))) {
         halfSecTick3 = @intFromBool(halfSecTick3 == 0);
         ret_value = 1;
         if (comptime dmcp_build) {
@@ -2775,7 +2706,7 @@ pub export fn checkHalfSec() callconv(.c) bool_t {
     if (getSystemFlag(FLAG_MONIT) == 0) {
         return 0;
     }
-    if (((@as(u16, @truncate(getUptimeMs())) >> 10) & 0x0001) == @as(u16, @intFromBool(halfSecTick2 != 0))) {
+    if (((@as(u16, @truncate(frontier_timer.getUptimeMs())) >> 10) & 0x0001) == @as(u16, @intFromBool(halfSecTick2 != 0))) {
         halfSecTick2 = @intFromBool(halfSecTick2 == 0);
         if (comptime dmcp_build) {
             dmcpResetAutoOff();
@@ -2795,7 +2726,7 @@ pub export fn monitorExit(loop: *i32, str: [*c]u8) callconv(.c) bool_t {
     if (checkHalfSec() != 0) {
         if (progressHalfSecUpdate_Integer(timed, str, loop.*, halfSec_clearZ, halfSec_clearT, halfSec_disp) != 0) {}
     }
-    if (exitKeyWaiting() != 0) {
+    if (frontier_addons.exitKeyWaiting() != 0) {
         _ = progressHalfSecUpdate_Integer(force + 1, @constCast("Interrupted: "), loop.*, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         return 1;
     }
@@ -2846,16 +2777,16 @@ fn stats_param_display(name: [*c]const u8, reg: calcRegister_t, prefix: [*c]u8, 
     _ = showString(&regS, &standardFont, 19, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + 6), vmNormal, 1, 1);
     prefixWidth = @intCast(showString(prefix, &standardFont, 19 + (17 + 28), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + 6), vmNormal, 1, 1));
 
-    if (getRegisterAsRealQuiet(reg, &t) != 0) {
+    if (frontier_register_value_conversions.getRegisterAsRealQuiet(reg, &t)) {
         angleMode = if (getRegisterDataType(reg) == dtReal34) @intCast(getRegisterAngularMode(reg)) else amNone;
         realToReal34(&t, &u);
-        real34ToDisplayString(&u, angleMode, tmpStringArg, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, NOIRFRAC);
+        frontier_display.real34ToDisplayString(&u, angleMode, tmpStringArg, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, NOIRFRAC);
         p = tmpStringArg;
     } else {
         p = "invalid";
     }
 
-    _ = showString(p, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(p, &numericFont, 0, 1)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X)), vmNormal, 0, 1);
+    _ = showString(p, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(p, &numericFont, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X)), vmNormal, 0, 1);
 }
 
 const PRIORITY_itemCatalogName: bool_t = 1;
@@ -2908,13 +2839,13 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
         showFunctionNameArg = @constCast(arg);
     } else if (item >= FIRST_CONSTANT and item <= LAST_CONSTANT) {
         _ = stringCopy(&functionName, pickValidItemFromItems(item, PRIORITY_itemSoftmenuName));
-    } else if (isItemConversion(item)) {
-        executionConversionPartner(item, null, &functionName);
-        expandAbbreviations(&functionName);
+    } else if (frontier_conversion_units.isItemConversion(item)) {
+        frontier_conversion_units.executionConversionPartner(item, null, &functionName);
+        frontier_char_string.expandAbbreviations(&functionName);
     } else if (item < LAST_ITEM and item != MNU_DYNAMIC) {
         _ = stringCopy(&functionName, pickValidItemFromItems(item, PRIORITY_itemCatalogName));
     } else if (dynamicMenuItem > -1) {
-        _ = stringCopy(&functionName, dynmenuGetLabel(dynamicMenuItem));
+        _ = stringCopy(&functionName, frontier_softmenus.dynmenuGetLabel(dynamicMenuItem));
     }
 
     showFunctionNameItem = item;
@@ -2933,13 +2864,13 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
         const typWidth: i32 = 120;
         _ = stringCopy(padding[@intCast(stringByteLength(&padding))..].ptr, &functionName);
         _ = stringCopy(padding[@intCast(stringByteLength(&padding))..].ptr, "       ");
-        if (calcMode == CM_ASSIGN or ((PROBMENU() or XXFNMODEACTIVE() or @as(i32, stringWidth(&padding, &standardFont, 1, 1)) + 1 + @as(i32, lineTWidth) > SCREEN_WIDTH) and calcMode != CM_PEM)) {
+        if (calcMode == CM_ASSIGN or ((PROBMENU() or XXFNMODEACTIVE() or @as(i32, frontier_char_string.stringWidth(&padding, &standardFont, true, true)) + 1 + @as(i32, lineTWidth) > SCREEN_WIDTH) and calcMode != CM_PEM)) {
             clearRegisterLine(REGISTER_T, true, false);
         }
         clearShiftState();
         const xx = showString(&padding, &standardFont, @intCast(funcNameOffset_x()), @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 6), vmNormal, 1, 1);
         if (overLapPossible) {
-            plotrect(@intCast(funcNameOffset_x()), Y_POSITION_OF_REGISTER_T_LINE + 6, @intCast(maxI(@as(i32, @intCast(xx)), funcNameOffset_x() + typWidth)), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
+            frontier_plotstat.plotrect(@intCast(funcNameOffset_x()), Y_POSITION_OF_REGISTER_T_LINE + 6, @intCast(maxI(@as(i32, @intCast(xx)), funcNameOffset_x() + typWidth)), Y_POSITION_OF_REGISTER_T_LINE + 6 + STANDARD_FONT_HEIGHT - 1);
             if (@as(i32, @intCast(xx)) < funcNameOffset_x() + typWidth) {
                 lcd_fill_rect(xx, Y_POSITION_OF_REGISTER_T_LINE + 6 + 1, @intCast(funcNameOffset_x() + typWidth - @as(i32, @intCast(xx))), STANDARD_FONT_HEIGHT - 2, LCD_SET_VALUE);
             }
@@ -2998,10 +2929,10 @@ pub export fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBot
 }
 
 fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, endChar: [*c]const u8) void {
-    if (lastFuncNo() == ITM_AVIEW or lastFuncNo() == ITM_PROMPT) {
+    if (frontier_items.lastFuncNo() == ITM_AVIEW or frontier_items.lastFuncNo() == ITM_PROMPT) {
         if (isShiftOffset()) {
             _ = strcpy(prefix, "  ");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else {
             prefix[0] = 0;
             prefixWidth.* = 1;
@@ -3038,7 +2969,7 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
     } else {
         abi.fmtCStr(prefix, "?" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
     }
-    prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
 }
 
 fn viewRegName(prefix: [*c]u8, prefixWidth: *i16) void {
@@ -3055,7 +2986,7 @@ fn nameRegis(regist: calcRegister_t, prefix: [*c]u8) void {
 }
 
 fn viewStoRcl(prefix: [*c]u8, prefixWidth: *i16) void {
-    do_viewRegName(lastSTORCL(), prefix, prefixWidth, ":");
+    do_viewRegName(frontier_items.lastSTORCL(), prefix, prefixWidth, ":");
     if (prefix[0] == '?') {
         prefix[0] = 0;
         // upstream `prefixWidth = 0` reassigns the LOCAL pointer (dead store), not
@@ -3064,7 +2995,7 @@ fn viewStoRcl(prefix: [*c]u8, prefixWidth: *i16) void {
 }
 
 pub export fn createSubstrings(number: u8) callconv(.c) void {
-    if (!(lastFuncNo() == ITM_AVIEW or lastFuncNo() == ITM_PROMPT)) {
+    if (!(frontier_items.lastFuncNo() == ITM_AVIEW or frontier_items.lastFuncNo() == ITM_PROMPT)) {
         return;
     }
     var nn: u16 = 0;
@@ -3093,32 +3024,32 @@ pub export fn createSubstrings(number: u8) callconv(.c) void {
 }
 
 fn userTI(viewRegister: i16, refreshRegist: i16, prefix: [*c]u8, prefixWidth: *i16) void {
-    if (!(lastFuncNo() == ITM_AVIEW or lastFuncNo() == ITM_PROMPT)) {
+    if (!(frontier_items.lastFuncNo() == ITM_AVIEW or frontier_items.lastFuncNo() == ITM_PROMPT)) {
         return;
     }
     if (temporaryInformation == TI_VIEW_REGISTER and getRegisterDataType(viewRegister) == dtString) {
         COPY_REGISTER_STRING_TO(tmpString, viewRegister);
         createSubstrings(4);
         if (refreshRegist == REGISTER_T) {
-            const string1: [*c]u8 = getNthString(tmpString, 0);
+            const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 0);
             const off1: usize = if (isShiftOffset()) 2 else 0;
-            _ = xcopy(tmpString + off1, string1, @intCast(stringByteLength(string1) + 1));
+            _ = frontier_char_string.xcopy(tmpString + off1, string1, @intCast(stringByteLength(string1) + 1));
             if (isShiftOffset()) {
                 tmpString[0] = 32;
                 tmpString[1] = 32;
             }
         } else if (refreshRegist == REGISTER_X) {
-            const string1: [*c]u8 = getNthString(tmpString, 1);
-            _ = xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 1);
+            _ = frontier_char_string.xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (refreshRegist == REGISTER_Y) {
-            const string1: [*c]u8 = getNthString(tmpString, 2);
-            _ = xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 2);
+            _ = frontier_char_string.xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (refreshRegist == REGISTER_Z) {
-            const string1: [*c]u8 = getNthString(tmpString, 3);
-            _ = xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            const string1: [*c]u8 = frontier_softmenus.getNthString(tmpString, 3);
+            _ = frontier_char_string.xcopy(prefix, string1, @intCast(stringByteLength(string1) + 1));
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     }
 }
@@ -3127,35 +3058,35 @@ fn elecTI(regist: i16, prefix: [*c]u8, prefixWidth: *i16) void {
     if (temporaryInformation == TI_ABC) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "c" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "b" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "a" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ABBCCA) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "bc" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "ab" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "ca" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_012) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "sym2" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "sym1" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "sym0" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     }
 }
@@ -3179,13 +3110,13 @@ fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
     } else {
         abi.fmtCStr(prefix, "??", .{});
     }
-    prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
 }
 
 fn _fnShowRecallTI(prefix: [*c]u8, prefixWidth: *i16) void {
     abi.fmtCStr(prefix, "SHOW RCL", .{});
     viewRegName2(prefix + "SHOW RCL".len, prefixWidth);
-    prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     temporaryInformation = TI_NO_INFO;
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
 }
@@ -3230,7 +3161,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
             }
         }
 
-        const mtxWidth = getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[(MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS ..].ptr, if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, &allElementsInColAreIntegers);
+        const mtxWidth = frontier_matrix_editor.getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, &dummyVal[(MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, @ptrCast(&allElementsInColAreIntegers));
         if (absI(mtxWidth) > MATRIX_LINE_WIDTH) {
             smallFont = 1;
         }
@@ -3269,7 +3200,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         const cols: u16 = matrix.header.matrixColumns;
         var smallFont: bool_t = @intFromBool(rows >= 5);
         var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) + 1]i16);
-        const mtxWidth = getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 2 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 3 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3) ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3) ..].ptr, if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, getComplexRegisterAngularMode(REGISTER_X), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar));
+        const mtxWidth = frontier_matrix_editor.getComplexMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 2 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * 3 ..].ptr, dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 3) ..].ptr, &dummyVal[MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS * 2 + 3)], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, getComplexRegisterAngularMode(REGISTER_X), (getComplexRegisterPolarMode(REGISTER_X) == amPolar));
         if (mtxWidth > MATRIX_LINE_WIDTH) {
             smallFont = 1;
         }
@@ -3303,7 +3234,7 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
     var prefixWidth: i16 = undefined;
     var savedTempInformation: u8 = undefined;
 
-    prefixWidth = stringWidth(prefix, &standardFont, 1, 1) + 1;
+    prefixWidth = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     savedTempInformation = temporaryInformation;
     temporaryInformation = TI_NO_INFO;
     refreshRegisterLine(REGISTER_T);
@@ -3315,32 +3246,32 @@ pub export fn displayTemporaryInformationOnX(prefix: [*c]u8) callconv(.c) void {
     if (getRegisterDataType(REGISTER_X) == dtReal34) {
         clearRegisterLine(REGISTER_X, true, true);
         if (getSystemFlag(FLAG_FRACT) != 0) {
-            fractionToDisplayString(REGISTER_X, tmpString);
+            frontier_display.fractionToDisplayString(REGISTER_X, tmpString);
         } else {
-            real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), @intCast(getRegisterAngularMode(REGISTER_X)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+            frontier_display.real34ToDisplayString(REGISTER_REAL34_DATA(REGISTER_X), @intCast(getRegisterAngularMode(REGISTER_X)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
         }
-        w = stringWidth(tmpString, &numericFont, 0, 1);
+        w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
     } else if (getRegisterDataType(REGISTER_X) == dtComplex34) {
         clearRegisterLine(REGISTER_X, true, true);
-        complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar));
-        w = stringWidth(tmpString, &numericFont, 0, 1);
+        frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(REGISTER_X), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, @intCast(getComplexRegisterAngularMode(REGISTER_X)), @intFromBool(getComplexRegisterPolarMode(REGISTER_X) == amPolar));
+        w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
     } else if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
         clearRegisterLine(REGISTER_X, true, true);
-        longIntegerRegisterToDisplayString(REGISTER_X, tmpString, TMP_STR_LENGTH, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), 50, 1);
-        w = stringWidth(tmpString, &numericFont, 0, 1);
+        frontier_display.longIntegerRegisterToDisplayString(REGISTER_X, tmpString, TMP_STR_LENGTH, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth), 50, 1);
+        w = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         if (w <= SCREEN_WIDTH - prefixWidth) {
             _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE, vmNormal, 0, 1);
         } else {
-            w = stringWidth(tmpString, &standardFont, 0, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
             if (w > SCREEN_WIDTH - prefixWidth) {
                 _ = strcpy(tmpString, "Long integer representation too wide!");
             }
-            w = stringWidth(tmpString, &standardFont, 0, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 0, 1);
         }
     } else {
@@ -3361,9 +3292,9 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
     iii = lastI;
     jji = lastJ;
     if (iii == 0xFFFF or jji == 0xFFFF) {
-        bb = @intFromBool(getRegisterAsRealQuiet(REGISTER_I, &iir) != 0 and getRegisterAsRealQuiet(REGISTER_J, &jjr) != 0);
-        iii = @bitCast(realToUint32C47(&iir, null));
-        jji = @bitCast(realToUint32C47(&jjr, null));
+        bb = @intFromBool(frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_I, &iir) and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_J, &jjr));
+        iii = @bitCast(frontier_real_type.realToUint32C47(&iir, null));
+        jji = @bitCast(frontier_real_type.realToUint32C47(&jjr, null));
     } else {
         bb = 1;
     }
@@ -3387,7 +3318,7 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
                     abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:J" ++ STD_SUB_c ++ "=", .{ std.mem.sliceTo(&tmp, 0) });
                 }
             }
-            prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     }
 }
@@ -3506,7 +3437,7 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
         return;
     }
 
-    prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
 }
 
 fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no: i16) void {
@@ -3524,8 +3455,8 @@ fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no
         },
         1 => {
             _ = strcpy(&noo, " =");
-            if (getRegisterAsRealQuiet(REGISTER_T, &t) != 0) {
-                if (realIsSpecial(&t) == 0 and realIsAnInteger(&t) != 0 and realToInt32C47(&t, null) == 200) {
+            if (frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_T, &t)) {
+                if (realIsSpecial(&t) == 0 and realIsAnInteger(&t) != 0 and frontier_real_type.realToInt32C47(&t, null) == 200) {
                     _ = strcat(&noo, " (conjugates)");
                 }
             }
@@ -3544,7 +3475,7 @@ fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no
         _ = memcpy(prefix, &nv.variableName[1], nv.variableName[0]);
         _ = strcpy(prefix + nv.variableName[0], &noo);
     }
-    prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
 }
 
 pub export fn _displaySolverOutput(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
@@ -3552,7 +3483,7 @@ pub export fn _displaySolverOutput(regist: calcRegister_t, prefix: [*c]u8, prefi
         __displaySolver(regist, prefix, prefixWidth, regist - REGISTER_X + 1);
     } else if (regist == REGISTER_Z) {
         _ = strcpy(prefix, "Accuracy " ++ STD_ALMOST_EQUAL);
-        prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
     if (regist == REGISTER_T) {
         if (funcNameOffset_x() == shiftOffset) {
@@ -3561,7 +3492,7 @@ pub export fn _displaySolverOutput(regist: calcRegister_t, prefix: [*c]u8, prefi
             prefix[0] = 0;
         }
         _ = strcat(prefix, "Result Code =");
-        prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
 }
 
@@ -3573,13 +3504,13 @@ pub export fn _displaySolverInput(regist: calcRegister_t, prefix: [*c]u8, prefix
 
 const noLine: bool_t = 0;
 fn _displaySigmaPlus(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, doLine: bool_t) void {
-    const w: i32 = realToInt32C47(SIGMA_N.ptr(), null);
+    const w: i32 = frontier_real_type.realToInt32C47(SIGMA_N.ptr(), null);
     if (regist == REGISTER_X) {
         abi.fmtCStr(prefix, "{d:0>3} data point", .{ @as(u32, @intCast(@as(c_int, w))) });
         if (w > 1) {
             _ = stringCopy(prefix + @as(usize, @intCast(stringByteLength(prefix))), "s");
         }
-        prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         if (doLine != 0) {
             drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_Y_LINE - 2);
         }
@@ -3595,10 +3526,10 @@ const dRT_coordMode = [_][*:0]const u8{ "RECT", "POLAR", "RECT", "RECT", "SPH", 
 pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
     if (regist == REGISTER_X) {
         var t: real_t = undefined;
-        _ = getRegisterAsRealQuiet(REGISTER_X, &t);
-        const typeIdx: i32 = realToInt32C47(&t, null);
+        _ = frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_X, &t);
+        const typeIdx: i32 = frontier_real_type.realToInt32C47(&t, null);
         realMultiply(&t, const_1000, &t, &ctxtReal39);
-        const subCode: i32 = realToInt32C47(&t, null) - 1000 * typeIdx;
+        const subCode: i32 = frontier_real_type.realToInt32C47(&t, null) - 1000 * typeIdx;
         const angSub: i32 = @divTrunc(subCode, 100);
         const polRec: i32 = @rem(@divTrunc(subCode, 10), 10);
         const vecType: i32 = @rem(subCode, 10);
@@ -3649,7 +3580,7 @@ pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidt
             }
         }
         abi.fmtCStr(prefix, "{s}", .{ std.mem.sliceTo(&typeStr, 0) });
-        prefixWidth.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
 }
 
@@ -3686,35 +3617,35 @@ pub export fn displayBaseMode(regist: calcRegister_t) callconv(.c) void {
         if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
             // Reg Pos Y
             if (displayStack == 1 and calcMode != CM_NIM) {
-                shortIntegerToDisplayString(Register_X, tmpString, 1, if (dispBase == 0) 10 else 16);
-                if (lastErrorCode == 0 and stringWidth(tmpString, fontForShortInteger.?, 0, 1) + stringWidth("  X: ", &standardFont, 0, 1) <= SCREEN_WIDTH) {
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, if (dispBase == 0) 10 else 16);
+                if (lastErrorCode == 0 and frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true) + frontier_char_string.stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
                     _ = showString("  X: ", &standardFont, 0, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Y - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
                 }
-                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, fontForShortInteger.?, 0, 1)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Y - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
+                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Y - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
             }
             // reg pos Z
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2) {
-                shortIntegerToDisplayString(Register_X, tmpString, 1, if (displayStack == 1) 2 else (if (dispBase == 0) @as(u8, 10) else 16));
-                if (lastErrorCode == 0 and stringWidth(tmpString, fontForShortInteger.?, 0, 1) + stringWidth("  X: ", &standardFont, 0, 1) <= SCREEN_WIDTH) {
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, if (displayStack == 1) 2 else (if (dispBase == 0) @as(u8, 10) else 16));
+                if (lastErrorCode == 0 and frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true) + frontier_char_string.stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
                     _ = showString("  X: ", &standardFont, 0, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Z - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
                 }
-                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, fontForShortInteger.?, 0, 1)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Z - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
+                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Z - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
             }
             // reg pos T
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) {
-                shortIntegerToDisplayString(Register_X, tmpString, 1, if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u8, 16) else 1) else dispBase);
-                if (lastErrorCode == 0 and stringWidth(tmpString, fontForShortInteger.?, 0, 1) + stringWidth("  X: ", &standardFont, 0, 1) <= SCREEN_WIDTH) {
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u8, 16) else 1) else dispBase);
+                if (lastErrorCode == 0 and frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true) + frontier_char_string.stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
                     _ = showString("  X: ", &standardFont, @intCast(0 + BASEMODE_OFFSET_X), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) + BASEMODE_OFFSET_Y), vmNormal, 0, 1);
                 }
-                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, fontForShortInteger.?, 0, 1)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
+                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
             }
         } else if (getRegisterDataType(REGISTER_X) == dtLongInteger and solverEstimatesUsed == 0) {
             // longinteger in pos T
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) {
-                longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u32, 16) else 1) else dispBase, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0)));
+                frontier_display.longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u32, 16) else 1) else dispBase, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0)));
                 const printFirstCol: bool_t = @intFromBool(fontForShortInteger == &tinyFont);
-                const printWillFit: bool_t = @intFromBool(stringWidth(tmpString, fontForShortInteger.?, printFirstCol, 1) + stringWidth("  X:" ++ STD_INTEGER_Z ++ ": ", &standardFont, 0, 1) <= SCREEN_WIDTH - (if (isShiftOffset()) @as(i32, 10) else 0));
-                const xoff: u32 = if (printWillFit != 0) @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0) - stringWidth(tmpString, fontForShortInteger.?, printFirstCol, 1) - 3) else (if (isShiftOffset()) @as(u32, 10) else 0);
+                const printWillFit: bool_t = @intFromBool(frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, printFirstCol != 0, true) + frontier_char_string.stringWidth("  X:" ++ STD_INTEGER_Z ++ ": ", &standardFont, false, true) <= SCREEN_WIDTH - (if (isShiftOffset()) @as(i32, 10) else 0));
+                const xoff: u32 = if (printWillFit != 0) @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, printFirstCol != 0, true) - 3) else (if (isShiftOffset()) @as(u32, 10) else 0);
                 if (lastErrorCode == 0 and printWillFit != 0) {
                     _ = showString("  X:" ++ STD_INTEGER_Z ++ ": ", &standardFont, @intCast(0 + BASEMODE_OFFSET_X), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) + BASEMODE_OFFSET_Y), vmNormal, 0, 1);
                 }
@@ -3736,7 +3667,7 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
     if (getRegisterDataType(regist) == dtShortInteger or getRegisterDataType(regist + 1) == dtShortInteger or getRegisterDataType(regist + 2) == dtShortInteger) {
         return 0;
     }
-    if (getRegisterAsRealQuiet(regist, tmp1) == 0) {
+    if (!frontier_register_value_conversions.getRegisterAsRealQuiet(regist, tmp1)) {
         return 0;
     }
     if (getRegisterDataType(regist) == dtReal34) {
@@ -3744,11 +3675,11 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
     } else {
         angle.* = amNone;
     }
-    if (getRegisterAsRealQuiet(regist + 1, tmp2) == 0) {
+    if (!frontier_register_value_conversions.getRegisterAsRealQuiet(regist + 1, tmp2)) {
         return 0;
     }
     realMultiply(tmp1, tmp2, tmp1, c);
-    if (getRegisterAsRealQuiet(regist + 2, tmp2) == 0) {
+    if (!frontier_register_value_conversions.getRegisterAsRealQuiet(regist + 2, tmp2)) {
         return 0;
     }
     realAdd(tmp1, tmp2, tmp1, c);
@@ -3759,14 +3690,14 @@ pub export fn registerFMA(regist: calcRegister_t, tmp1: *real_t, tmp2: *real_t, 
 const LRWidth: i16 = 140;
 fn displayLRtemporaryInformation(prefix1: [*c]const u8, prefix2: [*c]const u8, prefix: [*c]u8, label: [*c]const u8, prefixPre: bool_t, prefixPost: bool_t, prefixWidth: *i16) void {
     _ = strcpy(prefix, prefix1);
-    _ = strcat(prefix, getCurveFitModeFormula(lrChosen));
+    _ = strcat(prefix, frontier_debug.getCurveFitModeFormula(lrChosen));
     _ = strcat(prefix, prefix2);
-    while (stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1 < LRWidth) {
+    while (frontier_char_string.stringWidth(prefix, &standardFont, prefixPre != 0, prefixPost != 0) + 1 < LRWidth) {
         _ = strcat(prefix, STD_SPACE_6_PER_EM);
     }
     _ = strcat(prefix, label);
     _ = strcat(prefix, STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-    prefixWidth.* = stringWidth(prefix, &standardFont, prefixPre, prefixPost) + 1;
+    prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, prefixPre != 0, prefixPost != 0) + 1;
 }
 
 const RESTORE_T: bool_t = 1;
@@ -3837,7 +3768,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
                     abi.fmtBufZ(errorMessage[0..512], "BestF is set, but will not work until REAL data points are used.", .{});
                     moreInfoOnError("In function _refreshRegisterLine:", errorMessage, &errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], null);
                 }
-                w = stringWidth(tmpString, &standardFont, 1, 1);
+                w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
                 _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
             }
         } else if (temporaryInformation == TI_BATTV and regist == REGISTER_X) {
@@ -3850,7 +3781,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             abi.fmtBufZ(&prefix, "Bits" ++ STD_SPACE_FIGURE ++ "=", .{});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_ARE_YOU_SURE and regist == REGISTER_X) {
-            const id = getConfirmationTiId();
+            const id = frontier_config.getConfirmationTiId();
             _ = showString(&confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_WHO) {
             if (regist == REGISTER_Z or regist == REGISTER_Y or regist == REGISTER_X) {
@@ -3868,8 +3799,8 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             var j: real34_t = undefined;
             var tmpStr2: [20]u8 = undefined;
             uInt32ToReal34(firstGregorianDay, &j);
-            julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-            dateToDisplayString(TEMP_REGISTER_1, &tmpStr2);
+            frontier_date_time.julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+            frontier_display.dateToDisplayString(TEMP_REGISTER_1, &tmpStr2);
             abi.fmtBufZ(tmpString[0..2560], "First Gregorian day set: {s}", .{std.mem.sliceTo(&tmpStr2, 0)});
             _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DISP_WOY) {
@@ -3879,8 +3810,8 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             var j: real34_t = undefined;
             var tmpStr2: [20]u8 = undefined;
             uInt32ToReal34(firstGregorianDay, &j);
-            julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
-            dateToDisplayString(TEMP_REGISTER_1, &tmpStr2);
+            frontier_date_time.julianDayToInternalDate(&j, REGISTER_REAL34_DATA(TEMP_REGISTER_1));
+            frontier_display.dateToDisplayString(TEMP_REGISTER_1, &tmpStr2);
             abi.fmtBufZ(tmpString[0..2560], "First Gregorian day set: {s}", .{std.mem.sliceTo(&tmpStr2, 0)});
             _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + TEMPORARY_INFO_OFFSET + 6, vmNormal, 1, 1);
             abi.fmtBufZ(tmpString[0..2560], "Week of Year rule set: {s}.{s}", .{ std.mem.sliceTo(&nameOfWday_en[firstDayOfWeek].itemName, 0), std.mem.sliceTo(&nameOfWday_en[firstWeekOfYearDay].itemName, 0) });
@@ -3897,7 +3828,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             // handled
         } else if (temporaryInformation == TI_RESET and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_data_prgms_cleared)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_SAVED and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "Saved", .{});
@@ -3907,27 +3838,27 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_DEL_ALL_PRGMS and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_prgms_deleted)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_FLAGS and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_flags_cleared)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_MENUS and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_menus_cleared)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_CLEAR_ALL_VARIABLES and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_vars_cleared)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DEL_ALL_MENUS and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_menus_deleted)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_DEL_ALL_VARIABLES and regist == REGISTER_X) {
             abi.fmtBufZ(tmpString[0..2560], "{s}", .{errMsgRow(TI_All_user_vars_deleted)});
-            w = stringWidth(tmpString, &standardFont, 1, 1);
+            w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (!dmcp_build and temporaryInformation == TI_NOT_AVAILABLE and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Not_on_simulator)});
@@ -4052,7 +3983,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
     // STATISTICAL DISTR & SOLVER
     if (regist == REGISTER_X and lastErrorCode == 0 and calcMode != CM_PEM and
         ((PROBMENU()) or
-            (currentMenu() == -MNU_Solver_TOOL and solverEstimatesUsed != 0 and temporaryInformation != TI_SOLVER_VARIABLE_RESULT)))
+            (frontier_softmenus.currentMenu() == -MNU_Solver_TOOL and solverEstimatesUsed != 0 and temporaryInformation != TI_SOLVER_VARIABLE_RESULT)))
     {
         var r_i: [*c]const u8 = null;
         var r_j: [*c]const u8 = null;
@@ -4061,7 +3992,7 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
         var register_j: calcRegister_t = REGISTER_X;
         var register_k: calcRegister_t = REGISTER_X;
 
-        switch (currentMenu()) {
+        switch (frontier_softmenus.currentMenu()) {
             -MNU_Solver_TOOL => {
                 r_i = &indexOfItems[VAR_UEST].itemCatalogName;
                 register_i = RESERVED_VARIABLE_UEST;
@@ -4201,22 +4132,22 @@ fn refreshRegisterMainBranch(regist_p: *calcRegister_t, restoreRegisterT: bool_t
             const xx = showString(tmpString, &standardFont, @intCast(if (isShiftOffset()) @as(i32, 20) else 0), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
             if (isXFNregisterValid3r(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_X + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{s} ", .{errMsgRow(ERROR_INVALID_TYPE_XFN)});
             }
-            _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, &standardFont, 0, 1)), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
+            _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(tmpY + FMA_X), vmNormal, 0, 1);
         }
         if (getSystemFlag(FLAG_SSIZE8) != 0) {
             abi.fmtBufZ(tmpString[0..2560], "T{s}A+B=", .{std.mem.span(PRODUCT_SIGN())});
             const xx = showString(tmpString, &standardFont, @intCast(if (isShiftOffset()) @as(i32, 20) else 0), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
             if (isXFNregisterValid3r(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0)) and registerFMA(REGISTER_T + (if (calcMode == CM_NIM) @as(calcRegister_t, 1) else 0), &tmp1, &tmp2, &tmp3, &angle, &ctxtReal39) != 0) {
                 tmpString[0] = 0;
-                real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
+                frontier_display.real34ToDisplayString(&tmp3, @intCast(angle), tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 20) else 0) - @as(i32, @intCast(xx))), 34, LIMITEXP, FRONTSPACE, NOIRFRAC);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "{s} ", .{errMsgRow(ERROR_INVALID_TYPE_XFN)});
             }
-            _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, &standardFont, 0, 1)), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
+            _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(tmpY + FMA_T), vmNormal, 0, 1);
         }
         displayFormat = savedDisplayFormat;
         displayFormatDigits = savedDisplayFormatDigits;
@@ -4240,7 +4171,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     const hp = checkHPoffset();
 
     if (lastErrorCode != 0 and regist == errorMessageRegisterLine) {
-        if (stringWidth(&errorMessages[lastErrorCode], &standardFont, 1, 1) <= SCREEN_WIDTH - 1) {
+        if (frontier_char_string.stringWidth(&errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
             if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
                 abi.fmtBufZ(tmpString[0..2560], "{s}: {s}", .{ errMsgRow(lastErrorCode), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 _ = showString(tmpString, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
@@ -4253,7 +4184,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
                 moreInfoOnError("In function _refreshRegisterLine:", errorMessage, &errorMessages[lastErrorCode], null);
             }
             abi.fmtBufZ(tmpString[0..2560], "Error message {d} is too wide!", .{@as(u32, lastErrorCode)});
-            w_p.* = stringWidth(tmpString, &standardFont, 1, 1);
+            w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
         }
     } else if (regist == NIM_REGISTER_LINE and calcMode == CM_NIM) {
@@ -4267,8 +4198,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
                 lastBase[1] = @intCast('0' + lastIntegerBase);
                 lastBase[2] = 0;
             }
-            wLastBaseNumeric_p.* = stringWidth(lastBase, &numericFont, 1, 1);
-            wLastBaseStandard_p.* = stringWidth(lastBase, &standardFont, 1, 1);
+            wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lastBase, &numericFont, true, true);
+            wLastBaseStandard_p.* = frontier_char_string.stringWidth(lastBase, &standardFont, true, true);
         } else if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/') {
             var lb: [*c]u8 = lastBase;
 
@@ -4287,8 +4218,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
             lb[0] = 0;
             lb += 1;
-            wLastBaseNumeric_p.* = stringWidth(lb, &numericFont, 1, 1);
-            wLastBaseStandard_p.* = stringWidth(lb, &standardFont, 1, 1);
+            wLastBaseNumeric_p.* = frontier_char_string.stringWidth(lb, &numericFont, true, true);
+            wLastBaseStandard_p.* = frontier_char_string.stringWidth(lb, &standardFont, true, true);
         } else {
             wLastBaseNumeric_p.* = 0;
             wLastBaseStandard_p.* = 0;
@@ -4326,9 +4257,9 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
 
-        fractionToDisplayString(regist, tmpString);
+        frontier_display.fractionToDisplayString(regist, tmpString);
 
-        w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
 
         if (prefixWidth_p.* > 0) {
@@ -4342,14 +4273,14 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         if (w_p.* <= SCREEN_WIDTH) {
             _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
         } else {
-            w_p.* = stringWidth(tmpString, &standardFont, 0, 1);
+            w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
             lineWidth_p.* = @intCast(w_p.*);
             if (w_p.* > SCREEN_WIDTH) {
                 if (comptime extra_info) {
                     moreInfoOnError("In function _refreshRegisterLine:", "Fraction representation too wide!", tmpString, null);
                 }
                 _ = strcpy(tmpString, "Fraction representation too wide!");
-                w_p.* = stringWidth(tmpString, &standardFont, 0, 1);
+                w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
                 lineWidth_p.* = @intCast(w_p.*);
             }
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @bitCast(@as(i32, baseY)), vmNormal, 0, 1);
@@ -4384,8 +4315,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
-        timeToDisplayString(regist, tmpString, 0);
-        w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+        frontier_display.timeToDisplayString(regist, tmpString, 0);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
@@ -4403,20 +4334,20 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
                 if (isShiftOffset() and regist == REGISTER_T) {
                     _ = strcpy(prefix, "  ");
                 }
-                _ = strcat(prefix, &nameOfWday_en[@intCast(getJulianDayOfWeek(regist))].itemName);
-                prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+                _ = strcat(prefix, &nameOfWday_en[@intCast(frontier_date_time.getJulianDayOfWeek(regist))].itemName);
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
             }
         } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
             viewRegName(prefix, prefixWidth_p);
-            _ = strcat(prefix, &nameOfWday_en[@intCast(getJulianDayOfWeek(regist))].itemName);
+            _ = strcat(prefix, &nameOfWday_en[@intCast(frontier_date_time.getJulianDayOfWeek(regist))].itemName);
             _ = strcat(prefix, " ");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
 
-        dateToDisplayString(regist, tmpString);
-        w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+        frontier_display.dateToDisplayString(regist, tmpString);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
@@ -4432,8 +4363,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         } else if (temporaryInformation == TI_VIEW_REGISTER) {
             userTI(@intCast(currentViewRegister), regist, prefix, prefixWidth_p);
         }
-        _ = xcopy(tmpString, "Configuration data", 19);
-        w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+        _ = frontier_char_string.xcopy(tmpString, "Configuration data", 19);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
@@ -4448,8 +4379,8 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     else if (getRegisterDataType(regist) == dtComplex34Matrix) {
         refreshComplexMatrix(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
     } else {
-        abi.fmtBufZ(tmpString[0..2560], "Displaying {s}: to be coded!", .{std.mem.span(getRegisterDataTypeName(regist, 1, 0))});
-        _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, &standardFont, 0, 1)), @intCast(@as(i32, baseY) + 6), vmNormal, 0, 1);
+        abi.fmtBufZ(tmpString[0..2560], "Displaying {s}: to be coded!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false))});
+        _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, &standardFont, false, true)), @intCast(@as(i32, baseY) + 6), vmNormal, 0, 1);
     }
 }
 
@@ -4461,262 +4392,262 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (temporaryInformation == TI_THETA_RADIUS) {
         if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "r =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_theta_m ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_RADIUS_THETA) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "r =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_theta_m ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_RADIUS_THETA_SWAPPED) {
         if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "r =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_theta_m ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_PERC) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, " % :");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_PERCD) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_DELTA ++ "% :");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_PERCD2) {
         if (regist == REGISTER_Y) {
             _ = strcpy(prefix, " % :");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_DELTA ++ "% :");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_X_Y) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "x : Re =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "y : Im =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_X_Y_SWAPPED) {
         if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "x : Re =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_X) {
             _ = strcpy(prefix, "y : Im =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_RE_IM) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "Im" ++ STD_SPACE_FIGURE ++ "=");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "Re" ++ STD_SPACE_FIGURE ++ "=");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_SUMX_SUMY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_SIGMA ++ "x =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_SIGMA ++ "y =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_XMIN_YMIN) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "x" ++ STD_SUB_m ++ STD_SUB_i ++ STD_SUB_n ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "y" ++ STD_SUB_m ++ STD_SUB_i ++ STD_SUB_n ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_XMAX_YMAX) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "x" ++ STD_SUB_m ++ STD_SUB_a ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "y" ++ STD_SUB_m ++ STD_SUB_a ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_SA) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s(a" ++ STD_SUB_0 ++ ") =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "s(a" ++ STD_SUB_1 ++ ") =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_MEANX_MEANY or temporaryInformation == TI_MEANX) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_x_BAR ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y and temporaryInformation != TI_MEANX) {
             _ = strcpy(prefix, STD_y_BAR ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_PCTILEX_PCTILEY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "pctile" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "pctile" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_MEDIANX_MEDIANY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "md" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "md" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_Q1X_Q1Y) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "Q" ++ STD_SUB_1 ++ STD_SPACE_3_PER_EM ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "Q" ++ STD_SUB_1 ++ STD_SPACE_3_PER_EM ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_Q3X_Q3Y) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "Q" ++ STD_SUB_3 ++ STD_SPACE_3_PER_EM ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "Q" ++ STD_SUB_3 ++ STD_SPACE_3_PER_EM ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_MADX_MADY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "mad" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "mad" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_IQRX_IQRY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "iqr" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "iqr" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_RANGEX_RANGEY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "rg" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "rg" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_SAMPLSTDDEV) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s" ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "s" ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_POPLSTDDEV) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_sigma ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_sigma ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_STDERR) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_GEOMMEANX_GEOMMEANY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_G ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_y_BAR ++ STD_SUB_G ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_GEOMSAMPLSTDDEV) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_epsilon ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_epsilon ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_GEOMPOPLSTDDEV) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_epsilon ++ STD_SUB_p ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_epsilon ++ STD_SUB_p ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_GEOMSTDERR) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_epsilon ++ STD_SUB_m ++ STD_SUB_x ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_epsilon ++ STD_SUB_m ++ STD_SUB_y ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_WEIGHTEDMEANX) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_WEIGHTEDSAMPLSTDDEV) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s" ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_WEIGHTEDPOPLSTDDEV) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_sigma ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_WEIGHTEDSTDERR) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_w ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_STATISTIC_HISTO) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_UP_ARROW ++ "BIN" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_DOWN_ARROW ++ "BIN" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Z) {
             _ = strcpy(prefix, "nBINS" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ROOTS3) {
         if (regist == REGISTER_X or regist == REGISTER_Y or regist == REGISTER_Z) {
             _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ROOTS2) {
         if (regist == REGISTER_X or regist == REGISTER_Y) {
             _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_LR_A0) {
         if (regist == REGISTER_X) {
@@ -4740,122 +4671,122 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 displayLRtemporaryInformation("", "", prefix, "a" ++ STD_SUB_0, lprefixPre, lprefixPost, prefixWidth_p);
             } else if (regist == REGISTER_Y) {
                 _ = strcpy(prefix, "y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM);
-                while (stringWidth(prefix, &standardFont, lprefixPre, lprefixPost) + 1 < LRWidth) {
+                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1 < LRWidth) {
                     _ = strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 _ = strcat(prefix, "a" ++ STD_SUB_1 ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-                prefixWidth_p.* = stringWidth(prefix, &standardFont, lprefixPre, lprefixPost) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1;
             } else if (regist == REGISTER_Z) {
-                _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                if (lrCountOnes(lrSelection) > 1) {
+                _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, if (lrChosen == 0) @as([*c]const u8, "") else STD_SUP_ASTERISK);
                 }
-                while (stringWidth(prefix, &standardFont, lprefixPre, lprefixPost) + 1 < LRWidth) {
+                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1 < LRWidth) {
                     _ = strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 _ = strcat(prefix, "a" ++ STD_SUB_2 ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-                prefixWidth_p.* = stringWidth(prefix, &standardFont, lprefixPre, lprefixPost) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1;
             }
         } else {
             if (regist == REGISTER_X) {
                 displayLRtemporaryInformation("y" ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_4_PER_EM, "", prefix, "a" ++ STD_SUB_0, lprefixPre, lprefixPost, prefixWidth_p);
             } else if (regist == REGISTER_Y) {
-                _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                if (lrCountOnes(lrSelection) > 1) {
+                _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, if (lrChosen == 0) @as([*c]const u8, "") else STD_SUP_ASTERISK);
                 }
-                while (stringWidth(prefix, &standardFont, lprefixPre, lprefixPost) + 1 < LRWidth) {
+                while (frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1 < LRWidth) {
                     _ = strcat(prefix, STD_SPACE_6_PER_EM);
                 }
                 _ = strcat(prefix, "a" ++ STD_SUB_1 ++ STD_SPACE_4_PER_EM ++ "=" ++ STD_SPACE_HAIR);
-                prefixWidth_p.* = stringWidth(prefix, &standardFont, lprefixPre, lprefixPost) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, lprefixPre != 0, lprefixPost != 0) + 1;
             }
         }
     } else if (temporaryInformation == TI_CALCY) {
         if (regist == REGISTER_X) {
             prefix[0] = 0;
             if (lrChosen != 0) {
-                _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                if (lrCountOnes(lrSelection) > 1) {
+                _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, STD_SUP_ASTERISK);
                 }
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, STD_y_CIRC ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 0, 0) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
         }
     } else if (temporaryInformation == TI_CALCX) {
         if (regist == REGISTER_X) {
             prefix[0] = 0;
             if (lrChosen != 0) {
-                _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                if (lrCountOnes(lrSelection) > 1) {
+                _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, STD_SUP_ASTERISK);
                 }
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, STD_x_CIRC ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 0, 0) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
         }
     } else if (temporaryInformation == TI_CALCX2) {
         if (regist == REGISTER_X) {
             prefix[0] = 0;
             if (lrChosen != 0) {
-                _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                if (lrCountOnes(lrSelection) > 1) {
+                _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, STD_SUP_ASTERISK);
                 }
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, STD_x_CIRC ++ STD_SUB_1 ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 0, 0) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
         } else {
             if (regist == REGISTER_Y) {
                 prefix[0] = 0;
                 if (lrChosen != 0) {
-                    _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                    if (lrCountOnes(lrSelection) > 1) {
+                    _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                    if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                         _ = strcat(prefix, STD_SUP_ASTERISK);
                     }
                     _ = strcat(prefix, STD_SPACE_FIGURE);
                 }
                 _ = strcat(prefix, STD_x_CIRC ++ STD_SUB_2 ++ " =");
-                prefixWidth_p.* = stringWidth(prefix, &standardFont, 0, 0) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
             }
         }
     } else if (temporaryInformation == TI_CORR) {
         if (regist == REGISTER_X) {
             prefix[0] = 0;
             if (lrChosen != 0) {
-                _ = strcpy(prefix, eatSpacesEnd(getCurveFitModeName(lrChosen)));
-                if (lrCountOnes(lrSelection) > 1) {
+                _ = strcpy(prefix, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(lrChosen)));
+                if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1) {
                     _ = strcat(prefix, STD_SUP_ASTERISK);
                 }
                 _ = strcat(prefix, STD_SPACE_FIGURE);
             }
             _ = strcat(prefix, "r =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 0, 0) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
         }
     } else if (temporaryInformation == TI_SMI) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "s" ++ STD_SUB_m ++ STD_SUB_i ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 0, 0) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, false, false) + 1;
         }
     } else if (temporaryInformation == TI_HARMMEANX_HARMMEANY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_H ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_y_BAR ++ STD_SUB_H ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_RMSMEANX_RMSMEANY) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, STD_x_BAR ++ STD_SUB_R ++ STD_SUB_M ++ STD_SUB_S ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, STD_y_BAR ++ STD_SUB_R ++ STD_SUB_M ++ STD_SUB_S ++ " =");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_STATISTIC_SUMS) {
         _displaySigmaPlus(regist, prefix, prefixWidth_p, @intFromBool(noLine == 0));
@@ -4866,7 +4797,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
             } else {
                 abi.fmtCStr(prefix, "L.R. selected to {d:0>3}", .{ @as(c_uint, lrSelection & 0x01FF) });
             }
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_SOLVER_VARIABLE_RESULT) {
         _displaySolverOutput(regist, prefix, prefixWidth_p);
@@ -4875,55 +4806,55 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (temporaryInformation == TI_ELLIPSE_K) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "eccentricity e=k=" ++ STD_SQUARE_ROOT ++ "m" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ELLIPSE_M) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "modulus m=k" ++ STD_SUP_2 ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ELLIPSE_Theta) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "eccentricity angle " ++ STD_theta_m ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ACC) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "ACC" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ULIM) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, STD_UP_ARROW ++ " Upper limit" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_LLIM) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, STD_DOWN_ARROW ++ " Lower limit" ++ STD_SPACE_FIGURE ++ ":", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_INTEGRAL) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, STD_INTEGRAL ++ STD_ALMOST_EQUAL, .{});
-            prefixWidth_p.* = stringWidth(prefix, &numericFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &numericFont, true, true) + 1;
         } else if (regist == REGISTER_Y) {
             _ = strcpy(prefix, "Accuracy " ++ STD_ALMOST_EQUAL);
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_FUNCTION) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "f =", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_1ST_DERIVATIVE) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "{s}f'" ++ STD_ALMOST_EQUAL, .{ @as([*:0]const u8, errorMessage) });
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_2ND_DERIVATIVE) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "{s}f\"" ++ STD_ALMOST_EQUAL, .{ @as([*:0]const u8, errorMessage) });
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
         viewRegName(prefix, prefixWidth_p);
@@ -4933,52 +4864,52 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         _ = strcpy(prefix, " ");
         _ = strcat(prefix, errorMessage);
         _ = strcat(prefix, ":");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (temporaryInformation == TI_ABC or temporaryInformation == TI_ABBCCA or temporaryInformation == TI_012) {
         elecTI(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_FROM_DMS) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "decimal" ++ STD_DEGREE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_FROM_HMS) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "decimal h:");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_FROM_MS_TIME) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "hh.mmss:");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_FROM_MS_DEG) {
         if (regist == REGISTER_X) {
             _ = strcpy(prefix, "dd.mmss:");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_BAL and regist == REGISTER_X) {
         _ = strcpy(prefix, "Balance remaining =");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_PRN and regist == REGISTER_X) {
         abi.fmtCStr(prefix, "{s}", .{ STD_SIGMA });
         _ = strcat(prefix, " of principal to P2 =");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_INT and regist == REGISTER_X) {
         abi.fmtCStr(prefix, "{s}", .{ STD_SIGMA });
         _ = strcat(prefix, " of interest to P2 =");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P1 and regist == REGISTER_X) {
         _ = strcpy(prefix, "From period P1:");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P2 and regist == REGISTER_X) {
         _ = strcpy(prefix, "To period P2:");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (temporaryInformation == TI_TVM_EFF and regist == REGISTER_X) {
         _ = strcpy(prefix, "EFF%/a = EFF%YR = EAR =");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (temporaryInformation == TI_TVM_IA and regist == REGISTER_X) {
         _ = strcpy(prefix, "I%/a = I%YR = NAR =");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (temporaryInformation == TI_FROM_DATEX) {
         if (regist == REGISTER_X) {
             if (getSystemFlag(FLAG_DMY) != 0) {
@@ -4988,17 +4919,17 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
             } else {
                 _ = strcpy(prefix, "yyyy.mmdd:");
             }
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_LAST_CONST_CATNAME or temporaryInformation == TI_SCATTER_SMI) {
         if (regist == REGISTER_X) {
-            _ = strcpy(prefix, lastFuncSoftmenuName());
+            _ = strcpy(prefix, frontier_items.lastFuncSoftmenuName());
             if (prefix[0] != 0) {
                 _ = strcat(prefix, " ");
-                if (compareString(lastFuncSoftmenuName(), lastFuncCatalogName(), CMP_BINARY) != 0) {
+                if (frontier_sort.compareString(frontier_items.lastFuncSoftmenuName(), frontier_items.lastFuncCatalogName(), CMP_BINARY) != 0) {
                     var prefix_: [16]u8 = undefined;
                     prefix_[0] = 0;
-                    _ = strcat(&prefix_, lastFuncCatalogName());
+                    _ = strcat(&prefix_, frontier_items.lastFuncCatalogName());
                     if (prefix_[0] != 0) {
                         _ = strcat(prefix, &prefix_);
                     }
@@ -5006,7 +4937,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 if (prefix[0] != 0) {
                     _ = strcat(prefix, " = ");
                 }
-                prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+                prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
             }
         }
     } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
@@ -5029,9 +4960,9 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         }
     }
 
-    real34ToDisplayString(REGISTER_REAL34_DATA(regist), @intCast(getRegisterAngularMode(regist)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
+    frontier_display.real34ToDisplayString(REGISTER_REAL34_DATA(regist), @intCast(getRegisterAngularMode(regist)), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC);
 
-    w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+    w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
         if (temporaryInformation == TI_INTEGRAL and regist == REGISTER_X) {
@@ -5059,12 +4990,12 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
     } else if (temporaryInformation == TI_ROOTS3) {
         if (regist == REGISTER_X or regist == REGISTER_Y or regist == REGISTER_Z) {
             _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_ROOTS2) {
         if (regist == REGISTER_X or regist == REGISTER_Y) {
             _ = strcpy(prefix, "Root" ++ STD_SPACE_FIGURE ++ ":");
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
         _displayIJ(regist, prefix, prefixWidth_p);
@@ -5081,9 +5012,9 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
             _ = showString(prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + TEMPORARY_INFO_OFFSET, vmNormal, 1, 1);
         }
     }
-    complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) == amPolar));
+    frontier_display.complex34ToDisplayString(REGISTER_COMPLEX34_DATA(regist), tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, FULLIRFRAC, @intCast(getComplexRegisterAngularMode(regist)), @intFromBool(getComplexRegisterPolarMode(regist) == amPolar));
 
-    w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+    w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
         _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
@@ -5108,7 +5039,7 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         prefixWidth_p.* = 0;
     } else if (isShiftOffset() and regist == REGISTER_T) {
         _ = strcpy(prefix, "  ");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
 
     if (prefixWidth_p.* > 0) {
@@ -5127,7 +5058,7 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         lineWidth_p.* = w;
         _ = showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - hp), vmNormal, 0, 1);
     } else {
-        w = stringWidth(REGISTER_STRING_DATA(regist), &standardFont, 0, 1);
+        w = frontier_char_string.stringWidth(REGISTER_STRING_DATA(regist), &standardFont, false, true);
         if (w >= SCREEN_WIDTH - prefixWidth_p.*) {
             var tmpStrW: [*c]u8 = undefined;
             if (regist == REGISTER_X or (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)) {
@@ -5135,9 +5066,9 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                     createSubstrings(1);
                 }
-                tmpStrW = stringAfterPixels(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - 1), 0, 1);
+                tmpStrW = frontier_char_string.stringAfterPixels(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - 1), false, true);
                 tmpStrW[0] = 0;
-                w = stringWidth(tmpString, &standardFont, 0, 1);
+                w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
                 if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                     _ = showString(tmpString, &standardFont, @intCast(prefixWidth_p.*), Y_POSITION_OF_REGISTER_T_LINE - 3, vmNormal, 0, 1);
                 } else {
@@ -5148,12 +5079,12 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                     createSubstrings(1);
                 }
-                _ = xcopy(tmpString, tmpString + @as(usize, @intCast(w)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(w))) + 1));
-                w = stringWidth(tmpString, &standardFont, 0, 1);
+                _ = frontier_char_string.xcopy(tmpString, tmpString + @as(usize, @intCast(w)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(w))) + 1));
+                w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
                 if (w >= SCREEN_WIDTH - prefixWidth_p.*) {
-                    tmpStrW = stringAfterPixels(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - 14 - 1), 0, 1);
-                    _ = xcopy(tmpStrW, STD_ELLIPSIS, 3);
-                    w = stringWidth(tmpString, &standardFont, 0, 1);
+                    tmpStrW = frontier_char_string.stringAfterPixels(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - 14 - 1), false, true);
+                    _ = frontier_char_string.xcopy(tmpStrW, STD_ELLIPSIS, 3);
+                    w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
                 }
                 if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                     _ = showString(tmpString, &standardFont, @intCast(prefixWidth_p.*), Y_POSITION_OF_REGISTER_T_LINE + 18, vmNormal, 0, 1);
@@ -5162,9 +5093,9 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 }
             } else {
                 COPY_REGISTER_STRING_TO(tmpString, regist);
-                tmpStrW = stringAfterPixels(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - 14 - 1), 0, 1);
-                _ = xcopy(tmpStrW, STD_ELLIPSIS, 3);
-                w = stringWidth(tmpString, &standardFont, 0, 1);
+                tmpStrW = frontier_char_string.stringAfterPixels(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - 14 - 1), false, true);
+                _ = frontier_char_string.xcopy(tmpStrW, STD_ELLIPSIS, 3);
+                w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
                 lineWidth_p.* = w;
                 _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - hp), vmNormal, 0, 1);
             }
@@ -5187,8 +5118,8 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
 fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, hp: i32) void {
     _ = w_p;
     {
-        shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
-        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, fontForShortInteger.?, 0, 1)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) hp else 0)), vmNormal, 0, 1);
+        frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
+        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) hp else 0)), vmNormal, 0, 1);
 
         if (regist == REGISTER_X) {
             displayBaseMode(regist);
@@ -5204,16 +5135,16 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
     }
     tmpString[0] = 0;
     if (regist == REGISTER_X and (temporaryInformation == TI_DATA_LOSS or temporaryInformation == TI_DATA_NEG_OVRFL)) {
-        shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
+        frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
         if (temporaryInformation == TI_DATA_LOSS) {
             abi.fmtCStr(prefix, "Ovrfl>{d}bits:", .{ @as(c_uint, shortIntegerWordSize) });
         } else if (temporaryInformation == TI_DATA_NEG_OVRFL) {
             abi.fmtCStr(prefix, "Ovrfl<0:", .{});
         }
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
-        if (prefixWidth_p.* + stringWidth(tmpString, fontForShortInteger.?, 1, 1) + 1 > SCREEN_WIDTH) {
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
+        if (prefixWidth_p.* + frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, true, true) + 1 > SCREEN_WIDTH) {
             abi.fmtCStr(prefix, "OF", .{});
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
         viewRegName(prefix, prefixWidth_p);
@@ -5231,9 +5162,9 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
         if (tmpString[0] != 0) {
-            shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
+            frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
         }
-        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - stringWidth(tmpString, fontForShortInteger.?, 0, 1)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) hp else 0)), vmNormal, 0, 1);
+        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) hp else 0)), vmNormal, 0, 1);
     }
 }
 
@@ -5268,7 +5199,7 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
         if (regist == REGISTER_X) {
             var day: i32 = undefined;
             var li: longInteger_t = undefined;
-            _ = getRegisterAsLongInt(REGISTER_X, &li[0], null);
+            _ = frontier_register_value_conversions.getRegisterAsLongInt(REGISTER_X, &li[0], null);
             longIntegerToInt32(&li, &day);
             longIntegerFree(&li);
             if (day < 1 or day > 7) {
@@ -5276,14 +5207,14 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
             }
             _ = strcpy(prefix, "[ISO day] ");
             _ = strcat(prefix, &nameOfWday_en[@intCast(day)].itemName);
-            prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+            prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P1 and regist == REGISTER_X) {
         _ = strcpy(prefix, "From period P1:");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P2 and regist == REGISTER_X) {
         _ = strcpy(prefix, "To period P2:");
-        prefixWidth_p.* = stringWidth(prefix, &standardFont, 1, 1) + 1;
+        prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
 
     // shift longinteger prefix on by two spaces if interfering with the shift indicator
@@ -5307,30 +5238,30 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
 
     if (getSystemFlag(FLAG_DREAL) != 0) {
         _ = strcpy(tmpString, STD_INTEGER_Z_SMALL ++ ": ");
-        w_p.* = stringWidth(tmpString, if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 0, 1);
+        w_p.* = frontier_char_string.stringWidth(tmpString, if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true);
         const tlen: i16 = @intCast(stringByteLength(tmpString));
-        longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 0, toRemoveTrailingRadix);
+        frontier_display.longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 0, toRemoveTrailingRadix);
         tmpString[TMP_STR_LENGTH - 1] = tmpString[@intCast(tlen)];
     } else if (getSystemFlag(FLAG_2TO10) != 0 and displayFormat == DF_UN) {
         _ = strcpy(tmpString, STD_INTEGER_Z_SMALL ++ ": ");
-        w_p.* = stringWidth(tmpString, &standardFont, 0, 1);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
         const tlen: i16 = @intCast(stringByteLength(tmpString));
-        longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 1024, @intFromBool(toRemoveTrailingRadix == 0));
+        frontier_display.longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 1024, @intFromBool(toRemoveTrailingRadix == 0));
         tmpString[TMP_STR_LENGTH - 1] = tmpString[@intCast(tlen)];
     } else {
-        longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), 50, getSystemFlag(FLAG_LARGELI));
+        frontier_display.longIntegerRegisterToDisplayString(regist, tmpString, TMP_STR_LENGTH, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), 50, getSystemFlag(FLAG_LARGELI));
         tmpString[TMP_STR_LENGTH - 1] = tmpString[0];
         {
             var pos: u16 = undefined;
-            if (findTwoChars(tmpString, PRODUCT_SIGN()[0], PRODUCT_SIGN()[1], &pos) != 0) {
+            if (frontier_char_string.findTwoChars(tmpString, PRODUCT_SIGN()[0], PRODUCT_SIGN()[1], &pos)) {
                 _ = strcpy(tmpString, STD_INTEGER_Z_SMALL ++ ": ");
-                w_p.* = stringWidth(tmpString, if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 0, 1);
+                w_p.* = frontier_char_string.stringWidth(tmpString, if (getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true);
                 const tlen: i16 = @intCast(stringByteLength(tmpString));
                 const savedDisplayFormat: u8 = displayFormat;
                 const savedDisplayFormatDigits: u8 = displayFormatDigits;
                 displayFormatDigits = 20;
                 displayFormat = DF_SCI;
-                longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 0, toRemoveTrailingRadix);
+                frontier_display.longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 0, toRemoveTrailingRadix);
                 displayFormat = savedDisplayFormat;
                 displayFormatDigits = savedDisplayFormatDigits;
                 tmpString[TMP_STR_LENGTH - 1] = tmpString[@intCast(tlen)];
@@ -5338,7 +5269,7 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
         }
     }
 
-    w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+    w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
         _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
@@ -5346,14 +5277,14 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
     if (w_p.* <= SCREEN_WIDTH) {
         _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
     } else {
-        w_p.* = stringWidth(tmpString, &standardFont, 0, 1);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
         if (w_p.* > SCREEN_WIDTH) {
             if (comptime extra_info) {
                 moreInfoOnError("In function _refreshRegisterLine:", "Long integer representation too wide!", tmpString, null);
             }
             _ = strcpy(tmpString, "Long integer representation too wide!");
         }
-        w_p.* = stringWidth(tmpString, &standardFont, 0, 1);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
         _ = showString(tmpString, &standardFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) + 6), vmNormal, 0, 1);
     }
@@ -5382,7 +5313,7 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
             tiVector(regist, prefix, prefixWidth_p, @intFromBool(temporaryInformation != TI_VECTOR));
         }
 
-        showRealMatrix(&matrix, prefixWidth_p.*, toDisplayVectorMatrix, @intFromBool(!(temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)));
+        frontier_matrix_editor.showRealMatrix(&matrix, prefixWidth_p.*, toDisplayVectorMatrix != 0, (!(temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)));
         if (lastErrorCode != 0) {
             refreshRegisterLine(errorMessageRegisterLine);
         }
@@ -5401,18 +5332,18 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
         }
 
         var preserveErrorMessage: [ERROR_MESSAGE_LENGTH]u8 = undefined;
-        _ = xcopy(&preserveErrorMessage, errorMessage, ERROR_MESSAGE_LENGTH);
+        _ = frontier_char_string.xcopy(&preserveErrorMessage, errorMessage, ERROR_MESSAGE_LENGTH);
         if ((regist == REGISTER_Z or regist == REGISTER_T) and !runningOnSimOrUSB()) {
-            real34MatrixToDisplayString(regist, tmpString);
-        } else if (vectorToDisplayString(regist, tmpString) == 0) {
-            real34MatrixToDisplayString(regist, tmpString);
+            frontier_display.real34MatrixToDisplayString(regist, tmpString);
+        } else if (frontier_display.vectorToDisplayString(regist, tmpString) == 0) {
+            frontier_display.real34MatrixToDisplayString(regist, tmpString);
         }
-        _ = xcopy(errorMessage, &preserveErrorMessage, ERROR_MESSAGE_LENGTH);
+        _ = frontier_char_string.xcopy(errorMessage, &preserveErrorMessage, ERROR_MESSAGE_LENGTH);
 
-        w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
         if (w_p.* > SCREEN_WIDTH - 1) {
-            w_p.* = stringWidth(tmpString, &standardFont, 0, 1);
+            w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
             _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.* - 0 + 2), @bitCast(@as(i32, baseY)), vmNormal, 0, 1);
         } else {
             _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.* - 1), @bitCast(@as(i32, baseY)), vmNormal, 0, 1);
@@ -5442,7 +5373,7 @@ fn refreshComplexMatrix(regist: calcRegister_t, origRegist: calcRegister_t, base
             inputRegName(prefix, prefixWidth_p);
         }
 
-        showComplexMatrix(&matrix, prefixWidth_p.*, getComplexRegisterAngularMode(regist), @intFromBool(getComplexRegisterPolarMode(regist) == amPolar), @intFromBool(!(temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)));
+        frontier_matrix_editor.showComplexMatrix(&matrix, prefixWidth_p.*, getComplexRegisterAngularMode(regist), (getComplexRegisterPolarMode(regist) == amPolar), (!(temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)));
         if (lastErrorCode != 0) {
             refreshRegisterLine(errorMessageRegisterLine);
         }
@@ -5459,8 +5390,8 @@ fn refreshComplexMatrix(regist: calcRegister_t, origRegist: calcRegister_t, base
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
-        complex34MatrixToDisplayString(regist, tmpString);
-        w_p.* = stringWidth(tmpString, &numericFont, 0, 1);
+        frontier_display.complex34MatrixToDisplayString(regist, tmpString);
+        w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
         _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.* - 2), @bitCast(@as(i32, baseY)), vmNormal, 0, 1);
     }
@@ -5503,7 +5434,7 @@ pub export fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNum
     var w: i16 = undefined;
     const xangularMode: angularMode_t = getRegisterAngularMode(REGISTER_X);
     const hp = checkHPoffset();
-    if (stringWidth(nim, &numericFont, 1, 1) + wLastBaseNumeric <= SCREEN_WIDTH - 16) {
+    if (frontier_char_string.stringWidth(nim, &numericFont, true, true) + wLastBaseNumeric <= SCREEN_WIDTH - 16) {
         xCursor = showString(nim, &numericFont, 0, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - hp), vmNormal, 1, 1);
         yCursor = Y_POSITION_OF_NIM_LINE;
         cursorFont = &numericFont;
@@ -5513,7 +5444,7 @@ pub export fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNum
         } else if ((getRegisterDataType(REGISTER_X) == dtReal34) and (xangularMode < amNone)) {
             _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - hp));
         }
-    } else if (stringWidth(nim, &standardFont, 1, 1) + wLastBaseStandard <= SCREEN_WIDTH - 8) {
+    } else if (frontier_char_string.stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) {
         xCursor = showString(nim, &standardFont, 0, Y_POSITION_OF_NIM_LINE + 6, vmNormal, 1, 1);
         yCursor = Y_POSITION_OF_NIM_LINE + 6;
         cursorFont = &standardFont;
@@ -5526,14 +5457,14 @@ pub export fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNum
     } else {
         var nimw: [*c]u8 = undefined;
         w = @intCast(stringByteLength(nim) + 1);
-        _ = xcopy(tmpString, nim, @intCast(w));
-        _ = xcopy(tmpString + 1500, nim, @intCast(w));
-        nimw = stringAfterPixels(tmpString, &standardFont, SCREEN_WIDTH - 1, 1, 1);
+        _ = frontier_char_string.xcopy(tmpString, nim, @intCast(w));
+        _ = frontier_char_string.xcopy(tmpString + 1500, nim, @intCast(w));
+        nimw = frontier_char_string.stringAfterPixels(tmpString, &standardFont, SCREEN_WIDTH - 1, true, true);
         w = @intCast(nimw - tmpString);
         nimw[0] = 0;
 
-        if (stringWidth(tmpString + 1500 + @as(usize, @intCast(w)), &standardFont, 1, 1) + wLastBaseStandard > SCREEN_WIDTH - 8) {
-            addItemToNimBuffer(ITM_BACKSPACE);
+        if (frontier_char_string.stringWidth(tmpString + 1500 + @as(usize, @intCast(w)), &standardFont, true, true) + wLastBaseStandard > SCREEN_WIDTH - 8) {
+            frontier_bufferize.addItemToNimBuffer(ITM_BACKSPACE);
         } else {
             _ = showString(tmpString, &standardFont, 0, Y_POSITION_OF_NIM_LINE - 3, vmNormal, 1, 1);
 
@@ -5596,7 +5527,7 @@ pub export fn showShiftStateG() callconv(.c) void {
 
 pub export fn displayShiftAndTamBuffer() callconv(.c) void {
     if (calcMode == CM_ASSIGN) {
-        updateAssignTamBuffer();
+        frontier_assign.updateAssignTamBuffer();
     }
 
     if (calcMode != CM_ASSIGN or itemToBeAssigned == 0 or tam.alpha) {
@@ -5619,8 +5550,8 @@ pub export fn displayShiftAndTamBuffer() callconv(.c) void {
 }
 
 pub export fn closeShowMenu() callconv(.c) void {
-    if (currentMenu() == -MNU_SHOW) {
-        popSoftmenu();
+    if (frontier_softmenus.currentMenu() == -MNU_SHOW) {
+        frontier_softmenus.popSoftmenu();
     }
     showRegis = 9999;
     calcMode = CM_NORMAL;
@@ -5633,20 +5564,20 @@ pub export fn reallyClearStatusBar(info: u8) callconv(.c) void {
     _ = info;
     lcd_fill_rect(0, 0, @intCast(if (GRAPHMODE()) @divTrunc(@as(i32, SCREEN_WIDTH), 3) else SCREEN_WIDTH), Y_POSITION_OF_REGISTER_T_LINE, LCD_SET_VALUE);
     force_SBrefresh(force);
-    forceSBupdate();
-    refreshStatusBar();
+    frontier_status_bar.forceSBupdate();
+    frontier_status_bar.refreshStatusBar();
 }
 
 fn _selectiveClearScreen() void {
     if (screenUpdatingMode == SCRUPD_AUTO) {
         clearScreen(6);
-        refreshStatusBar();
+        frontier_status_bar.refreshStatusBar();
         refreshNIMdone = 0;
     } else {
         if ((screenUpdatingMode & (SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME)) == 0) {
             clearScreenStatusBar(7);
         } else if ((screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) == 0) {
-            refreshStatusBar();
+            frontier_status_bar.refreshStatusBar();
         }
 
         if ((screenUpdatingMode & (SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME)) == 0) {
@@ -5659,7 +5590,7 @@ fn _selectiveClearScreen() void {
 
         if ((screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
             lcd_fill_rect(LeftGraphInfoX, topLeftMenuInclBorderY, widthGraphInfoBox, menuHeightInclBorder, LCD_SET_VALUE);
-            if (!GRAPHMODE() or menu(0) == -MNU_PLOT_FUNC) {
+            if (!GRAPHMODE() or frontier_softmenus.menu(0) == -MNU_PLOT_FUNC) {
                 lcd_fill_rect(LeftGraphInfoX, topLeftMenuInclBorderY - 3, 20, 6, LCD_SET_VALUE);
             }
             if (!GRAPHMODE()) {
@@ -5673,12 +5604,12 @@ fn _selectiveClearScreen() void {
 inline fn clearScreen(cnt: u16) void {
     _ = cnt;
     lcd_fill_rect(0, 0, SCREEN_WIDTH, 240, LCD_SET_VALUE);
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 }
 inline fn clearScreenStatusBar(cnt: u16) void {
     _ = cnt;
     lcd_fill_rect(0, 0, if (calcMode == CM_GRAPH) widthGraphInfoBox else @as(u32, @intCast(SCREEN_WIDTH)), 20, LCD_SET_VALUE);
-    forceSBupdate();
+    frontier_status_bar.forceSBupdate();
 }
 
 pub export fn clearScreenOld(clearStatusBar: bool_t, clearRegisterLines_arg: bool_t, clearSoftkeys: bool_t) callconv(.c) void {
@@ -5736,34 +5667,34 @@ fn _refreshPemScreen() void {
         if (!runningOnSimOrUSB()) {
             if (doRefreshSoftMenu != 0 or (screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
                 clearScreenOld(@intFromBool(false), @intFromBool(false), clrSoftkeys);
-                showSoftmenuCurrentPart();
+                frontier_softmenus.showSoftmenuCurrentPart();
             }
             clearScreenOld(@intFromBool(false), clrRegisterLines, @intFromBool(false));
-            fnPem(NOPARAM);
+            frontier_manage.fnPem(NOPARAM);
             displayShiftAndTamBuffer();
             if ((screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) == 0) {
                 clearScreenOld(clrStatusBar, @intFromBool(false), @intFromBool(false));
-                refreshStatusBar();
+                frontier_status_bar.refreshStatusBar();
             }
         } else {
             clearScreen(7);
-            showSoftmenuCurrentPart();
-            fnPem(NOPARAM);
+            frontier_softmenus.showSoftmenuCurrentPart();
+            frontier_manage.fnPem(NOPARAM);
             displayShiftAndTamBuffer();
-            refreshStatusBar();
+            frontier_status_bar.refreshStatusBar();
         }
     } else {
         // PC_BUILD with TEST_BATTERY_POWERED_SIMULATION
         if (doRefreshSoftMenu != 0 or (screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
             clearScreenOld(@intFromBool(false), @intFromBool(false), clrSoftkeys);
-            showSoftmenuCurrentPart();
+            frontier_softmenus.showSoftmenuCurrentPart();
         }
         clearScreenOld(@intFromBool(false), clrRegisterLines, @intFromBool(false));
-        fnPem(NOPARAM);
+        frontier_manage.fnPem(NOPARAM);
         displayShiftAndTamBuffer();
         if ((screenUpdatingMode & SCRUPD_MANUAL_STATUSBAR) == 0) {
             clearScreenOld(clrStatusBar, @intFromBool(false), @intFromBool(false));
-            refreshStatusBar();
+            frontier_status_bar.refreshStatusBar();
         }
     }
     doRefreshSoftMenu = 0;
@@ -5790,7 +5721,7 @@ fn _refreshNormalScreen() void {
     }
 
     if (BASEMODEACTIVE()) {
-        showFracMode();
+        frontier_status_bar.showFracMode();
     }
     if (calcMode == CM_CONFIRMATION) {
         screenUpdatingMode = SCRUPD_AUTO;
@@ -5847,23 +5778,23 @@ fn _refreshNormalScreen() void {
     }
 
     if (calcMode == CM_ASN_BROWSER) {
-        fnAsnViewer(NOPARAM);
-        calcModeNormal();
+        frontier_asn_browser.fnAsnViewer(NOPARAM);
+        frontier_calc_mode.calcModeNormal();
         calcMode = CM_ASN_BROWSER;
     }
 
     if (calcMode == CM_MIM) {
-        showMatrixEditor();
+        frontier.showMatrixEditor();
     }
     if (calcMode == CM_TIMER) {
-        fnShowTimerApp();
+        frontier_timer.fnShowTimerApp();
     }
 
     if ((currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0) {
         var mvarMenu: bool_t = 0;
         var i: usize = 0;
         while (i < SOFTMENU_STACK_SIZE) : (i += 1) {
-            if (menu(@intCast(i)) == -MNU_MVAR) {
+            if (frontier_softmenus.menu(@intCast(i)) == -MNU_MVAR) {
                 mvarMenu = 1;
                 break;
             }
@@ -5871,13 +5802,13 @@ fn _refreshNormalScreen() void {
         if (mvarMenu == 0) {
             if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
                 if ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE) {
-                    showSoftmenu(-MNU_Sf);
+                    frontier_softmenus.showSoftmenu(-MNU_Sf);
                 } else {
-                    showSoftmenu(-MNU_Solver);
+                    frontier_softmenus.showSoftmenu(-MNU_Solver);
                 }
             } else {
                 currentMvarLabel = INVALID_VARIABLE;
-                showSoftmenu(-MNU_MVAR);
+                frontier_softmenus.showSoftmenu(-MNU_MVAR);
             }
         }
     }
@@ -5885,13 +5816,13 @@ fn _refreshNormalScreen() void {
         var mvarMenu: bool_t = 0;
         var i: usize = 0;
         while (i < SOFTMENU_STACK_SIZE) : (i += 1) {
-            if (menu(@intCast(i)) == -MNU_EQ_EDIT) {
+            if (frontier_softmenus.menu(@intCast(i)) == -MNU_EQ_EDIT) {
                 mvarMenu = 1;
                 break;
             }
         }
         if (mvarMenu == 0) {
-            showSoftmenu(-MNU_EQ_EDIT);
+            frontier_softmenus.showSoftmenu(-MNU_EQ_EDIT);
         }
     }
 
@@ -5902,7 +5833,7 @@ fn _refreshNormalScreen() void {
         displayShiftAndTamBuffer();
     }
     if ((screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
-        showSoftmenuCurrentPart();
+        frontier_softmenus.showSoftmenuCurrentPart();
         if (comptime dmcp_build) {
             lcd_refresh_dma();
         }
@@ -5911,7 +5842,7 @@ fn _refreshNormalScreen() void {
         hourGlassIconEnabled = 0;
     }
 
-    refreshStatusBar();
+    frontier_status_bar.refreshStatusBar();
 
     // RETURN_NORMAL:
     screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU;
@@ -5927,7 +5858,7 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
         }
     }
 
-    switch (currentMenu()) {
+    switch (frontier_softmenus.currentMenu()) {
         -MNU_PARETO, -MNU_UNIFORM, -MNU_DISUNIFORM, -MNU_GEV, -MNU_BINOM, -MNU_CAUCH, -MNU_WEIBL, -MNU_CHI2, -MNU_T, -MNU_EXPON, -MNU_POISS, -MNU_F, -MNU_GEOM, -MNU_HYPER, -MNU_LOGIS, -MNU_NORML => {
             screenUpdatingMode = SCRUPD_AUTO;
             screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
@@ -5939,22 +5870,22 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
         CM_FLAG_BROWSER => {
             last_CM = calcMode;
             clearScreen(9);
-            flagBrowser(NOPARAM);
-            refreshStatusBar();
+            frontier_flag_browser.flagBrowser(NOPARAM);
+            frontier_status_bar.refreshStatusBar();
             force_refresh(force);
         },
         CM_FONT_BROWSER => {
             last_CM = calcMode;
             clearScreen(10);
-            fontBrowser(NOPARAM);
-            refreshStatusBar();
+            frontier_font_browser.fontBrowser(NOPARAM);
+            frontier_status_bar.refreshStatusBar();
             force_refresh(force);
         },
         CM_REGISTER_BROWSER => {
             last_CM = calcMode;
             clearScreen(11);
-            registerBrowser(NOPARAM);
-            refreshStatusBar();
+            frontier_register_browser.registerBrowser(NOPARAM);
+            frontier_status_bar.refreshStatusBar();
             force_refresh(force);
         },
         CM_PEM => {
@@ -5982,42 +5913,42 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
         CM_LISTXY => {
             doRefreshSoftMenu = 0;
             displayShiftAndTamBuffer();
-            refreshStatusBar();
-            fnStatList();
+            frontier_status_bar.refreshStatusBar();
+            frontier_graphs.fnStatList();
             hourGlassIconEnabled = 0;
-            refreshStatusBar();
+            frontier_status_bar.refreshStatusBar();
             force_refresh(force);
         },
         CM_GRAPH => {
             doRefreshSoftMenu = 0;
-            graph_plotmem();
+            frontier_graphs.graph_plotmem();
             displayShiftAndTamBuffer();
-            showSoftmenuCurrentPart();
+            frontier_softmenus.showSoftmenuCurrentPart();
             hourGlassIconEnabled = 1;
-            refreshStatusBar();
+            frontier_status_bar.refreshStatusBar();
             hourGlassIconEnabled = 0;
-            showHideHourGlass();
-            refreshStatusBar();
+            frontier_status_bar.showHideHourGlass();
+            frontier_status_bar.refreshStatusBar();
             force_refresh(force);
         },
         CM_PLOT_STAT => {
             doRefreshSoftMenu = 0;
-            graphPlotstat(plotSelection);
+            frontier_plotstat.graphPlotstat(plotSelection);
             displayShiftAndTamBuffer();
-            showSoftmenuCurrentPart();
+            frontier_softmenus.showSoftmenuCurrentPart();
             hourGlassIconEnabled = 1;
-            refreshStatusBar();
-            graphDrawLRline(plotSelection);
+            frontier_status_bar.refreshStatusBar();
+            frontier_plotstat.graphDrawLRline(plotSelection);
             if (lastErrorCode != ERROR_NONE) {
-                if (currentMenu() == -MNU_HPLOT or currentMenu() == -MNU_PLOT_ASSESS or currentMenu() == -MNU_HPLOT or currentMenu() == -MNU_PLOT_SCATR) {
-                    popSoftmenu();
+                if (frontier_softmenus.currentMenu() == -MNU_HPLOT or frontier_softmenus.currentMenu() == -MNU_PLOT_ASSESS or frontier_softmenus.currentMenu() == -MNU_HPLOT or frontier_softmenus.currentMenu() == -MNU_PLOT_SCATR) {
+                    frontier_softmenus.popSoftmenu();
                     calcMode = CM_NORMAL;
                     refreshScreen(84);
                 }
             }
             hourGlassIconEnabled = 0;
-            showHideHourGlass();
-            refreshStatusBar();
+            frontier_status_bar.showHideHourGlass();
+            frontier_status_bar.refreshStatusBar();
             force_refresh(force);
         },
         else => {},
@@ -6062,7 +5993,7 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
             }
         }
 
-        _ = showDateTime();
+        _ = frontier_status_bar.showDateTime();
         lcd_refresh();
         refresh_gui();
         return 1; // TRUE
@@ -6092,9 +6023,9 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
             }
         }
 
-        if (showDateTime() != 0) {
+        if (frontier_status_bar.showDateTime()) {
             dmcpResetAutoOff();
-            fnPollTimerApp();
+            frontier_timer.fnPollTimerApp();
         }
         checkBattery();
         return 0;
@@ -6199,7 +6130,7 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
         var maxValue34: real34_t = undefined;
         int32ToReal34(maxValuePlusOne, &maxValue34);
         if (real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) != 0 or real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist)) != 0) {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
                 abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
@@ -6210,11 +6141,11 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
         value = real34ToInt32(REGISTER_REAL34_DATA(regist));
     } else if (getRegisterDataType(regist) == dtLongInteger) {
         var lgInt: longInteger_t = undefined;
-        convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
+        frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
         if (longIntegerCompareUInt(&lgInt[0], 0) < 0 or longIntegerCompareUInt(&lgInt[0], @intCast(maxValuePlusOne)) >= 0) {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                longIntegerToAllocatedString(&lgInt[0], errorMessage, ERROR_MESSAGE_LENGTH);
+                frontier_display.longIntegerToAllocatedString(&lgInt[0], errorMessage, ERROR_MESSAGE_LENGTH);
                 abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
             }
@@ -6226,9 +6157,9 @@ fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
         value = @bitCast(uv);
         longIntegerFree(&lgInt);
     } else {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(getRegisterDataTypeName(regist, 1, 0)) });
+            abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, regist), std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false)) });
             moreInfoOnError("In function _getPositionFromRegister:", errorMessage, "not suited for addressing!", null);
         }
         return -1;
@@ -6287,7 +6218,7 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
     var gramod: u32 = undefined;
     var liGramod: longInteger_t = undefined;
     getPixelPos(&x, &y);
-    convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, &liGramod[0]);
+    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, &liGramod[0]);
     longIntegerToUInt32(&liGramod, &gramod);
     longIntegerFree(&liGramod);
     if (lastErrorCode == ERROR_NONE) {
@@ -6301,7 +6232,7 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
                 screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
             }
             shortIntegerMode = SIM_UNSIGN;
-            convertShortIntegerRegisterToUInt64(@intCast(regist), &sign, &val);
+            frontier_register_value_conversions.convertShortIntegerRegisterToUInt64(@intCast(regist), &sign, &val);
             shortIntegerMode = savedShortIntegerMode;
             var i: u32 = 0;
             while (i < shortIntegerWordSize) : (i += 1) {
@@ -6326,9 +6257,9 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
 
             fnInc(REGISTER_X);
         } else {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, @as(i16, @intCast(regist))), std.mem.span(getRegisterDataTypeName(@intCast(regist), 1, 0)) });
+                abi.fmtBufZ(errorMessage[0..512], "register {d} is {s}:", .{ @as(i32, @as(i16, @intCast(regist))), std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
                 moreInfoOnError("In function fnAGraph:", errorMessage, "not suited for addressing!", null);
             }
         }
