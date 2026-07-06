@@ -19,6 +19,12 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // REPORT-27 M-IDIOM-9: build this object with SanitizerCoverage
+    // trace-pc-guard so report-zig-coverage.sh can resolve the stack-state Zig
+    // owner lines the host coverage harness executes. Measurement-only: set ONLY
+    // for the dedicated coverage harness variant, never a product/test object,
+    // because the sancov handler symbol is linked only into that binary.
+    coverage: bool = false,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -59,10 +65,15 @@ fn addRuntimeObject(
     descriptor_storage_options.addOption(bool, "use_fake_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("state_descriptor_storage_build_options", descriptor_storage_options);
 
-    return b.addObject(.{
+    const object = b.addObject(.{
         .name = b.fmt("{s}-stack-state", .{name_prefix}),
         .root_module = module,
     });
+    if (options.coverage) {
+        object.use_llvm = true;
+        object.sanitize_coverage_trace_pc_guard = true;
+    }
+    return object;
 }
 
 pub fn addRuntimeObjects(

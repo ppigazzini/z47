@@ -10,13 +10,16 @@
 # the coverage mechanism; the toy proof that Zig code IS instrumentable this way
 # is in the commit that introduced the handler.
 #
-# SCOPE: the FRONTIER owner object is now instrumented (frontier.addToModule
-# threads a `coverage` flag onto its b.addObject when the coverage harness is
-# built), so the report resolves the frontier zig_src/*.zig owners directly
-# (~1.5k lines) alongside the compiled-in C. The remaining owner groups
-# (keyboard_state / shortint / stack_state / math_command_wrappers / solve) are
-# still linked as objects built WITHOUT the flag; extend them the same way --
-# add a `coverage` field to each group's addObject path -- to cover those lines.
+# SCOPE: the FRONTIER, KEYBOARD_STATE, and STACK_STATE owner objects are now
+# instrumented (each threads a `coverage` flag onto its b.addObject when the
+# coverage harness is built), so the report resolves those zig_src/*.zig owners
+# directly alongside the compiled-in C. The keyboard harness drives btnClicked
+# dispatch + stack ops, so those owners execute and show up. The remaining owner
+# groups (shortint / math_command_wrappers / solve) are still linked as objects
+# built WITHOUT the flag; note the keyboard harness does not exercise the wp34s
+# math commands or the solver, so instrumenting those two would add near-zero
+# executed lines under THIS harness -- extend them only alongside a harness that
+# drives them.
 #
 # Usage: report-zig-coverage.sh   (run `zig build coverage` first)
 set -euo pipefail

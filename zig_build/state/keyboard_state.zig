@@ -26,6 +26,12 @@ pub const RuntimeObjectOptions = struct {
     // that compile-time model, and the keyboard-state object is shared between a
     // HW's C47 and R47 builds, so the distinction is threaded as a build option.
     is_r47: bool = false,
+    // REPORT-27 M-IDIOM-9: build this object with SanitizerCoverage
+    // trace-pc-guard so report-zig-coverage.sh can resolve the keyboard-state Zig
+    // owner lines the host coverage harness executes. Measurement-only: set ONLY
+    // for the dedicated coverage harness variant, never a product/test object,
+    // because the sancov handler symbol is linked only into that binary.
+    coverage: bool = false,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -88,10 +94,15 @@ fn addRuntimeObjectWithIncludeDir(
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
     module.addOptions("keyboard_state_build_options", kb_build_options);
 
-    return b.addObject(.{
+    const object = b.addObject(.{
         .name = b.fmt("{s}-keyboard-state", .{name_prefix}),
         .root_module = module,
     });
+    if (options.coverage) {
+        object.use_llvm = true;
+        object.sanitize_coverage_trace_pc_guard = true;
+    }
+    return object;
 }
 
 fn addGeneratedHeaderDirs(module: *std.Build.Module, headers: GeneratedHeaderDirs) void {

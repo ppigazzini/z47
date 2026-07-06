@@ -682,9 +682,43 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // available in this environment and Zig 0.16 has no -fprofile-instr path, so
     // this is the coverage mechanism. Measurement-only: the sancov flag and the
     // handler are compiled ONLY into this dedicated binary, never a product or
-    // normal-test one. (Owners linked as prebuilt objects -- keyboard_state,
-    // shortint, stack_state -- are compiled without the flag and so do not show
-    // up; the frontier owners compiled into the harness module do.)
+    // normal-test one.
+    //
+    // REPORT-27 M-IDIOM-9: the keyboard_state and stack_state owners are exercised
+    // by this harness (btnClicked dispatch + stack ops), but the shared context
+    // objects are built WITHOUT the coverage flag and reused by sim/test, so we
+    // cannot flip sancov on them (the handler symbol is linked only here). Instead
+    // build dedicated "keyboardEntryCov" variants of just those two objects with
+    // coverage=true and link them into this harness, so the report resolves their
+    // Zig owner lines too -- not only the frontier owners compiled into the module.
+    // The HostModuleConfig mirrors host/context.zig's keyboard_state wiring.
+    const cov_keyboard_state_objects = keyboard_state.addHostRuntimeObjectsWithOptions(
+        b,
+        context.host_target,
+        optimize,
+        "keyboardEntryCov",
+        .{
+            .platform_define = context.common.platform_define,
+            .word_size_define = context.common.word_size_define,
+            .raspberry = context.common.raspberry,
+            .decnumber_fastmul = context.common.decnumber_fastmul,
+            .needs_gnu_source = context.common.needs_gnu_source,
+            .have_dladdr = context.common.have_dladdr,
+            .generated_headers = .{
+                .version_headers_dir = context.version_headers_dir,
+                .softmenu_catalogs_dir = context.generated.softmenu_catalogs.dirname(),
+                .constant_pointers_h_dir = context.generated.constant_pointers_h.dirname(),
+            },
+        },
+        .{ .coverage = true },
+    );
+    const cov_stack_state_objects = stack.addRuntimeObjectsWithOptions(
+        b,
+        context.host_target,
+        optimize,
+        "keyboardEntryCov",
+        .{ .coverage = true },
+    );
     const coverage_harness = host_builders.addFullCoreHarness(
         b,
         context.host_target,
@@ -697,8 +731,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         context.version_headers_dir,
         context.generated,
         context.shortint_objects,
-        context.keyboard_state_objects,
-        context.stack_state_objects,
+        cov_keyboard_state_objects,
+        cov_stack_state_objects,
         null,
         true,
     );
