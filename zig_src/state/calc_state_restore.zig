@@ -124,6 +124,7 @@ fn TO_BLOCKS(n: anytype) u32 {
 
 // --- Struct models (asserted against the C ABI) ---
 const abi = @import("abi"); // L1 shared bindings
+const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
 const calcKey_t = abi.CalcKey;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
@@ -146,15 +147,11 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn memset(dst: ?*anyopaque, val: c_int, n: usize) ?*anyopaque;
-extern fn readLine(line: [*c]u8, maxLen: usize) void;
-extern fn read2Lines(line1: [*c]u8, maxLen1: usize, line2: [*c]u8, maxLen2: usize) void;
 extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
 extern fn allocateLocalRegisters(num: u16) void;
 extern fn initStatisticalSums() void;
 extern fn reLoadStatisticalSums() void;
-extern fn stringToUint64(str: [*c]const u8) u64;
-extern fn stringToFloat(str: [*c]const u8) f32;
 extern fn freeC47Blocks(p: ?*anyopaque, size_in_blocks: usize) void;
 extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 extern fn setUserKeyArgument(position: u16, name: [*c]const u8) void;
@@ -165,7 +162,6 @@ extern fn scanLabelsAndPrograms() void;
 extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
 extern fn deleteEquation(equation_id: u16) void;
 extern fn setEquation(equation_id: u16, str: [*c]const u8) void;
-extern fn convert001090400T001090500(parameter: u8, offset: u8) u8;
 extern fn configCommon(idx: u16) void;
 extern fn resetOtherConfigurationStuff(allow_user_keys: bool) void;
 extern fn defaultStatusBar() void;
@@ -326,10 +322,10 @@ fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
 // next (real id/name, or another Cmnt). Lets a hand-edited register data-file
 // carry comments between entries without throwing off the per-register count.
 fn readLineSkippingComments(line: [*c]u8, max_len: usize) void {
-    readLine(line, max_len);
+    calc_state.readLine(line, max_len);
     while (cmpName(line, "Cmnt")) {
-        readLine(line, max_len); // drop the comment text line
-        readLine(line, max_len); // next line: another Cmnt, or the real id / name
+        calc_state.readLine(line, max_len); // drop the comment text line
+        calc_state.readLine(line, max_len); // next line: another Cmnt, or the real id / name
     }
 }
 
@@ -352,7 +348,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
 
     cancelFilename = true;
     hourGlassIconEnabled = true;
-    readLine(tmpString, TMP_STR_LENGTH);
+    calc_state.readLine(tmpString, TMP_STR_LENGTH);
 
     // A well-formed save file terminates with OTHER_CONFIGURATION_STUFF (handled
     // below, which returns false). An empty section-header line means the file
@@ -369,13 +365,13 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
     var regist: i16 = 0;
 
     if (cmpName(tmpString, "GLOBAL_REGISTERS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLineSkippingComments(tmpString, TMP_STR_LENGTH); // Register number, skipping any comments
             regist = stringToRegisterNumber(tmpString); // "RX".."RW" or "Rnnn"
-            read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
+            calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
             if (load_mode == LM_ALL or
                 (load_mode == LM_REGISTERS and regist < REGISTER_X) or
                 (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n)))
@@ -388,7 +384,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "GLOBAL_FLAGS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
             str = tmpString;
             i = 0;
@@ -399,7 +395,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             globalFlags[@intCast(i)] = text.toUint16(str);
         }
     } else if (cmpName(tmpString, "LOCAL_REGISTERS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
             allocateLocalRegisters(@intCast(numberOfRegs));
@@ -407,9 +403,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         if ((load_mode != LM_ALL and load_mode != LM_REGISTERS) or lastErrorCode == ERROR_NONE) {
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
-                readLine(tmpString, TMP_STR_LENGTH);
+                calc_state.readLine(tmpString, TMP_STR_LENGTH);
                 regist = text.toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
-                read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
+                calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
                 if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
                     codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);
                     codec.restoreMatrixData(regist);
@@ -419,17 +415,17 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "LOCAL_FLAGS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
             currentLocalFlags.?.* = text.toUint32(tmpString);
         }
     } else if (cmpName(tmpString, "NAMED_VARIABLES")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
-            readLine(errorMessage, ERROR_MESSAGE_LENGTH);
-            read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(errorMessage, ERROR_MESSAGE_LENGTH);
+            calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
             const is_stats_or_histo = cmpName(errorMessage, "STATS") or cmpName(errorMessage, "HISTO");
             if ((load_mode == LM_ALL or
                 load_mode == LM_NAMED_VARIABLES or
@@ -450,17 +446,17 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "Cmnt")) {
-        readLine(tmpString, TMP_STR_LENGTH); // discard the single comment line that follows
+        calc_state.readLine(tmpString, TMP_STR_LENGTH); // discard the single comment line that follows
         // falls through to the common `return true` so the load loop continues
     } else if (cmpName(tmpString, "STATISTICAL_SUMS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         if (numberOfRegs > 0 and (load_mode == LM_ALL or load_mode == LM_SUMS)) {
             initStatisticalSums();
             reLoadStatisticalSums();
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
-                readLine(tmpString, TMP_STR_LENGTH);
+                calc_state.readLine(tmpString, TMP_STR_LENGTH);
                 if (statisticalSumsPointer != null) {
                     if (load_mode == LM_ALL or load_mode == LM_SUMS) {
                         codec.loadStatSum(tmpString, @intCast(i));
@@ -469,17 +465,17 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "SYSTEM_FLAGS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
-            systemFlags0 = stringToUint64(tmpString);
+            systemFlags0 = calc_state.stringToUint64(tmpString);
             systemFlags1 = 0;
             if (loaded_version < 10000006) defaultStatusBar();
             if (loaded_version < 10000009) setSystemFlag(FLAG_MONIT);
         }
     } else if (cmpName(tmpString, "SYSTEM_FLAGS1")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
-            systemFlags1 = stringToUint64(tmpString);
+            systemFlags1 = calc_state.stringToUint64(tmpString);
             if (loaded_version < 10000006) defaultStatusBar();
             if (loaded_version < 10000009) setSystemFlag(FLAG_MONIT);
             if (loaded_version < 10000012) {
@@ -494,11 +490,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "KEYBOARD_ASSIGNMENTS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
             if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
                 const k = &kbd_usr[@intCast(i)];
                 str = text.toInt16NextWord(tmpString, &k.keyId);
@@ -513,7 +509,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "KEYBOARD_ARGUMENTS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
             freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
@@ -523,7 +519,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         }
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
             if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
                 str = tmpString;
                 const key = text.toUint16(str);
@@ -539,31 +535,31 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
         }
     } else if (cmpName(tmpString, "MYMENU")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
             if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
                 parseMenuItem(&userMenuItems[@intCast(i)]);
             }
         }
     } else if (cmpName(tmpString, "MYALPHA")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
             if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
                 parseMenuItem(&userAlphaItems[@intCast(i)]);
             }
         }
     } else if (cmpName(tmpString, "USER_MENUS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         const numberOfMenus = text.toInt16(tmpString);
         var j: i32 = 0;
         while (j < numberOfMenus) : (j += 1) {
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
             var target: i16 = -1;
             if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
                 utf8ToString(tmpString, tmpString + TMP_STR_LENGTH / 2);
@@ -578,11 +574,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                     target = @intCast(@as(i32, numberOfUserMenus) - 1);
                 }
             }
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
             numberOfRegs = text.toInt16(tmpString);
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
-                readLine(tmpString, TMP_STR_LENGTH);
+                calc_state.readLine(tmpString, TMP_STR_LENGTH);
                 if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
                     parseMenuItem(&userMenus[@intCast(target)].menuItem[@intCast(i)]);
                 }
@@ -591,7 +587,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
     } else if (cmpName(tmpString, "PROGRAMS")) {
         restoreProgramsSection(load_mode);
     } else if (cmpName(tmpString, "EQUATIONS")) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         const formulae = text.toUint16(tmpString);
         if (formulae > 0 and (load_mode == LM_ALL or load_mode == LM_PROGRAMS)) {
             i = @intCast(numberOfFormulae);
@@ -608,7 +604,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             }
             i = 0;
             while (i < formulae) : (i += 1) {
-                readLine(tmpString, TMP_STR_LENGTH);
+                calc_state.readLine(tmpString, TMP_STR_LENGTH);
                 if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
                     utf8ToString(tmpString, tmpString + TMP_STR_LENGTH / 2);
                     setEquation(@intCast(i), tmpString + TMP_STR_LENGTH / 2);
@@ -648,7 +644,7 @@ fn restoreProgramsSection(load_mode: u16) void {
     var oldFirstFreeProgramByte: [*c]u8 = firstFreeProgramByte;
     const oldFreeProgramBytes: u16 = freeProgramBytes;
 
-    readLine(tmpString, TMP_STR_LENGTH);
+    calc_state.readLine(tmpString, TMP_STR_LENGTH);
     const numberOfBlocks = text.toUint16(tmpString);
     if (load_mode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
@@ -657,11 +653,11 @@ fn restoreProgramsSection(load_mode: u16) void {
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
     }
 
-    readLine(tmpString, TMP_STR_LENGTH); // currentStep block pointer
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // currentStep block pointer
     if (load_mode == LM_ALL) {
         currentStep = toPcmemptr(text.toUint32(tmpString));
     }
-    readLine(tmpString, TMP_STR_LENGTH); // currentStep offset within block
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // currentStep offset within block
     if (load_mode == LM_ALL) {
         currentStep += text.toUint32(tmpString);
     } else if (load_mode == LM_PROGRAMS) {
@@ -673,16 +669,16 @@ fn restoreProgramsSection(load_mode: u16) void {
         }
     }
 
-    readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte block pointer
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte block pointer
     if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
         firstFreeProgramByte = toPcmemptr(text.toUint32(tmpString));
     }
-    readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte offset within block
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte offset within block
     if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
         firstFreeProgramByte += text.toUint32(tmpString);
     }
 
-    readLine(tmpString, TMP_STR_LENGTH); // freeProgramBytes
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // freeProgramBytes
     if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
         freeProgramBytes = text.toUint16(tmpString);
     }
@@ -728,7 +724,7 @@ fn restoreProgramsSection(load_mode: u16) void {
     const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
     var i: i16 = 0;
     while (i < numberOfBlocks) : (i += 1) {
-        readLine(tmpString, TMP_STR_LENGTH);
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (load_mode == LM_ALL) {
             progWords[@intCast(i)] = text.toUint32(tmpString);
         } else if (load_mode == LM_PROGRAMS) {
@@ -743,22 +739,22 @@ fn restoreProgramsSection(load_mode: u16) void {
 }
 
 fn restoreOtherConfiguration(load_mode: u16, allow_user_keys: bool, loaded_version: u32, saved_calc_model: u16) void {
-    readLine(tmpString, TMP_STR_LENGTH); // count (unused)
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // count (unused)
 
-    readLine(aimBuffer, AIM_BUFFER_LENGTH); // duplicated param / END marker
+    calc_state.readLine(aimBuffer, AIM_BUFFER_LENGTH); // duplicated param / END marker
     if (cmpName(aimBuffer, "END_OTHER_PARAM")) {
         return; // short-form key-only state files: no reset
     }
     resetOtherConfigurationStuff(allow_user_keys);
-    readLine(tmpString, TMP_STR_LENGTH); // duplicated 00
+    calc_state.readLine(tmpString, TMP_STR_LENGTH); // duplicated 00
 
     var i: u32 = 0;
     while (i < 255) : (i += 1) {
-        readLine(aimBuffer, AIM_BUFFER_LENGTH); // param
+        calc_state.readLine(aimBuffer, AIM_BUFFER_LENGTH); // param
         if (cmpName(aimBuffer, "END_OTHER_PARAM") or aimBuffer[0] == 0) {
             break;
         }
-        readLine(tmpString, TMP_STR_LENGTH); // value
+        calc_state.readLine(tmpString, TMP_STR_LENGTH); // value
         if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
             applyConfigField(loaded_version, allow_user_keys, saved_calc_model);
             hourGlassIconEnabled = false;
@@ -807,9 +803,9 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (text.strcmp2(ab, @constCast("grpGroupingRight")) == 0) {
         grpGroupingRight = text.toUint8(tmpString);
     } else if (matchU8("roundingMode", &roundingMode)) {} else if (matchU8("displayStack", &displayStack)) {} else if (cmpName(ab, "rngState")) {
-        pcg32_global.state = stringToUint64(tmpString);
+        pcg32_global.state = calc_state.stringToUint64(tmpString);
         const w = text.nextWord(tmpString);
-        pcg32_global.inc = stringToUint64(w);
+        pcg32_global.inc = calc_state.stringToUint64(w);
     } else if (cmpName(ab, "exponentLimit")) {
         exponentLimit = text.toInt16(tmpString);
     } else if (cmpName(ab, "exponentHideLimit")) {
@@ -819,7 +815,7 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "bestF")) {
         lrSelection = text.toUint16(tmpString);
     } else if (cmpName(ab, "fgLN") or cmpName(ab, "jm_FG_LINE")) {
-        const fgLN = convert001090400T001090500(text.toUint8(tmpString), RBX_FGLNOFF);
+        const fgLN = calc_state.convert001090400T001090500(text.toUint8(tmpString), RBX_FGLNOFF);
         if (fgLN == RBX_FGLNOFF) {
             clearSystemFlag(FLAG_FGLNLIM);
             clearSystemFlag(FLAG_FGLNFUL);
@@ -863,7 +859,7 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
                 Norm_Key_00.funcParam[0] = 0;
                 Norm_Key_00.used = false;
             }
-            readLine(tmpString, TMP_STR_LENGTH);
+            calc_state.readLine(tmpString, TMP_STR_LENGTH);
         } else if (allow_user_keys and cmpName(tmpString, "NoNormKeyParamDef")) {
             Norm_Key_00.funcParam[0] = 0;
         } else if (allow_user_keys) {
@@ -893,11 +889,11 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "topHex")) {
         if (loaded_version < 10000019) forceSystemFlag(FLAG_TOPHEX, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "bcdDisplaySign")) {
-        bcdDisplaySign = convert001090400T001090500(text.toUint8(tmpString), BCDu);
+        bcdDisplaySign = calc_state.convert001090400T001090500(text.toUint8(tmpString), BCDu);
     } else if (matchU8("DRG_Cycling", &DRG_Cycling)) {} else if (matchU8("DM_Cycling", &DM_Cycling)) {} else if (cmpName(ab, "LongPressM")) {
-        LongPressM = convert001090400T001090500(text.toUint8(tmpString), RBX_M14);
+        LongPressM = calc_state.convert001090400T001090500(text.toUint8(tmpString), RBX_M14);
     } else if (cmpName(ab, "LongPressF")) {
-        LongPressF = convert001090400T001090500(text.toUint8(tmpString), RBX_F14);
+        LongPressF = calc_state.convert001090400T001090500(text.toUint8(tmpString), RBX_F14);
     } else if (cmpName(ab, "lastIntegerBase")) {
         lastIntegerBase = text.toUint8(tmpString);
     } else if (cmpName(ab, "amortP1")) {
@@ -907,9 +903,9 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "lrChosen")) {
         lrChosen = text.toUint16(tmpString);
     } else if (cmpName(ab, "graph_dx")) {
-        graph_dx = stringToFloat(tmpString);
+        graph_dx = calc_state.stringToFloat(tmpString);
     } else if (cmpName(ab, "graph_dy")) {
-        graph_dy = stringToFloat(tmpString);
+        graph_dy = calc_state.stringToFloat(tmpString);
     } else if (cmpName(ab, "roundedTicks")) {
         roundedTicks = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_INTG")) {

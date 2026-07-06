@@ -121,6 +121,7 @@ const REGISTER_X: calcRegister_t = stack_runtime.REGISTER_X;
 const formulaHeader_t = abi.FormulaHeader;
 
 const abi = @import("abi"); // L1 shared bindings
+const flags = @import("flags.zig"); // M-callconv: intra-object Zig-to-Zig
 const softmenu_t = abi.Softmenu;
 
 const softmenuStack_t = abi.SoftmenuStack;
@@ -163,7 +164,6 @@ extern fn z47_flags_runtime_handle_write_protected_flag() void;
 extern fn z47_flags_runtime_enter_alpha_mode() void;
 extern fn z47_flags_runtime_leave_alpha_mode() void;
 extern fn z47_flags_runtime_request_clf_all_confirmation() void;
-extern fn fnClFAll(confirmation: u16) callconv(.c) void;
 
 pub fn handleWriteProtectedFlag() void {
     if (use_fake_harness_surface) {
@@ -215,5 +215,5 @@ pub fn requestClFAllConfirmation() void {
         return;
     }
 
-    setConfirmationMode(&fnClFAll);
+    setConfirmationMode(&flags.fnClFAll);
 }
