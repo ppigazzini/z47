@@ -9,6 +9,8 @@
 // DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 
@@ -25,11 +27,8 @@ inline fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
 }
 
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 
 // WP34S_GammaP from the wp34s owner.
-extern fn WP34S_GammaP(x: *const real_t, a: *const real_t, res: *real_t, real_context: *runtime.realContext_t, upper: bool, regularised: bool) void;
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
@@ -43,11 +42,11 @@ pub export fn fnGammaX(gammaType: u16) callconv(.c) void {
         return;
     }
 
-    if (!runtime.getSystemFlag(FLAG_SPCRES) and (realCompareLessEqual(&x, const_0()) or realCompareLessThan(&y, const_0()))) {
+    if (!runtime.getSystemFlag(FLAG_SPCRES) and (math_comparison_reals.realCompareLessEqual(&x, const_0()) or math_comparison_reals.realCompareLessThan(&y, const_0()))) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function fnGammaX:", "Y must be non-negative and X must be positive", null, null);
     } else {
-        WP34S_GammaP(&y, &x, &res, &runtime.ctxtReal39, (gammaType >> 1) != 0, (gammaType & 0x0001) != 0);
+        math_wp34s.WP34S_GammaP(&y, &x, &res, &runtime.ctxtReal39, (gammaType >> 1) != 0, (gammaType & 0x0001) != 0);
         runtime.convertRealToResultRegister(&res, REGISTER_X, amNone);
     }
 

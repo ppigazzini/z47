@@ -12,6 +12,8 @@ const consts = abi.constants;
 // copies are file-local statics, so no bridge rename is needed.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 
@@ -20,10 +22,6 @@ const nim_register_line = runtime.REGISTER_X;
 // REAL_SIZE_IN_BLOCKS(75) == TO_BLOCKS(sizeof(real_t)) == 15.
 const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
-extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
-extern fn WP34S_Log10(x: *const real_t, res: *real_t, real_context: *runtime.realContext_t) callconv(.c) void;
 extern var displayFormatDigits: u8;
 
 // const_1e_37 == ((real_t *)(constants + 4436)) in constantPointers.h.
@@ -59,7 +57,7 @@ pub export fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *
         var j: usize = k + 1;
         while (j < n) : (j += 1) {
             runtime.complexMagnitude(&tmp_mat[(j * n + k) * 2], &tmp_mat[(j * n + k) * 2 + 1], &u, real_context);
-            if (realCompareGreaterThan(&u, &max)) {
+            if (math_comparison_reals.realCompareGreaterThan(&u, &max)) {
                 realCopy(&u, &max);
                 pvt = j;
             }
@@ -99,10 +97,10 @@ pub export fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *
                 runtime.realSubtract(&max, &u, &tmp_mat[(i * n + j) * 2 + 1], real_context);
                 runtime.realDivide(&tmp_mat[(i * n + j) * 2], &v, &t, &runtime.ctxtReal39);
                 runtime.realDivide(&tmp_mat[(i * n + j) * 2 + 1], &max, &u, &runtime.ctxtReal39);
-                if (realCompareAbsLessThan(&t, const_1e_37())) {
+                if (math_comparison_reals.realCompareAbsLessThan(&t, const_1e_37())) {
                     runtime.realSetZero(&tmp_mat[(i * n + j) * 2]);
                 }
-                if (realCompareAbsLessThan(&u, const_1e_37())) {
+                if (math_comparison_reals.realCompareAbsLessThan(&u, const_1e_37())) {
                     runtime.realSetZero(&tmp_mat[(i * n + j) * 2 + 1]);
                 }
             }
@@ -226,15 +224,15 @@ pub export fn invCpxMat(matrix: [*]real_t, n_in: u16, real_context: *runtime.rea
                     if (runtime.realCompareLessThan(&p, &min_val)) {
                         realCopy(&p, &min_val);
                     }
-                    if (realCompareGreaterThan(&p, &max_val)) {
+                    if (math_comparison_reals.realCompareGreaterThan(&p, &max_val)) {
                         realCopy(&p, &max_val);
                     }
                 }
-                WP34S_Log10(&max_val, &p, real_context);
-                WP34S_Log10(&min_val, &q, real_context);
+                math_wp34s.WP34S_Log10(&max_val, &p, real_context);
+                math_wp34s.WP34S_Log10(&min_val, &q, real_context);
                 runtime.realSubtract(&p, &q, &p, real_context);
                 runtime.int32ToReal(33 - @as(i32, displayFormatDigits), &q);
-                if (realCompareLessEqual(&q, &p)) {
+                if (math_comparison_reals.realCompareLessEqual(&q, &p)) {
                     runtime.temporaryInformation = runtime.TI_INACCURATE;
                 }
             }

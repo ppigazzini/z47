@@ -8,6 +8,8 @@ const consts = abi.constants;
 // file-local here.
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -32,12 +34,8 @@ inline fn const_plusInfinity() *const real_t {
     return consts.c1696();
 }
 
-extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
 extern fn getIRegisterAsInt(asArrayPointer: bool) i16;
 extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
-extern fn real34CompareLessThan(a: *const real34_t, b: *const real34_t) bool;
-extern fn real34CompareGreaterThan(a: *const real34_t, b: *const real34_t) bool;
-extern fn real34CompareEqual(a: *const real34_t, b: *const real34_t) bool;
 extern fn __gmpz_init(op: *runtime.mpz_struct) void;
 extern fn __gmpz_set_ui(op: *runtime.mpz_struct, value: c_ulong) void;
 extern fn __gmpz_clear(op: *runtime.mpz_struct) void;
@@ -63,10 +61,10 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
         var r: usize = 0;
         while (r < matrix.header.matrixRows) : (r += 1) {
             const cell = rmEl(matrix, r * cols + @as(usize, @intCast(j)));
-            if (!calcMax and real34CompareLessThan(cell, &res_val)) {
+            if (!calcMax and math_comparison_reals.real34CompareLessThan(cell, &res_val)) {
                 res_val = cell.*;
                 res_r = @intCast(r);
-            } else if (calcMax and real34CompareGreaterThan(cell, &res_val)) {
+            } else if (calcMax and math_comparison_reals.real34CompareGreaterThan(cell, &res_val)) {
                 res_val = cell.*;
                 res_r = @intCast(r);
             }
@@ -157,7 +155,7 @@ fn matrixFindReal(matrix: *real34Matrix_t) callconv(.c) bool {
     while (r < matrix.header.matrixRows) : (r += 1) {
         var c: usize = 0;
         while (c < cols) : (c += 1) {
-            if (real34CompareEqual(rmEl(matrix, r * cols + c), &searchVal)) {
+            if (math_comparison_reals.real34CompareEqual(rmEl(matrix, r * cols + c), &searchVal)) {
                 runtime.setIRegisterAsInt(true, @intCast(r));
                 runtime.setJRegisterAsInt(true, @intCast(c));
                 runtime.temporaryInformation = TI_TRUE;
@@ -207,7 +205,7 @@ fn matrixFindComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
         var c: usize = 0;
         while (c < cols) : (c += 1) {
             const cell = cmEl(matrix, r * cols + c);
-            if (real34CompareEqual(&cell.real, &searchValR) and real34CompareEqual(&cell.imag, &searchValI)) {
+            if (math_comparison_reals.real34CompareEqual(&cell.real, &searchValR) and math_comparison_reals.real34CompareEqual(&cell.imag, &searchValI)) {
                 runtime.setIRegisterAsInt(true, @intCast(r));
                 runtime.setJRegisterAsInt(true, @intCast(c));
                 runtime.temporaryInformation = TI_TRUE;
@@ -221,13 +219,13 @@ fn matrixFindComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 
 pub export fn fnColumnMin(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&columnMinMatrix, &columnMinMaxComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&columnMinMatrix, &columnMinMaxComplex);
 }
 pub export fn fnColumnMax(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&columnMaxMatrix, &columnMinMaxComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&columnMaxMatrix, &columnMinMaxComplex);
 }
 pub export fn fnMatrixFind(unusedParamButMandatory: u16) callconv(.c) void {
     _ = unusedParamButMandatory;
-    callByIndexedMatrix(&matrixFindReal, &matrixFindComplex);
+    math_matrix_elementwise.callByIndexedMatrix(&matrixFindReal, &matrixFindComplex);
 }

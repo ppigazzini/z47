@@ -11,6 +11,7 @@ const consts = abi.constants;
 // statics; only the two public determinant entry points are renamed.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -26,8 +27,6 @@ const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 // matrix.c block allocator and the comparison / constant surface the LU needs.
 extern fn allocC47Blocks(size_in_blocks: usize) callconv(.c) ?*anyopaque;
 extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) callconv(.c) void;
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
-extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
 
 // const_1e_37 is "#define const_1e_37 ((real_t *)(constants + 4436))" in the
 // generated constantPointers.h; hand out the same pointer into the blob.
@@ -66,7 +65,7 @@ fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *runtime.rea
         var j: usize = k + 1;
         while (j < n) : (j += 1) {
             runtime.complexMagnitude(&tmp_mat[(j * n + k) * 2], &tmp_mat[(j * n + k) * 2 + 1], &u, real_context);
-            if (realCompareGreaterThan(&u, &max)) {
+            if (math_comparison_reals.realCompareGreaterThan(&u, &max)) {
                 realCopy(&u, &max);
                 pvt = j;
             }
@@ -110,10 +109,10 @@ fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *runtime.rea
                 runtime.realSubtract(&max, &u, &tmp_mat[(i * n + j) * 2 + 1], real_context);
                 runtime.realDivide(&tmp_mat[(i * n + j) * 2], &v, &t, &runtime.ctxtReal39); // condition number
                 runtime.realDivide(&tmp_mat[(i * n + j) * 2 + 1], &max, &u, &runtime.ctxtReal39);
-                if (realCompareAbsLessThan(&t, const_1e_37())) {
+                if (math_comparison_reals.realCompareAbsLessThan(&t, const_1e_37())) {
                     runtime.realSetZero(&tmp_mat[(i * n + j) * 2]); // prevent ill-conditionedness
                 }
-                if (realCompareAbsLessThan(&u, const_1e_37())) {
+                if (math_comparison_reals.realCompareAbsLessThan(&u, const_1e_37())) {
                     runtime.realSetZero(&tmp_mat[(i * n + j) * 2 + 1]);
                 }
             }

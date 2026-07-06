@@ -29,6 +29,12 @@ const const39_egamma = consts.const39_egamma;
 // SAVE_SPACE_DM42_12BESSEL guard is dead on every z47 build.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_inverse_trig_command = @import("math_inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -102,8 +108,6 @@ const reallocateRegister = runtime.reallocateRegister;
 const getRegisterAsReal = runtime.getRegisterAsReal;
 const convertRealToReal34ResultRegister = runtime.convertRealToReal34ResultRegister;
 const convertComplexToResultRegister = runtime.convertComplexToResultRegister;
-extern fn mulComplexComplex(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2r: *align(1) const real_t, f2i: *align(1) const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
-extern fn divComplexComplex(numerReal: *align(1) const real_t, numerImag: *align(1) const real_t, denomReal: *align(1) const real_t, denomImag: *align(1) const real_t, quotientReal: *real_t, quotientImag: *real_t, real_context: *realContext_t) void;
 
 inline fn const_0() *const real_t {
     return runtime.z47_math_wrappers_const_0();
@@ -118,11 +122,6 @@ inline fn const_2() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
-extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn realArcosh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn decNumberCopy(res: *real_t, source: *align(1) const real_t) *real_t;
 extern fn decNumberMinus(res: *real_t, operand: *align(1) const real_t, ctxt: *realContext_t) *real_t;
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
@@ -138,14 +137,6 @@ inline fn realMinus(operand: *align(1) const real_t, res: *real_t, ctxt: *realCo
 }
 
 // Cross-domain WP34S / trig / hyperbolic helpers.
-extern fn WP34S_Gamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_SinhCosh(x: *const real_t, sinOut: ?*real_t, cosOut: ?*real_t, real_context: *realContext_t) void;
-extern fn WP34S_Tanh(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_RelativeError(x: *const real_t, y: *const real_t, tol: *const real_t, real_context: *realContext_t) bool;
-extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *const real_t, am: runtime.angularMode_t, sin: ?*real_t, cos: ?*real_t, tan: ?*real_t, real_context: *realContext_t) void;
-extern fn C47_WP34S_SinCosTanTaylor(angle: *const real_t, swap: bool, sinOut: ?*real_t, cosOut: ?*real_t, tanOut: ?*real_t, real_context: *realContext_t) void;
-extern fn C47_WP34S_Acos(x: *const real_t, angle: *real_t, real_context: *realContext_t) void;
-extern fn mod2Pi(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(ptr: ?*anyopaque, sizeInBlocks: usize) void;
@@ -233,7 +224,7 @@ fn fnBesselYCore() BesselError!void {
             realMinus(&b, &a, &runtime.ctxtReal75); // realMinus(&b, &a, ctx): a = -b
             realPolarToRectangular(&r, &a, &r, &a, &runtime.ctxtReal75);
 
-            C47_WP34S_Cvt2RadSinCosTan(&b, amRadian, null, &b, null, &runtime.ctxtReal75);
+            math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&b, amRadian, null, &b, null, &runtime.ctxtReal75);
             WP34S_BesselJ(&n, &x, &c, &runtime.ctxtReal75);
             realMultiply(&b, &c, &b, &runtime.ctxtReal75);
             realAdd(&b, &b, &b, &runtime.ctxtReal75);
@@ -277,14 +268,14 @@ fn bessel_asymptotic_large_x(alpha: *const real_t, x: *const real_t, is_y: bool,
     realMultiply(alpha, const_2(), &chi, realContext);
     realAdd(&chi, const_1(), &chi, realContext);
     realMultiply(&chi, const39_piOn4(), &chi, realContext);
-    mod2Pi(x, &tmp, realContext);
+    math_wp34s.mod2Pi(x, &tmp, realContext);
     realSubtract(&tmp, &chi, &tmp, realContext);
-    mod2Pi(&tmp, &chi, realContext);
+    math_wp34s.mod2Pi(&tmp, &chi, realContext);
 
     if (is_y) {
-        C47_WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, null, realContext);
+        math_wp34s.C47_WP34S_SinCosTanTaylor(&chi, false, &cChi, &sChi, null, realContext);
     } else {
-        C47_WP34S_SinCosTanTaylor(&chi, false, &sChi, &cChi, null, realContext);
+        math_wp34s.C47_WP34S_SinCosTanTaylor(&chi, false, &sChi, &cChi, null, realContext);
     }
 
     realMultiply(alpha, alpha, &mu, realContext);
@@ -328,7 +319,7 @@ fn bessel_asymptotic_large_x(alpha: *const real_t, x: *const real_t, is_y: bool,
 
         realSetOne(&tmp);
         tmp.exponent -= 73;
-        if (WP34S_RelativeError(&p, &pp, &tmp, realContext) and WP34S_RelativeError(&q, &qq, &tmp, realContext)) {
+        if (math_wp34s.WP34S_RelativeError(&p, &pp, &tmp, realContext) and math_wp34s.WP34S_RelativeError(&q, &qq, &tmp, realContext)) {
             break;
         }
     }
@@ -363,18 +354,18 @@ fn u_k(k: u32, coeff: [*]real_t, t_r: *const real_t, t_i: *const real_t, res_r: 
     realSetZero(res_i);
     i = 1;
     while (i < k) : (i += 1) {
-        mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
+        math_multiplication_cells.mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
     }
     i = 0;
     while (i < NUMBER_OF_COEFF) : (i += 1) {
         if (realIsZero(&coeff[i])) {
             break;
         }
-        mulComplexComplex(&coeff[i], const_0(), &t_n_r, &t_n_i, &tmp_r, &tmp_i, realContext);
+        math_multiplication_cells.mulComplexComplex(&coeff[i], const_0(), &t_n_r, &t_n_i, &tmp_r, &tmp_i, realContext);
         realAdd(res_r, &tmp_r, res_r, realContext);
         realAdd(res_i, &tmp_i, res_i, realContext);
-        mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
-        mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
+        math_multiplication_cells.mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
+        math_multiplication_cells.mulComplexComplex(&t_n_r, &t_n_i, t_r, t_i, &t_n_r, &t_n_i, realContext);
     }
 }
 
@@ -424,7 +415,7 @@ fn Sigma_u_k(nu: *const real_t, t_r: *const real_t, t_i: *const real_t, odd: i32
                 while (i < NUMBER_OF_COEFF) : (i += 1) {
                     if (((i % 2 == 1) and odd != 0) or ((i % 2 == 0) and even != 0)) {
                         u_k(i, coeff_current, t_r, t_i, &tmp, &tmp2, realContext);
-                        divComplexComplex(&tmp, &tmp2, &nu_k, const_0(), &tmp, &tmp2, realContext);
+                        math_division_cells.divComplexComplex(&tmp, &tmp2, &nu_k, const_0(), &tmp, &tmp2, realContext);
                         if ((!realIsSpecial(&tmp)) and !realIsSpecial(&tmp2)) {
                             int32ToReal(if (i % 2 == 1) odd else even, &coeff);
                             realMultiply(&tmp, &coeff, &tmp, realContext);
@@ -434,7 +425,7 @@ fn Sigma_u_k(nu: *const real_t, t_r: *const real_t, t_i: *const real_t, odd: i32
                         }
                         realSetOne(&tmp);
                         tmp.exponent -= 73;
-                        if (WP34S_RelativeError(res_r, &prev_r, &tmp, realContext) and WP34S_RelativeError(res_i, &prev_i, &tmp, realContext)) {
+                        if (math_wp34s.WP34S_RelativeError(res_r, &prev_r, &tmp, realContext) and math_wp34s.WP34S_RelativeError(res_i, &prev_i, &tmp, realContext)) {
                             break;
                         }
                         realCopy(res_r, &prev_r);
@@ -535,16 +526,16 @@ fn bessel_asymptotic_large_order_hyp(nu: *const real_t, x: *const real_t, is_y: 
 
     // nu * sech(alpha) = nu / cosh(alpha) = x
     realDivide(nu, x, &alpha, realContext);
-    realArcosh(&alpha, &alpha, realContext);
+    math_inverse_trig_command.realArcosh(&alpha, &alpha, realContext);
 
     // coefficient numerator
-    WP34S_Tanh(&alpha, &tanh_alpha, realContext);
+    math_wp34s.WP34S_Tanh(&alpha, &tanh_alpha, realContext);
     realSubtract(&tanh_alpha, &alpha, &coefficient, realContext);
     if (is_y) {
         realChangeSign(&coefficient);
     }
     realMultiply(nu, &coefficient, &coefficient, realContext);
-    realExp(&coefficient, &coefficient, realContext);
+    math_command_wrappers.realExp(&coefficient, &coefficient, realContext);
     if (is_y) {
         realChangeSign(&coefficient);
     }
@@ -577,7 +568,7 @@ fn bessel_asymptotic_large_order_trig(nu: *const real_t, x: *const real_t, is_y:
 
     // nu * sec(beta) = nu / cos(beta) = x
     realDivide(nu, x, &cos_beta, realContext);
-    C47_WP34S_Acos(&cos_beta, &beta, realContext);
+    math_wp34s.C47_WP34S_Acos(&cos_beta, &beta, realContext);
 
     realMultiply(&cos_beta, &cos_beta, &sin_beta, realContext); // cos²β
     realSubtract(const_1(), &sin_beta, &sin_beta, realContext); // sin²β
@@ -594,17 +585,17 @@ fn bessel_asymptotic_large_order_trig(nu: *const real_t, x: *const real_t, is_y:
     realSubtract(&tan_beta, &beta, &psi, realContext);
     realMultiply(&psi, nu, &psi, realContext);
     realSubtract(&psi, const39_piOn4(), &psi, realContext);
-    mod2Pi(&psi, &psi, realContext);
+    math_wp34s.mod2Pi(&psi, &psi, realContext);
     if (is_y) {
-        C47_WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, null, realContext);
+        math_wp34s.C47_WP34S_SinCosTanTaylor(&psi, false, &cos_psi, &sin_psi, null, realContext);
     } else {
-        C47_WP34S_SinCosTanTaylor(&psi, false, &sin_psi, &cos_psi, null, realContext);
+        math_wp34s.C47_WP34S_SinCosTanTaylor(&psi, false, &sin_psi, &cos_psi, null, realContext);
     }
 
     realDivide(const_1(), &tan_beta, &cot_beta, realContext);
     Sigma_u_k(nu, const_0(), &cot_beta, 0, 1, &lr, &li, realContext);
     Sigma_u_k(nu, const_0(), &cot_beta, 1, 0, &mr, &mi, realContext);
-    mulComplexComplex(&mr, &mi, const_0(), const__1(), &mr, &mi, realContext);
+    math_multiplication_cells.mulComplexComplex(&mr, &mi, const_0(), const__1(), &mr, &mi, realContext);
     // li == mi == 0 ?
 
     realMultiply(&lr, &cos_psi, &lr, realContext);
@@ -664,7 +655,7 @@ fn bessel_recur(nu: *const real_t, x: *const real_t, is_y: bool, descending: boo
 
 // Digamma function (integer arguments only)
 fn digamma(x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
-    if (realIsAnInteger(x) and realCompareGreaterThan(x, const_0())) {
+    if (realIsAnInteger(x) and math_comparison_reals.realCompareGreaterThan(x, const_0())) {
         var a: real_t = undefined;
         var ar: real_t = undefined;
         realMinus(const39_gammaEM(), res, realContext);
@@ -694,7 +685,7 @@ fn bessel(alpha: *const real_t, x: *const real_t, neg: bool, res: *real_t, realC
     realPower(&q, alpha, &r, realContext); // (x/2)^(2m+alpha)
 
     realAdd(alpha, const_1(), &gfac, realContext);
-    WP34S_Gamma(&gfac, &q, realContext);
+    math_wp34s.WP34S_Gamma(&gfac, &q, realContext);
     realDivide(&r, &q, &term, realContext);
     realCopy(&term, res); // first term in series
 
@@ -753,15 +744,15 @@ pub export fn WP34S_BesselJ(alpha: *const real_t, x: *const real_t, res: *real_t
     realMultiply(&a, &beta, &beta, realContext);
     realAdd(const_1(), const_1on4(), &gamma, realContext);
     realMultiply(&a, &gamma, &gamma, realContext);
-    if (realCompareGreaterThan(&a, const_90())) {
-        if (realCompareAbsLessThan(x, &beta)) {
+    if (math_comparison_reals.realCompareGreaterThan(&a, const_90())) {
+        if (math_comparison_reals.realCompareAbsLessThan(x, &beta)) {
             bessel_asymptotic_large_order_hyp(&a, x, false, res, realContext);
-        } else if (realCompareAbsGreaterThan(x, &gamma)) {
+        } else if (math_comparison_reals.realCompareAbsGreaterThan(x, &gamma)) {
             bessel_asymptotic_large_order_trig(&a, x, false, res, realContext);
         } else {
-            bessel_recur(&a, x, false, realCompareAbsLessThan(x, &a), res, realContext);
+            bessel_recur(&a, x, false, math_comparison_reals.realCompareAbsLessThan(x, &a), res, realContext);
         }
-    } else if (realCompareAbsGreaterThan(x, const_90()) and realCompareAbsGreaterThan(x, &gamma)) {
+    } else if (math_comparison_reals.realCompareAbsGreaterThan(x, const_90()) and math_comparison_reals.realCompareAbsGreaterThan(x, &gamma)) {
         bessel_asymptotic_large_x(&a, x, false, res, realContext);
     } else {
         bessel(&a, x, true, res, realContext);
@@ -808,7 +799,7 @@ fn bessel2_int_series(n_in: *const real_t, x: *const real_t, res: *real_t, realC
     if (in > 0) {
         realSubtract(n, const_1(), &v, realContext); // v = n-k-1 = n-1
         realSetZero(&k);
-        WP34S_Gamma(n, &p, realContext); // p = (n-1)!
+        math_wp34s.WP34S_Gamma(n, &p, realContext); // p = (n-1)!
         realCopy(&p, &s);
         realMultiply(&p, n, &nf, realContext); // nf = n!  (for later)
         realSetOne(&u);
@@ -912,22 +903,22 @@ pub export fn WP34S_BesselY(alpha: *const real_t, x: *const real_t, res: *real_t
     if (!realIsAnInteger(&a)) {
         WP34S_Mod(&a, const_2(), &t, realContext);
         realMultiply(&t, const39_pi(), &t, realContext);
-        C47_WP34S_Cvt2RadSinCosTan(&t, amRadian, &s, &c, null, realContext);
+        math_wp34s.C47_WP34S_Cvt2RadSinCosTan(&t, amRadian, &s, &c, null, realContext);
         WP34S_BesselJ(&a, x, &t, realContext);
         realMultiply(&t, &c, &u, realContext);
         realMinus(&a, &c, realContext); // realMinus(&a, &c, ctx): c = -a
         WP34S_BesselJ(&c, x, &t, realContext);
         realSubtract(&u, &t, &c, realContext);
         realDivide(&c, &s, res, realContext);
-    } else if (realCompareGreaterThan(&a, const_90())) {
-        if (realCompareAbsLessThan(x, &beta)) {
+    } else if (math_comparison_reals.realCompareGreaterThan(&a, const_90())) {
+        if (math_comparison_reals.realCompareAbsLessThan(x, &beta)) {
             bessel_asymptotic_large_order_hyp(&a, x, true, res, realContext);
-        } else if (realCompareAbsGreaterThan(x, &gamma)) {
+        } else if (math_comparison_reals.realCompareAbsGreaterThan(x, &gamma)) {
             bessel_asymptotic_large_order_trig(&a, x, true, res, realContext);
         } else {
             bessel_recur(&a, x, true, false, res, realContext);
         }
-    } else if (realCompareAbsGreaterThan(x, const_90()) and realCompareAbsGreaterThan(x, &gamma)) {
+    } else if (math_comparison_reals.realCompareAbsGreaterThan(x, const_90()) and math_comparison_reals.realCompareAbsGreaterThan(x, &gamma)) {
         bessel_asymptotic_large_x(alpha, x, true, res, realContext);
     } else {
         bessel2_int_series(alpha, x, res, realContext);

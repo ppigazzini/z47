@@ -10,6 +10,8 @@
 // (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -32,11 +34,8 @@ inline fn const_0() *const real_t {
 }
 
 // realCompareLessEqual is not in runtime; extern it.
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
 
 // Cross-domain Zig-exported externs.
-extern fn WP34S_Gamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_ComplexGamma(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
@@ -46,25 +45,25 @@ fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, r
     var tReal: real_t = undefined;
     var tImag: real_t = undefined;
 
-    if (realCompareLessEqual(xReal, const_0())) {
+    if (math_comparison_reals.realCompareLessEqual(xReal, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function complexBeta:", "cannot calculate Beta with Re(x)<=0", null, null);
         return false;
-    } else if (realCompareLessEqual(yReal, const_0())) {
+    } else if (math_comparison_reals.realCompareLessEqual(yReal, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function complexBeta:", "cannot calculate Beta with Re(y)<=0", null, null);
         return false;
     }
 
-    WP34S_ComplexGamma(xReal, xImag, &tReal, &tImag, realContext); // t = Gamma(x)
-    WP34S_ComplexGamma(yReal, yImag, rReal, rImag, realContext); // r = Gamma(y)
+    math_wp34s.WP34S_ComplexGamma(xReal, xImag, &tReal, &tImag, realContext); // t = Gamma(x)
+    math_wp34s.WP34S_ComplexGamma(yReal, yImag, rReal, rImag, realContext); // r = Gamma(y)
 
     runtime.mulComplexComplex(rReal, rImag, &tReal, &tImag, rReal, rImag, realContext); // r = Gamma(x) * Gamma(y)
 
     realAdd(xReal, yReal, &tReal, realContext); // t = x + y
     realAdd(xImag, yImag, &tImag, realContext);
 
-    WP34S_ComplexGamma(&tReal, &tImag, &tReal, &tImag, realContext); // t = Gamma(x + y);
+    math_wp34s.WP34S_ComplexGamma(&tReal, &tImag, &tReal, &tImag, realContext); // t = Gamma(x + y);
     runtime.divComplexComplex(rReal, rImag, &tReal, &tImag, rReal, rImag, realContext); // r = Gamma(x) * Gamma(y) / Gamma(x + y);
 
     if (realIsNaN(rImag) or realIsNaN(rReal)) {
@@ -80,24 +79,24 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
     // Beta(x, y) := Gamma(x) * Gamma(y) / Gamma(x+y)
     var tReal: real_t = undefined;
 
-    if (realCompareLessEqual(x, const_0())) {
+    if (math_comparison_reals.realCompareLessEqual(x, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function realBeta:", "cannot calculate Beta with x<=0", null, null);
         return false;
-    } else if (realCompareLessEqual(y, const_0())) {
+    } else if (math_comparison_reals.realCompareLessEqual(y, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function realBeta:", "cannot calculate Beta with Re(y)<=0", null, null);
         return false;
     }
 
-    WP34S_Gamma(x, &tReal, realContext); // t = Gamma(x)
-    WP34S_Gamma(y, r, realContext); // r = Gamma(y)
+    math_wp34s.WP34S_Gamma(x, &tReal, realContext); // t = Gamma(x)
+    math_wp34s.WP34S_Gamma(y, r, realContext); // r = Gamma(y)
 
     realMultiply(r, &tReal, r, realContext); // r = Gamma(x) * Gamma(y)
 
     realAdd(x, y, &tReal, realContext); // t = x + y
 
-    WP34S_Gamma(&tReal, &tReal, realContext); // t = Gamma(x + y);
+    math_wp34s.WP34S_Gamma(&tReal, &tReal, realContext); // t = Gamma(x + y);
     realDivide(r, &tReal, r, realContext); // r = Gamma(x) * Gamma(y) / Gamma(x + y);
 
     if (realIsNaN(r)) {

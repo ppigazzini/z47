@@ -9,6 +9,7 @@
 // (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;
@@ -42,7 +43,6 @@ inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) re
     dst[1] = src[1];
 }
 
-extern fn real34RectangularToPolar(real: *align(1) const real34_t, imag: *align(1) const real34_t, magnitude: *align(1) real34_t, theta: *align(1) real34_t) void;
 extern fn convertAngle34FromTo(angle: *align(1) real34_t, from_mode: angularMode_t, to_mode: angularMode_t) void;
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
@@ -94,7 +94,7 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
             }
             runtime.liftStack();
             runtime.reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-            real34RectangularToPolar(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X)); // X in radians
+            math_transform_complex_helpers.real34RectangularToPolar(REGISTER_REAL34_DATA(REGISTER_L), REGISTER_IMAG34_DATA(REGISTER_L), REGISTER_REAL34_DATA(REGISTER_Y), REGISTER_REAL34_DATA(REGISTER_X)); // X in radians
             convertAngle34FromTo(REGISTER_REAL34_DATA(REGISTER_X), amRadian, tempAngle);
             runtime.setRegisterAngularMode(REGISTER_X, tempAngle);
             runtime.temporaryInformation = TI_THETA_RADIUS;
@@ -123,7 +123,7 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
                 var i: u16 = 0;
                 while (i < @as(u32, cMat.header.matrixRows) * @as(u32, cMat.header.matrixColumns)) : (i += 1) {
                     if (runtime.getSystemFlag(FLAG_POLAR)) { // polar mode
-                        real34RectangularToPolar(VARIABLE_REAL34_DATA(&cElems[i]), VARIABLE_IMAG34_DATA(&cElems[i]), &rElems[i], &iElems[i]);
+                        math_transform_complex_helpers.real34RectangularToPolar(VARIABLE_REAL34_DATA(&cElems[i]), VARIABLE_IMAG34_DATA(&cElems[i]), &rElems[i], &iElems[i]);
                         convertAngle34FromTo(&iElems[i], amRadian, runtime.currentAngularMode);
                     } else { // rectangular mode
                         real34Copy(VARIABLE_REAL34_DATA(&cElems[i]), &rElems[i]);

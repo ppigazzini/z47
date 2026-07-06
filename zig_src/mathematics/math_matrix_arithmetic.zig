@@ -7,6 +7,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -18,8 +19,6 @@ const nim_register_line = runtime.REGISTER_X;
 
 // realMatrixInit / complexMatrixInit are owned by
 // math_matrix_lifecycle.zig (B1); resolve the canonical symbols here.
-extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
-extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool;
 
 
 const realElems = abi.matrixRealElems;
@@ -48,7 +47,7 @@ fn addSubRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, subtra
     }
 
     if (!samePtr(y, res) and !samePtr(x, res)) {
-        if (!realMatrixInit(res, rows, cols)) {
+        if (!math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
             reportRamFull("In function addSubRealMatrices:");
             return;
         }
@@ -85,7 +84,7 @@ fn addSubComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_
         return;
     }
 
-    if (samePtr(y, res) or samePtr(x, res) or complexMatrixInit(res, rows, cols)) {
+    if (samePtr(y, res) or samePtr(x, res) or math_matrix_lifecycle.complexMatrixInit(res, rows, cols)) {
         const ye = constComplexElems(y);
         const xe = constComplexElems(x);
         const re = complexElems(res);
@@ -117,7 +116,7 @@ pub export fn multiplyRealMatrix(matrix: *const real34Matrix_t, x: *const real34
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const me = constRealElems(matrix);
         const re = realElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -134,7 +133,7 @@ pub export fn _multiplyRealMatrix(matrix: *const real34Matrix_t, x: *const real_
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or realMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.realMatrixInit(res, rows, cols)) {
         const me = constRealElems(matrix);
         const re = realElems(res);
         const count = @as(usize, cols) * @as(usize, rows);
@@ -163,7 +162,7 @@ pub export fn _multiplyComplexMatrix(matrix: *const complex34Matrix_t, xr: *cons
     const rows = matrix.header.matrixRows;
     const cols = matrix.header.matrixColumns;
 
-    if (samePtr(matrix, res) or complexMatrixInit(res, rows, cols)) {
+    if (samePtr(matrix, res) or math_matrix_lifecycle.complexMatrixInit(res, rows, cols)) {
         const me = constComplexElems(matrix);
         const re = complexElems(res);
         const count = @as(usize, cols) * @as(usize, rows);

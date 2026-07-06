@@ -12,6 +12,10 @@ const const39_pi = consts.const39_pi;
 // become fixed moreInfoOnError strings (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_gamma = @import("math_gamma.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -59,8 +63,6 @@ inline fn const_plusInfinity() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 // real ops / predicates not in runtime: extern / inline macro equivalents.
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 inline fn realIsPositive(source: *const real_t) bool {
     return (source.bits & 0x80) == 0x00;
 }
@@ -74,7 +76,6 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 }
 
 // realToReal34 with a *align(1) const source (const_NaN is from the blob).
-extern fn realToReal34(source: *align(1) const real_t, destination: *align(1) real34_t) void;
 extern fn convertRealToReal34ResultRegister(real: *align(1) const real_t, dest: runtime.calcRegister_t) void;
 const real34_t = runtime.real34_t;
 
@@ -85,11 +86,6 @@ inline fn realMultiplyBlob(op1: *const real_t, op2: *align(1) const real_t, res:
 }
 
 // Cross-domain externs.
-extern fn WP34S_Mod(x: *const real_t, y: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Gamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_LnGamma(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn complexLnGamma(xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, real_context: *realContext_t) void;
 
 const RESULT_TYPE_UNKNOWN: i8 = 0;
 const RESULT_TYPE_REAL: i8 = 1;
@@ -104,11 +100,11 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function _checkLnGammaArgs", "cannot use +-Infinity as X input of lnbeta when flag D is not set", null, null);
         } else {
-            realToReal34(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), runtime.registerReal34Ptr(REGISTER_X));
+            math_runtime_helpers.realToReal34(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), runtime.registerReal34Ptr(REGISTER_X));
         }
 
         result = false;
-    } else if (realCompareLessEqual(xReal, const_0())) { // x <= 0
+    } else if (math_comparison_reals.realCompareLessEqual(xReal, const_0())) { // x <= 0
         if (realIsAnInteger(xReal)) {
             if (!runtime.getSystemFlag(FLAG_SPCRES)) {
                 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -123,9 +119,9 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
             var tmp: real_t = undefined;
 
             realMinus(xReal, &tmp, realContext); // tmp = -x
-            WP34S_Mod(&tmp, const_2(), &tmp, realContext); // tmp = ?
+            math_wp34s.WP34S_Mod(&tmp, const_2(), &tmp, realContext); // tmp = ?
 
-            if (realCompareGreaterThan(&tmp, const_1())) { // the result is a real
+            if (math_comparison_reals.realCompareGreaterThan(&tmp, const_1())) { // the result is a real
                 resultType.* = RESULT_TYPE_REAL;
             } else { // the result is a complex
                 if (runtime.getFlag(FLAG_CPXRES)) {
@@ -145,14 +141,14 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
 }
 
 fn _lnGammaReal(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) void {
-    WP34S_LnGamma(xReal, rReal, realContext);
+    math_wp34s.WP34S_LnGamma(xReal, rReal, realContext);
 }
 
 fn _lnGammaComplex(xReal: *real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) void {
     realCopy(xReal, rImag);
-    WP34S_Gamma(xReal, xReal, realContext);
+    math_wp34s.WP34S_Gamma(xReal, xReal, realContext);
     runtime.realSetPositiveSign(xReal);
-    WP34S_Ln(xReal, xReal, realContext);
+    math_wp34s.WP34S_Ln(xReal, xReal, realContext);
     realCopy(xReal, rReal);
     realToIntegralValue(rImag, rImag, DEC_ROUND_FLOOR, realContext);
     realMultiplyBlob(rImag, const39_pi(), rImag, realContext);
@@ -163,8 +159,8 @@ fn _lnBetaComplex(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t
     var tReal: real_t = undefined;
     var tImag: real_t = undefined;
 
-    complexLnGamma(xReal, xImag, &tReal, &tImag, realContext); // t = LnGamma(x)
-    complexLnGamma(yReal, yImag, rReal, rImag, realContext); // r = LnGamma(y)
+    math_gamma.complexLnGamma(xReal, xImag, &tReal, &tImag, realContext); // t = LnGamma(x)
+    math_gamma.complexLnGamma(yReal, yImag, rReal, rImag, realContext); // r = LnGamma(y)
 
     realAdd(rReal, &tReal, rReal, realContext); // r = LnGamma(x) + LnGamma(y)
     realAdd(rImag, &tImag, rImag, realContext);
@@ -172,7 +168,7 @@ fn _lnBetaComplex(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t
     realAdd(xReal, yReal, &tReal, realContext); // t = x + y
     realAdd(xImag, yImag, &tImag, realContext);
 
-    complexLnGamma(&tReal, &tImag, &tReal, &tImag, realContext); // t = LnGamma(x + y);
+    math_gamma.complexLnGamma(&tReal, &tImag, &tReal, &tImag, realContext); // t = LnGamma(x + y);
 
     realSubtract(rReal, &tReal, rReal, realContext); // r = LnGamma(x) + LnGamma(y) - LnGamma(x + y);
     realSubtract(rImag, &tImag, rImag, realContext);
