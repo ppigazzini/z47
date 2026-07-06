@@ -1002,7 +1002,7 @@ inline fn setStatPgmEnd() void {
 // ===========================================================================
 // Preserved bridge helpers (other owners extern these).
 // ===========================================================================
-pub export fn z47_frontier_push_u32_to_x(value: u32) callconv(.c) void {
+pub fn z47_frontier_push_u32_to_x(value: u32) void {
     var tmp: mpz_struct = undefined;
     liftStack();
     mpz_init(&tmp);
@@ -1011,7 +1011,7 @@ pub export fn z47_frontier_push_u32_to_x(value: u32) callconv(.c) void {
     mpz_clear(&tmp);
 }
 
-pub export fn z47_frontier_release_saved_statistical_sums() callconv(.c) void {
+pub fn z47_frontier_release_saved_statistical_sums() void {
     if (savedStatisticalSumsPointer != null) {
         freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * realSizeInBlocks75);
     }
@@ -1019,11 +1019,11 @@ pub export fn z47_frontier_release_saved_statistical_sums() callconv(.c) void {
 // REAL_SIZE_IN_BLOCKS(75) == 15
 const realSizeInBlocks75: usize = 15;
 
-pub export fn z47_frontier_is_r47_fam() callconv(.c) bool_t {
+pub fn z47_frontier_is_r47_fam() bool_t {
     return isR47FAM();
 }
 
-pub export fn z47_frontier_keys_to_user_case() callconv(.c) void {
+pub fn z47_frontier_keys_to_user_case() void {
     if (normKey00Key() != -1) {
         const k: usize = @intCast(normKey00Key());
         kbd_usr[k].primary = Norm_Key_00.func;
@@ -1043,7 +1043,7 @@ const MNU_DYNAMIC: i16 = 1394;
 const ITM_XEQ: i16 = 3;
 const ITM_RCL: i16 = 51;
 
-pub export fn z47_frontier_keys_from_user_case() callconv(.c) void {
+pub fn z47_frontier_keys_from_user_case() void {
     if (normKey00Key() != -1) {
         const k: usize = @intCast(normKey00Key());
         Norm_Key_00.func = kbd_usr[k].primary;
@@ -1061,7 +1061,7 @@ pub export fn z47_frontier_keys_from_user_case() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_keys_user_layout_reset_case() callconv(.c) void {
+pub fn z47_frontier_keys_user_layout_reset_case() void {
     _ = frontier_char_string.xcopy(kbd_usr, kbdStd(), SIZEOF_KBD_STD);
     Norm_Key_00.func = normKey00ItemInLayout();
     Norm_Key_00.funcParam[0] = 0;

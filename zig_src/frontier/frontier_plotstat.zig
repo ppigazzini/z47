@@ -1794,25 +1794,25 @@ pub export fn fnPlotCloseSmi(unusedButMandatoryParameter: u16) callconv(.c) void
 // ===========================================================================
 // Shim helpers (z47_frontier_plot_*) - provided HERE (no sibling exports them).
 // ===========================================================================
-pub export fn z47_frontier_plot_set_plotstatmx_stats() callconv(.c) void {
+pub fn z47_frontier_plot_set_plotstatmx_stats() void {
     _ = strcpy(&plotStatMx, "STATS");
 }
 
-pub export fn z47_frontier_plot_set_plotstatmx_histo() callconv(.c) void {
+pub fn z47_frontier_plot_set_plotstatmx_histo() void {
     _ = strcpy(&plotStatMx, "HISTO");
 }
 
-pub export fn z47_frontier_plot_set_statmx_histo() callconv(.c) void {
+pub fn z47_frontier_plot_set_statmx_histo() void {
     _ = strcpy(&statMx, "HISTO");
 }
 
-pub export fn z47_frontier_plot_has_source_data() callconv(.c) bool_t {
+pub fn z47_frontier_plot_has_source_data() bool_t {
     return (plotStatMx[0] == 'S' and frontier_stats.checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
         (plotStatMx[0] == 'H' and statMxN() >= 3);
 }
 
-pub export fn z47_frontier_plot_clear_screen_for_graph_entry() callconv(.c) void {
+pub fn z47_frontier_plot_clear_screen_for_graph_entry() void {
     if (!GRAPHMODE()) {
         frontier_screen.clearScreenOld(1, 0, 0); // clrStatusBar, !clrRegisterLines, !clrSoftkeys
     }

@@ -2280,36 +2280,36 @@ comptime {
 // z47_frontier_* C-helper shims (were in the bridge tail). Always-on, both
 // branches. On the IR-dead branch they reproduce the bridge's `#else` stubs.
 // ===========================================================================
-pub export fn z47_frontier_print_reg_range(first_register_no: u16, last_register_no: u16) callconv(.c) bool_t {
+pub fn z47_frontier_print_reg_range(first_register_no: u16, last_register_no: u16) bool_t {
     if (comptime ir_printing) {
         return _printRegRange(first_register_no, last_register_no);
     }
     return false;
 }
 
-pub export fn z47_frontier_print_exit_pressed() callconv(.c) bool_t {
+pub fn z47_frontier_print_exit_pressed() bool_t {
     if (comptime ir_printing) {
         return _exitKeyPressed();
     }
     return false;
 }
 
-pub export fn z47_frontier_current_number_of_local_registers() callconv(.c) u16 {
+pub fn z47_frontier_current_number_of_local_registers() u16 {
     return currentNumberOfLocalRegisters();
 }
 
-pub export fn z47_frontier_sigma_name(index: u16) callconv(.c) [*c]const u8 {
+pub fn z47_frontier_sigma_name(index: u16) [*c]const u8 {
     return &summationRegisterName[index].name;
 }
 
-pub export fn z47_frontier_print_sigma_line(index: u16) callconv(.c) void {
+pub fn z47_frontier_print_sigma_line(index: u16) void {
     if (comptime ir_printing) {
         frontier_register_value_conversions.convertRealToResultRegister(statisticalSumsPointer + index, TEMP_REGISTER_1, amNone);
         printRegImpl(@bitCast(TEMP_REGISTER_1), &summationRegisterName[index].name, true, LINE_FULL, true);
     }
 }
 
-pub export fn z47_frontier_print_alpha_register(register_no: u16) callconv(.c) void {
+pub fn z47_frontier_print_alpha_register(register_no: u16) void {
     if (comptime ir_printing) {
         if (getRegisterDataType(@bitCast(register_no)) == dtString) {
             printAlphaImpl(regString(@bitCast(register_no)), PRINT_ALPHA);
@@ -2317,58 +2317,58 @@ pub export fn z47_frontier_print_alpha_register(register_no: u16) callconv(.c) v
     }
 }
 
-pub export fn z47_frontier_print_set_printer_sbi(status: bool_t) callconv(.c) void {
+pub fn z47_frontier_print_set_printer_sbi(status: bool_t) void {
     if (comptime ir_printing) {
         setPrinterSBI(status);
     }
 }
 
-pub export fn z47_frontier_print_get_unicode_value(regist: calcRegister_t) callconv(.c) u16 {
+pub fn z47_frontier_print_get_unicode_value(regist: calcRegister_t) u16 {
     if (comptime ir_printing) {
         return _getUnicodeValue(regist);
     }
     return 0;
 }
 
-pub export fn z47_frontier_x_real_matrix_rows() callconv(.c) u16 {
+pub fn z47_frontier_x_real_matrix_rows() u16 {
     var x: real34Matrix_t = undefined;
     frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     return x.header.matrixRows;
 }
 
-pub export fn z47_frontier_x_real_matrix_cols() callconv(.c) u16 {
+pub fn z47_frontier_x_real_matrix_cols() u16 {
     var x: real34Matrix_t = undefined;
     frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     return x.header.matrixColumns;
 }
 
-pub export fn z47_frontier_x_complex_matrix_rows() callconv(.c) u16 {
+pub fn z47_frontier_x_complex_matrix_rows() u16 {
     var x: complex34Matrix_t = undefined;
     frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     return x.header.matrixRows;
 }
 
-pub export fn z47_frontier_x_complex_matrix_cols() callconv(.c) u16 {
+pub fn z47_frontier_x_complex_matrix_cols() u16 {
     var x: complex34Matrix_t = undefined;
     frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     return x.header.matrixColumns;
 }
 
-pub export fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) callconv(.c) void {
+pub fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) void {
     var x: real34Matrix_t = undefined;
     frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
     reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
     real34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
 }
 
-pub export fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) callconv(.c) void {
+pub fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) void {
     var x: complex34Matrix_t = undefined;
     frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
     reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
     complex34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
 }
 
-pub export fn z47_frontier_named_variable_label(index: u16, buffer: [*c]u8, buffer_size: u16) callconv(.c) bool_t {
+pub fn z47_frontier_named_variable_label(index: u16, buffer: [*c]u8, buffer_size: u16) bool_t {
     if (index >= numberOfNamedVariables or buffer == null or buffer_size == 0) {
         return false;
     }
@@ -2381,7 +2381,7 @@ pub export fn z47_frontier_named_variable_label(index: u16, buffer: [*c]u8, buff
     return true;
 }
 
-pub export fn z47_frontier_user_variable_should_skip(label: [*c]const u8) callconv(.c) bool_t {
+pub fn z47_frontier_user_variable_should_skip(label: [*c]const u8) bool_t {
     if (label == null) {
         return true;
     }
@@ -2392,23 +2392,23 @@ pub export fn z47_frontier_user_variable_should_skip(label: [*c]const u8) callco
         frontier_sort.compareString(label, "Mat_X", CMP_NAME) == 0;
 }
 
-pub export fn z47_frontier_find_named_variable_register(label: [*c]const u8) callconv(.c) calcRegister_t {
+pub fn z47_frontier_find_named_variable_register(label: [*c]const u8) calcRegister_t {
     return findNamedVariable(label);
 }
 
-pub export fn z47_frontier_program_begin() callconv(.c) [*c]u8 {
+pub fn z47_frontier_program_begin() [*c]u8 {
     return beginOfProgramMemory;
 }
 
-pub export fn z47_frontier_programs_end(step: [*c]u8) callconv(.c) bool_t {
+pub fn z47_frontier_programs_end(step: [*c]u8) bool_t {
     return frontier_manage.isAtEndOfPrograms(step);
 }
 
-pub export fn z47_frontier_program_next_step(step: [*c]u8) callconv(.c) [*c]u8 {
+pub fn z47_frontier_program_next_step(step: [*c]u8) [*c]u8 {
     return frontier_next_step.findNextStep(step);
 }
 
-pub export fn z47_frontier_program_global_label(step: [*c]u8, label: [*c]u8, label_size: u16) callconv(.c) bool_t {
+pub fn z47_frontier_program_global_label(step: [*c]u8, label: [*c]u8, label_size: u16) bool_t {
     if (step == null or label == null or label_size == 0) {
         return false;
     }
@@ -2429,26 +2429,26 @@ pub export fn z47_frontier_program_global_label(step: [*c]u8, label: [*c]u8, lab
     return true;
 }
 
-pub export fn z47_frontier_program_step_is_end(step: [*c]u8) callconv(.c) bool_t {
+pub fn z47_frontier_program_step_is_end(step: [*c]u8) bool_t {
     return isAtEndOfProgram(step);
 }
 
-pub export fn z47_frontier_program_label_prefix() callconv(.c) [*c]const u8 {
+pub fn z47_frontier_program_label_prefix() [*c]const u8 {
     return "LBL " ++ STD_LEFT_SINGLE_QUOTE;
 }
 
-pub export fn z47_frontier_program_label_suffix() callconv(.c) [*c]const u8 {
+pub fn z47_frontier_program_label_suffix() [*c]const u8 {
     return STD_RIGHT_SINGLE_QUOTE;
 }
 
-pub export fn z47_frontier_print_program_counter(program_number: u16, total_programs: u16) callconv(.c) void {
+pub fn z47_frontier_print_program_counter(program_number: u16, total_programs: u16) void {
     if (comptime ir_printing) {
         abi.fmtBufZ(tmpString[0..2560], "Prgm #{d}/{d}", .{ @as(u32, program_number), @as(u32, total_programs) });
         printJustifiedImpl(tmpString);
     }
 }
 
-pub export fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8, label_size: u16) callconv(.c) void {
+pub fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8, label_size: u16) void {
     if (label == null or label_size == 0) {
         return;
     }
@@ -2467,23 +2467,23 @@ pub export fn z47_frontier_format_register_label(register_no: u16, label: [*c]u8
     }
 }
 
-pub export fn z47_frontier_item_catalog_name(item: u16) callconv(.c) [*c]const u8 {
+pub fn z47_frontier_item_catalog_name(item: u16) [*c]const u8 {
     return &indexOfItems[item].itemCatalogName;
 }
 
-pub export fn z47_frontier_item_softmenu_name(item: u16) callconv(.c) [*c]const u8 {
+pub fn z47_frontier_item_softmenu_name(item: u16) [*c]const u8 {
     return &indexOfItems[item].itemSoftmenuName;
 }
 
-pub export fn z47_frontier_last_item() callconv(.c) u16 {
+pub fn z47_frontier_last_item() u16 {
     return LAST_ITEM;
 }
 
-pub export fn z47_frontier_print_backup_aim_message_area() callconv(.c) void {
+pub fn z47_frontier_print_backup_aim_message_area() void {
     _ = frontier_char_string.xcopy(tmpString, aimBuffer, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH));
 }
 
-pub export fn z47_frontier_print_restore_aim_message_area() callconv(.c) void {
+pub fn z47_frontier_print_restore_aim_message_area() void {
     _ = frontier_char_string.xcopy(aimBuffer, tmpString, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH));
 }
 
