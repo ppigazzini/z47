@@ -33,6 +33,9 @@ const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_b
 // Types
 // ---------------------------------------------------------------------------
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
+const solve_owned = @import("solve_owned.zig"); // M-callconv: Zig-to-Zig
+const sumprod = @import("sumprod.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -256,7 +259,6 @@ extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u
 // ---------------------------------------------------------------------------
 extern fn fnStore(r: u16) void;
 extern fn fnRCL(inp: i16) void;
-extern fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]u8) void;
 extern fn adjustResult(res: calcRegister_t, dropY: bool, setCpxRes: bool, errorReg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 extern fn fnDeleteVariable(regist: u16) void;
@@ -279,7 +281,6 @@ extern fn getSystemFlag(sf: c_int) bool;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn runFunction(func: i16) void;
-extern fn fnSolve(labelOrVariable: u16) void;
 extern fn fnSetSignificantDigits(S: u16) void;
 extern fn fnPline(unusedButMandatoryParameter: u16) void;
 extern fn fnPlotSQ(unusedButMandatoryParameter: u16) void;
@@ -317,7 +318,6 @@ extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, vid
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn checkHalfSec() bool;
 extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*c]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
-extern fn showProgressReal(a: *const real_t, ai: *real_t, cpx: bool) void;
 extern fn exitKeyWaiting() bool;
 extern fn refreshLcd(unused: ?*anyopaque) void;
 
@@ -467,7 +467,7 @@ fn execute_rpn_function() void {
     if (regStats != INVALID_VARIABLE) {
         fnStore(@bitCast(regStats)); // place X register into x
 
-        parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+        equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
         if (comptime !is_dmcp_build) {
@@ -1598,7 +1598,7 @@ fn complexSolver() void {
 
         if (checkHalfSec()) {
             if (progressHalfSecUpdate_Integer(timed, "Iter: ", iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { // timed
-                showProgressReal(&X1.Real, &X1.Imag, !realIsZero(&X1.Imag));
+                sumprod.showProgressReal(&X1.Real, &X1.Imag, !realIsZero(&X1.Imag));
             }
         }
 
@@ -1762,7 +1762,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
     switch (func) {
         EQ_REALSOLVE_LU, EQ_REALSOLVE => {
             if (currentSolverVariable >= FIRST_NAMED_VARIABLE) {
-                fnSolve(currentSolverVariable);
+                solve_owned.fnSolve(currentSolverVariable);
             }
         },
 

@@ -43,6 +43,8 @@ const const_1e_6143 = consts.const_1e_6143;
 const runtime = @import("solve_runtime.zig");
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
+const solve = @import("solve.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -271,7 +273,6 @@ extern fn fnFillStack(unused: u16) void;
 extern fn fnUndo(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
-extern fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]u8) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_t;
@@ -283,7 +284,6 @@ extern fn checkHalfSec() bool;
 extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
 
 // fnPgmInt is owned by solve.zig (its own Zig impl); call the real symbol.
-extern fn fnPgmInt(label: u16) void;
 
 // ===========================================================================
 // _fnIntegrate
@@ -291,7 +291,7 @@ extern fn fnPgmInt(label: u16) void;
 fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_section) void {
     if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (REGISTER_X <= @as(calcRegister_t, @intCast(labelOrVariable)) and @as(calcRegister_t, @intCast(labelOrVariable)) <= REGISTER_T)) {
         // Interactive mode
-        fnPgmInt(labelOrVariable);
+        solve.fnPgmInt(labelOrVariable);
         if (lastErrorCode == ERROR_NONE) {
             currentSolverStatus = SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_EQUATION_INTEGRATE;
         }
@@ -448,7 +448,7 @@ fn _integratorIteration() linksection(runtime.code_section) void {
         return;
     }
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
-        parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+        equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     } else {
         // mirror of the solver's guard (Mihail, 9bb487e44 "Fix integral nested in
         // SOLVE"); a nested program may repoint currentSolverProgram. Enables
