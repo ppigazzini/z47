@@ -1,3 +1,5 @@
+const std = @import("std");
+
 fn rangeExceedsLimit(start: u16, count: u16, exclusive_upper_bound: u16) bool {
     return @as(u32, start) + @as(u32, count) >= @as(u32, exclusive_upper_bound);
 }
@@ -69,4 +71,34 @@ pub fn validateRegisterDestinationRange(
     }
 
     return error_out_of_range;
+}
+
+// Native unit tests (REPORT-27 M-IDIOM-3). Pure register-range validation; no C
+// oracle, no global state. Fixture: register_x=112, first_local=1000, 8 locals
+// (local_limit=1008), OOR=1 / NONE=0.
+const testing = std.testing;
+const OOR: u8 = 1;
+const NONE: u8 = 0;
+
+test "validateRegisterSourceRange" {
+    var c: u16 = 5;
+    try testing.expectEqual(NONE, validateRegisterSourceRange(false, 0, &c, 112, 1000, 8, OOR, NONE));
+    c = 0;
+    try testing.expectEqual(NONE, validateRegisterSourceRange(false, 0, &c, 112, 1000, 8, OOR, NONE));
+    try testing.expectEqual(@as(u16, 112), c); // count auto-filled to register_x - start
+    c = 5;
+    try testing.expectEqual(OOR, validateRegisterSourceRange(false, 110, &c, 112, 1000, 8, OOR, NONE));
+    c = 2;
+    try testing.expectEqual(OOR, validateRegisterSourceRange(true, 1002, &c, 112, 1000, 8, OOR, NONE)); // load into local block
+    c = 2;
+    try testing.expectEqual(NONE, validateRegisterSourceRange(false, 1002, &c, 112, 1000, 8, OOR, NONE));
+    c = 1;
+    try testing.expectEqual(OOR, validateRegisterSourceRange(false, 2000, &c, 112, 1000, 8, OOR, NONE));
+}
+
+test "validateRegisterDestinationRange" {
+    try testing.expectEqual(NONE, validateRegisterDestinationRange(0, 5, 112, 1000, 8, OOR, NONE));
+    try testing.expectEqual(OOR, validateRegisterDestinationRange(110, 5, 112, 1000, 8, OOR, NONE));
+    try testing.expectEqual(NONE, validateRegisterDestinationRange(500, 3, 112, 1000, 8, OOR, NONE));
+    try testing.expectEqual(OOR, validateRegisterDestinationRange(2000, 1, 112, 1000, 8, OOR, NONE));
 }
