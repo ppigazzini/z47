@@ -106,6 +106,22 @@ const registerHeader_t = abi.RegisterHeader;
 // real_t for placeSubscript / changeSoftKey local math.
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 
@@ -665,7 +681,6 @@ extern var currentFormula: u16;
 extern var solverEstimatesUsed: bool_t;
 extern var compressString: u8;
 extern var itemToBeAssigned: i16;
-extern fn itemToBeCoded(unusedButMandatoryParameter: u16) void;
 extern var last_CM: u8;
 extern var alphaCase: u8;
 extern var calcModel: u8;
@@ -727,7 +742,6 @@ extern fn clearSystemFlag(sf: c_uint) void;
 inline fn isSystemFlagWriteProtected(sf: c_int) bool_t {
     return @intFromBool((sf & 0x4000) != 0);
 }
-extern fn compareString(s1: [*c]const u8, s2: [*c]const u8, mode: c_int) i32;
 // stringByteLength(str) = (int32_t)strlen(str) (macro).
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
@@ -750,70 +764,35 @@ fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
 inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     return stpcpy(dst, src);
 }
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
-extern fn displayBugScreen(msg: [*c]const u8) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
-extern fn enterAsmModeIfMenuIsACatalog(menuId: i16) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 inline fn getRegisterAngularMode(reg: calcRegister_t) c_int {
     return @intCast(getRegisterTag(reg) & amAngleMask);
 }
-extern fn getRegisterAsRealQuiet(regist: calcRegister_t, r: *real_t) bool_t;
 extern fn fnUndo(p: u16) void;
 extern fn liftStack() void;
-extern fn createMenu(menuName: [*c]const u8) void;
-extern fn assignToUserMenu(item: u16) void;
-extern fn refreshScreen(source: u16) void;
-extern fn checkOpCodeOfStep(step: [*c]const u8, op: i16) bool_t;
-extern fn findNextStep(step: [*c]u8) [*c]u8;
 extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
-extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
 extern fn parseEquation(equation: u16, parseMode: u16, buffer: [*c]u8, dest: [*c]u8) [*c]u8;
-extern fn reallyRunFunction(func: i16, param: i16) void;
 extern fn saveForUndo() void;
 extern fn fn1stDerivEq(p: u16) void;
 extern fn fn2ndDerivEq(p: u16) void;
 extern fn showEquation(equationId: u16, startAt: u16, cursorAt: u16, dryRun: bool_t, cursorShown: ?*bool_t, rightEllipsis: ?*bool_t) void;
-extern fn itemNotAvail(itemNr: i16) bool_t;
 extern fn isMatrixIndexed() bool_t;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool_t) u32;
 // real34ToReal(s,d) = decQuadToNumber = decimal128ToNumber (macro).
 extern fn decimal128ToNumber(d: *const real34_t, dn: *real_t) *real_t;
 inline fn real34ToReal(x: *const real34_t, r: *real_t) void {
     _ = decimal128ToNumber(x, r);
 }
-extern fn realToFloat(r: *const real_t, f: *f32) void;
 // realIsZero(x) = decNumberIsZero(x): lsu[0]==0 && digits==1 && !(bits&DECSPECIAL).
 const DECSPECIAL: u8 = 0x70;
 inline fn realIsZero(r: *const real_t) bool_t {
     return @intFromBool(r.lsu[0] == 0 and r.digits == 1 and (r.bits & DECSPECIAL) == 0);
 }
-extern fn fnCbIsSet(item: i16) i8;
-extern fn fnItemShowValue(item: i16) i16;
-extern fn figlabel(label: [*c]const u8, showText: [*c]const u8, showValue: i16) [*c]u8;
-extern fn stringToSub(showText: [*c]const u8) [*c]u8;
-extern fn formatDoubleWidth(value: *const real34_t, decimals: i32, displayName: [*c]u8, convertedRealPerfectly: *bool_t, maxWidth: i32, tmpBuf: [*c]u8, tmpBufLen: i32) [*c]u8;
-extern fn radixProcess(dest: [*c]u8, src: [*c]const u8) void;
-extern fn eatSpacesMid(str: [*c]u8) [*c]u8;
-extern fn compressConversionName(name: [*c]u8) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn showStringEnhanced(str: [*c]const u8, font: *const font_t, x: i32, y: i32, videoMode: c_int, showLeadingCols: bool_t, showEndingCols: bool_t, compress: c_int, raise: c_int, doShow: c_int, bold: c_int, lf: c_int) i16;
-extern fn stringWidthC47(str: [*c]const u8, mode: c_int, comp: c_int, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i32;
-extern fn clearScreenOld(a: bool_t, b: bool_t, c: bool_t) void;
 extern fn showShiftState() void;
-extern fn plotline1(x1: i16, y1: i16, x2: i16, y2: i16) void;
-extern fn RB_CHECKED(xx: u32, yy: u32) void;
-extern fn RB_UNCHECKED(xx: u32, yy: u32) void;
-extern fn CB_CHECKED(xx: u32, yy: u32) void;
-extern fn CB_UNCHECKED(xx: u32, yy: u32) void;
-extern fn MB_MACRO(tt: u32, yy: u32) void;
-extern fn MB_MACRO_CHECKED(xx: u32, yy: u32) void;
 
 // fnDynamicMenu is owned elsewhere (renamed away by the retired shim).
-extern fn fnDynamicMenu(unusedButMandatoryParameter: u16) void;
 
 // libc.
 extern fn malloc(n: usize) [*c]u8;
@@ -1351,7 +1330,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
     }
 
     if (softmenu[@intCast(i)].menuItem == 0) {
-        displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "menuArg '{d}' is not a valid menuArg item", .{@as(i32, @intCast(menuArg))});
             moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
@@ -1366,13 +1345,13 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
         if (menuArg == MNU_DYNAMIC) {
             i = 0;
             while (i < @as(i16, @intCast(numberOfUserMenus))) : (i += 1) {
-                if (compareString(tmpString, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
+                if (frontier_sort.compareString(tmpString, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
                     currentUserMenu = @intCast(i);
                     break;
                 }
             }
         }
-        enterAsmModeIfMenuIsACatalog(-%@as(i16, @bitCast(menuArg)));
+        frontier_calc_mode.enterAsmModeIfMenuIsACatalog(-%@as(i16, @bitCast(menuArg)));
         if (menuArg == MNU_CONVCHEF or menuArg == MNU_CONVV) {
             lastCatalogPosition[@intCast(catalog)] = if (getSystemFlag(FLAG_US) != 0) 18 else 0;
         } else {
@@ -1388,7 +1367,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", null);
             }
         } else {
-            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menuArg {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
@@ -1435,7 +1414,7 @@ pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
 
     while (menuItem != 0) {
         if ((indexOfItems[@intCast(menuItem)].status & CAT_STATUS) == CAT_MENU) {
-            if (compareString(&name, &indexOfItems[@intCast(menuItem)].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
+            if (frontier_sort.compareString(&name, &indexOfItems[@intCast(menuItem)].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
                 found = true;
                 menu_id = menuItem;
                 break;
@@ -1448,11 +1427,11 @@ pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
     if (!found) {
         i = 0;
         while (i < @as(i16, @intCast(numberOfUserMenus))) : (i += 1) {
-            if (compareString(&name, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
+            if (frontier_sort.compareString(&name, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
                 const len: i16 = @intCast(stringByteLength(&name) + 1);
                 found = true;
                 menu_id = MNU_DYNAMIC;
-                _ = xcopy(tmpString, &name, @intCast(len));
+                _ = frontier_char_string.xcopy(tmpString, &name, @intCast(len));
                 break;
             }
         }
@@ -1463,7 +1442,7 @@ pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
         menuItem = MNU_MyMenu;
         while (menuItem != 0) {
             if ((indexOfItems[@intCast(menuItem)].status & CAT_STATUS) == CAT_MNUH) {
-                if (compareString(&name, &indexOfItems[@intCast(menuItem)].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
+                if (frontier_sort.compareString(&name, &indexOfItems[@intCast(menuItem)].itemCatalogName, CMP_CLEANED_STRING_ONLY) == 0) {
                     found = true;
                     menu_id = menuItem;
                     break;
@@ -1500,7 +1479,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
 
     if (menuItem != MNU_DYNAMIC) {
         lenInBytes = @intCast(stringByteLength(&indexOfItems[@intCast(menuItem)].itemCatalogName) + 1);
-        _ = xcopy(&menuName, &indexOfItems[@intCast(menuItem)].itemCatalogName, @intCast(lenInBytes));
+        _ = frontier_char_string.xcopy(&menuName, &indexOfItems[@intCast(menuItem)].itemCatalogName, @intCast(lenInBytes));
         firstItem = softmenuStack[0].firstItem;
         if (firstItem >= 18) {
             var tmp: [16]u8 = undefined;
@@ -1516,25 +1495,25 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
         }
         reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
         if (lastErrorCode == ERROR_RAM_FULL) {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             fnUndo(NOPARAM);
             return;
         }
-        _ = xcopy(REGISTER_STRING_DATA(REGISTER_X), &menuName, @intCast(lenInBytes));
+        _ = frontier_char_string.xcopy(REGISTER_STRING_DATA(REGISTER_X), &menuName, @intCast(lenInBytes));
     } else {
         lenInBytes = @intCast(stringByteLength(&userMenus[@intCast(userMenuId)].menuName) + 1);
         reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
         if (lastErrorCode == ERROR_RAM_FULL) {
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             fnUndo(NOPARAM);
             return;
         }
-        _ = xcopy(REGISTER_STRING_DATA(REGISTER_X), &userMenus[@intCast(userMenuId)].menuName, @intCast(lenInBytes));
+        _ = frontier_char_string.xcopy(REGISTER_STRING_DATA(REGISTER_X), &userMenus[@intCast(userMenuId)].menuName, @intCast(lenInBytes));
     }
 }
 
 fn sortMenu(a: ?*const anyopaque, b: ?*const anyopaque) callconv(.c) c_int {
-    return compareString(@ptrCast(a), @ptrCast(b), CMP_EXTENSIVE);
+    return frontier_sort.compareString(@ptrCast(a), @ptrCast(b), CMP_EXTENSIVE);
 }
 
 fn _filterDataType(regist: calcRegister_t, typeFilter: dataType_t, isAngular: bool_t) bool_t {
@@ -1569,12 +1548,12 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
             const regist: calcRegister_t = @intCast(i + FIRST_NAMED_VARIABLE);
             if (applyFilter == 0 or _filterDataType(regist, typeFilter, isAngular) != 0) {
                 const nv = &allNamedVariables[@intCast(i)];
-                _ = xcopy(&tmpString[15 * @as(usize, numberOfVars)], &nv.variableName[1], nv.variableName[0]);
+                _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, numberOfVars)], &nv.variableName[1], nv.variableName[0]);
                 const cur: [*c]u8 = &tmpString[15 * @as(usize, numberOfVars)];
                 if ((softmenu[@intCast(softmenuStack[2].softmenuId)].menuItem == -%@as(i16, ITM_DELITM)) and
-                    ((compareString(cur, "STATS", CMP_NAME) == 0) or (compareString(cur, "HISTO", CMP_NAME) == 0) or
-                        (compareString(cur, "Mat_A", CMP_NAME) == 0) or (compareString(cur, "Mat_B", CMP_NAME) == 0) or
-                        (compareString(cur, "Mat_X", CMP_NAME) == 0)))
+                    ((frontier_sort.compareString(cur, "STATS", CMP_NAME) == 0) or (frontier_sort.compareString(cur, "HISTO", CMP_NAME) == 0) or
+                        (frontier_sort.compareString(cur, "Mat_A", CMP_NAME) == 0) or (frontier_sort.compareString(cur, "Mat_B", CMP_NAME) == 0) or
+                        (frontier_sort.compareString(cur, "Mat_X", CMP_NAME) == 0)))
                 {
                     _ = memset(cur, 0, 15);
                 } else {
@@ -1593,7 +1572,7 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
                 continue;
             }
             if (applyFilter == 0 or _filterDataType(regist, typeFilter, isAngular) != 0) {
-                _ = xcopy(&tmpString[15 * @as(usize, numberOfVars)], &rv.reservedVariableName[1], rv.reservedVariableName[0]);
+                _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, numberOfVars)], &rv.reservedVariableName[1], rv.reservedVariableName[0]);
                 numberOfVars += 1;
                 numberOfBytes += 1 + @as(u16, rv.reservedVariableName[0]);
             }
@@ -1610,7 +1589,7 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
         var i: i32 = 0;
         while (i < @as(i32, numberOfVars)) : (i += 1) {
             const len: i16 = @intCast(stringByteLength(&tmpString[15 * @as(usize, @intCast(i))]) + 1);
-            _ = xcopy(ptr, &tmpString[15 * @as(usize, @intCast(i))], @intCast(len));
+            _ = frontier_char_string.xcopy(ptr, &tmpString[15 * @as(usize, @intCast(i))], @intCast(len));
             ptr += @intCast(len);
         }
     }
@@ -1622,18 +1601,18 @@ fn _dynmenuConstructMVarsFromPgm(label: u16, numberOfBytes: *u16, numberOfVars: 
     while (numberOfVars.* < 18) {
         // Skip any user REM so a REM before an MVAR is transparent to the MVAR
         // count (matches C); a non-REM non-MVAR step (or .END) ends the count.
-        while (checkOpCodeOfStep(step, ITM_REM) != 0) {
-            step = findNextStep(step);
+        while (frontier_manage.checkOpCodeOfStep(step, ITM_REM)) {
+            step = frontier_next_step.findNextStep(step);
         }
-        if (!(checkOpCodeOfStep(step, ITM_MVAR) != 0 and step[2] == STRING_LABEL_VARIABLE)) {
+        if (!(frontier_manage.checkOpCodeOfStep(step, ITM_MVAR) and step[2] == STRING_LABEL_VARIABLE)) {
             break;
         }
-        const varNameLen = boundProgramNameLength(step + 4, step[3]);
-        _ = xcopy(&tmpString[numberOfBytes.*], step + 4, varNameLen);
+        const varNameLen = frontier_manage.boundProgramNameLength(step + 4, step[3]);
+        _ = frontier_char_string.xcopy(&tmpString[numberOfBytes.*], step + 4, varNameLen);
         _ = findOrAllocateNamedVariable(&tmpString[numberOfBytes.*]);
         numberOfBytes.* += @as(u16, varNameLen) + 1;
         numberOfVars.* += 1;
-        step = findNextStep(step);
+        step = frontier_next_step.findNextStep(step);
     }
 }
 
@@ -1660,7 +1639,7 @@ fn _dynmenuConstructMVars(mIdx: i16) void {
     }
 
     dynamicSoftmenu[@intCast(mIdx)].menuContent = malloc(numberOfBytes);
-    _ = xcopy(dynamicSoftmenu[@intCast(mIdx)].menuContent, tmpString, numberOfBytes);
+    _ = frontier_char_string.xcopy(dynamicSoftmenu[@intCast(mIdx)].menuContent, tmpString, numberOfBytes);
     dynamicSoftmenu[@intCast(mIdx)].numItems = @intCast(numberOfVars);
 }
 
@@ -1706,7 +1685,7 @@ fn _dynmenuConstructUser(mIdx: i16) void {
                 lbl = &indexOfItems[@intCast(cabs(md.item))].itemCatalogName;
             }
             const len: i16 = @intCast(stringByteLength(lbl) + 1);
-            _ = xcopy(ptr, lbl, @intCast(len));
+            _ = frontier_char_string.xcopy(ptr, lbl, @intCast(len));
             ptr += @intCast(len);
         }
     }
@@ -1739,7 +1718,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
                     if (lblNameLen > 14) { // this menu lays each name out in a fixed 15-byte slot
                         lblNameLen = 14;
                     }
-                    _ = xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], labelList[@intCast(i)].labelPointer + 1, lblNameLen);
+                    _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], labelList[@intCast(i)].labelPointer + 1, lblNameLen);
                     numberOfGlobalLabels += 1;
                     numberOfBytes += 1 + @as(i16, lblNameLen);
                 }
@@ -1752,7 +1731,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
             i = 0;
             while (i < numberOfGlobalLabels) : (i += 1) {
                 const len: i16 = @intCast(stringByteLength(&tmpString[15 * @as(usize, @intCast(i))]) + 1);
-                _ = xcopy(ptr, &tmpString[15 * @as(usize, @intCast(i))], @intCast(len));
+                _ = frontier_char_string.xcopy(ptr, &tmpString[15 * @as(usize, @intCast(i))], @intCast(len));
                 ptr += @intCast(len);
             }
             dynamicSoftmenu[@intCast(mIdx)].numItems = numberOfGlobalLabels;
@@ -1779,7 +1758,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
                 while (i < LAST_ITEM) : (i += 1) {
                     if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_MENU and indexOfItems[@intCast(i)].itemCatalogName[0] != 0) {
                         const len: i16 = @intCast(stringByteLength(&indexOfItems[@intCast(i)].itemCatalogName));
-                        _ = xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &indexOfItems[@intCast(i)].itemCatalogName, @intCast(len));
+                        _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &indexOfItems[@intCast(i)].itemCatalogName, @intCast(len));
                         numberOfGlobalLabels += 1;
                         numberOfBytes += 1 + len;
                     }
@@ -1789,9 +1768,9 @@ fn initVariableSoftmenu(mIdx: i16) void {
             while (i < @as(i16, @intCast(numberOfUserMenus))) : (i += 1) {
                 const len: i16 = @intCast(stringByteLength(&userMenus[@intCast(i)].menuName));
                 if ((softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem != -%@as(i16, ITM_DELITM)) or
-                    ((compareString("HOME", &userMenus[@intCast(i)].menuName, CMP_NAME) != 0) and (compareString("P.FN", &userMenus[@intCast(i)].menuName, CMP_NAME) != 0)))
+                    ((frontier_sort.compareString("HOME", &userMenus[@intCast(i)].menuName, CMP_NAME) != 0) and (frontier_sort.compareString("P.FN", &userMenus[@intCast(i)].menuName, CMP_NAME) != 0)))
                 {
-                    _ = xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &userMenus[@intCast(i)].menuName, @intCast(len));
+                    _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &userMenus[@intCast(i)].menuName, @intCast(len));
                     numberOfGlobalLabels += 1;
                     numberOfBytes += 1 + len;
                 }
@@ -1804,7 +1783,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
             i = 0;
             while (i < numberOfGlobalLabels) : (i += 1) {
                 const len: i16 = @intCast(stringByteLength(&tmpString[15 * @as(usize, @intCast(i))]) + 1);
-                _ = xcopy(ptr, &tmpString[15 * @as(usize, @intCast(i))], @intCast(len));
+                _ = frontier_char_string.xcopy(ptr, &tmpString[15 * @as(usize, @intCast(i))], @intCast(len));
                 ptr += @intCast(len);
             }
             dynamicSoftmenu[@intCast(mIdx)].numItems = numberOfGlobalLabels;
@@ -1816,17 +1795,17 @@ fn initVariableSoftmenu(mIdx: i16) void {
             _ = memset(tmpString, 0, TMP_STR_LENGTH);
             i = 0;
             while (i < 18) : (i += 1) {
-                _ = xcopy(&tmpString[@intCast(numberOfBytes)], &programmableMenu.itemName[@intCast(i)], @intCast(stringByteLength(&programmableMenu.itemName[@intCast(i)]) + 1));
+                _ = frontier_char_string.xcopy(&tmpString[@intCast(numberOfBytes)], &programmableMenu.itemName[@intCast(i)], @intCast(stringByteLength(&programmableMenu.itemName[@intCast(i)]) + 1));
                 numberOfBytes += @intCast(stringByteLength(&programmableMenu.itemName[@intCast(i)]) + 1);
             }
             ptr = malloc(@intCast(numberOfBytes));
             dynamicSoftmenu[@intCast(mIdx)].menuContent = ptr;
-            _ = xcopy(ptr, tmpString, @intCast(numberOfBytes));
+            _ = frontier_char_string.xcopy(ptr, tmpString, @intCast(numberOfBytes));
             dynamicSoftmenu[@intCast(mIdx)].numItems = 18;
         },
         else => {
             abi.fmtBufZ(errorMessage[0..512], "In function initVariableSoftmenu: unexpected variable softmenu {d}!", .{@as(i32, -%dynamicSoftmenu[@intCast(mIdx)].menuItem)});
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         },
     }
 }
@@ -1867,7 +1846,7 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
         x2.* = @intCast(KEY_X[@intCast(xSoftkey + 1)]);
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: xSoftkey={d} must be from 0 to 5", .{@as(i32, xSoftkey)});
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
         return 0;
     }
     if (0 <= ySoftKey and ySoftKey <= 2) {
@@ -1875,7 +1854,7 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
         y2.* = y1.* + SOFTMENU_HEIGHT;
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: ySoftKey={d} but must be from 0 to 2!", .{@as(i32, ySoftKey)});
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
         return 0;
     }
     return 1;
@@ -1936,14 +1915,14 @@ fn showSoftkey2(labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode:
         xx1 = x1;
         label0[0] = 0;
         _ = stringCopy(@ptrCast(&label0[@intCast(stringByteLength(&label0))]), labelSM1);
-        compressConversionName(&label0);
+        frontier_char_string.compressConversionName(&label0);
     }
     truncateAtArrow(&label0);
 
     if (xSoftkey == 1 or xSoftkey == 3 or xSoftkey == 5) {
         label1[0] = 0;
         _ = stringCopy(@ptrCast(&label1[@intCast(stringByteLength(&label1))]), labelSM1);
-        compressConversionName(&label1);
+        frontier_char_string.compressConversionName(&label1);
         truncateAtArrow(&label1);
         showKey2(&label0, &label1, xx1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
     }
@@ -2000,7 +1979,7 @@ fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i
     {
         var i: usize = 0;
         while (i < 4) : (i += 1) {
-            widths[i] = showStringEnhanced(w[i], &standardFont, 0, y1 + YY, videoMode, 0, 0, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF);
+            widths[i] = @intCast(frontier_screen.showStringEnhanced(w[i], &standardFont, 0, @intCast(y1 + YY), videoMode, 0, 0, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
         }
     }
 
@@ -2032,7 +2011,7 @@ fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i
     {
         var i: usize = 0;
         while (i < 4) : (i += 1) {
-            _ = showStringEnhanced(t[i], &standardFont, xpos[i], y1 + 1, videoMode, 0, 0, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
+            _ = frontier_screen.showStringEnhanced(t[i], &standardFont, @intCast(xpos[i]), @intCast(y1 + 1), videoMode, 0, 0, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
         }
     }
     lcd_fill_rect(@intCast(x1 + midpoint), @intCast(y1 + 5), 1, @bitCast(@as(i32, @intCast(minI(y2, SCREEN_HEIGHT - 1))) + 1 - y1 - 2 * 5), if (videoMode == vmNormal) LCD_EMPTY_VALUE else LCD_SET_VALUE);
@@ -2044,18 +2023,18 @@ pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, v
 
     drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
-    _ = xcopy(&l, label, @intCast(stringByteLength(label) + 1));
-    w = @intCast(stringWidthC47(figlabel(&l, showText, showValue), stdNoEnlarge, 0, 0, 0));
+    _ = frontier_char_string.xcopy(&l, label, @intCast(stringByteLength(label) + 1));
+    w = @intCast(frontier_screen.stringWidthC47(frontier_radio_button_catalog.figlabel(&l, showText, showValue), stdNoEnlarge, 0, 0, 0));
     if ((showCb >= 0) or (@as(i32, w) >= @divTrunc((@as(i32, @intCast(minI(x2, SCREEN_WIDTH))) - maxI(0, x1)) * 3, 4))) {
-        w = @intCast(stringWidthC47(figlabel(&l, showText, showValue), stdNoEnlarge, 1, 0, 0));
+        w = @intCast(frontier_screen.stringWidthC47(frontier_radio_button_catalog.figlabel(&l, showText, showValue), stdNoEnlarge, 1, 0, 0));
         if (showCb >= 0) {
             w = w + 8;
         }
         compressString = 1;
-        _ = showString(figlabel(&l, showText, showValue), &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
+        _ = frontier_screen.showString(frontier_radio_button_catalog.figlabel(&l, showText, showValue), &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
         compressString = 0;
     } else {
-        _ = showString(figlabel(&l, showText, showValue), &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
+        _ = frontier_screen.showString(frontier_radio_button_catalog.figlabel(&l, showText, showValue), &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
     }
 
     // JM_LINE2_DRAW is not defined -> skipped.
@@ -2063,17 +2042,17 @@ pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, v
     if (showCb >= 0) {
         if (videoMode == vmNormal) {
             if (showCb == RB_FALSE) {
-                RB_UNCHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
+                frontier_addons.RB_UNCHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
             } else if (showCb == RB_TRUE) {
-                RB_CHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
+                frontier_addons.RB_CHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
             } else if (showCb == CB_TRUE) {
-                CB_CHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
+                frontier_addons.CB_CHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
             } else if (showCb == CB_FALSE) {
-                CB_UNCHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
+                frontier_addons.CB_UNCHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
             } else if (showCb == MB_FALSE) {
-                MB_MACRO(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
+                frontier_addons.MB_MACRO(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
             } else if (showCb == MB_TRUE) {
-                MB_MACRO_CHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
+                frontier_addons.MB_MACRO_CHECKED(@bitCast(@as(i32, x2 - 11)), @bitCast(@as(i32, y2 - 16)));
             }
         }
     }
@@ -2183,7 +2162,7 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
         } else {
             var convertedRealPerfectly: bool_t = undefined;
             var tmpBuf: [100]u8 = undefined;
-            _ = strcpy(tmpS, formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, &tmpBuf, 60));
+            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 2 - 4, &tmpBuf, 60));
             if (tmpS[0] == '?' or strchr(tmpS, 'E') != null) {
                 switch (itemMod) {
                     VAR_ULIM, VAR_LLIM, VAR_UEST, VAR_LEST => {
@@ -2203,12 +2182,12 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
                     },
                     else => {},
                 }
-                _ = strcpy(tmpS, formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, &convertedRealPerfectly, 400 / 6 - 2 - 4, &tmpBuf, 60));
+                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 2 - 4, &tmpBuf, 60));
             }
         }
     }
 
-    radixProcess(tmpSS, tmpS);
+    _ = frontier_plotstat.radixProcess(tmpSS, tmpS);
     if (stringByteLength(tmpSS) < 4) {
         abi.fmtCStr(tmpS, "\xa0\x04{s}", .{@as([*:0]const u8, tmpSS)});
     } else {
@@ -2256,8 +2235,8 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
     showText[0] = 0;
 
     if (itemNr > 0) {
-        showCb.* = fnCbIsSet(@intCast(itemMod));
-        showValue.* = fnItemShowValue(@intCast(itemMod));
+        showCb.* = frontier_radio_button_catalog.fnCbIsSet(@intCast(itemMod));
+        showValue.* = frontier_radio_button_catalog.fnItemShowValue(@intCast(itemMod));
 
         switch (itemMod) {
             VAR_ACC => {
@@ -2265,7 +2244,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                 if (realIsZero(&tmpR) != 0) {
                     _ = strcpy(&tmpS, "0");
                 } else {
-                    realToFloat(&tmpR, &tmpF);
+                    frontier_register_value_conversions.realToFloat(&tmpR, &tmpF);
                     if (tmpF < 0) {
                         _ = strcpy(&tmpS, "NEG");
                     } else if (tmpF < 1.0e-34) {
@@ -2274,7 +2253,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                         _ = strcpy(&tmpS, concat2(STD_GAUSS_WHITE_R, "1"));
                     } else {
                         abi.fmtGC(&tmpS, 5, 0, true, @as(f64, tmpF));
-                        _ = strcpy(&tmpS, eatSpacesMid(&tmpS));
+                        _ = strcpy(&tmpS, frontier_debug.eatSpacesMid(&tmpS));
                     }
                 }
                 _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
@@ -2287,15 +2266,15 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                 }
             },
             ITM_IPLUS, ITM_IMINUS => {
-                if (isMatrixIndexed() != 0 and getRegisterAsRealQuiet(REGISTER_I, &tmpR) != 0) {
-                    abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(realToUint32C47(&tmpR, null))))});
+                if (isMatrixIndexed() != 0 and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_I, &tmpR)) {
+                    abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(frontier_real_type.realToUint32C47(&tmpR, null))))});
                     _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
                     showValue.* = NOVAL;
                 }
             },
             ITM_JPLUS, ITM_JMINUS => {
-                if (isMatrixIndexed() != 0 and getRegisterAsRealQuiet(REGISTER_J, &tmpR) != 0) {
-                    abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(realToUint32C47(&tmpR, null))))});
+                if (isMatrixIndexed() != 0 and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_J, &tmpR)) {
+                    abi.fmtCStr(&tmpS, "\xa0\x04\xa0\x04{d}", .{@as(u32, @as(u16, @truncate(frontier_real_type.realToUint32C47(&tmpR, null))))});
                     _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
                     showValue.* = NOVAL;
                 }
@@ -2424,13 +2403,13 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
         if (itemNr == -%@as(i16, MNU_PRINTER)) {
             switch (printerState.printer_model) {
                 PRINTER_HP => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName))});
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERHP)].itemSoftmenuName))});
                 },
                 PRINTER_MARTEL => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{ @as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName)) });
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "{s}", .{ @as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTERMARTEL)].itemSoftmenuName)) });
                 },
                 PRINTER_OTHER => {
-                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName))});
+                    abi.fmtCStr(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), "\xa0\x04{s}", .{@as([*:0]const u8, frontier_radio_button_catalog.stringToSub(&indexOfItems[@intCast(ITM_PRINTEROTHER)].itemSoftmenuName))});
                 },
                 else => {},
             }
@@ -2513,7 +2492,7 @@ pub export fn fnStrikeOutIfNotCoded(itemNr: i16, x: i16, y: i16) callconv(.c) vo
     var strike: i16 = 0;
     if (itemNr > 0) {
         // C compares indexOfItems[i].func to the itemToBeCoded FUNCTION address.
-        if (indexOfItems[@intCast(@rem(@as(i32, itemNr), 10000))].func == @as(?*const fn (u16) callconv(.c) void, &itemToBeCoded) or savedspace(itemNr) != 0) {
+        if (indexOfItems[@intCast(@rem(@as(i32, itemNr), 10000))].func == @as(?*const fn (u16) callconv(.c) void, &frontier_items.itemToBeCoded) or savedspace(itemNr) != 0) {
             strike = 1;
         }
     } else if (itemNr < 0) {
@@ -2539,7 +2518,7 @@ pub export fn fnStrikeOutIfNotCoded(itemNr: i16, x: i16, y: i16) callconv(.c) vo
 pub export fn fnStrikeThroughIfNA(itemNr: i16, x: i16, y: i16) callconv(.c) void {
     var yStroke: i16 = SCREEN_HEIGHT - y * 23 - 9;
     var xStroke: i16 = undefined;
-    if (itemNotAvail(itemNr) != 0) {
+    if (frontier_items.itemNotAvail(itemNr) != 0) {
         strokeStrike(typeStrikeThrough, @intFromBool(itemNr > 0), &xStroke, &yStroke, x, y);
     }
 }
@@ -2590,7 +2569,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
     setScreenUpdateFromMenu(softmenu[@intCast(m)].menuItem, openMenu);
 
     if ((!IS_BASEBLANK_(m) or BASE_OVERRIDEONCE != 0) and calcMode != CM_FLAG_BROWSER and calcMode != CM_ASN_BROWSER and calcMode != CM_FONT_BROWSER and calcMode != CM_REGISTER_BROWSER and calcMode != CM_BUG_ON_SCREEN) {
-        clearScreenOld(0, 0, 1);
+        frontier_screen.clearScreenOld(0, 0, 1);
         BASE_OVERRIDEONCE = 0;
         if (tam.mode == TM_KEY and !tam.keyInputFinished) {
             y = 0;
@@ -2708,28 +2687,28 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                         }
                                     },
                                     MNU_1STDERIV, MNU_2NDDERIV, MNU_MVAR => {
-                                        if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(ITM_DRAW)].itemSoftmenuName, CMP_NAME) == 0) {
+                                        if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(ITM_DRAW)].itemSoftmenuName, CMP_NAME) == 0) {
                                             vm = vmReverse;
-                                        } else if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(ITM_DRAW_LU)].itemSoftmenuName, CMP_NAME) == 0) {
+                                        } else if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(ITM_DRAW_LU)].itemSoftmenuName, CMP_NAME) == 0) {
                                             vm = vmReverse;
-                                        } else if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(MNU_GRAPHS)].itemSoftmenuName, CMP_NAME) == 0) {
+                                        } else if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(MNU_GRAPHS)].itemSoftmenuName, CMP_NAME) == 0) {
                                             vm = vmReverse;
-                                        } else if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(MNU_Solver_TOOL)].itemSoftmenuName, CMP_NAME) == 0) {
+                                        } else if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(MNU_Solver_TOOL)].itemSoftmenuName, CMP_NAME) == 0) {
                                             vm = vmReverse;
-                                        } else if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(MNU_Sf_TOOL)].itemSoftmenuName, CMP_NAME) == 0) {
+                                        } else if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(MNU_Sf_TOOL)].itemSoftmenuName, CMP_NAME) == 0) {
                                             vm = vmReverse;
                                         }
 
-                                        if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(ITM_SETSIG2)].itemSoftmenuName, CMP_NAME) == 0) {
-                                            _ = strcpy(&itemName, figlabel(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), "", fnItemShowValue(ITM_SETSIG2)));
+                                        if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &indexOfItems[@intCast(ITM_SETSIG2)].itemSoftmenuName, CMP_NAME) == 0) {
+                                            _ = strcpy(&itemName, frontier_radio_button_catalog.figlabel(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), "", frontier_radio_button_catalog.fnItemShowValue(ITM_SETSIG2)));
                                         }
 
                                         var tmpC: [16]u8 = undefined;
                                         tmpC[0] = 0;
                                         const svIdx: i32 = @as(i32, currentSolverVariable) - FIRST_NAMED_VARIABLE;
-                                        _ = xcopy(&tmpC, &allNamedVariables[@intCast(svIdx)].variableName[1], allNamedVariables[@intCast(svIdx)].variableName[0]);
+                                        _ = frontier_char_string.xcopy(&tmpC, &allNamedVariables[@intCast(svIdx)].variableName[1], allNamedVariables[@intCast(svIdx)].variableName[0]);
                                         tmpC[allNamedVariables[@intCast(svIdx)].variableName[0]] = 0;
-                                        if (compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &tmpC, CMP_NAME) == 0) {
+                                        if (frontier_sort.compareString(getNthString(dynamicSoftmenu[@intCast(m)].menuContent, x + 6 * y), &tmpC, CMP_NAME) == 0) {
                                             _ = strcpy(&itemName, &tmpC);
                                             _ = strcat(&itemName, "*");
                                         }
@@ -2789,7 +2768,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                             showSoftkey(&indexOfItems[@intCast(-%item)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == 0) {
                             abi.fmtBufZ(errorMessage[0..512], "In function showSoftmenuCurrentPart: softmenu ID {d} not found!", .{@as(i32, item)});
-                            displayBugScreen(errorMessage);
+                            frontier_error.displayBugScreen(errorMessage);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHA_OMEGA) and alphaCase == AC_UPPER) {
                             showSoftkey(&indexOfItems[@intCast(MNU_ALPHA_OMEGA)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == -%@as(i16, MNU_ALPHA_OMEGA) and alphaCase == AC_LOWER) {
@@ -2841,7 +2820,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         {
                             const yStrokeA: i16 = SCREEN_HEIGHT - (y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6)))) * 23 - 1;
                             const xStrokeA: i16 = x * 67 + 66 - 12;
-                            plotline1(xStrokeA + 2 + 4, yStrokeA - 16 - 3 - 1, xStrokeA + 2 + 4 + 5 - 1, yStrokeA - 16 - 3 + 5);
+                            frontier_plotstat.plotline1(xStrokeA + 2 + 4, yStrokeA - 16 - 3 - 1, xStrokeA + 2 + 4 + 5 - 1, yStrokeA - 16 - 3 + 5);
                         }
                     }
 
@@ -2986,13 +2965,13 @@ fn pushSoftmenu(softmenuId: i16) void {
                     lastCatalogPosition[CATALOG_NONE] = 0;
                 }
             }
-            _ = xcopy(softmenuStack + 1, softmenuStack, @intCast(i * @sizeOf(softmenuStack_t)));
+            _ = frontier_char_string.xcopy(softmenuStack + 1, softmenuStack, @intCast(i * @sizeOf(softmenuStack_t)));
             break;
         }
     }
 
     if (i == SOFTMENU_STACK_SIZE) {
-        _ = xcopy(softmenuStack + 1, softmenuStack, (SOFTMENU_STACK_SIZE - 1) * @sizeOf(softmenuStack_t));
+        _ = frontier_char_string.xcopy(softmenuStack + 1, softmenuStack, (SOFTMENU_STACK_SIZE - 1) * @sizeOf(softmenuStack_t));
     }
 
     softmenuStack[0].softmenuId = softmenuId;
@@ -3014,7 +2993,7 @@ pub export fn popSoftmenu() callconv(.c) void {
     screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME);
     setScreenUpdateFromMenu(currentMenu(), closeMenu);
 
-    _ = xcopy(softmenuStack, softmenuStack + 1, (SOFTMENU_STACK_SIZE - 1) * @sizeOf(softmenuStack_t));
+    _ = frontier_char_string.xcopy(softmenuStack, softmenuStack + 1, (SOFTMENU_STACK_SIZE - 1) * @sizeOf(softmenuStack_t));
     _ = memset(softmenuStack + (SOFTMENU_STACK_SIZE - 1), 0, @sizeOf(softmenuStack_t));
 
     doRefreshSoftMenu = 1;
@@ -3034,7 +3013,7 @@ pub export fn popSoftmenu() callconv(.c) void {
 
     softmenuStack[0].calcMode = calcMode;
 
-    enterAsmModeIfMenuIsACatalog(softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem);
+    frontier_calc_mode.enterAsmModeIfMenuIsACatalog(softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem);
 
     if (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -%@as(i16, MNU_MVAR)) {
         setSystemFlag(FLAG_VMDISP);
@@ -3051,7 +3030,7 @@ pub export fn setCurrentUserMenu(item: i16, funcParam: [*c]u8) callconv(.c) bool
     if (item == -%@as(i16, MNU_DYNAMIC)) {
         var i: u32 = 0;
         while (i < numberOfUserMenus) : (i += 1) {
-            if (compareString(funcParam, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
+            if (frontier_sort.compareString(funcParam, &userMenus[@intCast(i)].menuName, CMP_NAME) == 0) {
                 currentUserMenu = @intCast(i);
                 return 1;
             }
@@ -3063,7 +3042,7 @@ pub export fn setCurrentUserMenu(item: i16, funcParam: [*c]u8) callconv(.c) bool
 pub export fn createHOME() callconv(.c) bool_t {
     const itemToBeAssignedMeM: i16 = itemToBeAssigned;
     if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("HOME")) == 0) {
-        createMenu("HOME");
+        frontier_assign.createMenu("HOME");
         if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("HOME")) == 0) {
             itemToBeAssigned = itemToBeAssignedMeM;
             return 0;
@@ -3075,15 +3054,15 @@ pub export fn createHOME() callconv(.c) bool_t {
         screenUpdatingMode = ~@as(u8, SCRUPD_AUTO);
         doRefreshSoftMenu = 0;
         last_CM = 240;
-        assignToUserMenu(ii);
+        frontier_assign.assignToUserMenu(ii);
         itemToBeAssigned = menu_HOME[ii];
         screenUpdatingMode = ~@as(u8, SCRUPD_AUTO);
         doRefreshSoftMenu = 0;
         last_CM = 240;
-        assignToUserMenu(ii);
+        frontier_assign.assignToUserMenu(ii);
     }
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(170);
+    frontier_screen.refreshScreen(170);
     itemToBeAssigned = itemToBeAssignedMeM;
     return 1;
 }
@@ -3091,7 +3070,7 @@ pub export fn createHOME() callconv(.c) bool_t {
 pub export fn createPFN() callconv(.c) bool_t {
     const itemToBeAssignedMeM: i16 = itemToBeAssigned;
     if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("P.FN")) == 0) {
-        createMenu("P.FN");
+        frontier_assign.createMenu("P.FN");
         if (setCurrentUserMenu(-%@as(i16, MNU_DYNAMIC), @constCast("P.FN")) == 0) {
             itemToBeAssigned = itemToBeAssignedMeM;
             return 0;
@@ -3103,15 +3082,15 @@ pub export fn createPFN() callconv(.c) bool_t {
         screenUpdatingMode = ~@as(u8, SCRUPD_AUTO);
         doRefreshSoftMenu = 0;
         last_CM = 240;
-        assignToUserMenu(ii);
+        frontier_assign.assignToUserMenu(ii);
         itemToBeAssigned = menu_MyPFN[ii];
         screenUpdatingMode = ~@as(u8, SCRUPD_AUTO);
         doRefreshSoftMenu = 0;
         last_CM = 240;
-        assignToUserMenu(ii);
+        frontier_assign.assignToUserMenu(ii);
     }
     screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(171);
+    frontier_screen.refreshScreen(171);
     itemToBeAssigned = itemToBeAssignedMeM;
     return 1;
 }
@@ -3131,9 +3110,9 @@ pub export fn changeToALPHA() callconv(.c) void {
 }
 
 pub export fn menu(n: u8) callconv(.c) i16 {
-    if (softmenu[@intCast(softmenuStack[n].softmenuId)].menuItem == -%@as(i16, MNU_DYNAMIC) and compareString("HOME", &userMenus[@intCast(currentUserMenu)].menuName, CMP_NAME) == 0) {
+    if (softmenu[@intCast(softmenuStack[n].softmenuId)].menuItem == -%@as(i16, MNU_DYNAMIC) and frontier_sort.compareString("HOME", &userMenus[@intCast(currentUserMenu)].menuName, CMP_NAME) == 0) {
         return -%@as(i16, MNU_HOME);
-    } else if (softmenu[@intCast(softmenuStack[n].softmenuId)].menuItem == -%@as(i16, MNU_DYNAMIC) and compareString("P.FN", &userMenus[@intCast(currentUserMenu)].menuName, CMP_NAME) == 0) {
+    } else if (softmenu[@intCast(softmenuStack[n].softmenuId)].menuItem == -%@as(i16, MNU_DYNAMIC) and frontier_sort.compareString("P.FN", &userMenus[@intCast(currentUserMenu)].menuName, CMP_NAME) == 0) {
         return -%@as(i16, MNU_PFN);
     } else {
         return softmenu[@intCast(softmenuStack[n].softmenuId)].menuItem;
@@ -3162,7 +3141,7 @@ pub export fn removeUserMenuFromStack(userMenuId: i16) callconv(.c) void {
     while (i < SOFTMENU_STACK_SIZE) : (i += 1) {
         if (softmenu[@intCast(softmenuStack[@intCast(i)].softmenuId)].menuItem == -%@as(i16, MNU_DYNAMIC)) {
             if ((softmenuStack[@intCast(i)].userMenuId == userMenuId) or all == 1) {
-                _ = xcopy(softmenuStack + @as(usize, @intCast(i)), softmenuStack + @as(usize, @intCast(i + 1)), @intCast((SOFTMENU_STACK_SIZE - @as(usize, @intCast(i))) * @sizeOf(softmenuStack_t)));
+                _ = frontier_char_string.xcopy(softmenuStack + @as(usize, @intCast(i)), softmenuStack + @as(usize, @intCast(i + 1)), @intCast((SOFTMENU_STACK_SIZE - @as(usize, @intCast(i))) * @sizeOf(softmenuStack_t)));
                 softmenuStack[SOFTMENU_STACK_SIZE - 1].softmenuId = 0;
                 softmenuStack[SOFTMENU_STACK_SIZE - 1].firstItem = 0;
                 softmenuStack[SOFTMENU_STACK_SIZE - 1].userMenuId = 0;
@@ -3182,7 +3161,7 @@ pub export fn removeMenuFromStack(userMenuId: i16) callconv(.c) void {
     var i: i32 = SOFTMENU_STACK_SIZE - 1;
     while (i >= 0) : (i -= 1) {
         if (menu(@intCast(i)) == userMenuId) {
-            _ = xcopy(softmenuStack + @as(usize, @intCast(i)), softmenuStack + @as(usize, @intCast(i + 1)), @intCast((SOFTMENU_STACK_SIZE - @as(usize, @intCast(i)) - 1) * @sizeOf(softmenuStack_t)));
+            _ = frontier_char_string.xcopy(softmenuStack + @as(usize, @intCast(i)), softmenuStack + @as(usize, @intCast(i + 1)), @intCast((SOFTMENU_STACK_SIZE - @as(usize, @intCast(i)) - 1) * @sizeOf(softmenuStack_t)));
             _ = memset(softmenuStack + (SOFTMENU_STACK_SIZE - 1), 0, @sizeOf(softmenuStack_t));
         }
     }
@@ -3234,10 +3213,10 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
         id = -%@as(i16, MNU_DYNAMIC);
     }
 
-    enterAsmModeIfMenuIsACatalog(id);
+    frontier_calc_mode.enterAsmModeIfMenuIsACatalog(id);
 
     if (id == 0) {
-        displayBugScreen(bugScreenIdMustNotBe0);
+        frontier_error.displayBugScreen(bugScreenIdMustNotBe0);
         return;
     }
     if ((softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == id) and (softmenuStack[0].softmenuId >= NUMBER_OF_DYNAMIC_SOFTMENUS) and catalog == 0) {
@@ -3301,7 +3280,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
                 }
             }
             if (varList == null) {
-                displayBugScreen("In function showSoftmenu: MVAR not found!");
+                frontier_error.displayBugScreen("In function showSoftmenu: MVAR not found!");
                 varList = @constCast("\x00");
             }
         } else {
@@ -3318,7 +3297,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
         }
 
         if (numberOfVars > 12) {
-            displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             if (comptime extra_info) {
                 moreInfoOnError("In function showSoftmenu:", "there are more than 12 variables in this equation!", null, null);
             }
@@ -3330,7 +3309,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
         } else if ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE or (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
             if (getNthString(varList, 1)[0] == 0) {
                 currentSolverVariable = @intCast(findOrAllocateNamedVariable(getNthString(varList, 0)));
-                reallyRunFunction(ITM_STO, @intCast(currentSolverVariable));
+                frontier_items.reallyRunFunction(ITM_STO, @intCast(currentSolverVariable));
                 saveForUndo();
                 if ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
                     fn1stDerivEq(NOPARAM);
@@ -3355,7 +3334,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
             id == -%@as(i16, MNU_2NDDERIV))
         {
             id = -%@as(i16, MNU_EQN);
-            displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             if (comptime extra_info) {
                 moreInfoOnError("In function showSoftmenu:", "The solver/integrator variable is not selected. Refusing access to Tools/Solver menu prior to variable selected!", null, null);
             }
@@ -3372,7 +3351,7 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
 
     if (softmenu[@intCast(m)].menuItem == 0) {
         abi.fmtBufZ(errorMessage[0..512], "In function showSoftmenu: softmenu {d} not found!", .{@as(i32, id)});
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
     } else {
         if (tam.mode != 0 or (calcMode == CM_ASSIGN and tam.alpha)) {
             numberOfTamMenusToPop += 1;
@@ -3441,7 +3420,7 @@ pub export fn dynmenuGetLabelWithDup(menuitem_in: i16, dupNum: ?*i16) callconv(.
         labelName += @intCast(stringByteLength(labelName) + 1);
         menuitem -= 1;
         if (dupNum) |dn| {
-            if (compareString(labelName, prevLabelName, CMP_BINARY) == 0) {
+            if (frontier_sort.compareString(labelName, prevLabelName, CMP_BINARY) == 0) {
                 dn.* += 1;
             } else {
                 prevLabelName = labelName;
@@ -3479,8 +3458,6 @@ extern fn fopen(path: [*c]const u8, mode: [*c]const u8) ?*FILE;
 extern fn fclose(f: ?*FILE) c_int;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, n: usize, f: ?*FILE) usize;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
-extern fn stringToASCII(str: [*c]const u8, ascii: [*c]u8) void;
-extern fn stringToFileNameChars(str: [*c]const u8, ascii: [*c]u8, distinctQuotes: u8) void;
 const c_gtk_widget_queue_draw = if (!dmcp_build) @extern(*const fn (?*anyopaque) callconv(.c) void, .{ .name = "gtk_widget_queue_draw" }) else {};
 const c_gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
 const c_gtk_main_iteration = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_main_iteration" }) else {};
@@ -3517,13 +3494,13 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         var asciiMenuName: [448]u8 = undefined;
 
         if (newFilenameformat == 2) {
-            stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
-            stringToFileNameChars(&asciiMenuName, &asciiString, 0);
+            frontier_char_string.stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
+            frontier_char_string.stringToFileNameChars(&asciiMenuName, &asciiString, 0);
             abi.fmtBufZ(&bmpFileName, "{s}.{d}.bmp", .{ std.mem.sliceTo(&asciiString, 0), @as(c_int, @intCast(@divTrunc(item, 18) + 1)) });
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         } else if (newFilenameformat == 1) {
-            stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
-            stringToFileNameChars(&asciiMenuName, &asciiString, 0);
+            frontier_char_string.stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
+            frontier_char_string.stringToFileNameChars(&asciiMenuName, &asciiString, 0);
             abi.fmtBufZ(&bmpFileName, "Menu_{d:0>3}_p{d}_{s}.bmp", .{ @as(u32, @intCast(@as(c_int, menu_arg))), @as(c_int, @intCast(@divTrunc(item, 18) + 1)), std.mem.sliceTo(&asciiString, 0) });
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         }
