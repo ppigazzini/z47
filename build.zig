@@ -54,19 +54,28 @@ fn buildImpl(b: *std.Build) !void {
 fn registerNativeUnitTests(b: *std.Build) void {
     const pure_modules = [_][]const u8{
         "zig_src/abi/float_format.zig",
+        "zig_src/abi/types.zig",
         "zig_src/shortint/shortint_core.zig",
         "zig_src/state/calc_state_progmem.zig",
+        "zig_src/state/register_metadata_payload_bytes.zig",
     };
     const target = b.resolveTargetQuery(.{});
+    // Some pure owners reference the std-only L1 ABI types via @import("abi");
+    // provide that module so they stay self-contained under test:unit.
+    const abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = target,
+        .optimize = .Debug,
+    });
     const step = b.step("test:unit", "Run native Zig unit tests (no C oracle)");
     for (pure_modules) |src| {
-        const unit = b.addTest(.{
-            .root_module = b.createModule(.{
-                .root_source_file = b.path(src),
-                .target = target,
-                .optimize = .Debug,
-            }),
+        const mod = b.createModule(.{
+            .root_source_file = b.path(src),
+            .target = target,
+            .optimize = .Debug,
         });
+        mod.addImport("abi", abi_module);
+        const unit = b.addTest(.{ .root_module = mod });
         step.dependOn(&b.addRunArtifact(unit).step);
     }
 }
