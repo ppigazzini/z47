@@ -60,6 +60,23 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_fractions = @import("frontier_fractions.zig"); // M-callconv: Zig-to-Zig
+const frontier_input = @import("frontier_input.zig"); // M-callconv: Zig-to-Zig
+const frontier_lbl_gto_xeq = @import("frontier_lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -393,36 +410,13 @@ extern var gapItemRadix: u16;
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
-extern fn fnRefreshState() void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
-extern fn regInRange(r: u16) bool_t;
-extern fn currentMenu() i16;
-extern fn checkForAndChange(displayString: [*c]u8, value: *real_t, valueAbs: *real_t, cnst: *const real_t, tolerance: *const real_t, name: [*c]const u8, frontSpace: bool_t, complex: bool_t) bool_t;
-extern fn displayBugScreen(msg: [*c]const u8) void;
-extern fn fnPause(duration: u16) void;
-extern fn fnStopProgram(p: u16) void;
-extern fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer: *u64, denom: *u64, lessEqualGreater: *i16) bool_t;
-extern fn internalDateToJulianDay(d: *const real34_t, j: *real34_t) void;
-extern fn decomposeJulianDay(jd: *const real34_t, year: *real34_t, month: *real34_t, day: *real34_t) void;
-extern fn getIRegisterAsInt(asArrayPointer: bool_t) i16;
-extern fn getJRegisterAsInt(asArrayPointer: bool_t) i16;
-extern fn viewRegName2(prefix: [*c]u8, prefixWidth: *i16) void;
 extern fn registerFMAOutputString(regist: calcRegister_t, prefix: [*c]const u8, displayString: [*c]u8) bool_t;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
-extern fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, toDisplay: bool_t, regXposition: bool_t) void;
-extern fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i16, am: angularMode_t, polarMode: bool_t, regXposition: bool_t) void;
-extern fn refreshRegisterLine(line: calcRegister_t) void;
-extern fn refreshScreen(source: u16) void;
-extern fn clearScreenOld(a: bool_t, b: bool_t, c: bool_t) void;
-extern fn drawSinglePixelFullWidthLine(y: c_int) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn showSoftmenu(id: i16) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 
 // IR_PRINTING-only print helpers (only referenced when ir_printing is on).
@@ -430,15 +424,6 @@ const printViewAview = if (ir_printing) @extern(*const fn (func: u16, regist: u1
 const printInputPrompt = if (ir_printing) @extern(*const fn (func: u16, regist: u16) callconv(.c) void, .{ .name = "printInputPrompt" }) else {};
 
 // string / glyph helpers
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
-extern fn stringWidthC47(str: [*c]const u8, mode: c_int, comp: c_int, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) u32;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
-extern fn stringLastGlyph(str: [*c]const u8) i16;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
-extern fn stringPrevNumberGlyph(str: [*c]const u8, pos: i16) i16;
-extern fn stringAfterPixels(str: [*c]const u8, font: *const font_t, width: i16, a: bool_t, b: bool_t) [*c]u8;
-extern fn stringAfterPixelsC47(str: [*c]const u8, mode: c_int, comp: c_int, width: u32, a: bool_t, b: bool_t) [*c]u8;
 
 // libc
 extern fn strlen(s: [*c]const u8) usize;
@@ -471,22 +456,15 @@ extern fn decQuadToIntegralValue(r: *align(1) real34_t, a: *align(1) const real3
 extern fn decQuadToUInt32(d: *align(1) const real34_t, ctx: *realContext_t, round: c_int) u32;
 
 // real (decNumber) helpers used by display.c
-extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool_t) u32;
 extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn real34CompareAbsLessThan(a: *const real34_t, b: *const real34_t) bool_t;
 extern fn real34CompareEqual(a: *const real34_t, b: *const real34_t) bool_t;
-extern fn real34FromDegToDms(a: *const real34_t, res: *real34_t) void;
 extern fn realCompareAbsLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareLessEqual(a: *const real_t, b: *const real_t) bool_t;
-extern fn realToIntegralValue(a: *const real_t, res: *real_t, round: c_int, ctx: *realContext_t) void;
 extern fn roundToSignificantDigits(a: *const real_t, res: *real_t, digits: u16, ctx: *realContext_t) void;
 extern fn WP34S_Ln(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
-extern fn convertAngleFromTo(a: *real_t, from: angularMode_t, to: angularMode_t, ctx: *realContext_t) void;
-extern fn convertAngle34FromTo(a: *real34_t, from: angularMode_t, to: angularMode_t) void;
-extern fn convertRealToLongInteger(a: *const real_t, lgInt: *mpz_struct, round: c_int) void;
 // real* operations are decNumber* macros (note the arg-order swap: result first).
 extern fn decNumberFromString(r: *real_t, str: [*c]const u8, ctx: *realContext_t) *real_t;
 extern fn decNumberToString(r: *const real_t, str: [*c]u8) [*c]u8;
@@ -501,8 +479,6 @@ extern fn decNumberRemainder(res: *real_t, a: *const real_t, b: *const real_t, c
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 extern fn decNumberGetBCD(dn: *const real_t, bcd: [*c]u8) [*c]u8;
 // real symbols (true functions, not macros).
-extern fn realSetOne(r: *real_t) void;
-extern fn realSetZero(r: *real_t) void;
 extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
 // inline wrappers matching the realType.h macro call shapes.
 inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
@@ -545,7 +521,6 @@ extern fn __gmpz_tdiv_q_ui(q: [*c]mpz_struct, n: [*c]const mpz_struct, d: c_ulon
 extern fn __gmpz_tdiv_ui(n: [*c]const mpz_struct, d: c_ulong) c_ulong;
 extern fn __gmpz_fdiv_ui(n: [*c]const mpz_struct, d: c_ulong) c_ulong;
 extern fn __gmpz_sizeinbase(op: [*c]const mpz_struct, base: c_int) usize;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: [*c]mpz_struct) void;
 // longIntegerToDisplayString / longIntegerToAllocatedString are DEFINED below
 // (pub export); they are public functions of display.c.
 
@@ -937,7 +912,7 @@ pub export fn supNumberToDisplayString(supNumber_in: i32, displayString_in: [*c]
             const digit: i16 = @intCast(@rem(supNumber, 10));
             supNumber = @divTrunc(supNumber, 10);
 
-            _ = xcopy(displayString + 2, displayString, @intCast(stringByteLength(displayString) + 1));
+            _ = frontier_char_string.xcopy(displayString + 2, displayString, @intCast(stringByteLength(displayString) + 1));
 
             displayString[0] = STD_SUP_0[0];
             displayString[1] = STD_SUP_0[1];
@@ -948,11 +923,11 @@ pub export fn supNumberToDisplayString(supNumber_in: i32, displayString_in: [*c]
                 if (@rem(digitCount, GROUPWIDTH_LEFT()) == 0) {
                     const sl = SEPARATOR_LEFT();
                     if (sl[1] != 1) {
-                        _ = xcopy(displayString + 2, displayString, @intCast(stringByteLength(displayString) + 1));
+                        _ = frontier_char_string.xcopy(displayString + 2, displayString, @intCast(stringByteLength(displayString) + 1));
                         displayString[0] = sl[0];
                         displayString[1] = sl[1];
                     } else if (sl[0] != 1) {
-                        _ = xcopy(displayString + 1, displayString, @intCast(stringByteLength(displayString) + 1));
+                        _ = frontier_char_string.xcopy(displayString + 1, displayString, @intCast(stringByteLength(displayString) + 1));
                         displayString[0] = sl[0];
                     }
                 }
@@ -983,7 +958,7 @@ pub export fn subNumberToDisplayString(subNumber_in: i32, displayString_in: [*c]
             const digit: i16 = @intCast(@rem(subNumber, 10));
             subNumber = @divTrunc(subNumber, 10);
 
-            _ = xcopy(displayString + 2, displayString, @intCast(stringByteLength(displayString) + 1));
+            _ = frontier_char_string.xcopy(displayString + 2, displayString, @intCast(stringByteLength(displayString) + 1));
 
             displayString[0] = STD_SUB_0[0];
             displayString[1] = STD_SUB_0[1];
@@ -992,7 +967,6 @@ pub export fn subNumberToDisplayString(subNumber_in: i32, displayString_in: [*c]
     }
 }
 
-extern fn exponentToUnitDisplayString(exponent: i32, flag2To10: bool_t, displayString: [*c]u8, displayValueString: [*c]u8, nimMode: bool_t) void;
 
 // ===========================================================================
 // real34ToDisplayString (public wrapper: shrink digits until it fits maxWidth)
@@ -1033,7 +1007,7 @@ pub export fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, 
             }
             displayFormatDigits -= 1;
         }
-        if (!(stringWidth(displayString, font, 1, 1) > maxWidth)) break;
+        if (!(frontier_char_string.stringWidth(displayString, font, true, true) > maxWidth)) break;
     }
 
     displayFormat = savedDisplayFormat;
@@ -1063,28 +1037,28 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         var minutes: real_t = undefined;
         var seconds: real_t = undefined;
 
-        real34FromDegToDms(@ptrCast(angle34), &angle34Dms);
+        frontier_conversion_angles.real34FromDegToDms(@ptrCast(angle34), &angle34Dms);
         real34ToReal(&angle34Dms, &angleDms);
 
         sign = @intFromBool(realIsNegative(&angleDms));
         realSetPositiveSign(&angleDms);
 
-        realToIntegralValue(&angleDms, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
+        frontier_register_value_conversions.realToIntegralValue(&angleDms, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
         realSubtract(&angleDms, &degrees, &angleDms, &ctxtReal39);
         angleDms.exponent += 2;
-        realToIntegralValue(&angleDms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
+        frontier_register_value_conversions.realToIntegralValue(&angleDms, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
         realSubtract(&angleDms, &minutes, &angleDms, &ctxtReal39);
         angleDms.exponent += 2;
-        realToIntegralValue(&angleDms, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
+        frontier_register_value_conversions.realToIntegralValue(&angleDms, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
 
         realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
         angleDms.exponent += 2;
 
-        fs = realToUint32C47(&angleDms, null);
-        s = realToUint32C47(&seconds, null);
-        m = realToUint32C47(&minutes, null);
+        fs = frontier_real_type.realToUint32C47(&angleDms, null);
+        s = frontier_real_type.realToUint32C47(&seconds, null);
+        m = frontier_real_type.realToUint32C47(&minutes, null);
 
         if (fs >= 100) {
             fs -= 100;
@@ -1147,7 +1121,7 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         } else {
             _ = strcat(displayString, "?");
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "angle34ToDisplayString2", @as(c_int, mode), "mode" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         }
     }
 }
@@ -1248,8 +1222,8 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 realDivide(&x, const39_ln2, &x, &c);
                 x.exponent -= 1;
 
-                realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &c);
-                const tmpx: i32 = realToInt32C47(&tmpIp, null);
+                frontier_register_value_conversions.realToIntegralValue(&x, &tmpIp, DEC_ROUND_DOWN, &c);
+                const tmpx: i32 = frontier_real_type.realToInt32C47(&tmpIp, null);
                 if (tmpx > exponentUNlimit1024max) {
                     // overRange
                     flag2To10 = false;
@@ -1287,7 +1261,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             for (0..replacements.len) |ridx| {
                 const rep = replacements[ridx];
                 if ((limitIrfrac >= rep.option and runningOnSimOrUSB()) or limitIrfrac == FULLIRFRAC) {
-                    if (checkForAndChange(displayString, &valueReal, &valueRealAbs, rep.cnst, toleranceIrrational, rep.name, frontSpace, complex) != 0) {
+                    if (frontier_addons.checkForAndChange(displayString, &valueReal, &valueRealAbs, rep.cnst, toleranceIrrational, rep.name, frontSpace, complex) != 0) {
                         IrFractionsCurrentStatus = CF_NORMAL;
                         return;
                     }
@@ -1421,7 +1395,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                 }
             }
             return;
-        } else if (exponent < -exponentLimit or (exponentHideLimit != 0 and exponent < -exponentHideLimit and currentMenu() != -MNU_XXFCNS)) {
+        } else if (exponent < -exponentLimit or (exponentHideLimit != 0 and exponent < -exponentHideLimit and frontier_softmenus.currentMenu() != -MNU_XXFCNS)) {
             if (real34IsPositive(&value34)) {
                 _ = strcpy(displayString, STD_ALMOST_EQUAL ++ "0");
                 if (updateDisplayValueX != 0) {
@@ -1555,7 +1529,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     if (digitCount != 0 and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == 0) {
                         const sr = SEPARATOR_RIGHT();
                         const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                        _ = xcopy(displayString + charIndex, sr, n);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                         charIndex +%= @intCast(n);
                     }
                     displayString[charIndex] = '0';
@@ -1574,7 +1548,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     if (digitCount != 0 and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == 0) {
                         const sr = SEPARATOR_RIGHT();
                         const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                        _ = xcopy(displayString + charIndex, sr, n);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                         charIndex +%= @intCast(n);
                     }
                     displayString[charIndex] = '0' + bcd[@intCast(digitPointer)];
@@ -1592,7 +1566,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     digitCount -= 1;
                 }) {
                     if (digitCount != -1 and digitCount != exponent and GROUPWIDTH_(digitCount) != 0 and IS_SEPARATOR_(digitCount) and (GROUP1_OVFL(digitCount, exponent) == 0 or bcd[@intCast(digitPointer - 1)] >= GROUP1_OVFL(digitCount, exponent) + 1)) {
-                        _ = xcopy(displayString + charIndex, SEPARATOR_(digitCount), 2);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, SEPARATOR_(digitCount), 2);
                         charIndex +%= 2;
                     }
                     if (digitPointer <= lastDigit) {
@@ -1734,7 +1708,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     if (digitCount != 0 and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == 0) {
                         const sr = SEPARATOR_RIGHT();
                         const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                        _ = xcopy(displayString + charIndex, sr, n);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                         charIndex +%= @intCast(n);
                     }
                     displayString[charIndex] = '0';
@@ -1753,7 +1727,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     if (digitCount != 0 and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == 0) {
                         const sr = SEPARATOR_RIGHT();
                         const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                        _ = xcopy(displayString + charIndex, sr, n);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                         charIndex +%= @intCast(n);
                     }
                     displayString[charIndex] = '0' + bcd[@intCast(digitPointer)];
@@ -1776,7 +1750,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     if (!GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == 0) {
                         const sr = SEPARATOR_RIGHT();
                         const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                        _ = xcopy(displayString + charIndex, sr, n);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                         charIndex +%= @intCast(n);
                     }
                     displayString[charIndex] = '0';
@@ -1799,7 +1773,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     digitCount -= 1;
                 }) {
                     if (digitCount != -1 and digitCount != exponent and GROUPWIDTH_(digitCount) != 0 and IS_SEPARATOR_(digitCount) and (GROUP1_OVFL(digitCount, exponent) == 0 or bcd[@intCast(digitPointer - 1)] >= GROUP1_OVFL(digitCount, exponent) + 1)) {
-                        _ = xcopy(displayString + charIndex, SEPARATOR_(digitCount), 2);
+                        _ = frontier_char_string.xcopy(displayString + charIndex, SEPARATOR_(digitCount), 2);
                         charIndex +%= 2;
                     }
                     if (digitPointer <= lastDigit) {
@@ -1900,7 +1874,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
                 const sr = SEPARATOR_RIGHT();
                 const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                _ = xcopy(displayString + charIndex, sr, n);
+                _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                 charIndex +%= @intCast(n);
             } else {
                 firstDigitAfterPeriod = false;
@@ -1921,7 +1895,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
                 const sr = SEPARATOR_RIGHT();
                 const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                _ = xcopy(displayString + charIndex, sr, n);
+                _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                 charIndex +%= @intCast(n);
             } else {
                 firstDigitAfterPeriod = false;
@@ -2048,7 +2022,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
                 const sr = SEPARATOR_RIGHT();
                 const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                _ = xcopy(displayString + charIndex, sr, n);
+                _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                 charIndex +%= @intCast(n);
             } else {
                 firstDigitAfterPeriod = false;
@@ -2069,7 +2043,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
                 const sr = SEPARATOR_RIGHT();
                 const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                _ = xcopy(displayString + charIndex, sr, n);
+                _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
                 charIndex +%= @intCast(n);
             } else {
                 firstDigitAfterPeriod = false;
@@ -2095,7 +2069,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                     exponentToDisplayString(exponent, displayString + charIndex, null, 0);
                 }
             } else {
-                exponentToUnitDisplayString(exponent, @intFromBool(flag2To10), displayString + charIndex, @as([*c]u8, &displayValueX) + valueIndex, 0);
+                frontier_addons.exponentToUnitDisplayString(exponent, @intFromBool(flag2To10), displayString + charIndex, @as([*c]u8, &displayValueX) + valueIndex, 0);
             }
         }
     }
@@ -2112,7 +2086,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
     const savedDisplayFormatDigits = displayFormatDigits;
     const saveddisplayFormat = displayFormat;
 
-    const digitWidth: i16 = stringWidth("0", font, 0, 0);
+    const digitWidth: i16 = frontier_char_string.stringWidth("0", font, false, false);
 
     if (updateDisplayValueX != 0) {
         displayValueX[0] = 0;
@@ -2120,7 +2094,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
 
     complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
     var noFix: bool = false;
-    var overflow: i16 = stringWidth(displayString, font, 1, 1) - maxWidth;
+    var overflow: i16 = frontier_char_string.stringWidth(displayString, font, true, true) - maxWidth;
     while (overflow > 0) {
         const overflowDigits: i16 = @intCast(maxI(@divTrunc(@divTrunc(@as(i32, overflow), digitWidth), 4), 1));
 
@@ -2152,7 +2126,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
         }
 
         complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
-        overflow = stringWidth(displayString, font, 1, 1) - maxWidth;
+        overflow = frontier_char_string.stringWidth(displayString, font, true, true) - maxWidth;
     }
 
     displayFormatDigits = savedDisplayFormatDigits;
@@ -2198,7 +2172,7 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
         c.digits = if (showmode()) 39 else minI(75, maxI(0, maxExponent) + nbrDispRealCtxDigits() + 2);
         realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c);
         c.digits = if (showmode()) 39 else 3 + nbrDispRealCtxDigits();
-        convertAngleFromTo(&imagIc, amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
+        frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
 
         realToReal34(&real, &real34_);
         realToReal34(&imagIc, &imag34);
@@ -2254,7 +2228,7 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
                     imagNegative = true;
                     break;
                 }
-                iidx = imagOffset + stringNextGlyph(displayString + @as(usize, @intCast(imagOffset)), iidx - imagOffset);
+                iidx = imagOffset + frontier_char_string.stringNextGlyph(displayString + @as(usize, @intCast(imagOffset)), iidx - imagOffset);
             }
 
             if (!imagNegative) {
@@ -2266,12 +2240,12 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
             _ = strcat(displayString, complexUnit());
             real34CopyAbs(&imag34, &absimag34);
             _ = strcat(displayString, productSign());
-            _ = xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
+            _ = frontier_char_string.xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
         }
 
         if (getSystemFlag(FLAG_CPXMULT) == 0) {
             real34CopyAbs(&imag34, &absimag34);
-            _ = xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
+            _ = frontier_char_string.xcopy(strchr(displayString, 0), displayString + @as(usize, @intCast(imagOffset)), @intCast(strlen(displayString + @as(usize, @intCast(imagOffset))) + 1));
             _ = strcat(displayString, STD_SPACE_HAIR);
             _ = strcat(displayString, STD_SPACE_HAIR);
             _ = strcat(displayString, complexUnit());
@@ -2292,7 +2266,7 @@ pub export fn _numerator(numer_in: u64, displayString: [*c]u8, endingZero: *i16)
         if (gap == GROUPWIDTH_LEFT()) {
             gap = 0;
             endingZero.* += 1;
-            _ = xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
+            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
             endingZero.* += 1;
             const sf = SEPARATOR_FRAC();
             displayString[@intCast(insertAt)] = sf[0];
@@ -2302,7 +2276,7 @@ pub export fn _numerator(numer_in: u64, displayString: [*c]u8, endingZero: *i16)
         u = @intCast(numer % 10);
         numer /= 10;
         endingZero.* += 1;
-        _ = xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
+        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
         endingZero.* += 1;
 
         displayString[@intCast(insertAt)] = STD_SUP_0[0];
@@ -2322,7 +2296,7 @@ pub export fn _denominator(denom_in: u64, displayString: [*c]u8, endingZero: *i1
         if (gap == GROUPWIDTH_LEFT()) {
             gap = 0;
             endingZero.* += 1;
-            _ = xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
+            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
             endingZero.* += 1;
             const sf = SEPARATOR_FRAC();
             displayString[@intCast(insertAt)] = sf[0];
@@ -2332,7 +2306,7 @@ pub export fn _denominator(denom_in: u64, displayString: [*c]u8, endingZero: *i1
         u = @intCast(denom % 10);
         denom /= 10;
         endingZero.* += 1;
-        _ = xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
+        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
         endingZero.* += 1;
         displayString[@intCast(insertAt)] = STD_SUB_0[0];
         displayString[@intCast(insertAt + 1)] = STD_SUB_0[1];
@@ -2352,7 +2326,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
     var endingZero: i16 = undefined;
     var gap: i16 = undefined;
 
-    const prependFraction: bool = fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater) != 0;
+    const prependFraction: bool = frontier_fractions.fraction(regist, &sign, &intPart, &numer, &denom, &lessEqualGreater);
 
     if (getSystemFlag(FLAG_FRCSRN) != 0) {
         const xyzt = "xyzt";
@@ -2365,7 +2339,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         }
     } else if (prependFraction) {
         if (lessEqualGreater == -1) {
@@ -2377,7 +2351,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         }
     } else {
         displayString[0] = 0;
@@ -2402,7 +2376,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             if (gap == GROUPWIDTH_LEFT()) {
                 gap = 0;
                 endingZero += 1;
-                _ = xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero - insertAt));
+                _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero - insertAt));
                 endingZero += 1;
                 const sl = SEPARATOR_LEFT();
                 displayString[@intCast(insertAt)] = sl[0];
@@ -2412,7 +2386,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             u = @intCast(intPart % 10);
             intPart /= 10;
             endingZero += 1;
-            _ = xcopy(displayString + @as(usize, @intCast(insertAt + 1)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero - insertAt));
+            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 1)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero - insertAt));
             displayString[@intCast(insertAt)] = '0' + @as(u8, @intCast(u));
             if (intPart == 0) break;
         }
@@ -2466,7 +2440,7 @@ pub export fn longIntegerToHexDisplayString(regist: calcRegister_t, displayStrin
     var sign: bool = undefined;
     var digit: i32 = undefined;
 
-    convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
+    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
 
     if (longIntegerIsZero(&lgInt)) {
         displayString[0] = '0';
@@ -2506,19 +2480,19 @@ pub export fn longIntegerToHexDisplayString(regist: calcRegister_t, displayStrin
     }
 
     const lastTinyCharIfTooLong: usize = 256;
-    if (stringWidth(displayString, &numericFont, 0, 1) +
-        stringWidth(STD_SUB_0 ++ STD_SUB_0, &numericFont, 0, 1) +
-        stringWidth("  X:" ++ STD_INTEGER_Z_SMALL ++ ": ", &standardFont, 0, 1) <= width)
+    if (frontier_char_string.stringWidth(displayString, &numericFont, false, true) +
+        frontier_char_string.stringWidth(STD_SUB_0 ++ STD_SUB_0, &numericFont, false, true) +
+        frontier_char_string.stringWidth("  X:" ++ STD_INTEGER_Z_SMALL ++ ": ", &standardFont, false, true) <= width)
     {
         fontForShortInteger = &numericFont;
         addBaseNumber(displayString, @intCast(dispBase));
-    } else if (stringWidth(displayString, &standardFont, 0, 1) + stringWidth(STD_SUB_0 ++ STD_SUB_0, &standardFont, 0, 1) + stringWidth("  X:" ++ STD_INTEGER_Z_SMALL ++ ": ", &standardFont, 0, 1) <= width) {
+    } else if (frontier_char_string.stringWidth(displayString, &standardFont, false, true) + frontier_char_string.stringWidth(STD_SUB_0 ++ STD_SUB_0, &standardFont, false, true) + frontier_char_string.stringWidth("  X:" ++ STD_INTEGER_Z_SMALL ++ ": ", &standardFont, false, true) <= width) {
         fontForShortInteger = &standardFont;
         addBaseNumber(displayString, @intCast(dispBase));
     } else {
         fontForShortInteger = &tinyFont;
-        if (stringWidth(displayString, &tinyFont, 1, 1) +
-            stringWidth(STD_SUB_0 ++ STD_SUB_0, &tinyFont, 1, 1) >= width * 4)
+        if (frontier_char_string.stringWidth(displayString, &tinyFont, true, true) +
+            frontier_char_string.stringWidth(STD_SUB_0 ++ STD_SUB_0, &tinyFont, true, true) >= width * 4)
         {
             displayString[lastTinyCharIfTooLong + 0] = STD_ELLIPSIS[0];
             displayString[lastTinyCharIfTooLong + 1] = STD_ELLIPSIS[1];
@@ -2552,7 +2526,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         base = @intCast(getRegisterTag(regist));
         if (base <= 1 or base >= 17) {
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "shortIntegerToDisplayString", @as(c_int, base), "base" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
             base = 10;
         }
     } else {
@@ -2575,7 +2549,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
             number &= ~shortIntegerSignBit;
         } else {
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;
     }
@@ -2748,7 +2722,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (stringWidth(displayString, fontForShortInteger.?, 0, 0) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
             return;
         }
 
@@ -2777,7 +2751,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (stringWidth(displayString, fontForShortInteger.?, 0, 0) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
             return;
         }
 
@@ -2803,7 +2777,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (stringWidth(displayString, fontForShortInteger.?, 0, 0) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
             return;
         }
 
@@ -2836,7 +2810,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (stringWidth(displayString, fontForShortInteger.?, 0, 0) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
             return;
         }
 
@@ -2865,7 +2839,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (stringWidth(displayString, fontForShortInteger.?, 0, 0) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
             return;
         }
 
@@ -2897,7 +2871,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else {
             addBaseNumber(displayString, base);
         }
-        if (stringWidth(displayString, fontForShortInteger.?, 0, 0) < SCREEN_WIDTH) {
+        if (frontier_char_string.stringWidth(displayString, fontForShortInteger.?, false, false) < SCREEN_WIDTH) {
             return;
         }
 
@@ -2911,7 +2885,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
 // ===========================================================================
 pub export fn longIntegerRegisterToDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, max_Width: i16, maxExp: i16, allowLARGELI: bool_t) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
-    convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
+    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
     longIntegerToDisplayString(&lgInt[0], displayString, strLg, max_Width, maxExp, allowLARGELI);
     longIntegerFree(&lgInt);
 }
@@ -2990,7 +2964,7 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
         if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
             const sr = SEPARATOR_RIGHT();
             const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-            _ = xcopy(displayString + @as(usize, @intCast(charIndex)), sr, n);
+            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(charIndex)), sr, n);
             charIndex +%= @intCast(n);
         } else {
             firstDigitAfterPeriod = false;
@@ -3011,7 +2985,7 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
         if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
             const sr = SEPARATOR_RIGHT();
             const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-            _ = xcopy(displayString + @as(usize, @intCast(charIndex)), sr, n);
+            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(charIndex)), sr, n);
             charIndex +%= @intCast(n);
         } else {
             firstDigitAfterPeriod = false;
@@ -3094,7 +3068,7 @@ fn realSCIToDisplayString(work: *const real_t, displayString: [*c]u8, digitsToDi
 
 pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, minimum: i32, removeTrailingRadix: bool_t) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
-    convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
+    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
     longIntegerToAllocatedString(&lgInt[0], displayString, strLg);
     longIntegerFree(&lgInt);
     var tmp4: real_t = undefined;
@@ -3119,7 +3093,7 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
                     break;
                 }
                 digitsToDisplay -= 1;
-                if (!(stringWidth(displayString, font, 1, 1) > maxWidth)) break;
+                if (!(frontier_char_string.stringWidth(displayString, font, true, true) > maxWidth)) break;
             }
         } else {
             var tmpReal34: real34_t = undefined;
@@ -3128,7 +3102,7 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
         }
 
         if (removeTrailingRadix != 0) {
-            const lastGlyphPosition = stringLastGlyph(displayString);
+            const lastGlyphPosition = frontier_char_string.stringLastGlyph(displayString);
             const radix = RADIX34_MARK_STRING();
             if (displayString[@intCast(lastGlyphPosition)] == radix[0] and (displayString[@intCast(lastGlyphPosition + 1)] == radix[1] or radix[1] == 1)) {
                 displayString[@intCast(lastGlyphPosition)] = 0;
@@ -3147,11 +3121,11 @@ fn insertSepsIntoIntegerText(displayString: [*c]u8) void {
         if (ii > 0 and (ii != 1 or displayString[0] != '-')) {
             const sl = SEPARATOR_LEFT();
             if (sl[1] != 1) {
-                _ = xcopy(displayString + @as(usize, @intCast(ii + 2)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
+                _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 2)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
                 displayString[@intCast(ii)] = sl[0];
                 displayString[@intCast(ii + 1)] = sl[1];
             } else if (sl[0] != 1) {
-                _ = xcopy(displayString + @as(usize, @intCast(ii + 1)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
+                _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 1)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
                 displayString[@intCast(ii)] = sl[0];
             }
 
@@ -3160,12 +3134,12 @@ fn insertSepsIntoIntegerText(displayString: [*c]u8) void {
             while (ii > 0) : (ii -= @intCast(GROUPWIDTH_LEFT())) {
                 if (ii != 1 or displayString[0] != '-') {
                     if (sl[1] != 1) {
-                        _ = xcopy(displayString + @as(usize, @intCast(ii + 2)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
+                        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 2)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
                         displayString[@intCast(ii)] = sl[0];
                         displayString[@intCast(ii + 1)] = sl[1];
                         len += 2;
                     } else if (sl[0] != 1) {
-                        _ = xcopy(displayString + @as(usize, @intCast(ii + 1)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
+                        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 1)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
                         displayString[@intCast(ii)] = sl[0];
                         len += 1;
                     }
@@ -3222,7 +3196,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
 
     insertSepsIntoIntegerText(displayString);
 
-    if (stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 0, 0) > maxWidth) {
+    if (frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, false) > maxWidth) {
         var exponentString: [14]u8 = undefined;
         var lastRemovedDigit: u8 = undefined;
         var lastChar: i16 = undefined;
@@ -3239,7 +3213,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
         }
         exponentString[0] = 0;
         exponentToDisplayString(tenExponent, &exponentString, null, 0);
-        while (stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 0, 1) + stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 1, 0) > maxWidth) {
+        while (frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true) + frontier_char_string.stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, true, false) > maxWidth) {
             lastChar -= stringStep;
             tenExponent += exponentStep;
             lastRemovedDigit = displayString[@intCast(lastChar + (if (sl[1] == 1) @as(i16, 1) else 2))];
@@ -3264,22 +3238,22 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
                     displayString[@intCast(lastChar)] += 1;
                 } else {
                     lastChar = if (displayString[0] == '-') 1 else 0;
-                    _ = xcopy(displayString + @as(usize, @intCast(lastChar + 1)), displayString + @as(usize, @intCast(lastChar)), @intCast(strlen(displayString) + 1));
+                    _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(lastChar + 1)), displayString + @as(usize, @intCast(lastChar)), @intCast(strlen(displayString) + 1));
                     displayString[@intCast(lastChar)] = '1';
                     if (sl[1] != 1) {
                         if (!GROUPLEFT_DISABLED() and displayString[@intCast(lastChar + @as(i16, @intCast(GROUPWIDTH_LEFT())) + 2)] == sl[1]) {
-                            _ = xcopy(displayString + @as(usize, @intCast(lastChar + 3)), displayString + @as(usize, @intCast(lastChar + 1)), @intCast(strlen(displayString)));
+                            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(lastChar + 3)), displayString + @as(usize, @intCast(lastChar + 1)), @intCast(strlen(displayString)));
                             displayString[@intCast(lastChar + 1)] = sl[0];
                             displayString[@intCast(lastChar + 2)] = sl[1];
                         }
                     } else if (sl[0] != 1) {
                         if (!GROUPLEFT_DISABLED() and displayString[@intCast(lastChar + @as(i16, @intCast(GROUPWIDTH_LEFT())) + 1)] == sl[0]) {
-                            _ = xcopy(displayString + @as(usize, @intCast(lastChar + 2)), displayString + @as(usize, @intCast(lastChar + 1)), @intCast(strlen(displayString)));
+                            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(lastChar + 2)), displayString + @as(usize, @intCast(lastChar + 1)), @intCast(strlen(displayString)));
                             displayString[@intCast(lastChar + 1)] = sl[0];
                         }
                     }
 
-                    if (stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 0, 1) + stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, 1, 0) > maxWidth) {
+                    if (frontier_char_string.stringWidth(displayString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, false, true) + frontier_char_string.stringWidth(&exponentString, if (allowLARGELI != 0 and getSystemFlag(FLAG_LARGELI) != 0) &numericFont else &standardFont, true, false) > maxWidth) {
                         lastChar = @as(i16, @intCast(strlen(displayString))) - stringStep;
                         tenExponent += exponentStep;
                         displayString[@intCast(lastChar)] = 0;
@@ -3301,7 +3275,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
                     displayValueX[@intCast(lastChar)] += 1;
                 }
                 if (displayValueX[@intCast(lastChar)] > '9') {
-                    _ = xcopy(@as([*c]u8, &displayValueX) + 1, &displayValueX, @intCast(strlen(&displayValueX) + 1));
+                    _ = frontier_char_string.xcopy(@as([*c]u8, &displayValueX) + 1, &displayValueX, @intCast(strlen(&displayValueX) + 1));
                     displayValueX[@intCast(lastChar)] = '1';
                     lastChar += 1;
                     displayValueX[@intCast(lastChar)] = '0';
@@ -3339,7 +3313,7 @@ pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c
 
     if (strLen < stringLen) {
         abi.fmtBufZ(errorMessage[0..512], "In function longIntegerToAllocatedString: the string str ({d} bytes) is too small to hold the base 10 representation of lgInt, {d} are needed!", .{ strLen, stringLen });
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
         return;
     }
 
@@ -3359,7 +3333,7 @@ pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c
     }
 
     if (counter == 1) {
-        _ = xcopy(str + @as(usize, @intCast(stringLen)), str + @as(usize, @intCast(stringLen + 1)), @intCast(numberOfDigits));
+        _ = frontier_char_string.xcopy(str + @as(usize, @intCast(stringLen)), str + @as(usize, @intCast(stringLen + 1)), @intCast(numberOfDigits));
     }
 
     __gmpz_clear(&x[0]);
@@ -3381,8 +3355,8 @@ pub export fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8)
     var yearval64: u64 = undefined;
     var sign: [2]u8 = .{ 0, 0 };
 
-    internalDateToJulianDay(reg34(regist), &j);
-    decomposeJulianDay(&j, &y, &m, &d);
+    frontier_date_time.internalDateToJulianDay(reg34(regist), &j);
+    frontier_date_time.decomposeJulianDay(&j, &y, &m, &d);
     if (real34IsNegative(&y)) {
         sign[0] = '-';
     }
@@ -3433,7 +3407,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
     } else if ((timeDisplayFormatDigits == 1) or (timeDisplayFormatDigits == 2)) {
         realCopy(const_60, &value);
     } else {
-        realSetOne(&value);
+        frontier_real_type.realSetOne(&value);
         i = 3;
         while (i < timeDisplayFormatDigits) : (i += 1) {
             value.exponent -= 1;
@@ -3441,11 +3415,11 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
         }
     }
     if (realCompareAbsLessThan(&real, const_1) != 0) {
-        realSetOne(&tmp);
+        frontier_real_type.realSetOne(&tmp);
         tmp.exponent -= 33;
         realDivideRemainder(&real, &tmp, &tmp, &ctxtReal39);
     } else {
-        realSetZero(&tmp);
+        frontier_real_type.realSetZero(&tmp);
     }
     if (realCompareAbsLessThan(&real, &value) != 0 or (ignoreTDisp != 0 and !realIsZeroB(&tmp))) {
         if (ignoreTDisp != 0 or (timeDisplayFormatDigits == 0)) {
@@ -3465,7 +3439,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
 
     realDivide(&real, const_3600, &h, &ctxtReal39);
     realSetPositiveSign(&h);
-    realToIntegralValue(&h, &h, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&h, &h, DEC_ROUND_DOWN, &ctxtReal39);
 
     if (ignoreTDisp == 0) {
         switch (timeDisplayFormatDigits) {
@@ -3484,7 +3458,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
                     while (digits < tDigits) : (digits += 1) {
                         real.exponent += 1;
                     }
-                    realToIntegralValue(&real, &real, if (timeDisplayFormatDigits == 0) DEC_ROUND_HALF_UP else DEC_ROUND_DOWN, &ctxtReal39);
+                    frontier_register_value_conversions.realToIntegralValue(&real, &real, if (timeDisplayFormatDigits == 0) DEC_ROUND_HALF_UP else DEC_ROUND_DOWN, &ctxtReal39);
                     digits = bDigits;
                     while (digits < tDigits) : (digits += 1) {
                         real.exponent -= 1;
@@ -3495,7 +3469,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
             },
             1, 2 => {
                 realDivide(&real, const_60, &real, &ctxtReal39);
-                realToIntegralValue(&real, &real, DEC_ROUND_DOWN, &ctxtReal39);
+                frontier_register_value_conversions.realToIntegralValue(&real, &real, DEC_ROUND_DOWN, &ctxtReal39);
                 realMultiply(&real, const_60, &real, &ctxtReal39);
             },
             else => {
@@ -3506,7 +3480,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
                 while (digits < tDigits) : (digits += 1) {
                     real.exponent += 1;
                 }
-                realToIntegralValue(&real, &real, if (timeDisplayFormatDigits == 0) DEC_ROUND_HALF_UP else DEC_ROUND_DOWN, &ctxtReal39);
+                frontier_register_value_conversions.realToIntegralValue(&real, &real, if (timeDisplayFormatDigits == 0) DEC_ROUND_HALF_UP else DEC_ROUND_DOWN, &ctxtReal39);
                 digits = bDigits;
                 while (digits < tDigits) : (digits += 1) {
                     real.exponent -= 1;
@@ -3517,10 +3491,10 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
     }
     realSetPositiveSign(&real);
 
-    realToIntegralValue(&real, &s, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&real, &s, DEC_ROUND_DOWN, &ctxtReal39);
     realSubtract(&real, &s, &real, &ctxtReal39);
     realDivide(&s, const_60, &m, &ctxtReal39);
-    realToIntegralValue(&m, &m, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&m, &m, DEC_ROUND_DOWN, &ctxtReal39);
     realDivideRemainder(&s, const_60, &s, &ctxtReal39);
     realDivideRemainder(&m, const_60, &m, &ctxtReal39);
 
@@ -3540,7 +3514,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
 
     _ = strcpy(displayString, if (sign != 0) "-" else " ");
     longIntegerInit(&hli);
-    convertRealToLongInteger(&h, &hli[0], DEC_ROUND_DOWN);
+    frontier_register_value_conversions.convertRealToLongInteger(&h, &hli[0], DEC_ROUND_DOWN);
     longIntegerToAllocatedString(&hli[0], &digitBuf2, @intCast(@sizeOf(@TypeOf(digitBuf2))));
     longIntegerFree(&hli);
 
@@ -3568,17 +3542,17 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
 
     tDigits += 1;
     if ((ignoreTDisp == 0) and (timeDisplayFormatDigits == 1 or timeDisplayFormatDigits == 2 or (tDigits) > (if (isValid12hTime) @as(u32, 16) else 18))) {
-        m32 = realToUint32C47(&m, null);
+        m32 = frontier_real_type.realToUint32C47(&m, null);
         abi.fmtBufZ(&digitBuf, ":{d:0>2}", .{m32});
         _ = strcat(displayString, &digitBuf);
     } else {
-        m32 = realToUint32C47(&m, null);
-        s32 = realToUint32C47(&s, null);
+        m32 = frontier_real_type.realToUint32C47(&m, null);
+        s32 = frontier_real_type.realToUint32C47(&s, null);
         abi.fmtBufZ(&digitBuf, ":{d:0>2}:{d:0>2}", .{ m32, s32 });
         _ = strcat(displayString, &digitBuf);
 
         digits = 0;
-        realSetZero(&value);
+        frontier_real_type.realSetZero(&value);
         while (true) {
             realSubtract(&real, &value, &real, &ctxtReal39);
             if (ignoreTDisp != 0 or (timeDisplayFormatDigits == 0)) {
@@ -3591,7 +3565,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
                 if (tDigits > (if (isValid12hTime) @as(u32, 16) else 18)) break;
             }
             real.exponent += 1;
-            realToIntegralValue(&real, &value, DEC_ROUND_DOWN, &ctxtReal39);
+            frontier_register_value_conversions.realToIntegralValue(&real, &value, DEC_ROUND_DOWN, &ctxtReal39);
 
             if (digits == 0) {
                 var tt: [4]u8 = undefined;
@@ -3616,7 +3590,7 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
                 _ = strcat(displayString, &tt);
             }
 
-            s32 = realToUint32C47(&value, null);
+            s32 = frontier_real_type.realToUint32C47(&value, null);
             abi.fmtBufZ(&digitBuf, "{d}", .{s32});
             _ = strcat(displayString, &digitBuf);
             digits += 1;
@@ -3690,7 +3664,7 @@ pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u
         if ((r == 1 and c == 3) or (r == 3 and c == 1) or (r == 1 and c == 2) or (r == 2 and c == 1)) {
             var matrix: real34Matrix_t = undefined;
             linkToRealMatrixRegister(regist, &matrix);
-            showRealMatrix(&matrix, 0, @intFromBool(toDisplayVectorMatrix == 0), regXp);
+            frontier_matrix_editor.showRealMatrix(&matrix, 0, (toDisplayVectorMatrix == 0), regXp != 0);
             abi.fmtCStr(displayString, "{s}", .{ @as([*:0]const u8, errorMessage) });
             return 1;
         }
@@ -3709,31 +3683,31 @@ fn _complex34ToShowTmpString(r: *align(1) const real34_t, im: *align(1) const re
     while (tmpString[@intCast(last)] != 0) {
         last += 1;
     }
-    _ = xcopy(tmpString + @as(usize, @intCast(last)), if (real34IsNegative(&real34_)) @as([*c]const u8, "-") else "+", 1);
+    _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(last)), if (real34IsNegative(&real34_)) @as([*c]const u8, "-") else "+", 1);
     last += 1;
-    _ = xcopy(tmpString + @as(usize, @intCast(last)), complexUnit(), 2);
+    _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(last)), complexUnit(), 2);
     last += 1;
-    _ = xcopy(tmpString + @as(usize, @intCast(last)), productSign(), 3);
+    _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(last)), productSign(), 3);
 
     real34SetPositiveSign(&real34_);
     real34ToDisplayString(&real34_, amNone, tmpString + @as(usize, @intCast(2 * SHOWLineSize)), &standardFont, 2000, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC);
 
-    if (stringWidth(tmpString + @as(usize, @intCast(SHOWLineSize)), &standardFont, 1, 1) + stringWidth(tmpString + @as(usize, @intCast(2 * SHOWLineSize)), &standardFont, 1, 1) <= SCREEN_WIDTH) {
+    if (frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(SHOWLineSize)), &standardFont, true, true) + frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(2 * SHOWLineSize)), &standardFont, true, true) <= SCREEN_WIDTH) {
         last = SHOWLineSize;
         while (tmpString[@intCast(last)] != 0) {
             last += 1;
         }
-        _ = xcopy(tmpString + @as(usize, @intCast(last)), tmpString + @as(usize, @intCast(2 * SHOWLineSize)), @intCast(strlen(tmpString + @as(usize, @intCast(2 * SHOWLineSize))) + 1));
+        _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(last)), tmpString + @as(usize, @intCast(2 * SHOWLineSize)), @intCast(strlen(tmpString + @as(usize, @intCast(2 * SHOWLineSize))) + 1));
         tmpString[@intCast(2 * SHOWLineSize)] = 0;
     }
 
-    if (stringWidth(tmpString, &standardFont, 1, 1) + stringWidth(tmpString + @as(usize, @intCast(SHOWLineSize)), &standardFont, 1, 1) <= SCREEN_WIDTH) {
+    if (frontier_char_string.stringWidth(tmpString, &standardFont, true, true) + frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(SHOWLineSize)), &standardFont, true, true) <= SCREEN_WIDTH) {
         last = 0;
         while (tmpString[@intCast(last)] != 0) {
             last += 1;
         }
-        _ = xcopy(tmpString + @as(usize, @intCast(last)), tmpString + @as(usize, @intCast(SHOWLineSize)), @intCast(strlen(tmpString + @as(usize, @intCast(SHOWLineSize))) + 1));
-        _ = xcopy(tmpString + @as(usize, @intCast(SHOWLineSize)), tmpString + @as(usize, @intCast(2 * SHOWLineSize)), @intCast(strlen(tmpString + @as(usize, @intCast(2 * SHOWLineSize))) + 1));
+        _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(last)), tmpString + @as(usize, @intCast(SHOWLineSize)), @intCast(strlen(tmpString + @as(usize, @intCast(SHOWLineSize))) + 1));
+        _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(SHOWLineSize)), tmpString + @as(usize, @intCast(2 * SHOWLineSize)), @intCast(strlen(tmpString + @as(usize, @intCast(2 * SHOWLineSize))) + 1));
         tmpString[@intCast(2 * SHOWLineSize)] = 0;
     }
 }
@@ -3742,8 +3716,8 @@ pub export fn mimShowElement() callconv(.c) void {
     const savedDisplayFormat = displayFormat;
     const savedDisplayFormatDigits = displayFormatDigits;
 
-    const i: i16 = getIRegisterAsInt(1);
-    const j: i16 = getJRegisterAsInt(1);
+    const i: i16 = frontier.getIRegisterAsInt(true);
+    const j: i16 = frontier.getJRegisterAsInt(true);
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;
@@ -3772,7 +3746,6 @@ pub export fn mimShowElement() callconv(.c) void {
 // ===========================================================================
 // SHOW machinery (#if !SAVE_SPACE_DM42_9 is LIVE on every z47 target)
 // ===========================================================================
-extern fn menu(n: u8) i16;
 
 inline fn isXFNregisterValid3r(r: calcRegister_t) bool {
     if (!(getRegisterDataType(r) == dtReal34 or getRegisterDataType(r) == dtLongInteger)) return false;
@@ -3786,12 +3759,12 @@ inline fn registerIsNoAngle(r: calcRegister_t) bool {
     return (getRegisterDataType(r) == dtReal34 and getRegisterAngularMode(r) == amNone) or getRegisterDataType(r) == dtLongInteger;
 }
 inline fn isXFNShowing(r: calcRegister_t) bool {
-    return menu(0) == -MNU_SHOW and menu(1) == -MNU_XXFCNS and isXFNregisterValid3r(r);
+    return frontier_softmenus.menu(0) == -MNU_SHOW and frontier_softmenus.menu(1) == -MNU_XXFCNS and isXFNregisterValid3r(r);
 }
 
 fn RegName() void {
     var tmp: i16 = undefined;
-    viewRegName2(tmpString + 2100, &tmp);
+    frontier_screen.viewRegName2(tmpString + 2100, &tmp);
 }
 
 fn SHOW_reset() void {
@@ -3825,25 +3798,25 @@ fn printXSHOW(am: i16, d: i16, df: i16, dfd: i16, dt: i16, tagPolar: bool_t) voi
     var ww: i16 = undefined;
     const sreg: calcRegister_t = @intCast(showRegis);
     RegName();
-    ww = stringWidth(tmpString + 2100, &numericFont, 1, 1);
+    ww = frontier_char_string.stringWidth(tmpString + 2100, &numericFont, true, true);
 
     if (dt == dtReal34) {
         var real34_: real34_t = undefined;
         real34Copy(reg34(sreg), &real34_);
-        convertAngle34FromTo(&real34_, getRegisterAngularMode(sreg), @intCast(am));
+        frontier_conversion_angles.convertAngle34FromTo(&real34_, getRegisterAngularMode(sreg), @intCast(am));
         real34ToDisplayString(&real34_, @intCast(am), tmpString + 2100 + @as(usize, @intCast(stringByteLength(tmpString + 2100))), &numericFont, SCREEN_WIDTH - ww - 8 * 2, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC);
     } else if (dt == dtComplex34) {
         complex34ToDisplayString(regComplex34(sreg), tmpString + 2100 + @as(usize, @intCast(stringByteLength(tmpString + 2100))), &numericFont, SCREEN_WIDTH - ww - 8 * 2, 34, @intFromBool(LIMITEXP == 0), @intFromBool(FRONTSPACE == 0), NOIRFRAC, @intCast(getComplexRegisterAngularMode(sreg)), tagPolar);
     }
 
-    if (stringWidth(tmpString + 2100, &numericFont, 1, 1) > SCREEN_WIDTH) {
+    if (frontier_char_string.stringWidth(tmpString + 2100, &numericFont, true, true) > SCREEN_WIDTH) {
         tmpString[2100] = 0;
     }
 
     last = 2100 + @as(i16, @intCast(stringByteLength(tmpString + 2100)));
     src = 2100;
     dest = d;
-    while (src < last and stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1) <= SCREEN_WIDTH - 8 * 2) {
+    while (src < last and frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true) <= SCREEN_WIDTH - 8 * 2) {
         tmpString[@intCast(dest)] = tmpString[@intCast(src)];
         if ((tmpString[@intCast(dest)] & 0x80) != 0) {
             dest += 1;
@@ -3861,33 +3834,33 @@ fn dispM(regist: u16, prefix: [*c]u8) void {
     const baseY: i16 = 20;
     const prefixPre: bool_t = 0;
     const prefixPost: bool_t = 0;
-    prefixWidth = @intCast(stringWidth(prefix, &standardFont, 1, 1));
+    prefixWidth = @intCast(frontier_char_string.stringWidth(prefix, &standardFont, true, true));
     temporaryInformation = TI_SHOWNOTHING;
     if (getRegisterDataType(@intCast(regist)) == dtReal34Matrix) {
         var matrix: real34Matrix_t = undefined;
         linkToRealMatrixRegister(@intCast(regist), &matrix);
-        showRealMatrix(&matrix, @intCast(prefixWidth), toDisplayVectorMatrix, @intFromBool(regXp == 0));
+        frontier_matrix_editor.showRealMatrix(&matrix, @intCast(prefixWidth), toDisplayVectorMatrix != 0, (regXp == 0));
         if (lastErrorCode != 0) {
-            refreshRegisterLine(errorMessageRegisterLine);
+            frontier_screen.refreshRegisterLine(errorMessageRegisterLine);
         }
         if (prefixWidth > 0) {
-            _ = showString(prefix, &standardFont, 1, baseY, 0, prefixPre, prefixPost);
+            _ = frontier_screen.showString(prefix, &standardFont, 1, baseY, 0, prefixPre, prefixPost);
         }
         if (temporaryInformation == TI_INACCURATE and regist == REGISTER_X) {
-            _ = showString("This result may be inaccurate", &standardFont, 1, @intCast(Y_POSITION_OF_ERR_LINE), 0, 1, 1);
+            _ = frontier_screen.showString("This result may be inaccurate", &standardFont, 1, @intCast(Y_POSITION_OF_ERR_LINE), 0, 1, 1);
         }
     } else if (getRegisterDataType(@intCast(regist)) == dtComplex34Matrix) {
         var matrix: complex34Matrix_t = undefined;
         linkToComplexMatrixRegister(@intCast(regist), &matrix);
-        showComplexMatrix(&matrix, @intCast(prefixWidth), getComplexRegisterAngularMode(@intCast(regist)), @intFromBool(getComplexRegisterPolarMode(@intCast(regist)) == amPolar), @intFromBool(regXp == 0));
+        frontier_matrix_editor.showComplexMatrix(&matrix, @intCast(prefixWidth), getComplexRegisterAngularMode(@intCast(regist)), (getComplexRegisterPolarMode(@intCast(regist)) == amPolar), (regXp == 0));
         if (lastErrorCode != 0) {
-            refreshRegisterLine(errorMessageRegisterLine);
+            frontier_screen.refreshRegisterLine(errorMessageRegisterLine);
         }
         if (prefixWidth > 0) {
-            _ = showString(prefix, &standardFont, 1, baseY, 0, prefixPre, prefixPost);
+            _ = frontier_screen.showString(prefix, &standardFont, 1, baseY, 0, prefixPre, prefixPost);
         }
         if (temporaryInformation == TI_INACCURATE and regist == REGISTER_X) {
-            _ = showString("This result may be inaccurate", &standardFont, 1, @intCast(Y_POSITION_OF_ERR_LINE), 0, 1, 1);
+            _ = frontier_screen.showString("This result may be inaccurate", &standardFont, 1, @intCast(Y_POSITION_OF_ERR_LINE), 0, 1, 1);
         }
     }
 }
@@ -3904,8 +3877,8 @@ fn prepLongintIntoLines(last: *i16, src: *i16, dest: *i16, fontToUse: *const fon
         GRPWID = @intCast(GROUPWIDTH_RIGHT());
         GRP_DISABLED = GROUPRIGHT_DISABLED();
     }
-    _ = stringWidth(SEP, fontToUse, 1, 1); // Width_0 (unused beyond allowedWidth below)
-    const Width_0: i16 = stringWidth(SEP, fontToUse, 1, 1);
+    _ = frontier_char_string.stringWidth(SEP, fontToUse, true, true); // Width_0 (unused beyond allowedWidth below)
+    const Width_0: i16 = frontier_char_string.stringWidth(SEP, fontToUse, true, true);
 
     var d: i16 = undefined;
     dest.* = 0;
@@ -3933,7 +3906,7 @@ fn prepLongintIntoLines(last: *i16, src: *i16, dest: *i16, fontToUse: *const fon
             tmpString[@intCast(dest.*)] = 0;
             src.* += 1;
 
-            const currentWidth: i16 = stringWidth(tmpString + @as(usize, @intCast(dCounter)), fontToUse, 1, 1);
+            const currentWidth: i16 = frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(dCounter)), fontToUse, true, true);
             const allowedWidth: i16 = maxWidth - (if (dCounter == 0) @as(i16, 0) else Width_0);
 
             if (currentWidth >= allowedWidth) {
@@ -4077,7 +4050,7 @@ fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16,
     const lastSlot: i16 = startOffset + (numLines - 1) * SHOWLineSize;
     setRegisterTag(showRegis_p, @intCast(tag));
     if (showName) {
-        viewRegName2(tmpString + 2400, &prefixWidth);
+        frontier_screen.viewRegName2(tmpString + 2400, &prefixWidth);
     } else {
         tmpString[2400] = 0;
     }
@@ -4137,7 +4110,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
 
     switch (fnShow_param) {
         NOPARAM => {
-            showSoftmenu(-MNU_SHOW);
+            frontier_softmenus.showSoftmenu(-MNU_SHOW);
             source = 0;
             showRegis = REGISTER_X;
             startingLine = 0;
@@ -4177,7 +4150,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                 } else {
                     showRegis += 1;
                 }
-                while (regInRange(showRegis) == 0 and showRegis < @as(u16, @intCast(FIRST_NAMED_VARIABLE)) + numberOfNamedVariables) {
+                while (!frontier_store.regInRange(showRegis) and showRegis < @as(u16, @intCast(FIRST_NAMED_VARIABLE)) + numberOfNamedVariables) {
                     showRegis += 1;
                 }
             }
@@ -4196,7 +4169,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                 } else {
                     showRegis -= 1;
                 }
-                while (regInRange(showRegis) == 0 and showRegis != @as(u16, @intCast(FIRST_GLOBAL_REGISTER))) {
+                while (!frontier_store.regInRange(showRegis) and showRegis != @as(u16, @intCast(FIRST_GLOBAL_REGISTER))) {
                     showRegis -= 1;
                 }
             }
@@ -4205,7 +4178,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
         else => {},
     }
 
-    refreshScreen(153);
+    frontier_screen.refreshScreen(153);
 
     SHOW_reset();
 
@@ -4246,7 +4219,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             while (d <= 3 * SHOWLineSize) : (d += SHOWLineSize) {
                 dest = d;
                 tmpString[@intCast(d)] = 0;
-                while (source < last and stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1) <= SCREEN_WIDTH - 8 * 2 - 5) {
+                while (source < last and frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true) <= SCREEN_WIDTH - 8 * 2 - 5) {
                     const sl = SEPARATOR_LEFT();
                     const sr = SEPARATOR_RIGHT();
                     if ((tmpString[@intCast(source)] == sl[0] and (if (sl[1] == 1) true else tmpString[@intCast(source + 1)] == sl[1])) or
@@ -4259,9 +4232,9 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                         if ((tmpString[@intCast(aa)] & 0x80) != 0) aa += 2;
                         var tmpString20: [20]u8 = undefined;
                         tmpString20[0] = 0;
-                        _ = xcopy(&tmpString20, tmpString + @as(usize, @intCast(source)), @intCast(aa - source));
+                        _ = frontier_char_string.xcopy(&tmpString20, tmpString + @as(usize, @intCast(source)), @intCast(aa - source));
                         tmpString20[@intCast(aa - source)] = 0;
-                        if (stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1) + stringWidth(&tmpString20, &numericFont, 1, 1) > SCREEN_WIDTH - 8 * 2 - 5) {
+                        if (frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true) + frontier_char_string.stringWidth(&tmpString20, &numericFont, true, true) > SCREEN_WIDTH - 8 * 2 - 5) {
                             break;
                         }
                     }
@@ -4345,10 +4318,10 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             while (tmpString[@intCast(last)] != 0) {
                 last += 1;
             }
-            _ = xcopy(tmpString + @as(usize, @intCast(last)), tmpString + 0, @intCast(strlen(tmpString + 0) + 1));
+            _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(last)), tmpString + 0, @intCast(strlen(tmpString + 0) + 1));
             tmpString[0] = 0;
 
-            const strWid: i32 = stringWidth(tmpString + 2100, &numericFont, 1, 1);
+            const strWid: i32 = frontier_char_string.stringWidth(tmpString + 2100, &numericFont, true, true);
             d = 2100;
             var hadFirstRealDigit: i16 = 0;
             while (d < 2100 + @as(i16, @intCast(stringByteLength(tmpString + 2100)))) {
@@ -4358,13 +4331,13 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                 if (hadFirstRealDigit > 0 and (tmpString[@intCast(d)] == '+' or tmpString[@intCast(d)] == '-')) {
                     break;
                 }
-                d = 2100 + stringNextGlyph(tmpString + 2100, d - 2100);
+                d = 2100 + frontier_char_string.stringNextGlyph(tmpString + 2100, d - 2100);
             }
             const tmpp: i8 = @bitCast(tmpString[@intCast(d)]);
             tmpString[@intCast(d)] = 0;
-            const strWidReal: i32 = stringWidth(tmpString + 2100, &numericFont, 1, 1);
+            const strWidReal: i32 = frontier_char_string.stringWidth(tmpString + 2100, &numericFont, true, true);
             tmpString[@intCast(d)] = @bitCast(tmpp);
-            const strWidImag: i32 = stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1);
+            const strWidImag: i32 = frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true);
             var strWidCur: i32 = 0;
             var changedOverToImag: bool = false;
 
@@ -4374,7 +4347,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             while (d <= 3 * SHOWLineSize) : (d += SHOWLineSize) {
                 dest = d;
                 tmpString[@intCast(d)] = 0;
-                while (source < last and stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1) <= SCREEN_WIDTH - 8 * 2 - 5) {
+                while (source < last and frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true) <= SCREEN_WIDTH - 8 * 2 - 5) {
                     tmpString[@intCast(dest)] = tmpString[@intCast(source)];
                     if ((tmpString[@intCast(dest)] & 0x80) != 0) {
                         dest += 1;
@@ -4386,7 +4359,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                     tmpString[@intCast(dest)] = 0;
 
                     const strWidLim: i32 = @divTrunc(55 * (if (changedOverToImag) strWidImag else strWidReal), 100);
-                    strWidCur = stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1);
+                    strWidCur = frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true);
 
                     if ((strWidCur >= SCREEN_WIDTH - 60 and strWidCur > strWidLim) and tmpString[@intCast(source - 2)] == 160 and tmpString[@intCast(source - 1)] == 5) {
                         break;
@@ -4401,7 +4374,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                     const cu = complexUnit();
                     if (d > 0 and
                         ((!(getComplexRegisterPolarMode(@intCast(showRegis)) == amPolar) and (tmpString[@intCast(source)] == '+' or tmpString[@intCast(source)] == '-')) or
-                            (stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, 1, 1) >= @divTrunc(@as(i32, SCREEN_WIDTH) * 4, 5) and tmpString[@intCast(source)] == radix[0] and tmpString[@intCast(source + 1)] == radix[1]) or
+                            (frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), &numericFont, true, true) >= @divTrunc(@as(i32, SCREEN_WIDTH) * 4, 5) and tmpString[@intCast(source)] == radix[0] and tmpString[@intCast(source + 1)] == radix[1]) or
                             (getSystemFlag(FLAG_CPXMULT) != 0 and tmpString[@intCast(source)] == cu[0] and tmpString[@intCast(source + 1)] == cu[1])))
                     {
                         break;
@@ -4488,9 +4461,9 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             _ = strcat(tmpString + 2100, regString(@intCast(showRegis)));
             _ = strcat(tmpString + 2100, "'");
             while (thereIsANextLine) {
-                _ = xcopy(tmpString + @as(usize, @intCast(offset)), tmpString + @as(usize, @intCast(bytesProcessed)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(bytesProcessed))) + 1));
+                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(offset)), tmpString + @as(usize, @intCast(bytesProcessed)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(bytesProcessed))) + 1));
                 thereIsANextLine = false;
-                const strw = stringAfterPixelsC47(tmpString + @as(usize, @intCast(offset)), stdnumEnlarge, nocompress, @intCast(SCREEN_WIDTH - 1), 0, 1);
+                const strw = frontier_screen.stringAfterPixelsC47(tmpString + @as(usize, @intCast(offset)), stdnumEnlarge, nocompress, @intCast(SCREEN_WIDTH - 1), 0, 1);
                 if (strw[0] != 0) {
                     strw[0] = 0;
                     thereIsANextLine = true;
@@ -4512,9 +4485,9 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             _ = strcat(tmpString + 2100, regString(@intCast(showRegis)));
             _ = strcat(tmpString + 2100, "'");
             while (thereIsANextLine) {
-                _ = xcopy(tmpString + @as(usize, @intCast(offset)), tmpString + @as(usize, @intCast(bytesProcessed)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(bytesProcessed))) + 1));
+                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(offset)), tmpString + @as(usize, @intCast(bytesProcessed)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(bytesProcessed))) + 1));
                 thereIsANextLine = false;
-                const remainingString = stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, SCREEN_WIDTH, 0, 1);
+                const remainingString = frontier_char_string.stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, SCREEN_WIDTH, false, true);
                 if (remainingString[0] != 0) {
                     remainingString[0] = 0;
                     thereIsANextLine = true;
@@ -4526,25 +4499,25 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             break :blk_switch;
         } else if (selection == dtConfig) {
             temporaryInformation = TI_SHOW_REGISTER_BIG;
-            _ = xcopy(tmpString, "Configuration data", 19);
+            _ = frontier_char_string.xcopy(tmpString, "Configuration data", 19);
             break :blk_switch;
         } else if (selection == dtReal34Matrix or selection == dtComplex34Matrix) {
-            clearScreenOld(@intFromBool(clrStatusBar == 0), clrRegisterLines, clrSoftkeys);
+            frontier_screen.clearScreenOld(@intFromBool(clrStatusBar == 0), clrRegisterLines, clrSoftkeys);
             dispM(showRegis, tmpString + 2100);
-            drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE - 4);
+            frontier_screen.drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE - 4);
             temporaryInformation = TI_SHOWNOTHING;
             if (programRunStop == PGM_RUNNING) {
-                refreshScreen(150);
-                fnPause(10);
+                frontier_screen.refreshScreen(150);
+                frontier_input.fnPause(10);
                 temporaryInformation = TI_NO_INFO;
             }
             break :blk_switch;
         } else {
             temporaryInformation = TI_NO_INFO;
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, @intCast(showRegis));
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, @intCast(showRegis));
             if (comptime extra_info) {
                 if (comptime !dmcp_build) {
-                    abi.fmtBufZ(errorMessage[0..512], "cannot SHOW {s}{s}", .{ @as([*:0]const u8, tmpString + 2100), @as([*:0]const u8, getRegisterDataTypeName(@intCast(showRegis), 1, 0)) });
+                    abi.fmtBufZ(errorMessage[0..512], "cannot SHOW {s}{s}", .{ @as([*:0]const u8, tmpString + 2100), @as([*:0]const u8, frontier_debug.getRegisterDataTypeName(@intCast(showRegis), true, false)) });
                     moreInfoOnError("In function fnC47Show:", errorMessage, null, null);
                 }
             }
@@ -4561,7 +4534,7 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
 // The dtLongInteger / XFN shared body (XFNentryPoint .. end of case dtLongInteger).
 fn fnC47Show_longIntBody(last: *i16, dest: *i16, numberOfLines: *i16) void {
     last.* = @intCast(stringByteLength(errorMessage));
-    const glyphNumber: i16 = @intCast(stringGlyphLength(errorMessage));
+    const glyphNumber: i16 = @intCast(frontier_char_string.stringGlyphLength(errorMessage));
 
     blk_li: {
         if (IntShowMode == SHOWAUTO) {
@@ -4613,20 +4586,20 @@ fn fnC47Show_longIntBody(last: *i16, dest: *i16, numberOfLines: *i16) void {
 
 fn fnC47Show_goBreak1(numberOfLines: i16) void {
     if (tmpString[@intCast(numberOfLines * SHOWLineSize)] != 0) {
-        var ii: i16 = stringLastGlyph(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize)));
-        source = stringPrevNumberGlyph(errorMessage, source);
+        var ii: i16 = frontier_char_string.stringLastGlyph(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize)));
+        source = frontier_char_string.stringPrevNumberGlyph(errorMessage, source);
 
         if (IntShowMode == SHOWSML) {
-            while (ii > 10 and (stringWidth(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize)), &standardFont, 1, 1) + stringWidth(STD_ELLIPSIS, &standardFont, 1, 1) + stringWidth(STD_SPACE_6_PER_EM, &standardFont, 1, 1)) >= SCREEN_WIDTH) {
-                source = stringPrevNumberGlyph(errorMessage, source);
+            while (ii > 10 and (frontier_char_string.stringWidth(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize)), &standardFont, true, true) + frontier_char_string.stringWidth(STD_ELLIPSIS, &standardFont, true, true) + frontier_char_string.stringWidth(STD_SPACE_6_PER_EM, &standardFont, true, true)) >= SCREEN_WIDTH) {
+                source = frontier_char_string.stringPrevNumberGlyph(errorMessage, source);
                 tmpString[@intCast((numberOfLines - 1) * SHOWLineSize + ii)] = 0;
-                ii = stringPrevNumberGlyph(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize)), ii);
+                ii = frontier_char_string.stringPrevNumberGlyph(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize)), ii);
             }
         }
 
-        _ = xcopy(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize + ii)), STD_ELLIPSIS, 2);
+        _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize + ii)), STD_ELLIPSIS, 2);
         ii += 2;
-        _ = xcopy(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize + ii)), STD_SPACE_6_PER_EM, 2);
+        _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast((numberOfLines - 1) * SHOWLineSize + ii)), STD_SPACE_6_PER_EM, 2);
         ii += 2;
         tmpString[@intCast((numberOfLines - 1) * SHOWLineSize + ii)] = 0;
     }
@@ -4636,12 +4609,12 @@ fn fnC47Show_goBreak1(numberOfLines: i16) void {
 // _view / fnView / fnAview / fnPrompt
 // ===========================================================================
 fn _view(regist: u16) void {
-    if (regInRange(regist) != 0) {
+    if (frontier_store.regInRange(regist)) {
         currentViewRegister = regist;
         temporaryInformation = TI_VIEW_REGISTER;
         if (programRunStop == PGM_RUNNING) {
             screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
-            refreshScreen(151);
+            frontier_screen.refreshScreen(151);
         }
     }
 }
@@ -4665,5 +4638,5 @@ pub export fn fnPrompt(regist: u16) callconv(.c) void {
     if (comptime ir_printing) {
         printInputPrompt(ITM_PROMPT, regist);
     }
-    fnStopProgram(NOPARAM);
+    frontier_lbl_gto_xeq.fnStopProgram(NOPARAM);
 }
