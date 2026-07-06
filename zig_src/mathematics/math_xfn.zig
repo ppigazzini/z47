@@ -34,6 +34,9 @@ const const2139_2pi = consts.const2139_2pi;
 // moreInfoOnError strings.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_rdp = @import("math_rdp.zig"); // M-callconv: Zig-to-Zig
+const math_rsd = @import("math_rsd.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -133,7 +136,6 @@ const fnDrop = runtime.fnDrop;
 // align(1) variants (the 1071-digit stack scratch is 4-byte aligned, so this is
 // safe; the runtime declarations require natural alignment).
 extern fn convertAngleFromTo(angle: *align(1) real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
-extern fn mod2Pi(x: *align(1) const real_t, result: *align(1) real_t, ctxt: *realContext_t) void;
 extern fn fnDropT(unusedButMandatoryParameter: u16) void;
 
 extern var currentAngularMode: angularMode_t;
@@ -249,17 +251,8 @@ inline fn realGetDigits(x: *align(1) const real_t) i32 {
 extern fn realToSci(num: *align(1) const real_t, dispString: [*]u8) void;
 
 // WP34S / Taylor engine (operands *align(1)).
-extern fn C47_WP34S_Cvt2RadSinCosTan(angle: *align(1) const real_t, mode: angularMode_t, sin: ?*align(1) real_t, cos: ?*align(1) real_t, tan: ?*align(1) real_t, ctxt: *realContext_t) void;
-extern fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn WP34S_Mod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void;
 
 // roundToDecimalPlace / roundToSignificantDigits live in the rdp/rsd owners.
-extern fn roundToDecimalPlace(source: *align(1) const real_t, destination: *align(1) real_t, digits: u16, realContext: *realContext_t) void;
-extern fn roundToSignificantDigits(source: *align(1) const real_t, destination: *align(1) real_t, digits: u16, realContext: *realContext_t) void;
 
 // Register / longInteger access.
 extern fn getRegisterAsReal(reg: calcRegister_t, value: *align(1) real_t) bool;
@@ -327,23 +320,23 @@ fn BigReal(comptime digits: u32) type {
 // ---------------------------------------------------------------------------
 fn C47Cvt2RadSinCosTan1071(an: *align(1) real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
-    C47_WP34S_Cvt2RadSinCosTan(an, angularMode, sinOut, cosOut, tanOut, realContext);
+    math_wp34s.C47_WP34S_Cvt2RadSinCosTan(an, angularMode, sinOut, cosOut, tanOut, realContext);
 }
 fn C47_WP34S_Asin1071(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
-    C47_WP34S_Asin(x, angle, realContext);
+    math_wp34s.C47_WP34S_Asin(x, angle, realContext);
 }
 fn C47_WP34S_Acos1071(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
-    C47_WP34S_Acos(x, angle, realContext);
+    math_wp34s.C47_WP34S_Acos(x, angle, realContext);
 }
 fn C47_WP34S_Atan1071(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
-    C47_WP34S_Atan(x, angle, realContext);
+    math_wp34s.C47_WP34S_Atan(x, angle, realContext);
 }
 fn C47_WP34S_Atan2_1071(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     explicitTaylorIterVisibilitySelection = true;
-    C47_WP34S_Atan2(y, x, atan, realContext);
+    math_wp34s.C47_WP34S_Atan2(y, x, atan, realContext);
 }
 
 // ===========================================================================
@@ -949,16 +942,16 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
             },
             ITM_MODANG_XFN => {
                 if (angleMode == amRadian) {
-                    mod2Pi(paramX, paramX, &c);
+                    math_wp34s.mod2Pi(paramX, paramX, &c);
                 } else {
-                    WP34S_Mod(paramX, modulus(angleMode), paramX, &c);
+                    math_wp34s.WP34S_Mod(paramX, modulus(angleMode), paramX, &c);
                 }
             },
             ITM_RDP_XFN => {
-                roundToDecimalPlace(paramX, paramX, functionParam, &c);
+                math_rdp.roundToDecimalPlace(@alignCast(paramX), @alignCast(paramX), functionParam, &c);
             },
             ITM_RSD_XFN => {
-                roundToSignificantDigits(paramX, paramX, functionParam, &c);
+                math_rsd.roundToSignificantDigits(@alignCast(paramX), @alignCast(paramX), functionParam, &c);
             },
             ITM_CHS_XFN => {
                 realMultiply(const__1(), paramX, paramX, &c);
@@ -988,7 +981,7 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
                 realDivide(paramY, paramX, paramX, &c);
             },
             ITM_MOD_XFN => {
-                WP34S_BigMod(paramY, paramX, paramX, &c);
+                math_wp34s.WP34S_BigMod(paramY, paramX, paramX, &c);
             },
             ITM_atan2_XFN => {
                 C47_WP34S_Atan2_1071(paramY, paramX, paramX, &c);

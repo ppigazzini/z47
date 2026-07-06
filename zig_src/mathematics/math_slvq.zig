@@ -24,6 +24,11 @@ const const_4 = consts.const_4;
 // moreInfoOnError strings.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_addition_cells = @import("math_addition_cells.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_subtraction_cells = @import("math_subtraction_cells.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -116,14 +121,6 @@ inline fn realGetExponent(source: *align(1) const real_t) i32 {
 }
 
 // Complex helpers (operands *align(1) const).
-extern fn mulComplexComplex(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2r: *align(1) const real_t, f2i: *align(1) const real_t, pr: *align(1) real_t, pi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn divComplexComplex(nr: *align(1) const real_t, ni: *align(1) const real_t, dr: *align(1) const real_t, di: *align(1) const real_t, qr: *align(1) real_t, qi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn mulComplexReal(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2: *align(1) const real_t, pr: *align(1) real_t, pi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn addComplex(ar: *align(1) const real_t, ai: *align(1) const real_t, br: *align(1) const real_t, bi: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn subComplex(ar: *align(1) const real_t, ai: *align(1) const real_t, br: *align(1) const real_t, bi: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn sqrtComplex(re: *align(1) const real_t, im: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn realRectangularToPolar(re: *align(1) const real_t, im: *align(1) const real_t, magnitude: *align(1) real_t, theta: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn realPolarToRectangular(magnitude: *align(1) const real_t, theta: *align(1) const real_t, re: *align(1) real_t, im: *align(1) real_t, ctxt: *realContext_t) void;
 
 // Blob constants.
 
@@ -320,9 +317,9 @@ pub export fn solveQuadraticEquation(
         if (realIsZeroA(aReal) and realIsZeroA(aImag)) {
             // bx + c = 0   (b is not 0 here)
             // r = b²
-            mulComplexComplex(bReal, bImag, bReal, bImag, rReal, rImag, realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(bReal), @alignCast(bImag), @alignCast(bReal), @alignCast(bImag), @alignCast(rReal), @alignCast(rImag), realContext);
             // x1 = -c/b, x2 = NaN
-            divComplexComplex(cReal, cImag, bReal, bImag, x1Real, x1Imag, realContext);
+            math_division_cells.divComplexComplex(@alignCast(cReal), @alignCast(cImag), @alignCast(bReal), @alignCast(bImag), @alignCast(x1Real), @alignCast(x1Imag), realContext);
             realChangeSign(x1Real);
             realChangeSign(x1Imag);
             realSetNaN(x2Real);
@@ -330,12 +327,12 @@ pub export fn solveQuadraticEquation(
         } else if (realIsZeroA(cReal) and realIsZeroA(cImag)) {
             // ax² + bx = x(ax + b) = 0   (a is not 0 here)
             // r = b²
-            mulComplexComplex(bReal, bImag, bReal, bImag, rReal, rImag, realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(bReal), @alignCast(bImag), @alignCast(bReal), @alignCast(bImag), @alignCast(rReal), @alignCast(rImag), realContext);
             // x1 = 0
             realSetZero(x1Real);
             realSetZero(x1Imag);
             // x2 = -b/a
-            divComplexComplex(bReal, bImag, aReal, aImag, x2Real, x2Imag, realContext);
+            math_division_cells.divComplexComplex(@alignCast(bReal), @alignCast(bImag), @alignCast(aReal), @alignCast(aImag), @alignCast(x2Real), @alignCast(x2Imag), realContext);
             realChangeSign(x2Real);
             realChangeSign(x2Imag);
         } else {
@@ -343,28 +340,28 @@ pub export fn solveQuadraticEquation(
             // r = b² - 4ac
             realMultiply(const__4(), aReal, rReal, realContext);
             realMultiply(const__4(), aImag, rImag, realContext);
-            mulComplexComplex(cReal, cImag, rReal, rImag, rReal, rImag, realContext);
-            mulComplexComplex(bReal, bImag, bReal, bImag, x1Real, x1Imag, realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(cReal), @alignCast(cImag), @alignCast(rReal), @alignCast(rImag), @alignCast(rReal), @alignCast(rImag), realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(bReal), @alignCast(bImag), @alignCast(bReal), @alignCast(bImag), @alignCast(x1Real), @alignCast(x1Imag), realContext);
             realAdd(x1Real, rReal, rReal, realContext);
             realAdd(x1Imag, rImag, rImag, realContext);
 
             // x1 = (-b + sqrt(r)) / 2a
             realCopy(rReal, x1Real);
             realCopy(rImag, x1Imag);
-            realRectangularToPolar(x1Real, x1Imag, x1Real, x1Imag, realContext);
+            math_transform_complex_helpers.realRectangularToPolar(@alignCast(x1Real), @alignCast(x1Imag), @alignCast(x1Real), @alignCast(x1Imag), realContext);
             realSquareRoot(x1Real, x1Real, realContext);
             realMultiply(x1Imag, const_1on2(), x1Imag, realContext);
-            realPolarToRectangular(x1Real, x1Imag, x1Real, x1Imag, realContext);
+            math_transform_complex_helpers.realPolarToRectangular(@alignCast(x1Real), @alignCast(x1Imag), @alignCast(x1Real), @alignCast(x1Imag), realContext);
 
             realSubtract(x1Real, bReal, x1Real, realContext);
             realSubtract(x1Imag, bImag, x1Imag, realContext);
             realMultiply(x1Real, const_1on2(), x1Real, realContext);
             realMultiply(x1Imag, const_1on2(), x1Imag, realContext);
-            divComplexComplex(x1Real, x1Imag, aReal, aImag, x1Real, x1Imag, realContext);
+            math_division_cells.divComplexComplex(@alignCast(x1Real), @alignCast(x1Imag), @alignCast(aReal), @alignCast(aImag), @alignCast(x1Real), @alignCast(x1Imag), realContext);
 
             // x2 = c / ax1  (x1 connot be 0 here)
-            divComplexComplex(cReal, cImag, aReal, aImag, x2Real, x2Imag, realContext);
-            divComplexComplex(x2Real, x2Imag, x1Real, x1Imag, x2Real, x2Imag, realContext);
+            math_division_cells.divComplexComplex(@alignCast(cReal), @alignCast(cImag), @alignCast(aReal), @alignCast(aImag), @alignCast(x2Real), @alignCast(x2Imag), realContext);
+            math_division_cells.divComplexComplex(@alignCast(x2Real), @alignCast(x2Imag), @alignCast(x1Real), @alignCast(x1Imag), @alignCast(x2Real), @alignCast(x2Imag), realContext);
         }
     }
 }
@@ -564,18 +561,18 @@ pub export fn solveQuadraticEquation159(
         if (realIsZeroA(aReal) and realIsZeroA(aImag)) {
             // bx + c = 0 => x = -c/b
             // r = b²
-            mulComplexComplex(b_h, bI_h, b_h, bI_h, rReal, rImag, realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(b_h), @alignCast(bI_h), @alignCast(b_h), @alignCast(bI_h), @alignCast(rReal), @alignCast(rImag), realContext);
             // x1 = -c/b, x2 = NaN
-            divComplexComplex(c_h, cI_h, b_h, bI_h, x1Real, x1Imag, realContext);
+            math_division_cells.divComplexComplex(@alignCast(c_h), @alignCast(cI_h), @alignCast(b_h), @alignCast(bI_h), @alignCast(x1Real), @alignCast(x1Imag), realContext);
             realChangeSign(x1Real);
             realChangeSign(x1Imag);
             realSetNaN(x2Real);
             realSetNaN(x2Imag);
         } else {
             // Discriminant: r = b² - 4ac
-            mulComplexComplex(b_h, bI_h, b_h, bI_h, rR, rI, realContext);
-            mulComplexComplex(a_h, aI_h, c_h, cI_h, temp1R, temp1I, realContext);
-            mulComplexReal(temp1R, temp1I, const_4(), temp1R, temp1I, realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(b_h), @alignCast(bI_h), @alignCast(b_h), @alignCast(bI_h), @alignCast(rR), @alignCast(rI), realContext);
+            math_multiplication_cells.mulComplexComplex(@alignCast(a_h), @alignCast(aI_h), @alignCast(c_h), @alignCast(cI_h), @alignCast(temp1R), @alignCast(temp1I), realContext);
+            math_multiplication_cells.mulComplexReal(@alignCast(temp1R), @alignCast(temp1I), const_4(), @alignCast(temp1R), @alignCast(temp1I), realContext);
             realSubtract(rR, temp1R, rR, realContext);
             realSubtract(rI, temp1I, rI, realContext);
 
@@ -583,20 +580,20 @@ pub export fn solveQuadraticEquation159(
             realCopy(rI, rImag);
 
             // sqrt(r) using 159-digit precision
-            sqrtComplex(rR, rI, sqrtR, sqrtI, realContext);
+            math_transform_complex_helpers.sqrtComplex(@alignCast(rR), @alignCast(rI), @alignCast(sqrtR), @alignCast(sqrtI), realContext);
 
             // x1 = (-b + sqrt(r)) / (2a)
             realMinus(b_h, temp1R, realContext);
             realMinus(bI_h, temp1I, realContext);
-            addComplex(temp1R, temp1I, sqrtR, sqrtI, temp1R, temp1I, realContext);
-            mulComplexReal(a_h, aI_h, const_2(), temp2R, temp2I, realContext);
-            divComplexComplex(temp1R, temp1I, temp2R, temp2I, x1Real, x1Imag, realContext);
+            math_addition_cells.addComplex(@alignCast(temp1R), @alignCast(temp1I), @alignCast(sqrtR), @alignCast(sqrtI), @alignCast(temp1R), @alignCast(temp1I), realContext);
+            math_multiplication_cells.mulComplexReal(@alignCast(a_h), @alignCast(aI_h), const_2(), @alignCast(temp2R), @alignCast(temp2I), realContext);
+            math_division_cells.divComplexComplex(@alignCast(temp1R), @alignCast(temp1I), @alignCast(temp2R), @alignCast(temp2I), @alignCast(x1Real), @alignCast(x1Imag), realContext);
 
             // x2 = (-b - sqrt(r)) / (2a)
             realMinus(b_h, temp1R, realContext);
             realMinus(bI_h, temp1I, realContext);
-            subComplex(temp1R, temp1I, sqrtR, sqrtI, temp1R, temp1I, realContext);
-            divComplexComplex(temp1R, temp1I, temp2R, temp2I, x2Real, x2Imag, realContext);
+            math_subtraction_cells.subComplex(@alignCast(temp1R), @alignCast(temp1I), @alignCast(sqrtR), @alignCast(sqrtI), @alignCast(temp1R), @alignCast(temp1I), realContext);
+            math_division_cells.divComplexComplex(@alignCast(temp1R), @alignCast(temp1I), @alignCast(temp2R), @alignCast(temp2I), @alignCast(x2Real), @alignCast(x2Imag), realContext);
         }
     }
 

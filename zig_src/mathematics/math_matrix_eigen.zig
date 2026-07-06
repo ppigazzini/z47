@@ -26,6 +26,15 @@ const const_1e_34 = consts.const_1e_34;
 
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_complex_core = @import("math_matrix_complex_core.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_product = @import("math_matrix_product.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_slvc = @import("math_slvc.zig"); // M-callconv: Zig-to-Zig
+const math_slvq = @import("math_slvq.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -61,20 +70,10 @@ extern fn decNumberSquareRoot(res: *align(1) real_t, rhs: *align(1) const real_t
 extern fn decNumberFMA(res: *align(1) real_t, f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) *align(1) real_t;
 extern fn decNumberFromString(res: *align(1) real_t, source: [*:0]const u8, ctxt: *realContext_t) *align(1) real_t;
 extern fn realSetOne(r: *align(1) real_t) void;
-extern fn realCompareLessThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
-extern fn divComplexComplex(nr: *align(1) const real_t, ni: *align(1) const real_t, dr: *align(1) const real_t, di: *align(1) const real_t, qr: *align(1) real_t, qi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn realRectangularToPolar(re: *align(1) const real_t, im: *align(1) const real_t, magnitude: *align(1) real_t, theta: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn realPolarToRectangular(magnitude: *align(1) const real_t, theta: *align(1) const real_t, re: *align(1) real_t, im: *align(1) real_t, ctxt: *realContext_t) void;
 // mulCpxMat is the math_matrix_complex_core-owned interleaved-complex matmul.
-extern fn mulCpxMat(y: [*]align(1) const real_t, x: [*]align(1) const real_t, size_y: u16, size_yx: u16, size_x: u16, res: [*]align(1) real_t, ctxt: *realContext_t) void;
 extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
 extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
 extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
-extern fn realCompareGreaterThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
-extern fn realCompareEqual(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
-extern fn complexMagnitude(re: *align(1) const real_t, im: *align(1) const real_t, magnitude: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn realGetExponentComp(val: *align(1) const real_t) i32;
-extern fn realCompareAbsLessThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
 extern fn exitKeyWaiting() bool;
 extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
@@ -156,41 +155,8 @@ inline fn realIsZeroA(source: *align(1) const real_t) bool {
 }
 
 // Complex helper used by the 2x2/3x3 closed-form solvers.
-extern fn mulComplexComplex(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2r: *align(1) const real_t, f2i: *align(1) const real_t, pr: *align(1) real_t, pi: *align(1) real_t, ctxt: *realContext_t) void;
 
 // math_slvq-owned quadratic solvers (Zig exports).
-extern fn solveQuadraticEquation159(
-    aReal: *align(1) const real_t,
-    aImag: *align(1) const real_t,
-    bReal: *align(1) const real_t,
-    bImag: *align(1) const real_t,
-    cReal: *align(1) const real_t,
-    cImag: *align(1) const real_t,
-    rReal: *align(1) real_t,
-    rImag: *align(1) real_t,
-    x1Real: *align(1) real_t,
-    x1Imag: *align(1) real_t,
-    x2Real: *align(1) real_t,
-    x2Imag: *align(1) real_t,
-    realContext: *realContext_t,
-) void;
-extern fn solveCubicEquation159(
-    c2Real: *align(1) const real_t,
-    c2Imag: *align(1) const real_t,
-    c1Real: *align(1) const real_t,
-    c1Imag: *align(1) const real_t,
-    c0Real: *align(1) const real_t,
-    c0Imag: *align(1) const real_t,
-    rReal: *align(1) real_t,
-    rImag: *align(1) real_t,
-    x1Real: *align(1) real_t,
-    x1Imag: *align(1) real_t,
-    x2Real: *align(1) real_t,
-    x2Imag: *align(1) real_t,
-    x3Real: *align(1) real_t,
-    x3Imag: *align(1) real_t,
-    realContext: *realContext_t,
-) void;
 
 // Eigen iteration monitoring flag (matrix.c suppresses the keyboard monitor).
 extern var blockMonitoring: bool;
@@ -198,14 +164,10 @@ extern var blockMonitoring: bool;
 // --- blob constants -------------------------------------------------------
 
 // Matrix-product owners + a real comparison, used by the matrix-sqrt engine.
-extern fn multiplyRealMatrices(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real34Matrix_t) void;
-extern fn multiplyComplexMatrices(y: *const complex34Matrix_t, x: *const complex34Matrix_t, res: *complex34Matrix_t) void;
-extern fn realCompareLessEqual(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
 const ERROR_NO_ROOT_FOUND: u8 = 20;
 
 // Complex dense inverse (math_matrix_complex_core.zig) + NaN setter, both
 // taken at align(1) so the packed interleaved-complex bulk scratch passes.
-extern fn invCpxMat(matrix: [*]align(1) real_t, n: u16, ctxt: *realContext_t) bool;
 extern fn realSetNaN(value: *align(1) real_t) void;
 
 // --- BigReal(159): REAL_T_PTR(name, 159) stack scratch -------------------
@@ -280,8 +242,8 @@ pub export fn calculateEigenvalues22(
         realSubtract(detR, trR, detR, &ctx159);
         realSetZero(detI);
     } else {
-        mulComplexComplex(ar, ai, dr, di, detR, detI, &ctx159);
-        mulComplexComplex(br, bi, cr, ci, trR, trI, &ctx159);
+        math_multiplication_cells.mulComplexComplex(@alignCast(ar), @alignCast(ai), @alignCast(dr), @alignCast(di), @alignCast(detR), @alignCast(detI), &ctx159);
+        math_multiplication_cells.mulComplexComplex(@alignCast(br), @alignCast(bi), @alignCast(cr), @alignCast(ci), @alignCast(trR), @alignCast(trI), &ctx159);
         realSubtract(detR, trR, detR, &ctx159);
         realSubtract(detI, trI, detI, &ctx159);
     }
@@ -305,7 +267,7 @@ pub export fn calculateEigenvalues22(
     realSetZero(t1iH);
     realSetZero(t2rH);
     realSetZero(t2iH);
-    solveQuadraticEquation159(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1rH, t1iH, t2rH, t2iH, &ctx159);
+    math_slvq.solveQuadraticEquation159(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1rH, t1iH, t2rH, t2iH, &ctx159);
     realPlus(t1rH, t1r, realContext);
     realPlus(t1iH, t1i, realContext);
     realPlus(t2rH, t2r, realContext);
@@ -411,9 +373,9 @@ pub export fn QR_decomposition_householder(
                 realSubtract(&v[0], &sum, &v[0], realContext);
             } else {
                 blockMonitoring = true;
-                realRectangularToPolar(&v[0], &v[1], &m, &t, realContext);
+                math_transform_complex_helpers.realRectangularToPolar(&v[0], &v[1], &m, &t, realContext);
                 blockMonitoring = true;
-                realPolarToRectangular(&sum, &t, &m, &t, realContext);
+                math_transform_complex_helpers.realPolarToRectangular(&sum, &t, &m, &t, realContext);
                 blockMonitoring = false;
                 realAdd(&v[0], &m, &v[0], realContext);
                 realAdd(&v[1], &t, &v[1], realContext);
@@ -439,14 +401,14 @@ pub export fn QR_decomposition_householder(
             stringToReal(threshold_str, &min_norm, realContext);
             i = 0;
             while (i < sz - j) : (i += 1) {
-                if (realCompareLessThan(&sum, &min_norm)) {
+                if (math_comparison_reals.realCompareLessThan(&sum, &min_norm)) {
                     realCopy(&v[i * 2], &m);
                     realCopy(&v[i * 2 + 1], &t);
                 } else if (realIsZeroA(&v[i * 2 + 1])) {
                     realDivide(&v[i * 2], &sum, &m, realContext);
                     realSetZero(&t);
                 } else {
-                    divComplexComplex(&v[i * 2], &v[i * 2 + 1], &sum, const_0(), &m, &t, realContext);
+                    math_division_cells.divComplexComplex(&v[i * 2], &v[i * 2 + 1], &sum, const_0(), &m, &t, realContext);
                 }
                 realCopy(&m, &v[i * 2]);
                 realCopy(&t, &v[i * 2 + 1]);
@@ -472,7 +434,7 @@ pub export fn QR_decomposition_householder(
                         realMultiply(&v[i * 2], &v[k * 2], &m, realContext);
                         realSetZero(&t);
                     } else {
-                        mulComplexComplex(&v[i * 2], &v[i * 2 + 1], &v[k * 2], &sum, &m, &t, realContext);
+                        math_multiplication_cells.mulComplexComplex(&v[i * 2], &v[i * 2 + 1], &v[k * 2], &sum, &m, &t, realContext);
                     }
                     realMultiply(&m, const_2(), &m, realContext);
                     realMultiply(&t, const_2(), &t, realContext);
@@ -482,7 +444,7 @@ pub export fn QR_decomposition_householder(
             }
 
             // R = qq * matr.
-            mulCpxMat(qq, matr, size, size, size, newMat, realContext);
+            math_matrix_complex_core.mulCpxMat(qq, matr, size, size, size, newMat, realContext);
             i = 0;
             while (i < sz * sz) : (i += 1) {
                 realCopy(&newMat[i * 2], &matr[i * 2]);
@@ -490,7 +452,7 @@ pub export fn QR_decomposition_householder(
             }
             // Q = matq * qq*.
             adjCpxMat(qq, size, qt);
-            mulCpxMat(matq, qt, size, size, size, newMat, realContext);
+            math_matrix_complex_core.mulCpxMat(matq, qt, size, size, size, newMat, realContext);
             i = 0;
             while (i < sz * sz) : (i += 1) {
                 realCopy(&newMat[i * 2], &matq[i * 2]);
@@ -629,12 +591,12 @@ pub export fn calculateEigenvalues33(
     realChangeSign(bi);
 
     // linear coefficient: sum of principal 2x2 minors
-    mulComplexComplex(mr[0], mi[0], mr[4], mi[4], aekr, aeki, &ctx159);
-    mulComplexComplex(mr[1], mi[1], mr[3], mi[3], bdkr, bdki, &ctx159);
-    mulComplexComplex(mr[0], mi[0], mr[8], mi[8], cdhr, cdhi, &ctx159);
-    mulComplexComplex(mr[2], mi[2], mr[6], mi[6], cegr, cegi, &ctx159);
-    mulComplexComplex(mr[4], mi[4], mr[8], mi[8], bfgr, bfgi, &ctx159);
-    mulComplexComplex(mr[5], mi[5], mr[7], mi[7], afhr, afhi, &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[0]), @alignCast(mi[0]), @alignCast(mr[4]), @alignCast(mi[4]), @alignCast(aekr), @alignCast(aeki), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[1]), @alignCast(mi[1]), @alignCast(mr[3]), @alignCast(mi[3]), @alignCast(bdkr), @alignCast(bdki), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[0]), @alignCast(mi[0]), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(cdhr), @alignCast(cdhi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[2]), @alignCast(mi[2]), @alignCast(mr[6]), @alignCast(mi[6]), @alignCast(cegr), @alignCast(cegi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[4]), @alignCast(mi[4]), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(bfgr), @alignCast(bfgi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[5]), @alignCast(mi[5]), @alignCast(mr[7]), @alignCast(mi[7]), @alignCast(afhr), @alignCast(afhi), &ctx159);
     realAdd(aekr, cdhr, cr, &ctx159);
     realAdd(aeki, cdhi, ci, &ctx159);
     realAdd(cr, bfgr, cr, &ctx159);
@@ -647,14 +609,14 @@ pub export fn calculateEigenvalues33(
     realSubtract(ci, afhi, ci, &ctx159);
 
     // constant term: -determinant
-    mulComplexComplex(aekr, aeki, mr[8], mi[8], aekr, aeki, &ctx159);
-    mulComplexComplex(mr[1], mi[1], mr[5], mi[5], bfgr, bfgi, &ctx159);
-    mulComplexComplex(bfgr, bfgi, mr[6], mi[6], bfgr, bfgi, &ctx159);
-    mulComplexComplex(mr[2], mi[2], mr[3], mi[3], cdhr, cdhi, &ctx159);
-    mulComplexComplex(cdhr, cdhi, mr[7], mi[7], cdhr, cdhi, &ctx159);
-    mulComplexComplex(cegr, cegi, mr[4], mi[4], cegr, cegi, &ctx159);
-    mulComplexComplex(bdkr, bdki, mr[8], mi[8], bdkr, bdki, &ctx159);
-    mulComplexComplex(afhr, afhi, mr[0], mi[0], afhr, afhi, &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(aekr), @alignCast(aeki), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(aekr), @alignCast(aeki), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[1]), @alignCast(mi[1]), @alignCast(mr[5]), @alignCast(mi[5]), @alignCast(bfgr), @alignCast(bfgi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(bfgr), @alignCast(bfgi), @alignCast(mr[6]), @alignCast(mi[6]), @alignCast(bfgr), @alignCast(bfgi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(mr[2]), @alignCast(mi[2]), @alignCast(mr[3]), @alignCast(mi[3]), @alignCast(cdhr), @alignCast(cdhi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(cdhr), @alignCast(cdhi), @alignCast(mr[7]), @alignCast(mi[7]), @alignCast(cdhr), @alignCast(cdhi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(cegr), @alignCast(cegi), @alignCast(mr[4]), @alignCast(mi[4]), @alignCast(cegr), @alignCast(cegi), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(bdkr), @alignCast(bdki), @alignCast(mr[8]), @alignCast(mi[8]), @alignCast(bdkr), @alignCast(bdki), &ctx159);
+    math_multiplication_cells.mulComplexComplex(@alignCast(afhr), @alignCast(afhi), @alignCast(mr[0]), @alignCast(mi[0]), @alignCast(afhr), @alignCast(afhi), &ctx159);
     realAdd(aekr, bfgr, dr, &ctx159);
     realAdd(aeki, bfgi, di, &ctx159);
     realAdd(dr, cdhr, dr, &ctx159);
@@ -688,7 +650,7 @@ pub export fn calculateEigenvalues33(
     realSetZero(t3rH);
     realSetZero(t3iH);
 
-    solveCubicEquation159(br, bi, cr, ci, dr, di, discrR, discrI, t1rH, t1iH, t2rH, t2iH, t3rH, t3iH, &ctx159);
+    math_slvc.solveCubicEquation159(br, bi, cr, ci, dr, di, discrR, discrI, t1rH, t1iH, t2rH, t2iH, t3rH, t3iH, &ctx159);
 
     realPlus(t1rH, t1r, realContext);
     realPlus(t1iH, t1i, realContext);
@@ -756,7 +718,7 @@ fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real
 
     var threshold: real_t = undefined;
     realMultiply(&sqrt_term, const_1e_6(), &threshold, realContext);
-    if (realIsNegativeA(&delta_re) and realCompareGreaterThan(&abs_delta_re, &threshold)) {
+    if (realIsNegativeA(&delta_re) and math_comparison_reals.realCompareGreaterThan(&abs_delta_re, &threshold)) {
         realChangeSign(&sign_term);
     }
 
@@ -791,9 +753,9 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
     } else if (begin_a == end_b) {
         return;
     } else if (size == 2) {
-        complexMagnitude(&eig[0], &eig[1], &eig[2], realContext);
-        complexMagnitude(&eig[6], &eig[7], &eig[4], realContext);
-        if (realCompareLessThan(&eig[2], &eig[4])) {
+        math_runtime_helpers.complexMagnitude(@alignCast(&eig[0]), @alignCast(&eig[1]), @alignCast(&eig[2]), realContext);
+        math_runtime_helpers.complexMagnitude(@alignCast(&eig[6]), @alignCast(&eig[7]), @alignCast(&eig[4]), realContext);
+        if (math_comparison_reals.realCompareLessThan(@alignCast(&eig[2]), @alignCast(&eig[4]))) {
             realCopy(&eig[0], &eig[2]);
             realCopy(&eig[1], &eig[3]);
             realCopy(&eig[6], &eig[0]);
@@ -809,7 +771,7 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
         var i: u16 = begin_a;
         while (i <= end_b) : (i += 1) {
             const ii: usize = i;
-            complexMagnitude(&eig[(ii * sz + ii) * 2], &eig[(ii * sz + ii) * 2 + 1], &eig[(ii * sz + (ii + 1) % sz) * 2], realContext);
+            math_runtime_helpers.complexMagnitude(@alignCast(&eig[(ii * sz + ii) * 2]), @alignCast(&eig[(ii * sz + ii) * 2 + 1]), @alignCast(&eig[(ii * sz + (ii + 1) % sz) * 2]), realContext);
         }
         i = begin_a;
         while (i <= end_b) : (i += 1) {
@@ -825,7 +787,7 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
                 realCopy(&eig[(aa * sz + aa) * 2], &eig[dst]);
                 realCopy(&eig[(aa * sz + aa) * 2 + 1], &eig[dst + 1]);
                 a += 1;
-            } else if (realCompareLessThan(&eig[(@as(usize, a) * sz + (@as(usize, a) + 1) % sz) * 2], &eig[(@as(usize, b) * sz + (@as(usize, b) + 1) % sz) * 2])) {
+            } else if (math_comparison_reals.realCompareLessThan(@alignCast(&eig[(@as(usize, a) * sz + (@as(usize, a) + 1) % sz) * 2]), @alignCast(&eig[(@as(usize, b) * sz + (@as(usize, b) + 1) % sz) * 2]))) {
                 const bb: usize = b;
                 realCopy(&eig[(bb * sz + bb) * 2], &eig[dst]);
                 realCopy(&eig[(bb * sz + bb) * 2 + 1], &eig[dst + 1]);
@@ -887,8 +849,8 @@ fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) 
         for (0..sz) |j| {
             if (i != j) {
                 var offdiag_mag: real_t = undefined;
-                complexMagnitude(&matrix[(i * sz + j) * 2], &matrix[(i * sz + j) * 2 + 1], &offdiag_mag, realContext);
-                if (!realCompareLessThan(&offdiag_mag, tol)) {
+                math_runtime_helpers.complexMagnitude(@alignCast(&matrix[(i * sz + j) * 2]), @alignCast(&matrix[(i * sz + j) * 2 + 1]), &offdiag_mag, realContext);
+                if (!math_comparison_reals.realCompareLessThan(&offdiag_mag, @alignCast(tol))) {
                     return false;
                 }
             }
@@ -988,8 +950,8 @@ pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) callconv(.
 
 fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) bool {
     var mag: real_t = undefined;
-    complexMagnitude(value_re, value_im, &mag, realContext);
-    return realCompareLessThan(&mag, tol);
+    math_runtime_helpers.complexMagnitude(@alignCast(value_re), @alignCast(value_im), &mag, realContext);
+    return math_comparison_reals.realCompareLessThan(&mag, @alignCast(tol));
 }
 
 fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagonal: bool, realContext: *realContext_t) bool {
@@ -1076,7 +1038,7 @@ fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
     var isCompanion = true;
     var i: usize = 0;
     while (i + 1 < sz) : (i += 1) {
-        if (!realCompareEqual(&matrix[(i * sz + (i + 1)) * 2], const_1()) or
+        if (!math_comparison_reals.realCompareEqual(@alignCast(&matrix[(i * sz + (i + 1)) * 2]), const_1()) or
             !realIsZeroA(&matrix[(i * sz + (i + 1)) * 2 + 1]))
         {
             isCompanion = false;
@@ -1229,7 +1191,7 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
             }
 
             QR_decomposition_householder(a, size, q, r, realContext);
-            mulCpxMat(r, q, size, size, size, eig, realContext);
+            math_matrix_complex_core.mulCpxMat(@alignCast(r), @alignCast(q), size, size, size, @alignCast(eig), realContext);
 
             if (shifted) {
                 var ii: usize = 0;
@@ -1250,20 +1212,20 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
                 }
                 sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, CHDIAG, &changeDiagonalSum, false, &runtime.ctxtReal39);
 
-                if (realGetExponentComp(&changeDiagonalSum) < -blockDetectionTolerance and iteration > 5) {
+                if (math_comparison_reals.realGetExponentComp(&changeDiagonalSum) < -blockDetectionTolerance and iteration > 5) {
                     sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, NONDIAG, &currentOffDiagonalSum, false, &runtime.ctxtReal75);
-                    if (realGetExponentComp(&currentOffDiagonalSum) < -blockDetectionTolerance and iteration > 5) {
+                    if (math_comparison_reals.realGetExponentComp(&currentOffDiagonalSum) < -blockDetectionTolerance and iteration > 5) {
                         converged = true;
                         break;
                     }
                 }
 
                 converged = false;
-                if (realGetExponentComp(&changeDiagonalSum) < -toleranceDigits and iteration != 1) {
+                if (math_comparison_reals.realGetExponentComp(&changeDiagonalSum) < -toleranceDigits and iteration != 1) {
                     converged = true;
                 } else {
                     realSubtract(&changeDiagonalSum, &previousChangeDiagonalSum, &deltaChangeDiagonalSum, realContext);
-                    if (realGetExponentComp(&changeDiagonalSum) < -(toleranceDigits - extraDigits) and realIsZeroA(&deltaChangeDiagonalSum) and iteration != 1) {
+                    if (math_comparison_reals.realGetExponentComp(&changeDiagonalSum) < -(toleranceDigits - extraDigits) and realIsZeroA(&deltaChangeDiagonalSum) and iteration != 1) {
                         converged = true;
                     }
                 }
@@ -1283,10 +1245,10 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
                 if (converged) {
                     sumOfSubSupDiagonalAll("", eig, previousDiagonal, size, activeSize, SUPSUBDIAG, &currentOffDiagonalSum, false, &runtime.ctxtReal75);
                     realSubtract(&currentOffDiagonalSum, &previousOffDiagonalSum, &changeOffDiagonalSum, &runtime.ctxtReal75);
-                    if (realGetExponentComp(&currentOffDiagonalSum) <= -eigenTolerance) {
+                    if (math_comparison_reals.realGetExponentComp(&currentOffDiagonalSum) <= -eigenTolerance) {
                         // off-diagonals tiny: accept
                     } else if (realIsNegativeA(&changeOffDiagonalSum)) {
-                        if (realGetExponentComp(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {
+                        if (math_comparison_reals.realGetExponentComp(&changeOffDiagonalSum) > -(eigenTolerance - extraDigits)) {
                             converged = false;
                             offdiag_no_improvement_count = 0;
                         } else {
@@ -1317,10 +1279,10 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
                         const i: usize = id;
                         var subdiag_mag: real_t = undefined;
                         var threshold: real_t = undefined;
-                        complexMagnitude(&eig[(i * sz + (i - 1)) * 2], &eig[(i * sz + (i - 1)) * 2 + 1], &subdiag_mag, realContext);
+                        math_runtime_helpers.complexMagnitude(@alignCast(&eig[(i * sz + (i - 1)) * 2]), @alignCast(&eig[(i * sz + (i - 1)) * 2 + 1]), &subdiag_mag, realContext);
                         realSetOne(&threshold);
                         threshold.exponent -= blockDetectionTolerance;
-                        if (realCompareLessThan(&subdiag_mag, &threshold)) {
+                        if (math_comparison_reals.realCompareLessThan(&subdiag_mag, &threshold)) {
                             realSetZero(&eig[(i * sz + (i - 1)) * 2]);
                             realSetZero(&eig[(i * sz + (i - 1)) * 2 + 1]);
                             if (activeSize == 3 and id == 1) {
@@ -1394,9 +1356,9 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
             var i: usize = 0;
             while (i + 1 < sz) : (i += 1) {
                 var offdiag_mag: real_t = undefined;
-                complexMagnitude(&eig[((i + 1) * sz + i) * 2], &eig[((i + 1) * sz + i) * 2 + 1], &offdiag_mag, realContext);
+                math_runtime_helpers.complexMagnitude(@alignCast(&eig[((i + 1) * sz + i) * 2]), @alignCast(&eig[((i + 1) * sz + i) * 2 + 1]), &offdiag_mag, realContext);
                 // POST_QR_RELATIVE_BLOCK_CHECK active branch: use rel_threshold
-                if (!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
+                if (!math_comparison_reals.realCompareLessThan(&offdiag_mag, &rel_threshold)) {
                     if (first_unconverged == -1) first_unconverged = @intCast(i);
                     last_unconverged = @intCast(i + 1);
                 }
@@ -1416,7 +1378,7 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
                     var im_sum: real_t = undefined;
                     realSubtract(&eig[(fu * sz + fu) * 2], &eig[((fu + 1) * sz + (fu + 1)) * 2], &re_diff, realContext);
                     realAdd(&im1, &im2, &im_sum, realContext);
-                    if (realCompareAbsLessThan(&re_diff, const_1e_32()) and realCompareAbsLessThan(&im_sum, const_1e_32())) {
+                    if (math_comparison_reals.realCompareAbsLessThan(&re_diff, const_1e_32()) and math_comparison_reals.realCompareAbsLessThan(&im_sum, const_1e_32())) {
                         is_conjugate_pair = true;
                     }
                 }
@@ -1443,9 +1405,9 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
             var i: usize = 0;
             while (i + 1 < sz) : (i += 1) {
                 var offdiag_mag: real_t = undefined;
-                complexMagnitude(&eig[((i + 1) * sz + i) * 2], &eig[((i + 1) * sz + i) * 2 + 1], &offdiag_mag, realContext);
+                math_runtime_helpers.complexMagnitude(@alignCast(&eig[((i + 1) * sz + i) * 2]), @alignCast(&eig[((i + 1) * sz + i) * 2 + 1]), &offdiag_mag, realContext);
                 // POST_QR_RELATIVE_BLOCK_CHECK active branch: use rel_threshold
-                if (!realCompareLessThan(&offdiag_mag, &rel_threshold)) {
+                if (!math_comparison_reals.realCompareLessThan(&offdiag_mag, &rel_threshold)) {
                     if (first_unconverged == -1) first_unconverged = @intCast(i);
                     last_unconverged = @intCast(i + 1);
                 }
@@ -1475,9 +1437,9 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
         } else if (activeSize == 2) {
             var offdiag_01: real_t = undefined;
             var offdiag_10: real_t = undefined;
-            complexMagnitude(&eig[(1 * sz + 0) * 2], &eig[(1 * sz + 0) * 2 + 1], &offdiag_01, realContext);
-            complexMagnitude(&eig[(0 * sz + 1) * 2], &eig[(0 * sz + 1) * 2 + 1], &offdiag_10, realContext);
-            if (!realCompareLessThan(&offdiag_01, &tol) or !realCompareLessThan(&offdiag_10, &tol)) {
+            math_runtime_helpers.complexMagnitude(@alignCast(&eig[(1 * sz + 0) * 2]), @alignCast(&eig[(1 * sz + 0) * 2 + 1]), &offdiag_01, realContext);
+            math_runtime_helpers.complexMagnitude(@alignCast(&eig[(0 * sz + 1) * 2]), @alignCast(&eig[(0 * sz + 1) * 2 + 1]), &offdiag_10, realContext);
+            if (!math_comparison_reals.realCompareLessThan(&offdiag_01, &tol) or !math_comparison_reals.realCompareLessThan(&offdiag_10, &tol)) {
                 solve2x2Block(a, eig, size, is_real_symmetric, realContext);
             }
         } else if (activeSize == 1) {
@@ -1495,19 +1457,19 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
         }
 
         sortEigenvalues(eig, size, 0, (size + 1) / 2, size - 1, realContext);
-        complexMagnitude(&eig[0], &eig[1], &maxM, realContext);
+        math_runtime_helpers.complexMagnitude(@alignCast(&eig[0]), @alignCast(&eig[1]), &maxM, realContext);
 
         // ---- condition-number cleanup ----
         {
             var i: usize = 1;
             while (i < sz) : (i += 1) {
-                complexMagnitude(&eig[(i * sz + i) * 2], &eig[(i * sz + i) * 2 + 1], &tmpM, realContext);
-                if (!realIsZeroA(&tmpM) and !realIsZeroA(&maxM) and realCompareLessThan(&tmpM, &tol)) {
+                math_runtime_helpers.complexMagnitude(@alignCast(&eig[(i * sz + i) * 2]), @alignCast(&eig[(i * sz + i) * 2 + 1]), &tmpM, realContext);
+                if (!realIsZeroA(&tmpM) and !realIsZeroA(&maxM) and math_comparison_reals.realCompareLessThan(&tmpM, &tol)) {
                     realMultiply(&maxM, &tol, &minM, realContext);
                     var j: usize = 1;
                     while (j < sz) : (j += 1) {
-                        complexMagnitude(&eig[(j * sz + j) * 2], &eig[(j * sz + j) * 2 + 1], &tmpM, realContext);
-                        if (realCompareLessThan(&tmpM, &minM)) {
+                        math_runtime_helpers.complexMagnitude(@alignCast(&eig[(j * sz + j) * 2]), @alignCast(&eig[(j * sz + j) * 2 + 1]), &tmpM, realContext);
+                        if (math_comparison_reals.realCompareLessThan(&tmpM, &minM)) {
                             realSetZero(&eig[(j * sz + j) * 2]);
                             realSetZero(&eig[(j * sz + j) * 2 + 1]);
                         }
@@ -1807,8 +1769,8 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
     const blocks: usize = @as(usize, size) * size * realSizeInBlocks(75) * 2;
     if (allocC47Blocks(blocks)) |inv_a| {
         _ = runtime.xcopy(@ptrCast(inv_a), @ptrCast(a), @intCast(blocks << 2)); // TO_BYTES, BPB=2
-        if (invCpxMat(inv_a, size, realContext)) {
-            mulCpxMat(inv_a, b, size, size, 1, r, realContext);
+        if (math_matrix_complex_core.invCpxMat(inv_a, size, realContext)) {
+            math_matrix_complex_core.mulCpxMat(inv_a, @alignCast(b), size, size, 1, @alignCast(r), realContext);
         } else if (runtime.lastErrorCode != runtime.ERROR_RAM_FULL) {
             runtime.displayCalcErrorMessage(runtime.ERROR_SINGULAR_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function cpxLinearEqn:", "attempt to invert a singular matrix", null, null);
@@ -1899,11 +1861,11 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
                 var tol: real_t = undefined;
                 realSubtract(&eig[(k * sz + k) * 2], &diagR, &diff_r, realContext);
                 realSubtract(&eig[(k * sz + k) * 2 + 1], &diagI, &diff_i, realContext);
-                complexMagnitude(&eig[(k * sz + k) * 2], &eig[(k * sz + k) * 2 + 1], &mag_eig, realContext);
-                complexMagnitude(&diagR, &diagI, &mag_diag, realContext);
+                math_runtime_helpers.complexMagnitude(@alignCast(&eig[(k * sz + k) * 2]), @alignCast(&eig[(k * sz + k) * 2 + 1]), &mag_eig, realContext);
+                math_runtime_helpers.complexMagnitude(&diagR, &diagI, &mag_diag, realContext);
                 realCopy(&mag_eig, &scale);
-                if (realCompareLessThan(&scale, &mag_diag)) realCopy(&mag_diag, &scale);
-                if (realCompareLessThan(&scale, const_1())) realCopy(const_1(), &scale);
+                if (math_comparison_reals.realCompareLessThan(&scale, &mag_diag)) realCopy(&mag_diag, &scale);
+                if (math_comparison_reals.realCompareLessThan(&scale, const_1())) realCopy(const_1(), &scale);
                 realMultiply(&scale, const_1e_30(), &tol, realContext);
                 if (isElementWithinTolerance(&diff_r, &diff_i, &tol, realContext)) {
                     realCopy(const_1(), &r[(j * sz + k) * 2]);
@@ -1921,7 +1883,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
         const unknownsToFill: [*]u16 = @ptrCast(utBuf);
         k = 0;
         while (k < sz) : (k += 1) {
-            if (k > 0 and realCompareEqual(&eig[(k * sz + k) * 2], &eig[((k - 1) * sz + (k - 1)) * 2]) and realCompareEqual(&eig[(k * sz + k) * 2 + 1], &eig[((k - 1) * sz + (k - 1)) * 2 + 1])) {
+            if (k > 0 and math_comparison_reals.realCompareEqual(@alignCast(&eig[(k * sz + k) * 2]), @alignCast(&eig[((k - 1) * sz + (k - 1)) * 2])) and math_comparison_reals.realCompareEqual(@alignCast(&eig[(k * sz + k) * 2 + 1]), @alignCast(&eig[((k - 1) * sz + (k - 1)) * 2 + 1]))) {
                 duplicateEigenvalueCount += 1;
                 if (freeUnknowns > size) freeUnknowns = size;
             } else {
@@ -2412,7 +2374,7 @@ fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real3
             }
         }
 
-        multiplyComplexMatrices(&resultCopy, &resultCopy, &residual);
+        math_matrix_product.multiplyComplexMatrices(&resultCopy, &resultCopy, &residual);
         if (residual.matrixElements != null) {
             runtime.subtractComplexMatrices(&residual, &inputCopy, &residual);
             var residualNorm34: real34_t = undefined;
@@ -2425,7 +2387,7 @@ fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real3
             runtime.real34ToReal(&residualNorm34, &residualNorm);
             runtime.real34ToReal(&inputNorm34, &inputNorm);
             realMultiply(&inputNorm, const_1e_30(), &tolerance, &runtime.ctxtReal39);
-            verified = realCompareLessEqual(&residualNorm, &tolerance);
+            verified = math_comparison_reals.realCompareLessEqual(&residualNorm, &tolerance);
             runtime.complexMatrixFree(&residual);
         }
     }
@@ -2465,7 +2427,7 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) void
             while (i < nn) : (i += 1) {
                 runtime.real34ToReal(&li[i * nn + i], &val);
                 if (runtime.realIsNegative(&val)) runtime.realChangeSign(&val);
-                if (realCompareGreaterThan(&val, &tol)) {
+                if (math_comparison_reals.realCompareGreaterThan(&val, &tol)) {
                     hasGenuine = true;
                     break;
                 }
@@ -2508,7 +2470,7 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) void
             while (k < nn * nn) : (k += 1) {
                 runtime.real34ToReal(&qi[k], &val);
                 if (runtime.realIsNegative(&val)) runtime.realChangeSign(&val);
-                if (realCompareGreaterThan(&val, &tol)) {
+                if (math_comparison_reals.realCompareGreaterThan(&val, &tol)) {
                     hasGenuine = true;
                     break;
                 }
@@ -2524,12 +2486,12 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) void
             failed = true;
             break :blk;
         }
-        multiplyRealMatrices(&Q, &Lambda, &tmp);
+        math_matrix_product.multiplyRealMatrices(&Q, &Lambda, &tmp);
         if (tmp.matrixElements == null) {
             failed = true;
             break :blk;
         }
-        multiplyRealMatrices(&tmp, &Qinv, res);
+        math_matrix_product.multiplyRealMatrices(&tmp, &Qinv, res);
         if (res.matrixElements == null) {
             failed = true;
             break :blk;
@@ -2589,12 +2551,12 @@ fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matri
             failed = true;
             break :blk;
         }
-        multiplyComplexMatrices(&Q, &Lambda, &tmp);
+        math_matrix_product.multiplyComplexMatrices(&Q, &Lambda, &tmp);
         if (tmp.matrixElements == null) {
             failed = true;
             break :blk;
         }
-        multiplyComplexMatrices(&tmp, &Qinv, res);
+        math_matrix_product.multiplyComplexMatrices(&tmp, &Qinv, res);
         if (res.matrixElements == null) {
             failed = true;
             break :blk;
