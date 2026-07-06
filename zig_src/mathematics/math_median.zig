@@ -35,6 +35,7 @@ const const_1on2 = consts.const_1on2;
 // TI_* are the real defines.h values; FLAG_ASLIFT == 0xc023 (real value).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -98,7 +99,6 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
 }
 
-extern fn linpol(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void;
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 extern fn findNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn isStatsMatrix(rows: *u16, mx: [*:0]const u8) bool;
@@ -149,7 +149,7 @@ fn computePercentileSorted(data: [*]u8, n: u16, p: *const real_t, percentile: *r
         realCopy(dataAt(data, 0), percentile);
     } else {
         realSubtract(&t, &d, &d, &ctxtReal39); // d = FP(position)
-        linpol(dataAt(data, @as(usize, @intCast(k)) - 1), dataAt(data, @intCast(k)), &d, percentile);
+        math_command_wrappers.linpol(dataAt(data, @as(usize, @intCast(k)) - 1), dataAt(data, @intCast(k)), &d, percentile);
     }
 }
 
