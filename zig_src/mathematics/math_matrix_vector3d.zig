@@ -6,6 +6,7 @@
 // call it); the V3Recto* commands are public too -> all three bridge-renamed.
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_matrix_vector_helpers = @import("math_matrix_vector_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const calcRegister_t = runtime.calcRegister_t;
@@ -24,7 +25,6 @@ const _3DSPH: i16 = 2;
 const ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT: u8 = 52;
 const AMNONE: u32 = @intCast(runtime.amNone);
 
-extern fn V3err(err: c_int) void;
 extern fn fnConvertStkToMx(constVector1: u16) void;
 
 inline fn angMode(r: calcRegister_t) u32 {
@@ -128,10 +128,10 @@ pub export fn V3RectoToSph(am: u16) callconv(.c) void {
                 runtime.setVectorRegisterAngularMode(REGISTER_X, angleMode);
                 runtime.temporaryInformation = runtime.TI_VECTOR;
             } else {
-                V3err(1);
+                math_matrix_vector_helpers.V3err(1);
             }
         } else {
-            V3err(2);
+            math_matrix_vector_helpers.V3err(2);
         }
     }
 }
@@ -147,10 +147,10 @@ pub export fn V3RectoToCyl(am: u16) callconv(.c) void {
                 runtime.setVectorRegisterAngularMode(REGISTER_X, angleMode);
                 runtime.temporaryInformation = runtime.TI_VECTOR;
             } else {
-                V3err(3);
+                math_matrix_vector_helpers.V3err(3);
             }
         } else {
-            V3err(4);
+            math_matrix_vector_helpers.V3err(4);
         }
     }
 }

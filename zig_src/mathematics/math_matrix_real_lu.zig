@@ -8,6 +8,7 @@ const consts = abi.constants;
 // in for the caller). complex_LU_decomposition stays in the matrix bridge.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -18,8 +19,6 @@ const nim_register_line = runtime.REGISTER_X;
 // REAL_SIZE_IN_BLOCKS(75) == 15; the real scratch is non-interleaved.
 const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
-extern fn realCompareAbsLessThan(number1: *const real_t, number2: *const real_t) callconv(.c) bool;
 
 inline fn const_1e_37() *const real_t {
     return consts.c4436();
@@ -89,7 +88,7 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
                 while (j < nz) : (j += 1) {
                     realCopy(&tmp_mat[j * nz + k], &t);
                     realCopyAbs(&t, &u);
-                    if (realCompareGreaterThan(&u, &max)) {
+                    if (math_comparison_reals.realCompareGreaterThan(&u, &max)) {
                         realCopy(&u, &max);
                         pvt = j;
                     }
@@ -133,7 +132,7 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
                         realCopy(&tmp_mat[i * nz + j], &t);
                         runtime.realSubtract(&t, &max, &u, &runtime.ctxtReal39);
                         runtime.realDivide(&u, &t, &max, &runtime.ctxtReal39); // condition number
-                        if (realCompareAbsLessThan(&max, const_1e_37())) {
+                        if (math_comparison_reals.realCompareAbsLessThan(&max, const_1e_37())) {
                             runtime.realSetZero(&tmp_mat[i * nz + j]);
                         } else {
                             realCopy(&u, &tmp_mat[i * nz + j]);

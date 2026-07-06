@@ -17,6 +17,8 @@ const const__1 = consts.const__1;
 // LEGENDRE_P=4, CHEBYSHEV_T=5, CHEBYSHEV_U=6).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -53,10 +55,8 @@ const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
 // realCompareLessEqual is not in runtime; extern it.
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
 
 // WP34S_OrthoPoly is the Zig-ported owner in math_wp34s.zig.
-extern fn WP34S_OrthoPoly(kind: u16, x: *const real_t, n: *const real_t, param: *const real_t, res: *real_t, real_context: *realContext_t) void;
 
 extern var ctxtReal39: realContext_t;
 
@@ -85,11 +85,11 @@ pub export fn fnOrthoPoly(kind: u16) linksection(runtime.code_section) callconv(
     if (getOrthoPolyParam(REGISTER_X, &x, &ctxtReal39) and getOrthoPolyParam(REGISTER_Y, &y, &ctxtReal39)) {
         realSetZero(&z);
         if ((kind != ORTHOPOLY_LAGUERRE_L_ALPHA) or getOrthoPolyParam(REGISTER_Z, &z, &ctxtReal39)) {
-            if (realIsSpecial(&y) or realIsNegative(&y) or (!realIsAnInteger(&y)) or realCompareLessEqual(&z, const__1())) {
+            if (realIsSpecial(&y) or realIsNegative(&y) or (!realIsAnInteger(&y)) or math_comparison_reals.realCompareLessEqual(&z, const__1())) {
                 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
                 moreInfoOnError("In function fnOrthoPoly:", "Y must be a nonnegative integer.", if (kind == ORTHOPOLY_LAGUERRE_L_ALPHA) "In addition, Z must be greater than -1." else null, null);
             } else {
-                WP34S_OrthoPoly(kind, &x, &y, &z, &ans, &ctxtReal39);
+                math_wp34s.WP34S_OrthoPoly(kind, &x, &y, &z, &ans, &ctxtReal39);
                 convertRealToResultRegister(&ans, REGISTER_X, amNone);
                 if (kind == ORTHOPOLY_LAGUERRE_L_ALPHA) {
                     fnDropY(NOPARAM);

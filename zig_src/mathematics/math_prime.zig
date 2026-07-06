@@ -23,6 +23,13 @@ const const34_1 = consts.const34_1;
 // a no-op).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_register_link = @import("math_matrix_register_link.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_register_memory = @import("math_matrix_register_memory.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
 
 const calcRegister_t = runtime.calcRegister_t;
 const real_t = runtime.real_t;
@@ -180,7 +187,6 @@ inline fn longIntegerIsPrime(op: *const mpz_struct) i32 {
 }
 
 // longIntegerPower (power.c): result = base ^ exponent (overflow-guarded).
-extern fn longIntegerPower(base: *mpz_struct, exponent: *mpz_struct, result: *mpz_struct) void;
 
 // The mpz_* names used directly by prime.c.
 inline fn mpz_fits_uint_p(op: *const mpz_struct) bool {
@@ -247,14 +253,11 @@ inline fn real34Copy(source: *align(1) const real34_t, destination: *align(1) re
     dst[0] = src[0];
     dst[1] = src[1];
 }
-extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
-extern fn real34CompareAbsEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
 extern fn convertLongIntegerToReal34(source: *mpz_struct, destination: *align(1) real34_t) void;
 extern fn decQuadFromUInt32(destination: *align(1) real34_t, source: u32) *align(1) real34_t;
 inline fn uInt32ToReal34Impl(source: u32, destination: *align(1) real34_t) void {
     _ = decQuadFromUInt32(destination, source);
 }
-extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn convertReal34ToLongInteger(real34: *align(1) const real34_t, lgInt: *mpz_struct, mode: c_int) void;
 extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) void;
 
@@ -354,7 +357,6 @@ extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_
 extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 extern fn fnDrop(unused_but_mandatory_parameter: u16) void;
 extern fn fnSwapXY(unused_but_mandatory_parameter: u16) void;
-extern fn linkToRealMatrixRegister(reg: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn convertReal34MatrixRegisterToReal34Matrix(reg: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Matrix_t, reg: calcRegister_t) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
@@ -362,13 +364,6 @@ extern fn getFlag(flag: u16) bool;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn realSetOne(r: *real_t) void;
 extern fn realSetZero(r: *real_t) void;
-extern fn realIsAnInteger(x: *const real_t) bool;
-extern fn real34IsAnInteger(x: *align(1) const real34_t) bool;
-extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
-extern fn PowerReal(y: *const real_t, x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn PowerComplex(yReal: *const real_t, yImag: *const real_t, xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, real_context: *realContext_t) u8;
-extern fn mulComplexComplex(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 // realIsNegative / realMultiply / real34ToReal are C macros; reproduce them.
@@ -384,10 +379,6 @@ inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) v
 }
 
 // Matrix register helpers
-extern fn initMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
-extern fn redimMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, dimMode: u16) bool;
-extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) bool;
-extern fn realMatrixFree(matrix: *real34Matrix_t) void;
 extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcRegister_t) void;
 
 // Screen / progress (host-only; called for control-flow side effects)
@@ -402,7 +393,6 @@ extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32,
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
 
 // PCG32 RNG (exported by the random primitives owner).
-extern fn pcg32_random_r(rng: *pcg32_random_t) u32;
 
 // progressHalfSecUpdate_Integer mode constants (from screen.h)
 const halfSec_timed: u8 = 0; // "timed"
@@ -714,7 +704,7 @@ fn longIntegerSumPowers(base: *mpz_struct, exponent: *mpz_struct, k: u32, result
             longIntegerMultiplyUInt(&tmp, k, &tmp);
         }
         longIntegerCopy(base, &tmpbase);
-        longIntegerPower(&tmpbase, &tmp, &pwr);
+        math_power.longIntegerPower(&tmpbase, &tmp, &pwr);
         longIntegerCopy(&pwr, &tmp);
         longIntegerAdd(&sum, &tmp, &sum);
         longIntegerSubtractUInt(&count, 1, &count);
@@ -774,7 +764,7 @@ fn _doFnEvPFacts(param: u16) void {
 
     if (getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         var matrix: real34Matrix_t = undefined;
-        linkToRealMatrixRegister(REGISTER_X, &matrix);
+        math_matrix_register_link.linkToRealMatrixRegister(REGISTER_X, &matrix);
         const rows: u16 = registerMatrixHeader(REGISTER_X).matrixRows;
         const cols: u16 = registerMatrixHeader(REGISTER_X).matrixColumns;
         if (rows == 2 and cols >= 1) {
@@ -799,11 +789,11 @@ fn _doFnEvPFacts(param: u16) void {
             const elems = matrixElementsPtr(&matrix);
             var j: u16 = 0;
             while (j < cols) : (j += 1) {
-                if (real34IsAnInteger(&elems[j]) and real34IsAnInteger(&elems[cols + j]) and sumType == sumTypeInteger) {
+                if (math_comparison_reals.real34IsAnInteger(&elems[j]) and math_comparison_reals.real34IsAnInteger(&elems[cols + j]) and sumType == sumTypeInteger) {
                     convertReal34ToLongInteger(&elems[j], &p_li, currentRoundingMode());
                     convertReal34ToLongInteger(&elems[cols + j], &k_li, currentRoundingMode());
                     switch (param) {
-                        M_FACTORS => longIntegerPower(&p_li, &k_li, &factor),
+                        M_FACTORS => math_power.longIntegerPower(&p_li, &k_li, &factor),
                         M_SIGMA_0, M_SIGMA_1, M_SIGMA_k => longIntegerSumPowers(&p_li, &k_li, @bitCast(pwr), &factor),
                         else => {},
                     }
@@ -818,8 +808,8 @@ fn _doFnEvPFacts(param: u16) void {
                     }
                     real34ToReal(&elems[j], &baseR);
                     real34ToReal(&elems[cols + j], &expR);
-                    if (!(realIsNegative(&baseR) and !realIsAnInteger(&expR)) and sumType == sumTypeReal) {
-                        PowerReal(&baseR, &expR, &factorR, &runtime.ctxtReal39);
+                    if (!(realIsNegative(&baseR) and !math_comparison_reals.realIsAnInteger(&expR)) and sumType == sumTypeReal) {
+                        math_power.PowerReal(&baseR, &expR, &factorR, &runtime.ctxtReal39);
                         realMultiply(&prodR, &factorR, &prodR, &runtime.ctxtReal39);
                     } else if (getFlag(FLAG_CPXRES)) {
                         if (sumType == sumTypeReal) {
@@ -827,8 +817,8 @@ fn _doFnEvPFacts(param: u16) void {
                             sumType = sumTypeComplex;
                         }
                         if (sumType == sumTypeComplex) {
-                            _ = PowerComplex(&baseR, const_0(), &expR, const_0(), &factorR, &factorI, &runtime.ctxtReal39);
-                            mulComplexComplex(&prodR, &prodI, &factorR, &factorI, &prodR, &prodI, &runtime.ctxtReal39);
+                            _ = math_power.PowerComplex(&baseR, const_0(), &expR, const_0(), &factorR, &factorI, &runtime.ctxtReal39);
+                            math_multiplication_cells.mulComplexComplex(&prodR, &prodI, &factorR, &factorI, &prodR, &prodI, &runtime.ctxtReal39);
                         }
                     } else {
                         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -917,7 +907,7 @@ fn doFnEvPFacts(param: u16) void {
         longIntegerInit(&z);
         longIntegerInit(&tmp);
         int32ToLongInteger(k, &z);
-        longIntegerPower(&y, &z, &tmp);
+        math_power.longIntegerPower(&y, &z, &tmp);
         longIntegerCopy(&tmp, &y); // y is the number to be subtracted
         convertReal34MatrixToReal34MatrixRegister(&xxmat, REGISTER_X);
 
@@ -938,7 +928,7 @@ fn doFnEvPFacts(param: u16) void {
         longIntegerFree(&z);
         longIntegerFree(&y);
         longIntegerFree(&x);
-        realMatrixFree(&xxmat);
+        math_matrix_lifecycle.realMatrixFree(&xxmat);
     } else {
         _doFnEvPFacts(param);
     }
@@ -964,28 +954,28 @@ fn isRegisterMatrixFactors(reg: calcRegister_t, isNegative: *bool) bool {
         var i: u32 = 0;
         while (i < cols) : (i += 1) {
             real34ToReal(&elems[i + 0 * cols], &x);
-            if (!realIsAnInteger(&x)) {
+            if (!math_comparison_reals.realIsAnInteger(&x)) {
                 return false;
             }
-            if (realCompareLessEqual(&x, const_0())) {
+            if (math_comparison_reals.realCompareLessEqual(&x, const_0())) {
                 if (i != 0) {
                     return false;
                 }
-                if (!realCompareEqual(&x, const__1())) {
+                if (!math_comparison_reals.realCompareEqual(&x, const__1())) {
                     return false;
                 }
                 mustBeOne = true;
             }
 
             real34ToReal(&elems[i + 1 * cols], &x);
-            if (!realIsAnInteger(&x)) {
+            if (!math_comparison_reals.realIsAnInteger(&x)) {
                 return false;
             }
-            if (realCompareLessThan(&x, const_0())) {
+            if (math_comparison_reals.realCompareLessThan(&x, const_0())) {
                 return false;
             }
             if (mustBeOne) {
-                if (!realCompareEqual(&x, const_1())) {
+                if (!math_comparison_reals.realCompareEqual(&x, const_1())) {
                     return false;
                 }
                 isNegative.* = true;
@@ -1171,7 +1161,7 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
             fnPrimeFactors(unused_but_mandatory_parameter);
         }
         if (getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-            linkToRealMatrixRegister(REGISTER_X, &matrix);
+            math_matrix_register_link.linkToRealMatrixRegister(REGISTER_X, &matrix);
             const rows: u16 = registerMatrixHeader(REGISTER_X).matrixRows;
             const cols: u16 = registerMatrixHeader(REGISTER_X).matrixColumns;
             if (rows == 2 and cols >= 1) {
@@ -1531,7 +1521,7 @@ extern fn preventFilenameTimeout() void;
 // ===========================================================================
 fn delCol1RealMatrixX() bool {
     var mat: real34Matrix_t = undefined;
-    linkToRealMatrixRegister(REGISTER_X, &mat);
+    math_matrix_register_link.linkToRealMatrixRegister(REGISTER_X, &mat);
     const rows: u16 = matHeaderRows(&mat);
     const cols: u16 = matHeaderCols(&mat);
     if (matIsNull(&mat) or cols <= 1) {
@@ -1544,7 +1534,7 @@ fn delCol1RealMatrixX() bool {
     {
         var i: u16 = 0;
         while (i < rows) : (i += 1) {
-            if (!real34CompareEqual(&elems[i * cols + 0], const34_1()) and !real34CompareEqual(&elems[i * cols + 0], const34_0())) {
+            if (!math_comparison_reals.real34CompareEqual(&elems[i * cols + 0], const34_1()) and !math_comparison_reals.real34CompareEqual(&elems[i * cols + 0], const34_0())) {
                 removeFirstCol = false;
                 break;
             }
@@ -1555,7 +1545,7 @@ fn delCol1RealMatrixX() bool {
     }
 
     var tmp: real34Matrix_t = undefined;
-    if (!realMatrixInit(&tmp, rows, cols - 1)) {
+    if (!math_matrix_lifecycle.realMatrixInit(&tmp, rows, cols - 1)) {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return false;
     }
@@ -1570,7 +1560,7 @@ fn delCol1RealMatrixX() bool {
         }
     }
     // Re-init the register and free old buffer
-    _ = initMatrixRegister(REGISTER_X, rows, cols - 1, false);
+    _ = math_matrix_register_memory.initMatrixRegister(REGISTER_X, rows, cols - 1, false);
 
     const dest = registerReal34MatrixElements(REGISTER_X);
     const total: usize = @as(usize, rows) * (cols - 1);
@@ -1580,7 +1570,7 @@ fn delCol1RealMatrixX() bool {
             real34Copy(&tmpElems[kk], &dest[kk]);
         }
     }
-    realMatrixFree(&tmp);
+    math_matrix_lifecycle.realMatrixFree(&tmp);
     return true;
 }
 
@@ -1642,7 +1632,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
     pushLongIntegerToJK(factor);
 
     if (getRegisterDataType(regist) != dtReal34Matrix) {
-        if (initMatrixRegister(regist, 2, 1, false)) {
+        if (math_matrix_register_memory.initMatrixRegister(regist, 2, 1, false)) {
             setSystemFlag(@intCast(FLAG_ASLIFT));
         } else {
             if (lastErrorCode != 0) {
@@ -1667,7 +1657,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
         faddr.expons[faddr.nExpons - 1] = 1;
     }
     var wkgCols: u16 = faddr.nExpons;
-    if (!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
+    if (!math_matrix_register_memory.redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
         if (lastErrorCode != 0) {
             return addFactorReturnFalse();
         }
@@ -1683,15 +1673,15 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
     convertLongIntegerToReal34(factor, &factorR);
     const elems = registerReal34MatrixElements(regist);
     // search for existing factors
-    while (counter >= 0 and !real34CompareEqual(&factorR, &elems[@intCast(counter)])) {
+    while (counter >= 0 and !math_comparison_reals.real34CompareEqual(&factorR, &elems[@intCast(counter)])) {
         counter -= 1;
     }
 
     // increment exponent if found
-    if (longIntegerSign(factor) != 0 and counter >= 0 and !real34CompareAbsEqual(&elems[@intCast(counter)], const34_1())) {
+    if (longIntegerSign(factor) != 0 and counter >= 0 and !math_comparison_reals.real34CompareAbsEqual(&elems[@intCast(counter)], const34_1())) {
         faddr.expons[@intCast(counter)] += 1;
     } else {
-        const incNExpons: bool = if (real34CompareAbsEqual(&factorR, const34_1())) false else true;
+        const incNExpons: bool = if (math_comparison_reals.real34CompareAbsEqual(&factorR, const34_1())) false else true;
         if (!incNExpons) {
             c = 0;
         }
@@ -1708,7 +1698,7 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
 
             wkgCols += 1;
             faddr.expons[faddr.nExpons - 1] = 1;
-            if (!redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
+            if (!math_matrix_register_memory.redimMatrixRegister(regist, rows, wkgCols, ITM_M_DIM)) {
                 if (lastErrorCode != 0) {
                     return addFactorReturnFalse();
                 }
@@ -2043,7 +2033,7 @@ fn mpz_urandomm_pcg32(rop: *mpz_struct, rng: *pcg32_random_t, n: *const mpz_stru
     mpz_init(&temp);
     var bits_generated: usize = 0;
     while (bits_generated < n_bits + 32) {
-        const random_val: u32 = pcg32_random_r(rng);
+        const random_val: u32 = math_command_wrappers.pcg32_random_r(rng);
         mpz_mul_2exp(&temp, &temp, 32);
         mpz_add_ui(&temp, &temp, random_val);
         bits_generated += 32;

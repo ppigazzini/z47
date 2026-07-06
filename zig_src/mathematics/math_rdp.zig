@@ -17,6 +17,8 @@ const const_1 = consts.const_1;
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
+const math_rsd = @import("math_rsd.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -93,8 +95,6 @@ inline fn currentRoundingMode() rounding_t {
 }
 
 // rsd.c (sibling owner) provides these for the time path.
-extern fn senaryDigitToDecimal(pre_grouped: bool, val: *real_t, realContext: *realContext_t) void;
-extern fn decimalDigitToSenary(pre_grouped: bool, val: *real_t, realContext: *realContext_t) void;
 
 // Register data / real34 conversion.
 extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
@@ -111,8 +111,6 @@ extern fn real34FromDmsToDeg(angleDms: *align(1) const real34_t, angleDec: *alig
 extern fn checkDms34(angle34Dms: *align(1) real34_t) void;
 
 const U16Fn = ?*const fn (u16) callconv(.c) void;
-extern fn elementwiseRema_UInt16(f: U16Fn, param: u16) void;
-extern fn elementwiseCxma_UInt16(f: U16Fn, param: u16) void;
 
 extern var updateDisplayValueX: bool;
 extern var displayValueX: [80]u8;
@@ -223,14 +221,14 @@ pub export fn rdpTime(digits: u16) linksection(runtime.code_section) callconv(.c
     i = 0;
     while (i < 2) : (i += 1) {
         val.exponent -= 1;
-        senaryDigitToDecimal(false, &val, &runtime.ctxtReal39);
+        math_rsd.senaryDigitToDecimal(false, &val, &runtime.ctxtReal39);
         val.exponent -= 1;
     }
     roundToDecimalPlace(&val, &val, digits, &runtime.ctxtReal39);
     i = 0;
     while (i < 2) : (i += 1) {
         val.exponent += 1;
-        decimalDigitToSenary(false, &val, &runtime.ctxtReal39);
+        math_rsd.decimalDigitToSenary(false, &val, &runtime.ctxtReal39);
         val.exponent += 1;
     }
 
@@ -241,11 +239,11 @@ pub export fn rdpTime(digits: u16) linksection(runtime.code_section) callconv(.c
 // rdpRema / rdpCxma
 // ===========================================================================
 pub export fn rdpRema(digits: u16) linksection(runtime.code_section) callconv(.c) void {
-    elementwiseRema_UInt16(rdpReal, digits);
+    math_matrix_elementwise.elementwiseRema_UInt16(rdpReal, digits);
 }
 
 pub export fn rdpCxma(digits: u16) linksection(runtime.code_section) callconv(.c) void {
-    elementwiseCxma_UInt16(rdpCplx, digits);
+    math_matrix_elementwise.elementwiseCxma_UInt16(rdpCplx, digits);
 }
 
 // ===========================================================================

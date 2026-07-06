@@ -4,19 +4,8 @@ const circular_trig_owned = @import("math_circular_trig.zig");
 const ln_complex_owned = @import("math_ln_complex.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
-extern fn realPower10(
-    x: *const runtime.real_t,
-    res: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void;
-extern fn sinComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void;
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -178,7 +167,7 @@ pub fn lnRealValue(
     runtime.int32ToReal(3, &i);
 
     runtime.int32ToReal(1 - real_context.digits, &t);
-    realPower10(&t, &z, real_context);
+    math_command_wrappers.realPower10(&t, &z, real_context);
 
     while (true) {
         runtime.realMultiply(&m, &n, &n, real_context);
@@ -239,7 +228,7 @@ pub fn expM1Complex(
     runtime.realAdd(&e_imag, &e_imag, &e_imag, real_context);
 
     runtime.realChangeSign(&z2_imag);
-    sinComplex(&z2_imag, &z2_real, &z2_real, &z2_imag, real_context);
+    math_command_wrappers.sinComplex(&z2_imag, &z2_real, &z2_real, &z2_imag, real_context);
     runtime.mulComplexComplex(&z2_real, &z2_imag, &e_imag, &e_real, res_real, res_imag, real_context);
 }
 
