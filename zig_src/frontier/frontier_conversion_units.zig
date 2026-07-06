@@ -30,6 +30,11 @@ const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const FLAG_SPCRES: i32 = 0x8017;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
@@ -41,20 +46,14 @@ extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) 
 extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 
-extern fn getRegisterAsReal(reg: i16, value: *real_t) bool;
 extern fn saveLastX() bool;
 extern fn getSystemFlag(flag: i32) bool;
-extern fn convertRealToResultRegister(src: *align(1) const real_t, dest: i16, angle: c_int) void;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: i16, err_register_line: i16) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn adjustResult(res: i16, drop_y: bool, set_cpx: bool, op1: i16, op2: i16, op3: i16) void;
 extern fn getRegisterDataType(reg: i16) u32;
 extern fn getRegisterTag(reg: i16) u32;
 extern fn setRegisterTag(reg: i16, tag: u32) void;
-extern fn fnHMStoTM(p: u16) void;
 extern fn fnToReal(p: u16) void;
-extern fn fnHRtoTM(p: u16) void;
-extern fn fnFrom_ms(p: u16) void;
 extern fn WP34S_Log10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 extern fn realPower10(x: *const real_t, res: *real_t, ctx: *realContext_t) void;
 
@@ -291,14 +290,14 @@ const cvtTempOffsets = [12][4]u32{
 fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, invert: bool) void {
     var re_x: real_t = undefined;
 
-    if (!getRegisterAsReal(REGISTER_X, &re_x)) return;
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;
     if (!saveLastX()) return;
 
     if (invert and realIsZero(&re_x)) {
         if (getSystemFlag(FLAG_SPCRES)) {
-            convertRealToResultRegister(cst(if (realIsNegative(&re_x)) OFF_const_minusInfinity else OFF_const_plusInfinity), REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(@alignCast(cst(if (realIsNegative(&re_x)) OFF_const_minusInfinity else OFF_const_plusInfinity)), REGISTER_X, amNone);
         } else {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) moreInfoOnError("In function unitConversion:", "cannot calculate divide by zero", null, null);
         }
     }
@@ -306,7 +305,7 @@ fn unitConversion(coefficient: *align(1) const real_t, multiply_divide: u16, inv
     if (invert) rDiv(consts.c4856(), &re_x, &re_x);
     if (multiply_divide == multiply) rMul(&re_x, coefficient, &re_x) else rDiv(&re_x, coefficient, &re_x);
 
-    convertRealToResultRegister(&re_x, REGISTER_X, amNone);
+    frontier_register_value_conversions.convertRealToResultRegister(&re_x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
@@ -321,7 +320,7 @@ pub export fn fnUnitConvert(arg: u16) callconv(.c) void {
 
 pub export fn fnCvtTemp(ix: u16) callconv(.c) void {
     var re_x: real_t = undefined;
-    if (!getRegisterAsReal(REGISTER_X, &re_x)) return;
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;
     if (!saveLastX()) return;
 
     const row = cvtTempOffsets[ix];
@@ -330,7 +329,7 @@ pub export fn fnCvtTemp(ix: u16) callconv(.c) void {
     if (row[2] != OFF_const_1) rMul(&re_x, cst(row[2]), &re_x);
     if (row[3] != OFF_const_0) rAdd(&re_x, cst(row[3]), &re_x);
 
-    convertRealToResultRegister(&re_x, REGISTER_X, amNone);
+    frontier_register_value_conversions.convertRealToResultRegister(&re_x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
@@ -396,31 +395,31 @@ pub export fn fnMgeuktok100M(multiply_divide: u16) callconv(.c) void {
 
 pub export fn fnCvtHMSHR(multiply_divide: u16) callconv(.c) void {
     if (multiply_divide == divide) {
-        fnHMStoTM(0);
+        frontier_date_time.fnHMStoTM(0);
         fnToReal(0);
     } else {
-        fnHRtoTM(0);
-        fnFrom_ms(0);
+        frontier_date_time.fnHRtoTM(0);
+        frontier_addons.fnFrom_ms(0);
     }
 }
 
 pub export fn fnCvtRatioDb(ten_or_twenty: u16) callconv(.c) void {
     var re_x: real_t = undefined;
-    if (!getRegisterAsReal(REGISTER_X, &re_x)) return;
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;
     if (!saveLastX()) return;
     WP34S_Log10(&re_x, &re_x, &ctxtReal39);
     rMul(&re_x, cst(if (ten_or_twenty == 10) OFF_const_10 else OFF_const_20), &re_x);
-    convertRealToResultRegister(&re_x, REGISTER_X, amNone);
+    frontier_register_value_conversions.convertRealToResultRegister(&re_x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
 pub export fn fnCvtDbRatio(ten_or_twenty: u16) callconv(.c) void {
     var re_x: real_t = undefined;
-    if (!getRegisterAsReal(REGISTER_X, &re_x)) return;
+    if (!frontier_register_value_conversions.getRegisterAsReal(REGISTER_X, &re_x)) return;
     if (!saveLastX()) return;
     rDiv(&re_x, cst(if (ten_or_twenty == 10) OFF_const_10 else OFF_const_20), &re_x);
     realPower10(&re_x, &re_x, &ctxtReal39);
-    convertRealToResultRegister(&re_x, REGISTER_X, amNone);
+    frontier_register_value_conversions.convertRealToResultRegister(&re_x, REGISTER_X, amNone);
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
@@ -430,8 +429,6 @@ pub export fn fnCvtDbRatio(ten_or_twenty: u16) callconv(.c) void {
 // helpers; the softmenu/HPCONV name helpers are a later slice.
 const ITM_NULL: i16 = 0;
 const fInMim_t = abi.FInMim;
-extern fn runFunction(func: i16) void;
-extern fn fnMultiplySI(param: u16) void;
 
 const NUM_CONVERT_PAIRS = 314;
 
@@ -1146,22 +1143,22 @@ pub export fn isOneOfAConvertPair(x: u16, itemNr: i16, oddNrPartner: *i16) callc
 pub export fn runConversionToSI(itemNr: i16) callconv(.c) void {
     const entry = findPair(itemNr) orelse return;                               // not a conversion item; nothing to do
     if (entry.unity != ITM_NULL) {
-        runFunction(entry.unity);                                              // execute a conversion
+        frontier_items.runFunction(entry.unity);                                              // execute a conversion
     }
     if (entry.exponent != 0) {
-        fnMultiplySI(@intCast(@as(i32, 100) + entry.exponent));                // scale by 10^exponent
+        frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) + entry.exponent));                // scale by 10^exponent
     }
 }
 
 pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
     const entry = findPair(itemNr) orelse return;
     if (entry.exponent != 0) {
-        fnMultiplySI(@intCast(@as(i32, 100) - entry.exponent));                // undo the exponent
+        frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) - entry.exponent));                // undo the exponent
     }
     if (entry.unity != ITM_NULL) {
-        runFunction(findPair(entry.unity).?.partner);                          // inverse of the unity step
+        frontier_items.runFunction(findPair(entry.unity).?.partner);                          // inverse of the unity step
     }
-    runFunction(entry.partner);                                                 // inverse of the user's choice
+    frontier_items.runFunction(entry.partner);                                                 // inverse of the user's choice
 }
 
 // ─── conversion-name slice: softmenu-name helpers (conversionUnits.c:778+) ───

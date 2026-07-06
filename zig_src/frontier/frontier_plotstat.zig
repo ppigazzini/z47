@@ -36,7 +36,7 @@ const const_1 = consts.const_1;
 //     console hints are host-only (gated on extra_info && !dmcp_build).
 //   * USEFLOATING == useFLOAT (0): both `if(USEFLOATING==useREAL4)` and
 //     `if(USEFLOATING==useREAL39)` branches in drawline are comptime-false; the
-//     dead convertDoubleToReal(...&XX...) calls are reproduced under comptime ifs.
+//     dead frontier_register_value_conversions.convertDoubleToReal(...&XX...) calls are reproduced under comptime ifs.
 //   * The else-branch `#if defined(PC_BUILD) printf("Not plotted...")` debug is
 //     pure host diagnostics -> omitted.
 //
@@ -70,6 +70,18 @@ const font_t = abi.Font;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_curve_fitting = @import("frontier_curve_fitting.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_graphs = @import("frontier_graphs.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 comptime {
     if (@sizeOf(real_t) != 60) @compileError("real_t must be 60 bytes");
@@ -279,12 +291,7 @@ inline fn SIGMA_N() *align(1) const real_t {
 // ---------------------------------------------------------------------------
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn isStatsMatrix(rows: *u16, mx: [*c]u8) bool_t;
-extern fn checkMinimumDataPoints(n: *align(1) const real_t) bool_t;
 
-extern fn realToFloat(vv: *const real_t, v: *f32) void;
-extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
-extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *realContext_t) void;
 extern fn realLog10(x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) void;
 extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
@@ -327,41 +334,19 @@ inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t,
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
 
-extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) void;
 
 // screen / drawing primitives (real linkable c47 functions)
-extern fn force_refresh(mode: u8) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn showStringEnhanced(string: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, compress1: u8, raise1: u8, noShow1: u8, boldString1: u8, lf: bool_t) u32;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
-extern fn stringWidthC47(str: [*c]const u8, mode: c_int, comp: c_int, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) u32;
 
 // stats/curvefit helpers
 extern fn drawMxN() i32;
-extern fn graphResetCommon() void;
-extern fn graph_Include0(mode: bool_t, statnum: u16) void;
-extern fn calcSigma(maxOffset: u16) void;
-extern fn fnCurveFitting(curveFitting: u16) void;
-extern fn processCurvefitSelection(selection: u16, RR_: *real_t, SMI_: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) void;
 extern fn processCurvefitSA(sa0: *real_t, sa1: *real_t) void;
-extern fn minLRDataPoints(selection: u16) u16;
-extern fn getCurveFitModeName(selection: u16) [*c]const u8;
-extern fn getCurveFitModeFormula(selection: u16) [*c]const u8;
-extern fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1: f64, a2: f64, XX: *real_t, YY: *real_t, RR_: *real_t, SMI_: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) void;
-extern fn lrCountOnes(curveFitting: u16) u16;
-extern fn eatSpacesEnd(ss: [*c]const u8) [*c]u8;
 
 // misc / register / mode
 extern fn getSystemFlag(sf: i32) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-extern fn clearScreenOld(clearStatusBar: bool_t, clearRegisterLines: bool_t, clearSoftkeys: bool_t) void;
-extern fn clearScreenGraphs(source: u8, clearTextArea: bool_t, clearGraphArea: bool_t) void;
-extern fn exitKeyWaiting() bool_t;
 
-extern fn runFunction(func: i16) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn liftStack() void;
@@ -468,7 +453,7 @@ inline fn radix34MarkChar() u8 {
 // statGraphReset
 // ===========================================================================
 pub export fn statGraphReset() callconv(.c) void {
-    graphResetCommon();
+    frontier_graphs.graphResetCommon();
     currentKeyCode = 255;
     roundedTicks = true;
     clearSystemFlag(FLAG_SHOWX);
@@ -490,7 +475,7 @@ pub export fn grf_x(i: c_int) callconv(.c) f32 {
         linkToRealMatrixRegister(regStats, &stats);
         const cols: u16 = stats.header.matrixColumns;
         real34ToReal(&stats.matrixElements.?[@intCast(i * @as(c_int, cols))], &xr);
-        realToFloat(&xr, &xf);
+        frontier_register_value_conversions.realToFloat(&xr, &xf);
     } else {
         xf = 0;
     }
@@ -507,7 +492,7 @@ pub export fn grf_y(i: c_int) callconv(.c) f32 {
         linkToRealMatrixRegister(regStats, &stats);
         const cols: u16 = stats.header.matrixColumns;
         real34ToReal(&stats.matrixElements.?[@intCast(i * @as(c_int, cols) + 1)], &yr);
-        realToFloat(&yr, &yf);
+        frontier_register_value_conversions.realToFloat(&yr, &yf);
     } else {
         yf = 0;
     }
@@ -734,7 +719,7 @@ pub export fn graphAxisDraw() callconv(.c) void {
             cnt += 1;
         }
 
-        force_refresh(timed);
+        frontier_screen.force_refresh(timed);
 
         if (0 < x_max and 0 > x_min) {
             x = 0;
@@ -787,18 +772,18 @@ pub export fn graphAxisDraw() callconv(.c) void {
         // Write North arrow
         if (getSystemFlag(FLAG_NVECT)) {
             var tmpString2: [100]u8 = undefined;
-            _ = showString("N", &standardFont, xzero - 4, minny + 14, vmNormal, true, true);
-            _ = showString("x", &standardFont, xzero - 4, minny + 28, vmNormal, true, true);
+            _ = frontier_screen.showString("N", &standardFont, xzero - 4, minny + 14, vmNormal, 1, 1);
+            _ = frontier_screen.showString("x", &standardFont, xzero - 4, minny + 28, vmNormal, 1, 1);
             tmpString2[0] = @as(u8, 0x80) | @as(u8, 0x22);
             tmpString2[1] = 0x06;
             tmpString2[2] = 0;
-            _ = showString(&tmpString2, &standardFont, xzero - 4, minny + 0, vmNormal, true, true);
+            _ = frontier_screen.showString(&tmpString2, &standardFont, xzero - 4, minny + 0, vmNormal, 1, 1);
         }
 
         // DRAW YAXIS
         lcd_fill_rect(xzero, minny, 1, @intCast(SCREEN_HEIGHT_GRAPH - @as(i32, @intCast(minny))), LCD_EMPTY_VALUE);
 
-        force_refresh(timed);
+        frontier_screen.force_refresh(timed);
         if (0 < y_max and 0 > y_min) {
             y = 0;
             while (y <= y_max) : (y += tick_int_y) {
@@ -845,7 +830,7 @@ pub export fn graphAxisDraw() callconv(.c) void {
             }
         }
     }
-    force_refresh(timed);
+    frontier_screen.force_refresh(timed);
 }
 
 // ===========================================================================
@@ -1035,7 +1020,7 @@ fn checkWidthWithPrefix(itemName: [*c]const u8, numStr: [*c]const u8, max_width:
     // -> -1). The bitwise value made stringWidthC47 mis-measure every graph tick/
     // coordinate number so checkWidthWithPrefix never fit -> formatDoubleWidth fell
     // through to "??" (the "left panel shows ? instead of numbers" report).
-    return @intFromBool(stringWidthC47(&test_buffer, stdNoEnlarge, @intFromBool(nocompress == 0), false, false) < max_width);
+    return @intFromBool(frontier_screen.stringWidthC47(&test_buffer, stdNoEnlarge, @intFromBool(nocompress == 0), 0, 0) < max_width);
 }
 
 // ===========================================================================
@@ -1125,7 +1110,7 @@ pub export fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemN
         return done(buf, savedDisplayFormatDigits, saveddisplayFormat, ovrENG);
     }
     realLog10(&real, &reall10, &ctxtReal39);
-    if (realToInt32C47(&reall10, null) < digits) {
+    if (frontier_real_type.realToInt32C47(&reall10, null) < digits) {
         displayFormat = DF_SF;
         displayFormatDigits = @intCast(digits);
     } else {
@@ -1136,7 +1121,7 @@ pub export fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemN
     while (ddd >= 2) : (ddd -= 1) {
         updateDisplayValueX = true;
         displayValueX[0] = 0;
-        real34ToDisplayString(real34, amNone, buf, &standardFont, if (digitswidthLimit == 0) 60 else @intCast(digitswidthLimit), @intCast(ddd), LIMITEXP, !FRONTSPACE, NOIRFRAC);
+        frontier_display.real34ToDisplayString(real34, amNone, buf, &standardFont, if (digitswidthLimit == 0) 60 else @intCast(digitswidthLimit), @intCast(ddd), @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), NOIRFRAC);
         updateDisplayValueX = false;
         _ = strcpy(buf, &displayValueX);
         cleanupTrailingZeros(buf);
@@ -1180,7 +1165,7 @@ pub export fn formatCore(value_in: f64, digits: c_int, handle_zero: bool_t, buf:
         var valueR: real_t = undefined;
         var ok: bool_t = undefined;
         var tmpBuf: [128]u8 = undefined;
-        convertDoubleToReal(value, &valueR, &ctxtReal39);
+        frontier_register_value_conversions.convertDoubleToReal(value, &valueR, &ctxtReal39);
         realToReal34(&valueR, &value34);
         _ = strcpy(buf, sign);
         _ = strcat(buf, formatDoubleWidth(&value34, digits, "", &ok, if (widthLimit == 0) 50 else widthLimit, &tmpBuf, if (widthLimit == 0) 50 else widthLimit));
@@ -1212,7 +1197,7 @@ pub export fn statMxN() callconv(.c) i32 {
         if (regStats == INVALID_VARIABLE) {
             return 0;
         } else {
-            if (isStatsMatrix(&rows, &plotStatMx)) {
+            if (frontier_stats.isStatsMatrix(&rows, &plotStatMx)) {
                 var stats: real34Matrix_t = undefined;
                 linkToRealMatrixRegister(regStats, &stats);
                 return @intCast(stats.header.matrixRows);
@@ -1269,12 +1254,12 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
     numberOfPlotPoints = 0;
     roundedTicks = false;
 
-    if ((plotStatMx[0] == 'S' and checkMinimumDataPoints(const_2())) or
+    if ((plotStatMx[0] == 'S' and frontier_stats.checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
         (plotStatMx[0] == 'H' and statMxN() >= 3))
     {
         switch (plotStatMx[0]) {
-            'S' => numberOfPlotPoints = @intCast(realToInt32C47(SIGMA_N(), null)),
+            'S' => numberOfPlotPoints = @intCast(frontier_real_type.realToInt32C47(@alignCast(SIGMA_N()), null)),
             'D' => numberOfPlotPoints = @intCast(drawMxN()),
             'H' => numberOfPlotPoints = @intCast(statMxN()),
             else => {},
@@ -1286,7 +1271,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             plotmode = _SCAT;
 
             reDraw = false;
-            clearScreenGraphs(3, false, true); // !clrTextArea, clrGraphArea
+            frontier_screen.clearScreenGraphs(3, 0, 1); // !clrTextArea, clrGraphArea
 
             // AUTOSCALE
             x_min = FLoatingMax;
@@ -1309,7 +1294,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                 if (grf_y(cnt) > y_max) {
                     y_max = grf_y(cnt);
                 }
-                if (exitKeyWaiting()) {
+                if (frontier_addons.exitKeyWaiting() != 0) {
                     return;
                 }
             }
@@ -1321,7 +1306,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                 return scalePlusInfinity();
             }
 
-            graph_Include0(PLOTSTAT, numberOfPlotPoints);
+            frontier_graphs.graph_Include0(PLOTSTAT, numberOfPlotPoints);
 
             roundedTicks = false;
 
@@ -1371,12 +1356,12 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                     );
                 }
                 // else-branch is pure PC_BUILD diagnostics -> omitted.
-                if (exitKeyWaiting()) {
+                if (frontier_addons.exitKeyWaiting() != 0) {
                     return;
                 }
             }
         } else {
-            clearScreenGraphs(4, true, false); // clrTextArea, !clrGraphArea
+            frontier_screen.clearScreenGraphs(4, 1, 0); // clrTextArea, !clrGraphArea
         } // continue with text only
 
         if (drawHistogram == 1 and selection == 0) { // HISTO
@@ -1393,57 +1378,57 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             real34ToReal(&loBinR, &lBr);
             real34ToReal(&hiBinR, &hBr);
             real34ToReal(&nBins, &nBr);
-            realToFloat(&lBr, &lB);
-            realToFloat(&hBr, &hB);
-            realToFloat(&nBr, &nB);
+            frontier_register_value_conversions.realToFloat(&lBr, &lB);
+            frontier_register_value_conversions.realToFloat(&hBr, &hB);
+            frontier_register_value_conversions.realToFloat(&nBr, &nB);
 
             _ = strcpy(&ss, "Histogram(");
             _ = strcat(&ss, if (histElementXorY == 1) "y)" else "x)");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset + 17), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset + 17), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "(", x_max, 2, "");
             grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), y_max, 2, ")");
             _ = strcat(&tt, padEquals(&tmpbuf, &ss));
-            var n: u32 = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 2 - 3 - 2 - @as(i32, stringWidth(&tt, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 - 3 + autoshift), vmNormal, false, false);
+            var n: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 2 - 3 - 2 - @as(i32, frontier_char_string.stringWidth(&tt, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 - 3 + autoshift), vmNormal, 0, 0);
             grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), y_max, 2, ")");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 3 + autoshift + 2), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 3 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "(", x_min, 2, "");
-            n = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 6 + autoshift + 2), vmNormal, false, false);
+            n = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 6 + autoshift + 2), vmNormal, 0, 0);
             grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), y_min, 2, ")");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 6 + autoshift + 2), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 6 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, "Bin centres:");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
             grphNumFormatter(&ss, "", lB, 3, "");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, STD_DOWN_ARROW ++ "BIN" ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "", hB, 3, "");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, STD_UP_ARROW ++ "BIN" ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "", nB, 3, "");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "nBINS" ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
             grphNumFormatter(&ss, "", (hB - lB) / nB, 3, "");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "Width" ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
         }
     } else {
-        displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
                 abi.fmtBufZ(errorMessage[0..512], "There is no statistical data available!", .{});
@@ -1459,7 +1444,7 @@ inline fn yLine(off: i32) u32 {
 }
 
 fn scalePlusInfinity() void {
-    displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "Plus Infinity encountered!", .{});
@@ -1469,7 +1454,7 @@ fn scalePlusInfinity() void {
 }
 
 fn scaleMinusInfinity() void {
-    displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
             abi.fmtBufZ(errorMessage[0..512], "Minus Infinity encountered!", .{});
@@ -1486,7 +1471,7 @@ pub export fn demo_plot() callconv(.c) void {
     var t: time_t = undefined;
 
     srand(@intCast(@as(c_uint, @truncate(@as(c_ulong, @bitCast(time(&t)))))));
-    runFunction(ITM_CLSIGMA);
+    frontier_items.runFunction(ITM_CLSIGMA);
     plotSelection = 0;
     srand(@intCast(@as(c_uint, @truncate(@as(c_ulong, @bitCast(time(null)))))));
     ix = 0;
@@ -1502,7 +1487,7 @@ pub export fn demo_plot() callconv(.c) void {
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         int32ToReal34(mv + @rem(rand(), 4) - 2, REGISTER_REAL34_DATA(REGISTER_X));
 
-        runFunction(ITM_SIGMAPLUS);
+        frontier_items.runFunction(ITM_SIGMAPLUS);
     }
 }
 
@@ -1511,7 +1496,7 @@ pub export fn demo_plot() callconv(.c) void {
 // ===========================================================================
 pub export fn graphDrawLRline(selection: u16) callconv(.c) void {
     if (selection != 0) {
-        processCurvefitSelection(selection, &lr_RR, &lr_SMI, &lr_aa0, &lr_aa1, &lr_aa2);
+        frontier_curve_fitting.processCurvefitSelection(selection, &lr_RR, &lr_SMI, &lr_aa0, &lr_aa1, &lr_aa2);
         realMultiply(&lr_RR, &lr_RR, &lr_RR, &ctxtReal39);
         if (orOrtho(selection) == CF_ORTHOGONAL_FITTING) {
             processCurvefitSA(&lr_sa0, &lr_sa1);
@@ -1534,7 +1519,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     var tmpbuf: [PLOT_TMP_BUF_SIZE]u8 = undefined;
 
     switch (plotStatMx[0]) {
-        'S' => n = realToInt32C47(SIGMA_N(), null),
+        'S' => n = frontier_real_type.realToInt32C47(@alignCast(SIGMA_N()), null),
         'D' => n = drawMxN(),
         'H' => n = statMxN(),
         else => {},
@@ -1543,12 +1528,12 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     NN = @truncate(@as(u32, @bitCast(n)));
     const isValidDraw: bool_t =
         selection != 0 and
-        n >= @as(i32, @intCast(minLRDataPoints(selection))) and
+        n >= @as(i32, @intCast(frontier_curve_fitting.minLRDataPoints(selection))) and
         !realCompareGreaterThan(RR, const_1()) and
         !realIsNaN(RR) and
         !realIsNaN(aa0) and
         !realIsNaN(aa1) and
-        (!realIsNaN(aa2) or minLRDataPoints(selection) == 2) and
+        (!realIsNaN(aa2) or frontier_curve_fitting.minLRDataPoints(selection) == 2) and
         (!realIsNaN(SMI) or (orOrtho(selection) & CF_ORTHOGONAL_FITTING) == 0);
 
     var rr: f32 = undefined;
@@ -1567,13 +1552,13 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
         return;
     }
 
-    realToFloat(RR, &rr);
-    realToFloat(SMI, &smi);
-    realToFloat(aa0, &a0);
-    realToFloat(aa1, &a1);
-    realToFloat(aa2, &a2);
-    realToFloat(sa0, &ssa0);
-    realToFloat(sa1, &ssa1);
+    frontier_register_value_conversions.realToFloat(RR, &rr);
+    frontier_register_value_conversions.realToFloat(SMI, &smi);
+    frontier_register_value_conversions.realToFloat(aa0, &a0);
+    frontier_register_value_conversions.realToFloat(aa1, &a1);
+    frontier_register_value_conversions.realToFloat(aa2, &a2);
+    frontier_register_value_conversions.realToFloat(sa0, &ssa0);
+    frontier_register_value_conversions.realToFloat(sa1, &ssa1);
 
     if (isValidDraw) {
         if (selection == 0 and a2 == 0 and a1 == 0 and a0 == 0) {
@@ -1603,11 +1588,11 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
             while (xx < 14) : (xx += 1) {
                 xd = ixd + intervalW / @as(f64, @floatFromInt(@as(u16, 1) << @intCast(xx)));
                 if (comptime USEFLOATING == useREAL4) {
-                    convertDoubleToReal(xd, &XX, &ctxtReal4);
+                    frontier_register_value_conversions.convertDoubleToReal(xd, &XX, &ctxtReal4);
                 } else if (comptime USEFLOATING == useREAL39) {
-                    convertDoubleToReal(xd, &XX, &ctxtReal39);
+                    frontier_register_value_conversions.convertDoubleToReal(xd, &XX, &ctxtReal39);
                 }
-                yIsFnx(USEFLOATING, selection, xd, &yd, a0, a1, a2, &XX, &YY, RR, SMI, aa0, aa1, aa2);
+                frontier_curve_fitting.yIsFnx(USEFLOATING, selection, xd, &yd, a0, a1, a2, &XX, &YY, RR, SMI, aa0, aa1, aa2);
                 xN = screen_window_x(x_min, @floatCast(xd), x_max);
                 yN = screen_window_y(y_min, @floatCast(yd), y_max);
                 if ((@abs(@as(i32, yN) - @as(i32, yo)) <= 2) or iterations == 0 or xN <= minN_x) {
@@ -1633,22 +1618,22 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 
     var index: i16 = -1;
     if (selection != 0) {
-        _ = strcpy(&ss, eatSpacesEnd(getCurveFitModeName(selection)));
-        if (lrCountOnes(lrSelection) > 1 and selection == lrChosen) {
+        _ = strcpy(&ss, frontier_debug.eatSpacesEnd(frontier_debug.getCurveFitModeName(selection)));
+        if (frontier_curve_fitting.lrCountOnes(lrSelection) > 1 and selection == lrChosen) {
             _ = strcat(&ss, if (lrChosen == 0) "" else STD_SUP_ASTERISK);
         }
-        _ = showString(&ss, &standardFont, @intCast(horOffset + 17), yLine(autoinc * @as(i32, index) - 10 + autoshift), vmNormal, false, false);
+        _ = frontier_screen.showString(&ss, &standardFont, @intCast(horOffset + 17), yLine(autoinc * @as(i32, index) - 10 + autoshift), vmNormal, 0, 0);
         index += 1;
         if (selection != CF_GAUSS_FITTING and selection != CF_CAUCHY_FITTING) {
             _ = strcpy(&ss, "y=");
-            _ = strcat(&ss, getCurveFitModeFormula(selection));
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, false, false);
+            _ = strcat(&ss, frontier_debug.getCurveFitModeFormula(selection));
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, 0, 0);
             index += 1;
         } else {
             _ = strcpy(&ss, "y=");
-            _ = strcat(&ss, getCurveFitModeFormula(selection));
+            _ = strcat(&ss, frontier_debug.getCurveFitModeFormula(selection));
             compressString = 1;
-            _ = showString(&ss, &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(&ss, &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, 0, 0);
             index += 1;
         }
     }
@@ -1656,76 +1641,76 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     if (isValidDraw) {
         if (softmenuMenuItem0() != -MNU_PLOT_SCATR) {
             abi.fmtBufZ(&ss, "{d}", .{ @as(c_uint, NN) });
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
             abi.fmtBufZ(&ss, STD_SPACE_PUNCTUATION ++ STD_SPACE_PUNCTUATION ++ "n=", .{});
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
             index += 1;
         }
 
         if (orOrtho(selection) != CF_ORTHOGONAL_FITTING) {
             grphNumFormatter(&ss, "", a0, 3, "");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_0 ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "", a1, 3, "");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_1 ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             if (selection == CF_PARABOLIC_FITTING or selection == CF_GAUSS_FITTING or selection == CF_CAUCHY_FITTING) {
                 grphNumFormatter(&ss, "", a2, 3, "");
-                _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
                 _ = strcpy(&ss, "a" ++ STD_SUB_2 ++ "=");
-                _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
                 index += 1;
             }
 
             var tmpBuf: [100]u8 = undefined;
             _ = strcpy(&ss, formatCore(rr, 5, false, &tmpBuf, 50));
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "r" ++ STD_SUP_2 ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "(", x_max, 2, "");
-            const ssw: u16 = @intCast(showStringEnhanced(padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
+            const ssw: u16 = @intCast(frontier_screen.showStringEnhanced(padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, @intFromBool(NO_LF)));
             grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), y_max, 2, ")");
-            const ttw: u16 = @intCast(showStringEnhanced(padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, false, false, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
-            var nn: u32 = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, false, false);
-            _ = showString(padEquals(&tmpbuf, &tt), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) + autoshift + 2), vmNormal, false, false);
+            const ttw: u16 = @intCast(frontier_screen.showStringEnhanced(padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, @intFromBool(NO_LF)));
+            var nn: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &tt), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) + autoshift + 2), vmNormal, 0, 0);
             index += 1;
             grphNumFormatter(&ss, "(", x_min, 2, "");
-            nn = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift + 2), vmNormal, false, false);
+            nn = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift + 2), vmNormal, 0, 0);
             grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), y_min, 2, ")");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) - 2 + autoshift + 2), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) - 2 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
         } else { // ORTHOF
             var tmpBuf: [100]u8 = undefined;
             _ = strcpy(&ss, formatCore(a0, 3, false, &tmpBuf, 50));
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_0 ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, formatCore(ssa0, 3, false, &tmpBuf, 50));
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "    " ++ STD_PLUS_MINUS);
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, formatCore(a1, 3, false, &tmpBuf, 50));
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_1 ++ "=");
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, formatCore(ssa1, 3, false, &tmpBuf, 50));
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "    " ++ STD_PLUS_MINUS);
-            _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             if (softmenuMenuItem0() == -MNU_PLOT_SCATR) {
@@ -1735,47 +1720,47 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
                     _ = strcpy(&ss, "  | n < 30");
                 }
 
-                _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, 0, 0);
                 _ = strcpy(&ss, "s" ++ STD_SUB_m ++ STD_SUB_i ++ "=");
-                _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, 0, 0);
                 index += 1;
             } else {
                 _ = strcpy(&ss, formatCore(rr, 3, false, &tmpBuf, 50));
-                _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
                 _ = strcpy(&ss, "r" ++ STD_SUP_2 ++ "=");
-                _ = showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
                 index += 1;
             }
         }
     } else {
         if (n < 0) {
-            _ = showString("invalid n", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString("invalid n", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
-        } else if (isnanF(a0) or isnanF(a1) or (isnanF(a2) and minLRDataPoints(selection) != 2)) {
+        } else if (isnanF(a0) or isnanF(a1) or (isnanF(a2) and frontier_curve_fitting.minLRDataPoints(selection) != 2)) {
             if ((selection & 448) != 0) {
-                _ = showString("invalid a0,a1,a2", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString("invalid a0,a1,a2", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
                 index += 1;
             } else {
-                _ = showString("invalid a0,a1", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+                _ = frontier_screen.showString("invalid a0,a1", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
                 index += 1;
             }
         } else if ((orOrtho(selection) & CF_ORTHOGONAL_FITTING) != 0 and isnanF(smi)) {
-            _ = showString("invalid smi", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString("invalid smi", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
         } else if (rr > 1 or isnanF(rr)) {
-            _ = showString("invalid r", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString("invalid r", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
-        } else if (NN < minLRDataPoints(selection)) {
-            _ = showString("insufficient data", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+        } else if (NN < frontier_curve_fitting.minLRDataPoints(selection)) {
+            _ = frontier_screen.showString("insufficient data", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
-            abi.fmtBufZ(&ss, " {d} < {d}", .{ @as(c_uint, NN), @as(c_uint, minLRDataPoints(selection)) });
-            _ = showString(&ss, &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+            abi.fmtBufZ(&ss, " {d} < {d}", .{ @as(c_uint, NN), @as(c_uint, frontier_curve_fitting.minLRDataPoints(selection)) });
+            _ = frontier_screen.showString(&ss, &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
         } else if (selection == 0) {
-            _ = showString("No Valid L.R.", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString("No Valid L.R.", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
         } else {
-            _ = showString("L.R. error", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, false, false);
+            _ = frontier_screen.showString("L.R. error", &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 7 + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
         }
     }
@@ -1822,14 +1807,14 @@ pub export fn z47_frontier_plot_set_statmx_histo() callconv(.c) void {
 }
 
 pub export fn z47_frontier_plot_has_source_data() callconv(.c) bool_t {
-    return (plotStatMx[0] == 'S' and checkMinimumDataPoints(const_2())) or
+    return (plotStatMx[0] == 'S' and frontier_stats.checkMinimumDataPoints(const_2())) or
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
         (plotStatMx[0] == 'H' and statMxN() >= 3);
 }
 
 pub export fn z47_frontier_plot_clear_screen_for_graph_entry() callconv(.c) void {
     if (!GRAPHMODE()) {
-        clearScreenOld(true, false, false); // clrStatusBar, !clrRegisterLines, !clrSoftkeys
+        frontier_screen.clearScreenOld(1, 0, 0); // clrStatusBar, !clrRegisterLines, !clrSoftkeys
     }
 }
 

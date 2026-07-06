@@ -62,6 +62,20 @@ const bool_t = u8;
 const calcRegister_t = i16;
 const dataType_t = u32;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_units = @import("frontier_conversion_units.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_lbl_gto_xeq = @import("frontier_lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.RealBlob;
 
 const ItemFn = ?*const fn (u16) callconv(.c) void;
@@ -382,37 +396,15 @@ extern var DRG_Cycling: u8;
 // ---------------------------------------------------------------------------
 // Extern functions used by the dispatch logic
 // ---------------------------------------------------------------------------
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errMessageRegisterLine2: calcRegister_t) void;
 extern fn getSystemFlag(sf: i32) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn saveForUndo() void;
 extern fn undo() void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool_t;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool_t) u32;
 extern fn isMatrixIndexed() bool_t;
-extern fn isStatsMatrixN(rows: *u16, regStats: calcRegister_t) bool_t;
-extern fn isFunctionItemAMenu(item: i16) bool_t;
-extern fn currentMenu() i16;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn findNamedLabel(labelName: [*c]const u8) calcRegister_t;
-extern fn dynmenuGetLabel(menuitem: i16) [*c]u8;
-extern fn insertUserItemInProgram(func: i16, funcParam: [*c]u8) void;
-extern fn addStepInProgram(func: i16) void;
-extern fn tamEnterMode(func: i16) void;
 extern fn resetKeytimers() void;
-extern fn fnReturn(skip: u16) void;
-extern fn showHideHourGlass() void;
-extern fn refreshStatusBar() void;
-extern fn forceSBupdate() void;
-extern fn updateMatrixHeightCache() void;
-extern fn LastOpTimerReStart(func: u16) void;
-extern fn LastOpTimerLap(func: u16) void;
-extern fn expandConversionName(msg1: [*c]u8) void;
-extern fn isItemConversion(itemNr: i16) bool;
-extern fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) void;
-extern fn expandAbbreviations(msg1: [*c]u8) void;
 
 // libc
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -434,7 +426,7 @@ pub export fn itemToBeCoded(unusedButMandatoryParameter: u16) callconv(.c) void 
 pub export fn fnOldItemError(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     // !GENERATE_CATALOGS && !GENERATE_TESTPGMS always true
-    displayCalcErrorMessage(@intCast(ERROR_OLD_ITEM_TO_REPLACE), ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(@intCast(ERROR_OLD_ITEM_TO_REPLACE), ERR_REGISTER_LINE, REGISTER_X);
 }
 
 // fnNop is owned by frontier.zig; bound here as an extern for the table.
@@ -661,14 +653,14 @@ const ext_addItemToBuffer = @extern(ItemFn, .{ .name = "addItemToBuffer" });
 pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     // IR_PRINTING tracing block
     if (comptime ir_printing) {
-        if (isFunctionItemAMenu(func) == 0 and indexOfItems[@intCast(func)].func != ext_addItemToBuffer) {
+        if (frontier_softmenus.isFunctionItemAMenu(func) == 0 and indexOfItems[@intCast(func)].func != ext_addItemToBuffer) {
             if (programRunStop != PGM_RUNNING and programRunStop != PGM_SINGLE_STEP) {
                 if (calcMode != CM_MIM or (func != ITM_LEFT_ARROW and func != ITM_UP_ARROW and
                     func != ITM_RIGHT_ARROW and func != ITM_DOWN_ARROW and
                     func != ITM_op_j and func != ITM_op_j_pol))
                 {
                     if (!((func == ITM_toREAL) and (lastFunc == ITM_dotD))) {
-                        printTrace(func, param);
+                        frontier_print.printTrace(func, param);
                     }
                 }
             }
@@ -682,13 +674,13 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     }
 
     if (func != ITM_SOLVE_VAR and (calcMode == CM_NORMAL or calcMode == CM_NIM) and
-        (currentMenu() == -MNU_MVAR) and
+        (frontier_softmenus.currentMenu() == -MNU_MVAR) and
         (currentSolverStatus == 258 or currentSolverStatus == 259))
     {
         currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
     }
     if (indexOfItems[@intCast(func)].func != ext_fnTvmVar and (calcMode == CM_NORMAL or calcMode == CM_NIM) and
-        currentMenu() == -MNU_TVM and
+        frontier_softmenus.currentMenu() == -MNU_TVM and
         (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0)
     {
         currentSolverStatus &= ~SOLVER_STATUS_READY_TO_EXECUTE;
@@ -708,7 +700,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
 
         if (lastErrorCode == ERROR_RAM_FULL) {
             if ((indexOfItems[@intCast(func)].status & US_STATUS) == US_ENABLED or calcMode == CM_CONFIRMATION) {
-                displayCalcErrorMessage(@intCast(ERROR_RAM_FULL), ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                frontier_error.displayCalcErrorMessage(@intCast(ERROR_RAM_FULL), ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 return;
             } else {
                 lastErrorCode = @intCast(ERROR_NONE);
@@ -729,45 +721,45 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         if ((indexOfItems[@intCast(func)].status & HG_STATUS) == HG_ENABLED or (((indexOfItems[@intCast(func)].status & HG_STATUS) == HG_ENABLED_MX_ONLY) and isXYRegisterMatrix())) {
             hourGlassIconEnabled = 1;
             screenUpdatingMode &= @truncate(~SCRUPD_MANUAL_STATUSBAR);
-            showHideHourGlass();
+            frontier_status_bar.showHideHourGlass();
         }
 
         if (func == ITM_GTO or func == ITM_XEQ or func == ITM_GTOP) {
             while (currentSubroutineLevelData.*.subroutineLevel > 0) {
-                fnReturn(0);
+                frontier_lbl_gto_xeq.fnReturn(0);
             }
-            fnReturn(0);
+            frontier_lbl_gto_xeq.fnReturn(0);
         }
 
         screenUpdatingMode = @truncate(SCRUPD_AUTO);
     } else { // PGM_RUNNING MODE
         if (func == ITM_GTO or func == ITM_XEQ or func == ITM_GTOP) {
             screenUpdatingMode &= @truncate(~SCRUPD_MANUAL_STATUSBAR);
-            showHideHourGlass();
+            frontier_status_bar.showHideHourGlass();
         }
         if (comptime !dmcp_build) {
-            force_refresh(timed_val);
+            frontier_screen.force_refresh(timed_val);
         }
     }
 
     if ((programRunStop != PGM_RUNNING and func != ITM_LASTT) or func == ITM_XEQ or timeLastOp0 == 0) {
-        LastOpTimerReStart(@bitCast(func));
+        frontier_timer.LastOpTimerReStart(@bitCast(func));
     } else if (programRunStop == PGM_RUNNING and func == ITM_LASTT) {
-        LastOpTimerLap(@bitCast(func));
+        frontier_timer.LastOpTimerLap(@bitCast(func));
     }
 
     // mark the previous I and J for STOSEQ/RCLSEQ
-    var iir: real_t = undefined;
-    var jjr: real_t = undefined;
-    if ((func == ITM_RCLELPLUS or func == ITM_STOELPLUS) and isMatrixIndexed() != 0 and getRegisterAsRealQuiet(REGISTER_I, &iir) != 0 and getRegisterAsRealQuiet(REGISTER_J, &jjr) != 0) {
-        lastI = @truncate(realToUint32C47(&iir, null));
-        lastJ = @truncate(realToUint32C47(&jjr, null));
+    var iir: abi.Real = undefined;
+    var jjr: abi.Real = undefined;
+    if ((func == ITM_RCLELPLUS or func == ITM_STOELPLUS) and isMatrixIndexed() != 0 and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_I, &iir) and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_J, &jjr)) {
+        lastI = @truncate(frontier_real_type.realToUint32C47(&iir, null));
+        lastJ = @truncate(frontier_real_type.realToUint32C47(&jjr, null));
     } else {
         lastI = 0xFFFF;
         lastJ = 0xFFFF;
     }
 
-    refreshStatusBar();
+    frontier_status_bar.refreshStatusBar();
 
     // **RunFunction
     if (itemNotAvail(func) == 0) {
@@ -786,7 +778,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         if (itemERRTIVal(func) == _TO_ITM_TI) {
             temporaryInformation = TI_NOT_AVAILABLE;
         } else if (itemERRTIVal(func) == _TO_ITM_ERR) {
-            displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
         }
         screenUpdatingMode = @truncate(SCRUPD_AUTO);
     }
@@ -799,13 +791,13 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     }
 
     if (programRunStop != PGM_RUNNING) {
-        LastOpTimerLap(@bitCast(func));
+        frontier_timer.LastOpTimerLap(@bitCast(func));
     }
 
     if (funcIsProgramStopControl) {
         screenUpdatingMode &= @truncate(~SCRUPD_MANUAL_STATUSBAR);
         if (currentSubroutineLevelData.*.subroutineLevel == 0) {
-            forceSBupdate();
+            frontier_status_bar.forceSBupdate();
             screenUpdatingMode = @truncate(SCRUPD_AUTO);
         }
     }
@@ -854,7 +846,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
             },
             ITM_STO, ITM_RCL => {
                 temporaryInformation =
-                    if (pi == REGISTER_I and isMatrixIndexed() != 0) TI_I else if (pi == REGISTER_J and isMatrixIndexed() != 0) TI_J else if (inNameRegisterRange) (if (isStatsMatrixN(&rr, regStats) != 0 and pi == regStats) TI_STATISTIC_SUMS else TI_STORCL) else if (isMatrix) TI_STORCL else if (inReservedRange or inRegisterRange or inLocalRegisters) TI_STORCL else TI_NO_INFO;
+                    if (pi == REGISTER_I and isMatrixIndexed() != 0) TI_I else if (pi == REGISTER_J and isMatrixIndexed() != 0) TI_J else if (inNameRegisterRange) (if (frontier_stats.isStatsMatrixN(&rr, regStats) and pi == regStats) TI_STATISTIC_SUMS else TI_STORCL) else if (isMatrix) TI_STORCL else if (inReservedRange or inRegisterRange or inLocalRegisters) TI_STORCL else TI_NO_INFO;
             },
             ITM_RCLELPLUS, ITM_RCLEL, ITM_STOELPLUS, ITM_STOEL => {
                 if (isMatrixIndexed() != 0) temporaryInformation = TI_MIJEQ;
@@ -871,8 +863,8 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         // TI for conversion menus (items.c:555-573)
         if (lastErrorCode == ERROR_NONE and temporaryInformation == TI_NO_INFO) {
             temporaryInformation = TI_NO_INFO;
-            if (isItemConversion(func)) {
-                executionConversionPartner(func, null, errorMessage);
+            if (frontier_conversion_units.isItemConversion(func)) {
+                frontier_conversion_units.executionConversionPartner(func, null, errorMessage);
                 errorMessage[0] = 0;
                 temporaryInformation = TI_CONV_MENU_STR;
                 var i: i16 = 0;
@@ -887,7 +879,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
                     i += 1;
                 }
                 errorMessage[@intCast(j)] = 0;
-                expandAbbreviations(errorMessage);
+                frontier_char_string.expandAbbreviations(errorMessage);
             }
         }
     }
@@ -919,10 +911,10 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     }
 
     if (programRunStop != PGM_RUNNING) {
-        updateMatrixHeightCache();
+        frontier_screen.updateMatrixHeightCache();
         cachedDynamicMenu = 0;
         if (comptime !dmcp_build) {
-            _ = refreshLcd(null);
+            _ = frontier_screen.refreshLcd(null);
         }
     }
     // PC_BUILD gmpMemInBytes check is a host-only diagnostic (no observable
@@ -935,26 +927,21 @@ const REGISTER_Y_v: calcRegister_t = 101;
 inline fn isXYRegisterMatrix() bool {
     return (getRegisterDataType(REGISTER_X) == dtReal34Matrix) or (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) or (getRegisterDataType(REGISTER_Y_v) == dtReal34Matrix) or (getRegisterDataType(REGISTER_X) == dtComplex34Matrix);
 }
-// force_refresh(timed); timed == 0 (PC_BUILD only)
+// frontier_screen.force_refresh(timed); timed == 0 (PC_BUILD only)
 const timed_val: u8 = 0;
 
 // IR_PRINTING trace externs
-extern fn printTrace(func: i16, param: u16) void;
-extern fn printTraceTI() void;
-extern fn printTraceX(where: u16) void;
 inline fn ext_printTraceTI() void {
-    printTraceTI();
+    frontier_print.printTraceTI();
 }
 inline fn ext_printTraceX(where: i16) void {
-    printTraceX(@bitCast(where));
+    frontier_print.printTraceX(@bitCast(where));
 }
 
 // DMCP-only
 extern fn updateVbatIntegrated(arg: bool_t) void;
 
 // host-only (PC_BUILD)
-extern fn force_refresh(mode: u8) void;
-extern fn refreshLcd(unusedData: ?*anyopaque) c_int;
 extern fn jm_show_comment(comment: [*c]u8) void;
 
 pub export fn runFunction(func: i16) callconv(.c) void {
@@ -962,33 +949,33 @@ pub export fn runFunction(func: i16) callconv(.c) void {
 
     if (programRunStop != PGM_RUNNING) {
         if (func == ITM_RCL and dynamicMenuItem > -1) {
-            const varCatalogItem: [*c]u8 = dynmenuGetLabel(dynamicMenuItem);
+            const varCatalogItem: [*c]u8 = frontier_softmenus.dynmenuGetLabel(dynamicMenuItem);
             if (strcmp(varCatalogItem, "RCL") != 0) {
                 const v: calcRegister_t = findNamedVariable(varCatalogItem);
                 if (v != INVALID_VARIABLE) {
                     if (calcMode == CM_PEM) {
-                        insertUserItemInProgram(func, varCatalogItem);
+                        frontier_manage.insertUserItemInProgram(func, varCatalogItem);
                     } else {
                         reallyRunFunction(func, @bitCast(v));
                     }
                 } else {
-                    displayCalcErrorMessage(@intCast(ERROR_UNDEF_SOURCE_VAR), ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(@intCast(ERROR_UNDEF_SOURCE_VAR), ERR_REGISTER_LINE, REGISTER_X);
                 }
                 return;
             }
         }
         if (func == ITM_XEQ and dynamicMenuItem > -1) {
-            const varCatalogItem: [*c]u8 = dynmenuGetLabel(dynamicMenuItem);
+            const varCatalogItem: [*c]u8 = frontier_softmenus.dynmenuGetLabel(dynamicMenuItem);
             if (strcmp(varCatalogItem, "XEQ") != 0) {
-                const label: calcRegister_t = findNamedLabel(varCatalogItem);
+                const label: calcRegister_t = frontier_manage.findNamedLabel(varCatalogItem);
                 if (label != INVALID_VARIABLE) {
                     if (calcMode == CM_PEM) {
-                        insertUserItemInProgram(func, varCatalogItem);
+                        frontier_manage.insertUserItemInProgram(func, varCatalogItem);
                     } else {
                         reallyRunFunction(func, @bitCast(label));
                     }
                 } else {
-                    displayCalcErrorMessage(@intCast(ERROR_LABEL_NOT_FOUND), ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(@intCast(ERROR_LABEL_NOT_FOUND), ERR_REGISTER_LINE, REGISTER_X);
                 }
                 return;
             }
@@ -996,12 +983,12 @@ pub export fn runFunction(func: i16) callconv(.c) void {
         if (tam.mode == 0 and TM_VALUE <= @as(i16, @bitCast(indexOfItems[@intCast(func)].param)) and @as(i16, @bitCast(indexOfItems[@intCast(func)].param)) <= TM_CMP and (calcMode != CM_PEM or aimBuffer[0] == 0 or nimNumberPart != NP_INT_BASE)) {
             // **Start TAM function
             if (itemNotAvail(func) == 0) {
-                tamEnterMode(func);
+                frontier_tam.tamEnterMode(func);
             } else {
                 if (itemERRTIVal(func) == _TO_ITM_TI) {
                     temporaryInformation = TI_NOT_AVAILABLE;
                 } else if (itemERRTIVal(func) == _TO_ITM_ERR) {
-                    displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
                 }
                 screenUpdatingMode = @truncate(SCRUPD_AUTO);
             }
@@ -1024,7 +1011,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
             }
 
             if (tam.mode == 0 and ((func != ITM_BACKSPACE and (catalog == 0 or catalog == CATALOG_MVAR or fnKeyInCatalog != 0) and !doNotAddStep) or func == ITM_ENTER)) {
-                addStepInProgram(func);
+                frontier_manage.addStepInProgram(func);
                 return;
             }
         }
@@ -1039,7 +1026,7 @@ pub export fn runFunction(func: i16) callconv(.c) void {
     reallyRunFunction(func, indexOfItems[@intCast(func)].param);
 
     if (funcOK == 0) {
-        displayCalcErrorMessage(@intCast(ERROR_ITEM_TO_BE_CODED), ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(@intCast(ERROR_ITEM_TO_BE_CODED), ERR_REGISTER_LINE, REGISTER_X);
     }
 }
 
