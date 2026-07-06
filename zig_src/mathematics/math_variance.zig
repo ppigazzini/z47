@@ -27,6 +27,7 @@ const const_2 = consts.const_2;
 // the real defines.h values. CF_* and orOrtho match defines.h.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -91,7 +92,6 @@ extern var ctxtReal75: realContext_t;
 extern var lrChosen: u16;
 extern var lrSelection: u16;
 
-extern fn realExp(rhs: *const real_t, res: *real_t, set: *realContext_t) void;
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 extern fn processCurvefitSelection(selection: u16, RR_: *real_t, SMI_: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) void;
 extern fn processCurvefitSelectionAll(selection: u16, RR_: *real_t, MX: *real_t, MX2: *real_t, SX2: *real_t, SY2: *real_t, SMI_: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) void;
@@ -169,7 +169,7 @@ fn do_stddev(sumXX: *const real_t, sumX: *const real_t, numberX: *const real_t, 
         p = &tempReal3;
     }
     if (exp != 0) {
-        realExp(p, &tempReal2, realContext);
+        math_command_wrappers.realExp(p, &tempReal2, realContext);
         p = &tempReal2;
     }
     realToReal34(p, registerReal34Ptr(regIndex));

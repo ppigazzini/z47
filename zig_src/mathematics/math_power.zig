@@ -16,6 +16,8 @@ const const_8 = consts.const_8;
 // fflush(stdout) has no calculation effect and is omitted.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -66,9 +68,7 @@ inline fn const_minusInfinity() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
-extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn realSetPlusInfinity(value: *real_t) void;
-extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, ctxt: *realContext_t) *real_t;
@@ -161,14 +161,14 @@ pub export fn PowerReal(y: *const real_t, x: *const real_t, res: *real_t, realCo
         realCopyAbs(y, &lny);
         WP34S_Ln(&lny, &lny, realContext);
         realMultiply(x, &lny, res, realContext);
-        realExp(res, res, realContext);
+        math_command_wrappers.realExp(res, res, realContext);
         if (isOdd) {
             realChangeSign(res);
         }
     } else {
         WP34S_Ln(y, &lny, realContext);
         realMultiply(x, &lny, res, realContext);
-        realExp(res, res, realContext);
+        math_command_wrappers.realExp(res, res, realContext);
     }
 }
 
@@ -344,7 +344,7 @@ pub export fn PowerComplex(yReal: *const real_t, yImag: *const real_t, xReal: *c
         var md: i8 = undefined;
         var doZeroingReal: bool = false;
         var doZeroingImag: bool = false;
-        if (realCompareAbsEqual(yReal, yImag)) {
+        if (math_comparison_reals.realCompareAbsEqual(yReal, yImag)) {
             realDivideRemainder(xReal, const_8(), &xR, realContext);
             if (realIsZero(xImag) and realIsAnInteger(&xR)) {
                 md = @intCast(realToInt32C47(&xR, null));
@@ -374,7 +374,7 @@ pub export fn PowerComplex(yReal: *const real_t, yImag: *const real_t, xReal: *c
         realMultiply(rReal, xReal, rReal, realContext); // rReal = Xr.LN r
         realFMA(&theta, xImag, rReal, rReal, realContext); // rReal = Xr.LN r  *  -theta . Xi
 
-        realExp(rReal, &tmp, realContext);
+        math_command_wrappers.realExp(rReal, &tmp, realContext);
         realPolarToRectangular(const_1(), rImag, rReal, rImag, realContext);
         if (doZeroingImag) {
             realSetZero(rImag);

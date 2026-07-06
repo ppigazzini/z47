@@ -20,6 +20,7 @@ const std = @import("std");
 const abi = @import("abi");
 const comparison_reals = @import("math_comparison_reals.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_integer_division_cells = @import("math_integer_division_cells.zig"); // M-callconv: Zig-to-Zig
 
 const calcRegister_t = runtime.calcRegister_t;
 
@@ -55,11 +56,6 @@ extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, r: *runtime.real_t,
 extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: *u32) bool;
 extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *runtime.complex34Matrix_t) void;
-extern fn roundRema() void;
-extern fn roundCxma() void;
-extern fn roundReal() void;
-extern fn roundCplx() void;
-extern fn roundTime() void;
 extern fn fnSwapX(regist: u16) void;
 extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // Upstream macro currentNumberOfLocalRegisters expands to
@@ -596,9 +592,9 @@ fn almostEqualMatrix(regist: u16) void {
             runtime.realMatrixFree(&r);
             return;
         }
-        roundRema();
+        math_integer_division_cells.roundRema();
         fnSwapX(regist);
-        roundRema();
+        math_integer_division_cells.roundRema();
         fnSwapX(regist);
         compareRegisters(regist, COMPARE_MODE_EQUAL);
         runtime.convertReal34MatrixToReal34MatrixRegister(&r, asRegister(regist));
@@ -634,15 +630,15 @@ fn almostEqualMatrix(regist: u16) void {
         }
 
         if (x_is_cxma) {
-            roundCxma();
+            math_integer_division_cells.roundCxma();
         } else {
-            roundRema();
+            math_integer_division_cells.roundRema();
         }
         fnSwapX(regist);
         if (r_is_cxma) {
-            roundCxma();
+            math_integer_division_cells.roundCxma();
         } else {
-            roundRema();
+            math_integer_division_cells.roundRema();
         }
         fnSwapX(regist);
 
@@ -734,20 +730,20 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
         typePair(runtime.dtComplex34, runtime.dtReal34),
         typePair(runtime.dtComplex34, runtime.dtShortInteger),
         typePair(runtime.dtComplex34, runtime.dtLongInteger),
-        => roundCplx(),
+        => math_integer_division_cells.roundCplx(),
 
         typePair(runtime.dtReal34, runtime.dtComplex34),
         typePair(runtime.dtReal34, runtime.dtReal34),
         typePair(runtime.dtReal34, runtime.dtShortInteger),
         typePair(runtime.dtReal34, runtime.dtLongInteger),
-        => roundReal(),
+        => math_integer_division_cells.roundReal(),
 
         // when SI vs Real or Complex, cast to real
         typePair(runtime.dtShortInteger, runtime.dtComplex34),
         typePair(runtime.dtShortInteger, runtime.dtReal34),
         => {
             convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-            roundReal();
+            math_integer_division_cells.roundReal();
         },
 
         // when LI vs Real or Complex, cast to real
@@ -755,19 +751,19 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
         typePair(runtime.dtLongInteger, runtime.dtReal34),
         => {
             runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-            roundReal();
+            math_integer_division_cells.roundReal();
         },
 
         // when time vs Real or longinteger
         typePair(runtime.dtTime, runtime.dtReal34) => {
-            roundTime();
+            math_integer_division_cells.roundTime();
             runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
         },
 
         typePair(runtime.dtShortInteger, runtime.dtTime) => {
             convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-            roundTime();
+            math_integer_division_cells.roundTime();
             runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
         },
 
@@ -779,18 +775,18 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
                 runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             }
             runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-            roundTime();
+            math_integer_division_cells.roundTime();
             runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
         },
 
         typePair(runtime.dtTime, runtime.dtShortInteger),
         typePair(runtime.dtTime, runtime.dtLongInteger),
         => {
-            roundTime();
+            math_integer_division_cells.roundTime();
             runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
         },
 
-        typePair(runtime.dtTime, runtime.dtTime) => roundTime(),
+        typePair(runtime.dtTime, runtime.dtTime) => math_integer_division_cells.roundTime(),
 
         else => {
             fnSwapX(regist);
@@ -805,20 +801,20 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
             typePair(runtime.dtReal34, runtime.dtComplex34),
             typePair(runtime.dtShortInteger, runtime.dtComplex34),
             typePair(runtime.dtLongInteger, runtime.dtComplex34),
-            => roundCplx(),
+            => math_integer_division_cells.roundCplx(),
 
             typePair(runtime.dtComplex34, runtime.dtReal34),
             typePair(runtime.dtReal34, runtime.dtReal34),
             typePair(runtime.dtShortInteger, runtime.dtReal34),
             typePair(runtime.dtLongInteger, runtime.dtReal34),
-            => roundReal(),
+            => math_integer_division_cells.roundReal(),
 
             // when SI vs Real or Complex, cast to real
             typePair(runtime.dtComplex34, runtime.dtShortInteger),
             typePair(runtime.dtReal34, runtime.dtShortInteger),
             => {
                 convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-                roundReal();
+                math_integer_division_cells.roundReal();
             },
 
             // when LI vs Real or Complex, cast to real
@@ -826,18 +822,18 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
             typePair(runtime.dtReal34, runtime.dtLongInteger),
             => {
                 runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
-                roundReal();
+                math_integer_division_cells.roundReal();
             },
 
             typePair(runtime.dtReal34, runtime.dtTime) => {
-                roundTime();
+                math_integer_division_cells.roundTime();
                 runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             },
 
             typePair(runtime.dtTime, runtime.dtShortInteger) => {
                 convertShortIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
                 runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-                roundTime();
+                math_integer_division_cells.roundTime();
                 runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             },
 
@@ -849,18 +845,18 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
                     runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
                 }
                 runtime.convertReal34RegisterToTimeRegister(runtime.REGISTER_X, runtime.REGISTER_X);
-                roundTime();
+                math_integer_division_cells.roundTime();
                 runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             },
 
             typePair(runtime.dtShortInteger, runtime.dtTime),
             typePair(runtime.dtLongInteger, runtime.dtTime),
             => {
-                roundTime();
+                math_integer_division_cells.roundTime();
                 runtime.convertTimeRegisterToReal34Register(runtime.REGISTER_X, runtime.REGISTER_X);
             },
 
-            typePair(runtime.dtTime, runtime.dtTime) => roundTime(),
+            typePair(runtime.dtTime, runtime.dtTime) => math_integer_division_cells.roundTime(),
 
             else => {
                 fnSwapX(regist);

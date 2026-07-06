@@ -17,6 +17,12 @@ const const39_ln2 = consts.const39_ln2;
 // body is ported unconditionally.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -96,20 +102,9 @@ inline fn realSquareRootB(op: *align(1) const real_t, res: *real_t, ctxt: *realC
     _ = decNumberSquareRoot(res, op, ctxt);
 }
 
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
 
 // Cross-domain externs.
-extern fn WP34S_Ln(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Ln1P(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_ExpM1(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_Zeta(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
-extern fn WP34S_ComplexGamma(real: *const real_t, imag: *const real_t, res_real: *real_t, res_imag: *real_t, real_context: *realContext_t) void;
-extern fn PowerComplex(base_real: *align(1) const real_t, base_imag: *align(1) const real_t, exponent_real: *align(1) const real_t, exponent_imag: *align(1) const real_t, result_real: *real_t, result_imag: *real_t, real_context: *realContext_t) u8;
-extern fn mulComplexComplex(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
-extern fn divComplexComplex(nr: *const real_t, ni: *const real_t, dr: *const real_t, di: *const real_t, qr: *real_t, qi: *real_t, real_context: *realContext_t) void;
-extern fn realPolarToRectangular(magnitude: *align(1) const real_t, angle: *const real_t, real: *real_t, imag: *real_t, real_context: *realContext_t) void;
 extern fn realToInt32C47(source: *const real_t, err: ?*bool) i32;
 
 fn zeta_calc_complex(reg4: *real_t, reg5: *real_t, reg6: *real_t, reg7: *real_t, realContext: *realContext_t) void {
@@ -127,15 +122,15 @@ fn zeta_calc_complex(reg4: *real_t, reg5: *real_t, reg6: *real_t, reg7: *real_t,
     realCopyAbs(reg7, &p);
     realMul(const39_piOn2(), &p, &q, realContext);
     realMul(&p, const_2(), &p, realContext);
-    WP34S_Ln1P(&p, &p, realContext);
+    math_wp34s.WP34S_Ln1P(&p, &p, realContext);
     realAdd(&q, &p, &p, realContext);
     realCopy(const_3(), &q);
     q.exponent += 10;
-    WP34S_Ln(&q, &q, realContext);
+    math_wp34s.WP34S_Ln(&q, &q, realContext);
     realAdd(&p, &q, &p, realContext);
     realSquareRootB(const_8(), &q, realContext);
     realAddB(&q, const_3(), &q, realContext);
-    WP34S_Ln(&q, &q, realContext);
+    math_wp34s.WP34S_Ln(&q, &q, realContext);
     realDivide(&p, &q, &p, realContext);
     realToIntegralValue(&p, &p, DEC_ROUND_DOWN, realContext);
     realAddB(&p, const_1(), &p, realContext);
@@ -159,7 +154,7 @@ fn zeta_calc_complex(reg4: *real_t, reg5: *real_t, reg6: *real_t, reg7: *real_t,
 
         realMinus(reg6, &q, realContext);
         realMinus(reg7, &p, realContext);
-        _ = PowerComplex(&reg0, const_0(), &q, &p, &s, &r, realContext);
+        _ = math_power.PowerComplex(&reg0, const_0(), &q, &p, &s, &r, realContext);
         realChangeSign(reg5);
         realMultiply(reg4, reg5, &p, realContext);
         realMultiply(&p, &r, &r, realContext);
@@ -180,23 +175,23 @@ fn zeta_calc_complex(reg4: *real_t, reg5: *real_t, reg6: *real_t, reg7: *real_t,
         realAdd(reg4, &p, reg4, realContext);
         realSubB(&reg0, const_1(), &reg0, realContext);
 
-        if (!realCompareGreaterThan(&reg0, const_0())) break;
+        if (!math_comparison_reals.realCompareGreaterThan(&reg0, const_0())) break;
     }
     realDivide(&reg8, reg4, &reg8, realContext);
     realDivide(&reg9, reg4, &reg9, realContext);
     realSubB(const_1(), reg6, &p, realContext);
     realMul(const39_ln2(), &p, &p, realContext);
-    WP34S_ExpM1(&p, &reg1, realContext);
+    math_wp34s.WP34S_ExpM1(&p, &reg1, realContext);
     realMinus(reg7, &p, realContext);
     realMul(&p, const39_ln2(), &p, realContext);
-    realPolarToRectangular(const_1(), &p, &q, &p, realContext);
+    math_transform_complex_helpers.realPolarToRectangular(const_1(), &p, &q, &p, realContext);
     realSubB(&q, const_1(), &r, realContext);
     realMultiply(&q, &reg1, &q, realContext);
     realMultiply(&reg1, &p, &s, realContext);
     realAdd(&s, &p, &s, realContext);
     realAdd(&q, &r, &q, realContext);
 
-    divComplexComplex(&reg8, &reg9, &q, &s, reg4, reg5, realContext);
+    math_division_cells.divComplexComplex(&reg8, &reg9, &q, &s, reg4, reg5, realContext);
 }
 
 pub export fn ComplexZeta(xReal: *const real_t, xImag: *const real_t, resReal: *real_t, resImag: *real_t, realContext: *realContext_t) callconv(.c) void {
@@ -222,7 +217,7 @@ pub export fn ComplexZeta(xReal: *const real_t, xImag: *const real_t, resReal: *
     realCopy(xImag, &reg7);
     realCopy(xReal, &reg10);
     realCopy(xImag, &reg11);
-    if (realCompareGreaterEqual(xReal, const_1on2())) {
+    if (math_comparison_reals.realCompareGreaterEqual(xReal, const_1on2())) {
         zeta_calc_complex(&reg4, &reg5, &reg6, &reg7, realContext);
         realCopy(&reg4, resReal);
         realCopy(&reg5, resImag);
@@ -234,18 +229,18 @@ pub export fn ComplexZeta(xReal: *const real_t, xImag: *const real_t, resReal: *
         realSubB(const_0(), &reg11, &p, realContext);
         realMul(&q, const_1on2(), &q, realContext);
         realMul(&p, const_1on2(), &p, realContext);
-        WP34S_ComplexGamma(&q, &p, &s, &r, realContext);
-        mulComplexComplex(&s, &r, &reg4, &reg5, &reg4, &reg5, realContext);
+        math_wp34s.WP34S_ComplexGamma(&q, &p, &s, &r, realContext);
+        math_multiplication_cells.mulComplexComplex(&s, &r, &reg4, &reg5, &reg4, &reg5, realContext);
         realCopy(&reg10, &q);
         realCopy(&reg11, &p);
         realMul(&q, const_1on2(), &reg10, realContext);
         realMul(&p, const_1on2(), &reg11, realContext);
         realSubB(&q, const_1on2(), &q, realContext);
-        _ = PowerComplex(const39_pi(), const_0(), &q, &p, &s, &r, realContext);
-        mulComplexComplex(&s, &r, &reg4, &reg5, &reg4, &reg5, realContext);
-        WP34S_ComplexGamma(&reg10, &reg11, &q, &p, realContext);
+        _ = math_power.PowerComplex(const39_pi(), const_0(), &q, &p, &s, &r, realContext);
+        math_multiplication_cells.mulComplexComplex(&s, &r, &reg4, &reg5, &reg4, &reg5, realContext);
+        math_wp34s.WP34S_ComplexGamma(&reg10, &reg11, &q, &p, realContext);
 
-        divComplexComplex(&reg4, &reg5, &q, &p, resReal, resImag, realContext);
+        math_division_cells.divComplexComplex(&reg4, &reg5, &q, &p, resReal, resImag, realContext);
     }
 }
 
@@ -257,7 +252,7 @@ fn doRealZeta() callconv(.c) void {
         return;
     }
 
-    WP34S_Zeta(&x, &r, &runtime.ctxtReal39);
+    math_wp34s.WP34S_Zeta(&x, &r, &runtime.ctxtReal39);
     runtime.convertRealToResultRegister(&r, REGISTER_X, amNone);
 }
 

@@ -14,6 +14,10 @@ const const_NaN = consts.const_NaN;
 // unconditionally.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -66,11 +70,8 @@ inline fn const_plusInfinity() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 // real ops / predicates / copy. Some are C macros; reproduce them.
-extern fn realExp(x: *const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn realSetPlusInfinity(value: *real_t) void;
 extern fn realSetMinusInfinity(value: *real_t) void;
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
-extern fn realCompareGreaterEqual(number1: *const real_t, number2: *const real_t) bool;
 extern fn decNumberCopy(res: *real_t, source: *const real_t) *real_t;
 extern fn decNumberRemainder(res: *real_t, lhs: *const real_t, rhs: *const real_t, ctxt: *realContext_t) *real_t;
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
@@ -90,10 +91,8 @@ inline fn realSetNegativeSign(source: *real_t) void {
 }
 
 // Complex helpers.
-extern fn divRealComplex(numer: *const real_t, denom_real: *const real_t, denom_imag: *const real_t, quotient_real: *real_t, quotient_imag: *real_t, real_context: *realContext_t) void;
 
 // Cross-domain power helper (power.c owner).
-extern fn PowerReal(y: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) void;
 
 // Result-register conversions accepting *align(1) const (blob constants here).
 extern fn convertRealToResultRegister(real: *align(1) const real_t, dest: runtime.calcRegister_t, angle_mode: angularMode_t) void;
@@ -195,7 +194,7 @@ fn xthRootComplex(aa: *const real_t, bb: *const real_t, cc: *const real_t, dd: *
         return;
     }
 
-    divRealComplex(const_1(), &c, &d, &c, &d, realContext);
+    math_division_cells.divRealComplex(const_1(), &c, &d, &c, &d, realContext);
 
     // From power.c
     realRectangularToPolar(&a, &b, &a, &theta, realContext);
@@ -205,7 +204,7 @@ fn xthRootComplex(aa: *const real_t, bb: *const real_t, cc: *const real_t, dd: *
     realChangeSign(&theta);
     realMultiply(&a, &c, &a, realContext);
     realFMA(&theta, &d, &a, &a, realContext);
-    realExp(&a, &c, realContext);
+    math_command_wrappers.realExp(&a, &c, realContext);
     realPolarToRectangular(const_1(), &b, &a, &b, realContext);
     realMultiply(&c, &b, &d, realContext);
     realMultiply(&c, &a, &c, realContext);
@@ -229,26 +228,26 @@ pub export fn xthRootReal(yy: *real_t, xx: *real_t, realContext: *realContext_t)
     telltale = 0;
     if (getSystemFlag(FLAG_SPCRES)) {
         //0
-        if (((realIsZero(&y) and (realCompareGreaterEqual(&x, const_0()) or (realIsInfinite(&x) and realIsPositive(&x))))) or ((realIsInfinite(&y) and realIsPositive(&y)) and (realCompareLessThan(&x, const_0()) and (!realIsInfinite(&x))))) {
+        if (((realIsZero(&y) and (math_comparison_reals.realCompareGreaterEqual(&x, const_0()) or (realIsInfinite(&x) and realIsPositive(&x))))) or ((realIsInfinite(&y) and realIsPositive(&y)) and (realCompareLessThan(&x, const_0()) and (!realIsInfinite(&x))))) {
             telltale += 1;
             realSetZero(&o);
         }
 
         //1
-        if (((realCompareGreaterEqual(&y, const_0()) or (realIsInfinite(&y) and realIsPositive(&y))) and realIsInfinite(&x))) {
+        if (((math_comparison_reals.realCompareGreaterEqual(&y, const_0()) or (realIsInfinite(&y) and realIsPositive(&y))) and realIsInfinite(&x))) {
             telltale += 2;
             realSetOne(&o);
         }
 
         //inf
-        if ((realIsZero(&y) and (realCompareLessThan(&x, const_0()) and (!realIsInfinite(&x)))) or ((realIsInfinite(&y) and realIsPositive(&y)) and (realCompareGreaterEqual(&x, const_0()) and (!realIsInfinite(&x))))) {
+        if ((realIsZero(&y) and (realCompareLessThan(&x, const_0()) and (!realIsInfinite(&x)))) or ((realIsInfinite(&y) and realIsPositive(&y)) and (math_comparison_reals.realCompareGreaterEqual(&x, const_0()) and (!realIsInfinite(&x))))) {
             telltale += 4;
             realSetPlusInfinity(&o);
         }
 
         //NaN
         realDivideRemainder(&x, const_2(), &r, realContext);
-        if ((realIsNaN(&x) or realIsNaN(&y)) or ((realCompareLessThan(&y, const_0()) or (realIsInfinite(&y) and realIsNegative(&y))) and (realIsInfinite(&x))) or ((realCompareLessThan(&y, const_0()) and (!realIsInfinite(&y)) and (!realIsAnInteger(&x)))) or ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x)))) {
+        if ((realIsNaN(&x) or realIsNaN(&y)) or ((realCompareLessThan(&y, const_0()) or (realIsInfinite(&y) and realIsNegative(&y))) and (realIsInfinite(&x))) or ((realCompareLessThan(&y, const_0()) and (!realIsInfinite(&y)) and (!realIsAnInteger(&x)))) or ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x)))) {
             telltale += 8;
             realSetNaN(&o);
         }
@@ -256,7 +255,7 @@ pub export fn xthRootReal(yy: *real_t, xx: *real_t, realContext: *realContext_t)
         //-inf
         realAdd(&x, const_1(), &r, realContext);
         realDivideRemainder(&r, const_2(), &r, realContext);
-        if ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x))) {
+        if ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x))) {
             telltale += 16;
             realSetMinusInfinity(&o);
         }
@@ -281,7 +280,7 @@ pub export fn xthRootReal(yy: *real_t, xx: *real_t, realContext: *realContext_t)
     if (realIsPositive(&y)) { // positive base, no problem, get the power function y^(1/x)
         realDivide(const_1(), &x, &x, realContext);
 
-        PowerReal(&y, &x, &x, realContext);
+        math_power.PowerReal(&y, &x, &x, realContext);
         convertRealToResultRegister(&x, REGISTER_X, amNone);
         return;
     } // fall through, but returned
@@ -304,7 +303,7 @@ pub export fn xthRootReal(yy: *real_t, xx: *real_t, realContext: *realContext_t)
                     realDivide(const_1(), &x, &x, realContext);
 
                     realSetPositiveSign(&y);
-                    PowerReal(&y, &x, &x, realContext);
+                    math_power.PowerReal(&y, &x, &x, realContext);
                     realSetNegativeSign(&x);
 
                     convertRealToResultRegister(&x, REGISTER_X, amNone);

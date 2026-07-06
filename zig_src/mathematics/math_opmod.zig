@@ -13,6 +13,7 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const abi = @import("abi");
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
@@ -49,7 +50,6 @@ inline fn const_1() *const real_t {
     return runtime.z47_math_wrappers_const_1();
 }
 
-extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
 extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
 inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
@@ -314,7 +314,7 @@ pub export fn opModLonILonIReal(mode: u16) linksection(runtime.code_section) cal
 
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
+    } else if (math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
         longInteger_mulmod(&z, 0, &y, 0, &x, exp_x, &x, &exponent);
         toRealResult(&x, exponent);
     } else {
@@ -388,7 +388,7 @@ pub export fn opModLonIRealReal(mode: u16) linksection(runtime.code_section) cal
 
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_Y) != amNone) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
+    } else if (math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
         longInteger_mulmod(&z, 0, &y, exp_y, &x, exp_x, &x, &exponent);
         toRealResult(&x, exponent);
     } else {
@@ -519,7 +519,7 @@ pub export fn opModRealLonIReal(mode: u16) linksection(runtime.code_section) cal
 
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_Z) != amNone) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
+    } else if (math_comparison_reals.realCompareGreaterThan(&xx, const_1()) and longIntegerIsPositive(&y) and longIntegerIsPositive(&z)) {
         longInteger_mulmod(&z, exp_z, &y, 0, &x, exp_x, &x, &exponent);
         toRealResult(&x, exponent);
     } else {
@@ -587,7 +587,7 @@ pub export fn opModRealRealReal(mode: u16) linksection(runtime.code_section) cal
     real34ToReal(registerReal34Data(REGISTER_Z), &z);
     if ((mode == OPMOD_POWER) or (getRegisterAngularMode(REGISTER_Z) != amNone) or (getRegisterAngularMode(REGISTER_Y) != amNone) or (getRegisterAngularMode(REGISTER_X) != amNone)) {
         opModError(mode);
-    } else if (realCompareGreaterThan(&x, const_1()) and realCompareGreaterThan(&y, const_0()) and realCompareGreaterThan(&z, const_0())) {
+    } else if (math_comparison_reals.realCompareGreaterThan(&x, const_1()) and math_comparison_reals.realCompareGreaterThan(&y, const_0()) and math_comparison_reals.realCompareGreaterThan(&z, const_0())) {
         realMultiply(&z, &y, &z, &runtime.ctxtReal75);
         WP34S_Mod(&z, &x, &x, &runtime.ctxtReal75);
         convertRealToReal34ResultRegister(&x, REGISTER_X);

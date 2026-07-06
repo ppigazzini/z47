@@ -1,13 +1,7 @@
 const circular_trig_owned = @import("math_circular_trig.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
-extern fn cosComplex(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) callconv(.c) void;
 
 fn fibonacciReal(n: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) void {
     var a: runtime.real_t = undefined;
@@ -38,7 +32,7 @@ fn fibonacciComplex(
     _ = runtime.PowerComplex(runtime.z47_math_wrappers_const_phi(), runtime.z47_math_wrappers_const_0(), n_real, n_imag, &a_real, &a_imag, real_context);
     runtime.divRealComplex(runtime.z47_math_wrappers_const_1(), &a_real, &a_imag, &b_real, &b_imag, real_context);
     runtime.mulComplexComplex(runtime.z47_math_wrappers_const_pi(), runtime.z47_math_wrappers_const_0(), n_real, n_imag, res_real, res_imag, real_context);
-    cosComplex(res_real, res_imag, res_real, res_imag, real_context);
+    math_command_wrappers.cosComplex(res_real, res_imag, res_real, res_imag, real_context);
     runtime.mulComplexComplex(&b_real, &b_imag, res_real, res_imag, &b_real, &b_imag, real_context);
     runtime.realSquareRoot(runtime.z47_math_wrappers_const_5(), res_real, real_context);
     runtime.realSetZero(res_imag);

@@ -22,6 +22,7 @@ const const_100 = consts.const_100;
 // calls them). The commented-out alternate rsdReal in the C is dropped.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -120,8 +121,6 @@ extern fn real34FromDmsToDeg(angleDms: *align(1) const real34_t, angleDec: *alig
 extern fn checkDms34(angle34Dms: *align(1) real34_t) void;
 
 const U16Fn = ?*const fn (u16) callconv(.c) void;
-extern fn elementwiseRema_UInt16(f: U16Fn, param: u16) void;
-extern fn elementwiseCxma_UInt16(f: U16Fn, param: u16) void;
 
 extern var updateDisplayValueX: bool;
 extern var displayValueX: [80]u8;
@@ -287,11 +286,11 @@ pub export fn rsdTime(digits: u16) linksection(runtime.code_section) callconv(.c
 // rsdRema / rsdCxma
 // ===========================================================================
 pub export fn rsdRema(digits: u16) linksection(runtime.code_section) callconv(.c) void {
-    elementwiseRema_UInt16(rsdReal, digits);
+    math_matrix_elementwise.elementwiseRema_UInt16(rsdReal, digits);
 }
 
 pub export fn rsdCxma(digits: u16) linksection(runtime.code_section) callconv(.c) void {
-    elementwiseCxma_UInt16(rsdCplx, digits);
+    math_matrix_elementwise.elementwiseCxma_UInt16(rsdCplx, digits);
 }
 
 // ===========================================================================

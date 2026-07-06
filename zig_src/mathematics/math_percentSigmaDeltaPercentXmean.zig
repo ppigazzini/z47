@@ -8,8 +8,8 @@ const const_1 = consts.const_1;
 // UNCOVERED by the testSuite (no gate); faithful line-by-line translation
 // preserving the exact real_t operation order.
 //
-// percentSigma() is the committed Zig owner (math_percentSigma.zig);
-// deltaPercentXmeanReal() is the sibling Zig owner
+// math_percentSigma.percentSigma() is the committed Zig owner (math_percentSigma.zig);
+// math_deltaPercentXmean.deltaPercentXmeanReal() is the sibling Zig owner
 // (math_deltaPercentXmean.zig). Both are exported with C linkage, so
 // they are extern'd here exactly as the C called them. fnPcSigmaDeltaPcXmean
 // is the only .h-declared command. The EXTRA_INFO_ON_CALC_ERROR hint becomes
@@ -19,6 +19,8 @@ const const_1 = consts.const_1;
 // offset 4368.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_deltaPercentXmean = @import("math_deltaPercentXmean.zig"); // M-callconv: Zig-to-Zig
+const math_percentSigma = @import("math_percentSigma.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -48,8 +50,6 @@ extern var ctxtReal75: realContext_t;
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 
 // Sibling Zig owners, exported with C linkage.
-extern fn percentSigma(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) bool;
-extern fn deltaPercentXmeanReal(xReal: *real_t, rReal: *real_t, realContext: *realContext_t) bool;
 
 // Blob constants.
 const cstR = abi.constants.cstRAligned;
@@ -75,12 +75,12 @@ pub export fn fnPcSigmaDeltaPcXmean(unusedButMandatoryParameter: u16) linksectio
 
     liftStack();
 
-    if (percentSigma(&xReal, &rReal, &ctxtReal75)) {
+    if (math_percentSigma.percentSigma(&xReal, &rReal, &ctxtReal75)) {
         reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&rReal, REGISTER_Y);
     }
 
-    if (deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
+    if (math_deltaPercentXmean.deltaPercentXmeanReal(&xReal, &rReal, &ctxtReal75)) {
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&rReal, REGISTER_X);
     }

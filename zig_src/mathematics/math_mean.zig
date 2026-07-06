@@ -23,6 +23,7 @@ const const_1 = consts.const_1;
 // TI_* values are the real defines.h values.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -54,7 +55,6 @@ const moreInfoOnError = runtime.moreInfoOnError;
 
 extern var ctxtReal39: realContext_t;
 
-extern fn realExp(rhs: *const real_t, res: *real_t, set: *realContext_t) void;
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 extern var statisticalSumsPointer: ?[*]real_t;
 
@@ -139,7 +139,7 @@ pub export fn fnMeanX(unusedButMandatoryParameter: u16) linksection(runtime.code
 }
 
 fn geometricMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime.code_section) callconv(.c) void {
-    realExp(operand, result, &ctxtReal39);
+    math_command_wrappers.realExp(operand, result, &ctxtReal39);
 }
 
 pub export fn fnGeometricMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {

@@ -7,6 +7,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
@@ -16,8 +17,6 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 
 // Owned by math_matrix_lifecycle.zig (B1).
-extern fn copyRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) callconv(.c) void;
-extern fn copyComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) callconv(.c) void;
 
 const realElems = abi.matrixRealElems;
 const complexElems = abi.matrixComplexElems;
@@ -44,7 +43,7 @@ fn realMatrixSwap(matrix: *const real34Matrix_t, res: *real34Matrix_t, a: u16, b
     const limit = if (is_row) rows else cols;
 
     if (!samePtr(matrix, res)) {
-        copyRealMatrix(matrix, res);
+        math_matrix_lifecycle.copyRealMatrix(matrix, res);
     }
     if (res.matrixElements != null) {
         if ((a < limit) and (b < limit) and (a != b)) {
@@ -71,7 +70,7 @@ fn complexMatrixSwap(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, 
     const limit = if (is_row) rows else cols;
 
     if (!samePtr(matrix, res)) {
-        copyComplexMatrix(matrix, res);
+        math_matrix_lifecycle.copyComplexMatrix(matrix, res);
     }
     if (res.matrixElements != null) {
         if ((a < limit) and (b < limit) and (a != b)) {
