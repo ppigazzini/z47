@@ -96,6 +96,32 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_decode = @import("frontier_decode.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_fractions = @import("frontier_fractions.zig"); // M-callconv: Zig-to-Zig
+const frontier_integers = @import("frontier_integers.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_recall = @import("frontier_recall.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -599,22 +625,24 @@ extern var gapItemRight: u16;
 
 // fnCFGsettings is owned by frontier.zig (renamed-away); declared extern, not
 // re-exported.
-extern fn fnCFGsettings(unusedButMandatoryParameter: u16) void;
 
 // ===========================================================================
 // Function externs (cross-owner / runtime / libc / decNumber / GMP).
 // ===========================================================================
 extern fn getSystemFlag(sf: c_int) bool_t;
+// M-callconv: deferred — addons' stale signature (frontSpace: [*c]const u8, nim)
+// differs from frontier_display's real34ToDisplayString (frontSpace: bool_t,
+// limitIrfrac); a faithful @import conversion needs semantic reconciliation, so
+// this one symbol stays extern to preserve exact current behavior.
+extern fn real34ToDisplayString(value34: *align(1) const real34_t, angularMode: angularMode_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayDigits: c_int, allowLEDOff: bool_t, frontSpace: [*c]const u8, nim: bool_t) void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
-extern fn fnRefreshState() void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*c]u8;
 extern fn setRegisterDataPointer(regist: calcRegister_t, p: [*c]u8) void;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn setRegisterDataType(regist: calcRegister_t, dataType: u32, tag: u32) void;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool_t, padWithBlanks: bool_t) [*c]const u8;
 // freeRegisterData is a macro = freeC47Blocks(ptr, getRegisterFullSizeInBlocks).
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
@@ -623,44 +651,19 @@ inline fn freeRegisterData(regist: calcRegister_t) void {
 }
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeInBytes: u32, tag: u32) void;
 extern fn allocC47Blocks(numberOfBlocks: u32) [*c]u8;
-extern fn currentMenu() i16;
-extern fn showSoftmenu(id: i16) void;
-extern fn popSoftmenu() void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
-extern fn displayBugScreen(msg: [*c]const u8) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
-extern fn runFunction(func: i16) void;
-extern fn reallyRunFunction(func: i16, param: i16) void;
-extern fn clearRegisterLine(line: calcRegister_t, b: bool_t, c: bool_t) void;
-extern fn refreshScreen(source: u16) void;
-extern fn calcModeAim(unusedButMandatoryParameter: u16) void;
-extern fn fnEditMatrix(unusedButMandatoryParameter: u16) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
-extern fn fnBst(unusedButMandatoryParameter: u16) void;
 extern fn liftStack() void;
 extern fn saveLastX() bool_t;
 extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardString: [*c]u8) void;
 
 // edit / pem helpers
-extern fn pemAlphaEdit(unusedButMandatoryParameter: u16) void;
-extern fn pemAddNumber(item: i16, end: bool_t) void;
-extern fn decodeOneStep(step: [*c]const u8) void;
-extern fn deleteStepsFromTo(from: [*c]u8, to: [*c]u8) void;
-extern fn findNextStep(step: [*c]const u8) [*c]u8;
-// isAtEndOfProgram is a static inline = checkOpCodeOfStep(step, ITM_END).
-extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool_t;
+// isAtEndOfProgram is a static inline = frontier_manage.checkOpCodeOfStep(step, ITM_END).
 const ITM_END: u16 = 1458;
 inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
-    return checkOpCodeOfStep(step, ITM_END);
+    return @intFromBool(frontier_manage.checkOpCodeOfStep(step, ITM_END));
 }
-extern fn isAtEndOfPrograms(step: [*c]const u8) bool_t;
-extern fn isFunctionOldParam16(func: i16) bool_t;
-extern fn tamEnterMode(func: i16) void;
-extern fn tamProcessInput(item: i16) void;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
-extern fn stringLastGlyph(str: [*c]const u8) i16;
 // regKStoC is a static inline (registers.h).
 const FIRST_STAT_REGISTER_IN_KS_CODE: u16 = 211;
 const NUMBER_OF_LOCAL_REGISTERS: u16 = 99;
@@ -673,24 +676,10 @@ inline fn regKStoC(regKS: u16) u16 {
     const r: i32 = k - a * @as(i32, NUMBER_OF_LOCAL_REGISTERS) + b * (@as(i32, FIRST_LOCAL_REGISTER) - @as(i32, FIRST_LOCAL_REGISTER_IN_KS_CODE));
     return @intCast(@as(i16, @truncate(r)));
 }
-extern fn scrollPemBackwards() void;
 
 // nim / aim / display string helpers
-extern fn nimBufferToDisplayBuffer(nimBuffer: [*c]const u8, displayBuffer: [*c]u8) void;
-extern fn addItemToNimBuffer(item: i16) void;
-extern fn addItemToBuffer(item: i16) void;
-extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, nonFancyTimeFormat: bool_t) void;
-extern fn real34ToDisplayString(value34: *align(1) const real34_t, angularMode: angularMode_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayDigits: c_int, allowLEDOff: bool_t, frontSpace: [*c]const u8, nim: bool_t) void;
-extern fn supNumberToDisplayString(supNumber: i32, displayString: [*c]u8, displayValueString: [*c]u8, insertGap: bool_t) void;
-extern fn subNumberToDisplayString(subNumber: i32, displayString: [*c]u8, displayValueString: [*c]u8) void;
-extern fn exponentToDisplayString(exponent: i32, displayString: [*c]u8, displayValueString: [*c]u8, nimMode: bool_t) void;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
 
 // number / register conversions
-extern fn fraction(regist: calcRegister_t, sign: *i16, intPart: *u64, numer: *u64, denom: *u64, lessEqualGreater: *i16) void;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: [*c]mpz_struct) void;
-extern fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strSize: u32) void;
-extern fn longIntegerToDisplayString(lgInt: [*c]const mpz_struct, displayString: [*c]u8, strLg: i32, maxWidth: i16, maxExp: i16, allowLARGELI: bool_t) void;
 // stringToLongInteger is a static inline = mpz_set_str.
 extern fn __gmpz_set_str(rop: [*c]mpz_struct, str: [*c]const u8, base: c_int) c_int;
 inline fn stringToLongInteger(str: [*c]const u8, base: u32, lgInt: [*c]mpz_struct) void {
@@ -701,21 +690,11 @@ extern fn __gmpz_set_si(rop: [*c]mpz_struct, op: c_long) void;
 inline fn int32ToLongInteger(value: i32, lgInt: [*c]mpz_struct) void {
     __gmpz_set_si(lgInt, value);
 }
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: [*c]const mpz_struct, regist: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToShortIntegerRegister(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn convertShortIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: [*c]mpz_struct) void;
-extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToReal34(regist: calcRegister_t, r: *real34_t) void;
-extern fn convertLongIntegerRegisterToReal(regist: calcRegister_t, r: *real_t, ctx: *realContext_t) void;
 // longIntegerCompare is a static inline = mpz_cmp.
 extern fn __gmpz_cmp(a: [*c]const mpz_struct, b: [*c]const mpz_struct) c_int;
 inline fn longIntegerCompare(a: [*c]const mpz_struct, b: [*c]const mpz_struct) i32 {
     return __gmpz_cmp(a, b);
 }
-extern fn convertDateRegisterToReal34Register(source: calcRegister_t, dest: calcRegister_t) void;
-extern fn getRegisterAsComplexOrReal(reg: calcRegister_t, r: *real_t, c: *real_t, cmplx: *bool_t) bool_t;
 // stringToReal34 is a macro = decQuadFromString(dst, src, &ctxtReal34).
 extern fn decQuadFromString(r: *align(1) real34_t, str: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
 inline fn stringToReal34(str: [*c]const u8, r: *align(1) real34_t) void {
@@ -724,7 +703,6 @@ inline fn stringToReal34(str: [*c]const u8, r: *align(1) real34_t) void {
 extern fn stringToInt32(str: [*c]const u8) i32;
 
 // short integer / base
-extern fn fnChangeBase(base: u16) void;
 extern fn fnRoundi(unusedButMandatoryParameter: u16) void;
 
 // arithmetic on registers (commands)
@@ -732,10 +710,6 @@ extern fn fnMultiply(unusedButMandatoryParameter: u16) void;
 extern fn fnDivide(unusedButMandatoryParameter: u16) void;
 extern fn adjustResult(result: calcRegister_t, dropY: bool_t, setCpxRes: bool_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn fnToReal(unusedButMandatoryParameter: u16) void;
-extern fn fnToHr(unusedButMandatoryParameter: u16) void;
-extern fn fnHRtoTM(unusedButMandatoryParameter: u16) void;
-extern fn fnCvtFromCurrentAngularMode(am: u16) void;
-extern fn fnCvtToCurrentAngularMode(am: u16) void;
 // setRegisterAngularMode / setComplex* are setRegisterTag macros (registers.h).
 inline fn setRegisterAngularMode(regist: calcRegister_t, am: u16) void {
     setRegisterTag(regist, am);
@@ -747,14 +721,8 @@ inline fn setComplexRegisterPolarMode(regist: calcRegister_t, pm: u16) void {
     const base: u32 = if ((pm & amPolar) != 0) (getRegisterTag(regist) & amAngleMask) else @as(u32, @intCast(amNone));
     setRegisterTag(regist, base | (pm & amPolar));
 }
-extern fn fnSetWordSize(size: u16) void;
-extern fn fnIntegerMode(mode: u16) void;
-extern fn fnRecall(inp: i16) void;
 
 // complex / matrix
-extern fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) void;
-extern fn convertComplexToResultRegisterRPangle(real: *const real_t, imag: *const real_t, dest: calcRegister_t, angl: angularMode_t, polarTag: u8) void;
-extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, tag: angularMode_t) void;
 extern fn fnToPolar2(unusedButMandatoryParameter: u16) void;
 extern fn fnKeyCC(item: u16) void;
 extern fn chsCplx() void;
@@ -770,19 +738,13 @@ extern fn convert3DtoCYL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t
 extern fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, th2: *real_t, am: u8, ctx: *realContext_t) void;
 extern fn VtoAngleMode(angleMode: angularMode_t) bool_t;
 extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
-extern fn convertAngleFromTo(a: *real_t, from: angularMode_t, to: angularMode_t, ctx: *realContext_t) void;
 
 // IRFRAC helpers
 extern fn irfractionTolerence(ii: i32, tol: *real_t) void;
-extern fn _numerator(numer: u64, displayString: [*c]u8, endingZero: *i16) void;
-extern fn _denominator(denom: u64, displayString: [*c]u8, endingZero: *i16) void;
-extern fn realToInt32C47(r: *const real_t, err: ?*bool_t) i32;
-extern fn realToUint32C47(r: *const real_t, err: ?*bool_t) u32;
 extern fn realCompareLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareGreaterThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareAbsLessThan(a: *const real_t, b: *const real_t) bool_t;
 extern fn realCompareAbsGreaterThan(a: *const real_t, b: *const real_t) bool_t;
-extern fn realToIntegralValue(a: *const real_t, res: *real_t, round: c_int, ctx: *realContext_t) void;
 // real* sign/zero/compare are decNumber macros (realType.h), reproduced inline.
 extern fn decNumberCompare(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 inline fn realCompare(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
@@ -809,8 +771,6 @@ inline fn realSetNegativeSign(operand: *real_t) void {
 }
 
 // MyMenu helpers
-extern fn _assignItem(menuItem: *userMenuItem_t) void;
-extern fn assignGetName1() void;
 
 // glyph painters runtime. setBlackPixel/setWhitePixel are static inline over
 // bitblt24 (screen.h); placePixel is a real function. On firmware bitblt24 is a
@@ -834,9 +794,7 @@ inline fn setBlackPixel(x: u32, y: u32) void {
 inline fn setWhitePixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
-extern fn placePixel(x: u32, y: u32) void;
 extern fn _Buzz(a: i32, b: i32) void;
-extern fn force_refresh(mode: u8) void;
 extern fn getBeepVolume() u16;
 extern fn fnSetVolume(volume: u16) void;
 extern fn resetShiftState() void;
@@ -848,7 +806,6 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 extern fn strtof(s: [*c]const u8, end: ?*[*c]u8) f32;
 extern fn abs(v: c_int) c_int;
 
@@ -868,7 +825,6 @@ extern fn decQuadDivide(r: *align(1) real34_t, a: *align(1) const real34_t, b: *
 extern fn decQuadRemainder(r: *align(1) real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
 extern fn decQuadToIntegralValue(r: *align(1) real34_t, a: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *align(1) real34_t;
 extern fn decQuadCompare(r: *align(1) real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
-extern fn real34FromDegToDms(a: *const real34_t, res: *real34_t) void;
 extern var ctxtReal34: realContext_t;
 
 // real (decNumber) helpers / macros
@@ -1113,7 +1069,7 @@ fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(p)) {
         stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(p));
     }
-    _ = xcopy(tmpStringLabelOrVariableName, p, stringLength);
+    _ = frontier_char_string.xcopy(tmpStringLabelOrVariableName, p, stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -1124,7 +1080,7 @@ pub export fn _fractionToString(regist: calcRegister_t, displayString: [*c]u8, l
     var numer: u64 = undefined;
     var denom: u64 = undefined;
 
-    fraction(regist, &sign, &intPart, &numer, &denom, lessEqualGreater);
+    _ = frontier_fractions.fraction(regist, &sign, &intPart, &numer, &denom, lessEqualGreater);
 
     if (getSystemFlag(FLAG_PROPFR) != 0) { // a b/c
         abi.fmtCStr(displayString, "{s}{d} {d}/{d}", .{ @as([*:0]const u8, if (sign == -1) @as([*c]const u8, "-") else @as([*c]const u8, "+")), @as(u32, @truncate(intPart)), @as(u32, @truncate(numer)), @as(u32, @truncate(denom)) });
@@ -1147,7 +1103,7 @@ pub export fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u
 
     if (base <= 1 or base >= 17) {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "_shortIntegerToString", @as(c_int, base), "base" });
-        displayBugScreen(errorMessage);
+        frontier_error.displayBugScreen(errorMessage);
         base = 10;
     }
 
@@ -1167,7 +1123,7 @@ pub export fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u
             number &= ~shortIntegerSignBit;
         } else {
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;
     }
@@ -1218,7 +1174,7 @@ fn _hmsTimeToReal() void {
     var j: i16 = 0;
     var decimalflag: bool = false;
 
-    timeToDisplayString(REGISTER_X, tmpString, 1);
+    frontier_display.timeToDisplayString(REGISTER_X, tmpString, 1);
 
     while (tmpString[@intCast(i)] != 0) {
         switch (tmpString[@intCast(i)]) {
@@ -1319,7 +1275,7 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
         nimNumberPart = NP_REAL_FLOAT_PART;
     }
     _ = strcpy(nimDisplay, STD_SPACE_HAIR);
-    nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
+    frontier_bufferize.nimBufferToDisplayBuffer(nimInput, nimDisplay + 2);
     i = @intCast(stringByteLength(nimDisplay) - 1);
     while (i > 0) : (i -%= 1) {
         if (nimDisplay[i] == 0xab) { // token
@@ -1336,7 +1292,7 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
         }
     }
     if (exponentFound) {
-        exponentToDisplayString(stringToInt32(nimInput + @as(usize, @intCast(exponentSignLocation))), nimDisplay + @as(usize, @intCast(stringByteLength(nimDisplay))), null, 1);
+        frontier_display.exponentToDisplayString(stringToInt32(nimInput + @as(usize, @intCast(exponentSignLocation))), nimDisplay + @as(usize, @intCast(stringByteLength(nimDisplay))), null, 1);
         if (nimInput[@as(usize, @intCast(exponentSignLocation)) + 1] == 0 and nimInput[@intCast(exponentSignLocation)] == '-') {
             _ = strcat(nimDisplay, STD_SUP_MINUS);
         } else if (nimInput[@as(usize, @intCast(exponentSignLocation)) + 1] == '0' and nimInput[@intCast(exponentSignLocation)] == '+') {
@@ -1356,36 +1312,36 @@ pub export fn fnEdit(unusedParamButMandatory: u16) callconv(.c) void {
     var varOrLblName: [32]u8 = undefined; // C: char varOrLblName[32]; a name's byte length (opParam2) can exceed 7 with multi-byte glyphs
 
     if (tam.mode != 0) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
         return;
     }
     switch (calcMode) {
         CM_NORMAL => {
-            if (currentMenu() == -MNU_EQN or currentMenu() == -MNU_Sfdx or currentMenu() == -MNU_Solver_TOOL or currentMenu() == -MNU_Sf_TOOL or currentMenu() == -MNU_GRAPHS or
-                (currentMenu() == -MNU_MVAR and (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0 and (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0))
+            if (frontier_softmenus.currentMenu() == -MNU_EQN or frontier_softmenus.currentMenu() == -MNU_Sfdx or frontier_softmenus.currentMenu() == -MNU_Solver_TOOL or frontier_softmenus.currentMenu() == -MNU_Sf_TOOL or frontier_softmenus.currentMenu() == -MNU_GRAPHS or
+                (frontier_softmenus.currentMenu() == -MNU_MVAR and (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0 and (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0))
             {
-                showSoftmenu(-MNU_EQN);
-                runFunction(ITM_EQ_EDI);
+                frontier_softmenus.showSoftmenu(-MNU_EQN);
+                frontier_items.runFunction(ITM_EQ_EDI);
             } else {
                 editNormalDispatch(&index, &grpGroupingLeftOld, &grpGroupingRightOld);
             }
         },
         CM_AIM => {
-            runFunction(ITM_XEDIT);
+            frontier_items.runFunction(ITM_XEDIT);
         },
         CM_PEM => {
             editPem(&index, &grpGroupingLeftOld, &grpGroupingRightOld, &varOrLblName);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
         },
     }
 }
 
 fn editErr() void {
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     moreInfoOnErr("In function fnEdit:", "Calculator mode or type not supported for EDIT command");
 }
 
@@ -1409,7 +1365,7 @@ fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld:
                 return;
             },
             dtDate => {
-                convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                frontier_register_value_conversions.convertDateRegisterToReal34Register(REGISTER_X, REGISTER_X);
                 setRegisterDataType(REGISTER_X, dtDate, amNone);
                 editReal34(index, grpGroupingLeftOld, grpGroupingRightOld);
                 return;
@@ -1426,12 +1382,12 @@ fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld:
                 fnDrop(NOPARAM);
                 shiftF = 0;
                 shiftG = 0;
-                calcModeAim(NOPARAM);
-                showSoftmenu(-MNU_ALPHA);
+                frontier_calc_mode.calcModeAim(NOPARAM);
+                frontier_softmenus.showSoftmenu(-MNU_ALPHA);
             }
         },
         dtReal34Matrix, dtComplex34Matrix => {
-            fnEditMatrix(NOPARAM);
+            frontier.fnEditMatrix(NOPARAM);
         },
         else => {
             if (comptime !save_space_edit) {
@@ -1448,8 +1404,8 @@ fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld:
 fn editLongInteger() void {
     @memset(nimBufferDisplay[0..NIM_BUFFER_EXTENDED_LENGTH], 0);
     var lgInt: longInteger_t = undefined;
-    convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
-    longIntegerToAllocatedString(&lgInt[0], nimBufferDisplay, NIM_BUFFER_EXTENDED_LENGTH);
+    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+    frontier_display.longIntegerToAllocatedString(&lgInt[0], nimBufferDisplay, NIM_BUFFER_EXTENDED_LENGTH);
     if (longIntegerIsPositiveOrZero(&lgInt)) {
         aimBuffer[0] = '+';
         _ = strcpy(aimBuffer + 1, nimBufferDisplay);
@@ -1464,15 +1420,15 @@ fn editLongInteger() void {
             if (i != 1 or nimBufferDisplay[0] != '-') {
                 if (gapItemLeft != ITM_NULL) { // insert gapCharLeft
                     const lenGapItem: u8 = @intCast(strlen(&indexOfItems[gapItemLeft].itemSoftmenuName));
-                    _ = xcopy(nimBufferDisplay + @as(usize, @intCast(i)) + lenGapItem, nimBufferDisplay + @as(usize, @intCast(i)), @intCast(len - i + 1));
-                    _ = xcopy(nimBufferDisplay + @as(usize, @intCast(i)), &indexOfItems[gapItemLeft].itemSoftmenuName, lenGapItem);
+                    _ = frontier_char_string.xcopy(nimBufferDisplay + @as(usize, @intCast(i)) + lenGapItem, nimBufferDisplay + @as(usize, @intCast(i)), @intCast(len - i + 1));
+                    _ = frontier_char_string.xcopy(nimBufferDisplay + @as(usize, @intCast(i)), &indexOfItems[gapItemLeft].itemSoftmenuName, lenGapItem);
                     len += @intCast(lenGapItem);
                 }
             }
         }
     }
 
-    if (stringWidth(nimBufferDisplay, &standardFont, 1, 1) < (SCREEN_WIDTH * 2) - 8) {
+    if (frontier_char_string.stringWidth(nimBufferDisplay, &standardFont, true, true) < (SCREEN_WIDTH * 2) - 8) {
         calcMode = CM_NIM;
         clearSystemFlag(FLAG_ALPHA);
         freeRegisterData(REGISTER_X);
@@ -1482,7 +1438,7 @@ fn editLongInteger() void {
         hexDigits = 0;
         nimNumberPart = NP_INT_10;
         if (!checkHP()) {
-            clearRegisterLine(NIM_REGISTER_LINE, 1, 1);
+            frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
         }
         xCursor = 1;
         cursorEnabled = 1;
@@ -1503,7 +1459,7 @@ fn editReal34(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) vo
     @memset(nimBufferDisplay[0..NIM_BUFFER_LENGTH], 0);
 
     if (xangularMode == amDMS) {
-        real34FromDegToDms(reg34(REGISTER_X), reg34(REGISTER_X));
+        frontier_conversion_angles.real34FromDegToDms(reg34(REGISTER_X), reg34(REGISTER_X));
     }
 
     var lessEqualGreater: i16 = 0;
@@ -1517,18 +1473,18 @@ fn editReal34(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) vo
         if (lessEqualGreater == 0) { // display fraction
             nimNumberPart = NP_FRACTION_DENOMINATOR;
             _ = strcpy(nimBufferDisplay, STD_SPACE_HAIR);
-            nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+            frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
             _ = strcat(nimBufferDisplay, STD_SPACE_4_PER_EM);
             index.* = 2;
             while (aimBuffer[@intCast(index.*)] != ' ') : (index.* += 1) {}
-            supNumberToDisplayString(stringToInt32(aimBuffer + @as(usize, @intCast(index.* + 1))), nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay))), null, 1);
+            frontier_display.supNumberToDisplayString(stringToInt32(aimBuffer + @as(usize, @intCast(index.* + 1))), nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay))), null, 1);
 
             _ = strcat(nimBufferDisplay, "/");
 
             while (aimBuffer[@intCast(index.*)] != '/') : (index.* += 1) {}
             index.* += 1;
             if (aimBuffer[@intCast(index.*)] != 0) {
-                subNumberToDisplayString(stringToInt32(aimBuffer + @as(usize, @intCast(index.*))), nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay))), null);
+                frontier_display.subNumberToDisplayString(stringToInt32(aimBuffer + @as(usize, @intCast(index.*))), nimBufferDisplay + @as(usize, @intCast(stringByteLength(nimBufferDisplay))), null);
             }
         } else { // display real34
             _real34ToNim(reg34(REGISTER_X), aimBuffer, nimBufferDisplay);
@@ -1550,7 +1506,7 @@ fn editReal34(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) vo
     real34SetZero(reg34(REGISTER_X));
     hexDigits = 0;
     if (!checkHP()) {
-        clearRegisterLine(NIM_REGISTER_LINE, 1, 1);
+        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
     }
     xCursor = 1;
     cursorEnabled = 1;
@@ -1583,7 +1539,7 @@ fn editShortInteger(grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
     }
 
     _ = strcpy(nimBufferDisplay, STD_SPACE_HAIR);
-    nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+    frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
     i = @intCast(stringByteLength(nimBufferDisplay) - 1);
     while (i > 0) : (i -%= 1) {
         if (nimBufferDisplay[i] == 0xab) { // token
@@ -1600,7 +1556,7 @@ fn editShortInteger(grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
     setRegisterDataPointer(REGISTER_X, allocC47Blocks(REAL34_SIZE_IN_BLOCKS));
     setRegisterDataType(REGISTER_X, dtReal34, amNone);
     if (!checkHP()) {
-        clearRegisterLine(NIM_REGISTER_LINE, 1, 1);
+        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
     }
     xCursor = 1;
     cursorEnabled = 1;
@@ -1609,7 +1565,7 @@ fn editShortInteger(grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8) void {
 
 // CM_PEM arm of fnEdit (the program-step editor).
 fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOrLblName: *[32]u8) void {
-    if ((pemCursorIsZerothStep != 0) or isAtEndOfProgram(currentStep) != 0 or isAtEndOfPrograms(currentStep) != 0) {
+    if ((pemCursorIsZerothStep != 0) or isAtEndOfProgram(currentStep) != 0 or frontier_manage.isAtEndOfPrograms(currentStep)) {
         return; // Don't try to edit step 000 or END or .END.
     }
     var i: i16 = 0;
@@ -1635,7 +1591,7 @@ fn editPem(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld: *u8, varOr
         @memset(aimBuffer[0..AIM_BUFFER_LENGTH], 0);
 
         if (opParam == STRING_LABEL_VARIABLE) {
-            pemAlphaEdit(NOPARAM);
+            frontier_manage.pemAlphaEdit(NOPARAM);
         } else if (comptime !save_space_edit) {
             if ((opParam == BINARY_SHORT_INTEGER) or (opParam == STRING_SHORT_INTEGER) or (opParam == STRING_LONG_INTEGER) or
                 (opParam == BINARY_REAL34) or (opParam == STRING_REAL34) or
@@ -1666,13 +1622,13 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
         grpGroupingRightOld.* = grpGroupingRight;
         grpGroupingRight = 0;
         grpGroupingLeft = 0;
-        decodeOneStep(currentStep);
+        frontier_decode.decodeOneStep(currentStep);
         grpGroupingRight = grpGroupingRightOld.*;
         grpGroupingLeft = grpGroupingLeftOld.*;
         _ = strcpy(tempBuffer, tmpString);
     }
     lastIntegerBase = if (opParam == BINARY_SHORT_INTEGER) opParam2 else if (opParam == STRING_SHORT_INTEGER) opParam2 else 0;
-    deleteStepsFromTo(currentStep, findNextStep(currentStep));
+    frontier_manage.deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
 
     var i: u16 = 0;
     const iMax: u16 = @intCast(strlen(tempBuffer));
@@ -1680,30 +1636,30 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
     while (i < iMax) : (i += 1) {
         switch (tempBuffer[i]) {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' => {
-                pemAddNumber(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - '0', 0);
+                frontier_manage.pemAddNumber(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - '0', false);
             },
             'A', 'B', 'C', 'D', 'E', 'F' => {
-                pemAddNumber(@as(i16, ITM_A) + @as(i16, tempBuffer[i]) - 'A', 0);
+                frontier_manage.pemAddNumber(@as(i16, ITM_A) + @as(i16, tempBuffer[i]) - 'A', false);
             },
             '.' => {
                 if (!decimalflag) {
                     decimalflag = true;
-                    pemAddNumber(ITM_PERIOD, 0);
+                    frontier_manage.pemAddNumber(ITM_PERIOD, false);
                 }
             },
             ':' => {
                 if (!decimalflag) {
                     decimalflag = true;
-                    pemAddNumber(ITM_PERIOD, 0);
+                    frontier_manage.pemAddNumber(ITM_PERIOD, false);
                 }
             },
             '+' => {
                 if (chsNeeded) {
-                    pemAddNumber(ITM_CHS, 0);
+                    frontier_manage.pemAddNumber(ITM_CHS, false);
                 }
                 chsNeeded = false;
                 if (opParam == BINARY_COMPLEX34) {
-                    pemAddNumber(ITM_CC, 0);
+                    frontier_manage.pemAddNumber(ITM_CC, false);
                     decimalflag = false;
                 }
             },
@@ -1711,15 +1667,15 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
                 if (isDate) {
                     if (!decimalflag) {
                         decimalflag = true;
-                        pemAddNumber(ITM_PERIOD, 0);
+                        frontier_manage.pemAddNumber(ITM_PERIOD, false);
                     }
                 } else {
                     if (chsNeeded) {
-                        pemAddNumber(ITM_CHS, 0);
+                        frontier_manage.pemAddNumber(ITM_CHS, false);
                     }
                     chsNeeded = true;
                     if (opParam == BINARY_COMPLEX34) {
-                        pemAddNumber(ITM_CC, 0);
+                        frontier_manage.pemAddNumber(ITM_CC, false);
                         decimalflag = false;
                     }
                 }
@@ -1728,19 +1684,19 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
                 if (isDate) {
                     if (!decimalflag) {
                         decimalflag = true;
-                        pemAddNumber(ITM_PERIOD, 0);
+                        frontier_manage.pemAddNumber(ITM_PERIOD, false);
                     }
                 }
             },
             'e' => {
                 if (chsNeeded) {
-                    pemAddNumber(ITM_CHS, 0);
+                    frontier_manage.pemAddNumber(ITM_CHS, false);
                 }
                 chsNeeded = false;
-                pemAddNumber(ITM_EXPONENT, 0);
+                frontier_manage.pemAddNumber(ITM_EXPONENT, false);
             },
             'i' => {
-                pemAddNumber(ITM_CC, 0);
+                frontier_manage.pemAddNumber(ITM_CC, false);
                 decimalflag = false;
             },
             0x80 => {
@@ -1748,22 +1704,22 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
                 if ((tempBuffer[i] == STD_CROSS[1]) and (nimNumberPart != NP_COMPLEX_INT_PART)) {
                     i += 2; // Skip next character (STD_BASE_10)
                     if (chsNeeded) {
-                        pemAddNumber(ITM_CHS, 0);
+                        frontier_manage.pemAddNumber(ITM_CHS, false);
                     }
                     chsNeeded = false;
-                    pemAddNumber(ITM_EXPONENT, 0);
+                    frontier_manage.pemAddNumber(ITM_EXPONENT, false);
                 } else if ((tempBuffer[i] == STD_DEGREE[1]) and (opParam == STRING_ANGLE_DMS)) {
-                    pemAddNumber(ITM_PERIOD, 0);
+                    frontier_manage.pemAddNumber(ITM_PERIOD, false);
                 }
             },
             0xa1 => {
                 i += 1;
                 if ((tempBuffer[i] >= STD_SUP_0[1]) and (tempBuffer[i] <= STD_SUP_9_1)) {
-                    pemAddNumber(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - STD_SUP_0[1], 0);
+                    frontier_manage.pemAddNumber(@as(i16, ITM_0) + @as(i16, tempBuffer[i]) - STD_SUP_0[1], false);
                 } else if (tempBuffer[i] == STD_SUP_MINUS[1]) {
                     chsNeeded = true;
                 } else if (((tempBuffer[i] == STD_op_i_1) or (tempBuffer[i] == STD_op_j_1)) and (nimNumberPart != NP_COMPLEX_INT_PART)) {
-                    pemAddNumber(ITM_CC, 0);
+                    frontier_manage.pemAddNumber(ITM_CC, false);
                     decimalflag = false;
                 }
             },
@@ -1775,7 +1731,7 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
         lastIntegerBase = if (opParam == BINARY_SHORT_INTEGER) opParam2 else if (opParam == STRING_SHORT_INTEGER) opParam2 else 0;
     }
     if (chsNeeded) {
-        pemAddNumber(ITM_CHS, 0);
+        frontier_manage.pemAddNumber(ITM_CHS, false);
     }
     switch (opParam) {
         STRING_DATE, STRING_TIME, STRING_ANGLE_RADIAN, STRING_ANGLE_GRAD, STRING_ANGLE_DEGREE, STRING_ANGLE_DMS, STRING_ANGLE_MULTPI => {
@@ -1785,7 +1741,7 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
             editingLiteralType = 0;
         },
     }
-    pemAddNumber(ITM_NOP, 1); // to insert the resulting number in program
+    frontier_manage.pemAddNumber(ITM_NOP, true); // to insert the resulting number in program
 }
 
 fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8, ip: *i16, index: *i16, varOrLblName: *[32]u8) void {
@@ -1805,28 +1761,28 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
     }
     switch (paramMode) {
         PARAM_DECLARE_LABEL, PARAM_LABEL, PARAM_REGISTER, PARAM_FLAG, PARAM_NUMBER_8, PARAM_NUMBER_16, PARAM_COMPARE, PARAM_SKIP_BACK, PARAM_NUMBER_8_16, PARAM_SHUFFLE, PARAM_MENU => {
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            frontier_manage.deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             if (pemCursorIsZerothStep == 0) {
-                fnBst(NOPARAM);
+                frontier_next_step.fnBst(NOPARAM);
             }
-            tamEnterMode(func);
+            frontier_tam.tamEnterMode(func);
 
             var maxDigits: u8 = if (tam.max < 10) 1 else if (tam.max < 100) 2 else if (tam.max < 1000) 3 else if (tam.max < 10000) 4 else 5;
 
-            if ((opParam == INDIRECT_REGISTER) and (isFunctionOldParam16(func) == 0)) {
+            if ((opParam == INDIRECT_REGISTER) and (frontier_items.isFunctionOldParam16(@intCast(func)) == 0)) {
                 tam.indirect = true;
                 tam.max = 99;
                 maxDigits = 2;
                 opParam = opParam2;
                 opParam2 = opParam3;
-                popSoftmenu();
-                showSoftmenu(-MNU_TAM);
+                frontier_softmenus.popSoftmenu();
+                frontier_softmenus.showSoftmenu(-MNU_TAM);
                 numberOfTamMenusToPop -= 1;
-            } else if ((opParam == INDIRECT_VARIABLE) and (isFunctionOldParam16(func) == 0)) {
+            } else if ((opParam == INDIRECT_VARIABLE) and (frontier_items.isFunctionOldParam16(@intCast(func)) == 0)) {
                 tam.indirect = true;
                 opParam = STRING_LABEL_VARIABLE;
-                popSoftmenu();
-                showSoftmenu(-MNU_TAM);
+                frontier_softmenus.popSoftmenu();
+                frontier_softmenus.showSoftmenu(-MNU_TAM);
                 numberOfTamMenusToPop -= 1;
             }
 
@@ -1862,7 +1818,7 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
                 tam.value = 0;
             } else if ((paramMode == PARAM_NUMBER_16) and !tam.indirect) {
                 tam.digitsSoFar = @as(i16, maxDigits) - 1;
-                if (isFunctionOldParam16(func) != 0) {
+                if (frontier_items.isFunctionOldParam16(@intCast(func)) != 0) {
                     tam.value = @intCast(((@as(u16, opParam2) << 8) + opParam) / 10);
                 } else {
                     tam.value = @intCast(((@as(u16, opParam) << 8) + opParam2) / 10);
@@ -1877,15 +1833,15 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
                 tam.digitsSoFar = @as(i16, maxDigits) - 1;
                 tam.value = @intCast(opParam / 10);
             }
-            tamProcessInput(func);
+            frontier_tam.tamProcessInput(@intCast(func));
             if (opParam == STRING_LABEL_VARIABLE) {
-                tamProcessInput(ITM_alpha);
-                if (stringGlyphLength(varOrLblName) == 7) {
-                    varOrLblName[@intCast(stringLastGlyph(varOrLblName))] = 0; // Ensure name is 6 characters maximum
+                frontier_tam.tamProcessInput(ITM_alpha);
+                if (frontier_char_string.stringGlyphLength(varOrLblName) == 7) {
+                    varOrLblName[@intCast(frontier_char_string.stringLastGlyph(varOrLblName))] = 0; // Ensure name is 6 characters maximum
                 }
                 _ = strcpy(aimBuffer, varOrLblName);
-                alphaCursor = @intCast(stringGlyphLength(varOrLblName));
-                tamProcessInput(ITM_NOP);
+                alphaCursor = @intCast(frontier_char_string.stringGlyphLength(varOrLblName));
+                frontier_tam.tamProcessInput(ITM_NOP);
             }
         },
         PARAM_KEYG_KEYX => {
@@ -1894,30 +1850,30 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             } else { // ITM_42KEY
                 func = if (opParam2 == ITM_GTO) ITM_42KEYG else ITM_42KEYX;
             }
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            frontier_manage.deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             if (pemCursorIsZerothStep == 0) {
-                fnBst(NOPARAM);
+                frontier_next_step.fnBst(NOPARAM);
             }
-            runFunction(func);
-            tamProcessInput(@as(i16, ITM_0) + @divTrunc(@as(i16, opParam), 10));
-            tamProcessInput(@as(i16, ITM_0) + @as(i16, opParam % 10));
+            frontier_items.runFunction(func);
+            frontier_tam.tamProcessInput(@intCast(@as(i16, ITM_0) + @divTrunc(@as(i16, opParam), 10)));
+            frontier_tam.tamProcessInput(@intCast(@as(i16, ITM_0) + @as(i16, opParam % 10)));
             if ((opParam3 == INDIRECT_REGISTER) or (opParam3 == INDIRECT_VARIABLE)) {
-                tamProcessInput(ITM_INDIRECTION);
+                frontier_tam.tamProcessInput(ITM_INDIRECTION);
             }
         },
         PARAM_REM => {
             _ = memset(aimBuffer, 0, AIM_BUFFER_LENGTH);
-            deleteStepsFromTo(currentStep, findNextStep(currentStep));
+            frontier_manage.deleteStepsFromTo(currentStep, frontier_next_step.findNextStep(currentStep));
             if (pemCursorIsZerothStep == 0) {
-                fnBst(NOPARAM);
+                frontier_next_step.fnBst(NOPARAM);
             }
-            tamEnterMode(func);
-            if (stringGlyphLength(varOrLblName) == (if (@as(u16, @bitCast(func)) == ITM_42STRING) @as(i32, 15) else @as(i32, 14))) {
-                varOrLblName[@intCast(stringLastGlyph(varOrLblName))] = 0; // Ensure name is 14 (42STRING) or 13 (42APPEND) characters maximum
+            frontier_tam.tamEnterMode(func);
+            if (frontier_char_string.stringGlyphLength(varOrLblName) == (if (@as(u16, @bitCast(func)) == ITM_42STRING) @as(i32, 15) else @as(i32, 14))) {
+                varOrLblName[@intCast(frontier_char_string.stringLastGlyph(varOrLblName))] = 0; // Ensure name is 14 (42STRING) or 13 (42APPEND) characters maximum
             }
             _ = strcpy(aimBuffer, varOrLblName);
-            alphaCursor = @intCast(stringGlyphLength(varOrLblName));
-            tamProcessInput(ITM_NOP); // to insert the resulting string in program
+            alphaCursor = @intCast(frontier_char_string.stringGlyphLength(varOrLblName));
+            frontier_tam.tamProcessInput(ITM_NOP); // to insert the resulting string in program
         },
         else => {},
     }
@@ -1982,9 +1938,9 @@ fn standardScreenDump() void {
     vol = getBeepVolume();
     fnSetVolume(11);
     _Buzz(100, 5);
-    _ = xcopy(tmpString, errorMessage, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH));
+    _ = frontier_char_string.xcopy(tmpString, errorMessage, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH));
     _ = create_screenshot(0);
-    _ = xcopy(errorMessage, tmpString, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH));
+    _ = frontier_char_string.xcopy(errorMessage, tmpString, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH));
     _Buzz(100, 5);
     fnSetVolume(@intCast(vol));
 }
@@ -2026,7 +1982,7 @@ pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_in
             return -1;
         }
         if (displayWaitForRelease != 0) {
-            force_refresh(force);
+            frontier_screen.force_refresh(force);
         }
         _ = wait_for_key_release(0);
         var signalToDoScreenDump: bool = false;
@@ -2069,7 +2025,7 @@ pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_in
 
 pub export fn fnShoiXRepeats(numberOfRepeats: u16) callconv(.c) void {
     displayStackSHOIDISP = @intCast(numberOfRepeats);
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 pub export fn fnFrom_ymd(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -2109,7 +2065,7 @@ fn fnFrom_msRegisterImpl(regist: i16) void {
 
     if (temporaryInformation != TI_NO_INFO) {
         if (temporaryInformation == TI_FROM_MS_TIME) {
-            timeToDisplayString(regist, &tmpString100, 1);
+            frontier_display.timeToDisplayString(regist, &tmpString100, 1);
         }
         if (temporaryInformation == TI_FROM_MS_DEG) {
             // !LIMITEXP=0, FRONTSPACE=1, NOIRFRAC=0
@@ -2166,17 +2122,17 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     switch (calcMode) {
         CM_NIM => {
-            addItemToNimBuffer(ITM_ms);
+            frontier_bufferize.addItemToNimBuffer(ITM_ms);
         },
         CM_NORMAL => {
             copySourceRegisterToDestRegister(REGISTER_L, TEMP_REGISTER_1);
 
             switch (getRegisterDataType(REGISTER_X)) {
                 dtShortInteger => {
-                    convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                    frontier_register_value_conversions.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
                 },
                 dtLongInteger => {
-                    convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+                    frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
                 },
                 else => {},
             }
@@ -2186,21 +2142,21 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
                     if (calcMode == CM_NORMAL) {
                         fnToReal(0);
                     } else if (calcMode == CM_NIM) {
-                        addItemToNimBuffer(ITM_dotD);
+                        frontier_bufferize.addItemToNimBuffer(ITM_dotD);
                     }
-                    fnHRtoTM(0);
+                    frontier_date_time.fnHRtoTM(0);
                 } else if (getRegisterAngularMode(REGISTER_X) == amDegree) {
                     fnAngularModeJM(amDMS);
                 } else if (getRegisterAngularMode(REGISTER_X) == amNone) {
-                    fnHRtoTM(0);
+                    frontier_date_time.fnHRtoTM(0);
                 } else {
-                    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                     moreInfoOnErr("In function fnTo_ms:", "cannot calculate specific type/tag");
                 }
             } else if (getRegisterDataType(REGISTER_X) == dtTime) {
-                fnToHr(0);
+                frontier_date_time.fnToHr(0);
                 setRegisterAngularMode(REGISTER_X, amDegree);
-                fnCvtFromCurrentAngularMode(amDMS);
+                frontier_conversion_angles.fnCvtFromCurrentAngularMode(amDMS);
             }
 
             copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
@@ -2208,7 +2164,7 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
         CM_REGISTER_BROWSER, CM_ASN_BROWSER, CM_FLAG_BROWSER, CM_FONT_BROWSER, CM_PLOT_STAT, CM_LISTXY, CM_GRAPH => {},
         else => {
             abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected calcMode value ({d}) while processing key {s}!", .{ "fnTo_ms", @as(c_int, calcMode), ".ms" });
-            displayBugScreen(errorMessage);
+            frontier_error.displayBugScreen(errorMessage);
         },
     }
 }
@@ -2255,12 +2211,12 @@ pub export fn fnMultiplySI(multiplier: u16) callconv(.c) void {
 
     if (mult[0] != 0) {
         stringToLongInteger(&mult[@as(usize, if (mult[0] == '+') 1 else 0)], base, &lgInt[0]);
-        convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
         longIntegerFree(&lgInt);
         fnMultiply(0);
     } else if (divi[0] != 0) {
         stringToLongInteger(&divi[@as(usize, if (divi[0] == '+') 1 else 0)], base, &lgInt[0]);
-        convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
         longIntegerFree(&lgInt);
         fnDivide(0);
     }
@@ -2274,7 +2230,7 @@ fn cpxToStk(real1: *const real_t, real2: *const real_t, sl: bool) void {
         setSystemFlag(FLAG_ASLIFT);
     }
     liftStack();
-    convertComplexToResultRegister(real1, real2, REGISTER_X);
+    frontier_register_value_conversions.convertComplexToResultRegister(real1, real2, REGISTER_X);
 }
 
 pub export fn fn_cnst_op_j(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -2328,10 +2284,10 @@ pub export fn fn_cnst_op_A(option: u16) callconv(.c) void {
 
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
-    convertRealToResultRegister(const_0, REGISTER_X, amNone);
+    frontier_register_value_conversions.convertRealToResultRegister(const_0, REGISTER_X, amNone);
 
     if (initMatrixRegister(REGISTER_X, 3, 3, 1) != 0) {} else {
-        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnErr("In function fn_cnst_op_A:", "Not enough memory for a 1\xc3\x97" ++ "1 matrix");
         return;
     }
@@ -2420,7 +2376,7 @@ const vecCreate linksection(code_section) = [9]vecCreate_t{
 
 fn processDefaultVector(regist: calcRegister_t, p: u8, d: u8, xarr: [*]cmplxPair, complexCoefs: *bool_t) bool_t {
     if (d == V_COPY) {
-        if (getRegisterAsComplexOrReal(regist, &xarr[p].r, &xarr[p].i, complexCoefs) == 0) {
+        if (!frontier_register_value_conversions.getRegisterAsComplexOrReal(regist, &xarr[p].r, &xarr[p].i, @ptrCast(complexCoefs))) {
             return 0;
         }
     } else if (d <= V_D1) {
@@ -2440,7 +2396,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
                     fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);
                 } else {
                     if (comptime !dmcp_build) {
-                        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                         invalidDataTypeHint("In function fnExchangeStkToMx:");
                     }
                 }
@@ -2455,7 +2411,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
                     fnConvertStkToMx(VECT_CR_AUT);
                 } else {
                     if (comptime !dmcp_build) {
-                        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                         invalidDataTypeHint("In function fnExchangeStkToMx:");
                     }
                 }
@@ -2469,7 +2425,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
 inline fn invalidDataTypeHint(where: [*c]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
-            abi.fmtBufZ(errorMessage[0..512], "invalid data type {s} and {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_Y, 1, 0)), std.mem.span(getRegisterDataTypeName(REGISTER_X, 1, 0)) });
+            abi.fmtBufZ(errorMessage[0..512], "invalid data type {s} and {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_Y, true, false)), std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
             moreInfoOnError(where, errorMessage, null, null);
         }
     }
@@ -2527,19 +2483,19 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     var valid3DRInput: bool_t = undefined;
 
     if (is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector) == 0) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnErr("In function fnConvertStkToMx:", "No valid coordinates for 2D/3D Rect/Polar/Spherical/Cylindrical");
         return;
     } else {
         if (constVector1 == M_CR_zyx and valid3DRInput == 0) {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnErr("In function fnConvertStkToMx:", "No angles allowed for ELEC M");
             return;
         }
     }
 
     if (validPolarInput != 0) {
-        convertAngleFromTo(&x[0].r, @intCast(ang2Dx), amRadian, &ctxtReal39);
+        frontier_conversion_angles.convertAngleFromTo(&x[0].r, @intCast(ang2Dx), amRadian, &ctxtReal39);
         if (realCompareLessThan(&x[1].r, const_0) != 0) {
             realSetPositiveSign(&x[1].r);
             realAdd(&x[0].r, const39_pi, &x[0].r, &ctxtReal39);
@@ -2547,10 +2503,10 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     }
 
     if (validSPHInput != 0) {
-        convertAngleFromTo(&x[vc.x()].r, @intCast(ang3Dx), amRadian, &ctxtReal39);
-        convertAngleFromTo(&x[vc.y()].r, @intCast(ang3Dy), amRadian, &ctxtReal39);
+        frontier_conversion_angles.convertAngleFromTo(&x[vc.x()].r, @intCast(ang3Dx), amRadian, &ctxtReal39);
+        frontier_conversion_angles.convertAngleFromTo(&x[vc.y()].r, @intCast(ang3Dy), amRadian, &ctxtReal39);
     } else if (validCYLInput != 0) {
-        convertAngleFromTo(&x[vc.y()].r, @intCast(ang3Dy), amRadian, &ctxtReal39);
+        frontier_conversion_angles.convertAngleFromTo(&x[vc.y()].r, @intCast(ang3Dy), amRadian, &ctxtReal39);
     }
 
     if (vc.xdef() <= V_D1 or vc.ydef() <= V_D1 or vc.zdef() <= V_D1) {
@@ -2565,7 +2521,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
 
     if (getRegisterDataType(REGISTER_X) != dtReal34Matrix and getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
         if (initMatrixRegister(REGISTER_X, vc.rows(), vc.cols(), complexCoefs) != 0) {} else {
-            displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnErr("In function fnConvertStkToMx:", "Not enough memory for a 1\xc3\x97" ++ "1 matrix");
             return;
         }
@@ -2634,7 +2590,7 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
 
     if (!(getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix)) {
         if (comptime !dmcp_build) {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
             invalidDataTypeHint("In function fnConvertMxToStk:");
         }
         return;
@@ -2701,25 +2657,25 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
     }
 
     if (getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
-        convertRealToResultRegister(const_0, REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(const_0, REGISTER_X, amNone);
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
-        convertRealToResultRegister(const_0, REGISTER_X, amNone);
+        frontier_register_value_conversions.convertRealToResultRegister(const_0, REGISTER_X, amNone);
     } else {
-        convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, 0);
+        frontier_register_value_conversions.convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, 0);
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
-        convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, 0);
+        frontier_register_value_conversions.convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, 0);
     }
     if (elements > 2) {
         if (getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
             setSystemFlag(FLAG_ASLIFT);
             liftStack();
-            convertRealToResultRegister(const_0, REGISTER_X, amNone);
+            frontier_register_value_conversions.convertRealToResultRegister(const_0, REGISTER_X, amNone);
         } else {
             setSystemFlag(FLAG_ASLIFT);
             liftStack();
-            convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, 0);
+            frontier_register_value_conversions.convertComplexToResultRegisterRPangle(const_0, const_0, REGISTER_X, amNone, 0);
         }
     }
 
@@ -2729,7 +2685,7 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
         real34ToReal(mxRe34(matrix.matrixElements, 0), &magnitude);
         real34ToReal(mxRe34(matrix.matrixElements, 1), &theta);
         realRectangularToPolar(&magnitude, &theta, &magnitude, &theta, &ctxtReal39);
-        convertAngleFromTo(&theta, amRadian, ang2Dx, &ctxtReal39);
+        frontier_conversion_angles.convertAngleFromTo(&theta, amRadian, ang2Dx, &ctxtReal39);
         realToReal34(&magnitude, mxRe34(matrix.matrixElements, 0));
         realToReal34(&theta, mxRe34(matrix.matrixElements, 1));
     } else if ((constVector == VECT_CR_zyx or constVector == VECT_CR_zxy) and (ang3Dy != amNone and ang3Dx == amNone)) { // CYL
@@ -2805,15 +2761,15 @@ pub export fn fnJM_2SI(unusedButMandatoryParameter: u16) callconv(.c) void {
     var tmp3: longInteger_t = undefined;
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &tmp3[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &tmp3[0]);
             if (shortIntegerMode == SIM_UNSIGN and longIntegerIsNegative(&tmp3)) {
                 temporaryInformation = TI_DATA_NEG_OVRFL;
             }
-            convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X); // default to 10
+            frontier_register_value_conversions.convertLongIntegerRegisterToShortIntegerRegister(REGISTER_X, REGISTER_X); // default to 10
             if (lastIntegerBase >= 2 and lastIntegerBase <= 16 and lastIntegerBase != 10) {
-                fnChangeBase(@intCast(lastIntegerBase));
+                frontier_integers.fnChangeBase(@intCast(lastIntegerBase));
             }
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &tmp1[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &tmp1[0]);
 
             if (longIntegerCompare(&tmp1[0], &tmp3[0]) != 0) {
                 if (temporaryInformation != TI_DATA_NEG_OVRFL) {
@@ -2828,9 +2784,9 @@ pub export fn fnJM_2SI(unusedButMandatoryParameter: u16) callconv(.c) void {
             fnRoundi(0);
         },
         dtShortInteger => {
-            convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X);
             lastIntegerBase = 0;
-            fnRefreshState();
+            frontier_radio_button_catalog.fnRefreshState();
         },
         else => {},
     }
@@ -2872,10 +2828,10 @@ pub export fn exponentToUnitDisplayString(exponent: i32, flag2To10: bool_t, disp
         displayString[0] = 0;
         if (nimMode != 0) {
             if (exponent != 0) {
-                supNumberToDisplayString(exponent, displayString, displayValueString, 0);
+                frontier_display.supNumberToDisplayString(exponent, displayString, displayValueString, 0);
             }
         } else {
-            supNumberToDisplayString(exponent, displayString, displayValueString, 0);
+            frontier_display.supNumberToDisplayString(exponent, displayString, displayValueString, 0);
         }
     }
 }
@@ -2890,29 +2846,23 @@ const FLAG_MULTx: c_int = 32795; // 0x801b
 // ===========================================================================
 // fnDisplayFormatCycle
 // ===========================================================================
-extern fn fnDisplayFormatUnit(digits: u16) void;
-extern fn fnDisplayFormatSigFig(digits: u16) void;
-extern fn fnDisplayFormatAll(digits: u16) void;
-extern fn fnDisplayFormatFix(digits: u16) void;
-extern fn fnDisplayFormatSci(digits: u16) void;
-extern fn fnDisplayFormatEng(digits: u16) void;
 
 pub export fn fnDisplayFormatCycle(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (DM_Cycling == 0 and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_PREFIX) {
-        fnDisplayFormatUnit(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_UN) {
-        fnDisplayFormatSigFig(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatSigFig(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_SF) {
-        fnDisplayFormatAll(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatAll(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_ALL) {
-        fnDisplayFormatFix(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatFix(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_FIX) {
-        fnDisplayFormatSci(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatSci(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_SCI) {
-        fnDisplayFormatEng(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatEng(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_ENG) {
-        fnDisplayFormatUnit(@as(u16, displayFormatDigits));
+        frontier.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
     }
     DM_Cycling = 1;
 }
@@ -2925,21 +2875,21 @@ pub export fn fnAngularModeJM(AMODE: u16) callconv(.c) void {
             return;
         }
         if (getRegisterDataType(REGISTER_X) == dtReal34 and getRegisterAngularMode(REGISTER_X) != amNone) {
-            fnCvtFromCurrentAngularMode(amDegree);
+            frontier_conversion_angles.fnCvtFromCurrentAngularMode(amDegree);
         }
 
         if (calcMode == CM_NORMAL) {
             fnToReal(0);
         } else if (calcMode == CM_NIM) {
-            addItemToNimBuffer(ITM_dotD);
+            frontier_bufferize.addItemToNimBuffer(ITM_dotD);
         }
 
-        fnHRtoTM(0); // covers longint & real
+        frontier_date_time.fnHRtoTM(0); // covers longint & real
     } else {
         if (getRegisterDataType(REGISTER_X) == dtTime) {
-            fnToHr(0); // covers time
+            frontier_date_time.fnToHr(0); // covers time
             setRegisterAngularMode(REGISTER_X, amDegree);
-            fnCvtFromCurrentAngularMode(AMODE);
+            frontier_conversion_angles.fnCvtFromCurrentAngularMode(AMODE);
         }
 
         if (getRegisterDataType(REGISTER_X) == dtComplex34 or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
@@ -2952,15 +2902,15 @@ pub export fn fnAngularModeJM(AMODE: u16) callconv(.c) void {
                 if (calcMode == CM_NORMAL) {
                     fnToReal(0);
                 } else if (calcMode == CM_NIM) {
-                    addItemToNimBuffer(ITM_dotD);
+                    frontier_bufferize.addItemToNimBuffer(ITM_dotD);
                 }
 
                 const currentAngularModeOld = currentAngularMode;
                 currentAngularMode = @intCast(AMODE);
-                fnCvtFromCurrentAngularMode(@intCast(currentAngularMode));
+                frontier_conversion_angles.fnCvtFromCurrentAngularMode(@intCast(currentAngularMode));
                 currentAngularMode = currentAngularModeOld;
             } else { // convert existing tagged angle
-                fnCvtFromCurrentAngularMode(AMODE);
+                frontier_conversion_angles.fnCvtFromCurrentAngularMode(AMODE);
             }
         }
     }
@@ -2999,10 +2949,10 @@ pub export fn fnDRG(unusedButMandatoryParameter: u16) callconv(.c) void {
         DRG_cyc(&dest);
         setComplexRegisterAngularMode(REGISTER_X, dest);
     } else if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
-        convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        frontier_register_value_conversions.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
         setRegisterAngularMode(REGISTER_X, amNone);
     } else if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
-        convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+        frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
         setRegisterAngularMode(REGISTER_X, amNone);
     }
 
@@ -3010,13 +2960,13 @@ pub export fn fnDRG(unusedButMandatoryParameter: u16) callconv(.c) void {
         dest = @intCast(getRegisterAngularMode(REGISTER_X));
 
         if (dest != amNone and dest != currentAngularMode and DRG_Cycling != 1) {
-            fnCvtToCurrentAngularMode(dest);
+            frontier_conversion_angles.fnCvtToCurrentAngularMode(dest);
             copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_L);
             return;
         }
 
         DRG_cyc(&dest);
-        fnCvtFromCurrentAngularMode(dest);
+        frontier_conversion_angles.fnCvtFromCurrentAngularMode(dest);
     } else if (getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
         dest = @intCast(getVectorRegisterAngularMode(REGISTER_X));
         DRG_cyc(&dest);
@@ -3051,7 +3001,7 @@ pub export fn shrinkNimBuffer() callconv(.c) void {
 
 pub export fn fnChangeBaseJM(BASE: u16) callconv(.c) void {
     shrinkNimBuffer();
-    fnChangeBase(BASE);
+    frontier_integers.fnChangeBase(BASE);
 
     if (getSystemFlag(FLAG_HPBASE) != 0) {
         var regist: u16 = REGISTER_X + 1;
@@ -3061,17 +3011,17 @@ pub export fn fnChangeBaseJM(BASE: u16) callconv(.c) void {
                 if (2 <= BASE and BASE <= 16) {
                     setRegisterTag(@intCast(regist), BASE);
                 }
-                fnRefreshState();
+                frontier_radio_button_catalog.fnRefreshState();
             }
         }
     }
 
-    nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+    frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
 }
 
 pub export fn fnChangeBaseMNU(BASE: u16) callconv(.c) void {
     if (calcMode == CM_AIM) {
-        addItemToBuffer(ITM_toINT);
+        frontier_bufferize.addItemToBuffer(ITM_toINT);
         return;
     }
 
@@ -3083,25 +3033,25 @@ pub export fn fnChangeBaseMNU(BASE: u16) callconv(.c) void {
     }
 
     if (calcMode == CM_NORMAL and BASE == NOPARAM) {
-        runFunction(ITM_toINT);
+        frontier_items.runFunction(ITM_toINT);
         return;
     }
 
     if (BASE > 1 and BASE <= 16) {
         fnChangeBaseJM(BASE);
-        nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+        frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
         return;
     }
 
     if (aimBuffer[0] == 0 and calcMode == CM_NORMAL and BASE == NOPARAM) {
-        runFunction(ITM_toINT);
-        nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+        frontier_items.runFunction(ITM_toINT);
+        frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
         return;
     }
 
     if (aimBuffer[0] != 0 and calcMode == CM_NIM) {
-        addItemToNimBuffer(ITM_toINT);
-        nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
+        frontier_bufferize.addItemToNimBuffer(ITM_toINT);
+        frontier_bufferize.nimBufferToDisplayBuffer(aimBuffer, nimBufferDisplay + 2);
         return;
     }
 }
@@ -3109,17 +3059,17 @@ pub export fn fnChangeBaseMNU(BASE: u16) callconv(.c) void {
 pub export fn fnInDefault(inputDefault: u16) callconv(.c) void {
     Input_Default = @intCast(inputDefault);
     lastIntegerBase = 0;
-    fnRefreshState();
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 pub export fn fnByteShortcutsS(size: u16) callconv(.c) void {
-    fnSetWordSize(size);
-    fnIntegerMode(SIM_2COMPL);
+    frontier_config.fnSetWordSize(size);
+    frontier.fnIntegerMode(SIM_2COMPL);
 }
 
 pub export fn fnByteShortcutsU(size: u16) callconv(.c) void {
-    fnSetWordSize(size);
-    fnIntegerMode(SIM_UNSIGN);
+    frontier_config.fnSetWordSize(size);
+    frontier.fnIntegerMode(SIM_UNSIGN);
 }
 
 pub export fn doubleToXRegisterReal34(x: f64) callconv(.c) void {
@@ -3134,7 +3084,7 @@ pub export fn doubleToXRegisterReal34(x: f64) callconv(.c) void {
 pub export fn fnStrtoReg(buffer: [*c]const u8, regist: calcRegister_t) callconv(.c) void {
     const mem: i16 = @intCast(stringByteLength(buffer) + 1);
     reallocateRegister(regist, dtString, TO_BLOCKS(@intCast(mem)), amNone);
-    _ = xcopy(regString(regist), buffer, @intCast(mem));
+    _ = frontier_char_string.xcopy(regString(regist), buffer, @intCast(mem));
 }
 
 pub export fn fnStrtoX(buffer: [*c]const u8) callconv(.c) void {
@@ -3163,7 +3113,7 @@ pub export fn fnStrInputLongint(inp1: [*c]const u8) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
     longIntegerInit(&lgInt);
     stringToLongInteger(tmpString + @as(usize, if (tmpString[0] == '+') 1 else 0), 10, &lgInt[0]);
-    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
     longIntegerFree(&lgInt);
     setSystemFlag(FLAG_ASLIFT);
 }
@@ -3174,7 +3124,7 @@ pub export fn fnIntInputLongint(inp1: i32) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
     longIntegerInit(&lgInt);
     int32ToLongInteger(inp1, &lgInt[0]);
-    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
     longIntegerFree(&lgInt);
     setSystemFlag(FLAG_ASLIFT);
 }
@@ -3185,7 +3135,7 @@ pub export fn fnRCL(inp: i16) callconv(.c) void {
         liftStack();
         copySourceRegisterToDestRegister(inp, REGISTER_X);
     } else {
-        fnRecall(inp);
+        frontier_recall.fnRecall(@intCast(inp));
     }
 }
 
@@ -3194,7 +3144,7 @@ pub export fn convert_to_double(regist: calcRegister_t) callconv(.c) f64 {
     var tmpy: real_t = undefined;
     switch (getRegisterDataType(regist)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
+            frontier_register_value_conversions.convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
         },
         dtReal34 => {
             real34ToReal(reg34(regist), &tmpy);
@@ -3319,25 +3269,25 @@ pub export fn dms34ToReal34(dms: u16) callconv(.c) void {
     realSetPositiveSign(&temp);
 
     // Get the degrees
-    realToIntegralValue(&temp, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&temp, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
 
     // Get the minutes
     realSubtract(&temp, &degrees, &temp, &ctxtReal39);
     temp.exponent += 2; // temp = temp * 100
-    realToIntegralValue(&temp, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&temp, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
 
     // Get the seconds
     realSubtract(&temp, &minutes, &temp, &ctxtReal39);
     temp.exponent += 2;
-    realToIntegralValue(&temp, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
+    frontier_register_value_conversions.realToIntegralValue(&temp, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
 
     // Get the fractional seconds
     realSubtract(&temp, &seconds, &temp, &ctxtReal39);
     temp.exponent += 2;
 
-    fs = realToUint32C47(&temp, null);
-    s = realToUint32C47(&seconds, null);
-    m = realToUint32C47(&minutes, null);
+    fs = frontier_real_type.realToUint32C47(&temp, null);
+    s = frontier_real_type.realToUint32C47(&seconds, null);
+    m = frontier_real_type.realToUint32C47(&minutes, null);
 
     if (fs >= 100) {
         fs -= 100;
@@ -3385,10 +3335,10 @@ pub export fn dms34ToReal34(dms: u16) callconv(.c) void {
 
 pub export fn notSexa() callconv(.c) void {
     copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
-    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
-            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted!", .{std.mem.span(getRegisterDataTypeName(REGISTER_X, 0, 0))});
+            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, false, false))});
             moreInfoOnError("In function notSexa:", errorMessage, null, null);
         }
     }
@@ -3513,16 +3463,16 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
     while (i < 3) : (i += 1) {
         switch (getRegisterDataType(toTimeParamReg[i])) {
             dtLongInteger => {
-                convertLongIntegerRegisterToReal34(toTimeParamReg[i], part[i]);
+                frontier_register_value_conversions.convertLongIntegerRegisterToReal34(toTimeParamReg[i], part[i]);
             },
             dtReal34 => {
                 if (getRegisterAngularMode(toTimeParamReg[i]) != 0) {
                     real34ToIntegralValue(reg34(toTimeParamReg[i]), part[i], DEC_ROUND_DOWN);
                 } else {
-                    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
                         if (comptime !dmcp_build) {
-                            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(getRegisterDataTypeName(toTimeParamReg[i], 0, 0))});
+                            abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(toTimeParamReg[i], false, false))});
                             moreInfoOnError("In function fnToTime:", errorMessage, null, null);
                         }
                     }
@@ -3530,10 +3480,10 @@ pub export fn fnToTime(unusedButMandatoryParameter: u16) callconv(.c) void {
                 }
             },
             else => {
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
                     if (comptime !dmcp_build) {
-                        abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(getRegisterDataTypeName(toTimeParamReg[i], 0, 0))});
+                        abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be converted to a time!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(toTimeParamReg[i], false, false))});
                         moreInfoOnError("In function fnToTime:", errorMessage, null, null);
                     }
                 }
@@ -3595,7 +3545,7 @@ pub export fn getSmallestDenom(val: *const real_t) callconv(.c) i32 {
 
     // loop finding terms until denom gets too big
     while (true) {
-        ai = realToInt32C47(&xx, null);
+        ai = frontier_real_type.realToInt32C47(&xx, null);
         if (!(m[1][0] * ai + m[1][1] <= maxden)) break;
         var t: i32 = undefined;
         t = m[0][0] * ai + m[0][1];
@@ -3663,14 +3613,14 @@ fn finishDenom(m: *[2][2]i32, dd: i32) i32 {
 pub export fn changeToSup(numer: u64, str: [*c]u8) callconv(.c) void {
     var endingZero: i16 = 0;
     str[0] = 0;
-    _numerator(numer, str, &endingZero);
+    frontier_display._numerator(numer, str, &endingZero);
 }
 
 pub export fn changeToSub(denom: u64, str: [*c]u8) callconv(.c) void {
     var endingZero: i16 = 1;
     str[0] = '/';
     str[1] = 0;
-    _denominator(denom, str, &endingZero);
+    frontier_display._denominator(denom, str, &endingZero);
 }
 
 pub export fn changeToWholeString(intt: i32, str: [*c]u8, str1: [*c]const u8) callconv(.c) void {
@@ -3678,7 +3628,7 @@ pub export fn changeToWholeString(intt: i32, str: [*c]u8, str1: [*c]const u8) ca
     var lgInt: longInteger_t = undefined;
     longIntegerInit(&lgInt);
     int32ToLongInteger(intt, &lgInt[0]);
-    longIntegerToDisplayString(&lgInt[0], str, 30, SCREEN_WIDTH, 20, 1);
+    frontier_display.longIntegerToDisplayString(&lgInt[0], str, 30, SCREEN_WIDTH, 20, 1);
     _ = strcat(str, str1);
     longIntegerFree(&lgInt);
 }
@@ -3736,9 +3686,9 @@ pub export fn checkForAndChange(displayString: [*c]u8, valueReal: *const real_t,
 
     // See if there is a whole multiple of the new constant
     realDivide(valueRealAbs, &newConstant, &multipleOfNewConstant, &ctxtReal_find_multiple_of_irr);
-    realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal_find_multiple_of_irr);
+    frontier_register_value_conversions.realToIntegralValue(&multipleOfNewConstant, &multipleOfNewConstant_ip, DEC_ROUND_HALF_UP, &ctxtReal_find_multiple_of_irr);
     realSubtract(&multipleOfNewConstant, &multipleOfNewConstant_ip, &multipleOfNewConstant_fp, &ctxtReal_find_multiple_of_irr);
-    multipleOfNewConstantInteger = abs(realToInt32C47(&multipleOfNewConstant_ip, null));
+    multipleOfNewConstantInteger = abs(frontier_real_type.realToInt32C47(&multipleOfNewConstant_ip, null));
 
     // See if the ip is out of range
     if (realCompareAbsGreaterThan(&multipleOfNewConstant_ip, const_10p9__1) != 0) {
@@ -3889,14 +3839,14 @@ pub export fn fnSafeReset(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 fn assignToMyMenu_(position: u16) void {
     if (position < 18) {
-        _assignItem(@ptrCast(&userMenuItems[position]));
+        frontier_assign._assignItem(@ptrCast(&userMenuItems[position]));
     }
     cachedDynamicMenu = 0;
 }
 
 fn assignToMyAlpha_(position: u16) void {
     if (position < 18) {
-        _assignItem(@ptrCast(&userAlphaItems[position]));
+        frontier_assign._assignItem(@ptrCast(&userAlphaItems[position]));
     }
     cachedDynamicMenu = 0;
 }
@@ -3945,10 +3895,10 @@ pub export fn fnRESET_MyM(param: u16) callconv(.c) void {
 
         if (itemToBeAssigned == -MNU_PFN) {
             _ = strcpy(aimBuffer, "P.FN");
-            assignGetName1();
+            frontier_assign.assignGetName1();
         } else if (itemToBeAssigned == -MNU_HOME) {
             _ = strcpy(aimBuffer, "HOME");
-            assignGetName1();
+            frontier_assign.assignGetName1();
         }
 
         assignToMyMenu_(@intCast(fn_ - 1));
@@ -3960,7 +3910,7 @@ pub export fn fnRESET_MyM(param: u16) callconv(.c) void {
         }
     }
     setSystemFlag(FLAG_BASE_MYM);
-    refreshScreen(42);
+    frontier_screen.refreshScreen(42);
 }
 
 pub export fn fnRESET_Mya() callconv(.c) void {
@@ -3973,7 +3923,7 @@ pub export fn fnRESET_Mya() callconv(.c) void {
         itemToBeAssigned = ASSIGN_CLEAR;
         assignToMyAlpha_(@intCast(12 + fn_ - 1));
     }
-    refreshScreen(43);
+    frontier_screen.refreshScreen(43);
 }
 
 // ===========================================================================
@@ -4142,9 +4092,9 @@ const mb_offs: u32 = 1;
 pub export fn MB_MACRO(xx: u32, yy: u32) callconv(.c) void {
     var i: u8 = 0;
     while (i < mbDiamond.len) : (i += 1) {
-        placePixel(xx + mbDiamond[i][0] - mb_offs, yy + mbDiamond[i][1]);
+        frontier_plotstat.placePixel(xx + mbDiamond[i][0] - mb_offs, yy + mbDiamond[i][1]);
         // DOUBLE: duplicate row above for thickness
-        placePixel(xx + mbDiamond[i][0] - mb_offs, yy + mbDiamond[i][1] -% 1);
+        frontier_plotstat.placePixel(xx + mbDiamond[i][0] - mb_offs, yy + mbDiamond[i][1] -% 1);
     }
 }
 
@@ -4161,7 +4111,7 @@ pub export fn MB_MACRO_CHECKED(xx: u32, yy: u32) callconv(.c) void {
     MB_MACRO(xx, yy);
     var i: u8 = 0;
     while (i < mbDiamondFill.len) : (i += 1) {
-        placePixel(xx + mbDiamondFill[i][0] - mb_offs, yy + mbDiamondFill[i][1] -% 1);
+        frontier_plotstat.placePixel(xx + mbDiamondFill[i][0] - mb_offs, yy + mbDiamondFill[i][1] -% 1);
     }
 }
 
