@@ -10,8 +10,9 @@
 #        check-idiom-ratchet.sh --bump   # rewrite the baseline to current values
 # Exit: 0 if every metric <= its ceiling; 1 on any regression.
 #
-# Per REPORT-23 §11 this is NOT wired blocking into CI until Phase 2 (to avoid
-# churn while the L1 foundation lands); it is runnable now as the local gate.
+# Wired blocking into CI (REPORT-27 M-IDIOM-9): the idiom-ratchet-guard job in
+# .github/workflows/upstream-oracle.yml runs this on every push/PR so a change
+# cannot silently re-add [*c]/@ptrCast/extern-struct/extern-fn/callconv debt.
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
