@@ -30,6 +30,21 @@ const angularMode_t = c_int;
 const localFlags_t = u32;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
+const frontier_string_funcs = @import("frontier_string_funcs.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 
@@ -271,62 +286,29 @@ extern var ctxtReal34: anyopaque;
 // ---------------------------------------------------------------------------
 // Function externs
 // ---------------------------------------------------------------------------
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn liftStack() void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
-extern fn fnSkip(numberOfSteps: u16) void;
-extern fn fnBack(numberOfSteps: u16) void;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
-extern fn fnStore(r: u16) void;
 
-extern fn reallyRunFunction(func: i16, param: u16) void;
-extern fn runFunction(func: i16) void;
-extern fn fn42Alpha(unusedButMandatoryParameter: u16) void;
-extern fn fn42Append(unusedButMandatoryParameter: u16) void;
 
 extern fn indirectAddressing(regist: calcRegister_t, parameterType: u16, minValue: i16, maxValue: i16, tryAllocate: bool_t) i16;
-extern fn indirectionType(func: u16) u16;
 extern fn isFunctionAllowingNewVariable(op: u16) bool_t;
-extern fn isFunctionOldParam16(func: u16) bool_t;
-extern fn regInRange(r: u16) bool_t;
 
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn findNamedLabel(labelName: [*c]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
-extern fn findMenu(buffer: [*c]u8) i16;
 
-extern fn findNextStep(step: [*c]u8) [*c]u8;
-extern fn defineCurrentStep() void;
-extern fn defineCurrentProgramFromGlobalStepNumber(globalStepNumber: i16) void;
-extern fn getNumberOfSteps() u16;
-extern fn defineFirstDisplayedStep() void;
-extern fn isAtEndOfPrograms(step: [*c]const u8) bool_t;
-extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool_t;
-extern fn insertStepInProgram(func: i16) void;
 
-extern fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base: u32, destination: calcRegister_t) void;
-extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 
-extern fn julianDayToInternalDate(source: *const real34_t, destination: *real34_t) void;
-extern fn hmmssInRegisterToSeconds(regist: calcRegister_t) void;
-extern fn real34FromDmsToDeg(angleDms: *const real34_t, angleDec: *real34_t) void;
 
-extern fn refreshScreen(source: u16) void;
-extern fn refreshLcd(surface: ?*anyopaque) void;
-extern fn leaveTamModeIfEnabled() void;
-extern fn showHideHourGlass() void;
 
-extern fn xcopy(dest: *anyopaque, source: *const anyopaque, n: u32) *anyopaque;
 extern fn strlen(s: [*c]const u8) usize;
-extern fn dynmenuGetLabel(menuitem: i16) [*c]u8;
-extern fn dynmenuGetLabelWithDup(menuitem: i16, dupNum: *i16) [*c]u8;
 
 // decQuad helpers (the real34 macros / literal helpers).
 extern fn decQuadFromInt32(r: *real34_t, v: i32) *real34_t;
@@ -334,7 +316,6 @@ extern fn decQuadZero(r: *real34_t) *real34_t;
 extern fn decQuadFromString(r: *real34_t, s: [*c]const u8, ctx: *anyopaque) *real34_t;
 
 // C47 functions (always linkable, both host and firmware).
-extern fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) c_int;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 extern fn setLastKeyCode(key: c_int) void;
 
@@ -449,7 +430,7 @@ inline fn regKStoC(regKS: u8) i16 {
 }
 
 inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
-    return checkOpCodeOfStep(step, ITM_END);
+    return @intFromBool(frontier_manage.checkOpCodeOfStep(step, ITM_END));
 }
 
 inline fn absI32(x: i32) i32 {
@@ -482,22 +463,22 @@ pub export fn fnGoto(label: u16) callconv(.c) void {
                 }
             }
 
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function fnGoto:", "there is no local label in current program");
         } else if (label >= FIRST_LABEL and label <= LAST_LABEL) { // Global named label
             if ((label - FIRST_LABEL) < numberOfLabels) {
                 goToGlobalStep(@intCast(labelList[label - FIRST_LABEL].step));
                 return;
             } else {
-                displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                 moreInfoOnError("In function fnGoto:", "label ID out of range");
             }
         } else {
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function fnGoto:", "invalid parameter");
         }
     } else {
-        insertStepInProgram(@intCast(ITM_GTO));
+        frontier_manage.insertStepInProgram(@intCast(ITM_GTO));
     }
 }
 
@@ -509,7 +490,7 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
 
     if (dynamicMenuItem >= 0) {
         var dupNum: i16 = 0;
-        const labelName: [*c]u8 = dynmenuGetLabelWithDup(dynamicMenuItem, &dupNum);
+        const labelName: [*c]u8 = frontier_softmenus.dynmenuGetLabelWithDup(dynamicMenuItem, &dupNum);
 
         if (labelName[0] == 0) {
             return;
@@ -541,7 +522,7 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
         }
     }
 
-    defineCurrentProgramFromGlobalStepNumber(@intCast(step));
+    frontier_manage.defineCurrentProgramFromGlobalStepNumber(@intCast(step));
     currentLocalStepNumber = @intCast(absI32(step) - absI32(programList[currentProgramNumber - 1].step) + 1);
 
     var stepPointer: [*c]u8 = beginOfCurrentProgram;
@@ -552,13 +533,13 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
             break;
         }
 
-        stepPointer = findNextStep(stepPointer);
+        stepPointer = frontier_next_step.findNextStep(stepPointer);
         step += 1;
     }
 
     if (currentLocalStepNumber >= 3) {
         firstDisplayedLocalStepNumber = currentLocalStepNumber - 3;
-        const numberOfSteps: u16 = getNumberOfSteps();
+        const numberOfSteps: u16 = frontier_manage.getNumberOfSteps();
         if (firstDisplayedLocalStepNumber + 6 > numberOfSteps) {
             var i: i32 = 3 + @as(i32, currentLocalStepNumber) - @as(i32, numberOfSteps);
             while (i > 0) : (i -= 1) {
@@ -567,7 +548,7 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
                 }
             }
         }
-        defineFirstDisplayedStep();
+        frontier_next_step.defineFirstDisplayedStep();
     } else {
         firstDisplayedLocalStepNumber = 0;
         firstDisplayedStep = beginOfCurrentProgram;
@@ -613,20 +594,20 @@ pub export fn fnExecute(label: u16) callconv(.c) void {
             dynamicMenuItem = -1;
             if (lastErrorCode != ERROR_NONE) {
                 fnReturn(0);
-                fnBack(1);
+                frontier_next_step.fnBack(1);
             }
         } else {
             // OUT OF MEMORY
             currentSubroutineLevelData = oldCurrentSubroutineLevelData;
-            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         }
     } else {
         fnGoto(label);
         dynamicMenuItem = -1;
         if (lastErrorCode == ERROR_NONE) {
             if (tam.mode != 0) {
-                leaveTamModeIfEnabled();
-                refreshScreen(2);
+                frontier_tam.leaveTamModeIfEnabled();
+                frontier_screen.refreshScreen(2);
             }
             runProgram(0, INVALID_VARIABLE);
         }
@@ -651,11 +632,11 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
     if (currentInputVariable != INVALID_VARIABLE) {
         currentInputVariable = INVALID_VARIABLE;
         screenUpdatingMode = SCRUPD_AUTO; // &= ~SCRUPD_MANUAL_STATUSBAR;
-        refreshScreen(3);
+        frontier_screen.refreshScreen(3);
         if (comptime dmcp_build) {
             lcdRefresh();
         } else {
-            refreshLcd(null);
+            _ = frontier_screen.refreshLcd(null);
         }
     }
 
@@ -664,15 +645,15 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
         if (programRunStop == PGM_RUNNING) {
             currentProgramNumber = @bitCast(cur().returnProgramNumber);
             currentLocalStepNumber = cur().returnLocalStep + 1;
-            defineCurrentStep();
+            frontier_next_step.defineCurrentStep();
         } else {
             const returnGlobalStepNumber: u16 = @intCast(@as(i32, cur().returnLocalStep) + programList[@as(u16, @bitCast(cur().returnProgramNumber)) - 1].step); // the next step
             goToGlobalStep(returnGlobalStepNumber);
         }
 
-        if (skip > 0 and isAtEndOfProgram(currentStep) == 0 and isAtEndOfPrograms(currentStep) == 0) {
+        if (skip > 0 and isAtEndOfProgram(currentStep) == 0 and !frontier_manage.isAtEndOfPrograms(currentStep)) {
             currentLocalStepNumber += 1;
-            currentStep = findNextStep(currentStep);
+            currentStep = frontier_next_step.findNextStep(currentStep);
         }
         if (cur().numberOfLocalRegisters > 0) {
             allocateLocalRegisters(0);
@@ -717,7 +698,7 @@ pub export fn fnRunProgram(unusedButMandatoryParameter: u16) callconv(.c) void {
         if (currentInputVariable & 0x8000 != 0) {
             fnDropY(NOPARAM);
         }
-        fnStore(currentInputVariable & 0x3fff);
+        frontier_store.fnStore(currentInputVariable & 0x3fff);
         currentInputVariable = INVALID_VARIABLE;
     }
     dynamicMenuItem = -1;
@@ -745,7 +726,7 @@ fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
         stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
     }
-    _ = xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
+    _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
@@ -753,9 +734,9 @@ fn _executeWithIndirectRegister(paramAddress: [*c]u8, op: u16) void {
     const opParam: u8 = paramAddress[0];
     const tryAllocate: bool_t = isFunctionAllowingNewVariable(op);
     if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Local register from .00 to .98
-        const realParam: i16 = indirectAddressing(regKStoC(opParam), indirectionType(op), @intCast(indexOfItems[op].tamMinMax >> TAM_MAX_BITS), @intCast(indexOfItems[op].tamMinMax & TAM_MAX_MASK), tryAllocate);
+        const realParam: i16 = indirectAddressing(regKStoC(opParam), frontier_items.indirectionType(op), @intCast(indexOfItems[op].tamMinMax >> TAM_MAX_BITS), @intCast(indexOfItems[op].tamMinMax & TAM_MAX_MASK), tryAllocate);
         if (realParam != FAILED_INDIRECTION) {
-            reallyRunFunction(@bitCast(op), @bitCast(realParam));
+            frontier_items.reallyRunFunction(@bitCast(op), @bitCast(realParam));
         }
     } else {
         // sprintf(tmpString, ...): bug-path, dropped.
@@ -767,12 +748,12 @@ fn _executeWithIndirectVariable(stringAddress: [*c]u8, op: u16) void {
     _getStringLabelOrVariableName(stringAddress);
     const regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
     if (regist != INVALID_VARIABLE) {
-        const realParam: i16 = indirectAddressing(regist, indirectionType(op), @intCast(indexOfItems[op].tamMinMax >> TAM_MAX_BITS), @intCast(indexOfItems[op].tamMinMax & TAM_MAX_MASK), tryAllocate);
+        const realParam: i16 = indirectAddressing(regist, frontier_items.indirectionType(op), @intCast(indexOfItems[op].tamMinMax >> TAM_MAX_BITS), @intCast(indexOfItems[op].tamMinMax & TAM_MAX_MASK), tryAllocate);
         if (realParam != FAILED_INDIRECTION) {
-            reallyRunFunction(@bitCast(op), @bitCast(realParam));
+            frontier_items.reallyRunFunction(@bitCast(op), @bitCast(realParam));
         }
     } else {
-        displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function _executeWithIndirectVariable:", "string is not a named variable");
     }
 }
@@ -790,14 +771,14 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
 
         PARAM_LABEL => {
             if (opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
-                reallyRunFunction(@bitCast(op), opParam);
+                frontier_items.reallyRunFunction(@bitCast(op), opParam);
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 _getStringLabelOrVariableName(paramAddress);
-                const label: calcRegister_t = findNamedLabel(tmpStringLabelOrVariableName);
+                const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName);
                 if (label != INVALID_VARIABLE or op == ITM_LBLQ) {
-                    reallyRunFunction(@bitCast(op), @bitCast(label));
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(label));
                 } else {
-                    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                     moreInfoOnError("In function _executeOp:", "string is not a named label");
                 }
             } else if (opParam == INDIRECT_REGISTER) {
@@ -811,14 +792,14 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
 
         PARAM_FLAG => {
             if (opParam <= LAST_LOCAL_FLAG) { // Global flag 00..99, Lettered X..K, or Local .00..31
-                reallyRunFunction(@bitCast(op), opParam);
+                frontier_items.reallyRunFunction(@bitCast(op), opParam);
             } else if (FLAG_M <= opParam and opParam < FLAG_W) { // Lettered flag from M to W
-                reallyRunFunction(@bitCast(op), opParam);
+                frontier_items.reallyRunFunction(@bitCast(op), opParam);
             } else if (opParam == SYSTEM_FLAG_NUMBER) {
                 if (paramAddress[0] < 64) { // first 64 system flags
-                    reallyRunFunction(@bitCast(op), indexOfItems[@as(usize, paramAddress[0]) + SFL_TDM24].param);
+                    frontier_items.reallyRunFunction(@bitCast(op), indexOfItems[@as(usize, paramAddress[0]) + SFL_TDM24].param);
                 } else { // other system flags
-                    reallyRunFunction(@bitCast(op), indexOfItems[@as(usize, paramAddress[0] & 0x3f) + SFL_MONIT].param);
+                    frontier_items.reallyRunFunction(@bitCast(op), indexOfItems[@as(usize, paramAddress[0] & 0x3f) + SFL_MONIT].param);
                 }
             } else if (opParam == INDIRECT_REGISTER) {
                 _executeWithIndirectRegister(paramAddress, op);
@@ -831,7 +812,7 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
 
         PARAM_NUMBER_8 => {
             if (opParam <= (indexOfItems[op].tamMinMax & TAM_MAX_MASK)) { // Value from 0 to 99
-                reallyRunFunction(@bitCast(op), opParam);
+                frontier_items.reallyRunFunction(@bitCast(op), opParam);
             } else if (opParam == INDIRECT_REGISTER) {
                 _executeWithIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
@@ -843,9 +824,9 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
 
         PARAM_NUMBER_8_16 => {
             if (opParam <= 249) { // Value from 0 to 249
-                reallyRunFunction(@bitCast(op), opParam);
+                frontier_items.reallyRunFunction(@bitCast(op), opParam);
             } else if (opParam == CNST_BEYOND_250) { // Value from 250 to 499
-                reallyRunFunction(@bitCast(op), 250 + @as(u16, paramAddress[0]));
+                frontier_items.reallyRunFunction(@bitCast(op), 250 + @as(u16, paramAddress[0]));
             } else if (opParam == INDIRECT_REGISTER) {
                 _executeWithIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
@@ -856,43 +837,43 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
         },
 
         PARAM_NUMBER_16 => {
-            if (isFunctionOldParam16(op) != 0) { // original Param16 without indirection (little endian parameter)
-                reallyRunFunction(@bitCast(op), @as(u16, opParam) +% 256 *% @as(u16, paramAddress[0]));
+            if (frontier_items.isFunctionOldParam16(op) != 0) { // original Param16 without indirection (little endian parameter)
+                frontier_items.reallyRunFunction(@bitCast(op), @as(u16, opParam) +% 256 *% @as(u16, paramAddress[0]));
             } else { // new Param16 with indirection (big endian parameter)
                 if (opParam == INDIRECT_REGISTER) {
                     _executeWithIndirectRegister(paramAddress, op);
                 } else if (opParam == INDIRECT_VARIABLE) {
                     _executeWithIndirectVariable(paramAddress, op);
                 } else {
-                    reallyRunFunction(@bitCast(op), (@as(u16, opParam) *% 256) +% @as(u16, paramAddress[0]));
+                    frontier_items.reallyRunFunction(@bitCast(op), (@as(u16, opParam) *% 256) +% @as(u16, paramAddress[0]));
                 }
             }
         },
 
         PARAM_REGISTER, PARAM_COMPARE => {
             if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global 00..99, Lettered X..K, or Local .00..98
-                if (regInRange(@bitCast(regKStoC(opParam))) != 0) {
-                    reallyRunFunction(@bitCast(op), @bitCast(regKStoC(opParam)));
+                if (frontier_store.regInRange(@bitCast(regKStoC(opParam)))) {
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(regKStoC(opParam)));
                 }
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 _getStringLabelOrVariableName(paramAddress);
                 const regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
                 if (tryAllocate != 0) {
-                    reallyRunFunction(@bitCast(op), @bitCast(findOrAllocateNamedVariable(tmpStringLabelOrVariableName)));
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(findOrAllocateNamedVariable(tmpStringLabelOrVariableName)));
                 } else if (regist != INVALID_VARIABLE) {
-                    reallyRunFunction(@bitCast(op), @bitCast(regist));
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(regist));
                 } else {
-                    displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
                     moreInfoOnError("In function _executeOp:", "string is not a named variable");
                 }
             } else if (paramMode == PARAM_COMPARE and opParam == VALUE_0) {
                 reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
                 real34SetZero(reg34(TEMP_REGISTER_1));
-                reallyRunFunction(@bitCast(op), TEMP_REGISTER_1);
+                frontier_items.reallyRunFunction(@bitCast(op), TEMP_REGISTER_1);
             } else if (paramMode == PARAM_COMPARE and opParam == VALUE_1) {
                 reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
                 real34SetOne(reg34(TEMP_REGISTER_1));
-                reallyRunFunction(@bitCast(op), TEMP_REGISTER_1);
+                frontier_items.reallyRunFunction(@bitCast(op), TEMP_REGISTER_1);
             } else if (opParam == INDIRECT_REGISTER) {
                 _executeWithIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {
@@ -905,13 +886,13 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
         PARAM_MENU => {
             if (opParam == STRING_LABEL_VARIABLE) {
                 _getStringLabelOrVariableName(paramAddress);
-                const menu_id: i16 = findMenu(tmpStringLabelOrVariableName);
+                const menu_id: i16 = frontier_softmenus.findMenu(tmpStringLabelOrVariableName);
                 if (tryAllocate != 0) {
-                    reallyRunFunction(@bitCast(op), @bitCast(findOrAllocateNamedVariable(tmpStringLabelOrVariableName)));
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(findOrAllocateNamedVariable(tmpStringLabelOrVariableName)));
                 } else if (menu_id != INVALID_MENU) {
-                    reallyRunFunction(@bitCast(op), @bitCast(menu_id));
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(menu_id));
                 } else {
-                    displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
                     moreInfoOnError("In function _executeOp:", "string is not a menu name");
                 }
             } else if (opParam == INDIRECT_REGISTER) {
@@ -924,7 +905,7 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
         },
 
         PARAM_SKIP_BACK, PARAM_SHUFFLE => {
-            reallyRunFunction(@bitCast(op), opParam);
+            frontier_items.reallyRunFunction(@bitCast(op), opParam);
         },
 
         else => {
@@ -943,12 +924,12 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtShortInteger, 0, literalAddress[0]);
             literalAddress += 1;
-            _ = xcopy(getRegisterDataPointer(REGISTER_X), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
+            _ = frontier_char_string.xcopy(getRegisterDataPointer(REGISTER_X), @ptrCast(literalAddress), toBytes(SHORT_INTEGER_SIZE_IN_BLOCKS));
         },
 
         BINARY_REAL34 => {
             var realLiteral: real34_t = undefined;
-            _ = xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(@ptrCast(&realLiteral), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
@@ -960,8 +941,8 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtComplex34, 0, @bitCast(amNone));
-            _ = xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
-            _ = xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.real), @ptrCast(literalAddress), REAL34_SIZE_IN_BYTES);
+            _ = frontier_char_string.xcopy(@ptrCast(&complexLiteral.imag), @ptrCast(literalAddress + REAL34_SIZE_IN_BYTES), REAL34_SIZE_IN_BYTES);
             complex34Copy(&complexLiteral, regComplex34(REGISTER_X));
         },
 
@@ -974,7 +955,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             _ = stringToLongInteger(tmpStringLabelOrVariableName, base, &val);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertLongIntegerToShortIntegerRegister(&val, literalAddress[0], REGISTER_X);
+            frontier_register_value_conversions.convertLongIntegerToShortIntegerRegister(&val, literalAddress[0], REGISTER_X);
 
             mpz_clear(&val);
         },
@@ -987,7 +968,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             _ = stringToLongInteger(tmpStringLabelOrVariableName, 10, &val);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
-            convertLongIntegerToLongIntegerRegister(&val, REGISTER_X);
+            frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&val, REGISTER_X);
 
             mpz_clear(&val);
         },
@@ -1046,7 +1027,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtString, toBlocks(@as(u32, @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1))), @bitCast(amNone));
-            _ = xcopy(@ptrCast(regStringData(REGISTER_X)), @ptrCast(tmpStringLabelOrVariableName), @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1));
+            _ = frontier_char_string.xcopy(@ptrCast(regStringData(REGISTER_X)), @ptrCast(tmpStringLabelOrVariableName), @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1));
         },
 
         STRING_DATE => {
@@ -1055,7 +1036,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtDate, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
-            julianDayToInternalDate(@ptrCast(reg34(REGISTER_X)), @ptrCast(reg34(REGISTER_X)));
+            frontier_date_time.julianDayToInternalDate(@ptrCast(reg34(REGISTER_X)), @ptrCast(reg34(REGISTER_X)));
         },
 
         STRING_TIME => {
@@ -1064,7 +1045,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
-            hmmssInRegisterToSeconds(REGISTER_X);
+            frontier_date_time.hmmssInRegisterToSeconds(REGISTER_X);
         },
 
         STRING_ANGLE_DMS => {
@@ -1073,7 +1054,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amDMS));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
-            real34FromDmsToDeg(@ptrCast(reg34(REGISTER_X)), @ptrCast(reg34(REGISTER_X)));
+            frontier_conversion_angles.real34FromDmsToDeg(@ptrCast(reg34(REGISTER_X)), @ptrCast(reg34(REGISTER_X)));
         },
 
         else => {
@@ -1121,7 +1102,7 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
         },
 
         ITM_RTN, ITM_END, ITM_RTNP1 => {
-            runFunction(@bitCast(op));
+            frontier_items.runFunction(@bitCast(op));
             return 0;
         },
 
@@ -1145,7 +1126,7 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
         else => {
             switch (indexOfItems[op].status & PTP_STATUS) {
                 PTP_NONE => {
-                    runFunction(@bitCast(op));
+                    frontier_items.runFunction(@bitCast(op));
                 },
 
                 PTP_DECLARE_LABEL => {
@@ -1153,7 +1134,7 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                 },
 
                 PTP_DISABLED => {
-                    displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
+                    frontier_error.displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
                     moreInfoOnError("In function executeOneStep:", "non-programmable function appeared in the program!");
                     return 0;
                 },
@@ -1169,19 +1150,19 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                         step += 1;
                         if (marker == STRING_LABEL_VARIABLE) {
                             _getStringLabelOrVariableName(step);
-                            fn42Alpha(NOPARAM);
+                            frontier_string_funcs.fn42Alpha(NOPARAM);
                         }
                     } else if (op == ITM_42APPEND) {
                         const marker = step[0];
                         step += 1;
                         if (marker == STRING_LABEL_VARIABLE) {
                             if (getRegisterDataType(@bitCast(alphaRegister)) != dtString) {
-                                displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+                                frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
                                 moreInfoOnError("In function executeOneStep:", "cannot use 42append: alpha register is not a string");
                                 return 0;
                             }
                             _getStringLabelOrVariableName(step);
-                            fn42Append(NOPARAM);
+                            frontier_string_funcs.fn42Append(NOPARAM);
                         }
                     } else {
                         // REM: just ignore it
@@ -1213,13 +1194,13 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
     hourGlassIconEnabled = 1;
     programRunStop = PGM_RUNNING;
     if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING)) {
-        showHideHourGlass();
+        frontier_status_bar.showHideHourGlass();
         screenUpdatingMode = SCRUPD_AUTO;
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     }
 
     if (menuLabel != INVALID_VARIABLE) {
-        fnBack(1);
+        frontier_next_step.fnBack(1);
         if (menuLabel & 0x8000 != 0) {
             fnExecute(menuLabel & 0x7fff);
         } else {
@@ -1251,7 +1232,7 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
                 },
 
                 else => { // Find the next step
-                    fnSkip(@as(u16, @bitCast(stepsToBeAdvanced)) -% 1);
+                    frontier_next_step.fnSkip(@as(u16, @bitCast(stepsToBeAdvanced)) -% 1);
                 },
             }
         } else {
@@ -1259,14 +1240,14 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
         }
         if (comptime dmcp_build) {
             if (nestedEngine == 0) {
-                const key: c_int = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) + 1;
+                const key: c_int = frontier_addons.C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) + 1;
                 if (key == 36 or key == 33) { // JM R/S or EXIT
                     programRunStop = PGM_WAITING;
                     screenUpdatingMode = SCRUPD_AUTO;
                     if (getSystemFlag(FLAG_INTING) or getSystemFlag(FLAG_SOLVING)) {
-                        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                        frontier_error.displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                     }
-                    refreshScreen(1);
+                    frontier_screen.refreshScreen(1);
                     lcdRefresh();
                     fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
                     waitForKeyRelease(0);
@@ -1295,12 +1276,12 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
         entryStatus &= 0xfe;
     }
     if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING)) {
-        showHideHourGlass();
+        frontier_status_bar.showHideHourGlass();
         if (temporaryInformation == TI_VIEW_REGISTER) {
             screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
         }
         if (screenUpdatingMode == SCRUPD_AUTO and singleStep == 0) {
-            refreshScreen(4);
+            frontier_screen.refreshScreen(4);
         }
     }
     return;
@@ -1326,7 +1307,7 @@ pub export fn execProgram(label: u16) callconv(.c) void {
 pub export fn fnCheckLabel(label_arg: u16) callconv(.c) void {
     var label = label_arg;
     if (dynamicMenuItem >= 0) {
-        label = @bitCast(findNamedLabel(dynmenuGetLabel(dynamicMenuItem)));
+        label = @bitCast(frontier_manage.findNamedLabel(frontier_softmenus.dynmenuGetLabel(dynamicMenuItem)));
     }
 
     // Local Label 00 to 99 and A to l

@@ -22,6 +22,14 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -77,8 +85,6 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, pad: bool) [*c]const u8;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_line: calcRegister_t, err_register_line: calcRegister_t) void;
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strlen(str: [*c]const u8) usize;
@@ -88,21 +94,12 @@ extern fn fnSwapX(regist: u16) void;
 extern fn elementwiseRema_UInt16(f: ?*const fn (u16) callconv(.c) void, param: u16) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
-extern fn xcopy(dst: *anyopaque, src: *const anyopaque, n: u32) *anyopaque;
-extern fn stringGlyphLength(str: [*c]const u8) i32;
-extern fn stringNextGlyph(str: [*c]const u8, pos: i16) i16;
 extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn real34CompareAbsGreaterThan(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
 extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
 extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 
 // Converters exported by the registerValueConversions owner.
-extern fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, regist: calcRegister_t) void;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) void;
-extern fn convertLongIntegerToShortIntegerRegister(lgInt: *mpz_struct, base: u32, destination: calcRegister_t) void;
-extern fn convertShortIntegerRegisterToLongInteger(source: calcRegister_t, lgInt: *mpz_struct) void;
-extern fn convertReal34ToLongInteger(re34: *align(1) const real34_t, lgInt: *mpz_struct, roundingMode: c_int) void;
-extern fn convertRealToLongInteger(re: *const real_t, lgInt: *mpz_struct, roundingMode: c_int) void;
 
 // ---------------------------------------------------------------------------
 // GMP externs (mpz_* are header macros; the linkable symbols are __gmpz_*)
@@ -181,7 +178,7 @@ inline fn realSetPositiveSign(v: *real_t) void {
 pub export fn trimLeadingSpace(stringToTrim: [*c]u8) callconv(.c) void {
     if (stringToTrim[0] == ' ') {
         const len: i32 = stringByteLength(stringToTrim);
-        _ = xcopy(stringToTrim, stringToTrim + 1, @intCast(len));
+        _ = frontier_char_string.xcopy(stringToTrim, stringToTrim + 1, @intCast(len));
     }
 }
 
@@ -192,20 +189,20 @@ pub export fn fnAlphaLeng(regist: u16) callconv(.c) void {
     var stringSize: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot get the \x83\xb1LENG? from {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot get the \x83\xb1LENG? from {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaLeng:", errorMessage);
         }
         return;
     }
 
     longIntegerInit(&stringSize[0]);
-    int32ToLongInteger(stringGlyphLength(regString(@intCast(regist))), &stringSize[0]);
+    int32ToLongInteger(frontier_char_string.stringGlyphLength(regString(@intCast(regist))), &stringSize[0]);
 
     liftStack();
 
-    convertLongIntegerToLongIntegerRegister(&stringSize[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&stringSize[0], REGISTER_X);
     longIntegerFree(&stringSize[0]);
 }
 
@@ -219,16 +216,16 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaToX:", errorMessage);
         }
         return;
     }
 
     if (stringByteLength(regString(@intCast(regist))) == 0) {
-        displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on an empty string", .{});
             moreInfoOnError("In function fnAlphaToX:", errorMessage);
@@ -251,7 +248,7 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
         longIntegerAddUInt(&lgInt[0], char2, &lgInt[0]);
     }
 
-    convertLongIntegerToShortIntegerRegister(&lgInt[0], 16, REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToShortIntegerRegister(&lgInt[0], 16, REGISTER_X);
     longIntegerFree(&lgInt[0]);
 
     if (!getSystemFlag(FLAG_ASLIFT) or regist != @as(u16, @intCast(getStackTop()))) {
@@ -259,7 +256,7 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
             regist += 1;
         }
         const skip: u16 = if ((char1 & 0x80) != 0) 2 else 1;
-        _ = xcopy(regString(@intCast(regist)), regString(@intCast(regist)) + skip, @intCast(stringByteLength(regString(@intCast(regist)) + skip) + 1));
+        _ = frontier_char_string.xcopy(regString(@intCast(regist)), regString(@intCast(regist)) + skip, @intCast(stringByteLength(regString(@intCast(regist)) + skip) + 1));
     }
 }
 
@@ -278,18 +275,18 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
         },
         dtString => {
             _readDestinationRegister(regist);
-            if (stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
-                displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+            if (frontier_char_string.stringGlyphLength(tmpString) + frontier_char_string.stringGlyphLength(regString(REGISTER_X)) > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+                frontier_error.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
-                    abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} ({d} + {d}) characters long. Maximum is {d}", .{ stringGlyphLength(tmpString) + stringGlyphLength(regString(REGISTER_X)), stringGlyphLength(tmpString), stringGlyphLength(regString(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING });
+                    abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} ({d} + {d}) characters long. Maximum is {d}", .{ frontier_char_string.stringGlyphLength(tmpString) + frontier_char_string.stringGlyphLength(regString(REGISTER_X)), frontier_char_string.stringGlyphLength(tmpString), frontier_char_string.stringGlyphLength(regString(REGISTER_X)), MAX_NUMBER_OF_GLYPHS_IN_STRING });
                     moreInfoOnError("In function fnXToAlpha:", errorMessage);
                 }
             } else {
                 var l: i32 = stringByteLength(tmpString);
-                _ = xcopy(tmpString + @as(usize, @intCast(l)), regString(REGISTER_X), @intCast(stringByteLength(regString(REGISTER_X)) + 1));
+                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(l)), regString(REGISTER_X), @intCast(stringByteLength(regString(REGISTER_X)) + 1));
                 l = stringByteLength(tmpString);
                 reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
-                _ = xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
+                _ = frontier_char_string.xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
             }
             return;
         },
@@ -298,16 +295,16 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
                 elementwiseRema_UInt16(&_doXToAlpha, regist);
             } else { // X is the destination: return in X a string of the character codes from the matrix in X
                 reallocateRegister(REGISTER_L, dtString, 1, amNone);
-                _ = xcopy(regString(REGISTER_L), "", 1);
+                _ = frontier_char_string.xcopy(regString(REGISTER_L), "", 1);
                 elementwiseRema_UInt16(&_doXToAlpha, @intCast(REGISTER_L));
                 fnSwapX(REGISTER_L);
             }
             return;
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
             return;
@@ -329,22 +326,22 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
             // The register converter re-initializes lgInt itself (matches the C).
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
-                convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
             return;
@@ -353,7 +350,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
 
     longIntegerSetPositiveSign(&lgInt[0]);
     if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{ @as(u32, @truncate(lgInt[0]._mp_d[0])) }); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function fnXToAlpha:", errorMessage);
@@ -389,25 +386,25 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg {d})", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)), @as(c_uint, regist) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg {d})", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)), @as(c_uint, regist) });
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
         }
         return;
     }
 
     if (getRegisterDataType(REGISTER_X) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg X)", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg X)", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
         }
         return;
     }
 
-    if (stringGlyphLength(regString(@intCast(regist))) == 0 or stringGlyphLength(regString(REGISTER_X)) == 0) {
-        displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
+    if (frontier_char_string.stringGlyphLength(regString(@intCast(regist))) == 0 or frontier_char_string.stringGlyphLength(regString(REGISTER_X)) == 0) {
+        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on or with an empty string", .{});
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
@@ -443,7 +440,7 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     }
 
     liftStack();
-    convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
     longIntegerFree(&lgInt[0]);
 }
 
@@ -456,17 +453,17 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
     var mod: real_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaRR:", errorMessage);
         }
         return;
     }
 
-    const stringGlyphLen: i16 = @intCast(stringGlyphLength(regString(@intCast(regist))));
+    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
-        displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on an empty string", .{});
             moreInfoOnError("In function fnAlphaRR:", errorMessage);
@@ -477,7 +474,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (stringGlyphLen == 0) {
@@ -487,16 +484,16 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
                 realSetPositiveSign(&real);
                 int32ToReal(stringGlyphLen, &mod);
                 WP34S_Mod(&real, &mod, &real, &ctxtReal39);
-                convertRealToLongInteger(&real, &lgInt[0], DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertRealToLongInteger(&real, &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RR when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RR when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaRR:", errorMessage);
             }
             return;
@@ -515,15 +512,15 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
         var glyphPointer: i16 = 0;
         steps = stringGlyphLen - steps;
         while (steps > 0) : (steps -= 1) {
-            glyphPointer = stringNextGlyph(regString(@intCast(regist)), glyphPointer);
+            glyphPointer = frontier_char_string.stringNextGlyph(regString(@intCast(regist)), glyphPointer);
         }
 
         const ptr: [*c]u8 = regString(@intCast(regist)) + @as(usize, @intCast(glyphPointer));
         steps = @intCast(stringByteLength(ptr) + 1);
-        _ = xcopy(tmpString, ptr, @intCast(steps));
+        _ = frontier_char_string.xcopy(tmpString, ptr, @intCast(steps));
         ptr[0] = 0;
         copyRegisterStringTo(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), @intCast(regist));
-        _ = xcopy(regString(@intCast(regist)), tmpString, @intCast(stringByteLength(tmpString) + 1));
+        _ = frontier_char_string.xcopy(regString(@intCast(regist)), tmpString, @intCast(stringByteLength(tmpString) + 1));
     }
 }
 
@@ -532,7 +529,7 @@ inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
     const regData: ?*anyopaque = getRegisterDataPointer(regist);
     if (regData != null) {
         const regStr: [*c]u8 = @as([*c]u8, @ptrCast(regData.?)) + 4; // sizeof(strLgIntHeader_t)
-        _ = xcopy(dest, regStr, @intCast(stringByteLength(regStr) + 1));
+        _ = frontier_char_string.xcopy(dest, regStr, @intCast(stringByteLength(regStr) + 1));
     }
 }
 
@@ -545,17 +542,17 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     var mod: real_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaRL:", errorMessage);
         }
         return;
     }
 
-    const stringGlyphLen: i16 = @intCast(stringGlyphLength(regString(@intCast(regist))));
+    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
-        displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on an empty string", .{});
             moreInfoOnError("In function fnAlphaRL:", errorMessage);
@@ -566,7 +563,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (stringGlyphLen == 0) {
@@ -576,16 +573,16 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
                 realSetPositiveSign(&real);
                 int32ToReal(stringGlyphLen, &mod);
                 WP34S_Mod(&real, &mod, &real, &ctxtReal39);
-                convertRealToLongInteger(&real, &lgInt[0], DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertRealToLongInteger(&real, &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RL when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RL when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaRL:", errorMessage);
             }
             return;
@@ -603,15 +600,15 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     if (steps > 0) {
         var glyphPointer: i16 = 0;
         while (steps > 0) : (steps -= 1) {
-            glyphPointer = stringNextGlyph(regString(@intCast(regist)), glyphPointer);
+            glyphPointer = frontier_char_string.stringNextGlyph(regString(@intCast(regist)), glyphPointer);
         }
 
         const ptr: [*c]u8 = regString(@intCast(regist)) + @as(usize, @intCast(glyphPointer));
         steps = @intCast(stringByteLength(ptr) + 1);
-        _ = xcopy(tmpString, ptr, @intCast(steps));
+        _ = frontier_char_string.xcopy(tmpString, ptr, @intCast(steps));
         ptr[0] = 0;
         copyRegisterStringTo(tmpString + @as(usize, @intCast(stringByteLength(tmpString))), @intCast(regist));
-        _ = xcopy(regString(@intCast(regist)), tmpString, @intCast(stringByteLength(tmpString) + 1));
+        _ = frontier_char_string.xcopy(regString(@intCast(regist)), tmpString, @intCast(stringByteLength(tmpString) + 1));
     }
 }
 
@@ -622,17 +619,17 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaSR:", errorMessage);
         }
         return;
     }
 
-    const stringGlyphLen: i16 = @intCast(stringGlyphLength(regString(@intCast(regist))));
+    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
-        displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on an empty string", .{});
             moreInfoOnError("In function fnAlphaSR:", errorMessage);
@@ -643,22 +640,22 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
-                convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SR when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SR when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaSR:", errorMessage);
             }
             return;
@@ -681,7 +678,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
         var glyphPointer: i16 = 0;
         steps = stringGlyphLen - steps;
         while (steps > 0) : (steps -= 1) {
-            glyphPointer = stringNextGlyph(regString(@intCast(regist)), glyphPointer);
+            glyphPointer = frontier_char_string.stringNextGlyph(regString(@intCast(regist)), glyphPointer);
         }
 
         (regString(@intCast(regist)) + @as(usize, @intCast(glyphPointer)))[0] = 0;
@@ -695,18 +692,18 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     var lgInt: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaSL:", errorMessage);
         }
         return;
     }
 
     const ptr: [*c]u8 = regString(@intCast(regist));
-    const stringGlyphLen: i16 = @intCast(stringGlyphLength(ptr));
+    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(ptr));
     if (stringGlyphLen == 0) {
-        displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on an empty string", .{});
             moreInfoOnError("In function fnAlphaSL:", errorMessage);
@@ -717,22 +714,22 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
-                convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SL when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SL when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaSL:", errorMessage);
             }
             return;
@@ -754,10 +751,10 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     if (steps > 0) {
         var glyphPointer: i16 = 0;
         while (steps > 0) : (steps -= 1) {
-            glyphPointer = stringNextGlyph(ptr, glyphPointer);
+            glyphPointer = frontier_char_string.stringNextGlyph(ptr, glyphPointer);
         }
 
-        _ = xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
+        _ = frontier_char_string.xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
     }
 }
 
@@ -771,16 +768,16 @@ extern var alphaRegister: u16;
 // Truncate the alpha register's string to the 42S 44-glyph maximum.
 pub export fn truncateAlphaRegisterTo44Char() callconv(.c) void {
     const ptr = regString(@intCast(alphaRegister));
-    const stringGlyphLen = stringGlyphLength(ptr);
+    const stringGlyphLen = frontier_char_string.stringGlyphLength(ptr);
     if (stringGlyphLen <= 44) {
         return;
     }
     var steps: i16 = @intCast(stringGlyphLen - 44);
     var glyphPointer: i16 = 0;
     while (steps > 0) : (steps -= 1) {
-        glyphPointer = stringNextGlyph(ptr, glyphPointer);
+        glyphPointer = frontier_char_string.stringNextGlyph(ptr, glyphPointer);
     }
-    _ = xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
+    _ = frontier_char_string.xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
 }
 
 // 42S thin wrappers over the existing 47-native alpha operations.
@@ -806,22 +803,22 @@ const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
 pub export fn fn42AlphaShift(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
-        displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use 42ASHF on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use 42ASHF on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
             moreInfoOnError("In function fn42AlphaShift:", errorMessage);
         }
         return;
     }
 
     const ptr = regString(@intCast(alphaRegister));
-    const stringGlyphLen = stringGlyphLength(ptr);
+    const stringGlyphLen = frontier_char_string.stringGlyphLength(ptr);
     var steps: i16 = if (stringGlyphLen < 6) @intCast(stringGlyphLen) else 6;
     var glyphPointer: i16 = 0;
     while (steps > 0) : (steps -= 1) {
-        glyphPointer = stringNextGlyph(ptr, glyphPointer);
+        glyphPointer = frontier_char_string.stringNextGlyph(ptr, glyphPointer);
     }
-    _ = xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
+    _ = frontier_char_string.xcopy(ptr, ptr + @as(usize, @intCast(glyphPointer)), @intCast(stringByteLength(ptr + @as(usize, @intCast(glyphPointer))) + 1));
 }
 
 // 42XTOA: X -> alpha register (clamped to 44 glyphs).
@@ -839,9 +836,9 @@ inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
 pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
-        displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
+        frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use 42AROT on {s}", .{ std.mem.span(getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use 42AROT on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
             moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
         }
         return;
@@ -850,13 +847,13 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
     var lgInt: longInteger_t = undefined;
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
-        dtLongInteger => convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
-        dtReal34 => convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN),
-        dtShortInteger => convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
+        dtLongInteger => frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
+        dtReal34 => frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN),
+        dtShortInteger => frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot 42AROT when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot 42AROT when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
             }
             longIntegerFree(&lgInt[0]);
@@ -884,9 +881,6 @@ pub export fn fn42Cla(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 // Cross-owner callees for the remaining 42S wrappers (display/print/items globals).
-extern fn fnAview(regist: u16) void;
-extern fn fnP_Alpha(register_no: u16) void;
-extern fn fnPrompt(regist: u16) void;
 extern var lastFunc: i16;
 const ITM_AVIEW: i16 = 2018;
 const ITM_PROMPT: i16 = 2020;
@@ -895,20 +889,20 @@ const ITM_PROMPT: i16 = 2020;
 pub export fn fn42Aview(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     lastFunc = ITM_AVIEW;
-    fnAview(alphaRegister);
+    frontier_display.fnAview(alphaRegister);
 }
 
 // 42PRA: print the alpha register.
 pub export fn fn42Pra(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnP_Alpha(alphaRegister);
+    frontier.fnP_Alpha(alphaRegister);
 }
 
 // 42PROMPT: prompt with the alpha register.
 pub export fn fn42Prompt(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     lastFunc = ITM_PROMPT;
-    fnPrompt(alphaRegister);
+    frontier_display.fnPrompt(alphaRegister);
 }
 
 // Cross-owner deps for fn42Alpha/fn42Append (program state, alpha source buffers, store).
@@ -917,7 +911,6 @@ const PGM_RUNNING: u8 = 1;
 extern var aimBuffer: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 extern fn copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
-extern fn fnStoreAdd(regist: u16) void;
 const LAST_TEMP_REGISTER: calcRegister_t = 136;
 inline fn TO_BLOCKS(n: u32) u16 {
     return @intCast((n + 3) >> 2); // BYTES_PER_BLOCK = 4
@@ -928,7 +921,7 @@ pub export fn fn42Alpha(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
     reallocateRegister(@intCast(alphaRegister), dtString, TO_BLOCKS(@intCast(stringByteLength(alphaString) + 1)), amNone);
-    _ = xcopy(regString(@intCast(alphaRegister)), alphaString, @intCast(stringByteLength(alphaString) + 1));
+    _ = frontier_char_string.xcopy(regString(@intCast(alphaRegister)), alphaString, @intCast(stringByteLength(alphaString) + 1));
 }
 
 // 42APPEND: append the alpha entry string to the alpha register (clamped to 44).
@@ -937,8 +930,8 @@ pub export fn fn42Append(unusedButMandatoryParameter: u16) callconv(.c) void {
     const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
     copySourceRegisterToDestRegister(REGISTER_X, LAST_TEMP_REGISTER);
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(alphaString) + 1)), amNone);
-    _ = xcopy(regString(REGISTER_X), alphaString, @intCast(stringByteLength(alphaString) + 1));
-    fnStoreAdd(alphaRegister);
+    _ = frontier_char_string.xcopy(regString(REGISTER_X), alphaString, @intCast(stringByteLength(alphaString) + 1));
+    frontier_store.fnStoreAdd(alphaRegister);
     truncateAlphaRegisterTo44Char();
     copySourceRegisterToDestRegister(LAST_TEMP_REGISTER, REGISTER_X);
 }
@@ -956,9 +949,7 @@ const Fn0 = ?*const fn () callconv(.c) void;
 extern var lastErrorCode: u8;
 extern var grpGroupingLeft: u8;
 extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]Fn0;
-extern fn fnJM_2SI(unusedButMandatoryParameter: u16) void;
 extern fn integerPartReal(mode: c_int) void;
-extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
 
 // fnAlphaIP (new in real master): append the integer part of X to a register as a string.
 pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
@@ -971,16 +962,16 @@ pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
     }
 
     switch (getRegisterDataType(REGISTER_X)) {
-        dtShortInteger => convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X),
+        dtShortInteger => frontier_register_value_conversions.convertShortIntegerRegisterToLongIntegerRegister(REGISTER_X, REGISTER_X),
         dtReal34 => {
             integerPartReal(DEC_ROUND_DOWN);
-            fnJM_2SI(NOPARAM);
+            frontier_addons.fnJM_2SI(NOPARAM);
         },
         dtLongInteger => {},
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1IP when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1IP when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function fnAlphaIP:", errorMessage);
             }
             return;
@@ -1062,29 +1053,17 @@ const upperLower_t = extern struct {
 const complex34_t = abi.Complex34;
 
 // Cross-owner runtime callees for the new ops.
-extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) bool;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
-extern fn badTypeError(reg: calcRegister_t) void;
-extern fn stringLastGlyph(str: [*c]const u8) i16;
-extern fn stringPrevGlyph(str: [*c]const u8, pos: i16) i16;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn memmove(dst: *anyopaque, src: *const anyopaque, n: usize) *anyopaque;
 
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
 // Font globals (only the address is needed).
-extern const standardFont: anyopaque;
-extern const numericFont: anyopaque;
+extern const standardFont: abi.Font;
+extern const numericFont: abi.Font;
 
 // display.c converters reached by _readDestinationRegister.
-extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, maxExp: i16, allowLARGELI: bool) void;
-extern fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8, ignoreTDisp: bool) void;
-extern fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn real34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn complex34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) void;
-extern fn shortIntegerToDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool, baseOverride: u8) void;
-extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const anyopaque, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
-extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, displayString: [*c]u8, font: *const anyopaque, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int, tagAngle: u16, tagPolar: bool) void;
 
 const reg34c = abi.registerComplex34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
@@ -1120,7 +1099,7 @@ fn _isSameGlyph(glyph: u16, ptrString: [*c]const u8) bool {
 
 // _toUpperOrLowerCase: in-place case conversion using upperLowerTable.
 fn _toUpperOrLowerCase(ptrString: [*c]u8, toUpper: bool) void {
-    const lgString: i16 = @intCast(stringGlyphLength(ptrString));
+    const lgString: i16 = @intCast(frontier_char_string.stringGlyphLength(ptrString));
     var pos: i16 = 0;
 
     var i: i16 = 1;
@@ -1153,9 +1132,9 @@ fn _toUpperOrLowerCase(ptrString: [*c]u8, toUpper: bool) void {
 
 pub export fn fnAlphaLower(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Lower Case", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Lower Case", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaLower:", errorMessage);
         }
         return;
@@ -1167,9 +1146,9 @@ pub export fn fnAlphaLower(regist: u16) callconv(.c) void {
 
 pub export fn fnAlphaUpper(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Upper Case", .{ std.mem.span(getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Upper Case", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
             moreInfoOnError("In function fnAlphaUpper:", errorMessage);
         }
         return;
@@ -1183,7 +1162,7 @@ pub export fn fnAlphaUpper(regist: u16) callconv(.c) void {
 fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
     var start: i32 = start_arg;
     var len: i32 = len_arg;
-    const lgString: i32 = stringGlyphLength(ptrString);
+    const lgString: i32 = frontier_char_string.stringGlyphLength(ptrString);
     if (start == 0) {
         len = 0;
     }
@@ -1197,7 +1176,7 @@ fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
     if (start > 1) {
         var i: i32 = 1;
         while (i < start) : (i += 1) {
-            pos1 = stringNextGlyph(ptrString, pos1);
+            pos1 = frontier_char_string.stringNextGlyph(ptrString, pos1);
         }
     }
     var pos2: i16 = 0;
@@ -1214,21 +1193,21 @@ fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
     }
     tmpString[@intCast(pos2)] = 0;
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(tmpString) + 1)), amNone);
-    _ = xcopy(regString(REGISTER_X), tmpString, @intCast(stringByteLength(tmpString) + 1));
+    _ = frontier_char_string.xcopy(regString(REGISTER_X), tmpString, @intCast(stringByteLength(tmpString) + 1));
 }
 
 fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
     var lgInt: longInteger_t = undefined;
 
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        badTypeError(@intCast(regist));
+        frontier_register_value_conversions.badTypeError(@intCast(regist));
         return;
     }
 
     const ptrString: [*c]u8 = regString(@intCast(regist));
-    const lgString: i32 = stringGlyphLength(ptrString);
+    const lgString: i32 = frontier_char_string.stringGlyphLength(ptrString);
 
-    if (!getRegisterAsLongInt(REGISTER_X, &lgInt[0], null)) {
+    if (!frontier_register_value_conversions.getRegisterAsLongInt(REGISTER_X, &lgInt[0], null)) {
         longIntegerFree(&lgInt[0]);
         return;
     }
@@ -1242,7 +1221,7 @@ fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
     var start: i32 = 0;
     if (sf_type == SF_MID) {
         longIntegerFree(&lgInt[0]);
-        if (!getRegisterAsLongInt(REGISTER_Y, &lgInt[0], null)) {
+        if (!frontier_register_value_conversions.getRegisterAsLongInt(REGISTER_Y, &lgInt[0], null)) {
             longIntegerFree(&lgInt[0]);
             return;
         }
@@ -1287,15 +1266,15 @@ pub export fn fnAlphaRight(regist: u16) callconv(.c) void {
 
 pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        badTypeError(@intCast(regist));
+        frontier_register_value_conversions.badTypeError(@intCast(regist));
         return;
     }
 
     const ptrString: [*c]u8 = regString(@intCast(regist));
-    const lgString: i32 = stringGlyphLength(ptrString);
+    const lgString: i32 = frontier_char_string.stringGlyphLength(ptrString);
 
     if (strlen(ptrString) > @as(usize, @intCast(TMP_STR_LENGTH))) {
-        displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "string in regist {d} is too long, size {d} bytes doesn't fit in tmpString ({d} bytes max)", .{ @as(c_int, @intCast(regist)), @as(c_uint, @truncate(strlen(ptrString))), @as(c_int, TMP_STR_LENGTH) });
             moreInfoOnError("In function fnAlphaRev:", errorMessage);
@@ -1304,7 +1283,7 @@ pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
     }
 
     var ptrTmp: [*c]u8 = tmpString;
-    var pos: i16 = stringLastGlyph(ptrString);
+    var pos: i16 = frontier_char_string.stringLastGlyph(ptrString);
 
     var i: i16 = 1;
     while (i <= lgString) : (i += 1) {
@@ -1315,7 +1294,7 @@ pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
         }
         ptrTmp[0] = @truncate(glyph & 0xff);
         ptrTmp += 1;
-        pos = stringPrevGlyph(ptrString, pos);
+        pos = frontier_char_string.stringPrevGlyph(ptrString, pos);
     }
     ptrTmp[0] = 0;
     _ = strcpy(ptrString, tmpString);
@@ -1326,32 +1305,32 @@ pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
 fn _readDestinationRegister(regist: u16) void {
     switch (getRegisterDataType(@intCast(regist))) {
         dtLongInteger => {
-            longIntegerRegisterToDisplayString(@intCast(regist), tmpString, TMP_STR_LENGTH, SCREEN_WIDTH, 50, STD_SPACE_PUNCTUATION_AS_BOOL);
+            frontier_display.longIntegerRegisterToDisplayString(@intCast(regist), tmpString, TMP_STR_LENGTH, SCREEN_WIDTH, 50, @intFromBool(STD_SPACE_PUNCTUATION_AS_BOOL));
         },
         dtTime => {
-            timeToDisplayString(@intCast(regist), tmpString, false);
+            frontier_display.timeToDisplayString(@intCast(regist), tmpString, 0);
         },
         dtDate => {
-            dateToDisplayString(@intCast(regist), tmpString);
+            frontier_display.dateToDisplayString(@intCast(regist), tmpString);
         },
         dtString => {
-            _ = xcopy(tmpString, regString(@intCast(regist)), @intCast(stringByteLength(regString(@intCast(regist))) + 1));
+            _ = frontier_char_string.xcopy(tmpString, regString(@intCast(regist)), @intCast(stringByteLength(regString(@intCast(regist))) + 1));
         },
         dtReal34Matrix => {
-            real34MatrixToDisplayString(@intCast(regist), tmpString);
+            frontier_display.real34MatrixToDisplayString(@intCast(regist), tmpString);
         },
         dtComplex34Matrix => {
-            complex34MatrixToDisplayString(@intCast(regist), tmpString);
+            frontier_display.complex34MatrixToDisplayString(@intCast(regist), tmpString);
         },
         dtShortInteger => {
-            shortIntegerToDisplayString(@intCast(regist), tmpString, false, noBaseOverride);
+            frontier_display.shortIntegerToDisplayString(@intCast(regist), tmpString, 0, noBaseOverride);
         },
         dtReal34 => {
-            real34ToDisplayString(reg34(@intCast(regist)), getRegisterAngularMode(@intCast(regist)), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, STD_SPACE_PUNCTUATION_AS_BOOL, 1);
+            frontier_display.real34ToDisplayString(reg34(@intCast(regist)), getRegisterAngularMode(@intCast(regist)), tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, @intFromBool(STD_SPACE_PUNCTUATION_AS_BOOL), 1);
             trimLeadingSpace(tmpString);
         },
         dtComplex34 => {
-            complex34ToDisplayString(reg34c(@intCast(regist)), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, false, STD_SPACE_PUNCTUATION_AS_BOOL, 1, @truncate(getComplexRegisterAngularMode(@intCast(regist))), getComplexRegisterPolarMode(@intCast(regist)) != 0);
+            frontier_display.complex34ToDisplayString(reg34c(@intCast(regist)), tmpString, &numericFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, @intFromBool(STD_SPACE_PUNCTUATION_AS_BOOL), 1, @truncate(getComplexRegisterAngularMode(@intCast(regist))), @intFromBool(getComplexRegisterPolarMode(@intCast(regist)) != 0));
             trimLeadingSpace(tmpString);
         },
         else => {
@@ -1370,28 +1349,28 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
             longIntegerFree(&lgInt[0]);
-            convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
                 longIntegerFree(&lgInt[0]);
-                convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+                frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
             longIntegerFree(&lgInt[0]);
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34Matrix => {
             longIntegerFree(&lgInt[0]);
-            convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
                 moreInfoOnError("In function _doXToAlpha:", errorMessage);
             }
             longIntegerFree(&lgInt[0]);
@@ -1401,7 +1380,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
 
     longIntegerSetPositiveSign(&lgInt[0]);
     if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{ @as(u32, @truncate(lgInt[0]._mp_d[0])) }); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function _doXToAlpha:", errorMessage);
@@ -1429,10 +1408,10 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
         tmpString[0] = 0; // If destination register is X just return the alpha character from the character code
     }
 
-    if (stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
-        displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+    if (frontier_char_string.stringGlyphLength(tmpString) >= MAX_NUMBER_OF_GLYPHS_IN_STRING) {
+        frontier_error.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} characters long. Maximum is {d}", .{ stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING });
+            abi.fmtBufZ(errorMessage[0..512], "the resulting string would be {d} characters long. Maximum is {d}", .{ frontier_char_string.stringGlyphLength(tmpString) + 1, MAX_NUMBER_OF_GLYPHS_IN_STRING });
             moreInfoOnError("In function _doXToAlpha:", errorMessage);
         }
     } else {
@@ -1446,13 +1425,13 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
         l += 1;
 
         reallocateRegister(@intCast(regist), dtString, @intCast(l + 1), amNone);
-        _ = xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
+        _ = frontier_char_string.xcopy(regString(@intCast(regist)), tmpString, @intCast(l + 1));
     }
 }
 
 pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
-        badTypeError(@intCast(regist));
+        frontier_register_value_conversions.badTypeError(@intCast(regist));
         return;
     }
 
@@ -1462,14 +1441,14 @@ pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
         },
         dtString => {},
         else => {
-            badTypeError(REGISTER_X);
+            frontier_register_value_conversions.badTypeError(REGISTER_X);
             return;
         },
     }
     var ptrString: [*c]u8 = regString(REGISTER_X);
-    var lgString: i32 = stringGlyphLength(ptrString);
+    var lgString: i32 = frontier_char_string.stringGlyphLength(ptrString);
     if (lgString != 1) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "for \x83\xb1TRIM, X must be a single character. Here X = {s}", .{ std.mem.span(ptrString) });
             moreInfoOnError("In function fnAlphaTrim:", errorMessage);
@@ -1481,20 +1460,20 @@ pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
 
     const glyph: u16 = _getGlyphCode(ptrString);
     ptrString = regString(@intCast(regist));
-    lgString = stringGlyphLength(ptrString);
+    lgString = frontier_char_string.stringGlyphLength(ptrString);
 
     // Trim character at the beginning of the string
     var pos: i16 = 0;
     while (_isSameGlyph(glyph, ptrString + @as(usize, @intCast(pos)))) {
-        pos = stringNextGlyph(ptrString, pos);
+        pos = frontier_char_string.stringNextGlyph(ptrString, pos);
     }
     _ = memmove(ptrString, ptrString + @as(usize, @intCast(pos)), strlen(ptrString + @as(usize, @intCast(pos))) + 1);
 
     // Trim character at the end of the string
-    pos = stringLastGlyph(ptrString);
+    pos = frontier_char_string.stringLastGlyph(ptrString);
     while (_isSameGlyph(glyph, ptrString + @as(usize, @intCast(pos)))) {
         ptrString[@intCast(pos)] = 0;
-        pos = stringLastGlyph(ptrString);
+        pos = frontier_char_string.stringLastGlyph(ptrString);
     }
 
     copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X); // Restore register X
