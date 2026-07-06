@@ -108,6 +108,25 @@ const print_all_regs = @import("frontier_print_all_regs.zig");
 const print_all_items = @import("frontier_print_all_items.zig");
 const keys_management = @import("frontier_keys_management.zig");
 const print_user = @import("frontier_print_user.zig");
+const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_curve_fitting = @import("frontier_curve_fitting.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_manage = @import("frontier_manage.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen_snap = @import("frontier_screen_snap.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
@@ -373,142 +392,19 @@ extern fn flipSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: c_int) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnClearFlag(flag: u16) void;
-extern fn fnRefreshState() void;
-extern fn showSoftmenu(menu: i16) void;
-extern fn runFunction(func: i16) void;
 extern fn resetShiftState() void;
-extern fn refreshScreen(source: u16) void;
-extern fn refreshLcd(surface: ?*anyopaque) void;
 extern fn setLineDelay(delay: u16) void;
-extern fn print_lf() void;
-extern fn printLine(buff: [*:0]const u8, with_lf: c_int) void;
-extern fn printJustified(buff: [*:0]const u8) void;
-extern fn printTab(col: u16) void;
-extern fn printProgram(list: bool, lines: u16) void;
-extern fn cmdPrint(arg: u16, op: c_int) void;
-extern fn printTraceMatElement(where: u16) void;
-extern fn popSoftmenu() void;
-extern fn setConfirmationMode(func: ConfirmedFunction) void;
-extern fn fnClSigma(unused_but_mandatory_parameter: u16) void;
-extern fn calcSigma(max_offset: u16) void;
-extern fn fnCurveFitting(curve_fitting: u16) void;
-extern fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) bool;
-extern fn z47_frontier_matrix_vector_polar_mode(regist: u16) u16;
-extern fn z47_frontier_matrix_get_register_as_int(regist: u16, as_array_pointer: bool) i16;
-extern fn z47_frontier_matrix_set_register_as_int(regist: u16, as_array_pointer: bool, to_store: i16) void;
-extern fn z47_frontier_matrix_open_rows() u16;
-extern fn z47_frontier_matrix_open_cols() u16;
-extern fn z47_frontier_matrix_commit_open_to_register() void;
-extern fn z47_frontier_matrix_calc_mode_normal_gui() void;
-extern fn z47_frontier_matrix_hide_cursor() void;
-extern fn z47_frontier_matrix_reload_open_matrix_from_register() void;
-extern fn z47_frontier_matrix_inc_dec_i(mode: u16) void;
-extern fn z47_frontier_matrix_inc_dec_j(mode: u16) void;
-extern fn z47_frontier_matrix_reset_cursor_pos() void;
-extern fn z47_frontier_matrix_init_aim_exponent() void;
-extern fn z47_frontier_matrix_init_aim_period() void;
-extern fn z47_frontier_matrix_init_aim_digit() void;
-extern fn z47_frontier_matrix_aim_is_single_plus_digit() bool;
-extern fn z47_frontier_matrix_aim_clear_single_plus_digit() void;
-extern fn z47_frontier_matrix_zero_current_element() void;
-extern fn z47_frontier_matrix_change_sign_current_element() void;
-extern fn z47_frontier_matrix_make_j_element() void;
-extern fn z47_frontier_matrix_set_current_to_pi() void;
-extern fn z47_frontier_matrix_can_append_pi_literal() bool;
-extern fn z47_frontier_matrix_append_pi_literal_and_enter() void;
-extern fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) void;
-extern fn z47_frontier_matrix_open_is_complex() bool;
-extern fn z47_frontier_matrix_capture_selected_before() void;
-extern fn z47_frontier_matrix_load_selected_into_register_x() void;
-extern fn z47_frontier_matrix_run_item_function(func: i16, param: u16) void;
-extern fn z47_frontier_matrix_register_type(reg: u16) u32;
-extern fn z47_frontier_matrix_convert_register_x_long_to_real34() void;
-extern fn z47_frontier_matrix_convert_register_x_short_to_real34() void;
-extern fn z47_frontier_matrix_apply_register_x_to_selected() bool;
-extern fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() void;
-extern fn z47_frontier_matrix_softmenu_has_m_edit() bool;
-extern fn z47_frontier_matrix_softmenu_top_is_m_edit() bool;
-extern fn z47_frontier_matrix_show_m_edit_softmenu() void;
-extern fn z47_frontier_matrix_scroll_row_get() u16;
-extern fn z47_frontier_matrix_scroll_row_set(row: u16) void;
-extern fn z47_frontier_matrix_render_editor_body(col_vector: bool, rows: i16, cols: i16, mat_sel_row: i16, mat_sel_col: i16) void;
-extern fn leaveTamModeIfEnabled() void;
 extern fn saveStatsMatrix() void;
 extern fn getMatrixFromRegister(regist: u16) void;
 extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 extern fn clearRegister(regist: i16) void;
-extern fn fnExitAllMenus(unused_but_mandatory_parameter: u16) void;
-extern fn fnDeleteUserMenus(confirmation: u16) void;
-extern fn fnRESET_MyM(param: u16) void;
-extern fn fnRESET_Mya() void;
-extern fn createHOME() void;
-extern fn createPFN() void;
-extern fn initUserKeyArgument() void;
-extern fn showHideHourGlass() void;
-extern fn refreshStatusBar() void;
-extern fn statGraphReset() void;
 extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
-extern fn scanLabelsAndPrograms() void;
-extern fn removeUserItemAssignments(user_item: i16, user_item_name: [*:0]const u8) void;
 extern fn fnDeleteAllVariables(confirmation: u16) void;
 extern fn fnClFAll(confirmation: u16) void;
-extern fn z47_frontier_push_u32_to_x(value: u32) void;
-extern fn z47_frontier_release_saved_statistical_sums() void;
-extern fn z47_frontier_is_r47_fam() bool;
-extern fn z47_frontier_keys_to_user_case() void;
-extern fn z47_frontier_keys_from_user_case() void;
-extern fn z47_frontier_keys_user_layout_reset_case() void;
-extern fn z47_frontier_plot_set_plotstatmx_stats() void;
-extern fn z47_frontier_plot_set_plotstatmx_histo() void;
-extern fn z47_frontier_plot_set_statmx_histo() void;
-extern fn z47_frontier_plot_has_source_data() bool;
-extern fn z47_frontier_plot_clear_screen_for_graph_entry() void;
-extern fn z47_frontier_program_current_program_in_ram() bool;
-extern fn z47_frontier_dynamic_menu_softmenu_id() i16;
-extern fn z47_frontier_dynamic_menu_item() i16;
 
-extern fn printReg(regist: u16, label: ?[*:0]const u8, eq: bool, where: c_int, pr_sigma: bool) void;
 extern fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
-extern fn z47_frontier_print_reg_range(first_register_no: u16, last_register_no: u16) bool;
-extern fn z47_frontier_current_number_of_local_registers() u16;
-extern fn z47_frontier_print_exit_pressed() bool;
-extern fn z47_frontier_print_sigma_line(index: u16) void;
-extern fn z47_frontier_print_alpha_register(register_no: u16) void;
 extern fn getRegisterDataType(regist: i16) u32;
-extern fn z47_frontier_x_real_matrix_rows() u16;
-extern fn z47_frontier_x_real_matrix_cols() u16;
-extern fn z47_frontier_x_complex_matrix_rows() u16;
-extern fn z47_frontier_x_complex_matrix_cols() u16;
-extern fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) void;
-extern fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) void;
-extern fn create_filename(file_suffix: [*:0]const u8) void;
-extern fn stackregister_csv_out(reg_b: i16, reg_e: i16, one_line: bool) void;
-extern fn z47_frontier_print_set_printer_sbi(status: bool) void;
-extern fn z47_frontier_print_get_unicode_value(regist: i16) u16;
-extern fn z47_frontier_named_variable_label(index: u16, buffer: [*]u8, buffer_size: u16) bool;
-extern fn z47_frontier_user_variable_should_skip(label: [*:0]const u8) bool;
-extern fn z47_frontier_find_named_variable_register(label: [*:0]const u8) u16;
-extern fn z47_frontier_program_begin() [*]u8;
-extern fn z47_frontier_programs_end(step: [*]u8) bool;
-extern fn z47_frontier_program_next_step(step: [*]u8) [*]u8;
-extern fn z47_frontier_program_global_label(step: [*]u8, label: [*]u8, label_size: u16) bool;
-extern fn z47_frontier_program_step_is_end(step: [*]u8) bool;
-extern fn z47_frontier_program_label_prefix() [*:0]const u8;
-extern fn z47_frontier_program_label_suffix() [*:0]const u8;
-extern fn z47_frontier_print_program_counter(program_number: u16, total_programs: u16) void;
-extern fn z47_frontier_format_register_label(register_no: u16, label: [*]u8, label_size: u16) void;
-extern fn z47_frontier_item_catalog_name(item: u16) [*:0]const u8;
-extern fn z47_frontier_item_softmenu_name(item: u16) [*:0]const u8;
-extern fn z47_frontier_last_item() u16;
-extern fn z47_frontier_print_backup_aim_message_area() void;
-extern fn z47_frontier_print_restore_aim_message_area() void;
-extern fn z47_frontier_snap_screenshot_with_message_backup() void;
-extern fn z47_frontier_snap_backup_tam(dst: [*]u8) void;
-extern fn z47_frontier_snap_restore_tam(src: [*]const u8) void;
 extern var numberOfPrograms: u16;
-extern fn tmpString_csv_out(nn: u8) void;
-extern fn fnShowVersion(option: u16) void;
 
 fn isPrintableScalarType(dt: u32) bool {
     return switch (dt) {
@@ -521,17 +417,17 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     resetShiftState();
-    refreshScreen(80);
-    z47_frontier_snap_screenshot_with_message_backup();
+    frontier_screen.refreshScreen(80);
+    frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();
 
     var tam_backup: [TAM_BUFFER_LENGTH]u8 = undefined;
-    z47_frontier_snap_backup_tam(&tam_backup);
+    frontier_screen_snap.z47_frontier_snap_backup_tam(&tam_backup);
     if (calcMode == CM_AIM) {
         fnP_Alpha(NOPARAM);
     } else {
         fnP_All_Regs(PRN_STK);
     }
-    z47_frontier_snap_restore_tam(&tam_backup);
+    frontier_screen_snap.z47_frontier_snap_restore_tam(&tam_backup);
 
     screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
@@ -570,8 +466,8 @@ pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
 
 pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    _ = z47_frontier_dynamic_menu_softmenu_id();
-    _ = z47_frontier_dynamic_menu_item();
+    _ = frontier_softmenus.z47_frontier_dynamic_menu_softmenu_id();
+    _ = frontier_softmenus.z47_frontier_dynamic_menu_item();
 }
 
 pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -610,8 +506,8 @@ pub export fn fnTestBitIsSet(bit: u8) callconv(.c) bool {
 
 pub export fn fnCFGsettings(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runFunction(@as(i16, @intCast(ITM_FF)));
-    showSoftmenu(-MNU_SYSFL);
+    frontier_items.runFunction(@as(i16, @intCast(ITM_FF)));
+    frontier_softmenus.showSoftmenu(-MNU_SYSFL);
 }
 
 pub export fn fnP_PrinterOnOff(op: u16) callconv(.c) void {
@@ -801,23 +697,23 @@ pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
 }
 
 pub export fn getIRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
-    return z47_frontier_matrix_get_register_as_int(REGISTER_I, as_array_pointer);
+    return frontier_matrix_editor.z47_frontier_matrix_get_register_as_int(REGISTER_I, as_array_pointer);
 }
 
 pub export fn getJRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
-    return z47_frontier_matrix_get_register_as_int(REGISTER_J, as_array_pointer);
+    return frontier_matrix_editor.z47_frontier_matrix_get_register_as_int(REGISTER_J, as_array_pointer);
 }
 
 pub export fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
-    z47_frontier_matrix_set_register_as_int(REGISTER_I, as_array_pointer, to_store);
+    frontier_matrix_editor.z47_frontier_matrix_set_register_as_int(REGISTER_I, as_array_pointer, to_store);
 }
 
 pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
-    z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
+    frontier_matrix_editor.z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
 }
 
 fn matrixModeUndefinedError() void {
-    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
 fn matrixInEditorMode() bool {
