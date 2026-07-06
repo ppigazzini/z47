@@ -10,6 +10,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const text = @import("calc_state_text.zig");
+const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
 
 // data types (typeDefinitions.h)
 const dtLongInteger: u32 = 0;
@@ -176,8 +177,6 @@ extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, 
 extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
 extern fn memcpy(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn stringToUint64(s: [*c]const u8) u64;
-extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn displayBugScreen(msg: [*c]const u8) void;
 extern fn __gmpz_init(li: *MpzStruct) void;
 extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
@@ -612,7 +611,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         _ = xcopy(regStringData(regist), errorMessage, @intCast(len));
     } else if (strcmpEq(type_str, "ShoI")) {
         const sign: i16 = if (value[0] == '-') 1 else 0;
-        const val = stringToUint64(value + 1);
+        const val = calc_state.stringToUint64(value + 1);
         const hash = strchr(value, '#'); // accept "+255#16" or the old "+255 16"
         value = if (hash != null) hash + 1 else text.nextWord(value);
         const base = text.toUint32(value);
@@ -682,7 +681,7 @@ pub fn restoreMatrixData(regist: i16) void {
                 readToken(tmpString); // any whitespace (spaces/newlines) separates elements
                 dataFileCommaToPeriod(tmpString);
             } else {
-                readLine(tmpString, @intCast(TMP_STR_LENGTH));
+                calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));
             }
             _ = decQuadFromString(base + i * REAL34_SIZE_IN_BYTES, tmpString, &ctxtReal34);
         }
@@ -701,7 +700,7 @@ pub fn restoreMatrixData(regist: i16) void {
                 dataFileCommaToPeriod(&stdTmp[0]);
                 _ = strcpy(tmpString, &stdTmp[0]);
             } else {
-                readLine(tmpString, @intCast(TMP_STR_LENGTH));
+                calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));
             }
             const elem = base + i * COMPLEX34_SIZE_IN_BYTES;
             var imaginaryPart = text.skipWord(tmpString);
@@ -735,7 +734,7 @@ pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
                     readToken(tmpString);
                 }
             } else {
-                readLine(tmpString, @intCast(TMP_STR_LENGTH));
+                calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));
             }
         }
     }

@@ -8,6 +8,7 @@ const abi = @import("abi");
 const std = @import("std");
 const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
+const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
 const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
 const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id")) build_options.calc_model_user_id else 46;
 
@@ -628,21 +629,12 @@ pub fn saveCalc() void {
 // ===================== RESTORE side (Phase A2) =====================
 // labelList/savedStatisticalSumsPointer are pointer globals not declared above.
 // --- backup.cfg parser + typed value deserializer (host-only) ---
-extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn ioEof() c_int;
 extern fn malloc(n: usize) ?*anyopaque;
 extern fn free(p: ?*anyopaque) void;
 extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
 extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal
 extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8; // stringToReal34
-extern fn stringToInt64(s: [*c]const u8) i64;
-extern fn stringToUint64(s: [*c]const u8) u64;
-extern fn stringToInt32(s: [*c]const u8) i32;
-extern fn stringToUint32(s: [*c]const u8) u32;
-extern fn stringToInt16(s: [*c]const u8) i16;
-extern fn stringToUint16(s: [*c]const u8) u16;
-extern fn stringToInt8(s: [*c]const u8) i8;
-extern fn stringToUint8(s: [*c]const u8) u8;
 const OpaqueCtx = opaque {};
 extern var ctxtReal34: OpaqueCtx;
 extern var ctxtReal39: OpaqueCtx;
@@ -658,20 +650,20 @@ fn backupOpenParse() c_int {
     const op: [*c]u8 = &oneParam[0];
     const ret = ioFileOpen(ioPathBackup, ioModeRead);
     if (ret != FILE_OK) return ret;
-    readLine(op, oneParam.len);
+    calc_state.readLine(op, oneParam.len);
     paramHead = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
     paramCurrent = paramHead;
     paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
     _ = strcpy(paramCurrent.?.param, op);
     paramCurrent.?.next = null;
-    readLine(op, oneParam.len);
+    calc_state.readLine(op, oneParam.len);
     while (ioEof() == 0) {
         paramCurrent.?.next = @ptrCast(@alignCast(malloc(@sizeOf(CfgParam))));
         paramCurrent = paramCurrent.?.next;
         paramCurrent.?.param = @ptrCast(malloc(strlen(op) + 1));
         _ = strcpy(paramCurrent.?.param, op);
         paramCurrent.?.next = null;
-        readLine(op, oneParam.len);
+        calc_state.readLine(op, oneParam.len);
     }
     ioFileClose();
     return FILE_OK;
@@ -719,21 +711,21 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
     if (strcmp(type_str, v) != 0) return;
 
     if (streq(type_str, "int64")) {
-        @as(*i64, @ptrCast(@alignCast(buffer))).* = stringToInt64(vp);
+        @as(*i64, @ptrCast(@alignCast(buffer))).* = calc_state.stringToInt64(vp);
     } else if (streq(type_str, "uint64")) {
-        @as(*u64, @ptrCast(@alignCast(buffer))).* = stringToUint64(vp);
+        @as(*u64, @ptrCast(@alignCast(buffer))).* = calc_state.stringToUint64(vp);
     } else if (streq(type_str, "int32")) {
-        @as(*i32, @ptrCast(@alignCast(buffer))).* = stringToInt32(vp);
+        @as(*i32, @ptrCast(@alignCast(buffer))).* = calc_state.stringToInt32(vp);
     } else if (streq(type_str, "uint32")) {
-        @as(*u32, @ptrCast(@alignCast(buffer))).* = stringToUint32(vp);
+        @as(*u32, @ptrCast(@alignCast(buffer))).* = calc_state.stringToUint32(vp);
     } else if (streq(type_str, "int16")) {
-        @as(*i16, @ptrCast(@alignCast(buffer))).* = stringToInt16(vp);
+        @as(*i16, @ptrCast(@alignCast(buffer))).* = calc_state.stringToInt16(vp);
     } else if (streq(type_str, "uint16")) {
-        @as(*u16, @ptrCast(@alignCast(buffer))).* = stringToUint16(vp);
+        @as(*u16, @ptrCast(@alignCast(buffer))).* = calc_state.stringToUint16(vp);
     } else if (streq(type_str, "int8")) {
-        @as(*i8, @ptrCast(buffer)).* = stringToInt8(vp);
+        @as(*i8, @ptrCast(buffer)).* = calc_state.stringToInt8(vp);
     } else if (streq(type_str, "uint8")) {
-        @as(*u8, @ptrCast(buffer)).* = stringToUint8(vp);
+        @as(*u8, @ptrCast(buffer)).* = calc_state.stringToUint8(vp);
     } else if (streq(type_str, "float")) {
         @as(*f32, @ptrCast(@alignCast(buffer))).* = @floatCast(atof(vp));
     } else if (streq(type_str, "double")) {
@@ -743,11 +735,11 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
     } else if (streq(type_str, "real34")) {
         _ = decQuadFromString(@ptrCast(buffer), vp, &ctxtReal34);
     } else if (streq(type_str, "bool")) {
-        @as(*u8, @ptrCast(buffer)).* = if (stringToInt8(vp) != 0) 1 else 0;
+        @as(*u8, @ptrCast(buffer)).* = if (calc_state.stringToInt8(vp) != 0) 1 else 0;
     } else if (streq(type_str, "c47Ptr")) {
         @as(*u32, @ptrCast(@alignCast(buffer))).* = @truncate(strtoul(vp, null, 0));
     } else if (streq(type_str, "hexDump")) {
-        const numberOfBytes = stringToUint32(vp);
+        const numberOfBytes = calc_state.stringToUint32(vp);
         var bufp: [*c]u8 = @ptrCast(buffer);
         var vv: [*c]const u8 = undefined;
         var count: u32 = 0;

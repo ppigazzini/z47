@@ -42,6 +42,8 @@ const strLgIntHeader_t = payload_bytes_owned.strLgIntHeader_t;
 const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 
 const abi = @import("abi"); // L1 shared bindings
+const register_metadata = @import("register_metadata.zig"); // M-callconv: intra-object Zig-to-Zig
+const register_metadata_local_registers = @import("register_metadata_local_registers.zig"); // M-callconv: intra-object Zig-to-Zig
 const userMenu_t = abi.UserMenu;
 
 const named_variable_header_t = abi.NamedVariableHeader;
@@ -90,8 +92,6 @@ pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
 
-extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
-extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
@@ -288,9 +288,9 @@ pub fn requestClearAllVariablesConfirmation() void {
 }
 
 pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
-    allocateLocalRegisters(number_of_registers_to_allocate);
+    register_metadata_local_registers.allocateLocalRegisters(number_of_registers_to_allocate);
 }
 
 pub fn reallocateRegisterRetained(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
+    register_metadata.reallocateRegister(reg, data_type, data_size_without_data_len_blocks, tag);
 }

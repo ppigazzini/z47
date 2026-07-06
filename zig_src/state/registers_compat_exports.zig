@@ -5,6 +5,7 @@ const reg_param_product = @import("stack_runtime_reg_param_product.zig");
 const product_real = @import("stack_runtime_product_real.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const register_metadata_build_options = @import("register_metadata_build_options");
+const register_metadata_variables = @import("register_metadata_variables.zig"); // M-callconv: intra-object Zig-to-Zig
 
 // The parity harness links register_metadata_oracle.c, which defines its own
 // allReservedVariables fixture table. In that build the Zig owner must not also
@@ -52,8 +53,6 @@ const ERROR_NONE = stack_runtime.ERROR_NONE;
 const ERROR_OUT_OF_RANGE = stack_runtime.ERROR_OUT_OF_RANGE;
 const ERROR_INVALID_DATA_TYPE_FOR_OP = stack_runtime.ERROR_INVALID_DATA_TYPE_FOR_OP;
 
-extern fn findOrAllocateNamedVariable(variable_name: [*:0]const u8) stack_runtime.calcRegister_t;
-extern fn findNamedVariable(variable_name: [*:0]const u8) stack_runtime.calcRegister_t;
 extern fn findNamedLabel(label_name: [*:0]const u8) stack_runtime.calcRegister_t;
 extern fn findMenu(menu_name: [*:0]const u8) i16;
 extern fn convertShortIntegerRegisterToUInt64(reg: stack_runtime.calcRegister_t, sign: *i16, value: *u64) void;
@@ -330,9 +329,9 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         value = @intCast(raw_value);
     } else if (data_type == dtString and parameter_type == INDPM_REGISTER) {
         value = if (try_allocate)
-            findOrAllocateNamedVariable(registerStringData(regist))
+            register_metadata_variables.findOrAllocateNamedVariable(registerStringData(regist))
         else
-            findNamedVariable(registerStringData(regist));
+            register_metadata_variables.findNamedVariable(registerStringData(regist));
         is_valid_alpha = true;
         if (value == register_runtime.INVALID_VARIABLE and lastErrorCode != ERROR_ENTER_NEW_NAME) {
             return indirectError(ERROR_UNDEF_SOURCE_VAR);

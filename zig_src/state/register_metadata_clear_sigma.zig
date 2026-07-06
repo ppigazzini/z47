@@ -1,5 +1,7 @@
 const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("stack_runtime.zig");
+const register_metadata = @import("register_metadata.zig"); // M-callconv: intra-object Zig-to-Zig
+const register_metadata_variables = @import("register_metadata_variables.zig"); // M-callconv: intra-object Zig-to-Zig
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
@@ -9,8 +11,6 @@ pub const CONFIRMED: u16 = 9877;
 pub const INVALID_VARIABLE: stack_runtime.calcRegister_t = @intCast(stack_runtime.INVALID_VARIABLE);
 
 extern fn fnClSigma(confirmation: u16) callconv(.c) void;
-extern fn fnDeleteVariable(regist: u16) callconv(.c) void;
-extern fn findNamedVariable(variable_name: [*c]const u8) stack_runtime.calcRegister_t;
 
 pub fn clearSigma() void {
     if (!use_fake_register_metadata_harness_surface) {
@@ -18,14 +18,14 @@ pub fn clearSigma() void {
         return;
     }
 
-    var register = findNamedVariable("HISTO");
+    var register = register_metadata_variables.findNamedVariable("HISTO");
     if (register != INVALID_VARIABLE) {
-        fnDeleteVariable(@intCast(register));
+        register_metadata.fnDeleteVariable(@intCast(register));
     }
 
-    register = findNamedVariable("STATS");
+    register = register_metadata_variables.findNamedVariable("STATS");
     if (register != INVALID_VARIABLE) {
-        fnDeleteVariable(@intCast(register));
+        register_metadata.fnDeleteVariable(@intCast(register));
     }
 
     stack_runtime.lrChosen = 0;
