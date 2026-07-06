@@ -12,6 +12,7 @@ pub fn build(b: *std.Build) void {
 
 fn buildImpl(b: *std.Build) !void {
     registerCDependencyAuditStep(b);
+    registerNativeUnitTests(b);
 
     const optimize = b.standardOptimizeOption(.{});
     const ci_commit_tag = b.option([]const u8, "ci-commit-tag", "Commit tag for version information") orelse "";
@@ -43,6 +44,29 @@ fn buildImpl(b: *std.Build) !void {
         ci_commit_tag,
         dist_version,
     );
+}
+
+// REPORT-27 M-IDIOM-3: native Zig unit tests that run without the upstream C
+// oracle. Only self-contained, std-only pure-logic modules belong here (no
+// global calculator state, no C extern, no build_options). This gives a
+// correctness signal independent of the C testSuite. Extend `pure_modules` as
+// more owners are made standalone-testable.
+fn registerNativeUnitTests(b: *std.Build) void {
+    const pure_modules = [_][]const u8{
+        "zig_src/abi/float_format.zig",
+    };
+    const target = b.resolveTargetQuery(.{});
+    const step = b.step("test:unit", "Run native Zig unit tests (no C oracle)");
+    for (pure_modules) |src| {
+        const unit = b.addTest(.{
+            .root_module = b.createModule(.{
+                .root_source_file = b.path(src),
+                .target = target,
+                .optimize = .Debug,
+            }),
+        });
+        step.dependOn(&b.addRunArtifact(unit).step);
+    }
 }
 
 fn registerCDependencyAuditStep(b: *std.Build) void {
