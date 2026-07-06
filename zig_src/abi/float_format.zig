@@ -359,3 +359,36 @@ pub fn fmtGBuf(buf: []u8, width: usize, precision: usize, upper: bool, value: f6
     pos += s.len;
     return buf[0..pos];
 }
+
+// ---------------------------------------------------------------------------
+// Native unit tests (REPORT-27 M-IDIOM-3). Self-contained: std-only, no C
+// oracle, no global state. Expected strings are libc `%.*f` / `%.*e` / `%.*g`
+// verified. These give a correctness signal for the byte-exact formatters that
+// does not depend on the upstream C testSuite.
+// ---------------------------------------------------------------------------
+const testing = std.testing;
+
+test "fmtFixedBuf matches libc %.*f" {
+    var buf: [64]u8 = undefined;
+    try testing.expectEqualStrings("1.00", fmtFixedBuf(&buf, 2, 1.0));
+    try testing.expectEqualStrings("0", fmtFixedBuf(&buf, 0, 0.0));
+    try testing.expectEqualStrings("3.142", fmtFixedBuf(&buf, 3, 3.14159));
+    try testing.expectEqualStrings("-2.50", fmtFixedBuf(&buf, 2, -2.5));
+    try testing.expectEqualStrings("0.0001", fmtFixedBuf(&buf, 4, 0.0001));
+}
+
+test "fmtExpBuf matches libc %.*e" {
+    var buf: [64]u8 = undefined;
+    try testing.expectEqualStrings("0.00e+00", fmtExpBuf(&buf, 2, 0.0));
+    try testing.expectEqualStrings("1.000e+03", fmtExpBuf(&buf, 3, 1000.0));
+    try testing.expectEqualStrings("1.2e+04", fmtExpBuf(&buf, 1, 12345.0));
+    try testing.expectEqualStrings("6.02200e+23", fmtExpBuf(&buf, 5, 6.022e23));
+    try testing.expectEqualStrings("-1.23e-04", fmtExpBuf(&buf, 2, -0.000123));
+}
+
+test "fmtGBuf matches libc %.*g" {
+    var buf: [64]u8 = undefined;
+    try testing.expectEqualStrings("100000", fmtGBuf(&buf, 0, 6, false, 100000.0));
+    try testing.expectEqualStrings("0.0001", fmtGBuf(&buf, 0, 6, false, 0.0001));
+    try testing.expectEqualStrings("3.14", fmtGBuf(&buf, 0, 3, false, 3.14159));
+}
