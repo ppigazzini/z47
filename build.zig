@@ -54,6 +54,7 @@ fn buildImpl(b: *std.Build) !void {
 fn registerNativeUnitTests(b: *std.Build) void {
     const pure_modules = [_][]const u8{
         "zig_src/abi/float_format.zig",
+        "zig_src/shortint/shortint_core.zig",
     };
     const target = b.resolveTargetQuery(.{});
     const step = b.step("test:unit", "Run native Zig unit tests (no C oracle)");

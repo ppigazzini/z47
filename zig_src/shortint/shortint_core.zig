@@ -42,3 +42,38 @@ pub fn isBitClear(word: u64, bit: u16) bool {
 pub fn isBitSet(word: u64, bit: u16) bool {
     return !isBitClear(word, bit);
 }
+
+// Native unit tests (REPORT-27 M-IDIOM-3). Pure bit logic; expected values are
+// hand-computed. No C oracle, no global state.
+const testing = std.testing;
+
+test "maskRight" {
+    try testing.expectEqual(@as(u64, 0), maskRight(0));
+    try testing.expectEqual(@as(u64, 0x1), maskRight(1));
+    try testing.expectEqual(@as(u64, 0xF), maskRight(4));
+    try testing.expectEqual(@as(u64, 0xFF), maskRight(8));
+    try testing.expectEqual(std.math.maxInt(u64), maskRight(64));
+}
+
+test "maskLeft" {
+    try testing.expectEqual(@as(u64, 0), maskLeft(8, 0xFF, 0));
+    try testing.expectEqual(@as(u64, 0xF0), maskLeft(8, 0xFF, 4));
+    try testing.expectEqual(@as(u64, 0xFF00), maskLeft(16, 0xFFFF, 8));
+}
+
+test "countBits" {
+    try testing.expectEqual(@as(u64, 0), countBits(0));
+    try testing.expectEqual(@as(u64, 2), countBits(0x5));
+    try testing.expectEqual(@as(u64, 8), countBits(0xFF));
+    try testing.expectEqual(@as(u64, 64), countBits(std.math.maxInt(u64)));
+}
+
+test "set/clear/flip/isBit" {
+    try testing.expectEqual(@as(u64, 0x8), setBit(0, 3));
+    try testing.expectEqual(@as(u64, 0xFE), clearBit(0xFF, 0));
+    try testing.expectEqual(@as(u64, 0x20), flipBit(0, 5));
+    try testing.expectEqual(@as(u64, 0), flipBit(0x20, 5));
+    try testing.expect(isBitSet(0x8, 3));
+    try testing.expect(isBitClear(0x8, 2));
+    try testing.expect(!isBitSet(0x8, 2));
+}
