@@ -77,6 +77,15 @@ const complex34_t = abi.Complex34;
 // digits(i32)+exponent(i32)+bits(u8)+pad. Use the canonical c47 layout.
 const decNumberUnit = u16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const decContext = extern struct {
@@ -306,30 +315,13 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, errRegisterLine: calcRegister_t) void;
 
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool_t;
 
-extern fn hideCursor() void;
-extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool_t, clearBottom: bool_t) void;
-extern fn refreshRegisterLine(regist: calcRegister_t) void;
-extern fn updateMatrixHeightCache() void;
-extern fn setLastintegerBasetoZero() void;
-extern fn showSoftmenu(id: i16) void;
-extern fn mimShowElement() void;
 
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t) u32;
-extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) i16;
-extern fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNumeric: i16, wLastBaseStandard: i16) void;
-extern fn real34ToDisplayString(real34: *const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t) void;
-extern fn complex34ToDisplayString(complex34: *const complex34_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: irfracOption_t, tagAngle: u16, tagPolar: bool_t) void;
 
-extern fn addItemToNimBuffer(item: i16) void;
-extern fn closeNimWithFraction(dest: *real34_t) void;
-extern fn closeNimWithComplex(dest_r: *real34_t, dest_i: *real34_t) void;
-extern fn reallyRunFunction(func: i16, param: u16) void;
 
 extern fn real34IsAnInteger(x: *const real34_t) bool_t;
 extern fn realCompareLessThan(n1: *const real_t, n2: *const real_t) bool_t;
@@ -346,17 +338,13 @@ extern var ctxtReal34: realContext_t;
 
 extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *const realContext_t) void;
 extern fn realPolarToRectangular(magnitude: *const real_t, theta: *const real_t, real: *real_t, imag: *real_t, ctx: *const realContext_t) void;
-extern fn convertAngleFromTo(angle: *real_t, fromAngularMode: angularMode_t, toAngularMode: angularMode_t, ctx: *const realContext_t) void;
 
 extern fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, th2: *real_t, am: u8, ctx: *const decContext) void;
 extern fn convert3DtoCYL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, z: *real_t, am: u8, ctx: *const decContext) void;
 extern fn convert2DtoPOL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, am: u8, ctx: *const decContext) void;
 
-extern fn convertReal34MatrixToComplex34Matrix(source: *const real34Matrix_t, destination: *complex34Matrix_t) void;
 extern fn realMatrixFree(matrix: *real34Matrix_t) void;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
-extern fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const complex34Matrix_t, regist: calcRegister_t) void;
-extern fn convertReal34MatrixToReal34MatrixRegister(matrix: *const real34Matrix_t, regist: calcRegister_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, linkedMatrix: *complex34Matrix_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
 extern fn insRowRealMatrix(matrix: *real34Matrix_t, beforeRowNo: u16, add: bool_t) void;
@@ -367,8 +355,6 @@ extern fn delRowRealMatrix(matrix: *real34Matrix_t, rowNo: u16) void;
 extern fn delRowComplexMatrix(matrix: *complex34Matrix_t, rowNo: u16) void;
 extern fn delColRealMatrix(matrix: *real34Matrix_t, colNo: u16) void;
 extern fn delColComplexMatrix(matrix: *complex34Matrix_t, colNo: u16) void;
-extern fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
-extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
@@ -416,9 +402,6 @@ inline fn getVectorRegisterPolarMode(regist: calcRegister_t) u16 {
 // mpz_t is __mpz_struct[1]; a longInteger_t value decays to mpz_ptr
 // (= *__mpz_struct). We store one __mpz_struct and pass its address.
 const MpzStruct = abi.Mpz;
-extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, longInteger: *MpzStruct) void;
-extern fn convertReal34ToLongInteger(real34: *const real34_t, lgInt: *MpzStruct, mode: c_int) void;
-extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const MpzStruct, regist: calcRegister_t) void;
 extern fn __gmpz_init(op: *MpzStruct) void;
 extern fn __gmpz_clear(op: *MpzStruct) void;
 extern fn __gmpz_get_si(op: *const MpzStruct) c_long;
@@ -568,9 +551,9 @@ fn getRegisterAsInt(asArrayPointer: bool_t, reg: calcRegister_t) i16 {
     // The convert* helpers allocate (longIntegerInit) the destination
     // themselves; matching the C, we only init explicitly in the else branch.
     if (getRegisterDataType(reg) == dtLongInteger) {
-        convertLongIntegerRegisterToLongInteger(reg, &tmp_lgInt);
+        frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(reg, &tmp_lgInt);
     } else if (getRegisterDataType(reg) == dtReal34) {
-        convertReal34ToLongInteger(reg34(reg), &tmp_lgInt, DEC_ROUND_DOWN);
+        frontier_register_value_conversions.convertReal34ToLongInteger(reg34(reg), &tmp_lgInt, DEC_ROUND_DOWN);
     } else {
         __gmpz_init(&tmp_lgInt);
     }
@@ -587,7 +570,7 @@ fn setRegisterAsInt(asArrayPointer: bool_t, toStoreIn: i16, reg: calcRegister_t)
     var tmp_lgInt: MpzStruct = undefined;
     __gmpz_init(&tmp_lgInt);
     __gmpz_set_si(&tmp_lgInt, toStore);
-    convertLongIntegerToLongIntegerRegister(&tmp_lgInt, reg);
+    frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&tmp_lgInt, reg);
     __gmpz_clear(&tmp_lgInt);
 }
 
@@ -600,13 +583,13 @@ inline fn getJRegisterAsIntL(asArrayPointer: bool_t) i16 {
 
 // _resetCursorPos (static in matrixEditor.c). Used by the init-aim helpers.
 fn resetCursorPos() void {
-    clearRegisterLine(NIM_REGISTER_LINE, false, true);
+    frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, false, true);
     abi.fmtBufZ(tmpString[0..2560], "{d};{d}= ", .{ @as(i32, getRegisterAsInt(false, REGISTER_I)), @as(i32, getRegisterAsInt(false, REGISTER_J)) });
-    xCursor = showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, true, true) + 1;
+    xCursor = frontier_screen.showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, 1, 1) + 1;
     yCursor = Y_POSITION_OF_NIM_LINE;
     cursorEnabled = 1;
     cursorFont = &numericFont;
-    setLastintegerBasetoZero();
+    frontier_screen.setLastintegerBasetoZero();
 }
 
 // displayVectorAngle (static, OPTION_VECTOR).
@@ -776,7 +759,7 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
             }
         }
 
-        var baseWidth: i16 = (if (leftEllipsis) stringWidth(STD_ELLIPSIS ++ " ", font, true, true) else 0) + (if (rightEllipsis) stringWidth(" " ++ STD_ELLIPSIS, font, true, true) else 0);
+        var baseWidth: i16 = (if (leftEllipsis) frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true) else 0) + (if (rightEllipsis) frontier_char_string.stringWidth(" " ++ STD_ELLIPSIS, font, true, true) else 0);
         var mtxWidth = getRealMatrixColumnWidths(matrix, prefixWidth, font, &colWidth, &rPadWidth, &digits, maxCols, &allElementsInColAreIntegers);
         var noFix = (mtxWidth < 0);
         mtxWidth = if (mtxWidth < 0) -mtxWidth else mtxWidth;
@@ -824,10 +807,10 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
         {
             var j: usize = 0;
             while (j < maxCols) : (j += 1) {
-                baseWidth += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
+                baseWidth += colWidth[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
             }
         }
-        baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+        baseWidth -= frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
         baseWidth += 3;
 
         var endChar = std.mem.zeroes([6]u8);
@@ -843,29 +826,29 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
         if (!regXposition and prefixWidth > 0) {
             X_POS = prefixWidth;
         } else if (!forEditor) {
-            X_POS = SCREEN_WIDTH - 1 - ((if (colVector) stringWidth("[", font, true, true) + stringWidth(&endChar, font, true, true) + stringWidth(STD_SUP_BOLD_T, font, true, true) else stringWidth("[", font, true, true) + stringWidth(&endChar, font, true, true)) + baseWidth) - (if (font == &standardFont) @as(i16, 0) else @as(i16, 1));
+            X_POS = SCREEN_WIDTH - 1 - ((if (colVector) frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(&endChar, font, true, true) + frontier_char_string.stringWidth(STD_SUP_BOLD_T, font, true, true) else frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(&endChar, font, true, true)) + baseWidth) - (if (font == &standardFont) @as(i16, 0) else @as(i16, 1));
         }
 
         if (toDisplay) {
             if (forEditor) {
-                clearRegisterLine(REGISTER_X, true, true);
-                clearRegisterLine(REGISTER_Y, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_X, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_Y, true, true);
                 if (rows >= (if (font == &standardFont) @as(c_int, 3) else @as(c_int, 2))) {
-                    clearRegisterLine(REGISTER_Z, true, true);
+                    frontier_screen.clearRegisterLine(REGISTER_Z, true, true);
                 }
                 if (rows >= (if (font == &standardFont) @as(c_int, 4) else @as(c_int, 3))) {
-                    clearRegisterLine(REGISTER_T, true, true);
+                    frontier_screen.clearRegisterLine(REGISTER_T, true, true);
                 }
             } else if (!regXposition and prefixWidth > 0) {
-                clearRegisterLine(REGISTER_T, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_T, true, true);
                 if (rows >= 2) {
-                    clearRegisterLine(REGISTER_Z, true, true);
+                    frontier_screen.clearRegisterLine(REGISTER_Z, true, true);
                 }
                 if (rows >= (if (font == &standardFont) @as(c_int, 4) else @as(c_int, 3))) {
-                    clearRegisterLine(REGISTER_Y, true, true);
+                    frontier_screen.clearRegisterLine(REGISTER_Y, true, true);
                 }
                 if (rows == 4 and font != &standardFont) {
-                    clearRegisterLine(REGISTER_X, true, true);
+                    frontier_screen.clearRegisterLine(REGISTER_X, true, true);
                 }
             }
         }
@@ -880,11 +863,11 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
         var i: usize = 0;
         while (i < maxRows) : (i += 1) {
             if (toDisplay) {
-                colX = stringWidth("[", font, true, true);
-                _ = showString(if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, @intCast(X_POS + 5), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, false, false);
+                colX = frontier_char_string.stringWidth("[", font, true, true);
+                _ = frontier_screen.showString(if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, @intCast(X_POS + 5), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 0, 0);
                 if (leftEllipsis) {
-                    _ = showString(STD_ELLIPSIS ++ " ", font, @intCast(X_POS + 5 + stringWidth("[", font, true, true)), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, true, false);
-                    colX += stringWidth(STD_ELLIPSIS ++ " ", font, true, true);
+                    _ = frontier_screen.showString(STD_ELLIPSIS ++ " ", font, @intCast(X_POS + 5 + frontier_char_string.stringWidth("[", font, true, true)), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 1, 0);
+                    colX += frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true);
                 }
             }
 
@@ -911,7 +894,7 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
                         digits = 15;
                     }
                     extractVectorElement34(matrix, @intCast(j), @intCast((i + sRow) * @as(usize, @intCast(cols)) + j + sCol), rows, cols, &element, &toBeAngle, @intCast(digits), &aa, &bb, &cc);
-                    real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], digits, LIMITEXP, FRONTSPACE, if (cols * rows > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    frontier_display.real34ToDisplayString(&element, toBeAngle, tmpString, font, colWidth[j], digits, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rows > 3) LIMITIRFRAC else LIGHTIRFRAC);
 
                     if (toDisplay) {
                         if (forEditor and matSelRow == @as(i16, @intCast(i + sRow)) and matSelCol == @as(i16, @intCast(j + sCol))) {
@@ -923,9 +906,9 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
                     }
                 }
                 if (toDisplay) {
-                    width = stringWidth(tmpString, font, true, true) + 1;
-                    _ = showString(tmpString, font, @intCast(X_POS + 5 + colX + (if ((j == maxCols) and rightEllipsis) -stringWidth(" ", font, true, true) else (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j])), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), vm, true, false);
-                    colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true) - 1;
+                    width = frontier_char_string.stringWidth(tmpString, font, true, true) + 1;
+                    _ = frontier_screen.showString(tmpString, font, @intCast(X_POS + 5 + colX + (if ((j == maxCols) and rightEllipsis) -frontier_char_string.stringWidth(" ", font, true, true) else (colWidth[j] - width) - rPadWidth[i * MATRIX_MAX_COLUMNS + j])), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), vm, 1, 0);
+                    colX += colWidth[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - 1;
                 } else {
                     if (j > 0) {
                         _ = strcat(errorMessage, " ");
@@ -935,9 +918,9 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
             }
 
             if (toDisplay) {
-                _ = showString(if (maxRows == 1) &endChar else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, @intCast(X_POS + stringWidth("[", font, true, true) + baseWidth), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, true, false);
+                _ = frontier_screen.showString(if (maxRows == 1) &endChar else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, @intCast(X_POS + frontier_char_string.stringWidth("[", font, true, true) + baseWidth), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 1, 0);
                 if (colVector) {
-                    _ = showString(STD_SUP_BOLD_T, font, @intCast(X_POS + stringWidth("[", font, true, true) + stringWidth(&endChar, font, true, true) + baseWidth), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, true, false);
+                    _ = frontier_screen.showString(STD_SUP_BOLD_T, font, @intCast(X_POS + frontier_char_string.stringWidth("[", font, true, true) + frontier_char_string.stringWidth(&endChar, font, true, true) + baseWidth), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - i)) * fontHeight), 0, 1, 0);
                 }
             } else {
                 _ = strcat(errorMessage, &endChar);
@@ -1021,7 +1004,7 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                         displayFormatDigits = displayFormatDigits1;
                     }
 
-                    real34ToDisplayString(&r34Val, toBeAngle, &tmpStringL, font, maxWidth, @intCast(calcDigits), LIMITEXP, FRONTSPACE, if (cols * rowsReal > 3) LIMITIRFRAC else LIGHTIRFRAC);
+                    frontier_display.real34ToDisplayString(&r34Val, toBeAngle, &tmpStringL, font, maxWidth, @intCast(calcDigits), @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), if (cols * rowsReal > 3) LIMITIRFRAC else LIGHTIRFRAC);
                     if (displayFormat == DF_ALL and !noFix and strstr(&tmpStringL, STD_SUB_10) != null) {
                         noFix = true;
                         totalWidth = 0;
@@ -1033,7 +1016,7 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                         continue :begin;
                     }
 
-                    var width: i16 = stringWidth(&tmpStringL, font, true, true) + 1;
+                    var width: i16 = frontier_char_string.stringWidth(&tmpStringL, font, true, true) + 1;
                     rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
                     if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
                         var xStr: [*c]u8 = &tmpStringL;
@@ -1042,7 +1025,7 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                             const cond1 = (displayFormat != DF_ENG and (displayFormat != DF_ALL or !getSystemFlag(FLAG_ENGOVR))) and (xStr.* == '.' or xStr.* == ',');
                             const cond2 = isEngLike and xStr[0] == 0x80 and (xStr[1] == 0x87 or xStr[1] == 0xd7);
                             if (cond1 or cond2) {
-                                rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
+                                rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j] = frontier_char_string.stringWidth(xStr, font, true, true) + 1;
                                 if (maxRightWidth[j] < rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j]) {
                                     maxRightWidth[j] = rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j];
                                 }
@@ -1054,7 +1037,7 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                         }
                     } else {
                         if (r34sign and strstr(&tmpStringL, "/") != null) {
-                            width += stringWidth("-", font, true, true);
+                            width += frontier_char_string.stringWidth("-", font, true, true);
                         }
                         rPadWidthPtr[i * MATRIX_MAX_COLUMNS + j] = width | exponentOutOfRange;
                     }
@@ -1095,10 +1078,10 @@ pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWid
                 var j: usize = 0;
                 while (j < maxCols) : (j += 1) {
                     colWidthPtr[j] = (maxLeftWidth[j] + maxRightWidth[j]);
-                    totalWidth += colWidthPtr[j] + stringWidth(STD_SPACE_FIGURE, font, true, true) * 2;
+                    totalWidth += colWidthPtr[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) * 2;
                 }
             }
-            totalWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+            totalWidth -= frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
             if (noFix) {
                 displayFormat = DF_ALL;
                 displayFormatDigits = @intCast(dspDigits);
@@ -1192,7 +1175,7 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
             Y_POS += (if (maxRows == 1) STANDARD_FONT_HEIGHT_ else REGISTER_LINE_HEIGHT - STANDARD_FONT_HEIGHT_);
         }
 
-        var baseWidth: i16 = (if (leftEllipsis) stringWidth(STD_ELLIPSIS ++ " ", font, true, true) else 0) + (if (rightEllipsis) stringWidth(STD_ELLIPSIS, font, true, true) else 0);
+        var baseWidth: i16 = (if (leftEllipsis) frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true) else 0) + (if (rightEllipsis) frontier_char_string.stringWidth(STD_ELLIPSIS, font, true, true) else 0);
         totalWidth = baseWidth + getComplexMatrixColumnWidths(matrix, prefixWidth, font, &colWidth, &colWidth_r, &colWidth_i, &rPadWidth_r, &rPadWidth_i, &digits, @intCast(maxCols), angleMode, polarMode);
         if (totalWidth > maxWidth or leftEllipsis) {
             if (font == &numericFont) {
@@ -1230,46 +1213,46 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
         {
             var j: usize = 0;
             while (j < maxCols) : (j += 1) {
-                baseWidth += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
+                baseWidth += colWidth[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
             }
         }
-        baseWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+        baseWidth -= frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
 
         if (!regXposition and prefixWidth > 0) {
             X_POS = prefixWidth;
         } else if (!forEditor) {
-            X_POS = SCREEN_WIDTH - ((if (colVector) stringWidth("[]" ++ STD_SUP_BOLD_T, font, true, true) else stringWidth("[]", font, true, true)) + baseWidth) - (if (font == &standardFont) @as(i16, 0) else @as(i16, 1));
+            X_POS = SCREEN_WIDTH - ((if (colVector) frontier_char_string.stringWidth("[]" ++ STD_SUP_BOLD_T, font, true, true) else frontier_char_string.stringWidth("[]", font, true, true)) + baseWidth) - (if (font == &standardFont) @as(i16, 0) else @as(i16, 1));
         }
 
         if (forEditor) {
-            clearRegisterLine(REGISTER_X, true, true);
-            clearRegisterLine(REGISTER_Y, true, true);
+            frontier_screen.clearRegisterLine(REGISTER_X, true, true);
+            frontier_screen.clearRegisterLine(REGISTER_Y, true, true);
             if (rows >= (if (font == &standardFont) @as(c_int, 3) else @as(c_int, 2))) {
-                clearRegisterLine(REGISTER_Z, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_Z, true, true);
             }
             if (rows >= (if (font == &standardFont) @as(c_int, 4) else @as(c_int, 3))) {
-                clearRegisterLine(REGISTER_T, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_T, true, true);
             }
         } else if (!regXposition and prefixWidth > 0) {
-            clearRegisterLine(REGISTER_T, true, true);
+            frontier_screen.clearRegisterLine(REGISTER_T, true, true);
             if (rows >= 2) {
-                clearRegisterLine(REGISTER_Z, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_Z, true, true);
             }
             if (rows >= (if (font == &standardFont) @as(c_int, 4) else @as(c_int, 3))) {
-                clearRegisterLine(REGISTER_Y, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_Y, true, true);
             }
             if (rows == 4 and font != &standardFont) {
-                clearRegisterLine(REGISTER_X, true, true);
+                frontier_screen.clearRegisterLine(REGISTER_X, true, true);
             }
         }
 
         var i: usize = 0;
         while (i < maxRows) : (i += 1) {
-            var colX: i16 = stringWidth("[", font, true, true);
-            _ = showString(if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, @intCast(X_POS + 1), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, true, false);
+            var colX: i16 = frontier_char_string.stringWidth("[", font, true, true);
+            _ = frontier_screen.showString(if (maxRows == 1) "[" else if (i == 0) STD_MAT_TL else if (i + 1 == maxRows) STD_MAT_BL else STD_MAT_ML, font, @intCast(X_POS + 1), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
             if (leftEllipsis) {
-                _ = showString(STD_ELLIPSIS ++ " ", font, @intCast(X_POS + stringWidth("[", font, true, true)), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, true, false);
-                colX += stringWidth(STD_ELLIPSIS ++ " ", font, true, true);
+                _ = frontier_screen.showString(STD_ELLIPSIS ++ " ", font, @intCast(X_POS + frontier_char_string.stringWidth("[", font, true, true)), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
+                colX += frontier_char_string.stringWidth(STD_ELLIPSIS ++ " ", font, true, true);
             }
             var j: usize = 0;
             const jLimit: usize = @as(usize, @intCast(maxCols)) + (if (rightEllipsis) @as(usize, 1) else 0);
@@ -1283,7 +1266,7 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                     real34ToReal(&elem.real, &x);
                     real34ToReal(&elem.imag, &y);
                     realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-                    convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
+                    frontier_conversion_angles.convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
                     realToReal34(&x, &re);
                     realToReal34(&y, &im);
                 } else {
@@ -1296,7 +1279,7 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                     vm = 0;
                 } else {
                     tmpString[0] = 0;
-                    real34ToDisplayString(&re, amNone, tmpString, font, colWidth_r[j], if (displayFormat == DF_ALL) digits else 15, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
+                    frontier_display.real34ToDisplayString(&re, amNone, tmpString, font, colWidth_r[j], if (displayFormat == DF_ALL) digits else 15, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
                     if (forEditor and matSelRow == @as(i16, @intCast(i + sRow)) and matSelCol == @as(i16, @intCast(j + sCol))) {
                         lcdFillRect(@intCast(X_POS + colX), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), @intCast(colWidth[j]), if (font == &numericFont) 32 else 20, LCD_EMPTY_VALUE);
                         vm = 1;
@@ -1304,8 +1287,8 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                         vm = 0;
                     }
                 }
-                width = stringWidth(tmpString, font, true, true) + 1;
-                _ = showString(tmpString, font, @intCast(X_POS + colX + (if ((j == @as(usize, @intCast(maxCols))) and rightEllipsis) stringWidth(STD_SPACE_FIGURE, font, true, true) - width else (colWidth_r[j] - width) - rPadWidth_r[i * MATRIX_MAX_COLUMNS + j])), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, true, false);
+                width = frontier_char_string.stringWidth(tmpString, font, true, true) + 1;
+                _ = frontier_screen.showString(tmpString, font, @intCast(X_POS + colX + (if ((j == @as(usize, @intCast(maxCols))) and rightEllipsis) frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) - width else (colWidth_r[j] - width) - rPadWidth_r[i * MATRIX_MAX_COLUMNS + j])), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, 1, 0);
                 if (strcmpEq(tmpString, STD_ELLIPSIS) == false) {
                     const neg = real34IsNegative(&im);
                     var cpxUnitWidth: i16 = 0;
@@ -1317,7 +1300,7 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                         _ = strcat(tmpString, complexUnit());
                         _ = strcat(tmpString, productSign());
                     }
-                    cpxUnitWidth = stringWidth(tmpString, font, true, true);
+                    cpxUnitWidth = frontier_char_string.stringWidth(tmpString, font, true, true);
                     width = cpxUnitWidth;
                     if (!polarMode) {
                         if (neg) {
@@ -1325,17 +1308,17 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
                             real34SetPositiveSign(&im);
                         }
                     }
-                    _ = showString(tmpString, font, @intCast(X_POS + colX + colWidth_r[j] + (width - stringWidth(tmpString, font, true, true))), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, true, false);
+                    _ = frontier_screen.showString(tmpString, font, @intCast(X_POS + colX + colWidth_r[j] + (width - frontier_char_string.stringWidth(tmpString, font, true, true))), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, 1, 0);
 
-                    real34ToDisplayString(&im, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, tmpString, font, colWidth_i[j], if (displayFormat == DF_ALL) digits else 15, LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
-                    width = stringWidth(tmpString, font, true, true) + 1;
-                    _ = showString(tmpString, font, @intCast(X_POS + colX + colWidth_r[j] + cpxUnitWidth + (if ((j == @as(usize, @intCast(maxCols - 1))) and rightEllipsis) @as(i16, 0) else (colWidth_i[j] - width) - rPadWidth_i[i * MATRIX_MAX_COLUMNS + j])), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, true, false);
+                    frontier_display.real34ToDisplayString(&im, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, tmpString, font, colWidth_i[j], if (displayFormat == DF_ALL) digits else 15, @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
+                    width = frontier_char_string.stringWidth(tmpString, font, true, true) + 1;
+                    _ = frontier_screen.showString(tmpString, font, @intCast(X_POS + colX + colWidth_r[j] + cpxUnitWidth + (if ((j == @as(usize, @intCast(maxCols - 1))) and rightEllipsis) @as(i16, 0) else (colWidth_i[j] - width) - rPadWidth_i[i * MATRIX_MAX_COLUMNS + j])), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), vm, 1, 0);
                 }
-                colX += colWidth[j] + stringWidth(STD_SPACE_FIGURE, font, true, true);
+                colX += colWidth[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
             }
-            _ = showString(if (maxRows == 1) "]" else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, @intCast(X_POS + stringWidth("[", font, true, true) + baseWidth - 1), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, true, false);
+            _ = frontier_screen.showString(if (maxRows == 1) "]" else if (i == 0) STD_MAT_TR else if (i + 1 == maxRows) STD_MAT_BR else STD_MAT_MR, font, @intCast(X_POS + frontier_char_string.stringWidth("[", font, true, true) + baseWidth - 1), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
             if (colVector) {
-                _ = showString(STD_SUP_BOLD_T, font, @intCast(X_POS + stringWidth("[]", font, true, true) + baseWidth), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, true, false);
+                _ = frontier_screen.showString(STD_SUP_BOLD_T, font, @intCast(X_POS + frontier_char_string.stringWidth("[]", font, true, true) + baseWidth), @intCast(Y_POS - @as(i16, @intCast(maxRows - 1 - @as(c_int, @intCast(i)))) * fontHeight), 0, 1, 0);
             }
         }
         break :smallFont;
@@ -1376,7 +1359,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
         _ = strcat(&tmpStringL, complexUnit());
         _ = strcat(&tmpStringL, productSign());
     }
-    cpxUnitWidth = stringWidth(&tmpStringL, font, true, true);
+    cpxUnitWidth = frontier_char_string.stringWidth(&tmpStringL, font, true, true);
 
     var k: c_int = imax(imin(@as(c_int, displayFormatDigits) * (if (displayFormat == DF_ALL) @as(c_int, 2) else @as(c_int, 1)), imax(@divTrunc(@as(c_int, 50), cols) - 2, 0)), 10);
     while (k >= 1) : (k -= 1) {
@@ -1395,7 +1378,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                     real34ToReal(&c34Val.real, &x);
                     real34ToReal(&c34Val.imag, &y);
                     realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-                    convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
+                    frontier_conversion_angles.convertAngleFromTo(&y, amRadian, angleMode, &ctxtReal39);
                     realToReal34(&x, &c34Val.real);
                     realToReal34(&y, &c34Val.imag);
                 }
@@ -1403,8 +1386,8 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
                 real34SetPositiveSign(&c34Val.real);
                 var c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].real);
-                real34ToDisplayString(&c34Val.real, amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, LIMITEXP, FRONTSPACE, LIMITIRFRAC);
-                var width: i16 = stringWidth(&tmpStringL, font, true, true) + 1;
+                frontier_display.real34ToDisplayString(&c34Val.real, amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC);
+                var width: i16 = frontier_char_string.stringWidth(&tmpStringL, font, true, true) + 1;
                 if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
                     var xStr: [*c]u8 = &tmpStringL;
                     while (xStr.* != 0) : (xStr += 1) {
@@ -1412,7 +1395,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                         const cond1 = (displayFormat != DF_ENG and (displayFormat != DF_ALL or !getSystemFlag(FLAG_ENGOVR))) and (xStr.* == '.' or xStr.* == ',');
                         const cond2 = isEngLike and xStr[0] == 0x80 and (xStr[1] == 0x87 or xStr[1] == 0xd7);
                         if (cond1 or cond2) {
-                            rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
+                            rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = frontier_char_string.stringWidth(xStr, font, true, true) + 1;
                             if (maxRightWidth_r[j] < rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j]) {
                                 maxRightWidth_r[j] = rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j];
                             }
@@ -1424,7 +1407,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                     }
                 } else {
                     if (c34sign and strstr(&tmpStringL, "/") != null) {
-                        width += stringWidth("-", font, true, true);
+                        width += frontier_char_string.stringWidth("-", font, true, true);
                     }
                     rPadWidth_rPtr[i * MATRIX_MAX_COLUMNS + j] = width | exponentOutOfRange;
                 }
@@ -1435,8 +1418,8 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                     c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].imag);
                     real34SetPositiveSign(&c34Val.imag);
                 }
-                real34ToDisplayString(&c34Val.imag, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, LIMITEXP, !FRONTSPACE, LIMITIRFRAC);
-                width = stringWidth(&tmpStringL, font, true, true) + 1;
+                frontier_display.real34ToDisplayString(&c34Val.imag, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
+                width = frontier_char_string.stringWidth(&tmpStringL, font, true, true) + 1;
                 if (strstr(&tmpStringL, ".") != null or strstr(&tmpStringL, ",") != null) {
                     var xStr: [*c]u8 = &tmpStringL;
                     while (xStr.* != 0) : (xStr += 1) {
@@ -1444,7 +1427,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                         const cond1 = (displayFormat != DF_ENG and (displayFormat != DF_ALL or !getSystemFlag(FLAG_ENGOVR))) and (xStr.* == '.' or xStr.* == ',');
                         const cond2 = isEngLike and xStr[0] == 0x80 and (xStr[1] == 0x87 or xStr[1] == 0xd7);
                         if (cond1 or cond2) {
-                            rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j] = stringWidth(xStr, font, true, true) + 1;
+                            rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j] = frontier_char_string.stringWidth(xStr, font, true, true) + 1;
                             if (maxRightWidth_i[j] < rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j]) {
                                 maxRightWidth_i[j] = rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j];
                             }
@@ -1456,7 +1439,7 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                     }
                 } else {
                     if (c34sign and strstr(&tmpStringL, "/") != null) {
-                        width += stringWidth("-", font, true, true);
+                        width += frontier_char_string.stringWidth("-", font, true, true);
                     }
                     rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j] = width | exponentOutOfRange;
                 }
@@ -1506,10 +1489,10 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 colWidth_rPtr[j] = maxLeftWidth_r[j] + maxRightWidth_r[j];
                 colWidth_iPtr[j] = maxLeftWidth_i[j] + maxRightWidth_i[j];
                 colWidthPtr[j] = colWidth_rPtr[j] + (if (colWidth_iPtr[j] > 0) (cpxUnitWidth + colWidth_iPtr[j]) else 0);
-                totalWidth += colWidthPtr[j] + stringWidth(STD_SPACE_FIGURE, font, true, true) * 2;
+                totalWidth += colWidthPtr[j] + frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true) * 2;
             }
         }
-        totalWidth -= stringWidth(STD_SPACE_FIGURE, font, true, true);
+        totalWidth -= frontier_char_string.stringWidth(STD_SPACE_FIGURE, font, true, true);
         if (displayFormat != DF_ALL) {
             break;
         } else if (totalWidth <= maxWidth) {
@@ -1565,9 +1548,9 @@ pub export fn z47_frontier_matrix_open_cols() callconv(.c) u16 {
 
 pub export fn z47_frontier_matrix_commit_open_to_register() callconv(.c) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-        convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, @bitCast(matrixIndex));
+        frontier_register_value_conversions.convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, @bitCast(matrixIndex));
     } else {
-        convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, @bitCast(matrixIndex));
+        frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, @bitCast(matrixIndex));
     }
 }
 
@@ -1576,7 +1559,7 @@ pub export fn z47_frontier_matrix_calc_mode_normal_gui() callconv(.c) void {
 }
 
 pub export fn z47_frontier_matrix_hide_cursor() callconv(.c) void {
-    hideCursor();
+    frontier_screen.hideCursor();
     cursorEnabled = 0;
 }
 
@@ -1585,16 +1568,14 @@ pub export fn z47_frontier_matrix_reload_open_matrix_from_register() callconv(.c
         if (openMatrixMIMPointer.realMatrix.matrixElements != null) {
             realMatrixFree(&openMatrixMIMPointer.realMatrix);
         }
-        convertReal34MatrixRegisterToReal34Matrix(@bitCast(matrixIndex), &openMatrixMIMPointer.realMatrix);
+        frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(@bitCast(matrixIndex), &openMatrixMIMPointer.realMatrix);
     } else {
         if (openMatrixMIMPointer.complexMatrix.matrixElements != null) {
             complexMatrixFree(&openMatrixMIMPointer.complexMatrix);
         }
-        convertComplex34MatrixRegisterToComplex34Matrix(@bitCast(matrixIndex), &openMatrixMIMPointer.complexMatrix);
+        frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(@bitCast(matrixIndex), &openMatrixMIMPointer.complexMatrix);
     }
 }
-extern fn convertReal34MatrixRegisterToReal34Matrix(regist: calcRegister_t, matrix: *real34Matrix_t) void;
-extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
 
 // callByIndexedMatrix dispatch (matrixEditor.c static). The inc/dec real/complex
 // helpers are file-local.
@@ -1742,7 +1723,7 @@ pub export fn z47_frontier_matrix_aim_is_single_plus_digit() callconv(.c) bool {
 
 pub export fn z47_frontier_matrix_aim_clear_single_plus_digit() callconv(.c) void {
     aimBuffer[1] = 0;
-    hideCursor();
+    frontier_screen.hideCursor();
     cursorEnabled = 0;
 }
 
@@ -1783,9 +1764,9 @@ pub export fn z47_frontier_matrix_make_j_element() callconv(.c) void {
 
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         var cxma: complex34Matrix_t = undefined;
-        convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
+        frontier_register_value_conversions.convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
         realMatrixFree(&openMatrixMIMPointer.realMatrix);
-        convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
+        frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
         if ((getSystemFlag(FLAG_POLAR) and !temporaryFlagRect) or temporaryFlagPolar) {
             setRegisterTag(@bitCast(matrixIndex), @as(u32, @bitCast(@as(i32, currentAngularMode))) | amPolar);
         }
@@ -1797,7 +1778,7 @@ pub export fn z47_frontier_matrix_make_j_element() callconv(.c) void {
         if ((getSystemFlag(FLAG_POLAR) and !temporaryFlagRect) or temporaryFlagPolar) {
             var theta: real_t = undefined;
             realCopy(const39_piOn2, &theta);
-            convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
+            frontier_conversion_angles.convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
             real34SetOne(&elm.real);
             realToReal34(&theta, &elm.imag);
         } else {
@@ -1827,11 +1808,11 @@ pub export fn z47_frontier_matrix_can_append_pi_literal() callconv(.c) bool {
 
 pub export fn z47_frontier_matrix_append_pi_literal_and_enter() callconv(.c) void {
     _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
-    reallyRunFunction(ITM_ENTER, NOPARAM);
+    frontier_items.reallyRunFunction(ITM_ENTER, NOPARAM);
 }
 
 pub export fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) callconv(.c) void {
-    addItemToNimBuffer(item);
+    frontier_bufferize.addItemToNimBuffer(item);
 }
 
 var saved_is_complex: bool_t = false;
@@ -1879,7 +1860,7 @@ pub export fn z47_frontier_matrix_load_selected_into_register_x() callconv(.c) v
 }
 
 pub export fn z47_frontier_matrix_run_item_function(func: i16, param: u16) callconv(.c) void {
-    reallyRunFunction(func, param);
+    frontier_items.reallyRunFunction(func, param);
 }
 
 pub export fn z47_frontier_matrix_register_type(reg: u16) callconv(.c) u32 {
@@ -1887,11 +1868,11 @@ pub export fn z47_frontier_matrix_register_type(reg: u16) callconv(.c) u32 {
 }
 
 pub export fn z47_frontier_matrix_convert_register_x_long_to_real34() callconv(.c) void {
-    convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+    frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
 }
 
 pub export fn z47_frontier_matrix_convert_register_x_short_to_real34() callconv(.c) void {
-    convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
+    frontier_register_value_conversions.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
 }
 
 pub export fn z47_frontier_matrix_apply_register_x_to_selected() callconv(.c) bool {
@@ -1916,9 +1897,9 @@ pub export fn z47_frontier_matrix_apply_register_x_to_selected() callconv(.c) bo
         var ans: complex34_t = undefined;
 
         complex34Copy(regCplx(REGISTER_X), &ans);
-        convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
+        frontier_register_value_conversions.convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
         realMatrixFree(&openMatrixMIMPointer.realMatrix);
-        convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
+        frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
         openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
         openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
         openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
@@ -1941,14 +1922,14 @@ pub export fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted(
 
     if (saved_is_complex) {
         var linkedMatrix: complex34Matrix_t = undefined;
-        convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, REGISTER_X);
+        frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, REGISTER_X);
         linkToComplexMatrixRegister(REGISTER_X, &linkedMatrix);
         const idx: usize = @intCast(@as(c_int, i) * @as(c_int, linkedMatrix.header.matrixColumns) + @as(c_int, j));
         real34Copy(&saved_re, &linkedMatrix.matrixElements.?[idx].real);
         real34Copy(&saved_im, &linkedMatrix.matrixElements.?[idx].imag);
     } else {
         var linkedMatrix: real34Matrix_t = undefined;
-        convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, REGISTER_X);
+        frontier_register_value_conversions.convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, REGISTER_X);
         linkToRealMatrixRegister(REGISTER_X, &linkedMatrix);
         const idx: usize = @intCast(@as(c_int, i) * @as(c_int, linkedMatrix.header.matrixColumns) + @as(c_int, j));
         real34Copy(&saved_re, &linkedMatrix.matrixElements.?[idx]);
@@ -1956,7 +1937,7 @@ pub export fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted(
 }
 
 pub export fn z47_frontier_matrix_update_height_cache() callconv(.c) void {
-    updateMatrixHeightCache();
+    frontier_screen.updateMatrixHeightCache();
 }
 
 pub export fn z47_frontier_matrix_softmenu_has_m_edit() callconv(.c) bool {
@@ -1974,7 +1955,7 @@ pub export fn z47_frontier_matrix_softmenu_top_is_m_edit() callconv(.c) bool {
 }
 
 pub export fn z47_frontier_matrix_show_m_edit_softmenu() callconv(.c) void {
-    showSoftmenu(-MNU_M_EDIT);
+    frontier_softmenus.showSoftmenu(-MNU_M_EDIT);
 }
 
 pub export fn z47_frontier_matrix_scroll_row_get() callconv(.c) u16 {
@@ -1990,29 +1971,29 @@ pub export fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16,
     var width: i16 = 0;
 
     if (aimBuffer[0] == 0) {
-        clearRegisterLine(NIM_REGISTER_LINE, true, true);
+        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, true, true);
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
             showRealMatrix(&openMatrixMIMPointer.realMatrix, 0, toDisplayVectorMatrix, !regXp);
         } else {
             showComplexMatrix(&openMatrixMIMPointer.complexMatrix, 0, currentAngularMode, getSystemFlag(FLAG_POLAR), !regXp);
         }
     } else {
-        clearRegisterLine(NIM_REGISTER_LINE, false, true);
+        frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, false, true);
     }
 
     const hairArg: [*c]const u8 = if (aimBuffer[0] == 0) STD_SPACE_HAIR else "";
     const spaceArg: [*c]const u8 = if (aimBuffer[0] == 0 or aimBuffer[0] == '-') "" else " ";
     abi.fmtBufZ(tmpString[0..2560], "{d};{d}=" ++ STD_SPACE_4_PER_EM ++ "{s}{s}{s}", .{ @as(i32, if (colVector) matSelCol + 1 else matSelRow + 1), @as(i32, if (colVector) 1 else matSelCol + 1), std.mem.span(hairArg), std.mem.span(spaceArg), std.mem.span(nimBufferDisplay) });
-    width = stringWidth(tmpString, &numericFont, true, true) + 1;
+    width = frontier_char_string.stringWidth(tmpString, &numericFont, true, true) + 1;
     if (aimBuffer[0] == 0) {
         const selIdx: usize = @intCast(@as(c_int, matSelRow) * @as(c_int, cols) + @as(c_int, matSelCol));
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-            real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements.?[selIdx], amNone, tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIGHTIRFRAC);
+            frontier_display.real34ToDisplayString(&openMatrixMIMPointer.realMatrix.matrixElements.?[selIdx], amNone, tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIGHTIRFRAC);
         } else {
-            complex34ToDisplayString(&openMatrixMIMPointer.complexMatrix.matrixElements.?[selIdx], tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, LIMITEXP, FRONTSPACE, LIMITIRFRAC, @as(u16, @bitCast(@as(i16, @truncate(currentAngularMode)))), getSystemFlag(FLAG_POLAR));
+            frontier_display.complex34ToDisplayString(&openMatrixMIMPointer.complexMatrix.matrixElements.?[selIdx], tmpString + strlen(tmpString), &numericFont, SCREEN_WIDTH - width, NUMBER_OF_DISPLAY_DIGITS, @intFromBool(LIMITEXP), @intFromBool(FRONTSPACE), LIMITIRFRAC, @as(u16, @bitCast(@as(i16, @truncate(currentAngularMode)))), @intFromBool(getSystemFlag(FLAG_POLAR)));
         }
 
-        _ = showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, true, false);
+        _ = frontier_screen.showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, 1, 0);
     } else {
         if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/') {
             var lastBase = std.mem.zeroes([12]u8);
@@ -2041,24 +2022,24 @@ pub export fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16,
             lb[0] = @intCast(@as(u32, STD_SUB_0[1]) + (ld % 10));
             lb += 1;
             lb[0] = 0;
-            displayNim(tmpString, &lastBase, stringWidth(&lastBase, &numericFont, true, true), stringWidth(&lastBase, &standardFont, true, true));
+            frontier_screen.displayNim(tmpString, &lastBase, frontier_char_string.stringWidth(&lastBase, &numericFont, true, true), frontier_char_string.stringWidth(&lastBase, &standardFont, true, true));
         } else {
-            displayNim(tmpString, "", 0, 0);
+            frontier_screen.displayNim(tmpString, "", 0, 0);
         }
     }
 
     if (temporaryInformation == TI_SHOW_REGISTER and calcMode == CM_MIM) {
-        mimShowElement();
-        clearRegisterLine(REGISTER_T, true, true);
-        refreshRegisterLine(REGISTER_T);
+        frontier_display.mimShowElement();
+        frontier_screen.clearRegisterLine(REGISTER_T, true, true);
+        frontier_screen.refreshRegisterLine(REGISTER_T);
         if (tmpString[SHOWLineSize] != 0) {
-            clearRegisterLine(REGISTER_Z, true, true);
-            refreshRegisterLine(REGISTER_Z);
+            frontier_screen.clearRegisterLine(REGISTER_Z, true, true);
+            frontier_screen.refreshRegisterLine(REGISTER_Z);
         }
     }
 
     if (lastErrorCode != ERROR_NONE) {
-        refreshRegisterLine(errorMessageRegisterLine);
+        frontier_screen.refreshRegisterLine(errorMessageRegisterLine);
     }
 }
 
@@ -2079,19 +2060,19 @@ pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void
 
         switch (nimNumberPart) {
             NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR => {
-                closeNimWithFraction(&real34tmp);
+                frontier_bufferize.closeNimWithFraction(&real34tmp);
                 realChanged = true;
             },
             NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => {
                 var cxma: complex34Matrix_t = undefined;
-                convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
+                frontier_register_value_conversions.convertReal34MatrixToComplex34Matrix(&openMatrixMIMPointer.realMatrix, &cxma);
                 realMatrixFree(&openMatrixMIMPointer.realMatrix);
-                convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
+                frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&cxma, @bitCast(matrixIndex));
                 openMatrixMIMPointer.complexMatrix.header.matrixRows = cxma.header.matrixRows;
                 openMatrixMIMPointer.complexMatrix.header.matrixColumns = cxma.header.matrixColumns;
                 openMatrixMIMPointer.complexMatrix.matrixElements = cxma.matrixElements;
                 const complex34Ptr = &openMatrixMIMPointer.complexMatrix.matrixElements.?[idx];
-                closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
+                frontier_bufferize.closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
             },
             else => {
                 stringToReal34(aimBuffer, &real34tmp);
@@ -2107,11 +2088,11 @@ pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void
 
         switch (nimNumberPart) {
             NP_FRACTION_DENOMINATOR, NP_HP32SII_DENOMINATOR => {
-                closeNimWithFraction(&complex34Ptr.real);
+                frontier_bufferize.closeNimWithFraction(&complex34Ptr.real);
                 real34SetZero(&complex34Ptr.imag);
             },
             NP_COMPLEX_INT_PART, NP_COMPLEX_FLOAT_PART, NP_COMPLEX_EXPONENT, NP_COMPLEX_FRACTION_DENOMINATOR, NP_COMPLEX_HP32SII_DENOMINATOR => {
-                closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
+                frontier_bufferize.closeNimWithComplex(&complex34Ptr.real, &complex34Ptr.imag);
             },
             else => {
                 stringToReal34(aimBuffer, &complex34Ptr.real);
@@ -2122,17 +2103,17 @@ pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void
 
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
-    hideCursor();
+    frontier_screen.hideCursor();
     cursorEnabled = 0;
     setSystemFlag(FLAG_ASLIFT);
 }
 
 pub export fn z47_frontier_matrix_mim_enter_commit_open_matrix() callconv(.c) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-        convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, @bitCast(matrixIndex));
+        frontier_register_value_conversions.convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, @bitCast(matrixIndex));
         setRegisterTag(@bitCast(matrixIndex), openMatrixMIMPointer.header.mtag);
     } else {
-        convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, @bitCast(matrixIndex));
+        frontier_register_value_conversions.convertComplex34MatrixToComplex34MatrixRegister(&openMatrixMIMPointer.complexMatrix, @bitCast(matrixIndex));
         setRegisterTag(@bitCast(matrixIndex), openMatrixMIMPointer.header.mtag);
     }
 }
