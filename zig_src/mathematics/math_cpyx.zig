@@ -45,7 +45,6 @@ inline fn const_1() *const real_t {
 
 // realExp and WP34S_LnGamma / WP34S_ComplexLnGamma / expComplex cross-domain.
 
-
 // Long integer <-> real / register conversions.
 extern fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) void;
 extern fn convertRealToLongInteger(real: *const real_t, lgInt: *mpz_struct, mode: c_int) void;
@@ -54,8 +53,8 @@ extern fn convertLongIntegerToShortIntegerRegister(lgInt: *const mpz_struct, bas
 extern fn convertShortIntegerRegisterToLongInteger(reg: calcRegister_t, lgInt: *mpz_struct) void;
 
 // GMP / long integer helpers (longIntegerType.h inlines / macros).
-extern fn @"__gmpz_cmp_si"(op: *const mpz_struct, v: c_long) c_int;
-extern fn @"__gmpz_set"(rop: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
+extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
 // Overflow-guarded multiply (integers.c).
 extern fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct) void;
 
@@ -66,7 +65,7 @@ inline fn longIntegerFree(op: *mpz_struct) void {
     runtime.__gmpz_clear(op);
 }
 inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
-    @"__gmpz_set"(destination, source);
+    __gmpz_set(destination, source);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     runtime.__gmpz_set_ui(destination, source);
@@ -77,7 +76,7 @@ inline fn longIntegerToUInt32(op: *const mpz_struct) u32 {
     return @truncate(runtime.__gmpz_get_ui(op));
 }
 inline fn longIntegerCompareInt(op: *const mpz_struct, v: i32) i32 {
-    return @"__gmpz_cmp_si"(op, v);
+    return __gmpz_cmp_si(op, v);
 }
 inline fn longIntegerCompare(op1: *const mpz_struct, op2: *const mpz_struct) i32 {
     return runtime.__gmpz_cmp(op1, op2);

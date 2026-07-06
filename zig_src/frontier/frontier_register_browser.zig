@@ -132,8 +132,6 @@ extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 extern fn clearSystemFlag(flag: c_uint) void;
 
-
-
 // stringCopy (charString.h): stpcpy semantics — copy incl. NUL, return ptr to NUL.
 fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
     const l: u32 = @intCast(strlen(source));

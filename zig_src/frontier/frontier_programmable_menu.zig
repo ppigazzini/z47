@@ -134,7 +134,6 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
-
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------

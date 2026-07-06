@@ -76,8 +76,6 @@ extern const tinyFont: font_t;
 // Function externs
 // ---------------------------------------------------------------------------
 
-
-
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn exit(status: c_int) noreturn;

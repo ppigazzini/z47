@@ -892,7 +892,7 @@ pub export fn supNumberToDisplayString(supNumber_in: i32, displayString_in: [*c]
     var supNumber = supNumber_in;
     var displayString = displayString_in;
     if (displayValueString != null) {
-        abi.fmtCStr(displayValueString, "{d}", .{ supNumber });
+        abi.fmtCStr(displayValueString, "{d}", .{supNumber});
     }
 
     if (supNumber == 0) {
@@ -942,7 +942,7 @@ pub export fn subNumberToDisplayString(subNumber_in: i32, displayString_in: [*c]
     var subNumber = subNumber_in;
     var displayString = displayString_in;
     if (displayValueString != null) {
-        abi.fmtCStr(displayValueString, "{d}", .{ subNumber });
+        abi.fmtCStr(displayValueString, "{d}", .{subNumber});
     }
 
     if (subNumber < 0) {
@@ -966,7 +966,6 @@ pub export fn subNumberToDisplayString(subNumber_in: i32, displayString_in: [*c]
         }
     }
 }
-
 
 // ===========================================================================
 // real34ToDisplayString (public wrapper: shrink digits until it fits maxWidth)
@@ -2331,11 +2330,11 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
     if (getSystemFlag(FLAG_FRCSRN) != 0) {
         const xyzt = "xyzt";
         if (lessEqualGreater == -1) {
-            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ ">" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
+            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ ">" ++ STD_SPACE_PUNCTUATION, .{@as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)])))});
         } else if (lessEqualGreater == 0) {
-            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "=" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
+            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "=" ++ STD_SPACE_PUNCTUATION, .{@as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)])))});
         } else if (lessEqualGreater == 1) {
-            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, .{ @as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)]))) });
+            abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, .{@as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)])))});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
             abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
@@ -3286,7 +3285,7 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
         _ = strcat(displayString, &exponentString);
 
         if (updateDisplayValueX != 0) {
-            abi.fmtCStr(@as([*c]u8, &displayValueX) + strlen(&displayValueX), "e{d}", .{ @as(c_int, tenExponent) });
+            abi.fmtCStr(@as([*c]u8, &displayValueX) + strlen(&displayValueX), "e{d}", .{@as(c_int, tenExponent)});
         }
     }
 }
@@ -3640,10 +3639,10 @@ inline fn getVectorRegisterPolarMode(reg: calcRegister_t) u32 {
 pub export fn real34MatrixToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
     if (comptime option_vector) {
         if (isRegisterMatrix2dVector(regist)) {
-            abi.fmtCStr(displayString, "[2D Vector]{s}", .{ @as([*:0]const u8, @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolar) STD_SPACE_HAIR ++ STD_SUP_p else "")) });
+            abi.fmtCStr(displayString, "[2D Vector]{s}", .{@as([*:0]const u8, @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolar) STD_SPACE_HAIR ++ STD_SUP_p else ""))});
             return;
         } else if (isRegisterMatrix3dVector(regist)) {
-            abi.fmtCStr(displayString, "[3D Vector]{s}", .{ @as([*:0]const u8, @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolarSPH) STD_SPACE_HAIR ++ STD_SUP_s else if (getVectorRegisterPolarMode(regist) == amPolarCYL) STD_SPACE_HAIR ++ STD_SUP_c else "")) });
+            abi.fmtCStr(displayString, "[3D Vector]{s}", .{@as([*:0]const u8, @as([*c]const u8, if (getVectorRegisterPolarMode(regist) == amPolarSPH) STD_SPACE_HAIR ++ STD_SUP_s else if (getVectorRegisterPolarMode(regist) == amPolarCYL) STD_SPACE_HAIR ++ STD_SUP_c else ""))});
             return;
         }
     }
@@ -3665,7 +3664,7 @@ pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u
             var matrix: real34Matrix_t = undefined;
             linkToRealMatrixRegister(regist, &matrix);
             frontier_matrix_editor.showRealMatrix(&matrix, 0, (toDisplayVectorMatrix == 0), regXp != 0);
-            abi.fmtCStr(displayString, "{s}", .{ @as([*:0]const u8, errorMessage) });
+            abi.fmtCStr(displayString, "{s}", .{@as([*:0]const u8, errorMessage)});
             return 1;
         }
     }
@@ -3969,7 +3968,7 @@ pub export fn realToSci(num: *const real_t, dispString: [*c]u8) callconv(.c) voi
     exp = realGetExponent(num);
     realToString(num, dispString + 1500);
     if (realIsZeroB(num)) {
-        abi.fmtCStr(dispString, "0{s}0", .{ @as([*:0]const u8, radix) });
+        abi.fmtCStr(dispString, "0{s}0", .{@as([*:0]const u8, radix)});
         return;
     }
 
@@ -4038,7 +4037,7 @@ pub export fn realToSci(num: *const real_t, dispString: [*c]u8) callconv(.c) voi
     dispString[@intCast(mi)] = 0;
     var tt: [32]u8 = undefined;
     exponentToDisplayString(exp, &tt, null, 0);
-    abi.fmtCStr(dispString + @as(usize, @intCast(mi)), "{s}", .{ @as([*:0]const u8, @as([*c]const u8, &tt)) });
+    abi.fmtCStr(dispString + @as(usize, @intCast(mi)), "{s}", .{@as([*:0]const u8, @as([*c]const u8, &tt))});
 }
 
 fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16, numLines: i16, showName: bool) void {

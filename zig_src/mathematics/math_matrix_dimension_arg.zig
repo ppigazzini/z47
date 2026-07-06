@@ -18,7 +18,7 @@ const nim_register_line = runtime.REGISTER_X;
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
     buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
+    return buffer[0..slice.len :0];
 }
 
 pub export fn getMatrixDims(regist: calcRegister_t, func_name: [*:0]const u8, rows: *u16, cols: *u16) callconv(.c) bool {

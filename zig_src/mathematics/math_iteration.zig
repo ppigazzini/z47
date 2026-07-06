@@ -99,7 +99,6 @@ inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
-
 // real34 sign / predicate / set helpers (realType.h macros / decQuad).
 extern fn decQuadZero(res: *real34_t) *real34_t;
 extern fn decQuadFromInt32(res: *real34_t, value: i32) *real34_t;

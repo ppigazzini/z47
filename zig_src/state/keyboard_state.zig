@@ -907,7 +907,7 @@ pub export fn fnT_ARROW(command: u16) callconv(.c) void {
 // keyboardTweak.c key-click helpers. The DM42_KEYCLICK / CLICK_REFRESHSCR /
 // DM42_POWERMARKS / DM42_POWERMARK_KEYPRESS feature flags are never defined, so
 // these expand to no-ops on every build (host and DMCP alike).
-pub export fn @"_keyClick"(length_ms: u8, f: u32) callconv(.c) void {
+pub export fn _keyClick(length_ms: u8, f: u32) callconv(.c) void {
     _ = .{ length_ms, f };
 }
 pub export fn keyClick(length_ms: u8) callconv(.c) void {
@@ -970,7 +970,7 @@ pub export fn openHOMEorMyM(situation: runtime.bool_t) callconv(.c) void {
             }
             if (runtime.getSystemFlag(runtime.FLAG_USER)) { // USER mode
                 if (runtime.calcMode != runtime.CM_AIM and runtime.calcMode != runtime.CM_EIM and item > 0) {
-                    runtime.@"_executeItem"(item, keyCode); // LONGPRESS_CFG is defined
+                    runtime._executeItem(item, keyCode); // LONGPRESS_CFG is defined
                     runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
                     runtime.refreshScreen(1000);
                 } else {

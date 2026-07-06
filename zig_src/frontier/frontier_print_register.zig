@@ -118,13 +118,3 @@ extern var currentKeyCode: u8;
 extern var statisticalSumsPointer: ?*anyopaque;
 
 extern fn getSystemFlag(sf: c_int) bool;
-
-
-
-
-
-
-
-
-
-

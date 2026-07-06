@@ -2772,7 +2772,7 @@ fn stats_param_display(name: [*c]const u8, reg: calcRegister_t, prefix: [*c]u8, 
     } else {
         _ = strcpy(&regS, "Reg_");
         regS[3] = letteredRegisterName(reg);
-        abi.fmtCStr(prefix, "= {s} =", .{ @as([*:0]const u8, name) });
+        abi.fmtCStr(prefix, "= {s} =", .{@as([*:0]const u8, name)});
     }
     _ = showString(&regS, &standardFont, 19, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + 6), vmNormal, 1, 1);
     prefixWidth = @intCast(showString(prefix, &standardFont, 19 + (17 + 28), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + 6), vmNormal, 1, 1));
@@ -2955,7 +2955,7 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
         const nv = &allNamedVariables[@intCast(regist - FIRST_NAMED_VARIABLE)];
         const off2: usize = if (isShiftOffset()) 4 else 2;
         _ = memcpy(prefix + off2, &nv.variableName[1], nv.variableName[0]);
-        abi.fmtCStr(prefix + off2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix + off2 + nv.variableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE) {
         if (isShiftOffset()) {
             _ = strcpy(prefix, "  ");
@@ -2965,9 +2965,9 @@ fn do_viewRegName(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, end
         const rv = &allReservedVariables[@intCast(regist - FIRST_RESERVED_VARIABLE)];
         const off2: usize = if (isShiftOffset()) 4 else 2;
         _ = memcpy(prefix + off2, &rv.reservedVariableName[1], rv.reservedVariableName[0]);
-        abi.fmtCStr(prefix + off2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix + off2 + rv.reservedVariableName[0], STD_RIGHT_SINGLE_QUOTE ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     } else {
-        abi.fmtCStr(prefix, "?" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{ @as([*:0]const u8, endChar) });
+        abi.fmtCStr(prefix, "?" ++ STD_SPACE_4_PER_EM ++ "{s}" ++ STD_SPACE_4_PER_EM, .{@as([*:0]const u8, endChar)});
     }
     prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
 }
@@ -3094,11 +3094,11 @@ fn elecTI(regist: i16, prefix: [*c]u8, prefixWidth: *i16) void {
 fn inputRegName(prefix: [*c]u8, prefixWidth: *i16) void {
     const civ: u16 = currentInputVariable & 0x3fff;
     if (civ < REGISTER_X) {
-        abi.fmtCStr(prefix, " R{d:0>2}?", .{ @as(c_uint, civ) });
+        abi.fmtCStr(prefix, " R{d:0>2}?", .{@as(c_uint, civ)});
     } else if (civ <= LAST_SPARE_REGISTER) {
-        abi.fmtCStr(prefix, " {c}?", .{ @as(u8, @intCast(@as(c_int, letteredRegisterName(@intCast(civ))))) });
+        abi.fmtCStr(prefix, " {c}?", .{@as(u8, @intCast(@as(c_int, letteredRegisterName(@intCast(civ)))))});
     } else if ((civ >= FIRST_LOCAL_REGISTER) and civ <= LAST_LOCAL_REGISTER) {
-        abi.fmtCStr(prefix, " R.{d:0>2}?", .{ @as(c_uint, civ - FIRST_LOCAL_REGISTER) });
+        abi.fmtCStr(prefix, " R.{d:0>2}?", .{@as(c_uint, civ - FIRST_LOCAL_REGISTER)});
     } else if (FIRST_NAMED_VARIABLE <= civ and civ <= LAST_NAMED_VARIABLE) {
         const nv = &allNamedVariables[@intCast(civ - FIRST_NAMED_VARIABLE)];
         _ = memcpy(prefix, &nv.variableName[1], nv.variableName[0]);
@@ -3313,9 +3313,9 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
                 abi.fmtCStr(prefix, "{s}[I" ++ STD_SUB_r ++ "={d}" ++ STD_SPACE_4_PER_EM ++ "J" ++ STD_SUB_c ++ "={d}]{s}", .{ std.mem.sliceTo(&tmp, 0), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(iii)))))), @as(c_uint, @intCast(@as(u8, @truncate(@as(u32, @bitCast(jji)))))), @as([*:0]const u8, if (temporaryInformation == TI_I) @as([*c]const u8, ": I" ++ STD_SUB_r ++ "=") else @as([*c]const u8, ": J" ++ STD_SUB_c ++ "=")) });
             } else if (iii != 0 and jji != 0) {
                 if (regist == REGISTER_Y) {
-                    abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:I" ++ STD_SUB_r ++ "=", .{ std.mem.sliceTo(&tmp, 0) });
+                    abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:I" ++ STD_SUB_r ++ "=", .{std.mem.sliceTo(&tmp, 0)});
                 } else if (regist == REGISTER_X) {
-                    abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:J" ++ STD_SUB_c ++ "=", .{ std.mem.sliceTo(&tmp, 0) });
+                    abi.fmtCStr(prefix, STD_MU ++ STD_SPACE_4_PER_EM ++ "{s}:J" ++ STD_SUB_c ++ "=", .{std.mem.sliceTo(&tmp, 0)});
                 }
             }
             prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
@@ -3352,14 +3352,14 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
     if (temporaryInformation == TI_VECTORCOMP_3DSPH and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         if (getSystemFlag(FLAG_3DPHYS) != 0) {
             switch (regist) {
-                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{ STD_rho }),
+                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{STD_rho}),
                 REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s} ] =", .{ STD_phi_m, @as([*:0]const u8, _e2()) }),
                 REGISTER_X => abi.fmtCStr(prefix, "[  {s}{s}{s}] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
                 else => {},
             }
         } else {
             switch (regist) {
-                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{ STD_rho }),
+                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{STD_rho}),
                 REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
                 REGISTER_X => abi.fmtCStr(prefix, "[  {s}{s}] =", .{ STD_phi_m, @as([*:0]const u8, _e2()) }),
                 else => {},
@@ -3369,14 +3369,14 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
         switch (regist) {
             REGISTER_Z => abi.fmtCStr(prefix, "[r  ] =", .{}),
             REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
-            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{ @as([*:0]const u8, e2()) }),
+            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{@as([*:0]const u8, e2())}),
             else => {},
         }
     } else if (temporaryInformation == TI_VECTORCOMP_3DRECT and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         switch (regist) {
-            REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{ @as([*:0]const u8, e0()) }),
-            REGISTER_Y => abi.fmtCStr(prefix, "[ {s} ] =", .{ @as([*:0]const u8, e1()) }),
-            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{ @as([*:0]const u8, e2()) }),
+            REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{@as([*:0]const u8, e0())}),
+            REGISTER_Y => abi.fmtCStr(prefix, "[ {s} ] =", .{@as([*:0]const u8, e1())}),
+            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{@as([*:0]const u8, e2())}),
             else => {},
         }
     } else if (temporaryInformation == TI_VECTORCOMP_2DPOLAR and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Y) {
@@ -3387,8 +3387,8 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
         }
     } else if (temporaryInformation == TI_VECTORCOMP_2DRECT and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Y) {
         switch (regist) {
-            REGISTER_Y => abi.fmtCStr(prefix, "[{s} ] =", .{ @as([*:0]const u8, e0()) }),
-            REGISTER_X => abi.fmtCStr(prefix, "[ {s}] =", .{ @as([*:0]const u8, e1()) }),
+            REGISTER_Y => abi.fmtCStr(prefix, "[{s} ] =", .{@as([*:0]const u8, e0())}),
+            REGISTER_X => abi.fmtCStr(prefix, "[ {s}] =", .{@as([*:0]const u8, e1())}),
             else => {},
         }
     } else if (isRegisterMatrix3dVector(regist) != 0) {
@@ -3506,7 +3506,7 @@ const noLine: bool_t = 0;
 fn _displaySigmaPlus(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, doLine: bool_t) void {
     const w: i32 = frontier_real_type.realToInt32C47(SIGMA_N.ptr(), null);
     if (regist == REGISTER_X) {
-        abi.fmtCStr(prefix, "{d:0>3} data point", .{ @as(u32, @intCast(@as(c_int, w))) });
+        abi.fmtCStr(prefix, "{d:0>3} data point", .{@as(u32, @intCast(@as(c_int, w)))});
         if (w > 1) {
             _ = stringCopy(prefix + @as(usize, @intCast(stringByteLength(prefix))), "s");
         }
@@ -3579,7 +3579,7 @@ pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidt
                 _ = strcat(&typeStr, dRT_angleSuffix[@intCast(angSub - 1)]);
             }
         }
-        abi.fmtCStr(prefix, "{s}", .{ std.mem.sliceTo(&typeStr, 0) });
+        abi.fmtCStr(prefix, "{s}", .{std.mem.sliceTo(&typeStr, 0)});
         prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
 }
@@ -4795,7 +4795,7 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
             if (orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING) {
                 abi.fmtCStr(prefix, "L.R. selected to OrthoF", .{});
             } else {
-                abi.fmtCStr(prefix, "L.R. selected to {d:0>3}", .{ @as(c_uint, lrSelection & 0x01FF) });
+                abi.fmtCStr(prefix, "L.R. selected to {d:0>3}", .{@as(c_uint, lrSelection & 0x01FF)});
             }
             prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
@@ -4848,12 +4848,12 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         }
     } else if (temporaryInformation == TI_1ST_DERIVATIVE) {
         if (regist == REGISTER_X) {
-            abi.fmtCStr(prefix, "{s}f'" ++ STD_ALMOST_EQUAL, .{ @as([*:0]const u8, errorMessage) });
+            abi.fmtCStr(prefix, "{s}f'" ++ STD_ALMOST_EQUAL, .{@as([*:0]const u8, errorMessage)});
             prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_2ND_DERIVATIVE) {
         if (regist == REGISTER_X) {
-            abi.fmtCStr(prefix, "{s}f\"" ++ STD_ALMOST_EQUAL, .{ @as([*:0]const u8, errorMessage) });
+            abi.fmtCStr(prefix, "{s}f\"" ++ STD_ALMOST_EQUAL, .{@as([*:0]const u8, errorMessage)});
             prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
         }
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
@@ -4891,11 +4891,11 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         _ = strcpy(prefix, "Balance remaining =");
         prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_PRN and regist == REGISTER_X) {
-        abi.fmtCStr(prefix, "{s}", .{ STD_SIGMA });
+        abi.fmtCStr(prefix, "{s}", .{STD_SIGMA});
         _ = strcat(prefix, " of principal to P2 =");
         prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_INT and regist == REGISTER_X) {
-        abi.fmtCStr(prefix, "{s}", .{ STD_SIGMA });
+        abi.fmtCStr(prefix, "{s}", .{STD_SIGMA});
         _ = strcat(prefix, " of interest to P2 =");
         prefixWidth_p.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     } else if (option_tvm_amort and temporaryInformation == TI_AMORT_P1 and regist == REGISTER_X) {
@@ -5137,7 +5137,7 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
     if (regist == REGISTER_X and (temporaryInformation == TI_DATA_LOSS or temporaryInformation == TI_DATA_NEG_OVRFL)) {
         frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
         if (temporaryInformation == TI_DATA_LOSS) {
-            abi.fmtCStr(prefix, "Ovrfl>{d}bits:", .{ @as(c_uint, shortIntegerWordSize) });
+            abi.fmtCStr(prefix, "Ovrfl>{d}bits:", .{@as(c_uint, shortIntegerWordSize)});
         } else if (temporaryInformation == TI_DATA_NEG_OVRFL) {
             abi.fmtCStr(prefix, "Ovrfl<0:", .{});
         }

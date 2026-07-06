@@ -26,7 +26,7 @@ extern fn decNumberMinus(result: *runtime.real_t, rhs: *const runtime.real_t, re
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
     buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
+    return buffer[0..slice.len :0];
 }
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {

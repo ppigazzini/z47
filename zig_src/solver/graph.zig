@@ -171,7 +171,6 @@ const DOUBLE_NOT_INIT: f64 = 3.402823466e+38; // maximum float value
 
 const SIGMA_NONE: i8 = 0;
 
-
 // screen.h
 const timed: u8 = 0;
 const force: u8 = 1;

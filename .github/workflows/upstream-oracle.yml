@@ -55,6 +55,28 @@ jobs:
           set -euo pipefail
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
 
+  zig-fmt-check:
+    name: Enforce zig fmt on z47-owned Zig
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Check formatting (zig fmt --check)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./.github/project/check-fmt.sh
+
   zig-master-compatibility:
     name: Zig master compatibility monitor
     continue-on-error: true

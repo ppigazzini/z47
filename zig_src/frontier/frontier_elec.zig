@@ -100,13 +100,9 @@ extern fn fnSwapX(regist: u16) void;
 extern fn fnToRect2(unusedButMandatoryParameter: u16) void;
 extern fn copySourceRegisterToDestRegister(src: calcRegister_t, dst: calcRegister_t) void;
 
-
-
-
 extern fn decNumberCopy(dst: *real_t, src: *align(1) const real_t) *real_t;
 extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-
 
 extern fn decQuadIsZero(x: *align(1) const real34_t) u32;
 

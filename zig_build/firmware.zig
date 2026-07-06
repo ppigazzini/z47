@@ -1064,4 +1064,3 @@ fn firmwareSdkStartupSource(board: Board) []const u8 {
         .dmcp5 => "dep/DMCP5_SDK/dmcp/startup_pgm.s",
     };
 }
-

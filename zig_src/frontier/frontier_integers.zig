@@ -27,19 +27,19 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
-extern fn @"__gmpz_mul"(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
-extern fn @"__gmpz_add"(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
-extern fn @"__gmpz_sub"(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
-extern fn @"__gmpz_sizeinbase"(op: *const mpz_struct, base: c_int) usize;
-const mpz_mul = @"__gmpz_mul";
-const mpz_add = @"__gmpz_add";
-const mpz_sub = @"__gmpz_sub";
+extern fn __gmpz_mul(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_add(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_sub(r: *mpz_struct, a: *const mpz_struct, b: *const mpz_struct) void;
+extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
+const mpz_mul = __gmpz_mul;
+const mpz_add = __gmpz_add;
+const mpz_sub = __gmpz_sub;
 
 inline fn longIntegerSign(op: *const mpz_struct) i32 {
     return if (op._mp_size < 0) -1 else if (op._mp_size > 0) 1 else 0;
 }
 inline fn longIntegerBits(op: *const mpz_struct) u32 {
-    return @intCast(@"__gmpz_sizeinbase"(op, 2));
+    return @intCast(__gmpz_sizeinbase(op, 2));
 }
 
 const MAX_LONG_INTEGER_SIZE_IN_BITS: u32 = 3328;
@@ -82,11 +82,9 @@ extern var temporaryInformation: u8;
 extern fn setSystemFlag(flag: u16) void;
 extern fn clearSystemFlag(flag: u16) void;
 
-
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 // Provided by the registerValueConversions Zig owner.
-
 
 // Defined in radioButtonCatalog.c.
 

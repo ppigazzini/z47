@@ -100,16 +100,3 @@ fn handleAimNonEmpty(class: ItemClass, item: i16) void {
 }
 
 extern var calcMode: u8;
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -125,7 +125,6 @@ const CM_NIM: u8 = 2;
 // Constant blob
 // ---------------------------------------------------------------------------
 
-
 // const34_* named pointers (match the C macros that name these blob entries).
 const const34_43200 = consts.const34_43200();
 const const34_86400 = consts.const34_86400();
@@ -206,15 +205,6 @@ extern fn clearSystemFlag(flag: c_uint) void;
 
 // Register conversions provided (exported) by the registerValueConversions owner.
 
-
-
-
-
-
-
-
-
-
 // real34 comparison functions (linkable real externs).
 extern fn real34CompareEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
 extern fn real34CompareGreaterEqual(a: *align(1) const real34_t, b: *align(1) const real34_t) bool;
@@ -246,13 +236,13 @@ extern fn decNumberDivide(r: *real_t, a: *align(1) const real_t, b: *align(1) co
 // ---------------------------------------------------------------------------
 // GMP externs
 // ---------------------------------------------------------------------------
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
-const longIntegerInit = @"__gmpz_init";
-const longIntegerFree = @"__gmpz_clear";
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
+const longIntegerInit = __gmpz_init;
+const longIntegerFree = __gmpz_clear;
 inline fn uInt32ToLongInteger(v: u32, p: *mpz_struct) void {
-    @"__gmpz_set_ui"(p, v);
+    __gmpz_set_ui(p, v);
 }
 
 // ---------------------------------------------------------------------------

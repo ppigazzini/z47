@@ -94,31 +94,31 @@ const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 
-extern fn @"__gmpz_init"(op: *mpz_struct) void;
-extern fn @"__gmpz_clear"(op: *mpz_struct) void;
-extern fn @"__gmpz_set"(rop: *mpz_struct, op: *const mpz_struct) void;
-extern fn @"__gmpz_set_ui"(rop: *mpz_struct, op: c_ulong) void;
-extern fn @"__gmpz_cmp_si"(op: *const mpz_struct, v: c_long) c_int;
-extern fn @"__gmpz_mul_ui"(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_tdiv_q_ui"(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) c_ulong;
-extern fn @"__gmpz_mod"(r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
+extern fn __gmpz_init(op: *mpz_struct) void;
+extern fn __gmpz_clear(op: *mpz_struct) void;
+extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
+extern fn __gmpz_mul_ui(rop: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_tdiv_q_ui(q: *mpz_struct, n: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_mod(r: *mpz_struct, n: *const mpz_struct, d: *const mpz_struct) void;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) void {
-    @"__gmpz_set"(destination, source);
+    __gmpz_set(destination, source);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn longIntegerSetZero(op: *mpz_struct) void {
     // Previous implementation matched C: clear + init.
-    @"__gmpz_clear"(op);
-    @"__gmpz_init"(op);
+    __gmpz_clear(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
     return op._mp_size > 0;
@@ -127,16 +127,16 @@ inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }
 inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
-    return @"__gmpz_cmp_si"(op, sint);
+    return __gmpz_cmp_si(op, sint);
 }
 inline fn longIntegerMultiplyUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
-    @"__gmpz_mul_ui"(result, op, u);
+    __gmpz_mul_ui(result, op, u);
 }
 inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
-    _ = @"__gmpz_tdiv_q_ui"(result, op, u);
+    _ = __gmpz_tdiv_q_ui(result, op, u);
 }
 inline fn longIntegerModulo(op1: *const mpz_struct, op2: *const mpz_struct, result: *mpz_struct) void {
-    @"__gmpz_mod"(result, op1, op2);
+    __gmpz_mod(result, op1, op2);
 }
 
 // Overflow-guarded operators (integers owner).

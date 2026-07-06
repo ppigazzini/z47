@@ -150,7 +150,6 @@ const DEC_ROUND_CEILING: c_int = 0;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 
-
 // ---------------------------------------------------------------------------
 // Globals (defined in c47.c / plotstat.c, compiled through the legacy shims)
 // ---------------------------------------------------------------------------
@@ -201,13 +200,7 @@ extern fn liftStack() void;
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn getSystemFlag(flag: c_int) bool;
 
-
-
-
-
 extern fn WP34S_Ln(x: *const real_t, res: *real_t, realContext: *realContext_t) void;
-
-
 
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;

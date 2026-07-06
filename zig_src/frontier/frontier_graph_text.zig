@@ -93,15 +93,6 @@ pub export var t_line_y: u32 = 0;
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;

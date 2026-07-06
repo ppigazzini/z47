@@ -435,7 +435,7 @@ fn configToSaveString(regist: i16) void {
     const cfg: [*c]u8 = getRegisterDataPointer(regist);
     var i: usize = 0;
     while (i < CONFIG_DESCRIPTOR_SIZE) : (i += 1) {
-        abi.fmtCStr(trs + i * 2, "{X:0>2}", .{ @as(c_uint, cfg[i]) });
+        abi.fmtCStr(trs + i * 2, "{X:0>2}", .{@as(c_uint, cfg[i])});
     }
     _ = strcpy(aim(), "Conf");
 }
@@ -512,7 +512,7 @@ fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
     var ip: usize = 0;
     while (work[ip] != 'i') : (ip += 1) {} // guaranteed present (isIform)
     if (ip == 0) {
-        abi.fmtCStr(dest, "0 +{s}", .{ std.mem.sliceTo(work[1..], 0) }); // leading 'i' (e.g. "i4" == 0+i4)
+        abi.fmtCStr(dest, "0 +{s}", .{std.mem.sliceTo(work[1..], 0)}); // leading 'i' (e.g. "i4" == 0+i4)
         return;
     }
     var imSign: u8 = work[ip - 1]; // sign sits right before 'i'

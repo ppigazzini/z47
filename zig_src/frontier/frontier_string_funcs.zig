@@ -71,7 +71,6 @@ const DEC_ROUND_DOWN: c_int = 5;
 // Constant blob (offsets from the generated constantPointers.h)
 // ---------------------------------------------------------------------------
 
-
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
@@ -104,16 +103,16 @@ extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 // ---------------------------------------------------------------------------
 // GMP externs (mpz_* are header macros; the linkable symbols are __gmpz_*)
 // ---------------------------------------------------------------------------
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_set_si"(p: *mpz_struct, v: c_long) void;
-extern fn @"__gmpz_add_ui"(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn @"__gmpz_mul_ui"(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn @"__gmpz_fdiv_ui"(op: *const mpz_struct, c: c_ulong) c_ulong;
-extern fn @"__gmpz_cmp_ui"(op: *const mpz_struct, c: c_ulong) c_int;
-extern fn @"__gmpz_cmp_si"(op: *const mpz_struct, c: c_long) c_int;
-extern fn @"__gmpz_get_si"(op: *const mpz_struct) c_long;
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
+extern fn __gmpz_set_si(p: *mpz_struct, v: c_long) void;
+extern fn __gmpz_add_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+extern fn __gmpz_mul_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, c: c_ulong) c_ulong;
+extern fn __gmpz_cmp_ui(op: *const mpz_struct, c: c_ulong) c_int;
+extern fn __gmpz_cmp_si(op: *const mpz_struct, c: c_long) c_int;
+extern fn __gmpz_get_si(op: *const mpz_struct) c_long;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
@@ -130,31 +129,31 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 inline fn longIntegerInit(lg: *mpz_struct) void {
-    @"__gmpz_init"(lg);
+    __gmpz_init(lg);
 }
 inline fn longIntegerFree(lg: *mpz_struct) void {
-    @"__gmpz_clear"(lg);
+    __gmpz_clear(lg);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn int32ToLongInteger(source: i32, destination: *mpz_struct) void {
-    @"__gmpz_set_si"(destination, source);
+    __gmpz_set_si(destination, source);
 }
 inline fn longIntegerAddUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
-    @"__gmpz_add_ui"(result, op, uint);
+    __gmpz_add_ui(result, op, uint);
 }
 inline fn longIntegerMultiplyUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
-    @"__gmpz_mul_ui"(result, op, uint);
+    __gmpz_mul_ui(result, op, uint);
 }
 inline fn longIntegerModuloUInt(op: *const mpz_struct, uint: u32) u32 {
-    return @truncate(@"__gmpz_fdiv_ui"(op, uint));
+    return @truncate(__gmpz_fdiv_ui(op, uint));
 }
 inline fn longIntegerCompareUInt(op: *const mpz_struct, uint: u32) i32 {
-    return @"__gmpz_cmp_ui"(op, uint);
+    return __gmpz_cmp_ui(op, uint);
 }
 inline fn longIntegerCompareInt(op: *const mpz_struct, sint: i32) i32 {
-    return @"__gmpz_cmp_si"(op, sint);
+    return __gmpz_cmp_si(op, sint);
 }
 inline fn longIntegerIsZero(op: *const mpz_struct) bool {
     return op._mp_size == 0;
@@ -191,7 +190,7 @@ pub export fn fnAlphaLeng(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot get the \x83\xb1LENG? from {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot get the \x83\xb1LENG? from {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaLeng:", errorMessage);
         }
         return;
@@ -218,7 +217,7 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaToX:", errorMessage);
         }
         return;
@@ -304,7 +303,7 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
             return;
@@ -341,7 +340,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
             return;
@@ -352,7 +351,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
     if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{ @as(u32, @truncate(lgInt[0]._mp_d[0])) }); // OK for 32 and 64 bit limbs
+            abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{@as(u32, @truncate(lgInt[0]._mp_d[0]))}); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function fnXToAlpha:", errorMessage);
         }
         return;
@@ -397,7 +396,7 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     if (getRegisterDataType(REGISTER_X) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg X)", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg X)", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaPos:", errorMessage);
         }
         return;
@@ -455,7 +454,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaRR:", errorMessage);
         }
         return;
@@ -493,7 +492,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RR when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RR when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaRR:", errorMessage);
             }
             return;
@@ -544,7 +543,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaRL:", errorMessage);
         }
         return;
@@ -582,7 +581,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RL when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RL when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaRL:", errorMessage);
             }
             return;
@@ -621,7 +620,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaSR:", errorMessage);
         }
         return;
@@ -655,7 +654,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SR when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SR when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaSR:", errorMessage);
             }
             return;
@@ -667,7 +666,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
         int32ToLongInteger(stringGlyphLen, &lgInt[0]);
     }
 
-    var steps: i16 = @truncate(@"__gmpz_get_si"(&lgInt[0])); // longIntegerToInt32
+    var steps: i16 = @truncate(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
     longIntegerFree(&lgInt[0]);
 
     if (!saveLastX()) {
@@ -694,7 +693,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaSL:", errorMessage);
         }
         return;
@@ -729,7 +728,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SL when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SL when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaSL:", errorMessage);
             }
             return;
@@ -741,7 +740,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
         int32ToLongInteger(stringGlyphLen, &lgInt[0]);
     }
 
-    var steps: i16 = @truncate(@"__gmpz_get_si"(&lgInt[0])); // longIntegerToInt32
+    var steps: i16 = @truncate(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
     longIntegerFree(&lgInt[0]);
 
     if (!saveLastX()) {
@@ -805,7 +804,7 @@ pub export fn fn42AlphaShift(unusedButMandatoryParameter: u16) callconv(.c) void
     if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use 42ASHF on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use 42ASHF on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(alphaRegister), true, false))});
             moreInfoOnError("In function fn42AlphaShift:", errorMessage);
         }
         return;
@@ -838,7 +837,7 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
     if (getRegisterDataType(@intCast(alphaRegister)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use 42AROT on {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(alphaRegister), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot use 42AROT on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(alphaRegister), true, false))});
             moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
         }
         return;
@@ -853,7 +852,7 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot 42AROT when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot 42AROT when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fn42AlphaRotate:", errorMessage);
             }
             longIntegerFree(&lgInt[0]);
@@ -971,7 +970,7 @@ pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1IP when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1IP when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaIP:", errorMessage);
             }
             return;
@@ -1134,7 +1133,7 @@ pub export fn fnAlphaLower(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Lower Case", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Lower Case", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaLower:", errorMessage);
         }
         return;
@@ -1148,7 +1147,7 @@ pub export fn fnAlphaUpper(regist: u16) callconv(.c) void {
     if (getRegisterDataType(@intCast(regist)) != dtString) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Upper Case", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false)) });
+            abi.fmtBufZ(errorMessage[0..512], "cannot convert {s} to Upper Case", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
             moreInfoOnError("In function fnAlphaUpper:", errorMessage);
         }
         return;
@@ -1211,7 +1210,7 @@ fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
         longIntegerFree(&lgInt[0]);
         return;
     }
-    var len: i32 = @intCast(@"__gmpz_get_si"(&lgInt[0])); // longIntegerToInt32
+    var len: i32 = @intCast(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
     if (len < 0) {
         len = 0;
     } else if (len > lgString) {
@@ -1225,7 +1224,7 @@ fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
             longIntegerFree(&lgInt[0]);
             return;
         }
-        start = @intCast(@"__gmpz_get_si"(&lgInt[0])); // longIntegerToInt32
+        start = @intCast(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
         if (start < 0) {
             start = 0;
         }
@@ -1370,7 +1369,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{ std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false)) });
+                abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function _doXToAlpha:", errorMessage);
             }
             longIntegerFree(&lgInt[0]);
@@ -1382,7 +1381,7 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
     if (longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{ @as(u32, @truncate(lgInt[0]._mp_d[0])) }); // OK for 32 and 64 bit limbs
+            abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{@as(u32, @truncate(lgInt[0]._mp_d[0]))}); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function _doXToAlpha:", errorMessage);
         }
         longIntegerFree(&lgInt[0]);
@@ -1450,7 +1449,7 @@ pub export fn fnAlphaTrim(regist: u16) callconv(.c) void {
     if (lgString != 1) {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "for \x83\xb1TRIM, X must be a single character. Here X = {s}", .{ std.mem.span(ptrString) });
+            abi.fmtBufZ(errorMessage[0..512], "for \x83\xb1TRIM, X must be a single character. Here X = {s}", .{std.mem.span(ptrString)});
             moreInfoOnError("In function fnAlphaTrim:", errorMessage);
         }
         copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X); // Restore register X

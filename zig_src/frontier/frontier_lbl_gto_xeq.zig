@@ -52,12 +52,12 @@ const complex34_t = abi.Complex34;
 // Win64 is LLP64). Matches the registerValueConversions owner.
 const mp_limb_t = usize;
 const mpz_struct = abi.Mpz;
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_str"(p: *mpz_struct, str: [*c]const u8, base: c_int) c_int;
-const mpz_init = @"__gmpz_init";
-const mpz_clear = @"__gmpz_clear";
-const mpz_set_str = @"__gmpz_set_str";
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_str(p: *mpz_struct, str: [*c]const u8, base: c_int) c_int;
+const mpz_init = __gmpz_init;
+const mpz_clear = __gmpz_clear;
+const mpz_set_str = __gmpz_set_str;
 
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
@@ -293,20 +293,16 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
 
-
 extern fn indirectAddressing(regist: calcRegister_t, parameterType: u16, minValue: i16, maxValue: i16, tryAllocate: bool_t) i16;
 extern fn isFunctionAllowingNewVariable(op: u16) bool_t;
 
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
-
-
 
 extern fn strlen(s: [*c]const u8) usize;
 

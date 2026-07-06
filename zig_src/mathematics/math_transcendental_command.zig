@@ -6,7 +6,6 @@ const rectangular_to_polar_owned = @import("math_rectangular_to_polar.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
-
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }

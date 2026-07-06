@@ -273,6 +273,3 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn flipSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: c_int) void;
-
-
-

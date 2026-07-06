@@ -110,7 +110,6 @@ inline fn realFMAB(f1: *align(1) const real_t, f2: *align(1) const real_t, term:
 }
 const decNumberFMA = @extern(*const fn (result: *real_t, factor1: *align(1) const real_t, factor2: *align(1) const real_t, term: *align(1) const real_t, ctxt: *realContext_t) callconv(.c) *real_t, .{ .name = "decNumberFMA" });
 
-
 // real34ToReal with a register-resident (unaligned) real34 source.
 extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
 inline fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {

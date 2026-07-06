@@ -426,44 +426,18 @@ extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
-
-
-
-
-
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
 
-
-
-
-
-
-
-
-
-
-
-
 extern fn fnFlipFlag(flag: u16) void;
 
-
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-
-
-
-
-
-
 
 extern fn getSystemFlag(sf: i32) bool_t;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn resetShiftState() void;
-
-
-
 
 extern fn numlockReplacements(id: u16, item: i16, NL: bool_t, SHFT: bool_t, GSHFT: bool_t) u16;
 
@@ -472,7 +446,6 @@ extern fn SetSetting(jmConfig: u16) void;
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-
 
 // findOrAllocateNamedVariable / findNamedVariable / findMenu are not used here.
 
@@ -1011,7 +984,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     line = firstLine;
     while (line < 7) : (line += 1) {
         nextStep = frontier_next_step.findNextStep(step);
-        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
+        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
         if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber))) {
             tamOverPemYPos = @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line));
             _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(@intCast(tamOverPemYPos)) + 1), tamOverPemYPos, if ((pemCursorIsZerothStep and tam.mode == 0 and aimBuffer[0] == 0) or (tam.mode != 0 and (programList[currentProgramNumber - 1].step > 0))) vmNormal else vmReverse, @intFromBool(false), @intFromBool(true));
@@ -1042,7 +1015,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                         if (line >= 7) {
                             break;
                         }
-                        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
+                        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
                         _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
                     }
                 } else if (@as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber)) and lblOrEnd and (step[0] != ITM_LBL)) {
@@ -1054,7 +1027,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                         if (line >= 7) {
                             break;
                         }
-                        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{ @as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam)))) });
+                        abi.fmtBufZ(tmpString[0..2560], "{d:0>4}:" ++ STD_SPACE_4_PER_EM, .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
                         _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 1), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 1);
                     }
                 }

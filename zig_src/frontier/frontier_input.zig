@@ -124,9 +124,6 @@ const const34_65535 = consts.const34_65535();
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
 
-
-
-
 extern fn dmcpResetAutoOff() void;
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 extern fn setLastKeyCode(key: c_int) void;
@@ -143,18 +140,15 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) [*]u8;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
-
-
 extern fn liftStack() void;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
-
 
 extern var labelList: [*c]align(4) labelList_t;
 
 // GMP.
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
 
 // decQuad (real34) helpers.
 extern fn decQuadToIntegralValue(res: *real34_t, src: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
@@ -552,10 +546,10 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
         temporaryInformation = TI_FALSE;
         if (regist <= LAST_NAMED_VARIABLE) {
             var kc: longInteger_t = undefined;
-            @"__gmpz_init"(&kc[0]);
-            @"__gmpz_set_ui"(&kc[0], lastKeyCode);
+            __gmpz_init(&kc[0]);
+            __gmpz_set_ui(&kc[0], lastKeyCode);
             frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&kc[0], @bitCast(regist));
-            @"__gmpz_clear"(&kc[0]);
+            __gmpz_clear(&kc[0]);
             lastKeyCode = 0;
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -573,39 +567,39 @@ pub export fn fnKey(regist: u16) callconv(.c) void {
 pub export fn fnKeyType(regist: u16) callconv(.c) void {
     const keyCode: u16 = getKeyArg(regist);
     var kt: longInteger_t = undefined;
-    @"__gmpz_init"(&kt[0]);
+    __gmpz_init(&kt[0]);
     var ok = true;
     switch (keyCode) {
-        82 => @"__gmpz_set_ui"(&kt[0], 0),
-        72 => @"__gmpz_set_ui"(&kt[0], 1),
-        73 => @"__gmpz_set_ui"(&kt[0], 2),
-        74 => @"__gmpz_set_ui"(&kt[0], 3),
-        62 => @"__gmpz_set_ui"(&kt[0], 4),
-        63 => @"__gmpz_set_ui"(&kt[0], 5),
-        64 => @"__gmpz_set_ui"(&kt[0], 6),
-        52 => @"__gmpz_set_ui"(&kt[0], 7),
-        53 => @"__gmpz_set_ui"(&kt[0], 8),
-        54 => @"__gmpz_set_ui"(&kt[0], 9),
-        43, 44, 83 => @"__gmpz_set_ui"(&kt[0], 10),
+        82 => __gmpz_set_ui(&kt[0], 0),
+        72 => __gmpz_set_ui(&kt[0], 1),
+        73 => __gmpz_set_ui(&kt[0], 2),
+        74 => __gmpz_set_ui(&kt[0], 3),
+        62 => __gmpz_set_ui(&kt[0], 4),
+        63 => __gmpz_set_ui(&kt[0], 5),
+        64 => __gmpz_set_ui(&kt[0], 6),
+        52 => __gmpz_set_ui(&kt[0], 7),
+        53 => __gmpz_set_ui(&kt[0], 8),
+        54 => __gmpz_set_ui(&kt[0], 9),
+        43, 44, 83 => __gmpz_set_ui(&kt[0], 10),
         // CALCMODEL != USER_R47 (CALCMODEL == USER_C47), so 35/36 -> 12, 71 -> 11.
-        35, 36 => @"__gmpz_set_ui"(&kt[0], 12),
-        71 => @"__gmpz_set_ui"(&kt[0], 11),
-        11, 12, 13, 14, 15, 16 => @"__gmpz_set_ui"(&kt[0], 13),
-        21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 41, 42, 45, 51, 55, 61, 65, 75, 81, 84, 85 => @"__gmpz_set_ui"(&kt[0], 12),
+        35, 36 => __gmpz_set_ui(&kt[0], 12),
+        71 => __gmpz_set_ui(&kt[0], 11),
+        11, 12, 13, 14, 15, 16 => __gmpz_set_ui(&kt[0], 13),
+        21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 41, 42, 45, 51, 55, 61, 65, 75, 81, 84, 85 => __gmpz_set_ui(&kt[0], 12),
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "keycode {d} is out of range", .{@as(u32, keyCode)});
                 moreInfoOnErr("In function fnKeyType:", errorMessage);
             }
-            @"__gmpz_clear"(&kt[0]);
+            __gmpz_clear(&kt[0]);
             ok = false;
         },
     }
     if (!ok) return;
     liftStack();
     frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&kt[0], REGISTER_X);
-    @"__gmpz_clear"(&kt[0]);
+    __gmpz_clear(&kt[0]);
 }
 
 // ===========================================================================

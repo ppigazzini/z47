@@ -34,7 +34,6 @@ const freeMemoryRegion_t = abi.FreeMemoryRegion;
 extern var ram: [*c]u32;
 extern var numberOfFreeMemoryRegions: i32;
 
-
 inline fn freeRegions() [*c]freeMemoryRegion_t {
     if (comptime free_regions_is_array) {
         return @extern([*c]freeMemoryRegion_t, .{ .name = "freeMemoryRegions" });

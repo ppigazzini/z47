@@ -1096,7 +1096,7 @@ const MimFunctionsType3Conv = [NUM_CONVERT_PAIRS]fInMim_t{
     .{ .itemNr = 2840 },
 };
 
-fn findPair(input: i16) ?*const convPair_t {                                     // binary search; null if not found
+fn findPair(input: i16) ?*const convPair_t { // binary search; null if not found
     var lo: u16 = 0;
     var hi: u16 = NUM_CONVERT_PAIRS;
     while (lo < hi) {
@@ -1111,7 +1111,7 @@ fn findPair(input: i16) ?*const convPair_t {                                    
 }
 
 pub export fn conversionPartner(input: i16, unity: ?*i16, exponent: ?*i8, type_out: ?*u8) callconv(.c) i16 {
-    const entry = findPair(input) orelse return 0;                              // not found
+    const entry = findPair(input) orelse return 0; // not found
     if (unity) |p| p.* = entry.unity;
     if (exponent) |p| p.* = entry.exponent;
     if (type_out) |p| p.* = entry.type;
@@ -1119,46 +1119,46 @@ pub export fn conversionPartner(input: i16, unity: ?*i16, exponent: ?*i8, type_o
 }
 
 pub export fn isItemConversion(itemNr: i16) callconv(.c) bool {
-    return findPair(itemNr) != null;                                            // search itemNr in the table items
+    return findPair(itemNr) != null; // search itemNr in the table items
 }
 
 pub export fn areBothConvertConfigurable(item1Nr: i16, item2Nr: i16) callconv(.c) bool {
     const entry1 = findPair(item1Nr) orelse return false;
     const entry2 = findPair(item2Nr) orelse return false;
-    return entry1.type == entry2.type and entry1.type != UT_NOT_CONFIGURABLE;   // same configurable type
+    return entry1.type == entry2.type and entry1.type != UT_NOT_CONFIGURABLE; // same configurable type
 }
 
-pub export fn isStandardPair(item1Nr: i16, item2Nr: i16) callconv(.c) bool {     // item2Nr is the standard table partner of item1Nr
+pub export fn isStandardPair(item1Nr: i16, item2Nr: i16) callconv(.c) bool { // item2Nr is the standard table partner of item1Nr
     return item2Nr != 0 and conversionPartner(item1Nr, null, null, null) == item2Nr;
 }
 
 pub export fn isOneOfAConvertPair(x: u16, itemNr: i16, oddNrPartner: *i16) callconv(.c) bool {
-    const entry = findPair(itemNr) orelse return false;                         // not a conversion-pair member
+    const entry = findPair(itemNr) orelse return false; // not a conversion-pair member
     if ((x & 1) == 0) {
-        oddNrPartner.* = entry.partner;                                         // even x = left softkey: report partner
+        oddNrPartner.* = entry.partner; // even x = left softkey: report partner
     }
     return true;
 }
 
 pub export fn runConversionToSI(itemNr: i16) callconv(.c) void {
-    const entry = findPair(itemNr) orelse return;                               // not a conversion item; nothing to do
+    const entry = findPair(itemNr) orelse return; // not a conversion item; nothing to do
     if (entry.unity != ITM_NULL) {
-        frontier_items.runFunction(entry.unity);                                              // execute a conversion
+        frontier_items.runFunction(entry.unity); // execute a conversion
     }
     if (entry.exponent != 0) {
-        frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) + entry.exponent));                // scale by 10^exponent
+        frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) + entry.exponent)); // scale by 10^exponent
     }
 }
 
 pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
     const entry = findPair(itemNr) orelse return;
     if (entry.exponent != 0) {
-        frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) - entry.exponent));                // undo the exponent
+        frontier_addons.fnMultiplySI(@intCast(@as(i32, 100) - entry.exponent)); // undo the exponent
     }
     if (entry.unity != ITM_NULL) {
-        frontier_items.runFunction(findPair(entry.unity).?.partner);                          // inverse of the unity step
+        frontier_items.runFunction(findPair(entry.unity).?.partner); // inverse of the unity step
     }
-    frontier_items.runFunction(entry.partner);                                                 // inverse of the user's choice
+    frontier_items.runFunction(entry.partner); // inverse of the user's choice
 }
 
 // ─── conversion-name slice: softmenu-name helpers (conversionUnits.c:778+) ───
@@ -1211,7 +1211,7 @@ fn truncateAtArrow(label: [*c]u8) void {
 }
 
 pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) callconv(.c) void {
-    if (!isItemConversion(item)) {                                               // not a conversion: plain softmenu name
+    if (!isItemConversion(item)) { // not a conversion: plain softmenu name
         _ = stringCopy(outString, &indexOfItems[@intCast(item)].itemSoftmenuName);
         return;
     }
@@ -1221,7 +1221,7 @@ pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) c
     _ = stringCopy(&scratch, &indexOfItems[@intCast(useNameExcludingRightArrowOnLeft)].itemSoftmenuName); // left side up to arrow
     truncateAtArrow(&scratch);
     _ = stringCopy(outString, &scratch);
-    _ = stringCopy(outString + @as(usize, @intCast(stringByteLength(outString))), STD_RIGHT_ARROW);        // arrow between sides
+    _ = stringCopy(outString + @as(usize, @intCast(stringByteLength(outString))), STD_RIGHT_ARROW); // arrow between sides
     _ = stringCopy(&scratch, &indexOfItems[@intCast(useNameExcludingRightArrowOnRight)].itemSoftmenuName); // right side up to arrow
     truncateAtArrow(&scratch);
     _ = stringCopy(outString + @as(usize, @intCast(stringByteLength(outString))), &scratch);
@@ -1244,7 +1244,7 @@ const MNU_DYNAMIC: i16 = 1394;
 const FLAG_HPCONV: i32 = 0x8042;
 
 pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) callconv(.c) void {
-    if (!isItemConversion(item)) {                                               // not a conversion: plain softmenu name, no partner work
+    if (!isItemConversion(item)) { // not a conversion: plain softmenu name, no partner work
         if (itemNrPair) |p| p.* = 0;
         if (pairName != null) {
             _ = stringCopy(pairName, &indexOfItems[@intCast(item)].itemSoftmenuName);
@@ -1265,7 +1265,7 @@ pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName:
         userMenus[@intCast(currentUserMenu)].menuItem[@intCast(softKeyIx)].item
     else
         0;
-    if (areBothConvertConfigurable(item, softKeyPartner) and !isStandardPair(item, softKeyPartner)) {  // custom non-standard pair of the SAME configurable UT
+    if (areBothConvertConfigurable(item, softKeyPartner) and !isStandardPair(item, softKeyPartner)) { // custom non-standard pair of the SAME configurable UT
         if (itemNrPair) |p| p.* = softKeyPartner;
         if (pairName != null) {
             const leftItem: i16 = if (getSystemFlag(FLAG_HPCONV)) conversionPartner(softKeyPartner, null, null, null) else item;
@@ -1280,13 +1280,13 @@ pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName:
             _ = stringCopy(pairName + @as(usize, @intCast(stringByteLength(pairName))), &scratch);
         }
     } else {
-        if (itemNrPair) |p| p.* = 0;                                            // standard pair (or mismatched UTs)
+        if (itemNrPair) |p| p.* = 0; // standard pair (or mismatched UTs)
         if (pairName != null) {
-            fullConvSoftMenuItemNameInclHPCONV(item, pairName);                 // delegate the standard-pair name
+            fullConvSoftMenuItemNameInclHPCONV(item, pairName); // delegate the standard-pair name
         }
     }
 }
 
-comptime {                                                                       // keep MimFunctionsType3Conv referenced until fType==3 dispatch lands
+comptime { // keep MimFunctionsType3Conv referenced until fType==3 dispatch lands
     _ = &MimFunctionsType3Conv;
 }

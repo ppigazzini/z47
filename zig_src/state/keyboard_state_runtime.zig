@@ -197,7 +197,8 @@ fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updati
         programRunStop == PGM_WAITING and
         (lastKeyItemDetermined == ITM_RS or lastKeyItemDetermined == ITM_EXIT1) and
         !getSystemFlag(FLAG_INTING) and
-        !getSystemFlag(FLAG_SOLVING)) {
+        !getSystemFlag(FLAG_SOLVING))
+    {
         screenUpdatingMode = clearStatusbarUpdateFlags(previous_screen_updating_mode);
     }
 }
@@ -790,7 +791,7 @@ pub extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 pub extern fn setCurrentUserMenu(item: i16, func_param: [*c]u8) bool_t;
 pub extern fn fnExitAllMenus(unused: u16) void;
 pub extern fn showSoftmenuCurrentPart() void;
-pub extern fn @"_executeItem"(item: i16, key_code: c_int) void;
+pub extern fn _executeItem(item: i16, key_code: c_int) void;
 pub extern fn showStringEdC47(lastline: u32, offset: i16, edcursor: i16, string: [*c]const u8, x: u32, y: u32, video_mode: c_int, show_leading: bool_t, show_ending: bool_t, noshow1: bool_t) u32;
 
 // ---------------------------------------------------------------------------
@@ -1346,5 +1347,3 @@ pub inline fn wait_for_key_release(tout: c_int) void {
         f(tout);
     } else c_wait_for_key_release(tout);
 }
-
-

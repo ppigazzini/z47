@@ -407,7 +407,7 @@ pub fn deleteVariable(regist: u16) void {
         }
 
         clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
-    shrinkNamedVariableHeaderStorage();
+        shrinkNamedVariableHeaderStorage();
         runtime.numberOfNamedVariables -= 1;
         return;
     }

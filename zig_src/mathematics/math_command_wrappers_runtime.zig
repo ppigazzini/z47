@@ -858,9 +858,6 @@ pub const legacy = struct {
         raw_fnInc(parameter);
     }
 
-
-
-
     pub inline fn fnDblMultiply(parameter: u16) void {
         raw_fnDblMultiply(parameter);
     }

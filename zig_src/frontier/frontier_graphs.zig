@@ -256,42 +256,11 @@ extern fn fnClDrawMx(origin: u8) void;
 
 extern fn fnEqSolvGraph(func: u16) void;
 
-
-
-
-
-
-
 extern fn drawMxN() i32;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
-
-
 // graph_text / fnStatList shared text helpers
-
 
 // real34 macros: real34SetZero(d) == decQuadZero(d); real34IsZero(s) == decQuadIsZero(s)
 extern fn decQuadZero(d: *real34_t) *real34_t;
@@ -300,8 +269,8 @@ extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
 // longInteger (GMP) helpers
 
-extern fn @"__gmpz_get_si"(op: *const mpz_struct) c_long; // longIntegerToInt32
-extern fn @"__gmpz_clear"(op: *mpz_struct) void; // longIntegerFree
+extern fn __gmpz_get_si(op: *const mpz_struct) c_long; // longIntegerToInt32
+extern fn __gmpz_clear(op: *mpz_struct) void; // longIntegerFree
 
 // EXTRA_INFO console popup (host-only; matches the error owner).
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
@@ -570,11 +539,11 @@ pub export fn fnPlotZoom(unusedButMandatoryParameter: u16) callconv(.c) void {
     var ii: i32 = undefined;
 
     if (frontier_register_value_conversions.getRegisterAsLongInt(REGISTER_X, &x[0], null)) {
-        ii = @truncate(@"__gmpz_get_si"(&x[0])); // longIntegerToInt32(x, ii)
+        ii = @truncate(__gmpz_get_si(&x[0])); // longIntegerToInt32(x, ii)
         // the ZOOM command from outside the PLOT mode only works for PLSTAT
         PLOT_ZMY = @truncate(ii);
     }
-    @"__gmpz_clear"(&x[0]); // longIntegerFree(x)
+    __gmpz_clear(&x[0]); // longIntegerFree(x)
 }
 
 // ===========================================================================
@@ -885,11 +854,11 @@ fn showGraphTickText1(tick_int_x_: f32, tick_int_y_: f32, xoff: i32, yoff1: i32,
     var buff: [32]u8 = undefined;
     var outstr: [bufLen]u8 = undefined;
     var tmpBuf: [100]u8 = undefined;
-    abi.fmtBufZ(tmpString[0..2560], "  y {s}/tick  ", .{ @as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50))) });
+    abi.fmtBufZ(tmpString[0..2560], "  y {s}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
     frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
     _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, 1, 1);
 
-    abi.fmtBufZ(tmpString[0..2560], "  x {s}/tick  ", .{ @as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50))) });
+    abi.fmtBufZ(tmpString[0..2560], "  x {s}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
     frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
     _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, 1, 1);
 }
@@ -939,7 +908,7 @@ pub export fn graph_text() callconv(.c) void {
             abi.fmtBufZ(tmpString[0..bufLen], "  x-axis y 0", .{});
         },
         3 => {
-            abi.fmtBufZ(tmpString[0..2560], "  axis 0{s}0 ", .{ @as([*:0]const u8, frontier_plotstat.radixProcess(&tmpbuf, ".")) });
+            abi.fmtBufZ(tmpString[0..2560], "  axis 0{s}0 ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&tmpbuf, "."))});
         },
         else => {},
     }

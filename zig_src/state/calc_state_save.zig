@@ -192,13 +192,13 @@ fn toPcmemptr(p: u16) [*c]u8 {
 
 pub fn writeSaveSections() void {
     // SAV file version number + identifying model line.
-    abi.fmtCStr(b(), "SAVE_FILE_REVISION\n{d}\n", .{ cu(@as(u8, 0)) });
+    abi.fmtCStr(b(), "SAVE_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
-    abi.fmtCStr(b(), "C47_save_file_00\n{d}\n", .{ cu(configFileVersion) });
+    abi.fmtCStr(b(), "C47_save_file_00\n{d}\n", .{cu(configFileVersion)});
     save(b());
 
     // Global registers
-    abi.fmtCStr(b(), "GLOBAL_REGISTERS\n{d}\n", .{ cu(@as(u16, @intCast(LAST_GLOBAL_REGISTER + 1))) });
+    abi.fmtCStr(b(), "GLOBAL_REGISTERS\n{d}\n", .{cu(@as(u16, @intCast(LAST_GLOBAL_REGISTER + 1)))});
     save(b());
     {
         var regist: i16 = FIRST_GLOBAL_REGISTER;
@@ -217,7 +217,7 @@ pub fn writeSaveSections() void {
 
     // Local registers
     const localRegisterCount: u8 = currentSubroutineLevelData.?.numberOfLocalRegisters;
-    abi.fmtCStr(b(), "LOCAL_REGISTERS\n{d}\n", .{ cu(localRegisterCount) });
+    abi.fmtCStr(b(), "LOCAL_REGISTERS\n{d}\n", .{cu(localRegisterCount)});
     save(b());
     {
         var i: u32 = 0;
@@ -231,12 +231,12 @@ pub fn writeSaveSections() void {
 
     // Local flags
     if (currentLocalRegisters != null) {
-        abi.fmtCStr(b(), "LOCAL_FLAGS\n{d}\n", .{ cu(currentLocalFlags.?.*) });
+        abi.fmtCStr(b(), "LOCAL_FLAGS\n{d}\n", .{cu(currentLocalFlags.?.*)});
         save(b());
     }
 
     // Named variables
-    abi.fmtCStr(b(), "NAMED_VARIABLES\n{d}\n", .{ cu(numberOfNamedVariables) });
+    abi.fmtCStr(b(), "NAMED_VARIABLES\n{d}\n", .{cu(numberOfNamedVariables)});
     save(b());
     {
         var i: u32 = 0;
@@ -252,13 +252,13 @@ pub fn writeSaveSections() void {
 
     // Statistical sums
     const sumsCount: u16 = if (statisticalSumsPointer != null) NUMBER_OF_STATISTICAL_SUMS else 0;
-    abi.fmtCStr(b(), "STATISTICAL_SUMS\n{d}\n", .{ cu(sumsCount) });
+    abi.fmtCStr(b(), "STATISTICAL_SUMS\n{d}\n", .{cu(sumsCount)});
     save(b());
     {
         var i: u16 = 0;
         while (i < sumsCount) : (i += 1) {
             codec.statSumToString(i);
-            abi.fmtCStr(b(), "{s}\n", .{ @as([*:0]const u8, codec.regValueBuf()) });
+            abi.fmtCStr(b(), "{s}\n", .{@as([*:0]const u8, codec.regValueBuf())});
             save(b());
         }
     }
@@ -267,10 +267,10 @@ pub fn writeSaveSections() void {
     var yy1: [35]u8 = undefined;
     var yy2: [35]u8 = undefined;
     text.ui64ToString(systemFlags0, &yy1[0]);
-    abi.fmtCStr(b(), "SYSTEM_FLAGS\n{s}\n", .{ std.mem.sliceTo(yy1[0..], 0) });
+    abi.fmtCStr(b(), "SYSTEM_FLAGS\n{s}\n", .{std.mem.sliceTo(yy1[0..], 0)});
     save(b());
     text.ui64ToString(systemFlags1, &yy1[0]);
-    abi.fmtCStr(b(), "SYSTEM_FLAGS1\n{s}\n", .{ std.mem.sliceTo(yy1[0..], 0) });
+    abi.fmtCStr(b(), "SYSTEM_FLAGS1\n{s}\n", .{std.mem.sliceTo(yy1[0..], 0)});
     save(b());
 
     // Keyboard assignments
@@ -295,13 +295,13 @@ pub fn writeSaveSections() void {
                 num += 1;
             }
         }
-        abi.fmtCStr(b(), "{d}\n", .{ cu(num) });
+        abi.fmtCStr(b(), "{d}\n", .{cu(num)});
         save(b());
 
         i = 0;
         while (i < 37 * 6) : (i += 1) {
             if (getNthString(userKeyLabel, @intCast(i))[0] != 0) {
-                abi.fmtCStr(b(), "{d} ", .{ cu(i) });
+                abi.fmtCStr(b(), "{d} ", .{cu(i)});
                 stringToUtf8(getNthString(userKeyLabel, @intCast(i)), b() + strlen(b()));
                 _ = strcat(b(), "\n");
                 save(b());
@@ -319,7 +319,7 @@ pub fn writeSaveSections() void {
 
     // User menus
     save("USER_MENUS\n");
-    abi.fmtCStr(b(), "{d}\n", .{ cu(numberOfUserMenus) });
+    abi.fmtCStr(b(), "{d}\n", .{cu(numberOfUserMenus)});
     save(b());
     {
         var j: u32 = 0;
@@ -333,25 +333,25 @@ pub fn writeSaveSections() void {
 
     // Programs
     const currentSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
-    abi.fmtCStr(b(), "PROGRAMS\n{d}\n", .{ cu(currentSizeInBlocks) });
+    abi.fmtCStr(b(), "PROGRAMS\n{d}\n", .{cu(currentSizeInBlocks)});
     save(b());
     abi.fmtCStr(b(), "{d}\n{d}\n", .{ cu(toC47memptr(currentStep)), cu(offsetWithinBlock(currentStep)) });
     save(b());
     abi.fmtCStr(b(), "{d}\n{d}\n", .{ cu(toC47memptr(firstFreeProgramByte)), cu(offsetWithinBlock(firstFreeProgramByte)) });
     save(b());
-    abi.fmtCStr(b(), "{d}\n", .{ cu(freeProgramBytes) });
+    abi.fmtCStr(b(), "{d}\n", .{cu(freeProgramBytes)});
     save(b());
     {
         const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
         var i: u16 = 0;
         while (i < currentSizeInBlocks) : (i += 1) {
-            abi.fmtCStr(b(), "{d}\n", .{ cu(progWords[i]) });
+            abi.fmtCStr(b(), "{d}\n", .{cu(progWords[i])});
             save(b());
         }
     }
 
     // Equations
-    abi.fmtCStr(b(), "EQUATIONS\n{d}\n", .{ cu(numberOfFormulae) });
+    abi.fmtCStr(b(), "EQUATIONS\n{d}\n", .{cu(numberOfFormulae)});
     save(b());
     {
         var i: u32 = 0;
@@ -402,7 +402,7 @@ pub fn writeSaveSections() void {
     saveField("Norm_Key_00.func", "%d\n", .{ci(Norm_Key_00.func)});
     {
         const paramPtr: [*c]const u8 = if (Norm_Key_00.funcParam[0] == 0) "NoNormKeyParamDef" else &Norm_Key_00.funcParam[0];
-        abi.fmtCStr(b(), "Norm_Key_00.funcParam\n{s}\n", .{ @as([*:0]const u8, paramPtr) });
+        abi.fmtCStr(b(), "Norm_Key_00.funcParam\n{s}\n", .{@as([*:0]const u8, paramPtr)});
         save(b());
     }
     saveField("Norm_Key_00.used", "%u\n", .{cu(@intFromBool(Norm_Key_00.used))});
@@ -466,7 +466,7 @@ fn saveField(comptime name: []const u8, comptime value_format: []const u8, args:
 fn saveUserMenuBlock(items: [*c]const userMenuItem_t) void {
     var i: usize = 0;
     while (i < 18) : (i += 1) {
-        abi.fmtCStr(b(), "{d}", .{ ci(items[i].item) });
+        abi.fmtCStr(b(), "{d}", .{ci(items[i].item)});
         if (items[i].argumentName[0] != 0) {
             _ = strcat(b(), " ");
             stringToUtf8(&items[i].argumentName[0], b() + strlen(b()));
@@ -520,9 +520,9 @@ extern var hourGlassIconEnabled: bool;
 
 fn registerNumberToString(regist: i16, name: [*c]u8) void {
     if (regist >= FIRST_LETTERED_REGISTER and regist <= @as(i16, @intCast(LAST_SPARE_REGISTER))) {
-        abi.fmtCStr(name, "R{c}", .{ @as(u8, @intCast(@as(c_int, registerLetters[@intCast(regist - FIRST_LETTERED_REGISTER)]))) });
+        abi.fmtCStr(name, "R{c}", .{@as(u8, @intCast(@as(c_int, registerLetters[@intCast(regist - FIRST_LETTERED_REGISTER)])))});
     } else {
-        abi.fmtCStr(name, "R{d:0>3}", .{ @as(u32, @intCast(ci(regist))) });
+        abi.fmtCStr(name, "R{d:0>3}", .{@as(u32, @intCast(ci(regist)))});
     }
 }
 
@@ -533,7 +533,7 @@ pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName:
     if (registerName != null) {
         const regist = findNamedVariable(registerName); // read-only lookup: must not allocate
         if (regist == INVALID_VARIABLE) return false;
-        abi.fmtCStr(b(), "NAMED_VARIABLES\n{d}\n", .{ cu(@as(u16, 1)) });
+        abi.fmtCStr(b(), "NAMED_VARIABLES\n{d}\n", .{cu(@as(u16, 1))});
         save(b());
         codec.registerToSaveString(regist, !isXFN);
         abi.fmtCStr(b(), "{s}\n{s}\n{s}\n", .{ @as([*:0]const u8, registerName), std.mem.sliceTo(aimBuffer1[0..], 0), @as([*:0]const u8, codec.regValueBuf()) });
@@ -544,7 +544,7 @@ pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName:
 
     if (beginR == null or endR == null or endR.?.* < beginR.?.*) return false;
 
-    abi.fmtCStr(b(), "GLOBAL_REGISTERS\n{d}\n", .{ cu(@as(u16, @intCast(endR.?.* - beginR.?.* + 1))) });
+    abi.fmtCStr(b(), "GLOBAL_REGISTERS\n{d}\n", .{cu(@as(u16, @intCast(endR.?.* - beginR.?.* + 1)))});
     save(b());
     var regName: [16]u8 = undefined;
     var regist: i16 = @intCast(beginR.?.*);
@@ -575,7 +575,7 @@ fn doSaveDataFile(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]cons
     showHideHourGlass();
 
     codec.dataFileMode = true; // compact human-readable value forms for this file
-    abi.fmtCStr(b(), "DATA_FILE_REVISION\n{d}\n", .{ cu(@as(u8, 0)) });
+    abi.fmtCStr(b(), "DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
 
     _ = fnSaveDataRegisters(beginR, endR, registerName, isXFNRegister);

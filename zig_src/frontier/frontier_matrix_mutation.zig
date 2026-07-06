@@ -26,8 +26,3 @@ fn apply(kind: Kind) void {
         .delete_col => frontier_matrix_editor.z47_frontier_matrix_delete_col(),
     }
 }
-
-
-
-
-

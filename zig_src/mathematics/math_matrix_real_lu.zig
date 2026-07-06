@@ -19,7 +19,6 @@ const nim_register_line = runtime.REGISTER_X;
 // REAL_SIZE_IN_BLOCKS(75) == 15; the real scratch is non-interleaved.
 const real_size_in_blocks: usize = (@sizeOf(real_t) + 3) >> 2;
 
-
 inline fn const_1e_37() *const real_t {
     return consts.c4436();
 }

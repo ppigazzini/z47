@@ -67,7 +67,7 @@ pub export const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DAT
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
     buffer[slice.len] = 0;
-    return buffer[0 .. slice.len :0];
+    return buffer[0..slice.len :0];
 }
 
 // REGISTER_STRING_DATA(a): data pointer + sizeof(strLgIntHeader_t) (4 bytes).

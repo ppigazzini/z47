@@ -473,12 +473,12 @@ pub fn implementation(comptime runtime: type) type {
         // keyboard.c CatalogMenus[] (398-423): menus closed on a real CAT entry.
         const catalog_menus = [_]i16{
             runtime.MNU_ALPHA_OMEGA, runtime.MNU_ALPHAMISC, runtime.MNU_ALPHA,
-            runtime.MNU_FCNS,        runtime.MNU_CONST,      runtime.MNU_CHARS,
-            runtime.MNU_PROGS,       runtime.MNU_VARS,       runtime.MNU_MENUS,
-            runtime.MNU_CONFIGS,     runtime.MNU_MATRS,      runtime.MNU_DATES,
-            runtime.MNU_TIMES,       runtime.MNU_SINTS,      runtime.MNU_STRINGS,
-            runtime.MNU_NUMBRS,      runtime.MNU_CPXS,       runtime.MNU_REALS,
-            runtime.MNU_ANGLES,      runtime.MNU_LINTS,      runtime.MNU_ALLVARS,
+            runtime.MNU_FCNS,        runtime.MNU_CONST,     runtime.MNU_CHARS,
+            runtime.MNU_PROGS,       runtime.MNU_VARS,      runtime.MNU_MENUS,
+            runtime.MNU_CONFIGS,     runtime.MNU_MATRS,     runtime.MNU_DATES,
+            runtime.MNU_TIMES,       runtime.MNU_SINTS,     runtime.MNU_STRINGS,
+            runtime.MNU_NUMBRS,      runtime.MNU_CPXS,      runtime.MNU_REALS,
+            runtime.MNU_ANGLES,      runtime.MNU_LINTS,     runtime.MNU_ALLVARS,
         };
 
         pub fn closeAllCatalogMenus() void {

@@ -79,12 +79,6 @@ extern var allNamedVariables: [*c]namedVariableHeader_t;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
-
-
-
-
-
-
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;

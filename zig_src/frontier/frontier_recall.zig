@@ -175,7 +175,6 @@ extern var timeDisplayFormatDigits: u8;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 
-
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
@@ -193,19 +192,14 @@ extern fn adjustResult(result: calcRegister_t, dropY: bool, setCpxRes: bool, op1
 extern fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 extern fn registerMax(regist1: calcRegister_t, regist2: calcRegister_t, dest: calcRegister_t) void;
 
-
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
-
-
-
 
 extern fn getMatrixDims(regist: calcRegister_t, funcName: [*:0]const u8, rows: *u16, cols: *u16) bool;
 
 extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
 
-
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -708,8 +702,8 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
     } else {
         var zero: longInteger_t = undefined;
-        @"__gmpz_init"(&zero[0]); // longIntegerInit
-        defer @"__gmpz_clear"(&zero[0]); // longIntegerFree — leak fix (master fd83b4a4)
+        __gmpz_init(&zero[0]); // longIntegerInit
+        defer __gmpz_clear(&zero[0]); // longIntegerFree — leak fix (master fd83b4a4)
 
         if (!saveLastX()) {
             return;

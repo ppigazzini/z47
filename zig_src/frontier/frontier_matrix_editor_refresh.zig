@@ -92,16 +92,3 @@ fn updateScrollRow(geometry: Geometry, selection: Selection) void {
 fn render(geometry: Geometry, selection: Selection) void {
     frontier_matrix_editor.z47_frontier_matrix_render_editor_body(geometry.col_vector, geometry.rows, geometry.cols, selection.row, selection.col);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

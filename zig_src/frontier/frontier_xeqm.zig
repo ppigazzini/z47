@@ -84,9 +84,7 @@ extern fn strlen(s: [*c]const u8) usize;
 
 extern fn resetShiftState() void;
 
-
 extern fn liftStack() void;
-
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)

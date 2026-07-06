@@ -278,18 +278,3 @@ extern var numberOfNamedVariables: u16;
 extern var numberOfPrograms: u16;
 
 extern fn getSystemFlag(sf: c_int) bool;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

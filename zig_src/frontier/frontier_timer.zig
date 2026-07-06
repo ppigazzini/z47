@@ -159,16 +159,13 @@ const const34_1 = consts.q16312();
 // ---------------------------------------------------------------------------
 extern fn liftStack() void;
 
-
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
-
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn clearRegister(regist: calcRegister_t) void;
-
 
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
 
@@ -177,19 +174,15 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: i32) void;
 
-
-
-
-
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strlen(s: [*c]const u8) usize;
 
 // GMP.
-extern fn @"__gmpz_init"(p: *mpz_struct) void;
-extern fn @"__gmpz_clear"(p: *mpz_struct) void;
-extern fn @"__gmpz_set_ui"(p: *mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_mul_ui"(r: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
-extern fn @"__gmpz_add_ui"(r: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_init(p: *mpz_struct) void;
+extern fn __gmpz_clear(p: *mpz_struct) void;
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
+extern fn __gmpz_mul_ui(r: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
+extern fn __gmpz_add_ui(r: *mpz_struct, op: *const mpz_struct, v: c_ulong) void;
 
 // decNumber / decQuad behind the real* macros.
 extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
@@ -220,7 +213,6 @@ extern fn g_get_real_time() i64;
 
 // host-only GUI extern (real fn on the GTK sim, no-op macro on firmware).
 extern fn calcModeNormalGui() void;
-
 
 // ---------------------------------------------------------------------------
 // DMCP-ROM trampolines (fixed-address on firmware).
@@ -274,19 +266,19 @@ inline fn real34Add(o1: *align(1) const real34_t, o2: *align(1) const real34_t, 
     _ = decQuadAdd(res, o1, o2, &ctxtReal34);
 }
 inline fn longIntegerInit(op: *mpz_struct) void {
-    @"__gmpz_init"(op);
+    __gmpz_init(op);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
-    @"__gmpz_clear"(op);
+    __gmpz_clear(op);
 }
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
-    @"__gmpz_set_ui"(destination, source);
+    __gmpz_set_ui(destination, source);
 }
 inline fn longIntegerMultiplyUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
-    @"__gmpz_mul_ui"(result, op, uint);
+    __gmpz_mul_ui(result, op, uint);
 }
 inline fn longIntegerAddUInt(op: *const mpz_struct, uint: u32, result: *mpz_struct) void {
-    @"__gmpz_add_ui"(result, op, uint);
+    __gmpz_add_ui(result, op, uint);
 }
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));

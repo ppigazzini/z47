@@ -184,4 +184,3 @@ pub inline fn saveCalcBackup() void {
 pub inline fn restoreCalcBackup() void {
     io_owned.restoreCalc();
 }
-
