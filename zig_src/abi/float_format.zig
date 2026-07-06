@@ -392,3 +392,27 @@ test "fmtGBuf matches libc %.*g" {
     try testing.expectEqualStrings("0.0001", fmtGBuf(&buf, 0, 6, false, 0.0001));
     try testing.expectEqualStrings("3.14", fmtGBuf(&buf, 0, 3, false, 3.14159));
 }
+
+test "fmtFixedBuf edge cases vs libc %.*f" {
+    var buf: [64]u8 = undefined;
+    try testing.expectEqualStrings("2", fmtFixedBuf(&buf, 0, 2.5)); // round-half-to-even
+    try testing.expectEqualStrings("4", fmtFixedBuf(&buf, 0, 3.5));
+    try testing.expectEqualStrings("-0.00", fmtFixedBuf(&buf, 2, -0.0));
+    try testing.expectEqualStrings("1.0000000000", fmtFixedBuf(&buf, 10, 1.0));
+    try testing.expectEqualStrings("1000.00", fmtFixedBuf(&buf, 2, 999.995)); // carry
+}
+
+test "fmtExpBuf edge cases vs libc %.*e" {
+    var buf: [64]u8 = undefined;
+    try testing.expectEqualStrings("1e+01", fmtExpBuf(&buf, 0, 9.6)); // round bumps exponent
+    try testing.expectEqualStrings("9.999e+00", fmtExpBuf(&buf, 3, 9.9995));
+    try testing.expectEqualStrings("1.00e-300", fmtExpBuf(&buf, 2, 1e-300));
+    try testing.expectEqualStrings("1.00e+300", fmtExpBuf(&buf, 2, 1e300));
+}
+
+test "fmtGBuf edge cases vs libc %.*g" {
+    var buf: [64]u8 = undefined;
+    try testing.expectEqualStrings("0", fmtGBuf(&buf, 0, 1, false, 0.0));
+    try testing.expectEqualStrings("1.2e+03", fmtGBuf(&buf, 0, 2, false, 1234.0));
+    try testing.expectEqualStrings("1.23457e+06", fmtGBuf(&buf, 0, 6, false, 1234567.0));
+}
