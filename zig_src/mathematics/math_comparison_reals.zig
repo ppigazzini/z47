@@ -14,6 +14,7 @@
 
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 
 // Product ABI globals (uint8_t in src/c47/c47.c).  This file is only built
 // for the product surface, so the exact C types are used here even though
@@ -30,7 +31,6 @@ extern fn realToIntegralValue(
     mode: runtime.rounding_t,
     real_context: *runtime.realContext_t,
 ) void;
-extern fn int32ToReal(source: i32, destination: *runtime.real_t) void;
 extern fn decNumberCopyAbs(result: *runtime.real_t, rhs: *const runtime.real_t) *runtime.real_t;
 extern fn decQuadCompare(
     result: *runtime.real34_t,
@@ -40,7 +40,6 @@ extern fn decQuadCompare(
 ) *runtime.real34_t;
 extern fn decQuadCopyAbs(result: *runtime.real34_t, source: *const runtime.real34_t) *runtime.real34_t;
 extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
-extern fn z47_math_wrappers_const_0() *const runtime.real_t;
 
 // REAL_T_PTR(name, 159): REAL_MAX_DIGITS(159) = 159 -> 10-byte decNumber
 // header + 53 declets of DECDPUN=3 digits (116 bytes).
@@ -111,7 +110,7 @@ pub export fn convergenceTolerence(tol: *runtime.real_t) callconv(.c) void {
 }
 
 pub export fn irfractionTolerence(ii: i32, tol: *runtime.real_t) callconv(.c) void {
-    int32ToReal(ii, tol);
+    math_runtime_helpers.int32ToReal(ii, tol);
     const digits: i32 = fractionDigits;
     tol.exponent -= if (digits == 0 or digits >= 34) 34 else digits;
 }
@@ -323,5 +322,5 @@ pub export fn realIsAnInteger(x: *const runtime.real_t) callconv(.c) bool {
     realToIntegralValue(x, y.ptr(), runtime.DEC_ROUND_DOWN, &c);
     _ = runtime.decNumberSubtract(y.ptr(), x, y.constPtr(), &c);
 
-    return realCompareEqual(y.constPtr(), z47_math_wrappers_const_0());
+    return realCompareEqual(y.constPtr(), @alignCast(math_runtime_helpers.z47_math_wrappers_const_0()));
 }

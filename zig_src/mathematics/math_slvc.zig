@@ -28,6 +28,14 @@ const const_2916 = consts.const_2916;
 // SAVE_SPACE_DM42_12 guard and the #undef'd DISCRIMINANT blocks are omitted.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_addition_cells = @import("math_addition_cells.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_slvq = @import("math_slvq.zig"); // M-callconv: Zig-to-Zig
+const math_subtraction_cells = @import("math_subtraction_cells.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -113,20 +121,8 @@ extern fn decNumberCompare(res: *align(1) real_t, op1: *align(1) const real_t, o
 inline fn realCompareM(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
-extern fn realCompareGreaterThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
-extern fn realCompareLessThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
-extern fn realCompareAbsLessThan(n1: *align(1) const real_t, n2: *align(1) const real_t) bool;
 
 // Complex helpers (operands *align(1) const).
-extern fn mulComplexComplex(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2r: *align(1) const real_t, f2i: *align(1) const real_t, pr: *align(1) real_t, pi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn mulComplexReal(f1r: *align(1) const real_t, f1i: *align(1) const real_t, f2: *align(1) const real_t, pr: *align(1) real_t, pi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn addComplex(ar: *align(1) const real_t, ai: *align(1) const real_t, br: *align(1) const real_t, bi: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn subComplex(ar: *align(1) const real_t, ai: *align(1) const real_t, br: *align(1) const real_t, bi: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn divComplexComplex(nr: *align(1) const real_t, ni: *align(1) const real_t, dr: *align(1) const real_t, di: *align(1) const real_t, qr: *align(1) real_t, qi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn divComplexReal(nr: *align(1) const real_t, ni: *align(1) const real_t, d: *align(1) const real_t, qr: *align(1) real_t, qi: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn sqrtComplex(re: *align(1) const real_t, im: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn curtComplex(re: *align(1) const real_t, im: *align(1) const real_t, rr: *align(1) real_t, ri: *align(1) real_t, ctxt: *realContext_t) void;
-extern fn complexMagnitude2(a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) real_t, ctxt: *realContext_t) void;
 
 inline fn chsComplex(aReal: *align(1) real_t, aImag: *align(1) real_t) void {
     realChangeSign(aReal);
@@ -170,8 +166,8 @@ fn cmplxSortCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksection(ru
     var v2a: real_t = undefined;
     var c: real_t = undefined;
 
-    complexMagnitude2(&p1.r, &p1.i, &v1a, &ctxtReal39);
-    complexMagnitude2(&p2.r, &p2.i, &v2a, &ctxtReal39);
+    math_runtime_helpers.complexMagnitude2(&p1.r, &p1.i, &v1a, &ctxtReal39);
+    math_runtime_helpers.complexMagnitude2(&p2.r, &p2.i, &v2a, &ctxtReal39);
 
     // NaN's aren't interesting so sort largest
     if (realIsNaNA(&v1a)) {
@@ -294,13 +290,13 @@ fn fnSlvcCore() linksection(runtime.code_section) SlvcError!void {
     }
 
     if (realIsZero(&aReal) and realIsZero(&aImag)) {
-        solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &ctxtReal75);
+        math_slvq.solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &ctxtReal75);
         realSetNaN(&x[2].r);
         realSetNaN(&x[2].i);
     } else {
-        divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal75);
-        divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal75);
-        divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal75);
+        math_division_cells.divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal75);
+        math_division_cells.divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal75);
+        math_division_cells.divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal75);
 
         // OPTION_CUBIC_159 is defined on every z47 build -> 159-digit solver.
         var c159 = ctxtReal75;
@@ -382,7 +378,6 @@ inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt:
 }
 
 // solveQuadraticEquation lives in the slvq owner.
-extern fn solveQuadraticEquation(aReal: *align(1) const real_t, aImag: *align(1) const real_t, bReal: *align(1) const real_t, bImag: *align(1) const real_t, cReal: *align(1) const real_t, cImag: *align(1) const real_t, rReal: *align(1) real_t, rImag: *align(1) real_t, x1Real: *align(1) real_t, x1Imag: *align(1) real_t, x2Real: *align(1) real_t, x2Imag: *align(1) real_t, realContext: *realContext_t) void;
 
 // ===========================================================================
 // _checkConditionNumberOfAddSub
@@ -403,12 +398,12 @@ fn _checkConditionNumberOfAddSub(operand1: *align(1) const real_t, operand2: *al
             conditionNumber = &conditionNumber2;
         } else if (realIsZeroA(operand2)) {
             conditionNumber = &conditionNumber1;
-        } else if (realCompareGreaterThan(&conditionNumber1, &conditionNumber2)) {
+        } else if (math_comparison_reals.realCompareGreaterThan(&conditionNumber1, &conditionNumber2)) {
             conditionNumber = &conditionNumber2;
         } else {
             conditionNumber = &conditionNumber1;
         }
-        return realCompareLessThan(conditionNumber, const_1e_37());
+        return math_comparison_reals.realCompareLessThan(@alignCast(conditionNumber), const_1e_37());
     }
 }
 
@@ -466,49 +461,49 @@ pub export fn solveCubicEquation(
     const realIn = realIsZeroA(c2Imag) and realIsZeroA(c1Imag) and realIsZeroA(c0Imag);
 
     // q = (c - b^2 / 3) / 3 ; 9q = (3c - b^2)
-    mulComplexReal(c1Real, c1Imag, const_3(), &rr, &ri, realContext);
-    mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &qr, &qi, realContext);
-    subComplex(&rr, &ri, &qr, &qi, &qr, &qi, realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(c1Real), @alignCast(c1Imag), const_3(), &rr, &ri, realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(c2Real), @alignCast(c2Imag), @alignCast(c2Real), @alignCast(c2Imag), &qr, &qi, realContext);
+    math_subtraction_cells.subComplex(&rr, &ri, &qr, &qi, &qr, &qi, realContext);
 
     // r = (b c - 3 d) / 6 - b^3 / 27 ; 54r = 9(b c - 3 d) - 2 b^3
-    mulComplexComplex(c2Real, c2Imag, c1Real, c1Imag, &rr, &ri, realContext);
-    mulComplexReal(c0Real, c0Imag, const_3(), &ar, &ai, realContext);
-    subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
-    mulComplexReal(&rr, &ri, const_9(), &rr, &ri, realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(c2Real), @alignCast(c2Imag), @alignCast(c1Real), @alignCast(c1Imag), &rr, &ri, realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(c0Real), @alignCast(c0Imag), const_3(), &ar, &ai, realContext);
+    math_subtraction_cells.subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
+    math_multiplication_cells.mulComplexReal(&rr, &ri, const_9(), &rr, &ri, realContext);
 
-    mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, &ar, &ai, realContext);
-    mulComplexComplex(&ar, &ai, c2Real, c2Imag, &ar, &ai, realContext);
-    addComplex(&ar, &ai, &ar, &ai, &ar, &ai, realContext);
-    subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(c2Real), @alignCast(c2Imag), @alignCast(c2Real), @alignCast(c2Imag), &ar, &ai, realContext);
+    math_multiplication_cells.mulComplexComplex(&ar, &ai, @alignCast(c2Real), @alignCast(c2Imag), &ar, &ai, realContext);
+    math_addition_cells.addComplex(&ar, &ai, &ar, &ai, &ar, &ai, realContext);
+    math_subtraction_cells.subComplex(&rr, &ri, &ar, &ai, &rr, &ri, realContext);
 
     // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
-    mulComplexComplex(&qr, &qi, &qr, &qi, rReal, rImag, realContext);
-    mulComplexComplex(rReal, rImag, &qr, &qi, rReal, rImag, realContext);
-    mulComplexReal(rReal, rImag, const_4(), rReal, rImag, realContext);
-    mulComplexComplex(&rr, &ri, &rr, &ri, &ar, &ai, realContext);
-    addComplex(rReal, rImag, &ar, &ai, rReal, rImag, realContext);
-    divComplexReal(rReal, rImag, const_2916(), rReal, rImag, realContext);
+    math_multiplication_cells.mulComplexComplex(&qr, &qi, &qr, &qi, @alignCast(rReal), @alignCast(rImag), realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(rReal), @alignCast(rImag), &qr, &qi, @alignCast(rReal), @alignCast(rImag), realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(rReal), @alignCast(rImag), const_4(), @alignCast(rReal), @alignCast(rImag), realContext);
+    math_multiplication_cells.mulComplexComplex(&rr, &ri, &rr, &ri, &ar, &ai, realContext);
+    math_addition_cells.addComplex(@alignCast(rReal), @alignCast(rImag), &ar, &ai, @alignCast(rReal), @alignCast(rImag), realContext);
+    math_division_cells.divComplexReal(@alignCast(rReal), @alignCast(rImag), const_2916(), @alignCast(rReal), @alignCast(rImag), realContext);
 
     // Scale r back to its proper range.
-    divComplexReal(&rr, &ri, const_54(), &rr, &ri, realContext);
+    math_division_cells.divComplexReal(&rr, &ri, const_54(), &rr, &ri, realContext);
 
     // s1, s2 = cbrt(r ± sqrt(q^3 + r^2))
-    sqrtComplex(rReal, rImag, &s1r, &s1i, realContext);
-    subComplex(&rr, &ri, &s1r, &s1i, &s2r, &s2i, realContext);
-    addComplex(&rr, &ri, &s1r, &s1i, &s1r, &s1i, realContext);
-    curtComplex(&s1r, &s1i, &s1r, &s1i, realContext);
-    curtComplex(&s2r, &s2i, &s2r, &s2i, realContext);
+    math_transform_complex_helpers.sqrtComplex(@alignCast(rReal), @alignCast(rImag), &s1r, &s1i, realContext);
+    math_subtraction_cells.subComplex(&rr, &ri, &s1r, &s1i, &s2r, &s2i, realContext);
+    math_addition_cells.addComplex(&rr, &ri, &s1r, &s1i, &s1r, &s1i, realContext);
+    math_transform_complex_helpers.curtComplex(&s1r, &s1i, &s1r, &s1i, realContext);
+    math_transform_complex_helpers.curtComplex(&s2r, &s2i, &s2r, &s2i, realContext);
 
     // reusing q, r for (s1 ± s2)
-    addComplex(&s1r, &s1i, &s2r, &s2i, &qr, &qi, realContext);
-    subComplex(&s1r, &s1i, &s2r, &s2i, &rr, &ri, realContext);
-    mulComplexComplex(&rr, &ri, const_0(), const39_root3on2(), &rr, &ri, realContext);
+    math_addition_cells.addComplex(&s1r, &s1i, &s2r, &s2i, &qr, &qi, realContext);
+    math_subtraction_cells.subComplex(&s1r, &s1i, &s2r, &s2i, &rr, &ri, realContext);
+    math_multiplication_cells.mulComplexComplex(&rr, &ri, const_0(), const39_root3on2(), &rr, &ri, realContext);
 
     // roots
-    divComplexReal(c2Real, c2Imag, const_3(), x2Real, x2Imag, realContext);
+    math_division_cells.divComplexReal(@alignCast(c2Real), @alignCast(c2Imag), const_3(), @alignCast(x2Real), @alignCast(x2Imag), realContext);
     _realCheckedSubtract(&qr, x2Real, x1Real, realContext);
     _realCheckedSubtract(&qi, x2Imag, x1Imag, realContext);
-    mulComplexReal(&qr, &qi, const_1on2(), x3Real, x3Imag, realContext);
+    math_multiplication_cells.mulComplexReal(&qr, &qi, const_1on2(), @alignCast(x3Real), @alignCast(x3Imag), realContext);
     _realCheckedAdd(x3Real, x2Real, x3Real, realContext);
     _realCheckedAdd(x3Imag, x2Imag, x3Imag, realContext);
     chsComplex(x3Real, x3Imag);
@@ -526,14 +521,14 @@ pub export fn solveCubicEquation(
             realSetZero(x3Imag);
         } else {
             // One real, two complex roots
-            if (realCompareAbsLessThan(x1Imag, x2Imag)) {
-                if (realCompareAbsLessThan(x1Imag, x3Imag)) {
+            if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x1Imag), @alignCast(x2Imag))) {
+                if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x1Imag), @alignCast(x3Imag))) {
                     realSetZero(x1Imag);
                 } else {
                     realSetZero(x3Imag);
                 }
             } else {
-                if (realCompareAbsLessThan(x2Imag, x3Imag)) {
+                if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x2Imag), @alignCast(x3Imag))) {
                     realSetZero(x2Imag);
                 } else {
                     realSetZero(x3Imag);
@@ -604,20 +599,20 @@ pub export fn solveCubicEquation159(
     realSetZero(ai);
 
     // q = (c - b^2 / 3) / 3 ; 9q = (3c - b^2)
-    mulComplexReal(c1Real, c1Imag, const_3(), rr, ri, realContext);
-    mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, qr, qi, realContext);
-    subComplex(rr, ri, qr, qi, qr, qi, realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(c1Real), @alignCast(c1Imag), const_3(), @alignCast(rr), @alignCast(ri), realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(c2Real), @alignCast(c2Imag), @alignCast(c2Real), @alignCast(c2Imag), @alignCast(qr), @alignCast(qi), realContext);
+    math_subtraction_cells.subComplex(@alignCast(rr), @alignCast(ri), @alignCast(qr), @alignCast(qi), @alignCast(qr), @alignCast(qi), realContext);
 
     // r = (b c - 3 d) / 6 - b^3 / 27 ; 54r = 9(b c - 3 d) - 2 b^3
-    mulComplexComplex(c2Real, c2Imag, c1Real, c1Imag, rr, ri, realContext);
-    mulComplexReal(c0Real, c0Imag, const_3(), ar, ai, realContext);
-    subComplex(rr, ri, ar, ai, rr, ri, realContext);
-    mulComplexReal(rr, ri, const_9(), rr, ri, realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(c2Real), @alignCast(c2Imag), @alignCast(c1Real), @alignCast(c1Imag), @alignCast(rr), @alignCast(ri), realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(c0Real), @alignCast(c0Imag), const_3(), @alignCast(ar), @alignCast(ai), realContext);
+    math_subtraction_cells.subComplex(@alignCast(rr), @alignCast(ri), @alignCast(ar), @alignCast(ai), @alignCast(rr), @alignCast(ri), realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(rr), @alignCast(ri), const_9(), @alignCast(rr), @alignCast(ri), realContext);
 
-    mulComplexComplex(c2Real, c2Imag, c2Real, c2Imag, ar, ai, realContext);
-    mulComplexComplex(ar, ai, c2Real, c2Imag, ar, ai, realContext);
-    addComplex(ar, ai, ar, ai, ar, ai, realContext);
-    subComplex(rr, ri, ar, ai, rr, ri, realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(c2Real), @alignCast(c2Imag), @alignCast(c2Real), @alignCast(c2Imag), @alignCast(ar), @alignCast(ai), realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(ar), @alignCast(ai), @alignCast(c2Real), @alignCast(c2Imag), @alignCast(ar), @alignCast(ai), realContext);
+    math_addition_cells.addComplex(@alignCast(ar), @alignCast(ai), @alignCast(ar), @alignCast(ai), @alignCast(ar), @alignCast(ai), realContext);
+    math_subtraction_cells.subComplex(@alignCast(rr), @alignCast(ri), @alignCast(ar), @alignCast(ai), @alignCast(rr), @alignCast(ri), realContext);
 
     // discriminant using intermediate 159-digit variables
     var discrimR_b = BigReal(159){};
@@ -628,35 +623,35 @@ pub export fn solveCubicEquation159(
     realSetZero(discrimI);
 
     // q^3 + r^2 = (4 (9q)^3 + (54r)^2) / 2916
-    mulComplexComplex(qr, qi, qr, qi, discrimR, discrimI, realContext);
-    mulComplexComplex(discrimR, discrimI, qr, qi, discrimR, discrimI, realContext);
-    mulComplexReal(discrimR, discrimI, const_4(), discrimR, discrimI, realContext);
-    mulComplexComplex(rr, ri, rr, ri, ar, ai, realContext);
-    addComplex(discrimR, discrimI, ar, ai, discrimR, discrimI, realContext);
-    divComplexReal(discrimR, discrimI, const_2916(), discrimR, discrimI, realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(qr), @alignCast(qi), @alignCast(qr), @alignCast(qi), @alignCast(discrimR), @alignCast(discrimI), realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(discrimR), @alignCast(discrimI), @alignCast(qr), @alignCast(qi), @alignCast(discrimR), @alignCast(discrimI), realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(discrimR), @alignCast(discrimI), const_4(), @alignCast(discrimR), @alignCast(discrimI), realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(rr), @alignCast(ri), @alignCast(rr), @alignCast(ri), @alignCast(ar), @alignCast(ai), realContext);
+    math_addition_cells.addComplex(@alignCast(discrimR), @alignCast(discrimI), @alignCast(ar), @alignCast(ai), @alignCast(discrimR), @alignCast(discrimI), realContext);
+    math_division_cells.divComplexReal(@alignCast(discrimR), @alignCast(discrimI), const_2916(), @alignCast(discrimR), @alignCast(discrimI), realContext);
     realCopy(discrimR, rReal);
     realCopy(discrimI, rImag);
 
     // Scale r back to its proper range.
-    divComplexReal(rr, ri, const_54(), rr, ri, realContext);
+    math_division_cells.divComplexReal(@alignCast(rr), @alignCast(ri), const_54(), @alignCast(rr), @alignCast(ri), realContext);
 
     // s1, s2 = cbrt(r ± sqrt(q^3 + r^2))
-    sqrtComplex(discrimR, discrimI, s1r, s1i, realContext);
-    subComplex(rr, ri, s1r, s1i, s2r, s2i, realContext);
-    addComplex(rr, ri, s1r, s1i, s1r, s1i, realContext);
-    curtComplex(s1r, s1i, s1r, s1i, realContext);
-    curtComplex(s2r, s2i, s2r, s2i, realContext);
+    math_transform_complex_helpers.sqrtComplex(@alignCast(discrimR), @alignCast(discrimI), @alignCast(s1r), @alignCast(s1i), realContext);
+    math_subtraction_cells.subComplex(@alignCast(rr), @alignCast(ri), @alignCast(s1r), @alignCast(s1i), @alignCast(s2r), @alignCast(s2i), realContext);
+    math_addition_cells.addComplex(@alignCast(rr), @alignCast(ri), @alignCast(s1r), @alignCast(s1i), @alignCast(s1r), @alignCast(s1i), realContext);
+    math_transform_complex_helpers.curtComplex(@alignCast(s1r), @alignCast(s1i), @alignCast(s1r), @alignCast(s1i), realContext);
+    math_transform_complex_helpers.curtComplex(@alignCast(s2r), @alignCast(s2i), @alignCast(s2r), @alignCast(s2i), realContext);
 
     // reusing q, r for (s1 ± s2)
-    addComplex(s1r, s1i, s2r, s2i, qr, qi, realContext);
-    subComplex(s1r, s1i, s2r, s2i, rr, ri, realContext);
-    mulComplexComplex(rr, ri, const_0(), const159_root3on2, rr, ri, realContext);
+    math_addition_cells.addComplex(@alignCast(s1r), @alignCast(s1i), @alignCast(s2r), @alignCast(s2i), @alignCast(qr), @alignCast(qi), realContext);
+    math_subtraction_cells.subComplex(@alignCast(s1r), @alignCast(s1i), @alignCast(s2r), @alignCast(s2i), @alignCast(rr), @alignCast(ri), realContext);
+    math_multiplication_cells.mulComplexComplex(@alignCast(rr), @alignCast(ri), const_0(), @alignCast(const159_root3on2), @alignCast(rr), @alignCast(ri), realContext);
 
     // roots
-    divComplexReal(c2Real, c2Imag, const_3(), x2Real, x2Imag, realContext); // x2 = c2/3
+    math_division_cells.divComplexReal(@alignCast(c2Real), @alignCast(c2Imag), const_3(), @alignCast(x2Real), @alignCast(x2Imag), realContext); // x2 = c2/3
     realSubtract(qr, x2Real, x1Real, realContext);
     realSubtract(qi, x2Imag, x1Imag, realContext);
-    mulComplexReal(qr, qi, const_1on2(), x3Real, x3Imag, realContext);
+    math_multiplication_cells.mulComplexReal(@alignCast(qr), @alignCast(qi), const_1on2(), @alignCast(x3Real), @alignCast(x3Imag), realContext);
     realAdd(x3Real, x2Real, x3Real, realContext);
     realAdd(x3Imag, x2Imag, x3Imag, realContext);
     chsComplex(x3Real, x3Imag);
@@ -672,14 +667,14 @@ pub export fn solveCubicEquation159(
             realSetZero(x2Imag);
             realSetZero(x3Imag);
         } else {
-            if (realCompareAbsLessThan(x1Imag, x2Imag)) {
-                if (realCompareAbsLessThan(x1Imag, x3Imag)) {
+            if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x1Imag), @alignCast(x2Imag))) {
+                if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x1Imag), @alignCast(x3Imag))) {
                     realSetZero(x1Imag);
                 } else {
                     realSetZero(x3Imag);
                 }
             } else {
-                if (realCompareAbsLessThan(x2Imag, x3Imag)) {
+                if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x2Imag), @alignCast(x3Imag))) {
                     realSetZero(x2Imag);
                 } else {
                     realSetZero(x3Imag);
