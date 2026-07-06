@@ -55,3 +55,31 @@ pub fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void
     descriptor |= (@as(u32, columns) & 0x0fff) << Z47_LOCAL_MATRIX_COLUMNS_SHIFT;
     copyValueToBytes(u32, data_ptr, &descriptor);
 }
+
+// Native unit tests (REPORT-27 M-IDIOM-3). Pure byte/bit codec; no C oracle, no
+// global state.
+const testing = std.testing;
+
+test "toBlocks and byte-value roundtrip" {
+    try testing.expectEqual(@as(u16, 0), toBlocks(0));
+    try testing.expectEqual(@as(u16, 1), toBlocks(1));
+    try testing.expectEqual(@as(u16, 1), toBlocks(4));
+    try testing.expectEqual(@as(u16, 2), toBlocks(5));
+    try testing.expectEqual(@as(u16, 2), toBlocks(8));
+    var buf: u32 = 0;
+    const v: u32 = 0xDEADBEEF;
+    copyValueToBytes(u32, &buf, &v);
+    try testing.expectEqual(@as(u32, 0xDEADBEEF), copyBytesToValue(u32, &buf));
+    try testing.expectEqual(@as(u32, 0), copyBytesToValue(u32, null));
+}
+
+test "matrix header rows/columns pack-unpack" {
+    var desc: u32 = 0xAA000000; // high byte lives outside the row/col fields
+    setMatrixRowsColumns(&desc, 3, 5);
+    try testing.expectEqual(@as(u16, 3), matrixRows(&desc));
+    try testing.expectEqual(@as(u16, 5), matrixColumns(&desc));
+    try testing.expectEqual(@as(u32, 0xAA000000), desc & 0xff000000); // preserved
+    setMatrixRowsColumns(&desc, 0xFFF, 0xFFF);
+    try testing.expectEqual(@as(u16, 0xFFF), matrixRows(&desc));
+    try testing.expectEqual(@as(u16, 0xFFF), matrixColumns(&desc));
+}
