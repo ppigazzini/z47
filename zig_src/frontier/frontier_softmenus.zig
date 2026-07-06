@@ -1302,10 +1302,10 @@ pub export fn getNthString(ptr_in: [*c]u8, n_in: i16) callconv(.c) [*c]u8 {
 }
 
 // fnDynamicMenu is owned elsewhere; the two bridge helpers read its inputs.
-pub export fn z47_frontier_dynamic_menu_softmenu_id() callconv(.c) i16 {
+pub fn z47_frontier_dynamic_menu_softmenu_id() i16 {
     return softmenuStack[0].softmenuId;
 }
-pub export fn z47_frontier_dynamic_menu_item() callconv(.c) i16 {
+pub fn z47_frontier_dynamic_menu_item() i16 {
     return dynamicMenuItem;
 }
 

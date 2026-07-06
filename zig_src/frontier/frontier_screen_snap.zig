@@ -219,7 +219,7 @@ const regStringData = abi.registerString;
 // ---------------------------------------------------------------------------
 // fnSNAP backup helpers
 // ---------------------------------------------------------------------------
-pub export fn z47_frontier_snap_screenshot_with_message_backup() callconv(.c) void {
+pub fn z47_frontier_snap_screenshot_with_message_backup() void {
     if (comptime dmcp_build) {
         standardScreenDump();
     } else {
@@ -230,11 +230,11 @@ pub export fn z47_frontier_snap_screenshot_with_message_backup() callconv(.c) vo
     }
 }
 
-pub export fn z47_frontier_snap_backup_tam(dst: [*c]u8) callconv(.c) void {
+pub fn z47_frontier_snap_backup_tam(dst: [*c]u8) void {
     _ = frontier_char_string.xcopy(dst, tamBuffer, TAM_BUFFER_LENGTH);
 }
 
-pub export fn z47_frontier_snap_restore_tam(src: [*c]const u8) callconv(.c) void {
+pub fn z47_frontier_snap_restore_tam(src: [*c]const u8) void {
     _ = frontier_char_string.xcopy(tamBuffer, src, TAM_BUFFER_LENGTH);
 }
 

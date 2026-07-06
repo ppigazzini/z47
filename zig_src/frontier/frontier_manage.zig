@@ -2330,6 +2330,6 @@ pub export fn getNumberOfSteps() callconv(.c) u16 {
 // ===========================================================================
 // z47_frontier_program_current_program_in_ram — shim helper, reproduced here.
 // ===========================================================================
-pub export fn z47_frontier_program_current_program_in_ram() callconv(.c) bool {
+pub fn z47_frontier_program_current_program_in_ram() bool {
     return programList[currentProgramNumber - 1].step > 0;
 }

@@ -1522,31 +1522,31 @@ inline fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
 // Signatures must match the siblings' `extern fn` declarations exactly.
 // ===========================================================================
 
-pub export fn z47_frontier_matrix_get_register_as_int(regist: u16, as_array_pointer: bool) callconv(.c) i16 {
+pub fn z47_frontier_matrix_get_register_as_int(regist: u16, as_array_pointer: bool) i16 {
     return getRegisterAsInt(as_array_pointer, @bitCast(regist));
 }
 
-pub export fn z47_frontier_matrix_set_register_as_int(regist: u16, as_array_pointer: bool, to_store: i16) callconv(.c) void {
+pub fn z47_frontier_matrix_set_register_as_int(regist: u16, as_array_pointer: bool, to_store: i16) void {
     setRegisterAsInt(as_array_pointer, to_store, @bitCast(regist));
 }
 
-pub export fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) callconv(.c) bool {
+pub fn z47_frontier_matrix_is_register_matrix_vector(regist: u16) bool {
     return isRegisterMatrixVector(@bitCast(regist));
 }
 
-pub export fn z47_frontier_matrix_vector_polar_mode(regist: u16) callconv(.c) u16 {
+pub fn z47_frontier_matrix_vector_polar_mode(regist: u16) u16 {
     return getVectorRegisterPolarMode(@bitCast(regist));
 }
 
-pub export fn z47_frontier_matrix_open_rows() callconv(.c) u16 {
+pub fn z47_frontier_matrix_open_rows() u16 {
     return openMatrixMIMPointer.header.matrixRows;
 }
 
-pub export fn z47_frontier_matrix_open_cols() callconv(.c) u16 {
+pub fn z47_frontier_matrix_open_cols() u16 {
     return openMatrixMIMPointer.header.matrixColumns;
 }
 
-pub export fn z47_frontier_matrix_commit_open_to_register() callconv(.c) void {
+pub fn z47_frontier_matrix_commit_open_to_register() void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         frontier_register_value_conversions.convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, @bitCast(matrixIndex));
     } else {
@@ -1554,16 +1554,16 @@ pub export fn z47_frontier_matrix_commit_open_to_register() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_calc_mode_normal_gui() callconv(.c) void {
+pub fn z47_frontier_matrix_calc_mode_normal_gui() void {
     calcModeNormalGui();
 }
 
-pub export fn z47_frontier_matrix_hide_cursor() callconv(.c) void {
+pub fn z47_frontier_matrix_hide_cursor() void {
     frontier_screen.hideCursor();
     cursorEnabled = 0;
 }
 
-pub export fn z47_frontier_matrix_reload_open_matrix_from_register() callconv(.c) void {
+pub fn z47_frontier_matrix_reload_open_matrix_from_register() void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         if (openMatrixMIMPointer.realMatrix.matrixElements != null) {
             realMatrixFree(&openMatrixMIMPointer.realMatrix);
@@ -1629,15 +1629,15 @@ fn decJComplex(matrix: *complex34Matrix_t) bool_t {
     return decJReal(@ptrCast(matrix));
 }
 
-pub export fn z47_frontier_matrix_inc_dec_i(mode: u16) callconv(.c) void {
+pub fn z47_frontier_matrix_inc_dec_i(mode: u16) void {
     callByIndexedMatrix(if (mode == DEC_FLAG) decIReal else incIReal, if (mode == DEC_FLAG) decIComplex else incIComplex);
 }
 
-pub export fn z47_frontier_matrix_inc_dec_j(mode: u16) callconv(.c) void {
+pub fn z47_frontier_matrix_inc_dec_j(mode: u16) void {
     callByIndexedMatrix(if (mode == DEC_FLAG) decJReal else incJReal, if (mode == DEC_FLAG) decJComplex else incJComplex);
 }
 
-pub export fn z47_frontier_matrix_insert_row(add: bool) callconv(.c) void {
+pub fn z47_frontier_matrix_insert_row(add: bool) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         insRowRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_I)), add);
     } else {
@@ -1645,7 +1645,7 @@ pub export fn z47_frontier_matrix_insert_row(add: bool) callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_insert_col(add: bool) callconv(.c) void {
+pub fn z47_frontier_matrix_insert_col(add: bool) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         insColRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_J)), add);
     } else {
@@ -1653,7 +1653,7 @@ pub export fn z47_frontier_matrix_insert_col(add: bool) callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_delete_row() callconv(.c) void {
+pub fn z47_frontier_matrix_delete_row() void {
     if (openMatrixMIMPointer.header.matrixRows > 1) {
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
             delRowRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_I)));
@@ -1663,7 +1663,7 @@ pub export fn z47_frontier_matrix_delete_row() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_delete_col() callconv(.c) void {
+pub fn z47_frontier_matrix_delete_col() void {
     if (openMatrixMIMPointer.header.matrixColumns > 1) {
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
             delColRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_J)));
@@ -1673,7 +1673,7 @@ pub export fn z47_frontier_matrix_delete_col() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_finalize_open_matrix_memory() callconv(.c) void {
+pub fn z47_frontier_matrix_finalize_open_matrix_memory() void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         if (openMatrixMIMPointer.realMatrix.matrixElements != null) {
             realMatrixFree(&openMatrixMIMPointer.realMatrix);
@@ -1685,15 +1685,15 @@ pub export fn z47_frontier_matrix_finalize_open_matrix_memory() callconv(.c) voi
     }
 }
 
-pub export fn z47_frontier_matrix_aim_is_empty() callconv(.c) bool {
+pub fn z47_frontier_matrix_aim_is_empty() bool {
     return aimBuffer[0] == 0;
 }
 
-pub export fn z47_frontier_matrix_reset_cursor_pos() callconv(.c) void {
+pub fn z47_frontier_matrix_reset_cursor_pos() void {
     resetCursorPos();
 }
 
-pub export fn z47_frontier_matrix_init_aim_exponent() callconv(.c) void {
+pub fn z47_frontier_matrix_init_aim_exponent() void {
     aimBuffer[0] = '+';
     aimBuffer[1] = '1';
     aimBuffer[2] = '.';
@@ -1702,7 +1702,7 @@ pub export fn z47_frontier_matrix_init_aim_exponent() callconv(.c) void {
     resetCursorPos();
 }
 
-pub export fn z47_frontier_matrix_init_aim_period() callconv(.c) void {
+pub fn z47_frontier_matrix_init_aim_period() void {
     aimBuffer[0] = '+';
     aimBuffer[1] = '0';
     aimBuffer[2] = 0;
@@ -1710,24 +1710,24 @@ pub export fn z47_frontier_matrix_init_aim_period() callconv(.c) void {
     resetCursorPos();
 }
 
-pub export fn z47_frontier_matrix_init_aim_digit() callconv(.c) void {
+pub fn z47_frontier_matrix_init_aim_digit() void {
     aimBuffer[0] = '+';
     aimBuffer[1] = 0;
     nimNumberPart = NP_INT_10;
     resetCursorPos();
 }
 
-pub export fn z47_frontier_matrix_aim_is_single_plus_digit() callconv(.c) bool {
+pub fn z47_frontier_matrix_aim_is_single_plus_digit() bool {
     return (aimBuffer[0] == '+') and (aimBuffer[1] != 0) and (aimBuffer[2] == 0);
 }
 
-pub export fn z47_frontier_matrix_aim_clear_single_plus_digit() callconv(.c) void {
+pub fn z47_frontier_matrix_aim_clear_single_plus_digit() void {
     aimBuffer[1] = 0;
     frontier_screen.hideCursor();
     cursorEnabled = 0;
 }
 
-pub export fn z47_frontier_matrix_zero_current_element() callconv(.c) void {
+pub fn z47_frontier_matrix_zero_current_element() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getRegisterAsInt(true, REGISTER_I);
     const col: i16 = getRegisterAsInt(true, REGISTER_J);
@@ -1742,7 +1742,7 @@ pub export fn z47_frontier_matrix_zero_current_element() callconv(.c) void {
     setSystemFlag(FLAG_ASLIFT);
 }
 
-pub export fn z47_frontier_matrix_change_sign_current_element() callconv(.c) void {
+pub fn z47_frontier_matrix_change_sign_current_element() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getRegisterAsInt(true, REGISTER_I);
     const col: i16 = getRegisterAsInt(true, REGISTER_J);
@@ -1757,7 +1757,7 @@ pub export fn z47_frontier_matrix_change_sign_current_element() callconv(.c) voi
     setSystemFlag(FLAG_ASLIFT);
 }
 
-pub export fn z47_frontier_matrix_make_j_element() callconv(.c) void {
+pub fn z47_frontier_matrix_make_j_element() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getRegisterAsInt(true, REGISTER_I);
     const col: i16 = getRegisterAsInt(true, REGISTER_J);
@@ -1788,7 +1788,7 @@ pub export fn z47_frontier_matrix_make_j_element() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_set_current_to_pi() callconv(.c) void {
+pub fn z47_frontier_matrix_set_current_to_pi() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getRegisterAsInt(true, REGISTER_I);
     const col: i16 = getRegisterAsInt(true, REGISTER_J);
@@ -1802,16 +1802,16 @@ pub export fn z47_frontier_matrix_set_current_to_pi() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_can_append_pi_literal() callconv(.c) bool {
+pub fn z47_frontier_matrix_can_append_pi_literal() bool {
     return nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[strlen(aimBuffer) - 1] == 'i';
 }
 
-pub export fn z47_frontier_matrix_append_pi_literal_and_enter() callconv(.c) void {
+pub fn z47_frontier_matrix_append_pi_literal_and_enter() void {
     _ = strcat(aimBuffer, "3.141592653589793238462643383279503");
     frontier_items.reallyRunFunction(ITM_ENTER, NOPARAM);
 }
 
-pub export fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) callconv(.c) void {
+pub fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) void {
     frontier_bufferize.addItemToNimBuffer(item);
 }
 
@@ -1819,11 +1819,11 @@ var saved_is_complex: bool_t = false;
 var saved_re: real34_t = undefined;
 var saved_im: real34_t = undefined;
 
-pub export fn z47_frontier_matrix_open_is_complex() callconv(.c) bool {
+pub fn z47_frontier_matrix_open_is_complex() bool {
     return getRegisterDataType(@bitCast(matrixIndex)) == dtComplex34Matrix;
 }
 
-pub export fn z47_frontier_matrix_capture_selected_before() callconv(.c) void {
+pub fn z47_frontier_matrix_capture_selected_before() void {
     const i: i16 = getRegisterAsInt(true, REGISTER_I);
     const j: i16 = getRegisterAsInt(true, REGISTER_J);
     saved_is_complex = z47_frontier_matrix_open_is_complex();
@@ -1838,7 +1838,7 @@ pub export fn z47_frontier_matrix_capture_selected_before() callconv(.c) void {
     }
 }
 
-pub export fn z47_frontier_matrix_load_selected_into_register_x() callconv(.c) void {
+pub fn z47_frontier_matrix_load_selected_into_register_x() void {
     const i: i16 = getRegisterAsInt(true, REGISTER_I);
     const j: i16 = getRegisterAsInt(true, REGISTER_J);
     var re: real34_t = undefined;
@@ -1859,23 +1859,23 @@ pub export fn z47_frontier_matrix_load_selected_into_register_x() callconv(.c) v
     }
 }
 
-pub export fn z47_frontier_matrix_run_item_function(func: i16, param: u16) callconv(.c) void {
+pub fn z47_frontier_matrix_run_item_function(func: i16, param: u16) void {
     frontier_items.reallyRunFunction(func, param);
 }
 
-pub export fn z47_frontier_matrix_register_type(reg: u16) callconv(.c) u32 {
+pub fn z47_frontier_matrix_register_type(reg: u16) u32 {
     return getRegisterDataType(@bitCast(reg));
 }
 
-pub export fn z47_frontier_matrix_convert_register_x_long_to_real34() callconv(.c) void {
+pub fn z47_frontier_matrix_convert_register_x_long_to_real34() void {
     frontier_register_value_conversions.convertLongIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
 }
 
-pub export fn z47_frontier_matrix_convert_register_x_short_to_real34() callconv(.c) void {
+pub fn z47_frontier_matrix_convert_register_x_short_to_real34() void {
     frontier_register_value_conversions.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
 }
 
-pub export fn z47_frontier_matrix_apply_register_x_to_selected() callconv(.c) bool {
+pub fn z47_frontier_matrix_apply_register_x_to_selected() bool {
     const i: i16 = getRegisterAsInt(true, REGISTER_I);
     const j: i16 = getRegisterAsInt(true, REGISTER_J);
     const isComplex = z47_frontier_matrix_open_is_complex();
@@ -1912,7 +1912,7 @@ pub export fn z47_frontier_matrix_apply_register_x_to_selected() callconv(.c) bo
     return false;
 }
 
-pub export fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() callconv(.c) void {
+pub fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() void {
     if (matrixIndex != @as(u16, @bitCast(REGISTER_X))) {
         return;
     }
@@ -1936,11 +1936,11 @@ pub export fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted(
     }
 }
 
-pub export fn z47_frontier_matrix_update_height_cache() callconv(.c) void {
+pub fn z47_frontier_matrix_update_height_cache() void {
     frontier_screen.updateMatrixHeightCache();
 }
 
-pub export fn z47_frontier_matrix_softmenu_has_m_edit() callconv(.c) bool {
+pub fn z47_frontier_matrix_softmenu_has_m_edit() bool {
     var i: usize = 0;
     while (i < SOFTMENU_STACK_SIZE) : (i += 1) {
         if (softmenu[@intCast(softmenuStack[i].softmenuId)].menuItem == -MNU_M_EDIT) {
@@ -1950,23 +1950,23 @@ pub export fn z47_frontier_matrix_softmenu_has_m_edit() callconv(.c) bool {
     return false;
 }
 
-pub export fn z47_frontier_matrix_softmenu_top_is_m_edit() callconv(.c) bool {
+pub fn z47_frontier_matrix_softmenu_top_is_m_edit() bool {
     return softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_M_EDIT;
 }
 
-pub export fn z47_frontier_matrix_show_m_edit_softmenu() callconv(.c) void {
+pub fn z47_frontier_matrix_show_m_edit_softmenu() void {
     frontier_softmenus.showSoftmenu(-MNU_M_EDIT);
 }
 
-pub export fn z47_frontier_matrix_scroll_row_get() callconv(.c) u16 {
+pub fn z47_frontier_matrix_scroll_row_get() u16 {
     return scrollRow;
 }
 
-pub export fn z47_frontier_matrix_scroll_row_set(row: u16) callconv(.c) void {
+pub fn z47_frontier_matrix_scroll_row_set(row: u16) void {
     scrollRow = row;
 }
 
-pub export fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16, cols: i16, matSelRow: i16, matSelCol: i16) callconv(.c) void {
+pub fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16, cols: i16, matSelRow: i16, matSelCol: i16) void {
     _ = rows;
     var width: i16 = 0;
 
@@ -2043,7 +2043,7 @@ pub export fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16,
     }
 }
 
-pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void {
+pub fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getRegisterAsInt(true, REGISTER_I);
     const col: i16 = getRegisterAsInt(true, REGISTER_J);
@@ -2108,7 +2108,7 @@ pub export fn z47_frontier_matrix_mim_enter_apply_aim_buffer() callconv(.c) void
     setSystemFlag(FLAG_ASLIFT);
 }
 
-pub export fn z47_frontier_matrix_mim_enter_commit_open_matrix() callconv(.c) void {
+pub fn z47_frontier_matrix_mim_enter_commit_open_matrix() void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         frontier_register_value_conversions.convertReal34MatrixToReal34MatrixRegister(&openMatrixMIMPointer.realMatrix, @bitCast(matrixIndex));
         setRegisterTag(@bitCast(matrixIndex), openMatrixMIMPointer.header.mtag);
