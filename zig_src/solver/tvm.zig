@@ -7,7 +7,7 @@ const consts = abi.constants;
 //
 // Exports the public TVM commands with their real C names: fnTvmVar, fnEff,
 // fnEffToI, fnAmortBal, fnAmortPrn, fnAmortInt, fnAmortP, fnAmortNext, plus the
-// solver callback tvmEquation (called back from solve.c's generic solver()).
+// solver callback tvmEquation (called back from solve.c's generic solve_owned.solver()).
 // fnTvmBeginMode / fnTvmEndMode are NOT defined here - solve.zig owns them.
 // The static helpers (doubleExp, tvmRangeError, calculateEffectiveRate,
 // calculatePV/FV/PMT/NPPER/PPER/CPER, solveTvmVariable51, amort*) are private.
@@ -115,6 +115,7 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 var ctxtTvm42: realContext_t = std.mem.zeroes(realContext_t);
 const std = @import("std");
+const solve_owned = @import("solve_owned.zig"); // M-callconv: Zig-to-Zig
 
 inline fn ensureTvmContext() void {
     if (ctxtTvm42.digits == 0) {
@@ -361,7 +362,6 @@ extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const
 extern fn exitKeyWaiting() bool;
 
 // Generic solver (stays C in solve.c). Returns int; C reads it as uint16_t.
-extern fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *align(1) const real34_t, resZ: *align(1) real34_t, resY: *align(1) real34_t, resX: *align(1) real34_t) c_int;
 
 // ===========================================================================
 // doubleExp: e^x and e^x-1 (WP34S_ExpM1 internal logic)
@@ -1008,7 +1008,7 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                 }) {
                     real34Copy(&x, &xx);
                     real34Copy(&y, &yy);
-                    const solveResult: u16 = @bitCast(@as(i16, @truncate(solver(@bitCast(variable), &y, &x, &resZ, &resY, &resX))));
+                    const solveResult: u16 = @bitCast(@as(i16, @truncate(solve_owned.solver(@bitCast(variable), &y, &x, &resZ, &resY, &resX))));
                     if (solveResult == SOLVER_RESULT_NORMAL) {
                         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                         real34Copy(&resX, registerReal34Ptr(REGISTER_X));

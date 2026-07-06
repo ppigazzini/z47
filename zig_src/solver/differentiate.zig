@@ -25,6 +25,7 @@ const runtime = @import("solve_runtime.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -315,7 +316,6 @@ extern fn fnDrop(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
-extern fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]u8) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
@@ -434,7 +434,7 @@ fn _differentiatorIteration(label: calcRegister_t, r0: *real_t) linksection(runt
 
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         reallyRunFunction(ITM_STO, currentSolverVariable);
-        parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+        equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     } else {
         dynamicMenuItem = -1;
         execProgram(@bitCast(label));

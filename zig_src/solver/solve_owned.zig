@@ -23,6 +23,9 @@ const runtime = @import("solve_runtime.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
+const solve = @import("solve.zig"); // M-callconv: Zig-to-Zig
+const tvm = @import("tvm.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -374,7 +377,6 @@ extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 extern fn refreshScreen(source: u16) void;
 extern fn showSoftmenu(id: i16) void;
-extern fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]u8) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 extern fn exitKeyWaiting() bool;
@@ -392,18 +394,16 @@ inline fn TO_BLOCKS(n: u32) u16 {
 }
 
 // tvm.c callback (defined in tvm.zig)
-extern fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: ?*real_t) void;
 
 // ===========================================================================
 // fnSolve
 // ===========================================================================
 // fnPgmSlv is owned by solve.zig (the dispatcher). We extern it here.
-extern fn fnPgmSlv(label: u16) void;
 
 pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) callconv(.c) void {
     if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (REGISTER_X <= @as(calcRegister_t, @intCast(labelOrVariable)) and @as(calcRegister_t, @intCast(labelOrVariable)) <= REGISTER_T)) {
         // Interactive mode
-        fnPgmSlv(labelOrVariable);
+        solve.fnPgmSlv(labelOrVariable);
         if (lastErrorCode == ERROR_NONE) {
             currentSolverStatus = SOLVER_STATUS_INTERACTIVE;
         }
@@ -543,7 +543,7 @@ fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: 
         return;
     }
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
-        parseEquation(currentFormula, 1, tmpString, tmpString + 1024);
+        equation.parseEquation(currentFormula, 1, tmpString, tmpString + 1024);
     } else {
         const savedCurrentSolverProgram: u16 = currentSolverProgram;
         dynamicMenuItem = -1;
@@ -572,7 +572,7 @@ fn _executeSolverReal(variable: calcRegister_t, val: *const real_t, res: *real_t
     if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0) {
         // pass real_t value via ioVal, result comes back in same variable as real_t
         realCopy(val, res);
-        tvmEquation(variable, res, deriv);
+        tvm.tvmEquation(variable, res, deriv);
     } else {
         var val34: real34_t = undefined;
         var res34: real34_t = undefined;
