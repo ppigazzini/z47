@@ -515,7 +515,7 @@ extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, e
 extern fn findNamedVariable(variableName: [*c]const u8) i16;
 extern fn getSystemFlag(sf: c_int) bool;
 extern var screenUpdatingMode: u8;
-extern var temporaryInformation: u16;
+extern var temporaryInformation: u8;
 extern var hourGlassIconEnabled: bool;
 
 fn registerNumberToString(regist: i16, name: [*c]u8) void {
