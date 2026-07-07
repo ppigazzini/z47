@@ -20,7 +20,7 @@ const frontier_build_options = @import("frontier_build_options");
 const option_elec: bool = frontier_build_options.option_elec;
 
 // ---------------------------------------------------------------------------
-// Types -- L1 shared bindings (REPORT-23 §5). The hand-mirrored extern structs
+// Types -- L1 shared bindings (REPORT-23 §5). The hand-mirrored C-ABI layouts
 // (real_t/real34_t/realContext_t/cplx_t) now come from the single-source-of-truth
 // abi module; only the local spellings are aliased so the ported body is stable.
 // ---------------------------------------------------------------------------
