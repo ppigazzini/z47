@@ -217,7 +217,7 @@ pub export fn convertDigits(refstr: [*c]u8, outstr: [*c]u8) callconv(.c) void {
 // ---------------------------------------------------------------------------
 // replacementTable (TO_QSPI, pointer-bearing -> code_data_section)
 // ---------------------------------------------------------------------------
-const replaceTable_t = extern struct {
+const replaceTable_t = struct {
     Nr: u16,
     inStr: [*c]const u8,
     outStr: [*c]const u8,
@@ -849,7 +849,7 @@ pub export fn utf8ToString(utf8In: [*c]const u8, strIn: [*c]u8) callconv(.c) voi
 // ---------------------------------------------------------------------------
 // indexOfStringsASCII / indexOfStringsRTF (TO_QSPI, pointer-bearing).
 // ---------------------------------------------------------------------------
-const function_t2 = extern struct {
+const function_t2 = struct {
     item_in: [*c]const u8,
     item_out: [*c]const u8,
 };

@@ -2333,7 +2333,7 @@ const vector_or_elec = option_vector or option_elec;
 
 // vecCreate[]: TO_QSPI static const bitfield table {rows:2,cols:2,x:2,y:2,z:2,
 // xdef:2,ydef:2,zdef:2}, stride 4 bytes. Probed packed-u16 values per index.
-const vecCreate_t = extern struct {
+const vecCreate_t = struct {
     bits: u16,
     _pad: u16 = 0,
     inline fn rows(self: vecCreate_t) u8 {
