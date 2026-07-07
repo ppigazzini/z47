@@ -314,7 +314,7 @@ inline fn clearScreen() void {
 
 // real34 macro helpers
 inline fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
-    return @ptrCast(getRegisterDataPointer(a));
+    return abi.registerReal34Aligned(a);
 }
 inline fn real34SetZero(d: *real34_t) void {
     _ = decQuadZero(d);

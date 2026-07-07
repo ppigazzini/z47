@@ -611,6 +611,7 @@ pub const registerImag34 = registers.registerImag34;
 pub const registerComplex34 = registers.registerComplex34;
 pub const registerShortInteger = registers.registerShortInteger;
 pub const registerString = registers.registerString;
+pub const registerBytes = registers.registerBytes;
 pub const registerMatrixHeader = registers.registerMatrixHeader;
 pub const registerReal34Aligned = registers.registerReal34Aligned;
 pub const registerImag34Aligned = registers.registerImag34Aligned;

@@ -17,6 +17,7 @@
 // z47_math_wrappers_legacy_* so those internal C cross-calls keep working while
 // every canonical consumer resolves to this owner.
 
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
@@ -30,7 +31,7 @@ const ITM_M_DIM_GR: u16 = 1739;
 // Matrix elements live immediately after the matrixHeader_t (matrix.c:
 // REGISTER_*_MATRIX_ELEMENTS = getRegisterDataPointer + sizeof(matrixHeader_t)).
 fn elementBase(regist: calcRegister_t) [*]u8 {
-    const p: [*]u8 = @ptrCast(runtime.getRegisterDataPointer(regist).?);
+    const p: [*]u8 = abi.registerBytes(regist);
     return p + @sizeOf(runtime.matrixHeader_t);
 }
 

@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
@@ -91,7 +92,7 @@ extern fn liftStack() void;
 // ---------------------------------------------------------------------------
 // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) == 4.
 inline fn regString(reg: calcRegister_t) [*c]u8 {
-    return @as([*c]u8, @ptrCast(getRegisterDataPointer(reg))) + 4;
+    return abi.registerBytes(reg) + 4;
 }
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));

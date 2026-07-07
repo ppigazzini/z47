@@ -167,13 +167,13 @@ fn tryToRealComplexZero() bool {
         return false;
     }
 
-    const source_bytes: [*]align(1) const u8 = @ptrCast(runtime.getRegisterDataPointer(runtime.REGISTER_X) orelse unreachable);
+    const source_bytes: [*]align(1) const u8 = abi.registerBytes(runtime.REGISTER_X);
     var real_part: [@sizeOf(real34_t)]u8 = undefined;
     @memcpy(real_part[0..], source_bytes[0..real_part.len]);
 
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
 
-    const dest_bytes: [*]align(1) u8 = @ptrCast(runtime.getRegisterDataPointer(runtime.REGISTER_X) orelse unreachable);
+    const dest_bytes: [*]align(1) u8 = abi.registerBytes(runtime.REGISTER_X);
     @memcpy(dest_bytes[0..real_part.len], real_part[0..]);
     return true;
 }
