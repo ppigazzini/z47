@@ -72,7 +72,7 @@ pub const ITM_RS: i16 = 1725;
 
 pub extern var calcMode: u8;
 pub extern var itemToBeAssigned: i16;
-pub extern var lastKeyCode: i16;
+pub extern var lastKeyCode: u8;
 pub extern var tam: tam_state_t;
 pub extern var kbd_usr: [37]calcKey_t;
 pub extern var currentFlgScr: u8;
