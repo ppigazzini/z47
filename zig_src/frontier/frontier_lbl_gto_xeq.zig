@@ -1032,7 +1032,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtDate, 0, @bitCast(amNone));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
-            frontier_date_time.julianDayToInternalDate(@ptrCast(reg34(REGISTER_X)), @ptrCast(reg34(REGISTER_X)));
+            frontier_date_time.julianDayToInternalDate(reg34(REGISTER_X), reg34(REGISTER_X));
         },
 
         STRING_TIME => {
@@ -1050,7 +1050,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amDMS));
             stringToReal34(tmpStringLabelOrVariableName, reg34(REGISTER_X));
-            frontier_conversion_angles.real34FromDmsToDeg(@ptrCast(reg34(REGISTER_X)), @ptrCast(reg34(REGISTER_X)));
+            frontier_conversion_angles.real34FromDmsToDeg(reg34(REGISTER_X), reg34(REGISTER_X));
         },
 
         else => {
