@@ -84,7 +84,7 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 extern var aimBuffer1: [400]u8;
 extern var globalFlags: [8]u16;
 extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
-extern var currentLocalRegisters: ?*anyopaque;
+extern var currentLocalRegisters: [*c]abi.RegisterHeader;
 extern var currentLocalFlags: ?*u32;
 extern var numberOfNamedVariables: u16;
 extern var allNamedVariables: [*c]namedVariableHeader_t;
