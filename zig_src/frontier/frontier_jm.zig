@@ -126,7 +126,7 @@ extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWith
 extern fn adjustResult(result: calcRegister_t, dropY: bool_t, setCpxRes: bool_t, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn saveForUndo() void;
 extern fn liftStack() void;
-extern fn setSystemFlag(flag: u16) void;
+extern fn setSystemFlag(flag: c_uint) void;
 
 extern fn fnClearFlag(flag: u16) void;
 
