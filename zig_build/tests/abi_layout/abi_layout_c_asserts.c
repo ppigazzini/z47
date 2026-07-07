@@ -70,3 +70,15 @@ _Static_assert(SETTING_PRINTERICON == 134, "frontier_print status-bar icon (was 
 _Static_assert(ERROR_UNDEF_SOURCE_VAR == 36, "math_xfn (was 6 = ERROR_LABEL_NOT_FOUND)");
 _Static_assert(PGM_SINGLE_STEP == 6, "frontier_items programRunStop single-step (was 2)");
 _Static_assert(MAX_FACTORIAL == 450, "math_runtime_helpers factorial domain bound");
+// Second batch: more owner-hardcoded defines.h mirrors, several bug-flagged.
+_Static_assert(C47_NULL == 65535, "free-list null-block sentinel 0xFFFF (was 0; block 0 is valid)");
+_Static_assert(FLAG_ASLIFT == 0xc023, "auto-stack-lift flag (was 0x8019 = FLAG_QUIET)");
+_Static_assert(SIZE_OF_EACH_ERROR_MESSAGE == 48, "solve_owned errorMessages row stride (64 gave a wrong stride); pairs with NUMBER_OF_ERROR_CODES above");
+_Static_assert(FIRST_RESERVED_VARIABLE == 2000, "solver/equation reserved-variable base = LAST_NAMED_VARIABLE+1");
+_Static_assert(ERROR_MESSAGE_LENGTH == 512, "math_runtime_helpers errorMessage buffer length");
+_Static_assert(SCREEN_WIDTH == 400, "screen width used in browser/display right-justification");
+_Static_assert(TMP_STR_LENGTH == 2560, "tmpString buffer length used across owners");
+_Static_assert(TI_PERC == 68, "temporaryInformation TI_PERC: set must match the display check");
+_Static_assert(TI_PERCD == 69, "temporaryInformation TI_PERCD");
+_Static_assert(ERROR_INPUT_DATA_TYPE_NOT_MATCHING == 31, "math_xfn error code");
+_Static_assert(ERROR_UNDEFINED_OPCODE == 3, "math_xfn error code");
