@@ -1163,7 +1163,7 @@ fn Sett(grp: i16) void {
                 => {
                     int32ToReal(value, &realt);
                     reallocateRegister(@intCast(opcode), dtReal34, 0, amNone);
-                    realToReal34(&realt, @ptrCast(@alignCast(getRegisterDataPointer(@intCast(opcode)))));
+                    realToReal34(&realt, reg34(@intCast(opcode)));
                 },
 
                 2 => SetSetting(@intCast(value)),
@@ -1608,17 +1608,17 @@ pub export fn initSimEqMatABX() callconv(.c) void {
     var matrixHeader: *matrixHeader_t = undefined;
 
     allocateNamedVariable("Mat_A", dtReal34Matrix, @intCast(REAL34_SIZE_IN_BLOCKS + toBlocks(@intCast(@sizeOf(matrixHeader_t)))));
-    matrixHeader = @ptrCast(@alignCast(getRegisterDataPointer(FIRST_NAMED_VARIABLE)));
+    matrixHeader = abi.registerMatrixHeaderAligned(FIRST_NAMED_VARIABLE);
     setMatrixDims(matrixHeader, 1, 1);
     real34SetZero(matrixElementsAfterHeader(matrixHeader));
 
     allocateNamedVariable("Mat_B", dtReal34Matrix, @intCast(REAL34_SIZE_IN_BLOCKS + toBlocks(@intCast(@sizeOf(matrixHeader_t)))));
-    matrixHeader = @ptrCast(@alignCast(getRegisterDataPointer(FIRST_NAMED_VARIABLE + 1)));
+    matrixHeader = abi.registerMatrixHeaderAligned(FIRST_NAMED_VARIABLE + 1);
     setMatrixDims(matrixHeader, 1, 1);
     real34SetZero(matrixElementsAfterHeader(matrixHeader));
 
     allocateNamedVariable("Mat_X", dtReal34Matrix, @intCast(REAL34_SIZE_IN_BLOCKS + toBlocks(@intCast(@sizeOf(matrixHeader_t)))));
-    matrixHeader = @ptrCast(@alignCast(getRegisterDataPointer(FIRST_NAMED_VARIABLE + 2)));
+    matrixHeader = abi.registerMatrixHeaderAligned(FIRST_NAMED_VARIABLE + 2);
     setMatrixDims(matrixHeader, 1, 1);
     real34SetZero(matrixElementsAfterHeader(matrixHeader));
 }
