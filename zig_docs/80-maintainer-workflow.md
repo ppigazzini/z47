@@ -88,6 +88,28 @@ Keep one `pin-only` ledger row for the currently pinned upstream commit. Add
 further rows for the same commit only when a later slice records a more specific
 z47-owned surface, parity target, or legacy-boundary decision.
 
+### Re-syncing seam-and-core owners after a pin advance
+
+The enforced contract on a pin advance is behavioral parity, not source-shape
+correspondence (see
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)).
+The re-sync procedure depends on which layer a changed upstream file maps to.
+
+1. Regenerate the seam layer (the build-managed `translate-c` roots) so the
+   `extern struct` / `callconv(.c)` / offset shapes track the new pin. Seam
+   drift is a generator rerun, never a hand edit.
+2. For a transliterated (hot) owner, apply the upstream C diff textually as
+   before -- shape correspondence still holds there.
+3. For an idiomatized (cold) owner, do not expect a textual diff to apply. Run
+   that owner's parity oracle: a red oracle pinpoints the diverged function.
+   Read the upstream C diff for that function, re-derive the behavior change in
+   idiomatic Zig, and confirm the oracle returns green. Green oracle = provably
+   re-synced.
+
+This behavioral-re-derivation cost is why a file is only idiomatized when its
+measured upstream churn is low; hot files stay transliterated. The per-file
+hot/cold split is recorded in the active idiomatic-Zig report.
+
 ## Codebase Status Flow
 
 Use the tracked C-dependency status helper when a maintainer report or roadmap

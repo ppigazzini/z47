@@ -190,6 +190,37 @@ Current repo policy requires:
   `linkSystemLibrary`, or other explicit build-graph ownership where practical
 - parity or focused validation before widening a manual Zig rewrite slice
 
+## Seam-And-Core Architecture
+
+The idiomatic-Zig roadmap separates every owner surface into two layers so that
+the port can reach idiomatic hand-written Zig while still tracking upstream.
+
+- Seam layer (generated, faithful): the C-ABI shapes the upstream testSuite and
+  parity oracles mandate -- `extern struct` layout mirrors, dispatch-table
+  `callconv(.c)` signatures, and decNumber constant-blob offsets. These are
+  derived from upstream C through the build-managed `translate-c` roots and
+  regenerated on each pin advance, so they auto-track upstream by construction.
+  Seam files are not hand-edited.
+- Core layer (hand-written, idiomatic): owner logic behind the seam, written in
+  idiomatic Zig (slices over `[*c]`, error sets over sentinel returns, real
+  modules over monolithic files).
+
+Enforcement split:
+
+- The idiom ratchet (`report-idiom-status.py` / `check-idiom-ratchet.sh`) grades
+  the CORE layer only. Generated seam files are classified out of the ceiling
+  totals and reported separately, because grading machine-generated ABI glue by
+  hand-idiom rules is a category error, not a real regression.
+- A seam file is one that lives under a `generated/` path in `zig_src/` AND
+  carries the `// SEAM-GENERATED` header marker. The reporter fails closed if a
+  file has one but not the other, so a hand-written owner cannot smuggle
+  `extern struct` / `[*c]` debt out of the ceiling by faking the marker.
+
+The layer choice is per file and governed by upstream churn: cold files (rarely
+touched upstream) are idiomatized freely; hot files stay transliterated until
+they cool. See the churn-driven roadmap in the active idiomatic-Zig report and
+the sync flow in [80-maintainer-workflow.md](80-maintainer-workflow.md).
+
 ## Rules For New Boundaries
 
 - Add new checked-in `translate-c` root headers, checked-in `@cImport`, or
