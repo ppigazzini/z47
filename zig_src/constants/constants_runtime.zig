@@ -22,7 +22,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 pub const real34_t = abi.Real34;
 
 pub extern var currentSolverStatus: u16;
-pub extern var errorMessage: [512]u8;
+pub extern var errorMessage: [*c]u8;
 pub extern var realtConstants: [NOUC]*const real_t;
 
 pub extern fn liftStack() void;
@@ -55,7 +55,7 @@ pub inline fn validateConstant(constant: u16) bool {
     if (constant >= NOUC) {
         if (build_options.extra_info_on_calc_error) {
             const message = bufPrintZ(
-                errorMessage[0 .. errorMessage.len - 1],
+                errorMessage[0..511],
                 "parameter constant ({d}) is out of bounds, constant must be less or equal to {d}",
                 .{ constant, NOUC - 1 },
             ) catch unreachable;
