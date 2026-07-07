@@ -480,7 +480,7 @@ const STD_op_j = "\xa1\x49";
 const STD_NOCHAR: u8 = 1;
 const STD_ALMOST_EQUAL = "\xa2\x48";
 const STD_MEASURED_ANGLE = "\xa2\x21";
-const STD_mu = "\x83\xab";
+const STD_mu = "\x83\xbc";
 const STD_SPACE_PUNCTUATION = "\xa0\x08";
 // STD_SUP_9[1] = 0x69 ; STD_op_i[1]=0x48 ; STD_op_j[1]=0x49
 const STD_SUP_9_1: u8 = 0x69;

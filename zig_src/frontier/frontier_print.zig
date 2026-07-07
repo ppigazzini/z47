@@ -678,9 +678,9 @@ const ITM_SQRT1PX2: u16 = 1794;
 const ITM_EE_EXP_TH: u16 = 1816;
 const LAST_ITEM: u16 = 2860;
 
-const STD_SQUARE_ROOT = "\x80\x83";
+const STD_SQUARE_ROOT = "\xa2\x1a";
 const STD_SUP_3 = "\xa1\x63";
-const STD_SUP_x = "\xa1\x78";
+const STD_SUP_x = "\xa4\x99";
 const STD_SUP_2 = "\xa1\x62";
 
 fn alias(comptime item: u16, comptime name: []const u8) nameAlias_t {
