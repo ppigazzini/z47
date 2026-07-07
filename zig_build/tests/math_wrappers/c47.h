@@ -613,8 +613,8 @@ void fnInvertMatrix(uint16_t unusedButMandatoryParameter);
 void convertRealToReal34ResultRegister(const real_t *real, calcRegister_t dest);
 double z47_math_wrappers_log(double value);
 
-extern char errorMessage[ERROR_MESSAGE_LENGTH];
-extern char tmpString[ERROR_MESSAGE_LENGTH];
+extern char *errorMessage;
+extern char *tmpString;
 extern const char *commonBugScreenMessages[];
 
 const real_t *z47_math_wrappers_const_0(void);
