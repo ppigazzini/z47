@@ -479,6 +479,48 @@ pub const Mpz = extern struct {
     _mp_d: [*c]MpLimb,
 };
 
+/// Item-name alias (nameAlias_t): item id + display name.
+pub const NameAlias = extern struct {
+    item: u16,
+    name: [16]u8,
+};
+
+/// Summation-register name (summationRegisterName_t): 16-byte name.
+pub const SummationRegisterName = extern struct {
+    name: [16]u8,
+};
+
+/// Reserved-variable descriptor string (reservedVariableDescStr_t): 28 bytes.
+pub const ReservedVariableDescStr = extern struct {
+    Desc: [28]u8,
+};
+
+/// Lettered-flag display entry (letteredFlagDisplay_t): 4-char text + position.
+pub const LetteredFlagDisplay = extern struct {
+    txt: [4]u8,
+    position: u32,
+};
+
+/// Upper/lower case pair (upperLower_t): two 3-byte UTF-8 glyphs.
+pub const UpperLower = extern struct {
+    upper: [3]u8,
+    lower: [3]u8,
+};
+
+/// GTK keyboard geometry (calcKeyboard_t): key rectangles + widget handles. The
+/// C `keyImage` members are `GtkWidget *`; modelled as opaque pointers so this
+/// shared ABI layer stays GTK-free while keeping the exact pointer layout.
+pub const CalcKeyboard = extern struct {
+    x: c_int,
+    y: c_int,
+    width: [4]c_int,
+    height: [4]c_int,
+    keyImage: [4]?*anyopaque,
+};
+
+/// Local-flags word (localFlags_t): the C typedef is a bare `uint32_t`.
+pub const LocalFlags = u32;
+
 /// Typed constant-blob accessors (L1), reached as `abi.constants.const1on2()`.
 pub const constants = @import("constants.zig");
 

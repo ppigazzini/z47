@@ -97,6 +97,12 @@ const SIZE_PAIRS = .{
     .{ c.userMenuItem_t, abi.UserMenuItem, "UserMenuItem" },
     .{ c.userMenu_t, abi.UserMenu, "UserMenu" },
     .{ c.confirmationTI_t, abi.ConfirmationTI, "ConfirmationTI" },
+    .{ c.nameAlias_t, abi.NameAlias, "NameAlias" },
+    .{ c.summationRegisterName_t, abi.SummationRegisterName, "SummationRegisterName" },
+    .{ c.reservedVariableDescStr_t, abi.ReservedVariableDescStr, "ReservedVariableDescStr" },
+    .{ c.letteredFlagDisplay_t, abi.LetteredFlagDisplay, "LetteredFlagDisplay" },
+    .{ c.upperLower_t, abi.UpperLower, "UpperLower" },
+    .{ c.calcKeyboard_t, abi.CalcKeyboard, "CalcKeyboard" },
 };
 
 test "abi calc structs match upstream C size" {

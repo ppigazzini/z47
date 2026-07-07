@@ -48,7 +48,7 @@ const USER_C47: u8 = 46;
 const CALCMODEL: u8 = @import("frontier_build_options").calcmodel;
 
 // ---------------------------------------------------------------------------
-// Aggregate type layouts (extern struct, verified by size/align probe)
+// Aggregate C-ABI type layouts, all aliased from abi (oracle-verified vs C)
 // ---------------------------------------------------------------------------
 const bool_t = bool; // C `bool`, 1 byte
 const calcRegister_t = i16;
@@ -61,9 +61,8 @@ const realContext_t = abi.RealContext; // size 28, align 4
 
 const subroutineLevels_t = abi.SubroutineLevels; // size 4, align 2
 
-const localFlags_t = extern struct {
-    localFlags: u32,
-}; // size 4, align 4
+// The C localFlags_t typedef is a bare uint32_t; abi centralizes it as such.
+const localFlags_t = abi.LocalFlags;
 
 const glyph_t = abi.Glyph;
 
