@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi = @import("abi");
 const build_options = @import("stack_state_build_options");
 
 const use_fake_stack_state_harness_surface =
@@ -9,26 +10,12 @@ pub const product_rounding_t = c_int;
 pub const PRODUCT_DEC_ROUND_DOWN: product_rounding_t = 5;
 pub const product_real_negative_bit: u8 = 0x80;
 
-pub const ProductReal = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [25]u16,
-};
-
-pub const ProductReal34 = extern struct {
-    bytes: [16]u8,
-};
-
-pub const ProductRealContext = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: product_rounding_t,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+// These are the decNumber real/real34/context layouts (oracle-verified in abi);
+// the product path reached them through local re-mirrors. Alias to the shared
+// abi types. product_rounding_t is c_int, matching abi.RealContext.round.
+pub const ProductReal = abi.Real;
+pub const ProductReal34 = abi.Real34;
+pub const ProductRealContext = abi.RealContext;
 
 extern var ctxtReal39: ProductRealContext;
 extern fn decimal128ToNumber(source: *const ProductReal34, destination: *ProductReal) *ProductReal;
