@@ -73,15 +73,38 @@ typedef struct _GtkWidget GtkWidget;
 # STD_* glyph byte-strings owners mirror from fonts.h. A wrong byte sequence
 # renders the wrong glyph (testSuite-blind). String literals are not integer
 # constant expressions, so these need a compile-and-run strcmp, not _Static_assert.
-STRING_RE = re.compile(r'\bconst (STD_[A-Za-z_0-9]+)\s*=\s*("(?:\\.|[^"\\])*")\s*;')
+# Allow an optional `: [*:0]const u8`-style type annotation between name and `=`.
+STRING_RE = re.compile(r'\bconst (STD_[A-Za-z_0-9]+)\s*(?::[^=;]+)?=\s*("(?:\\.|[^"\\])*")\s*;')
+
+# Locally-renamed glyph aliases: owners that copy a fonts.h STD_* glyph under a
+# different const name. Map each to the C macro it must equal so the strcmp still
+# reaches it (the name-based #ifdef alone cannot -- the local name is not a macro).
+STRING_ALIASES = {
+    "std_cross": "STD_CROSS",
+    "std_plus_minus": "STD_PLUS_MINUS",
+    "std_infinity": "STD_INFINITY",
+    "std_degree": "STD_DEGREE",
+    "PRODUCT_SIGN": "STD_DOT",
+}
+
+
+def _alias_re(name):
+    return re.compile(
+        r"\bconst " + re.escape(name) + r'\s*(?::[^=;]+)?=\s*("(?:\\.|[^"\\])*")\s*;'
+    )
 
 
 def collect_string_mirrors():
-    """Return {name: {value_literal: owner}} for STD_* single-literal strings."""
+    """Return {c_macro: {value_literal: owner}} for STD_* and renamed glyph aliases.
+    Keyed by the C macro each owner literal must equal."""
     mirrors = {}
     for path in ZIG_SRC.rglob("*.zig"):
-        for name, literal in STRING_RE.findall(path.read_text(errors="ignore")):
+        text = path.read_text(errors="ignore")
+        for name, literal in STRING_RE.findall(text):
             mirrors.setdefault(name, {}).setdefault(literal, path.name)
+        for local, cmacro in STRING_ALIASES.items():
+            for literal in _alias_re(local).findall(text):
+                mirrors.setdefault(cmacro, {}).setdefault(literal, f"{path.name}:{local}")
     return mirrors
 
 
