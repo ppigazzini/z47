@@ -84,13 +84,6 @@ const item_t = abi.Item;
 
 const softmenuStack_t = abi.SoftmenuStack;
 const softmenu_t = abi.Softmenu;
-const labelList_t = extern struct {
-    program: u16,
-    step: [*c]u8,
-    instructionPointer: [*c]u8,
-    labelPointer: [*c]u8,
-    labelName: [*c]u8,
-};
 
 // ---------------------------------------------------------------------------
 // Constants (probed from the C build)
@@ -346,12 +339,8 @@ const namedVariableHeader_t = abi.NamedVariableHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
-const labelList_t2 = extern struct {
-    program: i16,
-    step: i32,
-    labelPointer: [*c]u8,
-    instructionPointer: [*c]u8,
-};
+// labelList_t layout centralized in abi (oracle-verified == C labelList_t).
+const labelList_t2 = abi.LabelList;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;
 
