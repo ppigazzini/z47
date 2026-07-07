@@ -6,7 +6,7 @@
 
 uint8_t calcMode = CM_AIM;
 int16_t itemToBeAssigned = 0;
-int16_t lastKeyCode = 0;
+uint8_t lastKeyCode = 0;
 tam_state_t tam = {0, false};
 calcKey_t kbd_std[37];
 calcKey_t kbd_usr[37];

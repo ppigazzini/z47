@@ -91,7 +91,7 @@ enum {
 
 extern uint8_t calcMode;
 extern int16_t itemToBeAssigned;
-extern int16_t lastKeyCode;
+extern uint8_t lastKeyCode;
 extern tam_state_t tam;
 extern calcKey_t kbd_std[37];
 extern calcKey_t kbd_usr[37];
