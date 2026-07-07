@@ -70,6 +70,55 @@ typedef struct _GtkWidget GtkWidget;
 """
 
 
+# STD_* glyph byte-strings owners mirror from fonts.h. A wrong byte sequence
+# renders the wrong glyph (testSuite-blind). String literals are not integer
+# constant expressions, so these need a compile-and-run strcmp, not _Static_assert.
+STRING_RE = re.compile(r'\bconst (STD_[A-Za-z_0-9]+)\s*=\s*("(?:\\.|[^"\\])*")\s*;')
+
+
+def collect_string_mirrors():
+    """Return {name: {value_literal: owner}} for STD_* single-literal strings."""
+    mirrors = {}
+    for path in ZIG_SRC.rglob("*.zig"):
+        for name, literal in STRING_RE.findall(path.read_text(errors="ignore")):
+            mirrors.setdefault(name, {}).setdefault(literal, path.name)
+    return mirrors
+
+
+def check_string_mirrors(zig, tmp):
+    """Compile+run a strcmp of every STD_* owner literal against the fonts.h macro.
+    Returns (checked, divergences[list of (name, literal, owner)])."""
+    mirrors = collect_string_mirrors()
+    src = tmp / "string_parity.c"
+    checks = []
+    for name in sorted(mirrors):
+        for literal, owner in sorted(mirrors[name].items()):
+            checks.append((name, literal, owner))
+    with src.open("w") as f:
+        f.write(PRELUDE)
+        f.write('#include "fonts.h"\n#include <string.h>\n#include <stdio.h>\n')
+        f.write("int main(void){int fails=0;\n")
+        for i, (name, literal, owner) in enumerate(checks):
+            # STD_* are #define string macros, so #ifdef filters Zig-local names.
+            f.write(f"#ifdef {name}\n")
+            f.write(f'  if(strcmp({literal}, {name})){{printf("%d\\n",{i});fails++;}}\n')
+            f.write("#endif\n")
+        f.write("return fails;}\n")
+    exe = tmp / "string_parity"
+    comp = subprocess.run(
+        [zig, "cc", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1",
+         "-I", str(ROOT / "dep/decNumberICU"), "-I", str(ROOT / "src/c47"),
+         str(src), "-o", str(exe)],
+        capture_output=True, text=True,
+    )
+    if comp.returncode != 0:
+        print("string check: compile failed\n" + comp.stderr[:2000], file=sys.stderr)
+        return len(checks), [("<compile-error>", "", "")]
+    run = subprocess.run([str(exe)], capture_output=True, text=True)
+    bad = [checks[int(x)] for x in run.stdout.split()]
+    return len(checks), bad
+
+
 def collect_mirrors():
     """Return {name: value_str}; report names that carry conflicting values."""
     mirrors = {}
@@ -124,11 +173,17 @@ def main():
         tag = KNOWN_DIVERGENCES.get(n, "*** UNEXPECTED ***")
         print(f"  DIVERGES {n}: {tag}")
 
-    if unexpected or conflicts:
-        print(f"\nFAIL: {len(unexpected)} unexpected divergence(s), "
-              f"{len(conflicts)} conflict(s)")
+    # STD_* glyph byte-string mirrors (compile-and-run strcmp vs fonts.h).
+    str_checked, str_bad = check_string_mirrors(zig, tmp)
+    print(f"\nstring-mirror check: {str_checked} STD_* owner literals vs fonts.h")
+    for name, literal, owner in str_bad:
+        print(f"  STRING DIVERGES {name} = {literal} in {owner}")
+
+    if unexpected or conflicts or str_bad:
+        print(f"\nFAIL: {len(unexpected)} unexpected value divergence(s), "
+              f"{len(conflicts)} conflict(s), {len(str_bad)} string divergence(s)")
         return 1
-    print("\nPASS: every C-mirrored constant matches upstream C "
+    print("\nPASS: every C-mirrored constant and glyph string matches upstream C "
           "(known-deferred exceptions allowlisted)")
     return 0
 
