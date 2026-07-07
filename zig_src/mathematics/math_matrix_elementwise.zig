@@ -8,6 +8,7 @@
 //
 // callByVectorElement / callByIndexedMatrix are the indexed-matrix element
 // dispatchers used by the MIM-routed commands (fnGetMatrix/fnPutMatrix/...).
+const abi = @import("abi");
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
@@ -37,7 +38,7 @@ extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
 extern fn regInRange(r: u16) bool;
 
 inline fn registerComplex34Data(reg: calcRegister_t) *complex34_t {
-    return @ptrCast(@alignCast(runtime.getRegisterDataPointer(reg).?));
+    return abi.registerComplex34Aligned(reg);
 }
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = @ptrCast(m.matrixElements);
