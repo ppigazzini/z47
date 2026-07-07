@@ -1,6 +1,6 @@
 {
   "totals": {
-    "extern_struct_files": 33,
+    "extern_struct_files": 32,
     "cptr_files": 88,
     "ptrcast_sites": 1415,
     "callconv_c_sites": 2769,
@@ -9,11 +9,11 @@
     "anyopaque_files": 84,
     "off_offset_sites": 77,
     "constants_blob_sites": 1,
-    "qspi_section_files": 26
+    "qspi_section_files": 25
   },
-  "owner_count": 333,
+  "owner_count": 332,
   "seam_totals": {
-    "extern_struct_files": 0,
+    "extern_struct_files": 1,
     "cptr_files": 0,
     "ptrcast_sites": 0,
     "callconv_c_sites": 0,
@@ -22,7 +22,7 @@
     "anyopaque_files": 0,
     "off_offset_sites": 0,
     "constants_blob_sites": 0,
-    "qspi_section_files": 0
+    "qspi_section_files": 1
   },
-  "seam_file_count": 0
+  "seam_file_count": 1
 }
