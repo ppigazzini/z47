@@ -432,6 +432,11 @@ jobs:
           # it into src/generated first.
           zig build constants
           python3 .github/project/check-constant-offsets.py
+          # Constant-parity audit: every defines.h/enum value an owner hardcodes
+          # (ITM_*, ERROR_*, FLAG_*, dt*, ...) must match upstream C. Catches the
+          # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
+          # behavioral constants_parity oracle does not cover.
+          python3 .github/project/audit-constant-parity.py
           # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
           # numeric mirrors must match the translate-c'd upstream decNumber-family
           # layout, so a wrong layout (silent-corruption class) fails here. Gates
@@ -969,6 +974,11 @@ jobs:
           # it into src/generated first.
           zig build constants
           python3 .github/project/check-constant-offsets.py
+          # Constant-parity audit: every defines.h/enum value an owner hardcodes
+          # (ITM_*, ERROR_*, FLAG_*, dt*, ...) must match upstream C. Catches the
+          # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
+          # behavioral constants_parity oracle does not cover.
+          python3 .github/project/audit-constant-parity.py
           # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
           # numeric mirrors must match the translate-c'd upstream decNumber-family
           # layout, so a wrong layout (silent-corruption class) fails here. Gates
@@ -1208,6 +1218,11 @@ jobs:
           # it into src/generated first.
           zig build constants
           python3 .github/project/check-constant-offsets.py
+          # Constant-parity audit: every defines.h/enum value an owner hardcodes
+          # (ITM_*, ERROR_*, FLAG_*, dt*, ...) must match upstream C. Catches the
+          # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
+          # behavioral constants_parity oracle does not cover.
+          python3 .github/project/audit-constant-parity.py
           # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
           # numeric mirrors must match the translate-c'd upstream decNumber-family
           # layout, so a wrong layout (silent-corruption class) fails here. Gates
