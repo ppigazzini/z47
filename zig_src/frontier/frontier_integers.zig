@@ -80,7 +80,7 @@ extern var lastIntegerBase: u32;
 extern var temporaryInformation: u8;
 
 extern fn setSystemFlag(flag: c_uint) void;
-extern fn clearSystemFlag(flag: u16) void;
+extern fn clearSystemFlag(flag: c_uint) void;
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
