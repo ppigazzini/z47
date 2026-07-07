@@ -1,12 +1,12 @@
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 fn real34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
-    return @as(*runtime.real34_t, @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?)));
+    return abi.registerReal34Aligned(regist);
 }
 
 fn imag34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
-    const base: [*]u8 = @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?));
-    return @as(*runtime.real34_t, @ptrCast(@alignCast(base + @sizeOf(runtime.real34_t))));
+    return abi.registerImag34Aligned(regist);
 }
 
 pub fn readP(p: *runtime.real_t) bool {

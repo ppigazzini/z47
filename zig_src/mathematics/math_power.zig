@@ -146,7 +146,7 @@ inline fn getRegisterShortIntegerBase(reg: runtime.calcRegister_t) u32 {
     return runtime.getRegisterTag(reg);
 }
 inline fn registerShortIntegerData(reg: runtime.calcRegister_t) *align(1) ShortInteger {
-    return @ptrCast(runtime.getRegisterDataPointer(reg).?);
+    return abi.registerShortInteger(reg);
 }
 
 // ===========================================================================
