@@ -1381,7 +1381,7 @@ inline fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
 // ---------------------------------------------------------------------------
 extern var significantDigits: u8;
 extern var exponentLimit: i16;
-extern var Input_Default: c_int;
+extern var Input_Default: u8;
 inline fn checkHP() bool {
     return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP and (calcMode == CM_NORMAL or calcMode == CM_NIM);
 }
