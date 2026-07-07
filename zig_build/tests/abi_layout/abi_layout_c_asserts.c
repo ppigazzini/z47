@@ -33,3 +33,9 @@ _Static_assert(sizeof(namedVariableHeader_t) == 20, "namedVariableHeader_t = hea
 _Static_assert(sizeof(reservedVariableHeader_t) == 12, "reservedVariableHeader_t = header(4) + name[8]");
 _Static_assert(offsetof(namedVariableHeader_t, variableName) == 4, "name follows the 4-byte header");
 _Static_assert(offsetof(reservedVariableHeader_t, reservedVariableName) == 4, "name follows the 4-byte header");
+
+// frontier_register_browser hardcodes CONFIG_SIZE_IN_BYTES = 840 (a testSuite-
+// blind display constant). Pin it to the C computation so an upstream growth of
+// dtConfigDescriptor_t is caught here instead of silently showing a wrong size.
+_Static_assert(TO_BYTES(TO_BLOCKS(sizeof(dtConfigDescriptor_t))) == 840,
+               "frontier_register_browser CONFIG_SIZE_IN_BYTES must stay 840");
