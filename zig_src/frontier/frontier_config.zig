@@ -576,17 +576,17 @@ extern var beginOfProgramMemory: [*c]u8;
 extern var currentStep: [*c]u8;
 extern var firstFreeProgramByte: [*c]u8;
 extern var firstDisplayedStep: [*c]u8;
-extern var labelList: ?*anyopaque;
-extern var programList: ?*anyopaque;
-extern var allNamedVariables: ?*anyopaque;
+extern var labelList: [*c]abi.LabelList;
+extern var programList: [*c]abi.ProgramList;
+extern var allNamedVariables: [*c]abi.NamedVariableHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
-extern var currentLocalFlags: ?*anyopaque;
-extern var currentLocalRegisters: ?*anyopaque;
+extern var currentLocalFlags: [*c]abi.LocalFlags;
+extern var currentLocalRegisters: [*c]abi.RegisterHeader;
 extern var userKeyLabel: [*c]u8;
 extern var savedStatisticalSumsPointer: ?*anyopaque;
-extern var statisticalSumsPointer: ?*anyopaque;
-extern var userMenus: ?*anyopaque;
-extern var allFormulae: ?*anyopaque;
+extern var statisticalSumsPointer: [*c]abi.Real;
+extern var userMenus: [*c]abi.UserMenu;
+extern var allFormulae: [*c]abi.FormulaHeader;
 
 // globalRegister/freeMemoryRegions are STATIC ARRAYS only on DMCP+OLD_HW; on the
 // host and new_hw firmware they are malloc'd POINTERS (c47.h:#if DMCP_BUILD &&
