@@ -2,6 +2,7 @@
 // Extern surface shared by the multiplication/division dispatch cell owners.
 // Values below mirror src/c47/defines.h and src/c47/typeDefinitions.h exactly.
 
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 pub const calcRegister_t = runtime.calcRegister_t;
@@ -15,18 +16,9 @@ pub const VoidCallback = runtime.VoidCallback;
 
 // 159-digit decNumber work area: REAL_SIZE_IN_BYTES(159) == 116 bytes
 // (10 header bytes rounded into the struct layout + 53 declets of 2 bytes).
-pub const real159_t = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [53]u16,
-};
-
-comptime {
-    if (@sizeOf(real159_t) != 116) {
-        @compileError("real159_t must match REAL_SIZE_IN_BYTES(159)");
-    }
-}
+// 159-digit decNumber storage (REAL_T_PTR(name, 159), 116 bytes); layout
+// centralized in abi (size asserted there).
+pub const real159_t = abi.Real159;
 
 pub fn asReal(big: *real159_t) *real_t {
     return @ptrCast(big);
