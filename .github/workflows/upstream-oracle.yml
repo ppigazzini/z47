@@ -432,6 +432,11 @@ jobs:
           # it into src/generated first.
           zig build constants
           python3 .github/project/check-constant-offsets.py
+          # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
+          # numeric mirrors must match the translate-c'd upstream decNumber-family
+          # layout, so a wrong layout (silent-corruption class) fails here. Gates
+          # green before abi/types.zig is generated; adjudicates the seam after.
+          zig build abi-layout-parity
           zig build keyboard_state_parity
           zig build both
           # NON-BLOCKING: the headless GUI smoke trips a pixman SSE2 composite
@@ -964,6 +969,11 @@ jobs:
           # it into src/generated first.
           zig build constants
           python3 .github/project/check-constant-offsets.py
+          # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
+          # numeric mirrors must match the translate-c'd upstream decNumber-family
+          # layout, so a wrong layout (silent-corruption class) fails here. Gates
+          # green before abi/types.zig is generated; adjudicates the seam after.
+          zig build abi-layout-parity
           zig build keyboard_state_parity
           zig build both
           zig build test
@@ -1198,6 +1208,11 @@ jobs:
           # it into src/generated first.
           zig build constants
           python3 .github/project/check-constant-offsets.py
+          # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
+          # numeric mirrors must match the translate-c'd upstream decNumber-family
+          # layout, so a wrong layout (silent-corruption class) fails here. Gates
+          # green before abi/types.zig is generated; adjudicates the seam after.
+          zig build abi-layout-parity
           zig build keyboard_state_parity
           zig build both
           zig build test

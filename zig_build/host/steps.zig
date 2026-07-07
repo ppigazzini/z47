@@ -879,6 +879,38 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const idiom_test_step = b.step("idiom-test", "Run the REPORT-23 idiomatic-Zig colocated test blocks");
     idiom_test_step.dependOn(&run_idiom_test.step);
 
+    // Seam-and-core harness: cross-check the abi/types.zig numeric mirrors
+    // against the translate-c'd upstream decNumber-family headers, so a wrong
+    // layout (silent-corruption class) fails here rather than at runtime. This
+    // must gate green before abi/types.zig is generated. Wiring mirrors the
+    // generate_constants translate-c root (dep/decNumberICU + src/c47 includes).
+    const abi_layout_c_bindings = b.addTranslateC(.{
+        .root_source_file = b.path("zig_build/tools/translate_c/abi_layout_oracle.h"),
+        .target = context.host_target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    abi_layout_c_bindings.defineCMacro("PC_BUILD", "1");
+    abi_layout_c_bindings.defineCMacro(context.common.platform_define, "1");
+    abi_layout_c_bindings.defineCMacro(context.common.word_size_define, "1");
+    abi_layout_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    abi_layout_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    const abi_layout_module = b.createModule(.{
+        .root_source_file = b.path("zig_build/tests/abi_layout/abi_layout_oracle.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    abi_layout_module.addImport("c_bindings", abi_layout_c_bindings.createModule());
+    abi_layout_module.addImport("abi", b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    }));
+    const abi_layout_test = b.addTest(.{ .root_module = abi_layout_module });
+    const run_abi_layout_test = b.addRunArtifact(abi_layout_test);
+    const abi_layout_step = b.step("abi-layout-parity", "Cross-check abi/types.zig mirrors against the upstream C layout");
+    abi_layout_step.dependOn(&run_abi_layout_test.step);
+
     const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
     const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
     run_keyboard_state_parity.setCwd(b.path("."));
