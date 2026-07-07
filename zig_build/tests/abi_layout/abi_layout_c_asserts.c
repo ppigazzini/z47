@@ -82,3 +82,18 @@ _Static_assert(TI_PERC == 68, "temporaryInformation TI_PERC: set must match the 
 _Static_assert(TI_PERCD == 69, "temporaryInformation TI_PERCD");
 _Static_assert(ERROR_INPUT_DATA_TYPE_NOT_MATCHING == 31, "math_xfn error code");
 _Static_assert(ERROR_UNDEFINED_OPCODE == 3, "math_xfn error code");
+// Third batch: register-range and flag bounds, plus the dispatch-critical
+// register data-type enum (frontier_register_browser et al. hardcode these; a
+// wrong value mis-routes every register operation -- dtReal34 was once 0).
+_Static_assert(LAST_GLOBAL_REGISTER == 136, "register-range top = TEMP_REGISTER_2_SAVED_STATS (was 125)");
+_Static_assert(FLAG_USER == 32788, "user-flag base (was a stale 43 in the original scaffold)");
+_Static_assert(dtLongInteger == 0, "register data-type enum");
+_Static_assert(dtReal34 == 1, "register data-type enum (was 0 = dtLongInteger)");
+_Static_assert(dtComplex34 == 2, "register data-type enum");
+_Static_assert(dtTime == 3, "register data-type enum");
+_Static_assert(dtDate == 4, "register data-type enum");
+_Static_assert(dtString == 5, "register data-type enum");
+_Static_assert(dtReal34Matrix == 6, "register data-type enum");
+_Static_assert(dtComplex34Matrix == 7, "register data-type enum");
+_Static_assert(dtShortInteger == 8, "register data-type enum");
+_Static_assert(dtConfig == 9, "register data-type enum");
