@@ -42,7 +42,8 @@ userMenu_t *userMenus = fake_user_menus;
 uint16_t numberOfUserMenus = 0;
 #endif
 uint32_t currentAngularMode = amNone;
-char errorMessage[ERROR_MESSAGE_LENGTH];
+static char errorMessage__stg[ERROR_MESSAGE_LENGTH];
+char *errorMessage = errorMessage__stg;
 const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH] = {
   "%s: no named variables",
   "%s: register %d must be less than %d",

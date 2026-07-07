@@ -223,7 +223,7 @@ extern registerHeader_t globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
 extern namedVariableHeader_t *allNamedVariables;
 extern registerHeader_t *currentLocalRegisters;
 extern const reservedVariableHeader_t allReservedVariables[];
-extern char errorMessage[ERROR_MESSAGE_LENGTH];
+extern char *errorMessage;
 extern const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH];
 extern uint16_t numberOfNamedVariables;
 extern uint8_t currentNumberOfLocalRegisters;

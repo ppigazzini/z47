@@ -131,8 +131,10 @@ static real34_t fake_const34_zero_value;
 static real34_t fake_const34_86400_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
-char errorMessage[ERROR_MESSAGE_LENGTH];
-char tmpString[ERROR_MESSAGE_LENGTH];
+static char errorMessage__stg[ERROR_MESSAGE_LENGTH];
+char *errorMessage = errorMessage__stg;
+static char tmpString__stg[ERROR_MESSAGE_LENGTH];
+char *tmpString = tmpString__stg;
 const char *commonBugScreenMessages[] = {
   "%s %u %s",
 };
