@@ -39,3 +39,14 @@ _Static_assert(offsetof(reservedVariableHeader_t, reservedVariableName) == 4, "n
 // dtConfigDescriptor_t is caught here instead of silently showing a wrong size.
 _Static_assert(TO_BYTES(TO_BLOCKS(sizeof(dtConfigDescriptor_t))) == 840,
                "frontier_register_browser CONFIG_SIZE_IN_BYTES must stay 840");
+
+// More C-derived sizeof constants hardcoded across owners without a guard. These
+// drive register (de)serialization strides in calc_state_register_codec and the
+// string/long-integer header math in frontier_display / keyboard_state_runtime /
+// solve_owned -- an upstream type growth would silently corrupt copies, and none
+// is caught by the testSuite. dtConfigDescriptor_t is pinned to its EXACT size
+// here (calc_state_register_codec's CONFIG_DESCRIPTOR_SIZE copies sizeof bytes,
+// a stricter contract than the rounded CONFIG_SIZE_IN_BYTES above).
+_Static_assert(sizeof(strLgIntHeader_t) == 4, "STR_LG_INT_HEADER_SIZE / SIZEOF_STR_LG_INT_HEADER");
+_Static_assert(sizeof(real_t) == 60, "REAL_SIZE_IN_BYTES codec stride");
+_Static_assert(sizeof(dtConfigDescriptor_t) == 840, "CONFIG_DESCRIPTOR_SIZE (exact, not just TO_BYTES-rounded)");
