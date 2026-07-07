@@ -13,6 +13,7 @@
 // only exist in builds where ALLOW_159 is enabled, so behavior is identical.
 
 const std = @import("std");
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 
@@ -41,28 +42,9 @@ extern fn decQuadCompare(
 extern fn decQuadCopyAbs(result: *runtime.real34_t, source: *const runtime.real34_t) *runtime.real34_t;
 extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 
-// REAL_T_PTR(name, 159): REAL_MAX_DIGITS(159) = 159 -> 10-byte decNumber
-// header + 53 declets of DECDPUN=3 digits (116 bytes).
-const Real159 = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [53]u16,
-
-    fn ptr(self: *Real159) *runtime.real_t {
-        return @ptrCast(self);
-    }
-
-    fn constPtr(self: *const Real159) *const runtime.real_t {
-        return @ptrCast(self);
-    }
-};
-
-comptime {
-    if (@sizeOf(Real159) != 116) {
-        @compileError("Real159 must match REAL_SIZE_IN_BYTES(159) == 116");
-    }
-}
+// 159-digit decNumber storage (REAL_T_PTR(name, 159), 116 bytes); layout +
+// ptr/constPtr accessors centralized in abi (size asserted there).
+const Real159 = abi.Real159;
 
 fn maxI32(lhs: i32, rhs: i32) i32 {
     return if (lhs > rhs) lhs else rhs;

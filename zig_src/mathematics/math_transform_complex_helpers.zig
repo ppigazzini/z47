@@ -9,6 +9,7 @@
 //! unitVectorCplx, so these exports must stay out of that link.
 
 const std = @import("std");
+const abi = @import("abi");
 const atan2_owned = @import("math_atan2.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const wrappers = @import("math_command_wrappers.zig");
@@ -46,15 +47,9 @@ fn realDivideBy2(operand: *runtime.real_t, real_context: *runtime.realContext_t)
     runtime.realMultiply(operand, runtime.z47_math_wrappers_const_1on2(), operand, real_context);
 }
 
-// Storage for one 159-digit decNumber, mirroring upstream REAL_T_PTR(name, 159):
-// REAL_SIZE_IN_BYTES(159) == 10 + 2 * (159 / 3) == 116 bytes -> 53 lsu units.
-const real159_unit_count = 53;
-const Real159 = extern struct {
-    digits: i32,
-    exponent: i32,
-    bits: u8,
-    lsu: [real159_unit_count]u16,
-};
+// Storage for one 159-digit decNumber (REAL_T_PTR(name, 159), 116 bytes); layout
+// centralized in abi (size asserted there).
+const Real159 = abi.Real159;
 
 fn real159(storage: *Real159) *runtime.real_t {
     return @ptrCast(storage);

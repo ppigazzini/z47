@@ -33,6 +33,25 @@ pub const Real34 = extern struct { bytes: [16]u8 };
 /// task converts.
 pub const RealBlob = extern struct { bytes: [60]u8 align(4) };
 
+/// 159-digit decNumber storage (upstream `REAL_T_PTR(name, 159)`): the same
+/// decNumber header as `Real` but a 53-unit lsu, so `REAL_SIZE_IN_BYTES(159) ==
+/// 116`. The math owners (cubic / eigen 159-digit internal paths) stack-allocate
+/// one and view it as a `real_t`; `ptr`/`constPtr` provide that view. Centralized
+/// here to replace the three identical per-owner re-mirrors.
+pub const Real159 = extern struct {
+    digits: i32,
+    exponent: i32,
+    bits: u8,
+    lsu: [53]u16,
+
+    pub inline fn ptr(self: *Real159) *Real {
+        return @ptrCast(self);
+    }
+    pub inline fn constPtr(self: *const Real159) *const Real {
+        return @ptrCast(self);
+    }
+};
+
 /// decContext.
 pub const RealContext = extern struct {
     digits: i32,
@@ -481,6 +500,7 @@ comptime {
     std.debug.assert(@offsetOf(Real, "bits") == 8);
     std.debug.assert(@offsetOf(Real, "lsu") == 10);
     std.debug.assert(@sizeOf(Real) == 60);
+    std.debug.assert(@sizeOf(Real159) == 116);
     std.debug.assert(@sizeOf(Real34) == 16);
     std.debug.assert(@sizeOf(Complex) == 2 * @sizeOf(Real));
     std.debug.assert(@sizeOf(Complex34) == 32);
