@@ -88,15 +88,9 @@ const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zi
 const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
-const decContext = extern struct {
-    digits: i32,
-    emax: i32,
-    emin: i32,
-    round: c_int,
-    traps: u32,
-    status: u32,
-    clamp: u8,
-};
+// decContext layout is centralized in abi.RealContext (oracle-verified == C
+// decContext by abi-layout-parity); alias instead of re-mirroring the fields.
+const decContext = abi.RealContext;
 const font_t = abi.Font;
 
 const matrixHeader_t = abi.MatrixHeader;
