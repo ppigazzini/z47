@@ -1012,8 +1012,7 @@ pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, 
 pub extern fn complex34ToDisplayString(complex34: *align(1) const complex34_t, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int, tag_angle: u16, tag_polar: bool) void;
 
 pub fn registerShortIntegerPtr(reg: calcRegister_t) *align(1) u64 {
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+    return abi.registerShortInteger(reg);
 }
 
 pub fn setRegisterLongIntegerSign(reg: calcRegister_t, sign: u32) void {
@@ -1033,24 +1032,22 @@ pub fn registerReal34Bytes(reg: calcRegister_t) *align(1) [16]u8 {
 }
 
 pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+    return abi.registerReal34(reg);
 }
 
 pub fn registerComplex34Ptr(reg: calcRegister_t) *align(1) complex34_t {
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    return @ptrCast(ptr);
+    return abi.registerComplex34(reg);
 }
 
 pub fn registerMatrixHeaderPtr(reg: calcRegister_t) *align(1) matrixHeader_t {
+    // Not delegated to abi.registerMatrixHeader: matrixHeader_t is faked to a
+    // distinct type under use_fake_wp34s_harness_surface, so the cast stays local.
     const ptr = getRegisterDataPointer(reg) orelse unreachable;
     return @ptrCast(ptr);
 }
 
 pub fn registerImag34Ptr(reg: calcRegister_t) *align(1) real34_t {
-    const ptr = getRegisterDataPointer(reg) orelse unreachable;
-    const bytes: [*]align(1) u8 = @ptrCast(ptr);
-    return @ptrCast(bytes + @sizeOf(real34_t));
+    return abi.registerImag34(reg);
 }
 
 pub fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {

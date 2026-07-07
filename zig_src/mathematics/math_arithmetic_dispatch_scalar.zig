@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -7,7 +8,7 @@ const dyadic_integer_subtract: u8 = 1;
 const dyadic_integer_multiply: u8 = 2;
 
 fn real34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
-    return @as(*runtime.real34_t, @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?)));
+    return abi.registerReal34Aligned(regist);
 }
 
 fn applyDyadicRealOperation(operation: u8, lhs: *const runtime.real_t, rhs: *const runtime.real_t, result: *runtime.real_t) void {
