@@ -454,7 +454,7 @@ const UT_ACCELERATION: unitType_t = 17;
 const UT_DENSITY: unitType_t = 18;
 const UT_LINEAR_FORCE_DENSITY: unitType_t = 19;
 
-const convPair_t = extern struct {
+const convPair_t = struct {
     item: i16,
     partner: i16,
     unity: i16,

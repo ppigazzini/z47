@@ -122,12 +122,12 @@ const item_t = abi.Item;
 const userMenuItem_t = abi.UserMenuItem;
 
 // indexOfStrings / indexOfMsgs / msg2 are file-local const tables.
-const numberstr = extern struct {
+const numberstr = struct {
     itemType: u8,
     count: u16,
     itemName: [*c]const u8,
 };
-const nstr2 = extern struct {
+const nstr2 = struct {
     str2: [180]u8,
 };
 
@@ -629,7 +629,7 @@ const SIZEOF_KBD_STD: u32 = 37 * @sizeOf(calcKey_t);
 
 extern var Norm_Key_00: normKey_t;
 extern var glyphNotFound: glyph_t;
-extern var softmenuStack: [SOFTMENU_STACK_SIZE]extern struct { softmenuId: i16, firstItem: i16, userMenuId: i16, calcMode: u8 };
+extern var softmenuStack: [SOFTMENU_STACK_SIZE]abi.SoftmenuStack;
 extern var globalFlags: [8]u16;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
