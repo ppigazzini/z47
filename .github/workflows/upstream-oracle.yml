@@ -277,7 +277,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 .github/project/generate-martel-font-seam.py --repo-root . --check
+          python3 .github/project/generate-font-seams.py --repo-root . --check
 
   c-dependency-policy:
     name: Verify Phase I C dependency policy

@@ -3,7 +3,7 @@
 //
 // Generated ABI seam for src/c47/printing/martelFonts.c
 // (martelFont24). Produced by
-// .github/project/generate-martel-font-seam.py from the upstream C table; do
+// .github/project/generate-font-seams.py from the upstream C table; do
 // not hand-edit. Regenerate after an upstream pin advance.
 //
 // Pure Martel printer-font glyph data, exported with C linkage and
@@ -22,13 +22,9 @@ else if (builtin.target.os.tag == .macos)
 else
     ".rodata";
 
-const glyphMartelPrinter_t = abi.GlyphMartelPrinter;
-
-// Matches martelFont24_t { uint16_t numberOfGlyphs; glyphMartelPrinter_t
-// glyphs[]; } with the 2 glyphs materialised inline.
 const MartelFont24 = extern struct {
     numberOfGlyphs: u16,
-    glyphs: [2]glyphMartelPrinter_t,
+    glyphs: [2]abi.GlyphMartelPrinter,
 };
 
 pub export const martelFont24: MartelFont24 linksection(martel_section) = .{
