@@ -77,15 +77,10 @@ const softmenuStack_t = abi.SoftmenuStack;
 
 const userMenuItem_t = abi.UserMenuItem; // size 20, align 2
 
-const programmableMenu_t = extern struct {
-    menuItem: [18]userMenuItem_t,
-}; // size 18*20 = 360? probed 332 -- use opaque blob instead
-// NOTE: probed programmableMenu_t size is 332, not 18*20. Define as opaque blob
-// of the exact size/align so the symbol is byte-correct without trusting the
-// member trace.
-const ProgrammableMenuBlob = extern struct {
-    bytes: [332]u8 align(2),
-};
+// programmableMenu_t (332 bytes, align 2) is centralized in abi as the typed
+// layout {itemName[18][16], itemParam[21], unused}, oracle-verified == C. The
+// prior opaque [332]u8 blob workaround is replaced by that exact-size type.
+const ProgrammableMenuBlob = abi.ProgrammableMenu;
 
 const tamState_t = abi.TamState;
 

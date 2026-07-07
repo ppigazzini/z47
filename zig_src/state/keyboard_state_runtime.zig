@@ -5,24 +5,9 @@ pub const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 pub const calcKey_t = abi.CalcKey;
 
-pub const tam_state_t = extern struct {
-    mode: u16,
-    function: i16,
-    alpha: bool_t,
-    currentOperation: i16,
-    dot: bool_t,
-    indirect: bool_t,
-    digitsSoFar: i16,
-    value0: i16,
-    value: i16,
-    min: i16,
-    max: i16,
-    key: i16,
-    keyAlpha: bool_t,
-    keyDot: bool_t,
-    keyIndirect: bool_t,
-    keyInputFinished: bool_t,
-};
+// tamState_t layout centralized in abi (oracle-verified == C tamState_t; the C
+// bool_t members are bool).
+pub const tam_state_t = abi.TamState;
 
 // items.h codes (probed against src/c47/items.h). The original keyboard scaffold
 // carried stale values for this block (e.g. ITM_A=132, ITM_UP1=1, ITM_BACKSPACE=3),
