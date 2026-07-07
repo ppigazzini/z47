@@ -2,10 +2,14 @@
 """Idiom-status census for the REPORT-23 idiomatic-Zig refactor (Phase infinity).
 
 Counts the transliteration anti-patterns REPORT-23 §2 tracks, across zig_src/,
-as a whole-tree total and per-owner. This is the ratchet metric: the numbers are
-meant to fall as owners move to the L1/L2/L3 shape. A companion gate
-(check-idiom-ratchet, wired non-blocking until REPORT-23 Phase 2) compares a
-recorded baseline to forbid regressions.
+per-owner. The census is split into two layers (churn-driven roadmap): CORE
+(hand-written owner code) is the ratchet ceiling metric and is meant to fall as
+owners move to idiomatic Zig; SEAM (generated ABI shims -- files under a
+generated/ path carrying the '// SEAM-GENERATED' marker) holds the
+contract-mandated C-ABI shapes and is reported separately, never graded. A
+marker/path mismatch fails closed so a hand-written owner cannot dodge the
+ceiling by faking the marker. A companion gate (check-idiom-ratchet) compares a
+recorded baseline to forbid regressions in the CORE totals.
 
 Reproduces the §2 census with explicit, greppable patterns so the report and the
 gate agree. Usage:
@@ -23,6 +27,30 @@ import sys
 from pathlib import Path
 
 BASELINE_PATH = ".github/project/idiom-status-baseline.json"
+
+# Seam-and-core split (churn-driven roadmap). A "seam" file is a generated ABI
+# shim: it holds the contract-mandated C-ABI shapes (extern struct / callconv(.c)
+# / offsets) derived from upstream C, so it is graded separately from
+# hand-written owner ("core") code. A seam file MUST both live under a
+# `generated/` path in zig_src AND carry the marker below; a file with exactly
+# one of those signals is a fail-closed guard violation, so a hand-written owner
+# cannot smuggle debt out of the core ceiling by faking the marker.
+SEAM_MARKER = "// SEAM-GENERATED"
+SEAM_PATH_TOKEN = "/generated/"
+
+
+def classify_layer(rel: str, text: str) -> tuple[str, str | None]:
+    """Return (layer, violation). layer is 'seam' or 'core'; violation is a
+    message when the marker and path signals disagree (fail closed)."""
+    under_generated = SEAM_PATH_TOKEN in rel
+    has_marker = SEAM_MARKER in text
+    if under_generated and has_marker:
+        return "seam", None
+    if under_generated and not has_marker:
+        return "core", f"{rel}: under generated/ but missing '{SEAM_MARKER}' marker"
+    if has_marker and not under_generated:
+        return "core", f"{rel}: has '{SEAM_MARKER}' marker but is not under a generated/ path"
+    return "core", None
 
 # (label, compiled regex, count_mode) -- count_mode "file" counts matching files,
 # "site" counts total matches.
@@ -49,19 +77,32 @@ def scan(repo_root: Path) -> dict:
     zig_root = repo_root / "zig_src"
     files = sorted(p for p in zig_root.rglob("*.zig"))
 
+    # `totals` is the CORE (hand-written) census -- the ratchet ceiling metric.
+    # `seam_totals` is the generated ABI-seam census, reported for visibility but
+    # never graded against the ceiling.
     totals = {label: 0 for label, _, _ in PATTERNS}
+    seam_totals = {label: 0 for label, _, _ in PATTERNS}
     per_owner: dict[str, dict] = {}
     owner_count = 0
+    seam_file_count = 0
+    violations: list[str] = []
 
     for path in files:
         rel = path.relative_to(repo_root).as_posix()
         text = path.read_text(encoding="utf-8", errors="ignore")
+        layer, violation = classify_layer(rel, text)
+        if violation:
+            violations.append(violation)
+        bucket = seam_totals if layer == "seam" else totals
         row = {}
         for label, rx, mode in PATTERNS:
             matches = rx.findall(text)
             n = (1 if matches else 0) if mode == "file" else len(matches)
             row[label] = n
-            totals[label] += n
+            bucket[label] += n
+        if layer == "seam":
+            seam_file_count += 1
+            continue
         # "Owner" = an idiomatic core file. The historical `_owned` role suffix was
         # dropped in M25 (project structure), so count every zig_src file that is
         # not an L3 C-ABI runtime/shared shim.
@@ -73,16 +114,24 @@ def scan(repo_root: Path) -> dict:
     return {
         "file_count": len(files),
         "owner_count": owner_count,
+        "seam_file_count": seam_file_count,
         "totals": totals,
+        "seam_totals": seam_totals,
         "per_owner": per_owner,
+        "violations": violations,
     }
 
 
 def print_report(result: dict) -> None:
-    print(f"zig_src files: {result['file_count']}  owners: {result['owner_count']}")
-    print("\nWhole-tree anti-pattern totals (REPORT-23 §2):")
+    print(f"zig_src files: {result['file_count']}  owners: {result['owner_count']}"
+          f"  seam files: {result['seam_file_count']}")
+    print("\nCore (hand-written) anti-pattern totals -- ratchet ceiling (REPORT-23 §2):")
     for label, _, mode in PATTERNS:
         print(f"  {label:26s} {result['totals'][label]:6d}  ({mode})")
+    if result["seam_file_count"]:
+        print("\nSeam (generated ABI) totals -- reported, NOT graded:")
+        for label, _, mode in PATTERNS:
+            print(f"  {label:26s} {result['seam_totals'][label]:6d}  ({mode})")
     worst = sorted(
         result["per_owner"].items(),
         key=lambda kv: sum(kv[1].values()),
@@ -104,6 +153,15 @@ def main() -> int:
     repo_root = Path(args.repo_root).resolve()
     result = scan(repo_root)
 
+    # The seam guard fails closed in every mode that writes or enforces state, so
+    # a marker/path mismatch can never silently exempt a hand-written owner.
+    if result["violations"] and (args.check or args.write_baseline):
+        for v in result["violations"]:
+            print(f"SEAM SCOPE VIOLATION: {v}")
+        print("A seam file must live under a generated/ path AND carry the "
+              f"'{SEAM_MARKER}' marker. Fix the file or its location.")
+        return 1
+
     if args.check:
         baseline = json.loads((repo_root / BASELINE_PATH).read_text(encoding="utf-8"))["totals"]
         cur = result["totals"]
@@ -122,7 +180,12 @@ def main() -> int:
         return rc
 
     if args.write_baseline:
-        baseline = {"totals": result["totals"], "owner_count": result["owner_count"]}
+        baseline = {
+            "totals": result["totals"],
+            "owner_count": result["owner_count"],
+            "seam_totals": result["seam_totals"],
+            "seam_file_count": result["seam_file_count"],
+        }
         (repo_root / BASELINE_PATH).write_text(json.dumps(baseline, indent=2) + "\n", encoding="utf-8")
         print(f"wrote {BASELINE_PATH}")
         return 0

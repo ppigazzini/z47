@@ -11,5 +11,18 @@
     "constants_blob_sites": 1,
     "qspi_section_files": 26
   },
-  "owner_count": 333
+  "owner_count": 333,
+  "seam_totals": {
+    "extern_struct_files": 0,
+    "cptr_files": 0,
+    "ptrcast_sites": 0,
+    "callconv_c_sites": 0,
+    "extern_fn_sites": 0,
+    "printf_family_files": 0,
+    "anyopaque_files": 0,
+    "off_offset_sites": 0,
+    "constants_blob_sites": 0,
+    "qspi_section_files": 0
+  },
+  "seam_file_count": 0
 }
