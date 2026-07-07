@@ -16,3 +16,11 @@
 #include "decContext.h"
 #include "decNumber.h"
 #include "decQuad.h"
+// Prelude so typeDefinitions.h (the calc struct layouts) parses standalone:
+// realType.h provides real_t/real34_t/complex34_t, pcg_basic.h provides
+// pcg32_random_t, and one config field is a GtkWidget* -- stubbed as an opaque
+// pointer target (pointer size only, which is all the layout oracle needs).
+#include "realType.h"
+#include "mathematics/pcg_basic.h"
+typedef struct _GtkWidget GtkWidget;
+#include "typeDefinitions.h"
