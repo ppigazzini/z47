@@ -140,6 +140,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # GitHub-hosted runners preconfigure Microsoft/azure-cli apt repos that
+          # intermittently fail signature checks (Clearsigned 'NOSPLIT') and abort
+          # apt-get update; none of our prerequisites need them, so drop those
+          # third-party source lists before updating.
+          sudo rm -f /etc/apt/sources.list.d/*microsoft*.list /etc/apt/sources.list.d/*azure*.list || true
           sudo apt-get update -qq
           sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
       - name: Build xlsxio helper for monitored Zig master
@@ -374,6 +379,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # GitHub-hosted runners preconfigure Microsoft/azure-cli apt repos that
+          # intermittently fail signature checks (Clearsigned 'NOSPLIT') and abort
+          # apt-get update; none of our prerequisites need them, so drop those
+          # third-party source lists before updating.
+          sudo rm -f /etc/apt/sources.list.d/*microsoft*.list /etc/apt/sources.list.d/*azure*.list || true
           sudo apt-get update -qq
           sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
       - name: Build xlsxio helper
@@ -657,6 +667,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # GitHub-hosted runners preconfigure Microsoft/azure-cli apt repos that
+          # intermittently fail signature checks (Clearsigned 'NOSPLIT') and abort
+          # apt-get update; none of our prerequisites need them, so drop those
+          # third-party source lists before updating.
+          sudo rm -f /etc/apt/sources.list.d/*microsoft*.list /etc/apt/sources.list.d/*azure*.list || true
           sudo apt-get update -qq
           sudo apt-get install -qq -y doxygen python3-pip
           requirements_file="$(bash .github/project/workflow-imported-root-paths.sh docs-requirements)"
@@ -731,6 +746,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # GitHub-hosted runners preconfigure Microsoft/azure-cli apt repos that
+          # intermittently fail signature checks (Clearsigned 'NOSPLIT') and abort
+          # apt-get update; none of our prerequisites need them, so drop those
+          # third-party source lists before updating.
+          sudo rm -f /etc/apt/sources.list.d/*microsoft*.list /etc/apt/sources.list.d/*azure*.list || true
           sudo apt-get update -qq
           sudo apt-get install -qq -y git pkgconf build-essential cmake libexpat1-dev libminizip-dev
       - name: Build xlsxio helper for firmware lane
