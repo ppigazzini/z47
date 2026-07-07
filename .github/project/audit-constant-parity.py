@@ -35,8 +35,10 @@ ZIG_SRC = ROOT / "zig_src"
 # C #define/enum mirrors, not arbitrary Zig locals.
 NAME_RE = re.compile(
     r"\bconst ((?:ITM_|TM_|FLAG_|ERROR_|TI_|SETTING_|CM_|PGM_|MAX_|MIN_|"
-    r"NUMBER_OF_|SIZE_OF_|LAST_|FIRST_|REGISTER_|RESERVED_VARIABLE_|dt[A-Z]|"
-    r"am[A-Z])[A-Za-z_0-9]*)\s*:?\s*[a-z0-9]*\s*=\s*(0?x?[0-9A-Fa-f]+)\s*;"
+    r"NUMBER_OF_|SIZE_OF_|LAST_|FIRST_|REGISTER_|RESERVED_VARIABLE_|"
+    r"MNU_|CST_|CATALOG_|RB_|SCRUPD_|ORTHOPOLY_|PARSER_|INDPM_|COMPARE_|"
+    r"SOLVER_|PLOT_|SUM_|MATRIX_|dt[A-Z]|am[A-Z])[A-Za-z_0-9]*)"
+    r"\s*:?\s*[a-z0-9]*\s*=\s*(0?x?[0-9A-Fa-f]+)\s*;"
 )
 
 # Constants that resolve in C but legitimately differ from the owner value.
