@@ -898,8 +898,8 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
                 }
                 var i: u16 = 0;
                 while (i < @as(u16, matrix.header.matrixRows)) : (i += 1) {
-                    real34ToReal(@ptrCast(&matrix.matrixElements.?[@as(usize, i) * 2]), &x);
-                    real34ToReal(@ptrCast(&matrix.matrixElements.?[@as(usize, i) * 2 + 1]), &y);
+                    real34ToReal(&matrix.matrixElements.?[@as(usize, i) * 2], &x);
+                    real34ToReal(&matrix.matrixElements.?[@as(usize, i) * 2 + 1], &y);
                     if (statisticalSumsUpdate) {
                         addSigma(&x, &y);
                     }

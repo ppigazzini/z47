@@ -338,9 +338,9 @@ fn storeElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
 
     if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
-        frontier_register_value_conversions.convertLongIntegerRegisterToReal34(REGISTER_X, @ptrCast(&matrix.matrixElements.?[idx]));
+        frontier_register_value_conversions.convertLongIntegerRegisterToReal34(REGISTER_X, &matrix.matrixElements.?[idx]);
     } else if (getRegisterDataType(REGISTER_X) == dtReal34) {
-        real34Copy(reg34(REGISTER_X), @ptrCast(&matrix.matrixElements.?[idx]));
+        real34Copy(reg34(REGISTER_X), &matrix.matrixElements.?[idx]);
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {

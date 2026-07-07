@@ -239,7 +239,7 @@ fn recallElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
     liftStack();
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
-    real34Copy(@ptrCast(&matrix.matrixElements.?[idx]), reg34(REGISTER_X));
+    real34Copy(&matrix.matrixElements.?[idx], reg34(REGISTER_X));
     return false;
 }
 
@@ -250,7 +250,7 @@ fn recallElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     liftStack();
     reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
-    complex34Copy(@ptrCast(&matrix.matrixElements.?[idx]), regComplex34(REGISTER_X));
+    complex34Copy(&matrix.matrixElements.?[idx], regComplex34(REGISTER_X));
     return false;
 }
 
