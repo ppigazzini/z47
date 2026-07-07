@@ -58,11 +58,17 @@ const realContext_t = abi.RealContext;
 
 const item_t = abi.Item;
 
-// letteredFlagDisplay_t { const char *txt; int16_t position; } (8 bytes).
-const letteredFlagDisplay_t = extern struct {
-    txt: [*:0]const u8,
-    position: i16,
-};
+// letteredFlagDisplay_t { char txt[4]; uint32_t position; } (8 bytes),
+// centralized in abi (oracle-verified == C). The upstream table stores the
+// display text inline (STD_SPACE_6_PER_EM + one letter == 3 bytes + NUL == 4).
+const letteredFlagDisplay_t = abi.LetteredFlagDisplay;
+
+// Build the inline 4-byte txt field from a comptime string (NUL-padded).
+fn flagTxt(comptime s: []const u8) [4]u8 {
+    var r = [4]u8{ 0, 0, 0, 0 };
+    @memcpy(r[0..s.len], s);
+    return r;
+}
 const font_t = abi.Font;
 
 // ---------------------------------------------------------------------------
@@ -130,32 +136,32 @@ const STD_INFINITY = "\xa2\x1e";
 // letteredFlagDisplay[] table (TO_QSPI const).
 // ---------------------------------------------------------------------------
 pub export const letteredFlagDisplay linksection(code_data_section) = [_]letteredFlagDisplay_t{
-    .{ .txt = STD_SPACE_6_PER_EM ++ "X", .position = 3 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "Y", .position = 3 + 1 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "Z", .position = 3 + 2 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "T", .position = 3 + 3 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "A", .position = 3 + 4 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "B", .position = 3 + 5 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "C", .position = 3 + 6 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "D", .position = 3 + 7 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "L", .position = 3 + 8 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "I", .position = 8 + 10 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "J", .position = 4 + 11 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "K", .position = 2 + 12 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "M", .position = 4 + 15 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "N", .position = 5 + 16 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "P", .position = 6 + 17 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "Q", .position = 6 + 18 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "R", .position = 6 + 19 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "S", .position = 6 + 20 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "E", .position = 9 + 22 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "F", .position = 9 + 23 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "G", .position = 8 + 24 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "H", .position = 8 + 25 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "O", .position = 9 + 28 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "U", .position = 9 + 29 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "V", .position = 8 + 30 * 12 },
-    .{ .txt = STD_SPACE_6_PER_EM ++ "W", .position = 8 + 31 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "X"), .position = 3 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "Y"), .position = 3 + 1 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "Z"), .position = 3 + 2 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "T"), .position = 3 + 3 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "A"), .position = 3 + 4 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "B"), .position = 3 + 5 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "C"), .position = 3 + 6 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "D"), .position = 3 + 7 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "L"), .position = 3 + 8 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "I"), .position = 8 + 10 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "J"), .position = 4 + 11 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "K"), .position = 2 + 12 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "M"), .position = 4 + 15 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "N"), .position = 5 + 16 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "P"), .position = 6 + 17 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "Q"), .position = 6 + 18 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "R"), .position = 6 + 19 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "S"), .position = 6 + 20 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "E"), .position = 9 + 22 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "F"), .position = 9 + 23 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "G"), .position = 8 + 24 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "H"), .position = 8 + 25 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "O"), .position = 9 + 28 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "U"), .position = 9 + 29 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "V"), .position = 8 + 30 * 12 },
+    .{ .txt = flagTxt(STD_SPACE_6_PER_EM ++ "W"), .position = 8 + 31 * 12 },
 };
 
 // ---------------------------------------------------------------------------
@@ -484,7 +490,7 @@ pub export fn flagBrowser(init: u16) callconv(.c) void {
         while (f <= FLAG_W) : (f += 1) {
             f = if (f == FLAG_K + 1) FLAG_M else f; // Skip from FLAG_K (111) to FLAG_M (211)
             i = if (f <= FLAG_K) f - FLAG_X else f - FLAG_X - 99; // Index in the flag display table
-            _ = frontier_screen.showString(letteredFlagDisplay[@intCast(i)].txt, &standardFont, @intCast(letteredFlagDisplay[@intCast(i)].position), 43, if (getFlag(@bitCast(f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
+            _ = frontier_screen.showString(&letteredFlagDisplay[@intCast(i)].txt[0], &standardFont, @intCast(letteredFlagDisplay[@intCast(i)].position), 43, if (getFlag(@bitCast(f))) vmReverse else vmNormal, @intFromBool(true), @intFromBool(true));
         }
 
         _ = frontier_screen.showString("[" ++ STD_SPACE_6_PER_EM ++ "  100..108   " ++ STD_SPACE_3_PER_EM ++ STD_SPACE_6_PER_EM ++ "109..111  " ++ STD_SPACE_3_PER_EM ++ "211..216  217..220" ++ STD_SPACE_6_PER_EM ++ " 221..224]", &standardFont, 1, 44 + 66 - 1 - 44, vmNormal, @intFromBool(true), @intFromBool(true));
