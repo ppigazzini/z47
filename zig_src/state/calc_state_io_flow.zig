@@ -15,7 +15,7 @@ extern fn showHideHourGlass() void;
 extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 extern var screenUpdatingMode: u8;
-extern var temporaryInformation: u16;
+extern var temporaryInformation: u8;
 extern var hourGlassIconEnabled: bool;
 
 const ioPathRegImport: c_int = 14;

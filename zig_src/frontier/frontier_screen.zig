@@ -1379,7 +1379,7 @@ inline fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
 // ---------------------------------------------------------------------------
 // runtime macros over globals.
 // ---------------------------------------------------------------------------
-extern var significantDigits: u32;
+extern var significantDigits: u8;
 extern var exponentLimit: i16;
 extern var Input_Default: c_int;
 inline fn checkHP() bool {

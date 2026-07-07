@@ -85,7 +85,7 @@ const TripleRegZ3_98: calcRegister_t = 98;
 // Globals and function externs
 // ---------------------------------------------------------------------------
 extern var ctxtReal39: realContext_t;
-extern var temporaryInformation: u16;
+extern var temporaryInformation: u8;
 
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
