@@ -251,11 +251,11 @@ pub extern fn WP34S_ComplexAbsError(
 ) bool;
 pub extern fn getFlag(flag: u16) bool;
 pub extern fn getSystemFlag(flag: i32) bool;
-pub extern fn setSystemFlag(flag: i32) void;
-pub extern fn clearSystemFlag(flag: i32) void;
+pub extern fn setSystemFlag(flag: c_uint) void;
+pub extern fn clearSystemFlag(flag: c_uint) void;
 pub extern fn fnChangeBase(base: u16) void;
 pub extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
-pub extern fn fnSetFlag(flag: i32) void;
+pub extern fn fnSetFlag(flag: u16) void;
 pub extern fn fnRefreshState() void;
 pub extern fn setLastintegerBasetoZero() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
