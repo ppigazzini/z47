@@ -896,7 +896,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     }
 
     if (comptime dmcp_build) {
-        updateVbatIntegrated(0);
+        _ = updateVbatIntegrated(0);
     }
 
     if (programRunStop != PGM_RUNNING) {
@@ -928,7 +928,7 @@ inline fn ext_printTraceX(where: i16) void {
 }
 
 // DMCP-only
-extern fn updateVbatIntegrated(arg: bool_t) void;
+extern fn updateVbatIntegrated(arg: bool_t) c_int;
 
 // host-only (PC_BUILD)
 extern fn jm_show_comment(comment: [*c]u8) void;
