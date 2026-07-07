@@ -358,7 +358,7 @@ const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 extern var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
-extern var currentLocalFlags: ?*anyopaque;
+extern var currentLocalFlags: [*c]abi.LocalFlags;
 extern var tam: tamState_t;
 
 // PC_BUILD-only.
