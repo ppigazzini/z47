@@ -650,7 +650,7 @@ inline fn freeRegisterData(regist: calcRegister_t) void {
     freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist));
 }
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeInBytes: u32, tag: u32) void;
-extern fn allocC47Blocks(numberOfBlocks: u32) [*c]u8;
+extern fn allocC47Blocks(numberOfBlocks: usize) [*c]u8;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 extern fn fnDropY(unusedButMandatoryParameter: u16) void;
