@@ -78,7 +78,7 @@ else
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 
 // ---------------------------------------------------------------------------
-// Types (matching the C build's extern struct layouts).
+// Types (C-ABI layouts aliased from abi; local-only helpers are plain structs).
 // ---------------------------------------------------------------------------
 const bool_t = u8;
 const calcRegister_t = i16;
@@ -2130,7 +2130,7 @@ fn changeDotAndIJ(item: i16, itemN: [*c]const u8) [*c]u8 {
     return @constCast(itemN);
 }
 
-const mstr = extern struct { modeName: [5]u8 };
+const mstr = struct { modeName: [5]u8 };
 const modeNames = [_]mstr{
     .{ .modeName = [5]u8{ 'A', 'L', 'L', 0, 0 } },
     .{ .modeName = [5]u8{ 'F', 'I', 'X', 0, 0 } },

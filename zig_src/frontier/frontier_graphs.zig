@@ -742,7 +742,7 @@ inline fn fToI16(v: f32) i16 {
 // ===========================================================================
 // plotdeltas tables (TO_QSPI const, all int8 -> code_section)
 // ===========================================================================
-const plotdeltas = extern struct {
+const plotdeltas = struct {
     valid: i8,
     xd1: i8,
     yd1: i8,

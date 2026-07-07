@@ -831,7 +831,7 @@ const versionStr = @extern([*c]const u8, .{ .name = "versionStr" });
 const versionStr2 = @extern([*c]const u8, .{ .name = "versionStr2" });
 
 // nameOfWday_en[8] : nstr { char itemName[30]; }. File-local in screen.c.
-const nstr = extern struct { itemName: [30]u8 };
+const nstr = struct { itemName: [30]u8 };
 fn wday(comptime s: []const u8) nstr {
     var r = nstr{ .itemName = std.mem.zeroes([30]u8) };
     @memcpy(r.itemName[0..s.len], s);

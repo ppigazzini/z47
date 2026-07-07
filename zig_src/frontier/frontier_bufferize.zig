@@ -76,7 +76,7 @@ const softmenuStack_t = abi.SoftmenuStack;
 const tamState_t = abi.TamState;
 
 const fInMim_t = abi.FInMim;
-const numStr = extern struct { noStr: [3]u8 };
+const numStr = struct { noStr: [3]u8 };
 
 // GMP long integer (mpz). The mpz_* names are header macros; the real symbols are
 // __gmpz_*. The limb width == pointer width on every z47 target, == usize.
