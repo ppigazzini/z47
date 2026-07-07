@@ -202,7 +202,7 @@ fn _clearVar(regist: calcRegister_t) void {
             var i: u32 = 0;
             const n: u32 = @as(u32, m.header.matrixRows) * m.header.matrixColumns;
             while (i < n) : (i += 1) {
-                real34SetZero(@ptrCast(&m.matrixElements.?[i]));
+                real34SetZero(&m.matrixElements.?[i]);
             }
         },
 
@@ -212,8 +212,8 @@ fn _clearVar(regist: calcRegister_t) void {
             var i: u32 = 0;
             const n: u32 = @as(u32, m.header.matrixRows) * m.header.matrixColumns;
             while (i < n) : (i += 1) {
-                real34SetZero(@ptrCast(&m.matrixElements.?[i].real));
-                real34SetZero(@ptrCast(&m.matrixElements.?[i].imag));
+                real34SetZero(&m.matrixElements.?[i].real);
+                real34SetZero(&m.matrixElements.?[i].imag);
             }
         },
 

@@ -3152,7 +3152,7 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
                 allElementsInColAreIntegers[j] = 1;
                 var i: usize = 0;
                 while (i < rows) : (i += 1) {
-                    if (real34IsAnInteger(@ptrCast(&matrix.matrixElements.?[i * cols + j])) == 0) {
+                    if (real34IsAnInteger(&matrix.matrixElements.?[i * cols + j]) == 0) {
                         allElementsInColAreIntegers[j] = 0;
                         break;
                     }
