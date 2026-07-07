@@ -6,6 +6,7 @@ zig_build/tools/translate_c/generate_constants.h
 zig_build/tools/translate_c/generate_catalogs.h
 zig_build/tools/translate_c/generate_testpgms.h
 zig_build/tools/translate_c/ttf2_raster_fonts.h
+zig_build/tools/translate_c/abi_layout_oracle.h
 
 [cimport]
 
