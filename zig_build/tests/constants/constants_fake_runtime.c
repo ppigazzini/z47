@@ -13,7 +13,8 @@ static real34_t register_x_real34;
 static const real_t pi_value = {314};
 
 uint16_t currentSolverStatus;
-char errorMessage[512];
+static char errorMessage__stg[512];
+char *errorMessage = errorMessage__stg;
 const real_t *realtConstants[NOUC];
 const real_t *const39_pi = &pi_value;
 
@@ -48,7 +49,7 @@ real34_t *z47_constants_test_register_real34_data(calcRegister_t reg) {
 void constantsRuntimeReset(void) {
   ensureConstantsInitialized();
   memset(&snapshot, 0, sizeof(snapshot));
-  memset(errorMessage, 0, sizeof(errorMessage));
+  memset(errorMessage, 0, 512);
   currentSolverStatus = 0xffffu;
   register_x_real34.id = 0xffffu;
   snapshot.real_to_real34_destination_reg = -1;
