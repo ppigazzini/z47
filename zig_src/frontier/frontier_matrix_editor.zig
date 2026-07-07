@@ -359,7 +359,7 @@ inline fn isMatrix3dVectorRC(rows: u32, cols: u32) bool {
     return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
 }
 inline fn registerMatrixHeader(regist: calcRegister_t) *align(1) const matrixHeader_t {
-    return @ptrCast(getRegisterDataPointer(regist));
+    return abi.registerMatrixHeader(regist);
 }
 inline fn isRegisterMatrix3dVector(regist: calcRegister_t) bool {
     if (getRegisterDataType(regist) != dtReal34Matrix) return false;

@@ -132,11 +132,11 @@ const amPolarSPH: u8 = 128;
 const amPolarCYL: u8 = 64;
 
 fn matrixRows(regist: i16) u16 {
-    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
     return hdr.matrixRows;
 }
 fn matrixCols(regist: i16) u16 {
-    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
     return hdr.matrixColumns;
 }
 fn isMatrix2dVector(rows: u16, cols: u16) bool {
@@ -361,7 +361,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
 
 fn matrixToSaveString(regist: i16, is_complex: bool) void {
     const trs = regValueBuf();
-    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
     abi.fmtCStr(trs, "{d} {d}", .{ @as(c_uint, hdr.matrixRows), @as(c_uint, hdr.matrixColumns) });
     if (!is_complex) {
         _ = strcpy(aim(), "Rema");
@@ -382,7 +382,7 @@ fn matrixToSaveString(regist: i16, is_complex: bool) void {
 pub fn saveMatrixElements(regist: i16) void {
     const dt = getRegisterDataType(regist);
     if (dt != dtReal34Matrix and dt != dtComplex34Matrix) return;
-    const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
     const cols: u32 = hdr.matrixColumns;
     const count: u32 = @as(u32, hdr.matrixRows) * cols;
     const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
@@ -452,7 +452,7 @@ fn hexVal(c: u8) u32 {
 }
 
 fn setMatrixDims(regist: i16, rows: u16, cols: u16) void {
-    const hdr: *matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+    const hdr: *matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
     hdr.matrixRows = @intCast(rows);
     hdr.matrixColumns = @intCast(cols);
 }
@@ -672,7 +672,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
 pub fn restoreMatrixData(regist: i16) void {
     const dt = getRegisterDataType(regist);
     if (dt == dtReal34Matrix) {
-        const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+        const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
         const count = @as(u32, hdr.matrixRows) * @as(u32, hdr.matrixColumns);
         const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
         var i: u32 = 0;
@@ -686,7 +686,7 @@ pub fn restoreMatrixData(regist: i16) void {
             _ = decQuadFromString(base + i * REAL34_SIZE_IN_BYTES, tmpString, &ctxtReal34);
         }
     } else if (dt == dtComplex34Matrix) {
-        const hdr: *const matrixHeader_t = @ptrCast(@alignCast(getRegisterDataPointer(regist)));
+        const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
         const count = @as(u32, hdr.matrixRows) * @as(u32, hdr.matrixColumns);
         const base = getRegisterDataPointer(regist) + MATRIX_HEADER_SIZE;
         var i: u32 = 0;

@@ -36,6 +36,14 @@ pub inline fn registerString(reg: i16) [*]u8 {
     const bytes: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
     return bytes + @sizeOf(StrLgIntHeader);
 }
+// Raw byte view of a register's data block: the base pointer as bytes, for the
+// owners that memcpy / pointer-walk the block or reinterpret it themselves. This
+// centralizes the bare `@ptrCast(getRegisterDataPointer(reg).?)` -> [*]u8 that
+// was scattered across ~12 owners; coerces to [*c]u8 / [*]const u8 / [*]align(1)
+// u8 at the call site.
+pub inline fn registerBytes(reg: i16) [*]u8 {
+    return @ptrCast(getRegisterDataPointer(reg).?);
+}
 pub inline fn registerMatrixHeader(reg: i16) *align(1) MatrixHeader {
     return @ptrCast(getRegisterDataPointer(reg).?);
 }

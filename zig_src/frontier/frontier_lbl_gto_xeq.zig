@@ -374,7 +374,7 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 inline fn regStringData(reg: calcRegister_t) [*]u8 {
-    const bytes: [*]u8 = @ptrCast(getRegisterDataPointer(reg));
+    const bytes: [*]u8 = abi.registerBytes(reg);
     return bytes + 4; // sizeof(strLgIntHeader_t)
 }
 

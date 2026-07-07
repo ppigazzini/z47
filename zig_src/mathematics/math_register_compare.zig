@@ -86,7 +86,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const
 
 fn registerStringData(reg: calcRegister_t) [*c]const u8 {
     // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) (4 bytes).
-    const bytes: [*]const u8 = @ptrCast(runtime.getRegisterDataPointer(reg).?);
+    const bytes: [*]const u8 = abi.registerBytes(reg);
     return bytes + 4;
 }
 

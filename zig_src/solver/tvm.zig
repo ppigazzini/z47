@@ -339,7 +339,7 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 // macro implicitly narrows the uint16_t argument to calcRegister_t).
 inline fn registerReal34Ptr(reg: anytype) *align(1) real34_t {
     const r: calcRegister_t = @bitCast(@as(u16, @intCast(reg)));
-    return @ptrCast(getRegisterDataPointer(r).?);
+    return abi.registerReal34(r);
 }
 
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;

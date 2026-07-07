@@ -1258,7 +1258,7 @@ inline fn minI(a: i32, b: i32) i32 {
     return if (a < b) a else b;
 }
 inline fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(a)));
+    return abi.registerReal34Aligned(a);
 }
 inline fn REGISTER_STRING_DATA(a: calcRegister_t) [*c]u8 {
     // dataLen is sizeof(strLgIntHeader_t) = 4 bytes.
