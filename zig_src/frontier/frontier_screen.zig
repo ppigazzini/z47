@@ -135,9 +135,8 @@ const softmenuStack_t = abi.SoftmenuStack;
 // confirmationTI_t {i16 item, char[30] string}
 const confirmationTI_t = abi.ConfirmationTI;
 // reservedVariableDescStr_t { char Desc[28] }
-const reservedVariableDescStr_t = extern struct {
-    Desc: [28]u8,
-};
+// reservedVariableDescStr_t centralized in abi (oracle-verified == C).
+const reservedVariableDescStr_t = abi.ReservedVariableDescStr;
 // registerHeader_t: union with bitfields; pointerToRegisterData = low 16 bits.
 const registerHeader_t = abi.RegisterHeader;
 const namedVariableHeader_t = abi.NamedVariableHeader;

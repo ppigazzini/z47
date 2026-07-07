@@ -1043,10 +1043,8 @@ const dtReal34Matrix: u32 = 6;
 const dtComplex34Matrix: u32 = 7;
 
 // upperLower_t: char upper[3]; char lower[3];
-const upperLower_t = extern struct {
-    upper: [3]u8,
-    lower: [3]u8,
-};
+// upperLower_t centralized in abi (oracle-verified == C).
+const upperLower_t = abi.UpperLower;
 
 // complex34_t == two real34_t (32 bytes).
 const complex34_t = abi.Complex34;

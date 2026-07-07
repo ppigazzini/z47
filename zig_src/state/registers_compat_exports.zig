@@ -19,9 +19,8 @@ const use_fake_register_metadata_harness_surface =
 const register_descriptor_t = u32;
 const register_header_t = abi.RegisterHeader;
 
-const reserved_variable_desc_t = extern struct {
-    Desc: [28]u8,
-};
+// reservedVariableDescStr_t centralized in abi (oracle-verified == C).
+const reserved_variable_desc_t = abi.ReservedVariableDescStr;
 
 const reserved_variable_header_t = abi.ReservedVariableHeader;
 

@@ -99,13 +99,10 @@ const martelFont24_t = extern struct {
     // glyphMartelPrinter_t glyphs[];
 };
 const glyph_t = abi.Glyph;
-const nameAlias_t = extern struct {
-    item: u16,
-    name: [16]u8,
-};
-const summationRegisterName_t = extern struct {
-    name: [16]u8,
-};
+// nameAlias_t / summationRegisterName_t layouts centralized in abi
+// (oracle-verified == C).
+const nameAlias_t = abi.NameAlias;
+const summationRegisterName_t = abi.SummationRegisterName;
 const printerState_t = abi.PrinterState;
 // (rows:12, cols:12, mtag:6, notUsed:2); only rows/cols are read.
 const matrixHeader_t = abi.MatrixHeader;
