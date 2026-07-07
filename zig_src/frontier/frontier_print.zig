@@ -485,7 +485,7 @@ extern fn fflush(f: ?*anyopaque) c_int;
 // ---------------------------------------------------------------------------
 const reg34 = abi.registerReal34Aligned;
 inline fn regBytes(reg: calcRegister_t) [*c]u8 {
-    return @ptrCast(getRegisterDataPointer(reg));
+    return abi.registerBytes(reg);
 }
 inline fn regImag34(reg: calcRegister_t) *real34_t {
     return @ptrCast(@alignCast(regBytes(reg) + REAL34_SIZE_IN_BYTES));

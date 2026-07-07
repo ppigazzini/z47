@@ -204,10 +204,10 @@ const regReal34 = abi.registerReal34Aligned;
 const regImag34 = abi.registerImag34Aligned;
 const regMatrixHeader = abi.registerMatrixHeaderAligned;
 inline fn regReal34MatrixElems(reg: calcRegister_t) [*]real34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg) + MATRIX_HEADER_SIZE));
+    return abi.registerReal34MatrixElements(reg);
 }
 inline fn regComplex34MatrixElems(reg: calcRegister_t) [*]complex34_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg) + MATRIX_HEADER_SIZE));
+    return abi.registerComplex34MatrixElements(reg);
 }
 const regStringData = abi.registerString;
 

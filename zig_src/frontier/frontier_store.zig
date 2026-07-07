@@ -225,7 +225,7 @@ const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 const regShortInt = abi.registerShortInteger;
 inline fn regConfig(reg: calcRegister_t) *align(4) dtConfigDescriptor_t {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg)));
+    return abi.registerConfig(reg);
 }
 inline fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
