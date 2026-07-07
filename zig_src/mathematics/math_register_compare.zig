@@ -91,7 +91,7 @@ fn registerStringData(reg: calcRegister_t) [*c]const u8 {
 }
 
 fn registerConfigData(reg: calcRegister_t) [*]const u8 {
-    return @ptrCast(runtime.getRegisterDataPointer(reg).?);
+    return abi.registerBytes(reg);
 }
 
 inline fn realCompare(

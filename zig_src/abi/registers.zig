@@ -15,6 +15,7 @@ const types = @import("types.zig");
 const Real34 = types.Real34;
 const Complex34 = types.Complex34;
 const MatrixHeader = types.MatrixHeader;
+const DtConfigDescriptor = types.DtConfigDescriptor;
 const StrLgIntHeader = types.StrLgIntHeader;
 
 pub extern fn getRegisterDataPointer(reg: i16) callconv(.c) ?*anyopaque;
@@ -44,6 +45,12 @@ pub inline fn registerString(reg: i16) [*]u8 {
 pub inline fn registerBytes(reg: i16) [*]u8 {
     return @ptrCast(getRegisterDataPointer(reg).?);
 }
+// Config-descriptor view of a register's data block (dtConfigDescriptor_t). The
+// register block is 4-byte aligned, so the view is *align(4) (DtConfigDescriptor
+// has u64 members whose natural align-8 the block does not guarantee).
+pub inline fn registerConfig(reg: i16) *align(4) DtConfigDescriptor {
+    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+}
 pub inline fn registerMatrixHeader(reg: i16) *align(1) MatrixHeader {
     return @ptrCast(getRegisterDataPointer(reg).?);
 }
@@ -68,6 +75,10 @@ pub inline fn registerShortIntegerAligned(reg: i16) *u64 {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
 }
 pub inline fn registerReal34MatrixElements(reg: i16) [*]align(1) Real34 {
+    const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
+    return @ptrCast(base + @sizeOf(MatrixHeader));
+}
+pub inline fn registerComplex34MatrixElements(reg: i16) [*]align(1) Complex34 {
     const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
     return @ptrCast(base + @sizeOf(MatrixHeader));
 }

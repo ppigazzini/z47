@@ -76,12 +76,11 @@ extern fn z47_stack_runtime_adjust_result_complex_matrix_core(res: calcRegister_
 extern fn z47_stack_runtime_adjust_result_set_cpxres() void;
 
 fn registerReal34(reg: calcRegister_t) *real34_t {
-    return @ptrCast(getRegisterDataPointer(reg).?);
+    return abi.registerReal34Aligned(reg);
 }
 
 fn registerImag34(reg: calcRegister_t) *real34_t {
-    const base: [*]u8 = @ptrCast(getRegisterDataPointer(reg).?);
-    return @ptrCast(base + @sizeOf(real34_t));
+    return abi.registerImag34Aligned(reg);
 }
 
 fn real34ToReal(source: *const real34_t, destination: *real_t) void {

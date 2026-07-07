@@ -5,6 +5,7 @@
 // register's in-place data (header + elements) without copying. The register
 // store, allocation and the rest of the engine stay in the matrix bridge.
 
+const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
@@ -20,7 +21,7 @@ inline fn registerHeader(regist: calcRegister_t) *matrixHeader_t {
     return @ptrCast(@alignCast(runtime.getRegisterDataPointer(regist).?));
 }
 inline fn registerBytes(regist: calcRegister_t) [*]u8 {
-    return @ptrCast(runtime.getRegisterDataPointer(regist).?);
+    return abi.registerBytes(regist);
 }
 
 // isMatrixVector(rows, cols) (defines.h): a 2D or 3D row/column vector.
