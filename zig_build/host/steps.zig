@@ -906,6 +906,19 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         .target = context.host_target,
         .optimize = optimize,
     }));
+    // C-side static-assert companion: the bitfield/union types translate-c can
+    // only expose as opaque are pinned here, compiled against the upstream C.
+    abi_layout_module.link_libc = true;
+    abi_layout_module.addCSourceFile(.{
+        .file = b.path("zig_build/tests/abi_layout/abi_layout_c_asserts.c"),
+        .flags = &.{
+            "-DPC_BUILD=1",
+            b.fmt("-D{s}=1", .{context.common.platform_define}),
+            b.fmt("-D{s}=1", .{context.common.word_size_define}),
+        },
+    });
+    abi_layout_module.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
+    abi_layout_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
     const abi_layout_test = b.addTest(.{ .root_module = abi_layout_module });
     const run_abi_layout_test = b.addRunArtifact(abi_layout_test);
     const abi_layout_step = b.step("abi-layout-parity", "Cross-check abi/types.zig mirrors against the upstream C layout");

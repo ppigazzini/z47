@@ -4,6 +4,7 @@
 src/generateConstants/generateConstants.c
 src/generateTestPgms/generateTestPgms.c
 src/testSuite/testSuite.c
+zig_build/tests/abi_layout/abi_layout_c_asserts.c
 zig_build/tests/calc_state/calc_state_fake_runtime.c
 zig_build/tests/calc_state/calc_state_oracle.c
 zig_build/tests/calc_state/calc_state_parity.c
