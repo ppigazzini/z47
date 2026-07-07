@@ -84,11 +84,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const
     return buffer[0..slice.len :0];
 }
 
-fn registerStringData(reg: calcRegister_t) [*c]const u8 {
-    // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) (4 bytes).
-    const bytes: [*]const u8 = abi.registerBytes(reg);
-    return bytes + 4;
-}
+const registerStringData = abi.registerString;
 
 fn registerConfigData(reg: calcRegister_t) [*]const u8 {
     return abi.registerBytes(reg);

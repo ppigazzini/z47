@@ -1260,10 +1260,7 @@ inline fn minI(a: i32, b: i32) i32 {
 inline fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
     return abi.registerReal34Aligned(a);
 }
-inline fn REGISTER_STRING_DATA(a: calcRegister_t) [*c]u8 {
-    // dataLen is sizeof(strLgIntHeader_t) = 4 bytes.
-    return getRegisterDataPointer(a) + 4;
-}
+const REGISTER_STRING_DATA = abi.registerString;
 inline fn IS_BASEBLANK_(menuId: i16) bool {
     return menuId == 0 and getSystemFlag(FLAG_BASE_MYM) == 0 and getSystemFlag(FLAG_BASE_HOME) == 0;
 }

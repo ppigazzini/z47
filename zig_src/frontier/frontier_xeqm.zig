@@ -91,9 +91,7 @@ extern fn liftStack() void;
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 // REGISTER_STRING_DATA: data pointer + sizeof(strLgIntHeader_t) == 4.
-inline fn regString(reg: calcRegister_t) [*c]u8 {
-    return abi.registerBytes(reg) + 4;
-}
+const regString = abi.registerString;
 inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }

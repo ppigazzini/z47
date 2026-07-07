@@ -549,9 +549,7 @@ pub inline fn toBlocks(n: u32) u16 {
     return @intCast((n + 3) >> 2);
 }
 // REGISTER_STRING_DATA(reg): skip the 4-byte string/long-int header.
-pub inline fn registerStringData(regist: i16) [*c]u8 {
-    return getRegisterDataPointer(regist) + STRLGINT_HEADER_SIZE;
-}
+pub const registerStringData = abi.registerString;
 // TO_PCMEMPTR(p): block number -> RAM pointer, or null for the C47_NULL sentinel.
 pub inline fn toPcMemPtr(p: u16) ?[*]u8 {
     if (p == C47_NULL) return null;
