@@ -49,7 +49,7 @@ comptime {
     _ = @import("frontier_free_list.zig");
     _ = @import("frontier_fonts.zig");
     _ = @import("generated/frontier_martel_fonts.zig");
-    _ = @import("frontier_printer_font8.zig");
+    _ = @import("generated/frontier_printer_font8.zig");
     _ = @import("frontier_conversion_units.zig");
     _ = @import("frontier_conversion_angles.zig");
     _ = @import("frontier_register_value_conversions.zig");
