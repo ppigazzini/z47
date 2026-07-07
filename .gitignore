@@ -172,3 +172,20 @@ build.ninja
 compile_commands.json
 
 # End of https://www.toptal.com/developers/gitignore/api/meson
+
+
+### z47 Zig port ###
+# Zig build cache and output
+.zig-cache/
+zig-out/
+
+# Python bytecode cache (governance scripts under .github/project/)
+__pycache__/
+
+# Coverage instrumentation output (zig build coverage -> report-zig-coverage.sh)
+cov_pcs.txt
+
+# Maintainer working surface: planning/audit docs and reports. Policy is to
+# never commit this tree (see __DEV/PROMPT.md); ignore it so it cannot be staged
+# by accident.
+__DEV/
