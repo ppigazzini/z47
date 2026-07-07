@@ -65,3 +65,45 @@ test "abi.Complex34 is two back-to-back C decQuads" {
     try testing.expectEqual(@as(usize, 2) * @sizeOf(c.decQuad), @sizeOf(abi.Complex34));
     try testing.expectEqual(@sizeOf(c.decQuad), @offsetOf(abi.Complex34, "imag"));
 }
+
+// The typeDefinitions.h calc structs. Size is the fork-reconciliation invariant
+// (a wrong field type or dropped padding shifts sizeof, the exact bug class
+// [[extern-struct-fork-reconciliation]] documents); alignment is asserted only
+// where abi does not intentionally use an align-1 view. Each pair is
+// {C type, abi type, name} so a mismatch names the culprit struct.
+const SIZE_PAIRS = .{
+    .{ c.calcKey_t, abi.CalcKey, "CalcKey" },
+    .{ c.softmenu_t, abi.Softmenu, "Softmenu" },
+    .{ c.item_t, abi.Item, "Item" },
+    .{ c.dtConfigDescriptor_t, abi.DtConfigDescriptor, "DtConfigDescriptor" },
+    .{ c.dynamicSoftmenu_t, abi.DynamicSoftmenu, "DynamicSoftmenu" },
+    .{ c.fInMim_t, abi.FInMim, "FInMim" },
+    .{ c.font_t, abi.Font, "Font" },
+    .{ c.formulaHeader_t, abi.FormulaHeader, "FormulaHeader" },
+    .{ c.freeMemoryRegion_t, abi.FreeMemoryRegion, "FreeMemoryRegion" },
+    .{ c.glyph_t, abi.Glyph, "Glyph" },
+    .{ c.glyphMartelPrinter_t, abi.GlyphMartelPrinter, "GlyphMartelPrinter" },
+    .{ c.glyphPrinter_t, abi.GlyphPrinter, "GlyphPrinter" },
+    .{ c.labelList_t, abi.LabelList, "LabelList" },
+    .{ c.normKey_t, abi.NormKey, "NormKey" },
+    .{ c.printerState_t, abi.PrinterState, "PrinterState" },
+    .{ c.programList_t, abi.ProgramList, "ProgramList" },
+    .{ c.programmableMenu_t, abi.ProgrammableMenu, "ProgrammableMenu" },
+    .{ c.softmenuStack_t, abi.SoftmenuStack, "SoftmenuStack" },
+    .{ c.strLgIntHeader_t, abi.StrLgIntHeader, "StrLgIntHeader" },
+    .{ c.subroutineLevelHeader_t, abi.SubroutineLevelHeader, "SubroutineLevelHeader" },
+    .{ c.subroutineLevels_t, abi.SubroutineLevels, "SubroutineLevels" },
+    .{ c.tamState_t, abi.TamState, "TamState" },
+    .{ c.userMenuItem_t, abi.UserMenuItem, "UserMenuItem" },
+    .{ c.userMenu_t, abi.UserMenu, "UserMenu" },
+    .{ c.confirmationTI_t, abi.ConfirmationTI, "ConfirmationTI" },
+};
+
+test "abi calc structs match upstream C size" {
+    inline for (SIZE_PAIRS) |pair| {
+        testing.expectEqual(@sizeOf(pair[0]), @sizeOf(pair[1])) catch |err| {
+            std.debug.print("size mismatch on {s}: C={d} abi={d}\n", .{ pair[2], @sizeOf(pair[0]), @sizeOf(pair[1]) });
+            return err;
+        };
+    }
+}
