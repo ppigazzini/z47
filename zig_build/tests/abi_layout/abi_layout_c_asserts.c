@@ -31,6 +31,7 @@
 #include "mathematics/pcg_basic.h"
 typedef struct _GtkWidget GtkWidget;
 #include "typeDefinitions.h"
+#include "items.h"
 
 _Static_assert(sizeof(matrixHeader_t) == 4, "matrixHeader_t is a 32-bit bitfield");
 _Static_assert(sizeof(registerHeader_t) == 4, "registerHeader_t is a 32-bit word");
@@ -97,3 +98,6 @@ _Static_assert(dtReal34Matrix == 6, "register data-type enum");
 _Static_assert(dtComplex34Matrix == 7, "register data-type enum");
 _Static_assert(dtShortInteger == 8, "register data-type enum");
 _Static_assert(dtConfig == 9, "register data-type enum");
+// items.h item code (needs items.h above): frontier_items.isFunctionAllowingNew-
+// Variable keys on this; 1645 (ITM_XtoALPHA_OLD) matched the deprecated x->alpha.
+_Static_assert(ITM_XtoALPHA == 2785, "current fnXToAlpha item code (was 1645 = deprecated _OLD)");
