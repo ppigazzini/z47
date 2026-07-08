@@ -671,6 +671,10 @@ pub const fmtExpBuf = float_format.fmtExpBuf;
 pub const fmtFixedBuf = float_format.fmtFixedBuf;
 pub const fmtGBuf = float_format.fmtGBuf;
 
+// Shared std-only pure integer primitives (gcd, isqrt, mod-exp, ...). Reachable
+// as `abi.int_math.*` from any owner; unit-tested under `zig build test:unit`.
+pub const int_math = @import("int_math.zig");
+
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
 /// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.

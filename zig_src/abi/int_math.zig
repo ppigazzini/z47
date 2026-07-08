@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure unsigned-integer primitives shared by the WP34S short-integer commands.
+// Pure unsigned-integer primitives shared across the port (WP34S short-integer
+// commands, prime tests, modular arithmetic).
 //
-// These are the parts of the integer engine that depend on nothing but their u64
-// inputs -- no calculator mode, flags, or registers -- so they live here as a
-// std-only module that `zig build test:unit` exercises natively. frontier_integers
-// keeps the mode/flag/register handling and delegates the raw arithmetic here.
+// These depend on nothing but their u64 inputs -- no calculator mode, flags, or
+// registers -- so they live in the shared abi layer as a std-only module that
+// `zig build test:unit` exercises natively, reachable as `abi.int_math` from any
+// owner. Runtime-coupled owners keep their mode/flag/register handling and
+// delegate the raw arithmetic here (cf. abi/float_format for the same pattern).
 
 const std = @import("std");
 
