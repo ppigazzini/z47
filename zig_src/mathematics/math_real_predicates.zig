@@ -168,7 +168,7 @@ test "realIsInfinite / realIsNaN isolate their special bits" {
 }
 
 test "real34IsNegative reads the MSB of the top blob byte" {
-    var q: abi.Real34 = .{ .bytes = [_]u8{0} ** 16 };
+    var q: abi.Real34 = std.mem.zeroes(abi.Real34);
     try std.testing.expect(!real34IsNegative(&q));
 
     q.bytes[15] = 0x80;
