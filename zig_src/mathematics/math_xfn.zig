@@ -38,6 +38,7 @@ const math_rdp = @import("math_rdp.zig"); // M-callconv: Zig-to-Zig
 const math_rsd = @import("math_rsd.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
@@ -194,16 +195,13 @@ extern fn sprintf(str: [*]u8, format: [*:0]const u8, ...) c_int;
 // realIsNaN / realIsInfinite / realIsZero (decNumber.h bit-test macros, inlined).
 const DEC_INF: u8 = 0x40;
 const DEC_NAN_BITS: u8 = 0x20 | 0x10; // DECNAN | DECSNAN
-const DEC_SPECIAL: u8 = 0x40 | 0x20 | 0x10;
 inline fn realIsInfinite(s: *align(1) const real_t) bool {
     return (s.bits & DEC_INF) != 0;
 }
 inline fn realIsNaN(s: *align(1) const real_t) bool {
     return (s.bits & DEC_NAN_BITS) != 0;
 }
-inline fn realIsZero(s: *align(1) const real_t) bool {
-    return s.lsu[0] == 0 and s.digits == 1 and (s.bits & DEC_SPECIAL) == 0;
-}
+const realIsZero = math_real_predicates.realIsZero;
 
 inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopy(destination, source);
@@ -238,9 +236,7 @@ inline fn realToString(source: *align(1) const real_t, destination: [*]u8) void 
 inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
-inline fn realIsSpecial(source: *align(1) const real_t) bool {
-    return (source.bits & 0x70) != 0;
-}
+const realIsSpecial = math_real_predicates.realIsSpecial;
 inline fn realGetExponent(source: *align(1) const real_t) i32 {
     return source.digits + source.exponent - 1;
 }

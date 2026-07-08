@@ -324,16 +324,10 @@ inline fn realSetOne(r: *align(1) real_t) void {
 inline fn realSetZero(r: *align(1) real_t) void {
     _ = decNumberFromInt32(r, 0);
 }
-inline fn realIsNegative(source: *align(1) const real_t) bool {
-    return (source.bits & 0x80) == 0x80;
-}
+const realIsNegative = math_real_predicates.realIsNegative;
 const realIsPositive = math_real_predicates.realIsPositive;
-inline fn realIsZero(source: *align(1) const real_t) bool {
-    return source.digits == 1 and source.lsu[0] == 0 and !realIsSpecial(source);
-}
-inline fn realIsSpecial(source: *align(1) const real_t) bool {
-    return (source.bits & 0x70) != 0;
-}
+const realIsZero = math_real_predicates.realIsZero;
+const realIsSpecial = math_real_predicates.realIsSpecial;
 inline fn realIsInfinite(source: *align(1) const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
