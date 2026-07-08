@@ -650,20 +650,9 @@ pub export fn WP34S_intLog10(x: u64) callconv(.c) u64 {
 }
 
 pub export fn WP34S_mulmod(a: u64, b: u64, c: u64) callconv(.c) u64 {
-    const x: u128 = @as(u128, a) * @as(u128, b);
-    return @intCast(x % c);
+    return integer_pure.mulmod(a, b, c);
 }
 
 pub export fn WP34S_expmod(a: u64, b_in: u64, c: u64) callconv(.c) u64 {
-    var b = b_in;
-    var x: u64 = 1;
-    var y: u64 = a;
-    while (b > 0) {
-        if ((b & 1) != 0) {
-            x = WP34S_mulmod(x, y, c);
-        }
-        y = WP34S_mulmod(y, y, c);
-        b /= 2;
-    }
-    return x % c;
+    return integer_pure.expmod(a, b_in, c);
 }

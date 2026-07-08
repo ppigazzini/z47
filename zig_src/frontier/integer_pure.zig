@@ -68,6 +68,26 @@ pub fn log10Floor(value: u64) u32 {
     return r;
 }
 
+/// (a * b) mod m, via a 128-bit product so the multiply never overflows. `m`
+/// must be non-zero (callers in the modular commands guarantee it).
+pub fn mulmod(a: u64, b: u64, m: u64) u64 {
+    const x: u128 = @as(u128, a) * @as(u128, b);
+    return @intCast(x % m);
+}
+
+/// (base ^ exp) mod m by right-to-left binary exponentiation. `m` must be
+/// non-zero.
+pub fn expmod(base: u64, exp: u64, m: u64) u64 {
+    var e = exp;
+    var x: u64 = 1;
+    var y: u64 = base;
+    while (e > 0) : (e >>= 1) {
+        if ((e & 1) != 0) x = mulmod(x, y, m);
+        y = mulmod(y, y, m);
+    }
+    return x % m;
+}
+
 test "gcd matches known pairs and boundary cases" {
     try std.testing.expectEqual(@as(u64, 6), gcd(54, 24));
     try std.testing.expectEqual(@as(u64, 6), gcd(24, 54)); // order independent
@@ -156,5 +176,41 @@ test "log10Floor and isPowerOfTen" {
         try std.testing.expect(isPowerOfTen(p));
         if (e >= 1) try std.testing.expect(!isPowerOfTen(p + 1));
         p *= 10;
+    }
+}
+
+test "mulmod computes (a*b) mod m without overflow" {
+    try std.testing.expectEqual(@as(u64, 0), mulmod(0, 5, 7));
+    try std.testing.expectEqual(@as(u64, 6), mulmod(4, 5, 7)); // 20 mod 7
+    try std.testing.expectEqual(@as(u64, 1), mulmod(3, 5, 7)); // 15 mod 7
+
+    // Products that overflow u64 but not the 128-bit intermediate.
+    const big = std.math.maxInt(u64);
+    try std.testing.expectEqual(@as(u64, 0), mulmod(big, big, big));
+    const m: u64 = 1_000_000_007;
+    try std.testing.expectEqual(@as(u64, 1), mulmod(m - 1, m - 1, m)); // (m-1)^2 mod m
+}
+
+test "expmod computes (base^exp) mod m" {
+    try std.testing.expectEqual(@as(u64, 1), expmod(2, 0, 7)); // x^0
+    try std.testing.expectEqual(@as(u64, 1), expmod(2, 3, 7)); // 8 mod 7
+    try std.testing.expectEqual(@as(u64, 4), expmod(2, 5, 7)); // 32 mod 7
+    try std.testing.expectEqual(@as(u64, 0), expmod(2, 5, 1)); // mod 1
+
+    // Fermat's little theorem: a^(p-1) == 1 (mod p) for prime p, gcd(a,p)==1.
+    const p: u64 = 1_000_000_007;
+    try std.testing.expectEqual(@as(u64, 1), expmod(2, p - 1, p));
+    try std.testing.expectEqual(@as(u64, 1), expmod(123_456, p - 1, p));
+
+    // Cross-check against a naive repeated-multiply reference for small inputs.
+    var base: u64 = 0;
+    while (base < 20) : (base += 1) {
+        var exp: u64 = 0;
+        while (exp < 12) : (exp += 1) {
+            var ref: u64 = 1;
+            var i: u64 = 0;
+            while (i < exp) : (i += 1) ref = (ref * base) % 13;
+            try std.testing.expectEqual(ref, expmod(base, exp, 13));
+        }
     }
 }
