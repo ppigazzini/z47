@@ -7,6 +7,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
@@ -21,9 +22,7 @@ const nim_register_line = runtime.REGISTER_X;
 const realElems = abi.matrixRealElems;
 const complexElems = abi.matrixComplexElems;
 
-inline fn samePtr(a: anytype, b: anytype) bool {
-    return @intFromPtr(a) == @intFromPtr(b);
-}
+const samePtr = math_real_predicates.samePtr;
 
 // real34Copy upstream is a raw element copy (defines.h).
 inline fn real34Copy(source: *const real34_t, destination: *real34_t) void {
