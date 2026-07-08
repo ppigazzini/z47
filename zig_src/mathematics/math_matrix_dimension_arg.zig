@@ -7,6 +7,7 @@
 
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -48,9 +49,7 @@ pub export fn getMatrixDims(regist: calcRegister_t, func_name: [*:0]const u8, ro
 
 // mpz_sgn(x) <= 0: a long integer is negative or zero when its size field is
 // non-positive (GMP stores the sign in _mp_size).
-inline fn longIntegerIsNegativeOrZero(value: *const mpz_struct) bool {
-    return value._mp_size <= 0;
-}
+const longIntegerIsNegativeOrZero = math_real_predicates.longIntegerIsNegativeOrZero;
 
 fn getSingleDimension(reg: calcRegister_t, d: *u32) bool {
     var tmp: runtime.longInteger_t = undefined;

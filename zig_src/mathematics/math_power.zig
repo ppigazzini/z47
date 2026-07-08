@@ -113,12 +113,8 @@ inline fn longIntegerCopy(source: *const mpz_struct, destination: *mpz_struct) v
 inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
     __gmpz_set_ui(destination, source);
 }
-inline fn longIntegerIsZero(op: *const mpz_struct) bool {
-    return op._mp_size == 0;
-}
-inline fn longIntegerIsNegative(op: *const mpz_struct) bool {
-    return op._mp_size < 0;
-}
+const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
+const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
 inline fn longIntegerIsOdd(op: *const mpz_struct) bool {
     return op._mp_size != 0 and (op._mp_d[0] & 1) != 0;
 }

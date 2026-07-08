@@ -11,6 +11,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -312,13 +313,9 @@ pub export fn conjCplx() linksection(runtime.code_section) callconv(.c) void {
 // ---------------------------------------------------------------------------
 // Long integer inline helpers (src/c47/longIntegerType.h static inlines).
 // ---------------------------------------------------------------------------
-fn longIntegerIsZero(op: *const mpz_struct) bool {
-    return op._mp_size == 0;
-}
+const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 
-fn longIntegerIsNegative(op: *const mpz_struct) bool {
-    return op._mp_size < 0;
-}
+const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
 
 fn longIntegerSign(op: *const mpz_struct) i32 {
     if (op._mp_size < 0) {

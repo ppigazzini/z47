@@ -276,9 +276,7 @@ inline fn stringToLongInteger(source: [*:0]const u8, radix: c_int, destination: 
 inline fn longIntegerToString(source: *const mpz_struct, radix: c_int, destination: [*]u8) void {
     _ = __gmpz_get_str(destination, radix, source);
 }
-inline fn longIntegerIsZero(op: *const mpz_struct) bool {
-    return op._mp_size == 0;
-}
+const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 
 // libc string ops.
 extern fn strlen(s: [*:0]const u8) usize;
