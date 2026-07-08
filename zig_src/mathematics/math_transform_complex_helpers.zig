@@ -12,6 +12,7 @@ const std = @import("std");
 const abi = @import("abi");
 const atan2_owned = @import("math_atan2.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const wrappers = @import("math_command_wrappers.zig");
 
 // Upstream realType.c functions (canonical symbols in the product link).
@@ -38,9 +39,7 @@ fn realSetNegativeSign(value: *runtime.real_t) void {
     value.bits |= 0x80;
 }
 
-fn realIsPositive(value: *const runtime.real_t) bool {
-    return (value.bits & 0x80) == 0;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 // realDivideBy2(op, ctxt) is the upstream macro decNumberMultiply(op, op, const_1on2, ctxt).
 fn realDivideBy2(operand: *runtime.real_t, real_context: *runtime.realContext_t) void {

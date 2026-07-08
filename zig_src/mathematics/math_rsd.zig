@@ -22,6 +22,7 @@ const const_100 = consts.const_100;
 // calls them). The commented-out alternate rsdReal in the C is dropped.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
@@ -57,9 +58,7 @@ extern fn refreshRegisterLine(regist: calcRegister_t) void;
 const realIsZero = runtime.realIsZero;
 const realIsSpecial = runtime.realIsSpecial;
 const realIsNegative = runtime.realIsNegative;
-inline fn realIsPositive(source: *const real_t) bool {
-    return (source.bits & 0x80) == 0x00;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;

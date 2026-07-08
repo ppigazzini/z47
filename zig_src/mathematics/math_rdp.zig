@@ -17,6 +17,7 @@ const const_1 = consts.const_1;
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
 const math_rsd = @import("math_rsd.zig"); // M-callconv: Zig-to-Zig
 
@@ -62,9 +63,7 @@ extern fn refreshRegisterLine(regist: calcRegister_t) void;
 const realIsZero = runtime.realIsZero;
 const realIsSpecial = runtime.realIsSpecial;
 const realIsNegative = runtime.realIsNegative;
-inline fn realIsPositive(source: *const real_t) bool {
-    return (source.bits & 0x80) == 0x00;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 inline fn getRegisterAngularMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amAngleMask;

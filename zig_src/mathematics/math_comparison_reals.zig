@@ -15,6 +15,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 
 // Product ABI globals (uint8_t in src/c47/c47.c).  This file is only built
@@ -65,9 +66,7 @@ inline fn realCompare(
     _ = runtime.decNumberCompare(res, operand1, operand2, real_context);
 }
 
-inline fn realIsPositive(value: *const runtime.real_t) bool {
-    return (value.bits & runtime.DECNEG) == 0;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 inline fn real34Compare(
     operand1: *const runtime.real34_t,
