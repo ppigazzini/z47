@@ -40,21 +40,20 @@ fn reportDblMultiplyTypeError(reg: runtime.calcRegister_t) void {
     runtime.moreInfoOnError("In function fnDblMultiply:", "the input type is not allowed for DBLx!", null, null);
 }
 
-fn requireDblMultiplyShortInteger(reg: runtime.calcRegister_t) bool {
+const DblTypeError = error{NotShortInteger};
+
+fn requireDblMultiplyShortInteger(reg: runtime.calcRegister_t) DblTypeError!void {
     if (runtime.getRegisterDataType(reg) == runtime.dtShortInteger) {
-        return true;
+        return;
     }
 
     reportDblMultiplyTypeError(reg);
-    return false;
+    return error.NotShortInteger;
 }
 
 fn dblMultiplyOwned() void {
-    if (!requireDblMultiplyShortInteger(runtime.REGISTER_X) or
-        !requireDblMultiplyShortInteger(runtime.REGISTER_Y))
-    {
-        return;
-    }
+    requireDblMultiplyShortInteger(runtime.REGISTER_X) catch return;
+    requireDblMultiplyShortInteger(runtime.REGISTER_Y) catch return;
 
     if (!runtime.saveLastX()) {
         return;
@@ -130,22 +129,19 @@ fn reportDblDivideOverflow() void {
     runtime.moreInfoOnError("In function dblDivide:", "quotient overflow", null, null);
 }
 
-fn requireDblDivideShortInteger(reg: runtime.calcRegister_t) bool {
+fn requireDblDivideShortInteger(reg: runtime.calcRegister_t) DblTypeError!void {
     if (runtime.getRegisterDataType(reg) == runtime.dtShortInteger) {
-        return true;
+        return;
     }
 
     reportDblDivideTypeError(reg);
-    return false;
+    return error.NotShortInteger;
 }
 
 fn dblDivideOwned(remainder_mode: bool) void {
-    if (!requireDblDivideShortInteger(runtime.REGISTER_X) or
-        !requireDblDivideShortInteger(runtime.REGISTER_Y) or
-        !requireDblDivideShortInteger(runtime.REGISTER_Z))
-    {
-        return;
-    }
+    requireDblDivideShortInteger(runtime.REGISTER_X) catch return;
+    requireDblDivideShortInteger(runtime.REGISTER_Y) catch return;
+    requireDblDivideShortInteger(runtime.REGISTER_Z) catch return;
 
     const sim = runtime.shortIntegerMode;
     const word_size: u32 = runtime.shortIntegerWordSize;
