@@ -87,16 +87,10 @@ pub export fn fnRlc(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var carry: u64 = @intFromBool(runtime.getSystemFlag(@as(i32, @intCast(runtime.FLAG_CARRY))));
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        const sign = @as(u64, @intFromBool((word & runtime.shortIntegerSignBit) != 0));
-        word = (word << 1) | carry;
-        carry = sign;
-    }
-
-    setCarry(carry != 0);
-    setShiftResult(word, base);
+    const carry_in = runtime.getSystemFlag(@as(i32, @intCast(runtime.FLAG_CARRY)));
+    const r = shortint_core.rotateLeftThroughCarry(word, number_of_shifts, carry_in, runtime.shortIntegerSignBit);
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnRrc(number_of_shifts: u16) callconv(.c) void {
@@ -104,17 +98,10 @@ pub export fn fnRrc(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    const shift = topShift();
-    var carry: u64 = @intFromBool(runtime.getSystemFlag(@as(i32, @intCast(runtime.FLAG_CARRY))));
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        const lsb = word & 1;
-        word = (word >> 1) | (carry << shift);
-        carry = lsb;
-    }
-
-    setCarry(carry != 0);
-    setShiftResult(word, base);
+    const carry_in = runtime.getSystemFlag(@as(i32, @intCast(runtime.FLAG_CARRY)));
+    const r = shortint_core.rotateRightThroughCarry(word, number_of_shifts, carry_in, topShift());
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnLj(unused_but_mandatory_parameter: u16) callconv(.c) void {

@@ -118,6 +118,35 @@ pub fn rotateRight(word_in: u64, count: u16, top_shift: u6) ShiftResult {
     return .{ .word = word, .carry = carry };
 }
 
+/// Rotate left through carry (RLC): the sign bit becomes the new carry and the
+/// old carry enters at bit 0, `count` times. Unlike the plain rotates this always
+/// publishes the final carry (so `carry` is never null, even for count 0).
+pub fn rotateLeftThroughCarry(word_in: u64, count: u16, carry_in: bool, sign_bit: u64) ShiftResult {
+    var word = word_in;
+    var carry: u64 = @intFromBool(carry_in);
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        const sign = @as(u64, @intFromBool((word & sign_bit) != 0));
+        word = (word << 1) | carry;
+        carry = sign;
+    }
+    return .{ .word = word, .carry = carry != 0 };
+}
+
+/// Rotate right through carry (RRC): bit 0 becomes the new carry and the old carry
+/// enters at `top_shift`, `count` times. Always publishes the final carry.
+pub fn rotateRightThroughCarry(word_in: u64, count: u16, carry_in: bool, top_shift: u6) ShiftResult {
+    var word = word_in;
+    var carry: u64 = @intFromBool(carry_in);
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        const lsb = word & 1;
+        word = (word >> 1) | (carry << top_shift);
+        carry = lsb;
+    }
+    return .{ .word = word, .carry = carry != 0 };
+}
+
 /// Left-justify (LJ): shift `word` up so its most significant set bit sits at the
 /// top of the word size. Zero yields a full-word-size count and an unchanged 0.
 pub fn leftJustify(word: u64, word_size: u8) JustifyResult {
@@ -254,6 +283,21 @@ test "rotateLeft and rotateRight wrap the end bit around" {
     // Zero-count leaves both the word and CARRY untouched.
     try testing.expectEqual(ShiftResult{ .word = 0x12, .carry = null }, rotateLeft(0x12, 0, s8));
     try testing.expectEqual(ShiftResult{ .word = 0x12, .carry = null }, rotateRight(0x12, 0, 7));
+}
+
+test "rotate through carry threads the CARRY bit" {
+    const s8: u64 = 0x80;
+    // RLC: old carry enters bit 0, sign becomes the new carry.
+    try testing.expectEqual(ShiftResult{ .word = 0x02, .carry = false }, rotateLeftThroughCarry(0x01, 1, false, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x100, .carry = true }, rotateLeftThroughCarry(0x80, 1, false, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x01, .carry = false }, rotateLeftThroughCarry(0x00, 1, true, s8));
+    // RRC: old carry enters the top, bit 0 becomes the new carry.
+    try testing.expectEqual(ShiftResult{ .word = 0x01, .carry = false }, rotateRightThroughCarry(0x02, 1, false, 7));
+    try testing.expectEqual(ShiftResult{ .word = 0x00, .carry = true }, rotateRightThroughCarry(0x01, 1, false, 7));
+    try testing.expectEqual(ShiftResult{ .word = 0x80, .carry = false }, rotateRightThroughCarry(0x00, 1, true, 7));
+    // Zero count still republishes the incoming carry (never null).
+    try testing.expectEqual(ShiftResult{ .word = 0x12, .carry = true }, rotateLeftThroughCarry(0x12, 0, true, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x12, .carry = false }, rotateRightThroughCarry(0x12, 0, false, 7));
 }
 
 test "leftJustify and rightJustify shift to the word edges" {
