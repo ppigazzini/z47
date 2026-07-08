@@ -46,6 +46,50 @@ pub fn isBitSet(word: u64, bit: u16) bool {
 /// The result of a justify: how far the value was shifted and the shifted word.
 pub const JustifyResult = struct { count: u32, word: u64 };
 
+/// The word after a shift/rotate and the CARRY to publish. `carry == null` means
+/// leave CARRY unchanged, which a zero-count shift must do (the C only calls
+/// setCarry on the final iteration, so no iterations touch nothing).
+pub const ShiftResult = struct { word: u64, carry: ?bool };
+
+/// Arithmetic shift right by `count` (ASR): the sign bit, sampled once from the
+/// input, is fed back into the top on every step; CARRY is the last bit shifted
+/// out. Result is unmasked (the caller re-masks to the word size).
+pub fn arithmeticShiftRight(word_in: u64, count: u16, sign_bit: u64) ShiftResult {
+    var word = word_in;
+    const sign = word & sign_bit;
+    var carry: ?bool = null;
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        if (i + 1 == count) carry = (word & 1) != 0;
+        word = (word >> 1) | sign;
+    }
+    return .{ .word = word, .carry = carry };
+}
+
+/// Logical shift left by `count` (SL); CARRY is the last bit shifted out the top.
+pub fn shiftLeft(word_in: u64, count: u16, sign_bit: u64) ShiftResult {
+    var word = word_in;
+    var carry: ?bool = null;
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        if (i + 1 == count) carry = (word & sign_bit) != 0;
+        word <<= 1;
+    }
+    return .{ .word = word, .carry = carry };
+}
+
+/// Logical shift right by `count` (SR); CARRY is the last bit shifted out the bottom.
+pub fn shiftRight(word_in: u64, count: u16) ShiftResult {
+    var word = word_in;
+    var carry: ?bool = null;
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        if (i + 1 == count) carry = (word & 1) != 0;
+        word >>= 1;
+    }
+    return .{ .word = word, .carry = carry };
+}
+
 /// Left-justify (LJ): shift `word` up so its most significant set bit sits at the
 /// top of the word size. Zero yields a full-word-size count and an unchanged 0.
 pub fn leftJustify(word: u64, word_size: u8) JustifyResult {
@@ -146,6 +190,24 @@ test "set/clear/flip/isBit" {
     try testing.expect(isBitSet(0x8, 3));
     try testing.expect(isBitClear(0x8, 2));
     try testing.expect(!isBitSet(0x8, 2));
+}
+
+test "arithmetic/logical shifts report the last out-bit as carry" {
+    const s8: u64 = 0x80;
+    // ASR preserves sign; last out-bit is CARRY.
+    try testing.expectEqual(ShiftResult{ .word = 0x02, .carry = false }, arithmeticShiftRight(0x08, 2, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0xC0, .carry = false }, arithmeticShiftRight(0x80, 1, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x01, .carry = true }, arithmeticShiftRight(0x03, 1, s8));
+    // SL: carry is the sign bit shifted out.
+    try testing.expectEqual(ShiftResult{ .word = 0x02, .carry = false }, shiftLeft(0x01, 1, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x100, .carry = true }, shiftLeft(0x80, 1, s8));
+    // SR: carry is the low bit shifted out.
+    try testing.expectEqual(ShiftResult{ .word = 0x01, .carry = false }, shiftRight(0x02, 1));
+    try testing.expectEqual(ShiftResult{ .word = 0x00, .carry = true }, shiftRight(0x01, 1));
+    // Zero-count leaves CARRY untouched (null) and the word unchanged.
+    try testing.expectEqual(ShiftResult{ .word = 0x08, .carry = null }, arithmeticShiftRight(0x08, 0, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x08, .carry = null }, shiftLeft(0x08, 0, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x08, .carry = null }, shiftRight(0x08, 0));
 }
 
 test "leftJustify and rightJustify shift to the word edges" {

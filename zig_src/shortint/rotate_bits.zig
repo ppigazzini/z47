@@ -37,15 +37,9 @@ pub export fn fnAsr(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    const sign = word & runtime.shortIntegerSignBit;
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        if (i + 1 == number_of_shifts) {
-            setCarry((word & 1) != 0);
-        }
-        word = (word >> 1) | sign;
-    }
-    setShiftResult(word, base);
+    const r = shortint_core.arithmeticShiftRight(word, number_of_shifts, runtime.shortIntegerSignBit);
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnSl(number_of_shifts: u16) callconv(.c) void {
@@ -53,14 +47,9 @@ pub export fn fnSl(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        if (i + 1 == number_of_shifts) {
-            setCarry((word & runtime.shortIntegerSignBit) != 0);
-        }
-        word <<= 1;
-    }
-    setShiftResult(word, base);
+    const r = shortint_core.shiftLeft(word, number_of_shifts, runtime.shortIntegerSignBit);
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnSr(number_of_shifts: u16) callconv(.c) void {
@@ -68,14 +57,9 @@ pub export fn fnSr(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        if (i + 1 == number_of_shifts) {
-            setCarry((word & 1) != 0);
-        }
-        word >>= 1;
-    }
-    setShiftResult(word, base);
+    const r = shortint_core.shiftRight(word, number_of_shifts);
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnRl(number_of_shifts: u16) callconv(.c) void {
