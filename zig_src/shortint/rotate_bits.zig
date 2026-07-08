@@ -189,40 +189,19 @@ pub export fn fnMirror(unused_but_mandatory_parameter: u16) callconv(.c) void {
     setShiftResult(shortint_core.mirrorBits(word, runtime.shortIntegerWordSize), base);
 }
 
-fn byte(word: u64, shift: u6) u64 {
-    return (word >> shift) & 0xff;
-}
-
 pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    const b7 = byte(word, 56);
-    const b6 = byte(word, 48);
-    const b5 = byte(word, 40);
-    const b4 = byte(word, 32);
-    const b3 = byte(word, 24);
-    const b2 = byte(word, 16);
-    const b1 = byte(word, 8);
-    const b0 = byte(word, 0);
-
+    // The command first grows the word size to a multiple of the swap
+    // granularity; that resize is a side effect kept here, then the pure byte
+    // reversal runs against the resolved word size.
     if (bit_width == 8) {
         if (runtime.shortIntegerWordSize < 16) {
             runtime.fnSetWordSize(16);
         } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bit_width - 1))) != 0) {
             runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bit_width - 1))) + 1);
-        }
-
-        switch (runtime.shortIntegerWordSize) {
-            16 => word = (b0 << 8) | b1,
-            24 => word = (b0 << 16) | (b1 << 8) | b2,
-            32 => word = (b0 << 24) | (b1 << 16) | (b2 << 8) | b3,
-            40 => word = (b0 << 32) | (b1 << 24) | (b2 << 16) | (b3 << 8) | b4,
-            48 => word = (b0 << 40) | (b1 << 32) | (b2 << 24) | (b3 << 16) | (b4 << 8) | b5,
-            56 => word = (b0 << 48) | (b1 << 40) | (b2 << 32) | (b3 << 24) | (b4 << 16) | (b5 << 8) | b6,
-            64 => word = (b0 << 56) | (b1 << 48) | (b2 << 40) | (b3 << 32) | (b4 << 24) | (b5 << 16) | (b6 << 8) | b7,
-            else => {},
         }
     } else if (bit_width == 16) {
         if (runtime.shortIntegerWordSize < 32) {
@@ -230,16 +209,9 @@ pub export fn fnSwapEndian(bit_width: u16) callconv(.c) void {
         } else if ((runtime.shortIntegerWordSize & @as(u8, @intCast(bit_width - 1))) != 0) {
             runtime.fnSetWordSize((runtime.shortIntegerWordSize | @as(u8, @intCast(bit_width - 1))) + 1);
         }
-
-        switch (runtime.shortIntegerWordSize) {
-            32 => word = (b1 << 24) | (b0 << 16) | (b3 << 8) | b2,
-            48 => word = (b1 << 40) | (b0 << 32) | (b3 << 24) | (b2 << 16) | (b5 << 8) | b4,
-            64 => word = (b1 << 56) | (b0 << 48) | (b3 << 40) | (b2 << 32) | (b5 << 24) | (b4 << 16) | (b7 << 8) | b6,
-            else => {},
-        }
     }
 
-    setShiftResult(word, base);
+    setShiftResult(shortint_core.swapEndian(word, runtime.shortIntegerWordSize, bit_width), base);
 }
 
 pub export fn fnZip(unused_but_mandatory_parameter: u16) callconv(.c) void {
