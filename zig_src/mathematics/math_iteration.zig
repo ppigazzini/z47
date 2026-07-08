@@ -49,6 +49,7 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_register_compare = @import("math_register_compare.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real34_t = runtime.real34_t;
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -113,9 +114,7 @@ inline fn real34SetOne(destination: *real34_t) void {
 inline fn real34IsZero(source: *const real34_t) bool {
     return decQuadIsZero(source) != 0;
 }
-inline fn real34IsNegative(source: *const real34_t) bool {
-    return (source.bytes[15] & 0x80) == 0x80;
-}
+const real34IsNegative = math_real_predicates.real34IsNegative;
 inline fn real34SetPositiveSign(operand: *real34_t) void {
     operand.bytes[15] &= 0x7F;
 }
