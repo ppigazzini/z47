@@ -71,12 +71,12 @@ def _split_top_level(text, sep=","):
 
 
 def parse_c_rows(src):
-    """Return the list of item_t initializers (func replaced with 0) from items.c."""
+    """Return (initializers-with-func-0, func-name-per-row) from items.c."""
     m = re.search(r"const item_t indexOfItems\[\] = \{(.*?)\n\};", src, re.S)
     body = "\n".join(re.sub(r"//.*$", "", ln) for ln in m.group(1).splitlines())
     rows = [re.sub(r"/\*.*?\*/", "", r, flags=re.S).strip() for r in _split_top_level(body)]
     rows = [r for r in rows if r]
-    out = []
+    out, funcs = [], []
     for r in rows:
         if r.startswith("UNIT_CONV"):
             args = [a.strip() for a in _split_top_level(r[r.index("(") + 1 : r.rindex(")")])]
@@ -85,11 +85,33 @@ def parse_c_rows(src):
                 f"{{ 0, {unit} | {invert}, {cat}, {menu}, (0 << TAM_MAX_BITS) | 0, "
                 "CAT_NONE | SLS_ENABLED | US_ENABLED | EIM_DISABLED | PTP_NONE | RESULT_IN_X }"
             )
+            funcs.append("fnUnitConvert")
         else:
             inner = r[1 : r.rindex("}")]
-            rest = _split_top_level(inner)[1:]  # drop the func field
-            out.append("{ 0, " + ",".join(rest).strip() + " }")
-    return out
+            parts = _split_top_level(inner)
+            funcs.append(parts[0].strip())
+            out.append("{ 0, " + ",".join(parts[1:]).strip() + " }")
+    return out, funcs
+
+
+# items.c func names that legitimately do NOT map to plain ext_<name> in the Zig
+# mirror. Keep tiny and always cite why (mirrors audit-constant-parity's
+# KNOWN_DIVERGENCES discipline).
+KNOWN_FUNC_MAP = {
+    # An items.c macro that resolves to itemToBeCoded whenever USECURVES is #undef
+    # (true on every z47 target), which the mirror binds directly.
+    "conditionalPCURVE": "&itemToBeCoded",
+    # z47 binds the underlying fnDumpMenus; the C row uses the fnDumpMenusWrapper
+    # indirection. Same dump entry -- see the deferred fnmenudump-stale-port note.
+    "fnDumpMenusWrapper": "ext_fnDumpMenus",
+}
+
+
+def expected_zig_func(c_func):
+    """The Zig .func reference a given items.c function name maps to."""
+    if c_func in KNOWN_FUNC_MAP:
+        return KNOWN_FUNC_MAP[c_func]
+    return "&itemToBeCoded" if c_func == "itemToBeCoded" else "ext_" + c_func
 
 
 def extract_block(src_lines, start_pat, end_pat):
@@ -102,7 +124,7 @@ def extract_block(src_lines, start_pat, end_pat):
 def build_probe_and_dump(zig, tmp):
     src = ITEMS_C.read_text(errors="ignore")
     src_lines = src.splitlines()
-    rows = parse_c_rows(src)
+    rows, cfuncs = parse_c_rows(src)
     # items.c-local string macros (SEP/S3EM/...) and the OPTION_XFN_1000 S18_* block.
     localm = extract_block(src_lines, r"#define PER_\b", r"#define S3EM\b")
     s18 = extract_block(src_lines, r"#if defined\(OPTION_XFN_1000\)", r"#endif //OPTION_XFN_1000")
@@ -148,7 +170,7 @@ def build_probe_and_dump(zig, tmp):
     )
     if comp.returncode != 0:
         print("item-table probe: compile failed\n" + comp.stderr[:2500], file=sys.stderr)
-        return None, len(rows)
+        return None, len(rows), cfuncs
     run = subprocess.run([str(tmp / "probe")], capture_output=True, text=True)
     cdump = {}
     for line in run.stdout.splitlines():
@@ -156,14 +178,14 @@ def build_probe_and_dump(zig, tmp):
             continue
         idx, param, tam, status, cat, sm = line.split("|")
         cdump[int(idx)] = (int(param), int(tam), int(status), cat, sm)
-    return cdump, len(rows)
+    return cdump, len(rows), cfuncs
 
 
 def parse_zig_rows():
     lines = ZIG_ITEMS.read_text().splitlines()
     hdr = next(i for i, l in enumerate(lines) if "pub export const indexOfItems" in l)
     size = int(re.search(r"\[(\d+)\]item_t", lines[hdr]).group(1))
-    rows, comptime = {}, 0
+    rows, zfuncs, comptime = {}, {}, 0
     idx = 0
     for i in range(hdr + 1, len(lines)):
         s = lines[i].strip()
@@ -176,13 +198,15 @@ def parse_zig_rows():
         ms = re.search(r"\.status\s*=\s*(\d+)", s)
         mc = re.search(r"\.itemCatalogName\s*=\s*\[16\]u8\{([^}]*)\}", s)
         msm = re.search(r"\.itemSoftmenuName\s*=\s*\[16\]u8\{([^}]*)\}", s)
-        if mp and mt and ms and mc and msm:
+        mf = re.search(r"\.func\s*=\s*(ext_[A-Za-z0-9_]+|&itemToBeCoded)", s)
+        if mp and mt and ms and mc and msm and mf:
             hx = lambda g: "".join(x.lower() for x in re.findall(r"0x([0-9a-fA-F]{2})", g))
             rows[idx] = (int(mp.group(1)), int(mt.group(1)), int(ms.group(1)), hx(mc.group(1)), hx(msm.group(1)))
+            zfuncs[idx] = mf.group(1)
         else:
             comptime += 1
         idx += 1
-    return size, idx, rows, comptime
+    return size, idx, rows, comptime, zfuncs
 
 
 def main():
@@ -192,7 +216,7 @@ def main():
         return 0
 
     last_item = int(re.search(r"#define\s+LAST_ITEM\s+(\d+)", ITEMS_H.read_text()).group(1))
-    zsize, zcount, zrows, comptime = parse_zig_rows()
+    zsize, zcount, zrows, comptime, zfuncs = parse_zig_rows()
 
     print(f"item-table parity: LAST_ITEM={last_item}, Zig table size={zsize}, rows={zcount}")
     if zsize != last_item + 1:
@@ -200,27 +224,32 @@ def main():
         return 1
 
     tmp = pathlib.Path(tempfile.mkdtemp())
-    cdump, ccount = build_probe_and_dump(zig, tmp)
+    cdump, ccount, cfuncs = build_probe_and_dump(zig, tmp)
     if cdump is None:
         return 1
     if ccount != zcount:
         print(f"FAIL: C items.c has {ccount} rows but Zig mirror has {zcount}")
         return 1
 
-    mismatches = []
+    data_bad, func_bad = [], []
     for idx, z in zrows.items():
         c = cdump.get(idx)
         if c != z:
-            mismatches.append((idx, c, z))
-    print(f"  compared {len(zrows)} literal rows, skipped {comptime} build-varying (comptime) rows")
-    for idx, c, z in mismatches[:12]:
-        fields = ["param", "tamMinMax", "status", "catName", "smName"]
+            data_bad.append((idx, c, z))
+        want = expected_zig_func(cfuncs[idx])
+        if zfuncs[idx] != want:
+            func_bad.append((idx, cfuncs[idx], want, zfuncs[idx]))
+    print(f"  compared {len(zrows)} literal rows (data + func), skipped {comptime} build-varying rows")
+    fields = ["param", "tamMinMax", "status", "catName", "smName"]
+    for idx, c, z in data_bad[:12]:
         diff = [(fields[k], c[k], z[k]) for k in range(5) if c[k] != z[k]]
-        print(f"  MISMATCH row {idx}: {diff}")
-    if mismatches:
-        print(f"\nFAIL: {len(mismatches)} indexOfItems row(s) diverge from upstream items.c")
+        print(f"  DATA MISMATCH row {idx}: {diff}")
+    for idx, cf, want, got in func_bad[:12]:
+        print(f"  FUNC MISMATCH row {idx}: items.c={cf} -> expected {want}, mirror has {got}")
+    if data_bad or func_bad:
+        print(f"\nFAIL: {len(data_bad)} data + {len(func_bad)} func indexOfItems divergence(s) from items.c")
         return 1
-    print("\nPASS: every literal indexOfItems row matches upstream items.c byte-for-byte")
+    print("\nPASS: every literal indexOfItems row matches upstream items.c byte-for-byte (data + func)")
     return 0
 
 
