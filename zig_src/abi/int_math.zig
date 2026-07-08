@@ -100,6 +100,49 @@ pub fn expmod(base: u64, exp: u64, m: u64) u64 {
     return x % m;
 }
 
+test "algebraic invariants of gcd, mulmod and expmod" {
+    // gcd laws: commutative, divides both operands, and scales linearly.
+    var a: u64 = 1;
+    while (a <= 60) : (a += 1) {
+        var b: u64 = 1;
+        while (b <= 60) : (b += 1) {
+            const g = gcd(a, b);
+            try std.testing.expectEqual(g, gcd(b, a)); // commutative
+            try std.testing.expect(g != 0 and a % g == 0 and b % g == 0); // divides both
+            try std.testing.expectEqual(@as(u64, 5) * g, gcd(5 * a, 5 * b)); // gcd(ka,kb)=k*gcd
+        }
+    }
+
+    // mulmod: commutative and distributes over addition, modulo m.
+    const m: u64 = 97;
+    var x: u64 = 0;
+    while (x < 97) : (x += 1) {
+        var y: u64 = 0;
+        while (y < 97) : (y += 1) {
+            try std.testing.expectEqual(mulmod(x, y, m), mulmod(y, x, m));
+            try std.testing.expectEqual((x * y) % m, mulmod(x, y, m)); // no-overflow cross-check
+            const z: u64 = 41;
+            const lhs = mulmod(x, (y + z) % m, m);
+            const rhs = (mulmod(x, y, m) + mulmod(x, z, m)) % m;
+            try std.testing.expectEqual(rhs, lhs); // distributive
+        }
+    }
+
+    // expmod exponent law: a^(e+f) == a^e * a^f (mod m).
+    var base: u64 = 0;
+    while (base < 40) : (base += 1) {
+        var e: u64 = 0;
+        while (e < 12) : (e += 1) {
+            var f: u64 = 0;
+            while (f < 12) : (f += 1) {
+                const combined = expmod(base, e + f, m);
+                const split = mulmod(expmod(base, e, m), expmod(base, f, m), m);
+                try std.testing.expectEqual(split, combined);
+            }
+        }
+    }
+}
+
 test "gcd matches known pairs and boundary cases" {
     try std.testing.expectEqual(@as(u64, 6), gcd(54, 24));
     try std.testing.expectEqual(@as(u64, 6), gcd(24, 54)); // order independent
