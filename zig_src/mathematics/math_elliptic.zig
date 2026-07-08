@@ -41,6 +41,7 @@ const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv:
 const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
@@ -163,9 +164,7 @@ inline fn realPlus(operand: *align(1) const real_t, res: *real_t, ctxt: *realCon
 inline fn realDivideRemainder(operand1: *align(1) const real_t, operand2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
-inline fn realIsPositive(source: *const real_t) bool {
-    return (source.bits & 0x80) == 0x00;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 // Complex / transcendental helpers (cross-domain).
 

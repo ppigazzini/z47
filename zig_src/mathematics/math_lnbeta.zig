@@ -17,6 +17,7 @@ const math_gamma = @import("math_gamma.zig"); // M-callconv: Zig-to-Zig
 const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 
@@ -63,9 +64,7 @@ inline fn const_plusInfinity() *const real_t {
 // Blob-offset constants without a runtime accessor.
 
 // real ops / predicates not in runtime: extern / inline macro equivalents.
-inline fn realIsPositive(source: *const real_t) bool {
-    return (source.bits & 0x80) == 0x00;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 extern fn decNumberMinus(res: *real_t, operand: *const real_t, ctxt: *realContext_t) *real_t;
 inline fn realMinus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
