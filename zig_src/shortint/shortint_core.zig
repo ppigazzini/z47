@@ -90,6 +90,34 @@ pub fn shiftRight(word_in: u64, count: u16) ShiftResult {
     return .{ .word = word, .carry = carry };
 }
 
+/// Rotate left by `count` (RL): the sign bit wraps into bit 0; CARRY is the last
+/// sign bit rotated out. Result is unmasked (the caller re-masks).
+pub fn rotateLeft(word_in: u64, count: u16, sign_bit: u64) ShiftResult {
+    var word = word_in;
+    var carry: ?bool = null;
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        const sign = (word & sign_bit) != 0;
+        if (i + 1 == count) carry = sign;
+        word = (word << 1) | @as(u64, @intFromBool(sign));
+    }
+    return .{ .word = word, .carry = carry };
+}
+
+/// Rotate right by `count` (RR): bit 0 wraps to the top (`top_shift` = word_size-1);
+/// CARRY is the last bit rotated out the bottom.
+pub fn rotateRight(word_in: u64, count: u16, top_shift: u6) ShiftResult {
+    var word = word_in;
+    var carry: ?bool = null;
+    var i: u16 = 0;
+    while (i < count) : (i += 1) {
+        const lsb = word & 1;
+        if (i + 1 == count) carry = lsb != 0;
+        word = (word >> 1) | (lsb << top_shift);
+    }
+    return .{ .word = word, .carry = carry };
+}
+
 /// Left-justify (LJ): shift `word` up so its most significant set bit sits at the
 /// top of the word size. Zero yields a full-word-size count and an unchanged 0.
 pub fn leftJustify(word: u64, word_size: u8) JustifyResult {
@@ -208,6 +236,24 @@ test "arithmetic/logical shifts report the last out-bit as carry" {
     try testing.expectEqual(ShiftResult{ .word = 0x08, .carry = null }, arithmeticShiftRight(0x08, 0, s8));
     try testing.expectEqual(ShiftResult{ .word = 0x08, .carry = null }, shiftLeft(0x08, 0, s8));
     try testing.expectEqual(ShiftResult{ .word = 0x08, .carry = null }, shiftRight(0x08, 0));
+}
+
+test "rotateLeft and rotateRight wrap the end bit around" {
+    const s8: u64 = 0x80;
+    // No wrap: plain shift, carry from the sign / low bit.
+    try testing.expectEqual(ShiftResult{ .word = 0x02, .carry = false }, rotateLeft(0x01, 1, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x80, .carry = false }, rotateLeft(0x40, 1, s8));
+    // Wrap: the sign bit rotates into bit 0 (result is pre-mask, so the extra
+    // high bit is present and CARRY records the rotated-out sign).
+    try testing.expectEqual(ShiftResult{ .word = 0x101, .carry = true }, rotateLeft(0x80, 1, s8));
+
+    // RR wraps bit 0 up to top_shift (word_size-1 == 7 for an 8-bit word).
+    try testing.expectEqual(ShiftResult{ .word = 0x80, .carry = true }, rotateRight(0x01, 1, 7));
+    try testing.expectEqual(ShiftResult{ .word = 0x40, .carry = false }, rotateRight(0x80, 1, 7));
+
+    // Zero-count leaves both the word and CARRY untouched.
+    try testing.expectEqual(ShiftResult{ .word = 0x12, .carry = null }, rotateLeft(0x12, 0, s8));
+    try testing.expectEqual(ShiftResult{ .word = 0x12, .carry = null }, rotateRight(0x12, 0, 7));
 }
 
 test "leftJustify and rightJustify shift to the word edges" {

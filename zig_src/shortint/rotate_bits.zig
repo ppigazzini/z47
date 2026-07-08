@@ -67,15 +67,9 @@ pub export fn fnRl(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        const sign = (word & runtime.shortIntegerSignBit) != 0;
-        if (i + 1 == number_of_shifts) {
-            setCarry(sign);
-        }
-        word = (word << 1) | @as(u64, @intFromBool(sign));
-    }
-    setShiftResult(word, base);
+    const r = shortint_core.rotateLeft(word, number_of_shifts, runtime.shortIntegerSignBit);
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnRr(number_of_shifts: u16) callconv(.c) void {
@@ -83,16 +77,9 @@ pub export fn fnRr(number_of_shifts: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    const shift = topShift();
-    var i: u16 = 0;
-    while (i < number_of_shifts) : (i += 1) {
-        const lsb = word & 1;
-        if (i + 1 == number_of_shifts) {
-            setCarry(lsb != 0);
-        }
-        word = (word >> 1) | (lsb << shift);
-    }
-    setShiftResult(word, base);
+    const r = shortint_core.rotateRight(word, number_of_shifts, topShift());
+    if (r.carry) |c| setCarry(c);
+    setShiftResult(r.word, base);
 }
 
 pub export fn fnRlc(number_of_shifts: u16) callconv(.c) void {
