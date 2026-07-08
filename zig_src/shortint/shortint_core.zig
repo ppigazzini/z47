@@ -43,6 +43,26 @@ pub fn isBitSet(word: u64, bit: u16) bool {
     return !isBitClear(word, bit);
 }
 
+/// The result of a justify: how far the value was shifted and the shifted word.
+pub const JustifyResult = struct { count: u32, word: u64 };
+
+/// Left-justify (LJ): shift `word` up so its most significant set bit sits at the
+/// top of the word size. Zero yields a full-word-size count and an unchanged 0.
+pub fn leftJustify(word: u64, word_size: u8) JustifyResult {
+    if (word == 0) return .{ .count = word_size, .word = 0 };
+    const count: u32 = @as(u32, @clz(word)) - (64 - @as(u32, word_size));
+    return .{ .count = count, .word = word << @as(u6, @intCast(count)) };
+}
+
+/// Right-justify (RJ): shift `word` down to drop its trailing zero bits. `mask` is
+/// the active word mask (the trailing-zero search is confined to it); `word_size`
+/// is the zero-input count. Zero yields a full-word-size count and an unchanged 0.
+pub fn rightJustify(word: u64, word_size: u8, mask: u64) JustifyResult {
+    if (word == 0) return .{ .count = word_size, .word = 0 };
+    const count: u32 = @ctz(word | ~mask);
+    return .{ .count = count, .word = word >> @as(u6, @intCast(count)) };
+}
+
 /// Reverse the byte order of `word` for the SWAP-endian command. `bit_width` is
 /// the swap granularity (8 = reverse all bytes, 16 = swap bytes within each 16-bit
 /// half) and `word_size` is the (already-resolved) active word size in bits. An
@@ -126,6 +146,26 @@ test "set/clear/flip/isBit" {
     try testing.expect(isBitSet(0x8, 3));
     try testing.expect(isBitClear(0x8, 2));
     try testing.expect(!isBitSet(0x8, 2));
+}
+
+test "leftJustify and rightJustify shift to the word edges" {
+    // 8-bit word, single bit at position 0.
+    try testing.expectEqual(JustifyResult{ .count = 7, .word = 0x80 }, leftJustify(0x01, 8));
+    try testing.expectEqual(JustifyResult{ .count = 0, .word = 0x01 }, rightJustify(0x01, 8, 0xFF));
+    // single bit already at the top of the 8-bit word.
+    try testing.expectEqual(JustifyResult{ .count = 0, .word = 0x80 }, leftJustify(0x80, 8));
+    try testing.expectEqual(JustifyResult{ .count = 7, .word = 0x01 }, rightJustify(0x80, 8, 0xFF));
+    // a multi-bit value: 0b0011_0000 -> left 0b1100_0000 (count 2), right 0b0000_0011 (count 4).
+    try testing.expectEqual(JustifyResult{ .count = 2, .word = 0xC0 }, leftJustify(0x30, 8));
+    try testing.expectEqual(JustifyResult{ .count = 4, .word = 0x03 }, rightJustify(0x30, 8, 0xFF));
+    // zero: full-word-size count, unchanged word.
+    try testing.expectEqual(JustifyResult{ .count = 8, .word = 0 }, leftJustify(0, 8));
+    try testing.expectEqual(JustifyResult{ .count = 8, .word = 0 }, rightJustify(0, 8, 0xFF));
+    // 32-bit word.
+    try testing.expectEqual(JustifyResult{ .count = 24, .word = 0x8000_0000 }, leftJustify(0x80, 32));
+
+    // Left- then right-justify returns the original trailing-zero-stripped value.
+    try testing.expectEqual(@as(u64, 0x03), rightJustify(leftJustify(0x30, 8).word, 8, 0xFF).word);
 }
 
 test "swapEndian reverses byte order per word size" {

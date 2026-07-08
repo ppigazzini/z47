@@ -153,14 +153,8 @@ pub export fn fnLj(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var count: u32 = runtime.shortIntegerWordSize;
-    if (word != 0) {
-        count = @intCast(@clz(word));
-        count -= @as(u32, 64 - runtime.shortIntegerWordSize);
-        word <<= @as(u6, @intCast(count));
-    }
-
-    justifyResultToRegisters(count, base, word);
+    const r = shortint_core.leftJustify(word, runtime.shortIntegerWordSize);
+    justifyResultToRegisters(r.count, base, r.word);
 }
 
 pub export fn fnRj(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -170,13 +164,8 @@ pub export fn fnRj(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var count: u32 = runtime.shortIntegerWordSize;
-    if (word != 0) {
-        count = @intCast(@ctz(word | ~runtime.shortIntegerMask));
-        word >>= @as(u6, @intCast(count));
-    }
-
-    justifyResultToRegisters(count, base, word);
+    const r = shortint_core.rightJustify(word, runtime.shortIntegerWordSize, runtime.shortIntegerMask);
+    justifyResultToRegisters(r.count, base, r.word);
 }
 
 pub export fn fnMirror(unused_but_mandatory_parameter: u16) callconv(.c) void {
