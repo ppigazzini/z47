@@ -43,6 +43,21 @@ pub fn isBitSet(word: u64, bit: u16) bool {
     return !isBitClear(word, bit);
 }
 
+/// Reverse the low `word_size` bits of `word` (the MIRROR command). Bits at or
+/// above word_size are dropped; the result occupies the same low field.
+pub fn mirrorBits(word: u64, word_size: u8) u64 {
+    var result: u64 = 0;
+    var index: u8 = 0;
+    while (index < word_size) : (index += 1) {
+        const src_shift: u6 = @intCast(index);
+        if ((word & (@as(u64, 1) << src_shift)) != 0) {
+            const dst_shift: u6 = @intCast(word_size - index - 1);
+            result |= @as(u64, 1) << dst_shift;
+        }
+    }
+    return result;
+}
+
 // Native unit tests (REPORT-27 M-IDIOM-3). Pure bit logic; expected values are
 // hand-computed. No C oracle, no global state.
 const testing = std.testing;
@@ -76,4 +91,23 @@ test "set/clear/flip/isBit" {
     try testing.expect(isBitSet(0x8, 3));
     try testing.expect(isBitClear(0x8, 2));
     try testing.expect(!isBitSet(0x8, 2));
+}
+
+test "mirrorBits reverses the low word_size bits" {
+    try testing.expectEqual(@as(u64, 0x80), mirrorBits(0x01, 8)); // lsb -> msb
+    try testing.expectEqual(@as(u64, 0x01), mirrorBits(0x80, 8));
+    try testing.expectEqual(@as(u64, 0x81), mirrorBits(0x81, 8)); // palindrome
+    try testing.expectEqual(@as(u64, 0x55), mirrorBits(0xAA, 8)); // 10101010 -> 01010101
+    try testing.expectEqual(@as(u64, 0x4), mirrorBits(0x2, 4)); // 0010 -> 0100
+    try testing.expectEqual(@as(u64, 0x80), mirrorBits(0xFF01, 8)); // bits >= word_size dropped
+
+    // Involution: mirroring twice within a word size restores the masked value.
+    for ([_]u8{ 4, 8, 16, 32, 63 }) |ws| {
+        const mask = (@as(u64, 1) << @as(u6, @intCast(ws))) - 1;
+        var x: u64 = 0;
+        while (x < 400) : (x += 1) {
+            const m = x & mask;
+            try testing.expectEqual(m, mirrorBits(mirrorBits(m, ws), ws));
+        }
+    }
 }

@@ -1,4 +1,5 @@
 const runtime = @import("shortint_runtime.zig");
+const shortint_core = @import("shortint_core.zig");
 
 fn getShiftInput(word: *u64, base: *u32) bool {
     if (!runtime.getRegisterAsRawShortInt(runtime.REGISTER_X, word, base)) {
@@ -185,17 +186,7 @@ pub export fn fnMirror(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
-    var result: u64 = 0;
-    var index: u8 = 0;
-    while (index < runtime.shortIntegerWordSize) : (index += 1) {
-        const src_shift: u6 = @intCast(index);
-        if ((word & (@as(u64, 1) << src_shift)) != 0) {
-            const dst_shift: u6 = @intCast(runtime.shortIntegerWordSize - index - 1);
-            result |= @as(u64, 1) << dst_shift;
-        }
-    }
-
-    setShiftResult(result, base);
+    setShiftResult(shortint_core.mirrorBits(word, runtime.shortIntegerWordSize), base);
 }
 
 fn byte(word: u64, shift: u6) u64 {
