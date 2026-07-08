@@ -113,3 +113,51 @@ test "abi calc structs match upstream C size" {
         };
     }
 }
+
+// registerHeader_t and matrixHeader_t are C bitfield types; translate-c demotes
+// them to opaque{}, so the sizeof/offset machinery above cannot reach the bit
+// positions of the fields inside the 32-bit word. The C companion
+// (abi_layout_c_asserts.c) returns each field's true packed mask; these tests set
+// the SAME field all-ones in the abi packed struct, bitcast to u32, and require
+// an exact match -- proving abi's hand-written packing is bit-identical to the C
+// bitfield (a wrong bit position keeps sizeof==4 but mis-routes register/matrix
+// dispatch). The all-ones value per field is its declared bit width.
+extern fn z47_reg_header_field_mask(field: c_int) u32;
+extern fn z47_matrix_header_field_mask(field: c_int) u32;
+
+test "abi.RegisterHeaderBits packs bit-identically to C registerHeader_t" {
+    const FIELDS = .{
+        .{ "pointerToRegisterData", @as(u16, 0xFFFF), 0 },
+        .{ "dataType", @as(u4, 0xF), 1 },
+        .{ "tag", @as(u5, 0x1F), 2 },
+        .{ "readOnly", @as(u1, 1), 3 },
+        .{ "notUsed", @as(u6, 0x3F), 4 },
+    };
+    inline for (FIELDS) |f| {
+        var z: abi.RegisterHeaderBits = @bitCast(@as(u32, 0));
+        @field(z, f[0]) = f[1];
+        const zmask: u32 = @bitCast(z);
+        testing.expectEqual(z47_reg_header_field_mask(f[2]), zmask) catch |err| {
+            std.debug.print("registerHeader bit mismatch on {s}: C=0x{x:0>8} abi=0x{x:0>8}\n", .{ f[0], z47_reg_header_field_mask(f[2]), zmask });
+            return err;
+        };
+    }
+}
+
+test "abi.MatrixHeader packs bit-identically to C matrixHeader_t" {
+    const FIELDS = .{
+        .{ "matrixRows", @as(u12, 0xFFF), 0 },
+        .{ "matrixColumns", @as(u12, 0xFFF), 1 },
+        .{ "mtag", @as(u6, 0x3F), 2 },
+        .{ "notUsed", @as(u2, 0x3), 3 },
+    };
+    inline for (FIELDS) |f| {
+        var z: abi.MatrixHeader = @bitCast(@as(u32, 0));
+        @field(z, f[0]) = f[1];
+        const zmask: u32 = @bitCast(z);
+        testing.expectEqual(z47_matrix_header_field_mask(f[2]), zmask) catch |err| {
+            std.debug.print("matrixHeader bit mismatch on {s}: C=0x{x:0>8} abi=0x{x:0>8}\n", .{ f[0], z47_matrix_header_field_mask(f[2]), zmask });
+            return err;
+        };
+    }
+}

@@ -43,6 +43,48 @@ _Static_assert(sizeof(reservedVariableHeader_t) == 12, "reservedVariableHeader_t
 _Static_assert(offsetof(namedVariableHeader_t, variableName) == 4, "name follows the 4-byte header");
 _Static_assert(offsetof(reservedVariableHeader_t, reservedVariableName) == 4, "name follows the 4-byte header");
 
+// Runtime bit-layout ground truth for registerHeader_t / matrixHeader_t. Both are
+// C bitfield types translate-c demotes to opaque{}, so the Zig oracle can size-
+// and offset-check the aggregates that EMBED them (above) but cannot see the bit
+// positions of the fields WITHIN the 32-bit word. The sizeof asserts prove the
+// word is 4 bytes; they do NOT prove dataType sits at bit 16 or matrixColumns at
+// bit 12 -- a wrong bit position keeps sizeof==4 yet silently mis-routes every
+// register/matrix op (the exact silent-corruption class this oracle exists to
+// catch). These helpers return the raw 32-bit word after setting exactly one
+// field all-ones over a zeroed word, i.e. that field's bit MASK as the pinned C
+// compiler actually packs it. The Zig test cross-checks abi's packed-struct
+// packing against these, proving the hand-written packed struct is bit-identical
+// to the C bitfield on the target ABI. Indices match the Zig test's field lists.
+uint32_t z47_reg_header_field_mask(int field) {
+  registerHeader_t h;
+  h.descriptor = 0;
+  switch (field) {
+    case 0: h.pointerToRegisterData = 0xFFFFu; break;
+    case 1: h.dataType = 0xFu; break;
+    case 2: h.tag = 0x1Fu; break;
+    case 3: h.readOnly = 0x1u; break;
+    case 4: h.notUsed = 0x3Fu; break;
+  }
+  return h.descriptor;
+}
+
+uint32_t z47_matrix_header_field_mask(int field) {
+  // matrixHeader_t is a plain (non-union) bitfield struct; overlay a uint32_t to
+  // read back the raw packed word.
+  union {
+    matrixHeader_t m;
+    uint32_t raw;
+  } u;
+  u.raw = 0;
+  switch (field) {
+    case 0: u.m.matrixRows = 0xFFFu; break;
+    case 1: u.m.matrixColumns = 0xFFFu; break;
+    case 2: u.m.mtag = 0x3Fu; break;
+    case 3: u.m.notUsed = 0x3u; break;
+  }
+  return u.raw;
+}
+
 // frontier_register_browser hardcodes CONFIG_SIZE_IN_BYTES = 840 (a testSuite-
 // blind display constant). Pin it to the C computation so an upstream growth of
 // dtConfigDescriptor_t is caught here instead of silently showing a wrong size.
