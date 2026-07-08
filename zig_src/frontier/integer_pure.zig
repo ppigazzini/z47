@@ -37,6 +37,37 @@ pub fn isqrt(value: u64) u64 {
     return nn1;
 }
 
+/// True when `value` is a power of two (2^k for k >= 0). Zero is not a power.
+pub fn isPowerOfTwo(value: u64) bool {
+    return value != 0 and (value & (value - 1)) == 0;
+}
+
+/// Floor of the base-2 logarithm: the index of the highest set bit. `value` must
+/// be > 0 (the short-integer LOG2 command rejects 0 before calling this).
+pub fn log2Floor(value: u64) u32 {
+    var v = value >> 1;
+    var log2: u32 = 0;
+    while (v != 0) : (v >>= 1) log2 += 1;
+    return log2;
+}
+
+/// True when `value` is a power of ten (10^k for k >= 0).
+pub fn isPowerOfTen(value: u64) bool {
+    var v = value;
+    while (v >= 10) : (v /= 10) {
+        if (v % 10 != 0) return false;
+    }
+    return v == 1;
+}
+
+/// Floor of the base-10 logarithm. `value` must be > 0.
+pub fn log10Floor(value: u64) u32 {
+    var v = value;
+    var r: u32 = 0;
+    while (v >= 10) : (v /= 10) r += 1;
+    return r;
+}
+
 test "gcd matches known pairs and boundary cases" {
     try std.testing.expectEqual(@as(u64, 6), gcd(54, 24));
     try std.testing.expectEqual(@as(u64, 6), gcd(24, 54)); // order independent
@@ -74,5 +105,56 @@ test "isqrt is the floor of the square root" {
         try std.testing.expect((r + 1) * (r + 1) > v);
         const is_square = (r * r == v);
         try std.testing.expectEqual(is_square, r *% r == v);
+    }
+}
+
+test "log2Floor and isPowerOfTwo" {
+    try std.testing.expectEqual(@as(u32, 0), log2Floor(1));
+    try std.testing.expectEqual(@as(u32, 1), log2Floor(2));
+    try std.testing.expectEqual(@as(u32, 1), log2Floor(3)); // floor
+    try std.testing.expectEqual(@as(u32, 3), log2Floor(8));
+    try std.testing.expectEqual(@as(u32, 3), log2Floor(15));
+    try std.testing.expectEqual(@as(u32, 63), log2Floor(std.math.maxInt(u64)));
+
+    try std.testing.expect(isPowerOfTwo(1));
+    try std.testing.expect(isPowerOfTwo(2));
+    try std.testing.expect(isPowerOfTwo(1 << 40));
+    try std.testing.expect(!isPowerOfTwo(0));
+    try std.testing.expect(!isPowerOfTwo(3));
+    try std.testing.expect(!isPowerOfTwo(6));
+
+    // For every power of two, log2Floor is exact and isPowerOfTwo agrees.
+    var k: u6 = 0;
+    while (k < 63) : (k += 1) {
+        const p = @as(u64, 1) << k;
+        try std.testing.expectEqual(@as(u32, k), log2Floor(p));
+        try std.testing.expect(isPowerOfTwo(p));
+        if (k >= 2) try std.testing.expect(!isPowerOfTwo(p + 1));
+    }
+}
+
+test "log10Floor and isPowerOfTen" {
+    try std.testing.expectEqual(@as(u32, 0), log10Floor(1));
+    try std.testing.expectEqual(@as(u32, 0), log10Floor(9));
+    try std.testing.expectEqual(@as(u32, 1), log10Floor(10));
+    try std.testing.expectEqual(@as(u32, 1), log10Floor(99));
+    try std.testing.expectEqual(@as(u32, 2), log10Floor(100));
+    try std.testing.expectEqual(@as(u32, 18), log10Floor(1_000_000_000_000_000_000));
+
+    try std.testing.expect(isPowerOfTen(1));
+    try std.testing.expect(isPowerOfTen(10));
+    try std.testing.expect(isPowerOfTen(1000));
+    try std.testing.expect(!isPowerOfTen(50));
+    try std.testing.expect(!isPowerOfTen(105));
+    try std.testing.expect(!isPowerOfTen(0));
+
+    // Every power of ten up to 10^18: exact floor and isPowerOfTen agrees.
+    var p: u64 = 1;
+    var e: u32 = 0;
+    while (e <= 18) : (e += 1) {
+        try std.testing.expectEqual(e, log10Floor(p));
+        try std.testing.expect(isPowerOfTen(p));
+        if (e >= 1) try std.testing.expect(!isPowerOfTen(p + 1));
+        p *= 10;
     }
 }
