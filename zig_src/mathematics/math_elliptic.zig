@@ -441,29 +441,29 @@ fn elliptic_setup_cpx_real(r: *real_t, snuk: *real_t, cnuk: *real_t, dnuk: *real
     realFMA(cnvki, cnvki, r, r, realContext);
 }
 
-fn jacobi_check_inputs(m: *real_t, uReal: *real_t, uImag: *real_t, realInput: *bool) linksection(runtime.code_section) i32 {
+const JacobiError = error{BadInput};
+
+fn jacobi_check_inputs(m: *real_t, uReal: *real_t, uImag: *real_t, realInput: *bool) linksection(runtime.code_section) JacobiError!void {
     var cmplx: bool = false;
 
     if (!getRegisterAsComplexOrReal(REGISTER_X, uReal, uImag, &cmplx) or !getRegisterAsReal(REGISTER_Y, m) or !saveLastX()) {
-        return 0;
+        return error.BadInput;
     }
     realInput.* = !cmplx;
-    return 1;
 }
 
-fn jacobi_check_inputs_phi(m: *real_t, phiReal: *real_t, phiImag: *real_t, realInput: *bool) linksection(runtime.code_section) i32 {
+fn jacobi_check_inputs_phi(m: *real_t, phiReal: *real_t, phiImag: *real_t, realInput: *bool) linksection(runtime.code_section) JacobiError!void {
     if (getRegisterDataType(REGISTER_X) == dtComplex34) {
         return jacobi_check_inputs(m, phiReal, phiImag, realInput);
     }
     var xAngularMode: angularMode_t = undefined;
     if (!getRegisterAsRealAngle(REGISTER_X, phiReal, &xAngularMode, !ifLongIntegerDoAngleReduction) or !getRegisterAsReal(REGISTER_Y, m) or !saveLastX()) {
-        return 0;
+        return error.BadInput;
     }
 
     convertAngleFromTo(phiReal, xAngularMode, amRadian, &runtime.ctxtReal75);
     realSetZero(phiImag);
     realInput.* = true;
-    return 1;
 }
 
 pub export fn jacobiElliptic(u: *const real_t, m: *const real_t, am: ?*real_t, sn: ?*real_t, cn: ?*real_t, dn: ?*real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
@@ -1733,9 +1733,7 @@ pub export fn fnJacobiSn(unusedButMandatoryParameter: u16) linksection(runtime.c
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
+    jacobi_check_inputs(&m, &uReal, &uImag, &realInput) catch return;
 
     if (realInput) {
         jacobiElliptic(&uReal, &m, null, &rReal, null, null, &runtime.ctxtReal39);
@@ -1757,9 +1755,7 @@ pub export fn fnJacobiCn(unusedButMandatoryParameter: u16) linksection(runtime.c
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
+    jacobi_check_inputs(&m, &uReal, &uImag, &realInput) catch return;
 
     if (realInput) {
         jacobiElliptic(&uReal, &m, null, null, &rReal, null, &runtime.ctxtReal39);
@@ -1781,9 +1777,7 @@ pub export fn fnJacobiDn(unusedButMandatoryParameter: u16) linksection(runtime.c
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
+    jacobi_check_inputs(&m, &uReal, &uImag, &realInput) catch return;
 
     if (realInput) {
         jacobiElliptic(&uReal, &m, null, null, null, &rReal, &runtime.ctxtReal39);
@@ -1805,9 +1799,7 @@ pub export fn fnJacobiAmplitude(unusedButMandatoryParameter: u16) linksection(ru
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs(&m, &uReal, &uImag, &realInput) == 0) {
-        return;
-    }
+    jacobi_check_inputs(&m, &uReal, &uImag, &realInput) catch return;
 
     if (realInput) {
         jacobiElliptic(&uReal, &m, &rReal, null, null, null, &runtime.ctxtReal39);
@@ -1936,7 +1928,7 @@ fn fnEllipticPiCore() EllipticError!void {
     var ri: real_t = undefined;
     var realInput: bool = undefined;
 
-    if (jacobi_check_inputs(&m, &ur, &ui, &realInput) == 0) return;
+    jacobi_check_inputs(&m, &ur, &ui, &realInput) catch return;
 
     if (realIsNegative(&m) or math_comparison_reals.realCompareGreaterEqual(&m, const_1())) {
         return error.PiMOutOfRange;
@@ -1972,7 +1964,7 @@ fn fnEllipticFphiCore() EllipticError!void {
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) return;
+    jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) catch return;
 
     ellipticF(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
     if (realInput) {
@@ -2006,7 +1998,7 @@ fn fnEllipticEphiCore() EllipticError!void {
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) return;
+    jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) catch return;
 
     ellipticE(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
     if (realInput) {
@@ -2040,7 +2032,7 @@ fn fnJacobiZetaCore() EllipticError!void {
     var rReal: real_t = undefined;
     var rImag: real_t = undefined;
 
-    if (jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) == 0) return;
+    jacobi_check_inputs_phi(&m, &uReal, &uImag, &realInput) catch return;
 
     jacobiZeta(&uReal, &uImag, &m, &rReal, &rImag, &runtime.ctxtReal39);
     if (realInput) {
