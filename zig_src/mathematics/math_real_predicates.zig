@@ -29,6 +29,18 @@ pub inline fn realIsNegative(source: *align(1) const abi.Real) bool {
     return (source.bits & abi.DECNEG) != 0;
 }
 
+/// A real_t carries a special (Inf/NaN/sNaN) encoding in the top nibble of `bits`.
+pub inline fn realIsSpecial(source: *align(1) const abi.Real) bool {
+    return (source.bits & abi.DECSPECIAL) != 0;
+}
+
+/// A real_t is zero when it has a single zero coefficient digit and is not a
+/// special value (matches decNumberIsZero on the finite encoding). Sign is
+/// irrelevant: negative zero is still zero.
+pub inline fn realIsZero(source: *align(1) const abi.Real) bool {
+    return source.digits == 1 and source.lsu[0] == 0 and !realIsSpecial(source);
+}
+
 /// decQuad (real34_t) stores its sign in the top bit of the last byte of the
 /// 16-byte big-endian blob.
 pub inline fn real34IsNegative(source: *align(1) const abi.Real34) bool {
@@ -71,6 +83,45 @@ test "realIsPositive / realIsNegative read the DECNEG bit" {
     // Unrelated flag bits without DECNEG stay positive.
     r.bits = 0x7f & ~abi.DECNEG;
     try std.testing.expect(realIsPositive(&r));
+}
+
+test "realIsSpecial detects the Inf/NaN/sNaN bits" {
+    var r: abi.Real = std.mem.zeroes(abi.Real);
+    r.bits = 0;
+    try std.testing.expect(!realIsSpecial(&r));
+    for ([_]u8{ abi.DECINF, abi.DECNAN, abi.DECSNAN }) |flag| {
+        r.bits = flag;
+        try std.testing.expect(realIsSpecial(&r));
+    }
+    // The sign bit alone is not a special encoding.
+    r.bits = abi.DECNEG;
+    try std.testing.expect(!realIsSpecial(&r));
+}
+
+test "realIsZero requires one zero digit and a finite encoding" {
+    var r: abi.Real = std.mem.zeroes(abi.Real);
+    r.digits = 1;
+    r.lsu[0] = 0;
+    r.bits = 0;
+    try std.testing.expect(realIsZero(&r));
+
+    // Negative zero is still zero.
+    r.bits = abi.DECNEG;
+    try std.testing.expect(realIsZero(&r));
+
+    // A special (Inf/NaN) encoding is never zero.
+    r.bits = abi.DECINF;
+    try std.testing.expect(!realIsZero(&r));
+
+    // A non-zero coefficient is not zero.
+    r.bits = 0;
+    r.lsu[0] = 5;
+    try std.testing.expect(!realIsZero(&r));
+
+    // More than one coefficient digit is not the canonical zero.
+    r.lsu[0] = 0;
+    r.digits = 3;
+    try std.testing.expect(!realIsZero(&r));
 }
 
 test "real34IsNegative reads the MSB of the top blob byte" {
