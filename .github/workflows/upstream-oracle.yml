@@ -447,6 +447,11 @@ jobs:
           # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
           # behavioral constants_parity oracle does not cover.
           python3 .github/project/audit-constant-parity.py
+          # Item-table parity audit: frontier_items.zig's hand-mirrored indexOfItems
+          # (2861 rows of param/name/tamMinMax/status) must match the C-compiled
+          # items.c byte-for-byte. Catches the exact class that crashed a pin advance
+          # (LAST_ITEM grew, the Zig table went out of bounds) before it can merge.
+          python3 .github/project/audit-item-table-parity.py
           # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
           # numeric mirrors must match the translate-c'd upstream decNumber-family
           # layout, so a wrong layout (silent-corruption class) fails here. Gates
@@ -999,6 +1004,11 @@ jobs:
           # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
           # behavioral constants_parity oracle does not cover.
           python3 .github/project/audit-constant-parity.py
+          # Item-table parity audit: frontier_items.zig's hand-mirrored indexOfItems
+          # (2861 rows of param/name/tamMinMax/status) must match the C-compiled
+          # items.c byte-for-byte. Catches the exact class that crashed a pin advance
+          # (LAST_ITEM grew, the Zig table went out of bounds) before it can merge.
+          python3 .github/project/audit-item-table-parity.py
           # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
           # numeric mirrors must match the translate-c'd upstream decNumber-family
           # layout, so a wrong layout (silent-corruption class) fails here. Gates
@@ -1243,6 +1253,11 @@ jobs:
           # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
           # behavioral constants_parity oracle does not cover.
           python3 .github/project/audit-constant-parity.py
+          # Item-table parity audit: frontier_items.zig's hand-mirrored indexOfItems
+          # (2861 rows of param/name/tamMinMax/status) must match the C-compiled
+          # items.c byte-for-byte. Catches the exact class that crashed a pin advance
+          # (LAST_ITEM grew, the Zig table went out of bounds) before it can merge.
+          python3 .github/project/audit-item-table-parity.py
           # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
           # numeric mirrors must match the translate-c'd upstream decNumber-family
           # layout, so a wrong layout (silent-corruption class) fails here. Gates
