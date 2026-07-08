@@ -190,6 +190,41 @@ test "long-integer sign predicates read _mp_size" {
     try std.testing.expect(!longIntegerIsZero(&z));
 }
 
+test "real classification predicates are consistent across all 256 bits values" {
+    // The real-classification predicates depend only on the `bits` byte, so this
+    // is an EXHAUSTIVE property test -- every possible flag byte is checked, which
+    // is stronger than fuzzing an 8-bit domain. It pins the exact bit each
+    // predicate reads and the cross-predicate invariants that must always hold.
+    var b: u16 = 0;
+    while (b < 256) : (b += 1) {
+        const bits: u8 = @intCast(b);
+        var r: abi.Real = std.mem.zeroes(abi.Real);
+        r.digits = 1;
+        r.lsu[0] = 0;
+        r.bits = bits;
+
+        // Sign is a single bit: positive and negative partition every value.
+        try std.testing.expect(realIsPositive(&r) != realIsNegative(&r));
+
+        // Special is exactly the union of the infinite and NaN encodings.
+        try std.testing.expectEqual(realIsInfinite(&r) or realIsNaN(&r), realIsSpecial(&r));
+
+        // Each predicate reads exactly its documented mask (drift pin).
+        try std.testing.expectEqual((bits & abi.DECNEG) != 0, realIsNegative(&r));
+        try std.testing.expectEqual((bits & abi.DECINF) != 0, realIsInfinite(&r));
+        try std.testing.expectEqual((bits & (abi.DECNAN | abi.DECSNAN)) != 0, realIsNaN(&r));
+        try std.testing.expectEqual((bits & abi.DECSPECIAL) != 0, realIsSpecial(&r));
+
+        // A canonical single zero digit is zero iff it is not a special encoding.
+        try std.testing.expectEqual(!realIsSpecial(&r), realIsZero(&r));
+
+        // A non-zero coefficient is never the canonical zero, whatever the flags.
+        var nz = r;
+        nz.lsu[0] = 1;
+        try std.testing.expect(!realIsZero(&nz));
+    }
+}
+
 test "samePtr compares addresses, not values" {
     var a: u32 = 7;
     var b: u32 = 7;
