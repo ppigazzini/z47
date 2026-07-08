@@ -33,6 +33,7 @@ const math_lnbeta = @import("math_lnbeta.zig"); // M-callconv: Zig-to-Zig
 const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
 const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const angularMode_t = runtime.angularMode_t;
@@ -326,9 +327,7 @@ inline fn realSetZero(r: *align(1) real_t) void {
 inline fn realIsNegative(source: *align(1) const real_t) bool {
     return (source.bits & 0x80) == 0x80;
 }
-inline fn realIsPositive(source: *align(1) const real_t) bool {
-    return (source.bits & 0x80) == 0x00;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 inline fn realIsZero(source: *align(1) const real_t) bool {
     return source.digits == 1 and source.lsu[0] == 0 and !realIsSpecial(source);
 }

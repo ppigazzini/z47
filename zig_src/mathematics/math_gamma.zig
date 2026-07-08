@@ -27,6 +27,7 @@ const math_ln_complex = @import("math_ln_complex.zig"); // M-callconv: Zig-to-Zi
 const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const real34_t = runtime.real34_t;
@@ -41,9 +42,7 @@ const realIsNaN = runtime.realIsNaN;
 const realIsZero = runtime.realIsZero;
 const realIsSpecial = runtime.realIsSpecial;
 const realIsAnInteger = runtime.realIsAnInteger;
-inline fn realIsPositive(value: *const real_t) bool {
-    return (value.bits & 0x80) == 0;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 const realSetPositiveSign = runtime.realSetPositiveSign;
 const realToIntegralValue = runtime.realToIntegralValue;
 const reallocateRegister = runtime.reallocateRegister;
