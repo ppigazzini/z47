@@ -73,6 +73,15 @@ pub inline fn longIntegerIsNegativeOrZero(op: *const abi.Mpz) bool {
     return op._mp_size <= 0;
 }
 
+/// A long integer is a positive value not exceeding `bound` exactly when GMP
+/// stores it in one positive limb within the bound: a non-positive `_mp_size` is
+/// zero or negative, and a normalized mpz with two or more limbs necessarily
+/// exceeds any single-limb bound. `bound` must fit in one limb (all callers use
+/// small dimension caps). Equivalent to `!(sgn<=0) and mpz_cmp_ui(op,bound)<=0`.
+pub inline fn longIntegerIsPositiveAtMost(op: *const abi.Mpz, bound: abi.MpLimb) bool {
+    return op._mp_size == 1 and op._mp_d[0] <= bound;
+}
+
 /// Two pointers alias the same address (guards in-place matrix/vector ops).
 pub inline fn samePtr(a: anytype, b: anytype) bool {
     return @intFromPtr(a) == @intFromPtr(b);
@@ -225,6 +234,35 @@ test "real classification predicates are consistent across all 256 bits values" 
         nz.lsu[0] = 1;
         try std.testing.expect(!realIsZero(&nz));
     }
+}
+
+test "longIntegerIsPositiveAtMost bounds a positive single-limb integer" {
+    var limbs = [_]abi.MpLimb{0};
+    var z: abi.Mpz = .{ ._mp_alloc = 1, ._mp_size = 0, ._mp_d = &limbs[0] };
+
+    // Zero and negative are never a positive bounded value.
+    z._mp_size = 0;
+    try std.testing.expect(!longIntegerIsPositiveAtMost(&z, 4096));
+    z._mp_size = -1;
+    limbs[0] = 5;
+    try std.testing.expect(!longIntegerIsPositiveAtMost(&z, 4096));
+
+    // Positive, within or at the bound.
+    z._mp_size = 1;
+    limbs[0] = 1;
+    try std.testing.expect(longIntegerIsPositiveAtMost(&z, 4096));
+    limbs[0] = 4096;
+    try std.testing.expect(longIntegerIsPositiveAtMost(&z, 4096));
+
+    // Positive but over the bound.
+    limbs[0] = 4097;
+    try std.testing.expect(!longIntegerIsPositiveAtMost(&z, 4096));
+
+    // Two or more limbs exceed any single-limb bound.
+    var big = [_]abi.MpLimb{ 1, 1 };
+    z._mp_d = &big[0];
+    z._mp_size = 2;
+    try std.testing.expect(!longIntegerIsPositiveAtMost(&z, 4096));
 }
 
 test "samePtr compares addresses, not values" {
