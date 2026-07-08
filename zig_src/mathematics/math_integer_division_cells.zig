@@ -6,6 +6,7 @@
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const support = @import("math_dispatch_cells_runtime.zig");
 
 const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
@@ -31,9 +32,7 @@ fn domainError(comptime function_name: [:0]const u8, comptime message: [:0]const
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
-fn longIntegerIsZero(value: *const runtime.mpz_struct) bool {
-    return value._mp_size == 0;
-}
+const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 
 fn longIntegerSetPositiveSign(value: *runtime.mpz_struct) void {
     value._mp_size = @intCast(@abs(value._mp_size));

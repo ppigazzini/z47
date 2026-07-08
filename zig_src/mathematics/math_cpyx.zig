@@ -9,6 +9,7 @@
 // strings (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
@@ -90,9 +91,7 @@ inline fn longIntegerSubtractUInt(op: *const mpz_struct, u: u32, result: *mpz_st
 inline fn longIntegerDivideUInt(op: *const mpz_struct, u: u32, result: *mpz_struct) void {
     _ = runtime.__gmpz_tdiv_q_ui(result, op, u);
 }
-inline fn longIntegerIsNegative(op: *const mpz_struct) bool {
-    return op._mp_size < 0;
-}
+const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
 
 inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return runtime.getRegisterShortIntegerBase(reg);

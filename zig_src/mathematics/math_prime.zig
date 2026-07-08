@@ -125,15 +125,11 @@ inline fn longIntegerChangeSign(op: *mpz_struct) void {
 inline fn longIntegerSetPositiveSign(op: *mpz_struct) void {
     op._mp_size = if (op._mp_size < 0) -op._mp_size else op._mp_size;
 }
-inline fn longIntegerIsZero(op: *const mpz_struct) bool {
-    return op._mp_size == 0;
-}
+const longIntegerIsZero = math_real_predicates.longIntegerIsZero;
 inline fn longIntegerIsPositive(op: *const mpz_struct) bool {
     return op._mp_size > 0;
 }
-inline fn longIntegerIsNegative(op: *const mpz_struct) bool {
-    return op._mp_size < 0;
-}
+const longIntegerIsNegative = math_real_predicates.longIntegerIsNegative;
 inline fn longIntegerIsEven(op: *const mpz_struct) bool {
     // mpz_even_p: size==0 || (low limb & 1)==0
     return op._mp_size == 0 or (op._mp_d[0] & 1) == 0;
