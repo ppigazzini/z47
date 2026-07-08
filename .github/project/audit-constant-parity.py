@@ -50,6 +50,11 @@ KNOWN_DIVERGENCES = {
     # reorganization deferred with near-zero practical impact. See the memory note
     # reserved-variable-model-stale.
     "FIRST_NAMED_RESERVED_VARIABLE": "deferred stale reserved-variable block (2026 vs C 2031)",
+    # Derived from the above: defines.h computes it as (FIRST_NAMED_RESERVED_VARIABLE
+    # - FIRST_RESERVED_VARIABLE), so the owner's 26 vs C's 31 is the SAME deferred
+    # reserved-variable staleness, not an independent bug. Was previously hidden by
+    # the clang error-limit truncation this audit just removed.
+    "NUMBER_OF_LETTERED_VARIABLES": "derived from the deferred reserved-variable block (26 vs C 31)",
 }
 
 # Base translate-unit: same header prelude as the abi-layout ground-truth oracle,
@@ -172,14 +177,22 @@ def main():
             f.write(f'_Static_assert(({n}) == ({mirrors[n]}), "{n}");\n')
 
     proc = subprocess.run(
-        [zig, "cc", "-c", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1",
+        # -ferror-limit=0: clang's default 20-error cap is consumed by the ~18
+        # Zig-local "undeclared identifier" diagnostics, which silently TRUNCATED
+        # the audit -- real divergences alphabetically after them (e.g. LAST_ITEM)
+        # were never reported. Report every assertion.
+        [zig, "cc", "-c", "-ferror-limit=0", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1",
          "-I", str(ROOT / "dep/decNumberICU"), "-I", str(ROOT / "src/c47"),
          str(src), "-o", str(tmp / "constant_parity.o")],
         capture_output=True, text=True,
     )
     err = proc.stderr
 
-    diverged = sorted(set(re.findall(r"requirement '\(([A-Za-z_0-9]+)\) == \(\d+\)'", err)))
+    # Each failing _Static_assert carries the constant name as its message
+    # ("...requirement '(2870) == (2860)': LAST_ITEM"); parse that so the report
+    # names the constant even when the preprocessor already substituted its value
+    # into the requirement (a #define shows as the value, not the name).
+    diverged = sorted(set(re.findall(r"static assertion failed due to requirement '.*': ([A-Za-z_0-9]+)", err)))
     undeclared = sorted(set(re.findall(r"use of undeclared identifier '([A-Za-z_0-9]+)'", err)))
 
     print(f"constant-parity audit: {len(mirrors)} C-convention mirrors extracted")
