@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Link-only no-op doubles for the eigen worker golden oracle
-// (math_wrappers_eigen_oracle.c). The full math_command_wrappers Zig module
-// references these display / HAL / dispatch symbols across its command surface,
-// but the eigen numeric workers under test never call them; they only need to
-// resolve at link time. Providing them here (a z47-owned test surface) keeps the
-// upstream tree untouched.
+// Link-only no-op doubles shared by every math_command_wrappers differential
+// oracle (eigen, atan, atan2, ln-complex, real-trig, circular-trig, real-rect-to-
+// polar). The full math_command_wrappers Zig module references these display /
+// HAL / dispatch symbols across its command surface, but the numeric workers under
+// test never call them; they only need to resolve at link time. Providing them
+// here (a z47-owned test surface) keeps the upstream tree untouched.
 
 #include "../../../src/c47/c47.h"
 

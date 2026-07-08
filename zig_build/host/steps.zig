@@ -183,13 +183,20 @@ fn addMathRealRectangularToPolarOracle(
     exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+    const filtered_core_sources = math_command_wrappers.filterCoreSources(b, context.raw_core_sources) catch @panic("filterCoreSources failed");
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
         .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
+    const helper_abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    helper_module.addImport("abi", helper_abi_module);
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
     helper_build_options.addOption(bool, "export_public_ln_complex", false);
@@ -202,7 +209,7 @@ fn addMathRealRectangularToPolarOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_real_rectangular_to_polar_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_real_rectangular_to_polar_oracle.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
@@ -242,13 +249,20 @@ fn addMathAtan2Oracle(
     exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+    const filtered_core_sources = math_command_wrappers.filterCoreSources(b, context.raw_core_sources) catch @panic("filterCoreSources failed");
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
         .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
+    const helper_abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    helper_module.addImport("abi", helper_abi_module);
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
     helper_build_options.addOption(bool, "export_public_ln_complex", false);
@@ -261,7 +275,7 @@ fn addMathAtan2Oracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_atan2_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_atan2_oracle.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
@@ -301,13 +315,20 @@ fn addMathAtanOracle(
     exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+    const filtered_core_sources = math_command_wrappers.filterCoreSources(b, context.raw_core_sources) catch @panic("filterCoreSources failed");
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
         .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
+    const helper_abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    helper_module.addImport("abi", helper_abi_module);
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
     helper_build_options.addOption(bool, "export_public_ln_complex", false);
@@ -320,7 +341,7 @@ fn addMathAtanOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_atan_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_atan_oracle.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
@@ -360,13 +381,20 @@ fn addMathRealTrigPrimitivesOracle(
     exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+    const filtered_core_sources = math_command_wrappers.filterCoreSources(b, context.raw_core_sources) catch @panic("filterCoreSources failed");
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
         .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
+    const helper_abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    helper_module.addImport("abi", helper_abi_module);
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
     helper_build_options.addOption(bool, "export_public_ln_complex", false);
@@ -379,7 +407,7 @@ fn addMathRealTrigPrimitivesOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_real_trig_primitives_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_real_trig_primitives_oracle.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
@@ -419,13 +447,20 @@ fn addMathCircularTrigOracle(
     exe.root_module.addIncludePath(context.generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(context.generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
+    const filtered_core_sources = math_command_wrappers.filterCoreSources(b, context.raw_core_sources) catch @panic("filterCoreSources failed");
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
         .root_source_file = b.path("zig_src/mathematics/math_command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
+    const helper_abi_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    helper_module.addImport("abi", helper_abi_module);
     const helper_build_options = b.addOptions();
     helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
     helper_build_options.addOption(bool, "export_public_ln_complex", false);
@@ -438,7 +473,7 @@ fn addMathCircularTrigOracle(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_circular_trig_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_circular_trig_oracle.c"), .flags = core_c_flags });
-    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = context.generated.constant_pointers_c, .flags = core_c_flags });
