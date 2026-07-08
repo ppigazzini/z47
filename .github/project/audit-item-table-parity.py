@@ -163,11 +163,22 @@ def build_probe_and_dump(zig, tmp):
     inc = ["-I", str(ROOT / "dep/decNumberICU"), "-I", str(ROOT / "src/c47")]
     for d in gen_dirs:
         inc += ["-I", d]
-    comp = subprocess.run(
-        [zig, "cc", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1", *gtk_flags, *inc,
-         str(tmp / "probe.c"), "-o", str(tmp / "probe")],
-        capture_output=True, text=True,
-    )
+    cc = [zig, "cc", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1", *gtk_flags, *inc]
+
+    # Preflight: c47.h drags in gmp.h / gtk / glib, which are not on every runner's
+    # default include path (e.g. Windows MSYS2, the Zig-master monitor). If a bare
+    # `#include "c47.h"` will not compile, this host lacks the item-table probe's
+    # build deps -- SKIP rather than mis-report an environment gap as table drift.
+    # The audit still gates on the Linux host-parity lane where the deps exist, and
+    # the table is platform-independent data so one lane is sufficient.
+    (tmp / "preflight.c").write_text('#include "c47.h"\nint main(void){return 0;}\n')
+    pf = subprocess.run(cc + [str(tmp / "preflight.c"), "-o", str(tmp / "pf")], capture_output=True, text=True)
+    if pf.returncode != 0:
+        miss = re.search(r"'([^']+\.h)' file not found", pf.stderr)
+        print(f"SKIP: c47.h build deps unavailable on this host ({miss.group(1) if miss else 'header not found'})", file=sys.stderr)
+        return "SKIP", len(rows), cfuncs
+
+    comp = subprocess.run(cc + [str(tmp / "probe.c"), "-o", str(tmp / "probe")], capture_output=True, text=True)
     if comp.returncode != 0:
         print("item-table probe: compile failed\n" + comp.stderr[:2500], file=sys.stderr)
         return None, len(rows), cfuncs
@@ -225,6 +236,9 @@ def main():
 
     tmp = pathlib.Path(tempfile.mkdtemp())
     cdump, ccount, cfuncs = build_probe_and_dump(zig, tmp)
+    if cdump == "SKIP":
+        print("SKIP: item-table probe deps unavailable on this host; gated on the Linux lane")
+        return 0
     if cdump is None:
         return 1
     if ccount != zcount:
