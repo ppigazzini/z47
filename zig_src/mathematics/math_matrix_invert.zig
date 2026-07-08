@@ -7,6 +7,7 @@
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const abi = @import("abi");
+const math_real_predicates = @import("math_real_predicates.zig");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -23,9 +24,7 @@ const realElems = abi.matrixRealElems;
 const constComplexElems = abi.matrixConstComplexElems;
 const complexElems = abi.matrixComplexElems;
 
-inline fn samePtr(a: anytype, b: anytype) bool {
-    return @intFromPtr(a) == @intFromPtr(b);
-}
+const samePtr = math_real_predicates.samePtr;
 
 fn clearResult(res: anytype) void {
     res.matrixElements = null;

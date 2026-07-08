@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
+const math_real_predicates = @import("math_real_predicates.zig");
 const consts = abi.constants;
 // Zig port of WP34S_LU_decomposition from src/c47/mathematics/matrix.c: the real
 // partial-pivoting LU decomposition, packing the matrix into a plain real_t
@@ -34,9 +35,7 @@ inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
     runtime.realSetPositiveSign(destination);
 }
 
-fn samePtr(a: anytype, b: anytype) bool {
-    return @intFromPtr(a) == @intFromPtr(b);
-}
+const samePtr = math_real_predicates.samePtr;
 
 fn reportRamFull(comptime info: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, nim_register_line);
