@@ -249,6 +249,32 @@ test "set/clear/flip/isBit" {
     try testing.expect(!isBitSet(0x8, 2));
 }
 
+test "shift/rotate/mirror algebraic properties over an 8-bit word" {
+    const ws: u8 = 8;
+    const sign: u64 = 0x80;
+    const mask: u64 = 0xFF;
+    const top: u6 = 7;
+    var w: u64 = 0;
+    while (w <= 0xFF) : (w += 1) {
+        // Rotating left by one then right by one restores the word (masked).
+        const l = rotateLeft(w, 1, sign).word & mask;
+        try testing.expectEqual(w, rotateRight(l, 1, top).word & mask);
+
+        // A rotation is a permutation of bits: population count is invariant.
+        try testing.expectEqual(@popCount(w), @popCount(rotateLeft(w, 1, sign).word & mask));
+        try testing.expectEqual(@popCount(w), @popCount(rotateRight(w, 1, top).word & mask));
+
+        // Bit-reversal is also a permutation, and is its own inverse.
+        try testing.expectEqual(@popCount(w), @popCount(mirrorBits(w, ws)));
+        try testing.expectEqual(w, mirrorBits(mirrorBits(w, ws), ws));
+
+        // Rotating right by one is the inverse of rotating left by one (masked),
+        // confirming the two directions agree bit-for-bit.
+        const r = rotateRight(w, 1, top).word & mask;
+        try testing.expectEqual(w, rotateLeft(r, 1, sign).word & mask);
+    }
+}
+
 test "arithmetic/logical shifts report the last out-bit as carry" {
     const s8: u64 = 0x80;
     // ASR preserves sign; last out-bit is CARRY.
