@@ -134,6 +134,7 @@ const DECSPECIAL: u8 = 0x70;
 const DECNUMUNITS = 25;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const math_real_predicates = @import("math_real_predicates.zig");
 pub const real_t = abi.Real;
 
 pub const real34_t = abi.Real34;
@@ -1152,21 +1153,10 @@ pub fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);
 }
 
-pub inline fn realIsSpecial(value: *const real_t) bool {
-    return (value.bits & DECSPECIAL) != 0;
-}
-
-pub inline fn realIsInfinite(value: *const real_t) bool {
-    return (value.bits & DECINF) != 0;
-}
-
-pub inline fn realIsNaN(value: *const real_t) bool {
-    return (value.bits & (DECNAN | DECSNAN)) != 0;
-}
-
-pub inline fn realIsNegative(value: *const real_t) bool {
-    return (value.bits & DECNEG) != 0;
-}
+pub const realIsSpecial = math_real_predicates.realIsSpecial;
+pub const realIsInfinite = math_real_predicates.realIsInfinite;
+pub const realIsNaN = math_real_predicates.realIsNaN;
+pub const realIsNegative = math_real_predicates.realIsNegative;
 
 pub inline fn real34IsNaN(value: *const real34_t) bool {
     return decQuadIsNaN(value) != 0;
@@ -1188,9 +1178,7 @@ pub inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
     _ = decimal128ToNumber(source, destination);
 }
 
-pub inline fn realIsZero(value: *const real_t) bool {
-    return value.digits == 1 and value.lsu[0] == 0 and !realIsSpecial(value);
-}
+pub const realIsZero = math_real_predicates.realIsZero;
 
 pub inline fn realChangeSign(value: *real_t) void {
     value.bits ^= 0x80;
