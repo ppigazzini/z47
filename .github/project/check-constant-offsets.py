@@ -28,9 +28,14 @@ ABI = ROOT / "zig_src/abi/constants.zig"
 C_DEF = re.compile(
     r"#define\s+(const\w+)\s+\(\(real(?:34)?_t \*\)\(constants \+ (\d+)\)\)"
 )
-# abi: pub inline fn const_1() ... { return at(4856); }  (at | at34 | cstR... skipped: dynamic)
+# abi: pub inline fn const_1() ... { return at(4856); }  (at | at34; the dynamic
+# cstR(offset) helpers take an argument so `\(\)` excludes them). Matches EVERY
+# zero-arg fixed-offset accessor, not just const*-named ones: the semantic
+# root3on2() and the offset-named cNNNN()/qNNNN() accessors were previously skipped
+# by a `const\w+` name anchor, so a stale offset on them went undetected (root3on2
+# silently pointed at sqrt2/2 after a pin advance). See the name-check note below.
 ABI_FN = re.compile(
-    r"pub inline fn (const\w+)\(\)[^\{]*\{\s*return at3?4?\((\d+)\);", re.S
+    r"pub inline fn (\w+)\(\)[^\{]*\{\s*return at3?4?\((\d+)\);", re.S
 )
 
 
@@ -77,13 +82,21 @@ def main() -> int:
         print("check-constant-offsets: no abi accessors parsed -- regex drift?", file=sys.stderr)
         return 1
 
+    # Every C constant's normalized token. An accessor whose normalized name is in
+    # here is a SEMANTIC accessor (const_1, root3on2) and must sit on the matching
+    # constant; one that is not (the offset-named cNNNN/qNNNN, whose name encodes an
+    # offset, not a constant) carries no name to verify, so it gets the garbage-
+    # offset check only.
+    all_c_norms = set().union(*c_norms.values()) if c_norms else set()
+
     garbage = []
     swapped = []
     for zname, off in accessors:
         if off not in off_to_names:
             garbage.append((zname, off))
             continue
-        if normalize(zname) not in c_norms[off]:
+        nz = normalize(zname)
+        if nz in all_c_norms and nz not in c_norms[off]:
             swapped.append((zname, off, sorted(off_to_names[off])))
 
     ok = len(accessors) - len(garbage) - len(swapped)
