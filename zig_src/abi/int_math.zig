@@ -39,6 +39,16 @@ pub fn isqrt(value: u64) u64 {
     return nn1;
 }
 
+/// True when `n` is a perfect square (n == k*k for some k). Uses the exact integer
+/// square root, so there are none of the floating-point rounding edge cases a
+/// `@sqrt` based test must guard. `*%` covers the top of the u64 range (there is no
+/// perfect square above 2^63 whose root squares back without wrapping, and every
+/// such wrap is correctly reported as "not a square").
+pub fn isPerfectSquare(n: u64) bool {
+    const r = isqrt(n);
+    return r *% r == n;
+}
+
 /// True when `value` is a power of two (2^k for k >= 0). Zero is not a power.
 pub fn isPowerOfTwo(value: u64) bool {
     return value != 0 and (value & (value - 1)) == 0;
@@ -128,6 +138,23 @@ test "isqrt is the floor of the square root" {
         const is_square = (r * r == v);
         try std.testing.expectEqual(is_square, r *% r == v);
     }
+}
+
+test "isPerfectSquare via exact integer sqrt" {
+    for ([_]u64{ 0, 1, 4, 9, 16, 25, 100, 10_000, 1 << 40, 1_000_000_000_000 }) |sq| {
+        try std.testing.expect(isPerfectSquare(sq));
+    }
+    for ([_]u64{ 2, 3, 5, 15, 26, 99, 101, 10_001 }) |ns| {
+        try std.testing.expect(!isPerfectSquare(ns));
+    }
+    // Exhaustive small sweep, cross-checked against the exact floor sqrt.
+    var v: u64 = 0;
+    while (v <= 5_000) : (v += 1) {
+        const r = isqrt(v);
+        try std.testing.expectEqual(r * r == v, isPerfectSquare(v));
+    }
+    // The top of the range is not a perfect square (exercises the *% guard).
+    try std.testing.expect(!isPerfectSquare(std.math.maxInt(u64)));
 }
 
 test "log2Floor and isPowerOfTwo" {

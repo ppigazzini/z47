@@ -1196,19 +1196,15 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
 // ===========================================================================
 // Perfect-square helpers
 // ===========================================================================
-extern fn sqrt(x: f64) f64;
 
 fn is_perfect_square_uint32(n: u32, sqrt_out: ?*u32) c_int {
-    const r: u32 = @intFromFloat(sqrt(@as(f64, @floatFromInt(n))));
-    if (r *% r == n) {
+    // Exact integer sqrt (abi.int_math, unit-tested) instead of libm @sqrt + the
+    // r/r+1 float-rounding guard: for a u32 the floor square root is exact, so a
+    // single r*r == n test is sufficient and identical in result.
+    const r: u32 = @intCast(abi.int_math.isqrt(n));
+    if (r * r == n) {
         if (sqrt_out) |so| {
             so.* = r;
-        }
-        return 1;
-    }
-    if ((r +% 1) *% (r +% 1) == n) {
-        if (sqrt_out) |so| {
-            so.* = r + 1;
         }
         return 1;
     }
