@@ -611,8 +611,7 @@ pub export fn WP34S_int10pow(x: u64) callconv(.c) u64 {
 
 pub export fn WP34S_intLog2(x: u64) callconv(.c) u64 {
     var signValue: i32 = undefined;
-    var value = WP34S_extract_value(x, &signValue);
-    var log2: u32 = 0;
+    const value = WP34S_extract_value(x, &signValue);
 
     if (value == 0 or signValue != 0) {
         frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -620,25 +619,19 @@ pub export fn WP34S_intLog2(x: u64) callconv(.c) u64 {
         return 0;
     }
 
-    if ((value & (value - 1)) != 0) {
+    // CARRY marks a non-power-of-two argument (an inexact log2).
+    if (!integer_pure.isPowerOfTwo(value)) {
         setSystemFlag(FLAG_CARRY);
     } else {
         clearSystemFlag(FLAG_CARRY);
     }
 
-    value >>= 1;
-    while (value != 0) : (value >>= 1) {
-        log2 += 1;
-    }
-
-    return @bitCast(WP34S_build_value(log2, signValue));
+    return @bitCast(WP34S_build_value(integer_pure.log2Floor(value), signValue));
 }
 
 pub export fn WP34S_intLog10(x: u64) callconv(.c) u64 {
     var signValue: i32 = undefined;
-    var value = WP34S_extract_value(x, &signValue);
-    var r: i32 = 0;
-    var c: i32 = 0;
+    const value = WP34S_extract_value(x, &signValue);
 
     if (value == 0 or signValue != 0) {
         frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -646,21 +639,14 @@ pub export fn WP34S_intLog10(x: u64) callconv(.c) u64 {
         return 0;
     }
 
-    while (value >= 10) {
-        r += 1;
-        if (value % 10 != 0) {
-            c = 1;
-        }
-        value /= 10;
-    }
-
-    if (c != 0 or value != 1) {
+    // CARRY marks a non-power-of-ten argument (an inexact log10).
+    if (!integer_pure.isPowerOfTen(value)) {
         setSystemFlag(FLAG_CARRY);
     } else {
         clearSystemFlag(FLAG_CARRY);
     }
 
-    return @bitCast(WP34S_build_value(@intCast(r), signValue));
+    return @bitCast(WP34S_build_value(@intCast(integer_pure.log10Floor(value)), signValue));
 }
 
 pub export fn WP34S_mulmod(a: u64, b: u64, c: u64) callconv(.c) u64 {
