@@ -7,6 +7,7 @@
 // the public commands are bridge-renamed.
 const std = @import("std");
 const runtime = @import("math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_euclidean_norm_command = @import("math_matrix_euclidean_norm_command.zig"); // M-callconv: Zig-to-Zig
@@ -44,12 +45,11 @@ extern fn getJRegisterAsInt(asArrayPointer: bool) i16;
 inline fn realCopy(source: *const real_t, destination: *real_t) void {
     destination.* = source.*;
 }
-inline fn realIsPositive(value: *const real_t) bool {
-    // C realType.h:140: #define realIsPositive(x) (((bits) & 0x80) == 0x00) — sign
-    // bit clear, INCLUDING +0 (do NOT exclude zero; that diverged from C and made
-    // MIM swap/get/put range guards reject zero-valued indices/sizes at edges).
-    return (value.bits & 0x80) == 0;
-}
+// C realType.h:140: #define realIsPositive(x) (((bits) & 0x80) == 0x00) — sign bit
+// clear, INCLUDING +0 (do NOT exclude zero; that diverged from C and made MIM
+// swap/get/put range guards reject zero-valued indices/sizes at edges). The shared
+// predicate keeps that convention.
+const realIsPositive = math_real_predicates.realIsPositive;
 
 inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = @ptrCast(m.matrixElements);

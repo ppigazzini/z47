@@ -41,6 +41,7 @@ inline fn const_1on2() *const real_t {
 }
 
 const abi = @import("abi");
+const math_real_predicates = @import("math_real_predicates.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_inverse_trig_command = @import("math_inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
@@ -67,9 +68,7 @@ inline fn realAddBlob(op1: *const real_t, op2: *align(1) const real_t, res: *rea
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
 
-inline fn realIsPositive(source: *const real_t) bool {
-    return (source.bits & 0x80) == 0x00;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 // Cross-domain externs.
 

@@ -19,6 +19,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const comparison_reals = @import("math_comparison_reals.zig");
+const math_real_predicates = @import("math_real_predicates.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_integer_division_cells = @import("math_integer_division_cells.zig"); // M-callconv: Zig-to-Zig
 
@@ -99,9 +100,7 @@ inline fn realCompare(
     _ = runtime.decNumberCompare(res, operand1, operand2, real_context);
 }
 
-inline fn realIsPositive(value: *const runtime.real_t) bool {
-    return (value.bits & runtime.DECNEG) == 0;
-}
+const realIsPositive = math_real_predicates.realIsPositive;
 
 // ============================================================================
 // compare.c
