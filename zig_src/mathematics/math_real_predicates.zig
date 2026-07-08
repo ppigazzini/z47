@@ -52,8 +52,10 @@ pub inline fn realIsNaN(source: *align(1) const abi.Real) bool {
     return (source.bits & (abi.DECNAN | abi.DECSNAN)) != 0;
 }
 
-/// decQuad (real34_t) stores its sign in the top bit of the last byte of the
-/// 16-byte big-endian blob.
+/// The raw sign bit of a decQuad (real34_t): the top bit of the last byte of the
+/// 16-byte big-endian blob. NOTE this is the raw encoding sign, which differs from
+/// decQuadIsNegative on NaN (a sign-set NaN is not "negative"); owners that need
+/// the decNumber negativity semantics use runtime.real34IsNegative instead.
 pub inline fn real34IsNegative(source: *align(1) const abi.Real34) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }
