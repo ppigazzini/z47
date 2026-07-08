@@ -21,9 +21,15 @@ func differ per target) are written in the Zig mirror as comptime expressions
 rather than literals; they are reported and skipped (they carry no literal to
 diff). Everything else is compared byte-exact.
 
-Run standalone or via `zig build item-table-parity`. Requires zig + the upstream
-headers under src/c47, dep/decNumberICU, the generated softmenu/constant headers
-(produced by any prior `zig build`), and GTK3 cflags (pkg-config).
+Run standalone (exit 1 on drift) or, when a pin advance HAS drifted the table,
+`--emit` prints the corrected frontier_items.zig `.{ ... }` literal for every
+changed row and every new row (with the array-resize target), so re-syncing the
+mirror is copy-paste instead of hand-building a probe. Build-varying (comptime)
+rows are flagged for manual re-derivation rather than emitted.
+
+Requires zig + the upstream headers under src/c47, dep/decNumberICU, the generated
+softmenu/constant headers (produced by any prior `zig build`), and GTK3 cflags
+(pkg-config); it SKIPs cleanly on hosts lacking those C build deps.
 """
 import os
 import pathlib
@@ -196,7 +202,7 @@ def parse_zig_rows():
     lines = ZIG_ITEMS.read_text().splitlines()
     hdr = next(i for i, l in enumerate(lines) if "pub export const indexOfItems" in l)
     size = int(re.search(r"\[(\d+)\]item_t", lines[hdr]).group(1))
-    rows, zfuncs, comptime = {}, {}, 0
+    rows, zfuncs, comptime, comptime_idx = {}, {}, 0, set()
     idx = 0
     for i in range(hdr + 1, len(lines)):
         s = lines[i].strip()
@@ -216,21 +222,39 @@ def parse_zig_rows():
             zfuncs[idx] = mf.group(1)
         else:
             comptime += 1
+            comptime_idx.add(idx)
         idx += 1
-    return size, idx, rows, comptime, zfuncs
+    return size, idx, rows, comptime, zfuncs, comptime_idx
+
+
+def zig_row_literal(centry, c_func):
+    """Render the frontier_items.zig `.{ ... }` literal for a probed C row."""
+    param, tam, status, cat_hex, sm_hex = centry
+
+    def bytes_lit(h):
+        b = [h[i : i + 2] for i in range(0, 32, 2)]
+        return "[16]u8{ " + ", ".join("0x" + x for x in b) + " }"
+
+    return (
+        f".{{ .func = {expected_zig_func(c_func)}, .param = {param}, "
+        f".itemCatalogName = {bytes_lit(cat_hex)}, .itemSoftmenuName = {bytes_lit(sm_hex)}, "
+        f".tamMinMax = {tam}, .status = {status} }},"
+    )
 
 
 def main():
+    emit = "--emit" in sys.argv[1:]
     zig = shutil.which("zig")
     if not zig:
         print("SKIP: zig not on PATH", file=sys.stderr)
         return 0
 
     last_item = int(re.search(r"#define\s+LAST_ITEM\s+(\d+)", ITEMS_H.read_text()).group(1))
-    zsize, zcount, zrows, comptime, zfuncs = parse_zig_rows()
+    zsize, zcount, zrows, comptime, zfuncs, comptime_idx = parse_zig_rows()
 
     print(f"item-table parity: LAST_ITEM={last_item}, Zig table size={zsize}, rows={zcount}")
-    if zsize != last_item + 1:
+    size_bad = zsize != last_item + 1
+    if size_bad and not emit:
         print(f"FAIL: Zig indexOfItems is [{zsize}] but items.h LAST_ITEM+1 == {last_item + 1}")
         return 1
 
@@ -241,7 +265,8 @@ def main():
         return 0
     if cdump is None:
         return 1
-    if ccount != zcount:
+    count_bad = ccount != zcount
+    if count_bad and not emit:
         print(f"FAIL: C items.c has {ccount} rows but Zig mirror has {zcount}")
         return 1
 
@@ -260,8 +285,26 @@ def main():
         print(f"  DATA MISMATCH row {idx}: {diff}")
     for idx, cf, want, got in func_bad[:12]:
         print(f"  FUNC MISMATCH row {idx}: items.c={cf} -> expected {want}, mirror has {got}")
-    if data_bad or func_bad:
-        print(f"\nFAIL: {len(data_bad)} data + {len(func_bad)} func indexOfItems divergence(s) from items.c")
+
+    if emit:
+        # Emit the corrected Zig literal for each drifted row and each new row
+        # (C index beyond the current mirror). Comptime/build-varying rows are
+        # flagged for manual attention rather than emitted (they carry no literal).
+        drifted = sorted({i for i, *_ in data_bad} | {i for i, *_ in func_bad})
+        new_rows = [i for i in range(zcount, ccount)]
+        print(f"\n--- EMIT: {len(drifted)} changed + {len(new_rows)} new row(s) "
+              f"(resize array to [{ccount}]) ---")
+        for i in drifted + new_rows:
+            if i in comptime_idx:
+                print(f"/* {i} */ // MANUAL: build-varying (comptime) row -- re-derive by hand")
+                continue
+            print(f"/* {i} */ {zig_row_literal(cdump[i], cfuncs[i])}")
+
+    if size_bad:
+        print(f"\nNOTE: resize the Zig indexOfItems to [{last_item + 1}] (LAST_ITEM+1)")
+    if data_bad or func_bad or size_bad or count_bad:
+        print(f"\nFAIL: {len(data_bad)} data + {len(func_bad)} func divergence(s)"
+              f"{' + size' if size_bad else ''}{' + count' if count_bad else ''} vs items.c")
         return 1
     print("\nPASS: every literal indexOfItems row matches upstream items.c byte-for-byte (data + func)")
     return 0
