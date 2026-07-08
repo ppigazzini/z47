@@ -1,0 +1,115 @@
+// SPDX-License-Identifier: GPL-3.0-only
+//
+// Shared sign / pointer predicates for the mathematics owners.
+//
+// These trivial field- and bit-test predicates were copy-pasted verbatim across
+// many math owners (`realIsPositive` alone appeared identically in 13 files). They
+// read only the std-only abi layout types -- `Real.bits`, `Real34.bytes`,
+// `Mpz._mp_size` -- so they collect here as one shared, C-oracle-independent
+// module that `zig build test:unit` exercises natively. This is the first testable
+// seam carved out of the mathematics module (REPORT-27 Phase 2, groups A1 + C1):
+// behavior is byte-identical to the former per-file copies, and the owners alias
+// these instead of redefining them.
+//
+// Only genuinely-pure predicates belong here. Sign tests that dispatch into
+// decNumber/decQuad (`realIsZero`'s special-value check, `real34IsZero` via
+// `decQuadIsZero`) stay in `math_command_wrappers_runtime.zig`; they are not
+// std-only and cannot be unit-tested without the C runtime.
+
+const std = @import("std");
+const abi = @import("abi");
+
+/// A real_t is flagged negative by the DECNEG bit of its `bits` byte; positive
+/// (or zero/NaN) otherwise. Mirrors the decNumber sign convention.
+pub inline fn realIsPositive(source: *align(1) const abi.Real) bool {
+    return (source.bits & abi.DECNEG) == 0;
+}
+
+pub inline fn realIsNegative(source: *align(1) const abi.Real) bool {
+    return (source.bits & abi.DECNEG) != 0;
+}
+
+/// decQuad (real34_t) stores its sign in the top bit of the last byte of the
+/// 16-byte big-endian blob.
+pub inline fn real34IsNegative(source: *align(1) const abi.Real34) bool {
+    return (source.bytes[15] & 0x80) == 0x80;
+}
+
+/// GMP mpz sign lives in `_mp_size`: negative size is a negative value, 0 is zero.
+pub inline fn longIntegerIsNegative(op: *const abi.Mpz) bool {
+    return op._mp_size < 0;
+}
+
+pub inline fn longIntegerIsZero(op: *const abi.Mpz) bool {
+    return op._mp_size == 0;
+}
+
+pub inline fn longIntegerIsNegativeOrZero(op: *const abi.Mpz) bool {
+    return op._mp_size <= 0;
+}
+
+/// Two pointers alias the same address (guards in-place matrix/vector ops).
+pub inline fn samePtr(a: anytype, b: anytype) bool {
+    return @intFromPtr(a) == @intFromPtr(b);
+}
+
+test "realIsPositive / realIsNegative read the DECNEG bit" {
+    var r: abi.Real = std.mem.zeroes(abi.Real);
+    r.bits = 0;
+    try std.testing.expect(realIsPositive(&r));
+    try std.testing.expect(!realIsNegative(&r));
+
+    r.bits = abi.DECNEG;
+    try std.testing.expect(!realIsPositive(&r));
+    try std.testing.expect(realIsNegative(&r));
+
+    // DECNEG set alongside unrelated flag bits is still negative.
+    r.bits = abi.DECNEG | 0x01;
+    try std.testing.expect(realIsNegative(&r));
+    try std.testing.expect(!realIsPositive(&r));
+
+    // Unrelated flag bits without DECNEG stay positive.
+    r.bits = 0x7f & ~abi.DECNEG;
+    try std.testing.expect(realIsPositive(&r));
+}
+
+test "real34IsNegative reads the MSB of the top blob byte" {
+    var q: abi.Real34 = .{ .bytes = [_]u8{0} ** 16 };
+    try std.testing.expect(!real34IsNegative(&q));
+
+    q.bytes[15] = 0x80;
+    try std.testing.expect(real34IsNegative(&q));
+
+    q.bytes[15] = 0x7f;
+    try std.testing.expect(!real34IsNegative(&q));
+
+    // Lower bytes never affect the sign.
+    q.bytes[0] = 0xff;
+    try std.testing.expect(!real34IsNegative(&q));
+}
+
+test "long-integer sign predicates read _mp_size" {
+    var z: abi.Mpz = std.mem.zeroes(abi.Mpz);
+
+    z._mp_size = 0;
+    try std.testing.expect(longIntegerIsZero(&z));
+    try std.testing.expect(longIntegerIsNegativeOrZero(&z));
+    try std.testing.expect(!longIntegerIsNegative(&z));
+
+    z._mp_size = -3;
+    try std.testing.expect(longIntegerIsNegative(&z));
+    try std.testing.expect(longIntegerIsNegativeOrZero(&z));
+    try std.testing.expect(!longIntegerIsZero(&z));
+
+    z._mp_size = 5;
+    try std.testing.expect(!longIntegerIsNegative(&z));
+    try std.testing.expect(!longIntegerIsNegativeOrZero(&z));
+    try std.testing.expect(!longIntegerIsZero(&z));
+}
+
+test "samePtr compares addresses, not values" {
+    var a: u32 = 7;
+    var b: u32 = 7;
+    try std.testing.expect(samePtr(&a, &a));
+    try std.testing.expect(!samePtr(&a, &b));
+}
