@@ -32,6 +32,7 @@ const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M
 const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
 
 const calcRegister_t = runtime.calcRegister_t;
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
@@ -367,9 +368,7 @@ extern fn realSetZero(r: *real_t) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 // realIsNegative / realMultiply / real34ToReal are C macros; reproduce them.
-inline fn realIsNegative(source: *const real_t) bool {
-    return (source.bits & 0x80) == 0x80;
-}
+const realIsNegative = math_real_predicates.realIsNegative;
 inline fn realMultiply(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = runtime.decNumberMultiply(res, operand1, operand2, ctxt);
 }

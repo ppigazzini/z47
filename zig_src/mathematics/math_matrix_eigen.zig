@@ -36,6 +36,7 @@ const math_slvc = @import("math_slvc.zig"); // M-callconv: Zig-to-Zig
 const math_slvq = @import("math_slvq.zig"); // M-callconv: Zig-to-Zig
 const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
+const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -94,10 +95,7 @@ const ERROR_SOLVER_ABORT: u8 = 60;
 inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realIsSpecial(source: *align(1) const real_t) bool {
-    // decNumberIsSpecial: any of the Inf/NaN/sNaN bits (DECSPECIAL = 0x70).
-    return (source.bits & 0x70) != 0;
-}
+const realIsSpecial = math_real_predicates.realIsSpecial;
 
 inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberFMA(res, f1, f2, term, ctxt);
