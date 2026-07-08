@@ -47,13 +47,16 @@ pub export fn getMatrixDims(regist: calcRegister_t, func_name: [*:0]const u8, ro
     }
 }
 
-// mpz_sgn(x) <= 0: a long integer is negative or zero when its size field is
-// non-positive (GMP stores the sign in _mp_size).
-const longIntegerIsNegativeOrZero = math_real_predicates.longIntegerIsNegativeOrZero;
+const DimensionError = error{ NotALongInteger, OutOfRange };
 
-fn getSingleDimension(reg: calcRegister_t, d: *u32) bool {
+// Reads one matrix dimension (rows or columns) from `reg` as a positive long
+// integer bounded by MAX_DIMENSION. Signals failure with a Zig error (after
+// displaying the calculator message) instead of a sentinel bool; the temporary
+// GMP integer is always released via defer. `d.*` is written only on success.
+const MAX_DIMENSION: u32 = 4096;
+
+fn getSingleDimension(reg: calcRegister_t, d: *u32) DimensionError!void {
     var tmp: runtime.longInteger_t = undefined;
-    var res = false;
 
     if (!runtime.getRegisterAsLongInt(reg, &tmp[0], null)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, nim_register_line);
@@ -65,10 +68,11 @@ fn getSingleDimension(reg: calcRegister_t, d: *u32) bool {
             runtime.moreInfoOnError("In function getSingleDimension:", message, null, null);
         }
         runtime.__gmpz_clear(&tmp[0]);
-        return false;
+        return error.NotALongInteger;
     }
+    defer runtime.__gmpz_clear(&tmp[0]);
 
-    if (longIntegerIsNegativeOrZero(&tmp[0]) or runtime.__gmpz_cmp_ui(&tmp[0], 4096) > 0) {
+    if (!math_real_predicates.longIntegerIsPositiveAtMost(&tmp[0], MAX_DIMENSION)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, nim_register_line);
         if (runtime.extra_info_on_calc_error) {
             var buffer: [64]u8 = undefined;
@@ -76,16 +80,17 @@ fn getSingleDimension(reg: calcRegister_t, d: *u32) bool {
             const message = bufPrintZ(&buffer, "invalid number of {s}", .{which}) catch "invalid number";
             runtime.moreInfoOnError("In function getSingleDimension:", message, null, null);
         }
-    } else {
-        d.* = @intCast(runtime.__gmpz_get_ui(&tmp[0]));
-        res = true;
+        return error.OutOfRange;
     }
 
-    runtime.__gmpz_clear(&tmp[0]);
-    return res;
+    d.* = @intCast(runtime.__gmpz_get_ui(&tmp[0]));
 }
 
 pub export fn getDimensionArg(rows: *u32, cols: *u32) callconv(.c) bool {
-    // Get Size or I&J for STOIJ from REGISTER_X and REGISTER_Y.
-    return getSingleDimension(runtime.REGISTER_X, cols) and getSingleDimension(runtime.REGISTER_Y, rows);
+    // Get Size or I&J for STOIJ from REGISTER_X and REGISTER_Y. Adapt the error
+    // set back to the C-ABI bool at this boundary; the short-circuit matches the
+    // former `&&` (Y is not read if X fails).
+    getSingleDimension(runtime.REGISTER_X, cols) catch return false;
+    getSingleDimension(runtime.REGISTER_Y, rows) catch return false;
+    return true;
 }
