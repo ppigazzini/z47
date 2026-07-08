@@ -15,6 +15,7 @@
 
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
+const integer_pure = @import("integer_pure.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
 const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
@@ -404,14 +405,7 @@ pub export fn WP34S_intDivide(y: u64, x: u64) callconv(.c) u64 {
 }
 
 pub export fn WP34S_int_gcd(a_in: u64, b_in: u64) callconv(.c) u64 {
-    var a = a_in;
-    var b = b_in;
-    while (b != 0) {
-        const t = b;
-        b = a % b;
-        a = t;
-    }
-    return a;
+    return integer_pure.gcd(a_in, b_in);
 }
 
 pub export fn WP34S_intGCD(y: u64, x: u64) callconv(.c) u64 {
@@ -460,7 +454,6 @@ pub export fn WP34S_intChs(x: u64) callconv(.c) u64 {
 pub export fn WP34S_intSqrt(x: u64) callconv(.c) u64 {
     var signValue: i32 = undefined;
     const value = WP34S_extract_value(x, &signValue);
-    var nn0: u64 = undefined;
     var nn1: u64 = undefined;
 
     if (signValue != 0) {
@@ -471,18 +464,10 @@ pub export fn WP34S_intSqrt(x: u64) callconv(.c) u64 {
     if (value == 0) {
         nn1 = 0;
     } else {
-        nn0 = value / 2 + 1;
-        nn1 = value / nn0 + nn0 / 2;
-        while (nn1 < nn0) {
-            nn0 = nn1;
-            nn1 = (nn0 + value / nn0) / 2;
-        }
-        nn0 = nn1 *% nn1;
-        if (nn0 > value) {
-            nn1 -%= 1;
-        }
-
-        if (nn0 != value) {
+        nn1 = integer_pure.isqrt(value);
+        // CARRY marks a non-perfect-square input: isqrt returns the floor, so the
+        // square equals the input exactly iff it was a perfect square.
+        if (nn1 *% nn1 != value) {
             setSystemFlag(FLAG_CARRY);
         } else {
             clearSystemFlag(FLAG_CARRY);
