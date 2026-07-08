@@ -41,6 +41,17 @@ pub inline fn realIsZero(source: *align(1) const abi.Real) bool {
     return source.digits == 1 and source.lsu[0] == 0 and !realIsSpecial(source);
 }
 
+/// A real_t is an infinity when the DECINF bit is set (NaN bits distinguish the
+/// other special encodings).
+pub inline fn realIsInfinite(source: *align(1) const abi.Real) bool {
+    return (source.bits & abi.DECINF) != 0;
+}
+
+/// A real_t is a (quiet or signalling) NaN when either NaN bit is set.
+pub inline fn realIsNaN(source: *align(1) const abi.Real) bool {
+    return (source.bits & (abi.DECNAN | abi.DECSNAN)) != 0;
+}
+
 /// decQuad (real34_t) stores its sign in the top bit of the last byte of the
 /// 16-byte big-endian blob.
 pub inline fn real34IsNegative(source: *align(1) const abi.Real34) bool {
@@ -122,6 +133,27 @@ test "realIsZero requires one zero digit and a finite encoding" {
     r.lsu[0] = 0;
     r.digits = 3;
     try std.testing.expect(!realIsZero(&r));
+}
+
+test "realIsInfinite / realIsNaN isolate their special bits" {
+    var r: abi.Real = std.mem.zeroes(abi.Real);
+
+    r.bits = abi.DECINF;
+    try std.testing.expect(realIsInfinite(&r));
+    try std.testing.expect(!realIsNaN(&r));
+
+    r.bits = abi.DECNAN;
+    try std.testing.expect(!realIsInfinite(&r));
+    try std.testing.expect(realIsNaN(&r));
+
+    r.bits = abi.DECSNAN;
+    try std.testing.expect(!realIsInfinite(&r));
+    try std.testing.expect(realIsNaN(&r));
+
+    // A finite value is neither.
+    r.bits = abi.DECNEG;
+    try std.testing.expect(!realIsInfinite(&r));
+    try std.testing.expect(!realIsNaN(&r));
 }
 
 test "real34IsNegative reads the MSB of the top blob byte" {
