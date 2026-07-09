@@ -1686,10 +1686,10 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     histElementXorY = -1;
 
 
-    x_min = -10;
-    x_max = 10;
-    y_min = 0;
-    y_max = 1;
+    int32ToReal(-10, x_min);
+    int32ToReal(10, x_max);
+    realSetZero(y_min);
+    realCopy(const_1, y_max);
 
 
 
@@ -1868,6 +1868,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     currentSolverProgram = 0xffffu;
     currentSolverVariable = INVALID_VARIABLE;
     currentSolverNestingDepth = 0;
+    graphAccActive = false;
 
     graphVariabl1 = 0;
 

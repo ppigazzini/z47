@@ -3399,7 +3399,11 @@ RELEASE_END:
 
 void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   doRefreshSoftMenu = true;     //dr
-    switch(calcMode) {
+    uint8_t effectiveCalcMode = calcMode;
+    if(calcMode == CM_GRAPH && programRunStop == PGM_RUNNING) {   // a program running under CM_GRAPH (e.g. plot(int) integrand) needs normal ENTER dup, not the empty interactive-graph case
+      effectiveCalcMode = CM_NORMAL;
+    }
+    switch(effectiveCalcMode) {
       case CM_NORMAL: {
 
         if(!getSystemFlag(FLAG_ERPN) || (!nimWhenButtonPressed && programRunStop != PGM_RUNNING) || (getSystemFlag(FLAG_ERPN) && programRunStop == PGM_RUNNING )) {     //vv PHM eRPN 2021-07;   JM corrected eRPN on 2024-03-19 on master 86fd2a5
@@ -3988,6 +3992,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
             popSoftmenu();
           }
           popSoftmenu();
+          if(-currentMenu() == MNU_SHOW) { // this would be after programmed plot
+            popSoftmenu();
+          }
         }
 
         if(currentMenu() == -MNU_TIMERF) {

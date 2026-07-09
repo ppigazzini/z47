@@ -7,6 +7,7 @@
 #if !defined(NEXTSTEP_H)
   #define NEXTSTEP_H
 
+  bool_t   programBytesAvailable   (const uint8_t *address, uint16_t numberOfBytes);
   uint8_t *findNextStep            (uint8_t *step);
   uint8_t *findKey2ndParam         (uint8_t *step);
   uint8_t *findPreviousStep        (uint8_t *step);

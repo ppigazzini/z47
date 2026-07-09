@@ -107,7 +107,7 @@ dmcp5r47:
     - saas-linux-small-amd64
 
 testSuite:
-  stage: test
+  stage: build
   before_script:
     - *linux-script-before
   script:
@@ -116,7 +116,7 @@ testSuite:
     - saas-linux-small-amd64
 
 codeDocs:
-  stage: test
+  stage: build
   before_script:
     - *linux-script-before
     - apt-get install -qq -y doxygen python3-sphinx python3-breathe furo

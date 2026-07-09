@@ -1306,6 +1306,17 @@ if(   (CTRL_State != 65536 || allowAltGrKey)
 
 
 continueWithOldDetections:
+
+
+    if(event_keyval == GDK_KEY_colon && tam.mode != 0) {
+      addItemToBuffer(ITM_COLON);
+      screenUpdatingMode = SCRUPD_AUTO;
+      refreshScreen(3);
+      goto returnKeyPressedFalse;
+    }
+
+
+
     #if defined(VERBOSEKEYS) || defined(VERBOSE_MINIMUM)
       printf("   Continue with old key detection using event_keyval=%u\n\n",event_keyval);
       fflush(stdout);

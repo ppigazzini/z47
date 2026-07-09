@@ -718,6 +718,63 @@ typedef struct {
 } letteredFlagDisplay_t;
 
 
+typedef enum {
+  LI_ZERO     = 0, // Long integer sign 0
+  LI_NEGATIVE = 1, // Long integer sign -
+  LI_POSITIVE = 2  // Long integer sign +
+} longIntegerSign_t;
+
+
+/**
+ * \enum printArgument_t
+ *
+ */
+typedef enum {
+  PRINT_BYTE,
+  PRINT_CHAR,
+  PRINT_TAB,
+  PRINT_ALPHA,
+  PRINT_ALPHA_NOADV,
+  PRINT_ALPHA_JUST
+} printArgument_t;
+
+
+/**
+ * \enum printerModel_t
+ *
+ */
+typedef enum {
+  PRINTER_HP,
+  PRINTER_MARTEL,
+  PRINTER_OTHER
+} printerModel_t;
+
+
+/**
+ * \enum printModes_t
+ *
+ */
+typedef enum  {
+  PMODE_DEFAULT = 0,
+  PMODE_GRAPHICS = 1,
+  PMODE_SMALLGRAPHICS = 2,
+  PMODE_SERIAL = 3
+} printModes_t;
+
+
+/**
+ * \enum printArea_t
+ *
+ */
+typedef enum  {
+  LINE_FULL  = 0,
+  LINE_LEFT  = 1,
+  LINE_RIGHT = 2,
+  LINE_NOLF  = 3,
+  LINE_ASIS  = 4,
+} printArea_t;
+
+
 /**
  * \struct printerState_t
    * Structure keeping the printer status
@@ -726,7 +783,7 @@ typedef struct {
   bool_t         print_on;               ///< Printing on/off
   bool_t         trace_done;             ///< Printing on/off
   uint8_t        print_blank_line;       ///< Print space between lines
-  print_modes_t  print_mode;             ///< printer modes
+  printModes_t   print_mode;             ///< printer modes
   printerModel_t printer_model;          ///< printer model
   uint16_t       delay;                  ///< printer line delay
 } printerState_t;

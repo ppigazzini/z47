@@ -9,6 +9,15 @@
 #include "c47.h"
 
 
+bool_t programBytesAvailable(const uint8_t *address, uint16_t numberOfBytes) {
+  uintptr_t begin = (uintptr_t)beginOfProgramMemory;
+  uintptr_t end = (uintptr_t)firstFreeProgramByte;
+  uintptr_t current = (uintptr_t)address;
+
+  return current >= begin && current <= end && numberOfBytes <= end - current;
+}
+
+
 uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
   uint8_t opParam = *(uint8_t *)(step++);
 
@@ -277,13 +286,20 @@ uint8_t *findKey2ndParam(uint8_t *step) {
     #endif // !DMCP_BUILD
     return NULL;
   }
+  if(!programBytesAvailable(step, 1)) {
+    return NULL;
+  }
   uint16_t op = *(step++);
   if(op & 0x80) {
+    if(!programBytesAvailable(step, 1)) {
+      return NULL;
+    }
     op &= 0x7f;
     op <<= 8;
     op |= *(step++);
   }
 
+  uint8_t *secondParam;
   if(op == 0x7fff) { // .END.
     return NULL;
   }
@@ -291,23 +307,36 @@ uint8_t *findKey2ndParam(uint8_t *step) {
     switch(indexOfItems[op].status & PTP_STATUS) {
       case PTP_NONE:
       case PTP_DISABLED: {
-        return step;
+        secondParam = step;
+        break;
       }
 
       case PTP_LITERAL:
       case PTP_REM: {
-        return countLiteralBytes(step);
+        secondParam = countLiteralBytes(step);
+        break;
       }
 
       case PTP_KEYG_KEYX: {
-        return countOpBytes(step, PARAM_NUMBER_8);
+        secondParam = countOpBytes(step, PARAM_NUMBER_8);
+        break;
       }
 
       default: {
-        return countOpBytes(step, (indexOfItems[op].status & PTP_STATUS) >> 9);
+        secondParam = countOpBytes(step, (indexOfItems[op].status & PTP_STATUS) >> 9);
+        break;
       }
     }
   }
+
+  // countLiteralBytes()/countOpBytes() advance by lengths taken from the step
+  // itself, so corrupt or imported program memory can push the result outside
+  // the active program region. Reject any pointer that leaves it: the next byte
+  // must be at or before firstFreeProgramByte (equal is the valid end position).
+  if(secondParam != NULL && !programBytesAvailable(secondParam, 0)) {
+    return NULL;
+  }
+  return secondParam;
 }
 
 

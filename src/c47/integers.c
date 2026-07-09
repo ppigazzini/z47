@@ -657,7 +657,7 @@ uint64_t WP34S_int2pow(uint64_t x) {
     setSystemFlag(FLAG_OVERFLOW);
     return 0;
   }
-  return 1LL << (uint32_t)(exponent & 0xff);
+  return (uint64_t)1 << (uint32_t)(exponent & 0xff);
 }
 
 

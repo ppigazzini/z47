@@ -2,9 +2,6 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 #include "c47.h"
-#if defined(PC_BUILD) && defined(DEBUGUNDO)
-  #include <execinfo.h>
-#endif // PC_BUILD &&MONITOR_CLRSCR
 
 void fnClX(uint16_t unusedButMandatoryParameter) {
   clearRegister(REGISTER_X);

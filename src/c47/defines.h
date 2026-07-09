@@ -272,7 +272,7 @@
 
 #define LOW_GRAPH_ACC                                                                     //Lowered graph accuracy for EQN graphs
 //#undef LOW_GRAPH_ACC
-#define significantDigitsForEqnGraphs (significantDigits == 0 ? 12 : significantDigits)   //If 6 is chosen by user, all four types are changes as follows: 34 to SDIGS; 39 to SDIGS+3; 51 to SDIGS+6; 75 to SDIGS+9
+#define significantDigitsForEqnGraphs (significantDigits == 0 ? 12 : significantDigits)   //While plotting, all four context types reduce: 34 to SDIGS; 39 to SDIGS+3; 51 to SDIGS+12; 75 to SDIGS+18
 #define significantDigitsForScreen    3                                                   //Only for screen coord scaling of the resulting graphic matrix: 34 to 4; 39 to 4+3; 51 to 4+3; 75 to 4+3
 
 
@@ -331,6 +331,8 @@
   #undef     VERBOSE_REGISTERS
   #define    GRAPHDEBUG
   #undef     GRAPHDEBUG
+  #define    GRAPHDEBUG_MIN
+  #undef     GRAPHDEBUG_MIN
 
 //Verbose STAT
   #define DEBUG_STAT                 0 // PLOT & STATS verbose level can be 0, 1 or 2 (more)
@@ -537,6 +539,7 @@
 #undef  USECURVES                          // activate spline curve option in the plot menu
 #define XFN_EXTENDED_2PI_FOR_MOD         1 // for X_MOD only, if detect precise X_PI 1034 digits, it extends pi to 2139 (or as per contxt up to 6147) in XFN only. Needs to by exact, to 0 ULP difference.
 #define YYSystem                         true // Enable the shortcut system to allow two-digit year defaults, i.e. 23.1212 [.d] to decode to 2023.1212
+#define PGMPTR_TO_NEXT_AFTER_RTN         1 // 1: top-level RTN rests one step past the RTN (wraps at END). 0: rests on the program's first step as per legacy
 
 
 #if defined(TESTSUITE_BUILD)
@@ -833,7 +836,7 @@
 #define FLAG_alphaCAP                         0xc00f
 #define FLAG_RUNTIM                           0xc010
 #define FLAG_AMORT_HP12C                      0x8011
-#define FLAG_spare                            0xc012
+#define FLAG_IMPLOT                           0x8012
 #define FLAG_TRACE                            0x8013
 #define FLAG_USER                             0x8014
 #define FLAG_LOWBAT                           0xc015
@@ -922,8 +925,12 @@
 #define FLAG_NORM                             0x8068 //41
 #define FLAG_BOLD                             0x8069 //42
 #define FLAG_SIGZEROS                         0x806A //43
+#define FLAG_PRMS                             0x806B
+#define FLAG_PINTG                            0x806C
+#define FLAG_PDIFF                            0x806D
+#define FLAG_PSHADE                           0x806E //47
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+43 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+47 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -947,13 +954,6 @@
 
 
 
-typedef enum {
-  LI_ZERO     = 0, // Long integer sign 0
-  LI_NEGATIVE = 1, // Long integer sign -
-  LI_POSITIVE = 2  // Long integer sign +
-} longIntegerSign_t;
-
-
 // PRINTING
 #define PROFF   0
 #define PRON    1
@@ -965,41 +965,6 @@ typedef enum {
 
 #define PROG    false
 #define LIST    true
-
-typedef enum {
-  PRINT_BYTE,
-  PRINT_CHAR,
-  PRINT_TAB,
-  PRINT_ALPHA,
-  PRINT_ALPHA_NOADV,
-  PRINT_ALPHA_JUST
-} printArgument_t;
-
-
-
-typedef enum {
-  PRINTER_HP,
-  PRINTER_MARTEL,
-  PRINTER_OTHER
-} printerModel_t;
-
-
-
-typedef enum  {
-  PMODE_DEFAULT = 0,
-  PMODE_GRAPHICS = 1,
-  PMODE_SMALLGRAPHICS = 2,
-  PMODE_SERIAL = 3
-} print_modes_t;
-
-
-typedef enum  {
-  LINE_FULL  = 0,
-  LINE_LEFT  = 1,
-  LINE_RIGHT = 2,
-  LINE_NOLF  = 3,
-  LINE_ASIS  = 4,
-} print_area_t;
 
 
 
@@ -2143,6 +2108,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SOLVER_STATUS_EQUATION_1ST_DERIVATIVE      0x0008 // --0- ---- ---- 10--
 #define SOLVER_STATUS_EQUATION_2ND_DERIVATIVE      0x000C // --0- ---- ---- 11--
 #define SOLVER_STATUS_EQUATION_GRAPHER             0x2000 // --1- ---- ---- 00--
+#define SOLVER_STATUS_RPN_GRAPHER                  0x4000 // -1xx xxxx xxxx xxxx
 
 #define SOLVER_STATUS_SINGLE_VARIABLE              0x0010 // 00-0 --00 ---1 ----
 #define SOLVER_STATUS_USES_FORMULA                 0x0100 // 00-0 --01 ---0 ----
@@ -2202,7 +2168,6 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #endif // EXTRA_INFO_ON_CALC_ERROR == 0 || TESTSUITE_BUILD || DMCP_BUILD
 
 #define isSystemFlagWriteProtected(sf)       ((sf & 0x4000) != 0)
-#define shortIntegerIsZero(op)               (((*(uint64_t *)(op)) == 0) || (shortIntegerMode == SIM_SIGNMT && (((*(uint64_t *)(op)) == 1u<<((uint64_t)shortIntegerWordSize-1)))))
 #define shortIntegerModeValue()              (shortIntegerMode == SIM_2COMPL ? 2 : (shortIntegerMode == SIM_1COMPL ? 1 : (shortIntegerMode == SIM_UNSIGN ? 0 : -1)))
 #define getStackTop()                        (getSystemFlag(FLAG_SSIZE8) ? REGISTER_D : REGISTER_T)
 #define freeRegisterData(regist)             freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist))
@@ -2449,7 +2414,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define debugf(a) do { fprintf(stderr, "%sdebug:%s %s %s(%s %s:%d)%s\n", COLOR_GREEN,  a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define errorf(a) do { fprintf(stderr, "%serror:%s %s %s(%s %s:%d)%s\n", COLOR_YELLOW, a, COLOR_DEFAULT, COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);fflush(stderr); } while(0)
 #define abortf(a) do { fprintf(stderr, "%sabort: %s(%s %s:%d)%s\n",      COLOR_RED,                      COLOR_CYAN, __FUNCTION__, __FILE__, __LINE__, COLOR_DEFAULT);perror(a);fflush(stderr);abort(); } while(0)
-#define userAbort(a) do { fprintf(stderr, "%serror:%s %s \n", COLOR_YELLOW, a, COLOR_DEFAULT);fflush(stderr); } while(0)
+#define userAbortf(a) do { fprintf(stderr, "%serror:%s %s \n", COLOR_YELLOW, a, COLOR_DEFAULT);fflush(stderr); } while(0)   //prints and continues, does not abort
 
 // To time a piece of code (not on DM42 hardware), you can use the following code snippet:
 // struct timespec stopwatch_start, stopwatch_stop;

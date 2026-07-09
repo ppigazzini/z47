@@ -307,8 +307,8 @@ void fnMirror(uint16_t unusedButMandatoryParameter) {
   }
 
   for(uint32_t i=0; i<shortIntegerWordSize; i++) {
-    if(x & (1LL << i)) {
-      r |= 1LL << (shortIntegerWordSize-i-1);
+    if(x & (1ULL << i)) {
+      r |= 1ULL << (shortIntegerWordSize-i-1);
     }
   }
 

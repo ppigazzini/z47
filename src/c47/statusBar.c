@@ -13,10 +13,6 @@
 
 
 #include "c47.h"
-#if defined(PC_BUILD) && defined(ANALYSE_REFRESH)
-  #include <execinfo.h>
-#endif // PC_BUILD &&MONITOR_CLRSCR
-
 
 
 void drawBattery(uint16_t voltage);

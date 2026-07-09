@@ -37,6 +37,7 @@
 void fnPgmSlv(uint16_t label) {
   if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
+    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
   }
   else if(REGISTER_X <= label && label <= REGISTER_T) {
     // Interactive mode
@@ -53,6 +54,7 @@ void fnPgmSlv(uint16_t label) {
     }
     else {
       currentSolverProgram = label - FIRST_LABEL;
+      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
     }
   }
   else {
@@ -62,6 +64,12 @@ void fnPgmSlv(uint16_t label) {
       moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
+}
+
+
+// ====== === temporarily / permanently use the PGMSOLVE's "currentSolverProgram" for plotting
+void fnPgmPlt(uint16_t label) {
+  fnPgmSlv(label);
 }
 
 void fnSolve(uint16_t labelOrVariable) {
@@ -148,6 +156,7 @@ void fnSolve(uint16_t labelOrVariable) {
         case SOLVER_RESULT_ABORTED: {
           temporaryInformation = TI_SOLVER_FAILED;
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+          programRunStop = PGM_WAITING;   // R/S halts the whole program on the SOLVE step
           break;
         }
       }
@@ -173,6 +182,67 @@ void fnSolve(uint16_t labelOrVariable) {
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
   }
 }
+
+
+// ====== === temporarily / permanently use the SOLVE's "currentSolverVariable" for plotting
+
+void fnMvarPlot(uint16_t labelOrVariable) {
+  if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
+    // Interactive mode
+    fnPgmSlv(labelOrVariable);
+    if(lastErrorCode == ERROR_NONE) {
+      currentSolverStatus = SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_RPN_GRAPHER;      //Full assignment, clearing not needed: currentSolverStatus &= ~SOLVER_STATUS_EQUATION_GRAPHER;
+    }
+  }
+  else if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) && currentSolverProgram >= numberOfLabels) {
+    displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "label %u not found", labelOrVariable);
+      moreInfoOnError("In function fnMvarPlot:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+  }
+  else if(FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) {
+    // Execute
+    real34_t xl, xh;
+    if(getRegisterAsReal34Quiet(REGISTER_Y, &xl) && getRegisterAsReal34Quiet(REGISTER_X, &xh)) {
+      saveForUndo(); //repeat after dropping the input parameters
+      currentSolverVariable = labelOrVariable;
+      screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
+      refreshScreen(0);
+      currentSolverStatus |= SOLVER_STATUS_RPN_GRAPHER;// | SOLVER_STATUS_INTERACTIVE | SOLVER_STATUS_READY_TO_EXECUTE;
+      currentSolverStatus &= ~(SOLVER_STATUS_EQUATION_GRAPHER);
+      #if defined(GRAPHDEBUG_MIN)
+        printf("LAUNCH PLOT, currentSolverProgram:%d currentSolverVariable=%d currentSolverStatus=%d\n", currentSolverProgram, currentSolverVariable, currentSolverStatus);
+      #endif //GRAPHDEBUG_MIN
+      fnPlotf(NOPARAM); // uses currentSolverVariable=labelOrVariable & 
+
+      //printf("DONE calcMode=%d\n",calcMode);
+      //fnSNAP(NOPARAM);                // !!! NOT PUTTING IT HERE: BEST NOT FOR PROGRAMABILITY. USER CAN SNAP.
+      //showSoftmenu(-MNU_PLOT_FUNC);   // !!! NOT PUTTING IT HERE: BEST NOT FOR PROGRAMABILITY. USER TO OPEN INTERACTIVE MODE MENU 'PLFUNC'.
+      fnUndo(0);
+
+    }
+    else {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "DataType %" PRIu32, getRegisterDataType(REGISTER_X));
+        moreInfoOnError("In function fnMvarPlot:", errorMessage, "is not a real number.", "");
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+    }
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "unexpected parameter %u", labelOrVariable);
+      moreInfoOnError("In function fnMvarPlot:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+  }
+}
+
+
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     printStatus(1, errorMessages[REAL_SOLVER], force);
@@ -205,7 +275,11 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
       temporaryInformation = TI_SOLVER_VARIABLE;
     }
     else if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
-      reallyRunFunction(ITM_SOLVE, regist);
+      if(currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) {
+        reallyRunFunction(ITM_PLTf, regist);
+      } else {
+        reallyRunFunction(ITM_SOLVE, regist);
+      }
     }
     else {
       currentSolverVariable = regist;
@@ -233,10 +307,15 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
   else {
+    // also stack the variable + control flags so a nested SOLVE cannot leak into the outer point (enables PLOT(SOLVE), SOLVE(SOLVE))
     uint16_t savedCurrentSolverProgram = currentSolverProgram;
+    uint16_t savedCurrentSolverVariable = currentSolverVariable;
+    uint16_t savedCurrentSolverStatus = currentSolverStatus;
     dynamicMenuItem = -1;
     execProgram(currentSolverProgram + FIRST_LABEL);
     currentSolverProgram = savedCurrentSolverProgram;
+    currentSolverVariable = savedCurrentSolverVariable;
+    currentSolverStatus = savedCurrentSolverStatus;
   }
   if(lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
     realToReal34(const_plusInfinity, res);
@@ -261,7 +340,7 @@ static void _executeSolver(calcRegister_t variable, const real34_t *val, real34_
   }
 }
 
-static void _executeSolverReal(calcRegister_t variable, const real_t *val, real_t *res, real_t *deriv) {
+void _executeSolverReal(calcRegister_t variable, const real_t *val, real_t *res, real_t *deriv) {
   if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
     // pass real_t value via ioVal, result comes back in same variable as real_t
     realCopy(val, res);
@@ -406,9 +485,18 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       realSetOne(&minBracketSpacing);
       minBracketSpacing.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
     }
+    else if(graphAccActive) {
+      // graphAccActive (true only inside execute_rpn_function_graphAcc) means contexts are narrowed to significantDigitsForEqnGraphs+3.
+      // follow the grapher: converge to graph precision. Set/cleared with the reduction.
+      realSetOne(&tol);
+      tol.exponent -= significantDigitsForEqnGraphs;
+      realSetOne(&minBracketSpacing);
+      minBracketSpacing.exponent -= significantDigitsForEqnGraphs;
+      realCopy(const_1e_34, &tolAlmostZero);   // residual floor stays at real34 precision
+    }
     else {
       convergenceTolerence(&tol);
-      stringToReal("1e-34", &tolAlmostZero, &ctxtSolver);
+      realCopy(const_1e_34, &tolAlmostZero);
       realCopy(const_1e_32, &minBracketSpacing);
     }
 
@@ -582,7 +670,7 @@ retryLevel:
         }
       }
 
-      if(exitKeyWaiting()) {
+      if(exitKeyWaiting() || (programRunStop == PGM_WAITING)) {   // key/EXIT, or a nested engine already aborted (PGM_WAITING survives, lastErrorCode does not)
           progressHalfSecUpdate_Integer(force+1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
           programRunStop = PGM_WAITING;
           displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);

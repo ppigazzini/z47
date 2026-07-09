@@ -42,6 +42,7 @@ void    fnPy               (uint16_t unusedButMandatoryParameter);
 void    fnListXY           (uint16_t unusedButMandatoryParameter);
 void    fnStatList         (void);
 void    graph_plotmem      (void);
+void    fnPlotf            (uint16_t unusedButMandatoryParameter);
 void    fnPlotSQ           (uint16_t unusedButMandatoryParameter);
 void    fnPlotReset        (uint16_t unusedButMandatoryParameter);
 void    fnPlotStatAdv      (uint16_t unusedButMandatoryParameter);
@@ -49,10 +50,10 @@ void    fnPlotStatAdv      (uint16_t unusedButMandatoryParameter);
 #define PLOTSTAT true
 void graphResetCommon      (void);
 void graph_Include0        (bool_t mode,  uint16_t statnum); //using global: FLAG_SHOWX, x_min, x_max, FLAG_SHOWY, y_min, y_max
-extern  float    x_min;
-extern  float    x_max;
-extern  float    y_min;
-extern  float    y_max;
+extern  real_t *const x_min;
+extern  real_t *const x_max;
+extern  real_t *const y_min;
+extern  real_t *const y_max;
 extern  int8_t   PLOT_ZMY;
 
 #endif // !GRAPHS_H

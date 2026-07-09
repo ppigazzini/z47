@@ -36,10 +36,148 @@ bool_t          screenChange;
 void (*funcToTest)(uint16_t);
 void (*funcCvt)(uint16_t);
 void runPgm(uint16_t unusedButMandatoryParameter);
+void covBackupRoundtrip(uint16_t unusedButMandatoryParameter);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
 const funcTest_t funcTestNoParam[] = {
+  // Save / restore calc state (serializers; file I/O).
+  {"fnSaveRegister",         fnSaveRegister        },
+  {"fnSaveStackRegisters",   fnSaveStackRegisters  },
+  {"fnSave",                 fnSave                },
+  {"fnSaveAllPrograms",      fnSaveAllPrograms     },
+  {"fnSaveProgram",          fnSaveProgram         },
+  {"fnExportProgram",        fnExportProgram       },
+  // Error raising / message display.
+  {"fnRaiseError",           fnRaiseError          },
+  {"fnErrorMessage",         fnErrorMessage        },
+  // Curve fitting / linear regression (operate on accumulated sigma data).
+  {"fnCurveFitting",         fnCurveFitting        },
+  {"fnCurveFittingReset",    fnCurveFittingReset   },
+  {"fnCurveFittingLR",       fnCurveFittingLR      },
+  {"fnProcessLR",            fnProcessLR           },
+  {"fnYIsFnx",               fnYIsFnx              },
+  {"fnXIsFny",               fnXIsFny              },
+  // Distributions: GEV, Pareto, Uniform (params in M/S/Q or M/N, input in X).
+  {"fnGEVP",                 fnGEVP                },
+  {"fnGEVL",                 fnGEVL                },
+  {"fnGEVR",                 fnGEVR                },
+  {"fnGEVI",                 fnGEVI                },
+  {"fnParetoP",              fnParetoP             },
+  {"fnParetoL",              fnParetoL             },
+  {"fnParetoU",              fnParetoU             },
+  {"fnParetoI",              fnParetoI             },
+  {"fnPareto2P",             fnPareto2P            },
+  {"fnPareto2L",             fnPareto2L            },
+  {"fnPareto2U",             fnPareto2U            },
+  {"fnPareto2I",             fnPareto2I            },
+  {"fnUniformP",             fnUniformP            },
+  {"fnUniformL",             fnUniformL            },
+  {"fnUniformU",             fnUniformU            },
+  {"fnUniformI",             fnUniformI            },
+  // Comparisons (X vs Y) and angle conversions (operate on X).
+  {"fnXLessThan",            fnXLessThan           },
+  {"fnXLessEqual",           fnXLessEqual          },
+  {"fnXGreaterThan",         fnXGreaterThan        },
+  {"fnXGreaterEqual",        fnXGreaterEqual       },
+  {"fnXEqualsTo",            fnXEqualsTo           },
+  {"fnXNotEqual",            fnXNotEqual           },
+  {"fnXAlmostEqual",         fnXAlmostEqual        },
+  // Store / recall (FARG = register number; operate on X, and Y/Z for 2/3 variants).
+  {"fnStore",                fnStore               },
+  {"fnRecall",               fnRecall              },
+  {"fnStoreAdd",             fnStoreAdd            },
+  {"fnStoreSub",             fnStoreSub            },
+  {"fnStoreMult",            fnStoreMult           },
+  {"fnStoreDiv",             fnStoreDiv            },
+  {"fnStoreMax",             fnStoreMax            },
+  {"fnStoreMin",             fnStoreMin            },
+  {"fnRecallAdd",            fnRecallAdd           },
+  {"fnRecallSub",            fnRecallSub           },
+  {"fnRecallMult",           fnRecallMult          },
+  {"fnRecallDiv",            fnRecallDiv           },
+  {"fnRecallMax",            fnRecallMax           },
+  {"fnRecallMin",            fnRecallMin           },
+  {"fn2Sto",                 fn2Sto                },
+  {"fn3Sto",                 fn3Sto                },
+  {"fn2Rcl",                 fn2Rcl                },
+  {"fn3Rcl",                 fn3Rcl                },
+  {"fnLastX",                fnLastX               },
+  {"fnStoreStack",           fnStoreStack          },
+  {"fnRecallStack",          fnRecallStack         },
+  // Value/type predicates and small math ops.
+  {"fnCheckType",            fnCheckType           },
+  {"fnIse",                  fnIse                 },
+  {"fnIsg",                  fnIsg                 },
+  {"fnIsz",                  fnIsz                 },
+  {"fnDse",                  fnDse                 },
+  {"fnDsl",                  fnDsl                 },
+  {"fnDsz",                  fnDsz                 },
+  {"fnCheckNumber",          fnCheckNumber         },
+  {"fnCheckAngle",           fnCheckAngle          },
+  {"fnCheckMatrix",          fnCheckMatrix         },
+  {"fnCheckMatrixSquare",    fnCheckMatrixSquare   },
+  {"fnCheckForZero",         fnCheckForZero        },
+  {"fnCheckNaN",             fnCheckNaN            },
+  {"fnCheckInfinite",        fnCheckInfinite       },
+  {"fnCheckSpecial",         fnCheckSpecial        },
+  {"fnCheckPlusZero",        fnCheckPlusZero       },
+  {"fnCheckMinusZero",       fnCheckMinusZero      },
+  {"fnGetType",              fnGetType             },
+  {"fnCheckInteger",         fnCheckInteger        },
+  {"fnRdp",                  fnRdp                 },
+  {"fnRsd",                  fnRsd                 },
+  {"fnInc",                  fnInc                 },
+  {"fnSdl",                  fnSdl                 },
+  {"fnSdr",                  fnSdr                 },
+  {"fnRandom",               fnRandom              },
+  {"fnRandomI",              fnRandomI             },
+  {"fnSeed",                 fnSeed                },
+  // Alpha register / string ops (build ALPHA with fnClearAlpha + fnXToAlpha).
+  {"fnClearAlpha",           fnClearAlpha          },
+  {"fnXToAlpha",             fnXToAlpha            },
+  {"fnAlphaToX",             fnAlphaToX            },
+  {"fnAlphaLeng",            fnAlphaLeng           },
+  {"fnAlphaPos",             fnAlphaPos            },
+  {"fnAlphaIP",             fnAlphaIP             },
+  {"fnAlphaRL",              fnAlphaRL             },
+  {"fnAlphaRR",              fnAlphaRR             },
+  {"fnAlphaSL",              fnAlphaSL             },
+  {"fnAlphaSR",              fnAlphaSR             },
+  // Program engine: navigate to a global step (selects the current program) and
+  // clear the local variables of the current program (walks the loaded program
+  // steps; needs res/testPgms/testPgms.bin staged in the CWD).
+  {"fnGotoDot",              fnGotoDot             },
+  {"fnClCVar",               fnClCVar              },
+  // Backup serializer round-trip: save the whole calculator state to backup.cfg
+  // and restore it. Exercises both directions of saveRestoreBackup.c. Resets the
+  // calculator, so its corpus test must run last.
+  {"fnBackupRoundtrip",      covBackupRoundtrip    },
+  // Statistics (use FARG=1 with fnSigmaAddRem to accumulate a (Y,X) data point).
+  {"fnSigmaAddRem",          fnSigmaAddRem         },
+  {"fnMeanX",                fnMeanX               },
+  {"fnMeanXY",               fnMeanXY              },
+  {"fnGeometricMeanXY",      fnGeometricMeanXY     },
+  {"fnHarmonicMeanXY",       fnHarmonicMeanXY      },
+  {"fnRMSMeanXY",            fnRMSMeanXY           },
+  {"fnWeightedMeanX",        fnWeightedMeanX       },
+  {"fnMedianXY",             fnMedianXY            },
+  {"fnSampleStdDev",         fnSampleStdDev        },
+  {"fnPopulationStdDev",     fnPopulationStdDev    },
+  {"fnStandardError",        fnStandardError       },
+  {"fnSampleCovariance",     fnSampleCovariance    },
+  {"fnPopulationCovariance", fnPopulationCovariance},
+  {"fnLowerQuartileXY",      fnLowerQuartileXY     },
+  {"fnUpperQuartileXY",      fnUpperQuartileXY     },
+  {"fnIQRXY",                fnIQRXY               },
+  {"fnDeltaPercentXmean",    fnDeltaPercentXmean   },
+  {"fnPcSigmaDeltaPcXmean",  fnPcSigmaDeltaPcXmean },
+  {"fnGeometricSampleStdDev", fnGeometricSampleStdDev},
+  {"fnGeometricStandardError", fnGeometricStandardError},
+  {"fnWeightedSampleStdDev", fnWeightedSampleStdDev},
+  {"fnWeightedStandardError", fnWeightedStandardError},
+  {"fnPercentileXY",         fnPercentileXY        },
+  {"fnCoeffDetermination",   fnCoefficientDetermination},
   {"fnAmortP",               fnAmortP              },
   {"fnAmortInt",             fnAmortInt            },
   {"fnAmortPrn",             fnAmortPrn            },
@@ -114,6 +252,13 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDeltaPercent",         fnDeltaPercent        },
   {"fnDenMax",               fnDenMax              },
   {"fnDeterminant",          fnDeterminant         },
+  {"fnVectorDist",           fnVectorDist          },
+  {"fnSwapRows",             fnSwapRows            },
+  {"fnSwapColumns",          fnSwapColumns         },
+  {"fnColumnMin",            fnColumnMin           },
+  {"fnColumnMax",            fnColumnMax           },
+  {"fnSetMatrixDimensions",  fnSetMatrixDimensions },
+  {"fnIndexMatrix",          fnIndexMatrix         },
   {"fnDivide",               fnDivide              },
   {"fnDot",                  fnDot                 },
   {"fnDrop",                 fnDrop                },
@@ -330,6 +475,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnWpositive",            fnWpositive           },
   {"fnXthRoot",              fnXthRoot             },
   {"fnXToDate",              fnXToDate             },
+  {"fnXAlmostEqual",         fnXAlmostEqual        },
   {"fnYear",                 fnYear                },
   {"fnZeta",                 fnZeta                },
   {"fnZip",                  fnZip                 },
@@ -420,6 +566,18 @@ void runPgm(uint16_t unusedButMandatoryParameter) {
     dynamicSoftmenu[0].menuContent = NULL;
     reallyRunFunction(ITM_XEQ, label);
   }
+}
+
+
+
+void covBackupRoundtrip(uint16_t unusedButMandatoryParameter) {
+  // Save the whole calculator state to backup.cfg and restore it, exercising both
+  // the serialize and deserialize halves of saveRestoreBackup.c. restoreCalc()
+  // bails when the sample programs are loaded, so clear that flag first; it resets
+  // the calculator, so this must be the last test in the list.
+  loadTestPrograms = false;
+  saveCalc();
+  restoreCalc();
 }
 
 
@@ -3053,6 +3211,9 @@ void functionToCall(char *functionName) {
 
     if(funcToTest == runPgm) {
       functionIndex = ITM_XEQ;
+    }
+    else if(funcToTest == covBackupRoundtrip) {
+      functionIndex = ITM_NOP; // testSuite-local coverage driver, not a catalog item
     }
     else {
       for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
