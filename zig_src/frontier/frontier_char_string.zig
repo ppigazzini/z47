@@ -559,189 +559,66 @@ pub export fn stringAfterPixels(str: [*c]const u8, font: *const font_t, widthIn:
 // stringNextGlyphNoEndCheck_JM
 // ---------------------------------------------------------------------------
 pub export fn stringNextGlyphNoEndCheck_JM(str: [*c]const u8, posIn: i16) callconv(.c) i16 {
-    var pos = posIn;
-    var posinc: i16 = 0;
-    if (str[@intCast(pos)] == 0) {
-        return pos;
-    }
-    if (str[@intCast(pos)] & 0x80 != 0) {
-        posinc = 2;
-        if (str[@intCast(pos + 2)] == 0) {
-            return pos + 2;
-        }
-    } else {
-        posinc = 1;
-        if (str[@intCast(pos + 1)] == 0) {
-            return pos + 1;
-        }
-    }
-    pos += posinc;
-    return pos;
+    return abi.c47_string.nextGlyphNoEndCheck(str, posIn);
 }
 
 // ---------------------------------------------------------------------------
 // stringNextGlyph
 // ---------------------------------------------------------------------------
 pub export fn stringNextGlyph(str: [*c]const u8, posIn: i16) callconv(.c) i16 {
-    var pos = posIn;
-    const lg: i16 = @intCast(stringByteLength(str));
-    if (pos >= lg) {
-        return lg;
-    }
-    pos += if (str[@intCast(pos)] & 0x80 != 0) @as(i16, 2) else @as(i16, 1);
-    if (pos >= lg) {
-        return lg;
-    } else {
-        return pos;
-    }
+    return abi.c47_string.nextGlyph(str, posIn);
 }
 
 // ---------------------------------------------------------------------------
 // stringPrevGlyph
 // ---------------------------------------------------------------------------
 pub export fn stringPrevGlyph(str: [*c]const u8, posIn: i16) callconv(.c) i16 {
-    var pos = posIn;
-    var prev: i16 = 0;
-    const lg: i16 = @intCast(stringByteLength(str));
-    if (pos >= lg) {
-        pos = lg;
-    }
-    if (pos <= 1) {
-        return 0;
-    } else {
-        var cnt: i16 = 0;
-        while (str[@intCast(cnt)] != 0 and cnt < pos) {
-            prev = cnt;
-            cnt = stringNextGlyph(str, cnt);
-        }
-    }
-    return prev;
+    return abi.c47_string.prevGlyph(str, posIn);
 }
 
 // ---------------------------------------------------------------------------
 // isValidNumber
 // ---------------------------------------------------------------------------
 pub export fn isValidNumber(ss: [*c]const u8, template: [*c]const u8) callconv(.c) bool_t {
-    if (stringByteLength(ss) != stringByteLength(template)) {
-        return false;
-    }
-    var nn: u16 = @intCast(stringByteLength(ss));
-    while (nn != 0) {
-        if ((template[nn - 1] == '.' and !(ss[nn - 1] == '.' or ss[nn - 1] == ',')) or
-            (template[nn - 1] == 'd' and !(ss[nn - 1] >= '0' and ss[nn - 1] <= '9')) or
-            (template[nn - 1] == 's' and !(ss[nn - 1] == '-' or ss[nn - 1] == '+')))
-        {
-            return false;
-        }
-        nn -%= 1;
-    }
-    return true;
+    return abi.c47_string.isValidNumber(ss, template);
 }
 
 // ---------------------------------------------------------------------------
 // stringPrevNumberGlyph
 // ---------------------------------------------------------------------------
 pub export fn stringPrevNumberGlyph(str: [*c]const u8, pos: i16) callconv(.c) i16 {
-    var pos2: i16 = pos;
-    while (true) {
-        pos2 = stringPrevGlyph(str, pos2);
-        if (('0' <= str[@intCast(pos2)] and str[@intCast(pos2)] <= '9') or str[@intCast(pos)] == '.' or str[@intCast(pos)] == ',') {
-            return pos2;
-        }
-        if (pos2 == 0) break;
-    }
-    return 0;
+    return abi.c47_string.prevNumberGlyph(str, pos);
 }
 
 // ---------------------------------------------------------------------------
 // stringLastGlyph
 // ---------------------------------------------------------------------------
 pub export fn stringLastGlyph(str: [*c]const u8) callconv(.c) i16 {
-    var lastGlyph: i16 = undefined;
     if (str == null) {
-        lastGlyph = -1;
-    } else {
-        const lg: i16 = @intCast(stringByteLength(str));
-        var next: i16 = 0;
-        lastGlyph = 0;
-        while (true) {
-            if (lastGlyph >= lg) {
-                next = lg;
-            } else {
-                next += if (str[@intCast(lastGlyph)] & 0x80 != 0) @as(i16, 2) else @as(i16, 1);
-                if (next > lg) {
-                    next = lg;
-                }
-            }
-            if (next == lg) {
-                break;
-            }
-            lastGlyph = next;
-        }
+        return -1;
     }
-    return lastGlyph;
+    return abi.c47_string.lastGlyph(str);
 }
 
 // ---------------------------------------------------------------------------
 // stringGlyphLength
 // ---------------------------------------------------------------------------
 pub export fn stringGlyphLength(strIn: [*c]const u8) callconv(.c) i32 {
-    var str = strIn;
-    var len: i32 = 0;
-    while (str[0] != 0) {
-        if (str[0] & 0x80 != 0) {
-            str += 2;
-            len += 1;
-        } else {
-            str += 1;
-            len += 1;
-        }
-    }
-    return len;
+    return abi.c47_string.glyphLength(strIn);
 }
 
 // ---------------------------------------------------------------------------
 // codePointToUtf8
 // ---------------------------------------------------------------------------
 pub export fn codePointToUtf8(codePoint: u32, utf8: [*c]u8) callconv(.c) void {
-    if (codePoint <= 0x00007F) {
-        utf8[0] = @truncate(codePoint);
-        utf8[1] = 0;
-        utf8[2] = 0;
-        utf8[3] = 0;
-        utf8[4] = 0;
-    } else if (codePoint <= 0x0007FF) {
-        utf8[0] = @truncate(0xC0 | (codePoint >> 6));
-        utf8[1] = @truncate(0x80 | (codePoint & 0x3F));
-        utf8[2] = 0;
-        utf8[3] = 0;
-        utf8[4] = 0;
-    } else {
-        utf8[0] = @truncate(0xE0 | (codePoint >> 12));
-        utf8[1] = @truncate(0x80 | ((codePoint >> 6) & 0x3F));
-        utf8[2] = @truncate(0x80 | (codePoint & 0x3F));
-        utf8[3] = 0;
-        utf8[4] = 0;
-    }
+    abi.c47_string.codePointToUtf8(codePoint, utf8);
 }
 
 // ---------------------------------------------------------------------------
 // utf8ToCodePoint
 // ---------------------------------------------------------------------------
 pub export fn utf8ToCodePoint(utf8: [*c]const u8, codePoint: *u32) callconv(.c) u32 {
-    if ((utf8[0] & 0x80) == 0) {
-        codePoint.* = utf8[0];
-        return 1;
-    } else if ((utf8[0] & 0xE0) == 0xC0) {
-        codePoint.* = (@as(u32, utf8[0]) & 0x1F) << 6;
-        codePoint.* |= (@as(u32, utf8[1]) & 0x3F);
-        return 2;
-    } else {
-        codePoint.* = (@as(u32, utf8[0]) & 0x0F) << 12;
-        codePoint.* |= (@as(u32, utf8[1]) & 0x3F) << 6;
-        codePoint.* |= (@as(u32, utf8[2]) & 0x3F);
-        return 3;
-    }
+    return abi.c47_string.utf8ToCodePoint(utf8, codePoint);
 }
 
 // ---------------------------------------------------------------------------

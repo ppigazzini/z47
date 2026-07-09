@@ -700,6 +700,11 @@ pub const complex_text = @import("complex_text.zig");
 // threads its global rng state through these and keeps the real_t producer.
 pub const pcg32 = @import("pcg32.zig");
 
+// Shared std-only C47 glyph-string navigation + UTF-8 codec (glyph count/next/prev/
+// last, numeric-template validation, code-point<->UTF-8). Reachable as
+// `abi.c47_string.*`; frontier_char_string delegates its stringFuncs primitives here.
+pub const c47_string = @import("c47_string.zig");
+
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
 /// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.
