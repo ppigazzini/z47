@@ -675,6 +675,11 @@ pub const fmtGBuf = float_format.fmtGBuf;
 // as `abi.int_math.*` from any owner; unit-tested under `zig build test:unit`.
 pub const int_math = @import("int_math.zig");
 
+// Shared std-only WP34S short-integer *mode* arithmetic (value/overflow decisions
+// under unsigned / 1's- / 2's-complement / sign-magnitude). Reachable as
+// `abi.shortint_arith.*`; frontier_integers delegates its WP34S_int* cores here.
+pub const shortint_arith = @import("shortint_arith.zig");
+
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
 /// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.
