@@ -32,6 +32,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const lr_selection = @import("lr_selection.zig"); // std-only LR-selection bitmask helpers
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
@@ -326,19 +327,11 @@ pub export fn fnCurveFittingLR(unusedButMandatoryParameter: u16) callconv(.c) vo
 // lrCountOnes / minLRDataPoints
 // ===========================================================================
 pub export fn lrCountOnes(curveFitting: u16) callconv(.c) u16 {
-    return @popCount(curveFitting);
+    return lr_selection.countOnes(curveFitting);
 }
 
 pub export fn minLRDataPoints(selection: u16) callconv(.c) u16 {
-    if (selection > 1023) {
-        return 65535;
-    } else if (selection & 448 != 0) {
-        return 3;
-    } else if (selection & (63 + 512) != 0) {
-        return 2;
-    } else {
-        return 65535; // if 0
-    }
+    return lr_selection.minDataPoints(selection);
 }
 
 // ===========================================================================
