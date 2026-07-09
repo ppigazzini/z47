@@ -54,6 +54,7 @@ const bool_t = bool; // C `bool`, 1 byte
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const keycode_remap = @import("keycode_remap.zig"); // std-only R47/WP43 key-code table
 const real_t = abi.RealBlob; // decNumber, zero-init here
 const real34_t = abi.Real34; // decQuad, zero-init here
 
@@ -641,43 +642,7 @@ const dmcp = struct {
     }
 
     pub fn convertKeyCode(key_in: c_int) callconv(.c) c_int {
-        var key = key_in;
-        if (isR47FAM()) {
-            // R47 keyboard mapping (upstream #if CALCMODEL == USER_R47)
-            switch (key) {
-                11 => key = 18, // COS
-                15 => key = 16, // +/-
-                16 => key = 15, // E
-                18 => key = 23, // UP
-                23 => key = 28, // DOWN
-                28 => key = 11, // SHIFT
-                else => {},
-            }
-        } else {
-            if (wp43KbdLayout) {
-                switch (key) {
-                    1 => key = 2, // SUM+
-                    2 => key = 1, // 1/x
-                    3 => key = 6, // SQRT
-                    4 => key = 5, // LOG
-                    5 => key = 4, // LN
-                    6 => key = 22, // XEQ
-                    10 => key = 3, // SIN
-                    11 => key = 10, // COS
-                    12 => key = 11, // TAN
-                    18 => key = 27, // UP
-                    22 => key = 18, // /
-                    23 => key = 32, // DOWN
-                    27 => key = 23, // x
-                    28 => key = 12, // SHIFT
-                    32 => key = 28, // -
-                    33 => key = 37, // EXIT
-                    37 => key = 33, // +
-                    else => {},
-                }
-            }
-        }
-        return key;
+        return keycode_remap.remapKey(key_in, isR47FAM(), wp43KbdLayout);
     }
 
     pub fn program_main() callconv(.c) void {

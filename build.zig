@@ -67,6 +67,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/abi/complex_text.zig",
         "zig_src/abi/pcg32.zig",
         "zig_src/abi/c47_string.zig",
+        "zig_src/frontier/keycode_remap.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");
