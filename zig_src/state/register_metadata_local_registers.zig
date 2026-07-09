@@ -1,6 +1,7 @@
 const build_options = @import("register_metadata_build_options");
 const abi = @import("abi");
 const memory_owned = @import("register_memory.zig");
+const block_math = @import("block_math.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
 
@@ -28,7 +29,7 @@ extern fn reallocC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, n
 extern fn reduceC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) void;
 
 fn toBlocks(bytes: usize) u16 {
-    return @intCast((bytes + 3) / 4);
+    return block_math.toBlocks(u16, bytes);
 }
 
 fn localFlagsAfterHeader(level_data: *subroutine_level_header_t) *localFlags_t {

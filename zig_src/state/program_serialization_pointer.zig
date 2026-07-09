@@ -1,11 +1,11 @@
-const runtime = @import("program_serialization_runtime.zig");
+const block_math = @import("block_math.zig");
 
 pub fn toBlocks(byte_count: usize) u16 {
-    return @intCast((byte_count + (runtime.BYTES_PER_BLOCK - 1)) >> runtime.BPB);
+    return block_math.toBlocks(u16, byte_count);
 }
 
 pub fn toBytes(block_count: usize) usize {
-    return block_count << runtime.BPB;
+    return block_math.toBytes(usize, block_count);
 }
 
 pub fn offsetPointer(ptr: [*c]u8, delta: isize) [*c]u8 {

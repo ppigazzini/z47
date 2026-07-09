@@ -1,16 +1,17 @@
 const block_availability_owned = @import("memory_block_availability.zig");
 const c47_alloc_owned = @import("memory_c47_alloc.zig");
+const block_math = @import("block_math.zig");
 const debug_owned = @import("memory_debug.zig");
 const gmp_alloc_owned = @import("memory_gmp_alloc.zig");
 const resize_program_owned = @import("memory_resize_program.zig");
 const runtime = @import("memory_runtime.zig");
 
 fn toBlocks(byte_count: usize) usize {
-    return (byte_count + (runtime.BYTES_PER_BLOCK - 1)) >> runtime.BPB;
+    return block_math.toBlocks(usize, byte_count);
 }
 
 fn toBytesSize(block_count: usize) usize {
-    return block_count << runtime.BPB;
+    return block_math.toBytes(usize, block_count);
 }
 
 fn toBytesU32(block_count: u16) u32 {

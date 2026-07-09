@@ -1,7 +1,8 @@
 const runtime = @import("memory_runtime.zig");
+const block_math = @import("block_math.zig");
 
 fn toBytesSize(block_count: usize) usize {
-    return block_count << runtime.BPB;
+    return block_math.toBytes(usize, block_count);
 }
 
 fn toBytesU32(block_count: u16) u32 {

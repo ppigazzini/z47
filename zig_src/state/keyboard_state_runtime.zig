@@ -1,5 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const block_math = @import("block_math.zig");
 pub const bool_t = bool;
 pub const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
@@ -546,7 +547,7 @@ pub extern fn xcopy(dest: [*c]u8, source: [*c]const u8, n: u32) [*c]u8;
 
 // TO_BLOCKS(n): bytes -> 4-byte blocks (BYTES_PER_BLOCK = 4, BPB = 2).
 pub inline fn toBlocks(n: u32) u16 {
-    return @intCast((n + 3) >> 2);
+    return block_math.toBlocks(u16, n);
 }
 // REGISTER_STRING_DATA(reg): skip the 4-byte string/long-int header.
 pub const registerStringData = abi.registerString;

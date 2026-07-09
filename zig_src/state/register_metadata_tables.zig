@@ -1,5 +1,6 @@
 const build_options = @import("register_metadata_build_options");
 const descriptor_storage = @import("register_descriptor_storage.zig");
+const block_math = @import("block_math.zig");
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
@@ -62,7 +63,7 @@ extern fn z47_register_metadata_compare_menu_names(left: [*c]const u8, right: [*
 extern fn z47_register_metadata_find_reserved_variable_name(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t;
 
 fn toBlocks(bytes: usize) usize {
-    return (bytes + 3) >> 2;
+    return block_math.toBlocks(usize, bytes);
 }
 
 fn namedVariableHeaderBlocks(count: usize) usize {
