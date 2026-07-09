@@ -1,4 +1,5 @@
 const runtime = @import("math_command_wrappers_runtime.zig");
+const abi = @import("abi"); // std-only integer primitives (math owners keep abi private via runtime)
 
 fn factReal() callconv(.c) void {
     var x_value: runtime.real_t = undefined;
@@ -42,22 +43,7 @@ fn factShoI() callconv(.c) void {
         return;
     }
 
-    var result: u64 = 1;
-    var remaining = value;
-
-    if (remaining > 1) {
-        var multiplier = remaining;
-        if ((remaining & 1) != 0) {
-            multiplier += remaining;
-            remaining -= 1;
-        }
-        result = multiplier;
-        remaining -= 2;
-        while (remaining > 0) : (remaining -= 2) {
-            multiplier += remaining;
-            result *= multiplier;
-        }
-    }
+    const result = abi.int_math.factorialU64(value); // value <= 20 guaranteed above
 
     if (result > runtime.shortIntegerMask) {
         runtime.setSystemFlag(runtime.FLAG_OVERFLOW);

@@ -100,6 +100,31 @@ pub fn expmod(base: u64, exp: u64, m: u64) u64 {
     return x % m;
 }
 
+/// n! for n <= 20 (21! overflows u64 -- the caller is responsible for the range
+/// check). Uses the WP34S pairwise-product trick: it multiplies terms in pairs by
+/// an incrementally accumulated multiplier (k, then k+(k-2), ...) instead of the
+/// naive 1*2*...*n, which halves the number of multiplies.
+pub fn factorialU64(n: u64) u64 {
+    var result: u64 = 1;
+    var remaining = n;
+
+    if (remaining > 1) {
+        var multiplier = remaining;
+        if ((remaining & 1) != 0) {
+            multiplier += remaining;
+            remaining -= 1;
+        }
+        result = multiplier;
+        remaining -= 2;
+        while (remaining > 0) : (remaining -= 2) {
+            multiplier += remaining;
+            result *= multiplier;
+        }
+    }
+
+    return result;
+}
+
 test "algebraic invariants of gcd, mulmod and expmod" {
     // gcd laws: commutative, divides both operands, and scales linearly.
     var a: u64 = 1;
@@ -285,4 +310,19 @@ test "expmod computes (base^exp) mod m" {
             try std.testing.expectEqual(ref, expmod(base, exp, 13));
         }
     }
+}
+
+test "factorialU64 matches a naive factorial across its whole 0..20 domain" {
+    // The WP34S pairwise trick must agree with 1*2*...*n for every valid n.
+    var n: u64 = 0;
+    var ref: u64 = 1;
+    while (n <= 20) : (n += 1) {
+        if (n > 0) ref *= n;
+        try std.testing.expectEqual(ref, factorialU64(n));
+    }
+    // A few explicit anchors, including the largest that fits in u64.
+    try std.testing.expectEqual(@as(u64, 1), factorialU64(0));
+    try std.testing.expectEqual(@as(u64, 1), factorialU64(1));
+    try std.testing.expectEqual(@as(u64, 120), factorialU64(5));
+    try std.testing.expectEqual(@as(u64, 2_432_902_008_176_640_000), factorialU64(20));
 }
