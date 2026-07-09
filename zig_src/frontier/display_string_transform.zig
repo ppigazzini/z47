@@ -215,6 +215,87 @@ pub fn cleanupTrailingZeros(str: [*]u8) void {
     }
 }
 
+/// The two-byte subscript glyphs convertDigits maps to. Grouping them in one
+/// struct lets the owner thread its own glyph constants in as a single value,
+/// so this module needs none of the shared glyph tables.
+pub const SubscriptGlyphs = struct {
+    /// Base subscript-zero glyph: '0'..'9' map to sub_0[0], sub_0[1] +% (c-'0').
+    sub_0: [2]u8,
+    /// Base subscript-a glyph: the letter set maps to sub_a[0], sub_a[1] +% (c-'a').
+    sub_a: [2]u8,
+    ratio: [2]u8, // ':'
+    sub_plus: [2]u8, // '+'
+    sub_minus: [2]u8, // '-'
+    low_quote: [2]u8, // ','
+    oblique3: [2]u8, // '/'
+};
+
+/// convertDigits: rewrite selected ASCII characters of `in` to their two-byte
+/// subscript glyphs in `out`, copying anything else through as a single byte.
+/// Digits and the letter set {t,i,c,k,x,y,a,s} use contiguous-range arithmetic
+/// off sub_0 / sub_a; the punctuation glyphs are direct. Index width (u16) and
+/// the wrapping arithmetic (+%) match the owner. `out` must NOT alias `in`
+/// (glyph output is wider than its input byte).
+pub fn convertDigits(out: [*]u8, in: [*]const u8, g: SubscriptGlyphs) void {
+    var ii: u16 = 0;
+    var oo: u16 = 0;
+    out[0] = 0;
+    while (in[ii] != 0) {
+        const c = in[ii];
+        switch (c) {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' => {
+                out[oo] = g.sub_0[0];
+                oo +%= 1;
+                out[oo] = g.sub_0[1] +% (c -% '0');
+                oo +%= 1;
+            },
+            't', 'i', 'c', 'k', 'x', 'y', 'a', 's' => {
+                out[oo] = g.sub_a[0];
+                oo +%= 1;
+                out[oo] = g.sub_a[1] +% (c -% 'a');
+                oo +%= 1;
+            },
+            ':' => {
+                out[oo] = g.ratio[0];
+                oo +%= 1;
+                out[oo] = g.ratio[1];
+                oo +%= 1;
+            },
+            '+' => {
+                out[oo] = g.sub_plus[0];
+                oo +%= 1;
+                out[oo] = g.sub_plus[1];
+                oo +%= 1;
+            },
+            '-' => {
+                out[oo] = g.sub_minus[0];
+                oo +%= 1;
+                out[oo] = g.sub_minus[1];
+                oo +%= 1;
+            },
+            ',' => {
+                out[oo] = g.low_quote[0];
+                oo +%= 1;
+                out[oo] = g.low_quote[1];
+                oo +%= 1;
+            },
+            '/' => {
+                out[oo] = g.oblique3[0];
+                oo +%= 1;
+                out[oo] = g.oblique3[1];
+                oo +%= 1;
+            },
+            // '.' and everything else fall through to a verbatim single-byte copy.
+            else => {
+                out[oo] = in[ii];
+                oo +%= 1;
+            },
+        }
+        ii +%= 1;
+    }
+    out[oo] = 0;
+}
+
 const testing = std.testing;
 
 test "radixProcess substitutes radix mark and hash, NUL-terminates" {
@@ -349,4 +430,50 @@ test "cleanupTrailingZeros strips leading exponent zeros after a sign" {
 test "cleanupTrailingZeros upcases a lowercase e and then cleans" {
     var a = cleanupCase("1.20e3");
     try testing.expectEqualStrings("1.2E3", std.mem.sliceTo(&a, 0));
+}
+
+// The owner's frontier_char_string.zig glyph constants, verbatim.
+const owner_glyphs = SubscriptGlyphs{
+    .sub_0 = .{ 0xa0, 0x80 },
+    .sub_a = .{ 0xa4, 0x9c },
+    .ratio = .{ 0xa2, 0x36 },
+    .sub_plus = .{ 0xa0, 0x8a },
+    .sub_minus = .{ 0xa0, 0x8b },
+    .low_quote = .{ 0xa0, 0x1a },
+    .oblique3 = .{ 0xa4, 0x25 },
+};
+
+test "convertDigits maps digits off the contiguous subscript-zero range" {
+    var out: [64]u8 = undefined;
+    convertDigits(&out, "123", owner_glyphs);
+    // '1'->a0 81, '2'->a0 82, '3'->a0 83.
+    const expected = [_]u8{ 0xa0, 0x81, 0xa0, 0x82, 0xa0, 0x83 };
+    try testing.expectEqualSlices(u8, &expected, std.mem.sliceTo(&out, 0));
+}
+
+test "convertDigits maps the letter set off the contiguous subscript-a range" {
+    var out: [64]u8 = undefined;
+    convertDigits(&out, "xy", owner_glyphs);
+    // 'x'->a4 (9c+23=b3), 'y'->a4 (9c+24=b4).
+    const expected = [_]u8{ 0xa4, 0xb3, 0xa4, 0xb4 };
+    try testing.expectEqualSlices(u8, &expected, std.mem.sliceTo(&out, 0));
+}
+
+test "convertDigits maps the direct punctuation glyphs" {
+    var out: [64]u8 = undefined;
+    convertDigits(&out, ":+-,/", owner_glyphs);
+    const expected = [_]u8{ 0xa2, 0x36, 0xa0, 0x8a, 0xa0, 0x8b, 0xa0, 0x1a, 0xa4, 0x25 };
+    try testing.expectEqualSlices(u8, &expected, std.mem.sliceTo(&out, 0));
+}
+
+test "convertDigits copies unmapped characters (incl. '.') verbatim" {
+    var out: [64]u8 = undefined;
+    convertDigits(&out, "P.Q", owner_glyphs);
+    try testing.expectEqualStrings("P.Q", std.mem.sliceTo(&out, 0));
+}
+
+test "convertDigits produces an empty string for empty input" {
+    var out: [4]u8 = undefined;
+    convertDigits(&out, "", owner_glyphs);
+    try testing.expectEqual(@as(u8, 0), out[0]);
 }
