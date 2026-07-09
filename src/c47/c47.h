@@ -39,11 +39,17 @@
     #if defined(PC_BUILD)
       #include <gtk/gtk.h>
       #include <gdk/gdk.h>
+
+      #include <stdarg.h>
+
+      #if defined(__linux__) || defined(__APPLE__)
+        #include <dlfcn.h>
+        #include <execinfo.h>
+      #endif
+
     #endif // PC_BUILD
 
-    #if defined(WIN32)
-      #include <locale.h>
-    #endif // WIN32
+    #include <locale.h>
 
     #if defined(DMCP_BUILD)
       #define DBG_PRINT
@@ -174,9 +180,11 @@
 
     #include "mathematics/pcg_basic.h"
 
+    #if defined(__linux__) || defined(__APPLE__)
+      #include <execinfo.h>
+    #endif
     #include "realType.h"
     #include "typeDefinitions.h"
-
   #endif // GENERATE_CONSTANTS
 
   #if defined(GENERATE_TESTPGMS)
@@ -222,6 +230,7 @@
   #endif //PC_BUILD
 
   extern bool_t                headlessMode;
+  extern bool_t                snapSkipRefresh;
   extern bool_t                loadTestPrograms;
   extern bool_t                loadTestData;
 
@@ -304,6 +313,7 @@
   extern bool_t                 refreshNIMdone;
   extern bool_t                 cleanupAfterShift;
   extern bool_t                 solverEstimatesUsed;
+  extern bool_t                 graphAccActive;
   extern bool_t                 updateOldConstants;
 
 
@@ -398,6 +408,7 @@
   extern uint8_t                fractionDigits;
   extern uint8_t                shortIntegerMode;
   extern uint8_t                previousCalcMode;
+  extern bool_t                 graphToRemainOnScreen;
   extern uint8_t                grpGroupingLeft;
   extern uint8_t                grpGroupingGr1LeftOverflow;
   extern uint8_t                grpGroupingGr1Left;

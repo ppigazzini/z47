@@ -170,9 +170,6 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 static void _storeValue(uint16_t regist) {
-  if(regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY) {
-    PLOT_ZMY = zoomOverride;  //PLOT EQN
-  }
   if(regist == RESERVED_VARIABLE_GRAMOD) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnLint(NOPARAM);
@@ -196,8 +193,22 @@ static void _storeValue(uint16_t regist) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
-      copySourceRegisterToDestRegister(REGISTER_X, regist);
-      copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+      if((regist == RESERVED_VARIABLE_UX || regist == RESERVED_VARIABLE_LX || regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY)
+          && real34IsSpecial(REGISTER_REAL34_DATA(REGISTER_X))) { //screen the plot range at the door: NaN/infinite rejected, old value kept
+        copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+        calcMode = CM_NORMAL;                          //the range STO items live in the plot menu; leave the graph screen so the error line renders
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function _storeValue:", "plot range limits must be finite", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      }
+      else {
+        copySourceRegisterToDestRegister(REGISTER_X, regist);
+        copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+        if(regist == RESERVED_VARIABLE_UY || regist == RESERVED_VARIABLE_LY) {
+          PLOT_ZMY = zoomOverride;  //PLOT EQN; only on a successful store, a rejected store must leave no side effects
+        }
+      }
     }
   }
   else {

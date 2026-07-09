@@ -3,20 +3,8 @@
 
 #include "c47.h"
 
-#include "c47Extensions/addons.h"
-#include "longIntegerType.h"
-#include "saveRestoreCalcState.h"
-#include "saveRestoreBackup.h"
-#include "statusBar.h"
-
 //#define JMSHOWCODES
 //#define BUFFER_CLICK_DETECTION
-
-#if defined(DMCP_BUILD)
-  #include "c47Extensions/inlineTest.h"
-  #include "c47Extensions/jm.h"
-  #include "c47Extensions/keyboardTweak.h"
-#endif
 
 uint16_t              lastI = 0;
 uint16_t              lastJ = 0;
@@ -32,6 +20,7 @@ char                  lastTemp[16];
 #endif // PC_BUILD
 
 bool_t                headlessMode = false;
+bool_t                snapSkipRefresh = false;
 bool_t                loadTestPrograms = false;
 bool_t                loadTestData = false;
 const font_t          *fontForShortInteger;
@@ -74,6 +63,7 @@ bool_t                 reDraw = true;
 bool_t                 refreshNIMdone = false;
 bool_t                 cleanupAfterShift = false;
 bool_t                 solverEstimatesUsed = false;
+bool_t                 graphAccActive = false;
 bool_t                 updateOldConstants;
 
 
@@ -163,6 +153,7 @@ uint8_t                dispBase;
 uint8_t                fractionDigits;
 uint8_t                shortIntegerMode;
 uint8_t                previousCalcMode;
+bool_t                 graphToRemainOnScreen;
 uint8_t                grpGroupingLeft;
 uint8_t                grpGroupingGr1LeftOverflow;
 uint8_t                grpGroupingGr1Left;

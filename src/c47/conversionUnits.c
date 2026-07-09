@@ -327,6 +327,10 @@ TO_QSPI const fInMim_t MimFunctionsType3Conv[NUM_CONVERT_PAIRS] =
     {ITM_KGtoUNSLUG     },
     {ITM_KGtoUNSLINCH   },
     {ITM_UNSLINCHtoKG   },
+    {ITM_MPHtoKNOT      },
+    {ITM_KNOTtoMPH      },
+    {ITM_MPHtoFPS       },
+    {ITM_FPStoMPH       },
      // do mimRunFunction(item, indexOfItems[item].param);
    };
 
@@ -694,6 +698,10 @@ TO_QSPI static const convPair_t convertPairs[NUM_CONVERT_PAIRS] = {             
   { ITM_KGtoUNSLUG       /* 2839 */, ITM_UNSLUGtoKG       , ITM_UNSLUGtoKG     , +0 , UT_MASS                     },
   { ITM_UNSLINCHtoKG     /* 2840 */, ITM_KGtoUNSLINCH     , ITM_NULL           , +0 , UT_MASS                     },
   { ITM_KGtoUNSLINCH     /* 2841 */, ITM_UNSLINCHtoKG     , ITM_UNSLINCHtoKG   , +0 , UT_MASS                     },
+  { ITM_MPHtoKNOT        /* 2860 */, ITM_KNOTtoMPH        , ITM_KNOTtoMPS      , +0 , UT_SPEED                    },
+  { ITM_KNOTtoMPH        /* 2861 */, ITM_MPHtoKNOT        , ITM_MPHtoMPS       , +0 , UT_SPEED                    },
+  { ITM_MPHtoFPS         /* 2862 */, ITM_FPStoMPH         , ITM_FPStoMPS       , +0 , UT_SPEED                    },
+  { ITM_FPStoMPH         /* 2863 */, ITM_MPHtoFPS         , ITM_MPHtoMPS       , +0 , UT_SPEED                    },
 };
 
 static const convPair_t *findPair(int16_t input) {                              // binary search; NULL if not found
@@ -1047,6 +1055,8 @@ TO_QSPI static const real_t * const conversionFactors[constFactorEND] = {
     [constFactorKgmNpm]       = const_gEarth,
     [constFactorInchM]        = const_InchToM,      /* 163 */
     [constFactorLbfKgf]       = const_LbToKg,
+    [constFactorMphKnot]      = const39_MphToKnot,
+    [constFactorMphFps]       = const39_MphToFps,   /* 166 */
   };
 
 

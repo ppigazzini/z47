@@ -69,7 +69,8 @@
       }
 
       default: {
-        printf("In function _clearVar, the data type %" PRIu32 " is unknown! Please try to reproduce and submit a bug.\n", getRegisterDataType(regist));
+        sprintf(errorMessage, commonBugScreenMessages[bugMsgDataTypeUnknown], "_clearVar", getDataTypeName(getRegisterDataType(regist), false, false));
+        displayBugScreen(errorMessage);
       }
     }
   }

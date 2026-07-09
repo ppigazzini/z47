@@ -519,8 +519,10 @@ void fnEdit (uint16_t unusedParamButMandatory) {
                   }
                 }
               }
-              printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
-              fflush(stdout);
+              #if defined(PC_BUILD)
+                printf("**[DL]** dtComplex34 aimBuffer %s nimBufferDisplay %s\n", aimBuffer, nimBufferDisplay);
+                fflush(stdout);
+              #endif //PC_BUILD
 
               exponentSignLocation = realExponentSignLocation;
               calcMode = CM_NIM;
@@ -1084,17 +1086,27 @@ bool_t anyKeyWaiting(void) {
 
 
 
+// EXIT (32) or R/S (35) both stop a long computation (solver, integrator, grapher, prime, matrix, ...)
 bool_t exitKeyWaiting(void) {
   #if defined(DMCP_BUILD)
-    bool_t checkKey = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32;
+    int interruptKey = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE);                   // drains and checks the DMCP SDK buffer (EXIT/R/S priority)
+    bool_t ringInterrupt = interruptKeyInBuffer();                                    // EXIT (33) / R/S (36) that a refresh's keyBuffer_pop parked in the C47 ring buffer, where C47PopKeyNoBuffer (SDK buffer only) cannot see it
+    bool_t checkKey = (interruptKey == 32 || interruptKey == 35) || ringInterrupt;    // 32 = EXIT, 35 = R/S (SDK buffer, in the -1 scheme, C47PopKeyNoBuffer returns)
     if(!checkKey) {
       key_pop_all();
       clearKeyBuffer();
     }
+    else if(ringInterrupt) {
+      clearKeyBuffer();                  // consume the ring-buffer interrupt key so a queued R/S cannot later relaunch fnRunProgram; the original EXIT-in-SDK path is left untouched
+    }
     return checkKey;
   #elif defined(PC_BUILD) // !DMCP_BUILD
     //printf("KeyWaiting keyCode=%u", currentKeyCode);
-    return currentKeyCode == 32; //EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
+    if(currentKeyCode == 35) {           // R/S: interrupt, and consume the key (R/S is a run/stop toggle; a surviving press was being re-read as "run" and relaunched the operation)
+      currentKeyCode = 255;
+      return true;
+    }
+    return currentKeyCode == 32;         // EXIT1 / EXIT key //Do not us gtk_events_pending() as it triggers for timers too
   #endif // PC_BUILD
   return false;
 }
@@ -1281,9 +1293,9 @@ void fnFrom_msRegister(calcRegister_t regist){
       if(tmpString100_OUT[0] != 0) {
         reallocateRegister(regist, dtReal34, 0, amNone);
         stringToReal34(tmpString100_OUT, REGISTER_REAL34_DATA(regist));
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1) && defined(PC_BUILD)
           printf("\n ------- 003 >>>%s<<<\n", tmpString100_OUT);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1) && PC_BUILD
       }
     }
 
@@ -2501,7 +2513,7 @@ double convert_to_double(calcRegister_t regist) { //Convert from X register to d
       return 0;
   }
   realToString(&tmpy, tmpString);
-  y = strtof(tmpString, NULL);
+  y = (float)stringToDouble(tmpString);
   return y;
 }
 

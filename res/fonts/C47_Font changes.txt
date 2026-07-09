@@ -465,7 +465,7 @@ Added QRNZ to NUM font
 2026-06-28
    ADD to STD font:
      U+2404   🮕▒▩        HP42S checkered block
-     U+25B6   ▶           HP42S Black right pointing triangle
+     U+25B6   ▶           Black right pointing triangle
      U+240A   ␊           HP42S Line Feed picture
      U+241B   ␛           HP42S ESC picture
      U+25AA   ▪           HP42S Small black square
@@ -479,7 +479,13 @@ Added QRNZ to NUM font
      U+1D05   ᴅ           HP42S SMALL CAPS D
      U+1D1B   ᴛ           HP42S SMALL CAPS T
      U+1D22   ᴢ           HP42S SMALL CAPS Z
-     U+25B7   ▷           HP42S Black right pointing triangle
+     U+25B7   ▷           White right pointing triangle
 
-
+2026-07-08
+  Change in STD Font:
+     U+25B6   ▶           Black right pointing triangle
+     U+25B7   ▷           White right pointing triangle
+     U+25B8   ▸           HP42S Black right pointing small triangle
+     U+25B9   ▹           White right pointing small triangle
+    
 

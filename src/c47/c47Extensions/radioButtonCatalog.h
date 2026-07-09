@@ -68,19 +68,8 @@ char*    figlabel              (const char* label, const char* showText, int16_t
 #define RB_PM                  160 // PRINTER MODE (MAN/NORM/TRACE)
 
 //Not strictly needed to follow on numerically from RB/CB types above, but why not
-#define JC_PROPER              165    // CB FractionType
-#define JC_IMPROPER            166    // CB FractionType
-#define JC_FRC                 171    // CB FRACTION MODE
-#define PRTACT0                174    // PRTACT checkbox
-#define PRTACT1                175    // PRTACT checkbox
 #define JC_ITM_TST             180    //dr
 
-#define JC_INTG                191    // graph setup
-#define JC_DIFF                192    // graph setup
-#define JC_RMS                 193    // graph setup
-#define JC_SHADE               194    // graph setup
-#define JC_PZOOMX              195
-#define JC_PZOOMY              196
 #define JC_NL                  197
 #define JC_UC                  198
 #define JC_LINEAR_FITTING      199

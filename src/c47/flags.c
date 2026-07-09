@@ -60,9 +60,10 @@ TO_QSPI const uint16_t refreshStateFlags[] = {       //these flags need to updat
   FLAG_CPXj, FLAG_POLAR, FLAG_LEAD0, FLAG_DENANY, FLAG_DENFIX, FLAG_SSIZE8,
   FLAG_MULTx, FLAG_ENGOVR, FLAG_ENDPMT, FLAG_HPRP, FLAG_MNUp1, FLAG_HPBASE,
   FLAG_NUMLOCK, FLAG_CPXMULT, FLAG_ERPN, FLAG_CARRY, FLAG_OVERFLOW, FLAG_FRCYC,
-  FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_AMORT_HP12C, FLAG_CPXPLOT, FLAG_SHOWX, FLAG_SHOWY,
+  FLAG_LARGELI, FLAG_alphaCAP, FLAG_2TO10, FLAG_AMORT_HP12C, FLAG_CPXPLOT, FLAG_IMPLOT, FLAG_SHOWX, FLAG_SHOWY,
   FLAG_PBOX, FLAG_PCURVE, FLAG_PCROS, FLAG_PPLUS, FLAG_PLINE, FLAG_SCALE,
-  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX, FLAG_FGGR, FLAG_BOLD, FLAG_SIGZEROS
+  FLAG_VECT, FLAG_NVECT, FLAG_TOPHEX, FLAG_FGGR, FLAG_BOLD, FLAG_SIGZEROS,
+  FLAG_PRMS, FLAG_PINTG, FLAG_PDIFF, FLAG_PSHADE
 };
 
 TO_QSPI const uint16_t clearStatusBarFlags[] = {       //these flags need to clear the statusbar and start SB again
@@ -133,6 +134,114 @@ doInteractionFlags:
               if(getSystemFlag(FLAG_FRACT)) {
                 _clearSystemFlag(FLAG_FRACT);
                 _setSystemFlag(FLAG_IRFRAC);
+              }
+              break;
+
+    // Graph plot marker interlocks: at least one of PLINE/PBOX/PCROS/PPLUS stays on;
+    // PBOX/PCROS/PPLUS are mutually exclusive; PCURVE implies PLINE
+    case FLAG_PLINE:
+              if(!getSystemFlag(FLAG_PLINE) && !getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+                _setSystemFlag(FLAG_PBOX);
+              }
+              if(!getSystemFlag(FLAG_PLINE)) {
+                _clearSystemFlag(FLAG_PCURVE);
+              }
+              break;
+
+    case FLAG_PBOX:
+              if(getSystemFlag(FLAG_PBOX)) {
+                _clearSystemFlag(FLAG_PCROS);
+                _clearSystemFlag(FLAG_PPLUS);
+              }
+              if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+                _setSystemFlag(FLAG_PLINE);
+              }
+              break;
+
+    case FLAG_PCROS:
+              if(getSystemFlag(FLAG_PCROS)) {
+                _clearSystemFlag(FLAG_PBOX);
+                _clearSystemFlag(FLAG_PPLUS);
+              }
+              if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+                _setSystemFlag(FLAG_PLINE);
+              }
+              break;
+
+    case FLAG_PPLUS:
+              if(getSystemFlag(FLAG_PPLUS)) {
+                _clearSystemFlag(FLAG_PBOX);
+                _clearSystemFlag(FLAG_PCROS);
+              }
+              if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
+                _setSystemFlag(FLAG_PLINE);
+              }
+              break;
+
+    case FLAG_PCURVE:
+              if(getSystemFlag(FLAG_PCURVE)) {
+                _setSystemFlag(FLAG_PLINE);
+              }
+              break;
+
+    // Graph plot overlay interlocks: overlays and vectors are mutually exclusive groups;
+    // PSHADE implies PINTG (nothing to shade without the integral)
+    case FLAG_PINTG:
+              if(getSystemFlag(FLAG_PINTG)) {
+                _clearSystemFlag(FLAG_VECT);
+                _clearSystemFlag(FLAG_NVECT);
+              }
+              else {
+                _clearSystemFlag(FLAG_PSHADE);
+              }
+              break;
+
+    case FLAG_PDIFF:
+    case FLAG_PRMS:
+              if(getSystemFlag(systemFlag)) {
+                _clearSystemFlag(FLAG_VECT);
+                _clearSystemFlag(FLAG_NVECT);
+              }
+              break;
+
+    case FLAG_PSHADE:
+              if(getSystemFlag(FLAG_PSHADE)) {
+                _setSystemFlag(FLAG_PINTG);
+                _clearSystemFlag(FLAG_VECT);
+                _clearSystemFlag(FLAG_NVECT);
+              }
+              break;
+
+    case FLAG_VECT:
+              if(getSystemFlag(FLAG_VECT)) {
+                _clearSystemFlag(FLAG_NVECT);
+                _clearSystemFlag(FLAG_PINTG);
+                _clearSystemFlag(FLAG_PDIFF);
+                _clearSystemFlag(FLAG_PRMS);
+                _clearSystemFlag(FLAG_PSHADE);
+              }
+              break;
+
+    case FLAG_NVECT:
+              if(getSystemFlag(FLAG_NVECT)) {
+                _clearSystemFlag(FLAG_VECT);
+                _clearSystemFlag(FLAG_PINTG);
+                _clearSystemFlag(FLAG_PDIFF);
+                _clearSystemFlag(FLAG_PRMS);
+                _clearSystemFlag(FLAG_PSHADE);
+              }
+              break;
+
+    // Complex plot interlocks: CPXPLOT and IMPLOT are mutually exclusive
+    case FLAG_CPXPLOT:
+              if(getSystemFlag(FLAG_CPXPLOT)) {
+                _clearSystemFlag(FLAG_IMPLOT);
+              }
+              break;
+
+    case FLAG_IMPLOT:
+              if(getSystemFlag(FLAG_IMPLOT)) {
+                _clearSystemFlag(FLAG_CPXPLOT);
               }
               break;
 
@@ -643,6 +752,7 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_FRCYC,
   FLAG_CPXMULT,
   FLAG_CPXPLOT,
+  FLAG_IMPLOT,
   FLAG_SHOWX,
   FLAG_SHOWY,
   FLAG_PBOX,
@@ -653,6 +763,10 @@ TO_QSPI const uint16_t flipFlags[] = {                   // Flags that have HP42
   FLAG_SCALE,
   FLAG_VECT,
   FLAG_NVECT,
+  FLAG_PRMS,
+  FLAG_PINTG,
+  FLAG_PDIFF,
+  FLAG_PSHADE,
   FLAG_TOPHEX,
   FLAG_BCD,
   FLAG_LARGELI,

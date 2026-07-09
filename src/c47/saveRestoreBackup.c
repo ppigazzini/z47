@@ -11,7 +11,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1015     // FLAG_SIGZEROS
+#define BACKUP_VERSION                     1016     // Graph defaults changing from float to real
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -361,6 +361,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&numScreensTinyFont,             sizeof(numScreensTinyFont),                                  "numScreensTinyFont",             "uint8");
     saveStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     saveStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
+    saveStateValue(&graphToRemainOnScreen,          sizeof(graphToRemainOnScreen),                               "graphToRemainOnScreen",          "bool");
     saveStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
     saveStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     saveStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
@@ -414,23 +415,19 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&lrChosenUndo,                   sizeof(lrChosenUndo),                                        "lrChosenUndo",                   "uint16");
     saveStateValue(&lastPlotMode,                   sizeof(lastPlotMode),                                        "lastPlotMode",                   "uint16");
     saveStateValue(&plotSelection,                  sizeof(plotSelection),                                       "plotSelection",                  "uint16");
-    saveStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "float");
-    saveStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "float");
+    saveStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "double");
+    saveStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "double");
     saveStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
-    saveStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
-    saveStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
-    saveStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
-    saveStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
     saveStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     saveStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
     saveStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
     saveStateValue(&plotmode,                       sizeof(plotmode),                                            "plotmode",                       "int8");
-    saveStateValue(&tick_int_x,                     sizeof(tick_int_x),                                          "tick_int_x",                     "float");
-    saveStateValue(&tick_int_y,                     sizeof(tick_int_y),                                          "tick_int_y",                     "float");
-    saveStateValue(&x_min,                          sizeof(x_min),                                               "x_min",                          "float");
-    saveStateValue(&x_max,                          sizeof(x_max),                                               "x_max",                          "float");
-    saveStateValue(&y_min,                          sizeof(y_min),                                               "y_min",                          "float");
-    saveStateValue(&y_max,                          sizeof(y_max),                                               "y_max",                          "float");
+    saveStateValue(&tick_int_x,                     sizeof(tick_int_x),                                          "tick_int_x",                     "double");
+    saveStateValue(&tick_int_y,                     sizeof(tick_int_y),                                          "tick_int_y",                     "double");
+    saveStateValue(x_min,                           REAL_SIZE_IN_BYTES(34),                                      "x_min",                          "real");
+    saveStateValue(x_max,                           REAL_SIZE_IN_BYTES(34),                                      "x_max",                          "real");
+    saveStateValue(y_min,                           REAL_SIZE_IN_BYTES(34),                                      "y_min",                          "real");
+    saveStateValue(y_max,                           REAL_SIZE_IN_BYTES(34),                                      "y_max",                          "real");
     saveStateValue(&xzero,                          sizeof(xzero),                                               "xzero",                          "uint32");
     saveStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
     saveStateValue(&regStatsXY,                     sizeof(regStatsXY),                                          "regStatsXY",                     "int16");
@@ -586,8 +583,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     if(paramCurrent == NULL) {
-      printf("Parameter %s of type %s not found in file %s\n", valueName, valueType, backupFileName);
-      printf("Using default value for %s\n", valueName);
+      printf("Parameter %s of type %s not found in file %s, using default\n", valueName, valueType, backupFileName);
       return;
     }
 
@@ -650,11 +646,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
 
     else if(!strcmp(valueType, "float")) {
-      *(float *)buffer = atof(valuePtr);
+      *(float *)buffer = (float)stringToDouble(valuePtr);
     }
 
     else if(!strcmp(valueType, "double")) {
-      *(double *)buffer = atof(valuePtr);
+      *(double *)buffer = stringToDouble(valuePtr);
     }
 
     else if(!strcmp(valueType, "real")) {
@@ -678,11 +674,17 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
     else if(!strcmp(valueType, "hexDump")) {
       uint32_t numberOfBytes = stringToUint32(valuePtr);
+      if(numberOfBytes > size) {
+        numberOfBytes = size;
+      }
       uint8_t hi, lo, *buf = (uint8_t *)buffer;
       uint8_t *v;
       for(uint32_t count=0; count < numberOfBytes; count++, buf++) {
         if(count % 32 == 0) {
           paramCurrent = paramCurrent->next;
+          if(paramCurrent == NULL) {
+            break;
+          }
           v = (uint8_t *)paramCurrent->param + 7;
         }
 
@@ -715,6 +717,38 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("ERROR: valueType %s unknown in function restoreStateValue!" LINEBREAK, valueType);
     }
   }
+
+
+  //One-time migration of a pre-1016 float parameter into its new real or double variable.
+  //Not an error: the old value is converted and reported, and the next save writes the new type.
+  static void migrateFloatValue(void *buffer, const char *valueName, const char *newType) {
+    char search[60];
+    strcpy(search, valueName);
+    strcat(search, ":float:");
+    paramCurrent = paramHead;
+    while(paramCurrent) {
+      if(!strncmp(paramCurrent->param, search, strlen(search))) {
+        break;
+      }
+      paramCurrent = paramCurrent->next;
+    }
+    if(paramCurrent == NULL) {
+      printf("Parameter %s of type float not found in file %s, using default\n", valueName, backupFileName);
+      return;
+    }
+    double d = stringToDouble(paramCurrent->param + strlen(search));
+    if(!isfinite(d)) {
+      d = 0;                                           //unusable old value: report and store the default 0
+    }
+    if(!strcmp(newType, "real")) {
+      convertDoubleToReal(d, (real_t *)buffer, &ctxtReal39);
+    }
+    else {
+      *(double *)buffer = d;
+    }
+    printf("%s: one-time conversion from float to %s, value %g; loads as %s in future\n", valueName, newType, d, newType);
+  }
+
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
@@ -779,8 +813,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("\n");
       char ss[150];
       sprintf(ss, "Cannot restore calc's memory from file %s! File %s has a too low version number.", backupFileName, backupFileName);
-      userAbort(ss);
-      userAbort("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
+      userAbortf(ss);
+      userAbortf("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
       return;
     }
 
@@ -939,6 +973,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&numScreensTinyFont,             sizeof(numScreensTinyFont),                                  "numScreensTinyFont",             "uint8");
     restoreStateValue(&numLinesTinyFont,               sizeof(numLinesTinyFont),                                    "numLinesTinyFont",               "uint8");
     restoreStateValue(&previousCalcMode,               sizeof(previousCalcMode),                                    "previousCalcMode",               "uint8");
+    restoreStateValue(&graphToRemainOnScreen,          sizeof(graphToRemainOnScreen),                               "graphToRemainOnScreen",          "bool");
     restoreStateValue(&lastErrorCode,                  sizeof(lastErrorCode),                                       "lastErrorCode",                  "uint8");
     restoreStateValue(&previousErrorCode,              sizeof(previousErrorCode),                                   "previousErrorCode",              "uint8");
     restoreStateValue(&nimNumberPart,                  sizeof(nimNumberPart),                                       "nimNumberPart",                  "uint8");
@@ -1004,23 +1039,31 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&lrChosenUndo,                   sizeof(lrChosenUndo),                                        "lrChosenUndo",                   "uint16");
     restoreStateValue(&lastPlotMode,                   sizeof(lastPlotMode),                                        "lastPlotMode",                   "uint16");
     restoreStateValue(&plotSelection,                  sizeof(plotSelection),                                       "plotSelection",                  "uint16");
-    restoreStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "float");
-    restoreStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "float");
     restoreStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
-    restoreStateValue(&PLOT_INTG,                      sizeof(PLOT_INTG),                                           "PLOT_INTG",                      "bool");
-    restoreStateValue(&PLOT_DIFF,                      sizeof(PLOT_DIFF),                                           "PLOT_DIFF",                      "bool");
-    restoreStateValue(&PLOT_RMS,                       sizeof(PLOT_RMS),                                            "PLOT_RMS",                       "bool");
-    restoreStateValue(&PLOT_SHADE,                     sizeof(PLOT_SHADE),                                          "PLOT_SHADE",                     "bool");
     restoreStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     restoreStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
     restoreStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
     restoreStateValue(&plotmode,                       sizeof(plotmode),                                            "plotmode",                       "int8");
-    restoreStateValue(&tick_int_x,                     sizeof(tick_int_x),                                          "tick_int_x",                     "float");
-    restoreStateValue(&tick_int_y,                     sizeof(tick_int_y),                                          "tick_int_y",                     "float");
-    restoreStateValue(&x_min,                          sizeof(x_min),                                               "x_min",                          "float");
-    restoreStateValue(&x_max,                          sizeof(x_max),                                               "x_max",                          "float");
-    restoreStateValue(&y_min,                          sizeof(y_min),                                               "y_min",                          "float");
-    restoreStateValue(&y_max,                          sizeof(y_max),                                               "y_max",                          "float");
+    if(backupVersion >= 1016) {
+      restoreStateValue(&graph_dx,                     sizeof(graph_dx),                                            "graph_dx",                       "double");
+      restoreStateValue(&graph_dy,                     sizeof(graph_dy),                                            "graph_dy",                       "double");
+      restoreStateValue(&tick_int_x,                   sizeof(tick_int_x),                                          "tick_int_x",                     "double");
+      restoreStateValue(&tick_int_y,                   sizeof(tick_int_y),                                          "tick_int_y",                     "double");
+      restoreStateValue(x_min,                         REAL_SIZE_IN_BYTES(34),                                      "x_min",                          "real");
+      restoreStateValue(x_max,                         REAL_SIZE_IN_BYTES(34),                                      "x_max",                          "real");
+      restoreStateValue(y_min,                         REAL_SIZE_IN_BYTES(34),                                      "y_min",                          "real");
+      restoreStateValue(y_max,                         REAL_SIZE_IN_BYTES(34),                                      "y_max",                          "real");
+    }
+    else { //pre-1016 backups stored the graph settings as float: convert each once; the next save writes the new types
+      migrateFloatValue(&graph_dx,                     "graph_dx",                       "double");
+      migrateFloatValue(&graph_dy,                     "graph_dy",                       "double");
+      migrateFloatValue(&tick_int_x,                   "tick_int_x",                     "double");
+      migrateFloatValue(&tick_int_y,                   "tick_int_y",                     "double");
+      migrateFloatValue(x_min,                         "x_min",                          "real");
+      migrateFloatValue(x_max,                         "x_max",                          "real");
+      migrateFloatValue(y_min,                         "y_min",                          "real");
+      migrateFloatValue(y_max,                         "y_max",                          "real");
+    }
     restoreStateValue(&xzero,                          sizeof(xzero),                                               "xzero",                          "uint32");
     restoreStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
     restoreStateValue(&regStatsXY,                     sizeof(regStatsXY),                                          "regStatsXY",                     "int16");

@@ -25,6 +25,7 @@
   bool_t              dumpMenusAll = false;
   bool_t              writeExportAll = false;
   uint8_t             config = 0;
+  bool_t              factoryReset = false;
   bool_t              enableFunctionKeysDisplay;
   bool_t              calcLandscape;
   bool_t              calcAutoLandscapePortrait;
@@ -187,6 +188,10 @@
         printf("Activated: %s\n", argv[arg]);
       }
 
+      if(strcmp(argv[arg], "--reset") == 0) {
+        factoryReset = true;
+        printf("Activated: %s\n", argv[arg]);
+      }
       if(strcmp(argv[arg], "--jm") == 0) {
         config = 1;
         printf("Activated: %s\n", argv[arg]);
@@ -238,6 +243,10 @@
       if(strcmp(argv[arg], "--headless") == 0) {
           headlessMode = true;
           printf("Activated: --headless\n");
+      }
+      if(strcmp(argv[arg], "--snapskiprefresh") == 0) {
+          snapSkipRefresh = true;
+          printf("Activated: --snapskiprefresh\n");
       }
       if(strcmp(argv[arg], "--mockup") == 0) {
         printf("Activated: %s\n", argv[arg]);
@@ -327,6 +336,7 @@
         printf("%s47 --n47                 : N47 layout (SIM only) (retired, historical info only)\n", cc);
         printf("%s47 --v47                 : V47 layout (SIM only) (retired, historical info only)\n", cc);
         printf("%s47 --d47                 : D47 layout (SIM only) (retired, historical info only)\n\n", cc);
+        printf("%s47 --reset               : factory defaults, do not load backup.cfg (scripted --exec/--script runs never write it back either)\n", cc);
         printf("%s47 --jm                  : Setting profile: Jaco preferences\n", cc);
         printf("%s47 --rj                  : Setting profile: RJvM preferences\n", cc);
         printf("%s47 --hp35                : Setting profile: HP-35 tribute\n\n", cc);
@@ -345,6 +355,7 @@
         printf("%s47 --exec <commands>     : execute DSL commands inline, ┬ e.g. ./t47 --exec 'nim 123; x!'\n", cc);
         printf("%s47 --e, %s47 -e <commands>: see --exec,                  ┴ e.g. ./t47 --exec 'nim 3; nim -4; xeq yˣ'\n", cc, cc);
         printf("%s47 --headless            : suppress GTK interface startup\n", cc);
+        printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
         printf("%s47 --dslcommands         : produce T47 ops table in %s\n", cc, dslOpsFileName);
         #if defined(_WIN32)
           printf("\nExample for command line operation: \n  %s47.exe --headless --script res/SCRIPTS/example.t47\n", cc);
@@ -431,7 +442,13 @@
       }
     }
 
-    restoreCalc();
+    if(factoryReset) {   //--reset: factory defaults, backup.cfg deliberately not loaded
+      fnReset(CONFIRMED);
+      printf("Factory reset: backup.cfg not loaded\n");
+    }
+    else {
+      restoreCalc();
+    }
 
     //set the calculator type again if it changes after loading the backup file
     if(calcModelNew != 255) {

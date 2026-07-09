@@ -67,6 +67,7 @@ ulp
 neighb
 min
 max
+compare
 tvm
 
 changeSign
@@ -267,6 +268,25 @@ percent
 percentMRR
 percentT
 percentSigma
+stats_cov
+mathmisc_cov
+string_cov
+matrix_cov
+round_cov
+storercl_cov
+compare_cov
+mathspecial_cov
+checkval_cov
+matrixops_cov
+prime_cov
+disterr_cov
+iteration_cov
+numextra_cov
+dist_cov
+curvefit_cov
+error_cov
+saverestore_cov
+numeric_diff_cov
 percentPlusMG
 deltaPercent
 
@@ -411,3 +431,12 @@ constants
 elec
 
 programs
+
+; These two coverage files mutate shared state that the per-test In: reset does
+; not clear - clcvar_cov clears the loaded sample programs' local variables and
+; matrix2_cov leaves the indexed-matrix pointer set - so they must run after
+; programs.txt (which consumes the pristine sample-program fixture), not before.
+matrix2_cov
+clcvar_cov
+
+serialize_cov

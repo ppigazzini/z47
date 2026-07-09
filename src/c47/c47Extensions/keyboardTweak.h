@@ -81,6 +81,7 @@ uint8_t  outKeyBufferDoubleClick();
 bool_t   fullKeyBuffer        ();
 bool_t   emptyKeyBuffer       ();
 void     clearKeyBuffer       ();
+bool_t   interruptKeyInBuffer ();
 
 
 void     btnFnPressed_StateMachine (void *unused, void *data);

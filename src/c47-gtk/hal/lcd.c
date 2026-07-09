@@ -5,10 +5,6 @@
 #include "c47.h"
 
 #if defined(PC_BUILD) && defined(HAVE_DLADDR)
-#include <execinfo.h>
-#include <dlfcn.h>
-#include <stdarg.h>
-
 void print_caller(const char *format, ...) {
   void *cs[64];
   va_list ap;

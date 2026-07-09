@@ -506,7 +506,7 @@
 #define SFL_alphaCAP                 478
 #define SFL_RUNTIM                   479
 #define SFL_AMORT_HP12C              480
-#define SFL_spare                    481
+#define SFL_IMPLOT                   481
 #define SFL_TRACE                    482
 #define SFL_USER                     483
 #define SFL_LOWBAT                   484
@@ -2345,11 +2345,11 @@
 #define SFL_PRTEN                   2290
 #define SFL_NORM                    2291
 #define SFL_BOLD                    2292
-#define SFL_SIGZEROS                   2293
-#define SFL_2294                    2294
-#define SFL_2295                    2295
-#define SFL_2296                    2296
-#define SFL_2297                    2297
+#define SFL_SIGZEROS                2293
+#define SFL_PRMS                    2294
+#define SFL_PINTG                   2295
+#define SFL_PDIFF                   2296
+#define SFL_PSHADE                  2297
 #define SFL_2298                    2298
 #define SFL_2299                    2299
 #define SFL_2300                    2300
@@ -2831,7 +2831,7 @@
 #define ITM_2730                    2730
 #define ITM_2731                    2731 //spares for Matrix/Vector
 #define ITM_PGMPLT                  2732
-#define MNU_PLTf                    2733
+#define MNU_2733                    2733
 #define ITM_PLTf                    2734
 #define ITM_IMPLOT                  2735
 #define MNU_BASE2                   2736
@@ -2854,7 +2854,7 @@
 #define ITM_TONNEtoKG               2753
 #define ITM_KGtoTONNE               2754
 #define ITM_2755                    2755
-#define ITM_2756                    2756
+#define ITM_2756                    2756 // XFN spares
 #define ITM_XEXPORT                 2757
 #define ITM_EXPATOW                 2758
 #define ITM_EXPSTK                  2759
@@ -2946,8 +2946,8 @@
 #define ITM_KGtoUNSLUG              2839
 #define ITM_UNSLINCHtoKG            2840
 #define ITM_KGtoUNSLINCH            2841
-#define ITM_2842                    2842
-#define ITM_2843                    2843 // CONV Spares
+#define ITM_2842                    2842 // CONV MENU Spares
+#define ITM_2843                    2843 // CONV MENU Spares
 
 #define MNU_CONV_SECTION            2844
 #define MNU_CONV_MATERL             2845
@@ -2959,15 +2959,26 @@
 #define ITM_XGEP0                   2850
 #define ITM_XLEM0                   2851
 #define ITM_PLTFCNS                 2852
-#define ITM_2853                    2853
-#define ITM_2854                    2854
-#define ITM_2855                    2855
-#define ITM_2856                    2856
-#define ITM_2857                    2857
-#define ITM_2858                    2858
-#define ITM_2859                    2859
+#define ITM_2853                    2853 // General items / any items spare
+#define ITM_2854                    2854 // General items / any items spare
+#define ITM_2855                    2855 // General items / any items spare
+#define ITM_2856                    2856 // General items / any items spare
+#define ITM_2857                    2857 // General items / any items spare
+#define ITM_2858                    2858 // General items / any items spare
+#define ITM_2859                    2859 // General items / any items spare
 
-#define LAST_ITEM                   2860
+#define ITM_MPHtoKNOT               2860
+#define ITM_KNOTtoMPH               2861
+#define ITM_MPHtoFPS                2862
+#define ITM_FPStoMPH                2863
+#define ITM_2864                    2864 // CONV spares
+#define ITM_2865                    2865 // CONV spares
+#define ITM_2866                    2866 // CONV spares
+#define ITM_2867                    2867 // CONV spares
+#define ITM_2868                    2868 // CONV spares
+#define ITM_2869                    2869 // CONV spares
+
+#define LAST_ITEM                   2870
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

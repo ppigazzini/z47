@@ -619,6 +619,7 @@ uint32_t utf8ToCodePoint(const uint8_t *utf8, uint32_t *codePoint) { // C47 supp
 }
 
 
+#if defined(PC_BUILD)
 void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
   printf("%s:", label);
   printf("  Hex:   ");
@@ -644,6 +645,7 @@ void debug_utf8_string(const char *label, const uint8_t *str, size_t max_len) {
   }
   printf("\n");
 }
+#endif //PC_BUILD
 
 
 void stringToUtf8(const char *str, uint8_t *utf8) {

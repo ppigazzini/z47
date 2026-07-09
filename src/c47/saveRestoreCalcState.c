@@ -4,7 +4,7 @@
 #include "c47.h"
 
 // This is used for the state files
-#define configFileVersion                  10000024 // FLAG_SIGZEROS
+#define configFileVersion                  10000025 // FLAG_PDIFF PINTG PRMS PSHADE
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -81,9 +81,17 @@ static uint32_t toUint32(const char *str) {
   return strtoul(str, NULL, 10);
 }
 
-// Floating point conversion functions
+// Floating point conversion function: accepts '.' or ',' in the file regardless of the locale, so config files written under one region setting load correctly under another
 float stringToFloat(const char *str) {
-  return strtof(str, NULL);
+  char buf[48];
+  const char radix = *localeconv()->decimal_point;
+  uint32_t i = 0;
+  while(str[i] != 0 && i < sizeof(buf) - 1) {
+    buf[i] = (str[i] == '.' || str[i] == ',') ? radix : str[i];
+    i++;
+  }
+  buf[i] = 0;
+  return strtof(buf, NULL);
 }
 
 // Lettered-register names for registers FIRST_LETTERED_REGISTER..LAST_SPARE_REGISTER (100..125), in register-number order:
@@ -417,7 +425,7 @@ static void saveMatrixElements(calcRegister_t regist) {
 
 
 bool_t fnSaveDataRegisters(uint16_t *beginR, uint16_t *endR, char *registerName, bool_t isXFNRegister) {
-  // Appends a register section to the already-open file: header, count, then per register id/name line, type line, 
+  // Appends a register section to the already-open file: header, count, then per register id/name line, type line,
   // value line, and matrix element lines. registerName != NULL saves that one named variable (beginR/endR ignored);
   // NULL saves the range *beginR..*endR inclusive. Lettered registers (100..125) use the short "RX".."RW" form. Returns false on invalid arguments.
   char tmpString[3000];           // Local target buffer. registerToSaveString() emits the value through the global
@@ -866,13 +874,12 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "amortP1\n%"                    PRIu16 "\n",     amortP1);                      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "amortP2\n%"                    PRIu16 "\n",     amortP2);                      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "graph_dx\n"                    "%f"   "\n",     graph_dx);                     save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "graph_dy\n"                    "%f"   "\n",     graph_dy);                     save(tmpString, strlen(tmpString));
+        char floatString[32];
+        sci_fmt(floatString, sizeof(floatString), graph_dx);
+        sprintf(tmpString, "graph_dx\n"                    "%s"   "\n",     floatString);                  save(tmpString, strlen(tmpString));
+        sci_fmt(floatString, sizeof(floatString), graph_dy);
+        sprintf(tmpString, "graph_dy\n"                    "%s"   "\n",     floatString);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "roundedTicks\n%"               PRIu8  "\n",     (uint8_t)roundedTicks);        save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_INTG\n%"                  PRIu8  "\n",     (uint8_t)PLOT_INTG);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_DIFF\n%"                  PRIu8  "\n",     (uint8_t)PLOT_DIFF);           save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_RMS\n%"                   PRIu8  "\n",     (uint8_t)PLOT_RMS);            save(tmpString, strlen(tmpString));
-        sprintf(tmpString, "PLOT_SHADE\n%"                 PRIu8  "\n",     (uint8_t)PLOT_SHADE);          save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "firstDayOfWeek\n%"             PRIu8  "\n",     firstDayOfWeek);               save(tmpString, strlen(tmpString));
@@ -1011,11 +1018,11 @@ int64_t stringToInt64(const char *str) {
   }
 
 
-  // Function to standardize new input to the old state file format, any new complex, into the old "re im" form. 
-  // Accepts (3-i4) | 3-i4 | +3+i4 | -3-i4 | (+3+i4) | (-3-i4) | 3 -4 | 3 4 | -2.5 1e3 | -2.5e-3+i4 | (-2.5e-3-i4) | i4 | (i4) | 
+  // Function to standardize new input to the old state file format, any new complex, into the old "re im" form.
+  // Accepts (3-i4) | 3-i4 | +3+i4 | -3-i4 | (+3+i4) | (-3-i4) | 3 -4 | 3 4 | -2.5 1e3 | -2.5e-3+i4 | (-2.5e-3-i4) | i4 | (i4) |
   //         ( 3 - i4 ) | (1.5e2-i2.5e-3) | 0+i0 | -7+i0 | (3 -i4) | 3 -i4 | +3 +i4 | -3 -i4 | ( 3 - i 4 ) | +3 + i4 | 3 - i 4 | (-2.5e-3 - i 4)
   //         (parentheses optional, leading sign optional)
-  // as well as the state file form  "3 -4"  (backward compatibility). Form and free white space is enabled by 'i' (which can never occur in a real number string). 
+  // as well as the state file form  "3 -4"  (backward compatibility). Form and free white space is enabled by 'i' (which can never occur in a real number string).
   static void standardiseComplex(const char *src, char *dest) {
     char work[200];
     char *w = work;
@@ -2268,10 +2275,6 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks          = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_INTG"                   ) == 0) { PLOT_INTG             = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_DIFF"                   ) == 0) { PLOT_DIFF             = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_RMS"                    ) == 0) { PLOT_RMS              = toUint8(tmpString) != 0; }
-          else if(strcmp(aimBuffer, "PLOT_SHADE"                  ) == 0) { PLOT_SHADE            = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstDayOfWeek"              ) == 0) { firstDayOfWeek        = toUint8(tmpString); }
@@ -2311,6 +2314,30 @@ int64_t stringToInt64(const char *str) {
               forceSystemFlag(FLAG_PFX_ALL, toUint8(tmpString) != 0);
             } //Keep compatible by repeating, even though setting is now in systemflags
           }
+
+
+          else if(strcmp(aimBuffer, "PLOT_INTG"                      ) == 0) {
+            if(loadedVersion < 10000025) {
+              forceSystemFlag(FLAG_PINTG, toUint8(tmpString) != 0);
+            }
+          }
+          else if(strcmp(aimBuffer, "PLOT_DIFF"                      ) == 0) {
+            if(loadedVersion < 10000025) {
+              forceSystemFlag(FLAG_PDIFF, toUint8(tmpString) != 0);
+            }
+          }
+          else if(strcmp(aimBuffer, "PLOT_RMS"                      ) == 0) {
+            if(loadedVersion < 10000025) {
+              forceSystemFlag(FLAG_PRMS, toUint8(tmpString) != 0);
+            }
+          }
+          else if(strcmp(aimBuffer, "PLOT_SHADE"                      ) == 0) {
+            if(loadedVersion < 10000025) {
+              forceSystemFlag(FLAG_PSHADE, toUint8(tmpString) != 0);
+            }
+          }
+
+
 
 
 

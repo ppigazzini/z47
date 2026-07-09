@@ -51,7 +51,7 @@ void fnCurveFitting(uint16_t curveFitting) {
   lrSelection = curveFitting;                 // lrSelection is used to store the BestF method, in inverse, i.e. 1 indicating allowed method
   lrChosen = 0;                               // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1) && defined(PC_BUILD)
     uint16_t numberOfOnes;
     numberOfOnes = lrCountOnes(curveFitting);
 
@@ -69,7 +69,7 @@ void fnCurveFitting(uint16_t curveFitting) {
     else {
       printf("\nfitting models.\n");
     }
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1) && PC_BUILD
 }
 
 
@@ -118,7 +118,7 @@ void fnCurveFitting_T(uint16_t curveFitting) { // Toggle
 
   lrChosen = 0;                                // lrChosen    is used to indicate if there was a L.R. selection. Can be only one bit.
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1) && defined(PC_BUILD)
     uint16_t numberOfOnes;
     numberOfOnes = lrCountOnes(curveFitting);
 
@@ -136,7 +136,7 @@ void fnCurveFitting_T(uint16_t curveFitting) { // Toggle
     else {
       printf("\nfitting models.\n");
     }
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1) && PC_BUILD
 }
 
 
@@ -219,9 +219,9 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   realSetZero(&aa0);
   realSetZero(&aa1);
   realSetZero(&aa2);
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1) && defined(PC_BUILD)
     printf("Processing for best fit: %s\n", getCurveFitModeNames(curveFitting));
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1) && PC_BUILD
   realCopy(const__4, &RRMAX);
   uint16_t s = 0;       // default
   uint16_t ix, jx;      // only a single graph can be evaluated at once, so retain the single lowest bit, and clear the higher order bits.
@@ -229,9 +229,9 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
   for(ix=0; ix<10; ix++) { // up to 2^9 inclusive of 512 which is ORTHOF. The ReM is respectedby usage of 0 only, not by manual selection.
     jx = curveFitting & ((1 << ix));
     if(jx) {
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1) && defined(PC_BUILD)
         printf("processCurvefitSelection curveFitting:%u sweep:%u %s\n", curveFitting, jx, getCurveFitModeNames(jx));
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1) && PC_BUILD
 
       if(nn >= (int32_t)minLRDataPoints(jx)) {
         processCurvefitSelection(jx, &RR, &SMI, &aa0, &aa1, &aa2);
@@ -248,14 +248,14 @@ static void fnProcessLRfind(uint16_t curveFitting, uint16_t resultType){
     s = 0; // error condition, cannot have >1 solutions, do not do L.R.
   }
 
-  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1) && defined(PC_BUILD)
     if(s != 0) {
       printf("Found best fit: %u %s\n", s, getCurveFitModeNames(s));
     }
     else {
       printf("Found no fit: %u\n", s);
     }
-  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1) && PC_BUILD
 
   if(nn >= (int32_t)minLRDataPoints(s)) {
     processCurvefitSelection(s, &RR, &SMI, &aa0, &aa1, &aa2);

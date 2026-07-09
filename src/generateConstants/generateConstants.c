@@ -280,6 +280,8 @@ void generateAllConstants(void) {
          generateConstant("ShorttonToKg",   8, EXACT,  "+907.18474"                                                   ); // kg     = short ton × 2000 × 0.45359237
          generateConstant("LongtonToKg",   11, EXACT,  "+1016.0469088"                                                ); // kg     =2240 × 0.4535923 39, EXACT,7
          generateConstant("KnotToMps",     39, APPROX, "+0.5144444444444444444444444444444444444444444444444444444"   ); // m/s    = knot × 1852 / 3600
+         generateConstant("MphToKnot",     39, APPROX, "+0.8689762419006479481641468682505399568034557235"            ); // knot   = mph × 1609.344 / 1852
+         generateConstant("MphToFps",      39, APPROX, "+1.4666666666666666666666666666666666666666666667"            ); // ft/s   = mph × 5280 / 3600 = 22 / 15
          generateConstant("SlugToKg",      39, APPROX, "+1.459390293720636482939632545931758530183727034120734908e+01"); // kg     = slug × 0.45359237 × 9.80665 / 0.3048
          generateConstant("SlinchToKg",    39, APPROX, "+1.751268352464763779527559055118110236220472440944881890e+02"); // kg     = slinch × 12 × SlugToKg
 

@@ -764,9 +764,15 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
 
 static void WP34S_Atan2_75temp(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
   real_t r, t;
+  int32_t savedContextDigits = realContext->digits;
+  if(realContext->digits > 75) {
+    realContext->digits = 75;
+  }
   if(!doAtan2(y, x, atan, &r, &t, realContext)) {
+    realContext->digits = savedContextDigits;
     return; //NaN
   }
+  realContext->digits = savedContextDigits;
 }
 
 static void C47do_WP34S_Atan2_1071temp(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
@@ -811,9 +817,15 @@ static bool_t doAsin(const real_t *x, real_t *angle, real_t *abx, real_t *z, rea
 
 static void WP34S_Asin_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
+  int32_t savedContextDigits = realContext->digits;
+  if(realContext->digits > 75) {
+    realContext->digits = 75;
+  }
   if(!doAsin(x, angle, &abx, &z, realContext)) {
+    realContext->digits = savedContextDigits;
     return; //NaN
   }
+  realContext->digits = savedContextDigits;
 }
 
 static void C47do_WP34S_Asin_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {
@@ -864,9 +876,15 @@ static bool_t doAcos(const real_t *x, real_t *angle, real_t *abx, real_t *z, rea
 
 static void WP34S_Acos_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
+  int32_t savedContextDigits = realContext->digits;
+  if(realContext->digits > 75) {
+    realContext->digits = 75;
+  }
   if(!doAcos(x, angle, &abx, &z, realContext)) {
+    realContext->digits = savedContextDigits;
     return; //NaN
   }
+  realContext->digits = savedContextDigits;
 }
 
 static void C47do_WP34S_Acos_1071temp(const real_t *x, real_t *angle, realContext_t *realContext) {

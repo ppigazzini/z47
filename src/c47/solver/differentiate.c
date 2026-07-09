@@ -6,7 +6,6 @@
  ***********************************************/
 
 #include "c47.h"
-#include "finite_differences.h"
 
 
 #if 0

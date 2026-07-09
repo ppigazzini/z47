@@ -108,10 +108,6 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SHTIM,            FLAG_SHFT_4s,           CB_JC},  //SetSetting
 
   {ITM_TEST,             JC_ITM_TST,             CB_JC},  //fnSetInlineTest
-  {ITM_INTG,             JC_INTG,                CB_JC},  //
-  {ITM_DIFF,             JC_DIFF,                CB_JC},  //
-  {ITM_RMS,              JC_RMS,                 CB_JC},  //
-  {ITM_SHADE,            JC_SHADE,               CB_JC},  //
 
   {ITM_CB_CPXRES,        FLAG_CPXRES ,           CB_JC},  //SetSetting
   {ITM_CB_SPCRES,        FLAG_SPCRES ,           CB_JC},  //SetSetting
@@ -136,6 +132,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_LARGELI,          FLAG_LARGELI,           CB_JC},  //SetSetting
   {ITM_IRFRAC,           FLAG_IRFRAC ,           CB_JC},  //SetSetting
   {ITM_CPXPLOT,          FLAG_CPXPLOT,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_IMPLOT,           FLAG_IMPLOT,            CB_JC},  // graph EQN & PLSTAT options
   {ITM_SHOWX,            FLAG_SHOWX  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_SHOWY,            FLAG_SHOWY  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_PBOX,             FLAG_PBOX   ,           CB_JC},  // graph EQN & PLSTAT options
@@ -146,6 +143,10 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SCALE,            FLAG_SCALE  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_VECT,             FLAG_VECT   ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_NVECT,            FLAG_NVECT  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_RMS,              FLAG_PRMS   ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_INTG,             FLAG_PINTG  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_DIFF,             FLAG_PDIFF  ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_SHADE,            FLAG_PSHADE ,           CB_JC},  // graph EQN & PLSTAT options
   {CHR_num,              FLAG_NUMLOCK     ,      CB_JC},  //
   {ITM_USERMODE,         FLAG_USER        ,      CB_JC},  //
   {ITM_SH_LONGPRESS,     FLAG_SH_LONGPRESS,      CB_JC},  //
@@ -274,6 +275,7 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_LARGELI,
   FLAG_IRFRAC,
   FLAG_CPXPLOT,
+  FLAG_IMPLOT,
   FLAG_SHOWX,
   FLAG_SHOWY,
   FLAG_PBOX,
@@ -284,6 +286,10 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_SCALE,
   FLAG_VECT,
   FLAG_NVECT,
+  FLAG_PRMS,
+  FLAG_PINTG,
+  FLAG_PDIFF,
+  FLAG_PSHADE,
   FLAG_NUMLOCK,
   FLAG_USER,
   FLAG_SH_LONGPRESS,
@@ -478,11 +484,6 @@ int8_t fnCbIsSet(int16_t item) {
                           case USER_R47fg_g:       cb_param = calcModel == param;                     break;
 
                           case JC_ORTHOGONAL_FITTING: cb_param = (orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING); break;
-
-                          case JC_DIFF:            cb_param = PLOT_DIFF;                              break;
-                          case JC_INTG:            cb_param = PLOT_INTG;                              break;
-                          case JC_RMS:             cb_param = PLOT_RMS;                               break;
-                          case JC_SHADE:           cb_param = PLOT_SHADE;                             break;
 
                           case JC_UC:              cb_param = !alphaCase;                             break;
                           case JC_SS:              cb_param = scrLock != NC_NORMAL;                   break;

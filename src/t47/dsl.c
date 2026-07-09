@@ -129,6 +129,17 @@ static int expectedScriptArgCount(int16_t index) {
 }
 
 /**
+ * Headless DSL has no GUI refresh loop, so a command that queued a plot
+ * (GRAPHMODE) would only render during snap's own redraw.  Render it now.
+ */
+static void dslRenderPendingPlot(void) {
+  if(GRAPHMODE) {
+    screenUpdatingMode = SCRUPD_AUTO;
+    refreshScreen(211);                //dsl.c owns trace id range 210..219
+  }
+}
+
+/**
  * Run one catalog function, with optional script args parsed per
  * items.c metadata.  The item index is validated, and the function
  * is called with the parsed parameter.
@@ -161,6 +172,7 @@ static int runCatalogItem(Jim_Interp *interp, int16_t index, int argArgc, Jim_Ob
     printf("Calling argless catalog function %s, index %d\n", item.itemCatalogName, index);
     fflush(stdout);
     reallyRunFunction(index, item.param);
+    dslRenderPendingPlot();
     return JIM_OK;
   }
 
@@ -177,6 +189,7 @@ static int runCatalogItem(Jim_Interp *interp, int16_t index, int argArgc, Jim_Ob
   printf("Calling catalog function %s(%s), index %d\n", item.itemCatalogName, argstr, index);
   fflush(stdout);
   reallyRunFunction(index, param);
+  dslRenderPendingPlot();
   return JIM_OK;
 }
 
@@ -501,7 +514,7 @@ static void dslFinishAssign(void) {
   catalog = CATALOG_NONE;
   screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
   screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
-  refreshScreen(103);
+  refreshScreen(210);                  //dsl.c owns trace id range 210..219
   screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
 }
 
@@ -745,6 +758,45 @@ static int readpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 }
 
 /**
+ * xportp <labelname> <filename> - Export a program to RTF (like the XPORTP menu command).
+ */
+static int xportpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  if(argc != 3) {
+    Jim_SetResultFormatted(interp, "xportp: wrong # args: expected <label> <filename>, got %d", argc - 1);
+    return JIM_ERR;
+  }
+
+  const char *labelName = Jim_String(argv[1]);
+  const char *filename = Jim_String(argv[2]);
+  char internalLabel[64];
+  static const size_t maxLabel = sizeof(internalLabel) / 2;
+
+  if(strlen(labelName) >= maxLabel) {
+    Jim_SetResultFormatted(interp, "xportp: '%s' exceeds max length %d", labelName, maxLabel);
+    return JIM_ERR;
+  }
+  utf8ToString((const uint8_t *)labelName, internalLabel);
+  calcRegister_t label = findNamedLabel(internalLabel);
+  if(label == INVALID_VARIABLE) {
+    Jim_SetResultFormatted(interp, "xportp: '%s' not found as a global label", labelName);
+    return JIM_ERR;
+  }
+
+  strncpy(_ioFileNameOverride, filename, C47_PATH_MAX - 1);
+  _ioFileNameOverride[C47_PATH_MAX - 1] = '\0';
+
+  lastErrorCode = ERROR_NONE;
+  reallyRunFunction(ITM_EXPORTP, (uint16_t)label);
+
+  if(lastErrorCode != ERROR_NONE) {
+    Jim_SetResultFormatted(interp, "xportp: export of '%s' failed: %s", labelName, errorMessages[lastErrorCode]);
+    return JIM_ERR;
+  }
+
+  return JIM_OK;
+}
+
+/**
  * xeq <labelname> - Execute a label, emulating the XEQ key action
  */
 
@@ -793,6 +845,7 @@ static int xeqCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   dynamicMenuItem = -1;  // clear stale dynamic menu context
   reallyRunFunction(ITM_XEQ, (uint16_t)label);
   waitForEngineReturn();
+  dslRenderPendingPlot();
   return JIM_OK;
 }
 
@@ -1182,6 +1235,7 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "tsvfn",  tsvfnCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "var",    varCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "xeq",    xeqCmd,    NULL, NULL);
+  Jim_CreateCommand(interp, "xportp", xportpCmd, NULL, NULL);
   // clang-format on
   if(!headlessMode) {
     // Conditionally add commands that require the GTK GUI

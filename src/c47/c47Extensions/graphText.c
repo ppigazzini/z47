@@ -550,8 +550,13 @@ void preventFilenameTimeout(void){
   /*-DMCP-*/
   /*-DMCP-*/  int16_t export_xy_to_file(float x, float y) {
   /*-DMCP-*/    char line[TMP_STR_LENGTH]; // Line buffer
+  /*-DMCP-*/    char xs[24], ys[24];
   /*-DMCP-*/    create_filename(".STAT.TSV");
-  /*-DMCP-*/    sprintf(line, "%.16e%s%.16e%s", x, CSV_TAB, y, CSV_NEWLINE);
+  /*-DMCP-*/    sci_fmt(xs, sizeof(xs), x);
+  /*-DMCP-*/    sci_fmt(ys, sizeof(ys), y);
+  /*-DMCP-*/    radixProcess(xs, xs); //radix mark setting, as REGS.TSV does
+  /*-DMCP-*/    radixProcess(ys, ys);
+  /*-DMCP-*/    sprintf(line, "%s%s%s%s", xs, CSV_TAB, ys, CSV_NEWLINE);
   /*-DMCP-*/    if(export_append_string_to_file(line, APPEND, filename_csv) != 0) {
   /*-DMCP-*/      //ERROR ALREADY ANNOUNCED
   /*-DMCP-*/      return 1;
@@ -873,8 +878,13 @@ void preventFilenameTimeout(void){
 
   int16_t export_xy_to_file(float x, float y) {
     char line[200]; // Line buffer
+    char xs[24], ys[24];
     create_filename(".STAT.TSV");
-    sprintf(line, "%.16e%s%.16e%s", x, CSV_TAB, y, CSV_NEWLINE);
+    sci_fmt(xs, sizeof(xs), x);
+    sci_fmt(ys, sizeof(ys), y);
+    radixProcess(xs, xs); //radix mark setting, as REGS.TSV does
+    radixProcess(ys, ys);
+    sprintf(line, "%s%s%s%s", xs, CSV_TAB, ys, CSV_NEWLINE);
     export_append_line(line);
     return 0;
   }
