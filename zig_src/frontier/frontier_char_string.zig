@@ -29,6 +29,7 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const conversion_name_codec = @import("conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
+const string_edit = @import("string_edit.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -1167,21 +1168,14 @@ comptime {
 // addChrBothSides
 // ---------------------------------------------------------------------------
 pub export fn addChrBothSides(t: u8, str: [*c]u8) callconv(.c) void {
-    var tt: [4]u8 = undefined;
-    tt[0] = t;
-    tt[1] = 0;
-    _ = xcopy(str + 1, str, @intCast(stringByteLength(str) + 1));
-    str[0] = t;
-    _ = strcat(str, &tt);
+    string_edit.addChrBothSides(t, str);
 }
 
 // ---------------------------------------------------------------------------
 // addStrBothSides
 // ---------------------------------------------------------------------------
 pub export fn addStrBothSides(str: [*c]u8, str_b: [*c]u8, str_e: [*c]u8) callconv(.c) void {
-    _ = xcopy(str + @as(usize, @intCast(stringByteLength(str_b))), str, @intCast(stringByteLength(str) + 1));
-    _ = xcopy(str, str_b, @intCast(stringByteLength(str_b)));
-    _ = xcopy(str + @as(usize, @intCast(stringByteLength(str))), str_e, @intCast(stringByteLength(str_e) + 1));
+    string_edit.addStrBothSides(str, str_b, str_e);
 }
 
 // ---------------------------------------------------------------------------
@@ -1214,12 +1208,5 @@ comptime {
 // findTwoChars
 // ---------------------------------------------------------------------------
 pub export fn findTwoChars(tmpString: [*c]const u8, char1: u8, char2: u8, position: *u16) callconv(.c) bool_t {
-    var i: u16 = 0;
-    while (tmpString[i] != 0 and tmpString[i + 1] != 0) : (i +%= 1) {
-        if (tmpString[i] == char1 and tmpString[i + 1] == char2) {
-            position.* = i;
-            return true;
-        }
-    }
-    return false;
+    return string_edit.findTwoChars(tmpString, char1, char2, position);
 }
