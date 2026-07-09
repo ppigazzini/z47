@@ -27,6 +27,7 @@ const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
+const conversion_name_codec = @import("conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
@@ -243,160 +244,34 @@ pub export fn charCodeHPReplacement(charCode: *u16) callconv(.c) void {
 // expandConversionName
 // ---------------------------------------------------------------------------
 pub export fn expandConversionName(msg1: [*c]u8) callconv(.c) void {
-    var i: i16 = 0;
-    var jj: i16 = 0;
-    var inStr: [51]u8 = undefined;
-    _ = xcopy(&inStr, msg1, @intCast(minI(50, stringByteLength(msg1) + 1)));
-    inStr[50] = 0;
-    msg1[0] = 0;
-    while (inStr[@intCast(i)] != 0) {
-        if ('h' == inStr[@intCast(i)] and 'k' == inStr[@intCast(i + 1)] and 'm' == inStr[@intCast(i + 2)]) {
-            msg1[@intCast(jj)] = '1';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = '0';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = '0';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = 'k';
-            jj += 1;
-            msg1[@intCast(jj)] = 'm';
-            jj += 1;
-        } else if ('/' == inStr[@intCast(i)] and 'E' == inStr[@intCast(i + 1)]) {
-            msg1[@intCast(jj)] = '/';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = 'k';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = 'W';
-            jj += 1;
-            msg1[@intCast(jj)] = 'h';
-            jj += 1;
-        } else if ('E' == inStr[@intCast(i)] and '/' == inStr[@intCast(i + 1)]) {
-            msg1[@intCast(jj)] = 'k';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = 'W';
-            jj += 1;
-            i += 1;
-            msg1[@intCast(jj)] = 'h';
-            jj += 1;
-            msg1[@intCast(jj)] = '/';
-            jj += 1;
-        } else {
-            msg1[@intCast(jj)] = inStr[@intCast(i)];
-            jj += 1;
-            i += 1;
-        }
-    }
-    msg1[@intCast(jj)] = 0;
-    jj += 1;
+    conversion_name_codec.expandConversionName(msg1);
 }
 
 // STD_* for compressConversionName.
 const STD_BINARY_ONE = "\xa0\x27";
 const STD_BINARY_ZERO = "\xa2\x0e";
 
-// ---------------------------------------------------------------------------
-// compressBinary (static) — twin of charString.c:166
-// ---------------------------------------------------------------------------
-fn compressBinary(in: [*c]const u8, out: [*c]u8, jjPtr: *i16) bool_t {
-    if ('1' == in[0] and '0' == in[1] and '0' == in[2] and ('k' == in[3] or 'm' == in[3])) {
-        var jj = jjPtr.*;
-        out[@intCast(jj)] = STD_BINARY_ONE[0];
-        jj += 1;
-        out[@intCast(jj)] = STD_BINARY_ONE[1];
-        jj += 1;
-        out[@intCast(jj)] = STD_BINARY_ZERO[0];
-        jj += 1;
-        out[@intCast(jj)] = STD_BINARY_ZERO[1];
-        jj += 1;
-        out[@intCast(jj)] = STD_BINARY_ZERO[0];
-        jj += 1;
-        out[@intCast(jj)] = STD_BINARY_ZERO[1];
-        jj += 1;
-        out[@intCast(jj)] = in[3]; // k or m for km or mile
-        jj += 1;
-        jjPtr.* = jj;
-        return true;
-    }
-    return false;
-}
+// compressBinary (charString.c:166) now lives in conversion_name_codec.zig,
+// called from that module's expandAbbreviations.
 
 // ---------------------------------------------------------------------------
 // expandAbbreviations — twin of charString.c:183
 // ---------------------------------------------------------------------------
 pub export fn expandAbbreviations(msg1: [*c]u8) callconv(.c) void {
-    expandConversionName(msg1);
-    var i: i16 = 0;
-    var jj: i16 = 0;
-    var inStr: [51]u8 = undefined;
-    _ = xcopy(&inStr, msg1, @intCast(minI(50, stringByteLength(msg1) + 1)));
-    inStr[50] = 0;
-    msg1[0] = 0;
-    while (inStr[@intCast(i)] != 0) {
-        if (compressBinary(@ptrCast(&inStr[@intCast(i)]), msg1, &jj)) {
-            i += 4;
-        } else {
-            msg1[@intCast(jj)] = inStr[@intCast(i)];
-            jj += 1;
-            i += 1;
-        }
-    }
-    msg1[@intCast(jj)] = 0;
-    jj += 1;
+    conversion_name_codec.expandAbbreviations(msg1, .{
+        .one = STD_BINARY_ONE[0..2].*,
+        .zero = STD_BINARY_ZERO[0..2].*,
+    });
 }
 
 // ---------------------------------------------------------------------------
 // compressConversionName
 // ---------------------------------------------------------------------------
 pub export fn compressConversionName(msg1: [*c]u8) callconv(.c) void {
-    var i: i16 = 0;
-    var jj: i16 = 0;
-    var inStr: [51]u8 = undefined;
-    _ = xcopy(&inStr, msg1, @intCast(minI(50, stringByteLength(msg1) + 1)));
-    inStr[50] = 0;
-    msg1[0] = 0;
-    while (inStr[@intCast(i)] != 0) {
-        if ('1' == inStr[@intCast(i)] and '0' == inStr[@intCast(i + 1)] and '0' == inStr[@intCast(i + 2)] and ('k' == inStr[@intCast(i + 3)] or 'm' == inStr[@intCast(i + 3)])) {
-            msg1[@intCast(jj)] = STD_BINARY_ONE[0];
-            jj += 1;
-            msg1[@intCast(jj)] = STD_BINARY_ONE[1];
-            jj += 1;
-            msg1[@intCast(jj)] = STD_BINARY_ZERO[0];
-            jj += 1;
-            msg1[@intCast(jj)] = STD_BINARY_ZERO[1];
-            jj += 1;
-            msg1[@intCast(jj)] = STD_BINARY_ZERO[0];
-            jj += 1;
-            msg1[@intCast(jj)] = STD_BINARY_ZERO[1];
-            jj += 1;
-            msg1[@intCast(jj)] = inStr[@intCast(i + 3)];
-            jj += 1;
-            i += 4;
-        } else if ('/' == inStr[@intCast(i)] and 'k' == inStr[@intCast(i + 1)] and 'W' == inStr[@intCast(i + 2)] and 'h' == inStr[@intCast(i + 3)]) {
-            msg1[@intCast(jj)] = '/';
-            jj += 1;
-            msg1[@intCast(jj)] = 'E';
-            jj += 1;
-            i += 4;
-        } else if ('k' == inStr[@intCast(i)] and 'W' == inStr[@intCast(i + 1)] and 'h' == inStr[@intCast(i + 2)] and '/' == inStr[@intCast(i + 3)]) {
-            msg1[@intCast(jj)] = 'E';
-            jj += 1;
-            msg1[@intCast(jj)] = '/';
-            jj += 1;
-            i += 4;
-        } else {
-            msg1[@intCast(jj)] = inStr[@intCast(i)];
-            jj += 1;
-            i += 1;
-        }
-    }
-    msg1[@intCast(jj)] = 0;
-    jj += 1;
+    conversion_name_codec.compressConversionName(msg1, .{
+        .one = STD_BINARY_ONE[0..2].*,
+        .zero = STD_BINARY_ZERO[0..2].*,
+    });
 }
 
 // ---------------------------------------------------------------------------
