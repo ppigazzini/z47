@@ -239,6 +239,11 @@ void oracle_realLog10(const real_t *x, real_t *res, realContext_t *realContext);
 #define realPower2 oracle_realPower2
 #define intPowReal oracle_intPowReal
 #define intPowCplx oracle_intPowCplx
+// intPowReal/intPowCplx are defined in 10pow.c (included below), but 2pow.c now
+// calls them, so forward-declare the renamed oracle_* symbols here to avoid the
+// implicit-declaration / conflicting-types errors (same pattern as realLog10).
+void oracle_intPowReal(void (*powf)(const real_t *x, real_t *res, realContext_t *realContext));
+void oracle_intPowCplx(const real_t *lnBase);
 #define realExp oracle_realExp
 #define fn2Pow oracle_fn2Pow
 #include "../../../src/c47/mathematics/2pow.c"
