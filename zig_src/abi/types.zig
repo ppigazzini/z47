@@ -680,6 +680,11 @@ pub const int_math = @import("int_math.zig");
 // `abi.shortint_arith.*`; frontier_integers delegates its WP34S_int* cores here.
 pub const shortint_arith = @import("shortint_arith.zig");
 
+// Shared std-only WP34S/C47 double->string display formatting (the calculator's
+// fixed-15-digit sci form + sign/separator normalization). Reachable as
+// `abi.sci_format.*`; the register-value converters delegate their buffer work here.
+pub const sci_format = @import("sci_format.zig");
+
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
 /// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.
