@@ -1569,7 +1569,7 @@ fn strBuf(comptime s: []const u8) [30]u8 {
     return b;
 }
 
-const LAST_ITEM: u16 = 2860;
+const LAST_ITEM: u16 = 2870;
 
 pub export fn getConfirmationTiId() callconv(.c) u16 {
     var id: u16 = 0;
