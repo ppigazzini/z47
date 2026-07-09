@@ -675,6 +675,11 @@ pub const fmtGBuf = float_format.fmtGBuf;
 // as `abi.int_math.*` from any owner; unit-tested under `zig build test:unit`.
 pub const int_math = @import("int_math.zig");
 
+// Shared std-only byte<->allocation-block arithmetic (round bytes up to whole
+// 4-byte blocks / multiply back). Reachable as `abi.block_math.*`; state memory
+// owners and frontier PC-memory owners delegate here.
+pub const block_math = @import("block_math.zig");
+
 // Shared std-only WP34S short-integer *mode* arithmetic (value/overflow decisions
 // under unsigned / 1's- / 2's-complement / sign-magnitude). Reachable as
 // `abi.shortint_arith.*`; frontier_integers delegates its WP34S_int* cores here.

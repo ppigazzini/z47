@@ -1,4 +1,5 @@
-const block_math = @import("block_math.zig");
+const abi = @import("abi");
+const block_math = abi.block_math;
 
 pub fn toBlocks(byte_count: usize) u16 {
     return block_math.toBlocks(u16, byte_count);

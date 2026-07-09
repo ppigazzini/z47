@@ -1780,7 +1780,7 @@ pub export fn printTraceString(string: [*c]u8, where: u16) callconv(.c) void {
     }
 }
 inline fn toBlocks(n: u32) u16 {
-    return @intCast((n + (4 - 1)) >> 2);
+    return abi.block_math.toBlocks(u16, n);
 }
 
 pub export fn printTraceTI() callconv(.c) void {

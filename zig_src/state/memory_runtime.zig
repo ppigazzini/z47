@@ -2,7 +2,7 @@ const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
 const build_options = @import("memory_build_options");
-const block_math = @import("block_math.zig");
+const block_math = abi.block_math;
 
 pub const freeMemoryRegion_t = abi.FreeMemoryRegion;
 

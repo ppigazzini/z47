@@ -1,7 +1,7 @@
 const build_options = @import("register_metadata_build_options");
 const abi = @import("abi");
 const memory_owned = @import("register_memory.zig");
-const block_math = @import("block_math.zig");
+const block_math = abi.block_math;
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
 

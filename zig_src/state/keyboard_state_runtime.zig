@@ -1,6 +1,6 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const block_math = @import("block_math.zig");
+const block_math = abi.block_math;
 pub const bool_t = bool;
 pub const is_dmcp_build = builtin.target.os.tag == .freestanding;
 

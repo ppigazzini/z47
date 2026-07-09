@@ -51,7 +51,7 @@ const allocated = if (track_allocations) struct {
 } else struct {};
 
 inline fn toBytes(blocks: u32) u32 {
-    return blocks << BPB;
+    return abi.block_math.toBytes(u32, blocks);
 }
 
 inline fn toPcMemPtr(blockAddress: u16) ?*anyopaque {
