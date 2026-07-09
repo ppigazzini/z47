@@ -739,10 +739,10 @@ const STD_NOCHAR: u8 = 1;
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1000 = constR(5380);
+const const_1000 = constR(5452);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
-const const34_0 = constR34(16200);
-const const34_1e6 = constR34(16856);
+const const34_0 = constR34(16272);
+const const34_1e6 = constR34(16928);
 
 // ---------------------------------------------------------------------------
 // font tables (real extern const structs, taken by &name).
