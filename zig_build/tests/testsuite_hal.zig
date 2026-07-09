@@ -101,7 +101,14 @@ const ioPathManualSave: c_int = 0;
 const ioPathPgmFile: c_int = 2;
 const ioPathTestPgms: c_int = 3;
 const ioPathBackup: c_int = 4;
+// Program write/export paths (WRITEP / EXPORTP / write-all), added upstream with
+// the save/restore coverage suites. io.h: SaveProgram=8, ExportRTFProgram=10,
+// SaveAllPrograms=12, ExportRTFAllPrograms=13.
+const ioPathSaveProgram: c_int = 8;
+const ioPathExportRTFProgram: c_int = 10;
 const ioPathLoadProgram: c_int = 11;
+const ioPathSaveAllPrograms: c_int = 12;
+const ioPathExportRTFAllPrograms: c_int = 13;
 const ioPathRegImport: c_int = 14;
 const ioPathRegExport: c_int = 15;
 
@@ -129,6 +136,12 @@ fn ioFileNameFromFilePath(path: c_int) ?[*:0]const u8 {
         // file so the save/load parity harness can round-trip; the real HAL would
         // resolve these to a user-chosen path via a file dialog.
         ioPathRegImport, ioPathRegExport => "c47.regs",
+        // Program write/export to a headless file so the save/restore coverage
+        // suite can round-trip (the real HAL resolves these via a file dialog).
+        ioPathSaveProgram => "c47program.bin",
+        ioPathExportRTFProgram => "c47program.rtf",
+        ioPathSaveAllPrograms => "c47programs.bin",
+        ioPathExportRTFAllPrograms => "c47programs.rtf",
         // Headless .p47 runner: return the path the harness set, if any.
         ioPathLoadProgram => z47_pgm_run_file,
         else => null,
