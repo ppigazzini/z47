@@ -43,126 +43,126 @@ pub inline fn cstRAligned(offset: u32) *const Real {
 
 // --- Seeded for the elec pilot (mathematics/elec.c) ---
 pub inline fn const1on2() *const Real {
-    return at(4580);
+    return at(4652);
 }
 pub inline fn const3() *const Real {
-    return at(5012);
+    return at(5084);
 }
 pub inline fn root3on2() *const Real {
-    return at(4772);
+    return at(4844);
 }
 pub inline fn const1e_37() *const Real {
-    return at(4436);
+    return at(4508);
 }
 
 // --- math_gd ---
 pub inline fn const39piOn2() *const Real {
-    return at(4880);
+    return at(4952);
 }
 pub inline fn const39piOn4() *const Real {
-    return at(4736);
+    return at(4808);
 }
 pub inline fn const__1() *const Real {
-    return at(4376);
+    return at(4448);
 }
 pub inline fn const_1() *const Real {
-    return at(4856);
-}
-pub inline fn const_2() *const Real {
     return at(4928);
 }
+pub inline fn const_2() *const Real {
+    return at(5000);
+}
 pub inline fn const_1on2() *const Real {
-    return at(4580);
+    return at(4652);
 }
 pub inline fn const_10() *const Real {
-    return at(5132);
+    return at(5204);
 }
 pub inline fn const_360() *const Real {
-    return at(5356);
+    return at(5428);
 }
 pub inline fn const_400() *const Real {
-    return at(5368);
+    return at(5440);
 }
 pub inline fn const1071_pi() *const Real {
-    return at(9932);
+    return at(10004);
 }
 pub inline fn const2139_2pi() *const Real {
-    return at(10656);
+    return at(10728);
 }
 pub inline fn const__4() *const Real {
-    return at(4364);
+    return at(4436);
 }
 pub inline fn const_1on4() *const Real {
-    return at(4532);
+    return at(4604);
 }
 pub inline fn const39_1on3() *const Real {
-    return at(4544);
+    return at(4616);
 }
 pub inline fn const39_pi() *const Real {
     return at(1848);
 }
 pub inline fn const39_piOn2() *const Real {
-    return at(4880);
+    return at(4952);
 }
 pub inline fn const39_piOn4() *const Real {
-    return at(4736);
+    return at(4808);
 }
 pub inline fn const75_2pi() *const Real {
-    return at(7640);
+    return at(7712);
 }
 pub inline fn const_1e_32() *const Real {
-    return at(5708);
+    return at(5780);
 }
 pub inline fn const_1e_37() *const Real {
-    return at(4436);
+    return at(4508);
 }
 pub inline fn const_1e_49() *const Real {
-    return at(4424);
+    return at(4496);
 }
 pub inline fn const__1Off() *const Real {
-    return at(4376);
+    return at(4448);
 }
 pub inline fn const_3Off() *const Real {
-    return at(5012);
+    return at(5084);
 }
 pub inline fn const_0() *const Real {
     return at(1708);
 }
 pub inline fn const_1on10() *const Real {
-    return at(4520);
+    return at(4592);
 }
 pub inline fn const_60() *const Real {
-    return at(5296);
+    return at(5368);
 }
 pub inline fn const_100() *const Real {
-    return at(7532);
+    return at(7604);
 }
 pub inline fn const_3() *const Real {
-    return at(5012);
+    return at(5084);
 }
 pub inline fn const_4() *const Real {
-    return at(5024);
+    return at(5096);
 }
 pub inline fn const_5() *const Real {
-    return at(5072);
+    return at(5144);
 }
 pub inline fn const_8() *const Real {
-    return at(5108);
+    return at(5180);
 }
 pub inline fn const_24() *const Real {
-    return at(5168);
+    return at(5240);
 }
 pub inline fn const_90() *const Real {
-    return at(7544);
+    return at(7616);
 }
 pub inline fn const75_piOn2() *const Real {
-    return at(7472);
+    return at(7544);
 }
 pub inline fn const39_gammaEM() *const Real {
     return at(1256);
 }
 pub inline fn const39_egamma() *const Real {
-    return at(4592);
+    return at(4664);
 }
 pub inline fn const_NaN() *const Real {
     return at(812);
@@ -171,205 +171,205 @@ pub inline fn const39_2pi() *const Real {
     return at(1812);
 }
 pub inline fn const39_ln2piOn2() *const Real {
-    return at(4820);
+    return at(4892);
 }
 pub inline fn const_12() *const Real {
-    return at(5144);
+    return at(5216);
 }
 pub inline fn const_1260() *const Real {
-    return at(5408);
+    return at(5480);
 }
 pub inline fn const_1680() *const Real {
-    return at(5420);
+    return at(5492);
 }
 pub inline fn const39_root3on2() *const Real {
-    return at(4772);
+    return at(4844);
 }
 pub inline fn const_9() *const Real {
-    return at(5120);
+    return at(5192);
 }
 pub inline fn const_54() *const Real {
-    return at(5248);
+    return at(5320);
 }
 pub inline fn const_2916() *const Real {
-    return at(5432);
+    return at(5504);
 }
 pub inline fn const_1e_6() *const Real {
-    return at(4508);
+    return at(4580);
 }
 pub inline fn const_1e_30() *const Real {
-    return at(4460);
+    return at(4532);
 }
 pub inline fn const_1e_34() *const Real {
-    return at(4448);
+    return at(4520);
 }
 pub inline fn const_1e_16() *const Real {
-    return at(4484);
+    return at(4556);
 }
 pub inline fn const39_ln10() *const Real {
-    return at(4940);
+    return at(5012);
 }
 pub inline fn const_7() *const Real {
-    return at(5096);
+    return at(5168);
 }
 pub inline fn const_1e_6143() *const Real {
-    return at(5840);
+    return at(5912);
 }
 pub inline fn const_86400() *const Real {
-    return at(5524);
+    return at(5596);
 }
 pub inline fn const34_43200() *align(1) const Real34 {
-    return at34(16776);
+    return at34(16848);
 }
 pub inline fn const34_86400() *align(1) const Real34 {
-    return at34(16808);
+    return at34(16880);
 }
 pub inline fn const34_2() *align(1) const Real34 {
-    return at34(16328);
+    return at34(16400);
 }
 pub inline fn const34_28() *align(1) const Real34 {
-    return at34(16488);
+    return at34(16560);
 }
 pub inline fn const34_400() *align(1) const Real34 {
-    return at34(16616);
+    return at34(16688);
 }
 pub inline fn const34__4712() *align(1) const Real34 {
-    return at34(16216);
+    return at34(16288);
 }
 pub inline fn const34_1() *align(1) const Real34 {
-    return at34(16312);
+    return at34(16384);
 }
 pub inline fn const34_31() *align(1) const Real34 {
-    return at34(16504);
+    return at34(16576);
 }
 pub inline fn const34_12() *align(1) const Real34 {
-    return at34(16440);
+    return at34(16512);
 }
 pub inline fn const34_14() *align(1) const Real34 {
-    return at34(16456);
+    return at34(16528);
 }
 pub inline fn const34_4800() *align(1) const Real34 {
-    return at34(16712);
+    return at34(16784);
 }
 pub inline fn const34_1461() *align(1) const Real34 {
-    return at34(16664);
+    return at34(16736);
 }
 pub inline fn const34_4() *align(1) const Real34 {
-    return at34(16360);
+    return at34(16432);
 }
 pub inline fn const34_367() *align(1) const Real34 {
-    return at34(16600);
+    return at34(16672);
 }
 pub inline fn const34_4900() *align(1) const Real34 {
-    return at34(16728);
+    return at34(16800);
 }
 pub inline fn const34_100() *align(1) const Real34 {
-    return at34(16552);
+    return at34(16624);
 }
 pub inline fn const34_3() *align(1) const Real34 {
-    return at34(16344);
+    return at34(16416);
 }
 pub inline fn const34_9() *align(1) const Real34 {
-    return at34(16408);
+    return at34(16480);
 }
 pub inline fn const34_7() *align(1) const Real34 {
-    return at34(16392);
+    return at34(16464);
 }
 pub inline fn const34_5001() *align(1) const Real34 {
-    return at34(16744);
+    return at34(16816);
 }
 pub inline fn const34_275() *align(1) const Real34 {
-    return at34(16584);
+    return at34(16656);
 }
 pub inline fn const34_1729777() *align(1) const Real34 {
-    return at34(16872);
+    return at34(16944);
 }
 pub inline fn const34_1401() *align(1) const Real34 {
-    return at34(16648);
+    return at34(16720);
 }
 pub inline fn const34_274277() *align(1) const Real34 {
-    return at34(16840);
+    return at34(16912);
 }
 pub inline fn const34_146097() *align(1) const Real34 {
-    return at34(16824);
+    return at34(16896);
 }
 pub inline fn const34_38() *align(1) const Real34 {
-    return at34(16520);
+    return at34(16592);
 }
 pub inline fn const34_153() *align(1) const Real34 {
-    return at34(16568);
+    return at34(16640);
 }
 pub inline fn const34_5() *align(1) const Real34 {
-    return at34(16376);
+    return at34(16448);
 }
 pub inline fn const34_4716() *align(1) const Real34 {
-    return at34(16696);
+    return at34(16768);
 }
 pub inline fn const34_1on2() *align(1) const Real34 {
-    return at34(16296);
+    return at34(16368);
 }
 pub inline fn const34_24() *align(1) const Real34 {
-    return at34(16472);
+    return at34(16544);
 }
 pub inline fn const34_3600() *align(1) const Real34 {
-    return at34(16680);
+    return at34(16752);
 }
 pub inline fn const34_60() *align(1) const Real34 {
-    return at34(16536);
+    return at34(16608);
 }
 pub inline fn const34_maxDate() *align(1) const Real34 {
-    return at34(16904);
+    return at34(16976);
 }
 pub inline fn const34_maxTime() *align(1) const Real34 {
-    return at34(16920);
+    return at34(16992);
 }
 pub inline fn const34_1e6() *align(1) const Real34 {
-    return at34(16856);
+    return at34(16928);
 }
 pub inline fn const34_1on10() *align(1) const Real34 {
-    return at34(16280);
+    return at34(16352);
 }
 pub inline fn const34_32075() *align(1) const Real34 {
-    return at34(16760);
+    return at34(16832);
 }
 pub inline fn const34_65535() *align(1) const Real34 {
-    return at34(16792);
+    return at34(16864);
 }
 pub inline fn const_2p32() *const Real {
-    return at(5548);
+    return at(5620);
 }
 pub inline fn const34_2p32() *align(1) const Real34 {
-    return at34(16888);
+    return at34(16960);
 }
 pub inline fn const6147_2pi() *const Real {
-    return at(12092);
+    return at(12164);
 }
 pub inline fn const_2p64() *const Real {
-    return at(5660);
+    return at(5732);
 }
 pub inline fn const34_1e_4() *align(1) const Real34 {
-    return at34(16264);
+    return at34(16336);
 }
 pub inline fn const_2p63() *const Real {
-    return at(5636);
+    return at(5708);
 }
 pub inline fn const34_0() *align(1) const Real34 {
-    return at34(16200);
+    return at34(16272);
 }
 pub inline fn const_3on2() *const Real {
-    return at(4868);
+    return at(4940);
 }
 pub inline fn const_9999() *const Real {
-    return at(5496);
+    return at(5568);
 }
 pub inline fn const39_ln2() *const Real {
-    return at(4628);
+    return at(4700);
 }
 pub inline fn q16200() *align(1) const Real34 {
-    return at34(16200);
+    return at34(16272);
 }
 pub inline fn q16312() *align(1) const Real34 {
-    return at34(16312);
+    return at34(16384);
 }
 pub inline fn c1848() *const Real {
     return at(1848);
@@ -381,202 +381,202 @@ pub inline fn c1696() *const Real {
     return at(1696);
 }
 pub inline fn q16264() *align(1) const Real34 {
-    return at34(16264);
+    return at34(16336);
 }
 pub inline fn q16280() *align(1) const Real34 {
-    return at34(16280);
+    return at34(16352);
 }
 pub inline fn q16296() *align(1) const Real34 {
-    return at34(16296);
+    return at34(16368);
 }
 pub inline fn q16328() *align(1) const Real34 {
-    return at34(16328);
+    return at34(16400);
 }
 pub inline fn q16344() *align(1) const Real34 {
-    return at34(16344);
+    return at34(16416);
 }
 pub inline fn q16392() *align(1) const Real34 {
-    return at34(16392);
+    return at34(16464);
 }
 pub inline fn q16408() *align(1) const Real34 {
-    return at34(16408);
+    return at34(16480);
 }
 pub inline fn q16472() *align(1) const Real34 {
-    return at34(16472);
+    return at34(16544);
 }
 pub inline fn c1708() *const Real {
     return at(1708);
 }
 pub inline fn c4376() *const Real {
-    return at(4376);
+    return at(4448);
 }
 pub inline fn c4436() *const Real {
-    return at(4436);
+    return at(4508);
 }
 pub inline fn c4520() *const Real {
-    return at(4520);
+    return at(4592);
 }
 pub inline fn c4580() *const Real {
-    return at(4580);
+    return at(4652);
 }
 pub inline fn c4856() *const Real {
-    return at(4856);
+    return at(4928);
 }
 pub inline fn c7532() *const Real {
-    return at(7532);
+    return at(7604);
 }
 pub inline fn c812() *const Real {
     return at(812);
 }
 pub inline fn q16568() *align(1) const Real34 {
-    return at34(16568);
+    return at34(16640);
 }
 pub inline fn c4928() *const Real {
-    return at(4928);
+    return at(5000);
 }
 pub inline fn c4484() *const Real {
-    return at(4484);
+    return at(4556);
 }
 pub inline fn c5708() *const Real {
-    return at(5708);
+    return at(5780);
 }
 pub inline fn c5568() *const Real {
-    return at(5568);
+    return at(5640);
 }
 pub inline fn c4508() *const Real {
-    return at(4508);
+    return at(4580);
 }
 pub inline fn c4544() *const Real {
-    return at(4544);
+    return at(4616);
 }
 pub inline fn c5012() *const Real {
-    return at(5012);
+    return at(5084);
 }
 pub inline fn c4532() *const Real {
-    return at(4532);
+    return at(4604);
 }
 pub inline fn c5180() *const Real {
-    return at(5180);
+    return at(5252);
 }
 pub inline fn c7628() *const Real {
-    return at(7628);
+    return at(7700);
 }
 pub inline fn c5236() *const Real {
-    return at(5236);
+    return at(5308);
 }
 pub inline fn c7616() *const Real {
-    return at(7616);
+    return at(7688);
 }
 pub inline fn c7544() *const Real {
-    return at(7544);
+    return at(7616);
 }
 pub inline fn c7460() *const Real {
-    return at(7460);
+    return at(7532);
 }
 pub inline fn c7448() *const Real {
-    return at(7448);
+    return at(7520);
 }
 pub inline fn c5344() *const Real {
-    return at(5344);
+    return at(5416);
 }
 pub inline fn c5356() *const Real {
-    return at(5356);
+    return at(5428);
 }
 pub inline fn c5368() *const Real {
-    return at(5368);
+    return at(5440);
 }
 pub inline fn c5460() *const Real {
-    return at(5460);
+    return at(5532);
 }
 pub inline fn c5696() *const Real {
-    return at(5696);
+    return at(5768);
 }
 pub inline fn c5684() *const Real {
-    return at(5684);
+    return at(5756);
 }
 pub inline fn c4472() *const Real {
-    return at(4472);
+    return at(4544);
 }
 pub inline fn c4424() *const Real {
-    return at(4424);
+    return at(4496);
 }
 pub inline fn c5192() *const Real {
-    return at(5192);
+    return at(5264);
 }
 pub inline fn c1812() *const Real {
     return at(1812);
 }
 pub inline fn c4880() *const Real {
-    return at(4880);
+    return at(4952);
 }
 pub inline fn c4736() *const Real {
-    return at(4736);
+    return at(4808);
 }
 pub inline fn c4976() *const Real {
-    return at(4976);
+    return at(5048);
 }
 pub inline fn c4628() *const Real {
-    return at(4628);
-}
-pub inline fn c4940() *const Real {
-    return at(4940);
-}
-pub inline fn c4700() *const Real {
     return at(4700);
 }
+pub inline fn c4940() *const Real {
+    return at(5012);
+}
+pub inline fn c4700() *const Real {
+    return at(4772);
+}
 pub inline fn c4592() *const Real {
-    return at(4592);
+    return at(4664);
 }
 pub inline fn c176() *const Real {
     return at(176);
 }
 pub inline fn c7388() *const Real {
-    return at(7388);
+    return at(7460);
 }
 pub inline fn c7472() *const Real {
-    return at(7472);
+    return at(7544);
 }
 pub inline fn c7556() *const Real {
-    return at(7556);
+    return at(7628);
 }
 pub inline fn c7700() *const Real {
-    return at(7700);
+    return at(7772);
 }
 pub inline fn c9932() *const Real {
-    return at(9932);
+    return at(10004);
 }
 pub inline fn c9208() *const Real {
-    return at(9208);
+    return at(9280);
 }
 pub inline fn c8484() *const Real {
-    return at(8484);
+    return at(8556);
 }
 pub inline fn c7760() *const Real {
-    return at(7760);
+    return at(7832);
 }
 pub inline fn c6068() *const Real {
-    return at(6068);
+    return at(6140);
 }
 pub inline fn c12092() *const Real {
-    return at(12092);
+    return at(12164);
 }
 pub inline fn c5308() *const Real {
-    return at(5308);
+    return at(5380);
 }
 pub inline fn c5260() *const Real {
-    return at(5260);
+    return at(5332);
 }
 pub inline fn c4808() *const Real {
-    return at(4808);
+    return at(4880);
 }
 pub inline fn c5296() *const Real {
-    return at(5296);
+    return at(5368);
 }
 pub inline fn c5448() *const Real {
-    return at(5448);
+    return at(5520);
 }
 pub inline fn c5828() *const Real {
-    return at(5828);
+    return at(5900);
 }
 pub inline fn c2628() *const Real {
     return at(2628);
@@ -588,8 +588,8 @@ pub inline fn c2648() *const Real {
     return at(2648);
 }
 pub inline fn q16552() *align(1) const Real34 {
-    return at34(16552);
+    return at34(16624);
 }
 pub inline fn q16632() *align(1) const Real34 {
-    return at34(16632);
+    return at34(16704);
 }
