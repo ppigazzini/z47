@@ -76,6 +76,25 @@ pub fn decodeGlyphAt(str: [*]const u8, pos: usize) u16 {
     return char_code;
 }
 
+/// Decode the glyph char-code at `offset` (or from 0 when `offset` is null) and
+/// advance `offset` past it -- charCodeFromString in charString.c. Same 1-or-2
+/// byte decode as decodeGlyphAt (marker bit kept), but it also reports how many
+/// bytes it consumed by writing the new position back through `offset`. The
+/// wrapping u16 index arithmetic matches the owner.
+pub fn charCodeFromString(ch: [*]const u8, offset: ?*u16) u16 {
+    var loffset: u16 = if (offset) |o| o.* else 0;
+    var char_code: u16 = ch[loffset];
+    loffset +%= 1;
+    if (char_code & 0x0080 != 0) {
+        char_code = (char_code << 8) | ch[loffset];
+        loffset +%= 1;
+    }
+    if (offset) |o| {
+        o.* = loffset;
+    }
+    return char_code;
+}
+
 /// Signed difference of two lead glyph codes (compareChar from sort.c). NOTE the
 /// decode here STRIPS the marker bit (`& 0x7f`) -- deliberately different from
 /// decodeGlyphAt, which keeps it; the two encode distinct orderings in sort.c.
@@ -148,4 +167,35 @@ test "compareLeadChar: the two-byte decode strips the marker bit" {
     const sup_a = [_]u8{ 0xa4, 0xb6 }; // (0x24 << 8) | 0xb6 = 0x24b6
     const ascii_a = [_]u8{'A'}; // 0x41
     try testing.expectEqual(@as(i32, 0x24b6 - 0x41), compareLeadChar(&sup_a, &ascii_a));
+}
+
+test "charCodeFromString: single-byte ASCII advances the offset by one" {
+    const s = [_]u8{ 'A', 'B', 0 };
+    var off: u16 = 0;
+    try testing.expectEqual(@as(u16, 0x41), charCodeFromString(&s, &off));
+    try testing.expectEqual(@as(u16, 1), off);
+}
+
+test "charCodeFromString: a two-byte glyph keeps the marker bit and advances by two" {
+    const s = [_]u8{ 0xa0, 0x80, 0 };
+    var off: u16 = 0;
+    try testing.expectEqual(@as(u16, 0xa080), charCodeFromString(&s, &off));
+    try testing.expectEqual(@as(u16, 2), off);
+}
+
+test "charCodeFromString: a null offset decodes from position zero without reporting" {
+    const s = [_]u8{ 0xa4, 0x9c, 0 };
+    try testing.expectEqual(@as(u16, 0xa49c), charCodeFromString(&s, null));
+}
+
+test "charCodeFromString: sequential decode walks glyph by glyph" {
+    // 'x' (1 byte) then a two-byte glyph then '9' (1 byte).
+    const s = [_]u8{ 'x', 0xa0, 0x81, '9', 0 };
+    var off: u16 = 0;
+    try testing.expectEqual(@as(u16, 0x78), charCodeFromString(&s, &off));
+    try testing.expectEqual(@as(u16, 1), off);
+    try testing.expectEqual(@as(u16, 0xa081), charCodeFromString(&s, &off));
+    try testing.expectEqual(@as(u16, 3), off);
+    try testing.expectEqual(@as(u16, 0x39), charCodeFromString(&s, &off));
+    try testing.expectEqual(@as(u16, 4), off);
 }
