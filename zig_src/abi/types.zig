@@ -690,6 +690,11 @@ pub const sci_format = @import("sci_format.zig");
 // `abi.glyph_code.*`; frontier_sort delegates its compareChar/compareString cores.
 pub const glyph_code = @import("glyph_code.zig");
 
+// Shared std-only complex-number text normalization ("(3-i4)"/"+3+i4"/"i4"/stock
+// "re im" -> stock "re im"). Reachable as `abi.complex_text.*`; the state restore
+// codec delegates standardiseComplex here.
+pub const complex_text = @import("complex_text.zig");
+
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
 /// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.
