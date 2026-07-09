@@ -1222,48 +1222,22 @@ jobs:
         shell: msys2 {0}
         run: |
           set -euo pipefail
-          retry_once() {
-            "$@" || "$@"
-          }
           prefix="$(cygpath -u "$RUNNER_TEMP")/xlsxio-prefix"
           export PATH="$prefix/bin:$PATH"
-          zig build logical_shortint_parity
-          zig build rotate_bits_parity
-          zig build logical_boolean_ops_suite
-          zig build stack_state_parity
-          retry_once zig build register_metadata_parity
-          zig build flags_parity
-          zig build memory_parity
-          zig build program_serialization_parity
-          zig build calc_state_parity
-          zig build math_command_wrappers_parity
-          zig build math_random_parity
-          # Format-equivalence oracle (M24): every migrated sprintf->std.fmt
-          # translation must stay byte-identical to libc.
-          zig build format_parity
-          # Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig
-          # typed accessor's blob offset must match the C constantPointers.h ground
-          # truth, so the offset-crash class stays caught after each pin advance.
-          # constantPointers.h is a gitignored generateConstants output, so refresh
-          # it into src/generated first.
+          # The platform-independent parity oracles -- the value oracles
+          # (logical_shortint/rotate_bits/logical_boolean_ops/stack_state/
+          # register_metadata/flags/memory/program_serialization/calc_state/
+          # math_command_wrappers/math_random/keyboard_state), the format-equivalence
+          # oracle, and the constant-offset / constant-parity / item-table audits --
+          # compare Zig-computed values or Zig-vs-C header constants, which are
+          # identical on every target, and already run on the blocking Linux host
+          # lane. Re-running them here added minutes for zero extra coverage. This
+          # lane keeps only what is genuinely Windows-specific: generate the constants
+          # blob the app build reads, the ABI struct-layout oracle (the one check with
+          # real per-target ABI sensitivity), the native Windows app build, the
+          # testSuite (Windows runtime behavior), and the generated outputs.
           zig build constants
-          python3 .github/project/check-constant-offsets.py
-          # Constant-parity audit: every defines.h/enum value an owner hardcodes
-          # (ITM_*, ERROR_*, FLAG_*, dt*, ...) must match upstream C. Catches the
-          # stale-mirror class (TM_CMP was 10021, dtReal34 was 0) that the
-          # behavioral constants_parity oracle does not cover.
-          python3 .github/project/audit-constant-parity.py
-          # Item-table parity audit: frontier_items.zig's hand-mirrored indexOfItems
-          # (2861 rows of param/name/tamMinMax/status) must match the C-compiled
-          # items.c byte-for-byte. Catches the exact class that crashed a pin advance
-          # (LAST_ITEM grew, the Zig table went out of bounds) before it can merge.
-          python3 .github/project/audit-item-table-parity.py
-          # abi struct-layout oracle (seam-and-core harness): the abi/types.zig
-          # numeric mirrors must match the translate-c'd upstream decNumber-family
-          # layout, so a wrong layout (silent-corruption class) fails here. Gates
-          # green before abi/types.zig is generated; adjudicates the seam after.
           zig build abi-layout-parity
-          zig build keyboard_state_parity
           zig build both
           zig build test
           zig build generated
