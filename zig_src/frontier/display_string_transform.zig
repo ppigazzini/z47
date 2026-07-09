@@ -34,6 +34,24 @@ fn setCStr(dst: [*]u8, comptime src: []const u8) void {
     dst[src.len] = 0;
 }
 
+/// First occurrence of `c` in the NUL-terminated `s`, or null (a std-only
+/// strchr, searching only up to the terminator).
+fn findChar(s: [*]u8, c: u8) ?[*]u8 {
+    var p = s;
+    while (p[0] != 0) : (p += 1) {
+        if (p[0] == c) return p;
+    }
+    return null;
+}
+
+/// Copy `n` bytes from `src` to `dst` low-to-high. Every caller here shifts a
+/// tail leftward (dst <= src), so a forward copy is the overlap-safe move --
+/// the std-only equivalent of the memmove the owner used.
+fn memmoveLeft(dst: [*]u8, src: [*]const u8, n: usize) void {
+    var i: usize = 0;
+    while (i < n) : (i += 1) dst[i] = src[i];
+}
+
 /// radixProcess: copy `in` to `out`, replacing ',' or '.' with `radix_mark`
 /// and '#' with ';'. Every input byte yields exactly one output byte, so it is
 /// safe to call in place (out and in may alias the same buffer): the write
@@ -148,6 +166,55 @@ pub fn nanCheck(s: [*]u8) void {
     }
 }
 
+/// cleanupTrailingZeros: normalise a formatted number in place. When an
+/// exponent is present (lowercase 'e' is first upcased to 'E'): drop trailing
+/// mantissa zeros between '.' and 'E' (removing the '.' too if every fractional
+/// digit was zero), then drop leading zeros from the exponent digits (after an
+/// optional sign). When no exponent is present: drop trailing fractional zeros,
+/// removing the '.' when the whole fraction was zero. Pointer walks and the
+/// left-shifting splices mirror the owner byte-for-byte.
+pub fn cleanupTrailingZeros(str: [*]u8) void {
+    var e_pos = findChar(str, 'E');
+    if (e_pos == null) e_pos = findChar(str, 'e');
+    if (e_pos) |e| {
+        if (e[0] == 'e') e[0] = 'E';
+    }
+    if (e_pos) |e| {
+        if (findChar(str, '.')) |dp| {
+            if (@intFromPtr(dp) < @intFromPtr(e)) {
+                var p = e - 1;
+                while (@intFromPtr(p) > @intFromPtr(dp) and p[0] == '0') p -= 1;
+                if (@intFromPtr(p) == @intFromPtr(dp)) {
+                    memmoveLeft(dp, e, byteLen(e) + 1);
+                } else {
+                    memmoveLeft(p + 1, e, byteLen(e) + 1);
+                }
+            }
+        }
+        if (findChar(str, 'E')) |e2| {
+            var exp_start = e2 + 1;
+            if (exp_start[0] == '+') exp_start += 1;
+            if (exp_start[0] == '-') exp_start += 1;
+            while (exp_start[0] == '0' and (exp_start + 1)[0] != 0) {
+                memmoveLeft(exp_start, exp_start + 1, byteLen(exp_start + 1) + 1);
+            }
+        }
+    } else {
+        if (findChar(str, '.')) |dp| {
+            const len: i32 = @intCast(byteLen(str));
+            var i: i32 = len - 1;
+            const dpIdx: i32 = @intCast(@intFromPtr(dp) - @intFromPtr(str));
+            while (i > dpIdx and str[@intCast(i)] == '0') {
+                str[@intCast(i)] = 0;
+                i -= 1;
+            }
+            if (i == dpIdx) {
+                str[@intCast(i)] = 0;
+            }
+        }
+    }
+}
+
 const testing = std.testing;
 
 test "radixProcess substitutes radix mark and hash, NUL-terminates" {
@@ -236,4 +303,50 @@ test "nanCheck does not rewrite a bracketed nan with nothing after the run" {
     var s = "(nan".*;
     nanCheck(&s);
     try testing.expectEqualStrings("(nan", std.mem.sliceTo(&s, 0));
+}
+
+fn cleanupCase(comptime in: []const u8) [in.len + 1]u8 {
+    var buf: [in.len + 1]u8 = undefined;
+    for (in, 0..) |c, i| buf[i] = c;
+    buf[in.len] = 0;
+    cleanupTrailingZeros(&buf);
+    return buf;
+}
+
+test "cleanupTrailingZeros strips fractional zeros without an exponent" {
+    var a = cleanupCase("1.2300");
+    try testing.expectEqualStrings("1.23", std.mem.sliceTo(&a, 0));
+    var b = cleanupCase("5.0");
+    try testing.expectEqualStrings("5", std.mem.sliceTo(&b, 0));
+    var c = cleanupCase("1.000");
+    try testing.expectEqualStrings("1", std.mem.sliceTo(&c, 0));
+}
+
+test "cleanupTrailingZeros leaves an integer or a clean fraction alone" {
+    var a = cleanupCase("123");
+    try testing.expectEqualStrings("123", std.mem.sliceTo(&a, 0));
+    var b = cleanupCase("1.23");
+    try testing.expectEqualStrings("1.23", std.mem.sliceTo(&b, 0));
+}
+
+test "cleanupTrailingZeros strips mantissa zeros before an exponent" {
+    var a = cleanupCase("1.2300E5");
+    try testing.expectEqualStrings("1.23E5", std.mem.sliceTo(&a, 0));
+}
+
+test "cleanupTrailingZeros drops the dot when the whole fraction is zero" {
+    var a = cleanupCase("1.000E5");
+    try testing.expectEqualStrings("1E5", std.mem.sliceTo(&a, 0));
+}
+
+test "cleanupTrailingZeros strips leading exponent zeros after a sign" {
+    var a = cleanupCase("1E05");
+    try testing.expectEqualStrings("1E5", std.mem.sliceTo(&a, 0));
+    var b = cleanupCase("1E-005");
+    try testing.expectEqualStrings("1E-5", std.mem.sliceTo(&b, 0));
+}
+
+test "cleanupTrailingZeros upcases a lowercase e and then cleans" {
+    var a = cleanupCase("1.20e3");
+    try testing.expectEqualStrings("1.2E3", std.mem.sliceTo(&a, 0));
 }
