@@ -29,6 +29,7 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const conversion_name_codec = @import("conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
+const glyph_export = @import("glyph_export.zig");
 const glyph_text_lookup = @import("glyph_text_lookup.zig");
 const string_edit = @import("string_edit.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -996,6 +997,19 @@ pub export fn stringToASCII(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) v
         return;
     }
 
+    const ranges = glyph_export.AsciiRanges{
+        .sup_digit = .{ .lead = STD_SUP_0[0], .lo = STD_SUP_0[1], .hi = STD_SUP_9[1] },
+        .sup_lower = .{ .lead = STD_SUP_a[0], .lo = STD_SUP_a[1], .hi = STD_SUP_z[1] },
+        .sup_upper = .{ .lead = STD_SUP_A[0], .lo = STD_SUP_A[1], .hi = STD_SUP_Z[1] },
+        .sub_digit = .{ .lead = STD_SUB_0[0], .lo = STD_SUB_0[1], .hi = STD_SUB_9[1] },
+        .sub_lower = .{ .lead = STD_SUB_a[0], .lo = STD_SUB_a[1], .hi = STD_SUB_z[1] },
+        .sub_upper = .{ .lead = STD_SUB_A[0], .lo = STD_SUB_A[1], .hi = STD_SUB_Z[1] },
+        .base_low = .{ .lead = STD_BASE_1[0], .lo = STD_BASE_1[1], .hi = STD_BASE_9[1] },
+        .base_high = .{ .lead = STD_BASE_10[0], .lo = STD_BASE_10[1], .hi = STD_BASE_16[1] },
+        .single_quote = .{ .lead = STD_LEFT_SINGLE_QUOTE[0], .lo = STD_LEFT_SINGLE_QUOTE[1], .hi = STD_SINGLE_HIGH_QUOTE[1] },
+        .double_quote = .{ .lead = STD_LEFT_DOUBLE_QUOTE[0], .lo = STD_LEFT_DOUBLE_QUOTE[1], .hi = STD_DOUBLE_HIGH_QUOTE[1] },
+    };
+
     var ii: i16 = 0;
     while (ii < len) : (ii += 1) {
         if (str[0] & 0x80 != 0) {
@@ -1012,34 +1026,12 @@ pub export fn stringToASCII(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) v
                     ascii += 1;
                 }
                 ascii -= 1;
-            } else if (a1 == STD_SUP_0[0] and (a2 >= STD_SUP_0[1] and a2 <= STD_SUP_9[1])) {
-                ascii[0] = ('0' +% a2) -% STD_SUP_0[1];
-            } else if (a1 == STD_SUP_a[0] and (a2 >= STD_SUP_a[1] and a2 <= STD_SUP_z[1])) {
-                ascii[0] = ('a' +% a2) -% STD_SUP_a[1];
-            } else if (a1 == STD_SUP_A[0] and (a2 >= STD_SUP_A[1] and a2 <= STD_SUP_Z[1])) {
-                ascii[0] = ('A' +% a2) -% STD_SUP_A[1];
-            } else if (a1 == STD_SUB_0[0] and (a2 >= STD_SUB_0[1] and a2 <= STD_SUB_9[1])) {
-                ascii[0] = ('0' +% a2) -% STD_SUB_0[1];
-            } else if (a1 == STD_SUB_a[0] and (a2 >= STD_SUB_a[1] and a2 <= STD_SUB_z[1])) {
-                ascii[0] = ('a' +% a2) -% STD_SUB_a[1];
-            } else if (a1 == STD_SUB_A[0] and (a2 >= STD_SUB_A[1] and a2 <= STD_SUB_Z[1])) {
-                ascii[0] = ('A' +% a2) -% STD_SUB_A[1];
-            } else if (a1 == STD_BASE_1[0] and (a2 >= STD_BASE_1[1] and a2 <= STD_BASE_9[1])) {
-                ascii[0] = '#';
-                ascii += 1;
-                ascii[0] = ('1' +% a2) -% STD_BASE_1[1];
-            } else if (a1 == STD_BASE_10[0] and (a2 >= STD_BASE_10[1] and a2 <= STD_BASE_16[1])) {
-                ascii[0] = '#';
-                ascii += 1;
-                ascii[0] = '1';
-                ascii += 1;
-                ascii[0] = ('0' +% a2) -% STD_BASE_10[1];
+            } else if (glyph_export.asciiFromGlyph(a1, a2, ascii, ranges)) |n| {
+                // asciiFromGlyph wrote n bytes; the trailing `ascii += 1` below
+                // advances the last one, so consume the other n-1 here.
+                ascii += n - 1;
             } else if (a1 >= 0x81 and a1 <= 0x83) {
                 ascii[0] = '_';
-            } else if (a1 == STD_LEFT_SINGLE_QUOTE[0] and (a2 >= STD_LEFT_SINGLE_QUOTE[1] and a2 <= STD_SINGLE_HIGH_QUOTE[1])) {
-                ascii[0] = '\'';
-            } else if (a1 == STD_LEFT_DOUBLE_QUOTE[0] and (a2 >= STD_LEFT_DOUBLE_QUOTE[1] and a2 <= STD_DOUBLE_HIGH_QUOTE[1])) {
-                ascii[0] = '"';
             } else {
                 if (comptime !dmcp_build) {
                     _ = printf("Not decoded, replace with _: --a1=%u--a2=%u\n", @as(c_uint, a1), @as(c_uint, a2));
