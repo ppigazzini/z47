@@ -121,6 +121,7 @@ const frontier_plotstat = @import("frontier_plotstat.zig"); // M-callconv: Zig-t
 const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
 const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
 const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const register_data_type = @import("register_data_type.zig");
 const frontier_screen_snap = @import("frontier_screen_snap.zig"); // M-callconv: Zig-to-Zig
 const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
@@ -407,10 +408,7 @@ extern fn getRegisterDataType(regist: i16) u32;
 extern var numberOfPrograms: u16;
 
 fn isPrintableScalarType(dt: u32) bool {
-    return switch (dt) {
-        dtLongInteger, dtReal34, dtShortInteger, dtString, dtDate, dtTime => true,
-        else => false,
-    };
+    return register_data_type.isPrintableScalarType(dt);
 }
 
 pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {

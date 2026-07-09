@@ -1,5 +1,6 @@
 const std = @import("std");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const register_data_type = @import("register_data_type.zig");
 const frontier_graph_text = @import("frontier_graph_text.zig"); // M-callconv: Zig-to-Zig
 const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
 const frontier_textfiles = @import("frontier_textfiles.zig"); // M-callconv: Zig-to-Zig
@@ -319,10 +320,7 @@ const PrintAllRegsRunner = struct {
 };
 
 fn isPrintableScalarType(dt: u32) bool {
-    return switch (dt) {
-        dtLongInteger, dtReal34, dtShortInteger, dtString, dtDate, dtTime => true,
-        else => false,
-    };
+    return register_data_type.isPrintableScalarType(dt);
 }
 
 fn printAllRegsPrintRangeOrReturn(first: u16, last: u16) bool {

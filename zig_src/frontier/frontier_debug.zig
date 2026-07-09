@@ -20,6 +20,7 @@
 
 const abi = @import("abi");
 const std = @import("std");
+const register_data_type = @import("register_data_type.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -203,10 +204,7 @@ pub export const typeName linksection(code_section) = [7][11][24]u8{
 // getDataTypeName
 // ---------------------------------------------------------------------------
 fn dataTypeNameKnown(dt: u32) bool {
-    return switch (dt) {
-        dtLongInteger, dtTime, dtDate, dtString, dtReal34Matrix, dtComplex34Matrix, dtShortInteger, dtReal34, dtComplex34, dtConfig => true,
-        else => false,
-    };
+    return register_data_type.dataTypeNameKnown(dt);
 }
 
 pub export fn getDataTypeName(dt: u16, article: bool_t, padWithBlanks: bool_t) [*c]const u8 {
