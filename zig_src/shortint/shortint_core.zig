@@ -214,6 +214,44 @@ pub fn mirrorBits(word: u64, word_size: u8) u64 {
     return result;
 }
 
+/// Interleave the low half_word = word_size/2 bits of `x` and `y` into one word
+/// (fnZip): bit i of x lands at 2i, bit i of y at 2i+1.
+pub fn zipBits(x: u64, y: u64, word_size: u8) u64 {
+    var result: u64 = 0;
+    var mask: u64 = 1;
+    var shift: u8 = 0;
+    var index: u8 = 0;
+    const half_word = word_size / 2;
+    while (index < half_word) : (index += 1) {
+        result |= (x & mask) << @as(u6, @intCast(shift));
+        shift += 1;
+        result |= (y & mask) << @as(u6, @intCast(shift));
+        mask <<= 1;
+    }
+    return result;
+}
+
+pub const UnzipResult = struct { x: u64, y: u64 };
+
+/// Inverse of zipBits (fnUnzip): de-interleave `a` over the low half_word =
+/// word_size/2 positions into its even-bit word x and odd-bit word y.
+pub fn unzipBits(a: u64, word_size: u8) UnzipResult {
+    var x: u64 = 0;
+    var y: u64 = 0;
+    var mask: u64 = 1;
+    var shift: u8 = 0;
+    var index: u8 = 0;
+    const half_word = word_size / 2;
+    while (index < half_word) : (index += 1) {
+        x |= (a & mask) >> @as(u6, @intCast(shift));
+        shift += 1;
+        mask <<= 1;
+        y |= (a & mask) >> @as(u6, @intCast(shift));
+        mask <<= 1;
+    }
+    return .{ .x = x, .y = y };
+}
+
 // Native unit tests (REPORT-27 M-IDIOM-3). Pure bit logic; expected values are
 // hand-computed. No C oracle, no global state.
 const testing = std.testing;
@@ -383,6 +421,37 @@ test "mirrorBits reverses the low word_size bits" {
         while (x < 400) : (x += 1) {
             const m = x & mask;
             try testing.expectEqual(m, mirrorBits(mirrorBits(m, ws), ws));
+        }
+    }
+}
+
+test "zipBits interleaves x (even bits) and y (odd bits)" {
+    try testing.expectEqual(@as(u64, 0b11), zipBits(0b1, 0b1, 8)); // x0->0, y0->1
+    try testing.expectEqual(@as(u64, 0b101), zipBits(0b11, 0, 8)); // x0->0, x1->2
+    try testing.expectEqual(@as(u64, 0b1010), zipBits(0, 0b11, 8)); // y0->1, y1->3
+}
+
+test "unzipBits inverts zipBits over the low half word" {
+    const r = unzipBits(0b1010, 8);
+    try testing.expectEqual(@as(u64, 0), r.x);
+    try testing.expectEqual(@as(u64, 0b11), r.y);
+
+    // Round-trip: for word sizes 8/16/32/64, unzip(zip(x,y)) restores the low
+    // half_word bits of x and y.
+    for ([_]u8{ 8, 16, 32, 64 }) |ws| {
+        const half_mask = (@as(u64, 1) << @as(u6, @intCast(ws / 2))) - 1;
+        var seed: u64 = 1;
+        var iter: u32 = 0;
+        while (iter < 200) : (iter += 1) {
+            // A cheap xorshift to vary the operands without Math.random.
+            seed ^= seed << 13;
+            seed ^= seed >> 7;
+            seed ^= seed << 17;
+            const x = seed & half_mask;
+            const y = (seed >> 32) & half_mask;
+            const back = unzipBits(zipBits(x, y, ws), ws);
+            try testing.expectEqual(x, back.x);
+            try testing.expectEqual(y, back.y);
         }
     }
 }

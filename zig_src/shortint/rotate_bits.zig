@@ -174,18 +174,7 @@ pub export fn fnZip(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
     if (!getShiftInput(&x, &base)) return;
 
-    var result: u64 = 0;
-    var mask: u64 = 1;
-    var shift: u8 = 0;
-    var index: u8 = 0;
-    const half_word = @divFloor(runtime.shortIntegerWordSize, 2);
-
-    while (index < half_word) : (index += 1) {
-        result |= (x & mask) << @as(u6, @intCast(shift));
-        shift += 1;
-        result |= (y & mask) << @as(u6, @intCast(shift));
-        mask <<= 1;
-    }
+    const result = shortint_core.zipBits(x, y, runtime.shortIntegerWordSize);
 
     setShiftResult(result, base);
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, runtime.REGISTER_Y, @as(runtime.calcRegister_t, -1));
@@ -201,21 +190,8 @@ pub export fn fnUnzip(unused_but_mandatory_parameter: u16) callconv(.c) void {
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     runtime.liftStack();
 
-    var x: u64 = 0;
-    var y: u64 = 0;
-    var mask: u64 = 1;
-    var shift: u8 = 0;
-    var index: u8 = 0;
-    const half_word = @divFloor(runtime.shortIntegerWordSize, 2);
+    const unzipped = shortint_core.unzipBits(a, runtime.shortIntegerWordSize);
 
-    while (index < half_word) : (index += 1) {
-        x |= (a & mask) >> @as(u6, @intCast(shift));
-        shift += 1;
-        mask <<= 1;
-        y |= (a & mask) >> @as(u6, @intCast(shift));
-        mask <<= 1;
-    }
-
-    runtime.setRawShortIntegerRegister(runtime.REGISTER_Y, base, y & runtime.shortIntegerMask);
-    setShiftResult(x, base);
+    runtime.setRawShortIntegerRegister(runtime.REGISTER_Y, base, unzipped.y & runtime.shortIntegerMask);
+    setShiftResult(unzipped.x, base);
 }
