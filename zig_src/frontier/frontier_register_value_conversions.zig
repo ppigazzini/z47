@@ -1051,100 +1051,12 @@ pub export fn convertReal34MatrixRegisterToComplex34MatrixRegister(source: calcR
 // Doubles and floats
 // ===========================================================================
 pub export fn sci_fmt(buf: [*c]u8, n: c_int, x_arg: f64) callconv(.c) void {
-    var x = x_arg;
-    var exp: c_int = 0;
-    var i: c_int = 0;
-    if (x < 0) {
-        buf[@intCast(i)] = '-';
-        i += 1;
-        x = -x;
-    }
-
-    while (x != 0 and x < 1.0) {
-        x *= 10.0;
-        exp -= 1;
-    }
-    while (x >= 10.0) {
-        x /= 10.0;
-        exp += 1;
-    }
-
-    var m: u64 = @intFromFloat(x * 1e15 + 0.5);
-    if (m >= 10000000000000000) {
-        m /= 10;
-        exp += 1;
-    }
-
-    buf[@intCast(i)] = '0' + @as(u8, @intCast(m / 1000000000000000));
-    i += 1;
-    buf[@intCast(i)] = '.';
-    i += 1;
-
-    const divs = [_]u64{
-        1000000000000000, 100000000000000, 10000000000000,
-        1000000000000,    100000000000,    10000000000,
-        1000000000,       100000000,       10000000,
-        1000000,          100000,          10000,
-        1000,             100,             10,
-    };
-
-    var j: usize = 1;
-    while (j < 15 and i < n - 6) : (j += 1) {
-        buf[@intCast(i)] = '0' + @as(u8, @intCast((m / divs[j]) % 10));
-        i += 1;
-    }
-
-    const dest = buf[@intCast(i)..@intCast(n)];
-    const written = std.fmt.bufPrint(dest, "e{s}{d:0>2}", .{ if (exp < 0) "-" else "+", @abs(exp) }) catch dest[0..0];
-    i += @intCast(written.len);
-    buf[@intCast(i)] = 0;
+    abi.sci_format.sciFmt(buf[0..@intCast(n)], x_arg);
 }
 
 pub export fn convertDoubleToString(x: f64, n: i16, buff: [*c]u8) callconv(.c) void {
-    var i: u16 = 2;
-    var j: u16 = 2;
-    var err: bool = false;
-
-    sci_fmt(buff, n, x);
-
-    if (buff[0] != '-') {
-        i = 0;
-        while (buff[i] != 0) {
-            i += 1;
-        }
-        buff[i + 1] = 0;
-        while (i != 0) {
-            buff[i] = buff[i - 1];
-            i -= 1;
-        }
-        buff[0] = '+';
-    }
-
-    if (buff[0] != 0 and (buff[1] == '+' or buff[1] != '-') and (buff[2] == '.' or buff[2] == ',')) {
-        buff[2] = '.';
-        i = 3;
-        j = 3;
-        while (buff[i] != 0) {
-            if (buff[i] == ',' or buff[i] == '.' or buff[i] == ' ') {
-                buff[j] = 0;
-            } else {
-                buff[j] = buff[i];
-                j += 1;
-            }
-            i += 1;
-        }
-        buff[j] = 0;
-    } else {
-        err = true;
-    }
-
-    if (err) {
-        // The PC_BUILD diagnostic printf path is host-only console output; dropped.
-        buff[0] = 'N';
-        buff[1] = 'a';
-        buff[2] = 'N';
-        buff[3] = 0;
-    }
+    // The PC_BUILD diagnostic printf path is host-only console output; dropped.
+    abi.sci_format.normalizeDoubleString(buff[0..@intCast(n)], x);
 }
 
 pub export fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
