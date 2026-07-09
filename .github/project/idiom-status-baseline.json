@@ -3,7 +3,7 @@
     "extern_struct_files": 10,
     "cptr_files": 90,
     "ptrcast_sites": 1342,
-    "callconv_c_sites": 2769,
+    "callconv_c_sites": 2771,
     "extern_fn_sites": 3346,
     "printf_family_files": 47,
     "anyopaque_files": 85,
