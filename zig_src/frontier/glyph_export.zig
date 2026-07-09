@@ -81,7 +81,93 @@ pub fn asciiFromGlyph(a1: u8, a2: u8, out: [*]u8, g: AsciiRanges) ?usize {
     return null;
 }
 
+/// The superscript/subscript glyph ranges stringToRTF wraps in RTF markup.
+pub const SupSubRanges = struct {
+    sup_digit: GlyphRange, // '0' + (a2 - lo), superscript
+    sup_lower: GlyphRange, // 'a' + (a2 - lo), superscript
+    sup_upper: GlyphRange, // 'A' + (a2 - lo), superscript
+    sub_digit: GlyphRange, // '0' + (a2 - lo), subscript
+    sub_lower: GlyphRange, // 'a' + (a2 - lo), subscript
+    sub_upper: GlyphRange, // 'A' + (a2 - lo), subscript
+};
+
+/// Decode a superscript/subscript glyph (a1,a2) to its RTF markup, writing
+/// `\super `/`\sub `, the ASCII character, then `\nosupersub ` to `out` and
+/// returning the total byte count. Returns null when the glyph is not sup/sub
+/// (the owner then tries getTextRTF and the \uNNN? escape). The decoded
+/// character is always printable, so the owner's `if (bb[0] != 0)` markup guard
+/// is always taken here; wrapping arithmetic (+%/-%) matches stringToRTF.
+pub fn rtfFromGlyph(a1: u8, a2: u8, out: [*]u8, g: SupSubRanges) ?usize {
+    var sign: i8 = undefined;
+    var ch: u8 = undefined;
+    if (inRange(a1, a2, g.sup_digit)) {
+        sign = 1;
+        ch = ('0' +% a2) -% g.sup_digit.lo;
+    } else if (inRange(a1, a2, g.sup_lower)) {
+        sign = 1;
+        ch = ('a' +% a2) -% g.sup_lower.lo;
+    } else if (inRange(a1, a2, g.sup_upper)) {
+        sign = 1;
+        ch = ('A' +% a2) -% g.sup_upper.lo;
+    } else if (inRange(a1, a2, g.sub_digit)) {
+        sign = -1;
+        ch = ('0' +% a2) -% g.sub_digit.lo;
+    } else if (inRange(a1, a2, g.sub_lower)) {
+        sign = -1;
+        ch = ('a' +% a2) -% g.sub_lower.lo;
+    } else if (inRange(a1, a2, g.sub_upper)) {
+        sign = -1;
+        ch = ('A' +% a2) -% g.sub_upper.lo;
+    } else {
+        return null;
+    }
+
+    var d: usize = 0;
+    const prefix = if (sign == 1) "\\super " else "\\sub ";
+    for (prefix) |c| {
+        out[d] = c;
+        d += 1;
+    }
+    out[d] = ch;
+    d += 1;
+    for ("\\nosupersub ") |c| {
+        out[d] = c;
+        d += 1;
+    }
+    return d;
+}
+
 const testing = std.testing;
+
+const owner_supsub = SupSubRanges{
+    .sup_digit = .{ .lead = 0xa1, .lo = 0x60, .hi = 0x69 },
+    .sup_lower = .{ .lead = 0xa4, .lo = 0x82, .hi = 0x9b },
+    .sup_upper = .{ .lead = 0xa4, .lo = 0xb6, .hi = 0xcf },
+    .sub_digit = .{ .lead = 0xa0, .lo = 0x80, .hi = 0x89 },
+    .sub_lower = .{ .lead = 0xa4, .lo = 0x9c, .hi = 0xb5 },
+    .sub_upper = .{ .lead = 0xa4, .lo = 0xd0, .hi = 0xe9 },
+};
+
+test "rtfFromGlyph wraps a superscript glyph in \\super markup" {
+    var out: [32]u8 = undefined;
+    const n = rtfFromGlyph(0xa1, 0x60, &out, owner_supsub).?; // superscript '0'
+    try testing.expectEqualStrings("\\super 0\\nosupersub ", out[0..n]);
+}
+
+test "rtfFromGlyph wraps a subscript glyph in \\sub markup" {
+    var out: [32]u8 = undefined;
+    const n = rtfFromGlyph(0xa4, 0x9c, &out, owner_supsub).?; // subscript 'a'
+    try testing.expectEqualStrings("\\sub a\\nosupersub ", out[0..n]);
+    const m = rtfFromGlyph(0xa4, 0xd0, &out, owner_supsub).?; // subscript 'A'
+    try testing.expectEqualStrings("\\sub A\\nosupersub ", out[0..m]);
+}
+
+test "rtfFromGlyph returns null for a non-sup/sub glyph" {
+    var out: [32]u8 = undefined;
+    // a curly-quote glyph (0xa0,0x18): stringToRTF has no sup/sub match for it.
+    try testing.expectEqual(@as(?usize, null), rtfFromGlyph(0xa0, 0x18, &out, owner_supsub));
+    try testing.expectEqual(@as(?usize, null), rtfFromGlyph(0x81, 0x00, &out, owner_supsub));
+}
 
 // The owner's frontier_char_string.zig glyph constants, verbatim.
 const owner_ranges = AsciiRanges{
