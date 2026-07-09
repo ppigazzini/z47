@@ -878,8 +878,6 @@ pub export fn stringToRTF(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) voi
     var a1: u8 = undefined;
     var a2: u8 = undefined;
     var aa: [32]u8 = undefined;
-    var bb: [2]u8 = undefined;
-    var supsub: i8 = 0;
 
     const len: i16 = @intCast(stringGlyphLength(str));
 
@@ -888,12 +886,18 @@ pub export fn stringToRTF(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) voi
         return;
     }
 
+    const ss = glyph_export.SupSubRanges{
+        .sup_digit = .{ .lead = STD_SUP_0[0], .lo = STD_SUP_0[1], .hi = STD_SUP_9[1] },
+        .sup_lower = .{ .lead = STD_SUP_a[0], .lo = STD_SUP_a[1], .hi = STD_SUP_z[1] },
+        .sup_upper = .{ .lead = STD_SUP_A[0], .lo = STD_SUP_A[1], .hi = STD_SUP_Z[1] },
+        .sub_digit = .{ .lead = STD_SUB_0[0], .lo = STD_SUB_0[1], .hi = STD_SUB_9[1] },
+        .sub_lower = .{ .lead = STD_SUB_a[0], .lo = STD_SUB_a[1], .hi = STD_SUB_z[1] },
+        .sub_upper = .{ .lead = STD_SUB_A[0], .lo = STD_SUB_A[1], .hi = STD_SUB_Z[1] },
+    };
+
     var ii: i16 = 0;
     while (ii < len) : (ii += 1) {
         if (str[0] & 0x80 != 0) {
-            bb[1] = 0;
-            bb[0] = 0;
-
             a1 = str[0];
             str += 1;
             a2 = str[0];
@@ -907,53 +911,11 @@ pub export fn stringToRTF(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) voi
                     ascii += 1;
                 }
                 ascii -= 1;
-            } else if (a1 == STD_SUP_0[0] and (a2 >= STD_SUP_0[1] and a2 <= STD_SUP_9[1])) {
-                supsub = 1;
-                bb[0] = ('0' +% a2) -% STD_SUP_0[1];
-            } else if (a1 == STD_SUP_a[0] and (a2 >= STD_SUP_a[1] and a2 <= STD_SUP_z[1])) {
-                supsub = 1;
-                bb[0] = ('a' +% a2) -% STD_SUP_a[1];
-            } else if (a1 == STD_SUP_A[0] and (a2 >= STD_SUP_A[1] and a2 <= STD_SUP_Z[1])) {
-                supsub = 1;
-                bb[0] = ('A' +% a2) -% STD_SUP_A[1];
-            } else if (a1 == STD_SUB_0[0] and (a2 >= STD_SUB_0[1] and a2 <= STD_SUB_9[1])) {
-                supsub = -1;
-                bb[0] = ('0' +% a2) -% STD_SUB_0[1];
-            } else if (a1 == STD_SUB_a[0] and (a2 >= STD_SUB_a[1] and a2 <= STD_SUB_z[1])) {
-                supsub = -1;
-                bb[0] = ('a' +% a2) -% STD_SUB_a[1];
-            } else if (a1 == STD_SUB_A[0] and (a2 >= STD_SUB_A[1] and a2 <= STD_SUB_Z[1])) {
-                supsub = -1;
-                bb[0] = ('A' +% a2) -% STD_SUB_A[1];
+            } else if (glyph_export.rtfFromGlyph(a1, a2, ascii, ss)) |n| {
+                ascii += n - 1;
             } else {
                 abi.fmtBufZ(&aa, "\\u{d}?", .{@as(i32, (@as(i32, a1 & 0x7F) << 8) | @as(i32, a2))});
                 var j: i16 = 0;
-                while (aa[@intCast(j)] != 0) {
-                    ascii[0] = aa[@intCast(j)];
-                    j += 1;
-                    ascii += 1;
-                }
-                ascii -= 1;
-            }
-
-            if (bb[0] != 0) {
-                if (supsub == 1) {
-                    _ = strcpy(&aa, "\\super ");
-                } else if (supsub == -1) {
-                    _ = strcpy(&aa, "\\sub ");
-                }
-                var j: i16 = 0;
-                while (aa[@intCast(j)] != 0) {
-                    ascii[0] = aa[@intCast(j)];
-                    j += 1;
-                    ascii += 1;
-                }
-
-                ascii[0] = bb[0];
-                ascii += 1;
-
-                _ = strcpy(&aa, "\\nosupersub ");
-                j = 0;
                 while (aa[@intCast(j)] != 0) {
                     ascii[0] = aa[@intCast(j)];
                     j += 1;
