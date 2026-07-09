@@ -29,6 +29,7 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const conversion_name_codec = @import("conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
+const glyph_text_lookup = @import("glyph_text_lookup.zig");
 const string_edit = @import("string_edit.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
@@ -850,29 +851,11 @@ fn stringAppend(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
 // _getText / _getTextRTF (static)
 // ---------------------------------------------------------------------------
 fn getText(a1: u8, a2: u8, str: [*c]u8) bool_t {
-    str[0] = 0;
-    const n = indexOfStringsASCII.len;
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        if (a1 == indexOfStringsASCII[i].item_in[0] and a2 == indexOfStringsASCII[i].item_in[1]) {
-            _ = stringAppend(str, indexOfStringsASCII[i].item_out);
-            break;
-        }
-    }
-    return str[0] != 0;
+    return glyph_text_lookup.lookupGlyphText(a1, a2, str, &indexOfStringsASCII);
 }
 
 fn getTextRTF(a1: u8, a2: u8, str: [*c]u8) bool_t {
-    str[0] = 0;
-    const n = indexOfStringsRTF.len;
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        if (a1 == indexOfStringsRTF[i].item_in[0] and a2 == indexOfStringsRTF[i].item_in[1]) {
-            _ = stringAppend(str, indexOfStringsRTF[i].item_out);
-            break;
-        }
-    }
-    return str[0] != 0;
+    return glyph_text_lookup.lookupGlyphText(a1, a2, str, &indexOfStringsRTF);
 }
 
 // STD_* used by stringToRTF range checks.
