@@ -2,6 +2,7 @@ const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
 const build_options = @import("memory_build_options");
+const block_math = @import("block_math.zig");
 
 pub const freeMemoryRegion_t = abi.FreeMemoryRegion;
 
@@ -49,7 +50,7 @@ pub extern fn z47_memory_runtime_realloc_gmp_bytes(pcMemPtr: ?*anyopaque, newSiz
 pub extern fn z47_memory_runtime_free_gmp_bytes(pcMemPtr: ?*anyopaque) void;
 
 fn toBytes(blocks: anytype) u64 {
-    return @as(u64, @intCast(blocks)) * BYTES_PER_BLOCK;
+    return block_math.toBytes(u64, blocks);
 }
 
 pub inline fn getRamSizeInBlocks() u16 {

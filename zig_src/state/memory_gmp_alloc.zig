@@ -1,11 +1,12 @@
 const runtime = @import("memory_runtime.zig");
+const block_math = @import("block_math.zig");
 
 fn toBlocks(byte_count: usize) usize {
-    return (byte_count + (runtime.BYTES_PER_BLOCK - 1)) >> runtime.BPB;
+    return block_math.toBlocks(usize, byte_count);
 }
 
 fn toBytesSize(block_count: usize) usize {
-    return block_count << runtime.BPB;
+    return block_math.toBytes(usize, block_count);
 }
 
 pub fn allocGmp(sizeInBytes: usize) ?*anyopaque {
