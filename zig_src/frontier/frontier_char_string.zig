@@ -1013,45 +1013,7 @@ pub export fn stringToASCII(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) v
 // stringToFileNameChars
 // ---------------------------------------------------------------------------
 pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8, distinctQuotes: u8) callconv(.c) void {
-    var str = strIn;
-    var ascii = asciiIn;
-    const len: i16 = @intCast(stringGlyphLength(str));
-
-    if (len == 0) {
-        ascii[0] = 0;
-        return;
-    }
-
-    var i: i16 = 0;
-    while (i < len) : (i += 1) {
-        if ((str[0] & 0x80) != 0) {
-            ascii[0] = '_';
-            str += 1;
-            str += 1;
-            ascii += 1;
-        } else if (str[0] < 0x20 or str[0] == '/' or str[0] == '\\') {
-            ascii[0] = '_';
-            str += 1;
-            ascii += 1;
-        } else if (str[0] == '|' or str[0] == '?' or str[0] == '*' or str[0] == ':' or str[0] == '<' or str[0] == '>') {
-            ascii[0] = '-';
-            str += 1;
-            ascii += 1;
-        } else if (str[0] == '"') {
-            ascii[0] = '\'';
-            ascii += 1;
-            if (distinctQuotes != 0) {
-                ascii[0] = '\'';
-                ascii += 1;
-            }
-            str += 1;
-        } else {
-            ascii[0] = str[0];
-            str += 1;
-            ascii += 1;
-        }
-        ascii[0] = 0;
-    }
+    glyph_export.fileNameChars(strIn, asciiIn, @intCast(stringGlyphLength(strIn)), distinctQuotes != 0);
 }
 
 // ---------------------------------------------------------------------------
