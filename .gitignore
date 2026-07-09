@@ -26,6 +26,7 @@ c47program.bin
 c47programs.bin
 c47program.rtf
 c47programs.rtf
+c47.regs
 *.s47
 *.zip
 !docs/appnotes/sources/
