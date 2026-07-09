@@ -70,6 +70,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/keycode_remap.zig",
         "zig_src/frontier/lr_selection.zig",
         "zig_src/frontier/display_string_transform.zig",
+        "zig_src/frontier/conversion_name_codec.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");
