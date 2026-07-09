@@ -1,0 +1,77 @@
+;*************************************************************
+;** Coverage: special-value and domain-edge inputs (NaN,     **
+;** infinities, out-of-domain) across the core transcendental **
+;** functions, driving the special-value and error branches   **
+;** the happy-path corpus skips. FL_SPCRES=1 selects the      **
+;** special-result behaviour. Expected values are the actual  **
+;** calculator results (NaN/finite asserted, infinities gated **
+;** by EC because the parser rewrites the "inf" token).       **
+;*************************************************************
+In: FL_SPCRES=1 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- roots ---
+Func: fnSquareRoot
+In:  RX=Real:"-4"
+Out: EC=1
+Func: fnSquareRoot
+In:  RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+Func: fnSquareRoot
+In:  RX=Real:"inf"
+Out: EC=0
+; --- logs ---
+Func: fnLn
+In:  RX=Real:"0"
+Out: EC=0
+Func: fnLn
+In:  RX=Real:"-2"
+Out: EC=0 RX=Real:"NaN"
+Func: fnLn
+In:  RX=Real:"inf"
+Out: EC=0
+Func: fnLog10
+In:  RX=Real:"0"
+Out: EC=0
+; --- exp ---
+Func: fnExp
+In:  RX=Real:"inf"
+Out: EC=0
+Func: fnExp
+In:  RX=Real:"-inf"
+Out: EC=0 RX=Real:"0"
+Func: fnExp
+In:  RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+; --- trig ---
+Func: fnSin
+In:  AM=RAD RX=Real:"inf"
+Out: EC=0 RX=Real:"NaN"
+Func: fnSin
+In:  AM=RAD RX=Real:"NaN"
+Out: EC=0 RX=Real:"NaN"
+Func: fnTan
+In:  AM=RAD RX=Real:"1.5707963267948966192313216916398"
+Out: EC=0
+Func: fnArcsin
+In:  AM=RAD RX=Real:"2"
+Out: EC=0 RX=Real:"NaN":RAD
+Func: fnArccos
+In:  AM=RAD RX=Real:"2"
+Out: EC=0 RX=Real:"NaN":RAD
+; --- gamma ---
+Func: fnGamma
+In:  RX=Real:"0"
+Out: EC=0 RX=Real:"NaN"
+Func: fnGamma
+In:  RX=Real:"-1"
+Out: EC=0 RX=Real:"NaN"
+Func: fnGamma
+In:  RX=Real:"inf"
+Out: EC=0
+; --- hyperbolic ---
+Func: fnTanh
+In:  RX=Real:"inf"
+Out: EC=0 RX=Real:"1"
+Func: fnCosh
+In:  RX=Real:"inf"
+Out: EC=0

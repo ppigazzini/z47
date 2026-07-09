@@ -1,0 +1,241 @@
+;*************************************************************
+;** Coverage: X-vs-R00 comparison predicates across every    **
+;** operand type pair and both true/false branches. The      **
+;** boolean result lives in temporaryInformation (not a      **
+;** register), so these assert only the error code; this is  **
+;** a coverage driver for compare.c's type-pair switches.    **
+;** FARG selects the register compared against X (R00).      **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- real vs real, all three ordering results and both branches ---
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"5" RX=Real:"3"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"3" RX=Real:"5"
+Out: EC=0
+Func: fnXLessEqual
+In:  FARG=0 R00=Real:"5" RX=Real:"5"
+Out: EC=0
+Func: fnXGreaterThan
+In:  FARG=0 R00=Real:"3" RX=Real:"5"
+Out: EC=0
+Func: fnXGreaterThan
+In:  FARG=0 R00=Real:"5" RX=Real:"3"
+Out: EC=0
+Func: fnXGreaterEqual
+In:  FARG=0 R00=Real:"5" RX=Real:"5"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Real:"5" RX=Real:"5"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Real:"3" RX=Real:"5"
+Out: EC=0
+Func: fnXNotEqual
+In:  FARG=0 R00=Real:"3" RX=Real:"5"
+Out: EC=0
+Func: fnXNotEqual
+In:  FARG=0 R00=Real:"5" RX=Real:"5"
+Out: EC=0
+
+; --- complex vs complex / real / integer (equality only for complex) ---
+Func: fnXEqualsTo
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Cplx:"1 i 2"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Cplx:"3 i 4"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Cplx:"5 i 0" RX=Real:"5"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Real:"5" RX=Cplx:"5 i 0"
+Out: EC=0
+Func: fnXNotEqual
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Real:"1"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Cplx:"7 i 0" RX=LonI:"7"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=LonI:"7" RX=Cplx:"7 i 0"
+Out: EC=0
+
+; --- long / short integer pairs, all combinations ---
+Func: fnXLessThan
+In:  FARG=0 R00=LonI:"7" RX=LonI:"3"
+Out: EC=0
+Func: fnXGreaterThan
+In:  FARG=0 R00=LonI:"3" RX=LonI:"7"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=LonI:"5" RX=LonI:"5"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=ShoI:"7#10" RX=ShoI:"3#10"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=ShoI:"5#10" RX=ShoI:"5#10"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=LonI:"7" RX=ShoI:"3#10"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=ShoI:"7#10" RX=LonI:"3"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"7" RX=LonI:"3"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=LonI:"7" RX=Real:"3"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"7" RX=ShoI:"3#10"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=ShoI:"7#10" RX=Real:"3"
+Out: EC=0
+
+; --- string vs string ---
+Func: fnXEqualsTo
+In:  FARG=0 R00=Stri:"ABC" RX=Stri:"ABC"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Stri:"ABC" RX=Stri:"ABD"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Stri:"ABD" RX=Stri:"ABC"
+Out: EC=0
+Func: fnXNotEqual
+In:  FARG=0 R00=Stri:"ABC" RX=Stri:"XYZ"
+Out: EC=0
+
+; --- matrix vs matrix (equality) ---
+Func: fnXEqualsTo
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[1,2,3,5]"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=CxMa:"M2,2[1,0,0,1]" RX=CxMa:"M2,2[1,0,0,1]"
+Out: EC=0
+
+; --- time comparisons ---
+Func: fnXLessThan
+In:  FARG=0 R00=Time:"12:00:00" RX=Time:"06:00:00"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Time:"12:00:00" RX=Time:"12:00:00"
+Out: EC=0
+Func: fnXGreaterThan
+In:  FARG=0 R00=Time:"06:00:00" RX=Time:"12:00:00"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Time:"12:00:00" RX=Real:"6"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"6" RX=Time:"12:00:00"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Time:"12:00:00" RX=LonI:"6"
+Out: EC=0
+
+; --- type-error / incompatible-order paths (compareTypeError) ---
+Func: fnXLessThan
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Cplx:"3 i 4"
+Out: EC=24
+Func: fnXLessThan
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=24
+Func: fnXLessThan
+In:  FARG=0 R00=Stri:"ABC" RX=Real:"5"
+Out: EC=24
+Func: fnXEqualsTo
+In:  FARG=0 R00=Stri:"ABC" RX=Real:"5"
+Out: EC=24
+Func: fnXGreaterThan
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Real:"5"
+Out: EC=24
+
+; --- almost-equal: scalars across all type pairs (almostEqualScalar) ---
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Real:"5" RX=Real:"5.0000001"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Real:"5" RX=Real:"9"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Cplx:"1 i 2"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Cplx:"1 i 2" RX=Real:"1"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Real:"1" RX=Cplx:"1 i 2"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Cplx:"5 i 0" RX=LonI:"5"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=LonI:"5" RX=LonI:"5"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=ShoI:"5#10" RX=ShoI:"5#10"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Real:"5" RX=LonI:"5"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=LonI:"5" RX=Real:"5"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=Real:"5" RX=ShoI:"5#10"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=ShoI:"5#10" RX=LonI:"5"
+Out: EC=0
+
+; --- almost-equal: matrices (almostEqualMatrix) ---
+Func: fnXAlmostEqual
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[1,2,3,5]"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=CxMa:"M2,2[1,0,0,1]" RX=CxMa:"M2,2[1,0,0,1]"
+Out: EC=0
+Func: fnXAlmostEqual
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0
+
+; --- special values: NaN / infinities in the number comparison ---
+Func: fnXEqualsTo
+In:  FARG=0 R00=Real:"NaN" RX=Real:"NaN"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"NaN" RX=Real:"5"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"inf" RX=Real:"5"
+Out: EC=0
+Func: fnXGreaterThan
+In:  FARG=0 R00=Real:"5" RX=Real:"inf"
+Out: EC=0
+Func: fnXLessThan
+In:  FARG=0 R00=Real:"5" RX=Real:"-inf"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Real:"inf" RX=Real:"inf"
+Out: EC=0
+Func: fnXEqualsTo
+In:  FARG=0 R00=Real:"0" RX=Real:"-0"
+Out: EC=0
+
+; --- matrix dimension mismatch on equality ---
+Func: fnXEqualsTo
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0

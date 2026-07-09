@@ -1,0 +1,92 @@
+;*************************************************************
+;** Coverage: curve fitting / linear regression over the    **
+;** accumulated sigma data. Fit each model family, then     **
+;** predict and reset. Data (x,y): (1,2)..(5,10), all > 0.  **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6" RX=Real:"3"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8" RX=Real:"4"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"10" RX=Real:"5"
+Out: EC=0
+
+; fit each individual model family (bitmask selector)
+Func: fnCurveFitting
+In:  FARG=1
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=2
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=4
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=8
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=16
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=32
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=64
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=128
+Out: EC=0
+Func: fnCurveFitting
+In:  FARG=256
+Out: EC=0
+; allow all nine model families, then run the best-fit L.R. which loops
+; over every selected model -> exercises each model's switch case
+Func: fnCurveFitting
+In:  FARG=511
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=1
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=2
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=4
+Out: EC=0
+; best fit marker across all models
+Func: fnCurveFitting
+In:  FARG=0
+Out: EC=0
+Func: fnProcessLR
+In:  FARG=7
+Out: EC=0
+; linear regression mask
+Func: fnCurveFittingLR
+In:  FARG=0
+Out: EC=0
+; predict y from x and x from y using the linear fit of y=2x
+Func: fnYIsFnx
+In:  FARG=0 RX=Real:"6"
+Out: EC=0 RX=Real:"12"
+Func: fnXIsFny
+In:  FARG=0 RX=Real:"12"
+Out: EC=0 RX=Real:"6"
+Func: fnCurveFittingReset
+In:  FARG=0
+Out: EC=0

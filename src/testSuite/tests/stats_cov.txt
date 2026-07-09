@@ -1,0 +1,114 @@
+;*************************************************************
+;** Statistics coverage: accumulate (x,y) data then compute **
+;** means, std devs, covariance, quartiles, correlation.    **
+;** Data points (x,y): (1,2) (2,4) (3,6) (4,8) (5,10) = y=2x **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2"
+Out: EC=0
+
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6" RX=Real:"3"
+Out: EC=0
+
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8" RX=Real:"4"
+Out: EC=0
+
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"10" RX=Real:"5"
+Out: EC=0
+
+Func: fnMeanXY
+In:  FARG=0
+Out: EC=0 RX=Real:"3" RY=Real:"6"
+
+Func: fnMeanX
+In:  FARG=0
+Out: EC=0 RX=Real:"3"
+
+Func: fnSampleStdDev
+In:  FARG=0
+Out: EC=0
+
+Func: fnPopulationStdDev
+In:  FARG=0
+Out: EC=0
+
+Func: fnStandardError
+In:  FARG=0
+Out: EC=0
+
+Func: fnSampleCovariance
+In:  FARG=0
+Out: EC=0
+
+Func: fnPopulationCovariance
+In:  FARG=0
+Out: EC=0
+
+Func: fnMedianXY
+In:  FARG=0
+Out: EC=0 RX=Real:"3" RY=Real:"6"
+
+Func: fnLowerQuartileXY
+In:  FARG=0
+Out: EC=0
+
+Func: fnUpperQuartileXY
+In:  FARG=0
+Out: EC=0
+
+Func: fnIQRXY
+In:  FARG=0
+Out: EC=0
+
+Func: fnGeometricMeanXY
+In:  FARG=0
+Out: EC=0
+
+Func: fnHarmonicMeanXY
+In:  FARG=0
+Out: EC=0
+
+Func: fnRMSMeanXY
+In:  FARG=0
+Out: EC=0
+
+Func: fnWeightedMeanX
+In:  FARG=0
+Out: EC=0
+
+Func: fnDeltaPercentXmean
+In:  FARG=0 RX=Real:"4"
+Out: EC=0
+
+Func: fnPcSigmaDeltaPcXmean
+In:  FARG=0 RX=Real:"4"
+Out: EC=0
+
+Func: fnGeometricSampleStdDev
+In:  FARG=0
+Out: EC=0
+Func: fnGeometricStandardError
+In:  FARG=0
+Out: EC=0
+Func: fnWeightedSampleStdDev
+In:  FARG=0
+Out: EC=0
+Func: fnWeightedStandardError
+In:  FARG=0
+Out: EC=0
+Func: fnPercentileXY
+In:  FARG=0 RX=Real:"50"
+Out: EC=0 RX=Real:"3" RY=Real:"6"

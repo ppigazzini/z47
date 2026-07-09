@@ -1,0 +1,77 @@
+;*************************************************************
+;** Coverage: distribution error branches. The p/l/r/i corpus **
+;** files drive the happy paths; this drives the invalid-      **
+;** parameter and out-of-domain branches (dof<=0, p outside    **
+;** [0,1], negative scale/rate, x outside support, inverse p   **
+;** outside [0,1]) that raise ERROR_INVALID_DISTRIBUTION_PARAM **
+;** / ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN across the families.   **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- chi-square: dof M ---
+Func: fnChi2P
+In:  RM=Real:"-1" RX=Real:"2"
+Out: EC=16
+Func: fnChi2P
+In:  RM=Real:"3" RX=Real:"-2"
+Out: EC=1
+Func: fnChi2I
+In:  RM=Real:"3" RX=Real:"1.5"
+Out: EC=1
+Func: fnChi2I
+In:  RM=Real:"-1" RX=Real:"0.5"
+Out: EC=16
+
+; --- Student t: dof M ---
+Func: fnT_P
+In:  RM=Real:"-1" RX=Real:"0"
+Out: EC=16
+Func: fnT_I
+In:  RM=Real:"5" RX=Real:"2"
+Out: EC=1
+
+; --- F: dof N, M ---
+Func: fnF_P
+In:  RN=Real:"-1" RM=Real:"5" RX=Real:"1"
+Out: EC=16
+Func: fnF_I
+In:  RN=Real:"3" RM=Real:"5" RX=Real:"1.5"
+Out: EC=1
+
+; --- exponential: rate R ---
+Func: fnExponentialP
+In:  RR=Real:"-1" RX=Real:"2"
+Out: EC=16
+Func: fnExponentialI
+In:  RR=Real:"2" RX=Real:"1.5"
+Out: EC=1
+Func: fnExponentialI
+In:  RR=Real:"2" RX=Real:"0.5"
+Out: EC=0
+
+; --- poisson: mean R ---
+Func: fnPoissonP
+In:  RR=Real:"-1" RX=Real:"2"
+Out: EC=16
+Func: fnPoissonI
+In:  RR=Real:"3" RX=Real:"1.5"
+Out: EC=1
+
+; --- binomial: n N, p P ---
+Func: fnBinomialP
+In:  RN=Real:"10" RP=Real:"2" RX=Real:"3"
+Out: EC=16
+Func: fnBinomialP
+In:  RN=Real:"-1" RP=Real:"0.5" RX=Real:"3"
+Out: EC=16
+Func: fnBinomialI
+In:  RN=Real:"10" RP=Real:"0.5" RX=Real:"1.5"
+Out: EC=1
+
+; --- geometric: p P ---
+Func: fnGeometricP
+In:  RP=Real:"2" RX=Real:"3"
+Out: EC=16
+Func: fnGeometricI
+In:  RP=Real:"0.3" RX=Real:"1.5"
+Out: EC=1

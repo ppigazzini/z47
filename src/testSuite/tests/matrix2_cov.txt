@@ -1,0 +1,74 @@
+;*************************************************************
+;** Coverage: matrix.c complex-matrix and linear-algebra       **
+;** paths - elementwise scalar functions on complex matrices,  **
+;** complex row/column swaps, column min/max, matrix resize,    **
+;** and complex invert/divide. Matrix results assert the exit   **
+;** code; a coverage driver for the cold matrix.c branches.     **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=1 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- scalar functions elementwise on a complex matrix (elementwiseCxma) ---
+Func: fnSin
+In:  AM=RAD RX=CxMa:"M2,2[1i1,2i0,0i1,3i2]"
+Out: EC=0
+Func: fnExp
+In:  RX=CxMa:"M2,2[1i1,2i0,0i1,3i2]"
+Out: EC=0
+Func: fnSquareRoot
+In:  RX=CxMa:"M2,2[1i1,2i0,0i1,3i2]"
+Out: EC=0
+Func: fnChangeSign
+In:  RX=CxMa:"M2,2[1i1,2i0,0i1,3i2]"
+Out: EC=0
+Func: fnMagnitude
+In:  RX=CxMa:"M2,2[3i4,0i0,1i1,2i2]"
+Out: EC=0
+
+; --- scalar functions elementwise on a real matrix ---
+Func: fnSin
+In:  AM=RAD RX=ReMa:"M2,2[0,0.5,1,1.5]"
+Out: EC=0
+Func: fnExp
+In:  RX=ReMa:"M2,2[0,1,2,3]"
+Out: EC=0
+Func: fnChangeSign
+In:  RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0
+
+; --- complex row/column swap on the indexed matrix (_complexMatrixSwap) ---
+Func: fnIndexMatrix
+In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+Out: EC=0
+Func: fnSwapRows
+In:  R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RY=Real:"1" RX=Real:"2"
+Out: EC=0
+Func: fnSwapColumns
+In:  R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RY=Real:"1" RX=Real:"2"
+Out: EC=0
+
+; --- column min / max on the indexed real matrix (columnMinMaxReal) ---
+Func: fnIndexMatrix
+In:  FARG=0 R00=ReMa:"M3,2[3,1,1,5,2,2]"
+Out: EC=0
+Func: fnColumnMin
+In:  R00=ReMa:"M3,2[3,1,1,5,2,2]"
+Out: EC=0
+Func: fnColumnMax
+In:  R00=ReMa:"M3,2[3,1,1,5,2,2]"
+Out: EC=0
+
+; --- complex invert / determinant / transpose (larger) ---
+Func: fnInvertMatrix
+In:  RX=CxMa:"M2,2[2i0,0i1,1i0,3i0]"
+Out: EC=0
+Func: fnDeterminant
+In:  RX=CxMa:"M2,2[2i0,0i1,1i0,3i0]"
+Out: EC=0
+Func: fnTranspose
+In:  RX=CxMa:"M2,3[1i1,2i2,3i3,4i4,5i5,6i6]"
+Out: EC=0
+
+; --- complex matrix divide (may drive cpxLinearEqn) ---
+Func: fnDivide
+In:  RY=CxMa:"M2,2[4i0,0i0,0i0,9i0]" RX=CxMa:"M2,2[2i0,0i0,0i0,3i0]"
+Out: EC=0

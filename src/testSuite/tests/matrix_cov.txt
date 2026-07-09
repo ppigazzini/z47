@@ -1,0 +1,42 @@
+;*************************************************************
+;** Coverage: matrix operations on real and complex inputs. **
+;** Square, non-square, vector and singular cases.          **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; determinant of a 2x2 (det [[4,1],[2,3]] = 10)
+Func: fnDeterminant
+In:  FARG=0 RX=ReMa:"M2,2[4,1,2,3]"
+Out: EC=0 RX=Real:"10"
+; invert a 2x2
+Func: fnInvertMatrix
+In:  FARG=0 RX=ReMa:"M2,2[4,1,2,3]"
+Out: EC=0 RX=ReMa:"M2,2[0.3,-0.1,-0.2,0.4]"
+; transpose a non-square 2x3
+Func: fnTranspose
+In:  FARG=0 RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0 RX=ReMa:"M3,2[1,4,2,5,3,6]"
+; LU decomposition of a 3x3
+Func: fnLuDecomposition
+In:  FARG=0 RX=ReMa:"M3,3[2,1,1,4,3,3,8,7,9]"
+Out: EC=0
+; QR decomposition of a 3x3
+Func: fnQrDecomposition
+In:  FARG=0 RX=ReMa:"M3,3[12,-51,4,6,167,-68,-4,24,-41]"
+Out: EC=0
+; eigenvalues of a symmetric 2x2 (eigenvalues 1 and 3)
+Func: fnEigenvalues
+In:  FARG=0 RX=ReMa:"M2,2[2,1,1,2]"
+Out: EC=0 RX=ReMa:"M1,2[3,1]"
+; determinant of a singular matrix (det = 0)
+Func: fnDeterminant
+In:  FARG=0 RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=0 RX=Real:"0"
+; determinant error: non-square
+Func: fnDeterminant
+In:  FARG=0 RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=21
+; complex matrix determinant
+Func: fnDeterminant
+In:  FARG=0 RX=CxMa:"M2,2[1,0,0,1]"
+Out: EC=0 RX=Cplx:"1 i 0"

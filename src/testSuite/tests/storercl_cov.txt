@@ -1,0 +1,71 @@
+;*************************************************************
+;** Coverage: store / recall and their arithmetic, max/min, **
+;** pair/triple and stack variants (FARG = register number).**
+;** Each case seeds R00.. and the stack so the stored/       **
+;** recalled result is deterministic and asserted by value.  **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnStore
+In:  FARG=0 R00=Real:"111" RX=Real:"5"
+Out: EC=0 R00=Real:"5" RX=Real:"5"
+Func: fnStoreAdd
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 R00=Real:"13"
+Func: fnStoreSub
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 R00=Real:"7"
+Func: fnStoreMult
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 R00=Real:"30"
+Func: fnStoreDiv
+In:  FARG=0 R00=Real:"12" RX=Real:"4"
+Out: EC=0 R00=Real:"3"
+Func: fnStoreMax
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 R00=Real:"10"
+Func: fnStoreMin
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 R00=Real:"3"
+Func: fnRecall
+In:  FARG=0 R00=Real:"42" RX=Real:"7"
+Out: EC=0 RX=Real:"42" RY=Real:"7"
+Func: fnRecallAdd
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 RX=Real:"13"
+Func: fnRecallSub
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 RX=Real:"-7"
+Func: fnRecallMult
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 RX=Real:"30"
+Func: fnRecallDiv
+In:  FARG=0 R00=Real:"12" RX=Real:"4"
+Out: EC=0 RX=Real:"0.3333333333333333333333333333333333"
+Func: fnRecallMax
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 RX=Real:"10"
+Func: fnRecallMin
+In:  FARG=0 R00=Real:"10" RX=Real:"3"
+Out: EC=0 RX=Real:"3"
+Func: fn2Sto
+In:  FARG=0 R00=Real:"111" R01=Real:"222" RY=Real:"2" RX=Real:"1"
+Out: EC=0 R00=Real:"1" R01=Real:"2"
+Func: fn2Rcl
+In:  FARG=0 R00=Real:"8" R01=Real:"9" RX=Real:"0"
+Out: EC=0 RX=Real:"8" RY=Real:"9"
+Func: fn3Sto
+In:  FARG=0 R00=Real:"111" R01=Real:"222" R02=Real:"333" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=0 R00=Real:"1" R01=Real:"2" R02=Real:"3"
+Func: fn3Rcl
+In:  FARG=0 R00=Real:"4" R01=Real:"5" R02=Real:"6" RX=Real:"0"
+Out: EC=0 RX=Real:"4" RY=Real:"5" RZ=Real:"6"
+Func: fnStoreStack
+In:  FARG=0 R00=Real:"0" R01=Real:"0" R02=Real:"0" R03=Real:"0" RT=Real:"4" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=0 R00=Real:"1" R01=Real:"2" R02=Real:"3" R03=Real:"4"
+Func: fnRecallStack
+In:  FARG=0 R00=Real:"11" R01=Real:"12" R02=Real:"13" R03=Real:"14" RX=Real:"0"
+Out: EC=0 RX=Real:"11" RY=Real:"12" RZ=Real:"13" RT=Real:"14"
+Func: fnLastX
+In:  FARG=0 RL=Real:"77" RX=Real:"5"
+Out: EC=0 RX=Real:"77"
