@@ -944,54 +944,7 @@ fn checkWidthWithPrefix(itemName: [*c]const u8, numStr: [*c]const u8, max_width:
 // cleanupTrailingZeros (static)
 // ===========================================================================
 fn cleanupTrailingZeros(str: [*c]u8) void {
-    var e_pos: [*c]u8 = strchr(str, 'E');
-    if (e_pos == null) {
-        e_pos = strchr(str, 'e');
-    }
-    if (e_pos != null and e_pos[0] == 'e') {
-        e_pos[0] = 'E';
-    }
-    if (e_pos != null) {
-        const decimal_pos: [*c]u8 = strchr(str, '.');
-        if (decimal_pos != null and @intFromPtr(decimal_pos) < @intFromPtr(e_pos)) {
-            var p: [*c]u8 = e_pos - 1;
-            while (@intFromPtr(p) > @intFromPtr(decimal_pos) and p[0] == '0') {
-                p -= 1;
-            }
-            if (@intFromPtr(p) == @intFromPtr(decimal_pos)) {
-                _ = memmove(decimal_pos, e_pos, strlen(e_pos) + 1);
-            } else {
-                _ = memmove(p + 1, e_pos, strlen(e_pos) + 1);
-            }
-        }
-        e_pos = strchr(str, 'E');
-        if (e_pos != null) {
-            var exp_start: [*c]u8 = e_pos + 1;
-            if (exp_start[0] == '+') {
-                exp_start += 1;
-            }
-            if (exp_start[0] == '-') {
-                exp_start += 1;
-            }
-            while (exp_start[0] == '0' and (exp_start + 1)[0] != 0) {
-                _ = memmove(exp_start, exp_start + 1, strlen(exp_start + 1) + 1);
-            }
-        }
-    } else {
-        const decimal_pos: [*c]u8 = strchr(str, '.');
-        if (decimal_pos != null) {
-            const len: i32 = @intCast(strlen(str));
-            var i: i32 = len - 1;
-            const dpIdx: i32 = @intCast(@intFromPtr(decimal_pos) - @intFromPtr(str));
-            while (i > dpIdx and str[@intCast(i)] == '0') {
-                str[@intCast(i)] = 0;
-                i -= 1;
-            }
-            if (i == dpIdx) {
-                str[@intCast(i)] = 0;
-            }
-        }
-    }
+    display_string_transform.cleanupTrailingZeros(str);
 }
 
 // ===========================================================================
