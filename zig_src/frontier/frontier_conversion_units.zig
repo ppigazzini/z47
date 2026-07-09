@@ -90,17 +90,17 @@ inline fn setRegisterAngularMode(reg: i16, am: u32) void {
 const OFF_const_minusInfinity = 1684;
 const OFF_const_plusInfinity = 1696;
 const OFF_const_0 = 1708;
-const OFF_const_1 = 4856;
-const OFF_const_9on5 = 4916;
-const OFF_const_32 = 5224;
-const OFF_const_273p15 = 3916;
-const OFF_const_459p67 = 3932;
-const OFF_const39_kBeVK = 3948;
-const OFF_const_9on10 = 4808;
-const OFF_const39_180onPi = 5260;
-const OFF_const39_200onPi = 5308;
-const OFF_const_10 = 5132;
-const OFF_const_20 = 5156;
+const OFF_const_1 = 4928;
+const OFF_const_9on5 = 4988;
+const OFF_const_32 = 5296;
+const OFF_const_273p15 = 3988;
+const OFF_const_459p67 = 4004;
+const OFF_const39_kBeVK = 4020;
+const OFF_const_9on10 = 4880;
+const OFF_const39_180onPi = 5332;
+const OFF_const39_200onPi = 5380;
+const OFF_const_10 = 5204;
+const OFF_const_20 = 5228;
 
 // conversionFactors[constFactorEND]: offset into `constants`, or null.
 const conversionFactorOffsets = [_]?u32{
