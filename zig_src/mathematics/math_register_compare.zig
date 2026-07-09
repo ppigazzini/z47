@@ -660,6 +660,7 @@ fn almostEqualMatrix(regist: u16) void {
 
 const Snapshot = struct {
     t: u8,
+    tag: u32,
     r: runtime.real34_t,
     i: runtime.real34_t,
     li: runtime.mpz_struct,
@@ -670,34 +671,49 @@ const Snapshot = struct {
 // SNAPVAL: the long/short integer cases read REGISTER_X regardless of reg,
 // faithfully mirroring the upstream macro.
 fn snapValue(reg: calcRegister_t, s: *Snapshot) void {
+    // Upstream SNAPVAL: snapshot from `reg` (the passed register, not always X --
+    // the old macro hardcoded REGISTER_X for the integer cases, a bug fixed in
+    // 2026), covering dtTime alongside dtReal34, and saving the register tag so
+    // RESTOREVAL can reallocate/retag correctly.
     s.t = @truncate(runtime.getRegisterDataType(reg));
     switch (@as(u32, s.t)) {
         runtime.dtComplex34 => {
             s.r = @as(*const runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).*;
             s.i = @as(*const runtime.real34_t, @ptrCast(runtime.registerImag34Ptr(reg))).*;
         },
-        runtime.dtReal34 => {
+        runtime.dtReal34, runtime.dtTime => {
             s.r = @as(*const runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).*;
             _ = decQuadZero(&s.i);
         },
         runtime.dtLongInteger => {
-            _ = runtime.getRegisterAsLongInt(runtime.REGISTER_X, &s.li, null);
+            _ = runtime.getRegisterAsLongInt(reg, &s.li, null);
         },
         runtime.dtShortInteger => {
-            _ = getRegisterAsRawShortInt(runtime.REGISTER_X, &s.si_val, &s.si_base);
+            _ = getRegisterAsRawShortInt(reg, &s.si_val, &s.si_base);
         },
         else => {},
     }
+    s.tag = runtime.getRegisterTag(reg);
 }
 
+// defines.h: SHORT_INTEGER_SIZE_IN_BLOCKS 2 (2 blocks = 8 bytes = 64 bits).
+const SHORT_INTEGER_SIZE_IN_BLOCKS: u16 = 2;
+
 fn restoreValue(reg: calcRegister_t, s: *Snapshot) void {
+    // Upstream RESTOREVAL (compare.c) now REALLOCATES reg to the snapshot's type
+    // and size before writing back: after the comparison reg may hold a different
+    // type (hence a smaller allocation) than the snapshot, so a direct copy would
+    // overflow the register's data block and corrupt the heap. reallocateRegister
+    // also sets reg's data type + tag, standing in for the trailing
+    // setRegisterDataType(reg, s.t, s.tag).
     switch (@as(u32, s.t)) {
         runtime.dtComplex34 => {
+            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.COMPLEX34_SIZE_IN_BLOCKS, s.tag);
             @as(*runtime.real34_t, @ptrCast(runtime.registerImag34Ptr(reg))).* = s.i;
-            // fall through (upstream: dtComplex34 falls into dtReal34)
             @as(*runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).* = s.r;
         },
-        runtime.dtReal34 => {
+        runtime.dtReal34, runtime.dtTime => {
+            runtime.reallocateRegister(reg, s.t, runtime.REAL34_SIZE_IN_BLOCKS, s.tag);
             @as(*runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).* = s.r;
         },
         runtime.dtLongInteger => {
@@ -705,6 +721,7 @@ fn restoreValue(reg: calcRegister_t, s: *Snapshot) void {
             runtime.__gmpz_clear(&s.li);
         },
         runtime.dtShortInteger => {
+            runtime.reallocateRegister(reg, runtime.dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.si_base);
             runtime.registerShortIntegerPtr(reg).* = s.si_val;
             runtime.setRegisterTag(reg, s.si_base);
         },
