@@ -1,0 +1,16 @@
+;*************************************************************
+;** Coverage: backup serializer round-trip. Save the whole  **
+;** calculator state to backup.cfg and restore it, driving  **
+;** both directions of saveRestoreBackup.c. This resets the  **
+;** calculator, so it must be the last file in the list.     **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; seed a little varied state, then round-trip it through backup.cfg
+Func: fnStore
+In:  FARG=0 RX=Real:"1234.5678"
+Out: EC=0
+; the round-trip must be lossless: R00 stored above survives save+restore
+Func: fnBackupRoundtrip
+In:  FARG=0
+Out: EC=0 R00=Real:"1234.5678"

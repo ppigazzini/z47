@@ -1,0 +1,21 @@
+;*************************************************************
+;** Coverage: error raising and the error-message display   **
+;** switch across operand types.                            **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnRaiseError
+In:  FARG=1 RX=Real:"0"
+Out: EC=1
+Func: fnRaiseError
+In:  FARG=5 RX=Real:"0"
+Out: EC=5
+Func: fnRaiseError
+In:  FARG=24 RX=Real:"0"
+Out: EC=24
+Func: fnErrorMessage
+In:  FARG=0 RX=LonI:"5"
+Out: EC=5
+Func: fnErrorMessage
+In:  FARG=0 RX=Real:"5"
+Out: EC=5

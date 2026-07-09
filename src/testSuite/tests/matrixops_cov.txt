@@ -1,0 +1,119 @@
+;*************************************************************
+;** Coverage: matrix operations across shapes (square,       **
+;** non-square, singular, vectors), types (real/complex) and  **
+;** error cases. Scalar results (determinant) are asserted;   **
+;** matrix results assert the exit code - a coverage driver   **
+;** for matrix.c's decomposition and linear-algebra paths.    **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- transpose: real square, real non-square, complex ---
+Func: fnTranspose
+In:  RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0
+Func: fnTranspose
+In:  RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=0
+Func: fnTranspose
+In:  RX=CxMa:"M2,2[1i0,2i0,3i0,4i0]"
+Out: EC=0
+
+; --- determinant: 2x2 (asserted), 3x3, singular, complex ---
+Func: fnDeterminant
+In:  RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0 RX=Real:"-2"
+Func: fnDeterminant
+In:  RX=ReMa:"M3,3[2,0,0,0,3,0,0,0,4]"
+Out: EC=0 RX=Real:"24"
+Func: fnDeterminant
+In:  RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=0 RX=Real:"0"
+Func: fnDeterminant
+In:  RX=CxMa:"M2,2[1i0,0i0,0i0,1i0]"
+Out: EC=0
+
+; --- inverse: nonsingular 2x2, 3x3, singular (error), complex ---
+Func: fnInvertMatrix
+In:  RX=ReMa:"M2,2[4,7,2,6]"
+Out: EC=0
+Func: fnInvertMatrix
+In:  RX=ReMa:"M3,3[2,0,0,0,3,0,0,0,4]"
+Out: EC=0
+Func: fnInvertMatrix
+In:  RX=ReMa:"M2,2[1,2,2,4]"
+Out: EC=22
+Func: fnInvertMatrix
+In:  RX=CxMa:"M2,2[1i0,0i0,0i0,2i0]"
+Out: EC=0
+
+; --- decompositions ---
+Func: fnLuDecomposition
+In:  RX=ReMa:"M3,3[4,3,2,1,5,3,2,1,6]"
+Out: EC=0
+Func: fnQrDecomposition
+In:  RX=ReMa:"M3,3[12,-51,4,6,167,-68,-4,24,-41]"
+Out: EC=0
+Func: fnQrDecomposition
+In:  RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=21
+
+; --- eigenvalues / eigenvectors: symmetric, general, complex ---
+Func: fnEigenvalues
+In:  RX=ReMa:"M2,2[2,0,0,3]"
+Out: EC=0
+Func: fnEigenvalues
+In:  RX=ReMa:"M2,2[2,1,1,2]"
+Out: EC=0
+Func: fnEigenvalues
+In:  RX=ReMa:"M3,3[2,0,0,0,3,0,0,0,4]"
+Out: EC=0
+Func: fnEigenvectors
+In:  RX=ReMa:"M2,2[2,1,1,2]"
+Out: EC=0
+Func: fnEigenvectors
+In:  RX=ReMa:"M2,2[2,0,0,3]"
+Out: EC=0
+
+; --- matrix square root ---
+Func: fnMatrixSquareRoot
+In:  RX=ReMa:"M2,2[4,0,0,9]"
+Out: EC=0
+
+; --- norms / vector operations ---
+Func: fnPNorm
+In:  FARG=0 RX=ReMa:"M1,3[3,4,0]"
+Out: EC=0
+Func: fnVectorAngle
+In:  RY=ReMa:"M1,3[1,0,0]" RX=ReMa:"M1,3[0,1,0]"
+Out: EC=0
+Func: fnVectorDist
+In:  RY=ReMa:"M1,3[0,0,0]" RX=ReMa:"M1,3[3,4,0]"
+Out: EC=0
+Func: fnMatrixIdentity
+In:  RY=Real:"3" RX=Real:"3"
+Out: EC=0 RX=ReMa:"M3,3[1,0,0,0,1,0,0,0,1]"
+
+; --- row / column swaps ---
+Func: fnSwapRows
+In:  RZ=Real:"1" RY=Real:"2" RX=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]"
+Out: EC=8
+Func: fnSwapColumns
+In:  RZ=Real:"1" RY=Real:"2" RX=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]"
+Out: EC=8
+
+; --- binary ops across matrices + dimension-mismatch errors ---
+Func: fnAdd
+In:  RY=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[5,6,7,8]"
+Out: EC=0
+Func: fnSubtract
+In:  RY=ReMa:"M2,2[5,6,7,8]" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=0
+Func: fnMultiply
+In:  RY=ReMa:"M2,3[1,2,3,4,5,6]" RX=ReMa:"M3,2[1,2,3,4,5,6]"
+Out: EC=0
+Func: fnAdd
+In:  RY=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=21
+Func: fnMultiply
+In:  RY=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]"
+Out: EC=21

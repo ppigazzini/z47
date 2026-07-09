@@ -1,0 +1,66 @@
+;*************************************************************
+;** Coverage: cubic solver, coordinate conversions and the    **
+;** random generator. fnSlvc reads the cubic coefficients      **
+;** a,b,c,d from the stack (T,Z,Y,X). Deterministic results    **
+;** (the three-real-root cubic, the polar magnitude, and the   **
+;** seeded RNG draws) are asserted by value; the remaining      **
+;** multi-value results assert the exit code - a coverage       **
+;** driver for slvc.c, toRect.c, toPolar.c and random.c.       **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=1 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- cubic solver: three real roots, one real + two complex, repeated, degenerate ---
+Func: fnSlvc
+In:  RT=Real:"1" RZ=Real:"-6" RY=Real:"11" RX=Real:"-6"
+Out: EC=0 RX=Real:"1" RY=Real:"2" RZ=Real:"3"
+Func: fnSlvc
+In:  RT=Real:"1" RZ=Real:"0" RY=Real:"0" RX=Real:"-8"
+Out: EC=0
+Func: fnSlvc
+In:  RT=Real:"1" RZ=Real:"-3" RY=Real:"3" RX=Real:"-1"
+Out: EC=0
+Func: fnSlvc
+In:  RT=Real:"0" RZ=Real:"1" RY=Real:"-5" RX=Real:"6"
+Out: EC=0
+Func: fnSlvc
+In:  RT=Cplx:"1 i 0" RZ=Cplx:"0 i 0" RY=Cplx:"0 i 0" RX=Cplx:"-1 i 0"
+Out: EC=0
+
+; --- polar<->rectangular, 2-argument form ---
+Func: fnToRect2
+In:  AM=RAD RY=Real:"1.5707963267948966" RX=Real:"2"
+Out: EC=0
+Func: fnToRect2
+In:  RX=Cplx:"3 i 4"
+Out: EC=0
+Func: fnToPolar2
+In:  RY=Real:"4" RX=Real:"3"
+Out: EC=0 RX=Real:"5"
+Func: fnToPolar2
+In:  RX=Cplx:"3 i 4"
+Out: EC=0
+
+; --- random generator: the PRNG is deterministic under TESTSUITE_BUILD (the seed
+;     derives from X's bytes), so each seeded draw is a fixed, asserted value.
+;     Re-seed before every draw so the assertion is independent of draw order. ---
+; fnRandom: a real in [0,1) built by realRandomU01
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandom
+In:  RX=Real:"0"
+Out: EC=0 RX=Real:"0.1142595267481666652178874759295643"
+; fnRandomI with real bounds takes the continuous path (doRealRandomI): a real in [1,100)
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RY=Real:"1" RX=Real:"100"
+Out: EC=0 RX=Real:"12.31169314806849985657086011702687"
+; fnRandomI with long-integer bounds takes the integer path (doIntRandomI): an int in [1,100]
+Func: fnSeed
+In:  RX=Real:"12345"
+Out: EC=0
+Func: fnRandomI
+In:  RY=LonI:"1" RX=LonI:"100"
+Out: EC=0 RX=LonI:"12"

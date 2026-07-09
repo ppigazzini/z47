@@ -1,0 +1,103 @@
+;*************************************************************
+;** Coverage: value/type predicates (checkValue.c) and the  **
+;** small math ops shiftDigits / random / increment.        **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; type predicates on a plain real
+Func: fnCheckType
+In:  FARG=0 RX=Real:"3.5"
+Out: EC=0
+Func: fnCheckNumber
+In:  FARG=0 RX=Real:"3.5"
+Out: EC=0
+Func: fnCheckAngle
+In:  FARG=0 RX=Real:"3.5"
+Out: EC=0
+Func: fnCheckMatrix
+In:  FARG=0 RX=Real:"3.5"
+Out: EC=0
+Func: fnCheckMatrixSquare
+In:  FARG=0 RX=Real:"3.5"
+Out: EC=24
+Func: fnCheckForZero
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnCheckPlusZero
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnCheckMinusZero
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnCheckNaN
+In:  FARG=0 RX=Real:"NaN"
+Out: EC=0
+Func: fnCheckInfinite
+In:  FARG=0 RX=Real:"NaN"
+Out: EC=0
+Func: fnCheckSpecial
+In:  FARG=0 RX=Real:"NaN"
+Out: EC=0
+
+; fnGetType across data types (covers the type switch). The pushed type code
+; folds the angular/polar mode into its fraction, so it is not asserted by value.
+Func: fnGetType
+In:  FARG=0 RX=Real:"3.5"
+Out: EC=0
+Func: fnGetType
+In:  FARG=0 RX=Cplx:"1 i 2"
+Out: EC=0
+Func: fnGetType
+In:  FARG=0 RX=LonI:"123456789"
+Out: EC=0
+Func: fnGetType
+In:  FARG=0 RX=Stri:"abc"
+Out: EC=0
+
+; predicates on other types
+Func: fnCheckNumber
+In:  FARG=0 RX=Cplx:"1 i 2"
+Out: EC=0
+
+; small math ops on X: shift the decimal 2 places left (x100) and right (/100)
+Func: fnSdl
+In:  FARG=2 RX=Real:"123.456"
+Out: EC=0 RX=Real:"12345.6"
+Func: fnSdr
+In:  FARG=2 RX=Real:"123.456"
+Out: EC=0 RX=Real:"1.23456"
+
+
+; integer check across modes (0 plain, 1 even, 2 odd, 3 fp) on integer and fractional X
+Func: fnCheckInteger
+In:  FARG=0 RX=Real:"6"
+Out: EC=0
+Func: fnCheckInteger
+In:  FARG=1 RX=Real:"6"
+Out: EC=0
+Func: fnCheckInteger
+In:  FARG=2 RX=Real:"7"
+Out: EC=0
+Func: fnCheckInteger
+In:  FARG=3 RX=Real:"5.5"
+Out: EC=0
+
+; increment a numbered register (R00: 41 -> 42)
+Func: fnInc
+In:  FARG=0 R00=Real:"41" RX=Real:"1"
+Out: EC=0 R00=Real:"42"
+
+; random: the PRNG is deterministic under TESTSUITE_BUILD, so a fixed seed gives a
+; fixed draw. Re-seed before each so the value is independent of draw order.
+Func: fnSeed
+In:  FARG=0 RX=Real:"42"
+Out: EC=0
+Func: fnRandom
+In:  FARG=0
+Out: EC=0 RX=Real:"0.1317037858314000210376891937608139"
+Func: fnSeed
+In:  FARG=0 RX=Real:"42"
+Out: EC=0
+Func: fnRandomI
+In:  FARG=0 RY=Real:"1" RX=Real:"100"
+Out: EC=0 RX=Real:"14.03867479730860208273123018232058"

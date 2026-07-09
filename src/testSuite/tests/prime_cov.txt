@@ -1,0 +1,95 @@
+;*************************************************************
+;** Coverage: primality and factorisation across ranges,     **
+;** edges, prime powers, semiprimes and Carmichael numbers,   **
+;** exercising the Miller-Rabin and factorisation branches.   **
+;** Predicate results land in temporaryInformation, so these  **
+;** assert the exit code; a coverage driver for prime.c.      **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- is-prime: edges, primes, composites, Carmichael, large ---
+Func: fnIsPrime
+In:  RX=LonI:"0"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"1"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"2"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"3"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"4"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"561"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"1729"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"7919"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"104729"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"1000003"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"1000000007"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=LonI:"-7"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=Real:"7"
+Out: EC=0
+Func: fnIsPrime
+In:  RX=Real:"7.5"
+Out: EC=1
+
+; --- next prime ---
+Func: fnNextPrime
+In:  RX=LonI:"2"
+Out: EC=0 RX=LonI:"3"
+Func: fnNextPrime
+In:  RX=LonI:"100"
+Out: EC=0 RX=LonI:"101"
+Func: fnNextPrime
+In:  RX=LonI:"7919"
+Out: EC=0 RX=LonI:"7927"
+Func: fnNextPrime
+In:  RX=Real:"100"
+Out: EC=0 RX=LonI:"101"
+
+; --- prime factorisation: composites, prime powers, semiprimes, primes ---
+Func: fnPrimeFactors
+In:  RX=LonI:"12"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"1"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"2"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"1024"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"1000000"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"6469693230"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"1000003"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=LonI:"999999999989"
+Out: EC=0
+Func: fnPrimeFactors
+In:  RX=Real:"360"
+Out: EC=0

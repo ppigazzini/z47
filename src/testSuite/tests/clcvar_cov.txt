@@ -1,0 +1,37 @@
+;*************************************************************
+;** Coverage: program-engine navigation and clear-variables. **
+;** fnGotoDot selects the program containing a global step;   **
+;** fnClCVar then walks the current program and clears its    **
+;** local variables. Sweeping several step numbers visits     **
+;** more than one loaded program. Requires the sample programs **
+;** (res/testPgms/testPgms.bin) to be staged in the CWD, but   **
+;** stays green with no program loaded.                        **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; first program
+Func: fnGotoDot
+In:  FARG=1
+Out: EC=0
+Func: fnClCVar
+In:  FARG=0
+Out: EC=0
+; step deeper in the program space (later programs)
+Func: fnGotoDot
+In:  FARG=10
+Out: EC=0
+Func: fnClCVar
+In:  FARG=0
+Out: EC=0
+Func: fnGotoDot
+In:  FARG=30
+Out: EC=0
+Func: fnClCVar
+In:  FARG=0
+Out: EC=0
+Func: fnGotoDot
+In:  FARG=60
+Out: EC=0
+Func: fnClCVar
+In:  FARG=0
+Out: EC=0

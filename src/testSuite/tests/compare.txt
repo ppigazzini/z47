@@ -1,0 +1,16 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        compare                          **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnXAlmostEqual
+
+;=================================================
+; x almost-equal must leave the compared register unchanged.
+; R00 holds a long integer, X a real; R00 must still be 7 after.
+Desc: x almost-equal against Long Integer R00 leaves R00 intact
+In:  FARG=0 R00=LonI:"7" RX=Real:"5"
+Out: EC=0 R00=LonI:"7"

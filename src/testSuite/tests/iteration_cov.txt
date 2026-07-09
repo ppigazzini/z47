@@ -1,0 +1,62 @@
+;*************************************************************
+;** Coverage: ISG/DSE loop-counter ops (iteration.c). The     **
+;** counter register holds ccccc.llliss (counter, limit,      **
+;** step). Drive each op below, at and past its limit, plus   **
+;** the non-real register branch, asserting the incremented/   **
+;** decremented counter that comes back in the register.       **
+;** FARG selects the counter register (R00).                  **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; --- ISG: increment by step, skip if greater than limit ---
+Func: fnIsg
+In:  FARG=0 R00=Real:"1.00500"
+Out: EC=0 R00=Real:"2.00500"
+Func: fnIsg
+In:  FARG=0 R00=Real:"5.00500"
+Out: EC=0 R00=Real:"6.00500"
+Func: fnIsg
+In:  FARG=0 R00=Real:"1.01002"
+Out: EC=0 R00=Real:"3.01002"
+; --- ISE: increment, skip if equal to limit ---
+Func: fnIse
+In:  FARG=0 R00=Real:"1.00500"
+Out: EC=0 R00=Real:"2.00500"
+Func: fnIse
+In:  FARG=0 R00=Real:"5.00500"
+Out: EC=0 R00=Real:"6.00500"
+; --- ISZ: increment, skip if zero ---
+Func: fnIsz
+In:  FARG=0 R00=Real:"1.00500"
+Out: EC=0 R00=Real:"2.00500"
+Func: fnIsz
+In:  FARG=0 R00=Real:"-1.00500"
+Out: EC=0 R00=Real:"-0.00500"
+; --- DSE: decrement by step, skip if equal-or-less ---
+Func: fnDse
+In:  FARG=0 R00=Real:"5.00100"
+Out: EC=0 R00=Real:"4.00100"
+Func: fnDse
+In:  FARG=0 R00=Real:"1.00100"
+Out: EC=0 R00=Real:"0.00100"
+; --- DSL: decrement, skip if less than limit ---
+Func: fnDsl
+In:  FARG=0 R00=Real:"5.00100"
+Out: EC=0 R00=Real:"4.00100"
+Func: fnDsl
+In:  FARG=0 R00=Real:"1.00100"
+Out: EC=0 R00=Real:"0.00100"
+; --- DSZ: decrement, skip if zero ---
+Func: fnDsz
+In:  FARG=0 R00=Real:"5.00100"
+Out: EC=0 R00=Real:"4.00100"
+Func: fnDsz
+In:  FARG=0 R00=Real:"1.00100"
+Out: EC=0 R00=Real:"0.00100"
+; --- non-real register branch (fp=0, target=0, step=1): plain +/-1 ---
+Func: fnIsg
+In:  FARG=0 R00=LonI:"3"
+Out: EC=0 R00=LonI:"4"
+Func: fnDse
+In:  FARG=0 R00=LonI:"3"
+Out: EC=0 R00=LonI:"2"
