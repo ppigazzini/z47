@@ -27,6 +27,7 @@ const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
+const display_string_transform = @import("display_string_transform.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -154,64 +155,15 @@ const STD_OBLIQUE3 = "\xa4\x25";
 // convertDigits
 // ---------------------------------------------------------------------------
 pub export fn convertDigits(refstr: [*c]u8, outstr: [*c]u8) callconv(.c) void {
-    var ii: u16 = 0;
-    var oo: u16 = 0;
-    outstr[0] = 0;
-
-    while (refstr[ii] != 0) {
-        const c = refstr[ii];
-        switch (c) {
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' => {
-                outstr[oo] = STD_SUB_0[0];
-                oo +%= 1;
-                outstr[oo] = STD_SUB_0[1] +% (c -% '0');
-                oo +%= 1;
-            },
-            't', 'i', 'c', 'k', 'x', 'y', 'a', 's' => {
-                outstr[oo] = STD_SUB_a[0];
-                oo +%= 1;
-                outstr[oo] = STD_SUB_a[1] +% (c -% 'a');
-                oo +%= 1;
-            },
-            ':' => {
-                outstr[oo] = STD_RATIO[0];
-                oo +%= 1;
-                outstr[oo] = STD_RATIO[1];
-                oo +%= 1;
-            },
-            '+' => {
-                outstr[oo] = STD_SUB_PLUS[0];
-                oo +%= 1;
-                outstr[oo] = STD_SUB_PLUS[1];
-                oo +%= 1;
-            },
-            '-' => {
-                outstr[oo] = STD_SUB_MINUS[0];
-                oo +%= 1;
-                outstr[oo] = STD_SUB_MINUS[1];
-                oo +%= 1;
-            },
-            ',' => {
-                outstr[oo] = STD_SINGLE_LOW_QUOTE[0];
-                oo +%= 1;
-                outstr[oo] = STD_SINGLE_LOW_QUOTE[1];
-                oo +%= 1;
-            },
-            '/' => {
-                outstr[oo] = STD_OBLIQUE3[0];
-                oo +%= 1;
-                outstr[oo] = STD_OBLIQUE3[1];
-                oo +%= 1;
-            },
-            // '.' falls through to default in C.
-            else => {
-                outstr[oo] = refstr[ii];
-                oo +%= 1;
-            },
-        }
-        ii +%= 1;
-    }
-    outstr[oo] = 0;
+    display_string_transform.convertDigits(outstr, refstr, .{
+        .sub_0 = STD_SUB_0[0..2].*,
+        .sub_a = STD_SUB_a[0..2].*,
+        .ratio = STD_RATIO[0..2].*,
+        .sub_plus = STD_SUB_PLUS[0..2].*,
+        .sub_minus = STD_SUB_MINUS[0..2].*,
+        .low_quote = STD_SINGLE_LOW_QUOTE[0..2].*,
+        .oblique3 = STD_OBLIQUE3[0..2].*,
+    });
 }
 
 // ---------------------------------------------------------------------------
