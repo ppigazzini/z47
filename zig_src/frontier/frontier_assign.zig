@@ -138,7 +138,7 @@ const NOT_CONFIRMED: u16 = 9878;
 const NOPARAM: u16 = 9876;
 const INVALID_VARIABLE: i16 = 2199;
 const FIRST_LABEL: i16 = 2200;
-const LAST_ITEM: i32 = 2860;
+const LAST_ITEM: i32 = 2870;
 const CAT_STATUS: u16 = 240;
 const CAT_FNCT: u16 = 16;
 

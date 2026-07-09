@@ -34,6 +34,19 @@ pub export fn fnPgmSlv(label: u16) callconv(.c) void {
     runtime.reportOutOfRange(label);
 }
 
+pub export fn fnPgmPlt(label: u16) callconv(.c) void {
+    // solve.c: fnPgmPlt(label) { fnPgmSlv(label); } -- faithful delegation.
+    fnPgmSlv(label);
+}
+
+pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
+    // PENDING faithful port of solve.c:fnMvarPlot -- the RPN-grapher launch
+    // (SOLVER_STATUS_RPN_GRAPHER + fnPlotf), part of the testSuite-blind
+    // graph/plot rework. Stubbed so the all-Zig product build links; the full
+    // behavioral port is deferred to the graph-rework re-sync slice.
+    _ = labelOrVariable;
+}
+
 pub export fn fnPgmInt(label: u16) callconv(.c) void {
     if (runtime.isLabel(label)) {
         runtime.currentSolverProgram = runtime.labelToProgram(label);
