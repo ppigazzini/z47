@@ -356,7 +356,7 @@ jobs:
           path: |
             .zig-cache
             ~/.cache/zig
-          key: zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          key: zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}
           restore-keys: |
             zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-linux-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
@@ -649,7 +649,7 @@ jobs:
           path: |
             .zig-cache
             ~/.cache/zig
-          key: zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          key: zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}
           restore-keys: |
             zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-linux-docs-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
@@ -728,7 +728,7 @@ jobs:
           path: |
             .zig-cache
             ~/.cache/zig
-          key: zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          key: zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}
           restore-keys: |
             zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-linux-firmware-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
@@ -877,7 +877,7 @@ jobs:
           path: |
             .zig-cache
             ~/Library/Caches/zig
-          key: zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          key: zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}
           restore-keys: |
             zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-macos-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
@@ -1179,7 +1179,7 @@ jobs:
         with:
           path: |
             .zig-cache
-          key: zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-${{ github.sha }}
+          key: zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}
           restore-keys: |
             zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-${{ github.ref_name }}-
             zig-build-windows-host-${{ runner.os }}-${{ runner.arch }}-${{ steps.toolchain.outputs.version }}-${{ env.ZIG_BUILD_CACHE_VERSION }}-
