@@ -1,5 +1,6 @@
 const runtime = @import("memory_runtime.zig");
-const block_math = @import("block_math.zig");
+const abi = @import("abi");
+const block_math = abi.block_math;
 
 fn toBytesSize(block_count: usize) usize {
     return block_math.toBytes(usize, block_count);

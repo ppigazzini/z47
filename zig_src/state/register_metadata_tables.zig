@@ -1,6 +1,6 @@
 const build_options = @import("register_metadata_build_options");
 const descriptor_storage = @import("register_descriptor_storage.zig");
-const block_math = @import("block_math.zig");
+const block_math = abi.block_math;
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and

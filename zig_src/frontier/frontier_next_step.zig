@@ -210,7 +210,7 @@ inline fn real34ToUInt32(src: *align(1) const real34_t) u32 {
     return decQuadToUInt32(src, &ctxtReal34, DEC_ROUND_DOWN);
 }
 inline fn toBytes(n: u16) u32 {
-    return @as(u32, n) << 2;
+    return abi.block_math.toBytes(u32, n);
 }
 
 // ===========================================================================

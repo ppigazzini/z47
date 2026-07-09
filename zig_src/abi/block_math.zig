@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //! Byte <-> allocation-block arithmetic, the single tested source for the
-//! conversion that a dozen state owners had each open-coded (memory.zig,
-//! memory_gmp_alloc.zig, memory_debug.zig, memory_resize_program.zig,
-//! memory_runtime.zig, program_serialization_pointer.zig,
-//! keyboard_state_runtime.zig, register_metadata_tables.zig,
-//! register_metadata_local_registers.zig). Every copy computed the same thing --
-//! round bytes up to whole blocks, and multiply blocks back to bytes -- but with
-//! different integer widths (u16 / u32 / usize / u64).
+//! conversion that a dozen state owners and several frontier owners had each
+//! open-coded -- round bytes up to whole blocks, and multiply blocks back to
+//! bytes. The frontier PC-memory helpers map the same 4-byte calc blocks into
+//! the simulator's flat `ram`, so they share this arithmetic; it lives in abi
+//! (the L1 shared layer) because both subsystems use it, reachable as
+//! `abi.block_math`.
 //!
 //! The functions are width-parameterised so each owner keeps its exact return
 //! type: memory_runtime needs the overflow-safe u64 on 32-bit firmware, while
-//! the rest stay usize/u16. Imports only std, so it runs under
+//! others stay usize/u16/u32. Imports only std, so it runs under
 //! `zig build test:unit`; the block sizing is also behaviour-checked by the
-//! memory_parity oracle.
+//! memory_parity oracle. (frontier_xeqm keeps a local variant that @bitCasts a
+//! signed count and wrap-adds, deliberately not routed here.)
 
 const std = @import("std");
 

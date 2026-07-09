@@ -883,10 +883,10 @@ extern fn SetSetting(jmConfig: u16) void;
 // Inline helpers mirroring c47.h macros.
 // ---------------------------------------------------------------------------
 inline fn toBlocks(n: u32) u32 {
-    return (n + (BYTES_PER_BLOCK - 1)) >> BPB;
+    return abi.block_math.toBlocks(u32, n);
 }
 inline fn toBytes(n: u32) u32 {
-    return n << BPB;
+    return abi.block_math.toBytes(u32, n);
 }
 // TO_PCMEMPTR(p): (p==C47_NULL)?NULL:ram+p  (p is a 16-bit block index)
 inline fn toPcMemPtr(p: u32) ?*anyopaque {
