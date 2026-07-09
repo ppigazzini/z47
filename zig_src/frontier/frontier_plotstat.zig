@@ -82,6 +82,7 @@ const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig
 const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
 const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const display_string_transform = @import("display_string_transform.zig");
 const real_t = abi.Real;
 comptime {
     if (@sizeOf(real_t) != 60) @compileError("real_t must be 60 bytes");
@@ -899,23 +900,7 @@ pub export fn graph_axis() callconv(.c) void {
 // radixProcess
 // ===========================================================================
 pub export fn radixProcess(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8 {
-    var ix: i8 = 0;
-    var iy: i8 = 0;
-
-    while (ss[@intCast(ix)] != 0) {
-        if (ss[@intCast(ix)] == ',' or ss[@intCast(ix)] == '.') {
-            output[@intCast(iy)] = radix34MarkChar();
-            iy += 1;
-        } else if (ss[@intCast(ix)] == '#') {
-            output[@intCast(iy)] = ';';
-            iy += 1;
-        } else {
-            output[@intCast(iy)] = ss[@intCast(ix)];
-            iy += 1;
-        }
-        ix += 1;
-    }
-    output[@intCast(iy)] = 0;
+    _ = display_string_transform.radixProcess(output, ss, radix34MarkChar());
     return output;
 }
 
@@ -923,56 +908,14 @@ pub export fn radixProcess(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8
 // nanCheck
 // ===========================================================================
 pub export fn nanCheck(s02: [*c]u8) callconv(.c) void {
-    if (stringByteLength(s02) > 2) {
-        var ix: i32 = 2;
-        while (s02[@intCast(ix)] != 0) : (ix += 1) {
-            if (s02[@intCast(ix)] == 'n' and s02[@intCast(ix - 1)] == 'a' and s02[@intCast(ix - 2)] == 'n') {
-                if (s02[0] == '(' and s02[@intCast(ix + 1)] != 0) {
-                    _ = strcpy(s02, "(NaN");
-                } else if (s02[0] == ';' and s02[@intCast(stringByteLength(s02) - 1)] == ')' and s02[@intCast(ix + 1)] != 0 and s02[@intCast(ix + 2)] != 0) {
-                    _ = strcpy(s02, ";NaN)");
-                }
-            }
-        }
-    }
+    display_string_transform.nanCheck(s02);
 }
 
 // ===========================================================================
 // padEquals
 // ===========================================================================
 pub export fn padEquals(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8 {
-    var ix: i8 = 0;
-    var iy: i8 = 0;
-
-    while (ss[@intCast(ix)] != 0) {
-        if ((ss[@intCast(ix)] & 0x80) == 0) {
-            if (ss[@intCast(ix)] == '=') {
-                output[@intCast(iy)] = STD_SPACE_PUNCTUATION[0];
-                iy += 1;
-                output[@intCast(iy)] = STD_SPACE_PUNCTUATION[1];
-                iy += 1;
-                output[@intCast(iy)] = '=';
-                iy += 1;
-                output[@intCast(iy)] = STD_SPACE_PUNCTUATION[0];
-                iy += 1;
-                output[@intCast(iy)] = STD_SPACE_PUNCTUATION[1];
-                iy += 1;
-            } else {
-                output[@intCast(iy)] = ss[@intCast(ix)];
-                iy += 1;
-            }
-        } else {
-            output[@intCast(iy)] = ss[@intCast(ix)];
-            iy += 1;
-            if (ss[@intCast(ix + 1)] != 0) {
-                ix += 1;
-                output[@intCast(iy)] = ss[@intCast(ix)];
-                iy += 1;
-            }
-        }
-        ix += 1;
-    }
-    output[@intCast(iy)] = 0;
+    _ = display_string_transform.padEquals(output, ss, STD_SPACE_PUNCTUATION[0..2].*);
     return output;
 }
 
@@ -980,32 +923,7 @@ pub export fn padEquals(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8 {
 // smallE
 // ===========================================================================
 pub export fn smallE(output: [*c]u8, ss: [*c]const u8) callconv(.c) [*c]u8 {
-    var ix: i8 = 0;
-    var iy: i8 = 0;
-
-    while (ss[@intCast(ix)] != 0) {
-        if ((ss[@intCast(ix)] & 0x80) == 0) {
-            if (ss[@intCast(ix)] == 'E') {
-                output[@intCast(iy)] = STD_SUB_E[0];
-                iy += 1;
-                output[@intCast(iy)] = STD_SUB_E[1];
-                iy += 1;
-            } else {
-                output[@intCast(iy)] = ss[@intCast(ix)];
-                iy += 1;
-            }
-        } else {
-            output[@intCast(iy)] = ss[@intCast(ix)];
-            iy += 1;
-            if (ss[@intCast(ix + 1)] != 0) {
-                ix += 1;
-                output[@intCast(iy)] = ss[@intCast(ix)];
-                iy += 1;
-            }
-        }
-        ix += 1;
-    }
-    output[@intCast(iy)] = 0;
+    _ = display_string_transform.smallE(output, ss, STD_SUB_E[0..2].*);
     return output;
 }
 
