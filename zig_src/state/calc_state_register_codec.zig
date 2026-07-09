@@ -482,50 +482,10 @@ fn dataFileCommaToPeriod(str: [*c]u8) void {
 }
 
 // Normalize any accepted complex form -- "(3-i4)", "+3+i4", "i4", stock "3 -4" --
-// into the stock "re im" form the parser below expects. Faithful port of
-// saveRestoreCalcState.c standardiseComplex.
+// into the stock "re im" form the parser below expects. The pure text transform
+// lives in the shared std-only abi.complex_text module (dest is a 200-byte scratch).
 fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
-    var work: [200]u8 = undefined;
-    var w: usize = 0;
-    var src = src_in;
-    const isIform = strchr(src, 'i') != null;
-    while (src[0] != 0) : (src += 1) {
-        const ch = src[0];
-        if (ch == '(' or ch == ')') continue;
-        if (isIform and (ch == ' ' or ch == '\t' or ch == '\n' or ch == '\r')) continue;
-        work[w] = ch;
-        w += 1;
-    }
-    work[w] = 0;
-
-    if (!isIform) {
-        var start: usize = 0;
-        while (work[start] == ' ' or work[start] == '\t' or work[start] == '\n' or work[start] == '\r') start += 1;
-        while (w > start and (work[w - 1] == ' ' or work[w - 1] == '\t' or work[w - 1] == '\n' or work[w - 1] == '\r')) {
-            w -= 1;
-            work[w] = 0;
-        }
-        _ = strcpy(dest, &work[start]); // already the stock "re im" form
-        return;
-    }
-
-    var ip: usize = 0;
-    while (work[ip] != 'i') : (ip += 1) {} // guaranteed present (isIform)
-    if (ip == 0) {
-        abi.fmtCStr(dest, "0 +{s}", .{std.mem.sliceTo(work[1..], 0)}); // leading 'i' (e.g. "i4" == 0+i4)
-        return;
-    }
-    var imSign: u8 = work[ip - 1]; // sign sits right before 'i'
-    const imMag: [*c]u8 = &work[ip + 1];
-    var realLen: usize = ip - 1;
-    if (imSign != '+' and imSign != '-') { // malformed: treat that char as real, assume '+'
-        imSign = '+';
-        realLen = ip;
-    }
-    var realStr: [200]u8 = undefined;
-    _ = xcopy(&realStr[0], &work[0], @intCast(realLen));
-    realStr[realLen] = 0;
-    abi.fmtCStr(dest, "{s} {c}{s}", .{ std.mem.sliceTo(realStr[0..], 0), @as(u8, @intCast(@as(c_int, imSign))), @as([*:0]const u8, imMag) });
+    abi.complex_text.standardiseComplex(src_in, dest[0..200]);
 }
 
 // Parse one register value (the inverse of registerToSaveString). `type_str`
