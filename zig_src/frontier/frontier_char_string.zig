@@ -128,18 +128,7 @@ inline fn minI(a: i32, b: i32) i32 {
 // charCodeFromString
 // ---------------------------------------------------------------------------
 pub export fn charCodeFromString(ch: [*c]const u8, offset: ?*u16) callconv(.c) u16 {
-    var loffset: u16 = if (offset != null) offset.?.* else 0;
-
-    var charCode: u16 = ch[loffset];
-    loffset +%= 1;
-    if (charCode & 0x0080 != 0) {
-        charCode = (charCode << 8) | @as(u16, ch[loffset]);
-        loffset +%= 1;
-    }
-    if (offset != null) {
-        offset.?.* = loffset;
-    }
-    return charCode;
+    return abi.glyph_code.charCodeFromString(ch, offset);
 }
 
 // STD_* byte sequences.
