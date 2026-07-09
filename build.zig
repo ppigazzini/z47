@@ -61,6 +61,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/mathematics/math_real_predicates.zig",
         "zig_src/abi/int_math.zig",
+        "zig_src/abi/shortint_arith.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");

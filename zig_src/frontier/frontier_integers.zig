@@ -16,6 +16,7 @@
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
 const integer_pure = abi.int_math;
+const arith = abi.shortint_arith;
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
 const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
@@ -82,6 +83,17 @@ extern var temporaryInformation: u8;
 
 extern fn setSystemFlag(flag: c_uint) void;
 extern fn clearSystemFlag(flag: c_uint) void;
+
+// Snapshot the live short-integer mode globals into the value passed to the pure
+// abi.shortint_arith core (which reads no globals of its own).
+inline fn intMode() arith.IntMode {
+    return .{
+        .mode = shortIntegerMode,
+        .mask = shortIntegerMask,
+        .sign_bit = shortIntegerSignBit,
+        .word_size = shortIntegerWordSize,
+    };
+}
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
@@ -161,95 +173,34 @@ pub export fn longIntegerSubtract(opY: *mpz_struct, opX: *mpz_struct, result: *m
 // ===========================================================================
 
 // Helper for add/sub overflow. Only call when signs match (add) / differ (sub).
+// Delegates the per-mode decision to the pure abi core; keeps the flag/bug-screen
+// side effects here.
 fn WP34S_calc_overflow(xv: u64, yv: u64, neg: i32) i32 {
-    var u: u64 = undefined;
-    var i: i32 = undefined;
-
-    switch (shortIntegerMode) {
-        SIM_UNSIGN => {
-            u = (yv & (shortIntegerSignBit - 1)) +% (xv & (shortIntegerSignBit - 1));
-            i = @as(i32, if ((u & shortIntegerSignBit) != 0) 1 else 0) +
-                @as(i32, if ((xv & shortIntegerSignBit) != 0) 1 else 0) +
-                @as(i32, if ((yv & shortIntegerSignBit) != 0) 1 else 0);
-            if (i > 1) {
-                // break -> set overflow
-            } else return 0;
-        },
-        SIM_2COMPL => {
-            u = xv +% yv;
-            if (neg != 0 and u == shortIntegerSignBit) {
-                return 0;
-            }
-            if ((shortIntegerSignBit & u) != 0) {
-                // break
-            } else if ((xv == shortIntegerSignBit and yv != 0) or (yv == shortIntegerSignBit and xv != 0)) {
-                // break
-            } else return 0;
-        },
-        SIM_SIGNMT, SIM_1COMPL => {
-            if ((shortIntegerSignBit & (xv +% yv)) != 0) {
-                // break
-            } else return 0;
-        },
-        else => {
-            frontier_error.displayBugScreen("WP34S_calc_overflow: bad shortIntegerMode");
-            return 0;
-        },
+    if (arith.calcOverflow(intMode(), xv, yv, neg)) |overflowed| {
+        if (overflowed) {
+            setSystemFlag(FLAG_OVERFLOW);
+            return 1;
+        }
+        return 0;
     }
-
-    setSystemFlag(FLAG_OVERFLOW);
-    return 1;
+    frontier_error.displayBugScreen("WP34S_calc_overflow: bad shortIntegerMode");
+    return 0;
 }
 
 pub export fn WP34S_extract_value(val: u64, sign: *i32) callconv(.c) u64 {
-    var value: u64 = val & shortIntegerMask;
-
-    if (shortIntegerMode == SIM_UNSIGN) {
-        sign.* = 0;
-        return value;
-    }
-
-    if ((value & shortIntegerSignBit) != 0) {
-        sign.* = 1;
-        if (shortIntegerMode == SIM_2COMPL) {
-            value = 0 -% value;
-        } else if (shortIntegerMode == SIM_1COMPL) {
-            value = ~value;
-        } else { // SIM_SIGNMT
-            value ^= shortIntegerSignBit;
-        }
-    } else {
-        sign.* = 0;
-    }
-
-    return value & shortIntegerMask;
+    const decoded = arith.extractValue(intMode(), val);
+    sign.* = decoded.sign;
+    return decoded.value;
 }
 
 pub export fn WP34S_build_value(x: u64, sign: i32) callconv(.c) i64 {
-    const value: u64 = x & shortIntegerMask;
-
-    if (sign == 0 or shortIntegerMode == SIM_UNSIGN) {
-        return @bitCast(value);
-    }
-    if (shortIntegerMode == SIM_2COMPL) {
-        return @bitCast((0 -% value) & shortIntegerMask);
-    }
-    if (shortIntegerMode == SIM_1COMPL) {
-        return @bitCast((~value) & shortIntegerMask);
-    }
-    return @bitCast(value | shortIntegerSignBit);
+    return arith.buildValue(intMode(), x, sign);
 }
 
 fn WP34S_multiply_with_overflow(multiplier: u64, multiplicand: u64, overflow: *i32) u64 {
-    const product: u64 = (multiplier *% multiplicand) & shortIntegerMask;
-
-    if (overflow.* == 0 and multiplicand != 0) {
-        const tbm: u64 = if (shortIntegerMode == SIM_UNSIGN) 0 else shortIntegerSignBit;
-        if ((product & tbm) != 0 or product / multiplicand != multiplier) {
-            overflow.* = 1;
-        }
-    }
-    return product;
+    const result = arith.multiplyWithOverflow(intMode(), multiplier, multiplicand, overflow.*);
+    overflow.* = result.overflow;
+    return result.product;
 }
 
 pub export fn WP34S_intAdd(y: u64, x: u64) callconv(.c) u64 {
@@ -501,34 +452,15 @@ pub export fn WP34S_intSign(x: u64) callconv(.c) u64 {
 }
 
 fn WP34S_int_power_helper(base_in: u64, exponent_in: u64, overflow_in: i32) u64 {
-    var base = base_in;
-    var exponent = exponent_in;
-    var overflow = overflow_in;
-    var power: u64 = 1;
-    var i: u32 = 0;
-    var overflow_next: i32 = 0;
+    const result = arith.powerHelper(intMode(), base_in, exponent_in, overflow_in);
 
-    while (i < shortIntegerWordSize and exponent != 0) : (i += 1) {
-        if ((exponent & 1) != 0) {
-            if (overflow_next != 0) {
-                overflow = 1;
-            }
-            power = WP34S_multiply_with_overflow(power, base, &overflow);
-        }
-        exponent >>= 1;
-
-        if (exponent != 0) {
-            base = WP34S_multiply_with_overflow(base, base, &overflow_next);
-        }
-    }
-
-    if (overflow != 0) {
+    if (result.overflow != 0) {
         setSystemFlag(FLAG_OVERFLOW);
     } else {
         clearSystemFlag(FLAG_OVERFLOW);
     }
 
-    return power;
+    return result.power;
 }
 
 pub export fn WP34S_intPower(b: u64, e: u64) callconv(.c) u64 {
