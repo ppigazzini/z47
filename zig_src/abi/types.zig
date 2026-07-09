@@ -685,6 +685,11 @@ pub const shortint_arith = @import("shortint_arith.zig");
 // `abi.sci_format.*`; the register-value converters delegate their buffer work here.
 pub const sci_format = @import("sci_format.zig");
 
+// Shared std-only glyph char-code helpers (1-or-2-byte decode, super/subscript/
+// struck folding for CMP_NAME ordering, compareChar lead difference). Reachable as
+// `abi.glyph_code.*`; frontier_sort delegates its compareChar/compareString cores.
+pub const glyph_code = @import("glyph_code.zig");
+
 /// Byte-exact C `%.<precision>e` written to a raw C pointer + trailing NUL, like
 /// `sprintf(dst, "%.Pe", value)`. The [*c] dest wrappers live here (beside
 /// fmtCStr) so float_format.zig stays extern- and [*c]-free for the oracle.
