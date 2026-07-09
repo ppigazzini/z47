@@ -137,6 +137,51 @@ pub fn rtfFromGlyph(a1: u8, a2: u8, out: [*]u8, g: SupSubRanges) ?usize {
     return d;
 }
 
+/// Rewrite a glyph string to filename-safe characters (stringToFileNameChars).
+/// `glyph_len` is the caller's stringGlyphLength; each iteration consumes one
+/// glyph from `str` (two bytes when the high bit is set, else one) and writes
+/// the mapped byte(s) to `out`, NUL-terminating as it goes: a high-bit glyph and
+/// the control / '/' / '\\' bytes become '_', the reserved |?*:<> bytes become
+/// '-', a '"' becomes one apostrophe (or two when `distinct_quotes`), and any
+/// other byte passes through. Fully self-contained -- no glyph tables.
+pub fn fileNameChars(str: [*]const u8, out: [*]u8, glyph_len: usize, distinct_quotes: bool) void {
+    if (glyph_len == 0) {
+        out[0] = 0;
+        return;
+    }
+    var s = str;
+    var a = out;
+    var i: usize = 0;
+    while (i < glyph_len) : (i += 1) {
+        if ((s[0] & 0x80) != 0) {
+            a[0] = '_';
+            s += 2;
+            a += 1;
+        } else if (s[0] < 0x20 or s[0] == '/' or s[0] == '\\') {
+            a[0] = '_';
+            s += 1;
+            a += 1;
+        } else if (s[0] == '|' or s[0] == '?' or s[0] == '*' or s[0] == ':' or s[0] == '<' or s[0] == '>') {
+            a[0] = '-';
+            s += 1;
+            a += 1;
+        } else if (s[0] == '"') {
+            a[0] = '\'';
+            a += 1;
+            if (distinct_quotes) {
+                a[0] = '\'';
+                a += 1;
+            }
+            s += 1;
+        } else {
+            a[0] = s[0];
+            s += 1;
+            a += 1;
+        }
+        a[0] = 0;
+    }
+}
+
 const testing = std.testing;
 
 const owner_supsub = SupSubRanges{
@@ -167,6 +212,43 @@ test "rtfFromGlyph returns null for a non-sup/sub glyph" {
     // a curly-quote glyph (0xa0,0x18): stringToRTF has no sup/sub match for it.
     try testing.expectEqual(@as(?usize, null), rtfFromGlyph(0xa0, 0x18, &out, owner_supsub));
     try testing.expectEqual(@as(?usize, null), rtfFromGlyph(0x81, 0x00, &out, owner_supsub));
+}
+
+test "fileNameChars maps path separators and controls to underscore" {
+    var out: [32]u8 = undefined;
+    fileNameChars("a/b\\c", &out, 5, false);
+    try testing.expectEqualStrings("a_b_c", std.mem.sliceTo(&out, 0));
+    const ctrl = [_]u8{ 'a', 0x01, 'b', 0 };
+    fileNameChars(&ctrl, &out, 3, false);
+    try testing.expectEqualStrings("a_b", std.mem.sliceTo(&out, 0));
+}
+
+test "fileNameChars maps reserved characters to dash" {
+    var out: [32]u8 = undefined;
+    fileNameChars("a:b*c?", &out, 6, false);
+    try testing.expectEqualStrings("a-b-c-", std.mem.sliceTo(&out, 0));
+}
+
+test "fileNameChars folds a quote, doubling it only with distinct_quotes" {
+    var out: [32]u8 = undefined;
+    fileNameChars("a\"b", &out, 3, false);
+    try testing.expectEqualStrings("a'b", std.mem.sliceTo(&out, 0));
+    fileNameChars("a\"b", &out, 3, true);
+    try testing.expectEqualStrings("a''b", std.mem.sliceTo(&out, 0));
+}
+
+test "fileNameChars turns a two-byte glyph into a single underscore" {
+    var out: [32]u8 = undefined;
+    const in = [_]u8{ 0xa4, 0x82, 'x', 0 }; // one glyph + 'x' = 2 glyphs
+    fileNameChars(&in, &out, 2, false);
+    try testing.expectEqualStrings("_x", std.mem.sliceTo(&out, 0));
+}
+
+test "fileNameChars on an empty string yields an empty result" {
+    var out: [4]u8 = undefined;
+    out[0] = 'Z';
+    fileNameChars("", &out, 0, false);
+    try testing.expectEqual(@as(u8, 0), out[0]);
 }
 
 // The owner's frontier_char_string.zig glyph constants, verbatim.
