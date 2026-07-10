@@ -844,8 +844,14 @@ void fnAngularMode(uint16_t am) {
 
 
 
+// External ADM encoding (legacy RCL ADM): 0=DEG, 1=D.MS, 2=RAD, 3=MULT<pi>, 4=GRAD; differs from angularMode_t order
+TO_QSPI const uint8_t angularModeToAdm[5] = { 2, 4, 0, 1, 3 };                                    // indexed by angularMode_t: amRadian, amGrad, amDegree, amDMS, amMultPi
+TO_QSPI static const uint8_t admToAngularMode[] = { amDegree, amDMS, amRadian, amMultPi, amGrad };// indexed by external ADM value
+
+
+
 void fnGetADM(uint16_t unusedButMandatoryParameter) {
-  fnIntInputLongint(currentAngularMode);
+  fnIntInputLongint(admValue());
 }
 
 
@@ -857,8 +863,8 @@ void fnSetADM(uint16_t regist) {
   }
   uint32_t value;
   longIntegerToUInt32(lgInt, value);
-  if(value < amNone) {
-    fnAngularMode(value);
+  if(value < nbrOfElements(admToAngularMode)) {
+    fnAngularMode(admToAngularMode[value]);
   }
 end:
   longIntegerFree(lgInt);

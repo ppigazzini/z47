@@ -776,7 +776,7 @@ static int xportpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     return JIM_ERR;
   }
   utf8ToString((const uint8_t *)labelName, internalLabel);
-  calcRegister_t label = findNamedLabel(internalLabel);
+  calcRegister_t label = findNamedLabel(internalLabel, GLOBAL_LABELS);
   if(label == INVALID_VARIABLE) {
     Jim_SetResultFormatted(interp, "xportp: '%s' not found as a global label", labelName);
     return JIM_ERR;
