@@ -23,6 +23,7 @@ else
 const glyph_t = abi.Glyph;
 
 const font_t = abi.Font;
+const glyph_font_search = @import("glyph_font_search.zig"); // std+abi pure search
 
 extern var glyphNotFound: glyph_t;
 
@@ -50,43 +51,11 @@ const hexaFont: [64]u8 linksection(hexa_font_section) = .{
 // The single binary-search core: exact charCode match, returns the index or -1
 // on a miss (no id-based fallback, so a miss is never mistaken for index 0).
 pub export fn findGlyphExact(font: *const font_t, charCode: u16) callconv(.c) i16 {
-    const glyphs: [*]const glyph_t = @ptrCast(&font.glyphs);
-
-    var first: i16 = 0;
-    var last: i16 = @as(i16, @intCast(font.numberOfGlyphs)) - 1;
-
-    var middle: i16 = @divTrunc(first + last, 2);
-    while (last > first + 1) {
-        if (charCode < glyphs[@intCast(middle)].charCode) {
-            last = middle;
-        } else {
-            first = middle;
-        }
-        middle = @divTrunc(first + last, 2);
-    }
-
-    if (glyphs[@intCast(first)].charCode == charCode) {
-        return first;
-    }
-    if (glyphs[@intCast(last)].charCode == charCode) {
-        return last;
-    }
-    return -1;
+    return glyph_font_search.findGlyphExact(font, charCode);
 }
 
-// Public wrapper: index on a hit, else the original id-based not-found codes.
 pub export fn findGlyph(font: *const font_t, charCode: u16) callconv(.c) i16 {
-    const id = findGlyphExact(font, charCode);
-    if (id >= 0) {
-        return id;
-    }
-    if (font.id == 1) {
-        return -1;
-    }
-    if (font.id == 0) {
-        return -2;
-    }
-    return 0;
+    return glyph_font_search.findGlyph(font, charCode);
 }
 
 pub export fn generateNotFoundGlyph(font: i16, charCodeArg: u16) callconv(.c) void {
