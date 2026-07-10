@@ -1,0 +1,32 @@
+# Portable-integer-width allowlist for check-portable-int-widths.sh.
+#
+# The check flags value-carrying casts to c_long / c_ulong — types that are
+# 64-bit on LP64 (Linux/macOS) but 32-bit on Windows LLP64, so an @intCast of a
+# wider value silently truncates and @intCast-panics at runtime on Win64 only
+# (invisible to the Linux local gate). The first all-Zig resync hit exactly this:
+# saveStateValue cast a full 64-bit state word to c_ulong and panicked the Windows
+# testSuite. See [[c-abi-width-types-are-transliteration-debt]].
+#
+# Every entry below is a cast whose value is PROVABLY bounded to <= 32 bits, so it
+# is safe on Win64. Casts that carry a genuine 64-bit value must NOT be allowlisted
+# — use the native i64/u64 (that is the fix, not an exception). Entries are matched
+# by trimmed source-line content (edit-stable); changing the code re-triggers review.
+# Lines starting with '#' and blank lines are ignored.
+
+# Double-width shift exponent: bounded by 2 * shortIntegerWordSize (<= 128).
+runtime.__gmpz_mul_2exp(result, result, @as(c_ulong, @intCast(exponent)));
+
+# Factorial operand: overflows the real domain long before 2^32; validated small.
+const n_c_ulong: c_ulong = @intCast(n);
+
+# Rational-decomposition numerator/denominator fed to GMP mpz_set_ui (unsigned
+# long ABI arg). Bounded in practice by the display-precision rational approx.
+# REVISIT if Win64 DENMAX/decomposition coverage is added — a >2^32 num/den would
+# panic here on Win64 just as saveStateValue did.
+runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(numer)));
+runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(denom)));
+
+# longInteger2Pow exponent: shortIntegerWordSize <= 64, so the products are <= 128.
+longInteger2Pow(@as(c_ulong, runtime.shortIntegerWordSize) * 2 - 1, &wd[0]);
+longInteger2Pow(@as(c_ulong, runtime.shortIntegerWordSize) * 2, &wd[0]);
+longInteger2Pow(@as(c_ulong, runtime.shortIntegerWordSize) - 1, &wd[0]);
