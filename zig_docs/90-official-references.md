@@ -5,7 +5,7 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Audit basis: 2026-07-11, upstream pin `d1b643e7`, Zig `0.16.0` stable.
 
 ## Reference Map
 
@@ -71,6 +71,39 @@ checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.en
 - [CONTRIBUTING.md](../CONTRIBUTING.md): maintained contributor workflow and
   verification contract.
 - [build.zig](../build.zig): live repo-root build router for this repository.
+
+## Zig Idiom And Style Guidance (secondary)
+
+There is no single official Zig style guide beyond `zig fmt` and the standard
+library's naming conventions, so these are community/secondary sources. They are
+the external basis for the idiom ratchet
+([.github/project/report-idiom-status.py](../.github/project/report-idiom-status.py))
+and for the code-quality assessment kept in the maintainer working notes.
+
+Scope caveat (important, do not misread): z47 is a faithful C→Zig transliteration
+pinned for byte-for-byte upstream parity, so the transliterated owner surface is
+deliberately **non-idiomatic** and cannot satisfy most of these rules — see the
+C-ABI ceiling in
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
+Only the std-only pure-core modules under `zig_src/*` registered in
+[build.zig](../build.zig) `pure_modules` follow this guidance fully. Treat these
+as the yardstick the code is *measured against*, not a description of the whole
+codebase.
+
+- [Bun / oven-sh Zig style guide](https://github.com/oven-sh/style-guide):
+  production-scale Zig conventions (const over var, slices `[]T` over
+  pointer+length, named error sets, tagged unions over bool params, small
+  functions, minimal `@as`/`@intCast`).
+- [Zig naming conventions (Craddock)](https://nathancraddock.com/blog/zig-naming-conventions/):
+  the camelCase-function / PascalCase-type / snake_case-variable conventions the
+  owners follow.
+- [Learning Zig: Style Guide](https://www.openmymind.net/learning_zig/style_guide/):
+  community style reference.
+- [zigcc/zig-idioms](https://github.com/zigcc/zig-idioms): common Zig idiom
+  catalogue.
+- [Zig memory-safety code-review checklist](https://pullpanda.io/blog/zig-code-review-checklist):
+  the allocator / `errdefer` / bounds / optional / overflow checklist the pure
+  cores are reviewed against.
 
 ## Retained Dependency References
 
