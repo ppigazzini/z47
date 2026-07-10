@@ -17,6 +17,9 @@ void     configCommon                 (uint16_t idx);
 void     showSoftmenu                 (int16_t  id);
 void     fnShowVersion                (uint16_t option);
 extern const enum rounding roundingModeTable[7];
+extern const uint8_t angularModeToAdm[5];
+// currentAngularMode in the external ADM encoding (legacy RCL ADM): 0=DEG, 1=D.MS, 2=RAD, 3=MULT<pi>, 4=GRAD
+#define admValue() (currentAngularMode < nbrOfElements(angularModeToAdm) ? angularModeToAdm[currentAngularMode] : 0)
 
 void     fnSetHP35                    (uint16_t unusedButMandatoryParameter);
 void     fnSetJM                      (uint16_t unusedButMandatoryParameter);
