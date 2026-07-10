@@ -918,11 +918,14 @@ jobs:
           # lane. Re-running them here added minutes for zero extra coverage. This
           # lane keeps only what is genuinely macOS-specific: generate the constants
           # blob the app build reads, the ABI struct-layout oracle (the one check
-          # with real per-target ABI sensitivity), the native macOS app build, the
-          # testSuite (macOS runtime behavior -- historically the dyld SIGBUS class),
-          # and the generated outputs.
+          # with real per-target ABI sensitivity), the native unit tests (their pure
+          # modules carry target-sensitive layout/byte-codec/int-width tests the value
+          # oracles do not run), the native macOS app build, the testSuite (macOS
+          # runtime behavior -- historically the dyld SIGBUS class), and the generated
+          # outputs.
           zig build constants
           zig build abi-layout-parity
+          zig build test:unit
           zig build both
           zig build test
           zig build generated
@@ -1142,10 +1145,14 @@ jobs:
           # lane. Re-running them here added minutes for zero extra coverage. This
           # lane keeps only what is genuinely Windows-specific: generate the constants
           # blob the app build reads, the ABI struct-layout oracle (the one check with
-          # real per-target ABI sensitivity), the native Windows app build, the
-          # testSuite (Windows runtime behavior), and the generated outputs.
+          # real per-target ABI sensitivity), the native unit tests (their pure modules
+          # carry target-sensitive layout/byte-codec/int-width tests -- on Windows LLP64
+          # this exercises the integer-width class the value oracles do not), the native
+          # Windows app build, the testSuite (Windows runtime behavior), and the
+          # generated outputs.
           zig build constants
           zig build abi-layout-parity
+          zig build test:unit
           zig build both
           zig build test
           zig build generated
