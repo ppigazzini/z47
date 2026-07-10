@@ -367,7 +367,7 @@ pub fn implementation(comptime runtime: type) type {
                                             if (item == runtime.ITM_XEQ and runtime.dynamicMenuItem > -1) {
                                                 const varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
                                                 if (runtime.strcmp(varCatalogItem, "XEQ") != 0) {
-                                                    const regist = runtime.findNamedLabel(varCatalogItem);
+                                                    const regist = runtime.findNamedLabel(varCatalogItem, runtime.GLOBAL_LABELS);
                                                     if (regist != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
                                                         item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                                                     } else {
@@ -544,7 +544,7 @@ pub fn implementation(comptime runtime: type) type {
             }
             if (in_catalog or runtime.currentMenu() == -runtime.MNU_CONST) {
                 switch (-runtime.currentMenu()) {
-                    runtime.MNU_TAM, runtime.MNU_TAMVARONLY, runtime.MNU_TAMNONREG, runtime.MNU_TAMCMP, runtime.MNU_TAMSTO, runtime.MNU_TAMRCL, runtime.MNU_TAMFLAG, runtime.MNU_TAMSHUFFLE, runtime.MNU_TAMLABEL, runtime.MNU_TAMLBLONLY, runtime.ITM_DELITM => {
+                    runtime.MNU_TAM, runtime.MNU_TAMVARONLY, runtime.MNU_TAMNONREG, runtime.MNU_TAMCMP, runtime.MNU_TAMSTO, runtime.MNU_TAMRCL, runtime.MNU_TAMFLAG, runtime.MNU_TAMSHUFFLE, runtime.MNU_TAMLABEL, runtime.MNU_TAMLBLONLY, runtime.MNU_TAMLOCALLABEL, runtime.ITM_DELITM => {
                         // TAM menus are processed elsewhere.
                     },
                     else => {
@@ -896,7 +896,7 @@ pub fn implementation(comptime runtime: type) type {
             if (runtime.calcMode == runtime.CM_ASSIGN and item != runtime.ITM_NOP and item != runtime.ITM_NULL) {
                 switch (-runtime.softmenu[@intCast(menuId)].menuItem) {
                     runtime.MNU_PROG, runtime.MNU_PROGS => {
-                        return @intCast(@as(i32, runtime.findNamedLabel(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem))) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
+                        return @intCast(@as(i32, runtime.findNamedLabel(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem), runtime.GLOBAL_LABELS)) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                     },
                     runtime.MNU_VAR, runtime.MNU_CONFIGS, runtime.MNU_MATRS, runtime.MNU_DATES, runtime.MNU_TIMES, runtime.MNU_SINTS, runtime.MNU_STRINGS, runtime.MNU_NUMBRS, runtime.MNU_CPXS, runtime.MNU_REALS, runtime.MNU_ANGLES, runtime.MNU_LINTS, runtime.MNU_ALLVARS => {
                         return @intCast(@as(i32, runtime.findNamedVariable(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem))) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
@@ -1650,7 +1650,7 @@ pub fn implementation(comptime runtime: type) type {
                                             if (item == runtime.ITM_XEQ and runtime.tmpString[0] != 0 and (runtime.getSystemFlag(runtime.FLAG_USER) or ((@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and (runtime.keyStateCode == 0) and runtime.Norm_Key_00.used))) {
                                                 var label: [15]u8 = undefined;
                                                 _ = runtime.xcopy(&label, runtime.tmpString, @intCast(runtime.stringByteLength(runtime.tmpString) + 1));
-                                                const regist = runtime.findNamedLabel(&label);
+                                                const regist = runtime.findNamedLabel(&label, runtime.GLOBAL_LABELS);
                                                 if (regist != INVALID_VARIABLE) {
                                                     item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                                                 } else {
@@ -1960,6 +1960,10 @@ pub fn implementation(comptime runtime: type) type {
 
             if (runtime.tam.mode != 0) { // if in TAM mode
                 if (runtime.numberOfTamMenusToPop > 1 and runtime.currentMenu() != -runtime.MNU_TAMALPHA) {
+                    if (runtime.tam.colon and runtime.catalog == 0) {
+                        runtime.tam.colon = false;
+                        runtime.tamProcessInput(runtime.ITM_NOP); // to update the tam buffer
+                    }
                     runtime.popSoftmenu();
                     runtime.numberOfTamMenusToPop -= 1;
                 } else {

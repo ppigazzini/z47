@@ -157,6 +157,15 @@ const STRING_ANGLE_DEGREE: u8 = 20;
 const STRING_ANGLE_DMS: u8 = 21;
 const STRING_ANGLE_MULTPI: u8 = 22;
 const STRING_LABEL_VARIABLE: u8 = 253;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
+
+// namedLabels_t (typeDefinitions.h): the label-scope selector threaded through
+// findNamedLabel/findNamedLabelWithDuplicate. GLOBAL_LABELS and LOCAL_LABELS
+// alias the STRING_/LOCAL_LABEL_VARIABLE op-parameter sentinels so a caller can
+// pass opParam directly.
+pub const GLOBAL_LABELS: u8 = STRING_LABEL_VARIABLE; // 253
+pub const LOCAL_LABELS: u8 = LOCAL_LABEL_VARIABLE; // 249
+pub const ALL_LABELS: u8 = 0;
 
 const TEMP_REGISTER_1: i16 = 135;
 const dtReal34: u32 = 1;
@@ -655,6 +664,9 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
             if (step[1] <= LAST_LOCAL_LABEL) { // Local label
                 labelList[numberOfLabels].step = -@as(i32, @intCast(stepNumber));
                 labelList[numberOfLabels].labelPointer = step + 1;
+            } else if (step[1] == LOCAL_LABEL_VARIABLE) { // Local named label
+                labelList[numberOfLabels].step = -@as(i32, @intCast(stepNumber));
+                labelList[numberOfLabels].labelPointer = step + 2;
             } else { // Global label
                 labelList[numberOfLabels].step = @intCast(stepNumber);
                 labelList[numberOfLabels].labelPointer = step + 2;
@@ -1998,7 +2010,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                     tmpString[opLen + 0] = @intCast(if ((ufunc == ITM_KEYX) or (ufunc == ITM_42KEYX)) ITM_XEQ else ITM_GTO);
                     if (tam.alpha) {
                         const nameLength: u16 = @intCast(stringByteLength(aimBuffer));
-                        tmpString[opLen + 1] = if (tam.indirect) INDIRECT_VARIABLE else STRING_LABEL_VARIABLE;
+                        tmpString[opLen + 1] = if (tam.indirect) INDIRECT_VARIABLE else if (tam.colon) LOCAL_LABEL_VARIABLE else STRING_LABEL_VARIABLE;
                         tmpString[opLen + 2] = @intCast(nameLength);
                         _ = frontier_char_string.xcopy(tmpString + opLen + 3, aimBuffer, nameLength);
                         _insertInProgram(tmpString, @intCast(nameLength + opLen + 3));
@@ -2166,7 +2178,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                 }
             } else if (tam.alpha) {
                 const nameLength: u16 = @intCast(stringByteLength(aimBuffer));
-                tmpString[opBytes2] = if (tam.indirect) INDIRECT_VARIABLE else STRING_LABEL_VARIABLE;
+                tmpString[opBytes2] = if (tam.indirect) INDIRECT_VARIABLE else if (tam.colon) LOCAL_LABEL_VARIABLE else STRING_LABEL_VARIABLE;
                 tmpString[opBytes2 + 1] = @intCast(nameLength);
                 _ = frontier_char_string.xcopy(tmpString + opBytes2 + 2, aimBuffer, nameLength);
                 _insertInProgram(tmpString, @intCast(nameLength + opBytes2 + 2));
@@ -2256,26 +2268,63 @@ pub export fn addStepInProgram(func: i16) callconv(.c) void {
 // ===========================================================================
 // findNamedLabel (public)
 // ===========================================================================
-pub export fn findNamedLabel(labelName: [*c]const u8) callconv(.c) calcRegister_t {
-    return findNamedLabelWithDuplicate(labelName, 0);
+pub export fn findNamedLabel(labelName: [*c]const u8, labelType: u8) callconv(.c) calcRegister_t {
+    return findNamedLabelWithDuplicate(labelName, 0, labelType);
 }
 
 // ===========================================================================
 // findNamedLabelWithDuplicate (public)
 // ===========================================================================
-pub export fn findNamedLabelWithDuplicate(labelName: [*c]const u8, dupNumIn: i16) callconv(.c) calcRegister_t {
+pub export fn findNamedLabelWithDuplicate(labelName: [*c]const u8, dupNumIn: i16, labelType: u8) callconv(.c) calcRegister_t {
     var dupNum = dupNumIn;
-    var lbl: u16 = 0;
-    while (lbl < numberOfLabels) : (lbl += 1) {
-        if (labelList[lbl].step > 0) {
-            const lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, labelList[lbl].labelPointer[0]);
-            _ = frontier_char_string.xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
-            tmpString[lblNameLen] = 0;
-            if (frontier_sort.compareString(tmpString, labelName, CMP_BINARY) == 0) {
-                if (dupNum <= 0) {
-                    return @intCast(@as(i32, lbl) + FIRST_LABEL);
-                } else {
-                    dupNum -= 1;
+    if ((labelType == ALL_LABELS) or (labelType == LOCAL_LABELS)) { // Start searching for local named labels
+        var labelFound: bool = false;
+        var firstLabel: u16 = 0;
+        var nextLabel: u16 = 0;
+        var lbl: u16 = 0;
+
+        while (lbl < numberOfLabels) : (lbl += 1) {
+            if (labelList[lbl].program > currentProgramNumber) { // After the current program
+                break;
+            }
+            if (labelList[lbl].program == currentProgramNumber) { // Within the current progrm
+                if (labelList[lbl].step < 0 and (labelList[lbl].labelPointer - 1)[0] == LOCAL_LABEL_VARIABLE) { // Is a named local label
+                    const lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, labelList[lbl].labelPointer[0]);
+                    _ = frontier_char_string.xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+                    tmpString[lblNameLen] = 0;
+                    if (frontier_sort.compareString(tmpString, labelName, CMP_BINARY) == 0) { // Label name match
+                        if (!labelFound) { // First label occurence in the current program
+                            firstLabel = lbl;
+                            labelFound = true;
+                        }
+                        const labelLocalStepNumber: i32 = (-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1;
+                        if (labelLocalStepNumber > @as(i32, currentLocalStepNumber)) {
+                            nextLabel = lbl; // First label occurence after the current program step
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        // return local label found, if any
+        if (labelFound) { // If a local label found in the program
+            lbl = if (nextLabel != 0) nextLabel else firstLabel; // First found label label after current program step or the first found label in the program
+            return @intCast(@as(i32, lbl) + FIRST_LABEL);
+        }
+    }
+    if ((labelType == ALL_LABELS) or (labelType == GLOBAL_LABELS)) { // then search global labels
+        var lbl: u16 = 0;
+        while (lbl < numberOfLabels) : (lbl += 1) {
+            if (labelList[lbl].step > 0) {
+                const lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, labelList[lbl].labelPointer[0]);
+                _ = frontier_char_string.xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+                tmpString[lblNameLen] = 0;
+                if (frontier_sort.compareString(tmpString, labelName, CMP_BINARY) == 0) {
+                    if (dupNum <= 0) {
+                        return @intCast(@as(i32, lbl) + FIRST_LABEL);
+                    } else {
+                        dupNum -= 1;
+                    }
                 }
             }
         }

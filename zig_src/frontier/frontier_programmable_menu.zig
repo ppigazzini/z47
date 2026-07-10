@@ -53,6 +53,7 @@ const INDPM_REGISTER: u16 = 1;
 const INVALID_VARIABLE: u16 = 2199;
 const FAILED_INDIRECTION: i16 = 9999;
 const STRING_LABEL_VARIABLE: u8 = 253;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
 const INDIRECT_REGISTER: u8 = 254;
 const INDIRECT_VARIABLE: u8 = 255;
 
@@ -234,9 +235,9 @@ fn _get2ndParamOfKey(paramAddress_arg: [*c]u8) u16 {
 
     if (opParam <= 109) { // Local label from 00 to 99 or from A to J
         return opParam;
-    } else if (opParam == STRING_LABEL_VARIABLE) {
+    } else if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
         _getStringLabelOrVariableName(paramAddress);
-        const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName);
+        const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName, opParam);
         if (label != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
             return @bitCast(label);
         } else {

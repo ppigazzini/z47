@@ -315,6 +315,8 @@ const SOLVER_STATUS_INTERACTIVE: u16 = 2;
 
 // literal types
 const STRING_LABEL_VARIABLE: u8 = 253;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
+const ITM_COLON: i16 = 822;
 const BINARY_SHORT_INTEGER: u8 = 1;
 const STRING_SHORT_INTEGER: u8 = 7;
 const STRING_LONG_INTEGER: u8 = 8;
@@ -1751,7 +1753,7 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
     var i = ip.*;
     var regNumber: u16 = undefined;
     const paramMode: u16 = (indexOfItems[@intCast(func)].status & PTP_STATUS) >> 9;
-    if ((opParam == STRING_LABEL_VARIABLE) or (opParam == INDIRECT_VARIABLE)) {
+    if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE) or (opParam == INDIRECT_VARIABLE)) {
         index.* = 0;
         while (index.* < opParam2) : (index.* += 1) {
             varOrLblName[@intCast(index.*)] = currentStep[@intCast(i)];
@@ -1834,7 +1836,10 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
                 tam.value = @intCast(opParam / 10);
             }
             frontier_tam.tamProcessInput(@intCast(func));
-            if (opParam == STRING_LABEL_VARIABLE) {
+            if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
+                if (opParam == LOCAL_LABEL_VARIABLE) {
+                    frontier_tam.tamProcessInput(ITM_COLON);
+                }
                 frontier_tam.tamProcessInput(ITM_alpha);
                 if (frontier_char_string.stringGlyphLength(varOrLblName) == 7) {
                     varOrLblName[@intCast(frontier_char_string.stringLastGlyph(varOrLblName))] = 0; // Ensure name is 6 characters maximum

@@ -104,8 +104,11 @@ const VALUE_0: u8 = 251;
 const VALUE_1: u8 = 252;
 const CNST_BEYOND_250: u8 = 250;
 const STRING_LABEL_VARIABLE: u8 = 253;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
 const INDIRECT_REGISTER: u8 = 254;
 const INDIRECT_VARIABLE: u8 = 255;
+const ITM_LBL: u8 = 1;
+const MNU_TAMLOCALLABEL: i16 = 2859;
 const FAILED_INDIRECTION: i16 = 9999;
 
 const TAM_MAX_BITS: u4 = 14;
@@ -445,25 +448,47 @@ pub export fn fnGoto(label: u16) callconv(.c) void {
 
         // Local Label 00 to 99 and A to l
         if (label <= LAST_LOCAL_LABEL) {
-            // Search for local label
+            // Search forwward for the the local label in the current program
+            var labelFound: bool = false;
+            var firstLabel: u16 = 0;
+            var nextLabel: u16 = 0;
             var lbl: u16 = 0;
+
             while (lbl < numberOfLabels) : (lbl += 1) {
-                if (labelList[lbl].program == @as(i16, @bitCast(currentProgramNumber)) and labelList[lbl].step < 0 and labelList[lbl].labelPointer[0] == label) {
-                    if (programRunStop == PGM_RUNNING) {
-                        currentLocalStepNumber = @intCast((-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1);
-                        currentStep = labelList[lbl].labelPointer - 1;
-                    } else {
-                        goToGlobalStep(@intCast(-labelList[lbl].step));
-                    }
-                    return;
+                if (labelList[lbl].program > @as(i16, @bitCast(currentProgramNumber))) { // After the current program
+                    break;
                 }
+                if (labelList[lbl].program == @as(i16, @bitCast(currentProgramNumber))) { // Within the current progrm
+                    if (labelList[lbl].step < 0 and labelList[lbl].labelPointer[0] == label and (labelList[lbl].labelPointer - 1)[0] == ITM_LBL) { // Is a local label and is the searched label
+                        if (!labelFound) { // First label occurence in the current program
+                            firstLabel = lbl;
+                            labelFound = true;
+                        }
+                        const labelLocalStepNumber: i32 = (-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1;
+                        if (labelLocalStepNumber > @as(i32, currentLocalStepNumber)) {
+                            nextLabel = lbl; // First label occurence after the current program step
+                            break;
+                        }
+                    }
+                }
+            }
+            // Goto local label found, if any
+            if (labelFound) { // If a local label found in the program
+                lbl = if (nextLabel != 0) nextLabel else firstLabel; // Will goto the first found label label after current program step or the first found label in teh program
+                if (programRunStop == PGM_RUNNING) {
+                    currentLocalStepNumber = @intCast((-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1);
+                    currentStep = labelList[lbl].labelPointer - 1;
+                } else {
+                    goToGlobalStep(@intCast(-labelList[lbl].step));
+                }
+                return;
             }
 
             frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function fnGoto:", "there is no local label in current program");
-        } else if (label >= FIRST_LABEL and label <= LAST_LABEL) { // Global named label
+        } else if (label >= FIRST_LABEL and label <= LAST_LABEL) { // Global or local named label
             if ((label - FIRST_LABEL) < numberOfLabels) {
-                goToGlobalStep(@intCast(labelList[label - FIRST_LABEL].step));
+                goToGlobalStep(@intCast(absI32(labelList[label - FIRST_LABEL].step)));
                 return;
             } else {
                 frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
@@ -486,6 +511,7 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
 
     if (dynamicMenuItem >= 0) {
         var dupNum: i16 = 0;
+        const localLabel: bool = (softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem == -MNU_TAMLOCALLABEL);
         const labelName: [*c]u8 = frontier_softmenus.dynmenuGetLabelWithDup(dynamicMenuItem, &dupNum);
 
         if (labelName[0] == 0) {
@@ -494,28 +520,11 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
         if ((softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem != -MNU_PROG) and (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem != -MNU_PROGS)) { // Don't apply the dupNum logic in configurable menus
             dupNum = 0;
         }
-
-        const len: i16 = @intCast(stringByteLength(labelName));
-        var lbl: u16 = 0;
-        while (lbl < numberOfLabels) : (lbl += 1) {
-            const lblPtr: [*c]u8 = labelList[lbl].labelPointer;
-            if (labelList[lbl].step > 0 and lblPtr[0] == @as(u8, @intCast(len))) { // It's a global label and the length is OK
-                var c: i16 = 0;
-                while (c < len) : (c += 1) {
-                    if (labelName[@intCast(c)] != lblPtr[@intCast(c + 1)]) {
-                        break;
-                    }
-                }
-                if (c == len) {
-                    if (dupNum <= 0) {
-                        step = labelList[lbl].step;
-                        break;
-                    } else {
-                        dupNum -= 1;
-                    }
-                }
-            }
+        const lbl: calcRegister_t = frontier_manage.findNamedLabelWithDuplicate(labelName, dupNum, if (localLabel) frontier_manage.LOCAL_LABELS else frontier_manage.GLOBAL_LABELS);
+        if (lbl == INVALID_VARIABLE) {
+            return;
         }
+        step = absI32(labelList[@as(u16, @intCast(lbl)) - FIRST_LABEL].step);
     }
 
     frontier_manage.defineCurrentProgramFromGlobalStepNumber(@intCast(step));
@@ -668,21 +677,28 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
     // Not in a subroutine
     else {
         goToPgmStep(currentProgramNumber, 1);
-        if (cur().numberOfLocalRegisters > 0) {
-            allocateLocalRegisters(0);
-        }
-        if (cur().numberOfLocalFlags > 0) {
-            reduceC47Blocks(
-                cur(),
-                toBlocks(@as(u32, @sizeOf(subroutineLevelHeader_t)) + @as(u32, @sizeOf(localFlags_t))),
-                toBlocks(@as(u32, @sizeOf(subroutineLevelHeader_t))),
-            );
-            cur().numberOfLocalFlags = 0;
-        }
-        currentLocalFlags = null;
-        currentLocalRegisters = null;
         pemCursorIsZerothStep = 1;
+        cleanLocalFlagsAndRegisters();
     }
+}
+
+// ===========================================================================
+// cleanLocalFlagsAndRegisters
+// ===========================================================================
+pub fn cleanLocalFlagsAndRegisters() void {
+    if (cur().numberOfLocalRegisters > 0) {
+        allocateLocalRegisters(0);
+    }
+    if (cur().numberOfLocalFlags > 0) {
+        reduceC47Blocks(
+            cur(),
+            toBlocks(@as(u32, @sizeOf(subroutineLevelHeader_t)) + @as(u32, @sizeOf(localFlags_t))),
+            toBlocks(@as(u32, @sizeOf(subroutineLevelHeader_t))),
+        );
+        cur().numberOfLocalFlags = 0;
+    }
+    currentLocalFlags = null;
+    currentLocalRegisters = null;
 }
 
 // ===========================================================================
@@ -768,9 +784,9 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
         PARAM_LABEL => {
             if (opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
                 frontier_items.reallyRunFunction(@bitCast(op), opParam);
-            } else if (opParam == STRING_LABEL_VARIABLE) {
+            } else if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
                 _getStringLabelOrVariableName(paramAddress);
-                const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName);
+                const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName, opParam);
                 if (label != INVALID_VARIABLE or op == ITM_LBLQ) {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(label));
                 } else {
@@ -1303,7 +1319,7 @@ pub export fn execProgram(label: u16) callconv(.c) void {
 pub export fn fnCheckLabel(label_arg: u16) callconv(.c) void {
     var label = label_arg;
     if (dynamicMenuItem >= 0) {
-        label = @bitCast(frontier_manage.findNamedLabel(frontier_softmenus.dynmenuGetLabel(dynamicMenuItem)));
+        label = @bitCast(frontier_manage.findNamedLabel(frontier_softmenus.dynmenuGetLabel(dynamicMenuItem), frontier_manage.ALL_LABELS));
     }
 
     // Local Label 00 to 99 and A to l
@@ -1311,7 +1327,7 @@ pub export fn fnCheckLabel(label_arg: u16) callconv(.c) void {
         // Search for local label
         var lbl: u16 = 0;
         while (lbl < numberOfLabels) : (lbl += 1) {
-            if (labelList[lbl].program == @as(i16, @bitCast(currentProgramNumber)) and labelList[lbl].step < 0 and labelList[lbl].labelPointer[0] == label) {
+            if (labelList[lbl].program == @as(i16, @bitCast(currentProgramNumber)) and labelList[lbl].step < 0 and labelList[lbl].labelPointer[0] == label and (labelList[lbl].labelPointer - 1)[0] == ITM_LBL) {
                 temporaryInformation = TI_TRUE;
                 return;
             }

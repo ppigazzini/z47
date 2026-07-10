@@ -22,7 +22,7 @@ pub export fn fnPgmSlv(label: u16) callconv(.c) void {
         buf[0] = runtime.letteredRegisterName(@intCast(label));
         buf[1] = 0;
 
-        const named_label: u16 = @intCast(runtime.findNamedLabel(@ptrCast(&buf[0])));
+        const named_label: u16 = @intCast(runtime.findNamedLabel(@ptrCast(&buf[0]), runtime.GLOBAL_LABELS));
         if (runtime.isInvalidVariable(named_label)) {
             runtime.reportLabelNotFound(@ptrCast(&buf[0]));
         } else {
@@ -59,7 +59,7 @@ pub export fn fnPgmInt(label: u16) callconv(.c) void {
         buf[0] = runtime.letteredRegisterName(@intCast(label));
         buf[1] = 0;
 
-        const named_label: u16 = @intCast(runtime.findNamedLabel(@ptrCast(&buf[0])));
+        const named_label: u16 = @intCast(runtime.findNamedLabel(@ptrCast(&buf[0]), runtime.GLOBAL_LABELS));
         if (runtime.isInvalidVariable(named_label)) {
             runtime.reportLabelNotFoundPgmInt(@ptrCast(&buf[0]));
         } else {

@@ -189,6 +189,7 @@ pub const TamState = extern struct {
     alpha: bool,
     currentOperation: i16,
     dot: bool,
+    colon: bool,
     indirect: bool,
     digitsSoFar: i16,
     value0: i16,
@@ -554,11 +555,11 @@ comptime {
     std.debug.assert(@offsetOf(SoftmenuStack, "firstItem") == 2);
     std.debug.assert(@offsetOf(SoftmenuStack, "userMenuId") == 4);
     std.debug.assert(@offsetOf(SoftmenuStack, "calcMode") == 6);
-    std.debug.assert(@sizeOf(TamState) == 26);
+    std.debug.assert(@sizeOf(TamState) == 28);
     std.debug.assert(@alignOf(TamState) == 2);
     std.debug.assert(@offsetOf(TamState, "alpha") == 4);
-    std.debug.assert(@offsetOf(TamState, "digitsSoFar") == 10);
-    std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 25);
+    std.debug.assert(@offsetOf(TamState, "digitsSoFar") == 12);
+    std.debug.assert(@offsetOf(TamState, "keyInputFinished") == 27);
     std.debug.assert(@sizeOf(Pcg32Random) == 16);
     std.debug.assert(@offsetOf(Pcg32Random, "inc") == 8);
     std.debug.assert(@sizeOf(RegisterHeader) == 4);

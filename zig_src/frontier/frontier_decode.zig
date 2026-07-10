@@ -77,6 +77,7 @@ const SYSTEM_FLAG_NUMBER: u8 = 250;
 const VALUE_0: u8 = 251;
 const VALUE_1: u8 = 252;
 const STRING_LABEL_VARIABLE: u8 = 253;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
 const INDIRECT_REGISTER: u8 = 254;
 const INDIRECT_VARIABLE: u8 = 255;
 
@@ -404,13 +405,13 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                 abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'A') + (@as(c_int, opParam) - 100))) });
             } else if (opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
                 abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'a') + (@as(c_int, opParam) - FIRST_LC_LOCAL_LABEL))) });
-            } else if (opParam == STRING_LABEL_VARIABLE) {
+            } else if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
                 str = stringCopy(str, op);
-                str = stringCopy(str, " " ++ STD_LEFT_SINGLE_QUOTE);
+                str = stringCopy(str, if (opParam == LOCAL_LABEL_VARIABLE) @as([*c]const u8, " :") else " " ++ STD_LEFT_SINGLE_QUOTE);
                 str = stringCopy(str, tmpStringLabelOrVariableName);
-                str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
+                str = stringCopy(str, if (opParam == LOCAL_LABEL_VARIABLE) @as([*c]const u8, ":") else STD_RIGHT_SINGLE_QUOTE);
             } else {
                 abi.fmtBufZ(tmpString[0..2560], "\nIn function decodeOp case PARAM_DECLARE_LABEL: opParam {d} is not a valid label!\n", .{@as(u32, opParam)});
             }
@@ -423,13 +424,13 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
                 abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'A') + (@as(c_int, opParam) - 100))) });
             } else if (opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
                 abi.fmtBufZ(tmpString[0..2560], "{s} {c}", .{ std.mem.span(op), @as(u8, @intCast(@as(c_int, 'a') + (@as(c_int, opParam) - FIRST_LC_LOCAL_LABEL))) });
-            } else if (opParam == STRING_LABEL_VARIABLE) {
+            } else if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
                 var str: [*c]u8 = tmpString;
                 getStringLabelOrVariableName(paramAddress);
                 str = stringCopy(str, op);
-                str = stringCopy(str, " " ++ STD_LEFT_SINGLE_QUOTE);
+                str = stringCopy(str, if (opParam == LOCAL_LABEL_VARIABLE) @as([*c]const u8, " :") else " " ++ STD_LEFT_SINGLE_QUOTE);
                 str = stringCopy(str, tmpStringLabelOrVariableName);
-                str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
+                str = stringCopy(str, if (opParam == LOCAL_LABEL_VARIABLE) @as([*c]const u8, ":") else STD_RIGHT_SINGLE_QUOTE);
             } else if (opParam == INDIRECT_REGISTER) {
                 getIndirectRegister(paramAddress, op);
             } else if (opParam == INDIRECT_VARIABLE) {

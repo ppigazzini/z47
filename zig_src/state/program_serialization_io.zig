@@ -32,7 +32,7 @@ const labelList_t = abi.LabelList;
 const programList_t = abi.ProgramList;
 
 // Only the fields consumed here are modelled; alpha sits at offset 4 and
-// digitsSoFar at offset 10, matching upstream tamState_t.
+// digitsSoFar at offset 12, matching upstream tamState_t.
 const tamState_t = abi.TamState;
 
 comptime {
@@ -43,7 +43,7 @@ comptime {
     std.debug.assert(@offsetOf(labelList_t, "labelPointer") == 8);
     std.debug.assert(@offsetOf(programList_t, "step") == 0);
     std.debug.assert(@offsetOf(tamState_t, "alpha") == 4);
-    std.debug.assert(@offsetOf(tamState_t, "digitsSoFar") == 10);
+    std.debug.assert(@offsetOf(tamState_t, "digitsSoFar") == 12);
 }
 
 extern var labelList: ?[*]labelList_t;

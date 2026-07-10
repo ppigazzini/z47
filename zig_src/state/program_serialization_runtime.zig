@@ -27,7 +27,8 @@ pub extern var numberOfLabels: u16;
 pub extern var temporaryInformation: u8;
 
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
-pub extern fn findNamedLabel(labelName: [*c]const u8) u16;
+pub const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
+pub extern fn findNamedLabel(labelName: [*c]const u8, labelType: u8) u16;
 
 pub const ioPathSaveProgram: c_int = 8;
 pub const ioPathSaveAllPrograms: c_int = 12;

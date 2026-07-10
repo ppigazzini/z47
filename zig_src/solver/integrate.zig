@@ -273,7 +273,7 @@ extern fn fnUndo(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;

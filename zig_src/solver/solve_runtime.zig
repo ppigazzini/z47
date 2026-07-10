@@ -29,7 +29,11 @@ pub extern var currentSolverProgram: u16;
 pub extern var currentSolverStatus: u16;
 
 pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
-pub extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+// namedLabels_t label-scope selector (typeDefinitions.h): GLOBAL_LABELS ==
+// STRING_LABEL_VARIABLE (253), LOCAL_LABELS == LOCAL_LABEL_VARIABLE (249),
+// ALL_LABELS == 0.
+pub const GLOBAL_LABELS: u8 = 253;
+pub extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn setSystemFlag(flag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, register_line: calcRegister_t, regist: calcRegister_t) void;
