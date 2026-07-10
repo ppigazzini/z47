@@ -61,6 +61,7 @@ const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -841,50 +842,6 @@ fn setPrinterSBI(status: bool_t) void {
 }
 const SETTING_PRINTERICON: i32 = 134; // defines.h:935 0x86 (was 130; status bar reads 134)
 
-const charWidths = [171]u8{
-    162, 143, 210, 208, 215, 179, 100, 209, 130, 167, 178, 199,
-    215, 85,  107, 123, 160, 172, 172, 88,  178, 177, 208, 208,
-    166, 208, 179, 173, 209, 215, 130, 165, 170, 172, 172, 165,
-    177, 172, 172, 214, 171, 117, 131, 209, 143, 215, 131, 178,
-    215, 213, 143, 201, 213, 179, 172, 214, 170, 172, 215, 209,
-    215, 95,  129, 129, 172, 172, 172, 172, 129, 207, 215, 136,
-    172, 208, 173, 172, 172, 172, 136, 129, 172, 172, 166, 172,
-    172, 112, 135, 147, 129, 171, 130, 129, 176, 131, 141, 208,
-    115, 143, 82,  140, 50,  93,  129, 129, 57,  128, 165, 129,
-    129, 57,  135, 137, 171, 129, 135, 93,  123, 123, 129, 129,
-    87,  195, 129, 129, 129, 131, 57,  135, 141, 172, 171, 131,
-    207, 165, 202, 177, 93,  167, 178, 135, 165, 124, 129, 177,
-    136, 142, 143, 86,  129, 129, 129, 129, 129, 87,  165, 129,
-    129, 129, 129, 129, 129, 129, 129, 129, 123, 129, 129, 129,
-    129, 129, 21,
-};
-const charDivs = [3]u8{ 1, 6, 36 };
-
-fn charlengths(c: u32) u32 {
-    return (@as(u32, charWidths[c / 3]) / charDivs[c % 3]) % 6 + 1;
-}
-
-fn findlengths(posns: *[257]u16, smallp: c_int) void {
-    const mask: c_int = if (smallp != 0) 256 else 0;
-    posns[0] = 0;
-    var i: c_int = 0;
-    while (i < 256) : (i += 1) {
-        posns[@intCast(i + 1)] = posns[@intCast(i)] + @as(u16, @intCast(charlengths(@intCast(i + mask)))) - 1;
-    }
-}
-
-fn pixel_length(s_in: [*c]const u8, smallp: c_int) c_int {
-    var len: c_int = 0;
-    const offset: c_int = if (smallp != 0) 256 else 0;
-    var s = s_in;
-    while (s[0] != 0) {
-        // INCLUDE_FONT_ESCAPE not defined for z47, so the escape branch is dead.
-        len += @intCast(charlengths(@intCast(@as(c_int, s[0]) + offset)));
-        s += 1;
-    }
-    return len;
-}
-
 fn prepareNewLine() void {
     if (comptime dmcp_build) {
         var i: c_int = 0;
@@ -1143,7 +1100,7 @@ fn printJustifiedImpl(buff: [*c]const u8) void {
     var len: u16 = if (pmode == PMODE_DEFAULT)
         @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1
     else
-        @intCast(pixel_length(buff, @intFromBool(pmode == PMODE_SMALLGRAPHICS)));
+        @intCast(printer_text_width.pixelLength(buff, pmode == PMODE_SMALLGRAPHICS));
     const paperWidth: u16 = @intCast(PAPER_WIDTH);
 
     if (len >= paperWidth - printerColumn) {
@@ -1160,7 +1117,7 @@ fn printJustifiedLeft(buff: [*c]const u8) void {
     var len: u16 = if (pmode == PMODE_DEFAULT)
         @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1
     else
-        @intCast(pixel_length(buff, @intFromBool(pmode == PMODE_SMALLGRAPHICS)));
+        @intCast(printer_text_width.pixelLength(buff, pmode == PMODE_SMALLGRAPHICS));
     const paperWidth: u16 = (@as(u16, @intCast(PAPER_WIDTH)) / 2) - 7;
 
     if (len >= paperWidth - printerColumn) {
@@ -2462,7 +2419,6 @@ comptime {
     _ = &reverse;
     _ = &printLcd;
     _ = &setPrintMode;
-    _ = &findlengths;
     _ = &printGlyph24;
     _ = &fnP_GetDelay;
     _ = &printTraceErrorFunction;
