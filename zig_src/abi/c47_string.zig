@@ -194,6 +194,73 @@ pub fn utf8ToCodePoint(utf8: [*]const u8, codePoint: *u32) u32 {
     }
 }
 
+/// stringToUtf8: convert a C47 glyph string to a NUL-terminated UTF-8 byte
+/// string. A two-byte glyph (lead byte high bit set) decodes to its code point
+/// `(lead & 0x7F) * 256 + trail`; single bytes copy through.
+pub fn stringToUtf8(strIn: [*]const u8, utf8In: [*]u8) void {
+    var str = strIn;
+    var utf8 = utf8In;
+    const len: i16 = @intCast(glyphLength(str));
+
+    if (len == 0) {
+        utf8[0] = 0;
+        return;
+    }
+
+    var i: i16 = 0;
+    while (i < len) : (i += 1) {
+        if (str[0] & 0x80 != 0) {
+            codePointToUtf8((@as(u32, str[0]) & 0x7F) * 256 + @as(u32, str[1]), utf8);
+            str += 2;
+            while (utf8[0] != 0) {
+                utf8 += 1;
+            }
+        } else {
+            utf8[0] = str[0];
+            utf8 += 1;
+            str += 1;
+            utf8[0] = 0;
+        }
+    }
+}
+
+/// utf8ToString: convert a NUL-terminated UTF-8 byte string to a C47 glyph
+/// string. Code points whose low byte is 0x00 would terminate the C string
+/// early: the three known glyphs relocate to their 0x00-free slot, and any other
+/// is replaced with '?'. `onForbidden`, if given, is called with each replaced
+/// code point (the owner passes a host-diagnostic printf; std-only callers pass
+/// null). The relocation + placeholder output is identical either way.
+pub fn utf8ToString(utf8In: [*]const u8, strIn: [*]u8, onForbidden: ?*const fn (u32) void) void {
+    var utf8 = utf8In;
+    var str = strIn;
+    var codePoint: u32 = undefined;
+
+    while (utf8[0] != 0) {
+        utf8 += utf8ToCodePoint(utf8, &codePoint);
+        switch (codePoint) {
+            0x0100 => codePoint = 0x017F, // STD_A_MACRON (was U+0100)
+            0x1D00 => codePoint = 0x045A, // STD_SMALLCAP_A (was U+1D00)
+            0x2200 => codePoint = 0x2C6F, // STD_FOR_ALL (was U+2200)
+            else => {},
+        }
+        if (codePoint < 0x0080) {
+            str[0] = @truncate(codePoint);
+            str += 1;
+        } else if ((codePoint & 0x00FF) == 0) {
+            if (onForbidden) |cb| cb(codePoint);
+            str[0] = '?';
+            str += 1;
+        } else {
+            codePoint |= 0x8000;
+            str[0] = @truncate(codePoint >> 8);
+            str += 1;
+            str[0] = @truncate(codePoint & 0x00FF);
+            str += 1;
+        }
+    }
+    str[0] = 0;
+}
+
 // ===========================================================================
 // Tests -- native (run under `zig build test:unit`). Fixtures use the C47
 // encoding: a byte >= 0x80 starts a two-byte glyph. "\xa4\xb6" is one glyph.
@@ -257,4 +324,53 @@ test "utf8ToCodePoint inverts codePointToUtf8, returning the byte count" {
         try testing.expectEqual(@as(u32, c[0]), cp);
         try testing.expectEqual(@as(u32, c[1]), n);
     }
+}
+
+test "stringToUtf8 encodes a mixed glyph string and terminates it" {
+    // 'A' + glyph 0xa4,0xb6 (code point 0x24B6) + 'B' -> 0x41, E2 92 B6, 0x42, NUL.
+    var buf: [16]u8 = undefined;
+    stringToUtf8(mixed, &buf);
+    try testing.expectEqualSlices(u8, "A\xE2\x92\xB6B", buf[0..5]);
+    try testing.expectEqual(@as(u8, 0), buf[5]);
+    // Empty string -> just a terminator.
+    stringToUtf8("", &buf);
+    try testing.expectEqual(@as(u8, 0), buf[0]);
+}
+
+test "utf8ToString round-trips stringToUtf8" {
+    var utf8: [16]u8 = undefined;
+    var back: [16]u8 = undefined;
+    stringToUtf8(mixed, &utf8);
+    utf8ToString(&utf8, &back, null);
+    try testing.expectEqualSlices(u8, "A\xa4\xb6B", back[0..4]);
+    try testing.expectEqual(@as(u8, 0), back[4]);
+}
+
+test "utf8ToString relocates the three forbidden-low-byte glyphs" {
+    // U+0100 (C4 80) relocates to 0x017F -> glyph bytes 0x81,0x7F (| 0x8000).
+    var buf: [8]u8 = undefined;
+    utf8ToString("\xC4\x80", &buf, null);
+    try testing.expectEqual(@as(u8, 0x81), buf[0]);
+    try testing.expectEqual(@as(u8, 0x7F), buf[1]);
+    try testing.expectEqual(@as(u8, 0), buf[2]);
+}
+
+var test_last_forbidden: u32 = 0;
+fn recordForbidden(codePoint: u32) void {
+    test_last_forbidden = codePoint;
+}
+
+test "utf8ToString replaces an other 0x00-low-byte point with '?' and reports it" {
+    // U+0200 (C8 80): not one of the three relocations, low byte 0x00 -> '?'.
+    var buf: [8]u8 = undefined;
+    test_last_forbidden = 0;
+    utf8ToString("\xC8\x80", &buf, recordForbidden);
+    try testing.expectEqual(@as(u8, '?'), buf[0]);
+    try testing.expectEqual(@as(u8, 0), buf[1]);
+    try testing.expectEqual(@as(u32, 0x0200), test_last_forbidden);
+    // Same input with no callback must behave identically (just no report).
+    test_last_forbidden = 0;
+    utf8ToString("\xC8\x80", &buf, null);
+    try testing.expectEqual(@as(u8, '?'), buf[0]);
+    try testing.expectEqual(@as(u32, 0), test_last_forbidden);
 }
