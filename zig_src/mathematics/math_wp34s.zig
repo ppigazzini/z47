@@ -35,15 +35,16 @@ const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv:
 
 const math_real_predicates = @import("math_real_predicates.zig");
 const wp34s_atan = @import("math_wp34s_atan.zig"); // inverse-circular split
+const wp34s_trig = @import("math_wp34s_trig.zig"); // forward-circular split
 pub const real_t = runtime.real_t;
 pub const realContext_t = runtime.realContext_t;
-const angularMode_t = runtime.angularMode_t;
+pub const angularMode_t = runtime.angularMode_t;
 
-const amRadian = runtime.amRadian;
-const amGrad = runtime.amGrad;
-const amDegree = runtime.amDegree;
-const amDMS = runtime.amDMS;
-const amMultPi = runtime.amMultPi;
+pub const amRadian = runtime.amRadian;
+pub const amGrad = runtime.amGrad;
+pub const amDegree = runtime.amDegree;
+pub const amDMS = runtime.amDMS;
+pub const amMultPi = runtime.amMultPi;
 
 // ---------------------------------------------------------------------------
 // real_t constant blob accessors. Use the runtime accessors where they exist
@@ -72,10 +73,10 @@ inline fn const_3() *align(1) const real_t {
 inline fn const__1() *align(1) const real_t {
     return consts.c4376();
 }
-inline fn const_1on2() *align(1) const real_t {
+pub inline fn const_1on2() *align(1) const real_t {
     return consts.c4580();
 }
-inline fn const_1on4() *align(1) const real_t {
+pub inline fn const_1on4() *align(1) const real_t {
     return consts.c4532();
 }
 pub inline fn const_1on10() *align(1) const real_t {
@@ -84,34 +85,34 @@ pub inline fn const_1on10() *align(1) const real_t {
 inline fn const_29() *align(1) const real_t {
     return consts.c5180();
 }
-inline fn const_45() *align(1) const real_t {
+pub inline fn const_45() *align(1) const real_t {
     return consts.c7628();
 }
 inline fn const_47() *align(1) const real_t {
     return consts.c5236();
 }
-inline fn const_50() *align(1) const real_t {
+pub inline fn const_50() *align(1) const real_t {
     return consts.c7616();
 }
-inline fn const_90() *align(1) const real_t {
+pub inline fn const_90() *align(1) const real_t {
     return consts.c7544();
 }
-inline fn const_100() *align(1) const real_t {
+pub inline fn const_100() *align(1) const real_t {
     return consts.c7532();
 }
-inline fn const_180() *align(1) const real_t {
+pub inline fn const_180() *align(1) const real_t {
     return consts.c7460();
 }
-inline fn const_200() *align(1) const real_t {
+pub inline fn const_200() *align(1) const real_t {
     return consts.c7448();
 }
 inline fn const_205() *align(1) const real_t {
     return consts.c5344();
 }
-inline fn const_360() *align(1) const real_t {
+pub inline fn const_360() *align(1) const real_t {
     return consts.c5356();
 }
-inline fn const_400() *align(1) const real_t {
+pub inline fn const_400() *align(1) const real_t {
     return consts.c5368();
 }
 inline fn const_9000() *align(1) const real_t {
@@ -162,7 +163,7 @@ inline fn const39_ln2() *align(1) const real_t {
 inline fn const39_ln10() *align(1) const real_t {
     return consts.c4940();
 }
-inline fn const39_root2on2() *align(1) const real_t {
+pub inline fn const39_root2on2() *align(1) const real_t {
     return consts.c4700();
 }
 inline fn const39_egamma() *align(1) const real_t {
@@ -237,7 +238,7 @@ extern fn realSetPlusInfinity(value: *align(1) real_t) void;
 extern fn realSetMinusInfinity(value: *align(1) real_t) void;
 
 // Higher-level real ops / transcendentals from elsewhere in the tree.
-extern fn convertAngleFromTo(angle: *align(1) real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
+pub extern fn convertAngleFromTo(angle: *align(1) real_t, from: angularMode_t, to: angularMode_t, ctxt: *realContext_t) void;
 
 // Complex helpers used by the complex-gamma / lambert / error paths.
 extern fn WP34S_Cdf_Q(x: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void;
@@ -303,7 +304,7 @@ pub inline fn realSquareRoot(operand: *align(1) const real_t, res: *align(1) rea
 inline fn realPower(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberPower(res, op1, op2, ctxt);
 }
-inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberCompare(res, op1, op2, ctxt);
 }
 inline fn realDivideRemainder(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
@@ -319,7 +320,7 @@ pub inline fn uInt32ToReal(source: u32, destination: *align(1) real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
 
-inline fn realSetOne(r: *align(1) real_t) void {
+pub inline fn realSetOne(r: *align(1) real_t) void {
     _ = decNumberFromInt32(r, 1);
 }
 pub inline fn realSetZero(r: *align(1) real_t) void {
@@ -341,14 +342,14 @@ pub inline fn realChangeSign(operand: *align(1) real_t) void {
 pub inline fn realSetNegativeSign(operand: *align(1) real_t) void {
     operand.bits |= 0x80;
 }
-inline fn realSetPositiveSign(operand: *align(1) real_t) void {
+pub inline fn realSetPositiveSign(operand: *align(1) real_t) void {
     operand.bits &= 0x7F;
 }
-inline fn realGetExponent(source: *align(1) const real_t) i32 {
+pub inline fn realGetExponent(source: *align(1) const real_t) i32 {
     return source.digits + source.exponent - 1;
 }
 
-inline fn maxI32(a: i32, b: i32) i32 {
+pub inline fn maxI32(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 
@@ -373,7 +374,8 @@ pub fn BigReal(comptime digits: u32) type {
 }
 
 // ===========================================================================
-// reduceAngleToRange
+// Forward-circular family (reduceAngleToRange + sin/cos/tan) -> math_wp34s_trig.zig.
+// These wrappers keep the exact C-ABI export symbols and delegate.
 // ===========================================================================
 pub export fn reduceAngleToRange(
     angle: *align(1) real_t,
@@ -384,259 +386,15 @@ pub export fn reduceAngleToRange(
     savedContextDigits: i32,
     realContext: *realContext_t,
 ) callconv(.c) void {
-    switch (angularMode.*) {
-        amRadian => {
-            if (savedContextDigits >= 1071) {
-                angle45.* = const1071_piOn4();
-                angle90.* = const1071_piOn2();
-                angle180.* = const1071_pi();
-            } else {
-                angle45.* = const75_piOn4();
-                angle90.* = const75_piOn2();
-                angle180.* = const75_pi();
-            }
-            mod2Pi(angle, angle, realContext); // mod(angle, 2pi) --> angle
-        },
-        amMultPi => {
-            angle45.* = const_1on4();
-            angle90.* = const_1on2();
-            angle180.* = const_1();
-            WP34S_Mod(angle, const_2(), angle, realContext); // mod(angle, 2) --> angle
-        },
-        amGrad => {
-            angle45.* = const_50();
-            angle90.* = const_100();
-            angle180.* = const_200();
-            WP34S_Mod(angle, const_400(), angle, realContext); // mod(angle, 400g) --> angle
-        },
-        amDegree, amDMS => {
-            angle45.* = const_45();
-            angle90.* = const_90();
-            angle180.* = const_180();
-            WP34S_Mod(angle, const_360(), angle, realContext); // mod(angle, 360) --> angle
-            angularMode.* = amDegree;
-        },
-        else => {},
-    }
+    wp34s_trig.reduceAngleToRange(angle, angle45, angle90, angle180, angularMode, savedContextDigits, realContext);
 }
 
-// ===========================================================================
-// doWP34S_SinCosTanTaylor (static)
-// ===========================================================================
-fn doWP34S_SinCosTanTaylor(
-    angle: *align(1) real_t,
-    sinNeg: *bool,
-    cosNeg: *bool,
-    swap: *bool,
-    sinOut: ?*align(1) real_t,
-    cosOut: ?*align(1) real_t,
-    tanOut: ?*align(1) real_t,
-    angularMode_arg: angularMode_t,
-    savedContextDigits: i32,
-    realContext: *realContext_t,
-) void {
-    var angularMode = angularMode_arg;
-    var angle45: *align(1) const real_t = const_0();
-    var angle90: *align(1) const real_t = const_0();
-    var angle180: *align(1) const real_t = const_0();
-
-    // sin(-x) = -sin(x), cos(-x) = cos(x)
-    if (realIsNegative(angle)) {
-        sinNeg.* = true;
-        realSetPositiveSign(angle);
-    }
-
-    reduceAngleToRange(@ptrCast(angle), &angle45, &angle90, &angle180, &angularMode, savedContextDigits, realContext);
-
-    // sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-    if (math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle180))) { // angle >= 180
-        realSubtract(angle, angle180, angle, realContext); // angle - 180 --> angle
-        sinNeg.* = !(sinNeg.*);
-        cosNeg.* = !(cosNeg.*);
-    }
-
-    // sin(90+x) = cos(x), cos(90+x) = -sin(x)
-    if (math_comparison_reals.realCompareGreaterEqual(@alignCast(angle), @alignCast(angle90))) { // angle >= 90
-        realSubtract(angle, angle90, angle, realContext); // angle - 90 --> angle
-        swap.* = true;
-        cosNeg.* = !(cosNeg.*);
-    }
-
-    // sin(90-x) = cos(x), cos(90-x) = sin(x)
-    if (math_comparison_reals.realCompareEqual(@alignCast(angle), @alignCast(angle45))) { // angle == 45
-        if (sinOut) |s| {
-            realCopy(const39_root2on2(), s);
-        }
-        if (cosOut) |c| {
-            realCopy(const39_root2on2(), c);
-        }
-        if (tanOut) |t| {
-            realSetOne(t);
-        }
-    } else { // angle < 90
-        if (math_comparison_reals.realCompareGreaterThan(@alignCast(angle), @alignCast(angle45))) { // angle > 45
-            realSubtract(angle90, angle, angle, realContext); // 90 - angle --> angle
-            swap.* = !(swap.*);
-        }
-        convertAngleFromTo(angle, angularMode, amRadian, realContext);
-        if (savedContextDigits >= 1071) {
-            C47_WP34S_SinCosTanTaylor_temp1071(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
-        } else {
-            C47_WP34S_SinCosTanTaylor_temp75(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
-        }
-    }
-
-    realContext.digits = savedContextDigits;
-
-    if (sinOut) |s| {
-        if (sinNeg.*) {
-            realSetNegativeSign(s);
-            if (tanOut) |t| {
-                realSetNegativeSign(t);
-            }
-        }
-        if (realIsZero(s)) {
-            realSetPositiveSign(s);
-            if (tanOut) |t| {
-                realSetPositiveSign(t);
-            }
-        }
-        realPlus(s, s, realContext);
-    }
-
-    if (cosOut) |c| {
-        if (cosNeg.*) {
-            realSetNegativeSign(c);
-            if (tanOut) |t| {
-                realChangeSign(t);
-            }
-        }
-        if (realIsZero(c)) {
-            realSetPositiveSign(c);
-        }
-        realPlus(c, c, realContext);
-    }
-
-    if (tanOut != null and cosOut != null and realIsZero(cosOut.?)) {
-        realSetPositiveSign(tanOut.?);
-        realPlus(tanOut.?, tanOut.?, realContext);
-    }
+pub export fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+    wp34s_trig.C47_WP34S_Cvt2RadSinCosTan(an, angularMode, sinOut, cosOut, tanOut, realContext);
 }
 
-// ===========================================================================
-// C47_WP34S_Cvt2RadSinCosTan_75temp (static)
-// ===========================================================================
-fn C47_WP34S_Cvt2RadSinCosTan_75temp(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
-    var sinNeg: bool = false;
-    var cosNeg: bool = false;
-    var swap: bool = false;
-    var angle: real_t = undefined;
-
-    if (realIsNaN(an)) {
-        if (sinOut) |s| realSetNaN(s);
-        if (cosOut) |c| realSetNaN(c);
-        if (tanOut) |t| realSetNaN(t);
-        return;
-    }
-
-    realCopy(an, &angle);
-
-    const savedContextDigits = realContext.digits;
-
-    if (realContext.digits > 51) {
-        realContext.digits = 75;
-    } else {
-        realContext.digits = 51;
-    }
-
-    doWP34S_SinCosTanTaylor(&angle, &sinNeg, &cosNeg, &swap, sinOut, cosOut, tanOut, angularMode, savedContextDigits, realContext);
-}
-
-// ===========================================================================
-// doTaylorIterations (static)
-// ===========================================================================
-fn doTaylorIterations(
-    a: *align(1) const real_t,
-    angle: *align(1) real_t,
-    a2: *align(1) real_t,
-    t: *align(1) real_t,
-    j: *align(1) real_t,
-    z: *align(1) real_t,
-    sin: *align(1) real_t,
-    cos: *align(1) real_t,
-    sinOut: ?*align(1) real_t,
-    cosOut: ?*align(1) real_t,
-    epsilonOrCompare: *align(1) real_t,
-    doEpsilon: bool,
-    epsilonDigits: i32,
-    realContext: *realContext_t,
-) void {
-    var tmpEpsilon: [16]u8 = undefined;
-    var endSin: bool = (sinOut == null);
-    var endCos: bool = (cosOut == null);
-
-    if (doEpsilon) {
-        stringToReal(formatEminusD(&tmpEpsilon, epsilonDigits), epsilonOrCompare, realContext);
-    }
-    realCopy(a, angle);
-    realMultiply(angle, angle, a2, realContext);
-    realSetOne(j);
-    realSetOne(t);
-    realSetOne(sin);
-    realSetOne(cos);
-
-    var i: i32 = 1;
-    while (!(endSin and endCos) and i < TaylorIterationMax) : (i += 1) {
-        realAdd(j, const_1(), j, realContext);
-        realDivide(a2, j, z, realContext);
-        realMultiply(t, z, t, realContext);
-        realChangeSign(t);
-        var tExp = realGetExponent(t);
-
-        if (!endCos) {
-            realCopy(cos, z);
-            realAdd(cos, t, cos, realContext);
-            if (doEpsilon) {
-                realCopyAbs(t, z);
-            } else {
-                realCompare(cos, z, epsilonOrCompare, realContext);
-            }
-            endCos = (!doEpsilon and realIsZero(epsilonOrCompare)) or (doEpsilon and math_comparison_reals.realCompareLessThan(@alignCast(z), @alignCast(epsilonOrCompare)));
-        }
-
-        realAdd(j, const_1(), j, realContext);
-        realDivide(t, j, t, realContext);
-        tExp = maxI32(tExp, realGetExponent(t));
-
-        if (!endSin) {
-            realCopy(sin, z);
-            realAdd(sin, t, sin, realContext);
-            if (doEpsilon) {
-                realCopyAbs(t, z);
-            } else {
-                realCompare(sin, z, epsilonOrCompare, realContext);
-            }
-            endSin = (!doEpsilon and realIsZero(epsilonOrCompare)) or (doEpsilon and math_comparison_reals.realCompareLessThan(@alignCast(z), @alignCast(epsilonOrCompare)));
-        }
-
-        if (explicitTaylorIterVisibilitySelection and checkHalfSec()) {
-            _ = progressHalfSecUpdate_Integer(halfSec_timed, "Taylor Iter", epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        }
-        if (exitKeyWaiting()) {
-            _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-            break;
-        }
-    }
-
-    if (realIsZero(cos)) {
-        realSetPositiveSign(cos);
-    }
-    if (realIsZero(sin)) {
-        realSetPositiveSign(sin);
-    }
-    realMultiply(sin, angle, sin, realContext);
-    explicitTaylorIterVisibilitySelection = false;
+pub export fn C47_WP34S_SinCosTanTaylor(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+    wp34s_trig.C47_WP34S_SinCosTanTaylor(a, swap, sinOut, cosOut, tanOut, realContext);
 }
 
 // Helper: render "1E-<d>" into the provided buffer (sprintf in the C).
@@ -668,147 +426,6 @@ pub fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
     }
     buf[idx] = 0;
     return @ptrCast(buf);
-}
-
-// ===========================================================================
-// C47_WP34S_SinCosTanTaylor_temp75
-// ===========================================================================
-fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
-    var doEpsilon: bool = false;
-    var epsilonDigits: i32 = undefined;
-    var angle: real_t = undefined;
-    var a2: real_t = undefined;
-    var t: real_t = undefined;
-    var j: real_t = undefined;
-    var z: real_t = undefined;
-    var sin: real_t = undefined;
-    var cos: real_t = undefined;
-    var epsilonOrCompare: real_t = undefined;
-
-    const savedContextDigits = realContext.digits;
-
-    if (realContext.digits > 51) {
-        realContext.digits = 75;
-        epsilonDigits = 72;
-        doEpsilon = true;
-    } else {
-        realContext.digits = 51;
-        epsilonDigits = 39;
-        doEpsilon = false;
-    }
-
-    doTaylorIterations(a, &angle, &a2, &t, &j, &z, &sin, &cos, sinOut, cosOut, &epsilonOrCompare, doEpsilon, epsilonDigits, realContext);
-
-    realContext.digits = savedContextDigits;
-
-    if (sinOut) |s| {
-        realPlus(&sin, s, realContext);
-    }
-
-    if (cosOut) |c| {
-        realPlus(&cos, c, realContext);
-    }
-
-    if (tanOut) |tn| {
-        if (sinOut == null or cosOut == null) {
-            realSetNaN(tn);
-        } else {
-            if (swap) {
-                realDivide(&cos, &sin, tn, realContext);
-            } else {
-                realDivide(&sin, &cos, tn, realContext);
-            }
-        }
-    }
-}
-
-// ===========================================================================
-// C47_WP34S_Cvt2RadSinCosTan_1071temp (static)
-// ===========================================================================
-fn C47_WP34S_Cvt2RadSinCosTan_1071temp(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
-    var sinNeg: bool = false;
-    var cosNeg: bool = false;
-    var swap: bool = false;
-    var angle_buf: BigReal(1071) = .{};
-    const angle = angle_buf.ptr();
-
-    if (realIsNaN(an)) {
-        if (sinOut) |s| realSetNaN(s);
-        if (cosOut) |c| realSetNaN(c);
-        if (tanOut) |t| realSetNaN(t);
-        return;
-    }
-
-    realCopy(an, angle);
-
-    const savedContextDigits = realContext.digits;
-
-    doWP34S_SinCosTanTaylor(angle, &sinNeg, &cosNeg, &swap, sinOut, cosOut, tanOut, angularMode, savedContextDigits, realContext);
-}
-
-// ===========================================================================
-// C47_WP34S_Cvt2RadSinCosTan
-// ===========================================================================
-pub export fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    if (realContext.digits >= 1071) {
-        C47_WP34S_Cvt2RadSinCosTan_1071temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
-    } else {
-        C47_WP34S_Cvt2RadSinCosTan_75temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
-    }
-}
-
-// ===========================================================================
-// C47_WP34S_SinCosTanTaylor_temp1071
-// ===========================================================================
-fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
-    var angle_buf: BigReal(1071) = .{};
-    var a2_buf: BigReal(1071) = .{};
-    var t_buf: BigReal(1071) = .{};
-    var j_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    var sin_buf: BigReal(1071) = .{};
-    var cos_buf: BigReal(1071) = .{};
-    var epsilon_buf: BigReal(1071) = .{};
-
-    const angle = angle_buf.ptr();
-    const a2 = a2_buf.ptr();
-    const t = t_buf.ptr();
-    const j = j_buf.ptr();
-    const z = z_buf.ptr();
-    const sin = sin_buf.ptr();
-    const cos = cos_buf.ptr();
-    const epsilonOrCompare = epsilon_buf.ptr();
-
-    doTaylorIterations(a, angle, a2, t, j, z, sin, cos, sinOut, cosOut, epsilonOrCompare, true, 1040, realContext);
-
-    if (sinOut) |s| {
-        realPlus(sin, s, realContext);
-    }
-    if (cosOut) |c| {
-        realPlus(cos, c, realContext);
-    }
-    if (tanOut) |tn| {
-        if (sinOut == null or cosOut == null) {
-            realSetNaN(tn);
-        } else {
-            if (swap) {
-                realDivide(cos, sin, tn, realContext);
-            } else {
-                realDivide(sin, cos, tn, realContext);
-            }
-        }
-    }
-}
-
-// ===========================================================================
-// C47_WP34S_SinCosTanTaylor (dispatcher) - not in wp34s.h but defined in C
-// ===========================================================================
-pub export fn C47_WP34S_SinCosTanTaylor(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    if (realContext.digits >= 1071) {
-        C47_WP34S_SinCosTanTaylor_temp1071(a, swap, sinOut, cosOut, tanOut, realContext);
-    } else {
-        C47_WP34S_SinCosTanTaylor_temp75(a, swap, sinOut, cosOut, tanOut, realContext);
-    }
 }
 
 // ===========================================================================
@@ -946,7 +563,7 @@ fn WP34S_Gamma_LnGamma(xin: *align(1) const real_t, calculateLnGamma: bool, res:
         // figure out xin * PI mod 2PI
         WP34S_Mod(xin, const_2(), &t, realContext);
         realMultiply(&t, const39_pi(), &t, realContext); // t = xin*pi
-        C47_WP34S_SinCosTanTaylor_temp75(@ptrCast(&t), false, &x, null, null, realContext); // x = sin(xin*pi)
+        wp34s_trig.C47_WP34S_SinCosTanTaylor_temp75(@ptrCast(&t), false, &x, null, null, realContext); // x = sin(xin*pi)
 
         if (calculateLnGamma) {
             realDivide(const39_pi(), &x, &t, realContext); // t = pi / sin(pi*xin)
