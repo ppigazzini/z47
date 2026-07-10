@@ -305,10 +305,13 @@ fn sv(buffer: ?*const anyopaque, size: u32, name: [*c]const u8, type_str: [*c]co
     const v: [*c]u8 = &value[0];
     const buf: [*c]const u8 = @ptrCast(buffer);
     if (streq(type_str, "int64")) {
-        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_long, @intCast(rd(i64, buffer))) });
+        // C uses PRIi64/PRIu64: the full 64-bit value on every platform. Casting
+        // to c_long/c_ulong truncates (and @intCast-panics on overflow) on Windows
+        // LLP64 where long is 32-bit, so pass the native i64/u64 straight through.
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), rd(i64, buffer) });
         save(v);
     } else if (streq(type_str, "uint64")) {
-        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_ulong, @intCast(rd(u64, buffer))) });
+        abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), rd(u64, buffer) });
         save(v);
     } else if (streq(type_str, "int32")) {
         abi.fmtCStr(v, "{s}:{s}:{d}\n", .{ @as([*:0]const u8, name), @as([*:0]const u8, type_str), @as(c_int, rd(i32, buffer)) });
