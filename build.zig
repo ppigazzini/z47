@@ -69,6 +69,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/abi/c47_string.zig",
         "zig_src/frontier/keycode_remap.zig",
         "zig_src/frontier/lr_selection.zig",
+        "zig_src/frontier/plot_viewport.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",

@@ -73,6 +73,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_curve_fitting = @import("frontier_curve_fitting.zig"); // M-callconv: Zig-to-Zig
+const plot_viewport = @import("plot_viewport.zig"); // std-only pure viewport math
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -104,6 +105,8 @@ const SCREEN_WIDTH: i32 = 400;
 const SCREEN_HEIGHT: i32 = 240;
 const SCREEN_HEIGHT_GRAPH: i32 = SCREEN_HEIGHT; // 240
 const SCREEN_WIDTH_GRAPH: i32 = SCREEN_WIDTH; // 400
+
+const minn: i32 = 0; // #define minn 0 (graph top margin)
 
 const Y_POSITION_OF_REGISTER_T_LINE: i32 = 24;
 const Y_POSITION_OF_REGISTER_Z_LINE: i32 = 60;
@@ -429,11 +432,6 @@ inline fn maxF(a: f32, b: f32) f32 {
     return if (a > b) a else b;
 }
 
-// ROUND_F2I(f) ((int)((f) >= 0 ? (f) + 0.5f : (f) - 0.5f))
-inline fn ROUND_F2I(f: f32) i32 {
-    return @intFromFloat(if (f >= 0) f + 0.5 else f - 0.5);
-}
-
 // moreInfoOnError helper (host-only console hint).
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
     c_moreInfoOnError(m1, m2, m3, m4);
@@ -503,61 +501,18 @@ pub export fn grf_y(i: c_int) callconv(.c) f32 {
 // screen_window_x
 // ===========================================================================
 pub export fn screen_window_x(x_minp: f32, x: f32, x_maxp: f32) callconv(.c) i16 {
-    var temp: i16 = undefined;
-    const tempr: f32 = ((x - x_minp) / (x_maxp - x_minp) * @as(f32, @floatFromInt(SCREEN_HEIGHT_GRAPH - 1)));
-
-    if (tempr > 32766) {
-        temp = 32767;
-    } else if (tempr < -32766) {
-        temp = -32767;
-    } else {
-        temp = @intCast(ROUND_F2I(tempr));
-    }
-
-    if (temp > SCREEN_HEIGHT_GRAPH - 1) {
-        temp = @intCast(SCREEN_HEIGHT_GRAPH - 1);
-    } else if (temp < 0) {
-        temp = 0;
-    }
-
-    return @intCast(@as(i32, temp) + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
+    return plot_viewport.screenWindowX(x_minp, x, x_maxp);
 }
 
 // ===========================================================================
 // _screen_window_y  (#define minn 0)
 // ===========================================================================
-const minn: i32 = 0;
-fn _screen_window_y(y_minp: f32, y: f32, y_maxp: f32, nolimit: bool_t) i16 {
-    var temp: i32 = undefined;
-    const tempr: f32 = ((y - y_minp) / (y_maxp - y_minp) * @as(f32, @floatFromInt(SCREEN_HEIGHT_GRAPH - 1 - minn)));
-
-    if (tempr > 32766) {
-        temp = 32767;
-    } else if (tempr < -32766) {
-        temp = -32767;
-    } else {
-        temp = @as(i32, @as(i16, @intCast(ROUND_F2I(tempr))));
-    }
-
-    if (!nolimit) {
-        if (temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
-            temp = SCREEN_HEIGHT_GRAPH - 1 - minn;
-        } else if (temp < 0) {
-            temp = 0;
-        }
-    }
-
-    // PC_BUILD diagnostic printf omitted (pure host debug).
-
-    return @intCast(SCREEN_HEIGHT_GRAPH - 1 - temp);
-}
-
 pub export fn screen_window_y_nolimit(y_minp: f32, y: f32, y_maxp: f32) callconv(.c) i16 {
-    return _screen_window_y(y_minp, y, y_maxp, true); // nolimit
+    return plot_viewport.screenWindowY(y_minp, y, y_maxp, true); // nolimit
 }
 
 pub export fn screen_window_y(y_minp: f32, y: f32, y_maxp: f32) callconv(.c) i16 {
-    return _screen_window_y(y_minp, y, y_maxp, false); // limit
+    return plot_viewport.screenWindowY(y_minp, y, y_maxp, false); // limit
 }
 
 // ===========================================================================
