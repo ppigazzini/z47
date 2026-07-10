@@ -912,7 +912,8 @@ pub extern fn fnRecall(r: u16) void;
 pub extern fn showStep() void;
 pub extern fn fnOff(unused: u16) void;
 pub extern fn addStepInProgram(func: i16) void;
-pub extern fn findNamedLabel(label_name: [*c]const u8) i16;
+pub const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
+pub extern fn findNamedLabel(label_name: [*c]const u8, label_type: u8) i16;
 pub extern fn stringGlyphLength(str: [*c]const u8) i32;
 // stringByteLength is a macro: ((int32_t)strlen(str)) (charString.h:48).
 pub fn stringByteLength(str: [*c]const u8) i32 {
@@ -1060,6 +1061,7 @@ pub const MNU_TAMFLAG: i16 = 1390;
 pub const MNU_TAMSHUFFLE: i16 = 1391;
 pub const MNU_TAMLABEL: i16 = 1393;
 pub const MNU_TAMLBLONLY: i16 = 2226;
+pub const MNU_TAMLOCALLABEL: i16 = 2859;
 pub const ITM_DELITM: i16 = 1455;
 
 // determineItem dependencies (keyboard.c 1511-1734).

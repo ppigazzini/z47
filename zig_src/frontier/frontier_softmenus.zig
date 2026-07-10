@@ -722,6 +722,8 @@ extern var printerState: printerState_t;
 // tamState_t: only mode / alpha / keyInputFinished are read here.
 const tamState_t = abi.TamState;
 extern var tam: tamState_t;
+extern var currentProgramNumber: u16;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
 
 // fnGetSystemFlag: compared by address against indexOfItems[].func.
 extern fn fnGetSystemFlag(systemFlag: u16) void;
@@ -932,8 +934,9 @@ const menu_TamAlpha linksection(code_section) = [_]i16{ -1377, -1375, -1378, -13
 const menu_TamCmp linksection(code_section) = [_]i16{ 539, -1389, 527, 528, 529, 530, 988, 989, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2066 };
 const menu_TamFlag linksection(code_section) = [_]i16{ 539, -1379, 527, 528, 529, 530, 0, 0, 0, 0, 0, 0, 2276, 2275, 476, 475, 474, -2067 };
 const menu_TamIndirect linksection(code_section) = [_]i16{ 0, -1389, 527, 528, 529, 530, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -2066 };
-const menu_TamLabel linksection(code_section) = [_]i16{ 539, -1392, 533, 534, 2342, 2343, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587 };
-const menu_TamLabelOnly linksection(code_section) = [_]i16{ 539, -1392, 0, 0, 0, 0 };
+const menu_TamLabel linksection(code_section) = [_]i16{ 539, -1392, 822, 534, 2342, 2343, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587 };
+const menu_TamLocalLabel linksection(code_section) = [_]i16{ 0, -1392, 628, 0, 0, 0 }; // { ITM_NULL, -MNU_PROG, ITM_alpha, ITM_NULL x3 }
+const menu_TamLabelOnly linksection(code_section) = [_]i16{ 539, -1392, 822, 0, 0, 0 };
 const menu_TamMenu linksection(code_section) = [_]i16{ 539, -2407, 2415, 2416, 2417, 2418 };
 const menu_TamNonReg linksection(code_section) = [_]i16{ 539, 0, 2415, 2416, 2417, 2418 };
 const menu_TamNonRegMax linksection(code_section) = [_]i16{ 539, 2110, 2415, 2416, 2417, 2418 };
@@ -1144,6 +1147,7 @@ pub export const softmenu linksection(code_data_section) = [_]softmenu_t{
     .{ .menuItem = -2711, .numItems = @as(i16, @intCast(menu_TamNorm.len)), .softkeyItem = &menu_TamNorm },
     .{ .menuItem = -2736, .numItems = @as(i16, @intCast(menu_Base2.len)), .softkeyItem = &menu_Base2 },
     .{ .menuItem = -2738, .numItems = @as(i16, @intCast(menu_42.len)), .softkeyItem = &menu_42 },
+    .{ .menuItem = -2859, .numItems = @as(i16, @intCast(menu_TamLocalLabel.len)), .softkeyItem = &menu_TamLocalLabel }, // MNU_TAMLOCALLABEL (fixed softmenu index 185; do not move -- Wiki-fixed)
     .{ .menuItem = 0, .numItems = 0, .softkeyItem = null },
 };
 // dynamicSoftmenu is a MUTABLE RAM global in C (softmenus.c:1164, written at
@@ -1506,6 +1510,31 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
     }
 }
 
+// Collapse adjacent duplicate 15-byte name slots in tmpString (the list must
+// already be sorted). Local named labels can repeat across the scan-forward
+// search, so the CONV/label menu shows each name once. Returns the new count.
+fn _removeDuplicateLabels(n: i16) i16 {
+    if (n == 0) return 0;
+    var j: i16 = 0;
+    var i: i16 = 1;
+    while (i < n) : (i += 1) {
+        if (!slotsEqual(tmpString + 15 * @as(usize, @intCast(i)), tmpString + 15 * @as(usize, @intCast(j)))) {
+            j += 1;
+            _ = frontier_char_string.xcopy(tmpString + 15 * @as(usize, @intCast(j)), tmpString + 15 * @as(usize, @intCast(i)), 15);
+        }
+    }
+    return j + 1;
+}
+
+// Byte-wise C strcmp equivalence for two NUL-terminated 15-byte name slots.
+fn slotsEqual(a: [*c]const u8, b: [*c]const u8) bool {
+    var k: usize = 0;
+    while (true) : (k += 1) {
+        if (a[k] != b[k]) return false;
+        if (a[k] == 0) return true;
+    }
+}
+
 fn sortMenu(a: ?*const anyopaque, b: ?*const anyopaque) callconv(.c) c_int {
     return frontier_sort.compareString(@ptrCast(a), @ptrCast(b), CMP_EXTENSIVE);
 }
@@ -1707,7 +1736,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
             _ = memset(tmpString, 0, TMP_STR_LENGTH);
             i = 0;
             while (i < @as(i16, @bitCast(numberOfLabels))) : (i += 1) {
-                if (labelList[@intCast(i)].step > 0) {
+                if ((!tam.colon and (labelList[@intCast(i)].step > 0)) or (tam.colon and labelList[@intCast(i)].program == @as(i16, @bitCast(currentProgramNumber)) and (labelList[@intCast(i)].labelPointer - 1)[0] == LOCAL_LABEL_VARIABLE)) { // Global label or local named label
                     var lblNameLen: u8 = labelList[@intCast(i)].labelPointer[0];
                     if (lblNameLen > 14) { // this menu lays each name out in a fixed 15-byte slot
                         lblNameLen = 14;
@@ -1719,6 +1748,9 @@ fn initVariableSoftmenu(mIdx: i16) void {
             }
             if (numberOfGlobalLabels != 0) {
                 qsort(tmpString, @intCast(numberOfGlobalLabels), 15, &sortMenu);
+            }
+            if (tam.colon) { // Don't show duplicates for local named labels which use the scan forward search method
+                numberOfGlobalLabels = _removeDuplicateLabels(numberOfGlobalLabels);
             }
             ptr = malloc(@intCast(numberOfBytes));
             dynamicSoftmenu[@intCast(mIdx)].menuContent = ptr;

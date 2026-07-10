@@ -27,7 +27,7 @@ pub fn saveAllPrograms() void {
         if (!runtime.globalLabelNameAt(i, &label_name)) {
             continue;
         }
-        const label = runtime.findNamedLabel(&label_name);
+        const label = runtime.findNamedLabel(&label_name, runtime.GLOBAL_LABELS);
         const old_program_number = runtime.currentProgramNumber;
         _ = runtime.selectProgram(label);
         if (runtime.currentProgramNumber != old_program_number) {

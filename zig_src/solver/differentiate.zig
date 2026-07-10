@@ -317,7 +317,9 @@ extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
+const ALL_LABELS: u8 = 0; // namedLabels_t: search local then global
+extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 
 // libc string helpers
@@ -346,7 +348,7 @@ fn derivativeCommon(label_in: u16, order: u16, ti: u8) linksection(runtime.code_
         // Interactive mode
         buf[0] = letteredRegisterName(@intCast(label));
         buf[1] = 0;
-        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0])))));
+        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
         if (label == INVALID_VARIABLE) {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         } else {
@@ -416,7 +418,7 @@ fn deriv_default_h(h: *real_t) linksection(runtime.code_section) void {
     dynamicMenuItem = -1;
     var i: usize = 0;
     while (i < deriv_lbls.len) : (i += 1) {
-        const deltaX = findNamedLabel(deriv_lbls[i]);
+        const deltaX = findNamedLabel(deriv_lbls[i], ALL_LABELS);
         if (@as(u16, @bitCast(@as(i16, @truncate(deltaX)))) != INVALID_VARIABLE) {
             deriv_found_lbl(deltaX, h);
             undo();

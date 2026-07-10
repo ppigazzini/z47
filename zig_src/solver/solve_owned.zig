@@ -372,7 +372,7 @@ extern fn runProgram(singleStep: bool, menuLabel: u16) void;
 extern fn runFunction(item: i16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 extern fn refreshScreen(source: u16) void;

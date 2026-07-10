@@ -1733,7 +1733,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
             }
         }
     } else if (item == ITM_XEQ and getSystemFlag(FLAG_USER) != 0 and funcParam[0] != 0) {
-        const label = frontier_manage.findNamedLabel(funcParam);
+        const label = frontier_manage.findNamedLabel(funcParam, frontier_manage.GLOBAL_LABELS);
         if (label != INVALID_VARIABLE) {
             if (calcMode == CM_PEM) {
                 frontier_manage.insertUserItemInProgram(item, @constCast(funcParam));

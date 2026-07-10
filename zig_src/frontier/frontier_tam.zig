@@ -230,6 +230,8 @@ const MNU_TAMFLAG = 1390;
 const MNU_TAMINDIRECT = 2108;
 const MNU_TAMLABEL = 1393;
 const MNU_TAMLBLONLY = 2226;
+const MNU_TAMLOCALLABEL = 2859;
+const ITM_COLON = 822;
 const MNU_TAMMENU = 2406;
 const MNU_TAMNONREG = 2068;
 const MNU_TAMNONREGMAX = 2109;
@@ -598,8 +600,11 @@ fn _tamUpdateBuffer() void {
         if (tam.dot) {
             tbPtr = stringCopy(tbPtr, ".");
         }
+        if (tam.colon) {
+            tbPtr = stringCopy(tbPtr, ":");
+        }
         if (tam.alpha) {
-            tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
+            tbPtr = stringCopy(tbPtr, if (tam.colon) @as([*c]const u8, "") else STD_LEFT_SINGLE_QUOTE);
             if (aimBuffer[0] == 0) {
                 tbPtr[0] = STD_CURSOR[0];
                 tbPtr += 1;
@@ -609,7 +614,7 @@ fn _tamUpdateBuffer() void {
             } else {
                 frontier_screen.insertAlphaCursor(0);
                 tbPtr = stringCopy(tbPtr, tmpString);
-                tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
+                tbPtr = stringCopy(tbPtr, if (tam.colon) @as([*c]const u8, ":") else STD_RIGHT_SINGLE_QUOTE);
             }
         } else {
             const max: i16 = if (tam.indirect)
@@ -817,6 +822,12 @@ fn _tamProcessInput(item: u16) void {
             tam.max = @bitCast(indexOfItems[@intCast(ITM_GTO)].tamMinMax & TAM_MAX_MASK);
         } else if (tam.dot) {
             tam.dot = false;
+        } else if (tam.colon) {
+            if (catalog == 0) {
+                tam.colon = false;
+            }
+            frontier_softmenus.popSoftmenu();
+            numberOfTamMenusToPop -= 1;
         } else if (tam.indirect) {
             tam.indirect = false;
             frontier_softmenus.popSoftmenu();
@@ -838,7 +849,7 @@ fn _tamProcessInput(item: u16) void {
                 frontier_softmenus.showSoftmenu(if (item == ITM_STO) (if (frontier_softmenus.currentMenu() == -MNU_TVM) -MNU_TAMSTO_TVM else -MNU_TAMSTO) else (if (frontier_softmenus.currentMenu() == -MNU_TVM or frontier_softmenus.currentMenu() == -MNU_AMORT) -MNU_TAMRCL_TVM else -MNU_TAMRCL));
             } else if (tam.mode == TM_LABEL or (tam.mode == TM_KEY and tam.keyInputFinished)) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLABEL);
-            } else if (tam.mode == TM_LBLONLY or (tam.mode == TM_KEY and tam.keyInputFinished)) {
+            } else if (tam.mode == TM_LBLONLY) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);
             } else if (tam.mode == TM_SOLVE) {
                 if (tam.function == ITM_SOLVE and calcMode == CM_PEM) {
@@ -915,7 +926,7 @@ fn _tamProcessInput(item: u16) void {
                 alphaCase = CAPS_TAMother_DEFAULT;
             }
             switch (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem) {
-                -MNU_TAMCMP, -MNU_TAMLABEL, -MNU_TAMLBLONLY, -MNU_TAM, -MNU_TAMVARONLY, -MNU_TAMSTO, -MNU_TAMRCL, -MNU_TAMSTO_TVM, -MNU_TAMRCL_TVM, -MNU_TAMMENU, -MNU_TAMINDIRECT => {
+                -MNU_TAMCMP, -MNU_TAMLABEL, -MNU_TAMLBLONLY, -MNU_TAMLOCALLABEL, -MNU_TAM, -MNU_TAMVARONLY, -MNU_TAMSTO, -MNU_TAMRCL, -MNU_TAMSTO_TVM, -MNU_TAMRCL_TVM, -MNU_TAMMENU, -MNU_TAMINDIRECT => {
                     frontier_softmenus.showSoftmenu(-MNU_TAMALPHA);
                     screenUpdatingMode = SCRUPD_AUTO;
                 },
@@ -1114,6 +1125,14 @@ fn _tamProcessInput(item: u16) void {
             max2 = tam.max;
             maxDigits = _tamMaxDigits(max2);
         }
+    } else if (item == ITM_COLON) {
+        if ((tam.mode == TM_LABEL) or (tam.mode == TM_LBLONLY) or (tam.mode == TM_KEY) or ((tam.mode == TM_SOLVE) and (tam.function != ITM_SOLVE or calcMode != CM_PEM))) {
+            if (!tam.colon) {
+                frontier_softmenus.showSoftmenu(-MNU_TAMLOCALLABEL);
+            }
+            tam.colon = true;
+            return;
+        }
     } else if (item == ITM_PERIOD) {
         if (tam.function == ITM_LBL) {
             return;
@@ -1260,7 +1279,7 @@ fn _tamProcessInput(item: u16) void {
             value = 1;
         } else if (tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or (tam.mode == TM_KEY and tam.keyInputFinished) or (tam.mode == TM_DELITM and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_PROGS)) {
             if (!tam.indirect) {
-                value = frontier_manage.findNamedLabelWithDuplicate(buffer, dupNum);
+                value = frontier_manage.findNamedLabelWithDuplicate(buffer, dupNum, if (tam.colon) frontier_manage.LOCAL_LABELS else frontier_manage.GLOBAL_LABELS);
             } else {
                 value = findNamedVariable(buffer);
                 tam.value0 = value;
@@ -1314,7 +1333,7 @@ fn _tamProcessInput(item: u16) void {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(buffer)});
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set");
                     }
-                } else if (calcMode != CM_PEM or tam.function != ITM_GTO) {
+                } else if (calcMode != CM_PEM or (tam.function != ITM_GTO and tam.mode != TM_KEY)) {
                     frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(buffer)});
@@ -1383,7 +1402,7 @@ fn _tamProcessInput(item: u16) void {
             if (calcMode == CM_MIM) {
                 frontier.mimRunFunction(tamOperation(), @bitCast(value));
             } else if (tam.function == ITM_GTOP) {
-                frontier_lbl_gto_xeq.goToGlobalStep(labelList[@intCast(value - FIRST_LABEL)].step);
+                frontier_lbl_gto_xeq.goToGlobalStep(@intCast(@abs(labelList[@intCast(value - FIRST_LABEL)].step)));
             } else if (tam.function == ITM_DELP) {
                 frontier_items.reallyRunFunction(ITM_DELP, @bitCast(value));
             } else if (calcMode == CM_PEM) {
@@ -1470,6 +1489,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
     tam.currentOperation = tam.function;
     tam.digitsSoFar = 0;
     tam.dot = false;
+    tam.colon = false;
     tam.indirect = false;
     tam.value = 0;
 

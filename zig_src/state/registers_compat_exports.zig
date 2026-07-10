@@ -52,7 +52,8 @@ const ERROR_NONE = stack_runtime.ERROR_NONE;
 const ERROR_OUT_OF_RANGE = stack_runtime.ERROR_OUT_OF_RANGE;
 const ERROR_INVALID_DATA_TYPE_FOR_OP = stack_runtime.ERROR_INVALID_DATA_TYPE_FOR_OP;
 
-extern fn findNamedLabel(label_name: [*:0]const u8) stack_runtime.calcRegister_t;
+const ALL_LABELS: u8 = 0; // namedLabels_t: search local then global
+extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) stack_runtime.calcRegister_t;
 extern fn findMenu(menu_name: [*:0]const u8) i16;
 extern fn convertShortIntegerRegisterToUInt64(reg: stack_runtime.calcRegister_t, sign: *i16, value: *u64) void;
 
@@ -336,11 +337,10 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
             return indirectError(ERROR_UNDEF_SOURCE_VAR);
         }
     } else if (data_type == dtString and parameter_type == INDPM_LABEL) {
-        value = findNamedLabel(registerStringData(regist));
+        value = findNamedLabel(registerStringData(regist), ALL_LABELS);
         is_valid_alpha = true;
-        if (value == register_runtime.INVALID_VARIABLE) {
-            return indirectError(ERROR_LABEL_NOT_FOUND);
-        }
+        // [DL] remove error here to allow INVALID_VARIABLE to be passed to LBL?;
+        // the INVALID_VARIABLE error is handled in LBL, GTO, XEQ ...
     } else if (data_type == dtString and parameter_type == INDPM_MENU) {
         value = findMenu(registerStringData(regist));
         is_valid_alpha = true;

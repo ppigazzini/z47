@@ -618,7 +618,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                         }
                     }
                 } else if (item == runtime.ITM_XEQ and (runtime.getSystemFlag(runtime.FLAG_USER) or Norm_Key_00_released) and funcParam[0] != 0) {
-                    const label = runtime.findNamedLabel(funcParam);
+                    const label = runtime.findNamedLabel(funcParam, runtime.GLOBAL_LABELS);
                     if (label != @as(i16, @intCast(runtime.INVALID_VARIABLE))) {
                         if (runtime.calcMode == runtime.CM_PEM) {
                             runtime.insertUserItemInProgram(item, funcParam);

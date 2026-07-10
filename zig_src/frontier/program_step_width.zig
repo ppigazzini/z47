@@ -30,6 +30,7 @@ const SYSTEM_FLAG_NUMBER: u8 = 250;
 const VALUE_0: u8 = 251;
 const VALUE_1: u8 = 252;
 const STRING_LABEL_VARIABLE: u8 = 253;
+const LOCAL_LABEL_VARIABLE: u8 = 249;
 const INDIRECT_REGISTER: u8 = 254;
 const INDIRECT_VARIABLE: u8 = 255;
 
@@ -79,7 +80,7 @@ pub fn countOpBytes(step_arg: [*]u8, paramMode: u16, isOldParam16: *const fn (u1
         PARAM_DECLARE_LABEL => {
             if (opParam <= LAST_LOCAL_LABEL) {
                 return step;
-            } else if (opParam == STRING_LABEL_VARIABLE) {
+            } else if (opParam == STRING_LABEL_VARIABLE or opParam == LOCAL_LABEL_VARIABLE) {
                 return step + step[0] + 1;
             } else {
                 return null;
@@ -89,7 +90,7 @@ pub fn countOpBytes(step_arg: [*]u8, paramMode: u16, isOldParam16: *const fn (u1
         PARAM_LABEL => {
             if (opParam <= LAST_LOCAL_LABEL) {
                 return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
+            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE or opParam == LOCAL_LABEL_VARIABLE) {
                 return step + step[0] + 1;
             } else if (opParam == INDIRECT_REGISTER) {
                 return step + 1;

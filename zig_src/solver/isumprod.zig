@@ -131,7 +131,8 @@ extern fn clearSystemFlag(sf: c_uint) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn findNamedLabel(label_name: [*:0]const u8) calcRegister_t;
+const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
+extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 
 extern fn checkHalfSec() bool;
@@ -280,7 +281,7 @@ fn _checkiArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section
         var buf: [2]u8 = undefined;
         buf[0] = letteredRegisterName(@intCast(label));
         buf[1] = 0;
-        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0])))));
+        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
         if (label == INVALID_VARIABLE) {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         } else {

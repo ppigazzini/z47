@@ -1425,7 +1425,7 @@ pub export fn assignGetName1() callconv(.c) void {
 
         // programs
         if (itemToBeAssigned == ASSIGN_CLEAR) {
-            itemToBeAssigned = frontier_manage.findNamedLabel(aimBuffer);
+            itemToBeAssigned = frontier_manage.findNamedLabel(aimBuffer, frontier_manage.GLOBAL_LABELS);
             if (itemToBeAssigned == INVALID_VARIABLE) {
                 itemToBeAssigned = ASSIGN_CLEAR;
             } else {
