@@ -1,73 +1,68 @@
 # Project And Upstream Contract
 
-This page defines what z47 is, what it owns, what the imported upstream C47
-tree owns, and where the current Zig port boundary sits.
+This page defines what z47 is, what it owns, what the imported upstream C47 tree
+owns, and where the Zig port boundary now sits.
 
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
+Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+
 ## At A Glance
 
-- z47 is not a generic Zig sample project and not a plain mirror of the
-  upstream tree.
-- z47 is the maintained Zig-first build, CI, packaging, documentation, and
-  staged rewrite overlay for the upstream C47 calculator application.
+- z47 is the Zig-first build, CI, packaging, documentation, and port of the
+  upstream C47 calculator application.
+- The calculator core is fully ported to Zig. The product builds (host simulator
+  and DMCP/DMCP5 firmware) contain no first-party calculator C:
+  `report-c-dependency-status.py` reports 0 active product-build first-party C
+  files.
+- The upstream C tree (`src/`, `dep/`) is retained as a read-only audit input and
+  the verification reference (the shared testSuite plus per-owner parity oracles).
+  z47 never edits it during normal work.
 - The authoritative upstream source repository is
-  `https://gitlab.com/rpncalculators/c43.git`.
-- The GitLab path still uses the historical `c43` repository name even though
-  the project identifies itself as C47.
-- The repo root currently carries the imported upstream working tree pinned at
-  commit `fd83b4a4ee4295543a398b19df9b00175dfcedca`.
-- `UPSTREAM_ROOT=.` in `../.github/project/upstream-pin.env` records that the
-  current imported baseline still lives at repo root.
-- `../.github/project/report-upstream-refresh.py` turns the pinned baseline
-  into a local commit, path, and ownership-classified touchpoint report before
-  a refresh lands.
-- M13 now keeps a tracked linked-worktree pilot helper at
-  `../.github/project/nested-upstream-pilot.sh`, but the measured recommendation
-  is no-go and the maintained baseline remains the repo-root import.
+  `https://gitlab.com/rpncalculators/c43.git`. The GitLab path still uses the
+  historical `c43` name even though the project identifies itself as C47.
+- The repo root carries the imported upstream working tree pinned at commit
+  `0caee2adcde273ecb75e7e9aa7181c97e50413cd` (verified fact from
+  `.github/project/upstream-pin.env`).
 - `build.zig` is the canonical maintained build entrypoint.
-- The imported `Makefile`, `meson.build`, and related upstream files remain in
-  the tree as audit and rebase reference surfaces.
-- The current verified Zig-owned code slices are the deterministic generators
-  under `zig_build/tools/`, the live runtime Zig slices under `zig_src/`, and
-  the legacy runtime bridge shims under `zig_bridge/`.
-- A Zig-owned control plane is not treated as success by itself. If added Zig
-  does not replace buggy or retired C owners or remove real legacy build debt,
-  it is extra maintenance cost.
 
 ## What This Repository Is
 
-z47 is the working repository for porting the upstream C47 calculator
-application to a Zig-first build and maintenance model while preserving
-upstream behavior.
+z47 is the working repository that ports the upstream C47 calculator application
+to a Zig-first build and maintenance model while preserving upstream behavior,
+proven by the shared testSuite and per-owner parity oracles.
 
-In practice, that means this repo owns:
+This repo owns:
 
 - the repo-root `build.zig` control plane
-- the Zig build-domain code under `zig_build/`
-- the live runtime Zig owner paths under `zig_src/`
-- the legacy runtime bridge or shim paths under `zig_bridge/`
-- GitHub Actions workflows, pins, and packaging helpers under `.github/`
+- the ported calculator core under `zig_src/` (the Zig owners)
+- the Zig build-domain code under `zig_build/` (host, firmware, distribution,
+  generators, tests, and the Zig host/firmware/testSuite HAL replacements)
+- the near-retired legacy header shims under `zig_bridge/`
+- GitHub Actions workflows, pins, governance guards, and packaging helpers under
+  `.github/`
 - the maintained developer-doc set under `zig_docs/`
 
-The imported upstream tree still owns the main calculator sources, assets,
-legacy build graph, and legacy third-party dependency layout carried at the
-repo root.
+The imported upstream tree still owns the original calculator C sources, assets,
+legacy build graph, and legacy third-party dependency layout carried at the repo
+root, kept as audit and parity reference.
 
 ## What This Repository Is Not
 
-- not a clean-room Zig rewrite of the whole calculator
-- not a docs-only planning repo disconnected from live sources
-- not a promise that GTK, FreeType, GMP, `decNumberICU`, or the SwissMicros SDK
-  stack has already been replaced
-- not a license to treat `zig translate-c` or ad hoc `@cImport` calls as the
-  default migration strategy
+- not a clean-room rewrite: the Zig owners are parity-gated against the imported
+  upstream C, which stays in the tree as the oracle
+- not pure Zig at the dependency level: the build still compiles the vendored
+  `dep/decNumberICU` and links GTK 3, GMP, FreeType 2, optional PulseAudio, and
+  the SwissMicros SDKs (see the dependency table below)
+- not a license to treat `zig translate-c` or ad hoc `@cImport` as a migration
+  path for owner logic: `translate-c` is confined to the generated ABI seam and a
+  few narrow generator boundaries (see
+  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md))
 
 ## Imported Upstream Baseline
 
-The current imported upstream pin is recorded in
-`../.github/project/upstream-pin.env`.
+The imported upstream pin is recorded in `../.github/project/upstream-pin.env`.
 
 Current checked-in values:
 
@@ -77,77 +72,62 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `fd83b4a4ee4295543a398b19df9b00175dfcedca` |
+| `UPSTREAM_COMMIT` | `0caee2adcde273ecb75e7e9aa7181c97e50413cd` |
 | `UPSTREAM_ROOT` | `.` |
 | `UPSTREAM_IMPORT_LAYOUT` | `repo-root-import` |
-| `UPSTREAM_PIN_UPDATED` | `2026-06-25` |
+| `UPSTREAM_PIN_UPDATED` | `2026-07-09` |
 
-The current `UPSTREAM_ROOT=.` value means the imported upstream tree is mounted
-at repo root today. That is the current baseline contract, not a promise that a
-future M13 topology pilot cannot move the imported root after the path and
-ownership blast radius stays bounded.
-
-The M13 pilot is now closed with a no-go recommendation. The tracked helper at
-`../.github/project/nested-upstream-pilot.sh` remains available for future
-measurement, but the maintained layout still keeps the imported tree at repo
-root until CI path debt drops enough to improve clarity rather than only moving
-the same coupling under `upstream/`.
-
-That imported tree includes the main source, dependency, resource, packaging,
-and docs inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`,
-`Makefile`, `meson.build`, and related root files.
+`UPSTREAM_ROOT=.` means the imported upstream tree is mounted at repo root. That
+imported tree includes the source, dependency, resource, packaging, and docs
+inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`,
+`meson.build`, and related root files. Advancing the pin is the upstream resync
+flow; see [80-maintainer-workflow.md](80-maintainer-workflow.md) and the committed
+`.github/project/upstream-resync-runbook.md`.
 
 ## Ownership Table
 
 | Surface | Owner | Purpose |
 | --- | --- | --- |
-| `build.zig` | z47 overlay | repo-root option parsing and top-level step registration |
-| `zig_build/` | z47 overlay | host, firmware, distribution, generator, and rewrite build-registration domains |
-| `zig_src/` | z47 overlay | live runtime Zig owners for parity-gated rewrite slices |
-| `zig_bridge/` | z47 overlay | legacy helper C shims paired with live Zig runtime slices |
-| `.github/` and `.github/project/` | z47 overlay | CI workflows, toolchain pin, upstream pin, boundary guard, package helpers |
-| `../.github/project/source-ownership.txt` and `../.github/project/check-source-ownership.sh` | z47 overlay | tracked top-level ownership manifest plus CI guard for imported-root additions |
-| `zig_docs/` | z47 maintained docs | stable developer documentation for the live repo |
-| `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `meson_options.txt`, `tools/` | imported upstream baseline | canonical calculator sources, assets, legacy build graph, and helper tools |
-| `dep/DMCP_SDK` and `dep/DMCP5_SDK` | imported legacy SDK inputs | SwissMicros hardware build inputs used by the Zig-owned firmware flow |
+| `build.zig` | z47 | repo-root option parsing and top-level step registration |
+| `zig_src/` | z47 | the ported calculator core (Zig owners: `abi`, `constants`, `frontier`, `mathematics`, `shortint`, `solver`, `state`, `ui`) |
+| `zig_build/` | z47 | host, firmware, distribution, generator, and test build domains, plus the Zig host/firmware/testSuite HAL replacements |
+| `zig_bridge/` | z47 | near-retired legacy header shims (two headers) paired with a few owners |
+| `.github/` and `.github/project/` | z47 | CI workflows, toolchain pin, upstream pin, governance guards, boundary and ownership manifests, package helpers |
+| `zig_docs/` | z47 | maintained developer documentation |
+| `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `tools/` | imported upstream | original calculator C sources, assets, legacy build graph, and helper tools -- read-only audit and parity reference |
+| `dep/DMCP_SDK` and `dep/DMCP5_SDK` | imported SwissMicros SDKs | hardware build inputs used by the Zig-owned firmware flow |
 
 ## Port Boundary Summary
 
-| Surface | Current state | Notes |
-| --- | --- | --- |
-| `src/c47`, `src/c47-gtk`, `src/c47-dmcp`, `src/c47-dmcp5` | existing C compiled by Zig, with selected leaf and stack replacements | most calculator, simulator, and hardware code still comes from the imported upstream tree |
-| `dep/decNumberICU` | legacy C dependency compiled by Zig | vendored decimal arithmetic library remains explicit |
-| GTK 3, FreeType 2, GMP, libm, optional PulseAudio | external C libraries linked from Zig | legacy host dependencies remain explicit |
-| `zig_build/tools/` generator entrypoints | manual Zig executables with narrow C boundaries | deterministic generators now run from Zig-owned entrypoints |
-| `zig_src/constants/` constants rewrite slice | manual Zig rewrite with parity coverage | constants-command ownership now lives in Zig with focused parity validation |
-| `zig_src/shortint/` short-integer rewrite slice | manual Zig rewrite with parity coverage | low-coupling short-integer modules have focused parity validation |
-| `zig_src/state/` stateful rewrite slices | manual Zig rewrite with parity coverage | the exported stack, register-metadata, flags, memory, serialization, calc-state, and keyboard helper owners now live in Zig for the live graphs |
-| `zig_bridge/state/` legacy helper shims | existing C compiled by Zig | legacy runtime helper seams stay explicit beside the live Zig owners they support |
-| `zig_src/constants/constants_runtime.zig`, `zig_src/shortint/shortint_runtime.zig`, `zig_src/state/stack_runtime.zig`, plus approved generator files | explicit Zig or C boundary | checked-in `@cImport` and direct `extern` usage is CI-gated |
+| Surface | Current state |
+| --- | --- |
+| calculator core (`src/c47/**` logic) | fully ported to Zig under `zig_src/`; the upstream C is retained only as the parity oracle |
+| GTK host layer (`src/c47-gtk`) | ported to Zig under `zig_build/host/gtk_*.zig`; the ported C files are filtered out of the build (`filterGtkSources`) |
+| DMCP/DMCP5 firmware HAL (`src/c47-dmcp*`) | audio, file-I/O, and print-IR HAL ported to Zig under `zig_build/firmware_*_runtime.zig`; firmware core is the Zig owners |
+| testSuite HAL (`src/testSuite/hal/*.c`) | ported to Zig (`zig_build/tests/testsuite_hal.zig`) and linked instead of the C HAL |
+| `dep/decNumberICU` | retained vendored C, compiled by Zig into the product and generators |
+| GTK 3, GMP, FreeType 2, optional PulseAudio | retained external C libraries linked from Zig (host) |
+| SwissMicros DMCP/DMCP5 SDKs | retained external C inputs linked from Zig (firmware) |
+| first-party C remaining in the tree | the ~60 parity/oracle/fake-runtime/test files under `zig_build/tests/**` and `src/**` used only for verification -- not in the product |
 
 ## Runtime And Build Boundary Rules
 
-- Fix shared calculator behavior in the canonical imported owner path or in an
-  approved Zig rewrite slice, not in notes or generated output snapshots.
+- Fix shared calculator behavior in the Zig owner under `zig_src/`, never in the
+  imported upstream tree (which is the oracle) and never in notes or generated
+  snapshots.
 - Keep the imported root tree rebase-friendly against `upstream/master`.
-- Keep `UPSTREAM_ROOT`, the tracked source-ownership manifest, and the
-  source-manifest workflow aligned when the imported baseline or top-level
-  ownership split changes.
-- Keep legacy C libraries explicit in docs and code review. Do not imply a
-  pure-Zig state while the build still links or compiles legacy C.
-- Treat new Zig build or orchestration code as justified only when it replaces
-  legacy C owners, fixes a real build or platform defect, or deletes more
-  workflow debt than it adds.
-- Update `../.github/project/upstream-pin.env` and any affected maintainer docs
-  together when the audited upstream pin changes.
+- Keep retained C dependencies explicit in docs and review. Do not imply a
+  pure-Zig state while the build still compiles decNumberICU or links GTK, GMP,
+  FreeType, or the hardware SDKs.
+- Update `../.github/project/upstream-pin.env`, the source-ownership manifest, the
+  port ledger, and any affected maintainer docs together when the pin changes.
 
 ## What To Read Next
 
-- Read [10-build-and-source-layout.md](10-build-and-source-layout.md) next for
-  the canonical build entrypoints, build layout, and local flow.
-- Read [20-zig-build-graph.md](20-zig-build-graph.md) when you need the actual
-  Zig build-domain split.
-- Read [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
-  before changing any `@cImport`, `extern`, or rewrite slice.
-- Read [70-tests-and-verification.md](70-tests-and-verification.md) before
-  deciding which rerun lane to use.
+- [10-build-and-source-layout.md](10-build-and-source-layout.md) for the canonical
+  build entrypoints, layout, and local flow.
+- [20-zig-build-graph.md](20-zig-build-graph.md) for the Zig build-domain split.
+- [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
+  before changing any `@cImport`, `extern`, generated seam, or retained C surface.
+- [70-tests-and-verification.md](70-tests-and-verification.md) before choosing a
+  rerun lane.

@@ -1,190 +1,145 @@
 # Tests And Verification
 
-This page maps the maintainer verification surfaces, the contracts they lock,
-and the smallest rerun lane that should move with each kind of change.
+This page maps the maintainer verification surfaces, the contracts they lock, and
+the smallest rerun lane that should move with each kind of change.
 
-Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first.
-This page assumes the build entrypoints and ownership split are already clear.
+Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
+page assumes the build entrypoints and ownership split are already clear.
 
-## Verification Flow
+Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
 
-```mermaid
-flowchart TD
-  A[Code or docs change]
-  B{Changed surface}
-  C[Boundary or rewrite slice]
-  D[Host simulator or core regression]
-  E[Generated artifact or docs surface]
-  F[Firmware or package surface]
-  G[Broader CI lanes]
+## The One-Command Local Gate
 
-  A --> B
-  B -->|@cImport, extern, leaf rewrite| C
-  B -->|host simulator, tests, platform glue| D
-  B -->|generated outputs, docs| E
-  B -->|firmware, dist, release proof| F
-  C --> G
-  D --> G
-  E --> G
-  F --> G
+Before pushing anything non-trivial, run:
+
+```bash
+bash .github/project/run-local-gate.sh
 ```
+
+It reproduces the full Linux CI verdict: the governance guards, then the
+host-parity build/test/oracle battery (`run-host-parity-battery.sh`, byte-
+identical to the CI step, which now calls the same script), then the tracked-
+generated-artifact diff. It fails fast on the first red.
+
+`zig build sim` and `zig build test:unit` are NOT the full gate. The first
+all-Zig upstream resync shipped three CI-only failures that were green under
+sim+test:unit -- a parity oracle that stopped compiling, a stale generated
+artifact, and a source-ownership violation. The local gate catches all three. The
+one class it cannot reproduce on Linux is the Windows LLP64 integer-width trap;
+`check-portable-int-widths.sh` (inside the gate) approximates it, and the CI
+Windows lane is the final adjudicator. See
+`.github/project/upstream-resync-runbook.md`.
+
+`zig build test` runs the shared upstream testSuite (10228 tests as of this pin)
+plus the Zig-owned suites; confirm it exits 0, not just that it printed
+`0 TESTS FAILED` before any crash.
 
 ## Contract Inventory
 
-| Contract surface | Source of truth | Focused verification surface | First rerun lane |
-| --- | --- | --- | --- |
-| toolchain pin and supported Zig version | `../.github/zig-toolchain.env` | live `zig version` plus pinned manifest check | `zig build --help --summary none` after confirming the pinned version |
-| imported upstream pin and repo-root import contract | `../.github/project/upstream-pin.env` | upstream-branch reachability check plus source-manifest job | `git fetch <upstream-url> <upstream-branch> && git merge-base --is-ancestor <pinned-upstream> FETCH_HEAD` |
-| upstream refresh report | `../.github/project/upstream-pin.env`, `../.github/project/report-upstream-refresh.py` | fetch-backed summary of new upstream commits, changed imported paths, and ownership-classified z47 touchpoints | `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch` |
-| upstream pin triage ledger | `../.github/project/upstream-port-ledger.tsv`, `../.github/project/check-upstream-port-ledger.py` | ledger guard script plus branch-diff co-update check | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
-| split first-party C status report | `../.github/project/c_dependency_audit.py`, `../.github/project/report-c-dependency-status.py`, `../.github/project/c-dependency-allowlist.json`, `../.github/project/c-dependency-product-allowlist.json` | live split metrics for active product-build first-party C, legacy bridge first-party C, and non-product parity-oracle or test first-party C | `python3 .github/project/report-c-dependency-status.py --repo-root .` |
-| legacy bridge review ledger | `../.github/project/legacy-bridge-review.tsv`, `../.github/project/legacy_bridge_review.py`, `../.github/project/check-legacy-bridge-ledger.py`, `../.github/project/c-dependency-product-allowlist.json` | live active product-lane `zig_bridge` set matched against the tracked file-by-file review status | `python3 .github/project/check-legacy-bridge-ledger.py --repo-root .` |
-| tracked top-level ownership contract | `../.github/project/source-ownership.txt`, `../.github/project/check-source-ownership.sh` | source-ownership guard script | `git fetch <upstream-url> <upstream-branch> && bash .github/project/check-source-ownership.sh` |
-| workflow imported-root CI vocabulary | `../.github/project/workflow-imported-root-paths.sh`, `../.github/workflows/upstream-oracle.yml` | workflow imported-root guard script | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
-| checked-in Zig or C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | boundary guard script | `bash .github/project/check-zig-c-boundaries.sh` |
-| constants-command parity | `../zig_src/constants/`, `../zig_build/tests/constants/` | focused parity executable | `zig build constants_parity --summary none` |
-| short-integer mask, count, and bit-toggle parity | `../zig_src/shortint/`, `../zig_build/tests/` | focused parity executable | `zig build logical_shortint_parity --summary none` |
-| rotate, justify, mirror, byte-swap, zip, and unzip parity | `../zig_src/shortint/`, `../zig_build/tests/rotate_bits/` | focused parity executable covering the live `logicalOps/rotateBits.c` owner replacement | `zig build rotate_bits_parity --summary none` |
-| logical boolean operator rewrite regression | `../zig_src/shortint/`, `../zig_build/tests/testSuiteList_logical_boolean_ops.txt`, `../src/testSuite/tests/` | focused host test-suite list covering `and`, `or`, `not`, `nand`, `nor`, `xor`, and `xnor` after the live owner replacement | `zig build logical_boolean_ops_suite --summary none` |
-| stack-state rewrite parity | `../zig_src/state/`, `../zig_build/tests/stack_state/` | focused parity executable | `zig build stack_state_parity --summary none` |
-| register-metadata rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/register_metadata/` | focused parity executable | `zig build register_metadata_parity --summary none` |
-| system-flag rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/flags/` | focused parity executable | `zig build flags_parity --summary none` |
-| memory-helper rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/memory/` | focused parity executable | `zig build memory_parity --summary none` |
-| program-serialization rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/program_serialization/` | focused parity executable | `zig build program_serialization_parity --summary none` |
-| calc-state rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/calc_state/` | focused parity executable covering state-file wrappers plus simulator-only backup entrypoints | `zig build calc_state_parity --summary none` |
-| mathematics command-wrapper rewrite parity | `../zig_src/mathematics/`, `../zig_bridge/mathematics/`, `../zig_build/tests/math_wrappers/` | focused parity executable covering the live command owners plus shared trig, exponential, integer-power, Euler, complex-log, and other helper exports and the `invert`, `sign`, `changeSign`, `tanh`, `square`, and `cube` cluster | `zig build math_command_wrappers_parity --summary none` |
-| mathematics random and PCG rewrite parity | `../zig_src/mathematics/`, `../zig_bridge/mathematics/`, `../zig_build/tests/math_wrappers/` | focused parity executable covering the live `pcg_basic.c` and `random.c` owner replacements under the shared math wrapper runtime boundary | `zig build math_random_parity --summary none` |
-| tone UI rewrite parity | `../zig_src/ui/`, `../zig_build/ui/`, `../zig_build/tests/tone/` | focused parity executable covering `fnTone` and `fnBeep` dispatch and refresh behavior | `zig build tone_parity --summary none` |
-| keyboard command-surface rewrite parity | `../zig_src/state/`, `../zig_bridge/state/`, `../zig_build/tests/keyboard_state/` | focused parity executable covering the broader public keyboard command entrypoints | `zig build keyboard_state_parity --summary none` |
-| keyboard stop-statusbar mask regression | `../zig_bridge/state/keyboard_state_overlay.c`, `../zig_bridge/state/keyboard_state_legacy.c`, `../zig_bridge/state/keyboard_statusbar_mask.h`, `../zig_build/tests/keyboard_statusbar_flags_regression.c` | focused host regression executable | `zig build keyboard_statusbar_flags_regression --summary none` |
-| host simulator build boundary | `../zig_build/host/`, `../src/c47-gtk/` | simulator build surface | `zig build sim --summary none` |
-| host simulator live behavior boundary | `../zig_build/host/`, `../zig_build/host/simulator_smoke.sh`, `../src/c47-gtk/` | live X11 smoke covering LCD, keyboard, and pointer behavior for both simulators | `zig build simulator_smoke --summary none` |
-| host core regression | `../zig_build/host/`, `../src/testSuite/` | grouped native test suite | `zig build test --summary none` |
-| native Zig C sanitizer lane | `../zig_build/host/steps.zig` | sanitized host build and tests | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
-| deterministic generated outputs | `../zig_build/tools/`, tracked generated files | generator refresh plus targeted diff | `zig build generated --summary none` |
-| docs surface under `docs/code` | `../docs/code/`, `../docs/code/requirements.txt` | Sphinx and Doxygen lane | `zig build docs --summary none` |
-| firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | smallest affected firmware target | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
-| host or firmware packages | `../zig_build/dist.zig`, `../zig_build/zig_dist.py` | matching distribution target plus a fresh archive extraction when packaged runtime behavior matters | `zig build -Doptimize=ReleaseFast dist_linux --summary none` for Linux host-release parity, or the matching host or firmware package target on the relevant platform |
+| Contract surface | Source of truth | First rerun lane |
+| --- | --- | --- |
+| full Linux CI verdict | `../.github/project/run-local-gate.sh`, `../.github/project/run-host-parity-battery.sh` | `bash .github/project/run-local-gate.sh` |
+| toolchain pin and supported Zig version | `../.github/zig-toolchain.env` | `zig version` against the pinned manifest |
+| imported upstream pin and repo-root import | `../.github/project/upstream-pin.env` | `git fetch <upstream-url> master && git merge-base --is-ancestor <pin> FETCH_HEAD` |
+| upstream refresh report | `../.github/project/report-upstream-refresh.py` | `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch` |
+| upstream port ledger | `../.github/project/check-upstream-port-ledger.py` | `python3 .github/project/check-upstream-port-ledger.py --repo-root .` |
+| split first-party C status | `../.github/project/report-c-dependency-status.py` | `python3 .github/project/report-c-dependency-status.py --repo-root .` |
+| retained bridge review ledger | `../.github/project/retained-bridge-review.tsv`, `../.github/project/check-retained-bridge-ledger.py` | `python3 .github/project/check-retained-bridge-ledger.py --repo-root .` |
+| tracked top-level ownership | `../.github/project/source-ownership.txt`, `../.github/project/check-source-ownership.sh` | `bash .github/project/check-source-ownership.sh` |
+| workflow imported-root vocabulary | `../.github/project/workflow-imported-root-paths.sh` | `bash .github/project/workflow-imported-root-paths.sh check-workflow` |
+| checked-in Zig/C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | `bash .github/project/check-zig-c-boundaries.sh` |
+| idiomatic-Zig ratchet | `../.github/project/idiom-status-baseline.json`, `../.github/project/check-idiom-ratchet.sh` | `bash .github/project/check-idiom-ratchet.sh` |
+| Windows LLP64 int-width trap | `../.github/project/portable-int-width-allowlist.txt`, `../.github/project/check-portable-int-widths.sh` | `bash .github/project/check-portable-int-widths.sh` |
+| constant-blob offset parity | `../zig_src/abi/constants.zig`, `../.github/project/check-constant-offsets.py` | `zig build constants && python3 .github/project/check-constant-offsets.py` |
+| constant/enum mirror parity | `../.github/project/audit-constant-parity.py` | `python3 .github/project/audit-constant-parity.py` |
+| item-table parity | `../zig_src/frontier/frontier_items.zig`, `../.github/project/audit-item-table-parity.py` | `python3 .github/project/audit-item-table-parity.py` |
+| abi struct-layout parity | `../zig_build/tests/abi_layout/` | `zig build abi-layout-parity --summary none` |
+| per-owner behavioral parity | `../zig_src/<domain>/`, `../zig_build/tests/<owner>/` | `zig build <owner>_parity --summary none` (see below) |
+| native Zig unit tests (no C oracle) | `../zig_build/`, `zig_src` module tests | `zig build test:unit --summary none` |
+| host simulator build | `../zig_build/host/` | `zig build sim --summary none` |
+| host live-behavior smoke | `../zig_build/host/simulator_smoke.sh` | `zig build simulator_smoke --summary none` (non-blocking; known Xvfb pixman over-read) |
+| host core regression | `../zig_build/host/`, `../src/testSuite/` | `zig build test --summary none` |
+| native C-sanitizer lane | `../zig_build/host/steps.zig` | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
+| deterministic generated outputs | `../zig_build/tools/`, tracked generated files | `zig build generated --summary none` |
+| docs surface | `../docs/code/` | `zig build docs --summary none` |
+| firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
+| host or firmware packages | `../zig_build/dist.zig` | `zig build -Doptimize=ReleaseFast dist_linux --summary none`, or the matching package target |
+
+## Per-Owner Parity Oracles
+
+Each ported owner keeps a focused parity lane that compiles the retained upstream
+C as an oracle and asserts the Zig output matches it. These are the verification
+surface that lets the C be retired from the product while proving behavior. Run
+the lane for the owner you touched, for example:
+
+- `zig build logical_shortint_parity`, `zig build rotate_bits_parity`,
+  `zig build logical_boolean_ops_suite` (short-integer owners)
+- `zig build stack_state_parity`, `zig build register_metadata_parity`,
+  `zig build flags_parity`, `zig build memory_parity`,
+  `zig build program_serialization_parity`, `zig build calc_state_parity`,
+  `zig build keyboard_state_parity` (state owners)
+- `zig build math_command_wrappers_parity`, `zig build math_random_parity`,
+  and the focused `zig build math_*_oracle` lanes (mathematics owners)
+- `zig build constants_parity`, `zig build tone_parity`,
+  `zig build saveload_parity`, `zig build format_parity`,
+  `zig build distribution_parity`, `zig build eigen_parity`
+
+The full current set is discoverable with `zig build --help`.
 
 ## Which Lane To Run First
 
-- docs-only maintainer doc change rooted in `zig_docs/`, `CONTRIBUTING.md`, or
-  `ZIG-README.md`: verify every key claim against live files, then rerun
-  `zig build --help --summary none` if target names or options are described;
-  rerun `bash .github/project/check-source-ownership.sh` as well when the
-  change touches imported-root or tracked top-level ownership claims
-- imported-root layout, source-manifest, upstream-pin, or top-level ownership
-  change:
-  `zig build --help --summary none`, then
-  `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch`, then
-  `python3 .github/project/check-upstream-port-ledger.py --repo-root .`, then
-  `bash .github/project/check-source-ownership.sh`, then
-  `bash .github/project/workflow-imported-root-paths.sh check-workflow`, then
-  the smallest affected host or firmware target
-- codebase-status telemetry or first-party C reporting change:
-  `python3 .github/project/report-c-dependency-status.py --repo-root .`, then
-  `python3 .github/project/check-legacy-bridge-ledger.py --repo-root .`, then
-  the relevant `check-c-dependency-allowlist.py` command for the changed
-  config or baseline
-- build-graph step rename, option change, or output-path change:
-  `zig build --help --summary none`, then the smallest affected target
-- generator or tracked generated-artifact change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build generated --summary none`, then `zig build logical_boolean_ops_suite --summary none`
-- calc-state or simulator backup-entrypoint change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build calc_state_parity --summary none`, then `zig build sim --summary none`; if the slice adds or moves legacy C bindings, keep them in `zig_src/state/calc_state_runtime.zig` rather than `zig_src/state/calc_state.zig`; if the slice must stay firmware-safe, rerun `zig build dist_dmcp_pkg3 --summary none`, and rerun `zig build dist_dmcp_pkg2 --summary none` as well when package-2 overlay trims are part of the change
-- rotate, justify, byte-order, or zip-state leaf change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build rotate_bits_parity --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
-- short-integer logical boolean operator change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_boolean_ops_suite --summary none`, then `zig build test --summary none`, then `zig build dmcp --summary none`
-- mathematics command-wrapper, shared helper-export, or shared trig, exponential, integer-power, Euler, random, or PCG change: `bash .github/project/check-zig-c-boundaries.sh`, then the smallest relevant focused math oracle for the touched owner helper tranche such as `zig build math_atan_oracle --summary none`, `zig build math_atan2_oracle --summary none`, `zig build math_real_rectangular_to_polar_oracle --summary none`, `zig build math_real_trig_primitives_oracle --summary none`, `zig build math_circular_trig_oracle --summary none`, or `zig build math_ln_complex_oracle --summary none`, then `zig build math_command_wrappers_parity --summary none`, then `zig build sim --summary none`; rerun `zig build dmcp dmcp5 --summary none` when the slice adds or moves legacy helper exports used by legacy C, or when it must remain firmware-safe across both firmware targets
-- tone command-surface change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build tone_parity --summary none`, then `zig build sim --summary none`, then `zig build -Ddmcp-package=3 dmcp --summary none`
-- keyboard input, command-surface, or statusbar-flag change: `zig build keyboard_state_parity --summary none`; if the slice is limited to the stop-statusbar helper, rerun `zig build keyboard_statusbar_flags_regression --summary none`; then rerun `zig build simulator_smoke --summary none` and `zig build test --summary none`; if the slice must stay firmware-safe, rerun `zig build -Ddmcp-package=3 dmcp --summary none`
-- host simulator UI, GTK callback, or desktop platform-glue change:
-  `zig build sim --summary none`; if the change touches LCD paint, pointer
-  routing, or keyboard dispatch, rerun `zig build simulator_smoke --summary none`
-- host core or test-surface change:
-  `zig build test --summary none`
-- boundary or rewrite-slice change: `bash .github/project/check-zig-c-boundaries.sh`, then `zig build logical_shortint_parity --summary none`, `zig build rotate_bits_parity --summary none`, `zig build logical_boolean_ops_suite --summary none`, `zig build stack_state_parity --summary none`, `zig build register_metadata_parity --summary none`, `zig build flags_parity --summary none`, `zig build memory_parity --summary none`, `zig build program_serialization_parity --summary none`, `zig build calc_state_parity --summary none`, or `zig build keyboard_state_parity --summary none` for the touched slice
-- docs/code change: `zig build docs --summary none`
-- firmware or linker-script change: smallest affected firmware target first
-- package or release-proof change: matching `dist_<host>` or firmware package
-  target on the matching host OS after
-  `bash .github/project/workflow-imported-root-paths.sh check-workflow`; use
-  `-Doptimize=ReleaseFast` when reproducing the published desktop host archive
-  contract; for Linux firmware publication changes, use `dist_dmcp` plus the
-  dedicated `dist_dmcp_pkg*` steps instead of repeating `-Ddmcp-package` on
-  the generic `dist_dmcp` target
-- packaged host runtime change: after the matching `dist_<host>` target,
-  unpack a fresh `zig-out/dist/<archive>.zip` and run the packaged simulator
-  from that extraction instead of reusing an older `___TMP` tree; when the
-  published host artifact size matters, pair that extraction with
-  `-Doptimize=ReleaseFast`
-- host package portability change on x86 or x86_64: verify the matching
-  `dist_<host>` target from a fresh archive extraction and confirm the packaged
-  simulator does not inherit runner-native CPU instructions from the build host
+- docs-only change under `zig_docs/`, `CONTRIBUTING.md`, or `ZIG-README.md`:
+  verify every key claim against live files; rerun `zig build --help` if targets
+  or options are described; rerun `bash .github/project/check-source-ownership.sh`
+  if imported-root or ownership claims changed
+- upstream pin advance (resync): follow
+  `.github/project/upstream-resync-runbook.md`, then
+  `bash .github/project/run-local-gate.sh`
+- owner logic change: `zig build <owner>_parity`, then `zig build test`, then the
+  smallest firmware target if it must stay firmware-safe (`zig build dmcp` /
+  `zig build dmcp5`)
+- Zig/C boundary or generated-seam change:
+  `bash .github/project/check-zig-c-boundaries.sh`, then the affected owner parity
+  lane, then `zig build generated`
+- host serialization / RNG / time / file-offset change (Windows LLP64 risk):
+  `bash .github/project/check-portable-int-widths.sh`, then the owner parity lane;
+  let the CI Windows lane adjudicate the runtime width behavior
+- generated-artifact change: `zig build generated`, then
+  `git diff --exit-code` on the tracked generated artifacts
+- host simulator / GTK change: `zig build sim`; if it touches LCD paint, pointer,
+  or keyboard dispatch, `zig build simulator_smoke`
+- firmware or linker-script change: the smallest affected firmware target first
+- package or release-proof change: the matching `dist_<host>` or firmware package
+  target on the matching host OS; use `-Doptimize=ReleaseFast` for the published
+  desktop archive contract, and unpack a fresh archive when packaged runtime
+  behavior matters
 
-## Full Linux Pre-CI Sweep
+## Full Linux Sweep
 
-When a change touches multiple active surfaces and you want the closest local
-match to the Linux CI lane, use this order after exporting the xlsxio helper:
+`bash .github/project/run-local-gate.sh` is the maintained full Linux sweep and
+replaces the older hand-listed lane sequence. For platform surfaces the Linux
+gate does not cover, rely on the CI matrix:
 
-1. `bash .github/project/check-zig-c-boundaries.sh`
-2. `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch`
-3. `python3 .github/project/check-upstream-port-ledger.py --repo-root .`
-4. `bash .github/project/check-source-ownership.sh`
-5. `bash .github/project/workflow-imported-root-paths.sh check-workflow`
-6. `zig build logical_shortint_parity --summary none`
-7. `zig build rotate_bits_parity --summary none`
-8. `zig build logical_boolean_ops_suite --summary none`
-9. `zig build stack_state_parity --summary none`
-10. `zig build register_metadata_parity --summary none`
-11. `zig build flags_parity --summary none`
-12. `zig build memory_parity --summary none`
-13. `zig build program_serialization_parity --summary none`
-14. `zig build calc_state_parity --summary none`
-15. `zig build math_command_wrappers_parity --summary none`
-16. `zig build math_random_parity --summary none`
-17. `zig build tone_parity --summary none`
-18. `zig build keyboard_state_parity --summary none`
-19. `zig build both --summary none`
-20. `zig build simulator_smoke --summary none`
-21. `zig build testPgms --summary none`
-22. `xvfb-run --auto-servernum zig build test --summary none`
-23. `zig build generated --summary none`
-24. `zig build both_asan --summary none`
-25. `xvfb-run --auto-servernum zig build test_asan --summary none`
-26. `zig build docs --summary none`
-27. `zig build dmcp --summary none`
-28. `zig build dmcpr47 --summary none`
-29. `zig build dmcp5 --summary none`
-30. `zig build dmcp5r47 --summary none`
-31. `zig build -Doptimize=ReleaseFast dist_linux --summary none`
-32. `zig build dist_dmcp --summary none`
-33. `zig build dist_dmcp_pkg1 --summary none`
-34. `zig build dist_dmcp_pkg2 --summary none`
-35. `zig build dist_dmcp_pkg3 --summary none`
-36. `zig build dist_dmcpr47 --summary none`
-37. `zig build dist_dmcp5 --summary none`
-38. `zig build dist_dmcp5r47 --summary none`
+- macOS and Windows host lanes (build, test, generated outputs, app smoke)
+- firmware validation and publication (`dmcp`, `dmcp5`, `dmcpr47`, `dmcp5r47`,
+  and the `dist_dmcp*` package steps)
+
+See [60-ci-and-release-workflow.md](60-ci-and-release-workflow.md) for the lane
+split.
 
 ## Generated Artifact Diff Contract
 
-After `zig build generated --summary none`, compare only the tracked generated
-sources and generated test data refreshed by that step.
-
-Do not use unrelated diffs as proof that the generated-artifact contract moved.
-
-## When To Rebuild From The Top
-
-Run a broader grouped lane when:
-
-- the change crosses host, generated-artifact, and packaging ownership at the
-  same time
-- a focused lane passes but a CI job name or artifact contract changed
-- a `zig build clean` run removed tracked generated outputs and you need to
-  re-establish the full generated surface
+After `zig build generated`, compare only the tracked generated sources and
+generated test data refreshed by that step (the `run-local-gate.sh` final step
+does this). Regenerate `res/testPgms/testPgms.bin` after any item-table growth --
+a stale copy fails the diff. Do not use unrelated diffs as proof the
+generated-artifact contract moved.
 
 ## Verification Change Rules
 
 - Keep the smallest rerun lane explicit in docs and reviews.
-- Update this page whenever a public target name, focused test lane, or tracked
-  generated output list changes.
-- Prefer executable checks over visual confidence.
-- If a lane cannot run locally, record the exact blocker and the narrower file
-  or workflow evidence that was checked instead.
+- Update this page whenever a public target name, focused lane, guard script, or
+  tracked generated-output list changes.
+- Prefer executable checks over visual confidence; capture the actual exit code.
+- If a lane cannot run locally, record the exact blocker and the narrower evidence
+  checked instead.

@@ -1,75 +1,148 @@
 # Build And Source Layout
 
-This page is the canonical z47 ownership, build, and rebuild contract for the
-live repository.
+This page is the canonical z47 build-entrypoint, ownership, and source-layout
+contract for the live repository. Use it for the `zig build` targets, the
+one-command local gate, the tracked source domains, the checked-in pins, and the
+build outputs.
 
 Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 starts after the project and ownership boundary are already clear.
 
-Use this page for build entrypoints, checked-in pins, build-domain layout, and
-the local maintainer flow.
+Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
 
 ## Build At A Glance
 
-- `build.zig` is the canonical maintained entrypoint.
-- The repo-root `build.zig` stays small and routes work into `zig_build/`.
-- `zig_build/` is build-only; live runtime Zig lives under `zig_src/` and
-  legacy runtime bridge C lives under `zig_bridge/`.
-- imported upstream paths route through `UPSTREAM_ROOT` in
-  `../.github/project/upstream-pin.env`; the current value `.` keeps the
-  imported baseline at repo root
-- `zig_build/zig_dist.py` now resolves imported packaging resources through
-  that same `UPSTREAM_ROOT` pin instead of assuming repo-root `res/` paths.
-- `../.github/project/nested-upstream-pilot.sh` is the tracked M13 helper for
-  measuring an `upstream/` candidate in a linked worktree without changing the
-  maintained baseline.
-- The imported `Makefile` and Meson files remain audit and parity references,
-  not the maintained z47 control plane.
-- Host, docs, firmware, and packaging work all route through `zig build`.
-- Deterministic generated sources and data refresh through public `zig build`
-  steps rather than ad hoc scripts.
+- `build.zig` is the canonical maintained entrypoint. The repo-root `build.zig`
+  stays small and routes work into `zig_build/`.
+- The calculator core is fully ported to Zig. `report-c-dependency-status.py`
+  reports 0 active product-build first-party C files, so `zig build sim`,
+  `zig build dmcp`, and `zig build dmcp5` compile no first-party calculator C.
+- `zig_build/` is build-only Zig plus the Zig host/firmware/testSuite HAL
+  replacements; the ported calculator core lives under `zig_src/`; `zig_bridge/`
+  is near-retired and holds only two header shims.
+- Retained C is explicit: the vendored `dep/decNumberICU` is compiled by Zig,
+  and the build links GTK 3, GMP, FreeType 2, and optional PulseAudio (host) plus
+  the SwissMicros DMCP/DMCP5 SDKs (firmware). The remaining first-party C in the
+  tree is parity/oracle/testSuite verification only, not in the product.
+- Imported upstream paths route through `UPSTREAM_ROOT` in
+  `../.github/project/upstream-pin.env`; the current value `.` keeps the imported
+  baseline at repo root. The imported `Makefile` and Meson files stay audit and
+  parity references, not the maintained control plane.
+- Host, docs, firmware, packaging, and generator work all route through
+  `zig build`. Build output goes to `zig-out/`, which is gitignored.
 
-## Top-Level Locality Map (M13)
+## Canonical Build Entrypoints
+
+Lead with these. The full grouped set is in `../ZIG-README.md`,
+[20-zig-build-graph.md](20-zig-build-graph.md), and live `zig build --help`.
+
+| Command | What it does |
+| --- | --- |
+| `zig build` / `zig build sim` | canonical host simulator build (C47) |
+| `zig build simr47` / `zig build both` | R47 simulator / build both simulators |
+| `zig build test` | grouped host regression lane: the shared upstream testSuite plus the Zig-owned suites |
+| `zig build test:unit` | native Zig unit tests, no C oracle |
+| `zig build generated` | refresh all tracked generated host artifacts |
+| `zig build constants`, `zig build catalogs`, `zig build fonts`, `zig build testPgms` | individual generator lanes |
+| `zig build docs` | docs build for `docs/code` |
+| `zig build dmcp`, `zig build dmcpr47`, `zig build dmcp5`, `zig build dmcp5r47` | firmware targets (DMCP and DMCP5, C47 and R47) |
+| `zig build dist_linux`, `zig build dist_macos`, `zig build dist_windows` | host-package build on the matching host OS |
+| `zig build clean` | clear derived build state |
+
+Verification entrypoints:
+
+- `bash .github/project/run-local-gate.sh`: one command that reproduces the full
+  Linux CI verdict before pushing. It runs the governance guards, the native unit
+  tests, the host-parity build/test/oracle battery, and the tracked
+  generated-artifact diff, failing fast on the first red.
+- the per-owner parity and oracle lanes (for example `zig build calc_state_parity`,
+  `zig build math_command_wrappers_parity`, `zig build eigen_parity`) prove each
+  Zig owner matches its retained upstream C; see
+  [70-tests-and-verification.md](70-tests-and-verification.md).
+
+## Top-Level Locality Map
 
 Use this compact map first when triaging where a change belongs.
 
 | Bucket | Root count | Canonical source | Action rule |
 | --- | ---: | --- | --- |
-| z47-owned control roots | 9 | `../.github/project/source-ownership.txt` (`[z47-owned]`) | Place new maintained build, runtime-Zig, CI, and docs logic here. |
-| imported upstream roots | 20 | `../.github/project/source-ownership.txt` (`[imported-upstream]`) | Treat as imported baseline; change only with explicit reviewed exception. |
-| local environment and build-output roots | 5 | live worktree (`.tmp`, `.venv`, `.vscode`, `.zig-cache`, `zig-out`) | Keep untracked and out of policy claims; do not treat as owned source roots. |
+| z47-owned control roots | 10 | `../.github/project/source-ownership.txt` (`[z47-owned]`) | Place new maintained build, runtime-Zig, CI, and docs logic here. |
+| imported upstream roots | 20 | `../.github/project/source-ownership.txt` (`[imported-upstream]`) | Treat as imported baseline; change only with an explicit reviewed exception. |
+| local environment and build-output roots | untracked | live worktree (`.zig-cache`, `zig-out`, and other ignored paths) | Keep untracked and out of policy claims; do not treat as owned source roots. |
 
 Root-clutter guardrails:
 
 - `.github/project/check-source-ownership.sh` rejects missing or unclassified
   tracked top-level roots.
 - `.github/project/source-ownership.txt` is the single classification surface
-  for owned versus imported tracked roots.
-- avoid adding new top-level roots; prefer adding paths under existing
+  for owned versus imported tracked roots (including the reviewed
+  `[approved-z47-additions-under-imported]` exceptions).
+- avoid adding new top-level roots; prefer adding paths under the existing
   `zig_build/`, `zig_src/`, `zig_bridge/`, `.github/`, or `zig_docs/` trees.
+
+## Repo-Owned Source Domains
+
+The ported calculator core lives under `zig_src/` as 366 `.zig` owners across
+eight domains.
+
+| Domain | `.zig` owners | Role |
+| --- | ---: | --- |
+| `abi` | 13 | ABI mirror types and the generated C-boundary seam |
+| `constants` | 2 | constant-table owner and its generator seam |
+| `frontier` | 103 | menus, catalogs, display, keyboard/program-editor frontends |
+| `mathematics` | 154 | math command entries, real/complex math, matrices, stats |
+| `shortint` | 10 | short-integer and bit-logic owners |
+| `solver` | 10 | solver and root-finding owners |
+| `state` | 72 | calculator state, stack, flags, memory, program serialization |
+| `ui` | 2 | tone and small UI-side owners |
+
+`zig_build/` holds roughly 59 `.zig` files across the host, firmware,
+distribution, generator, and test build domains, plus the Zig host, firmware, and
+testSuite HAL replacements. Its top level includes `host.zig`, `firmware.zig`,
+`dist.zig`, `common.zig`, `zig_dist.py`, the `firmware_*_runtime.zig` HAL files,
+and the `host/`, `firmware/`, `tools/`, `tests/`, and per-domain subdirectories.
+
+`zig_bridge/` is near-retired: it holds only `c47.h` and
+`state/keyboard_statusbar_mask.h`.
 
 ## Build-Relevant File Layout
 
 ```text
 repo root
 |- build.zig
+|- build.zig.zon
 |- zig_build/
 |  |- common.zig
 |  |- host.zig
-|  |- host/
 |  |- firmware.zig
 |  |- dist.zig
+|  |- firmware_audio_runtime.zig
+|  |- firmware_io_runtime.zig
+|  |- firmware_print_ir_runtime.zig
+|  |- zig_dist.py
+|  |- host/
+|  |- firmware/
 |  |- tools/
+|  |- tests/
 |  |- constants/
 |  |- shortint/
 |  |- state/
-|  `- zig_dist.py
+|  |- solver/
+|  |- mathematics/
+|  |- frontier/
+|  `- ui/
 |- zig_src/
+|  |- abi/
 |  |- constants/
+|  |- frontier/
+|  |- mathematics/
 |  |- shortint/
-|  `- state/
+|  |- solver/
+|  |- state/
+|  `- ui/
 |- zig_bridge/
-|  `- state/
+|  |- c47.h
+|  `- state/keyboard_statusbar_mask.h
 |- .github/
 |  |- zig-toolchain.env
 |  |- workflows/
@@ -77,16 +150,14 @@ repo root
 |     |- upstream-pin.env
 |     |- upstream-port-ledger.tsv
 |     |- check-upstream-port-ledger.py
-|     |- c_dependency_audit.py
-|     |- legacy-bridge-review.tsv
-|     |- legacy_bridge_review.py
-|     |- check-legacy-bridge-ledger.py
-|     |- report-c-dependency-status.py
-|     |- report-upstream-refresh.py
 |     |- source-ownership.txt
 |     |- check-source-ownership.sh
 |     |- zig-c-boundaries.txt
-|     `- check-zig-c-boundaries.sh
+|     |- check-zig-c-boundaries.sh
+|     |- report-c-dependency-status.py
+|     |- run-local-gate.sh
+|     |- run-host-parity-battery.sh
+|     `- upstream-resync-runbook.md
 |- zig_docs/
 |- docs/code/
 |  |- conf.py
@@ -102,127 +173,78 @@ repo root
 |  |- DMCP_SDK/
 |  `- DMCP5_SDK/
 |- res/
-|  |- fonts/
-|  |- testPgms/
-|  `- dist-docs/
 |- LIBRARY/
-|- BUILD.md
-|- README.md
-|- CONTRIBUTING.md
-|- ZIG-README.md
 |- Makefile
 |- meson.build
 |- meson_options.txt
 `- tag2ver.py
 ```
 
-## Install And Build Behavior
-
-The live Zig build graph installs into the active Zig prefix. Keep the
-maintained docs focused on the public `zig build` entrypoints and the tracked
-source surfaces they act on, not on ignored build-output directories.
+The `.github/project/` list above is a triage subset; that directory also carries
+the C-dependency baselines and allowlists, the retained-bridge review ledger, the
+idiom ratchet, and other governance guards. Run `ls .github/project/` for the
+full set.
 
 ## Checked-In Defaults And Pins
 
-Checked-in build defaults currently come from these files:
+Checked-in build defaults come from these tracked files:
 
-- `../.github/zig-toolchain.env`: pins Zig `0.16.0`
-- `../.github/project/upstream-pin.env`: pins the imported upstream commit and
-  repository URL plus the current imported upstream root
-- `../.github/project/upstream-port-ledger.tsv`: records the maintainer triage
-  ledger for the current upstream pin and later audited upstream commits
+- `../.github/zig-toolchain.env`: pins Zig `0.16.0` (plus the audited Zig master
+  snapshot used by the non-blocking compatibility lane and the setup-zig action
+  ref)
+- `../.github/project/upstream-pin.env`: pins the imported upstream commit,
+  repository URL, branch, and the imported upstream root (`UPSTREAM_ROOT=.`)
+- `../.github/project/upstream-port-ledger.tsv`: the maintainer triage ledger for
+  the current pin and later audited upstream commits
 - `../.github/project/check-upstream-port-ledger.py`: validates ledger shape,
   pinned-commit coverage, and pin-plus-ledger co-updates
 - `../.github/project/c_dependency_audit.py`: shared path extraction and
   classification logic for tracked first-party C telemetry
-- `../.github/project/legacy-bridge-review.tsv`: tracked file-by-file review
-  ledger for the active product-lane `zig_bridge` C seams
-- `../.github/project/legacy_bridge_review.py`: shared legacy-bridge review
-  parsing logic used by the status helper and ledger guard
-- `../.github/project/check-legacy-bridge-ledger.py`: validates that the
-  legacy-bridge review ledger covers the current active product-lane
-  `zig_bridge` references exactly once
-- `../.github/project/report-c-dependency-status.py`: prints split live
-  first-party C metrics for active product-build, legacy-bridge, and
-  parity-oracle or test buckets used by future codebase-status reports
+- `../.github/project/c-dependency-first-party-baseline.txt` and
+  `../.github/project/c-dependency-product-first-party-baseline.txt`: the tracked
+  first-party C baselines the Phase I policy check compares against
+- `../.github/project/report-c-dependency-status.py`: prints split first-party C
+  metrics for the active product-build, retained-bridge, and parity/oracle/test
+  buckets
+- `../.github/project/retained-bridge-review.tsv` and
+  `../.github/project/check-retained-bridge-ledger.py`: the file-by-file review
+  ledger and guard for the remaining `zig_bridge` seams
 - `../.github/project/report-upstream-refresh.py`: summarizes new upstream
-  commits, changed imported paths, and explicit z47-owned touchpoints before a
-  refresh lands
-- `../.github/project/source-ownership.txt`: records the tracked top-level
-  z47-owned roots and imported-upstream roots used by CI and source manifests
+  commits, changed imported paths, and z47-owned touchpoints before a refresh
+  lands
+- `../.github/project/source-ownership.txt` and
+  `../.github/project/check-source-ownership.sh`: the tracked top-level ownership
+  classification and its guard
 - `../.github/project/workflow-imported-root-paths.sh`: resolves the
-  workflow-owned imported-root paths used by docs install,
-  generated-artifact proof, and host package staging
-- `../.github/project/zig-c-boundaries.txt`: records the approved checked-in
-  `@cImport` and direct `extern` boundary files
+  workflow-owned imported-root paths used by docs install, generated-artifact
+  proof, and host package staging
+- `../.github/project/zig-c-boundaries.txt` and
+  `../.github/project/check-zig-c-boundaries.sh`: the approved checked-in
+  `@cImport` and direct `extern` boundary files and their guard
 - `../docs/code/requirements.txt`: pins the Python package set needed for
   `zig build docs`
 
 The live project-specific Zig options are:
 
-- `-Dci-commit-tag=<string>`: optional version tag input for packaging
+- `-Dci-commit-tag=<string>`: optional version tag input for packaging (default
+  empty)
 - `-Draspberry=<bool>`: Raspberry Pi layout switch, default `false`
 - `-Ddecnumber-fastmul=<bool>`: `DECNUMBER_FASTMUL` switch, default `true`
 - `-Ddmcp-package=<int>`: DMCP package selector for `dmcp` and `dmcpr47`,
   default `4`
 
-## Repository Ownership Map
+## Build Outputs
 
-Top-level z47-owned overlay paths:
+The live Zig build graph installs into `zig-out/`, which is gitignored along with
+`.zig-cache/`. Keep the maintained docs focused on the public `zig build`
+entrypoints and the tracked source surfaces they act on, not on ignored
+build-output directories.
 
-- `build.zig`
-- `zig_build/`
-- `zig_src/`
-- `zig_bridge/`
-- `.github/`
-- `zig_docs/`
+## File Naming Conventions
 
-The tracked top-level ownership split used by CI lives in
-`../.github/project/source-ownership.txt`. The source-manifest job and the
-source-ownership guard both read from that manifest, the upstream-port ledger
-guard reads `../.github/project/upstream-port-ledger.tsv`, and the workflow
-imported-root guard reads `../.github/project/workflow-imported-root-paths.sh`,
-so docs and CI use tracked vocabulary files for the current repo-root
-baseline.
-
-Imported upstream-shaped paths consumed directly by the live build graph:
-
-- `src/`
-- `dep/`
-- `docs/`
-- `res/`
-- `LIBRARY/`
-- `Makefile`
-- `meson.build`
-- `meson_options.txt`
-- `tag2ver.py`
-
-Maintenance rule:
-
-- add new z47-owned build logic under `zig_build/` or `.github/`
-- add new live runtime Zig under `zig_src/`
-- add new legacy runtime bridge C under `zig_bridge/`
-- do not place new z47-owned files under imported upstream-shaped directories
-  unless the task is intentionally editing the canonical imported owner path
-- use a linked worktree when rehearsing an `upstream/master` refresh instead of
-  repurposing the active coding tree
-- run `../.github/project/report-upstream-refresh.py` after fetching
-  `upstream/master` so the refresh review records new commits, changed imported
-  paths, and the likely z47-owned follow-up surfaces before the pin moves
-- run `../.github/project/report-c-dependency-status.py` when a maintainer
-  report, roadmap update, or closure claim needs live split first-party C
-  telemetry; keep active product-build, legacy-bridge, and parity-oracle or
-  test buckets separate instead of collapsing them into one closure sentence
-- run `../.github/project/check-legacy-bridge-ledger.py` after any change to
-  the active product-lane `zig_bridge` set or its file-by-file review status so
-  the ledger stays aligned with the live product subset
-- use `../.github/project/nested-upstream-pilot.sh` when you need to re-measure
-  a nested `upstream/` layout; do not change `UPSTREAM_ROOT` in the maintained
-  tree unless that pilot is explicitly promoted
-
-## Naming Contract
-
-Use one naming stratum per file.
+Use one naming stratum per file. The suffixes below are the layout-visible part
+of that contract; the deeper layer-scoped casing policy lives in the naming
+milestones under `__DEV/`.
 
 - semantic owner files use the domain name directly, for example
   `zig_src/frontier/frontier.zig`, `zig_src/state/calc_state.zig`, and
@@ -231,116 +253,62 @@ Use one naming stratum per file.
   `zig_src/frontier/frontier_runtime.zig` and
   `zig_src/state/calc_state_runtime.zig`
 - pure ABI shim forwarders use `*_export.zig`, for example
-  `zig_src/mathematics/math_atan2_export.zig` and
-  `zig_src/mathematics/math_real_trig_export.zig`
-- internal implementation helpers that exist only behind a paired export shim
-  use `*_owned.zig`, for example `zig_src/mathematics/math_atan2_owned.zig`
-- legacy C owner or helper files stay explicit as `*_legacy.c` or
-  `*_runtime_helpers.c`
-- inside semantic owner files and coherent internal-only helper clusters, use
-  Zig casing only when the whole family can move together without leaving a
-  mixed layer: directories and files `snake_case`, types `TitleCase`,
-  functions `camelCase`, and other values `snake_case`
-- callable alias constants inside owner files are still values, so keep them
-  semantic and `snake_case` rather than leaking legacy boundary spellings or
-  function-style casing into the owner layer
-- the current owned mathematics helper vocabulary follows that rule with names
-  such as `arctanReal`, `arctan2Real`, `rectangularToPolarReal`,
-  `arcsinReal`, `arccosReal`, `sinhCoshReal`, `tanhReal`, `arcsinhReal`,
-  `arctanhReal`, `lnRealValue`, `lnComplex`, and
-  `convertAngleToSinCosTan`
-- the broad owner file `zig_src/mathematics/math_command_wrappers.zig` remains
-  an accepted semantic filename after the fresh 2026-05 Slice F review because
-  it still owns the broad math command-entry and shared-helper surface used by
-  the build graph and the focused parity lane
-- the May 2026 structural naming milestone is complete under this layer-scoped
-  contract; any future naming reopener must start from a fresh owner-specific
-  inventory instead of inheriting the now-closed queue
-- `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types,
-  and legacy public names may keep upstream-compatible spellings where ABI
-  stability or upstream tracking requires them
-- do not try to force one repo-wide casing rule across owner, runtime, and
-  export layers; the repo needs layer-specific rules, not global churn
+  `zig_src/frontier/glyph_export.zig`
+- internal implementation helpers that exist only behind a paired export shim use
+  `*_owned.zig`, for example `zig_src/solver/solve_owned.zig`
+- `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types, and
+  legacy public names may keep upstream-compatible spellings where ABI stability
+  or upstream tracking requires them
+- do not force one repo-wide casing rule across owner, runtime, and export
+  layers; the repo needs layer-specific rules, not global churn
 
 Avoid historical mixed forms such as `*_owned_export.zig` and owner-file
 `*_entries.zig` suffixes. Keep upstream-compatible spellings at the legacy
 boundary or export surface, not in the semantic owner filename.
 
-## Build Entry Points
+## Local Maintainer Flow
 
-Public maintainer entrypoints currently exposed by `zig build --help` include:
-
-- `zig build sim`
-- `zig build simr47`
-- `zig build both`
-- `zig build both_asan`
-- `zig build simulator_smoke`
-- `zig build logical_shortint_parity`
-- `zig build rotate_bits_parity`
-- `zig build stack_state_parity`
-- `zig build register_metadata_parity`
-- `zig build flags_parity`
-- `zig build memory_parity`
-- `zig build program_serialization_parity`
-- `zig build calc_state_parity`
-- `zig build math_command_wrappers_parity`
-- `zig build math_random_parity`
-- `zig build keyboard_state_parity`
-- `zig build keyboard_statusbar_flags_regression`
-- `zig build test`
-- `zig build test_asan`
-- `zig build repeattest`
-- `zig build fonts`
-- `zig build constants`
-- `zig build catalogs`
-- `zig build testPgms`
-- `zig build generated`
-- `zig build docs`
-- `zig build dmcp`
-- `zig build dmcpr47`
-- `zig build dmcp5`
-- `zig build dmcp5r47`
-- `zig build dist_linux`
-- `zig build dist_macos`
-- `zig build dist_windows`
-- `zig build dist`
-- `zig build distS`
-
-The full grouped command list is documented in `../ZIG-README.md`,
-`20-zig-build-graph.md`, and the live `zig build --help` output.
-
-## Local Start-To-End Pipeline
-
-Use this order when you want the same local maintainer flow that the repo now
-expects from a clean shell:
-
-1. Ensure `zig version` matches the checked-in pin from
+1. Ensure `zig version` matches the checked-in pin in
    `../.github/zig-toolchain.env`.
 2. Ensure host prerequisites are installed for the lane you plan to run.
-3. Export the `xlsxio_xlsx2csv` helper and its runtime library path when the
-   lane depends on generated artifacts, docs, or packaging.
-4. Run the smallest focused lane first, usually `zig build logical_shortint_parity`,
-  `zig build rotate_bits_parity`, `zig build test`,
-  `zig build stack_state_parity`, `zig build register_metadata_parity`,
-  `zig build generated`, `zig build docs`, or one firmware target.
-5. Rerun the broader host or package lane only after the focused lane passes.
+3. Run the smallest focused lane first, usually `zig build test:unit`, a single
+   owner parity lane (for example `zig build stack_state_parity`),
+   `zig build generated`, `zig build docs`, or one firmware target.
+4. Rerun the broader host or package lane only after the focused lane passes.
+5. Before pushing (especially after an upstream resync) run
+   `bash .github/project/run-local-gate.sh` for the full Linux CI verdict. The
+   Windows LLP64 and macOS lanes still only run in CI.
 
 ## Generated And Cleaned Surfaces
 
 `zig build generated` refreshes the tracked generated calculator sources and
-test-program data owned by the host build graph.
-
-`zig build clean` clears derived build state. After a clean-based lane, rerun
-`zig build generated` before checking generated diffs or committing generated
-output changes.
+test-program data owned by the host build graph. `zig build clean` clears derived
+build state; after a clean-based lane, rerun `zig build generated` before
+checking generated diffs or committing generated output changes. Change canonical
+owner paths first and never patch generated outputs by hand.
 
 ## Practical Maintenance Rules
 
 - Keep `build.zig` small. Push domain-specific logic down into `zig_build/`.
+- Add new z47-owned build logic under `zig_build/` or `.github/`, new live
+  runtime Zig under `zig_src/`, and do not place new z47-owned files under
+  imported upstream-shaped directories without a reviewed exception.
+- Keep retained C dependencies explicit. Do not imply a pure-Zig state while the
+  build still compiles decNumberICU or links GTK, GMP, FreeType, or the hardware
+  SDKs.
+- Use a linked worktree (and `../.github/project/nested-upstream-pilot.sh` when
+  re-measuring a nested `upstream/` layout) to rehearse an `upstream/master`
+  refresh instead of repurposing the active coding tree; do not change
+  `UPSTREAM_ROOT` in the maintained tree unless that pilot is promoted.
+- Run `../.github/project/report-upstream-refresh.py` after fetching
+  `upstream/master` so the refresh review records new commits, changed imported
+  paths, and likely z47-owned follow-up surfaces before the pin moves.
+- Run `../.github/project/report-c-dependency-status.py` when a maintainer report
+  or closure claim needs live split first-party C telemetry; keep the active
+  product-build, retained-bridge, and parity/oracle/test buckets separate.
 - Keep `ZIG-README.md`, `zig_docs/`, and the live `zig build --help` surface
   aligned when target names or options change.
-- Keep imported upstream build files readable and auditable even when they are
-  no longer the maintained control plane.
-- Change canonical owner paths first. Do not patch generated outputs by hand.
+- Keep imported upstream build files readable and auditable even when they are no
+  longer the maintained control plane.
 - Keep docs, CI workflows, and pins aligned in the same change when a contract
   changes.

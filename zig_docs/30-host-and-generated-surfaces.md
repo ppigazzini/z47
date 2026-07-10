@@ -1,187 +1,161 @@
 # Host And Generated Surfaces
 
-This page maps the host simulator, host test, generated-artifact, and docs
-build surfaces owned by the current Zig build graph.
+This page maps the host simulator, the generated-artifact flows and their
+generators, the docs build, and the retained host dependency contract owned by
+the current Zig build graph. It is precise about which host pieces are Zig and
+which are retained C.
 
-Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes
-the domain split is already clear.
+Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
+domain split is already clear.
+
+Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
 
 ## Host Surface At A Glance
 
-The current host-facing build graph owns all of these surfaces through
-`../zig_build/host/`:
+The host-facing build graph lives under `../zig_build/host/` and owns:
 
-- desktop simulator builds for C47 and R47
-- live X11 simulator smoke coverage for C47 and R47
-- focused rewrite-parity executables for the live Zig slices
-- grouped host regression lanes
-- native Zig C-sanitized host builds and tests
-- deterministic generator execution
-- tracked generated artifact refresh
-- Sphinx and Doxygen docs orchestration
+- the C47 and R47 desktop simulator builds
+- the Xvfb-backed X11 simulator smoke probe
+- the deterministic generator executables and the tracked generated-artifact
+  refresh steps
+- the Sphinx and Doxygen docs orchestration
+- the host-platform glue (native paths, import libraries, link config)
 
-## Value Boundary
+The host regression and per-owner parity lanes also register here, but their
+canonical inventory lives in
+[70-tests-and-verification.md](70-tests-and-verification.md).
 
-This page records the live host build surface. It does not claim that the
-current amount of Zig host orchestration is valuable by itself.
+## What Is Zig And What Is Retained C
 
-For this repo, a Zig-owned host layer earns its keep only when it replaces
-buggy or intentionally retired C owners, fixes real platform or packaging
-defects, or deletes more legacy build debt than it adds. If the same working
-imported C simulator and the same effective dependency story still remain in
-place, extra Zig orchestration is maintenance overhead rather than delivered
-user value.
+The GTK host application layer is ported to Zig. The calculator core is fully
+ported to Zig (the owners under `../zig_src/`). The host still links external C
+libraries and compiles one vendored C library. Be honest about the split:
 
-## Retained Host Dependency Split
+| Host piece | State |
+| --- | --- |
+| GTK simulator application layer | ported to Zig (`../zig_build/host/gtk_*.zig`) |
+| calculator core | ported to Zig (the `../zig_src/` owners) |
+| `../src/c47-gtk/*.c` (the C the Zig host replaces) | filtered out of the build |
+| `dep/decNumberICU` | retained vendored C, compiled by Zig |
+| GTK 3 | retained external C library, linked from Zig |
+| GMP | retained external C library, linked from Zig |
+| FreeType 2 | retained external C library, linked by the fonts generator |
+| PulseAudio (optional) | retained external C library, linked when present |
 
-Host simulator, generator, test, and host-package builds currently depend on:
+The presence of a Zig-owned host build graph does not make the host simulator a
+pure-Zig application: it still links GTK 3, GMP, and (optionally) PulseAudio, and
+it still compiles the vendored `dep/decNumberICU`.
 
-- `pkg-config`
-- GTK 3 development files
-- FreeType 2 development files
-- GMP development files
-- optional PulseAudio development files for audio support
-- `python3`
+## The GTK Filter Boundary
 
-Generator-dependent host builds also require the xlsxio helper at runtime.
+`../zig_build/host/context.zig` collects the upstream `../src/c47-gtk` C files,
+then `../zig_build/host/gtk_gui.zig` `filterGtkSources` drops every path listed in
+`../zig_build/host/gtk_gui_legacy_gtk_sources.txt`. That manifest currently lists
+all seven upstream GTK C files (`c47-gtk.c`, `gtkGui.c`, and the `hal/` set), so
+no first-party GTK C reaches the simulator link. The former
+`gtk_gui_legacy.c` re-entry bridge is retired; the ported main, GUI, HAL, I/O, and
+LCD surfaces run entirely from the Zig objects added by
+`gtk_gui.addToModule` (`gtk_gui_runtime.zig`, `gtk_hal_runtime.zig`,
+`gtk_io_runtime.zig`, `gtk_lcd_runtime.zig`, and the wider `gtk_gui_*.zig` set).
 
-Current runtime expectations:
-
-- executable on `PATH`: `xlsxio_xlsx2csv`
-- loader-visible shared library: `libxlsxio_read`
-
-If the helper is installed in a non-system prefix, export the matching library
-path for the active platform before running generator-dependent lanes.
+The imported `../src/c47-gtk/*.c` files stay in the tree as read-only audit and
+parity reference; they are not compiled.
 
 ## Host Simulator Steps
 
-Current public host simulator steps:
+| Step | What it builds |
+| --- | --- |
+| `sim` (or bare `zig build`) | the C47 simulator |
+| `simr47` | the R47 simulator |
+| `both` | both host simulators |
+| `both_asan` | both host simulators with native Zig C sanitizing |
+| `simulator_smoke` | both simulators plus the Xvfb-backed LCD, keyboard, and pointer smoke probe |
 
-- `zig build sim`: builds the C47 simulator
-- `zig build simr47`: builds the R47 simulator
-- `zig build both`: builds both host simulators
-- `zig build simulator_smoke`: builds both host simulators and runs the
-  Xvfb-backed LCD, keyboard, and pointer smoke probe
-- `zig build both_asan`: builds both host simulators with native Zig C
-  sanitizing enabled
+## Host Regression And Parity Lanes
 
-The host build graph still compiles imported upstream C sources for the main
-simulator and GTK surfaces, but it now replaces the imported `stack.c` owner
-with `../zig_src/state/stack.zig` plus the explicit helper seam in
-`../zig_bridge/state/stack_runtime_helpers.c`, replaces the exported register
-metadata accessors from `registers.c` with
-`../zig_src/state/register_metadata.zig`, and replaces the exported
-system-flag accessor and change-tracking surface from `flags.c` with
-`../zig_src/state/flags.zig` plus legacy wrapper sources under
-`../zig_bridge/state/`. The current host lane also replaces the remaining
-short-integer boolean logical owners under `../src/c47/logicalOps/` with
-`../zig_src/shortint/logical_boolean_ops.zig`. The current host
-lane also replaces the broader public keyboard command-entry surface with
-`../zig_src/state/keyboard_state.zig` while freestanding firmware keeps the
-legacy owner through `../zig_bridge/state/keyboard_state_legacy.c`.
+The host build graph also registers the grouped regression lanes (`test`,
+`test_asan`, `repeattest`), the native Zig unit lane (`test:unit`), and the
+per-owner parity and oracle lanes. `test`, `test_asan`, and `repeattest` run both
+the upstream corpus at `../src/testSuite/tests/testSuiteList.txt` and the z47
+overlay list at `../zig_build/tests/testSuiteList_z47.txt`, so z47 adds focused
+coverage without editing the imported upstream corpus. These lanes depend on the
+`testPgms` refresh, so the tracked test-program image is regenerated before they
+run.
 
-The legacy GTK boundary is still explicit: `../zig_build/host/context.zig`
-filters the imported `../src/c47-gtk/gtkGui.c` path out of the bulk GTK source
-set through `../zig_build/host/gtk_gui.zig`, and that helper then
-re-enters the host build through `../zig_build/host/gtk_gui_legacy.c` plus
-`../zig_build/host/gtk_button_signal_wrappers.c`. The presence of a Zig-owned
-build graph still does not mean the host simulator is already a pure-Zig
-application.
+The full lane inventory, the smallest rerun per owner, and the parity-oracle
+model live in [70-tests-and-verification.md](70-tests-and-verification.md). Do not
+duplicate that inventory here.
 
-The current host lane also replaces the imported `../src/c47-gtk/hal/io.c`
-owner with `../zig_build/host/gtk_io_runtime.zig`. That Zig-owned runtime now
-keeps the GTK file chooser, program and state-path selection, and
-`fileNameSelected` basename copy aligned with the upstream simulator contract
-while the imported `hal/io.c` file remains a read-only audit surface.
+## Retained Host Dependency Contract
 
-The host solver boundary now includes an explicit command-entry rewrite lane:
-`../zig_build/solver/solve.zig` filters imported
-`../src/c47/solver/solve.c`, re-enters the legacy body through
-`../zig_bridge/solver/solve_legacy.c`, and compiles the Zig-owned
-`fnPgmSlv` entrypoint from `../zig_src/solver/solve.zig`.
+Host simulator, generator, test, and host-package builds depend on:
 
-## Host Test Steps
+- `pkg-config`
+- GTK 3 development files
+- GMP development files
+- FreeType 2 development files (required by the fonts generator, not the
+  simulator link)
+- optional PulseAudio development files (`libpulse-simple`); audio is auto-enabled
+  only when `pkg-config` finds it
+- `python3`
 
-Current grouped host test steps:
+The vendored `dep/decNumberICU` is compiled by Zig into the simulator and the
+generators; it is not a system dependency.
 
-- `zig build logical_shortint_parity`
-- `zig build rotate_bits_parity`
-- `zig build logical_boolean_ops_suite`
-- `zig build stack_state_parity`
-- `zig build register_metadata_parity`
-- `zig build flags_parity`
-- `zig build memory_parity`
-- `zig build program_serialization_parity`
-- `zig build calc_state_parity`
-- `zig build math_command_wrappers_parity`
-- `zig build math_random_parity`
-- `zig build keyboard_state_parity`
-- `zig build test`
-- `zig build test_asan`
-- `zig build repeattest`
-
-`zig build rotate_bits_parity` compares the live Zig `rotateBits.c` owner
-replacement with the imported oracle against a fake runtime. `zig build
-logical_boolean_ops_suite` runs the host test harness against the focused
-`and`, `or`, `not`, `nand`, `nor`, `xor`, and `xnor` command corpus after the
-live Zig owner replacement for those files. `zig build
-stack_state_parity` compares the live Zig stack-state owner with the imported
-`stack.c` oracle against a fake runtime. `zig build register_metadata_parity`
-does the same for the live register-metadata accessors against the imported
-`registers.c` oracle surface in the host lane. `zig build flags_parity` does
-the same for the exported system-flag accessor and change-tracking surface
-against the imported `flags.c` oracle, including refresh-state,
-clear-status-bar, and integer-base side effects. `zig build memory_parity`,
-`zig build program_serialization_parity`, `zig build calc_state_parity`,
-`zig build math_command_wrappers_parity`, `zig build math_random_parity`, and
-`zig build keyboard_state_parity` extend the focused host parity coverage
-across the live stateful and math command-owner Zig slices, including the
-simulator-only backup path, the shared exp, integer-power, Euler, random, and
-PCG helper surface, and the broader public keyboard command entrypoints.
-`zig build test`, `zig build test_asan`, and `zig build repeattest` cover the
-broader legacy host regression surface after those focused slices pass.
-
-`zig build test`, `zig build test_asan`, and `zig build repeattest` run both:
-
-- the upstream list at `../src/testSuite/tests/testSuiteList.txt`
-- the z47-owned overlay list at `../zig_build/tests/testSuiteList_z47.txt`
-
-That split lets z47 add focused regression coverage without editing the
-imported upstream corpus.
+The fonts generator needs the catalog sorting order extracted from
+`res/fonts/sortingOrder.xlsx`. It prefers the `xlsxio_xlsx2csv` helper when it is
+on `PATH` (using `$HOME/.local/lib` as an extra library path) and otherwise falls
+back to the checked-in `../zig_build/tools/xlsx_to_sorting_csv.py` Python
+converter, so the xlsxio helper is now optional rather than a hard runtime
+requirement.
 
 ## Generated Artifact Inventory
 
-The deterministic generated-artifact surface currently refreshes these tracked
-surfaces:
+The generator executables live under `../zig_build/tools/`. Each refresh step
+runs a generator and copies its output over the tracked source-tree path.
 
-| Step | Tracked outputs |
-| --- | --- |
-| `fonts` | tracked raster-font source refresh |
-| `constants` | tracked generated constant-source refresh |
-| `catalogs` | tracked generated catalog-source refresh |
-| `testPgms` or `testpgms` | tracked generated test-program data refresh |
-| `generated` | all tracked generated refresh surfaces above |
+| Step | Generator | Tracked outputs |
+| --- | --- | --- |
+| `fonts` | `ttf2_raster_fonts.zig` | `src/generated/rasterFontsData.c` |
+| `constants` | `generate_constants.zig` | `src/generated/constantPointers.c`, `constantPointers.h`, `constantPointers2.c` |
+| `catalogs` | `generate_catalogs.zig` | `src/generated/softmenuCatalogs.h` |
+| `testPgms` (alias `testpgms`) | `generate_testpgms.zig` | `res/testPgms/testPgms.bin` |
+| `generated` | all of the above | every tracked output above |
 
-The generator entrypoints now live under `../zig_build/tools/`. Their narrow C
-interop now enters through the checked-in `translate-c` root headers under
-`../zig_build/tools/translate_c/` and the build-managed translation steps in
-`../zig_build/host/generated.zig` rather than checked-in `@cImport` blocks in
-the generator Zig sources. The generator executables remain manual Zig owners
-even though legacy decNumber, FreeType, and host-header surfaces still cross
-that explicit build-managed boundary.
+Regenerate `res/testPgms/testPgms.bin` (via `zig build testPgms` or
+`zig build generated`) after any item-table growth; a stale image fails the host
+regression lanes.
+
+## Generator Boundary And Retained C
+
+The generator executables are manual Zig owners, but they still cross explicit,
+build-managed C boundaries rather than ad hoc `@cImport` blocks:
+
+- their narrow C interop enters through the checked-in `translate-c` root headers
+  under `../zig_build/tools/translate_c/` and the `Build.addTranslateC` wiring in
+  `../zig_build/host/generated.zig`
+- every generator compiles the vendored `dep/decNumberICU` sources
+- the fonts generator links FreeType 2 (via its `translate-c` root and
+  `linkRasterFontsFreetype`)
+- `generate_catalogs` and `generate_testpgms` additionally compile a subset of
+  upstream `../src/c47` sources and link GTK 3 and GMP
+
+These boundaries are governed by the allowlist and guard described in
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 
 ## Docs Surface
 
-`zig build docs` is the canonical docs lane for `../docs/code`.
+`zig build docs` is the canonical docs lane for the imported `../docs/code` tree.
 
 Current requirements:
 
 - `python3`
 - `doxygen`
-- Python packages from `../docs/code/requirements.txt`
+- the Python docs packages (`sphinx`, `breathe`, `furo`) from
+  `../docs/code/requirements.txt`
 
-The current implementation runs `python3 -m sphinx -M html docs/code
-<install-prefix>/docs/code` after verifying the required tools are available.
+After verifying those tools and packages are present, the step runs
+`python3 -m sphinx -M html docs/code <install-prefix>/docs/code`.
 
 This lane documents the imported code surface under `docs/code`. It does not
 replace the maintainer-facing `zig_docs/` set.
@@ -190,21 +164,21 @@ replace the maintainer-facing `zig_docs/` set.
 
 - `../zig_build/host/platform.zig` is the central host-platform glue surface.
 - Windows host builds and packaging need explicit native-path and import-library
-  handling for GTK and FreeType rather than relying on generic `-lfoo` names.
+  handling for GTK and FreeType rather than generic `-lfoo` names.
 - The macOS smoke lane expects the checked-out `res/` asset tree to be visible
   from the executable directory during startup.
 
 ## Change Rules
 
 - Keep new host build or platform glue inside `../zig_build/host/`.
-- Keep generated output ownership explicit through the public `zig build`
-  update steps instead of standalone scripts.
-- Do not treat a Zig-owned host build layer as a success by itself. If a new
-  Zig host surface does not replace legacy C owners, fix a real host defect,
-  or delete more legacy workflow debt than it adds, it is overhead.
+- Keep generated output ownership explicit through the public `zig build` refresh
+  steps instead of standalone scripts.
 - Keep host dependency docs honest. Do not imply the host simulator is pure Zig
-  while GTK, GMP, FreeType, and imported upstream C still participate in the
-  build.
+  while it still links GTK 3, GMP, or PulseAudio and compiles `dep/decNumberICU`.
+- Route any new generator C interop through a checked-in `translate-c` root and
+  the allowlist in
+  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md);
+  do not add `@cImport` blocks to generator sources.
 - Update [70-tests-and-verification.md](70-tests-and-verification.md) whenever a
-  host-facing command name, generated output list, or smallest rerun lane
+  host-facing command name, generated output path, or smallest rerun lane
   changes.
