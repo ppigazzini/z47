@@ -26,7 +26,7 @@ const consts = abi.constants;
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+pub const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
 const math_ln_complex = @import("math_ln_complex.zig"); // M-callconv: Zig-to-Zig
 const math_lnbeta = @import("math_lnbeta.zig"); // M-callconv: Zig-to-Zig
@@ -34,8 +34,9 @@ const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M
 const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const math_real_predicates = @import("math_real_predicates.zig");
-const real_t = runtime.real_t;
-const realContext_t = runtime.realContext_t;
+const wp34s_atan = @import("math_wp34s_atan.zig"); // inverse-circular split
+pub const real_t = runtime.real_t;
+pub const realContext_t = runtime.realContext_t;
 const angularMode_t = runtime.angularMode_t;
 
 const amRadian = runtime.amRadian;
@@ -56,13 +57,13 @@ const OFF_const51_gammaC01: u32 = 6184;
 // REAL_SIZE_IN_BYTES(51) for indexing const51_gammaC01[k].
 const REAL_SIZE_51: u32 = 44;
 
-inline fn const_0() *align(1) const real_t {
+pub inline fn const_0() *align(1) const real_t {
     return consts.c1708();
 }
-inline fn const_1() *align(1) const real_t {
+pub inline fn const_1() *align(1) const real_t {
     return consts.c4856();
 }
-inline fn const_2() *align(1) const real_t {
+pub inline fn const_2() *align(1) const real_t {
     return consts.c4928();
 }
 inline fn const_3() *align(1) const real_t {
@@ -77,7 +78,7 @@ inline fn const_1on2() *align(1) const real_t {
 inline fn const_1on4() *align(1) const real_t {
     return consts.c4532();
 }
-inline fn const_1on10() *align(1) const real_t {
+pub inline fn const_1on10() *align(1) const real_t {
     return consts.c4520();
 }
 inline fn const_29() *align(1) const real_t {
@@ -140,19 +141,19 @@ inline fn const_NaN() *align(1) const real_t {
 inline fn const_minusInfinity() *align(1) const real_t {
     return consts.c1684();
 }
-inline fn const39_pi() *align(1) const real_t {
+pub inline fn const39_pi() *align(1) const real_t {
     return consts.c1848();
 }
 inline fn const39_2pi() *align(1) const real_t {
     return consts.c1812();
 }
-inline fn const39_piOn2() *align(1) const real_t {
+pub inline fn const39_piOn2() *align(1) const real_t {
     return consts.c4880();
 }
-inline fn const39_piOn4() *align(1) const real_t {
+pub inline fn const39_piOn4() *align(1) const real_t {
     return consts.c4736();
 }
-inline fn const39_3piOn4() *align(1) const real_t {
+pub inline fn const39_3piOn4() *align(1) const real_t {
     return consts.c4976();
 }
 inline fn const39_ln2() *align(1) const real_t {
@@ -173,28 +174,28 @@ inline fn const39_eE() *align(1) const real_t {
 inline fn const39_1on3() *align(1) const real_t {
     return consts.c4544();
 }
-inline fn const75_pi() *align(1) const real_t {
+pub inline fn const75_pi() *align(1) const real_t {
     return consts.c7388();
 }
-inline fn const75_piOn2() *align(1) const real_t {
+pub inline fn const75_piOn2() *align(1) const real_t {
     return consts.c7472();
 }
-inline fn const75_piOn4() *align(1) const real_t {
+pub inline fn const75_piOn4() *align(1) const real_t {
     return consts.c7556();
 }
-inline fn const75_3piOn4() *align(1) const real_t {
+pub inline fn const75_3piOn4() *align(1) const real_t {
     return consts.c7700();
 }
-inline fn const1071_pi() *align(1) const real_t {
+pub inline fn const1071_pi() *align(1) const real_t {
     return consts.c9932();
 }
-inline fn const1071_piOn2() *align(1) const real_t {
+pub inline fn const1071_piOn2() *align(1) const real_t {
     return consts.c9208();
 }
-inline fn const1071_piOn4() *align(1) const real_t {
+pub inline fn const1071_piOn4() *align(1) const real_t {
     return consts.c8484();
 }
-inline fn const1071_3piOn4() *align(1) const real_t {
+pub inline fn const1071_3piOn4() *align(1) const real_t {
     return consts.c7760();
 }
 inline fn const51_gammaC00() *align(1) const real_t {
@@ -211,7 +212,7 @@ inline fn const6147_2pi() *align(1) const real_t {
 // Globals / externs.
 // ---------------------------------------------------------------------------
 extern var ctxtReal39: realContext_t;
-extern var explicitTaylorIterVisibilitySelection: bool;
+pub extern var explicitTaylorIterVisibilitySelection: bool;
 
 // decNumber primitives (the realType.h macros expand to these).
 extern fn decNumberCopy(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
@@ -231,7 +232,7 @@ extern fn decNumberFromInt32(res: *align(1) real_t, source: i32) *align(1) real_
 extern fn decNumberFromUInt32(res: *align(1) real_t, source: u32) *align(1) real_t;
 
 // real* setters / predicates.
-extern fn realSetNaN(value: *align(1) real_t) void;
+pub extern fn realSetNaN(value: *align(1) real_t) void;
 extern fn realSetPlusInfinity(value: *align(1) real_t) void;
 extern fn realSetMinusInfinity(value: *align(1) real_t) void;
 
@@ -252,51 +253,51 @@ const ORTHOPOLY_CHEBYSHEV_T: u16 = 5;
 const ORTHOPOLY_CHEBYSHEV_U: u16 = 6;
 
 // Host-only progress / abort control flow (preserved for side effects).
-extern fn checkHalfSec() bool;
-extern fn exitKeyWaiting() bool;
-extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+pub extern fn checkHalfSec() bool;
+pub extern fn exitKeyWaiting() bool;
+pub extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
+pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
 
-const ERROR_SOLVER_ABORT: u8 = 60;
-const REGISTER_T: runtime.calcRegister_t = 103;
-const NIM_REGISTER_LINE: runtime.calcRegister_t = 100; // REGISTER_X
-const halfSec_timed: u8 = 0;
-const halfSec_force: u8 = 1;
-const halfSec_clearZ: bool = true;
-const halfSec_clearT: bool = true;
-const halfSec_disp: bool = true;
-const TaylorIterationMax: i32 = 1000;
+pub const ERROR_SOLVER_ABORT: u8 = 60;
+pub const REGISTER_T: runtime.calcRegister_t = 103;
+pub const NIM_REGISTER_LINE: runtime.calcRegister_t = 100; // REGISTER_X
+pub const halfSec_timed: u8 = 0;
+pub const halfSec_force: u8 = 1;
+pub const halfSec_clearZ: bool = true;
+pub const halfSec_clearT: bool = true;
+pub const halfSec_disp: bool = true;
+pub const TaylorIterationMax: i32 = 1000;
 
 // ---------------------------------------------------------------------------
 // real_t op helpers mirroring the realType.h macro argument order. Operands are
 // *align(1) const real_t so blob constants and stack scratch both work.
 // ---------------------------------------------------------------------------
-inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
+pub inline fn realCopy(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopy(destination, source);
 }
-inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
+pub inline fn realCopyAbs(source: *align(1) const real_t, destination: *align(1) real_t) void {
     _ = decNumberCopyAbs(destination, source);
 }
-inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
 }
-inline fn realMinus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realMinus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberMinus(res, operand, ctxt);
 }
-inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realAdd(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberAdd(res, op1, op2, ctxt);
 }
-inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realSubtract(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberSubtract(res, op1, op2, ctxt);
 }
-inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
 }
-inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realDivide(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberDivide(res, op1, op2, ctxt);
 }
-inline fn realSquareRoot(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn realSquareRoot(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberSquareRoot(res, operand, ctxt);
 }
 inline fn realPower(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
@@ -308,36 +309,36 @@ inline fn realCompare(op1: *align(1) const real_t, op2: *align(1) const real_t, 
 inline fn realDivideRemainder(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, op1, op2, ctxt);
 }
-inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
+pub inline fn stringToReal(source: [*:0]const u8, destination: *align(1) real_t, ctxt: *realContext_t) void {
     _ = decNumberFromString(destination, source, ctxt);
 }
 inline fn int32ToReal(source: i32, destination: *align(1) real_t) void {
     _ = decNumberFromInt32(destination, source);
 }
-inline fn uInt32ToReal(source: u32, destination: *align(1) real_t) void {
+pub inline fn uInt32ToReal(source: u32, destination: *align(1) real_t) void {
     _ = decNumberFromUInt32(destination, source);
 }
 
 inline fn realSetOne(r: *align(1) real_t) void {
     _ = decNumberFromInt32(r, 1);
 }
-inline fn realSetZero(r: *align(1) real_t) void {
+pub inline fn realSetZero(r: *align(1) real_t) void {
     _ = decNumberFromInt32(r, 0);
 }
-const realIsNegative = math_real_predicates.realIsNegative;
-const realIsPositive = math_real_predicates.realIsPositive;
-const realIsZero = math_real_predicates.realIsZero;
+pub const realIsNegative = math_real_predicates.realIsNegative;
+pub const realIsPositive = math_real_predicates.realIsPositive;
+pub const realIsZero = math_real_predicates.realIsZero;
 const realIsSpecial = math_real_predicates.realIsSpecial;
-inline fn realIsInfinite(source: *align(1) const real_t) bool {
+pub inline fn realIsInfinite(source: *align(1) const real_t) bool {
     return (source.bits & 0x40) != 0;
 }
-inline fn realIsNaN(source: *align(1) const real_t) bool {
+pub inline fn realIsNaN(source: *align(1) const real_t) bool {
     return (source.bits & (0x20 | 0x10)) != 0;
 }
-inline fn realChangeSign(operand: *align(1) real_t) void {
+pub inline fn realChangeSign(operand: *align(1) real_t) void {
     operand.bits ^= 0x80;
 }
-inline fn realSetNegativeSign(operand: *align(1) real_t) void {
+pub inline fn realSetNegativeSign(operand: *align(1) real_t) void {
     operand.bits |= 0x80;
 }
 inline fn realSetPositiveSign(operand: *align(1) real_t) void {
@@ -362,10 +363,10 @@ inline fn realMaxDigits(comptime digits: u32) u32 {
 inline fn realSizeInBytes(comptime digits: u32) u32 {
     return 10 + 2 * (realMaxDigits(digits) / 3);
 }
-fn BigReal(comptime digits: u32) type {
+pub fn BigReal(comptime digits: u32) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
-        inline fn ptr(self: *@This()) *align(1) real_t {
+        pub inline fn ptr(self: *@This()) *align(1) real_t {
             return @ptrCast(&self.buf);
         }
     };
@@ -639,7 +640,7 @@ fn doTaylorIterations(
 }
 
 // Helper: render "1E-<d>" into the provided buffer (sprintf in the C).
-fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
+pub fn formatEminusD(buf: *[16]u8, d: i32) [*:0]const u8 {
     var tmp: [16]u8 = undefined;
     var n: usize = 0;
     var v: u32 = @intCast(d);
@@ -811,448 +812,23 @@ pub export fn C47_WP34S_SinCosTanTaylor(a: *align(1) const real_t, swap: bool, s
 }
 
 // ===========================================================================
-// doAtan (static)
-// ===========================================================================
-fn doAtan(
-    a: *align(1) real_t,
-    angle: *align(1) real_t,
-    a2: *align(1) real_t,
-    t: *align(1) real_t,
-    j: *align(1) real_t,
-    z: *align(1) real_t,
-    x: *align(1) const real_t,
-    b: *align(1) real_t,
-    epsilon: *align(1) real_t,
-    last: *align(1) real_t,
-    doEpsilon: bool,
-    epsilonDigits: i32,
-    doubles: *i32,
-    invert: *c_int,
-    neg: *c_int,
-    realContext: *realContext_t,
-) bool {
-    var conditionToKeepIterating: bool = false;
-    var tmpEpsilon: [16]u8 = undefined;
-    if (doEpsilon) {
-        stringToReal(formatEminusD(&tmpEpsilon, epsilonDigits), epsilon, realContext);
-    }
-
-    neg.* = @intFromBool(realIsNegative(x));
-
-    if (realIsNaN(x)) {
-        realSetNaN(angle);
-        return false;
-    }
-
-    realCopy(x, a);
-
-    // arrange for a >= 0
-    if (neg.* != 0) {
-        realChangeSign(a);
-    }
-
-    // reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
-    invert.* = @intFromBool(math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_1())));
-    if (invert.* != 0) {
-        realDivide(const_1(), a, a, realContext);
-    }
-
-    // Range reduce using tan(x/2) = tan(x)/(1+sqrt(1+tan(x)^2))
-    {
-        var n: i32 = 0;
-        while (n < TaylorIterationMax) : (n += 1) {
-            if (!doEpsilon and math_comparison_reals.realCompareLessEqual(@alignCast(a), @alignCast(const_1on10()))) {
-                break;
-            } else if (doEpsilon and math_comparison_reals.realCompareLessEqual(@alignCast(a), @alignCast(const_1on10()))) {
-                break;
-            }
-
-            doubles.* += 1;
-            // a = a/(1+sqrt(1+a^2)) -- at most 3 iterations.
-            realMultiply(a, a, b, realContext);
-            realAdd(b, const_1(), b, realContext);
-            realSquareRoot(b, b, realContext);
-            realAdd(b, const_1(), b, realContext);
-            realDivide(a, b, a, realContext);
-        }
-    }
-
-    // Now Taylor series: atan(x) = x(1-x^2/3+x^4/5-...)
-    uInt32ToReal(3, angle);
-    uInt32ToReal(5, j);
-    realMultiply(a, a, a2, realContext); // a^2
-    realCopy(a2, t);
-    realDivide(t, angle, angle, realContext); // s = 1-t/3
-    realSubtract(const_1(), angle, angle, realContext);
-
-    var i: i32 = 0;
-    while (true) {
-        realCopy(angle, last);
-
-        realMultiply(t, a2, t, realContext);
-        realDivide(t, j, z, realContext);
-        realAdd(angle, z, angle, realContext);
-
-        realAdd(j, const_2(), j, realContext);
-
-        realMultiply(t, a2, t, realContext);
-        realDivide(t, j, z, realContext);
-        realSubtract(angle, z, angle, realContext);
-
-        realAdd(j, const_2(), j, realContext);
-
-        if (doEpsilon) {
-            realSubtract(angle, last, b, realContext);
-            realCopyAbs(b, b);
-            realSubtract(b, epsilon, b, realContext);
-            conditionToKeepIterating = realIsPositive(b);
-        } else {
-            realSubtract(angle, last, b, realContext);
-            realPlus(b, b, realContext);
-            conditionToKeepIterating = !realIsZero(b);
-        }
-
-        if (explicitTaylorIterVisibilitySelection and checkHalfSec()) {
-            _ = progressHalfSecUpdate_Integer(halfSec_timed, "Taylor Iter", epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-        }
-        if (exitKeyWaiting()) {
-            _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-            break;
-        }
-
-        i += 1;
-
-        if (!(conditionToKeepIterating and i < TaylorIterationMax)) {
-            break;
-        }
-    }
-
-    realMultiply(angle, a, angle, realContext);
-
-    while (doubles.* != 0) {
-        realAdd(angle, angle, angle, realContext);
-        doubles.* -= 1;
-    }
-    if (invert.* != 0) {
-        realSubtract(if (realContext.digits > 51) const1071_piOn2() else const39_piOn2(), angle, angle, realContext);
-    }
-    if (neg.* != 0) {
-        realChangeSign(angle);
-    }
-    return true;
-}
-
-// ===========================================================================
-// WP34S_Atan_75temp (static)
-// ===========================================================================
-fn WP34S_Atan_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var doEpsilon: bool = false;
-    var a: real_t = undefined;
-    var b: real_t = undefined;
-    var a2: real_t = undefined;
-    var t: real_t = undefined;
-    var j: real_t = undefined;
-    var z: real_t = undefined;
-    var last: real_t = undefined;
-    var epsilon: real_t = undefined;
-    var doubles: i32 = 0;
-    var invert: c_int = undefined;
-    var neg: c_int = undefined;
-    const savedContextDigits = realContext.digits;
-    var epsilonDigits: i32 = undefined;
-
-    if (realContext.digits > 39) {
-        realContext.digits = 75;
-        epsilonDigits = 72;
-        doEpsilon = true;
-    } else {
-        realContext.digits = 39;
-        epsilonDigits = 39;
-        doEpsilon = false;
-    }
-
-    if (!doAtan(&a, angle, &a2, &t, &j, &z, x, &b, &epsilon, &last, doEpsilon, epsilonDigits, &doubles, &invert, &neg, realContext)) {
-        realContext.digits = savedContextDigits;
-        return; // NaN
-    }
-    realContext.digits = savedContextDigits;
-}
-
-// ===========================================================================
-// C47do_WP34S_Atan_1071temp (static)
-// ===========================================================================
-fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var a_buf: BigReal(1071) = .{};
-    var b_buf: BigReal(1071) = .{};
-    var a2_buf: BigReal(1071) = .{};
-    var t_buf: BigReal(1071) = .{};
-    var j_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    var last_buf: BigReal(1071) = .{};
-    var epsilon_buf: BigReal(1071) = .{};
-    var doubles: i32 = 0;
-    var invert: c_int = undefined;
-    var neg: c_int = undefined;
-    if (!doAtan(a_buf.ptr(), angle, a2_buf.ptr(), t_buf.ptr(), j_buf.ptr(), z_buf.ptr(), x, b_buf.ptr(), epsilon_buf.ptr(), last_buf.ptr(), true, 1040, &doubles, &invert, &neg, realContext)) {
-        return; // NaN
-    }
-}
-
-// ===========================================================================
-// C47_WP34S_Atan
+// Inverse-circular family (atan/atan2/asin/acos) -> math_wp34s_atan.zig.
+// These wrappers keep the exact C-ABI export symbols and delegate.
 // ===========================================================================
 pub export fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    if (realContext.digits >= 1071) {
-        C47do_WP34S_Atan_1071temp(x, angle, realContext);
-    } else {
-        WP34S_Atan_75temp(x, angle, realContext);
-    }
-}
-
-// pi-family selectors used by doAtan2 (the _pi/_piOn2/... macros).
-inline fn pi_d(d: i32) *align(1) const real_t {
-    return if (d > 51) (if (d > 75) const1071_pi() else const75_pi()) else const39_pi();
-}
-inline fn piOn2_d(d: i32) *align(1) const real_t {
-    return if (d > 51) (if (d > 75) const1071_piOn2() else const75_piOn2()) else const39_piOn2();
-}
-inline fn piOn4_d(d: i32) *align(1) const real_t {
-    return if (d > 51) (if (d > 75) const1071_piOn4() else const75_piOn4()) else const39_piOn4();
-}
-inline fn threePiOn4_d(d: i32) *align(1) const real_t {
-    return if (d > 51) (if (d > 75) const1071_3piOn4() else const75_3piOn4()) else const39_3piOn4();
-}
-
-// ===========================================================================
-// doAtan2 (static)
-// ===========================================================================
-fn doAtan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, r: *align(1) real_t, t: *align(1) real_t, realContext: *realContext_t) bool {
-    const xNeg = realIsNegative(x);
-    const yNeg = realIsNegative(y);
-
-    if (realIsNaN(x) or realIsNaN(y)) {
-        realSetNaN(atan);
-        return false;
-    }
-
-    if (math_comparison_reals.realCompareEqual(@alignCast(y), @alignCast(const_0()))) {
-        if (yNeg) {
-            if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_0()))) {
-                if (xNeg) {
-                    realMinus(pi_d(realContext.digits), atan, realContext);
-                } else {
-                    realCopy(y, atan);
-                }
-            } else if (xNeg) {
-                realMinus(pi_d(realContext.digits), atan, realContext);
-            } else {
-                realCopy(y, atan);
-            }
-        } else {
-            if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_0()))) {
-                if (xNeg) {
-                    realCopy(pi_d(realContext.digits), atan);
-                } else {
-                    realSetZero(atan);
-                }
-            } else if (xNeg) {
-                realCopy(pi_d(realContext.digits), atan);
-            } else {
-                realSetZero(atan);
-            }
-        }
-        return true;
-    }
-
-    if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_0()))) {
-        realCopy(piOn2_d(realContext.digits), atan);
-        if (yNeg) {
-            realSetNegativeSign(atan);
-        }
-        return true;
-    }
-
-    if (realIsInfinite(x)) {
-        if (xNeg) {
-            if (realIsInfinite(y)) {
-                realCopy(threePiOn4_d(realContext.digits), atan);
-                if (yNeg) {
-                    realSetNegativeSign(atan);
-                }
-            } else {
-                realCopy(pi_d(realContext.digits), atan);
-                if (yNeg) {
-                    realSetNegativeSign(atan);
-                }
-            }
-        } else {
-            if (realIsInfinite(y)) {
-                realCopy(piOn4_d(realContext.digits), atan);
-                if (yNeg) {
-                    realSetNegativeSign(atan);
-                }
-            } else {
-                realSetZero(atan);
-                if (yNeg) {
-                    realSetNegativeSign(atan);
-                }
-            }
-        }
-        return true;
-    }
-
-    if (realIsInfinite(y)) {
-        realCopy(piOn2_d(realContext.digits), atan);
-        if (yNeg) {
-            realSetNegativeSign(atan);
-        }
-        return true;
-    }
-
-    realDivide(y, x, t, realContext);
-    C47_WP34S_Atan(@ptrCast(t), @ptrCast(r), realContext);
-    if (xNeg) {
-        realCopy(pi_d(realContext.digits), t);
-        if (yNeg) {
-            realSetNegativeSign(t);
-        }
-    } else {
-        realSetZero(t);
-    }
-
-    realAdd(r, t, atan, realContext);
-    if (math_comparison_reals.realCompareEqual(@alignCast(atan), @alignCast(const_0())) and yNeg) {
-        realSetNegativeSign(atan);
-    }
-    return true;
-}
-
-// ===========================================================================
-// WP34S_Atan2_75temp / 1071temp (static) + dispatcher
-// ===========================================================================
-fn WP34S_Atan2_75temp(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
-    var r: real_t = undefined;
-    var t: real_t = undefined;
-    if (!doAtan2(y, x, atan, &r, &t, realContext)) {
-        return; // NaN
-    }
-}
-
-fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
-    var r_buf: BigReal(1071) = .{};
-    var t_buf: BigReal(1071) = .{};
-    if (!doAtan2(y, x, atan, r_buf.ptr(), t_buf.ptr(), realContext)) {
-        return; // NaN
-    }
+    wp34s_atan.C47_WP34S_Atan(x, angle, realContext);
 }
 
 pub export fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    if (realContext.digits >= 1071) {
-        C47do_WP34S_Atan2_1071temp(y, x, atan, realContext);
-    } else {
-        WP34S_Atan2_75temp(y, x, atan, realContext);
-    }
-}
-
-// ===========================================================================
-// doAsin (static) + dispatchers
-// ===========================================================================
-fn doAsin(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) real_t, z: *align(1) real_t, realContext: *realContext_t) bool {
-    if (realIsNaN(x)) {
-        realSetNaN(angle);
-        return false;
-    }
-    realCopyAbs(x, abx);
-    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {
-        realSetNaN(angle);
-        return false;
-    }
-    // angle = 2*atan(x/(1+sqrt(1-x*x)))
-    realMultiply(x, x, z, realContext);
-    realSubtract(const_1(), z, z, realContext);
-    realSquareRoot(z, z, realContext);
-    realAdd(z, const_1(), z, realContext);
-    realDivide(x, z, z, realContext);
-    C47_WP34S_Atan(@ptrCast(z), @ptrCast(abx), realContext);
-    realAdd(abx, abx, angle, realContext);
-    return true;
-}
-
-fn WP34S_Asin_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var abx: real_t = undefined;
-    var z: real_t = undefined;
-    if (!doAsin(x, angle, &abx, &z, realContext)) {
-        return; // NaN
-    }
-}
-
-fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var abx_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    if (!doAsin(x, angle, abx_buf.ptr(), z_buf.ptr(), realContext)) {
-        return; // NaN
-    }
+    wp34s_atan.C47_WP34S_Atan2(y, x, atan, realContext);
 }
 
 pub export fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    if (realContext.digits >= 1071) {
-        C47do_WP34S_Asin_1071temp(x, angle, realContext);
-    } else {
-        WP34S_Asin_75temp(x, angle, realContext);
-    }
-}
-
-// ===========================================================================
-// doAcos (static) + dispatchers
-// ===========================================================================
-fn doAcos(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) real_t, z: *align(1) real_t, realContext: *realContext_t) bool {
-    if (realIsNaN(x)) {
-        realSetNaN(angle);
-        return false;
-    }
-    realCopyAbs(x, abx);
-    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {
-        realSetNaN(angle);
-        return false;
-    }
-    // angle = 2*atan((1-x)/sqrt(1-x*x))
-    if (math_comparison_reals.realCompareEqual(@alignCast(x), @alignCast(const_1()))) {
-        realSetZero(angle);
-    } else {
-        realMultiply(x, x, z, realContext);
-        realSubtract(const_1(), z, z, realContext);
-        realSquareRoot(z, z, realContext);
-        realSubtract(const_1(), x, abx, realContext);
-        realDivide(abx, z, z, realContext);
-        C47_WP34S_Atan(@ptrCast(z), @ptrCast(abx), realContext);
-        realAdd(abx, abx, angle, realContext);
-    }
-    return true;
-}
-
-fn WP34S_Acos_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var abx: real_t = undefined;
-    var z: real_t = undefined;
-    if (!doAcos(x, angle, &abx, &z, realContext)) {
-        return; // NaN
-    }
-}
-
-fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var abx_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    if (!doAcos(x, angle, abx_buf.ptr(), z_buf.ptr(), realContext)) {
-        return; // NaN
-    }
+    wp34s_atan.C47_WP34S_Asin(x, angle, realContext);
 }
 
 pub export fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
-    if (realContext.digits >= 1071) {
-        C47do_WP34S_Acos_1071temp(x, angle, realContext);
-    } else {
-        WP34S_Acos_75temp(x, angle, realContext);
-    }
+    wp34s_atan.C47_WP34S_Acos(x, angle, realContext);
 }
 
 // ===========================================================================
