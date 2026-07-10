@@ -38,6 +38,7 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const timer_math = @import("timer_math.zig"); // std-only elapsed math
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
@@ -612,28 +613,18 @@ fn currentTime() u32 {
 }
 
 fn antirewinder(currTime: u32) void {
-    if (currTime < timerStartTime) {
-        timerValue += 86400000 - timerStartTime;
-        if (timerTotalTime > 0) {
-            timerTotalTime += 86400000 - timerStartTime;
-        }
-        timerStartTime = 0;
-    } else if (currTime >= timerStartTime + 3600000) {
-        timerValue += 3600000;
-        if (timerTotalTime > 0) {
-            timerTotalTime += 3600000;
-        }
-        timerStartTime += 3600000;
-    }
+    const s = timer_math.antirewinder(.{ .startTime = timerStartTime, .value = timerValue, .totalTime = timerTotalTime }, currTime);
+    timerStartTime = s.startTime;
+    timerValue = s.value;
+    timerTotalTime = s.totalTime;
 }
 
 fn getTimerValue() u32 {
-    const currTime: u32 = currentTime();
-    if (timerStartTime == TIMER_APP_STOPPED) {
-        return timerValue;
-    }
-    antirewinder(currTime);
-    return currTime - timerStartTime + timerValue;
+    const r = timer_math.timerElapsed(.{ .startTime = timerStartTime, .value = timerValue, .totalTime = timerTotalTime }, currentTime());
+    timerStartTime = r.state.startTime;
+    timerValue = r.state.value;
+    timerTotalTime = r.state.totalTime;
+    return r.elapsed;
 }
 
 // ===========================================================================
