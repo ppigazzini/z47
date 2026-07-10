@@ -34,9 +34,10 @@ uint32_t       *screenData;
 bool_t          screenChange;
 
 void (*funcToTest)(uint16_t);
-void (*funcCvt)(uint16_t);
 void runPgm(uint16_t unusedButMandatoryParameter);
 void covBackupRoundtrip(uint16_t unusedButMandatoryParameter);
+void covConvToSI(uint16_t itemNr);
+void covConvFromSI(uint16_t itemNr);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
@@ -153,6 +154,8 @@ const funcTest_t funcTestNoParam[] = {
   // and restore it. Exercises both directions of saveRestoreBackup.c. Resets the
   // calculator, so its corpus test must run last.
   {"fnBackupRoundtrip",      covBackupRoundtrip    },
+  {"covConvToSI",            covConvToSI           },
+  {"covConvFromSI",          covConvFromSI         },
   // Statistics (use FARG=1 with fnSigmaAddRem to accumulate a (Y,X) data point).
   {"fnSigmaAddRem",          fnSigmaAddRem         },
   {"fnMeanX",                fnMeanX               },
@@ -578,6 +581,18 @@ void covBackupRoundtrip(uint16_t unusedButMandatoryParameter) {
   loadTestPrograms = false;
   saveCalc();
   restoreCalc();
+}
+
+
+
+// Wrappers exposing the SI round-trip halves (custom conversion pairs) to generated tests
+// in conversionsSI.txt; the param is the convertPairs[] item number
+void covConvToSI(uint16_t itemNr) {
+  runConversionToSI((int16_t)itemNr);
+}
+
+void covConvFromSI(uint16_t itemNr) {
+  runConversionFromSI((int16_t)itemNr);
 }
 
 
@@ -1642,7 +1657,7 @@ var1:
   //Setting a program to run
   else if(strcmp(l, "PGM") == 0) {
     r[strlen(r) - 1] = 0;
-    label = findNamedLabel(r + 1);
+    label = findNamedLabel(r + 1, GLOBAL_LABELS);
     if(label == INVALID_VARIABLE) {
       printf("\nUnknown global label: %s\n", r+1);
       abortTest();
@@ -3141,6 +3156,18 @@ void outParameters(char *token) {
 
 
 
+static void checkGmpMemFreed(void) {
+  if(gmpMemInBytes != 0) {
+    char tmpMsg[1000];
+    sprintf(tmpMsg, "\ngmpMemInBytes should be 0 but it is %" PRIu64 "! Check to ensure allocated long integers have been freed.", (uint64_t)gmpMemInBytes);
+    errorf(tmpMsg);
+    fflush(stderr);
+    exit(-1);
+  }
+}
+
+
+
 void callFunction(void) {
   lastErrorCode = 0;
 
@@ -3154,23 +3181,19 @@ void callFunction(void) {
       }
 
       funcToTest(functionParameter);
-      if(gmpMemInBytes != 0) {
-        char tmpMsg[1000];
-        sprintf(tmpMsg, "\ngmpMemInBytes should be 0 but it is %" PRIu64 "! Check to ensure allocated long integers have been freed.", (uint64_t)gmpMemInBytes);
-        errorf(tmpMsg);
-        fflush(stderr);
-        exit(-1);
-      }
+      checkGmpMemFreed();
       break;
 
-    case FUNC_CVT:
-      funcCvt(NOPARAM);
+    case FUNC_ITEM:
+      // Real dispatch chain: reallyRunFunction does undo and stack lift itself, so the mimicry below is skipped
+      reallyRunFunction(functionIndex, indexOfItems[functionIndex].param);
+      checkGmpMemFreed();
       break;
 
     default: ;
   }
 
-  if(lastErrorCode == 0) {
+  if(funcType != FUNC_ITEM && lastErrorCode == 0) {
     if(functionIndex < LAST_ITEM) {
       if((indexOfItems[functionIndex].status & SLS_STATUS) == SLS_DISABLED) {
         clearSystemFlag(FLAG_ASLIFT);
@@ -3212,8 +3235,8 @@ void functionToCall(char *functionName) {
     if(funcToTest == runPgm) {
       functionIndex = ITM_XEQ;
     }
-    else if(funcToTest == covBackupRoundtrip) {
-      functionIndex = ITM_NOP; // testSuite-local coverage driver, not a catalog item
+    else if(funcToTest == covBackupRoundtrip || funcToTest == covConvToSI || funcToTest == covConvFromSI) {
+      functionIndex = ITM_NOP; // testSuite-local coverage drivers, not catalog items
     }
     else {
       for(functionIndex=1; functionIndex<=LAST_ITEM; functionIndex++) {
@@ -3234,6 +3257,111 @@ void functionToCall(char *functionName) {
 
   printf("\nCannot find the function to test: check spelling of the function name and remember the name is case sensitive\n");
   abortTest();
+}
+
+
+
+// ITM_ name table for the Item: directive, lazily parsed from items.h in the source tree so it cannot go stale
+typedef struct {
+  char    name[64];
+  int32_t number;
+} itemName_t;
+
+static itemName_t *itemNameTable = NULL;
+static int32_t     itemNameCount = 0;
+
+static void loadItemNameTable(void) {
+  char  itemsHPath[2100], buffer[1000];
+  FILE *itemsH;
+
+  snprintf(itemsHPath, sizeof(itemsHPath), "%s/../../c47/items.h", filePath);
+  itemsH = fopen(itemsHPath, "rb");
+  if(itemsH == NULL) {
+    printf("Cannot open file %s to resolve ITM_ names!\n", itemsHPath);
+    exit(-1);
+  }
+
+  while(fgets(buffer, sizeof(buffer), itemsH) != NULL) {
+    itemName_t entry;
+    memcpy(entry.name, "ITM_", 4);
+    if(sscanf(buffer, " #define ITM_%59s %d", entry.name + 4, &entry.number) == 2) {
+      if((itemNameCount % 500) == 0) {
+        itemNameTable = realloc(itemNameTable, (itemNameCount + 500) * sizeof(itemName_t));
+        if(itemNameTable == NULL) {
+          printf("Out of memory building the ITM_ name table!\n");
+          exit(-1);
+        }
+      }
+      itemNameTable[itemNameCount++] = entry;
+    }
+  }
+
+  fclose(itemsH);
+}
+
+
+
+static int32_t lookupItemName(const char *name) {
+  if(itemNameTable == NULL) {
+    loadItemNameTable();
+  }
+
+  for(int32_t i=0; i<itemNameCount; i++) {
+    if(strcmp(itemNameTable[i].name, name) == 0) {
+      return itemNameTable[i].number;
+    }
+  }
+
+  return -1;
+}
+
+
+
+void itemToCall(char *itemSpec) {
+  int32_t itemNr;
+
+  // Default to a NOP so a following Out: after a failed Item: does not rerun the previous function
+  functionIndex = ITM_NOP;
+  funcToTest    = fnNop;
+  funcType      = FUNC_TO_TEST;
+
+  if(strncmp(itemSpec, "ITM_", 4) == 0) {
+    itemNr = lookupItemName(itemSpec);
+    if(itemNr < 0) {
+      printf("\nCannot find %s in items.h: check spelling of the item name and remember the name is case sensitive\n", itemSpec);
+      abortTest();
+      return;
+    }
+  }
+  else if('0' <= itemSpec[0] && itemSpec[0] <= '9') {
+    char *end;
+    itemNr = (int32_t)strtol(itemSpec, &end, 10);
+    if(*end != 0) {
+      printf("\nItem number has trailing characters: %s\n", itemSpec);
+      abortTest();
+      return;
+    }
+  }
+  else {
+    printf("\nItem must be an ITM_ name or an item number: %s\n", itemSpec);
+    abortTest();
+    return;
+  }
+
+  if(itemNr <= 0 || itemNr >= LAST_ITEM) {
+    printf("\nItem number %d is out of range (1..%d)\n", itemNr, LAST_ITEM - 1);
+    abortTest();
+    return;
+  }
+
+  if(indexOfItems[itemNr].func == itemToBeCoded) {
+    printf("\nItem %d (%s) is not an implemented function\n", itemNr, itemSpec);
+    abortTest();
+    return;
+  }
+
+  functionIndex = itemNr;
+  funcType      = FUNC_ITEM;
 }
 
 
@@ -3347,7 +3475,7 @@ void processLine(void) {
     if('a' <= line[i] && line[i] <= 'z') {
       line[i] -= 32;
     }
-    if(i >= 5 && (strncmp(line, "FUNC: ", 6) == 0 || strncmp(line, "DESC: ", 6) == 0)) {
+    if(i >= 5 && (strncmp(line, "FUNC: ", 6) == 0 || strncmp(line, "DESC: ", 6) == 0 || strncmp(line, "ITEM: ", 6) == 0)) {
       break;
     }
     if(i >= 12 && (strncmp(line, "DESC_PREFIX: ", 13) == 0 || strncmp(line, "DESC_SUFFIX: ", 13) == 0)) {
@@ -3393,6 +3521,11 @@ void processLine(void) {
   else if(strncmp(line, "FUNC: ", 6) == 0) {
     //printf("%s\n", line);
     functionToCall(line + 6);
+  }
+
+  else if(strncmp(line, "ITEM: ", 6) == 0) {
+    //printf("%s\n", line);
+    itemToCall(line + 6);
   }
 
   else if(strncmp(line, "OUT: ", 5) == 0) {

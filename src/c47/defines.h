@@ -1157,14 +1157,15 @@
 // 100…111                           Lettered global registers from X to L                          100…111
 // 112…117         Lettered global registers from M to S: no possibility of indirect access         211…216
 // 118…125         Lettered global registers from E to W: no possibility of indirect access         217…224
-//                                        25 undefined free registers                               225…249
+//                                        24 undefined free registers                               225…248
 // 126…134                 saved stack registers (UNDO feature) not user accessible
 // 135…136                          temporary registers not user accessible
-// 137…249              113 undefined free registers: no possibility of indirect access
+// 137…248              112 undefined free registers: no possibility of indirect access
 //
+//                                            LOCAL_LABEL_VARIABLE                                  249
 //                             SYSTEM_FLAG_NUMBER --> Used for system flag access                   250
-//                                  VALUE_0 --> Can't remember what this is!                        251
-//                                  VALUE_1 --> Can't remember what this is!                        252
+//                                       VALUE_0 --> Used for test vs. 0.                           251
+//                                       VALUE_1 --> Used for test vs. 1.                           252
 //                                           STRING_LABEL_VARIABLE                                  253
 //                                             INDIRECT_REGISTER                                    254
 //                                             INDIRECT_VARIABLE                                    255
@@ -1354,7 +1355,8 @@ enum REG_NUMBERS_IN_KS_CODE { // Key Stroke register codes
   LAST_SPARE_REGISTERS_IN_KS_CODE = REGISTER_W_IN_KS_CODE,
 
   // OP parameter special values
-  CNST_BEYOND_250       = 250,
+  LOCAL_LABEL_VARIABLE  = 249,
+  CNST_BEYOND_250       = 250,        // [DL] Not an issue to have it above LOCAL_LABEL_VARIABLE as both are used in different contexts
   //CNST_BEYOND_500       = 251,
   //CNST_BEYOND_750       = 252,
   SYSTEM_FLAG_NUMBER    = 250,

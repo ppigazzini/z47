@@ -26,7 +26,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
       if(opParam <= LAST_LOCAL_LABEL) { // Local labels from 00 to 99 and from A to l
         return step;
       }
-      else if(opParam == STRING_LABEL_VARIABLE) {
+      else if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE)) {
         return step + *step + 1;
       }
       else {
@@ -41,7 +41,7 @@ uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
       if(opParam <= LAST_LOCAL_LABEL) { // Local labels from 00 to 99 and from A to l
         return step;
       }
-      else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
+      else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE || opParam == LOCAL_LABEL_VARIABLE) {
         return step + *step + 1;
       }
       else if(opParam == INDIRECT_REGISTER) {

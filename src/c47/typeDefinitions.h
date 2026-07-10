@@ -691,6 +691,7 @@ typedef struct {
   bool_t     alpha;
   int16_t    currentOperation;
   bool_t     dot;
+  bool_t     colon;
   bool_t     indirect;
   int16_t    digitsSoFar;
   int16_t    value0;       // to store the initial value for indirection
@@ -787,6 +788,16 @@ typedef struct {
   printerModel_t printer_model;          ///< printer model
   uint16_t       delay;                  ///< printer line delay
 } printerState_t;
+
+
+/**
+ * \enum namedLabels_t
+ */
+typedef enum {
+  GLOBAL_LABELS = STRING_LABEL_VARIABLE,    // Only global labels
+  LOCAL_LABELS  = LOCAL_LABEL_VARIABLE,     // Only local named labels
+  ALL_LABELS    = 0                         // Both global and local names lables
+} namedLabels_t;
 
 
   #if defined(PC_BUILD)

@@ -17,7 +17,7 @@ void fnPgmInt(uint16_t label) {
     char buf[2];
     buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
-    label = findNamedLabel(buf);
+    label = findNamedLabel(buf, GLOBAL_LABELS);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)

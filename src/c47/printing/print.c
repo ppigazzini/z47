@@ -187,7 +187,7 @@
   /* 0x83, */ 0x221A, // #SQUARE ROOT
   /* 0x84, */ 0x222B, // #INTEGRAL
   /* 0x85, */ 0x2211, // #N-ARY SUMMATION
-  /* 0x86, */ 0x25B6, // #BLACK RIGHT-POINTING TRIANGLE                *
+  /* 0x86, */ 0x25B8, // #BLACK RIGHT-POINTING SMALL TRIANGLE                *
   /* 0x87, */ 0x03C0, // #GREEK SMALL LETTER PI
   /* 0x88, */ 0x2202, // #PARTIAL DIFFERENTIAL
   /* 0x89, */ 0x2264, // #LESS-THAN OR EQUAL TO

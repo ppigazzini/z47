@@ -47,9 +47,9 @@ static uint16_t _get2ndParamOfKey(uint8_t *paramAddress) {
   if(opParam <= 109) { // Local label from 00 to 99 or from A to J
     return opParam;
   }
-  else if(opParam == STRING_LABEL_VARIABLE) {
+  else if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE)) {
     getStringLabelOrVariableName(paramAddress);
-    calcRegister_t label = findNamedLabel(tmpStringLabelOrVariableName);
+    calcRegister_t label = findNamedLabel(tmpStringLabelOrVariableName, opParam);
     if(label != INVALID_VARIABLE) {
       return label;
     }

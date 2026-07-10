@@ -479,7 +479,7 @@ void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
             uint8_t nameLength = boundProgramNameLength(labelList[i].labelPointer + 1, labelList[i].labelPointer[0]);
             xcopy(labelName, labelList[i].labelPointer + 1, nameLength);
             labelName[nameLength]=0;
-            label = findNamedLabel(labelName);
+            label = findNamedLabel(labelName, GLOBAL_LABELS);
             _selectProgram(label);
             stringToASCII(labelName, labelName1);
             //printf("#### labelNo=%5i, labelName=%11s, ----Pr no=%6u, old Pr no=%6u name=%30s,  ",label, labelName, currentProgramNumber, oldCurrentProgramNumber, labelName1);

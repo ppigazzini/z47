@@ -332,7 +332,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
         while(currentSubroutineLevel > 0) {
           fnReturn(0);
         }
-        fnReturn(0); // 1 more time to clean local registers
+        //fnReturn(0); // 1 more time to clean local registers
+        cleanLocalFlagsAndRegisters();
       }
 
 /* Full refresh included in showHideHourGlass above, so removinf it here to save time
@@ -666,7 +667,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       if(func == ITM_XEQ && dynamicMenuItem > -1) {
         char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
         if(strcmp(varCatalogItem, "XEQ") != 0) {
-          calcRegister_t label = findNamedLabel(varCatalogItem);
+          calcRegister_t label = findNamedLabel(varCatalogItem, GLOBAL_LABELS);
           if(label != INVALID_VARIABLE) {
             if(calcMode == CM_PEM) {
               insertUserItemInProgram(func, varCatalogItem);
@@ -1757,7 +1758,17 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
 
 
-/* Helper macro for multiplicative unit conversions */
+//==============================================================================
+         // CONV step 5/6 of ADDING to CONV    [grep for "add conversion items to CONV menu"]
+         // =================================================================================
+         // Helper macro for multiplicative unit conversions.
+         // Add two UNIT_CONV lines at the correct new item numbers, one per direction: Best to copy and edit two prior pairs to ensure spacing is standard.
+         // UNIT_CONV(constFactor<Xxx>, multiply, ...) converts the left unit to the right one
+         // (result = X x factor); the partner line uses divide with the SAME factor. Both name fields hold only 
+         //   the LEFT unit plus the arrow ("mph" STD_RIGHT_ARROW is a complete name) 
+         //   the right-hand side is rebuilt at runtime from the partner item, fullConvSoftMenuItemName-InclHPCONV().
+         // Next Step: CONV step 6/6 in src/c47/softmenus.c.
+//==============================================================================
 #define UNIT_CONV(unit, invert, cat, menu)      \
             { fnUnitConvert,                unit | invert,              cat,                                            menu,                                           (0 << TAM_MAX_BITS) |    0, CAT_NONE | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | RESULT_IN_X }
 
@@ -4707,7 +4718,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2856 */  { itemToBeCoded,                   NOPARAM,                  "2856",                                           "2856",                                          (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2857 */  { itemToBeCoded,                   NOPARAM,                  "2857",                                           "2857",                                          (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2858 */  { itemToBeCoded,                   NOPARAM,                  "2858",                                           "2858",                                          (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2859 */  { itemToBeCoded,                   NOPARAM,                  "2859",                                           "2859",                                          (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2859 */  { itemToBeCoded,                NOPARAM,                     "",                                               "TamLocalLabel",                                 (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 
 /* 2860 */  UNIT_CONV(constFactorMphKnot     , multiply         ,            "mph"                                STD_RIGHT_ARROW                                                ,            "mph"                                STD_RIGHT_ARROW                                                ),
 /* 2861 */  UNIT_CONV(constFactorMphKnot     , divide           ,            "knot"                               STD_RIGHT_ARROW                                                ,            "knot"                               STD_RIGHT_ARROW                                                ),

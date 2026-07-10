@@ -880,7 +880,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         else {
           uint16_t regNumber;
           uint16_t paramMode = (indexOfItems[func].status & PTP_STATUS) >> 9;
-          if((opParam == STRING_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
+          if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
             for(index = 0;  index < opParam2; index++) {
               varOrLblName[index] = currentStep[i++];
             }
@@ -987,7 +987,10 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               //fflush(stdout);
               tamProcessInput(func);
               //scrollPemBackwards();
-              if(opParam == STRING_LABEL_VARIABLE) {      // Variable name : Label or  edit name string
+              if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE)) {      // Variable name : Label or  edit name string
+                if(opParam == LOCAL_LABEL_VARIABLE) {
+                  tamProcessInput(ITM_COLON);
+                }
                 tamProcessInput(ITM_alpha);
                 if(stringGlyphLength(varOrLblName) == 7) {
                   varOrLblName[stringLastGlyph(varOrLblName)] = 0;  // Ensure name is 6 characters maximum

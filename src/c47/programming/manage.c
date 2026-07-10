@@ -159,6 +159,10 @@ void scanLabelsAndPrograms(void) {
         labelList[numberOfLabels].step = -stepNumber;
         labelList[numberOfLabels].labelPointer = step + 1;
       }
+      else if(*(step + 1) == LOCAL_LABEL_VARIABLE) { // Local named label
+        labelList[numberOfLabels].step = -stepNumber;
+        labelList[numberOfLabels].labelPointer = step + 2;
+      }
       else { // Global label
         labelList[numberOfLabels].step = stepNumber;
         labelList[numberOfLabels].labelPointer = step + 2;
@@ -1527,7 +1531,7 @@ void insertStepInProgram(const int16_t func) {
             tmpString[opLen + 0] = (((func == ITM_KEYX) || (func == ITM_42KEYX)) ? ITM_XEQ : ITM_GTO);
             if(tam.alpha) {
               uint16_t nameLength = stringByteLength(aimBuffer);
-              tmpString[opLen + 1] = (char)(tam.indirect ? INDIRECT_VARIABLE : STRING_LABEL_VARIABLE);
+              tmpString[opLen + 1] = (char)(tam.indirect ? INDIRECT_VARIABLE : tam.colon ? LOCAL_LABEL_VARIABLE : STRING_LABEL_VARIABLE);
               tmpString[opLen + 2] = nameLength;
               xcopy(tmpString + opLen + 3, aimBuffer, nameLength);
               _insertInProgram((uint8_t *)tmpString, nameLength + opLen + 3);
@@ -1749,7 +1753,7 @@ void insertStepInProgram(const int16_t func) {
       }
       else if(tam.alpha) {
         uint16_t nameLength = stringByteLength(aimBuffer);
-        tmpString[opBytes    ] = (char)(tam.indirect ? INDIRECT_VARIABLE : STRING_LABEL_VARIABLE);
+        tmpString[opBytes    ] = (char)(tam.indirect ? INDIRECT_VARIABLE : tam.colon ? LOCAL_LABEL_VARIABLE : STRING_LABEL_VARIABLE);
         tmpString[opBytes + 1] = nameLength;
         xcopy(tmpString + opBytes + 2, aimBuffer, nameLength);
         _insertInProgram((uint8_t *)tmpString, nameLength + opBytes + 2);
@@ -1853,24 +1857,61 @@ void addStepInProgram(int16_t func) {
 
 
 
-calcRegister_t findNamedLabel(const char *labelName) {
-  return findNamedLabelWithDuplicate(labelName, 0);
+calcRegister_t findNamedLabel(const char *labelName, uint8_t labelType) {
+  return findNamedLabelWithDuplicate(labelName, 0, labelType);
 }
 
 
 
-calcRegister_t findNamedLabelWithDuplicate(const char *labelName, int16_t dupNum) {
-  for(uint16_t lbl = 0; lbl < numberOfLabels; lbl++) {
-    if(labelList[lbl].step > 0) {
-      uint8_t lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, *(labelList[lbl].labelPointer));
-      xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
-      tmpString[lblNameLen] = 0;
-      if(compareString(tmpString, labelName, CMP_BINARY) == 0) {
-        if(dupNum <= 0) {
-          return lbl + FIRST_LABEL;
+calcRegister_t findNamedLabelWithDuplicate(const char *labelName, int16_t dupNum, uint8_t labelType) {
+  if((labelType == ALL_LABELS) || (labelType == LOCAL_LABELS)) {       // Start searching for local named labels
+    bool_t labelFound = false;
+    uint16_t firstLabel = 0;
+    uint16_t nextLabel = 0;
+    uint16_t lbl;
+
+    for(lbl=0; lbl<numberOfLabels; lbl++) {
+      if(labelList[lbl].program > currentProgramNumber) {   // After the current program
+        break;
+      }
+      if(labelList[lbl].program == currentProgramNumber) { // Within the current progrm
+        if(labelList[lbl].step < 0 &&  *(labelList[lbl].labelPointer - 1) == LOCAL_LABEL_VARIABLE) { // Is a named local label
+          uint8_t lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, *(labelList[lbl].labelPointer));
+          xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+          tmpString[lblNameLen] = 0;
+          if(compareString(tmpString, labelName, CMP_BINARY) == 0) {   // Label name match
+            if(!labelFound) {    // First label occurence in the current program
+              firstLabel = lbl;
+              labelFound = true;
+            }
+            uint16_t labelLocalStepNumber = (-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1;
+            if(labelLocalStepNumber > currentLocalStepNumber) {
+              nextLabel = lbl;  // First label occurence after the current program step
+              break;
+            }
+          }
         }
-        else {
-          --dupNum;
+      }
+    }
+    // return local label found, if any
+    if(labelFound) {   // If a local label found in the program
+      lbl = (nextLabel != 0 ? nextLabel : firstLabel); // First found label label after current program step or the first found label in the program
+      return lbl + FIRST_LABEL;
+    }
+  }
+  if((labelType == ALL_LABELS) || (labelType == GLOBAL_LABELS)) {      // then search global labels
+    for(uint16_t lbl = 0; lbl < numberOfLabels; lbl++) {
+      if(labelList[lbl].step > 0) {
+        uint8_t lblNameLen = boundProgramNameLength(labelList[lbl].labelPointer + 1, *(labelList[lbl].labelPointer));
+        xcopy(tmpString, labelList[lbl].labelPointer + 1, lblNameLen);
+        tmpString[lblNameLen] = 0;
+        if(compareString(tmpString, labelName, CMP_BINARY) == 0) {
+          if(dupNum <= 0) {
+            return lbl + FIRST_LABEL;
+          }
+          else {
+            --dupNum;
+          }
         }
       }
     }
