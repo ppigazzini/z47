@@ -74,6 +74,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/conversion_pairs.zig",
         "zig_src/frontier/glyph_font_search.zig",
         "zig_src/frontier/program_step_width.zig",
+        "zig_src/frontier/printer_text_width.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",
