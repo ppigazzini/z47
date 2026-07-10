@@ -62,6 +62,7 @@ const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zi
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const printer_text_width = @import("printer_text_width.zig"); // std-only width math
+const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -774,48 +775,16 @@ fn charMap(charCode: u16) u8 {
     return 0;
 }
 
+// Thin wrappers: compute the flexible-array glyphs pointer past the font header
+// and delegate the pure binary search to printer_glyph_search (std+abi, tested).
 fn findPrinterGlyph(font: *const printerFont_t, charCode: u16) i16 {
     const glyphs: [*]const glyphPrinter_t = @ptrFromInt(@intFromPtr(font) + @sizeOf(printerFont_t));
-    var first: i16 = 0;
-    var last: i16 = @as(i16, @bitCast(font.numberOfGlyphs)) - 1;
-    var middle: i16 = @divTrunc(first + last, 2);
-    while (last > first + 1) {
-        if (charCode < glyphs[@intCast(middle)].charCode) {
-            last = middle;
-        } else {
-            first = middle;
-        }
-        middle = @divTrunc(first + last, 2);
-    }
-    if (glyphs[@intCast(first)].charCode == charCode) {
-        return first;
-    }
-    if (glyphs[@intCast(last)].charCode == charCode) {
-        return last;
-    }
-    return @as(i16, @bitCast(font.numberOfGlyphs)) - 1;
+    return printer_glyph_search.findPrinterGlyph(glyphs, font.numberOfGlyphs, charCode);
 }
 
 fn findMartelGlyph(font: *const martelFont24_t, charCode: u16) u16 {
     const glyphs: [*]const glyphMartelPrinter_t = @ptrFromInt(@intFromPtr(font) + @sizeOf(martelFont24_t));
-    var first: u16 = 0;
-    var last: u16 = font.numberOfGlyphs - 1;
-    var middle: u16 = (first + last) / 2;
-    while (last > first + 1) {
-        if (charCode < glyphs[middle].charCode) {
-            last = middle;
-        } else {
-            first = middle;
-        }
-        middle = (first + last) / 2;
-    }
-    if (glyphs[first].charCode == charCode) {
-        return first;
-    }
-    if (glyphs[last].charCode == charCode) {
-        return last;
-    }
-    return 255;
+    return printer_glyph_search.findMartelGlyph(glyphs, font.numberOfGlyphs, charCode);
 }
 
 fn _exitKeyPressed() bool_t {
