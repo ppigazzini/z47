@@ -53,7 +53,7 @@ pub const amMultPi = runtime.amMultPi;
 const cstR = consts.cstR;
 
 // Offsets extracted from the generated constantPointers.h.
-const OFF_const51_gammaC01: u32 = 6184;
+const OFF_const51_gammaC01: u32 = 6188;
 
 // REAL_SIZE_IN_BYTES(51) for indexing const51_gammaC01[k].
 const REAL_SIZE_51: u32 = 44;

@@ -1269,22 +1269,22 @@ Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00561797752808988764044943820224719
 ; fir → lb (constFactorFirtolb=76)
 Func: fnUnitConvert(76)
 In:  FL_ASLIFT=0 RX=Real:"1"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"90.00000734139932"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"90"
 
 ; lb → fir (constFactorFirtolb=76 | 0x8000)
 Func: fnUnitConvert(32844)
 In:  FL_ASLIFT=0 RX=Real:"1"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0111111102047655899809870772686962"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.01111111111111111111111111111111111"
 
 ; furlong/fortnight → mph (constFactorFpftomph=77)
 Func: fnUnitConvert(77)
 In:  FL_ASLIFT=0 RX=Real:"1"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.00037202473418562"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0.0003720238095238095238095238095238095"
 
 ; mph → furlong/fortnight (constFactorFpftomph=77 | 0x8000)
 Func: fnUnitConvert(32845)
 In:  FL_ASLIFT=0 RX=Real:"1"
-Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2687.993319016941169626843628342908"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"1" RX=Real:"2688"
 
 ; brds → m (constFactorBrdstom=72)
 Func: fnUnitConvert(72)

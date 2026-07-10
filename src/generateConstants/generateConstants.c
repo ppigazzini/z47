@@ -250,7 +250,7 @@ void generateAllConstants(void) {
          generateConstant("MiToM",          7, EXACT,  "+1.609344e+03"                                                ); // m      = mile × 63360 × 0.0254
          generateConstant("NmiToM",         4, EXACT,  "+1.852e+03"                                                   ); // m      = nmi × 1852
 
-         generateConstant("Kmphmps",       39, APPROX, "+2.777777777777777777777777777777777777777777777777777777e-01"); // mps      =  Kmph  * 0.277...   // 2.5/9
+         generateConstant("Kmphmps",       39, APPROX, "+2.777777777777777777777777777777777777777777777777777778e-01"); // mps      =  Kmph  * 0.277...   // 2.5/9, last digit rounded half even
          generateConstant("RpmDegps",       1, EXACT,  "+6"                                                           ); // Degps    =  Rpm * 6
          generateConstant("Mphmps",         5, EXACT,  "+4.4704e-01"                                                  ); // mps      =  Mph  * 0.44704     //11.176/25
          generateConstant("RpmRadps",      39, APPROX, "+0.1047197551196597746154214461093167628065723133125035274"   ); // Radps    =  Rpm  * 0.1047   // pi/30
@@ -320,8 +320,8 @@ void generateAllConstants(void) {
          generateConstant("firToKg",        9, EXACT,  "+40.8233133"                                                  ); // fff menu: Convert firkin to kilogram
          generateConstant("fpfToKph",      15, EXACT,  "+5.98714285714286e-04"                                        ); // fff menu: Convert furlong per fortnight to kilometer per hour
          generateConstant("brdsToIn",      15, EXACT,  "+3.93700787401575e-07"                                        ); // fff menu: Convert beardsecond to inch
-         generateConstant("firToLb",       16, EXACT,  "+90.00000734139932"                                           ); // fff menu: Convert firkin to pound
-         generateConstant("fpfToMph",      14, EXACT,  "+3.7202473418562e-04"                                         ); // fff menu: Convert furlong per fortnight to mile per hour
+         generateConstant("firToLb",        2, EXACT,  "+90"                                                          ); // fff menu: Convert firkin to pound; firkin = 90 lb exactly
+         generateConstant("fpfToMph",      39, APPROX, "+3.72023809523809523809523809523809523810e-04"                ); // fff menu: Convert furlong per fortnight to mile per hour = (201.168/1209600)/0.44704
 
          generateConstant("fpsToKph",       6, EXACT,  "+1.09728"                                                     ); // foot per second to kilometer per hour
          generateConstant("fpsToMps",       4, EXACT,  "+3.048e-01"                                                   ); // foot per second to meter per second

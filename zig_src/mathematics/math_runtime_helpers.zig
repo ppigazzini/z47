@@ -76,28 +76,28 @@ const consts = abi.constants;
 const constantPointer = consts.cstR;
 
 // Byte offsets from the generated constantPointers.h.
-const offset_const_1 = 4928; // const_1
-const offset_const_2 = 5000; // const_2
-const offset_const_3 = 5084; // const_3
-const offset_const_5 = 5144; // const_5
-const offset_const_1on2 = 4652; // const_1on2
-const offset_const39_1on3 = 4616; // const39_1on3
-const offset_const39_1oneE = 4460; // const39_1oneE
-const offset_const_90 = 7616; // const_90
-const offset_const_100 = 7604; // const_100
-const offset_const_180 = 7532; // const_180
-const offset_const39_ln2 = 4700; // const39_ln2
-const offset_const39_ln10 = 5012; // const39_ln10
+const offset_const_1 = 4932; // const_1
+const offset_const_2 = 5004; // const_2
+const offset_const_3 = 5088; // const_3
+const offset_const_5 = 5148; // const_5
+const offset_const_1on2 = 4656; // const_1on2
+const offset_const39_1on3 = 4620; // const39_1on3
+const offset_const39_1oneE = 4464; // const39_1oneE
+const offset_const_90 = 7620; // const_90
+const offset_const_100 = 7608; // const_100
+const offset_const_180 = 7536; // const_180
+const offset_const39_ln2 = 4704; // const39_ln2
+const offset_const39_ln10 = 5016; // const39_ln10
 const offset_const39_PHI = 1596; // const39_PHI
 const offset_const39_pi = 1848; // const39_pi
-const offset_const39_piOn4 = 4808; // const39_piOn4
-const offset_const39_piOn2 = 4952; // const39_piOn2
-const offset_const39_3piOn4 = 5048; // const39_3piOn4
-const offset_const39_3piOn2 = 5108; // const39_3piOn2
-const offset_const75_pi = 7460; // const75_pi
-const offset_const75_piOn2 = 7544; // const75_piOn2
-const offset_const75_piOn4 = 7628; // const75_piOn4
-const offset_const_3600 = 5520; // const_3600
+const offset_const39_piOn4 = 4812; // const39_piOn4
+const offset_const39_piOn2 = 4956; // const39_piOn2
+const offset_const39_3piOn4 = 5052; // const39_3piOn4
+const offset_const39_3piOn2 = 5112; // const39_3piOn2
+const offset_const75_pi = 7464; // const75_pi
+const offset_const75_piOn2 = 7548; // const75_piOn2
+const offset_const75_piOn4 = 7632; // const75_piOn4
+const offset_const_3600 = 5524; // const_3600
 
 // Constants the retired C file synthesized locally (lazily initialized statics
 // built via z47_math_wrappers_init_constant; here they are comptime values

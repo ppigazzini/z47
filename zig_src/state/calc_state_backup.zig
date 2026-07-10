@@ -138,7 +138,6 @@ extern var errorMessageRegisterLine: [2]u8;
 extern var shortIntegerMask: [8]u8;
 extern var shortIntegerSignBit: [8]u8;
 extern var temporaryInformation: [1]u8;
-extern var glyphNotFound: [24]u8;
 extern var funcOK: [1]u8;
 extern var screenChange: [1]u8;
 extern var exponentSignLocation: [2]u8;
@@ -502,7 +501,6 @@ pub fn saveCalc() void {
     sv(&shortIntegerMask[0], 8, "shortIntegerMask", "uint64");
     sv(&shortIntegerSignBit[0], 8, "shortIntegerSignBit", "uint64");
     sv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
-    sv(&glyphNotFound[0], 24, "glyphNotFound", "hexDump");
     sv(&funcOK[0], 1, "funcOK", "bool");
     sv(&screenChange[0], 1, "screenChange", "bool");
     sv(&exponentSignLocation[0], 2, "exponentSignLocation", "int16");
@@ -1077,7 +1075,6 @@ pub fn restoreCalc() void {
     rv(&shortIntegerMask[0], 8, "shortIntegerMask", "uint64");
     rv(&shortIntegerSignBit[0], 8, "shortIntegerSignBit", "uint64");
     rv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
-    rv(&glyphNotFound[0], 24, "glyphNotFound", "hexDump");
     rv(&funcOK[0], 1, "funcOK", "bool");
     rv(&screenChange[0], 1, "screenChange", "bool");
     rv(&exponentSignLocation[0], 2, "exponentSignLocation", "int16");
