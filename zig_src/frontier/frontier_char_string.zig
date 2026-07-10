@@ -475,71 +475,23 @@ pub export fn debug_utf8_string(label: [*c]const u8, str: [*c]const u8, max_len:
 // stringToUtf8
 // ---------------------------------------------------------------------------
 pub export fn stringToUtf8(strIn: [*c]const u8, utf8In: [*c]u8) callconv(.c) void {
-    var str = strIn;
-    var utf8 = utf8In;
-    const len: i16 = @intCast(stringGlyphLength(str));
-
-    if (len == 0) {
-        utf8[0] = 0;
-        return;
-    }
-
-    var i: i16 = 0;
-    while (i < len) : (i += 1) {
-        if (str[0] & 0x80 != 0) {
-            codePointToUtf8((@as(u32, str[0]) & 0x7F) * 256 + @as(u32, str[1]), utf8);
-            str += 2;
-            while (utf8[0] != 0) {
-                utf8 += 1;
-            }
-        } else {
-            utf8[0] = str[0];
-            utf8 += 1;
-            str += 1;
-            utf8[0] = 0;
-        }
-    }
+    abi.c47_string.stringToUtf8(strIn, utf8In);
 }
 
 // ---------------------------------------------------------------------------
 // utf8ToString
 // ---------------------------------------------------------------------------
-pub export fn utf8ToString(utf8In: [*c]const u8, strIn: [*c]u8) callconv(.c) void {
-    var utf8 = utf8In;
-    var str = strIn;
-    var codePoint: u32 = undefined;
-
-    while (utf8[0] != 0) {
-        utf8 += utf8ToCodePoint(utf8, &codePoint);
-        // Glyphs whose low byte is 0x00 are forbidden in C47 (a 0x00 second byte
-        // terminates C strings early). Relocate each such real Unicode point to
-        // its internal 0x00-free slot.
-        switch (codePoint) {
-            0x0100 => codePoint = 0x017F, // STD_A_MACRON (was U+0100)
-            0x1D00 => codePoint = 0x045A, // STD_SMALLCAP_A (was U+1D00)
-            0x2200 => codePoint = 0x2C6F, // STD_FOR_ALL (was U+2200)
-            else => {},
-        }
-        if (codePoint < 0x0080) {
-            str[0] = @truncate(codePoint);
-            str += 1;
-        } else if ((codePoint & 0x00FF) == 0) {
-            // Any other code point with a 0x00 low byte -> placeholder '?' to
-            // prevent an early string terminator.
-            if (comptime !dmcp_build) {
-                _ = printf("In function utf8ToString: code point U+%04X has a 0x00 second byte and was replaced with '?'\n", codePoint);
-            }
-            str[0] = '?';
-            str += 1;
-        } else {
-            codePoint |= 0x8000;
-            str[0] = @truncate(codePoint >> 8);
-            str += 1;
-            str[0] = @truncate(codePoint & 0x00FF);
-            str += 1;
-        }
+// Host-only diagnostic for a UTF-8 code point that had to be replaced with '?'
+// (0x00 low byte, not one of the three relocated glyphs). Injected into the pure
+// codec so abi.c47_string stays std-only; no-op on firmware, as upstream gates it.
+fn reportForbiddenUtf8(codePoint: u32) void {
+    if (comptime !dmcp_build) {
+        _ = printf("In function utf8ToString: code point U+%04X has a 0x00 second byte and was replaced with '?'\n", codePoint);
     }
-    str[0] = 0;
+}
+
+pub export fn utf8ToString(utf8In: [*c]const u8, strIn: [*c]u8) callconv(.c) void {
+    abi.c47_string.utf8ToString(utf8In, strIn, reportForbiddenUtf8);
 }
 
 // ---------------------------------------------------------------------------
