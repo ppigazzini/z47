@@ -371,7 +371,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&shortIntegerMask,               sizeof(shortIntegerMask),                                    "shortIntegerMask",               "uint64");
     saveStateValue(&shortIntegerSignBit,            sizeof(shortIntegerSignBit),                                 "shortIntegerSignBit",            "uint64");
     saveStateValue(&temporaryInformation,           sizeof(temporaryInformation),                                "temporaryInformation",           "uint8");
-    saveStateValue(&glyphNotFound,                  sizeof(glyphNotFound),                                       "glyphNotFound",                  "hexDump");
     saveStateValue(&funcOK,                         sizeof(funcOK),                                              "funcOK",                         "bool");
     saveStateValue(&screenChange,                   sizeof(screenChange),                                        "screenChange",                   "bool");
     saveStateValue(&exponentSignLocation,           sizeof(exponentSignLocation),                                "exponentSignLocation",           "int16");
@@ -983,11 +982,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&shortIntegerMask,               sizeof(shortIntegerMask),                                    "shortIntegerMask",               "uint64");
     restoreStateValue(&shortIntegerSignBit,            sizeof(shortIntegerSignBit),                                 "shortIntegerSignBit",            "uint64");
     restoreStateValue(&temporaryInformation,           sizeof(temporaryInformation),                                "temporaryInformation",           "uint8");
-
-    restoreStateValue(&glyphNotFound,                  sizeof(glyphNotFound),                                       "glyphNotFound",                  "hexDump");
-    glyphNotFound.data   = malloc(38);
-    xcopy(glyphNotFound.data, "\xff\xf8\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\x80\x08\xff\xf8", 38);
-
     restoreStateValue(&funcOK,                         sizeof(funcOK),                                              "funcOK",                         "bool");
     restoreStateValue(&screenChange,                   sizeof(screenChange),                                        "screenChange",                   "bool");
     restoreStateValue(&exponentSignLocation,           sizeof(exponentSignLocation),                                "exponentSignLocation",           "int16");

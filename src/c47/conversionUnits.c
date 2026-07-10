@@ -776,7 +776,10 @@ void runConversionFromSI(int16_t itemNr) {
     fnMultiplySI(100 - entry->exponent);                                         // undo the exponent
   }
   if(entry->unity != ITM_NULL) {
-    runFunction(findPair(entry->unity)->partner);                                // execute the inverse of the unity step
+    const convPair_t *unityEntry = findPair(entry->unity);                       // a unity outside convertPairs[] must not crash
+    if(unityEntry != NULL) {
+      runFunction(unityEntry->partner);                                          // execute the inverse of the unity step
+    }
   }
   runFunction(entry->partner);                                                   // execute the inverse of the user's choice
 }
@@ -967,7 +970,7 @@ TO_QSPI static const real_t * const conversionFactors[constFactorEND] = {
     [constFactorFpftokph]     = const_fpfToKph,
     [constFactorBrdstoin]     = const_brdsToIn,
     [constFactorFirtolb]      = const_firToLb,
-    [constFactorFpftomph]     = const_fpfToMph,
+    [constFactorFpftomph]     = const39_fpfToMph,
     [constFactorFpstokph]     = const_fpsToKph,
     [constFactorFpstomps]     = const_fpsToMps,
     [constFactorL100Tokml]    = const_100,          /*  80 */
@@ -1070,7 +1073,7 @@ void fnUnitConvert(uint16_t arg) {
 
 
 //  {[(x - B) / C] * D} + E
-TO_QSPI static const real_t * const cvtTempConsts[13][4] = {
+TO_QSPI static const real_t * const cvtTempConsts[12][4] = {
   //   B              C             D             E
   {const_0,       const_1,       const_9on5,    const_32     }, // ITM_CtoF     ix =  0
   {const_32,      const_9on5,    const_1,       const_0      }, // ITM_FtoC     ix =  1
