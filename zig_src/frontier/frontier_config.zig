@@ -193,6 +193,21 @@ const amDegree: i32 = 2;
 const amRadian: i32 = 0;
 const amNone: u32 = 5;
 
+// External ADM encoding (legacy RCL ADM): 0=DEG, 1=D.MS, 2=RAD, 3=MULT-pi,
+// 4=GRAD; differs from angularMode_t order. Indexed by angularMode_t
+// (amRadian, amGrad, amDegree, amDMS, amMultPi).
+const angularModeToAdm = [5]u8{ 2, 4, 0, 1, 3 };
+// Indexed by the external ADM value -> angularMode_t (amDegree, amDMS, amRadian, amMultPi, amGrad).
+const admToAngularMode = [5]u8{ 2, 3, 0, 4, 1 };
+
+/// currentAngularMode rendered in the external ADM encoding (0 if out of range).
+pub fn admValue() u8 {
+    return if (currentAngularMode >= 0 and @as(usize, @intCast(currentAngularMode)) < angularModeToAdm.len)
+        angularModeToAdm[@intCast(currentAngularMode)]
+    else
+        0;
+}
+
 const RM_HALF_EVEN: u8 = 0;
 const RM_HALF_UP: u8 = 1;
 
@@ -1452,7 +1467,7 @@ pub export fn fnRoundingMode(RM: u16) callconv(.c) void {
 
 pub export fn fnGetADM(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    frontier_addons.fnIntInputLongint(@intCast(currentAngularMode));
+    frontier_addons.fnIntInputLongint(@intCast(admValue()));
 }
 
 pub export fn fnSetADM(regist: u16) callconv(.c) void {
@@ -1463,8 +1478,8 @@ pub export fn fnSetADM(regist: u16) callconv(.c) void {
         return;
     }
     const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    if (value < amNone) {
-        frontier.fnAngularMode(@intCast(value));
+    if (value < admToAngularMode.len) {
+        frontier.fnAngularMode(admToAngularMode[@intCast(value)]);
     }
     mpz_clear(&lgInt);
 }
