@@ -145,7 +145,7 @@ static int dslParseLabelArg(Jim_Interp *interp, const char *arg, uint16_t *outPa
     return JIM_ERR;
   }
   utf8ToString((const uint8_t *)arg, internalName);
-  calcRegister_t label = findNamedLabel(internalName);
+  calcRegister_t label = findNamedLabel(internalName, STRING_LABEL_VARIABLE);
   if(label == INVALID_VARIABLE) {
     Jim_SetResultFormatted(interp, "label not found: '%s'", arg);
     return JIM_ERR;

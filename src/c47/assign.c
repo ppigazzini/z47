@@ -1187,7 +1187,7 @@ void assignGetName1(void) {
 
     // programs
     if(itemToBeAssigned == ASSIGN_CLEAR) {
-      itemToBeAssigned = findNamedLabel(aimBuffer);
+      itemToBeAssigned = findNamedLabel(aimBuffer, GLOBAL_LABELS);
       if(itemToBeAssigned == INVALID_VARIABLE) {
         itemToBeAssigned = ASSIGN_CLEAR;
       }

@@ -818,7 +818,7 @@ static int xeqCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     return JIM_ERR;
   }
   utf8ToString((const uint8_t *)labelName, internalLabel);
-  calcRegister_t label = findNamedLabel(internalLabel);
+  calcRegister_t label = findNamedLabel(internalLabel, STRING_LABEL_VARIABLE);
 
   if(label == INVALID_VARIABLE) {
     // Original UTF-8 labelName here, not internalLabel: runCatalogFunctionByName does its own utf8ToString.

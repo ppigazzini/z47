@@ -32,4 +32,7 @@
 
   void    goToGlobalStep    (int32_t step);
   void    goToPgmStep       (uint16_t program, uint16_t step);
+  
+  void    cleanLocalFlagsAndRegisters (void);
+  
 #endif // !LBLGTOXEQ_H

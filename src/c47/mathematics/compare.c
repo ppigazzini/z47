@@ -329,7 +329,7 @@ static void compareRegisters(uint16_t regist, uint8_t mode) {
 
     /* ------------------------------------------------------------------------
      * Config vs Config (equality only)
-     * NOTE: memcmp is safe only if configs are canonical byte blobs (no padding).
+     * NOTE: memcmp is safe only if configs are raw byte blobs without padding.
      * ---------------------------------------------------------------------- */
     case type_pair_u8(dtConfig, dtConfig): {
       if(!mode_is_equality(mode)) {

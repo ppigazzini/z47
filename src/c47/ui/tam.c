@@ -158,8 +158,11 @@
       if(tam.dot) {
         tbPtr = stringCopy(tbPtr, ".");
       }
+      if(tam.colon) {
+        tbPtr = stringCopy(tbPtr, ":");
+      }
       if(tam.alpha) {
-        tbPtr = stringCopy(tbPtr, STD_LEFT_SINGLE_QUOTE);
+        tbPtr = stringCopy(tbPtr, (tam.colon ? "" : STD_LEFT_SINGLE_QUOTE));
         if(aimBuffer[0] == 0) {
           *(tbPtr++) = STD_CURSOR[0];
           *(tbPtr++) = STD_CURSOR[1];
@@ -168,7 +171,7 @@
         else {
           insertAlphaCursor(0);
           tbPtr = stringCopy(tbPtr, tmpString);
-          tbPtr = stringCopy(tbPtr, STD_RIGHT_SINGLE_QUOTE);
+          tbPtr = stringCopy(tbPtr, (tam.colon ? ":" : STD_RIGHT_SINGLE_QUOTE));
         }
       }
       else {
@@ -340,6 +343,13 @@
       else if(tam.dot) {
         tam.dot = false;
       }
+      else if(tam.colon) {
+        if(!catalog) {
+          tam.colon = false;
+        }
+        popSoftmenu();
+        --numberOfTamMenusToPop;
+      }
       else if(tam.indirect) {
         tam.indirect = false;
         popSoftmenu();
@@ -369,7 +379,7 @@
         else if(tam.mode == TM_LABEL || (tam.mode == TM_KEY && tam.keyInputFinished)) {
           showSoftmenu(-MNU_TAMLABEL);
         }
-        else if(tam.mode == TM_LBLONLY || (tam.mode == TM_KEY && tam.keyInputFinished)) {
+        else if(tam.mode == TM_LBLONLY) {
           showSoftmenu(-MNU_TAMLBLONLY);
         }
         else if(tam.mode == TM_SOLVE) {
@@ -460,6 +470,7 @@
           case -MNU_TAMCMP      :
           case -MNU_TAMLABEL    :
           case -MNU_TAMLBLONLY  :
+          case -MNU_TAMLOCALLABEL:
           case -MNU_TAM         :
           case -MNU_TAMVARONLY  :
           case -MNU_TAMSTO      :
@@ -742,6 +753,15 @@ printf("tam.value: %d\n", tam.value);
         maxDigits = _tamMaxDigits(max2);
       }
     }
+    else if(item == ITM_COLON) {
+      if((tam.mode == TM_LABEL) || (tam.mode == TM_LBLONLY) || (tam.mode == TM_KEY) || ((tam.mode == TM_SOLVE) && (tam.function != ITM_SOLVE || calcMode != CM_PEM))) {
+        if(!tam.colon) {
+          showSoftmenu(-MNU_TAMLOCALLABEL);
+        }
+        tam.colon = true;
+        return;
+      }
+    }
     else if(item == ITM_PERIOD) {
       if(tam.function == ITM_LBL) {
         return;
@@ -913,7 +933,7 @@ printf("tam.value: %d\n", tam.value);
       }
       else if(tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || tam.mode == TM_SOLVE || (tam.mode == TM_KEY && tam.keyInputFinished) || (tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_PROGS)) {
         if(!tam.indirect) {
-          value = findNamedLabelWithDuplicate(buffer, dupNum);
+          value = findNamedLabelWithDuplicate(buffer, dupNum, (tam.colon ? LOCAL_LABELS : GLOBAL_LABELS));
         }
         else {
           value = findNamedVariable(buffer);
@@ -980,7 +1000,7 @@ printf("tam.value: %d\n", tam.value);
               moreInfoOnError("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set", NULL);
             #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
           }
-          else if((calcMode != CM_PEM || tam.function != ITM_GTO)){
+          else if(calcMode != CM_PEM || (tam.function != ITM_GTO && tam.mode != TM_KEY)) {
             #if defined(IR_PRINTING)
               sprintf(errorMessage, "'%s'", buffer);
               printTraceErrorFunction(tam.function, errorMessage);
@@ -1073,7 +1093,7 @@ printf("tam.value: %d\n", tam.value);
           mimRunFunction(tamOperation(), value);
         }
         else if(tam.function == ITM_GTOP) {
-          goToGlobalStep(labelList[value - FIRST_LABEL].step);
+          goToGlobalStep(abs(labelList[value - FIRST_LABEL].step));
         }
         else if(tam.function == ITM_DELP) {
           reallyRunFunction(ITM_DELP, value);
@@ -1157,6 +1177,7 @@ printf("tam.value: %d\n", tam.value);
     tam.currentOperation = tam.function;
     tam.digitsSoFar = 0;
     tam.dot = false;
+    tam.colon = false;
     tam.indirect = false;
     tam.value = 0;
 

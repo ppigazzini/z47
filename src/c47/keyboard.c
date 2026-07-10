@@ -268,9 +268,9 @@ static void executeFunction(const char *data, int16_t item_);
         case MNU_PROGS: {
                     #if defined(VERBOSEKEYS)
                     printf("0096a PROG or PROGS: registerno:%s\n", (char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem) );
-                    printf("0096b %d %d %d\n", findNamedLabel((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)), - FIRST_LABEL, + ASSIGN_LABELS);
+                    printf("0096b %d %d %d\n", findNamedLabel((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem), STRING_LABEL_VARIABLE), - FIRST_LABEL, + ASSIGN_LABELS);
                     #endif //VERBOSEKEYS
-          return findNamedLabel((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_LABEL + ASSIGN_LABELS;
+          return findNamedLabel((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem), GLOBAL_LABELS) - FIRST_LABEL + ASSIGN_LABELS;
         }
 
         case MNU_VAR:
@@ -454,6 +454,7 @@ static void executeFunction(const char *data, int16_t item_);
           case MNU_TAMSHUFFLE:
           case MNU_TAMLABEL:
           case MNU_TAMLBLONLY:
+          case MNU_TAMLOCALLABEL:
           case ITM_DELITM: {
             // TAM menus are processed elsewhere
             break;
@@ -1329,7 +1330,7 @@ endReturnTrue:
                   if(item == ITM_XEQ && dynamicMenuItem > -1) {
                     char *varCatalogItem = dynmenuGetLabel(dynamicMenuItem);
                     if(strcmp(varCatalogItem, "XEQ") != 0) {
-                      calcRegister_t regist = findNamedLabel(varCatalogItem);
+                      calcRegister_t regist = findNamedLabel(varCatalogItem, GLOBAL_LABELS);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
                       }
@@ -2225,7 +2226,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             }
           }
           else if(item == ITM_XEQ && (getSystemFlag(FLAG_USER) || Norm_Key_00_released) && funcParam[0] != 0) {
-            calcRegister_t label = findNamedLabel(funcParam);
+            calcRegister_t label = findNamedLabel(funcParam, GLOBAL_LABELS);
             if(label != INVALID_VARIABLE) {
               if(calcMode == CM_PEM) {  // Insert user program call in program
                 #if defined(PC_BUILD) && defined(VERBOSE_DETERMINEITEM)
@@ -3169,7 +3170,7 @@ RELEASE_END:
                     if(item == ITM_XEQ && tmpString[0] != 0 && (getSystemFlag(FLAG_USER) || ((currentKeyCode == Norm_Key_00_key) && (keyStateCode == 0) && Norm_Key_00.used))) {
                       char label[15];
                       xcopy(label, tmpString, stringByteLength(tmpString) + 1);
-                      calcRegister_t regist = findNamedLabel(label);
+                      calcRegister_t regist = findNamedLabel(label, GLOBAL_LABELS);
                       if(regist != INVALID_VARIABLE) {
                         item = regist - FIRST_LABEL + ASSIGN_LABELS;
                       }
@@ -3696,6 +3697,10 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
           }*/
 
       if((numberOfTamMenusToPop > 1) && (currentMenu() != -MNU_TAMALPHA)) {
+        if(tam.colon && !catalog ) {
+          tam.colon = false;
+          tamProcessInput(ITM_NOP); // to update the tam buffer
+        }
         popSoftmenu();
         numberOfTamMenusToPop--;
       }

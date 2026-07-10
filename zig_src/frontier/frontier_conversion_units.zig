@@ -269,6 +269,8 @@ const conversionFactorOffsets = [_]?u32{
     436, // 162 constFactorKgmNpm = const_gEarth
     4060, // 163 constFactorInchM = const_InchToM
     2748, // 164 constFactorLbfKgf = const_LbToKg
+    2888, // 165 constFactorMphKnot = const39_MphToKnot
+    2924, // 166 constFactorMphFps = const39_MphToFps
 };
 
 // (x - B) / C * D + E temperature-conversion coefficient offsets (see cvtTempConsts).
@@ -770,6 +772,10 @@ const MimFunctionsType3Conv = [NUM_CONVERT_PAIRS]fInMim_t{
     .{ .itemNr = 2839 },
     .{ .itemNr = 2841 },
     .{ .itemNr = 2840 },
+    .{ .itemNr = 2860 }, // ITM_MPHtoKNOT
+    .{ .itemNr = 2861 }, // ITM_KNOTtoMPH
+    .{ .itemNr = 2862 }, // ITM_MPHtoFPS
+    .{ .itemNr = 2863 }, // ITM_FPStoMPH
 };
 
 // The pair table, findPair, and the lookup predicates now live in

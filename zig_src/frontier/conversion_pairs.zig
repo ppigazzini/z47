@@ -18,7 +18,7 @@
 
 const std = @import("std");
 
-pub const NUM_CONVERT_PAIRS = 314;
+pub const NUM_CONVERT_PAIRS = 318;
 
 pub const ConvPair = struct {
     item: i16,
@@ -345,6 +345,10 @@ const convert_pairs = [NUM_CONVERT_PAIRS]ConvPair{
     .{ .item = 2839, .partner = 2838, .unity = 2838, .exponent = 0, .type = 4 },
     .{ .item = 2840, .partner = 2841, .unity = 0, .exponent = 0, .type = 4 },
     .{ .item = 2841, .partner = 2840, .unity = 2840, .exponent = 0, .type = 4 },
+    .{ .item = 2860, .partner = 2861, .unity = 2743, .exponent = 0, .type = 12 }, // MPHtoKNOT: unity KNOTtoMPS, UT_SPEED
+    .{ .item = 2861, .partner = 2860, .unity = 2092, .exponent = 0, .type = 12 }, // KNOTtoMPH: unity MPHtoMPS,  UT_SPEED
+    .{ .item = 2862, .partner = 2863, .unity = 2189, .exponent = 0, .type = 12 }, // MPHtoFPS:  unity FPStoMPS,  UT_SPEED
+    .{ .item = 2863, .partner = 2862, .unity = 2092, .exponent = 0, .type = 12 }, // FPStoMPH:  unity MPHtoMPS,  UT_SPEED
 };
 
 /// Binary search the item-sorted table; null if `input` is not a conversion item.

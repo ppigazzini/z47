@@ -6,7 +6,7 @@
  ***********************************************/
 
 #define FUNC_TO_TEST  0
-#define FUNC_CVT      1
+#define FUNC_ITEM     1
 
 #define RE_ACCURATE   0
 #define RE_INACCURATE 1
@@ -26,6 +26,7 @@ void checkRegisterType        (calcRegister_t regist, char letter, uint32_t expe
 void checkExpectedOutParameter(char *p);
 void outParameters            (char *token);
 void functionToCall           (char *functionName);
+void itemToCall               (char *itemSpec);
 void abortTest                (void);
 void standardizeLine          (void);
 void processLine              (void);

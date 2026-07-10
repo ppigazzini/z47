@@ -180,13 +180,13 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
       else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
         sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
-      else if(opParam == STRING_LABEL_VARIABLE) {
+      else if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE)) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
         str = stringCopy(str, op);
-        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, (opParam == LOCAL_LABEL_VARIABLE ? " :" : " " STD_LEFT_SINGLE_QUOTE));
         str = stringCopy(str, tmpStringLabelOrVariableName);
-        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, (opParam == LOCAL_LABEL_VARIABLE ? ":" : STD_RIGHT_SINGLE_QUOTE));
       }
       else {
         sprintf(tmpString, "\nIn function decodeOp case PARAM_DECLARE_LABEL: opParam %u is not a valid label!\n", opParam);
@@ -204,13 +204,13 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
       else if(opParam <= LAST_LOCAL_LABEL) { // Local label from a to l
         sprintf(tmpString, "%s %c", op, 'a' + (opParam - FIRST_LC_LOCAL_LABEL));
       }
-      else if(opParam == STRING_LABEL_VARIABLE) {
+      else if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE)) {
         char *str = tmpString;
         getStringLabelOrVariableName(paramAddress);
         str = stringCopy(str, op);
-        str = stringCopy(str, " " STD_LEFT_SINGLE_QUOTE);
+        str = stringCopy(str, (opParam == LOCAL_LABEL_VARIABLE ? " :" : " " STD_LEFT_SINGLE_QUOTE));
         str = stringCopy(str, tmpStringLabelOrVariableName);
-        str = stringCopy(str, STD_RIGHT_SINGLE_QUOTE);
+        str = stringCopy(str, (opParam == LOCAL_LABEL_VARIABLE ? ":" : STD_RIGHT_SINGLE_QUOTE));
       }
       else if(opParam == INDIRECT_REGISTER) {
         getIndirectRegister(paramAddress, op);

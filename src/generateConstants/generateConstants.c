@@ -225,6 +225,17 @@ void generateAllConstants(void) {
 
 
 
+//==============================================================================
+         // CONV step 1/6 of ADDING to CONV    [grep for "add conversion items to CONV menu"]
+         // =================================================================================
+         // Adding a conversion pair starts here: one generateConstant() per new factor.
+         //    EXACT  if the value terminates, else 
+         //    APPROX with 39 digits; give all source digits and round the last digit half even, never truncate. The comment must state the physical relationship.
+         // The C identifier becomes const_<Name> (EXACT) or const39_<Name> (APPROX).
+         // Every new CONV conversion constant also needs an independent-source REF entry in src/generateTests/constantsCheck.py, else that testSuite audit flags it UNREFERENCED.
+         // Next step: CONV step 2/6 in src/c47/conversionUnits.h.
+//==============================================================================
+
          // All the formulas are 100% exact conversion formulas
          generateConstant("PointToMm",     39, APPROX, "+3.527777777777777777777777777777777777777777777777777778e-01"); // mm     = pt × 0.0254 / 72 × 1000
          generateConstant("InchToMm",       3, EXACT,  "+25.4"                                                        ); // mm     = inch × 0.0254 × 1000

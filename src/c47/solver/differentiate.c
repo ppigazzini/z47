@@ -55,7 +55,7 @@ static void derivativeCommon(uint16_t label, uint16_t order, uint8_t ti) {
     // Interactive mode
     buf[0] = letteredRegisterName((calcRegister_t)label);
     buf[1] = 0;
-    label = findNamedLabel(buf);
+    label = findNamedLabel(buf, GLOBAL_LABELS);
     if(label == INVALID_VARIABLE) {
       displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
@@ -137,7 +137,7 @@ static void deriv_default_h(real_t *h) {
 
   dynamicMenuItem = -1;
   for(i=0; i<nbrOfElements(lbls); i++) {
-    if((deltaX = findNamedLabel(lbls[i])) != INVALID_VARIABLE) {
+    if((deltaX = findNamedLabel(lbls[i], ALL_LABELS)) != INVALID_VARIABLE) {
       deriv_found_lbl(deltaX, h);
       undo();
       return;
