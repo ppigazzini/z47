@@ -812,7 +812,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_DSPCYCLE => result = 32700 + @as(i16, displayFormat),
         ITM_SCR => result = @as(i16, scrLock & 0x03) | @as(i16, nextChar & 0x03),
         ITM_DSP => result = displayFormatDigits,
-        ITM_SET_ADM => result = @intCast(currentAngularMode),
+        ITM_SET_ADM => result = @intCast(frontier_config.admValue()),
         ITM_SET_ISM => result = shortIntegerModeValue(),
         ITM_SET_REALDF => result = displayFormat,
         ITM_SET_DMX => result = @intCast(denMax),
