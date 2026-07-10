@@ -1,3 +1,5 @@
+const keycode_last = @import("keycode_last.zig");
+
 pub fn implementation(comptime runtime: type) type {
     return struct {
         fn isGraphMode() bool {
@@ -98,26 +100,8 @@ pub fn implementation(comptime runtime: type) type {
         }
 
         pub fn setLastKeyCode(key: i32) void {
-            if (key < 1 or key > 43) {
-                return;
-            }
-
-            if (key <= 6) {
-                runtime.lastKeyCode = @intCast(key + 20);
-            } else if (key <= 12) {
-                runtime.lastKeyCode = @intCast(key - 6 + 30);
-            } else if (key <= 17) {
-                runtime.lastKeyCode = @intCast(key - 12 + 40);
-            } else if (key <= 22) {
-                runtime.lastKeyCode = @intCast(key - 17 + 50);
-            } else if (key <= 27) {
-                runtime.lastKeyCode = @intCast(key - 22 + 60);
-            } else if (key <= 32) {
-                runtime.lastKeyCode = @intCast(key - 27 + 70);
-            } else if (key <= 37) {
-                runtime.lastKeyCode = @intCast(key - 32 + 80);
-            } else {
-                runtime.lastKeyCode = @intCast(key - 37 + 10);
+            if (keycode_last.lastKeyCodeFor(key)) |code| {
+                runtime.lastKeyCode = code;
             }
         }
 
