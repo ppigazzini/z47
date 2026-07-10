@@ -23,14 +23,19 @@ The seams re-sync deterministically; run their audits after importing:
 - **Item table** — `LAST_ITEM` and `frontier_items.zig`'s `indexOfItems` mirror
   `items.c`. Re-emit with `audit-item-table-parity.py --emit`; the row→line splicer
   counts `.{ .func` rows (NOT `line = base + N`). Gate: `audit-item-table-parity.py`.
-- **Constant blob offsets** — when upstream adds constants the whole blob shifts and
-  every hardcoded offset breaks (stale offset → decNumber reads a garbage digit
-  count → xcopy SEGV). Remap **by name**: regenerate the OLD `constantPointers.h`
-  in a throwaway `git worktree`, pair old↔new offsets by constant name. Five owner
-  classes carry offsets: abi `constants.zig` `at()`, `const NAME = constR(N)`
-  (frontier_display/screen/addons), `conversionFactorOffsets[]`, `OFF_const_NAME`
-  (frontier_conversion_units), `offset_const_*` (math_runtime_helpers) + the WP34S
-  Lanczos base. Gate: `zig build constants && check-constant-offsets.py`.
+- **Constant blob offsets** — when upstream changes constants (adds one, or even
+  just changes a constant's *digit count* — see the 80244c7f resync) the whole blob
+  shifts and every hardcoded offset breaks (stale offset → decNumber reads a garbage
+  digit count → xcopy SEGV). This is **automated** now, `--fix` does the by-name remap
+  for all five offset classes (abi `constants.zig` `at()`, `constR(N)` in
+  frontier_display/screen/addons, `conversionFactorOffsets[]` + `OFF_const_NAME` in
+  frontier_conversion_units, `offset_const_*` in math_runtime_helpers, and the WP34S
+  Lanczos base):
+  1. regenerate the OLD `constantPointers.h`: `git checkout <oldpin> -- src/generateConstants/generateConstants.c && rm -rf .zig-cache && zig build constants && cp src/generated/constantPointers.h /tmp/old_cptr.h` (the `rm -rf .zig-cache` is REQUIRED — the constants build caches the generator across a source swap);
+  2. restore + regen the new header: `git checkout <newpin> -- src/generateConstants/generateConstants.c && rm -rf .zig-cache && zig build constants`;
+  3. `python3 .github/project/check-constant-offsets.py --fix --old-constant-pointers /tmp/old_cptr.h` — remaps every offset by name (proven byte-identical to the hand remap; idempotent on an in-sync tree). It rewrites OFFSETS only, not the trailing `// = const_X` name comments (update those by hand on the rare digit-count *rename*).
+  Gate: `zig build constants && python3 .github/project/check-constant-offsets.py`
+  (default = check) confirms the abi accessors; the owner tables are testSuite-gated.
 - **abi struct layout** — gate: `zig build abi-layout-parity`.
 - **Constant/enum mirrors** — gate: `audit-constant-parity.py`.
 
