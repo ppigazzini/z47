@@ -44,34 +44,13 @@ const font_t = abi.Font;
 const labelList_t = abi.LabelList;
 const programList_t = abi.ProgramList;
 const item_t = abi.Item;
+const program_step_width = @import("program_step_width.zig"); // std+abi step widths
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / items.h)
 // ---------------------------------------------------------------------------
-const LAST_LOCAL_LABEL: u8 = 123;
-const LAST_SPARE_REGISTERS_IN_KS_CODE: u8 = 224;
-const LAST_LOCAL_FLAG: u8 = 143;
-const FLAG_M: u8 = 211;
-const FLAG_W: u8 = 224;
-const CNST_BEYOND_250: u8 = 250;
-const SYSTEM_FLAG_NUMBER: u8 = 250;
-const VALUE_0: u8 = 251;
-const VALUE_1: u8 = 252;
-const STRING_LABEL_VARIABLE: u8 = 253;
-const INDIRECT_REGISTER: u8 = 254;
-const INDIRECT_VARIABLE: u8 = 255;
 
-const PARAM_DECLARE_LABEL: u16 = 1;
-const PARAM_LABEL: u16 = 2;
-const PARAM_REGISTER: u16 = 3;
-const PARAM_FLAG: u16 = 4;
 const PARAM_NUMBER_8: u16 = 5;
-const PARAM_NUMBER_16: u16 = 6;
-const PARAM_COMPARE: u16 = 7;
-const PARAM_SKIP_BACK: u16 = 9;
-const PARAM_NUMBER_8_16: u16 = 10;
-const PARAM_SHUFFLE: u16 = 11;
-const PARAM_MENU: u16 = 12;
 
 const PTP_STATUS: u16 = 0x1e00;
 const PTP_NONE: u16 = 0 << 9;
@@ -79,24 +58,6 @@ const PTP_KEYG_KEYX: u16 = 8 << 9;
 const PTP_LITERAL: u16 = 13 << 9;
 const PTP_REM: u16 = 14 << 9;
 const PTP_DISABLED: u16 = 15 << 9;
-
-const BINARY_SHORT_INTEGER: u8 = 1;
-const BINARY_REAL34: u8 = 3;
-const BINARY_COMPLEX34: u8 = 4;
-const STRING_SHORT_INTEGER: u8 = 7;
-const STRING_LONG_INTEGER: u8 = 8;
-const STRING_REAL34: u8 = 9;
-const STRING_COMPLEX34: u8 = 10;
-const STRING_TIME: u8 = 11;
-const STRING_DATE: u8 = 12;
-const STRING_ANGLE_RADIAN: u8 = 18;
-const STRING_ANGLE_GRAD: u8 = 19;
-const STRING_ANGLE_DEGREE: u8 = 20;
-const STRING_ANGLE_DMS: u8 = 21;
-const STRING_ANGLE_MULTPI: u8 = 22;
-
-const REAL34_SIZE_IN_BYTES: u32 = 16;
-const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 
 const ITM_LBL: u16 = 1;
 const ITM_END: u16 = 1458;
@@ -214,181 +175,19 @@ inline fn toBytes(n: u16) u32 {
 }
 
 // ===========================================================================
-// countOpBytes
+// countOpBytes / countLiteralBytes -> program_step_width.zig (std+abi, tested).
+// Thin C-ABI wrappers; the pure byte-width arithmetic lives in the module.
 // ===========================================================================
-pub export fn countOpBytes(step_arg: [*c]u8, paramMode: u16) callconv(.c) [*c]u8 {
-    var step = step_arg;
-    const opParam: u8 = step[0];
-    step += 1;
-
-    switch (paramMode) {
-        PARAM_DECLARE_LABEL => {
-            if (opParam <= LAST_LOCAL_LABEL) { // Local labels from 00 to 99 and from A to l
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                // !DMCP_BUILD printf diagnostic dropped.
-                return null;
-            }
-        },
-
-        PARAM_LABEL => {
-            if (opParam <= LAST_LOCAL_LABEL) { // Local labels from 00 to 99 and from A to l
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_REGISTER => {
-            if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global 00..99, lettered X..W, and local .00..98
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_FLAG => {
-            if (opParam <= LAST_LOCAL_FLAG) { // Global flags 00..99, lettered X..K, and local .00..31
-                return step;
-            } else if (FLAG_M <= opParam and opParam <= FLAG_W) { // Global flags from M to W
-                return step;
-            } else if (opParam == INDIRECT_REGISTER or opParam == SYSTEM_FLAG_NUMBER) {
-                return step + 1;
-            } else if (opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_NUMBER_8 => {
-            if (opParam <= 249) { // Value from 0 to 99
-                return step;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else if (opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_NUMBER_8_16 => {
-            if (opParam <= 249) { // Value from 0 to 249
-                return step;
-            } else if (opParam == CNST_BEYOND_250) { // Value from 250 to 499
-                return step + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else if (opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_NUMBER_16 => {
-            var func: u16 = (@as(u16, (step - 3)[0]) << 8) +% @as(u16, (step - 2)[0]);
-            func &= 0x7fff;
-            if (frontier_items.isFunctionOldParam16(func) != 0) { // original Param16 without indirection support (little endian)
-                return step + 1;
-            } else { // new Param16 with indirection support (big endian)
-                if (opParam == INDIRECT_REGISTER) {
-                    return step + 1;
-                } else if (opParam == INDIRECT_VARIABLE) {
-                    return step + step[0] + 1;
-                } else {
-                    return step + 1;
-                }
-            }
-        },
-
-        PARAM_COMPARE => {
-            if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE or opParam == VALUE_0 or opParam == VALUE_1) {
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_SKIP_BACK, PARAM_SHUFFLE => {
-            return step;
-        },
-
-        PARAM_MENU => {
-            if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
-        },
-
-        else => {
-            return null;
-        },
-    }
+fn isOldParam16(func: u16) bool {
+    return frontier_items.isFunctionOldParam16(func) != 0;
 }
 
-// ===========================================================================
-// countLiteralBytes
-// ===========================================================================
-pub export fn countLiteralBytes(step_arg: [*c]u8) callconv(.c) [*c]u8 {
-    var step = step_arg;
-    const kind: u8 = step[0];
-    step += 1;
-    switch (kind) {
-        BINARY_SHORT_INTEGER => {
-            return step + 9;
-        },
+pub export fn countOpBytes(step: [*c]u8, paramMode: u16) callconv(.c) [*c]u8 {
+    return program_step_width.countOpBytes(step, paramMode, isOldParam16);
+}
 
-        BINARY_REAL34 => {
-            return step + REAL34_SIZE_IN_BYTES;
-        },
-
-        BINARY_COMPLEX34 => {
-            return step + toBytes(REAL34_SIZE_IN_BLOCKS * 2);
-        },
-
-        STRING_SHORT_INTEGER => {
-            return step + (step + 1)[0] + 2;
-        },
-
-        STRING_LONG_INTEGER,
-        STRING_REAL34,
-        STRING_LABEL_VARIABLE,
-        STRING_COMPLEX34,
-        STRING_DATE,
-        STRING_TIME,
-        STRING_ANGLE_DMS,
-        STRING_ANGLE_RADIAN,
-        STRING_ANGLE_GRAD,
-        STRING_ANGLE_DEGREE,
-        STRING_ANGLE_MULTPI,
-        => {
-            return step + step[0] + 1;
-        },
-
-        else => {
-            // !DMCP_BUILD printf diagnostics dropped.
-            return null;
-        },
-    }
+pub export fn countLiteralBytes(step: [*c]u8) callconv(.c) [*c]u8 {
+    return program_step_width.countLiteralBytes(step);
 }
 
 // ===========================================================================
