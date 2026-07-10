@@ -5,6 +5,8 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
+Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+
 ## Reference Map
 
 ```mermaid
@@ -51,6 +53,9 @@ flowchart TD
 
 ## Zig Toolchain And Build System
 
+The pinned baseline is Zig `0.16.0` stable; the exact version, release date, and
+checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.env).
+
 - [Zig download page](https://ziglang.org/download/): canonical release entry
   point.
 - [Zig download index JSON](https://ziglang.org/download/index.json): canonical
@@ -69,17 +74,32 @@ flowchart TD
 
 ## Retained Dependency References
 
+z47 keeps these third-party surfaces as external or vendored C; none is a
+Zig-native replacement (see
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)).
+
 - [GTK 3 docs](https://docs.gtk.org/gtk3/): canonical GTK 3 API and platform
-  reference.
+  reference; retained external C library linked from Zig for the host simulator.
 - [FreeType documentation](https://freetype.org/freetype2/docs/): canonical
-  FreeType 2 reference.
+  FreeType 2 reference; retained external C library linked from Zig (host).
 - [GMP project page](https://gmplib.org/): canonical GMP project and release
-  reference.
-- [xlsxio repository](https://github.com/brechtsanders/xlsxio): helper surface
-  used by generator-dependent host builds and CI lanes.
+  reference; retained external C library linked from Zig (host).
+- [SwissMicros DMCP_SDK](https://github.com/swissmicros/DMCP_SDK): canonical
+  DMCP hardware SDK repository (from upstream `.gitmodules`); retained external C
+  input linked from Zig for DMCP firmware.
+- [SwissMicros DMCP5_SDK](https://github.com/swissmicros/DMCP5_SDK): canonical
+  DMCP5 hardware SDK repository (from upstream `.gitmodules`); retained external
+  C input linked from Zig for DMCP5 firmware.
+- PulseAudio: retained optional external host audio dependency, linked from Zig
+  when present; no separate canonical doc surface is pinned here.
+- The vendored `dep/decNumberICU` is compiled by Zig rather than linked as an
+  external library; there is no external canonical doc surface to pin for it.
 
-## CI And Packaging References
+## Generator And Packaging Helper References
 
+- [xlsxio repository](https://github.com/brechtsanders/xlsxio): build-time
+  generator helper (`xlsxio_xlsx2csv` plus `libxlsxio_read`) used by the
+  font-generator toolchain and its CI lanes; not a product-runtime dependency.
 - [GitHub Actions workflow syntax](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions):
   workflow trigger, job, matrix, and artifact syntax reference.
 - [GitHub Actions artifacts docs](https://docs.github.com/actions/using-workflows/storing-workflow-data-as-artifacts):
@@ -87,10 +107,38 @@ flowchart TD
 - [GitHub Actions cache docs](https://docs.github.com/actions/using-workflows/caching-dependencies-to-speed-up-workflows):
   cache-key behavior used by the host-platform workflows.
 
-## Tracked Repo Files To Inspect First
+## Repo-Local Governance And Pin Map
 
 When a maintainer claim depends on the live repo state, inspect these checked-in
-files before widening to external sources:
+files before widening to external sources.
+
+Pins and manifests:
+
+- [.github/project/upstream-pin.env](../.github/project/upstream-pin.env):
+  imported upstream commit, branch, and pin-updated date.
+- [.github/zig-toolchain.env](../.github/zig-toolchain.env): pinned Zig stable
+  version, release date, checksum, and the monitored Zig master snapshot.
+- [.github/project/source-ownership.txt](../.github/project/source-ownership.txt):
+  z47-owned versus imported-upstream surface manifest.
+- [.github/project/upstream-port-ledger.tsv](../.github/project/upstream-port-ledger.tsv):
+  per-surface port-state ledger.
+- [.github/project/zig-c-boundaries.txt](../.github/project/zig-c-boundaries.txt):
+  approved `@cImport`, `extern`, and generated-seam boundary manifest.
+- [.github/project/idiom-status-baseline.json](../.github/project/idiom-status-baseline.json):
+  idiomatic-Zig ratchet baseline.
+
+Runbooks and gate scripts:
+
+- [.github/project/upstream-resync-runbook.md](../.github/project/upstream-resync-runbook.md):
+  the pin-advance (upstream resync) procedure.
+- [.github/project/run-local-gate.sh](../.github/project/run-local-gate.sh):
+  one command that reproduces the full Linux CI verdict before pushing.
+- [.github/project/run-host-parity-battery.sh](../.github/project/run-host-parity-battery.sh):
+  the host-parity build/test/oracle battery invoked by the local gate.
+- [.github/project/check-portable-int-widths.sh](../.github/project/check-portable-int-widths.sh):
+  portable integer-width governance guard.
+
+Root entry points and CI workflows:
 
 - [README.md](../README.md)
 - [BUILD.md](../BUILD.md)
@@ -99,8 +147,7 @@ files before widening to external sources:
 - [build.zig](../build.zig)
 - [.github/workflows/upstream-oracle.yml](../.github/workflows/upstream-oracle.yml)
 - [.github/workflows/upstream-drift.yml](../.github/workflows/upstream-drift.yml)
-- [.github/project/upstream-pin.env](../.github/project/upstream-pin.env)
-- [.github/project/zig-c-boundaries.txt](../.github/project/zig-c-boundaries.txt)
+- [.github/workflows/c-dependency-zero.yml](../.github/workflows/c-dependency-zero.yml)
 
 ## Reference Rules
 
