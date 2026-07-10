@@ -422,6 +422,8 @@ jobs:
           sudo apt-get install -qq -y unzip
           sudo apt-get install -qq -y libfreetype6-dev libgmp-dev libgtk-3-dev
           sudo apt-get install -qq -y xvfb xdotool x11-utils imagemagick libpulse-dev
+          # llvm-symbolizer for the Annex A0 coverage floor (report-zig-coverage.sh)
+          sudo apt-get install -qq -y llvm
       - name: Run Linux host build, tests, and generated artifacts
         shell: bash
         run: |
@@ -440,6 +442,19 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           zig build both_asan
           xvfb-run --auto-servernum zig build test_asan
+      - name: Enforce the owner-coverage floor (Annex A0)
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
+          export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+          # Build the sancov-instrumented keyboard harness, then enforce the
+          # monotonic coverage ratchet -- including the zig_src owner-coverage
+          # collapse floor, which only measures when this coverage build is
+          # present. Makes a push that de-instruments an owner object fail CI
+          # (M-IDIOM-9 coverage gate).
+          zig build coverage
+          bash .github/project/check-coverage-ratchet.sh
       - name: Run Linux distribution surface
         shell: bash
         run: |

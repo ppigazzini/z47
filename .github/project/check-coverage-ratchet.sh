@@ -23,6 +23,24 @@ cur_fullcore_harness_steps="$(grep -c 'addFullCoreHarness(' zig_build/host/steps
 
 metrics=(differential_functions fullcore_harness_steps)
 
+# Annex A0 owner-coverage floor: distinct zig_src/ owner source lines executed by
+# the instrumented keyboardEntryCov harness (frontier + keyboard_state + stack_state
+# owner objects built with coverage=true). Measured only when a `zig build coverage`
+# build is present, so this script stays usable in the nightly grep-only run.
+#
+# This count is NOT exact: llvm-symbolizer/inlining resolves a few lines differently
+# run-to-run and across LLVM versions. It is therefore a COLLAPSE floor with a
+# deliberate margin below the measured value -- it catches an owner object losing its
+# coverage=true flag or the harness being gutted (hundreds of lines), NOT a +-few
+# symbolizer wobble. Raise it BY HAND (not --bump) when a real coverage gain lands.
+cur_zig_src_covered_lines=""
+cov_bin="$(find .zig-cache -name keyboardEntryCov -type f -executable \
+  -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)"
+if [[ -f cov_pcs.txt && -n "$cov_bin" ]] && command -v llvm-symbolizer >/dev/null 2>&1; then
+  cur_zig_src_covered_lines="$(llvm-symbolizer --obj="$cov_bin" < cov_pcs.txt 2>/dev/null \
+    | grep -oE '/zig_src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
+fi
+
 if [[ "${1:-}" == "--bump" ]]; then
   for m in "${metrics[@]}"; do
     cur="cur_$m"
@@ -48,4 +66,19 @@ for m in "${metrics[@]}"; do
     echo "$m = $have (at floor)"
   fi
 done
+
+if [[ -n "$cur_zig_src_covered_lines" ]]; then
+  have="$cur_zig_src_covered_lines"; want="$(floor zig_src_covered_lines)"
+  if (( have < want )); then
+    echo "RATCHET REGRESSION: zig_src_covered_lines = $have, floor is $want -- owner"
+    echo "  coverage collapsed. An owner object likely lost its coverage=true flag or"
+    echo "  the keyboardEntryCov harness was gutted. Restore it, or lower the floor"
+    echo "  with an explicit justification."
+    rc=1
+  else
+    echo "zig_src_covered_lines = $have (>= collapse floor $want; margined for symbolizer noise)"
+  fi
+else
+  echo "zig_src_covered_lines: skipped (no coverage build present; run 'zig build coverage' first)"
+fi
 exit $rc
