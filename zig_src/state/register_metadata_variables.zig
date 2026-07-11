@@ -1,4 +1,5 @@
 const std = @import("std");
+const name_glyph = @import("name_glyph.zig"); // std-only variable-name glyph decoding
 const abi = @import("abi");
 const build_options = @import("register_metadata_build_options");
 
@@ -42,29 +43,15 @@ extern fn reallocC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, n
 extern fn reduceC47Blocks(pc_mem_ptr: ?*anyopaque, old_size_in_blocks: usize, new_size_in_blocks: usize) void;
 
 fn validateNameGlyphLength(name: [*:0]const u8) usize {
-    var glyph_length: usize = 0;
-    var offset: usize = 0;
-
-    while (name[offset] != 0) {
-        offset += if ((name[offset] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
-        glyph_length += 1;
-    }
-
-    return glyph_length;
+    return name_glyph.glyphLength(name);
 }
 
 fn validateNameNextGlyphOffset(name: [*:0]const u8, offset: usize) usize {
-    return offset + if ((name[offset] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
+    return name_glyph.nextGlyphOffset(name, offset);
 }
 
 fn validateNameGlyphCode(name: [*:0]const u8, offset: usize) u16 {
-    const first = name[offset];
-
-    if ((first & 0x80) != 0) {
-        return (@as(u16, first & 0x7f) << 8) | @as(u16, name[offset + 1]);
-    }
-
-    return @as(u16, first);
+    return name_glyph.glyphCode(name, offset);
 }
 
 fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
