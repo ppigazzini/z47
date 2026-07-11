@@ -34,8 +34,12 @@ metrics=(differential_functions fullcore_harness_steps)
 # coverage=true flag or the harness being gutted (hundreds of lines), NOT a +-few
 # symbolizer wobble. Raise it BY HAND (not --bump) when a real coverage gain lands.
 cur_zig_src_covered_lines=""
+# `|| true`: in the grep-only nightly/drift run there is no build, so `.zig-cache`
+# is absent and `find` exits non-zero -- under `set -euo pipefail` that would abort
+# the whole script before the graceful "no coverage build present" skip below. Keep
+# cov_bin empty instead so the skip path runs.
 cov_bin="$(find .zig-cache -name keyboardEntryCov -type f -executable \
-  -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)"
+  -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2 || true)"
 if [[ -f cov_pcs.txt && -n "$cov_bin" ]] && command -v llvm-symbolizer >/dev/null 2>&1; then
   cur_zig_src_covered_lines="$(llvm-symbolizer --obj="$cov_bin" < cov_pcs.txt 2>/dev/null \
     | grep -oE '/zig_src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
