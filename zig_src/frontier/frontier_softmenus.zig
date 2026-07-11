@@ -108,6 +108,7 @@ const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
 const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
+const nth_string = @import("nth_string.zig"); // std-only packed-string advance
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -1292,13 +1293,7 @@ inline fn RADIX34_MARK_CHAR() u8 {
 // getNthString: advance past n NUL-terminated strings.
 // ---------------------------------------------------------------------------
 pub export fn getNthString(ptr_in: [*c]u8, n_in: i16) callconv(.c) [*c]u8 {
-    var ptr = ptr_in;
-    var n = n_in;
-    while (n != 0) {
-        ptr += @as(usize, @intCast(stringByteLength(ptr) + 1));
-        n -= 1;
-    }
-    return ptr;
+    return nth_string.getNthString(ptr_in, n_in);
 }
 
 // fnDynamicMenu is owned elsewhere; the two bridge helpers read its inputs.
