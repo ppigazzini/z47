@@ -107,6 +107,7 @@ const registerHeader_t = abi.RegisterHeader;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
+const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -1529,11 +1530,7 @@ fn _removeDuplicateLabels(n: i16) i16 {
 
 // Byte-wise C strcmp equivalence for two NUL-terminated 15-byte name slots.
 fn slotsEqual(a: [*c]const u8, b: [*c]const u8) bool {
-    var k: usize = 0;
-    while (true) : (k += 1) {
-        if (a[k] != b[k]) return false;
-        if (a[k] == 0) return true;
-    }
+    return name_slot_equal.slotsEqual(a, b);
 }
 
 fn sortMenu(a: ?*const anyopaque, b: ?*const anyopaque) callconv(.c) c_int {
