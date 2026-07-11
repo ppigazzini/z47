@@ -1,3 +1,4 @@
+const gtk_int = @import("gtk_int.zig"); // std-only GTK integer helpers
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Host GTK label/text helpers ported from src/c47-gtk/gtkGui.c. Starts with the
@@ -151,7 +152,7 @@ fn isR47FAM() bool {
 // max(item, -item) from gtkGui.c, i.e. abs, computed in i32 to match C's
 // integer promotion (so i16 MIN can't trap).
 fn absItem(x: i16) i16 {
-    return @intCast(@max(@as(i32, x), -@as(i32, x)));
+    return gtk_int.absItem(x);
 }
 
 pub fn softmenuName(idx: i16) [*c]const u8 {

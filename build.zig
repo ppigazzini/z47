@@ -154,6 +154,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/register_data_type.zig",
         "zig_build/host/path_util.zig",
         "zig_build/host/manifest.zig",
+        "zig_build/host/gtk_int.zig",
         "zig_src/abi/block_math.zig",
     };
     const target = b.resolveTargetQuery(.{});
