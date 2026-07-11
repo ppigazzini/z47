@@ -39,6 +39,7 @@ else
 const bool_t = bool;
 const calcRegister_t = i16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const tam_digits = @import("tam_digits.zig"); // std-only TAM max-digit ladder
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -527,11 +528,7 @@ pub export fn tamOperation() callconv(.c) i16 {
 // _tamMaxDigits (static)
 // ===========================================================================
 fn _tamMaxDigits(max: i16) u8 {
-    if (tam.function == ITM_GTOP) {
-        return if (max < 1000) 3 else if (max < 10000) 4 else 5;
-    } else {
-        return if (max < 10) 1 else if (max < 100) 2 else if (max < 1000) 3 else if (max < 10000) 4 else 5;
-    }
+    return tam_digits.maxDigits(max, tam.function == ITM_GTOP);
 }
 
 // ===========================================================================

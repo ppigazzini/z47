@@ -64,6 +64,7 @@ const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const numeral_grouping = @import("numeral_grouping.zig"); // std-only digit-group separator math
+const fraction_encode = @import("fraction_encode.zig"); // std-only fraction glyph encoder
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -2258,62 +2259,11 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
 // _numerator / _denominator / fractionToDisplayString
 // ===========================================================================
 pub export fn _numerator(numer_in: u64, displayString: [*c]u8, endingZero: *i16) callconv(.c) void {
-    var numer = numer_in;
-    var u: i16 = undefined;
-    var gap: i16 = -1;
-    const insertAt: i16 = endingZero.*;
-    while (true) {
-        gap += 1;
-        if (gap == GROUPWIDTH_LEFT()) {
-            gap = 0;
-            endingZero.* += 1;
-            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
-            endingZero.* += 1;
-            const sf = SEPARATOR_FRAC();
-            displayString[@intCast(insertAt)] = sf[0];
-            displayString[@intCast(insertAt + 1)] = sf[1];
-        }
-
-        u = @intCast(numer % 10);
-        numer /= 10;
-        endingZero.* += 1;
-        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
-        endingZero.* += 1;
-
-        displayString[@intCast(insertAt)] = STD_SUP_0[0];
-        displayString[@intCast(insertAt + 1)] = STD_SUP_0[1];
-        displayString[@intCast(insertAt + 1)] +%= @intCast(u);
-        if (numer == 0) break;
-    }
+    fraction_encode.encodeFractionPart(numer_in, displayString, endingZero, @intCast(GROUPWIDTH_LEFT()), SEPARATOR_FRAC(), STD_SUP_0);
 }
 
 pub export fn _denominator(denom_in: u64, displayString: [*c]u8, endingZero: *i16) callconv(.c) void {
-    var denom = denom_in;
-    var u: i16 = undefined;
-    var gap: i16 = -1;
-    const insertAt: i16 = endingZero.*;
-    while (true) {
-        gap += 1;
-        if (gap == GROUPWIDTH_LEFT()) {
-            gap = 0;
-            endingZero.* += 1;
-            _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
-            endingZero.* += 1;
-            const sf = SEPARATOR_FRAC();
-            displayString[@intCast(insertAt)] = sf[0];
-            displayString[@intCast(insertAt + 1)] = sf[1];
-        }
-
-        u = @intCast(denom % 10);
-        denom /= 10;
-        endingZero.* += 1;
-        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(insertAt + 2)), displayString + @as(usize, @intCast(insertAt)), @intCast(endingZero.* - insertAt));
-        endingZero.* += 1;
-        displayString[@intCast(insertAt)] = STD_SUB_0[0];
-        displayString[@intCast(insertAt + 1)] = STD_SUB_0[1];
-        displayString[@intCast(insertAt + 1)] +%= @intCast(u);
-        if (denom == 0) break;
-    }
+    fraction_encode.encodeFractionPart(denom_in, displayString, endingZero, @intCast(GROUPWIDTH_LEFT()), SEPARATOR_FRAC(), STD_SUB_0);
 }
 
 pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
