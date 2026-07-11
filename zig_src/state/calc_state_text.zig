@@ -10,6 +10,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
+const word_scan = @import("word_scan.zig"); // std-only whitespace word scanners
 extern fn strtol(nptr: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;
 extern fn strtoul(nptr: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
@@ -32,22 +33,16 @@ pub fn toUint32(s: [*c]const u8) u32 {
 }
 
 pub fn skipSpace(s: [*c]u8) [*c]u8 {
-    var p = s;
-    while (p[0] == ' ') p += 1;
-    return p;
+    return word_scan.skipSpace(s);
 }
 pub fn skipWord(s: [*c]u8) [*c]u8 {
-    var p = s;
-    while (p[0] != ' ' and p[0] != 0) p += 1;
-    return p;
+    return word_scan.skipWord(s);
 }
 pub fn nextWord(s: [*c]u8) [*c]u8 {
-    return skipWord(skipSpace(s));
+    return word_scan.nextWord(s);
 }
 pub fn skipToSpaceNewline(s: [*c]u8) [*c]u8 {
-    var p = s;
-    while (p[0] != ' ' and p[0] != '\n' and p[0] != 0) p += 1;
-    return p;
+    return word_scan.skipToSpaceNewline(s);
 }
 pub fn toInt16NextWord(s: [*c]u8, val: *i16) [*c]u8 {
     val.* = toInt16(s);
