@@ -3,6 +3,7 @@ const alpha_case_select = @import("alpha_case_select.zig"); // std-only lowercas
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const statusbar_flags = @import("statusbar_flags.zig"); // std-only status-bar update-flag clear
 const menu_doublepress = @import("menu_doublepress.zig"); // std-only double-press-blocked menu predicate
+const radix_mark = @import("radix_mark.zig"); // std-only radix-mark character selection
 const builtin = @import("builtin");
 const block_math = abi.block_math;
 pub const bool_t = bool;
@@ -1093,7 +1094,7 @@ pub fn normKey00ItemInLayout() i16 {
 // Rx[1], so map comma + wide-comma ("\xa7\x88") to ',' else '.'.
 pub fn radix34MarkChar() u8 {
     const rx = indexOfItemsSoftmenuName(@intCast(gapItemRadix));
-    return if (rx[0] == ',' or (rx[0] == 0xa7 and rx[1] == 0x88)) ',' else '.';
+    return radix_mark.radixMarkFromName(rx[0], rx[1]);
 }
 pub fn radix34MarkDecItm() i16 {
     return if (radix34MarkChar() == '.') ITM_PERIOD else ITM_COMMA;
