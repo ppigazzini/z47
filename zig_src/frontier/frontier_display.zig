@@ -66,6 +66,7 @@ const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv:
 const numeral_grouping = @import("numeral_grouping.zig"); // std-only digit-group separator math
 const fraction_encode = @import("fraction_encode.zig"); // std-only fraction glyph encoder
 const word_break = @import("word_break.zig"); // std-only display word-break trim
+const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char normalization
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -609,29 +610,11 @@ fn itemStr(gapItem: u16) [*c]const u8 {
 }
 // gapChar1Left/Right: applies when Lt[0]!=0 && Lt[1]==0 && Lt[2]==0
 fn gapChar1LR(gapItem: u16) [*c]const u8 {
-    const s = itemStr(gapItem);
-    if (s[0] != 0 and s[1] == 0 and s[2] == 0) {
-        return switch (s[0]) {
-            ',' => lit_comma1,
-            '.' => lit_dot1,
-            '\'' => lit_quote1,
-            '_' => lit_underscore1,
-            else => s,
-        };
-    }
-    return s;
+    return gap_char_codec.gapChar1LR(itemStr(gapItem));
 }
 // gapChar1Radix: applies when Rx[0]!=0 && (Rx[1]==0 || Rx[2]==0). Only ',' / '.'.
 fn gapChar1Radix(gapItem: u16) [*c]const u8 {
-    const s = itemStr(gapItem);
-    if (s[0] != 0 and (s[1] == 0 or s[2] == 0)) {
-        return switch (s[0]) {
-            ',' => lit_comma1,
-            '.' => lit_dot1,
-            else => s,
-        };
-    }
-    return s;
+    return gap_char_codec.gapChar1Radix(itemStr(gapItem));
 }
 inline fn SEPARATOR_LEFT() [*c]const u8 {
     return gapChar1LR(gapItemLeft);
