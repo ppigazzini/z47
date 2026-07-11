@@ -110,6 +110,7 @@ const label_truncate = @import("label_truncate.zig"); // std-only label arrow tr
 const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
+const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -1456,11 +1457,7 @@ pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
 }
 
 pub export fn _add_digitglyph(tmp: [*c]u8, xx: i16) callconv(.c) void {
-    tmp[0] = 0;
-    _ = stringCopy(tmp, STD_0);
-    if (xx >= 1 and xx <= 9) {
-        tmp[0] +%= @intCast(xx);
-    }
+    digit_glyph.addDigitGlyph(tmp, xx, STD_0);
 }
 
 pub export fn fnGetMenu(_: u16) callconv(.c) void {
