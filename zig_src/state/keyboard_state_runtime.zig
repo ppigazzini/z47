@@ -1,4 +1,5 @@
 const std = @import("std");
+const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const statusbar_flags = @import("statusbar_flags.zig"); // std-only status-bar update-flag clear
 const menu_doublepress = @import("menu_doublepress.zig"); // std-only double-press-blocked menu predicate
 const builtin = @import("builtin");
@@ -1236,19 +1237,17 @@ pub extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_t
 pub fn isBaseBlank(menu_id: i16) bool {
     return menu_id == 0 and !getSystemFlag(FLAG_BASE_MYM) and !getSystemFlag(FLAG_BASE_HOME);
 }
+fn solverMasks() solver_status.SolverMasks {
+    return .{ .eqn_mode = SOLVER_STATUS_EQUATION_MODE, .interactive = SOLVER_STATUS_INTERACTIVE, .uses_formula = SOLVER_STATUS_USES_FORMULA, .integrate = SOLVER_STATUS_EQUATION_INTEGRATE, .first_deriv = SOLVER_STATUS_EQUATION_1ST_DERIVATIVE, .second_deriv = SOLVER_STATUS_EQUATION_2ND_DERIVATIVE };
+}
 pub fn isEqnIntegrate() bool {
-    return (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE and
-        (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0;
+    return solver_status.isEqnIntegrate(currentSolverStatus, solverMasks());
 }
 pub fn isEqn1stDer() bool {
-    return (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0 and
-        (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0 and
-        (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE;
+    return solver_status.isEqn1stDer(currentSolverStatus, solverMasks());
 }
 pub fn isEqn2ndDer() bool {
-    return (currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0 and
-        (currentSolverStatus & SOLVER_STATUS_INTERACTIVE) != 0 and
-        (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE;
+    return solver_status.isEqn2ndDer(currentSolverStatus, solverMasks());
 }
 
 // execFnTimeout dependencies (keyboardTweak.c 960-972). btnFnClicked is
