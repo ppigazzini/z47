@@ -1,6 +1,5 @@
 const std = @import("std");
 const real34_sign = @import("real34_sign.zig"); // std-only real34 sign-byte ops
-const matrix_element_count = @import("matrix_element_count.zig"); // std-only matrix element count
 
 const build_options = @import("stack_state_build_options");
 const mutation_owned = @import("stack_mutation.zig");
@@ -137,11 +136,11 @@ fn complexMatrixElementsPtr(res: runtime.calcRegister_t) [*]align(1) complex34_t
 }
 
 fn realMatrixElementCount(res: runtime.calcRegister_t) usize {
-    return matrix_element_count.elementCount(@intCast(runtime.getRegisterFullSizeInBlocks(res)), matrix_header_size_in_blocks, @intCast(runtime.real34SizeInBlocks()));
+    return ((@as(usize, @intCast(runtime.getRegisterFullSizeInBlocks(res))) - matrix_header_size_in_blocks) / @as(usize, @intCast(runtime.real34SizeInBlocks())));
 }
 
 fn complexMatrixElementCount(res: runtime.calcRegister_t) usize {
-    return matrix_element_count.elementCount(@intCast(runtime.getRegisterFullSizeInBlocks(res)), matrix_header_size_in_blocks, @intCast(complex34SizeInBlocks()));
+    return ((@as(usize, @intCast(runtime.getRegisterFullSizeInBlocks(res))) - matrix_header_size_in_blocks) / @as(usize, @intCast(complex34SizeInBlocks())));
 }
 
 fn normalizeResultRealRegister(reg: runtime.calcRegister_t, value: *align(1) real34_t) void {

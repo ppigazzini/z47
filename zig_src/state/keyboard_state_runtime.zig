@@ -1,7 +1,5 @@
 const std = @import("std");
-const alpha_case_select = @import("alpha_case_select.zig"); // std-only lowercase-selected predicate
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
-const statusbar_flags = @import("statusbar_flags.zig"); // std-only status-bar update-flag clear
 const menu_doublepress = @import("menu_doublepress.zig"); // std-only double-press-blocked menu predicate
 const builtin = @import("builtin");
 const block_math = abi.block_math;
@@ -179,7 +177,7 @@ pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
 }
 
 fn clearStatusbarUpdateFlags(mode: u8) u8 {
-    return statusbar_flags.clearStatusbarUpdateFlags(mode, SCRUPD_MANUAL_STATUSBAR, SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+    return mode & ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
 }
 
 fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updating_mode: u8) void {
@@ -878,7 +876,8 @@ pub extern var lastshiftF: bool_t;
 
 // lowercaseselected macro (keyboard.c:473).
 pub fn lowercaseSelected() bool {
-    return alpha_case_select.lowercaseSelected(alphaCase, lastshiftF, AC_LOWER, AC_UPPER);
+    // lowercase when lower-and-not-shifted or upper-and-shifted
+    return (alphaCase == AC_LOWER and !lastshiftF) or (alphaCase == AC_UPPER and lastshiftF);
 }
 
 pub const normKey_t = abi.NormKey;
