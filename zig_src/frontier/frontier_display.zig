@@ -69,6 +69,7 @@ const word_break = @import("word_break.zig"); // std-only display word-break tri
 const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char normalization
 const radix_mark = @import("radix_mark.zig"); // std-only radix-mark buffer fill
 const integer_separators = @import("integer_separators.zig"); // std-only integer separator splice
+const str_prepend = @import("str_prepend.zig"); // std-only in-place string prepend
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -2116,25 +2117,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
 }
 
 pub export fn strPrepend(dest: [*c]u8, prefix: [*c]u8) callconv(.c) void {
-    var ii: i16 = @intCast(stringByteLength(prefix));
-    if (ii == 0 or ii > 20) {
-        return;
-    }
-    while (ii > 0) {
-        _ = strcat(dest, " ");
-        ii -= 1;
-    }
-    var jj: i16 = @intCast(stringByteLength(dest) - 1);
-    ii = @intCast(stringByteLength(prefix));
-    while (jj - ii >= 0) {
-        dest[@intCast(jj)] = dest[@intCast(jj - ii)];
-        jj -= 1;
-    }
-    ii -= 1;
-    while (ii >= 0) {
-        dest[@intCast(ii)] = prefix[@intCast(ii)];
-        ii -= 1;
-    }
+    str_prepend.strPrepend(dest, prefix);
 }
 
 fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, limitIrfrac: irfracOption_t) void {
