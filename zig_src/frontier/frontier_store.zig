@@ -21,6 +21,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const store_register_range = @import("store_register_range.zig"); // std-only store register-range validity
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -256,13 +257,21 @@ inline fn variableImag34(elem: *align(1) complex34_t) *align(1) real34_t {
 // isRegInRange / regInRange
 // ===========================================================================
 pub export fn isRegInRange(regist: u16) callconv(.c) bool {
-    return (regist <= LAST_LETTERED_REGISTER) or // r00 -> r99 and includes X -> K
-        (FIRST_STAT_REGISTER <= regist and regist <= LAST_STAT_REGISTER) or // M -> S
-        (FIRST_SPARE_REGISTER <= regist and regist <= LAST_SPARE_REGISTER) or // E -> W
-        (FIRST_LOCAL_REGISTER <= regist and @as(i32, regist) < @as(i32, FIRST_LOCAL_REGISTER) + @as(i32, currentNumberOfLocalRegisters())) or // 7000 -> 7098
-        (FIRST_NAMED_VARIABLE <= regist and @as(i32, regist) < @as(i32, FIRST_NAMED_VARIABLE) + @as(i32, numberOfNamedVariables)) or // 256  -> 1999 *
-        (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE) or // 2000 -> 2047 *
-        (FIRST_TEMP_REGISTER <= regist and regist <= LAST_TEMP_REGISTER); // 135, 136
+    return store_register_range.isRegInRange(regist, .{
+        .last_lettered = LAST_LETTERED_REGISTER,
+        .first_stat = FIRST_STAT_REGISTER,
+        .last_stat = LAST_STAT_REGISTER,
+        .first_spare = FIRST_SPARE_REGISTER,
+        .last_spare = LAST_SPARE_REGISTER,
+        .first_local = FIRST_LOCAL_REGISTER,
+        .local_count = currentNumberOfLocalRegisters(),
+        .first_named = FIRST_NAMED_VARIABLE,
+        .named_count = numberOfNamedVariables,
+        .first_reserved = FIRST_RESERVED_VARIABLE,
+        .last_reserved = LAST_RESERVED_VARIABLE,
+        .first_temp = FIRST_TEMP_REGISTER,
+        .last_temp = LAST_TEMP_REGISTER,
+    });
 }
 
 pub export fn regInRange(regist: u16) callconv(.c) bool {
