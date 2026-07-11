@@ -31,7 +31,6 @@ fn hpRangeShift(char_code: u16, std_1: u16, std_9: u16, std_hp_1: u16, std_sup_1
     if (char_code >= std_sup_1 and char_code <= std_sup_9) return char_code - std_sup_1 + std_hp_1;
     return null;
 }
-const str_append = @import("str_append.zig"); // std-only string append
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const conversion_name_codec = @import("conversion_name_codec.zig");
@@ -801,7 +800,11 @@ const indexOfStringsRTF linksection(code_data_section) = [_]function_t2{
 // stringAppend (static)
 // ---------------------------------------------------------------------------
 fn stringAppend(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    return str_append.stringAppend(dest, source);
+    var l: usize = 0;
+    while (source[l] != 0) : (l += 1) {}
+    var i: usize = 0;
+    while (i <= l) : (i += 1) dest[i] = source[i];
+    return dest + l;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,10 @@
 const build_options = @import("state_descriptor_storage_build_options");
-const descriptor_index = @import("descriptor_index.zig"); // std-only register-band index resolution
+fn resolveIndex(reg: i16, first: i16, count: u16) ?u16 {
+    if (reg < first or count == 0) return null;
+    const index: u16 = @intCast(reg - first);
+    if (index >= count) return null;
+    return index;
+}
 
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
@@ -68,14 +73,14 @@ pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_
 }
 
 pub fn tryGetNamedDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    const index = descriptor_index.resolveIndex(reg, FIRST_NAMED_VARIABLE, numberOfNamedVariables) orelse return false;
+    const index = resolveIndex(reg, FIRST_NAMED_VARIABLE, numberOfNamedVariables) orelse return false;
     const headers = allNamedVariables orelse return false;
     descriptor.* = headers[index].header.descriptor;
     return true;
 }
 
 pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    const index = descriptor_index.resolveIndex(reg, FIRST_NAMED_VARIABLE, numberOfNamedVariables) orelse return false;
+    const index = resolveIndex(reg, FIRST_NAMED_VARIABLE, numberOfNamedVariables) orelse return false;
     const headers = allNamedVariables orelse return false;
     headers[index].header.descriptor = descriptor;
     return true;
@@ -92,14 +97,14 @@ pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t
 }
 
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    const index = descriptor_index.resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
+    const index = resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
     const headers = currentLocalRegisters orelse return false;
     descriptor.* = headers[index].descriptor;
     return true;
 }
 
 pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    const index = descriptor_index.resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
+    const index = resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
     const headers = currentLocalRegisters orelse return false;
     headers[index].descriptor = descriptor;
     return true;

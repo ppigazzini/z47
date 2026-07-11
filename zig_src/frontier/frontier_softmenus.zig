@@ -108,7 +108,6 @@ const registerHeader_t = abi.RegisterHeader;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
-const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
 const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
@@ -1521,7 +1520,11 @@ fn _removeDuplicateLabels(n: i16) i16 {
 
 // Byte-wise C strcmp equivalence for two NUL-terminated 15-byte name slots.
 fn slotsEqual(a: [*c]const u8, b: [*c]const u8) bool {
-    return name_slot_equal.slotsEqual(a, b);
+    var k: usize = 0;
+    while (true) : (k += 1) {
+        if (a[k] != b[k]) return false;
+        if (a[k] == 0) return true;
+    }
 }
 
 fn sortMenu(a: ?*const anyopaque, b: ?*const anyopaque) callconv(.c) c_int {

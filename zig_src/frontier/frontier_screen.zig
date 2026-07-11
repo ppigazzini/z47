@@ -68,7 +68,6 @@ const irfracOption_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const byte_decode = @import("byte_decode.zig"); // std-only 2-byte BE decode
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_asn_browser = @import("frontier_asn_browser.zig"); // M-callconv: Zig-to-Zig
@@ -1969,7 +1968,7 @@ pub export fn Shft_stop() callconv(.c) void {
 }
 
 pub export fn str2dec(ch: [*c]u8) callconv(.c) u16 {
-    return byte_decode.str2dec(ch);
+    return @as(u16, ch[1]) + (@as(u16, ch[0]) << 8);
 }
 
 pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32, y_in: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, noPreClear: bool_t) callconv(.c) u32 {
