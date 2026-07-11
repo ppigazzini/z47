@@ -25,6 +25,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
+const byte_move = @import("byte_move.zig"); // std-only overlap-safe byte move
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const conversion_name_codec = @import("conversion_name_codec.zig");
@@ -974,28 +975,10 @@ pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8, distin
 pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) callconv(.c) ?*anyopaque {
     const pDest: [*c]u8 = @ptrCast(dest);
     const pSource: [*c]const u8 = @ptrCast(source);
-    var n = nIn;
-
-    if (n == 0 or pDest == null or pSource == null) {
+    if (nIn == 0 or pDest == null or pSource == null) {
         return dest;
     }
-
-    if (@intFromPtr(pSource) > @intFromPtr(pDest)) {
-        var d = pDest;
-        var s = pSource;
-        while (n != 0) {
-            n -%= 1;
-            d[0] = s[0];
-            d += 1;
-            s += 1;
-        }
-    } else if (@intFromPtr(pSource) < @intFromPtr(pDest)) {
-        while (n != 0) {
-            n -%= 1;
-            pDest[n] = pSource[n];
-        }
-    }
-
+    byte_move.xcopy(pDest, pSource, nIn);
     return dest;
 }
 
