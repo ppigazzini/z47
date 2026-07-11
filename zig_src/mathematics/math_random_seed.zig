@@ -2,9 +2,9 @@ const std = @import("std");
 const random_primitives_owned = @import("math_random_primitives.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 
+const seed_word = @import("seed_word.zig"); // std-only RNG seed-word read
 fn readSeedWord(lsu_bytes: *const [50]u8, offset: usize) u64 {
-    const word_bytes: *const [8]u8 = @ptrCast(&lsu_bytes[offset]);
-    return std.mem.readInt(u64, word_bytes, .native);
+    return seed_word.readSeedWord(lsu_bytes, offset);
 }
 
 fn seedDefaults(seed_value: *u64, sequence: *u64) void {
