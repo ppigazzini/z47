@@ -1,4 +1,5 @@
 const std = @import("std");
+const alpha_case_select = @import("alpha_case_select.zig"); // std-only lowercase-selected predicate
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const statusbar_flags = @import("statusbar_flags.zig"); // std-only status-bar update-flag clear
 const menu_doublepress = @import("menu_doublepress.zig"); // std-only double-press-blocked menu predicate
@@ -877,7 +878,7 @@ pub extern var lastshiftF: bool_t;
 
 // lowercaseselected macro (keyboard.c:473).
 pub fn lowercaseSelected() bool {
-    return (alphaCase == AC_LOWER and !lastshiftF) or (alphaCase == AC_UPPER and lastshiftF);
+    return alpha_case_select.lowercaseSelected(alphaCase, lastshiftF, AC_LOWER, AC_UPPER);
 }
 
 pub const normKey_t = abi.NormKey;
