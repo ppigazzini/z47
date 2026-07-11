@@ -1,4 +1,5 @@
 const runtime = @import("stack_runtime.zig");
+const shuffle_order = @import("shuffle_order.zig"); // std-only register-shuffle order decode
 
 fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcRegister_t {
     return base + @as(runtime.calcRegister_t, @intCast(offset));
@@ -79,9 +80,9 @@ pub fn shuffle(regist_order: u16) void {
         runtime.setGlobalDescriptor(saved_reg, saved_descriptor);
     }
 
+    const order = shuffle_order.shuffleOrder(regist_order);
     index = 0;
     while (index < 4) : (index += 1) {
-        const regist_offset: u16 = (regist_order >> @intCast(index * 2)) & 3;
-        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, regist_offset), registerWithOffset(runtime.REGISTER_X, index));
+        runtime.copySourceRegisterToDestRegister(registerWithOffset(runtime.SAVED_REGISTER_X, order[index]), registerWithOffset(runtime.REGISTER_X, index));
     }
 }
