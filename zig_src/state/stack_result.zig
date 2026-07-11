@@ -1,4 +1,5 @@
 const std = @import("std");
+const real34_sign = @import("real34_sign.zig"); // std-only real34 sign-byte ops
 
 const build_options = @import("stack_state_build_options");
 const mutation_owned = @import("stack_mutation.zig");
@@ -76,11 +77,11 @@ fn real34IsZero(value: *const real34_t) bool {
 }
 
 fn real34IsNegative(value: *const real34_t) bool {
-    return (value.bytes[15] & 0x80) != 0;
+    return real34_sign.isNegative(value);
 }
 
 fn real34SetPositiveSign(value: *real34_t) void {
-    value.bytes[15] &= 0x7f;
+    real34_sign.setPositiveSign(value);
 }
 
 fn setRegisterRaw(reg: runtime.calcRegister_t, data_type: u32, tag: u32, data_ptr: ?*anyopaque) void {
