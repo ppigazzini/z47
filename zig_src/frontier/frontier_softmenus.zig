@@ -109,6 +109,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
 const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
+const str_concat = @import("str_concat.zig"); // std-only scratch string concat
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -2210,13 +2211,7 @@ inline fn cmodNonNeg(n: i32, d: i32) i32 {
 // STD_GAUSS_WHITE_R STD_SUB_0). The two operands here are always short STD_*.
 var concatBuf: [64]u8 = undefined;
 fn concat2(a: [*c]const u8, b: [*c]const u8) [*c]const u8 {
-    const la: usize = @intCast(strlenc(a));
-    const lb: usize = @intCast(strlenc(b));
-    var i: usize = 0;
-    while (i < la) : (i += 1) concatBuf[i] = a[i];
-    var j: usize = 0;
-    while (j < lb) : (j += 1) concatBuf[la + j] = b[j];
-    concatBuf[la + lb] = 0;
+    _ = str_concat.concat2(&concatBuf, a, b);
     return &concatBuf;
 }
 extern fn strlen(s: [*c]const u8) usize;
@@ -2426,26 +2421,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
 // alias concatBuf, since changeSoftKey passes concat3 alongside other strings).
 var concat3Buf: [64]u8 = undefined;
 fn concat3(a: [*c]const u8, b: [*c]const u8, c: [*c]const u8) [*c]const u8 {
-    const la: usize = strlen(a);
-    const lb: usize = strlen(b);
-    const lc: usize = strlen(c);
-    var k: usize = 0;
-    var i: usize = 0;
-    while (i < la) : (i += 1) {
-        concat3Buf[k] = a[i];
-        k += 1;
-    }
-    i = 0;
-    while (i < lb) : (i += 1) {
-        concat3Buf[k] = b[i];
-        k += 1;
-    }
-    i = 0;
-    while (i < lc) : (i += 1) {
-        concat3Buf[k] = c[i];
-        k += 1;
-    }
-    concat3Buf[k] = 0;
+    _ = str_concat.concat3(&concat3Buf, a, b, c);
     return &concat3Buf;
 }
 
