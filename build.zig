@@ -58,6 +58,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/shortint/shortint_core.zig",
         "zig_src/state/calc_state_progmem.zig",
         "zig_src/state/register_metadata_payload_bytes.zig",
+        "zig_src/state/register_descriptor_codec.zig",
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/state/keycode_last.zig",
         "zig_src/mathematics/math_real_predicates.zig",
