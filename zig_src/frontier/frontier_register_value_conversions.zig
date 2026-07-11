@@ -27,6 +27,7 @@ const const34_1e6 = consts.const34_1e6;
 // straight to mpz_*; the firmware RTC path uses the fixed-address SDK call.
 
 const builtin = @import("builtin");
+const type_is_number = @import("type_is_number.zig"); // std-only numeric-type classifier
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
@@ -1195,18 +1196,7 @@ pub export fn realToDouble(vv: *const real_t, v: *f64) callconv(.c) void {
 // Type checks / error helpers
 // ===========================================================================
 fn typeIsNumber(t: u32, cmplx: ?*bool) bool {
-    switch (t) {
-        dtComplex34 => {
-            if (cmplx) |c| c.* = true;
-            return true;
-        },
-        dtLongInteger, dtShortInteger, dtReal34 => {
-            if (cmplx) |c| c.* = false;
-            return true;
-        },
-        else => {},
-    }
-    return false;
+    return type_is_number.typeIsNumber(t, cmplx, dtComplex34, dtLongInteger, dtShortInteger, dtReal34);
 }
 
 pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
