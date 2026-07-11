@@ -26,7 +26,11 @@
 const std = @import("std");
 const abi = @import("abi");
 const byte_move = @import("byte_move.zig"); // std-only overlap-safe byte move
-const hp_range_shift = @import("hp_range_shift.zig"); // std-only HP glyph range shift
+fn hpRangeShift(char_code: u16, std_1: u16, std_9: u16, std_hp_1: u16, std_sup_1: u16, std_sup_9: u16) ?u16 {
+    if (char_code >= std_1 and char_code <= std_9) return char_code - std_1 + std_hp_1;
+    if (char_code >= std_sup_1 and char_code <= std_sup_9) return char_code - std_sup_1 + std_hp_1;
+    return null;
+}
 const str_append = @import("str_append.zig"); // std-only string append
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
@@ -239,7 +243,7 @@ const STD_SUP_9 = "\xa1\x69";
 pub export fn charCodeHPReplacement(charCode: *u16) callconv(.c) void {
     if (replace(charCode)) {
         // handled by replace
-    } else if (hp_range_shift.hpRangeShift(charCode.*, charCodeFromString(STD_1, null), charCodeFromString(STD_9, null), charCodeFromString(STD_HP_1, null), charCodeFromString(STD_SUP_1, null), charCodeFromString(STD_SUP_9, null))) |c| {
+    } else if (hpRangeShift(charCode.*, charCodeFromString(STD_1, null), charCodeFromString(STD_9, null), charCodeFromString(STD_HP_1, null), charCodeFromString(STD_SUP_1, null), charCodeFromString(STD_SUP_9, null))) |c| {
         charCode.* = c;
     }
 }
