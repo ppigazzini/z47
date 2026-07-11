@@ -1,6 +1,7 @@
 const builtin = @import("builtin");
 const runtime = @import("flags_runtime.zig");
 const flag_classify = @import("flag_classify.zig"); // std-only flag classification
+const flag_bits = @import("flag_bits.zig"); // std-only user-flag bit location
 
 pub export var systemFlags0Changed: u64 = ~@as(u64, 0);
 pub export var systemFlags1Changed: u64 = ~@as(u64, 0);
@@ -112,83 +113,32 @@ fn isWriteProtectedSystemFlag(flag: u16) bool {
 }
 
 fn setUserFlag(flag: u16) void {
-    if (flag <= runtime.FLAG_K) {
-        const index: usize = @intCast(flag / 16);
-        const shift: u4 = @intCast(flag % 16);
-        runtime.globalFlags[index] |= @as(u16, 1) << shift;
-        return;
-    }
-
-    if (flag <= runtime.LAST_LOCAL_FLAG) {
-        if (runtime.currentLocalFlags != null) {
-            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
-            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
-                const shift: u5 = @intCast(local_flag);
-                runtime.currentLocalFlags[0] |= @as(u32, 1) << shift;
-            }
-        }
-        return;
-    }
-
-    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
-        const extra_flag = flag - 99;
-        const index: usize = @intCast(extra_flag / 16);
-        const shift: u4 = @intCast(extra_flag % 16);
-        runtime.globalFlags[index] |= @as(u16, 1) << shift;
+    switch (flag_bits.flagLocation(flag, runtime.FLAG_K, runtime.LAST_LOCAL_FLAG, runtime.NUMBER_OF_GLOBAL_FLAGS, runtime.NUMBER_OF_LOCAL_FLAGS, runtime.FLAG_M, runtime.FLAG_W)) {
+        .global, .extra => |g| runtime.globalFlags[g.index] |= @as(u16, 1) << g.shift,
+        .local => |l| if (runtime.currentLocalFlags != null) {
+            runtime.currentLocalFlags[0] |= @as(u32, 1) << l.shift;
+        },
+        .none => {},
     }
 }
 
 fn clearUserFlag(flag: u16) void {
-    if (flag <= runtime.FLAG_K) {
-        const index: usize = @intCast(flag / 16);
-        const shift: u4 = @intCast(flag % 16);
-        runtime.globalFlags[index] &= ~(@as(u16, 1) << shift);
-        return;
-    }
-
-    if (flag <= runtime.LAST_LOCAL_FLAG) {
-        if (runtime.currentLocalFlags != null) {
-            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
-            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
-                const shift: u5 = @intCast(local_flag);
-                runtime.currentLocalFlags[0] &= ~(@as(u32, 1) << shift);
-            }
-        }
-        return;
-    }
-
-    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
-        const extra_flag = flag - 99;
-        const index: usize = @intCast(extra_flag / 16);
-        const shift: u4 = @intCast(extra_flag % 16);
-        runtime.globalFlags[index] &= ~(@as(u16, 1) << shift);
+    switch (flag_bits.flagLocation(flag, runtime.FLAG_K, runtime.LAST_LOCAL_FLAG, runtime.NUMBER_OF_GLOBAL_FLAGS, runtime.NUMBER_OF_LOCAL_FLAGS, runtime.FLAG_M, runtime.FLAG_W)) {
+        .global, .extra => |g| runtime.globalFlags[g.index] &= ~(@as(u16, 1) << g.shift),
+        .local => |l| if (runtime.currentLocalFlags != null) {
+            runtime.currentLocalFlags[0] &= ~(@as(u32, 1) << l.shift);
+        },
+        .none => {},
     }
 }
 
 fn flipUserFlag(flag: u16) void {
-    if (flag <= runtime.FLAG_K) {
-        const index: usize = @intCast(flag / 16);
-        const shift: u4 = @intCast(flag % 16);
-        runtime.globalFlags[index] ^= @as(u16, 1) << shift;
-        return;
-    }
-
-    if (flag <= runtime.LAST_LOCAL_FLAG) {
-        if (runtime.currentLocalFlags != null) {
-            const local_flag = flag - runtime.NUMBER_OF_GLOBAL_FLAGS;
-            if (local_flag < runtime.NUMBER_OF_LOCAL_FLAGS) {
-                const shift: u5 = @intCast(local_flag);
-                runtime.currentLocalFlags[0] ^= @as(u32, 1) << shift;
-            }
-        }
-        return;
-    }
-
-    if (flag >= runtime.FLAG_M and flag <= runtime.FLAG_W) {
-        const extra_flag = flag - 99;
-        const index: usize = @intCast(extra_flag / 16);
-        const shift: u4 = @intCast(extra_flag % 16);
-        runtime.globalFlags[index] ^= @as(u16, 1) << shift;
+    switch (flag_bits.flagLocation(flag, runtime.FLAG_K, runtime.LAST_LOCAL_FLAG, runtime.NUMBER_OF_GLOBAL_FLAGS, runtime.NUMBER_OF_LOCAL_FLAGS, runtime.FLAG_M, runtime.FLAG_W)) {
+        .global, .extra => |g| runtime.globalFlags[g.index] ^= @as(u16, 1) << g.shift,
+        .local => |l| if (runtime.currentLocalFlags != null) {
+            runtime.currentLocalFlags[0] ^= @as(u32, 1) << l.shift;
+        },
+        .none => {},
     }
 }
 
