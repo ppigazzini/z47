@@ -27,6 +27,7 @@ const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zi
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map
 const alpha_substring = @import("alpha_substring.zig"); // std-only ALPHAMID substring
+const string_trim = @import("string_trim.zig"); // std-only leading-space trim
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -177,10 +178,7 @@ inline fn realSetPositiveSign(v: *real_t) void {
 // trimLeadingSpace (new in real master): drop a single leading space in place.
 // Used by addition's addStri{Real,Cplx} display formatting.
 pub export fn trimLeadingSpace(stringToTrim: [*c]u8) callconv(.c) void {
-    if (stringToTrim[0] == ' ') {
-        const len: i32 = stringByteLength(stringToTrim);
-        _ = frontier_char_string.xcopy(stringToTrim, stringToTrim + 1, @intCast(len));
-    }
+    string_trim.trimLeadingSpace(stringToTrim);
 }
 
 // ===========================================================================
