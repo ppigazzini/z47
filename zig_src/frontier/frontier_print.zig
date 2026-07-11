@@ -63,8 +63,6 @@ const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
-const glyph_rotate = @import("glyph_rotate.zig"); // std-only 24-dot glyph rotation
-const print_tab = @import("print_tab.zig"); // std-only printer tab-advance count
 const printer_char_map = @import("printer_char_map.zig"); // std-only HP82240 reverse lookup
 const bit_reverse = @import("bit_reverse.zig"); // std-only byte bit-reversal
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
@@ -848,7 +846,10 @@ fn printTabImpl(col: u16) void {
         printAdvance(0);
     }
     if (printerColumn < col) {
-        var i: u16 = print_tab.tabAdvanceCount(printerColumn, col);
+        var i: u16 = (col - printerColumn) % 7;
+        if (i == 0 and printerColumn == 0 and col > 6) {
+            i = 7;
+        }
         printerColumn += i;
         if (i != 0) {
             sendByteIR(27);
@@ -942,7 +943,8 @@ fn printMartelGlyph(charCode: u16) void {
 }
 
 fn printGlyph24(charCode: u16, font: *const font_t) void {
-    var graphic: [42]u8 = undefined; // zeroed by rotateGlyph24 before it fills the buffer
+    var graphic: [42]u8 = undefined;
+    _ = memset(&graphic, 0, 42);
     const glyphId = frontier_fonts.findGlyph(font, charCode);
 
     var glyph: *glyph_t = undefined;
@@ -958,7 +960,32 @@ fn printGlyph24(charCode: u16, font: *const font_t) void {
     } else {
         glyph = undefined; // C NULL deref would crash; preserved structurally
     }
-    glyph_rotate.rotateGlyph24(&graphic, glyph.data, glyph.rowsGlyph, glyph.rowsBelowGlyph, glyph.colsGlyph);
+    var data: [*c]u8 = glyph.data;
+
+    var byte: u8 = 0;
+    var row: u32 = @as(u32, glyph.rowsGlyph) + @as(u32, glyph.rowsBelowGlyph);
+    while (row > glyph.rowsBelowGlyph) : (row -= 1) {
+        var bit: i32 = 7;
+        const row_scaled: u32 = row;
+        var col: u32 = 0;
+        while (col < glyph.colsGlyph) : (col += 1) {
+            if (bit == 7) {
+                byte = data[0];
+                data += 1;
+            }
+            const graphic_byte: u32 = col * 3 + (24 - row_scaled) / 8;
+            if (byte & 0x80 != 0) {
+                graphic[graphic_byte] = graphic[graphic_byte] | (@as(u8, 1) << @intCast((row_scaled - 1) % 8));
+            } else {
+                graphic[graphic_byte] = graphic[graphic_byte] & ~(@as(u8, 1) << @intCast((row_scaled - 1) % 8));
+            }
+            byte <<= 1;
+            bit -= 1;
+            if (bit == -1) {
+                bit = 7;
+            }
+        }
+    }
     printGraphic24(42, &graphic);
     printerColumn += 14;
 }
