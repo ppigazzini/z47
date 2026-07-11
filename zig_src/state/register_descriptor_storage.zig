@@ -92,30 +92,14 @@ pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t
 }
 
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    if (reg < FIRST_LOCAL_REGISTER) {
-        return false;
-    }
-
-    const index: u16 = @intCast(reg - FIRST_LOCAL_REGISTER);
-    if (index >= localRegisterCount()) {
-        return false;
-    }
-
+    const index = descriptor_index.resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
     const headers = currentLocalRegisters orelse return false;
     descriptor.* = headers[index].descriptor;
     return true;
 }
 
 pub fn trySetLocalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    if (reg < FIRST_LOCAL_REGISTER) {
-        return false;
-    }
-
-    const index: u16 = @intCast(reg - FIRST_LOCAL_REGISTER);
-    if (index >= localRegisterCount()) {
-        return false;
-    }
-
+    const index = descriptor_index.resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
     const headers = currentLocalRegisters orelse return false;
     headers[index].descriptor = descriptor;
     return true;
