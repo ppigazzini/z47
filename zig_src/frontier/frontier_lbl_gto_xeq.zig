@@ -31,6 +31,7 @@ const localFlags_t = u32;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
+const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode/bound
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
@@ -736,13 +737,8 @@ pub export fn fnStopProgram(unusedButMandatoryParameter: u16) callconv(.c) void 
 // this local copy carries the same clamp so a corrupt step's length byte cannot
 // read past the program region.
 fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    var stringLength: u8 = stringAddress[0];
     const nameStart: [*c]u8 = stringAddress + 1;
-    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
-        stringLength = 0;
-    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
-        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
-    }
+    const stringLength = program_step_opcode.boundProgramNameLength(nameStart, stringAddress[0], firstFreeProgramByte);
     _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
