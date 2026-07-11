@@ -40,6 +40,7 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const tam_digits = @import("tam_digits.zig"); // std-only TAM max-digit ladder
+const shuffle_decode = @import("shuffle_decode.zig"); // std-only TAM shuffle register decode
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -579,16 +580,7 @@ fn _tamUpdateBuffer() void {
     }
 
     if (tam.mode == TM_SHUFFLE) {
-        regists[4] = 0;
-        var i: u4 = 0;
-        while (i < 4) : (i += 1) {
-            if ((tam.value >> @intCast(i * 2 + 8)) & 1 != 0) {
-                const regNum: u8 = @intCast((tam.value >> @intCast(i * 2)) & 3);
-                regists[i] = if (regNum == 3) 't' else 'x' + regNum;
-            } else {
-                regists[i] = '_';
-            }
-        }
+        regists = shuffle_decode.decodeShuffle(tam.value);
         tbPtr = stringCopy(tbPtr, &regists);
     } else {
         if (tam.indirect) {
