@@ -26,6 +26,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const byte_move = @import("byte_move.zig"); // std-only overlap-safe byte move
+const str_append = @import("str_append.zig"); // std-only string append
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const conversion_name_codec = @import("conversion_name_codec.zig");
@@ -797,8 +798,7 @@ const indexOfStringsRTF linksection(code_data_section) = [_]function_t2{
 // stringAppend (static)
 // ---------------------------------------------------------------------------
 fn stringAppend(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    const l: usize = @intCast(stringByteLength(source));
-    return @as([*c]u8, @ptrCast(memcpy(dest, source, l + 1))) + l;
+    return str_append.stringAppend(dest, source);
 }
 
 // ---------------------------------------------------------------------------
