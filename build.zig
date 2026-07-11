@@ -80,6 +80,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/timer_math.zig",
         "zig_src/frontier/adm_encoding.zig",
         "zig_src/frontier/plot_regression_selection.zig",
+        "zig_src/frontier/word_size_math.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",
