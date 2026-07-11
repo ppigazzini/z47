@@ -702,7 +702,7 @@ pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, di
 pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;
-pub extern fn decNumberCompare(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberCompare(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;
 pub extern fn decNumberPlus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
