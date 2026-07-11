@@ -68,6 +68,7 @@ const videoMode_t = c_int;
 const font_t = abi.Font;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const plot_zoom = @import("plot_zoom.zig"); // std-only plot viewport zoom
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -559,18 +560,7 @@ fn calculateZoomFactor(factor: f32, aa: *f32) void {
 }
 
 fn multiplyZoomFactors(plotzoomx: f32, plotzoomy: f32, histofactor: f32, x_min_: *f32, x_max_: *f32, y_min_: *f32, y_max_: *f32, dx: *f32, dy: *f32) void {
-    x_min_.* = x_min_.* - dx.* * zoomfactor;
-    y_min_.* = y_min_.* - dy.* * zoomfactor;
-    x_max_.* = x_max_.* + dx.* * zoomfactor;
-    y_max_.* = y_max_.* + dy.* * zoomfactor;
-    dx.* = x_max_.* - x_min_.*;
-    dy.* = y_max_.* - y_min_.*;
-    const xavg: f32 = (x_max_.* + x_min_.*) / 2;
-    const yavg: f32 = (y_max_.* + y_min_.*) / 2;
-    y_min_.* = yavg - dy.* / 2 * plotzoomy * histofactor;
-    y_max_.* = yavg + dy.* / 2 * plotzoomy * histofactor;
-    x_min_.* = xavg - dx.* / 2 * plotzoomx * histofactor;
-    x_max_.* = xavg + dx.* / 2 * plotzoomx * histofactor;
+    plot_zoom.multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, zoomfactor, x_min_, x_max_, y_min_, y_max_, dx, dy);
 }
 
 // ===========================================================================
