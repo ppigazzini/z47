@@ -25,6 +25,8 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map
+const alpha_substring = @import("alpha_substring.zig"); // std-only ALPHAMID substring
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -1073,58 +1075,20 @@ inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
 
-// _getGlyphCode: read a 1- or 2-byte glyph code from the string head.
+// _getGlyphCode / _isSameGlyph / _toUpperOrLowerCase delegate to the std-only,
+// tested glyph_case module; the wrappers keep the [*c] boundary and, for the
+// case conversion, resolve the glyph length and pass the upperLowerTable in.
 fn _getGlyphCode(ptrString: [*c]const u8) u16 {
-    var glyph: u16 = @as(u16, ptrString[0]) & 0xff;
-    if ((glyph & 0x80) != 0) {
-        glyph = (glyph << 8) | (@as(u16, ptrString[1]) & 0xff);
-    }
-    return glyph;
+    return glyph_case.glyphCode(ptrString);
 }
 
-// _isSameGlyph: does the glyph code match the glyph at ptrString?
 fn _isSameGlyph(glyph: u16, ptrString: [*c]const u8) bool {
-    var p: [*c]const u8 = ptrString;
-    if ((glyph & 0x8000) != 0) {
-        if ((glyph >> 8) != (@as(u16, p[0]) & 0xff)) {
-            return false;
-        }
-        p += 1;
-    }
-    return (glyph & 0xff) == (@as(u16, p[0]) & 0xff);
+    return glyph_case.isSameGlyph(glyph, ptrString);
 }
 
-// _toUpperOrLowerCase: in-place case conversion using upperLowerTable.
 fn _toUpperOrLowerCase(ptrString: [*c]u8, toUpper: bool) void {
     const lgString: i16 = @intCast(frontier_char_string.stringGlyphLength(ptrString));
-    var pos: i16 = 0;
-
-    var i: i16 = 1;
-    while (i <= lgString) : (i += 1) {
-        const glyph: u16 = _getGlyphCode(ptrString + @as(usize, @intCast(pos)));
-        var j: usize = 0;
-        while (upperLowerTable[j].upper[0] != 0) {
-            const currentGlyph: u16 = if (toUpper)
-                _getGlyphCode(@ptrCast(&upperLowerTable[j].lower))
-            else
-                _getGlyphCode(@ptrCast(&upperLowerTable[j].upper));
-            if (glyph == currentGlyph) {
-                const newGlyph: u16 = if (toUpper)
-                    _getGlyphCode(@ptrCast(&upperLowerTable[j].upper))
-                else
-                    _getGlyphCode(@ptrCast(&upperLowerTable[j].lower));
-                if ((glyph & 0x8000) != 0) {
-                    ptrString[@intCast(pos)] = @truncate(newGlyph >> 8);
-                    ptrString[@intCast(pos + 1)] = @truncate(newGlyph & 0xff);
-                } else {
-                    ptrString[@intCast(pos)] = @truncate(newGlyph);
-                }
-                break;
-            }
-            j += 1;
-        }
-        pos += if ((glyph & 0x8000) != 0) 2 else 1;
-    }
+    glyph_case.toUpperOrLowerCase(ptrString, toUpper, lgString, &upperLowerTable);
 }
 
 pub export fn fnAlphaLower(regist: u16) callconv(.c) void {
@@ -1157,38 +1121,10 @@ pub export fn fnAlphaUpper(regist: u16) callconv(.c) void {
 
 // _alphaMid: copy len glyphs of ptrString starting at 1-based `start` into X.
 fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
-    var start: i32 = start_arg;
-    var len: i32 = len_arg;
     const lgString: i32 = frontier_char_string.stringGlyphLength(ptrString);
-    if (start == 0) {
-        len = 0;
-    }
-    if (start > lgString) {
-        start = lgString;
-        len = 0;
-    } else if (start + len - 1 > lgString) {
-        len = lgString - start + 1;
-    }
-    var pos1: i16 = 0;
-    if (start > 1) {
-        var i: i32 = 1;
-        while (i < start) : (i += 1) {
-            pos1 = frontier_char_string.stringNextGlyph(ptrString, pos1);
-        }
-    }
-    var pos2: i16 = 0;
-    var i: i32 = 0;
-    while (i < len) : (i += 1) {
-        if ((ptrString[@intCast(pos1)] & 0x80) != 0) {
-            tmpString[@intCast(pos2)] = ptrString[@intCast(pos1)];
-            pos2 += 1;
-            pos1 += 1;
-        }
-        tmpString[@intCast(pos2)] = ptrString[@intCast(pos1)];
-        pos2 += 1;
-        pos1 += 1;
-    }
-    tmpString[@intCast(pos2)] = 0;
+    // Extract the substring into the scratch buffer, then reallocate REGISTER_X
+    // to hold it and copy it in. The clamp + glyph-walk copy is the pure core.
+    _ = alpha_substring.alphaMid(tmpString, ptrString, start_arg, len_arg, lgString);
     reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(tmpString) + 1)), amNone);
     _ = frontier_char_string.xcopy(regString(REGISTER_X), tmpString, @intCast(stringByteLength(tmpString) + 1));
 }

@@ -86,6 +86,8 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/printer_char_map.zig",
         "zig_src/frontier/numeral_grouping.zig",
         "zig_src/frontier/numeral_decode.zig",
+        "zig_src/frontier/glyph_case.zig",
+        "zig_src/frontier/alpha_substring.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",
