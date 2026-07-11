@@ -30,6 +30,7 @@ const angularMode_t = c_int;
 const localFlags_t = u32;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
@@ -422,10 +423,14 @@ extern fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void;
 
 // regKStoC (static inline in defines.h).
 inline fn regKStoC(regKS: u8) i16 {
-    const k: i16 = @intCast(regKS);
-    const stat: i16 = if (FIRST_STAT_REGISTER_IN_KS_CODE <= k and regKS <= LAST_SPARE_REGISTERS_IN_KS_CODE) NUMBER_OF_LOCAL_REGISTERS else 0;
-    const local: i16 = if (FIRST_LOCAL_REGISTER_IN_KS_CODE <= k and k <= LAST_LOCAL_REGISTER_IN_KS_CODE) (FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE) else 0;
-    return k - stat + local;
+    return ks_register_remap.regKStoC(regKS, .{
+        .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
+        .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+        .last_local_ks = LAST_LOCAL_REGISTER_IN_KS_CODE,
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+    });
 }
 
 inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
