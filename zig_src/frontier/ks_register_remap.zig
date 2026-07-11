@@ -28,6 +28,50 @@ pub fn regKStoC(regKS: u8, layout: KsLayout) i16 {
     return k - stat + local;
 }
 
+/// The C-register register layout bounds (the C→KS direction).
+pub const CtoKsLayout = struct {
+    first_stat: i16,
+    last_spare: i16,
+    num_local: i16,
+    first_local: i16,
+    last_local: i16,
+    first_local_ks: i16,
+};
+
+/// Translate an internal C register index `regC` back to its KS code (the
+/// inverse of regKStoC).
+pub fn regCtoKS(regC: i16, layout: CtoKsLayout) u8 {
+    var r: i32 = regC;
+    if (layout.first_stat <= regC and regC <= layout.last_spare) {
+        r += layout.num_local;
+    }
+    if (layout.first_local <= regC and regC <= layout.last_local) {
+        r -= (layout.first_local - layout.first_local_ks);
+    }
+    return @truncate(@as(u32, @bitCast(r)));
+}
+
+const test_c_layout = CtoKsLayout{
+    .first_stat = 112,
+    .last_spare = 125,
+    .num_local = 99,
+    .first_local = 7000,
+    .last_local = 7098,
+    .first_local_ks = 112,
+};
+
+fn remapC(regC: i16) u8 {
+    return regCtoKS(regC, test_c_layout);
+}
+
+test "regCtoKS inverts regKStoC across the bands" {
+    try std.testing.expectEqual(@as(u8, 100), remapC(100)); // global identity
+    try std.testing.expectEqual(@as(u8, 211), remapC(112)); // first stat -> KS 211
+    try std.testing.expectEqual(@as(u8, 224), remapC(125)); // last spare -> KS 224
+    try std.testing.expectEqual(@as(u8, 112), remapC(7000)); // first local -> KS 112
+    try std.testing.expectEqual(@as(u8, 210), remapC(7098)); // last local -> KS 210
+}
+
 const test_layout = KsLayout{
     .first_stat = 211,
     .last_spare = 224,

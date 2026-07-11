@@ -62,6 +62,7 @@ const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
+const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
@@ -522,14 +523,14 @@ inline fn ramEnd() [*c]u8 {
 
 // regCtoKS (defines.h static inline)
 inline fn regCtoKS(regC: i16) u8 {
-    var r: i32 = regC;
-    if (FIRST_STAT_REGISTER <= regC and regC <= LAST_SPARE_REGISTER) {
-        r += NUMBER_OF_LOCAL_REGISTERS;
-    }
-    if (FIRST_LOCAL_REGISTER <= regC and regC <= LAST_LOCAL_REGISTER) {
-        r -= (FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE);
-    }
-    return @truncate(@as(u32, @bitCast(r)));
+    return ks_register_remap.regCtoKS(regC, .{
+        .first_stat = FIRST_STAT_REGISTER,
+        .last_spare = LAST_SPARE_REGISTER,
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+        .last_local = LAST_LOCAL_REGISTER,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+    });
 }
 
 // clearScreen(cnt): lcd_fill_rect(0,0,SCREEN_WIDTH,240,LCD_SET_VALUE); frontier_status_bar.forceSBupdate();
