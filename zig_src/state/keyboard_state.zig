@@ -1,4 +1,5 @@
 const builtin = @import("builtin");
+const keyboard_hit_test = @import("keyboard_hit_test.zig"); // std-only click hit-test
 const runtime = @import("keyboard_state_runtime.zig");
 const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 
@@ -115,32 +116,11 @@ var mouse_key: [3]u8 = .{ 0, 0, 0 };
 
 // keyboard.c convertXYToKey (1949-1978): map a click coordinate to a key string.
 fn convertXYToKey(x: c_int, y: c_int) void {
-    mouse_key[0] = 0;
-    mouse_key[1] = 0;
+    const key10_special = runtime.currentBezel == 2 and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or (runtime.tam.mode == runtime.TM_SOLVE and (runtime.tam.function != runtime.ITM_SOLVE or runtime.calcMode != runtime.CM_PEM)) or (runtime.tam.mode == runtime.TM_KEY and runtime.tam.keyInputFinished));
+    const hit = keyboard_hit_test.convertXYToKey(&runtime.calcKeyboard, x, y, runtime.currentBezel, key10_special);
+    mouse_key[0] = hit.b0;
+    mouse_key[1] = hit.b1;
     mouse_key[2] = 0;
-    var i: usize = 0;
-    while (i < 43) : (i += 1) {
-        const xMin = runtime.calcKeyboard[i].x;
-        const yMin = runtime.calcKeyboard[i].y;
-        var xMax: c_int = undefined;
-        var yMax: c_int = undefined;
-        if (i == 10 and runtime.currentBezel == 2 and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or (runtime.tam.mode == runtime.TM_SOLVE and (runtime.tam.function != runtime.ITM_SOLVE or runtime.calcMode != runtime.CM_PEM)) or (runtime.tam.mode == runtime.TM_KEY and runtime.tam.keyInputFinished))) {
-            xMax = xMin + runtime.calcKeyboard[10].width[3];
-            yMax = yMin + runtime.calcKeyboard[10].height[3];
-        } else {
-            xMax = xMin + runtime.calcKeyboard[i].width[@intCast(runtime.currentBezel)];
-            yMax = yMin + runtime.calcKeyboard[i].height[@intCast(runtime.currentBezel)];
-        }
-        if (xMin <= x and x <= xMax and yMin <= y and y <= yMax) {
-            if (i < 6) {
-                mouse_key[0] = @intCast(@as(usize, '1') + i);
-            } else {
-                mouse_key[0] = @intCast(@as(usize, '0') + (i - 6) / 10);
-                mouse_key[1] = @intCast(@as(usize, '0') + (i - 6) % 10);
-            }
-            break;
-        }
-    }
 }
 
 // keyboard.c frmCalcMouseButtonPressed (1980-1994).
