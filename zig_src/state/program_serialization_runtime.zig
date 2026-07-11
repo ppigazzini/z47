@@ -51,7 +51,11 @@ fn parseU32LineZ(line: [*c]const u8) u32 {
     var idx: usize = 0;
 
     while (line[idx] >= '0' and line[idx] <= '9') : (idx += 1) {
-        value = value * 10 + (line[idx] - '0');
+        // Saturating: a malformed oversized digit string (e.g. a corrupt program-size
+        // field) clamps to u32-max instead of panicking on checked overflow; every
+        // valid field is small so this is exact for all well-formed input. The caller
+        // range-checks the result and rejects the file. (M1, REPORT-27 ANNEX B.)
+        value = value *| 10 +| (line[idx] - '0');
     }
 
     return value;

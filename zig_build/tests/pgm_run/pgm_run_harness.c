@@ -77,6 +77,15 @@ int main(int argc, char **argv) {
   printf("LOAD %s\n", pgm_path);
   fnLoadProgram(NOPARAM);
 
+  // M1 (REPORT-27 ANNEX B) load-only fuzz mode: exercise only the untrusted-file
+  // PARSE surface. If the load returned without an OOB/crash, the malformed input
+  // was handled -- pass, regardless of whether it produced a (garbage) program.
+  // Executing a loaded program is a separate surface, out of M1's scope.
+  if(getenv("PGM_LOAD_ONLY") != NULL) {
+    printf("LOAD-ONLY OK\n");
+    return 0;
+  }
+
   if(numberOfLabels == 0) {
     fprintf(stderr, "FAIL: load produced no labels (load failed or empty)\n");
     return 1;
@@ -91,7 +100,7 @@ int main(int argc, char **argv) {
       if(len >= sizeof(labelName)) len = sizeof(labelName) - 1;
       memcpy(labelName, labelList[i].labelPointer + 1, len);
       labelName[len] = 0;
-      runLabel = findNamedLabel(labelName);
+      runLabel = findNamedLabel(labelName, GLOBAL_LABELS);
       if(runLabel != INVALID_VARIABLE) break;
     }
   }

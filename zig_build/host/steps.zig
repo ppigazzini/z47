@@ -867,6 +867,36 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const pgm_run_step = b.step("pgm_run", "Load and XEQ a .p47 program on the full core (args: <file.p47>)");
     pgm_run_step.dependOn(&run_pgm_run.step);
 
+    // M1 (REPORT-27 ANNEX B): run a corpus of MALFORMED .p47 files through the real
+    // program-load path under AddressSanitizer. This is the one justified memory-
+    // correctness task -- the load path is the empirical bug surface (upstream 577
+    // statefile overflow, decode-literal-base-oob), and the existing cov tests only
+    // exercise VALID round-trips. A graceful reject (no labels -> exit 1) passes; an
+    // OOB read/write on a malformed file aborts ASAN -> the driver fails the build.
+    const pgm_run_asan = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "pgmRunAsan",
+        "zig_build/tests/pgm_run/pgm_run_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        .full,
+        false,
+    );
+    const pgm_load_fuzz_cmd = b.addSystemCommand(&.{ "bash", "zig_build/tests/pgm_run/run-pgm-load-fuzz.sh" });
+    pgm_load_fuzz_cmd.addArtifactArg(pgm_run_asan);
+    pgm_load_fuzz_cmd.addArg("zig_build/tests/pgm_run/malformed");
+    pgm_load_fuzz_cmd.setCwd(b.path("."));
+    const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "M1: run malformed .p47 files through the load path under ASAN");
+    pgm_load_fuzz_step.dependOn(&pgm_load_fuzz_cmd.step);
+
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
     // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.
