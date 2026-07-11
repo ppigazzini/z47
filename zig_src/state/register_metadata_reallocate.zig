@@ -1,4 +1,5 @@
 const descriptor_owned = @import("register_metadata_descriptor.zig");
+const reserved_register = @import("reserved_register.zig"); // std-only reserved-register predicates
 const payload_owned = @import("register_metadata_payload.zig");
 const memory_owned = @import("register_memory.zig");
 const runtime = @import("register_metadata_runtime.zig");
@@ -13,14 +14,11 @@ fn isSyntheticReservedCopySource(reg: runtime.calcRegister_t) bool {
 }
 
 fn isReservedRegister(reg: runtime.calcRegister_t) bool {
-    return reg > runtime.LAST_NAMED_VARIABLE and reg <= runtime.LAST_RESERVED_VARIABLE;
+    return reserved_register.isReservedRegister(reg, runtime.LAST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE);
 }
 
 fn normalizeLetteredReservedRegister(reg: runtime.calcRegister_t) runtime.calcRegister_t {
-    if (reg >= runtime.FIRST_RESERVED_VARIABLE and reg < runtime.FIRST_NAMED_RESERVED_VARIABLE) {
-        return reg - runtime.FIRST_RESERVED_VARIABLE + runtime.REGISTER_X;
-    }
-    return reg;
+    return reserved_register.normalizeLetteredReserved(reg, runtime.FIRST_RESERVED_VARIABLE, runtime.FIRST_NAMED_RESERVED_VARIABLE, runtime.REGISTER_X);
 }
 
 fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_blocks: u16) bool {
