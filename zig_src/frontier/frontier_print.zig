@@ -64,6 +64,7 @@ const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv:
 const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
 const glyph_rotate = @import("glyph_rotate.zig"); // std-only 24-dot glyph rotation
+const print_tab = @import("print_tab.zig"); // std-only printer tab-advance count
 const printer_char_map = @import("printer_char_map.zig"); // std-only HP82240 reverse lookup
 const bit_reverse = @import("bit_reverse.zig"); // std-only byte bit-reversal
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
@@ -847,10 +848,7 @@ fn printTabImpl(col: u16) void {
         printAdvance(0);
     }
     if (printerColumn < col) {
-        var i: u16 = (col - printerColumn) % 7;
-        if (i == 0 and printerColumn == 0 and col > 6) {
-            i = 7;
-        }
+        var i: u16 = print_tab.tabAdvanceCount(printerColumn, col);
         printerColumn += i;
         if (i != 0) {
             sendByteIR(27);
