@@ -85,6 +85,7 @@ const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const adm_encoding = @import("adm_encoding.zig"); // pure external-ADM angular encoding
 const word_size_math = @import("word_size_math.zig"); // pure short-integer word-size resolution
+const vbat_integrator = @import("vbat_integrator.zig"); // pure battery-voltage integrator
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
@@ -2475,21 +2476,9 @@ fn updateVbatIntegrated_impl(minutePulse: bool_t) callconv(.c) c_int {
         return 3100;
     }
     const tmpVbat = romGetVbat();
-    if (tmpVbat > 1500 and tmpVbat < 3100) {
-        if (tmpVbat < vbatVIntegrated) {
-            vbatVIntegrated = tmpVbat;
-            loopVar = 0;
-        } else if (tmpVbat > vbatVIntegrated) {
-            if (tmpVbat > 2900) { // !MONITOR_VOLTAGE_INTEGRATOR taken
-                vbatVIntegrated = tmpVbat;
-                loopVar = 0;
-            } else if (vbatVIntegrated < tmpVbat and minutePulse) {
-                const inc = @max(@as(c_int, 1), (tmpVbat - vbatVIntegrated) >> 4);
-                vbatVIntegrated = vbatVIntegrated + inc;
-            }
-        }
-    } else {
-        vbatVIntegrated = tmpVbat;
+    const r = vbat_integrator.integrate(vbatVIntegrated, tmpVbat, minutePulse);
+    vbatVIntegrated = r.integrated;
+    if (r.reset_loop) {
         loopVar = 0;
     }
     return tmpVbat;
