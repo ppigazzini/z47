@@ -41,6 +41,7 @@
 // hints use the extra_info build option.
 
 const std = @import("std");
+const softmenu_math = @import("softmenu_math.zig"); // std-only small integer-math helpers
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -1249,22 +1250,19 @@ const VAR_PPERonA = 1198;
 // Small C-macro helpers reproduced inline.
 // ---------------------------------------------------------------------------
 inline fn TO_BLOCKS(n: i32) u16 {
-    return @intCast((n + 3) >> 2); // BYTES_PER_BLOCK = 4, BPB = 2
+    return softmenu_math.toBlocks(n);
 }
 inline fn cmod(n: i32, d: i32) i32 {
-    // mod(n,d) = ((n%d + d) % d)
-    return @mod(@rem(n, d) + d, d);
+    return softmenu_math.cmod(n, d);
 }
 inline fn modulo(n: i32, d: i32) i32 {
-    // modulo(n,d): only valid for d>0 = (n%d<0 ? n%d+d : n%d)
-    const r = @rem(n, d);
-    return if (r < 0) r + d else r;
+    return softmenu_math.modulo(n, d);
 }
 inline fn maxI(a: i32, b: i32) i32 {
-    return if (a > b) a else b;
+    return softmenu_math.maxI(a, b);
 }
 inline fn minI(a: i32, b: i32) i32 {
-    return if (a < b) a else b;
+    return softmenu_math.minI(a, b);
 }
 inline fn REGISTER_REAL34_DATA(a: calcRegister_t) *real34_t {
     return abi.registerReal34Aligned(a);
@@ -2201,7 +2199,7 @@ inline fn tmpSS_via(tmpS: [*c]u8) [*c]const u8 {
     return tmpS;
 }
 inline fn cmodNonNeg(n: i32, d: i32) i32 {
-    return @rem(n, d);
+    return softmenu_math.cmodNonNeg(n, d);
 }
 // concat2: build a small comptime-known concatenation of two byte strings on a
 // scratch buffer. Used to reproduce C string-literal concatenation (e.g.
