@@ -1,4 +1,5 @@
 const build_options = @import("state_descriptor_storage_build_options");
+const descriptor_index = @import("descriptor_index.zig"); // std-only register-band index resolution
 
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
@@ -67,30 +68,14 @@ pub fn setGlobalDescriptor(reg: calcRegister_t, descriptor: register_descriptor_
 }
 
 pub fn tryGetNamedDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
-    if (reg < FIRST_NAMED_VARIABLE or numberOfNamedVariables == 0) {
-        return false;
-    }
-
-    const index: u16 = @intCast(reg - FIRST_NAMED_VARIABLE);
-    if (index >= numberOfNamedVariables) {
-        return false;
-    }
-
+    const index = descriptor_index.resolveIndex(reg, FIRST_NAMED_VARIABLE, numberOfNamedVariables) orelse return false;
     const headers = allNamedVariables orelse return false;
     descriptor.* = headers[index].header.descriptor;
     return true;
 }
 
 pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
-    if (reg < FIRST_NAMED_VARIABLE or numberOfNamedVariables == 0) {
-        return false;
-    }
-
-    const index: u16 = @intCast(reg - FIRST_NAMED_VARIABLE);
-    if (index >= numberOfNamedVariables) {
-        return false;
-    }
-
+    const index = descriptor_index.resolveIndex(reg, FIRST_NAMED_VARIABLE, numberOfNamedVariables) orelse return false;
     const headers = allNamedVariables orelse return false;
     headers[index].header.descriptor = descriptor;
     return true;
