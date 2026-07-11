@@ -60,6 +60,7 @@ plus the Zig-owned suites; confirm it exits 0, not just that it printed
 | host live-behavior smoke | `../zig_build/host/simulator_smoke.sh` | `zig build simulator_smoke --summary none` (non-blocking; known Xvfb pixman over-read) |
 | host core regression | `../zig_build/host/`, `../src/testSuite/` | `zig build test --summary none` |
 | native C-sanitizer lane | `../zig_build/host/steps.zig` | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
+| malformed-input load fuzz (untrusted `.p47`) | `../zig_build/tests/pgm_run/malformed/`, `../zig_build/tests/pgm_run/run-pgm-load-fuzz.sh` | `zig build pgm_load_fuzz --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | `zig build generated --summary none` |
 | docs surface | `../docs/code/` | `zig build docs --summary none` |
 | firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
@@ -104,6 +105,12 @@ The full current set is discoverable with `zig build --help`.
 - host serialization / RNG / time / file-offset change (Windows LLP64 risk):
   `bash .github/project/check-portable-int-widths.sh`, then the owner parity lane;
   let the CI Windows lane adjudicate the runtime width behavior
+- state-load or program-load parse change (untrusted-file surface): the owner
+  parity lane, then `zig build pgm_load_fuzz` to drive the malformed-input corpus
+  through the real load path under AddressSanitizer. The per-owner cov tests only
+  round-trip VALID files, so this lane is what covers truncated, oversized, and
+  garbage input. See the memory-safety posture in
+  [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 - generated-artifact change: `zig build generated`, then
   `git diff --exit-code` on the tracked generated artifacts
 - host simulator / GTK change: `zig build sim`; if it touches LCD paint, pointer,
