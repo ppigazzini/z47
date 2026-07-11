@@ -74,6 +74,7 @@ const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zi
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_curve_fitting = @import("frontier_curve_fitting.zig"); // M-callconv: Zig-to-Zig
 const plot_viewport = @import("plot_viewport.zig"); // std-only pure viewport math
+const plot_tick_snap = @import("plot_tick_snap.zig"); // std-only axis-tick mantissa snapping
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -809,21 +810,7 @@ pub export fn auto_tick(tick_int_f_in: f32) callconv(.c) f32 {
     tmpString2[2] = '0'; // "1.0e+01"
     const tick_int_f_mult: f32 = strtof(&tmpString2, null);
 
-    if (tick_int_f > 0) {
-        if (tick_int_f <= 1.3) {
-            tick_int_f = 1.0;
-        } else if (tick_int_f <= 1.7) {
-            tick_int_f = 1.5;
-        } else if (tick_int_f <= 3.0) {
-            tick_int_f = 2.0;
-        } else if (tick_int_f <= 6.5) {
-            tick_int_f = 5.0;
-        } else if (tick_int_f <= 9.9) {
-            tick_int_f = 7.5;
-        }
-    } else {
-        tick_int_f = 1;
-    }
+    tick_int_f = plot_tick_snap.snapTickMantissa(tick_int_f);
     tick_int_f *= tick_int_f_mult;
 
     return tick_int_f;
