@@ -26,6 +26,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const byte_move = @import("byte_move.zig"); // std-only overlap-safe byte move
+const hp_range_shift = @import("hp_range_shift.zig"); // std-only HP glyph range shift
 const str_append = @import("str_append.zig"); // std-only string append
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
@@ -237,11 +238,9 @@ const STD_SUP_9 = "\xa1\x69";
 // ---------------------------------------------------------------------------
 pub export fn charCodeHPReplacement(charCode: *u16) callconv(.c) void {
     if (replace(charCode)) {
-        // handled
-    } else if (charCode.* >= charCodeFromString(STD_1, null) and charCode.* <= charCodeFromString(STD_9, null)) {
-        charCode.* = charCode.* - charCodeFromString(STD_1, null) + charCodeFromString(STD_HP_1, null);
-    } else if (charCode.* >= charCodeFromString(STD_SUP_1, null) and charCode.* <= charCodeFromString(STD_SUP_9, null)) {
-        charCode.* = charCode.* - charCodeFromString(STD_SUP_1, null) + charCodeFromString(STD_HP_1, null);
+        // handled by replace
+    } else if (hp_range_shift.hpRangeShift(charCode.*, charCodeFromString(STD_1, null), charCodeFromString(STD_9, null), charCodeFromString(STD_HP_1, null), charCodeFromString(STD_SUP_1, null), charCodeFromString(STD_SUP_9, null))) |c| {
+        charCode.* = c;
     }
 }
 
