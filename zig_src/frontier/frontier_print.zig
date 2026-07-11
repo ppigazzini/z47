@@ -63,6 +63,7 @@ const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
+const printer_char_map = @import("printer_char_map.zig"); // std-only HP82240 reverse lookup
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -758,21 +759,7 @@ const hp82240CharMap = [256]u16{
 // IR helpers (file static & public). All compiled only when ir_printing.
 // ---------------------------------------------------------------------------
 fn charMap(charCode: u16) u8 {
-    if (lastFunc == ITM_PRINTERALPHA) { // map control-char symbols only for pr_alpha
-        var j: u32 = 0;
-        while (j < 32) : (j += 1) { // characters below 0x20
-            if (hp82240CharMap[j] == (charCode & ~@as(u16, 0x8000))) {
-                return @intCast(j);
-            }
-        }
-    }
-    var i: u32 = 128;
-    while (i < 255) : (i += 1) { // characters above 0x80
-        if (hp82240CharMap[i] == (charCode & ~@as(u16, 0x8000))) {
-            return @intCast(i);
-        }
-    }
-    return 0;
+    return printer_char_map.charMap(&hp82240CharMap, lastFunc == ITM_PRINTERALPHA, charCode);
 }
 
 // Thin wrappers: compute the flexible-array glyphs pointer past the font header
