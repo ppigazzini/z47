@@ -79,6 +79,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/state/sys_flag_bits.zig",
         "zig_src/state/shuffle_order.zig",
         "zig_src/state/alpha_case_select.zig",
+        "zig_src/state/descriptor_index.zig",
         "zig_src/state/keyboard_hit_test.zig",
         "zig_src/frontier/string_trim.zig",
         "zig_src/frontier/matrix_index.zig",
