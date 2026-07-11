@@ -46,6 +46,27 @@ pub fn gapChar1Radix(s: [*]const u8) [*]const u8 {
     return s;
 }
 
+/// Right-separator normalization (the decode owner's variant): the radix
+/// variant's looser length test but the full ',' '.' '\'' '_' set.
+pub fn gapChar1RightFull(s: [*]const u8) [*]const u8 {
+    if (s[0] != 0 and (s[1] == 0 or s[2] == 0)) {
+        return switch (s[0]) {
+            ',' => lit_comma1,
+            '.' => lit_dot1,
+            '\'' => lit_quote1,
+            '_' => lit_underscore1,
+            else => s,
+        };
+    }
+    return s;
+}
+
+/// The radix mark character: ',' when the normalized radix `r` is a comma or the
+/// wide-comma glyph `wcomma`, else '.'.
+pub fn radix34MarkChar(r: [*]const u8, wcomma: [*]const u8) u8 {
+    return if (r[0] == ',' or (r[0] == wcomma[0] and r[1] == wcomma[1])) ',' else '.';
+}
+
 fn bytes(p: [*]const u8) []const u8 {
     return std.mem.sliceTo(p, 0);
 }
@@ -73,4 +94,20 @@ test "gapChar1Radix normalizes only comma and dot, with the looser length test" 
     try std.testing.expectEqualStrings("'", bytes(gapChar1Radix("'\x00\x00")));
     // Both trailing bytes non-zero disqualifies it.
     try std.testing.expectEqualSlices(u8, &[_]u8{ ',', 0x05, 0x06 }, bytes(gapChar1Radix(",\x05\x06")));
+}
+
+test "gapChar1RightFull uses the looser length test with the full separator set" {
+    // Looser test: s[2] == 0 qualifies even with s[1] != 0.
+    try std.testing.expectEqualSlices(u8, &[_]u8{ '\'', 0x01 }, bytes(gapChar1RightFull("'\x05\x00")));
+    try std.testing.expectEqualSlices(u8, &[_]u8{ '_', 0x01 }, bytes(gapChar1RightFull("_\x00\x00")));
+    // Both trailing bytes non-zero disqualifies it.
+    try std.testing.expectEqualSlices(u8, &[_]u8{ ',', 0x05, 0x06 }, bytes(gapChar1RightFull(",\x05\x06")));
+}
+
+test "radix34MarkChar picks comma for a comma or the wide-comma glyph" {
+    const wcomma = "\xa7\x88";
+    try std.testing.expectEqual(@as(u8, ','), radix34MarkChar(",\x00", wcomma));
+    try std.testing.expectEqual(@as(u8, ','), radix34MarkChar(wcomma, wcomma));
+    try std.testing.expectEqual(@as(u8, '.'), radix34MarkChar(".\x00", wcomma));
+    try std.testing.expectEqual(@as(u8, '.'), radix34MarkChar("x\x00", wcomma));
 }
