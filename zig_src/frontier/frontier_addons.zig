@@ -58,6 +58,7 @@
 // `if (comptime dmcp_build)` via LIBRARY_FN_BASE trampolines.
 
 const std = @import("std");
+const str_addzeroes = @import("str_addzeroes.zig"); // std-only power-of-ten text
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -2175,12 +2176,7 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn addzeroes(st: [*c]u8, ix: u8) callconv(.c) void {
-    var iy: u8 = undefined;
-    _ = strcpy(st, "1");
-    iy = 0;
-    while (iy < ix) : (iy += 1) {
-        _ = strcat(st, "0");
-    }
+    str_addzeroes.addzeroes(st, ix);
 }
 
 pub export fn fnMultiplySI(multiplier: u16) callconv(.c) void {
