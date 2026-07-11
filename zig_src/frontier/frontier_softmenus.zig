@@ -108,9 +108,7 @@ const registerHeader_t = abi.RegisterHeader;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
-const nth_string = @import("nth_string.zig"); // std-only packed-string advance
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
-const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -1292,7 +1290,15 @@ inline fn RADIX34_MARK_CHAR() u8 {
 // getNthString: advance past n NUL-terminated strings.
 // ---------------------------------------------------------------------------
 pub export fn getNthString(ptr_in: [*c]u8, n_in: i16) callconv(.c) [*c]u8 {
-    return nth_string.getNthString(ptr_in, n_in);
+    var p = ptr_in;
+    var count = n_in;
+    while (count != 0) {
+        var len: usize = 0;
+        while (p[len] != 0) : (len += 1) {}
+        p += len + 1;
+        count -= 1;
+    }
+    return p;
 }
 
 // fnDynamicMenu is owned elsewhere; the two bridge helpers read its inputs.
@@ -1454,7 +1460,14 @@ pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
 }
 
 pub export fn _add_digitglyph(tmp: [*c]u8, xx: i16) callconv(.c) void {
-    digit_glyph.addDigitGlyph(tmp, xx, STD_0);
+    var i: usize = 0;
+    while (STD_0[i] != 0) : (i += 1) {
+        tmp[i] = STD_0[i];
+    }
+    tmp[i] = 0;
+    if (xx >= 1 and xx <= 9) {
+        tmp[0] +%= @intCast(xx);
+    }
 }
 
 pub export fn fnGetMenu(_: u16) callconv(.c) void {

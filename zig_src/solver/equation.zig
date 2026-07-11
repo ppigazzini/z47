@@ -18,7 +18,6 @@ const consts = abi.constants;
 // cursorShown/rightEllipsis out-params and tmpString contents are preserved).
 
 const runtime = @import("solve_runtime.zig");
-const exponent_scan = @import("exponent_scan.zig"); // std-only formula exponent scan
 const solve_build_options = @import("solve_build_options");
 
 // hal/gui.h: calcModeAimGui() is a no-op macro on DMCP builds (and when the sim
@@ -615,7 +614,26 @@ fn _showExponent(bufPtr: *[*c]u8, strPtr: *[*c]const u8, strWidth: *i16) linksec
 }
 
 fn _checkExponent(strPtr_in: [*c]const u8) linksection(runtime.code_section) u32 {
-    return exponent_scan.checkExponent(strPtr_in);
+    var p = strPtr_in;
+    var digits: u32 = 0;
+    while (true) {
+        switch (p[0]) {
+            '0'...'9' => {
+                digits += 1;
+                p += 1;
+            },
+            '^', ',', '.' => return 0,
+            '+', '-' => {
+                if (digits == 0) {
+                    digits += 1;
+                    p += 1;
+                } else {
+                    return digits;
+                }
+            },
+            else => return digits,
+        }
+    }
 }
 
 fn _addSpace(bufPtr: *[*c]u8, strWidth: *i16, doubleBytednessHistory: *u32) linksection(runtime.code_section) void {

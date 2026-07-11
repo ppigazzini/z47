@@ -1,12 +1,17 @@
 const std = @import("std");
-const manifest_util = @import("manifest.zig"); // std-only manifest path membership
 const build_common = @import("../common.zig");
 
 const legacy_gtk_sources_manifest = @embedFile("gtk_gui_legacy_gtk_sources.txt");
 const runtime_helper_sources_manifest = @embedFile("gtk_gui_runtime_helper_sources.txt");
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
-    return manifest_util.manifestContainsPath(manifest, needle);
+    var lines = std.mem.tokenizeAny(u8, manifest, "\r\n");
+    while (lines.next()) |line_raw| {
+        const line = std.mem.trim(u8, line_raw, " \t");
+        if (line.len == 0 or line[0] == '#') continue;
+        if (std.mem.eql(u8, line, needle)) return true;
+    }
+    return false;
 }
 
 pub fn filterGtkSources(b: *std.Build, gtk_sources: [][]const u8) ![][]const u8 {

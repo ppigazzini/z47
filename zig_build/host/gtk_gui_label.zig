@@ -1,5 +1,3 @@
-const gtk_int = @import("gtk_int.zig"); // std-only GTK integer helpers
-const space_label = @import("space_label.zig"); // std-only space-label patch
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Host GTK label/text helpers ported from src/c47-gtk/gtkGui.c. Starts with the
@@ -153,7 +151,7 @@ fn isR47FAM() bool {
 // max(item, -item) from gtkGui.c, i.e. abs, computed in i32 to match C's
 // integer promotion (so i16 MIN can't trap).
 fn absItem(x: i16) i16 {
-    return gtk_int.absItem(x);
+    return @intCast(@max(@as(i32, x), -@as(i32, x)));
 }
 
 pub fn softmenuName(idx: i16) [*c]const u8 {
@@ -166,7 +164,14 @@ fn strEq(a: [*c]const u8, b: [*c]const u8) bool {
 
 // gtkGui.c's "space -> middle-dot" label patch (lbl was a lone 0x20).
 fn patchSpaceLabel(lbl: *[22]u8) void {
-    space_label.patchSpaceLabel(lbl);
+    if (lbl[0] == 32 and lbl[1] == 0) {
+        lbl[0] = 0xC2;
+        lbl[1] = 0xB7;
+        lbl[2] = '_';
+        lbl[3] = 0xc2;
+        lbl[4] = 0xb7;
+        lbl[5] = 0;
+    }
 }
 
 /// gtkGui.c labelCaptionNormal: renders a key's primary button caption plus the

@@ -25,7 +25,6 @@
 
 const std = @import("std");
 const abi = @import("abi");
-const byte_move = @import("byte_move.zig"); // std-only overlap-safe byte move
 fn hpRangeShift(char_code: u16, std_1: u16, std_9: u16, std_hp_1: u16, std_sup_1: u16, std_sup_9: u16) ?u16 {
     if (char_code >= std_1 and char_code <= std_9) return char_code - std_1 + std_hp_1;
     if (char_code >= std_sup_1 and char_code <= std_sup_9) return char_code - std_sup_1 + std_hp_1;
@@ -984,7 +983,22 @@ pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) call
     if (nIn == 0 or pDest == null or pSource == null) {
         return dest;
     }
-    byte_move.xcopy(pDest, pSource, nIn);
+    var n = nIn;
+    if (@intFromPtr(pSource) > @intFromPtr(pDest)) {
+        var d = pDest;
+        var s = pSource;
+        while (n != 0) {
+            n -%= 1;
+            d[0] = s[0];
+            d += 1;
+            s += 1;
+        }
+    } else if (@intFromPtr(pSource) < @intFromPtr(pDest)) {
+        while (n != 0) {
+            n -%= 1;
+            pDest[n] = pSource[n];
+        }
+    }
     return dest;
 }
 
