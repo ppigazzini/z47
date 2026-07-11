@@ -70,6 +70,7 @@ const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char norma
 const radix_mark = @import("radix_mark.zig"); // std-only radix-mark buffer fill
 const integer_separators = @import("integer_separators.zig"); // std-only integer separator splice
 const str_prepend = @import("str_prepend.zig"); // std-only in-place string prepend
+const base_number = @import("base_number.zig"); // std-only base-number subscript encoder
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -2330,15 +2331,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
 // addBaseNumber / longIntegerToHexDisplayString / shortIntegerToDisplayString
 // ===========================================================================
 pub export fn addBaseNumber(displayString: [*c]u8, base: i16) callconv(.c) void {
-    if (base <= 16) {
-        _ = strcat(displayString, STD_BASE_2);
-        displayString[strlen(displayString) - 1] +%= @intCast(base - 2);
-    } else {
-        _ = strcat(displayString, STD_SUB_0);
-        displayString[strlen(displayString) - 1] +%= @intCast(@divTrunc(base, 10));
-        _ = strcat(displayString, STD_SUB_0);
-        displayString[strlen(displayString) - 1] +%= @intCast(@rem(base, 10));
-    }
+    base_number.addBaseNumber(displayString, base, STD_BASE_2, STD_SUB_0);
 }
 
 pub export fn longIntegerToHexDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, baseOverride: u8, width: i32) callconv(.c) void {
