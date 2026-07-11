@@ -23,6 +23,14 @@ pub fn loadProgram() void {
     }
     const loaded_version = header.loaded_version;
     const program_size_in_bytes = header.program_size_in_bytes;
+    // Reject a malformed/corrupt program size: the program-memory domain is u16
+    // (addSpaceAfterPrograms/freeProgramBytes), so a size above 0xFFFF cannot be a
+    // real program and would otherwise overflow the @intCast in applyLoadedProgram.
+    // Valid files are always well within this bound. (M1, REPORT-27 ANNEX B.)
+    if (program_size_in_bytes > 0xFFFF) {
+        runtime.displayReadError();
+        return;
+    }
     load_apply_owned.applyLoadedProgram(program_size_in_bytes);
 
     if (loaded_version < runtime.OLDEST_COMPATIBLE_PROGRAM_VERSION) {
