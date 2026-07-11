@@ -63,7 +63,6 @@ const tamState_t = abi.TamState;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
-const pem_offset = @import("pem_offset.zig"); // std-only PEM left-offset / status-bar Y-shift logic
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
@@ -896,16 +895,22 @@ const FLAG_SBtime: i32 = 0x802D;
 const FLAG_SBwoy: i32 = 0x8057;
 const Y_SHIFT_LO: i32 = Y_POSITION_OF_REGISTER_T_LINE;
 inline fn yShift() i32 {
-    return pem_offset.yShift(
-        getSystemFlag(FLAG_SBdate),
-        getSystemFlag(FLAG_SBtime),
-        getSystemFlag(FLAG_SBwoy),
-        getSystemFlag(FLAG_SBshfR),
-        Y_SHIFT_LO,
-    );
+    const sbDate = getSystemFlag(FLAG_SBdate);
+    const sbTime = getSystemFlag(FLAG_SBtime);
+    const sbWoy = getSystemFlag(FLAG_SBwoy);
+    const sbarShift = getSystemFlag(FLAG_SBshfR);
+    if ((!sbDate or !(sbTime or sbWoy)) and !sbarShift) {
+        return 0;
+    } else {
+        return if (sbarShift) 0 else Y_SHIFT_LO;
+    }
 }
 pub export fn pemLeftOffset(y: i32) callconv(.c) i32 {
-    return pem_offset.pemLeftOffset(y, Y_POSITION_OF_REGISTER_T_LINE, xShiftIsRight(), yShift() == 0);
+    if (y > Y_POSITION_OF_REGISTER_T_LINE or xShiftIsRight() or yShift() == 0) {
+        return 0;
+    } else {
+        return 16; // Offset to allow for f/g
+    }
 }
 
 // _isAngleType (static)

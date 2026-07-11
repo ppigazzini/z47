@@ -69,8 +69,6 @@ const font_t = abi.Font;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const plot_zoom = @import("plot_zoom.zig"); // std-only plot viewport zoom
-const plot_range_zero = @import("plot_range_zero.zig"); // std-only zero-axis range inclusion
-const plot_range_degenerate = @import("plot_range_degenerate.zig"); // std-only degenerate-range expansion
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -964,25 +962,53 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
 
     // include the 0 axis
     if (getSystemFlag(FLAG_SHOWX)) {
-        const r = plot_range_zero.includeZeroAxis(x_min, x_max);
-        x_min = r.min;
-        x_max = r.max;
+        if (x_min > 0.0 and x_max > 0.0) {
+            if (x_min <= x_max) {
+                x_min = -0.05 * x_max;
+            } else {
+                x_min = 0.0;
+            }
+        }
+        if (x_min < 0.0 and x_max < 0.0) {
+            if (x_min >= x_max) {
+                x_min = -0.05 * x_max;
+            } else {
+                x_max = 0.0;
+            }
+        }
     }
     if (getSystemFlag(FLAG_SHOWY)) {
-        const r = plot_range_zero.includeZeroAxis(y_min, y_max);
-        y_min = r.min;
-        y_max = r.max;
+        if (y_min > 0.0 and y_max > 0.0) {
+            if (y_min <= y_max) {
+                y_min = -0.05 * y_max;
+            } else {
+                y_min = 0.0;
+            }
+        }
+        if (y_min < 0.0 and y_max < 0.0) {
+            if (y_min >= y_max) {
+                y_min = -0.05 * y_max;
+            } else {
+                y_max = 0.0;
+            }
+        }
     }
 
     // modify the draw range if the min == max
-    const yr = plot_range_degenerate.expandDegenerateRange(y_min, y_max);
-    y_min = yr.min;
-    y_max = yr.max;
-    const xr = plot_range_degenerate.expandDegenerateRange(x_min, x_max);
-    x_min = xr.min;
-    x_max = xr.max;
     var dx: f32 = x_max - x_min;
     var dy: f32 = y_max - y_min;
+    if (dy == 0.0) {
+        dy = 1.0;
+        y_max = y_min + dy / 2.0;
+        y_min = y_max - dy;
+        dy = y_max - y_min;
+    }
+    if (dx == 0.0) {
+        dx = 1.0;
+        x_max = x_min + dx / 2.0;
+        x_min = x_max - dx;
+        dx = x_max - x_min;
+    }
 
     // Calc zoom scales
     var plotzoomy: f32 = 1;

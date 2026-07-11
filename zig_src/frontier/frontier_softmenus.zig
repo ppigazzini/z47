@@ -110,9 +110,6 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
 const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
-const menu_strip = @import("menu_strip.zig"); // std-only menu-name page-marker stripping
-const slot_dedup = @import("slot_dedup.zig"); // std-only adjacent fixed-slot dedup
-const softkey_geometry = @import("softkey_geometry.zig"); // std-only softkey rectangle geometry
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
 const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
@@ -1379,7 +1376,23 @@ inline fn menuPageNumberU() u16 {
 }
 
 pub export fn _stripMenuName(buffer: [*c]u8, name: [*c]u8) callconv(.c) void {
-    menuPageNumber = @intCast(menu_strip.stripMenuName(name, buffer, STD_CR[0], STD_CR[1], STD_0[0], STD_9[0]));
+    var i: usize = 0;
+    menuPageNumber = 1;
+    while (buffer[i] != 0) {
+        if ((buffer[i] == STD_CR[0]) and (buffer[i + 1] == STD_CR[1])) {
+            if ((buffer[i + 3] == 0) and (buffer[i + 2] > STD_0[0]) and (buffer[i + 2] <= STD_9[0])) {
+                name[i] = 0;
+                menuPageNumber = @intCast(@as(i32, buffer[i + 2]) - @as(i32, STD_0[0]));
+            } else {
+                menuPageNumber = 0;
+            }
+            break;
+        } else {
+            name[i] = buffer[i];
+            i += 1;
+        }
+    }
+    name[i] = 0;
 }
 
 pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
@@ -1494,7 +1507,16 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
 // already be sorted). Local named labels can repeat across the scan-forward
 // search, so the CONV/label menu shows each name once. Returns the new count.
 fn _removeDuplicateLabels(n: i16) i16 {
-    return slot_dedup.dedupeAdjacentSlots(tmpString, n, 15);
+    if (n == 0) return 0;
+    var j: i16 = 0;
+    var i: i16 = 1;
+    while (i < n) : (i += 1) {
+        if (!slotsEqual(tmpString + 15 * @as(usize, @intCast(i)), tmpString + 15 * @as(usize, @intCast(j)))) {
+            j += 1;
+            _ = frontier_char_string.xcopy(tmpString + 15 * @as(usize, @intCast(j)), tmpString + 15 * @as(usize, @intCast(i)), 15);
+        }
+    }
+    return j + 1;
 }
 
 // Byte-wise C strcmp equivalence for two NUL-terminated 15-byte name slots.
@@ -1834,17 +1856,17 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
     if (GRAPHMODE() and xSoftkey >= 2) {
         return 0;
     }
-    if (softkey_geometry.softkeyXBounds(xSoftkey, KEY_X)) |xb| {
-        x1.* = xb[0];
-        x2.* = xb[1];
+    if (0 <= xSoftkey and xSoftkey <= 5) {
+        x1.* = @intCast(KEY_X[@intCast(xSoftkey)]);
+        x2.* = @intCast(KEY_X[@intCast(xSoftkey + 1)]);
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: xSoftkey={d} must be from 0 to 5", .{@as(i32, xSoftkey)});
         frontier_error.displayBugScreen(errorMessage);
         return 0;
     }
-    if (softkey_geometry.softkeyYBounds(ySoftKey, SOFTMENU_HEIGHT, 217)) |yb| {
-        y1.* = yb[0];
-        y2.* = yb[1];
+    if (0 <= ySoftKey and ySoftKey <= 2) {
+        y1.* = 217 - SOFTMENU_HEIGHT * ySoftKey;
+        y2.* = y1.* + SOFTMENU_HEIGHT;
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: ySoftKey={d} but must be from 0 to 2!", .{@as(i32, ySoftKey)});
         frontier_error.displayBugScreen(errorMessage);
