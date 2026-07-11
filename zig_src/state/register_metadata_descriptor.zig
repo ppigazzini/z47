@@ -1,37 +1,31 @@
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("stack_runtime.zig");
+const codec = @import("register_descriptor_codec.zig"); // std-only descriptor bit-field codec
 
-const pointer_mask: runtime.register_descriptor_t = 0x0000ffff;
-const data_type_mask: runtime.register_descriptor_t = 0x000f0000;
-const tag_mask: runtime.register_descriptor_t = 0x01f00000;
-const data_type_shift: u5 = 16;
-const tag_shift: u5 = 20;
 const invalid_data_type: u32 = 31;
 
 fn descriptorDataType(descriptor: runtime.register_descriptor_t) u32 {
-    return (descriptor & data_type_mask) >> data_type_shift;
+    return codec.dataType(descriptor);
 }
 
 fn descriptorTag(descriptor: runtime.register_descriptor_t) u32 {
-    return (descriptor & tag_mask) >> tag_shift;
+    return codec.tag(descriptor);
 }
 
 fn descriptorPointer(descriptor: runtime.register_descriptor_t) u16 {
-    return @intCast(descriptor & pointer_mask);
+    return codec.pointer(descriptor);
 }
 
 fn withDataTypeTag(descriptor: runtime.register_descriptor_t, data_type: u16, tag: u32) runtime.register_descriptor_t {
-    return (descriptor & ~(data_type_mask | tag_mask)) |
-        ((@as(runtime.register_descriptor_t, data_type) & 0xf) << data_type_shift) |
-        ((tag & 0x1f) << tag_shift);
+    return codec.withDataTypeTag(descriptor, data_type, tag);
 }
 
 fn withTag(descriptor: runtime.register_descriptor_t, tag: u32) runtime.register_descriptor_t {
-    return (descriptor & ~tag_mask) | ((tag & 0x1f) << tag_shift);
+    return codec.withTag(descriptor, tag);
 }
 
 fn withPointer(descriptor: runtime.register_descriptor_t, mem_ptr: u16) runtime.register_descriptor_t {
-    return (descriptor & ~pointer_mask) | @as(runtime.register_descriptor_t, mem_ptr);
+    return codec.withPointer(descriptor, mem_ptr);
 }
 
 pub fn dataPointerFromDescriptor(descriptor: runtime.register_descriptor_t) ?*anyopaque {
