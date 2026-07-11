@@ -69,6 +69,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/state/word_scan.zig",
         "zig_src/state/keyboard_hit_test.zig",
         "zig_src/frontier/string_trim.zig",
+        "zig_src/frontier/matrix_index.zig",
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/state/keycode_last.zig",
         "zig_src/mathematics/math_real_predicates.zig",
