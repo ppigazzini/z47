@@ -67,6 +67,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/state/data_file_bytes.zig",
         "zig_src/state/name_glyph.zig",
         "zig_src/state/word_scan.zig",
+        "zig_src/state/saved_register.zig",
         "zig_src/state/keyboard_hit_test.zig",
         "zig_src/frontier/string_trim.zig",
         "zig_src/frontier/matrix_index.zig",
