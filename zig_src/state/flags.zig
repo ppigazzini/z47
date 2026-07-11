@@ -1,5 +1,6 @@
 const builtin = @import("builtin");
 const runtime = @import("flags_runtime.zig");
+const flag_classify = @import("flag_classify.zig"); // std-only flag classification
 
 pub export var systemFlags0Changed: u64 = ~@as(u64, 0);
 pub export var systemFlags1Changed: u64 = ~@as(u64, 0);
@@ -68,53 +69,7 @@ const flip_flags = [_]u16{
 };
 
 fn needsRefreshState(system_flag: u16) bool {
-    return switch (system_flag) {
-        0x8000,
-        0xc001,
-        0xc002,
-        0xc003,
-        0x8004,
-        0x8017,
-        0x8005,
-        0x8006,
-        0x800d,
-        0x8009,
-        0x800a,
-        0x8018,
-        0x801b,
-        0x801c,
-        0xc029,
-        0x802b,
-        0x8056,
-        0x803c,
-        0x8043,
-        0x8044,
-        0x8045,
-        0x800b,
-        0x800c,
-        0x8041,
-        0x8046,
-        0xc00f,
-        0x803d,
-        0x8011,
-        0x804b,
-        0x804c,
-        0x804d,
-        0x804e,
-        0x805a,
-        0x804f,
-        0x8050,
-        0x8051,
-        0x8052,
-        0x8053,
-        0x8054,
-        0x8058,
-        0x8064,
-        0x8069, // FLAG_BOLD
-        0x806a, // FLAG_SIGZEROS
-        => true,
-        else => false,
-    };
+    return flag_classify.needsRefreshState(system_flag);
 }
 
 fn needsClearStatusBar(system_flag: u16) bool {
@@ -145,15 +100,15 @@ fn needsClearStatusBar(system_flag: u16) bool {
 }
 
 fn maskedFlagFromSigned(sf: i32) i32 {
-    return sf & 0x3fff;
+    return flag_classify.maskedFlagFromSigned(sf);
 }
 
 fn maskedFlagFromUnsigned(sf: u16) i32 {
-    return @as(i32, sf & 0x3fff);
+    return flag_classify.maskedFlagFromUnsigned(sf);
 }
 
 fn isWriteProtectedSystemFlag(flag: u16) bool {
-    return (flag & 0x4000) != 0;
+    return flag_classify.isWriteProtectedSystemFlag(flag);
 }
 
 fn setUserFlag(flag: u16) void {
