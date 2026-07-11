@@ -1,7 +1,8 @@
 const runtime = @import("stack_runtime.zig");
 
+const saved_register = @import("saved_register.zig"); // std-only saved-register mapping
 fn savedRegisterFor(reg: runtime.calcRegister_t) runtime.calcRegister_t {
-    return runtime.SAVED_REGISTER_X - runtime.REGISTER_X + reg;
+    return saved_register.savedRegisterFor(reg, runtime.SAVED_REGISTER_X - runtime.REGISTER_X);
 }
 
 fn clearSavedStackRegisters() void {
