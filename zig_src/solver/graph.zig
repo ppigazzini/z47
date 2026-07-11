@@ -45,7 +45,6 @@ const real34Matrix_t = abi.Real34Matrix;
 const font_t = opaque {};
 
 const cplx_t = abi.Complex;
-const plot_step_size = @import("plot_step_size.zig"); // std-only step-size math
 
 const PlotPoint = extern struct {
     x: f64,
@@ -589,7 +588,17 @@ pub export fn validateDiscontinuityResolution(buffer: [*c]PlotPoint, count: c_in
 }
 
 pub export fn calculateNewStepSize(discontinuityDetected: c_int, grad1: f64, grad2: f64, grad2IncreaseDetected: bool, dx0: f64) callconv(.c) f64 {
-    return plot_step_size.calculateNewStepSize(discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0);
+    if (discontinuityDetected > 0 and discontinuityDetected <= FINE) {
+        return dJMP * dx0;
+    } else if (grad2 == 0 or grad1 == 0) {
+        return dx0;
+    } else if (grad2IncreaseDetected) {
+        const ratio1: f64 = grad2 / grad1;
+        const ratio2: f64 = grad1 / grad2;
+        return dx0 * (if (ratio1 > SS1 or ratio2 > SS1) @as(f64, 0.5) else @as(f64, 1.0));
+    } else {
+        return dx0;
+    }
 }
 
 pub export fn enterHighResMode(inHighResMode: *bool, highResCount: *c_int, highResStartX: *f64, baselineCurvatureChange: *f64, cumulativeCurvatureChange: *f64, x: f64, curvatureChange: f64) callconv(.c) void {

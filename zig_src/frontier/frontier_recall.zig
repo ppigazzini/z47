@@ -20,7 +20,10 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // Types
 // ---------------------------------------------------------------------------
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const matrix_index = @import("matrix_index.zig"); // std-only matrix linear-index decomposition
+const RowCol = struct { row: i32, col: i32 };
+fn linearToRowCol(ix: i32, cols: i32) RowCol {
+    return .{ .row = @divTrunc(ix - 1, cols) + 1, .col = @rem(ix - 1, cols) + 1 };
+}
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -619,7 +622,7 @@ pub export fn fnRecallVElement(ix: u16) callconv(.c) void {
     var cols: u16 = undefined;
     if (getMatrixDims(REGISTER_X, "In function fnRecallVElement:", &rows, &cols)) {
         // C int promotion: (ix-1)/cols is signed int arithmetic.
-        const rc = matrix_index.linearToRowCol(@as(i32, ix), @as(i32, cols));
+        const rc = linearToRowCol(@as(i32, ix), @as(i32, cols));
         frontier.setIRegisterAsInt(false, @intCast(rc.row));
         frontier.setJRegisterAsInt(false, @intCast(rc.col));
         matrixIndex = @intCast(REGISTER_X);
@@ -643,7 +646,7 @@ pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
     matrixIndex = @intCast(REGISTER_X);
     var ix: u16 = 1;
     while (@as(u32, ix) <= @as(u32, rows) * @as(u32, cols) and lastErrorCode == 0) : (ix +%= 1) { // for 5x5, from 1 to 25
-        const rc = matrix_index.linearToRowCol(@as(i32, ix), @as(i32, cols));
+        const rc = linearToRowCol(@as(i32, ix), @as(i32, cols));
         frontier.setIRegisterAsInt(false, @intCast(rc.row));
         frontier.setJRegisterAsInt(false, @intCast(rc.col));
         _fnRecallElement(false);
