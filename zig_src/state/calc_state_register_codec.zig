@@ -10,6 +10,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const vector_shape = @import("vector_shape.zig"); // std-only matrix vector-shape
+const data_file_bytes = @import("data_file_bytes.zig"); // std-only data-file byte transforms
 const text = @import("calc_state_text.zig");
 const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
 
@@ -449,7 +450,7 @@ fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
 }
 
 fn hexVal(c: u8) u32 {
-    return if (c >= 'A') @as(u32, c - 'A' + 10) else @as(u32, c - '0');
+    return data_file_bytes.hexVal(c);
 }
 
 fn setMatrixDims(regist: i16, rows: u16, cols: u16) void {
@@ -476,10 +477,7 @@ const FLAG_DMY: c_int = 0xc002;
 
 // Data files may localize the decimal separator; normalize ',' -> '.' in place.
 fn dataFileCommaToPeriod(str: [*c]u8) void {
-    var p = str;
-    while (p[0] != 0) : (p += 1) {
-        if (p[0] == ',') p[0] = '.';
-    }
+    data_file_bytes.commaToPeriod(str);
 }
 
 // Normalize any accepted complex form -- "(3-i4)", "+3+i4", "i4", stock "3 -4" --
