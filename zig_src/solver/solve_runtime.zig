@@ -45,20 +45,24 @@ pub extern fn z47_solver_fnProgrammableiSum(label: u16) void;
 pub extern fn z47_solver_fnProgrammableiProduct(label: u16) void;
 pub extern fn z47_solver_fn1stDeriv(label: u16) void;
 
+const label_range = @import("label_range.zig"); // std-only label/register band predicates
+inline fn labelBands() label_range.Bands {
+    return .{ .first_label = FIRST_LABEL, .last_label = LAST_LABEL, .reg_x = REGISTER_X, .reg_t = REGISTER_T, .invalid_variable = INVALID_VARIABLE };
+}
 pub inline fn isLabel(label: u16) bool {
-    return FIRST_LABEL <= label and label <= LAST_LABEL;
+    return label_range.isLabel(labelBands(), label);
 }
 
 pub inline fn isStackRegister(label: u16) bool {
-    return REGISTER_X <= @as(calcRegister_t, @intCast(label)) and @as(calcRegister_t, @intCast(label)) <= REGISTER_T;
+    return label_range.isStackRegister(labelBands(), label);
 }
 
 pub inline fn isInvalidVariable(variable: u16) bool {
-    return variable == INVALID_VARIABLE;
+    return label_range.isInvalidVariable(labelBands(), variable);
 }
 
 pub inline fn labelToProgram(label: u16) u16 {
-    return label - FIRST_LABEL;
+    return label_range.labelToProgram(labelBands(), label);
 }
 
 pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
