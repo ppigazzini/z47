@@ -6,6 +6,7 @@
 // _row_columnNorm) are static in matrix.c, so they stay file-local here; only
 // the public commands are bridge-renamed.
 const std = @import("std");
+const math_mim_util = @import("math_mim_util.zig"); // std-only matrix-input helpers
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_real_predicates = @import("math_real_predicates.zig");
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
@@ -60,7 +61,7 @@ inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     return &e[i];
 }
 inline fn truncToU16(v: i32) u16 {
-    return @truncate(@as(u32, @bitCast(v)));
+    return math_mim_util.truncToU16(v);
 }
 
 // getArg -- read REGISTER_X/Y as an integral real_t (long integer or real34
@@ -493,7 +494,7 @@ fn _row_columnNorm(pParam: u16) void {
 }
 
 inline fn numEl(h: *const matrixHeader_t) usize {
-    return @as(usize, h.matrixRows) * h.matrixColumns;
+    return math_mim_util.numEl(h.matrixRows, h.matrixColumns);
 }
 fn writeNnz(nnzi: u32) void {
     var nnz: real_t = undefined;
