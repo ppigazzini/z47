@@ -1,4 +1,5 @@
 const descriptor_owned = @import("register_metadata_descriptor.zig");
+const register_id_valid = @import("register_id_valid.zig"); // std-only register-ID band validity
 const local_registers_owned = @import("register_metadata_local_registers.zig");
 const payload_owned = @import("register_metadata_payload.zig");
 const reallocate_owned = @import("register_metadata_reallocate.zig");
@@ -29,11 +30,7 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
 
 pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     // Legacy callers may still issue malformed register IDs during migration.
-    if (reg < 0 or
-        (reg > runtime.LAST_GLOBAL_REGISTER and reg < runtime.FIRST_NAMED_VARIABLE) or
-        (reg > runtime.LAST_RESERVED_VARIABLE and reg < runtime.FIRST_LOCAL_REGISTER) or
-        reg > runtime.LAST_LOCAL_REGISTER)
-    {
+    if (!register_id_valid.isValidRegisterId(reg, runtime.LAST_GLOBAL_REGISTER, runtime.FIRST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE, runtime.FIRST_LOCAL_REGISTER, runtime.LAST_LOCAL_REGISTER)) {
         runtime.reportUndefSourceVar();
         return;
     }
