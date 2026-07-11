@@ -112,6 +112,7 @@ const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot st
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
 const menu_strip = @import("menu_strip.zig"); // std-only menu-name page-marker stripping
 const slot_dedup = @import("slot_dedup.zig"); // std-only adjacent fixed-slot dedup
+const softkey_geometry = @import("softkey_geometry.zig"); // std-only softkey rectangle geometry
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
 const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
@@ -1833,17 +1834,17 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
     if (GRAPHMODE() and xSoftkey >= 2) {
         return 0;
     }
-    if (0 <= xSoftkey and xSoftkey <= 5) {
-        x1.* = @intCast(KEY_X[@intCast(xSoftkey)]);
-        x2.* = @intCast(KEY_X[@intCast(xSoftkey + 1)]);
+    if (softkey_geometry.softkeyXBounds(xSoftkey, KEY_X)) |xb| {
+        x1.* = xb[0];
+        x2.* = xb[1];
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: xSoftkey={d} must be from 0 to 5", .{@as(i32, xSoftkey)});
         frontier_error.displayBugScreen(errorMessage);
         return 0;
     }
-    if (0 <= ySoftKey and ySoftKey <= 2) {
-        y1.* = 217 - SOFTMENU_HEIGHT * ySoftKey;
-        y2.* = y1.* + SOFTMENU_HEIGHT;
+    if (softkey_geometry.softkeyYBounds(ySoftKey, SOFTMENU_HEIGHT, 217)) |yb| {
+        y1.* = yb[0];
+        y2.* = yb[1];
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function initSoftkeyCoordinates: ySoftKey={d} but must be from 0 to 2!", .{@as(i32, ySoftKey)});
         frontier_error.displayBugScreen(errorMessage);
