@@ -65,6 +65,7 @@ const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zi
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const numeral_grouping = @import("numeral_grouping.zig"); // std-only digit-group separator math
 const fraction_encode = @import("fraction_encode.zig"); // std-only fraction glyph encoder
+const word_break = @import("word_break.zig"); // std-only display word-break trim
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -3728,16 +3729,7 @@ fn SHOW_reset() void {
 }
 
 fn checkAndEat(source_p: *i16, last: i16, dest: *i16) void {
-    var ix: u8 = 0;
-    if (source_p.* < last and !GROUPLEFT_DISABLED()) {
-        while (ix < 16) : (ix += 1) {
-            if (tmpString[@intCast(dest.* - 2)] == STD_SPACE_PUNCTUATION[0] and tmpString[@intCast(dest.* - 1)] == STD_SPACE_PUNCTUATION[1]) break;
-            if (tmpString[@intCast(dest.* - 1)] == 32) break;
-            dest.* -= 1;
-            source_p.* -= 1;
-        }
-        tmpString[@intCast(dest.*)] = 0;
-    }
+    word_break.checkAndEat(tmpString, source_p, last, dest, GROUPLEFT_DISABLED(), STD_SPACE_PUNCTUATION);
 }
 
 fn printXSHOW(am: i16, d: i16, df: i16, dfd: i16, dt: i16, tagPolar: bool_t) void {
