@@ -84,6 +84,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const adm_encoding = @import("adm_encoding.zig"); // pure external-ADM angular encoding
+const word_size_math = @import("word_size_math.zig"); // pure short-integer word-size resolution
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
@@ -1366,29 +1367,18 @@ pub export fn fnGetWordSize(unusedButMandatoryParameter: u16) callconv(.c) void 
 }
 
 pub export fn fnSetWordSize(WS_in: u16) callconv(.c) void {
-    var WS = WS_in;
-    if (shortIntegerWordSize != @as(u8, @truncate(WS))) {
+    const resolved = word_size_math.resolveWordSize(WS_in, shortIntegerWordSize);
+
+    if (resolved.changed) {
         setSystemFlagChanged(SETTING_SINT_WS);
         screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
     }
 
-    if (WS == 0) {
-        WS = 64;
-    }
+    shortIntegerWordSize = resolved.word_size;
+    shortIntegerMask = resolved.mask;
+    shortIntegerSignBit = resolved.sign_bit;
 
-    const reduceWordSize = (WS < shortIntegerWordSize);
-
-    shortIntegerWordSize = @truncate(WS);
-
-    if (shortIntegerWordSize == 64) {
-        shortIntegerMask = @bitCast(@as(i64, -1));
-    } else {
-        shortIntegerMask = (@as(u64, 1) << @intCast(shortIntegerWordSize)) - 1;
-    }
-
-    shortIntegerSignBit = @as(u64, 1) << @intCast(shortIntegerWordSize - 1);
-
-    if (reduceWordSize) {
+    if (resolved.reduce) {
         var regist: calcRegister_t = REGISTER_X;
         const top = getStackTop();
         while (regist <= top) : (regist += 1) {
