@@ -13,6 +13,7 @@ const CONFIG_DESCRIPTOR_SIZE_IN_BYTES: usize = 840;
 extern fn z47_register_metadata_config_size_in_blocks() u16;
 extern fn isMemoryBlockAvailable(size_in_blocks: usize, num_blocks: u16, extra_fraction: f32) bool;
 
+const align_blocks = @import("align_blocks.zig"); // std-only long-integer block alignment
 fn bytesPerBlock() comptime_int {
     return payload_bytes_owned.bytesPerBlock();
 }
@@ -53,14 +54,7 @@ pub fn memoryBlockAvailable(size_in_blocks: u16) bool {
 }
 
 pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
-    const limb_size_in_bytes = @sizeOf(usize);
-    const limb_size_in_blocks = toBlocks(limb_size_in_bytes);
-
-    if ((@as(usize, size_in_blocks) * bytesPerBlock()) % limb_size_in_bytes != 0) {
-        return @intCast(((@as(usize, size_in_blocks) / limb_size_in_blocks) + 1) * limb_size_in_blocks);
-    }
-
-    return size_in_blocks;
+    return align_blocks.alignLongIntegerBlocks(size_in_blocks, bytesPerBlock(), toBlocks(@sizeOf(usize)));
 }
 
 pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
