@@ -1,4 +1,5 @@
 const std = @import("std");
+const path_util = @import("path_util.zig"); // std-only path predicates
 const build_common = @import("../common.zig");
 const host_types = @import("types.zig");
 const TranslateC = std.Build.Step.TranslateC;
@@ -324,5 +325,5 @@ fn addHostSearchPath(module: *std.Build.Module, path: []const u8, comptime kind:
 }
 
 fn looksLikeWindowsAbsolutePath(path: []const u8) bool {
-    return path.len >= 3 and std.ascii.isAlphabetic(path[0]) and path[1] == ':' and (path[2] == '/' or path[2] == '\\');
+    return path_util.looksLikeWindowsAbsolutePath(path);
 }
