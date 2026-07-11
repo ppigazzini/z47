@@ -111,6 +111,7 @@ const label_truncate = @import("label_truncate.zig"); // std-only label arrow tr
 const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
 const menu_strip = @import("menu_strip.zig"); // std-only menu-name page-marker stripping
+const slot_dedup = @import("slot_dedup.zig"); // std-only adjacent fixed-slot dedup
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
 const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
@@ -1492,16 +1493,7 @@ pub export fn fnGetMenu(_: u16) callconv(.c) void {
 // already be sorted). Local named labels can repeat across the scan-forward
 // search, so the CONV/label menu shows each name once. Returns the new count.
 fn _removeDuplicateLabels(n: i16) i16 {
-    if (n == 0) return 0;
-    var j: i16 = 0;
-    var i: i16 = 1;
-    while (i < n) : (i += 1) {
-        if (!slotsEqual(tmpString + 15 * @as(usize, @intCast(i)), tmpString + 15 * @as(usize, @intCast(j)))) {
-            j += 1;
-            _ = frontier_char_string.xcopy(tmpString + 15 * @as(usize, @intCast(j)), tmpString + 15 * @as(usize, @intCast(i)), 15);
-        }
-    }
-    return j + 1;
+    return slot_dedup.dedupeAdjacentSlots(tmpString, n, 15);
 }
 
 // Byte-wise C strcmp equivalence for two NUL-terminated 15-byte name slots.
