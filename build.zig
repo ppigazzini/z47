@@ -74,6 +74,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/state/menu_doublepress.zig",
         "zig_src/state/reserved_register.zig",
         "zig_src/state/statusbar_flags.zig",
+        "zig_src/state/solver_status.zig",
         "zig_src/state/keyboard_hit_test.zig",
         "zig_src/frontier/string_trim.zig",
         "zig_src/frontier/matrix_index.zig",
