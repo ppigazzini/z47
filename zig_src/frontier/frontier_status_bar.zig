@@ -22,6 +22,7 @@
 // across every target plus the boundary gates.
 
 const std = @import("std");
+const status_bar_geometry = @import("status_bar_geometry.zig"); // std-only status-bar geometry
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -419,22 +420,19 @@ inline fn labelText() bool {
 }
 // X_DATE = (SBARUPD_Time || SBARUPD_WoY) ? 1 : 25
 inline fn xDate() i32 {
-    return if (sbTime() or sbWoY()) 1 else 25;
+    return status_bar_geometry.xDate(sbTime(), sbWoY());
 }
 // X_SHIFT
 inline fn xShift() i32 {
-    return if (getSystemFlag(FLAG_SBshfR)) X_SHIFT_R else X_SHIFT_L;
+    return status_bar_geometry.xShift(getSystemFlag(FLAG_SBshfR), X_SHIFT_R, X_SHIFT_L);
 }
 // Y_SHIFT
 inline fn yShift() i32 {
-    if ((!sbDate() or !(sbTime() or sbWoY())) and !sbarShift()) {
-        return 0;
-    }
-    return if (sbarShift()) 0 else Y_SHIFT_LO;
+    return status_bar_geometry.yShift(sbDate(), sbTime(), sbWoY(), sbarShift(), Y_SHIFT_LO);
 }
 // lowerUnderLine
 inline fn lowerUnderLine() i32 {
-    return if (calcMode == CM_REGISTER_BROWSER or calcMode == CM_FLAG_BROWSER) 0 else 2;
+    return status_bar_geometry.lowerUnderLine(calcMode == CM_REGISTER_BROWSER or calcMode == CM_FLAG_BROWSER);
 }
 
 // ---------------------------------------------------------------------------
