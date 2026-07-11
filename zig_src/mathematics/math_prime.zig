@@ -33,6 +33,7 @@ const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
 
 const calcRegister_t = runtime.calcRegister_t;
 const math_real_predicates = @import("math_real_predicates.zig");
+const small_prime_list = @import("small_prime_list.zig"); // std-only small-prime index->value list
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
@@ -399,31 +400,17 @@ const halfSec_disp: bool = true;
 // ---------------------------------------------------------------------------
 // Static prime tables (TO_QSPI const in C -> Zig const data).
 // ---------------------------------------------------------------------------
-const smallPrimes = [_]u8{ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251 };
+// The smallPrimeList index->prime map (both prime tables + the accumulation)
+// lives in the std-only, tested small_prime_list module; these aliases keep the
+// owner's call sites unchanged.
+const smallPrimeListNumber: u16 = small_prime_list.count;
+fn smallPrimeList(index: u16) u16 {
+    return small_prime_list.at(index);
+}
 
 const indices = [_]u8{ 1, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 121, 127, 131, 137, 139, 143, 149, 151, 157, 163, 167, 169, 173, 179, 181, 187, 191, 193, 197, 199, 209 };
 
 const offsets = [_]u8{ 10, 2, 4, 2, 4, 6, 2, 6, 4, 2, 4, 6, 6, 2, 6, 4, 2, 6, 4, 6, 8, 4, 2, 4, 2, 4, 8, 6, 4, 6, 2, 4, 6, 2, 6, 6, 4, 2, 4, 6, 2, 6, 4, 2, 4, 2, 10, 2 };
-
-const smallPrimes2 = [_]u8{ 6, 6, 6, 2, 6, 4, 2, 10, 14, 4, 2, 4, 14, 6, 10, 2, 4, 6, 8, 6, 6, 4, 6, 8, 4, 8, 10, 2, 10, 2, 6, 4, 6, 8, 4, 2, 4, 12, 8, 4, 8, 4, 6, 12, 2, 18, 6, 10, 6, 6, 2, 6, 10, 6, 6, 2, 6, 6, 4, 2, 12, 10, 2, 4, 6, 6, 2, 12, 4, 6, 8, 10, 8, 10, 8, 6, 6, 4, 8, 6, 4, 8, 4, 14, 10, 12, 2, 10, 2, 4, 2, 10, 14, 4, 2, 4, 14, 4, 2, 4, 20, 4, 8, 10, 8, 4, 6, 6, 14, 4, 6, 6, 8, 6, 12 };
-
-const smallPrimeListNumber: u16 = smallPrimes.len + smallPrimes2.len;
-
-fn smallPrimeList(index: u16) u16 {
-    var tt: u16 = 251;
-    if (index < smallPrimes.len) {
-        return smallPrimes[index];
-    } else if (index < smallPrimeListNumber) {
-        const subIndex: u16 = index - @as(u16, smallPrimes.len);
-        var ii: u16 = 0;
-        while (ii <= subIndex and ii < smallPrimes2.len) : (ii += 1) {
-            tt += smallPrimes2[ii];
-        }
-        return tt;
-    } else {
-        return 0;
-    }
-}
 
 const Factors_1_SmallPrimes: bool = true;
 const Factors_2_PerfectSquare: bool = true;

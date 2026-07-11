@@ -22,6 +22,7 @@ const comparison_reals = @import("math_comparison_reals.zig");
 const math_real_predicates = @import("math_real_predicates.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_integer_division_cells = @import("math_integer_division_cells.zig"); // M-callconv: Zig-to-Zig
+const register_classify = @import("register_classify.zig"); // std-only register-band classification
 
 const calcRegister_t = runtime.calcRegister_t;
 
@@ -190,48 +191,38 @@ pub export fn registerMin(regist1: calcRegister_t, regist2: calcRegister_t, dest
     registerMinMax(regist1, regist2, dest, 0);
 }
 
+// Snapshot the register-address layout for the pure classifier: the fixed band
+// constants plus the two live counts read from globals.
+fn currentMap() register_classify.RegisterMap {
+    return .{
+        .first_local = FIRST_LOCAL_REGISTER,
+        .local_count = localRegisterCount(),
+        .first_named = FIRST_NAMED_VARIABLE,
+        .named_count = numberOfNamedVariables,
+        .first_reserved = FIRST_RESERVED_VARIABLE,
+        .last_reserved = LAST_RESERVED_VARIABLE,
+        .first_global = FIRST_GLOBAL_REGISTER,
+        .last_spare = LAST_SPARE_REGISTER,
+        .temp_1 = TEMP_REGISTER_1,
+    };
+}
+
 // Encodes two 8-bit type IDs into one 16-bit key (low byte = REGISTER_X type).
+// Stays a wrapper so the many comptime typePair(...) switch labels are unchanged.
 fn typePair(lo: u32, hi: u32) u16 {
-    return @as(u16, @as(u8, @truncate(lo))) | (@as(u16, @as(u8, @truncate(hi))) << 8);
+    return register_classify.typePair(lo, hi);
 }
 
 fn cmpSign(v: i32) i32 {
-    return @as(i32, @intFromBool(v > 0)) - @as(i32, @intFromBool(v < 0));
+    return register_classify.cmpSign(v);
 }
 
 fn modeIsEquality(mode: u8) bool {
     return mode == COMPARE_MODE_EQUAL or mode == COMPARE_MODE_NOT_EQUAL;
 }
 
-fn isLocalRegister(r: u16) bool {
-    const first = FIRST_LOCAL_REGISTER;
-    const end_exclusive = FIRST_LOCAL_REGISTER +% localRegisterCount();
-    return r >= first and r < end_exclusive;
-}
-
-fn isNamedVariable(r: u16) bool {
-    if (numberOfNamedVariables == 0) {
-        return false;
-    }
-    const lo = FIRST_NAMED_VARIABLE;
-    const hi = FIRST_NAMED_VARIABLE +% numberOfNamedVariables -% 1;
-    return r >= lo and r <= hi;
-}
-
-fn isReservedVariable(r: u16) bool {
-    return r >= FIRST_RESERVED_VARIABLE and r <= LAST_RESERVED_VARIABLE;
-}
-
-fn isGlobalRegister(r: u16) bool {
-    return r >= FIRST_GLOBAL_REGISTER and r <= LAST_SPARE_REGISTER;
-}
-
 fn isComparableRegister(r: u16) bool {
-    return isLocalRegister(r) or
-        isGlobalRegister(r) or
-        isNamedVariable(r) or
-        isReservedVariable(r) or
-        (r == TEMP_REGISTER_1);
+    return register_classify.isComparable(currentMap(), r);
 }
 
 fn cmpToResult(result: i32, mode: u8) void {
