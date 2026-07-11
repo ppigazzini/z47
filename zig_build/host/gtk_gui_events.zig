@@ -1,3 +1,4 @@
+const caps_strip = @import("caps_strip.zig"); // std-only caps-lock strip
 const shortcut_owned = @import("gtk_gui_shortcut.zig");
 
 const calcKey_t = extern struct {
@@ -105,10 +106,7 @@ extern fn g_source_remove(tag: c_uint) c_int;
 extern fn g_timeout_add(interval: c_uint, function: *const fn (?*anyopaque) callconv(.c) c_int, data: ?*anyopaque) c_uint;
 
 fn stripCapsLockForCommand(keyval: u32) u32 {
-    const is_alpha = (keyval >= 'A' and keyval <= 'Z') or (keyval >= 'a' and keyval <= 'z');
-    if (!is_alpha) return keyval;
-
-    return (keyval & 0xFFFFDF) + (0x20 & ~(event_command_shift >> (16 - 5)));
+    return caps_strip.stripCapsLockForCommand(keyval, event_command_shift);
 }
 
 fn clearUiActiveFlag(data: ?*anyopaque) callconv(.c) c_int {
