@@ -1,4 +1,5 @@
 const gtk_int = @import("gtk_int.zig"); // std-only GTK integer helpers
+const space_label = @import("space_label.zig"); // std-only space-label patch
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Host GTK label/text helpers ported from src/c47-gtk/gtkGui.c. Starts with the
@@ -165,14 +166,7 @@ fn strEq(a: [*c]const u8, b: [*c]const u8) bool {
 
 // gtkGui.c's "space -> middle-dot" label patch (lbl was a lone 0x20).
 fn patchSpaceLabel(lbl: *[22]u8) void {
-    if (lbl[0] == 32 and lbl[1] == 0) {
-        lbl[0] = 0xC2;
-        lbl[1] = 0xB7;
-        lbl[2] = '_';
-        lbl[3] = 0xc2;
-        lbl[4] = 0xb7;
-        lbl[5] = 0;
-    }
+    space_label.patchSpaceLabel(lbl);
 }
 
 /// gtkGui.c labelCaptionNormal: renders a key's primary button caption plus the
