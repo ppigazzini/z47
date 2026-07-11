@@ -30,6 +30,7 @@ const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const FLAG_SPCRES: i32 = 0x8017;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -853,24 +854,8 @@ fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
 inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     return stpcpy(dst, src);
 }
-// truncateAtArrow/truncateAtString: ~8-line pair duplicated locally from
-// frontier_softmenus.zig (those copies are private there).
-fn truncateAtString(label: [*c]u8, search: [*c]const u8) void {
-    var i: usize = 0;
-    while (label[i + 1] != 0) {
-        if (search[0] == label[i] and search[1] == label[i + 1]) {
-            label[i] = 0;
-            break;
-        }
-        i += 1;
-    }
-}
 fn truncateAtArrow(label: [*c]u8) void {
-    var sample: [4]u8 = undefined;
-    _ = stringCopy(&sample, STD_RIGHT_ARROW);
-    truncateAtString(label, &sample);
-    _ = stringCopy(&sample, STD_LEFT_ARROW);
-    truncateAtString(label, &sample);
+    label_truncate.truncateAtArrow(label, STD_RIGHT_ARROW, STD_LEFT_ARROW);
 }
 
 pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) callconv(.c) void {

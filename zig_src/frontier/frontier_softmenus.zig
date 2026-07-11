@@ -106,6 +106,7 @@ const registerHeader_t = abi.RegisterHeader;
 // real_t for placeSubscript / changeSoftKey local math.
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -1886,23 +1887,8 @@ fn initSoftkeyCoordinates(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, x1:
     return 1;
 }
 
-fn truncateAtString(label: [*c]u8, search: [*c]const u8) void {
-    var i: usize = 0;
-    while (label[i + 1] != 0) {
-        if (search[0] == label[i] and search[1] == label[i + 1]) {
-            label[i] = 0;
-            break;
-        }
-        i += 1;
-    }
-}
-
 fn truncateAtArrow(label: [*c]u8) void {
-    var sample: [4]u8 = undefined;
-    _ = stringCopy(&sample, STD_RIGHT_ARROW);
-    truncateAtString(label, &sample);
-    _ = stringCopy(&sample, STD_LEFT_ARROW);
-    truncateAtString(label, &sample);
+    label_truncate.truncateAtArrow(label, STD_RIGHT_ARROW, STD_LEFT_ARROW);
 }
 
 pub export fn greyRect(x: i16, y: i16, dx: i16, dy: i16) callconv(.c) void {
