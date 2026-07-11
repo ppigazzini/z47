@@ -2,7 +2,11 @@ const builtin = @import("builtin");
 const runtime = @import("flags_runtime.zig");
 const flag_classify = @import("flag_classify.zig"); // std-only flag classification
 const flag_bits = @import("flag_bits.zig"); // std-only user-flag bit location
-const sys_flag_bits = @import("sys_flag_bits.zig"); // std-only system-flag bit location
+const SysFlagBit = struct { word: u1, shift: u6 };
+fn systemFlagBitLocation(masked_flag: i32) SysFlagBit {
+    if (masked_flag < 64) return .{ .word = 0, .shift = @intCast(masked_flag) };
+    return .{ .word = 1, .shift = @intCast(masked_flag - 64) };
+}
 
 pub export var systemFlags0Changed: u64 = ~@as(u64, 0);
 pub export var systemFlags1Changed: u64 = ~@as(u64, 0);
@@ -148,7 +152,7 @@ fn setTemporaryInformationTrueFalse(condition: bool) void {
 }
 
 fn setSystemFlagBit(system_flag: u16) void {
-    const loc = sys_flag_bits.systemFlagBitLocation(maskedFlagFromUnsigned(system_flag));
+    const loc = systemFlagBitLocation(maskedFlagFromUnsigned(system_flag));
     const bit = @as(u64, 1) << loc.shift;
     if (loc.word == 0) {
         systemFlags0Changed |= ~runtime.systemFlags0 & bit;
@@ -160,7 +164,7 @@ fn setSystemFlagBit(system_flag: u16) void {
 }
 
 fn clearSystemFlagBit(system_flag: u16) void {
-    const loc = sys_flag_bits.systemFlagBitLocation(maskedFlagFromUnsigned(system_flag));
+    const loc = systemFlagBitLocation(maskedFlagFromUnsigned(system_flag));
     const bit = @as(u64, 1) << loc.shift;
     if (loc.word == 0) {
         systemFlags0Changed |= runtime.systemFlags0 & bit;
@@ -172,7 +176,7 @@ fn clearSystemFlagBit(system_flag: u16) void {
 }
 
 fn flipSystemFlagBit(system_flag: u16) void {
-    const loc = sys_flag_bits.systemFlagBitLocation(maskedFlagFromUnsigned(system_flag));
+    const loc = systemFlagBitLocation(maskedFlagFromUnsigned(system_flag));
     const bit = @as(u64, 1) << loc.shift;
     if (loc.word == 0) {
         systemFlags0Changed |= bit;
