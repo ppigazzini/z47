@@ -1,4 +1,5 @@
 const runtime = @import("stack_runtime.zig");
+const register_range_ops = @import("register_range_ops.zig"); // std-only register-range geometry
 
 pub fn regClr() void {
     var s: u16 = 0;
@@ -27,7 +28,7 @@ pub fn regSwap() void {
         return;
     }
 
-    if (d < s + n and s < d + n) {
+    if (register_range_ops.rangesOverlap(s, d, n)) {
         runtime.reportRegisterCommandError(runtime.ERROR_OUT_OF_RANGE);
         return;
     }
@@ -60,32 +61,33 @@ pub fn regCopy(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    if (s > d) {
-        var index: u16 = 0;
-        while (index < n) : (index += 1) {
-            runtime.copySourceRegisterToDestRegister(
-                @as(runtime.calcRegister_t, @intCast(s + index)),
-                @as(runtime.calcRegister_t, @intCast(d + index)),
-            );
-            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-                return;
+    switch (register_range_ops.copyDirection(s, d)) {
+        .ascending => {
+            var index: u16 = 0;
+            while (index < n) : (index += 1) {
+                runtime.copySourceRegisterToDestRegister(
+                    @as(runtime.calcRegister_t, @intCast(s + index)),
+                    @as(runtime.calcRegister_t, @intCast(d + index)),
+                );
+                if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                    return;
+                }
             }
-        }
-        return;
-    }
-
-    if (s < d) {
-        var index = n;
-        while (index > 0) {
-            index -= 1;
-            runtime.copySourceRegisterToDestRegister(
-                @as(runtime.calcRegister_t, @intCast(s + index)),
-                @as(runtime.calcRegister_t, @intCast(d + index)),
-            );
-            if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
-                return;
+        },
+        .descending => {
+            var index = n;
+            while (index > 0) {
+                index -= 1;
+                runtime.copySourceRegisterToDestRegister(
+                    @as(runtime.calcRegister_t, @intCast(s + index)),
+                    @as(runtime.calcRegister_t, @intCast(d + index)),
+                );
+                if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+                    return;
+                }
             }
-        }
+        },
+        .none => {},
     }
 }
 
