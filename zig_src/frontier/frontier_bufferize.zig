@@ -45,6 +45,7 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const mim_function_set = @import("mim_function_set.zig"); // std-only MIM function membership
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
@@ -1785,13 +1786,8 @@ const NumMsg = [_]numStr{
 const bugScreenNoParam = "In function addItemToBuffer:item should not be NOPARAM=7654!";
 
 fn isFunctionInMim(com: i16, fType: u8) bool {
-    const n: usize = if (fType == 0) MimFunctionsType0.len else if (fType == 1) MimFunctionsType1.len else MimFunctionsType2.len;
-    var i: usize = 0;
-    while (i < n) : (i += 1) {
-        const match = if (fType == 0) com == @as(i16, @bitCast(MimFunctionsType0[i].itemNr)) else if (fType == 1) com == @as(i16, @bitCast(MimFunctionsType1[i].itemNr)) else com == @as(i16, @bitCast(MimFunctionsType2[i].itemNr));
-        if (match) return true;
-    }
-    return false;
+    const table: []const fInMim_t = if (fType == 0) &MimFunctionsType0 else if (fType == 1) &MimFunctionsType1 else &MimFunctionsType2;
+    return mim_function_set.contains(table, com);
 }
 
 // ---------------------------------------------------------------------------
