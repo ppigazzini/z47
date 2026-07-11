@@ -39,7 +39,20 @@ else
 const bool_t = bool;
 const calcRegister_t = i16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const shuffle_decode = @import("shuffle_decode.zig"); // std-only TAM shuffle register decode
+fn decodeShuffle(value: i16) [5]u8 {
+    var regists: [5]u8 = undefined;
+    regists[4] = 0;
+    var i: u4 = 0;
+    while (i < 4) : (i += 1) {
+        if ((value >> @intCast(i * 2 + 8)) & 1 != 0) {
+            const regNum: u8 = @intCast((value >> @intCast(i * 2)) & 3);
+            regists[i] = if (regNum == 3) 't' else 'x' + regNum;
+        } else {
+            regists[i] = '_';
+        }
+    }
+    return regists;
+}
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
@@ -582,7 +595,7 @@ fn _tamUpdateBuffer() void {
     }
 
     if (tam.mode == TM_SHUFFLE) {
-        regists = shuffle_decode.decodeShuffle(tam.value);
+        regists = decodeShuffle(tam.value);
         tbPtr = stringCopy(tbPtr, &regists);
     } else {
         if (tam.indirect) {

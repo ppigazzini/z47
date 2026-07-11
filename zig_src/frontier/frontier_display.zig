@@ -67,10 +67,7 @@ const numeral_grouping = @import("numeral_grouping.zig"); // std-only digit-grou
 const fraction_encode = @import("fraction_encode.zig"); // std-only fraction glyph encoder
 const word_break = @import("word_break.zig"); // std-only display word-break trim
 const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char normalization
-const radix_mark = @import("radix_mark.zig"); // std-only radix-mark buffer fill
 const integer_separators = @import("integer_separators.zig"); // std-only integer separator splice
-const str_prepend = @import("str_prepend.zig"); // std-only in-place string prepend
-const base_number = @import("base_number.zig"); // std-only base-number subscript encoder
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -1149,7 +1146,17 @@ fn irfracReplacements() [15]IrfracReplacement {
 
 // radix mark into tt[4]; returns nothing, the C code copies bytes then strcat.
 fn radixTT(tt: *[4]u8) void {
-    radix_mark.radixTT(tt, RADIX34_MARK_STRING());
+    const radix = RADIX34_MARK_STRING();
+    if (radix[1] != 1) {
+        var i: usize = 0;
+        while (radix[i] != 0) : (i += 1) {
+            tt[i] = radix[i];
+        }
+        tt[i] = 0;
+    } else {
+        tt[0] = radix[0];
+        tt[1] = 0;
+    }
 }
 
 fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
@@ -2117,8 +2124,33 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
     displayFormat = saveddisplayFormat;
 }
 
+fn strPrepend_strlen16(p: [*c]const u8) i16 {
+    var n: i16 = 0;
+    while (p[@intCast(n)] != 0) : (n += 1) {}
+    return n;
+}
+
 pub export fn strPrepend(dest: [*c]u8, prefix: [*c]u8) callconv(.c) void {
-    str_prepend.strPrepend(dest, prefix);
+    const plen: i16 = strPrepend_strlen16(prefix);
+    if (plen == 0 or plen > 20) {
+        return;
+    }
+    var dlen: i16 = strPrepend_strlen16(dest);
+    var k: i16 = 0;
+    while (k < plen) : (k += 1) {
+        dest[@intCast(dlen)] = ' ';
+        dlen += 1;
+    }
+    dest[@intCast(dlen)] = 0;
+
+    var jj: i16 = dlen - 1;
+    while (jj - plen >= 0) : (jj -= 1) {
+        dest[@intCast(jj)] = dest[@intCast(jj - plen)];
+    }
+    var ii: i16 = plen - 1;
+    while (ii >= 0) : (ii -= 1) {
+        dest[@intCast(ii)] = prefix[@intCast(ii)];
+    }
 }
 
 fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, limitIrfrac: irfracOption_t) void {
@@ -2330,8 +2362,27 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
 // ===========================================================================
 // addBaseNumber / longIntegerToHexDisplayString / shortIntegerToDisplayString
 // ===========================================================================
+fn addBaseNumber_appendGlyphLastIndex(dest: [*c]u8, glyph: [*c]const u8) usize {
+    var len: usize = 0;
+    while (dest[len] != 0) : (len += 1) {}
+    var i: usize = 0;
+    while (glyph[i] != 0) : (i += 1) {
+        dest[len + i] = glyph[i];
+    }
+    dest[len + i] = 0;
+    return len + i - 1;
+}
+
 pub export fn addBaseNumber(displayString: [*c]u8, base: i16) callconv(.c) void {
-    base_number.addBaseNumber(displayString, base, STD_BASE_2, STD_SUB_0);
+    if (base <= 16) {
+        const last = addBaseNumber_appendGlyphLastIndex(displayString, STD_BASE_2);
+        displayString[last] +%= @intCast(base - 2);
+    } else {
+        var last = addBaseNumber_appendGlyphLastIndex(displayString, STD_SUB_0);
+        displayString[last] +%= @intCast(@divTrunc(base, 10));
+        last = addBaseNumber_appendGlyphLastIndex(displayString, STD_SUB_0);
+        displayString[last] +%= @intCast(@rem(base, 10));
+    }
 }
 
 pub export fn longIntegerToHexDisplayString(regist: calcRegister_t, displayString: [*c]u8, determineFont: bool_t, baseOverride: u8, width: i32) callconv(.c) void {

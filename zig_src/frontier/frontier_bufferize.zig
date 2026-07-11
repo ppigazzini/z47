@@ -45,7 +45,6 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const mim_function_set = @import("mim_function_set.zig"); // std-only MIM function membership
 const gap_insert = @import("gap_insert.zig"); // std-only digit-group gap insertion
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
@@ -1788,7 +1787,12 @@ const bugScreenNoParam = "In function addItemToBuffer:item should not be NOPARAM
 
 fn isFunctionInMim(com: i16, fType: u8) bool {
     const table: []const fInMim_t = if (fType == 0) &MimFunctionsType0 else if (fType == 1) &MimFunctionsType1 else &MimFunctionsType2;
-    return mim_function_set.contains(table, com);
+    for (table) |entry| {
+        if (com == @as(i16, @bitCast(entry.itemNr))) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // ---------------------------------------------------------------------------
