@@ -102,6 +102,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/plot_range_degenerate.zig",
         "zig_src/frontier/plot_tick_snap.zig",
         "zig_src/frontier/menu_strip.zig",
+        "zig_src/frontier/slot_dedup.zig",
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/state/keycode_last.zig",
         "zig_src/mathematics/math_real_predicates.zig",
