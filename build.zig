@@ -71,6 +71,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/state/align_blocks.zig",
         "zig_src/state/real34_sign.zig",
         "zig_src/state/matrix_element_count.zig",
+        "zig_src/state/menu_doublepress.zig",
         "zig_src/state/keyboard_hit_test.zig",
         "zig_src/frontier/string_trim.zig",
         "zig_src/frontier/matrix_index.zig",

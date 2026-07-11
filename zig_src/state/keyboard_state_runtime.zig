@@ -1,4 +1,5 @@
 const std = @import("std");
+const menu_doublepress = @import("menu_doublepress.zig"); // std-only double-press-blocked menu predicate
 const builtin = @import("builtin");
 const block_math = abi.block_math;
 pub const bool_t = bool;
@@ -1117,10 +1118,7 @@ pub extern var FN_timed_out_to_RELEASE_EXEC: bool_t;
 pub extern fn underline_softkey(x_softkey_mask: u16, y_softkey: u16) void;
 // BLOCK_DOUBLEPRESS_MENU macro (defines.h:2262).
 pub fn blockDoublepressMenu(menu_id: i16, x: i16, y: i16) bool {
-    return (menu_id == -MNU_ALPHA and y == 0 and (x == 4 or x == 5)) or
-        (menu_id == -MNU_M_EDIT and y == 0 and (x == 4 or x == 5)) or
-        (menu_id == -MNU_EQ_EDIT and y == 0 and (x == 4 or x == 5)) or
-        (menu_id == -MNU_TAMALPHA and y == 0 and (x == 4 or x == 5));
+    return menu_doublepress.blockDoublepressMenu(menu_id, x, y, &.{ MNU_ALPHA, MNU_M_EDIT, MNU_EQ_EDIT, MNU_TAMALPHA });
 }
 
 // Check_MultiPresses dependencies (keyboardTweak.c 351-639).
