@@ -97,6 +97,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/bit_reverse.zig",
         "zig_src/frontier/name_slot_equal.zig",
         "zig_src/frontier/nth_string.zig",
+        "zig_src/frontier/program_step_opcode.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",

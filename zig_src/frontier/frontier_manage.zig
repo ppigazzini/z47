@@ -61,6 +61,7 @@ const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
@@ -562,18 +563,14 @@ inline fn calcModeAimGuiCall() void {
 // isAtEndOfPrograms (public)
 // ===========================================================================
 pub export fn isAtEndOfPrograms(step: [*c]const u8) callconv(.c) bool_t {
-    return (step == null) or (step[0] == 255 and step[1] == 255);
+    return program_step_opcode.isAtEndOfPrograms(step);
 }
 
 // ===========================================================================
 // checkOpCodeOfStep (public)
 // ===========================================================================
 pub export fn checkOpCodeOfStep(step: [*c]const u8, op: u16) callconv(.c) bool_t {
-    if (op < 128) {
-        return step != null and step[0] == op;
-    } else {
-        return step != null and (step[0] & 0x7f) == (op >> 8) and step[1] == (op & 0xff);
-    }
+    return program_step_opcode.checkOpCodeOfStep(step, op);
 }
 
 // isAtEndOfProgram (static inline in manage.h): checkOpCodeOfStep(step, ITM_END)
@@ -592,13 +589,7 @@ inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
 // When the name would start at or past firstFreeProgramByte there are no valid
 // bytes left, so return 0 rather than leaving the length unbounded.
 pub export fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) callconv(.c) u8 {
-    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
-        return 0;
-    }
-    if (claimedLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
-        return @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
-    }
-    return claimedLength;
+    return program_step_opcode.boundProgramNameLength(nameStart, claimedLength, firstFreeProgramByte);
 }
 
 // ===========================================================================
