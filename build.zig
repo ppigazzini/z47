@@ -87,6 +87,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/base_number.zig",
         "zig_src/frontier/status_bar_geometry.zig",
         "zig_src/frontier/type_is_number.zig",
+        "zig_src/frontier/softmenu_math.zig",
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/state/keycode_last.zig",
         "zig_src/mathematics/math_real_predicates.zig",
