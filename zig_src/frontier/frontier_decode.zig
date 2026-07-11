@@ -41,6 +41,7 @@ const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const numeral_decode = @import("numeral_decode.zig"); // std-only numeral -> display-string formatter
+const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char normalization
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_conversion_units = @import("frontier_conversion_units.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
@@ -295,45 +296,16 @@ fn rxStr() [*c]const u8 {
     return @ptrCast(&indexOfItems[gapItemRadix].itemSoftmenuName);
 }
 fn gapChar1Left() [*c]const u8 {
-    const l = ltStr();
-    if (l[0] != 0 and l[1] == 0 and l[2] == 0) {
-        return switch (l[0]) {
-            ',' => ",\x01",
-            '.' => ".\x01",
-            '\'' => "'\x01",
-            '_' => "_\x01",
-            else => l,
-        };
-    }
-    return l;
+    return gap_char_codec.gapChar1LR(ltStr());
 }
 fn gapChar1Right() [*c]const u8 {
-    const r = rtStr();
-    if (r[0] != 0 and (r[1] == 0 or (r[1] != 0 and r[2] == 0))) {
-        return switch (r[0]) {
-            ',' => ",\x01",
-            '.' => ".\x01",
-            '\'' => "'\x01",
-            '_' => "_\x01",
-            else => r,
-        };
-    }
-    return r;
+    return gap_char_codec.gapChar1RightFull(rtStr());
 }
 fn gapChar1Radix() [*c]const u8 {
-    const r = rxStr();
-    if (r[0] != 0 and (r[1] == 0 or (r[1] != 0 and r[2] == 0))) {
-        return switch (r[0]) {
-            ',' => ",\x01",
-            '.' => ".\x01",
-            else => r,
-        };
-    }
-    return r;
+    return gap_char_codec.gapChar1Radix(rxStr());
 }
 fn radix34MarkChar() u8 {
-    const r = gapChar1Radix();
-    return if (r[0] == ',' or (r[0] == STD_WCOMMA[0] and r[1] == STD_WCOMMA[1])) ',' else '.';
+    return gap_char_codec.radix34MarkChar(gapChar1Radix(), STD_WCOMMA);
 }
 inline fn groupWidthLeft() u8 {
     return grpGroupingLeft;
