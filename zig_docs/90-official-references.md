@@ -75,10 +75,17 @@ checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.en
 ## Zig Idiom And Style Guidance (secondary)
 
 There is no single official Zig style guide beyond `zig fmt` and the standard
-library's naming conventions, so these are community/secondary sources. They are
-the external basis for the idiom ratchet
+library's naming conventions, so these are community/secondary sources plus a few
+exemplar production codebases. They are the external basis for the idiom ratchet
 ([.github/project/report-idiom-status.py](../.github/project/report-idiom-status.py))
-and for the code-quality assessment kept in the maintainer working notes.
+and for the code-quality assessment and refactor plan kept in the maintainer
+working notes.
+
+Domain match (which yardstick applies): z47 is a **safety-critical, no-heap,
+embedded** calculator, so **TigerBeetle's TigerStyle is the primary calibration**
+(static allocation, assertions, bounded loops, explicit limits). Ghostty is the
+model for the comptime dispatch/platform seams. Bun's arena/heap idioms are
+largely **out of domain** here and are kept only as a lint-discipline reference.
 
 Scope caveat (important, do not misread): z47 is a faithful C→Zig transliteration
 pinned for byte-for-byte upstream parity, so the transliterated owner surface is
@@ -90,10 +97,25 @@ Only the std-only pure-core modules under `zig_src/*` registered in
 as the yardstick the code is *measured against*, not a description of the whole
 codebase.
 
+Exemplar production codebases (primary calibration for this domain):
+
+- [TigerBeetle TigerStyle](https://github.com/tigerbeetle/tigerbeetle/blob/main/docs/TIGER_STYLE.md):
+  the closest domain peer — NASA-Power-of-Ten lineage: static allocation (none
+  after init), ≥2 assertions per function, ≤70-line functions, bounded loops with
+  asserted caps, explicitly-sized ints over `usize`/`c_int`. The primary yardstick
+  for z47's firmware-facing code.
+- [Ghostty — Useful Zig Patterns (Hashimoto)](https://mitchellh.com/writing/ghostty-and-useful-zig-patterns):
+  comptime interfaces for platform code, comptime data tables + `@Type` enum
+  generation + platform pruning (the model for a native item table), and
+  Zig-as-C-library (which validates z47's C-ABI shell as a boundary technique).
+
+General style / review references (secondary):
+
 - [Bun / oven-sh Zig style guide](https://github.com/oven-sh/style-guide):
   production-scale Zig conventions (const over var, slices `[]T` over
   pointer+length, named error sets, tagged unions over bool params, small
-  functions, minimal `@as`/`@intCast`).
+  functions, minimal `@as`/`@intCast`). Its arena/heap idioms do not apply to the
+  no-heap firmware path.
 - [Zig naming conventions (Craddock)](https://nathancraddock.com/blog/zig-naming-conventions/):
   the camelCase-function / PascalCase-type / snake_case-variable conventions the
   owners follow.
