@@ -75,6 +75,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/byte_move.zig",
         "zig_src/frontier/byte_decode.zig",
         "zig_src/frontier/str_stpcpy.zig",
+        "zig_src/frontier/str_append.zig",
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/state/keycode_last.zig",
         "zig_src/mathematics/math_real_predicates.zig",
