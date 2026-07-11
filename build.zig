@@ -98,6 +98,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/hp_range_shift.zig",
         "zig_src/frontier/glyph_advance.zig",
         "zig_src/frontier/pem_offset.zig",
+        "zig_src/frontier/plot_range_zero.zig",
         "zig_src/state/stack_runtime_register_range.zig",
         "zig_src/state/keycode_last.zig",
         "zig_src/mathematics/math_real_predicates.zig",

@@ -69,6 +69,7 @@ const font_t = abi.Font;
 const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const plot_zoom = @import("plot_zoom.zig"); // std-only plot viewport zoom
+const plot_range_zero = @import("plot_range_zero.zig"); // std-only zero-axis range inclusion
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -962,36 +963,14 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
 
     // include the 0 axis
     if (getSystemFlag(FLAG_SHOWX)) {
-        if (x_min > 0.0 and x_max > 0.0) {
-            if (x_min <= x_max) {
-                x_min = -0.05 * x_max;
-            } else {
-                x_min = 0.0;
-            }
-        }
-        if (x_min < 0.0 and x_max < 0.0) {
-            if (x_min >= x_max) {
-                x_min = -0.05 * x_max;
-            } else {
-                x_max = 0.0;
-            }
-        }
+        const r = plot_range_zero.includeZeroAxis(x_min, x_max);
+        x_min = r.min;
+        x_max = r.max;
     }
     if (getSystemFlag(FLAG_SHOWY)) {
-        if (y_min > 0.0 and y_max > 0.0) {
-            if (y_min <= y_max) {
-                y_min = -0.05 * y_max;
-            } else {
-                y_min = 0.0;
-            }
-        }
-        if (y_min < 0.0 and y_max < 0.0) {
-            if (y_min >= y_max) {
-                y_min = -0.05 * y_max;
-            } else {
-                y_max = 0.0;
-            }
-        }
+        const r = plot_range_zero.includeZeroAxis(y_min, y_max);
+        y_min = r.min;
+        y_max = r.max;
     }
 
     // modify the draw range if the min == max
