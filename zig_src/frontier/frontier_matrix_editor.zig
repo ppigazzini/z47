@@ -77,6 +77,7 @@ const complex34_t = abi.Complex34;
 // digits(i32)+exponent(i32)+bits(u8)+pad. Use the canonical c47 layout.
 const decNumberUnit = u16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const matrix_wrap = @import("matrix_wrap.zig"); // std-only matrix I/J cursor wrap
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
@@ -2116,44 +2117,18 @@ pub fn z47_frontier_matrix_mim_enter_commit_open_matrix() void {
 // sibling's internal name.
 // ===========================================================================
 fn wrapIJImpl(rows: u16, cols: u16) bool_t {
-    clearSystemFlag(FLAG_WRAPEDG);
-    clearSystemFlag(FLAG_WRAPEND);
-    if (getRegisterAsInt(true, REGISTER_I) < 0) {
-        setRegisterAsInt(true, @intCast(@as(c_int, rows) - 1), REGISTER_I);
-        setSystemFlag(FLAG_WRAPEDG);
-        setRegisterAsInt(true, if (getRegisterAsInt(true, REGISTER_J) == 0) @as(i16, @intCast(@as(c_int, cols) - 1)) else getRegisterAsInt(true, REGISTER_J) - 1, REGISTER_J);
-        if (getRegisterAsInt(true, REGISTER_J) == @as(i16, @intCast(@as(c_int, cols) - 1)) and getRegisterAsInt(true, REGISTER_I) == @as(i16, @intCast(@as(c_int, rows) - 1))) {
-            setSystemFlag(FLAG_WRAPEND);
-        }
-    } else {
-        if (getRegisterAsInt(true, REGISTER_I) == @as(i16, @bitCast(rows))) {
-            setRegisterAsInt(true, 0, REGISTER_I);
-            setSystemFlag(FLAG_WRAPEDG);
-            setRegisterAsInt(true, if (getRegisterAsInt(true, REGISTER_J) == @as(i16, @intCast(@as(c_int, cols) - 1))) 0 else getRegisterAsInt(true, REGISTER_J) + 1, REGISTER_J);
-            if (getRegisterAsInt(true, REGISTER_J) == 0 and getRegisterAsInt(true, REGISTER_I) == 0) {
-                setSystemFlag(FLAG_WRAPEND);
-            }
-        }
-    }
-
-    if (getRegisterAsInt(true, REGISTER_J) < 0) {
-        setRegisterAsInt(true, @intCast(@as(c_int, cols) - 1), REGISTER_J);
-        setSystemFlag(FLAG_WRAPEDG);
-        setRegisterAsInt(true, if (getRegisterAsInt(true, REGISTER_I) == 0) @as(i16, @intCast(@as(c_int, rows) - 1)) else getRegisterAsInt(true, REGISTER_I) - 1, REGISTER_I);
-        if (getRegisterAsInt(true, REGISTER_J) == @as(i16, @intCast(@as(c_int, cols) - 1)) and getRegisterAsInt(true, REGISTER_I) == @as(i16, @intCast(@as(c_int, rows) - 1))) {
-            setSystemFlag(FLAG_WRAPEND);
-        }
-    } else {
-        if (getRegisterAsInt(true, REGISTER_J) == @as(i16, @bitCast(cols))) {
-            setRegisterAsInt(true, 0, REGISTER_J);
-            setSystemFlag(FLAG_WRAPEDG);
-            setRegisterAsInt(true, if ((!getSystemFlag(FLAG_GROW)) and (getRegisterAsInt(true, REGISTER_I) == @as(i16, @intCast(@as(c_int, rows) - 1)))) 0 else getRegisterAsInt(true, REGISTER_I) + 1, REGISTER_I);
-            if (getRegisterAsInt(true, REGISTER_I) == 0 and getRegisterAsInt(true, REGISTER_J) == 0) {
-                setSystemFlag(FLAG_WRAPEND);
-            }
-        }
-    }
-    return getRegisterAsInt(true, REGISTER_I) == @as(i16, @bitCast(rows));
+    const r = matrix_wrap.wrapIJ(
+        getRegisterAsInt(true, REGISTER_I),
+        getRegisterAsInt(true, REGISTER_J),
+        rows,
+        cols,
+        getSystemFlag(FLAG_GROW),
+    );
+    setRegisterAsInt(true, r.i, REGISTER_I);
+    setRegisterAsInt(true, r.j, REGISTER_J);
+    if (r.wrap_edge) setSystemFlag(FLAG_WRAPEDG) else clearSystemFlag(FLAG_WRAPEDG);
+    if (r.wrap_end) setSystemFlag(FLAG_WRAPEND) else clearSystemFlag(FLAG_WRAPEND);
+    return r.at_rows;
 }
 
 comptime {

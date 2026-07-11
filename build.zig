@@ -113,6 +113,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/gap_char_codec.zig",
         "zig_src/frontier/radix_mark.zig",
         "zig_src/frontier/integer_separators.zig",
+        "zig_src/frontier/matrix_wrap.zig",
         "zig_src/frontier/gap_insert.zig",
         "zig_src/frontier/digit_glyph.zig",
         "zig_src/frontier/display_string_transform.zig",
