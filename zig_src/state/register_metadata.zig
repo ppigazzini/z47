@@ -1,5 +1,11 @@
 const descriptor_owned = @import("register_metadata_descriptor.zig");
-const register_id_valid = @import("register_id_valid.zig"); // std-only register-ID band validity
+fn isValidRegisterId(reg: i32, last_global: i32, first_named: i32, last_reserved: i32, first_local: i32, last_local: i32) bool {
+    if (reg < 0) return false;
+    if (reg > last_global and reg < first_named) return false;
+    if (reg > last_reserved and reg < first_local) return false;
+    if (reg > last_local) return false;
+    return true;
+}
 const local_registers_owned = @import("register_metadata_local_registers.zig");
 const payload_owned = @import("register_metadata_payload.zig");
 const reallocate_owned = @import("register_metadata_reallocate.zig");
@@ -30,7 +36,7 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
 
 pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     // Legacy callers may still issue malformed register IDs during migration.
-    if (!register_id_valid.isValidRegisterId(reg, runtime.LAST_GLOBAL_REGISTER, runtime.FIRST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE, runtime.FIRST_LOCAL_REGISTER, runtime.LAST_LOCAL_REGISTER)) {
+    if (!isValidRegisterId(reg, runtime.LAST_GLOBAL_REGISTER, runtime.FIRST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE, runtime.FIRST_LOCAL_REGISTER, runtime.LAST_LOCAL_REGISTER)) {
         runtime.reportUndefSourceVar();
         return;
     }
