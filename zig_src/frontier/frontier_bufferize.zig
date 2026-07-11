@@ -46,6 +46,7 @@ const angularMode_t = c_int;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const mim_function_set = @import("mim_function_set.zig"); // std-only MIM function membership
+const gap_insert = @import("gap_insert.zig"); // std-only digit-group gap insertion
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
@@ -2091,61 +2092,15 @@ fn gapChar1Bytes(gapItem: u16) TwoBytes {
 }
 
 fn insertGapIP(displayBuffer: [*c]u8, numDigits: i16, nth: i16) i16 {
-    const groupwidthLeft: i16 = grpGroupingLeft;
-    if (groupwidthLeft == 0 or gapItemLeft == 0) {
-        return 0; // GROUPLEFT_DISABLED
-    }
-    if (numDigits <= groupwidthLeft) {
-        return 0;
-    }
-    if (nth + 1 == numDigits) {
-        return 0;
-    }
-    if (@rem(numDigits - nth, groupwidthLeft) == 1 or groupwidthLeft == 1) {
-        var tt: [4]u8 = undefined;
-        if (separatorLeftByte1() != 1) {
-            tt[0] = 0xab; // token
-            tt[1] = 1;
-            tt[2] = 0;
-            _ = strcpy(displayBuffer, &tt);
-            return 2;
-        } else {
-            tt[0] = 0xab; // token
-            tt[1] = 0;
-            _ = strcpy(displayBuffer, &tt);
-            return 1;
-        }
-    }
-    return 0;
+    const gw: i16 = grpGroupingLeft;
+    const disabled = gw == 0 or gapItemLeft == 0;
+    return gap_insert.insertGapIP(displayBuffer, numDigits, nth, gw, disabled, separatorLeftByte1() == 1);
 }
 
 fn insertGapFP(displayBuffer: [*c]u8, numDigits: i16, nth: i16) i16 {
-    const groupwidthRight: i16 = grpGroupingRight;
-    if (groupwidthRight == 0 or gapItemRight == 0) {
-        return 0; // GROUPRIGHT_DISABLED
-    }
-    if (numDigits <= groupwidthRight) {
-        return 0;
-    }
-    if (nth + 1 == numDigits) {
-        return 0;
-    }
-    if (@rem(nth, groupwidthRight) == groupwidthRight - 1) {
-        var tt: [4]u8 = undefined;
-        if (separatorRightByte1() != 1) {
-            tt[0] = 0xbb; // token
-            tt[1] = 1;
-            tt[2] = 0;
-            _ = strcpy(displayBuffer, &tt);
-            return 2;
-        } else {
-            tt[0] = 0xbb; // token
-            tt[1] = 0;
-            _ = strcpy(displayBuffer, &tt);
-            return 1;
-        }
-    }
-    return 0;
+    const gw: i16 = grpGroupingRight;
+    const disabled = gw == 0 or gapItemRight == 0;
+    return gap_insert.insertGapFP(displayBuffer, numDigits, nth, gw, disabled, separatorRightByte1() == 1);
 }
 
 // ---------------------------------------------------------------------------
