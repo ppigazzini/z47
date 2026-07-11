@@ -34,6 +34,7 @@ const conversion_name_codec = @import("conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
 const glyph_export = @import("glyph_export.zig");
 const glyph_text_lookup = @import("glyph_text_lookup.zig");
+const glyph_advance = @import("glyph_advance.zig"); // std-only glyph pixel-advance arithmetic
 const string_edit = @import("string_edit.zig");
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
@@ -323,15 +324,9 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
                 return;
             }
 
-            numPixels += @intCast((@as(u32, doubling) * (@as(u32, glyph.?.colsGlyph) + @as(u32, glyph.?.colsAfterGlyph))) >> 3);
-            if (firstChar) {
-                firstChar = false;
-                if (withLeadingEmptyRows) {
-                    numPixels += @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsBeforeGlyph)) >> 3);
-                }
-            } else {
-                numPixels += @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsBeforeGlyph)) >> 3);
-            }
+            const addBefore = !firstChar or withLeadingEmptyRows;
+            numPixels += glyph_advance.glyphAdvance(doubling, glyph.?.colsGlyph, glyph.?.colsAfterGlyph, glyph.?.colsBeforeGlyph, addBefore);
+            firstChar = false;
 
             if (resultStr != null) {
                 if (numPixels > width.*) {
@@ -344,7 +339,7 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
     }
 
     if (glyph != null and withEndingEmptyRows == false) {
-        numPixels -= @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsAfterGlyph)) >> 3);
+        numPixels -= glyph_advance.trailingTrim(doubling, glyph.?.colsAfterGlyph);
         if (resultStr != null and numPixels <= width.*) {
             if (resultStr.?.*[0] & 0x80 != 0) {
                 resultStr.?.* += 2;
