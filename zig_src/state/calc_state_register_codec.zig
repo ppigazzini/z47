@@ -9,6 +9,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
+const vector_shape = @import("vector_shape.zig"); // std-only matrix vector-shape
 const text = @import("calc_state_text.zig");
 const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
 
@@ -140,10 +141,10 @@ fn matrixCols(regist: i16) u16 {
     return hdr.matrixColumns;
 }
 fn isMatrix2dVector(rows: u16, cols: u16) bool {
-    return (rows == 1 and cols == 2) or (rows == 2 and cols == 1);
+    return vector_shape.is2dVector(rows, cols);
 }
 fn isMatrix3dVector(rows: u16, cols: u16) bool {
-    return (rows == 1 and cols == 3) or (rows == 3 and cols == 1);
+    return vector_shape.is3dVector(rows, cols);
 }
 fn isRegisterMatrixVector(regist: i16) bool {
     if (getRegisterDataType(regist) != dtReal34Matrix) return false;
