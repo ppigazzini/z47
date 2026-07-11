@@ -148,7 +148,9 @@ runs, in order:
 - `both` (both host simulators), then the non-blocking `simulator_smoke`, then
   `testPgms`, `${XVFB} test` (the 10228-test shared testSuite), and `generated`
 
-The job then runs the ASAN surface (`both_asan`, `test_asan`), builds the
+The job then runs the ASAN surface (`both_asan`, `test_asan`, and
+`pgm_load_fuzz` -- the malformed `.p47` load corpus driven through the real load
+path under AddressSanitizer), builds the
 published Linux archive with `zig build -Doptimize=ReleaseFast dist_linux`,
 launches a smoke test from the unpacked archive, diffs and hashes the tracked
 generated artifacts, and uploads the Linux package artifact plus a golden

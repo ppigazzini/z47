@@ -103,7 +103,7 @@ entrypoint list and `zig build --help` for the authoritative set.
 | Host simulators | `host/steps.zig` | `sim`/`all`, `simr47`, `both`, `both_asan`, `simulator_smoke` |
 | Generators | `host/steps.zig` (driving `tools/`) | `fonts`, `constants`, `catalogs`, `testpgms`/`testPgms`, `generated` |
 | Docs and cleanup | `host/steps.zig` | `docs`, `clean` |
-| Tests and verification | `host/steps.zig` (driving `tests/`) and `build.zig` | grouped host lanes `test`, `test_asan`, `repeattest`; native `test:unit`; C-dependency audits `check-c-deps*`; the per-owner `*_parity` suites, `*_oracle` helpers, and focused regression/harness lanes |
+| Tests and verification | `host/steps.zig` (driving `tests/`) and `build.zig` | grouped host lanes `test`, `test_asan`, `repeattest`; native `test:unit`; the `pgm_load_fuzz` malformed-input load lane; C-dependency audits `check-c-deps*`; the per-owner `*_parity` suites, `*_oracle` helpers, and focused regression/harness lanes |
 | Firmware | `firmware.zig` | `dmcp`, `dmcpr47`, `dmcp5`, `dmcp5r47`, the fixed-package `dmcp_pkg1`/`2`/`3`, and `dmcp_pkgs_all` |
 | Distribution | `dist.zig` | host `dist_linux`/`dist_macos`/`dist_windows`, firmware `dist_dmcp*`, the `dist_dmcp_pkgs_*` bundles, and the aggregate `dist`/`distS` |
 

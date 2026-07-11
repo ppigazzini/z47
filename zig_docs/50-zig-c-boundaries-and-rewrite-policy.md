@@ -113,6 +113,44 @@ testSuite dispatch contract and the firmware object layout, not reducible debt.
 Ongoing owner work is idiomatic refinement within that ceiling. See the
 churn-driven notes in [80-maintainer-workflow.md](80-maintainer-workflow.md).
 
+## Memory-Safety Posture
+
+The low idiomatic-Zig metrics (many `[*c]` pointers, `callconv(.c)`, `extern`
+sites) are a property of the transliteration contract, not latent memory-safety
+debt. A blanket `[*c]`-to-slice sweep of the transliterated spine is explicitly
+NOT on the roadmap: it would break the line-for-line upstream re-sync map without
+closing a real hazard. The honest posture is scoped, not aspirational:
+
+- The concern is CORRECTNESS, not security. z47 is offline and single-user, with
+  no network, crypto, auth, or secrets surface, so it is out of scope for the
+  CISA/NSA memory-safe-roadmap framing. The failure that matters is a corrupted
+  read making the calculator show a wrong number, which needs no attacker.
+- The real hazard surface is UNTRUSTED FILE IMPORT -- the state-load and
+  program-load paths that parse a `.p47` / state file whose bytes the code did
+  not produce. Upstream's own bug history concentrates memory fixes there
+  (state-file overflow, restore/decode out-of-bounds). The arithmetic and display
+  core takes no untrusted input.
+- z47 already defends that surface three ways: the load owner LOGIC
+  (`zig_src/state/calc_state_load.zig`, `program_serialization.zig` and its
+  `_header` / `_load_apply` / `_save` parts) is `[*c]`-free idiomatic Zig, with
+  `[*c]` confined to the paired `*_io.zig` / `*_runtime.zig` C-ABI file-I/O
+  seams; the full shared testSuite runs under AddressSanitizer in CI
+  (`zig build test_asan` / `both_asan`); and a malformed-input corpus is driven
+  through the real load path under ASAN (`zig build pgm_load_fuzz`, see
+  [70-tests-and-verification.md](70-tests-and-verification.md)). That fuzz lane
+  surfaced three real load-path bugs when it was added: two integer overflows in
+  the parse surface were fixed parity-safe, and a third (an overflow reached only
+  by executing a truncated program) was scoped out of the parse lane.
+- Firmware ships `.ReleaseSmall`, which compiles out all runtime safety checks,
+  so the safe-build panics these lanes rely on are a DEV/TEST-time guard, not a
+  device-runtime one. Making the device trap on the same conditions would mean
+  building ReleaseSafe and paying the flash and speed cost; that is a separate
+  priced decision, not assumed here.
+
+New owner or ported code should still prefer `[]T` / `[N]T` over `[*c]` at
+z47-owned leaves and on the load owners where a length is known, but never on the
+transliterated spine, where matching upstream shape keeps re-sync cheap.
+
 ## `translate-c` Policy
 
 Treat `translate-c` roots and any `@cImport` use as narrow boundary tools, not a
