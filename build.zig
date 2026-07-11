@@ -93,6 +93,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/label_truncate.zig",
         "zig_src/frontier/tam_digits.zig",
         "zig_src/frontier/mim_function_set.zig",
+        "zig_src/frontier/vbat_integrator.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",
