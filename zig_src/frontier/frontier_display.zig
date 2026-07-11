@@ -68,6 +68,7 @@ const fraction_encode = @import("fraction_encode.zig"); // std-only fraction gly
 const word_break = @import("word_break.zig"); // std-only display word-break trim
 const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char normalization
 const radix_mark = @import("radix_mark.zig"); // std-only radix-mark buffer fill
+const integer_separators = @import("integer_separators.zig"); // std-only integer separator splice
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -3043,39 +3044,8 @@ pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, dis
 
 fn insertSepsIntoIntegerText(displayString: [*c]u8) void {
     if (!GROUPLEFT_DISABLED() and GROUPWIDTH_LEFT1() > 0) {
-        var len: i16 = @intCast(strlen(displayString));
-        const digitOne: i16 = if (displayString[0] == '-') 1 else 0;
-        var Grp1: i16 = if (GROUPWIDTH_LEFT1X() > 0 and (@as(i32, displayString[@intCast(digitOne)]) - 48 <= GROUPWIDTH_LEFT1X()) and (len - digitOne == @as(i16, @intCast(GROUPWIDTH_LEFT1())) + 1)) @as(i16, @intCast(GROUPWIDTH_LEFT1())) + 1 else @as(i16, @intCast(GROUPWIDTH_LEFT1()));
-        Grp1 = if (len >= (if (checkHP()) @as(i16, 10) else 20)) @as(i16, @intCast(GROUPWIDTH_LEFT())) else Grp1;
-        var ii: i16 = len - Grp1;
-        if (ii > 0 and (ii != 1 or displayString[0] != '-')) {
-            const sl = SEPARATOR_LEFT();
-            if (sl[1] != 1) {
-                _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 2)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
-                displayString[@intCast(ii)] = sl[0];
-                displayString[@intCast(ii + 1)] = sl[1];
-            } else if (sl[0] != 1) {
-                _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 1)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
-                displayString[@intCast(ii)] = sl[0];
-            }
-
-            len = @intCast(strlen(displayString));
-            ii = len - @as(i16, @intCast(GROUPWIDTH_LEFT())) - (Grp1 + (if (sl[1] == 1) @as(i16, 1) else 2));
-            while (ii > 0) : (ii -= @intCast(GROUPWIDTH_LEFT())) {
-                if (ii != 1 or displayString[0] != '-') {
-                    if (sl[1] != 1) {
-                        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 2)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
-                        displayString[@intCast(ii)] = sl[0];
-                        displayString[@intCast(ii + 1)] = sl[1];
-                        len += 2;
-                    } else if (sl[0] != 1) {
-                        _ = frontier_char_string.xcopy(displayString + @as(usize, @intCast(ii + 1)), displayString + @as(usize, @intCast(ii)), @intCast(len - ii + 1));
-                        displayString[@intCast(ii)] = sl[0];
-                        len += 1;
-                    }
-                }
-            }
-        }
+        const sl = SEPARATOR_LEFT();
+        integer_separators.insertSeps(displayString, @intCast(GROUPWIDTH_LEFT()), @intCast(GROUPWIDTH_LEFT1()), GROUPWIDTH_LEFT1X(), sl[0], sl[1], checkHP());
     }
 }
 
