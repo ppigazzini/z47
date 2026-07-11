@@ -1,4 +1,5 @@
 const std = @import("std");
+const math_type_encode = @import("math_type_encode.zig"); // std-only type-report encoders
 const runtime = @import("math_command_wrappers_runtime.zig");
 
 fn pushIntegerOut(value: u32) void {
@@ -30,20 +31,11 @@ fn pushRealOut(value: u32) void {
 }
 
 fn matrixVectorShape(header: *align(1) runtime.matrixHeader_t) u32 {
-    if (header.matrixRows > 1 and header.matrixColumns == 1) {
-        return 2;
-    }
-
-    if (header.matrixRows == 1 and header.matrixColumns > 1) {
-        return 1;
-    }
-
-    return 0;
+    return math_type_encode.matrixVectorShape(header.matrixRows, header.matrixColumns);
 }
 
 fn angleCode(angular_mode: u32) u32 {
-    const angle_bits: u32 = @intCast(angular_mode & 0x07);
-    return 5 - angle_bits;
+    return math_type_encode.angleCode(angular_mode);
 }
 
 fn realMatrixVectorPolarCode() u32 {

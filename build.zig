@@ -90,6 +90,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/mathematics/small_prime_list.zig",
         "zig_src/mathematics/seed_word.zig",
         "zig_src/mathematics/math_matrix_kinds.zig",
+        "zig_src/mathematics/math_type_encode.zig",
         "zig_src/abi/int_math.zig",
         "zig_src/abi/shortint_arith.zig",
         "zig_src/abi/sci_format.zig",
