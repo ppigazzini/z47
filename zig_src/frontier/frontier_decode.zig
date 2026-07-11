@@ -40,6 +40,7 @@ const angularMode_t = c_int;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const numeral_decode = @import("numeral_decode.zig"); // std-only numeral -> display-string formatter
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_conversion_units = @import("frontier_conversion_units.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
@@ -633,104 +634,27 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
 // _decodeNumeral (static)
 // ===========================================================================
 fn _decodeNumeral(startPtr: [*c]u8, srcStartPtr: [*c]const u8, isLongInt: bool, updatedTgtPtr: ?*[*c]u8, updatedSrcPtr: ?*[*c]const u8) void {
-    var digit: i32 = 0;
-    var strPtr: [*c]u8 = startPtr;
-    var srcStr: [*c]const u8 = srcStartPtr;
-
-    if (srcStr[0] == '-') {
-        srcStr += 1;
-    }
-    digit = 0;
-    while ((srcStr[0] >= '0' and srcStr[0] <= '9') or (srcStr[0] >= 'A' and srcStr[0] <= 'F')) {
-        digit += 1;
-        srcStr += 1;
-    }
-    srcStr = srcStartPtr;
-
-    if (srcStr[0] == '-') {
-        strPtr[0] = srcStr[0];
-        strPtr += 1;
-        srcStr += 1;
-    }
-    while ((srcStr[0] >= '0' and srcStr[0] <= '9') or (srcStr[0] >= 'A' and srcStr[0] <= 'F') or srcStr[0] == '.' or srcStr[0] == ',') {
-        if (digit == 0) {
-            strPtr[0] = radix34MarkChar();
-            strPtr += 1;
-            srcStr += 1;
-        } else {
-            if (!groupRightDisabled() and digit < -1 and @rem(abs(digit), @as(c_int, groupWidthRight())) == 1) {
-                const g = gapChar1Right();
-                strPtr[0] = g[0];
-                strPtr += 1;
-                if (g[1] != 1) {
-                    strPtr[0] = g[1];
-                    strPtr += 1;
-                }
-            }
-            strPtr[0] = srcStr[0];
-            strPtr += 1;
-            srcStr += 1;
-            if (!groupLeftDisabled() and digit > 1 and @rem(digit, @as(i32, groupWidthLeft())) == 1) {
-                const g = gapChar1Left();
-                strPtr[0] = g[0];
-                strPtr += 1;
-                if (g[1] != 1) {
-                    strPtr[0] = g[1];
-                    strPtr += 1;
-                }
-            }
-        }
-        digit -= 1;
-    }
-    if (digit == 0 and !isLongInt) {
-        strPtr[0] = radix34MarkChar();
-        strPtr += 1;
-    }
-
-    if (srcStr[0] == 'e') {
-        srcStr += 1;
-        const ps = productSign();
-        strPtr[0] = ps[0];
-        strPtr += 1;
-        strPtr[0] = ps[1];
-        strPtr += 1;
-        strPtr[0] = STD_SUB_10[0];
-        strPtr += 1;
-        strPtr[0] = STD_SUB_10[1];
-        strPtr += 1;
-        if (srcStr[0] == '-') {
-            strPtr[0] = STD_SUP_MINUS[0];
-            strPtr += 1;
-            strPtr[0] = STD_SUP_MINUS[1];
-            strPtr += 1;
-            srcStr += 1;
-        } else if (srcStr[0] == '+') {
-            srcStr += 1;
-        }
-        while (srcStr[0] >= '0' and srcStr[0] <= '9') {
-            strPtr[0] = supDigit[0 + @as(usize, srcStr[0] - '0') * 2];
-            strPtr += 1;
-            strPtr[0] = supDigit[1 + @as(usize, srcStr[0] - '0') * 2];
-            strPtr += 1;
-            srcStr += 1;
-        }
-    } else if (srcStr[0] == '#') { // input not yet closed
-        strPtr[0] = srcStr[0];
-        strPtr += 1;
-        srcStr += 1;
-        while (srcStr[0] >= '0' and srcStr[0] <= '9') {
-            strPtr[0] = srcStr[0];
-            strPtr += 1;
-            srcStr += 1;
-        }
-    }
-
-    strPtr[0] = 0;
+    // Resolve the display formatting from the grouping/gap globals, then hand the
+    // pure byte-shuffling transform off to numeral_decode (std-only, tested).
+    const fmt = numeral_decode.Format{
+        .radix_mark = radix34MarkChar(),
+        .group_left_disabled = groupLeftDisabled(),
+        .group_right_disabled = groupRightDisabled(),
+        .group_width_left = groupWidthLeft(),
+        .group_width_right = groupWidthRight(),
+        .gap_left = gapChar1Left(),
+        .gap_right = gapChar1Right(),
+        .product_sign = productSign(),
+        .sub_10 = STD_SUB_10,
+        .sup_minus = STD_SUP_MINUS,
+        .sup_digit = &supDigit,
+    };
+    const w = numeral_decode.decodeNumeral(startPtr, srcStartPtr, isLongInt, fmt);
     if (updatedTgtPtr) |p| {
-        p.* = strPtr;
+        p.* = w.tgt;
     }
     if (updatedSrcPtr) |p| {
-        p.* = srcStr;
+        p.* = w.src;
     }
 }
 
