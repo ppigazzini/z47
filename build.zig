@@ -101,6 +101,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/frontier/program_step_opcode.zig",
         "zig_src/frontier/plot_zoom.zig",
         "zig_src/frontier/shuffle_decode.zig",
+        "zig_src/frontier/str_concat.zig",
         "zig_src/frontier/display_string_transform.zig",
         "zig_src/frontier/conversion_name_codec.zig",
         "zig_src/frontier/string_edit.zig",
