@@ -28,6 +28,7 @@ const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv:
 const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map
 const alpha_substring = @import("alpha_substring.zig"); // std-only ALPHAMID substring
 const string_trim = @import("string_trim.zig"); // std-only leading-space trim
+const substring_search = @import("substring_search.zig"); // std-only byte-string substring search
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -421,22 +422,7 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     const lgTarget: i16 = @intCast(stringByteLength(ptrTarget));
     const lgRegist: i16 = @intCast(stringByteLength(ptrRegist));
 
-    int32ToLongInteger(-1, &lgInt[0]);
-    var i: i16 = 0;
-    outer: while (i <= lgRegist - lgTarget) : (i += 1) {
-        var found: bool = true;
-        var j: i16 = 0;
-        while (j < lgTarget) : (j += 1) {
-            if ((ptrRegist + @as(usize, @intCast(i + j)))[0] != (ptrTarget + @as(usize, @intCast(j)))[0]) {
-                found = false;
-                break;
-            }
-        }
-        if (found) {
-            int32ToLongInteger(i, &lgInt[0]);
-            break :outer;
-        }
-    }
+    int32ToLongInteger(substring_search.substringPosition(ptrRegist, lgRegist, ptrTarget, lgTarget), &lgInt[0]);
 
     liftStack();
     frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
