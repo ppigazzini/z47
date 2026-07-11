@@ -63,6 +63,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const numeral_grouping = @import("numeral_grouping.zig"); // std-only digit-group separator math
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -666,8 +667,17 @@ inline fn GROUPWIDTH_LEFT() i32 {
 inline fn GROUPWIDTH_RIGHT() i32 {
     return grpGroupingRight;
 }
+// The four grouping-width settings, read into the pure numeral_grouping core.
+inline fn currentGrouping() numeral_grouping.Grouping {
+    return .{
+        .left = grpGroupingLeft,
+        .right = grpGroupingRight,
+        .gr1_left = grpGroupingGr1Left,
+        .gr1_overflow = grpGroupingGr1LeftOverflow,
+    };
+}
 inline fn GROUPWIDTH_LEFT1() u16 {
-    return if (grpGroupingGr1Left == 0) @as(u16, grpGroupingLeft) else @as(u16, grpGroupingGr1Left);
+    return numeral_grouping.groupWidthLeft1(currentGrouping());
 }
 inline fn GROUPWIDTH_LEFT1X() i32 {
     return grpGroupingGr1LeftOverflow;
@@ -676,18 +686,10 @@ inline fn GROUPWIDTH_(digitCount: i32) i32 {
     return if (digitCount >= 0) GROUPWIDTH_LEFT() else GROUPWIDTH_RIGHT();
 }
 inline fn GROUP1_OVFL(digitCount: i32, exp: i32) i32 {
-    return if (grpGroupingGr1LeftOverflow > 0 and exp == @as(i32, GROUPWIDTH_LEFT1()) and digitCount + 1 == @as(i32, GROUPWIDTH_LEFT1())) grpGroupingGr1LeftOverflow else 0;
-}
-inline fn digitCountNEW(digitCount: i32) i32 {
-    return if (digitCount + 1 > @as(i32, GROUPWIDTH_LEFT1())) digitCount - @as(i32, GROUPWIDTH_LEFT1()) else digitCount;
+    return numeral_grouping.group1Overflow(currentGrouping(), digitCount, exp);
 }
 inline fn IS_SEPARATOR_(digitCount: i32) bool {
-    if (digitCount + 1 == @as(i32, GROUPWIDTH_LEFT1())) return true;
-    if (digitCount + 1 > @as(i32, GROUPWIDTH_LEFT1()) or digitCount < 0) {
-        const gw = GROUPWIDTH_(digitCount);
-        return modulo(digitCountNEW(digitCount), gw) == gw - 1;
-    }
-    return false;
+    return numeral_grouping.isSeparator(currentGrouping(), digitCount);
 }
 inline fn GROUPLEFT_DISABLED() bool {
     return GROUPWIDTH_LEFT() == 0 or gapItemLeft == 0;
