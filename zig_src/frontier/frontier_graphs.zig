@@ -70,6 +70,7 @@ const real34_t = abi.Real34;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const plot_zoom = @import("plot_zoom.zig"); // std-only plot viewport zoom
 const plot_range_zero = @import("plot_range_zero.zig"); // std-only zero-axis range inclusion
+const plot_range_degenerate = @import("plot_range_degenerate.zig"); // std-only degenerate-range expansion
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -974,20 +975,14 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
     }
 
     // modify the draw range if the min == max
+    const yr = plot_range_degenerate.expandDegenerateRange(y_min, y_max);
+    y_min = yr.min;
+    y_max = yr.max;
+    const xr = plot_range_degenerate.expandDegenerateRange(x_min, x_max);
+    x_min = xr.min;
+    x_max = xr.max;
     var dx: f32 = x_max - x_min;
     var dy: f32 = y_max - y_min;
-    if (dy == 0.0) {
-        dy = 1.0;
-        y_max = y_min + dy / 2.0;
-        y_min = y_max - dy;
-        dy = y_max - y_min;
-    }
-    if (dx == 0.0) {
-        dx = 1.0;
-        x_max = x_min + dx / 2.0;
-        x_min = x_max - dx;
-        dx = x_max - x_min;
-    }
 
     // Calc zoom scales
     var plotzoomy: f32 = 1;
