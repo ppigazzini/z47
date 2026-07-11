@@ -31,6 +31,7 @@ const FLAG_SPCRES: i32 = 0x8017;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
+const str_stpcpy = @import("str_stpcpy.zig"); // std-only stpcpy
 const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
@@ -841,15 +842,7 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 }
 // stringCopy is a macro for stpcpy (returns pointer to dst's terminating NUL).
 fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
+    return str_stpcpy.stpcpy(dst, src);
 }
 inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
     return stpcpy(dst, src);
