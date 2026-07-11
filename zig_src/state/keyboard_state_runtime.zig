@@ -1,4 +1,5 @@
 const std = @import("std");
+const statusbar_flags = @import("statusbar_flags.zig"); // std-only status-bar update-flag clear
 const menu_doublepress = @import("menu_doublepress.zig"); // std-only double-press-blocked menu predicate
 const builtin = @import("builtin");
 const block_math = abi.block_math;
@@ -176,7 +177,7 @@ pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
 }
 
 fn clearStatusbarUpdateFlags(mode: u8) u8 {
-    return mode & ~@as(u8, SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+    return statusbar_flags.clearStatusbarUpdateFlags(mode, SCRUPD_MANUAL_STATUSBAR, SCRUPD_SKIP_STATUSBAR_ONE_TIME);
 }
 
 fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updating_mode: u8) void {
