@@ -67,6 +67,7 @@ const numeral_grouping = @import("numeral_grouping.zig"); // std-only digit-grou
 const fraction_encode = @import("fraction_encode.zig"); // std-only fraction glyph encoder
 const word_break = @import("word_break.zig"); // std-only display word-break trim
 const gap_char_codec = @import("gap_char_codec.zig"); // std-only gap-char normalization
+const radix_mark = @import("radix_mark.zig"); // std-only radix-mark buffer fill
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -1145,13 +1146,7 @@ fn irfracReplacements() [15]IrfracReplacement {
 
 // radix mark into tt[4]; returns nothing, the C code copies bytes then strcat.
 fn radixTT(tt: *[4]u8) void {
-    const radix = RADIX34_MARK_STRING();
-    if (radix[1] != 1) {
-        _ = strcpy(tt, radix);
-    } else {
-        tt[0] = radix[0];
-        tt[1] = 0;
-    }
+    radix_mark.radixTT(tt, RADIX34_MARK_STRING());
 }
 
 fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, noFix: bool_t, frontSpace: bool_t, complex: bool_t, limitIrfrac: irfracOption_t) void {
