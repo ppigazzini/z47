@@ -64,6 +64,7 @@ const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv:
 const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
 const printer_char_map = @import("printer_char_map.zig"); // std-only HP82240 reverse lookup
+const bit_reverse = @import("bit_reverse.zig"); // std-only byte bit-reversal
 const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
@@ -1443,11 +1444,7 @@ fn setPrintMode(mode: u8) void {
 }
 
 fn reverse(b_in: u8) u8 {
-    var b = b_in;
-    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-    return b;
+    return bit_reverse.reverse(b_in);
 }
 
 fn printLcd() void {
