@@ -922,7 +922,13 @@ fn WP34S_CalcComplexLnGamma_Lanczos(zReal: *align(1) const real_t, zImag: *align
     realCopy(zImag, &tImag);
     var k: i32 = 28;
     while (k >= 0) : (k -= 1) {
-        math_division_cells.divRealComplex(@alignCast(const51_gammaC01(@intCast(k))), &tReal, &tImag, &sReal, &sImag, realContext);
+        // The Lanczos coefficient lives at an align(1) offset inside the const
+        // blob; copy it into an aligned local instead of @alignCast-ing the
+        // blob pointer, which aborts on macOS/aarch64 (strict alignment). The
+        // sibling real path (realDivide) already reads these align(1)-safe.
+        var cReal: real_t = undefined;
+        realCopy(const51_gammaC01(@intCast(k)), &cReal);
+        math_division_cells.divRealComplex(&cReal, &tReal, &tImag, &sReal, &sImag, realContext);
         realSubtract(&tReal, const_1(), &tReal, realContext);
         realAdd(&uReal, &sReal, &uReal, realContext);
         realAdd(&uImag, &sImag, &uImag, realContext);
@@ -1008,14 +1014,19 @@ fn WP34S_ComplexGammaLnGamma(zReal: *align(1) const real_t, zImag: *align(1) con
 
     // Finally invert if we started with a negative argument
     if (reflect) {
+        // Aligned copy of the const-blob pi coefficient (same reason as the
+        // Lanczos loop above): divRealComplex needs a naturally-aligned pointer,
+        // and @alignCast-ing the align(1) blob pointer aborts on macOS/aarch64.
+        var piReal: real_t = undefined;
+        realCopy(const39_pi(), &piReal);
         realMultiply(zReal, const39_pi(), &tReal, realContext);
         realMultiply(zImag, const39_pi(), &tImag, realContext);
         math_command_wrappers.sinComplex(&tReal, &tImag, &sinPiZReal, &sinPiZImag, realContext);
         if (!calculateLnGamma) {
             math_multiplication_cells.mulComplexComplex(&sinPiZReal, &sinPiZImag, @alignCast(resReal), @alignCast(resImag), &uReal, &uImag, realContext);
-            math_division_cells.divRealComplex(@alignCast(const39_pi()), &uReal, &uImag, @alignCast(resReal), @alignCast(resImag), realContext);
+            math_division_cells.divRealComplex(&piReal, &uReal, &uImag, @alignCast(resReal), @alignCast(resImag), realContext);
         } else {
-            math_division_cells.divRealComplex(@alignCast(const39_pi()), &sinPiZReal, &sinPiZImag, &uReal, &uImag, realContext);
+            math_division_cells.divRealComplex(&piReal, &sinPiZReal, &sinPiZImag, &uReal, &uImag, realContext);
             math_ln_complex.lnComplex(&uReal, &uImag, &tReal, &tImag, realContext);
             realSubtract(&tReal, resReal, resReal, realContext);
             realSubtract(&tImag, resImag, resImag, realContext);
