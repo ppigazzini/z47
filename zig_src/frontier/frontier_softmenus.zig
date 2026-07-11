@@ -110,6 +110,7 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("label_truncate.zig"); // std-only label arrow truncation
 const name_slot_equal = @import("name_slot_equal.zig"); // std-only name-slot strcmp
 const nth_string = @import("nth_string.zig"); // std-only packed-string advance
+const menu_strip = @import("menu_strip.zig"); // std-only menu-name page-marker stripping
 const str_concat = @import("str_concat.zig"); // std-only scratch string concat
 const digit_glyph = @import("digit_glyph.zig"); // std-only single-digit glyph
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
@@ -1376,23 +1377,7 @@ inline fn menuPageNumberU() u16 {
 }
 
 pub export fn _stripMenuName(buffer: [*c]u8, name: [*c]u8) callconv(.c) void {
-    var i: usize = 0;
-    menuPageNumber = 1;
-    while (buffer[i] != 0) {
-        if ((buffer[i] == STD_CR[0]) and (buffer[i + 1] == STD_CR[1])) {
-            if ((buffer[i + 3] == 0) and (buffer[i + 2] > STD_0[0]) and (buffer[i + 2] <= STD_9[0])) {
-                name[i] = 0;
-                menuPageNumber = @intCast(@as(i32, buffer[i + 2]) - @as(i32, STD_0[0]));
-            } else {
-                menuPageNumber = 0;
-            }
-            break;
-        } else {
-            name[i] = buffer[i];
-            i += 1;
-        }
-    }
-    name[i] = 0;
+    menuPageNumber = @intCast(menu_strip.stripMenuName(name, buffer, STD_CR[0], STD_CR[1], STD_0[0], STD_9[0]));
 }
 
 pub export fn findMenu(buffer: [*c]u8) callconv(.c) i16 {
