@@ -157,6 +157,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_build/host/manifest.zig",
         "zig_build/host/gtk_int.zig",
         "zig_build/host/space_label.zig",
+        "zig_build/host/caps_strip.zig",
         "zig_src/abi/block_math.zig",
     };
     const target = b.resolveTargetQuery(.{});
