@@ -35,7 +35,7 @@ COMMENT_RE = re.compile(r"//[^\n]*|/\*.*?\*/", re.DOTALL)
 FONTS = [
     {
         "c_source": "src/c47/printing/martelFonts.c",
-        "seam_path": "zig_src/frontier/generated/frontier_martel_fonts.zig",
+        "seam_path": "zig_src/shell/generated/frontier_martel_fonts.zig",
         "table": "martelFont24",
         "struct_name": "MartelFont24",
         "section_const": "martel_section",
@@ -47,7 +47,7 @@ FONTS = [
     },
     {
         "c_source": "src/c47/printing/printerFont8.c",
-        "seam_path": "zig_src/frontier/generated/frontier_printer_font8.zig",
+        "seam_path": "zig_src/shell/generated/frontier_printer_font8.zig",
         "table": "printerFont8",
         "struct_name": "PrinterFont8",
         "section_const": "pf8_section",

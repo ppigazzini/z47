@@ -5,7 +5,7 @@ each importer's new location, plus the build-system path literals.
 
 Cross-*module* moves are rejected: Zig forbids @import of a file outside the
 module root dir (verified), so a file may only move within its module's root
-subtree (e.g. within zig_src/frontier/). This tool enforces that.
+subtree (e.g. within zig_src/shell/). This tool enforces that.
 
 Usage:
   move-owners.py <mapfile>            # dry-run: print every rewrite, touch nothing
