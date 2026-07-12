@@ -126,7 +126,7 @@ fn addMathEigenOracle(
         .optimize = optimize,
     });
     const eigen_abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -192,7 +192,7 @@ fn addMathRealRectangularToPolarOracle(
         .optimize = optimize,
     });
     const helper_abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -258,7 +258,7 @@ fn addMathAtan2Oracle(
         .optimize = optimize,
     });
     const helper_abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -324,7 +324,7 @@ fn addMathAtanOracle(
         .optimize = optimize,
     });
     const helper_abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -390,7 +390,7 @@ fn addMathRealTrigPrimitivesOracle(
         .optimize = optimize,
     });
     const helper_abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -456,7 +456,7 @@ fn addMathCircularTrigOracle(
         .optimize = optimize,
     });
     const helper_abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -828,7 +828,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
             .link_libc = true,
             .imports = &.{
                 .{ .name = "float_format", .module = b.createModule(.{
-                    .root_source_file = b.path("zig_src/abi/float_format.zig"),
+                    .root_source_file = b.path("zig_src/seam/abi/float_format.zig"),
                     .target = context.host_target,
                     .optimize = optimize,
                 }) },
@@ -935,7 +935,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // authority for behavior; this covers invariants the oracle cannot express.
     const idiom_test = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/abi/types.zig"),
+            .root_source_file = b.path("zig_src/seam/abi/types.zig"),
             .target = context.host_target,
             .optimize = optimize,
         }),
@@ -967,7 +967,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     });
     abi_layout_module.addImport("c_bindings", abi_layout_c_bindings.createModule());
     abi_layout_module.addImport("abi", b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = context.host_target,
         .optimize = optimize,
     }));
