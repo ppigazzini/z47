@@ -5,8 +5,12 @@
 # roots) that a naive @import-only sweep misses. Runs a collision pre-check and
 # preserves the semantic suffix strata the idiom ratchet keys on.
 #
-# See REPORT-28 §12 (design) and §14.2/§15b (why state/ is NOT an in-place strip
-# and why one shortint file is skipped).
+# Notes: a directory whose files are prefixed with a *cluster* name rather than
+# the directory's own name (e.g. register_/stack_ under a state dir) is NOT a
+# safe in-place strip — the stripped names collide and lose the grouping; move
+# such files into subdirectories instead. A file whose stripped name would drop
+# a protected _runtime/_shared/_export/_owned suffix is skipped automatically by
+# the guard below.
 #
 # Usage:
 #   rename-owner.sh check  <dir> <prefix>    # dry-run collision + skip report
