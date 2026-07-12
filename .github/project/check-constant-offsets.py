@@ -123,7 +123,7 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
         "zig_src/frontier/display/display.zig": [r"constR3?4?\((\d+)\)"],
         "zig_src/frontier/frontier_addons.zig": [r"constR3?4?\((\d+)\)"],
         "zig_src/frontier/display/screen.zig": [r"constR3?4?\((\d+)\)"],
-        "zig_src/frontier/frontier_conversion_units.zig": [
+        "zig_src/frontier/convert/conversion_units.zig": [
             r"constR3?4?\((\d+)\)",
             r"OFF_const\w* = (\d+)",
             r"^\s*(\d+), // \d+ constFactor",

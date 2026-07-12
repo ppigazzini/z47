@@ -32,7 +32,7 @@ fn hpRangeShift(char_code: u16, std_1: u16, std_9: u16, std_hp_1: u16, std_sup_1
 }
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
-const conversion_name_codec = @import("../../conversion_name_codec.zig");
+const conversion_name_codec = @import("../../convert/conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
 const glyph_export = @import("glyph_export.zig");
 const glyph_text_lookup = @import("glyph_text_lookup.zig");
