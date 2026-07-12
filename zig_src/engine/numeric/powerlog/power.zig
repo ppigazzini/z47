@@ -15,10 +15,10 @@ const const_8 = consts.const_8;
 // moreInfoOnError strings (no-op under TESTSUITE / DMCP). The PC_BUILD
 // fflush(stdout) has no calculation effect and is omitted.
 
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
-const math_comparison_reals = @import("../comparison_reals.zig");
-const math_real_predicates = @import("../real_predicates.zig");
+const math_comparison_reals = @import("../compare/comparison_reals.zig");
+const math_real_predicates = @import("../compare/real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 

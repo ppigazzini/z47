@@ -1,6 +1,6 @@
 const std = @import("std");
 const random_primitives_owned = @import("random_primitives.zig");
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 fn readSeedWord(lsu_bytes: *const [50]u8, offset: usize) u64 {
     const word_bytes: *const [8]u8 = @ptrCast(&lsu_bytes[offset]);

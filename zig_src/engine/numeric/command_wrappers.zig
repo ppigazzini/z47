@@ -1,45 +1,45 @@
-const check_value_owned = @import("check_value.zig");
+const check_value_owned = @import("compare/check_value.zig");
 const build_options = @import("math_command_wrappers_build_options");
-const compare_owned = @import("compare.zig");
+const compare_owned = @import("compare/compare.zig");
 const convergence_owned = @import("convergence.zig");
-const integer_part_owned = @import("integer_part.zig");
-const runtime = @import("command_wrappers_runtime.zig");
-const get_type_owned = @import("get_type.zig");
+const integer_part_owned = @import("rounding/integer_part.zig");
+const runtime = @import("dispatch/command_wrappers_runtime.zig");
+const get_type_owned = @import("compare/get_type.zig");
 const projection_owned = @import("projection.zig");
-const arithmetic_dispatch_command_owned = @import("arithmetic_dispatch_command.zig");
+const arithmetic_dispatch_command_owned = @import("dispatch/arithmetic_dispatch_command.zig");
 const atan2_command_owned = @import("trig/atan2_command.zig");
-const double_width_command_owned = @import("double_width_command.zig");
+const double_width_command_owned = @import("arithmetic/double_width_command.zig");
 const percent_base_owned = @import("arithmetic/percent_base.zig");
 const percent_extended_owned = @import("arithmetic/percent_extended.zig");
 const random_primitives_owned = @import("random/random_primitives.zig");
 const random_real_owned = @import("random/random_real.zig");
 const random_integer_owned = @import("random/random_integer.zig");
 const random_seed_owned = @import("random/random_seed.zig");
-const special_algebraic_command_owned = @import("special_algebraic_command.zig");
-const increment_decrement_command_owned = @import("increment_decrement_command.zig");
-const decomp_owned = @import("scalar_integer_decomp_command.zig");
-const precision_owned = @import("scalar_integer_precision.zig");
-const trig_complex_primitives_owned = @import("trig_complex_primitives.zig");
+const special_algebraic_command_owned = @import("special/special_algebraic_command.zig");
+const increment_decrement_command_owned = @import("arithmetic/increment_decrement_command.zig");
+const decomp_owned = @import("arithmetic/scalar_integer_decomp_command.zig");
+const precision_owned = @import("rounding/scalar_integer_precision.zig");
+const trig_complex_primitives_owned = @import("trig/trig_complex_primitives.zig");
 const logxy_command_owned = @import("powerlog/logxy_command.zig");
 const circular_trig_command_owned = @import("trig/circular_trig_command.zig");
 const inverse_trig_command_owned = @import("trig/inverse_trig_command.zig");
-const transcendental_command_owned = @import("transcendental_command.zig");
+const transcendental_command_owned = @import("special/transcendental_command.zig");
 const powlog_log_owned = @import("powerlog/powlog_log.zig");
 const powlog_power_owned = @import("powerlog/powlog_power.zig");
-const invert_command_owned = @import("invert_command.zig");
-const sign_command_owned = @import("sign_command.zig");
-const exponent_bernoulli_command_owned = @import("exponent_bernoulli_command.zig");
+const invert_command_owned = @import("arithmetic/invert_command.zig");
+const sign_command_owned = @import("arithmetic/sign_command.zig");
+const exponent_bernoulli_command_owned = @import("special/exponent_bernoulli_command.zig");
 const lambertw_command_owned = @import("special/lambertw_command.zig");
-const integer_residue_command_owned = @import("integer_residue_command.zig");
+const integer_residue_command_owned = @import("arithmetic/integer_residue_command.zig");
 const atan_owned = @import("trig/atan.zig");
 const atan2_owned = @import("trig/atan2.zig");
 const circular_trig_owned = @import("trig/circular_trig.zig");
 const ln_complex_owned = @import("ln_complex.zig");
-const real_trig_owned = @import("real_trig.zig");
+const real_trig_owned = @import("trig/real_trig.zig");
 const erf_owned = @import("special/special_function_erf.zig");
-const factorial_owned = @import("special_function_factorial.zig");
-const fibonacci_owned = @import("special_function_fibonacci.zig");
-const ixyz_owned = @import("special_function_ixyz.zig");
+const factorial_owned = @import("special/special_function_factorial.zig");
+const fibonacci_owned = @import("special/special_function_fibonacci.zig");
+const ixyz_owned = @import("special/special_function_ixyz.zig");
 const matrix_vector_diagnostics_owned = @import("matrix/vector_diagnostics.zig");
 const matrix_vector_cross_matrix_owned = @import("matrix/vector_cross_matrix.zig");
 const matrix_vector_cross_scalar_owned = @import("matrix/vector_cross_scalar.zig");
@@ -49,7 +49,7 @@ const matrix_vector_validation_owned = @import("matrix/vector_validation.zig");
 const rectangular_to_polar_owned = @import("transform/rectangular_to_polar.zig");
 const linpol_pipeline_owned = @import("matrix/vector_linpol_pipeline.zig");
 const linpol_compute_owned = @import("matrix/vector_linpol_compute.zig");
-const shift_digits_command_owned = @import("shift_digits_command.zig");
+const shift_digits_command_owned = @import("arithmetic/shift_digits_command.zig");
 const parallel_command_owned = @import("transform/transform_parallel_command.zig");
 const polar_rect_command_owned = @import("transform/transform_polar_rect_command.zig");
 const power_command_owned = @import("transform/transform_power_command.zig");
@@ -75,8 +75,8 @@ comptime {
         // The compare/incDec cluster owners export the legacy fallback names
         // (z47_math_wrappers_legacy_fnXLessThan, ...) that the parity harness
         // gets from math_wrappers_legacy_link_stubs.c.
-        _ = @import("comparison_reals.zig");
-        _ = @import("register_compare.zig");
+        _ = @import("compare/comparison_reals.zig");
+        _ = @import("compare/register_compare.zig");
         // The addition/subtraction cell owners export the dispatch matrices
         // and every add*/sub* cell plus the z47_math_wrappers_legacy_fnAdd
         // and ..._fnSubtract fallback commands; the parity harness keeps its
@@ -99,8 +99,8 @@ comptime {
         // sign/integer-part helpers) and the thin real/real34 wrapper symbols.
         // The parity harness compiles the relocated C file instead, so these
         // owners are excluded there to avoid duplicate symbols.
-        _ = @import("runtime_helpers.zig");
-        _ = @import("runtime_error_reporters.zig");
+        _ = @import("dispatch/runtime_helpers.zig");
+        _ = @import("dispatch/runtime_error_reporters.zig");
         // The matrix lifecycle owner replaces the allocate/free/identity/redim,
         // copy and transpose primitives of mathematics/matrix.c. The matrix
         // bridge keeps the renamed legacy copies (still called by the rest of
@@ -216,11 +216,11 @@ comptime {
         // The matrix-index owner replaces isMatrixIndexed and fnIndexMatrix of
         // mathematics/matrix.c.
         _ = @import("matrix/index_command.zig");
-        _ = @import("prime.zig");
+        _ = @import("number_theory/prime.zig");
         _ = @import("special/wp34s.zig");
-        _ = @import("cpyx.zig");
-        _ = @import("agm.zig");
-        _ = @import("gd.zig");
+        _ = @import("special/cpyx.zig");
+        _ = @import("special/agm.zig");
+        _ = @import("special/gd.zig");
         _ = @import("special/lnbeta.zig");
         _ = @import("special/beta.zig");
         _ = @import("special/gamma.zig");
@@ -230,20 +230,20 @@ comptime {
         _ = @import("special/gammaX.zig");
         _ = @import("powerlog/power.zig");
         _ = @import("powerlog/xthroot.zig");
-        _ = @import("opmod.zig");
+        _ = @import("number_theory/opmod.zig");
         _ = @import("special/bessel.zig");
         _ = @import("special/elliptic.zig");
-        _ = @import("xfn.zig");
+        _ = @import("special/xfn.zig");
         _ = @import("slvc.zig");
         _ = @import("slvq.zig");
-        _ = @import("rsd.zig");
-        _ = @import("rdp.zig");
-        _ = @import("ortho_polynom.zig");
+        _ = @import("rounding/rsd.zig");
+        _ = @import("rounding/rdp.zig");
+        _ = @import("special/ortho_polynom.zig");
         _ = @import("arithmetic/percentSigma.zig");
-        _ = @import("mean.zig");
-        _ = @import("median.zig");
-        _ = @import("variance.zig");
-        _ = @import("deltaPercentXmean.zig");
+        _ = @import("statistics/mean.zig");
+        _ = @import("statistics/median.zig");
+        _ = @import("statistics/variance.zig");
+        _ = @import("statistics/deltaPercentXmean.zig");
         _ = @import("iteration.zig");
         _ = @import("arithmetic/percentSigmaDeltaPercentXmean.zig");
     }
@@ -733,11 +733,11 @@ pub export fn fnFp(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSinc(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    @import("sinc_command.zig").fnSinc(unused_but_mandatory_parameter);
+    @import("special/sinc_command.zig").fnSinc(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSincpi(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    @import("sinc_command.zig").fnSincpi(unused_but_mandatory_parameter);
+    @import("special/sinc_command.zig").fnSincpi(unused_but_mandatory_parameter);
 }
 
 pub export fn fnSin(unused_but_mandatory_parameter: u16) callconv(.c) void {

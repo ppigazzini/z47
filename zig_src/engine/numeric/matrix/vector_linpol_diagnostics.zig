@@ -1,5 +1,5 @@
 const std = @import("std");
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 pub fn invalidXError() void {
     var message_buffer: [128]u8 = undefined;

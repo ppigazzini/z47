@@ -45,10 +45,10 @@ const consts = abi.constants;
 //   constantPointers.h.
 // =====================================================================
 
-const runtime = @import("command_wrappers_runtime.zig");
-const math_comparison_reals = @import("comparison_reals.zig");
-const math_register_compare = @import("register_compare.zig");
-const math_real_predicates = @import("real_predicates.zig");
+const runtime = @import("dispatch/command_wrappers_runtime.zig");
+const math_comparison_reals = @import("compare/comparison_reals.zig");
+const math_register_compare = @import("compare/register_compare.zig");
+const math_real_predicates = @import("compare/real_predicates.zig");
 const real34_t = runtime.real34_t;
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

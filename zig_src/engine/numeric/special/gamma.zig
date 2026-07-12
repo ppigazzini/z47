@@ -20,13 +20,13 @@ const const_1680 = consts.const_1680;
 // sprintf hints become fixed moreInfoOnError strings (no-op under TESTSUITE/
 // DMCP).
 
-const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_division_cells = @import("../arithmetic/division_cells.zig");
 const math_ln_complex = @import("../ln_complex.zig");
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
 const math_wp34s = @import("wp34s.zig");
-const math_real_predicates = @import("../real_predicates.zig");
+const math_real_predicates = @import("../compare/real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const real34_t = runtime.real34_t;

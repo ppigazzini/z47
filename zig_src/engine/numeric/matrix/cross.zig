@@ -4,7 +4,7 @@
 // 3D vector cross product, zero-padding 2D inputs). The vector angle and the
 // rest of the engine stay in the matrix bridge.
 
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const abi = @import("abi");
 
 const real_t = runtime.real_t;

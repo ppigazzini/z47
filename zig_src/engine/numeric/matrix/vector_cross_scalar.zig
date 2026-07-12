@@ -1,4 +1,4 @@
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 fn crossReal() callconv(.c) void {
     runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);

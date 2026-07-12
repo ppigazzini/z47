@@ -6,10 +6,10 @@
 // _row_columnNorm) are static in matrix.c, so they stay file-local here; only
 // the public commands are bridge-renamed.
 const std = @import("std");
-const math_mim_util = @import("../mim_util.zig"); // std-only matrix-input helpers
-const runtime = @import("../command_wrappers_runtime.zig");
-const math_real_predicates = @import("../real_predicates.zig");
-const math_comparison_reals = @import("../comparison_reals.zig");
+const math_mim_util = @import("mim_util.zig"); // std-only matrix-input helpers
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const math_real_predicates = @import("../compare/real_predicates.zig");
+const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_matrix_elementwise = @import("elementwise.zig");
 const math_matrix_euclidean_norm_command = @import("euclidean_norm_command.zig");
 const math_matrix_swap = @import("swap.zig");
