@@ -49,15 +49,86 @@ pub export fn fnPlay(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 // ---------------------------------------------------------------------------
-// lcd.c — no framebuffer in the testSuite.
+// lcd.c — a real 1bpp frame buffer so plot/display output can be snapshotted
+// and hashed (ported from src/testSuite/hal/lcd.c, the c47-gtk software
+// blitter). lcd_buffer keeps the same 52-byte row stride (a two-byte prefix
+// plus 50 data bytes) as the simulator, so screen.c/fnScreenDump address it
+// identically. Defined (as null) in shell/c47.zig; allocated lazily here.
 // ---------------------------------------------------------------------------
+const SCREEN_WIDTH: u32 = 400;
+const SCREEN_HEIGHT: u32 = 240;
+const LCD_LINE_SIZE: u32 = 50;
+const BLT_OR: c_int = 0;
+const BLT_ANDN: c_int = 1;
+const BLT_XOR: c_int = 2;
+const BLT_NONE: c_int = 0;
+const BLT_SET: c_int = 1;
+extern var lcd_buffer: [*c]u8;
+extern fn calloc(nmemb: usize, size: usize) [*c]u8;
+
+fn ensureLcdBuffer() void {
+    if (lcd_buffer == null) {
+        lcd_buffer = calloc(SCREEN_HEIGHT * (SCREEN_WIDTH / 8 + 2) + 16, 1) + 2;
+    }
+}
+
+pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void {
+    ensureLcdBuffer();
+    if (dx < 1 or dx > 24) return;
+    if (x_in >= SCREEN_WIDTH or x_in + dx > SCREEN_WIDTH) return;
+    const x = SCREEN_WIDTH - dx - x_in;
+    const byte_i = x >> 3;
+    const bit_off: u5 = @intCast(x & 7);
+    const lowmask = (@as(u32, 1) << @as(u5, @intCast(dx))) -% 1;
+    const bytes_needed = (@as(u32, bit_off) + dx + 7) / 8;
+    var srcbits: u32 = undefined;
+    if (fill == BLT_SET and blt_op != BLT_XOR) {
+        srcbits = if (blt_op == BLT_ANDN) lowmask << bit_off else 0;
+    } else {
+        srcbits = (val & lowmask) << bit_off;
+    }
+    const srcbytes = [4]u8{ @truncate(srcbits), @truncate(srcbits >> 8), @truncate(srcbits >> 16), @truncate(srcbits >> 24) };
+    const base = y * (LCD_LINE_SIZE + 2) + byte_i + 2;
+    var i: u32 = 0;
+    switch (blt_op) {
+        BLT_OR => while (i < bytes_needed) : (i += 1) {
+            lcd_buffer[base + i] |= srcbytes[i];
+        },
+        BLT_XOR => while (i < bytes_needed) : (i += 1) {
+            lcd_buffer[base + i] ^= srcbytes[i];
+        },
+        BLT_ANDN => while (i < bytes_needed) : (i += 1) {
+            lcd_buffer[base + i] &= ~srcbytes[i];
+        },
+        else => return,
+    }
+    lcd_buffer[y * (LCD_LINE_SIZE + 2)] = 1; // mark line dirty
+}
+
 pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void {
-    _ = .{ x, y, dx, dy, val };
+    const endX = x + dx;
+    const endY = y + dy;
+    if (endX > SCREEN_WIDTH or endY > SCREEN_HEIGHT) return;
+    const blt_op: c_int = if (val != 0) BLT_OR else BLT_ANDN;
+    var col = x;
+    while (col < endX) : (col += 24) {
+        const cols = if (24 < endX - col) @as(u32, 24) else endX - col;
+        var line = y;
+        while (line < endY) : (line += 1) {
+            bitblt24(col, cols, line, 0xFFFFFF, blt_op, BLT_NONE);
+        }
+    }
+}
+
+pub export fn lcd_buffer_pixel_on(x: u32, y: u32) callconv(.c) u8 {
+    ensureLcdBuffer();
+    if (x >= SCREEN_WIDTH or y >= SCREEN_HEIGHT) return 0;
+    const bitIndex = SCREEN_WIDTH - 1 - x;
+    const byte_i = bitIndex >> 3;
+    const bit_j: u3 = @intCast(bitIndex & 7);
+    return (lcd_buffer[52 * y + 2 + byte_i] >> bit_j) & 1;
 }
 pub export fn _lcdRefresh() callconv(.c) void {}
-pub export fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int) callconv(.c) void {
-    _ = .{ x, dx, y, val, blt_op, fill };
-}
 pub export fn _lcdSBRefresh() callconv(.c) void {}
 pub export fn _lcdBandRefresh(y: u32, dy: u32) callconv(.c) void {
     _ = .{ y, dy };

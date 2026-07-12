@@ -310,8 +310,6 @@ const DF_ALL: u8 = 0;
 const DF_SCI: u8 = 2;
 const DF_UN: u8 = 5;
 
-const ON_PIXEL: i32 = 3158064;
-
 // items
 const ITM_NOP: i16 = 1542;
 const ITM_RCL: i16 = 51;
@@ -967,11 +965,6 @@ extern var userKeyLabel: [*c]u8;
 extern var current_cursor_x: u16;
 extern var current_cursor_y: u16;
 extern var alphaCursor: i16;
-// host-only screen buffer (referenced only under !dmcp_build in fnScreenDump).
-// `uint32_t *screenData` is a POINTER global: bind its storage and deref, else
-// @extern([*c]u32) yields &screenData -> off-segment read.
-const screenData_ptr = if (!dmcp_build) @extern(*[*c]u32, .{ .name = "screenData" }) else {};
-const screenStride = if (!dmcp_build) @extern(*i16, .{ .name = "screenStride" }) else {};
 
 const SIGMA_N = struct {
     inline fn ptr() *const real_t {
@@ -1066,6 +1059,12 @@ inline fn bitblt24(x: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill: c_int
         c_bitblt24(x, dx, y, val, blt_op, fill);
     }
 }
+// lcd_buffer_pixel_on tests one pixel of the 1bpp frame buffer. Only the PC and
+// testSuite screen dumps read it back, so it is bound on non-firmware builds
+// only; the C prototype returns bool_t, which is a one-byte 0/1 here.
+const LcdBufferPixelOnFn = *const fn (x: u32, y: u32) callconv(.c) u8;
+const c_lcd_buffer_pixel_on = if (!dmcp_build) @extern(LcdBufferPixelOnFn, .{ .name = "lcd_buffer_pixel_on" }) else {};
+
 // lcd.h static inlines over bitblt24: BLT_OR=0, BLT_ANDN=1, BLT_XOR=2, BLT_NONE=0.
 const BLT_OR: c_int = 0;
 const BLT_ANDN: c_int = 1;
@@ -6081,9 +6080,11 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0x000030c0;
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = 0x00001a7c;
+        // Horizontal and vertical print resolution: 2835 pixels/m (72 dpi), so
+        // sim and hardware screen dumps produce byte-identical BMPs.
+        uint32 = 0x00000b13;
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = 0x00001a7c;
+        uint32 = 0x00000b13;
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0x00000002;
         _ = fwrite(&uint32, 1, 4, bmp);
@@ -6123,7 +6124,7 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
             var x: i32 = 0;
             while (x < SCREEN_WIDTH) : (x += 1) {
                 uint8 = @bitCast(@as(u8, @bitCast(uint8)) << 1);
-                if (screenData_ptr.*[@intCast(y * screenStride.* + x)] == ON_PIXEL) {
+                if (c_lcd_buffer_pixel_on(@intCast(x), @intCast(y)) != 0) {
                     uint8 |= 1;
                 }
                 if (@rem(x, 8) == 7) {
