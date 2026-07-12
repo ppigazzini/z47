@@ -1,4 +1,4 @@
-const core = @import("shortint_core.zig");
+const core = @import("core.zig");
 const runtime = @import("shortint_runtime.zig");
 
 fn getBitOperand(bit: u16, base: ?*u32, word: *u64, require_save_last_x: bool) bool {
