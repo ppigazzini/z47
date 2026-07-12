@@ -35,10 +35,10 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_addons = @import("extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
