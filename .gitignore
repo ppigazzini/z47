@@ -35,6 +35,7 @@ c47.regs
 !xfnToR47user.s47
 20*.REGS.TSV
 20*.bmp
+c47plotTest*.bmp
 tags
 /PROGRAMS
 /SAVFILES

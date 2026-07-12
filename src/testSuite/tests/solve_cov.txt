@@ -1,0 +1,31 @@
+;*************************************************************
+;** Coverage: numeric root solver. fnSolve()/solver() finds  **
+;** a root of the current formula f(X)=X^2-4 (roots +/-2),    **
+;** evaluating the formula through equation.c each iteration. **
+;** The two guesses come from Y and X on the stack; the root  **
+;** lands in X. Uses SOLVER_STATUS_USES_FORMULA - no program  **
+;** fixture needed.                                           **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; guesses bracketing the positive root -> 2
+Func: fnSolveRootCov
+In:  FARG=0 RY=Real:"1" RX=Real:"3"
+Out: EC=0 RX=Real:"2"
+; guesses bracketing the negative root -> -2
+Func: fnSolveRootCov
+In:  FARG=0 RY=Real:"-3" RX=Real:"-1"
+Out: EC=0 RX=Real:"-2"
+
+; no real root (f(X)=X^2+1): the solver reports ERROR_NO_ROOT_FOUND (20)
+Func: fnSolveRootCov
+In:  FARG=2 RY=Real:"0" RX=Real:"3"
+Out: EC=20
+; fnPgmSlv dispatch: unknown label letter -> LABEL_NOT_FOUND (6),
+; out-of-range parameter -> OUT_OF_RANGE (8)
+Func: fnSolveErrCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=6
+Func: fnSolveErrCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=8

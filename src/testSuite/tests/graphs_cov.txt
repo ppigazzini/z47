@@ -1,0 +1,104 @@
+;*******************************************************************************************************************************
+;** Coverage: plot regression. Each graph is rendered by XEQ of a small RPN program ending in SNAP (G1..G4, staged below),    **
+;** i.e. the real programmed UI context. fnBmpNameCov names the SNAP bitmap c47plotTest<N>.bmp (kept on disk for inspection); **
+;** fnHashBmpCov pins its SHA-256, so a change to the grapher, fonts or the blitter fails the test. Own file, so it can be    **
+;** commented out if an upstream change legitimately alters the render.                                                       **
+;*******************************************************************************************************************************
+In: AM=RAD FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; stage program S (f(X)=X^2-4; serialize_cov's reset wiped program memory) and the graph programs G1..G4
+Func: fnLoadPgmCov
+In:  FARG=0
+Out: EC=0
+Func: fnLoadGraphPgmsCov
+In:  FARG=0
+Out: EC=0
+
+; equation plot (G1: X.SWAP, DROP, Draw y^x, SNAP): the program swaps the formula in from the X string; the staged formula is deliberately the OTHER one,
+; so the pinned hash only matches if the programmed X.SWAP really swapped. f(X)=X^2 over [-5,5] (range from Z and Y, formula in X)
+Func: fnEqSetCov
+In:  FARG=1
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=0
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 RZ=Real:"-5" RY=Real:"5" RX=Stri:"X^2" PGM="G1"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=0
+Out: EC=0 RX=Stri:"9C804C44D5B233E64EA969DC4F9CF35E53D431697ADD0BEEA22CBB18BB248C77"
+
+; equation plot (G1): f(X)=SIN(X) over [-5,5] (radians), X^2 staged and swapped out
+Func: fnEqSetCov
+In:  FARG=0
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=1
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 RZ=Real:"-5" RY=Real:"5" RX=Stri:"SIN(X)" PGM="G1"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=1
+Out: EC=0 RX=Stri:"7164E1B8A390797ADC903C1D7A8AE5F0EC80B54845D20CD5E422F137EDCDEB81"
+
+; program plot (G2: PGMPLT ->00, PLTf 'x', SNAP): label name from R00, plot variable 'x' sacrificial, range [-5,5] from the stack
+Func: fnBmpNameCov
+In:  FARG=2
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 R00=Stri:"S" RY=Real:"-5" RX=Real:"5" PGM="G2"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=2
+Out: EC=0 RX=Stri:"708E9B6A67A0B9BA2EBBAAAE35E5BE0D2CF67379885C7C2994AADE6FA5115217"
+
+; statistics plots: seed five (Y,X) data points once, then plot the same data with PLSTAT (G3) and with SCATR (G4)
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1.2" RX=Real:"2.1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"3.1" RX=Real:"3.0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4.2" RX=Real:"4.4"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"5.0" RX=Real:"4.8"
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=3
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G3"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=3
+Out: EC=0 RX=Stri:"710088EB701BC2B5D706DCEA8A338F4B9BCDA326D5D92468D53D1E6B1E43B05F"
+
+; scatter plot: points only - clear the line flag PLSTAT's default set above
+Func: fnBmpNameCov
+In:  FARG=4
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 FL_PLINE=0 PGM="G4"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=4
+Out: EC=0 RX=Stri:"2A237EFC7B341273E460CB641130471FEE9358BAE1128F9CB8653793F2FEFF1A"
+
+; clear the statistical sums so they do not leak past this file
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+; Graph items still to be covered here, and why they are not yet:
+; HISTO  - not yet programmable (interactive only); also needs bin setup pinned
+; ASSESS - not yet programmable (interactive only)

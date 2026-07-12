@@ -1119,7 +1119,11 @@ fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]alig
             realSetZero(&eig[k]);
             realSetZero(&q[k]);
             realSetZero(&r[k]);
-            realSetZero(&previousDiagonal[k]);
+        }
+        // previousDiagonal stores only the size-element diagonal (size*2 reals).
+        var pd: usize = 0;
+        while (pd < sz * 2) : (pd += 1) {
+            realSetZero(&previousDiagonal[pd]);
         }
         var ii: usize = 0;
         while (ii < sz) : (ii += 1) {

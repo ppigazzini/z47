@@ -38,9 +38,38 @@ void runPgm(uint16_t unusedButMandatoryParameter);
 void covBackupRoundtrip(uint16_t unusedButMandatoryParameter);
 void covConvToSI(uint16_t itemNr);
 void covConvFromSI(uint16_t itemNr);
+void covStateRoundtrip(uint16_t unusedButMandatoryParameter);
+void covEqCalc(uint16_t unusedButMandatoryParameter);
+void covDerivEq(uint16_t order);
+void covSolveRoot(uint16_t which);
+void covDerivErr(uint16_t which);
+void covSolveErr(uint16_t which);
+void covLoadPgm(uint16_t unusedButMandatoryParameter);
+void covDerivPgm(uint16_t order);
+void covSolvePgm(uint16_t unusedButMandatoryParameter);
+void covIntegrate(uint16_t which);
+void covIntegrateErr(uint16_t which);
+void covIntegratePgm(uint16_t unusedButMandatoryParameter);
+void covSumProd(uint16_t which);
+void covISumProd(uint16_t which);
+void covTvm(uint16_t which);
+void covTvmPmt(uint16_t which);
+void covEff(uint16_t unusedButMandatoryParameter);
+void covEffToI(uint16_t unusedButMandatoryParameter);
+void covAmort(uint16_t which);
+void covAmortNext(uint16_t which);
+void covEqSet(uint16_t which);
+void covLoadGraphPgms(uint16_t unusedButMandatoryParameter);
+void covBmpName(uint16_t which);
+void covHashBmp(uint16_t which);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
+// Omitted trailing coverageDriver fields are zero by the C standard; silence the per-row -Wextra noise the same way reservedRegisterLookup.h does.
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#endif
 const funcTest_t funcTestNoParam[] = {
   // Save / restore calc state (serializers; file I/O).
   {"fnSaveRegister",         fnSaveRegister        },
@@ -145,17 +174,39 @@ const funcTest_t funcTestNoParam[] = {
   {"fnAlphaRR",              fnAlphaRR             },
   {"fnAlphaSL",              fnAlphaSL             },
   {"fnAlphaSR",              fnAlphaSR             },
-  // Program engine: navigate to a global step (selects the current program) and
-  // clear the local variables of the current program (walks the loaded program
-  // steps; needs res/testPgms/testPgms.bin staged in the CWD).
+  // Program engine: navigate to a global step (selects the current program) and clear the local variables of the current program (walks the loaded program steps;
+  // needs res/testPgms/testPgms.bin staged in the CWD).
   {"fnGotoDot",              fnGotoDot             },
   {"fnClCVar",               fnClCVar              },
-  // Backup serializer round-trip: save the whole calculator state to backup.cfg
-  // and restore it. Exercises both directions of saveRestoreBackup.c. Resets the
-  // calculator, so its corpus test must run last.
-  {"fnBackupRoundtrip",      covBackupRoundtrip    },
-  {"covConvToSI",            covConvToSI           },
-  {"covConvFromSI",          covConvFromSI         },
+  // Backup serializer round-trip: save the whole calculator state to backup.cfg and restore it. Exercises both directions of saveRestoreBackup.c.
+  // Resets the calculator, so its corpus test must run last.
+  {"fnBackupRoundtrip",      covBackupRoundtrip, 1 },
+  {"covConvToSI",            covConvToSI, 1 },
+  {"covConvFromSI",          covConvFromSI, 1 },
+  {"fnEqSetCov",             covEqSet, 1 },
+  {"fnLoadGraphPgmsCov",     covLoadGraphPgms, 1 },
+  {"fnBmpNameCov",           covBmpName, 1 },
+  {"fnHashBmpCov",           covHashBmp, 1 },
+  {"fnStateRoundtrip",       covStateRoundtrip, 1 },
+  {"fnEqCalcCov",            covEqCalc, 1 },
+  {"fnDerivEqCov",           covDerivEq, 1 },
+  {"fnSolveRootCov",         covSolveRoot, 1 },
+  {"fnDerivErrCov",          covDerivErr, 1 },
+  {"fnSolveErrCov",          covSolveErr, 1 },
+  {"fnLoadPgmCov",           covLoadPgm, 1 },
+  {"fnDerivPgmCov",          covDerivPgm, 1 },
+  {"fnSolvePgmCov",          covSolvePgm, 1 },
+  {"fnIntegrateCov",         covIntegrate, 1 },
+  {"fnIntegrateErrCov",      covIntegrateErr, 1 },
+  {"fnIntegratePgmCov",      covIntegratePgm, 1 },
+  {"fnSumProdCov",           covSumProd, 1 },
+  {"fnISumProdCov",          covISumProd, 1 },
+  {"fnTvmCov",               covTvm, 1 },
+  {"fnTvmPmtCov",            covTvmPmt, 1 },
+  {"fnEffCov",               covEff, 1 },
+  {"fnEffToICov",            covEffToI, 1 },
+  {"fnAmortCov",             covAmort, 1 },
+  {"fnAmortNextCov",         covAmortNext, 1 },
   // Statistics (use FARG=1 with fnSigmaAddRem to accumulate a (Y,X) data point).
   {"fnSigmaAddRem",          fnSigmaAddRem         },
   {"fnMeanX",                fnMeanX               },
@@ -495,6 +546,9 @@ const funcTest_t funcTestNoParam[] = {
   {"fnExecute",              runPgm                },
   {"",                       NULL                  }
 };
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
+#pragma GCC diagnostic pop
+#endif
 
 
 
@@ -574,25 +628,634 @@ void runPgm(uint16_t unusedButMandatoryParameter) {
 
 
 void covBackupRoundtrip(uint16_t unusedButMandatoryParameter) {
-  // Save the whole calculator state to backup.cfg and restore it, exercising both
-  // the serialize and deserialize halves of saveRestoreBackup.c. restoreCalc()
-  // bails when the sample programs are loaded, so clear that flag first; it resets
-  // the calculator, so this must be the last test in the list.
+  // Save the whole calculator state to backup.cfg and restore it, exercising both the serialize and deserialize halves of saveRestoreBackup.c.
+  // restoreCalc() bails when the sample programs are loaded, so clear that flag first; it resets the calculator, so this must be the last test in the list.
   loadTestPrograms = false;
   saveCalc();
   restoreCalc();
 }
 
+static void covStoTvm(int32_t value, uint16_t reg) {
+  // Store an integer into a register through the calculator's own STO, which types the destination correctly. Seeds the reserved TVM registers and clobbers global
+  // registers with a sentinel.
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(value, REGISTER_REAL34_DATA(REGISTER_X));
+  reallyRunFunction(ITM_STO, reg);
+}
+
+static void covClobberRegs(void) {
+  // Overwrite the seeded global registers R00..R05 with a sentinel so a following load must restore them from file for the round-trip assertion to mean anything (a
+  // no-op load would leave the sentinel and fail the test). The sentinel is a real, so it also destroys the datatype of the mixed-type registers (R03 complex,
+  // R04 string, R05 short integer) - the load must restore both the value and the type.
+  for(uint16_t r = 0; r < 6; ++r) {
+    covStoTvm(-99999, r);
+  }
+}
+
+void covStateRoundtrip(uint16_t unusedButMandatoryParameter) {
+  // Save the whole calculator state and load it straight back, driving both the serialize half (doSave) and the deserialize half (doLoad,
+  // restoreOneSection) of saveRestoreCalcState.c. In the host build the DMCP power_check_screen() guard is compiled out, so doSave runs.
+  // Loading rewrites the state from file, so this must run late in the list; the round-trip is lossless, so seeded registers survive it.
+  //
+  // Two save flavours and several load modes are exercised: the full state file (stateSave/stateLoad, c47state.bin) plus a manual save (manualSave,
+  // c47.sav) read back one section at a time, covering the loadMode dispatch in restoreOneSection (registers, named variables, statistical sums, system state).
+  //
+  // The seeded registers R00..R05 are clobbered with a sentinel after each save and before the matching load, so the corpus assertion that they come back is proof that
+  // the load actually reads and restores the file - a no-op load would leave the sentinel and fail the test, rather than passing on state that was simply never
+  // changed.
+  fnSave(SM_STATE_SAVE);
+  covClobberRegs();
+  fnLoad(LM_STATE_LOAD);
+  fnSave(SM_MANUAL_SAVE);
+  covClobberRegs();
+  fnLoad(LM_REGISTERS);
+  fnLoad(LM_NAMED_VARIABLES);
+  fnLoad(LM_SUMS);
+  fnLoad(LM_SYSTEM_STATE);
+}
+
+void covEqCalc(uint16_t formulaIndex) {
+  // Evaluate one of a table of formulas through the equation engine, selected by FARG. fnEqCalc() runs parseEquation() in EQUATION_PARSER_XEQ mode over the current
+  // formula, driving the tokeniser, the operator-precedence parser, and the function dispatch in equation.c; the result lands in X.
+  // A single formula slot is created and reused, so no formula accumulates in the pool.
+  static const char * const covFormulae[] = {
+    "2+3",                    // 0  addition
+    "1+2" STD_CROSS "3",      // 1  precedence: x binds tighter than +
+    "(1+2)" STD_CROSS "3",    // 2  parentheses override precedence
+    "2^10",                   // 3  power
+    "10-2-3",                 // 4  left-associative subtraction
+    "2" STD_CROSS "(3+4)^2",  // 5  nested parentheses and power
+    "100-2" STD_CROSS "3^2",  // 6  precedence across x and ^
+    "COS(0)",                 // 7  function call -> 1
+    "SIN(0)",                 // 8  function call -> 0
+    "-5+3",                   // 9  unary minus
+    "COS(SIN(0))",            // 10 nested function calls
+    "TAN(0)",                 // 11 another function
+    "LN(1)",                  // 12 natural log
+    "((2+3)^2-1)",            // 13 deeper nesting
+    "2^3^2",                  // 14 power associativity
+    "A+2",                    // 15 named variable A (= X in)
+    "A^2",                    // 16 named variable in a power
+    "A" STD_CROSS "A+1",      // 17 variable used twice
+    "2+3=5",                  // 18 equation that holds (residual 0)
+    "3+4=10",                 // 19 equation residual (RHS-LHS = 10-7 = 3)
+  };
+  const uint16_t n = sizeof(covFormulae) / sizeof(covFormulae[0]);
+  if(formulaIndex >= n) {
+    return;
+  }
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  // Store the corpus input (X) into the named variable A so a formula can reference it; this exercises the variable-resolution path in the parser.
+  reallyRunFunction(ITM_STO, findOrAllocateNamedVariable("A"));
+  setEquation(currentFormula, covFormulae[formulaIndex]);
+  fnEqCalc(NOPARAM);
+}
+
+void covDerivEq(uint16_t order) {
+  // Differentiate the current formula f(X) at the point in X, through the equation derivative path (fn1stDerivEq / fn2ndDerivEq in differentiate.c,
+  // which evaluate the formula via parseEquation each iteration). A formula in the named variable X is set once and reused; the eval point comes from X.
+  // order 2 -> second derivative, else first. Result lands in X.
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  setEquation(currentFormula, "X^3");
+  currentSolverVariable = findOrAllocateNamedVariable("X");
+  reallyRunFunction(ITM_STO, currentSolverVariable);
+  if(order == 2) {
+    fn2ndDerivEq(NOPARAM);
+  }
+  else {
+    fn1stDerivEq(NOPARAM);
+  }
+}
+
+void covSolveRoot(uint16_t which) {
+  // Find a root of a formula with the numeric root solver (fnSolve -> solver() in solve.c). The two guesses come from Y and X on the stack;
+  // the solver evaluates the formula (equation.c) each iteration, leaving the result in X. Using a formula avoids a program fixture,
+  // so SOLVER_STATUS_USES_FORMULA is set explicitly. which < 2 uses f(X)=X^2-4 (roots +/-2); which >= 2 uses f(X)=X^2+1, which has no real root,
+  // driving the solver's no-root-found path.
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  setEquation(currentFormula, (which >= 2) ? "X^2+1" : "X^2-4");
+  const uint16_t var = findOrAllocateNamedVariable("X");
+  currentSolverVariable = var;
+  // Reset the solver status to exactly USES_FORMULA: a prior solver-driving test (e.g. the equation derivative) can leave other status bits set that change the
+  // solver's convergence, so assign rather than OR.
+  currentSolverStatus = SOLVER_STATUS_USES_FORMULA;
+  fnSolve(var);
+}
+
+void covDerivErr(uint16_t which) {
+  // Drive the error/dispatch branches of the program-based derivative entry (derivativeCommon in differentiate.c), which the formula path covDerivEq does not reach.
+  // which=0: a stack register whose letter names no program label -> ERROR_LABEL_NOT_FOUND; otherwise an out-of-range parameter -> ERROR_OUT_OF_RANGE.
+  if(which == 0) {
+    fn1stDeriv(REGISTER_T);            // letter 'T' names no program label
+  }
+  else {
+    fn1stDeriv(FIRST_NAMED_VARIABLE);  // outside [FIRST_LABEL,LAST_LABEL] and [X,T]
+  }
+}
+
+void covSolveErr(uint16_t which) {
+  // Drive the error/dispatch branches of fnPgmSlv (solve.c), distinct from the formula solver covSolveRoot drives. which=0:
+  // a stack register whose letter names no program label -> ERROR_LABEL_NOT_FOUND; otherwise an out-of-range parameter -> ERROR_OUT_OF_RANGE.
+  if(which == 0) {
+    fnPgmSlv(REGISTER_T);
+  }
+  else {
+    fnPgmSlv(FIRST_NAMED_VARIABLE);
+  }
+}
+
+static void covWriteAndLoadPgm(const uint8_t *pgm, size_t n) {
+  // Write a program in the program-file format (PROGRAM_VERSION 1, one byte per line) and import it through the official loader fnLoadProgram,
+  // which appends it safely and registers the global label. The file is the Test-suffixed name the test HAL maps ioPathLoadProgram to (c47programTest.bin),
+  // never the real c47program.bin, so the suite cannot clobber a user's saved program.
+  FILE *f = fopen("c47programTest.bin", "wb");
+  if(f == NULL) {
+    printf("\nCannot open c47programTest.bin for writing\n");
+    abortTest();
+    return;
+  }
+  fprintf(f, "PROGRAM_FILE_FORMAT\n0\nC47_program_file_version\n1\nPROGRAM\n%u\n", (unsigned)n);
+  for(size_t i = 0; i < n; ++i) {
+    fprintf(f, "%u\n", pgm[i]);
+  }
+  fclose(f);
+  fnLoadProgram(NOPARAM);
+}
+
+void covLoadPgm(uint16_t unusedButMandatoryParameter) {
+  // Build and import two labelled RPN programs: S = X^2 - 4 (root at X=2, derivative 2X) for the solver / differentiator / integrator / real summation,
+  // and T = X^2 (which returns a long integer for a long-integer counter) for the indexed summation. Both reach the execProgram branches the formula corpus cannot.
+  // Bytes: LBL name / X^2 / [literal 4 / SUB] / END.
+  static const uint8_t pgmS[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'S',            // LBL "S"
+    ITM_SQUARE,                                        // X^2
+    ITM_LITERAL, STRING_REAL34, 1, '4',                // 4
+    ITM_SUB,                                           // X^2 - 4
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff), // END
+  };
+  static const uint8_t pgmT[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'T',            // LBL "T"
+    ITM_SQUARE,                                        // X^2
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff), // END
+  };
+  covWriteAndLoadPgm(pgmS, sizeof(pgmS));
+  covWriteAndLoadPgm(pgmT, sizeof(pgmT));
+}
+
+void covDerivPgm(uint16_t order) {
+  // Program-based derivative: differentiate the loaded program S (f(X)=X^2-4) at the point in X through derivativeCommon -> calcDeriv -> execProgram (differentiate.c)
+  // - the program branch covDerivEq (formula) does not reach. f'(X)=2X, so the first derivative at X=3 is 6.
+  const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
+  if(label == INVALID_VARIABLE) {
+    printf("\nUnknown global label: S\n");
+    abortTest();
+    return;
+  }
+  currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
+  if(order == 2) {
+    fn2ndDeriv(label);
+  }
+  else {
+    fn1stDeriv(label);
+  }
+}
+
+void covSolvePgm(uint16_t unusedButMandatoryParameter) {
+  // Program-based root solve: find a root of the loaded program S (f(X)=X^2-4) with fnSolve -> solver() over the program (execProgram each iteration in solve.c) - the
+  // program branch covSolveRoot (formula) does not reach. The two guesses come from Y and X on the stack; the positive root is 2. fnPgmSlv selects the program,
+  // then fnSolve over a named variable runs the iteration (the program reads the trial value the solver leaves in X).
+  const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
+  if(label == INVALID_VARIABLE) {
+    printf("\nUnknown global label: S\n");
+    abortTest();
+    return;
+  }
+  // Clear the whole solver status first: a prior TVM or interactive solve can leave bits set (e.g. SOLVER_STATUS_TVM_APPLICATION) that send _executeSolver down the
+  // wrong evaluation path, so assign rather than clear a single bit.
+  currentSolverStatus = 0;
+  fnPgmSlv(label);
+  fnSolve(findOrAllocateNamedVariable("X"));
+}
+
+void covIntegrate(uint16_t which) {
+  // Integrate the current formula f(X) over [Y, X] with fnIntegrateYX (integrate.c -> the double-exponential integrator,
+  // evaluating the formula via parseEquation each iteration). which selects the integrand; the lower limit comes from Y and the upper from X on the stack;
+  // the result lands in X. A formula avoids a program fixture, so SOLVER_STATUS_USES_FORMULA is set explicitly.
+  static const char * const covIntegrand[] = {
+    "X",                              // 0  integral of X     over [0,2] = 2
+    "X" STD_CROSS "X",                // 1  integral of X*X   over [0,3] = 9
+    "X+1",                            // 2  integral of X+1   over [0,2] = 4
+    "X" STD_CROSS "X" STD_CROSS "X",  // 3  integral of X^3   over [0,2] = 4
+    "2" STD_CROSS "X",                // 4  integral of 2*X   over [0,3] = 9
+  };
+  const uint16_t n = sizeof(covIntegrand) / sizeof(covIntegrand[0]);
+  if(which >= n) {
+    return;
+  }
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  setEquation(currentFormula, covIntegrand[which]);
+  const uint16_t var = findOrAllocateNamedVariable("X");
+  currentSolverVariable = var;
+  currentSolverStatus = SOLVER_STATUS_USES_FORMULA;
+  // Accuracy: zero the ACC reserved variable, which the integrator reads as the default 1e-32 tolerance. This does not touch X/Y,
+  // which carry the limits that fnIntegrateYX reads (upper from X, lower from Y).
+  reallocateRegister(RESERVED_VARIABLE_ACC, dtReal34, 0, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  fnIntegrateYX(var);
+}
+
+void covIntegrateErr(uint16_t which) {
+  // Drive the dispatch error branches of the integrator (_fnIntegrate / fnPgmInt in integrate.c). which=0: a stack register whose letter names no program label ->
+  // ERROR_LABEL_NOT_FOUND; otherwise a named variable with no program specified -> ERROR_NO_PROGRAM_SPECIFIED.
+  if(which == 0) {
+    fnIntegrate(REGISTER_T);
+  }
+  else {
+    currentSolverStatus = 0;
+    currentSolverProgram = 9999;   // >= numberOfLabels: no program specified
+    fnIntegrate(FIRST_NAMED_VARIABLE);
+  }
+}
+
+void covIntegratePgm(uint16_t unusedButMandatoryParameter) {
+  // Program-based integral: integrate the loaded program S (f(X)=X^2-4) over [Y,X] through fnPgmInt -> the integrator's execProgram branch (integrate.c),
+  // distinct from the formula path covIntegrate drives. Integral of X^2-4 over [0,3] is [X^3/3 - 4X] = 9 - 12 = -3. Requires the sample programs staged,
+  // so its corpus runs after programs.txt.
+  const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
+  if(label == INVALID_VARIABLE) {
+    printf("\nUnknown global label: S\n");
+    abortTest();
+    return;
+  }
+  currentSolverStatus = 0;
+  fnPgmInt(label);
+  reallocateRegister(RESERVED_VARIABLE_ACC, dtReal34, 0, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(RESERVED_VARIABLE_ACC));
+  fnIntegrateYX(findOrAllocateNamedVariable("X"));
+}
+
+void covSumProd(uint16_t which) {
+  // Program-based summation / product (sumprod.c). fnProgrammableSum / fnProgrammableProduct run the loaded program S (f(n)=n^2-4) for the counter n = Z, Z+X, ...
+  // up to Y (from=Z, to=Y, step=X on the stack), accumulating the sum or product of f(n). For n=3,4,5: sum = 5+12+21 = 38, product = 5*12*21 = 1260.
+  // Requires the sample programs staged, so its corpus runs after programs.
+  const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
+  if(label == INVALID_VARIABLE) {
+    printf("\nUnknown global label: S\n");
+    abortTest();
+    return;
+  }
+  currentSolverStatus = 0;
+  if(which == 1) {
+    fnProgrammableProduct(label);
+  }
+  else {
+    fnProgrammableSum(label);
+  }
+}
+
+void covISumProd(uint16_t which) {
+  // Program-based indexed (long-integer) summation / product (isumprod.c). fnProgrammableiSum / fnProgrammableiProduct run the loaded program T (f(n)=n^2,
+  // which returns a long integer for a long-integer counter) for n = Z, Z+X, ... up to Y (from=Z, to=Y, step=X, all long integers on the stack),
+  // accumulating a long-integer sum or product. For n=1,3,5 (from=1, to=5, step=2): sum = 1+9+25 = 35, product = 1*9*25 = 225. Requires the sample programs staged,
+  // so its corpus runs after programs.
+  const calcRegister_t label = findNamedLabel("T", GLOBAL_LABELS);
+  if(label == INVALID_VARIABLE) {
+    printf("\nUnknown global label: T\n");
+    abortTest();
+    return;
+  }
+  currentSolverStatus = 0;
+  if(which == 1) {
+    fnProgrammableiProduct(label);
+  }
+  else {
+    fnProgrammableiSum(label);
+  }
+}
 
 
-// Wrappers exposing the SI round-trip halves (custom conversion pairs) to generated tests
-// in conversionsSI.txt; the param is the convertPairs[] item number
+static void covSolveTvmTarget(uint16_t target) {
+  // Clobber the target with a deliberately-wrong value (50) so a no-op fnTvmVar would leave 50 and fail rather than pass on the pre-seeded answer, solve for it,
+  // and copy the result into X for the corpus to assert.
+  covStoTvm(50, target);
+  fnTvmVar(target);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  real34Copy(REGISTER_REAL34_DATA(target), REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+void covTvm(uint16_t which) {
+  // Solve one time-value-of-money variable from the others with fnTvmVar (tvm.c). In the testSuite build the internal `testing` flag is true,
+  // so fnTvmVar executes the solve directly instead of waiting on the MVAR menu. A consistent END-mode problem with round numbers - N=3,
+  // I%/yr=100 (periodic rate 100%), PV=-1000, PMT=0, FV=8000, one payment and compounding period per year - so every solved variable is exact: FV=-PV(1+i)^N=8000,
+  // PV=-1000, N=3, I%=100, PMT=0. FARG selects the target (0=FV, 1=PV, 2=PMT, 3=N, 4=I%); the result is copied from its reserved register into X for the corpus to
+  // assert.
+  setSystemFlag(FLAG_ENDPMT);
+  covStoTvm(3,     RESERVED_VARIABLE_NPPER);
+  covStoTvm(100,   RESERVED_VARIABLE_IPONA);
+  covStoTvm(-1000, RESERVED_VARIABLE_PV);
+  covStoTvm(0,     RESERVED_VARIABLE_PMT);
+  covStoTvm(8000,  RESERVED_VARIABLE_FV);
+  covStoTvm(1,     RESERVED_VARIABLE_PPERONA);
+  covStoTvm(1,     RESERVED_VARIABLE_CPERONA);
+  currentSolverStatus = 0;
+  uint16_t target;
+  switch(which) {
+    case 1:  target = RESERVED_VARIABLE_PV;    break;
+    case 2:  target = RESERVED_VARIABLE_PMT;   break;
+    case 3:  target = RESERVED_VARIABLE_NPPER; break;
+    case 4:  target = RESERVED_VARIABLE_IPONA; break;
+    default: target = RESERVED_VARIABLE_FV;    break;
+  }
+  // The closed-form variables (FV/PV/PMT/N) ignore the wrong seed and simply overwrite it; the iterative I% solve takes the seeded 50 as its starting guess,
+  // a wrong start inside the convergence basin, so that case proves the solver moves from a wrong start to 100.
+  covSolveTvmTarget(target);
+}
+
+void covTvmPmt(uint16_t which) {
+  // TVM with a non-zero payment (annuity), driving the annuity-factor and payment-timing branches of calculateFV / calculatePV / calculatePMT. Consistent problem: N=3,
+  // I%/yr=100 (periodic rate 100%), PV=0, PMT=-100. In END mode this is an ordinary annuity, FV = -PMT*((1+i)^N-1)/i = 700;
+  // with FARG >= 10 the driver clears FLAG_ENDPMT (BEGIN mode, annuity due), where the payment-timing factor (1+i) lifts the future value to FV = 700*(1+i) = 1400 and
+  // covers the p=1 branch. FARG selects the target (0/10=FV, 1/11=PV, 2/12=PMT); the result is asserted in X.
+  const bool_t begin = which >= 10;
+  const uint16_t sel = begin ? (uint16_t)(which - 10) : which;
+  if(begin) {
+    clearSystemFlag(FLAG_ENDPMT);
+  }
+  else {
+    setSystemFlag(FLAG_ENDPMT);
+  }
+  covStoTvm(3,    RESERVED_VARIABLE_NPPER);
+  covStoTvm(100,  RESERVED_VARIABLE_IPONA);
+  covStoTvm(0,    RESERVED_VARIABLE_PV);
+  covStoTvm(-100, RESERVED_VARIABLE_PMT);
+  covStoTvm(begin ? 1400 : 700, RESERVED_VARIABLE_FV);
+  covStoTvm(1,    RESERVED_VARIABLE_PPERONA);
+  covStoTvm(1,    RESERVED_VARIABLE_CPERONA);
+  currentSolverStatus = 0;
+  uint16_t target;
+  switch(sel) {
+    case 1:  target = RESERVED_VARIABLE_PV;  break;
+    case 2:  target = RESERVED_VARIABLE_PMT; break;
+    default: target = RESERVED_VARIABLE_FV;  break;
+  }
+  // All three targets here are closed-form, so the wrong seed is overwritten.
+  covSolveTvmTarget(target);
+  setSystemFlag(FLAG_ENDPMT);  // restore the default payment-timing mode (test isolation)
+}
+
+void covEff(uint16_t unusedButMandatoryParameter) {
+  // Effective annual interest rate: fnEff computes 100*((iA/(100*cperA)+1)^cperA - 1) from the nominal rate and the compounding frequency, leaving it in X.
+  // Nominal 100%/yr compounded 2/yr -> effective 100*((1+0.5)^2-1) = 125%.
+  covStoTvm(100, RESERVED_VARIABLE_IPONA);
+  covStoTvm(2,   RESERVED_VARIABLE_CPERONA);
+  fnEff(NOPARAM);
+}
+
+void covEffToI(uint16_t unusedButMandatoryParameter) {
+  // Inverse of fnEff: the nominal annual rate from the effective rate (read from X) and the compounding frequency (CPER/a).
+  // fnEffToI computes iA = 100*cperA*((EFF/100+1)^(1/cperA)-1); EFF=125% compounded 2/yr gives ((1.25+1)^(1/2)-1)*100*2 = (1.5-1)*200 = 100% nominal - the exact
+  // inverse of the covEff case (100% nominal, 2/yr -> 125% effective).
+  covStoTvm(2, RESERVED_VARIABLE_CPERONA);
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(125, REGISTER_REAL34_DATA(REGISTER_X));
+  fnEffToI(NOPARAM);
+}
+
+// Common loan state for the amortisation drivers: PV=1000, I%/yr=100 (periodic rate 100%), PMT=-1200, END mode, one payment and compounding period per year. Period 1:
+// interest 1000, principal 200, balance 800; period 2 (start 800): interest 800, principal 400, balance 400.
+static void covSeedAmortLoan(void) {
+  setSystemFlag(FLAG_ENDPMT);
+  covStoTvm(3,     RESERVED_VARIABLE_NPPER);
+  covStoTvm(100,   RESERVED_VARIABLE_IPONA);
+  covStoTvm(1000,  RESERVED_VARIABLE_PV);
+  covStoTvm(-1200, RESERVED_VARIABLE_PMT);
+  covStoTvm(1,     RESERVED_VARIABLE_PPERONA);
+  covStoTvm(1,     RESERVED_VARIABLE_CPERONA);
+}
+
+static void covRunAmort(uint16_t sel) {
+  if(sel == 1) {
+    fnAmortPrn(NOPARAM);
+  }
+  else if(sel == 2) {
+    fnAmortInt(NOPARAM);
+  }
+  else {
+    fnAmortBal(NOPARAM);
+  }
+}
+
+void covAmort(uint16_t which) {
+  // Amortisation schedule for the shared loan. FARG encodes two axes: band = FARG/10 selects the mode (0 = single-period analytical,
+  // 1 = HP12C period-by- period balance path amortBalAt_HP12C, 2 = multi-period analytical range [1,2]); sel = FARG%10 selects the figure (0 = BAL, 1 = PRN, 2 = INT).
+  // The result is left in X. The periodic rate 1.00 is exact, so the HP12C rounded schedule matches the analytical one.
+  // For the range [1,2] the interest and principal accumulate over both periods (INT=1000+800=1800, PRN=200+400=600) and BAL is the balance after period 2 (=400),
+  // driving the multi-period accumulation loop the single-period cases skip.
+  const uint16_t band = which / 10;
+  const uint16_t sel  = which % 10;
+  covSeedAmortLoan();
+  if(band == 1) {
+    setSystemFlag(FLAG_AMORT_HP12C);
+  }
+  else {
+    clearSystemFlag(FLAG_AMORT_HP12C);
+  }
+  amortP1 = 1;
+  amortP2 = (band == 2) ? 2 : 1;
+  covRunAmort(sel);
+  clearSystemFlag(FLAG_AMORT_HP12C);  // restore the default amortisation mode (test isolation)
+  amortP1 = 1;
+  amortP2 = 1;                        // restore the default amortisation range (test isolation)
+}
+
+void covAmortNext(uint16_t which) {
+  // Advance the amortisation range with fnAmortNext, then read period 2. From the [1,1] range fnAmortNext moves it to [2,2] (amortP1=amortP2=2);
+  // period 2 has interest 800, principal 400 and balance 400. FARG selects the figure (0=BAL, 1=PRN, 2=INT).
+  covSeedAmortLoan();
+  clearSystemFlag(FLAG_AMORT_HP12C);
+  amortP1 = 1;
+  amortP2 = 1;
+  fnAmortNext(NOPARAM);
+  covRunAmort(which);
+  amortP1 = 1;
+  amortP2 = 1;                        // restore the default amortisation range (test isolation)
+}
+
+
+
+// Wrappers exposing the SI round-trip halves (custom conversion pairs) to generated tests in conversionsSI.txt; the param is the convertPairs[] item number
 void covConvToSI(uint16_t itemNr) {
   runConversionToSI((int16_t)itemNr);
 }
 
 void covConvFromSI(uint16_t itemNr) {
   runConversionFromSI((int16_t)itemNr);
+}
+
+// SHA-256 (FIPS 180-4), self-contained, to hash the SNAP bitmap.
+typedef struct { uint32_t s[8]; uint64_t len; uint8_t buf[64]; uint32_t n; } sha256Ctx;
+
+static uint32_t sha256Ror(uint32_t x, int r) { return (x >> r) | (x << (32 - r)); }
+
+static void sha256Block(sha256Ctx *c, const uint8_t *p) {
+  static const uint32_t K[64] = {
+    0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
+  uint32_t w[64], a, b, cc, d, e, f, g, h, t1, t2;
+  for(int i = 0; i < 16; i++) {
+    w[i] = ((uint32_t)p[i*4] << 24) | ((uint32_t)p[i*4+1] << 16) | ((uint32_t)p[i*4+2] << 8) | p[i*4+3];
+  }
+  for(int i = 16; i < 64; i++) {
+    uint32_t s0 = sha256Ror(w[i-15], 7) ^ sha256Ror(w[i-15], 18) ^ (w[i-15] >> 3);
+    uint32_t s1 = sha256Ror(w[i-2], 17) ^ sha256Ror(w[i-2], 19) ^ (w[i-2] >> 10);
+    w[i] = w[i-16] + s0 + w[i-7] + s1;
+  }
+  a=c->s[0]; b=c->s[1]; cc=c->s[2]; d=c->s[3]; e=c->s[4]; f=c->s[5]; g=c->s[6]; h=c->s[7];
+  for(int i = 0; i < 64; i++) {
+    uint32_t S1 = sha256Ror(e, 6) ^ sha256Ror(e, 11) ^ sha256Ror(e, 25);
+    uint32_t ch = (e & f) ^ (~e & g);
+    t1 = h + S1 + ch + K[i] + w[i];
+    uint32_t S0 = sha256Ror(a, 2) ^ sha256Ror(a, 13) ^ sha256Ror(a, 22);
+    uint32_t maj = (a & b) ^ (a & cc) ^ (b & cc);
+    t2 = S0 + maj;
+    h=g; g=f; f=e; e=d+t1; d=cc; cc=b; b=a; a=t1+t2;
+  }
+  c->s[0]+=a; c->s[1]+=b; c->s[2]+=cc; c->s[3]+=d; c->s[4]+=e; c->s[5]+=f; c->s[6]+=g; c->s[7]+=h;
+}
+
+static void sha256Init(sha256Ctx *c) {
+  c->s[0]=0x6a09e667; c->s[1]=0xbb67ae85; c->s[2]=0x3c6ef372; c->s[3]=0xa54ff53a;
+  c->s[4]=0x510e527f; c->s[5]=0x9b05688c; c->s[6]=0x1f83d9ab; c->s[7]=0x5be0cd19;
+  c->len = 0; c->n = 0;
+}
+
+static void sha256Update(sha256Ctx *c, const uint8_t *p, size_t len) {
+  c->len += len;
+  while(len) {
+    uint32_t k = 64 - c->n;
+    if(k > len) { k = (uint32_t)len; }
+    memcpy(c->buf + c->n, p, k);
+    c->n += k; p += k; len -= k;
+    if(c->n == 64) { sha256Block(c, c->buf); c->n = 0; }
+  }
+}
+
+static void sha256Final(sha256Ctx *c, char outHex[65]) {
+  uint64_t bits = c->len * 8; // message length captured before padding
+  uint8_t pad = 0x80, zero = 0;
+  sha256Update(c, &pad, 1);
+  while(c->n != 56) { sha256Update(c, &zero, 1); }
+  uint8_t lenb[8];
+  for(int i = 0; i < 8; i++) { lenb[i] = (uint8_t)(bits >> (56 - i*8)); }
+  sha256Update(c, lenb, 8);
+  for(int i = 0; i < 8; i++) { sprintf(outHex + i*8, "%08X", c->s[i]); }
+  outHex[64] = 0;
+}
+
+// Plot-regression drivers (graphs_cov.txt). Each graph is rendered by XEQ of a small RPN program ending in SNAP (G1..G4, staged by covLoadGraphPgms), i.e.
+// in the real programmed UI context, and pinned by a SHA-256 of the SNAP screen capture:
+//   EQN Draw_y^x: G1 - X.SWAP the formula in from the X string, then Draw it;
+//   ADV PLTf    : G2 - program plot (PGMPLT ->00 via R00, then PLTf 'x');
+//   PLOT PLSTAT : G3 - statistics plot from the seeded sums;
+//   REGR SCATR  : G4 - scatter plot from the same seeded sums;
+//   REGR HISTO  : (not yet programmable, interactive only).
+//   REGR ASSESS : (not yet programmable, interactive only).
+// covBmpName numbers the bitmap (c47plotTest<N>.bmp) so every graph stays on disk; covHashBmp pins its SHA-256.
+void covEqSet(uint16_t which) {
+  // Stage the fallback formula G1 swaps out; also allocates the formula slot and the solver variable. The plot range comes from the stack on the XEQ line.
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  setEquation(currentFormula, which == 1 ? "SIN(X)" : "X^2");
+  currentSolverVariable = findOrAllocateNamedVariable("X");
+}
+
+// Two-byte program opcode: the high bit on the first byte marks that a second opcode byte follows (the decoder's (op & 0x80) convention).
+#define OP2(itm) (uint8_t)(((itm) >> 8) | 0x80), (uint8_t)((itm) & 0xff)
+
+void covLoadGraphPgms(uint16_t unusedButMandatoryParameter) {
+  // Build and import the graph programs through the official loader like program S (covLoadPgm). G2..G4 match the numbered bitmaps they snap.
+  static const uint8_t pgmG1[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '1',    // LBL "G1"
+    OP2(ITM_XSWAP),                                 // X.SWAP (formula <-> X string)
+    ITM_DROP,                                       // DROP the old formula text
+    OP2(ITM_DRAW),                                  // Draw y^x
+    OP2(ITM_PLTFCNS),                               // PLTFCNS (plot menu up, as interactive Draw shows it)
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  static const uint8_t pgmG2[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '2',    // LBL "G2"
+    OP2(ITM_PGMPLT), INDIRECT_REGISTER, 0,          // PGMPLT ->00
+    OP2(ITM_PLTf), STRING_LABEL_VARIABLE, 1, 'x',   // PLTf 'x'
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  static const uint8_t pgmG3[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '3',    // LBL "G3"
+    OP2(ITM_PLOT_STAT),                             // PLSTAT
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  static const uint8_t pgmG4[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '4',    // LBL "G4"
+    OP2(ITM_PLOT_SCATR),                            // SCATR
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  covWriteAndLoadPgm(pgmG1, sizeof(pgmG1));
+  covWriteAndLoadPgm(pgmG2, sizeof(pgmG2));
+  covWriteAndLoadPgm(pgmG3, sizeof(pgmG3));
+  covWriteAndLoadPgm(pgmG4, sizeof(pgmG4));
+}
+
+// The on-disk name of graph <which>'s bitmap. covBmpName points the SNAP capture at it and covHashBmp reads it back; one builder keeps the two from drifting.
+static void covPlotBmpName(char *out, uint16_t which) {
+  sprintf(out, "c47plotTest%u.bmp", which);
+}
+
+void covBmpName(uint16_t which) {
+  // Point the next SNAP capture at c47plotTest<FARG>.bmp; the override is consumed by one capture, so this runs before each XEQ of a graph program.
+  covPlotBmpName(_ioFileNameOverride, which);
+}
+
+void covHashBmp(uint16_t which) {
+  // SHA-256 the numbered Test bitmap the graph program's SNAP just wrote; the 64-digit hex lands in X for the corpus to compare against the reference.
+  char bmpName[24];
+  covPlotBmpName(bmpName, which);
+  FILE *bmp = fopen(bmpName, "rb");
+  if(bmp == NULL) {
+    printf("\nCannot open %s\n", bmpName);
+    abortTest();
+    return;
+  }
+  sha256Ctx ctx;
+  sha256Init(&ctx);
+  uint8_t buf[4096];
+  size_t got;
+  while((got = fread(buf, 1, sizeof(buf), bmp)) > 0) {
+    sha256Update(&ctx, buf, got);
+  }
+  fclose(bmp);
+  char hex[65];
+  sha256Final(&ctx, hex);
+  reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(hex) + 1), amNone);
+  strcpy(REGISTER_STRING_DATA(REGISTER_X), hex);
+  calcMode = CM_NORMAL; // leave the graph view so a reordered corpus is unaffected
 }
 
 
@@ -891,6 +1554,14 @@ void setParameter(char *p) {
         }
         else {
           setSystemFlag(FLAG_SPCRES);
+        }
+      }
+      else if(!strcmp(l+3, "PLINE")) {
+        if(r[0] == '0') {
+          clearSystemFlag(FLAG_PLINE);
+        }
+        else {
+          setSystemFlag(FLAG_PLINE);
         }
       }
       else if(!strcmp(l+3, "CPXRES")) {
@@ -3235,7 +3906,7 @@ void functionToCall(char *functionName) {
     if(funcToTest == runPgm) {
       functionIndex = ITM_XEQ;
     }
-    else if(funcToTest == covBackupRoundtrip || funcToTest == covConvToSI || funcToTest == covConvFromSI) {
+    else if(funcTestNoParam[function].coverageDriver) {
       functionIndex = ITM_NOP; // testSuite-local coverage drivers, not catalog items
     }
     else {

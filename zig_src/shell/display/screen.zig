@@ -300,6 +300,7 @@ const amPolarSPH: u32 = 128;
 const PGM_STOPPED: u8 = 0;
 const PGM_RUNNING: u8 = 1;
 const PGM_WAITING: u8 = 2;
+const PGM_PAUSED: u8 = 3;
 const PGM_SINGLE_STEP: u8 = 6;
 
 const SIM_UNSIGN: u8 = 0;
@@ -1199,6 +1200,10 @@ const c_time = @extern(*const fn (t: ?*time_t) callconv(.c) time_t, .{ .name = "
 extern fn localtime(t: *const time_t) *tm;
 extern fn strftime(s: [*c]u8, max: usize, fmt: [*c]const u8, tmp: *const tm) usize;
 extern fn fopen(name: [*c]const u8, mode: [*c]const u8) ?*FILE;
+extern fn strncpy(dst: [*c]u8, src: [*c]const u8, n: usize) [*c]u8;
+// Optional SNAP filename override: the graph coverage suite writes the next
+// capture's path here; fnScreenDump consumes it once and clears it.
+extern var _ioFileNameOverride: [1024]u8;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, nmemb: usize, stream: ?*FILE) usize;
 extern fn fclose(stream: ?*FILE) c_int;
 
@@ -5921,6 +5926,12 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
             frontier_graphs.graph_plotmem();
             displayShiftAndTamBuffer();
             frontier_softmenus.showSoftmenuCurrentPart();
+            if (programRunStop == PGM_RUNNING or programRunStop == PGM_PAUSED) {
+                // Programmed graph: paint the current menu (above) and drop to
+                // CM_NORMAL so a following programmed SNAP captures the same view
+                // the interactive UI shows.
+                calcMode = CM_NORMAL;
+            }
             hourGlassIconEnabled = 1;
             frontier_status_bar.refreshStatusBar();
             hourGlassIconEnabled = 0;
@@ -6037,7 +6048,15 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         var rawTime: time_t = undefined;
         _ = c_time(&rawTime);
         const timeInfo = localtime(&rawTime);
-        _ = strftime(&bmpFileName, 22, "%Y%m%d-%H%M%S00.bmp", timeInfo);
+        if (_ioFileNameOverride[0] != 0) {
+            // The graph coverage suite set this before a programmed SNAP so the
+            // capture lands in c47plotTest<N>.bmp; consume it once, then clear.
+            _ = strncpy(&bmpFileName, &_ioFileNameOverride, bmpFileName.len - 1);
+            bmpFileName[bmpFileName.len - 1] = 0;
+            _ioFileNameOverride[0] = 0;
+        } else {
+            _ = strftime(&bmpFileName, 22, "%Y%m%d-%H%M%S00.bmp", timeInfo);
+        }
         const bmp = fopen(&bmpFileName, "wb");
 
         _ = fwrite("BM", 1, 2, bmp);
