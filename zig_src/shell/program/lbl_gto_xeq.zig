@@ -30,7 +30,7 @@ const angularMode_t = c_int;
 const localFlags_t = u32;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const ks_register_remap = @import("../ks_register_remap.zig"); // std-only KS-code register remap
+const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode/bound
 const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
