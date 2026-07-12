@@ -28,7 +28,7 @@ const solve_build_options = @import("solve_build_options");
 const dmcp_dm42 = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -115,8 +115,7 @@ extern var ctxtReal34: realContext_t;
 // ---------------------------------------------------------------------------
 var ctxtTvm42: realContext_t = std.mem.zeroes(realContext_t);
 const std = @import("std");
-const solve_owned = @import("solve_owned.zig"); // M-callconv: Zig-to-Zig
-
+const solve_owned = @import("solve_owned.zig");
 inline fn ensureTvmContext() void {
     if (ctxtTvm42.digits == 0) {
         ctxtTvm42 = ctxtReal39;
@@ -1073,10 +1072,10 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
 // ===========================================================================
 // fnEff / fnEffToI
 // ===========================================================================
-// L2 error surface (REPORT-23 P1/P5): the finance-command cores return an
-// out-of-range error instead of calling displayCalcErrorMessage inline; the L3
-// shims map it via reportTvmError (all these paths share ERROR_OUT_OF_RANGE with
-// static two-part messages).
+// Error surface: the finance-command cores return an out-of-range error instead
+// of calling displayCalcErrorMessage inline; the exported command shims map it
+// via reportTvmError (all these paths share ERROR_OUT_OF_RANGE with static
+// two-part messages).
 const TvmError = error{ EffOutOfRange, EffToIOutOfRange, AmortBalOutOfRange, AmortPrnOutOfRange, AmortIntOutOfRange };
 
 fn reportTvmError(e: TvmError) void {

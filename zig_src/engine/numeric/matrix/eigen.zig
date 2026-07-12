@@ -26,16 +26,15 @@ const const_1e_34 = consts.const_1e_34;
 
 const std = @import("std");
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_complex_core = @import("complex_core.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_product = @import("product.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_slvc = @import("../slvc.zig"); // M-callconv: Zig-to-Zig
-const math_slvq = @import("../slvq.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_division_cells = @import("../arithmetic/division_cells.zig");
+const math_matrix_complex_core = @import("complex_core.zig");
+const math_matrix_product = @import("product.zig");
+const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
+const math_runtime_helpers = @import("../runtime_helpers.zig");
+const math_slvc = @import("../slvc.zig");
+const math_slvq = @import("../slvq.zig");
+const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig");
 const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -1791,7 +1790,7 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
 // technique, storing the eigenvectors column-wise into r. Diagonal A takes the
 // permuted-unit-vector fast path. matrix_any aliases real34Matrix_t /
 // complex34Matrix_t (shared header); the C copy stays file-local so the Zig
-// signature is chosen for convenience (no bridge rename).
+// signature is chosen for convenience.
 // ===========================================================================
 fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) void {
     // real34Matrix_t and complex34Matrix_t share the {header, matrixElements}
@@ -2311,8 +2310,8 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
 
 // ===========================================================================
 // Matrix square root (M.SQRT). MATRIX_SQRT_USE_EIGEN==1 default: A = Q L Q^-1,
-// sqrt(A) = Q sqrt(L) Q^-1. All helpers are static in matrix.c; only the public
-// fnMatrixSquareRoot is bridge-renamed.
+// sqrt(A) = Q sqrt(L) Q^-1. All helpers are static in matrix.c; only
+// fnMatrixSquareRoot is exported as the public command.
 // ===========================================================================
 
 fn isRealMatrixDiagonal(matrix: *const real34Matrix_t) bool {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// L1 bindings -- typed wrappers over the C decNumber complex runtime
-// (REPORT-23 §5/§10 `abi/runtime.zig`). Owners previously each declared the raw
+// Shared ABI bindings -- typed wrappers over the C decNumber complex runtime.
+// Owners previously each declared the raw
 // `extern fn addComplex(ar: *align(1) const real_t, ai: ..., ctx: *realContext_t)`
 // (six `*align(1) const real_t` + a context) and a local `addCplx`/`mulCplx`/
 // `divCplx` helper to marshal a `Complex` into it. This centralizes both: the

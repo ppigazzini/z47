@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for the firmware-only (`#if defined(DMCP_BUILD)`) keyboard handlers
-// that the retired keyboard_state_legacy.c bridge once compiled out of keyboard.c.
-// These are not reachable from the host sim or testSuite (they bind DMCP key-event
-// ROM surfaces), so they are verified by build/link across the firmware targets +
-// faithful-port review, then exported onto the DMCP lanes while the bridge renames
-// the C copies away.
+// ported out of keyboard.c. These are not reachable from the host sim or testSuite
+// (they bind DMCP key-event ROM surfaces), so they are verified by build/link
+// across the firmware targets + faithful-port review, then exported onto the DMCP
+// lanes.
 const abi = @import("abi");
 const std = @import("std");
 const builtin = @import("builtin");

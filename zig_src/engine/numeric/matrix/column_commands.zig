@@ -8,9 +8,8 @@ const consts = abi.constants;
 // file-local here.
 const std = @import("std");
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_elementwise = @import("elementwise.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_matrix_elementwise = @import("elementwise.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;

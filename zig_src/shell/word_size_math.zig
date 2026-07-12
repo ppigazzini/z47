@@ -1,6 +1,6 @@
 //! Short-integer word-size resolution -- the pure core of fnSetWordSize.
 //!
-//! frontier_config.zig's fnSetWordSize takes a requested word size and derives
+//! config.zig's fnSetWordSize takes a requested word size and derives
 //! the normalized size, the value mask, the sign bit, and the "setting changed"
 //! and "word size reduced" predicates that gate its side effects (the
 //! SETTING_SINT_WS flag change, the status-bar refresh, and the reduce-time

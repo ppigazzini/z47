@@ -5,8 +5,8 @@ const const_1 = consts.const_1;
 //
 // Zig owner for src/c47/mathematics/percentSigma.c: %Sigma = x/Sum(x)*100.
 // Faithful line-by-line translation; covered by percentSigma.txt. The
-// percentSigma() helper is exported with C linkage because
-// percentSigmaDeltaPercentXmean.c (still compiled as C) calls it; the static
+// percentSigma() helper is exported with C linkage and is also called by the
+// sibling owner percentSigmaDeltaPercentXmean.zig; the static
 // percentSigmaReal helper is replicated as a private fn but, because
 // elementwiseRema needs a C-callable function pointer, it is exported. fnPercentSigma
 // is exported with C linkage. The EXTRA_INFO_ON_CALC_ERROR hints become fixed

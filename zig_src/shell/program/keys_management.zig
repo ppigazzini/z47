@@ -1,6 +1,6 @@
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_config = @import("../config.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const TO_USER: u16 = 29;
 const FROM_USER: u16 = 30;
 

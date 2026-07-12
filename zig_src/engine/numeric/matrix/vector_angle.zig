@@ -2,8 +2,7 @@
 // Zig port of the vector-angle function of src/c47/mathematics/matrix.c:
 // vectorAngle computes the angle between two 2D or 3D vectors via the dot
 // product divided by the product of the euclidean (p=2) norms, fed through
-// arc-cosine. The remaining matrix engine stays in the matrix bridge until the
-// later B clusters land.
+// arc-cosine. The remaining matrix engine stays in the matrix bridge.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 

@@ -59,29 +59,29 @@ const calcRegister_t = i16;
 const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("text/char_string.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier = @import("../shell.zig");
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_char_string = @import("text/char_string.zig");
 const numeral_grouping = @import("text/numeral_grouping.zig"); // std-only digit-group separator math
 const fraction_encode = @import("../convert/fraction_encode.zig"); // std-only fraction glyph encoder
 const word_break = @import("text/word_break.zig"); // std-only display word-break trim
 const gap_char_codec = @import("text/gap_char_codec.zig"); // std-only gap-char normalization
 const integer_separators = @import("text/integer_separators.zig"); // std-only integer separator splice
-const frontier_conversion_angles = @import("../convert/conversion_angles.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_fractions = @import("../convert/fractions.zig"); // M-callconv: Zig-to-Zig
-const frontier_input = @import("input.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_store = @import("../store.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
+const frontier_error = @import("../error.zig");
+const frontier_fractions = @import("../convert/fractions.zig");
+const frontier_input = @import("input.zig");
+const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig");
+const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
+const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig");
+const frontier_real_type = @import("../real_type.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("screen.zig");
+const frontier_softmenus = @import("softmenus/softmenus.zig");
+const frontier_store = @import("../store.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -845,9 +845,8 @@ inline fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8, displayString: 
 
 // NOTE: the eight fnDisplayFormat* setters and fnDisplayFormatReset are NOT
 // ported here. frontier.zig (the host hub) already owns and exports the
-// fnDisplayFormat* family; the display.c copies are the ones the legacy shim
-// renamed to z47_frontier_legacy_*. Re-exporting them here would collide, so
-// they are intentionally omitted (renamed-away owners).
+// fnDisplayFormat* family; re-exporting the display.c copies here would collide
+// with those exports, so they are intentionally omitted.
 
 // ===========================================================================
 // exponentToDisplayString / supNumberToDisplayString / subNumberToDisplayString

@@ -38,9 +38,8 @@ const std = @import("std");
 //   bitblt24           +36  (lft_ifc.h:55)  [via setBlackPixel/setWhitePixel/flipPixel]
 // lcd_buffer is a C47-side uint8_t* global (not ROM). placePixel is first-party.
 //
-// fnSNAP IS owned here (the legacy shim only renamed it to graft the
-// z47_frontier_snap_* backup helpers, which STAY in C). No other screen.c symbol
-// is owned elsewhere.
+// fnSNAP IS owned here; the z47_frontier_snap_* backup helpers it calls are owned
+// by screen_snap.zig. No other screen.c symbol is owned elsewhere.
 //
 // The decNumber/real34 wrapper block mirrors the sibling display/bufferize owners
 // exactly (const* macros over `constants`, decQuad*/decNumber* inline wrappers,
@@ -67,40 +66,40 @@ const videoMode_t = c_int;
 const irfracOption_t = c_int;
 
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_asn_browser = @import("../browsers/asn_browser.zig"); // M-callconv: Zig-to-Zig
-const frontier_assign = @import("../input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_units = @import("../convert/conversion_units.zig"); // M-callconv: Zig-to-Zig
-const frontier_curve_fitting = @import("../plot/curve_fitting.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_flag_browser = @import("../browsers/flag_browser.zig"); // M-callconv: Zig-to-Zig
-const frontier_font_browser = @import("../browsers/font_browser.zig"); // M-callconv: Zig-to-Zig
-const frontier_fonts = @import("fonts/fonts.zig"); // M-callconv: Zig-to-Zig
-const frontier_graphs = @import("../plot/graphs.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("../program/next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_plotstat = @import("../plot/plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_browser = @import("../browsers/register_browser.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("../input/tam.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../timer.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier = @import("../shell.zig");
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_asn_browser = @import("../browsers/asn_browser.zig");
+const frontier_assign = @import("../input/assign.zig");
+const frontier_bufferize = @import("bufferize.zig");
+const frontier_calc_mode = @import("../calc_mode.zig");
+const frontier_char_string = @import("text/char_string.zig");
+const frontier_config = @import("../config.zig");
+const frontier_conversion_units = @import("../convert/conversion_units.zig");
+const frontier_curve_fitting = @import("../plot/curve_fitting.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
+const frontier_display = @import("display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_flag_browser = @import("../browsers/flag_browser.zig");
+const frontier_font_browser = @import("../browsers/font_browser.zig");
+const frontier_fonts = @import("fonts/fonts.zig");
+const frontier_graphs = @import("../plot/graphs.zig");
+const frontier_items = @import("items/items.zig");
+const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig");
+const frontier_manage = @import("../program/manage.zig");
+const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
+const frontier_next_step = @import("../program/next_step.zig");
+const frontier_plotstat = @import("../plot/plotstat.zig");
+const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig");
+const frontier_real_type = @import("../real_type.zig");
+const frontier_register_browser = @import("../browsers/register_browser.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_softmenus = @import("softmenus/softmenus.zig");
+const frontier_sort = @import("sort.zig");
+const frontier_status_bar = @import("statusbar/status_bar.zig");
+const frontier_tam = @import("../input/tam.zig");
+const frontier_timer = @import("../timer.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -108,7 +107,7 @@ const realContext_t = abi.RealContext;
 
 // glyph_t: 24 bytes. byte fields at 2..7, data ptr at 16.
 const glyph_t = abi.Glyph;
-// M-callconv type unification: font_t is the abi single-source (same layout --
+// font_t is the abi single-source (same layout --
 // numberOfGlyphs@2, glyphs@8; .id is never read here so the i8-vs-u16 owner
 // difference is inert). glyphsPtr() lives on abi.Font.
 const font_t = abi.Font;
@@ -760,7 +759,7 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 const allReservedVariables = @extern([*c]const reservedVariableHeader_t, .{ .name = "allReservedVariables" });
 // `namedVariableHeader_t *allNamedVariables` is a POINTER global (dynamically
 // alloc'd array), not an array symbol: the `extern var` form loads the pointer
-// VALUE; @extern([*c]...) would load &allNamedVariables (gotcha #6b). Matches the
+// VALUE; @extern([*c]...) would load &allNamedVariables. Matches the
 // 13 sibling owners that bind it as `extern var`.
 extern var allNamedVariables: [*c]const namedVariableHeader_t;
 // C: `const int KEY_X[7] = {-1, 66, ...}` -- signed 4-byte ints (KEY_X[0] is
@@ -777,7 +776,7 @@ const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48;
 const errorMessages = @extern([*c]const [SIZE_OF_EACH_ERROR_MESSAGE]u8, .{ .name = "errorMessages" });
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
 
-// A NUL-terminated view of an errorMessages row for std.fmt {s} (M24). The row
+// A NUL-terminated view of an errorMessages row for std.fmt {s}. The row
 // pointer inherits `allowzero` from the [*c] blob base, which {s} rejects; one
 // localized cast here yields the plain [:0]const u8 the formatter wants.
 inline fn errMsgRow(idx: anytype) [:0]const u8 {
@@ -788,8 +787,8 @@ const kbd_usr = @extern([*c]const calcKey_t, .{ .name = "kbd_usr" });
 // lcd_buffer is a C47-side `uint8_t *lcd_buffer` POINTER global (NOT ROM): the
 // symbol's storage holds the pointer to the malloc'd framebuffer. Binding it
 // `@extern([*c]u8)` yields &lcd_buffer (a .data address), so indexing it ran off
-// the data segment -> SIGSEGV on the R47 f/g underline path (gotcha #6b, same
-// class as screenData). Bind the pointer's storage and deref.
+// the data segment -> SIGSEGV on the R47 f/g underline path (same class as
+// screenData). Bind the pointer's storage and deref.
 const lcd_bufferPtr = @extern(*[*c]u8, .{ .name = "lcd_buffer" });
 inline fn lcd_buffer() [*c]u8 {
     return lcd_bufferPtr.*;
@@ -969,7 +968,7 @@ extern var current_cursor_y: u16;
 extern var alphaCursor: i16;
 // host-only screen buffer (referenced only under !dmcp_build in fnScreenDump).
 // `uint32_t *screenData` is a POINTER global: bind its storage and deref, else
-// @extern([*c]u32) yields &screenData -> off-segment read (gotcha #6b).
+// @extern([*c]u32) yields &screenData -> off-segment read.
 const screenData_ptr = if (!dmcp_build) @extern(*[*c]u32, .{ .name = "screenData" }) else {};
 const screenStride = if (!dmcp_build) @extern(*i16, .{ .name = "screenStride" }) else {};
 
@@ -3445,7 +3444,7 @@ fn __displaySolver(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, no
     // C `uint16_t variableNo = currentSolverVariable - FIRST_RESERVED_VARIABLE;`
     // wraps mod 2^16 when currentSolverVariable < FIRST_RESERVED_VARIABLE (the
     // value is only used under the `>=` guard below). Zig `-` would panic on the
-    // underflow (gotcha #0b); reproduce the C truncation.
+    // underflow; reproduce the C truncation.
     const variableNo: u16 = @truncate(@as(u32, @bitCast(@as(i32, currentSolverVariable) - @as(i32, FIRST_RESERVED_VARIABLE))));
     switch (no) {
         2 => {

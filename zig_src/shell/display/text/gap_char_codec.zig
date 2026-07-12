@@ -9,7 +9,7 @@
 //! normalization is pure over the input bytes; the owner does the item-table
 //! lookup. Lift it here for native coverage -- the display owner is only
 //! reachable through the C oracle. This module uses Zig many-item pointers rather
-//! than C pointers, so it stays out of the idiom-ratchet cptr ceiling.
+//! than C pointers.
 
 const std = @import("std");
 

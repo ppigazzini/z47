@@ -3,8 +3,7 @@
 // src/c47/mathematics/matrix.c: realVectorSize / complexVectorSize and the
 // p-norm euclideanNormRealMatrix / euclideanNormComplexMatrix (with their
 // shared real_t worker _euclideanNormRealMatrix). The dot/cross products, the
-// vector angle and the rest of the engine stay in the matrix bridge until the
-// later B clusters land.
+// vector angle and the rest of the engine stay in the matrix bridge.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");

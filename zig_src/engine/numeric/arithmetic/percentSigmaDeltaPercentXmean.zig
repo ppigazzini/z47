@@ -8,9 +8,9 @@ const const_1 = consts.const_1;
 // UNCOVERED by the testSuite (no gate); faithful line-by-line translation
 // preserving the exact real_t operation order.
 //
-// math_percentSigma.percentSigma() is the committed Zig owner (math_percentSigma.zig);
+// math_percentSigma.percentSigma() is the committed Zig owner (percentSigma.zig);
 // math_deltaPercentXmean.deltaPercentXmeanReal() is the sibling Zig owner
-// (math_deltaPercentXmean.zig). Both are exported with C linkage, so
+// (deltaPercentXmean.zig). Both are exported with C linkage, so
 // they are extern'd here exactly as the C called them. fnPcSigmaDeltaPcXmean
 // is the only .h-declared command. The EXTRA_INFO_ON_CALC_ERROR hint becomes
 // a fixed moreInfoOnError string (no-op under TESTSUITE/DMCP).
@@ -19,9 +19,8 @@ const const_1 = consts.const_1;
 // offset 4368.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_deltaPercentXmean = @import("../deltaPercentXmean.zig"); // M-callconv: Zig-to-Zig
-const math_percentSigma = @import("percentSigma.zig"); // M-callconv: Zig-to-Zig
-
+const math_deltaPercentXmean = @import("../deltaPercentXmean.zig");
+const math_percentSigma = @import("percentSigma.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;

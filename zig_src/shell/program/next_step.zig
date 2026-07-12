@@ -28,16 +28,16 @@ const bool_t = u32;
 const angularMode_t = c_int;
 
 const real34_t = abi.Real34;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_decode = @import("decode.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_store = @import("../store.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_debug = @import("../debug.zig");
+const frontier_decode = @import("decode.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_manage = @import("manage.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_store = @import("../store.zig");
 const realContext_t = abi.RealContext;
 const font_t = abi.Font;
 

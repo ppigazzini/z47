@@ -39,15 +39,15 @@ const angularMode_t = c_int;
 
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const numeral_decode = @import("numeral_decode.zig"); // std-only numeral -> display-string formatter
 const gap_char_codec = @import("../display/text/gap_char_codec.zig"); // std-only gap-char normalization
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_units = @import("../convert/conversion_units.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("next_step.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_conversion_units = @import("../convert/conversion_units.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_next_step = @import("next_step.zig");
 const realContext_t = abi.RealContext;
 const font_t = abi.Font;
 

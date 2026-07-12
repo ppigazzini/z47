@@ -73,7 +73,7 @@ pub fn validateRegisterDestinationRange(
     return error_out_of_range;
 }
 
-// Native unit tests (REPORT-27 M-IDIOM-3). Pure register-range validation; no C
+// Native unit tests. Pure register-range validation; no C
 // oracle, no global state. Fixture: register_x=112, first_local=1000, 8 locals
 // (local_limit=1008), OOR=1 / NONE=0.
 const testing = std.testing;

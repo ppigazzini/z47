@@ -85,9 +85,9 @@ pub export fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16,
 }
 
 pub export fn z47_calc_state_save_sections() void {
-    // Host-only: the DMCP firmware saves via the C retained path
-    // (z47_calc_state_legacy_*), so this symbol is never called there. Gating it
-    // keeps the Zig section writer out of firmware (byte-identical flash) while
+    // Host-only: the DMCP firmware saves via the C retained path, so this symbol
+    // is never called there. Gating it keeps the Zig section writer out of
+    // firmware (byte-identical flash) while
     // still resolving the io_owned extern.
     save_owned.writeSaveSections();
 }

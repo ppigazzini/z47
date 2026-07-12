@@ -17,9 +17,8 @@ const const__1 = consts.const__1;
 // LEGENDRE_P=4, CHEBYSHEV_T=5, CHEBYSHEV_U=6).
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_comparison_reals = @import("comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("comparison_reals.zig");
+const math_wp34s = @import("special/wp34s.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;

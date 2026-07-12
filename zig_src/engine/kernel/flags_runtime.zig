@@ -120,8 +120,8 @@ const REGISTER_X: calcRegister_t = stack_runtime.REGISTER_X;
 
 const formulaHeader_t = abi.FormulaHeader;
 
-const abi = @import("abi"); // L1 shared bindings
-const flags = @import("flags.zig"); // M-callconv: intra-object Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const flags = @import("flags.zig"); // intra-object Zig-to-Zig
 const softmenu_t = abi.Softmenu;
 
 const softmenuStack_t = abi.SoftmenuStack;
@@ -140,7 +140,7 @@ pub extern var nextChar: u8;
 pub extern var globalFlags: [8]u16;
 pub extern var currentLocalFlags: [*c]u32;
 pub extern var calcMode: u8;
-// C `softmenu_t softmenu[]` is an ARRAY: bind the address (gotcha #1), like the
+// C `softmenu_t softmenu[]` is an ARRAY: bind the address, like the
 // 9 sibling owners. `extern var softmenu: [*c]…` loaded the array's first bytes
 // AS the pointer -> softmenu[id] (leaveAlphaMode in CM_EIM) read a wild pointer.
 pub const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });

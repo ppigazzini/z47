@@ -11,7 +11,7 @@
 // HYPERGEOMETRIC case; the f distribution's PDF path). The quantile uses the
 // shared C Newton solver (WP34S_Qf_Newton) and the poisson owner's
 // WP34S_normal_moment_approx; the CDF uses logCyxReal, WP34S_Ln/ExpM1, and
-// WP34S_RelativeError, all bound through frontier_distribution_runtime. The
+// WP34S_RelativeError, all bound through distribution_runtime.zig. The
 // testSuite drives every branch via tests/hypergeometric_{p,l,r,i}.txt.
 
 const dr = @import("distribution_runtime.zig");

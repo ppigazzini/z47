@@ -7,15 +7,12 @@
 // firstFreeProgramByte, beginOfProgramMemory, labelList[].labelPointer etc. is
 // reproduced exactly.
 //
-// fnClPAll is NOT exported here. The shim zig_bridge/frontier/manage_legacy.c does
-//   #define fnClPAll z47_frontier_legacy_fnClPAll
-// which renames manage.c's fnClPAll away so it does NOT collide with the canonical
-// owner: zig_src/frontier/frontier.zig exports `pub export fn fnClPAll` (delegating
-// to program_clear.run in frontier_program_clear.zig). So here fnClPAll is a
-// PRIVATE Zig fn used by _clearProgram / fnClP / insertStepInProgram, and we declare
-// the real symbol as an extern fn for setConfirmationMode's address-of. The shim
-// also adds z47_frontier_program_current_program_in_ram, reproduced here as a
-// pub export fn.
+// fnClPAll is NOT exported here, so it does not collide with the canonical owner:
+// zig_src/shell/shell.zig exports `pub export fn fnClPAll` (delegating to
+// program_clear.run in program_clear.zig, a faithful copy of manage.c's fnClPAll
+// body). The internal callers below (_clearProgram / fnClP) invoke that canonical
+// fnClPAll through the `frontier` (../shell.zig) import. This owner also provides
+// z47_frontier_program_current_program_in_ram, defined below as a pub fn.
 //
 // SAVE_SPACE_DM42_10 is never defined for the frontier object (no build option for
 // it; defines.h #undef's it), so the !defined(SAVE_SPACE_DM42_10) bodies of
@@ -60,25 +57,25 @@ const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 const tamState_t = abi.TamState;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_assign = @import("../input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_decode = @import("decode.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("../display/sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("../display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig");
+const frontier_assign = @import("../input/assign.zig");
+const frontier_bufferize = @import("../display/bufferize.zig");
+const frontier_calc_mode = @import("../calc_mode.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_decode = @import("decode.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_lbl_gto_xeq = @import("lbl_gto_xeq.zig");
+const frontier_next_step = @import("next_step.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_sort = @import("../display/sort.zig");
+const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
 const realContext_t = abi.RealContext;
 
 // ---------------------------------------------------------------------------
@@ -470,7 +467,7 @@ const FnPtr = ?*const fn (u16) callconv(.c) void;
 const c_addItemToBuffer = @extern(FnPtr, .{ .name = "addItemToBuffer" });
 const c_fnT_ARROW = @extern(FnPtr, .{ .name = "fnT_ARROW" });
 
-// The canonical fnClPAll symbol (provided by frontier.zig). We reference its
+// The canonical fnClPAll symbol (provided by shell.zig). We reference its
 // address for setConfirmationMode and call it from _clearProgram / insertStepInProgram.
 
 // ---------------------------------------------------------------------------
@@ -714,13 +711,12 @@ fn _removeLabelsAssignments() void {
     }
 }
 
-// fnClPAll is NOT defined here. The shim's `#define fnClPAll z47_frontier_legacy_fnClPAll`
-// renames manage.c's definition away; the canonical fnClPAll is exported by
-// frontier.zig (delegating to frontier_program_clear.zig, a faithful copy of
-// manage.c's fnClPAll body). The internal callers below must use the CANONICAL
-// fnClPAll pointer, because the confirmation system (config.c:1013) compares the
-// registered confirmedFunction against indexOfItems[ITM_DELPALL].func, which is the
-// canonical fnClPAll. So we reference the extern symbol, not a local copy.
+// fnClPAll is NOT defined here; the canonical fnClPAll is exported by shell.zig
+// (delegating to program_clear.zig, a faithful copy of manage.c's fnClPAll body).
+// The internal callers below must use that CANONICAL fnClPAll, because the
+// confirmation system (config.c:1013) compares the registered confirmedFunction
+// against indexOfItems[ITM_DELPALL].func, which is the canonical fnClPAll. So we
+// call it through the `frontier` (../shell.zig) import, not a local copy.
 
 // _clearProgram (static) -> int
 fn _clearProgram() c_int {
@@ -2342,7 +2338,7 @@ pub export fn getNumberOfSteps() callconv(.c) u16 {
 }
 
 // ===========================================================================
-// z47_frontier_program_current_program_in_ram — shim helper, reproduced here.
+// z47_frontier_program_current_program_in_ram — helper used by program_clear.zig.
 // ===========================================================================
 pub fn z47_frontier_program_current_program_in_ram() bool {
     return programList[currentProgramNumber - 1].step > 0;

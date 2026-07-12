@@ -11,8 +11,8 @@ const std = @import("std");
 // fnP_SetDelay / fnP_Advance / fnP_PrinterList / fnP_Byte / fnP_Char / fnP_Tab /
 // fnP_User / fnP_LCD / fnP_Alpha / fnP_Regs / fnP_Sigma / fnP_All_Regs /
 // fnP_PrintAllItems), the NamesAlias / hp82240CharMap / summationRegisterName
-// data tables, and the z47_frontier_* C-helper shims that print.c's bridge
-// (zig_bridge/frontier/print_legacy.c) provided. Faithful, line-by-line port.
+// data tables, and the z47_frontier_* C-helper functions the print command
+// entry points call. Faithful, line-by-line port.
 //
 // IR_PRINTING gating: print.c's infrared path is `#if defined(IR_PRINTING)`.
 // IR_PRINTING is defined by default (defines.h:71) and stays defined for the
@@ -20,8 +20,7 @@ const std = @import("std");
 // old_hw DM42 package blocks (defines.h:194/214/234). So the IR path is LIVE on
 // host + dmcp5 and DEAD only on old_hw firmware:
 //     const ir_printing = !(dmcp_build and old_hw);
-// On the dead branch print.c's `#else` stubs (in the bridge tail) are
-// reproduced. The DMCP-ROM functions (printer_advance_buf / printer_busy_for /
+// On the dead branch print.c's `#else` stubs are reproduced. The DMCP-ROM functions (printer_advance_buf / printer_busy_for /
 // sys_timer_* / sys_sleep / lcd_line_addr / start_buzzer_freq / stop_buzzer /
 // beep_volume_up / get_beep_volume / sys_delay) are fixed-address jump-table
 // calls (LIBRARY_FN_BASE + verified offset from lft_ifc.h), only referenced
@@ -56,33 +55,33 @@ const print_area_t = c_int;
 const printArgument_t = c_int;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier = @import("../shell.zig");
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_bufferize = @import("../display/bufferize.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
 const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
 const printer_char_map = @import("printer_char_map.zig"); // std-only HP82240 reverse lookup
-const frontier_conversion_angles = @import("../convert/conversion_angles.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_decode = @import("../program/decode.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_fonts = @import("../display/fonts/fonts.zig"); // M-callconv: Zig-to-Zig
-const frontier_graph_text = @import("../plot/graph_text.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("../program/next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen_snap = @import("../display/screen_snap.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("../display/sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("../display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("../input/tam.zig"); // M-callconv: Zig-to-Zig
-const frontier_textfiles = @import("../extensions/textfiles.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../timer.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
+const frontier_decode = @import("../program/decode.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_fonts = @import("../display/fonts/fonts.zig");
+const frontier_graph_text = @import("../plot/graph_text.zig");
+const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig");
+const frontier_manage = @import("../program/manage.zig");
+const frontier_next_step = @import("../program/next_step.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_screen_snap = @import("../display/screen_snap.zig");
+const frontier_sort = @import("../display/sort.zig");
+const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
+const frontier_tam = @import("../input/tam.zig");
+const frontier_textfiles = @import("../extensions/textfiles.zig");
+const frontier_timer = @import("../timer.zig");
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
@@ -376,7 +375,7 @@ extern const standardFont: font_t;
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
 // NUL views of indexOfItems name fields for std.fmt {s} -- the [*c] blob base
-// makes &indexOfItems[i].field allowzero, which {s} rejects (M24).
+// makes &indexOfItems[i].field allowzero, which {s} rejects.
 inline fn itemSoftName(idx: usize) [:0]const u8 {
     return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[idx].itemSoftmenuName)), 0);
 }
@@ -430,7 +429,7 @@ inline fn isAtEndOfProgram(step: [*c]const u8) bool_t {
     return frontier_manage.checkOpCodeOfStep(step, ITM_END);
 }
 
-// renamed-away in the bridge; owned by other owners. Extern, NOT re-exported.
+// owned by other owners. Extern, NOT re-exported.
 
 // real34 / decimal helpers. int32ToReal34 / real34ToString / real34IsZero are
 // decQuad* macros in C; bind the underlying decQuad symbols and wrap.
@@ -651,7 +650,7 @@ inline fn key_pop_all() void {
 
 // ===========================================================================
 // IR_PRINTING-gated body. Everything from charMap() to _getUnicodeValue() is
-// only present when ir_printing is true; otherwise the bridge `#else` stubs
+// only present when ir_printing is true; otherwise print.c's `#else` stubs
 // (reproduced near the bottom) provide the public symbols.
 // ===========================================================================
 
@@ -1580,7 +1579,7 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
 
 // ---------------------------------------------------------------------------
 // Public (pub export) printing functions, gated on ir_printing.
-// On the dead branch the bridge's `#else` stubs are reproduced.
+// On the dead branch print.c's `#else` stubs are reproduced.
 // ---------------------------------------------------------------------------
 pub export fn printTab(col: u16) callconv(.c) void {
     if (comptime ir_printing) printTabImpl(col);
@@ -2086,7 +2085,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
 // fnP_PrintAllItems) are owned by frontier.zig and the printer_control /
 // print_register / print_all_regs / print_user / print_all_items owners, which
 // already replicate those bodies. They are NOT exported here; this owner only
-// provides the underlying printing engine and the helper shims those owners call.
+// provides the underlying printing engine and the helper functions those owners call.
 // fnP_GetDelay was provided only by print.c, so it is kept here.
 // ===========================================================================
 pub export fn fnP_GetDelay(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -2102,7 +2101,7 @@ pub export fn fnP_GetDelay(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 extern fn liftStack() void;
 
-// fnP_Regs is owned elsewhere (renamed away in the bridge), so we do NOT define
+// fnP_Regs is owned elsewhere, so we do NOT define
 // it here; it is externed above and used by _printRegRange.
 
 const summationRegisterName = blk: {
@@ -2156,11 +2155,11 @@ comptime {
     @export(&summationRegisterName, .{ .name = "summationRegisterName", .linkage = .strong });
 }
 
-// fnP_PrintAllItems is owned elsewhere (renamed away in the bridge); extern only.
+// fnP_PrintAllItems is owned elsewhere; extern only.
 
 // ===========================================================================
-// z47_frontier_* C-helper shims (were in the bridge tail). Always-on, both
-// branches. On the IR-dead branch they reproduce the bridge's `#else` stubs.
+// z47_frontier_* C-helper functions. Always-on, both
+// branches. On the IR-dead branch they provide `#else`-equivalent stubs.
 // ===========================================================================
 pub fn z47_frontier_print_reg_range(first_register_no: u16, last_register_no: u16) bool_t {
     if (comptime ir_printing) {

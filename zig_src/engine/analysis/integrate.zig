@@ -28,11 +28,11 @@ const const_1e_6143 = consts.const_1e_6143;
 // (USE_NEW_DEI_INTEGRATION_CODE == 0) are DEAD and omitted.
 // SPEEDUPEXPERIMENT is defined.
 //
-// The bridge (integrate_legacy.c, removed) renamed fnPgmInt/fnIntegrate/
-// fnIntegrateYX. solve.zig's dispatcher calls z47_solver_fnIntegrate /
-// z47_solver_fnIntegrateYX (exported here) but owns fnPgmInt itself (its own
-// Zig impl), so z47_solver_fnPgmInt is DEAD and omitted; _fnIntegrate calls the
-// real fnPgmInt (extern, owned by solve.zig). The real-name public symbols
+// fnIntegrate / fnIntegrateYX are exported here as z47_solver_fnIntegrate /
+// z47_solver_fnIntegrateYX (the symbols solve.zig's dispatcher calls), but
+// solve.zig owns fnPgmInt itself (its own Zig impl), so no z47_solver_fnPgmInt
+// is defined here; _fnIntegrate calls the real fnPgmInt (extern, owned by
+// solve.zig). The real-name public symbols
 // fnIntVar and integrate are exported here. The non-static _fnIntegrate /
 // _showProgress are only referenced internally and become private (the
 // host-only _showProgress drawing is a no-op, matching the sumprod precedent;
@@ -42,9 +42,9 @@ const const_1e_6143 = consts.const_1e_6143;
 
 const runtime = @import("solve_runtime.zig");
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
-const solve = @import("solve.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const equation = @import("equation.zig");
+const solve = @import("solve.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -134,7 +134,7 @@ extern var ctxtReal75: realContext_t;
 // softmenu globals (for fnIntVar)
 const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 const softmenuStack_t = abi.SoftmenuStack;
-// C arrays: bind the address, not the data-as-pointer (gotcha #1). The pointer
+// C arrays: bind the address, not the data-as-pointer. The pointer
 // form crashed fnIntegrateVar's dynamicSoftmenu[...] access like fnSolveVar.
 const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });

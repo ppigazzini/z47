@@ -36,14 +36,14 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // Types
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
-const frontier_integers = @import("convert/integers.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("real_type.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("display/text/char_string.zig");
+const frontier_date_time = @import("convert/date_time.zig");
+const frontier_debug = @import("debug.zig");
+const frontier_display = @import("display/display.zig");
+const frontier_error = @import("error.zig");
+const frontier_integers = @import("convert/integers.zig");
+const frontier_real_type = @import("real_type.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;

@@ -1,6 +1,6 @@
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig");
+const frontier_matrix_editor = @import("matrix_editor.zig");
+const frontier_screen = @import("../display/screen.zig");
 const FLAG_ASLIFT: c_uint = 0xc023;
 
 const ERROR_NONE: u8 = 0;

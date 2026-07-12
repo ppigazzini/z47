@@ -17,8 +17,8 @@ const DECSPECIAL: u8 = 0x70;
 // decContext.h rounding enum order: CEILING,UP,HALF_UP,HALF_EVEN,HALF_DOWN,DOWN,..
 const DEC_ROUND_DOWN: c_int = 5;
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const real_t = abi.Real;
 
 const realContext_t = abi.RealContext;

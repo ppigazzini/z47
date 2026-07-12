@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// L1 typed register-data accessors (M22 / REPORT-23 §5). registers.h reinterprets
+// Typed register-data accessors. registers.h reinterprets
 // a register's data block as a real34 / complex34 / matrix header / short-integer
 // / string. Centralizing that reinterpretation here -- one @ptrCast per shape,
 // over the shared abi layout types -- replaces the raw per-owner casts of
@@ -83,7 +83,7 @@ pub inline fn registerComplex34MatrixElements(reg: i16) [*]align(1) Complex34 {
     return @ptrCast(base + @sizeOf(MatrixHeader));
 }
 
-// Matrix element views (M22): reinterpret a matrix header's `.matrixElements`
+// Matrix element views: reinterpret a matrix header's `.matrixElements`
 // buffer as its typed element array -- the C `real34_t */complex34_t *
 // matrixElements` union field. Takes the header struct by `anytype` so it serves
 // both real34Matrix_t and complex34Matrix_t (each has a `.matrixElements`); these

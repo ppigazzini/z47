@@ -1,4 +1,4 @@
-//! Battery-voltage integrator -- the pure core of frontier_config's
+//! Battery-voltage integrator -- the pure core of config.zig's
 //! updateVbatIntegrated_impl.
 //!
 //! The firmware smooths the raw battery reading toward a running integrated

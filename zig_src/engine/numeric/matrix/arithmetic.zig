@@ -3,13 +3,12 @@
 // src/c47/mathematics/matrix.c: add/subtract of two matrices and multiply of a
 // matrix by a real34/real scalar (real34 and complex34). The matrix*matrix
 // products, the divide family and the vector ops stay in the matrix bridge
-// until the later B clusters land.
+// for now.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../real_predicates.zig");
-const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real_t = runtime.real_t;
@@ -19,7 +18,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const nim_register_line = runtime.REGISTER_X;
 
 // realMatrixInit / complexMatrixInit are owned by
-// math_matrix_lifecycle.zig (B1); resolve the canonical symbols here.
+// math_matrix_lifecycle.zig; resolve the canonical symbols here.
 
 const realElems = abi.matrixRealElems;
 const constRealElems = abi.matrixConstRealElems;

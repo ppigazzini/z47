@@ -132,7 +132,7 @@ pub export fn addError() callconv(.c) void {
 }
 
 /// The legacy C fnAdd body: saveLastX, matrix dispatch, adjustResult. The Zig
-/// fnAdd wrapper (math_command_wrappers.zig) calls this for the cells it does
+/// fnAdd wrapper (command_wrappers.zig) calls this for the cells it does
 /// not handle natively (string rows/columns and the error cells).
 pub export fn z47_math_wrappers_legacy_fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;

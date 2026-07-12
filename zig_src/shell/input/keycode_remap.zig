@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Pure physical->logical key-code remapping for the R47 and WP43 keyboard
-// layouts, lifted from frontier_c47.zig (dmcp.convertKeyCode). It is a plain
+// layouts, lifted from c47.zig (dmcp.convertKeyCode). It is a plain
 // integer table -- no register, dec, or GTK coupling -- so it lives here as a
 // std-only module exercised natively under `zig build test:unit`. The owner reads
 // the layout globals (isR47FAM(), wp43KbdLayout) and threads them in as flags.

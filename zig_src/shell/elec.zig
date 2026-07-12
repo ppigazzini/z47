@@ -20,14 +20,14 @@ const frontier_build_options = @import("frontier_build_options");
 const option_elec: bool = frontier_build_options.option_elec;
 
 // ---------------------------------------------------------------------------
-// Types -- L1 shared bindings (REPORT-23 §5). The hand-mirrored C-ABI layouts
+// Types -- shared ABI bindings. The hand-mirrored C-ABI layouts
 // (real_t/real34_t/realContext_t/cplx_t) now come from the single-source-of-truth
 // abi module; only the local spellings are aliased so the ported body is stable.
 // ---------------------------------------------------------------------------
 const abi = @import("abi");
-const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("error.zig");
+const frontier_real_type = @import("real_type.zig");
+const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const consts = abi.constants;
 const real_t = abi.Real;
 const real34_t = abi.Real34;
@@ -60,7 +60,7 @@ const TI_012: u16 = 74;
 const NOPARAM: u16 = 9876;
 const REAL34_SIZE_IN_BYTES: usize = 16;
 
-// decNumber bit flags (realType.h) -- from the shared L1 bindings.
+// decNumber bit flags (realType.h) -- from the shared ABI bindings.
 const DECNEG = abi.DECNEG;
 const DECNAN = abi.DECNAN;
 const DECSNAN = abi.DECSNAN;
@@ -77,7 +77,7 @@ const TripleRegI3_95: calcRegister_t = 95;
 const TripleRegZ2_97: calcRegister_t = 97;
 const TripleRegZ3_98: calcRegister_t = 98;
 
-// Named, typed constant-blob accessors live in the shared L1 module
+// Named, typed constant-blob accessors live in the shared abi module
 // (zig_src/abi/constants.zig): consts.const1on2(), const3(), root3on2(),
 // const1e_37() -- no magic offsets or unchecked casts in this body.
 
@@ -136,7 +136,7 @@ inline fn setComplexRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
     setRegisterTag(reg, angle | (pm & amPolar));
 }
 
-// Complex arithmetic comes from the shared L1 runtime wrappers (abi.runtime):
+// Complex arithmetic comes from the shared abi runtime wrappers (abi.runtime):
 // rt.add/mul/div take a *Complex and thread ctxtReal39.
 const rt = abi.runtime;
 inline fn getRegCplx(reg: calcRegister_t, c: *cplx_t) void {
@@ -165,8 +165,8 @@ fn elecInputIsComplex(regs: []const calcRegister_t) bool {
     return false;
 }
 
-// L2 error surface (REPORT-23 §6 P5): the core returns an error instead of
-// calling displayCalcErrorMessage inline; the L3 shim maps it back at the ABI
+// Error surface: the core returns an error instead of calling
+// displayCalcErrorMessage inline; the exported wrapper maps it back at the ABI
 // boundary. The SPCRES NaN-substitution path is a success (it recovers), so it
 // stays in the core.
 const Error = error{ArgExceedsDomain};

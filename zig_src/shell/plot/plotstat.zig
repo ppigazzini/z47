@@ -6,21 +6,19 @@ const const_1 = consts.const_1;
 //
 // Zig owner for src/c47/plotstat.c: the stat-plot drawing/formatting layer.
 // Faithful, line-by-line port of every PUBLIC symbol of plotstat.c plus the
-// shim's z47_frontier_plot_* helpers.
+// z47_frontier_plot_* helpers.
 //
-// fnPlotStat and fnPlotRegressionLine are NOT ported here: the shim
-// zig_bridge/frontier/plotstat_legacy.c #defines them away
-// (z47_frontier_legacy_*), and the canonical owners live elsewhere -
-// frontier.zig exports `fnPlotStat` (frontier.zig:790) and
+// fnPlotStat and fnPlotRegressionLine are NOT ported here: the canonical owners
+// live elsewhere - frontier.zig exports `fnPlotStat` (frontier.zig:790) and
 // `fnPlotRegressionLine` (frontier.zig:960). No other code inside plotstat.c
 // calls them internally (graphDrawLRline/drawline call the curve-fit helpers,
 // not fnPlotStat), so they are simply omitted here.
 //
-// The shim's 5 helpers (z47_frontier_plot_set_plotstatmx_stats /
+// The 5 helpers (z47_frontier_plot_set_plotstatmx_stats /
 // _set_plotstatmx_histo / _set_statmx_histo / _has_source_data /
 // _clear_screen_for_graph_entry) are declared `extern` by the consumers
-// (frontier.zig, frontier_plot_stat.zig) and were provided by the C shim;
-// no sibling EXPORTS them, so they are reproduced here as `pub export fn`.
+// (frontier.zig, frontier_plot_stat.zig); no sibling EXPORTS them, so they are
+// defined here as `pub export fn`.
 //
 // BUILD-CONFIG (probed in src/c47/defines.h for the standard frontier build):
 //   * STATDEBUG / STATDEBUG_VERBOSE: DEBUG_STAT==0 -> both undef'd -> all those
@@ -69,20 +67,20 @@ const irfracOption_t = c_int;
 const font_t = abi.Font;
 
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_curve_fitting = @import("curve_fitting.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_curve_fitting = @import("curve_fitting.zig");
 const plot_viewport = @import("plot_viewport.zig"); // std-only pure viewport math
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_graphs = @import("graphs.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("../stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("../debug.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_graphs = @import("graphs.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_real_type = @import("../real_type.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_stats = @import("../stats.zig");
 const display_string_transform = @import("../display/text/display_string_transform.zig");
 const real_t = abi.Real;
 comptime {

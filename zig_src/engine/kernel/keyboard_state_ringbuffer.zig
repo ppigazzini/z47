@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // DMCP internal key ring buffer — Zig owner for the `#if defined(DMCP_BUILD)`
-// ring buffer in src/c47/c47Extensions/keyboardTweak.c (1073-1403). Porting it
-// (plus keyBuffer_pop and the btn entry handlers) was part of retiring the
-// keyboard_state_legacy.c bridge, which brought product first-party C to 0.
+// ring buffer in src/c47/c47Extensions/keyboardTweak.c (1073-1403), ported here
+// (plus keyBuffer_pop and the btn entry handlers).
 //
 // The compiled buffer is the SIMPLE variant: the upstream BUFFER_CLICK_DETECTION
 // and BUFFER_KEY_COUNT options are `#define`d then immediately `#undef`d
@@ -104,7 +103,7 @@ var buffer: KeyBuffer = .{};
 // C-ABI wrappers matching the keyboardTweak.h prototypes exactly (bool_t = bool;
 // the BUFFER_CLICK_DETECTION-off outKeyBuffer takes a single uint8_t*, and
 // outKeyBufferDoubleClick is the `#else` stub returning 255). @export'd onto the
-// DMCP lanes below; the bridge renames the upstream C copies away so these win.
+// DMCP lanes below.
 fn c_inKeyBuffer(byte: u8) callconv(.c) u8 {
     return buffer.push(byte);
 }

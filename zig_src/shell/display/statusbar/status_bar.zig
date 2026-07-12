@@ -36,11 +36,11 @@ const bool_t = bool;
 const angularMode_t = c_int;
 const videoMode_t = c_int;
 const font_t = abi.Font;
-const abi = @import("abi"); // L1 shared bindings
-const frontier_date_time = @import("../../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_plotstat = @import("../../plot/plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../../timer.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_date_time = @import("../../convert/date_time.zig");
+const frontier_plotstat = @import("../../plot/plotstat.zig");
+const frontier_screen = @import("../screen.zig");
+const frontier_timer = @import("../../timer.zig");
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 

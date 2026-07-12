@@ -40,17 +40,17 @@ else
 // Types
 // ---------------------------------------------------------------------------
 const bool_t = bool;
-const abi = @import("abi"); // L1 shared bindings
-const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_units = @import("../convert/conversion_units.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("../display/sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("tam.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_calc_mode = @import("../calc_mode.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_config = @import("../config.zig");
+const frontier_conversion_units = @import("../convert/conversion_units.zig");
+const frontier_error = @import("../error.zig");
+const frontier_manage = @import("../program/manage.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_sort = @import("../display/sort.zig");
+const frontier_tam = @import("tam.zig");
 const calcKey_t = abi.CalcKey;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;

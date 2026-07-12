@@ -6,9 +6,8 @@
 // commands.
 const std = @import("std");
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_matrix_eigen = @import("eigen.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_named = @import("named.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_eigen = @import("eigen.zig");
+const math_matrix_named = @import("named.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;

@@ -3,10 +3,9 @@ const keyboard_hit_test = @import("keyboard_hit_test.zig"); // std-only click hi
 const runtime = @import("keyboard_state_runtime.zig");
 const shared = @import("keyboard_state_shared.zig").implementation(runtime);
 
-// Force-compile the DMCP key ring-buffer owner into this object. It currently
-// exports nothing (the bridge still owns the C copies), so this only validates
-// that the module and its per-model build option compile on every lane ahead of
-// the wiring slice that renames the C copies and exports the Zig ones.
+// Force-compile the DMCP key ring-buffer owner into this object so that the module
+// and its per-model build option are validated on every lane (each module's own
+// comptime block handles the DMCP-lane exports).
 comptime {
     _ = @import("keyboard_state_ringbuffer.zig");
     _ = @import("keyboard_state_dmcp.zig");
@@ -32,7 +31,7 @@ pub export fn processAimInput(item: i16) callconv(.c) void {
 
 // leavePem and checkKeyShifts have no DMCP `#ifdef` divergence (C and shared.*
 // identical across lanes, reaching only lane-independent program-memory / flag
-// helpers), so they are exported for ALL lanes (M1). Host is unchanged.
+// helpers), so they are exported for ALL lanes. Host is unchanged.
 pub export fn leavePem() callconv(.c) void {
     shared.leavePem();
 }
@@ -50,10 +49,9 @@ fn btnFnClickedHost(not_used: ?*anyopaque, data: ?*anyopaque) callconv(.c) void 
     shared.executeFunction(@ptrCast(data), 0);
 }
 
-// M1 batch: these handlers are all `#ifdef`-free in both the upstream C and
+// These handlers are all `#ifdef`-free in both the upstream C and
 // shared.* (identical across lanes, reaching only lane-independent calc / display
-// helpers), so they are exported for ALL lanes. keyCC stays host-only below — it
-// carries a DMCP `#ifdef` branch (M2). Host behaviour is unchanged.
+// helpers), so they are exported for ALL lanes. Host behaviour is unchanged.
 pub export fn determineFunctionKeyItem_C47(data: [*c]const u8, shiftF: runtime.bool_t, shiftG: runtime.bool_t) callconv(.c) i16 {
     return shared.determineFunctionKeyItem_C47(data, shiftF, shiftG);
 }
@@ -65,7 +63,7 @@ pub export fn fnKeyEnter(unused_but_mandatory_parameter: u16) callconv(.c) void 
 // keyExit + keyBackspace are now exported for ALL lanes. Both are divergence-free;
 // they reach clearScreen -> lcd_fill_rect and jm_show_calc_state, which are now
 // lane-aware ROM trampolines / no-ops in the runtime, so they link and run on the
-// DMCP lanes. keyCC stays host-only (DMCP `#ifdef` divergence → M2).
+// DMCP lanes.
 pub export fn fnKeyExit(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyExit(unused_but_mandatory_parameter);
 }
@@ -92,8 +90,8 @@ pub export fn fnKeyDown(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 // fnKeyDotD has no DMCP `#ifdef` divergence: the C handler and shared.keyDotD are
 // identical across lanes and reach only lane-independent calc functions, so it is
-// exported for ALL lanes — the first keyboard handler taken off the C on firmware
-// (M1 leaf). Host behaviour is unchanged (it already used this Zig owner).
+// exported for ALL lanes — the first keyboard handler taken off the C on firmware.
+// Host behaviour is unchanged (it already used this Zig owner).
 pub export fn fnKeyDotD(unused_but_mandatory_parameter: u16) callconv(.c) void {
     shared.keyDotD(unused_but_mandatory_parameter);
 }
@@ -707,8 +705,9 @@ fn btnClickedDmcp(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
 // string) with no GdkEvent. btnReleased/btnFnReleased ignore the event and
 // btnFnClicked just runs the function, and their host bodies are already
 // lane-aware (or divergence-free), so they serve the DMCP lane directly.
-// btnPressed/btnFnPressed are NOT here yet: their host ports are PC-only and lack
-// the DMCP-specific blocks, so they keep their C copies until the lane-merge slice.
+// btnPressed/btnFnPressed are likewise lane-merged: their host bodies carry the
+// DMCP-specific blocks under `comptime is_dmcp_build`, and btnPressedDmcp /
+// btnFnPressedDmcp wrap them for the single-`data` DMCP signature.
 fn btnReleasedDmcp(data: ?*anyopaque) callconv(.c) void {
     btnReleasedHost(null, null, data);
 }

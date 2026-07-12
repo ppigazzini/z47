@@ -6,10 +6,9 @@ const consts = abi.constants;
 // testSuite (no test gate) - verified by build only. Faithful line-by-line
 // translation preserving the exact order of every real_t operation.
 //
-// The bridge (differentiate_legacy.c, removed) renamed only fn1stDeriv ->
-// z47_solver_fn1stDeriv (the symbol solve.zig's dispatcher calls). The other
-// public commands (fn2ndDeriv, fn1stDerivEq, fn2ndDerivEq) keep their real C
-// names. The static helpers stay private.
+// fn1stDeriv is exported here as z47_solver_fn1stDeriv (the symbol solve.zig's
+// dispatcher calls). The other public commands (fn2ndDeriv, fn1stDerivEq,
+// fn2ndDerivEq) keep their real C names. The static helpers stay private.
 //
 // The finite-difference stencil tables and fdValues array live as
 // `TO_QSPI static const` data in finite_differences.h (file-local, not
@@ -24,8 +23,8 @@ const consts = abi.constants;
 const runtime = @import("solve_runtime.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const equation = @import("equation.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;

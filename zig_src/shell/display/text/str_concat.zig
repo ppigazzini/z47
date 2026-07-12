@@ -6,8 +6,7 @@
 //! buffer. The copy is pure over the operands and a destination; the owner keeps
 //! the scratch buffers. Lift the copy here for native coverage -- the softmenu
 //! owner is only reachable through the C oracle. This module uses Zig many-item
-//! pointers rather than C pointers, so it stays out of the idiom-ratchet cptr
-//! ceiling.
+//! pointers rather than C pointers.
 
 const std = @import("std");
 

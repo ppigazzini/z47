@@ -22,10 +22,10 @@ const consts = abi.constants;
 const runtime = @import("solve_runtime.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
-const solve = @import("solve.zig"); // M-callconv: Zig-to-Zig
-const tvm = @import("tvm.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const equation = @import("equation.zig");
+const solve = @import("solve.zig");
+const tvm = @import("tvm.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -157,8 +157,8 @@ inline fn ctxtSolverHi() *realContext_t {
 
 // C `const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]`
 // is a 2D ARRAY: the symbol address IS the data. Binding it as `[*]const [M]u8`
-// (a pointer type) made Zig load the array's first 8 bytes AS the pointer value
-// (gotcha #1), so errorMessages[REAL_SOLVER] dereferenced garbage -> printStatus's
+// (a pointer type) made Zig load the array's first 8 bytes AS the pointer value,
+// so errorMessages[REAL_SOLVER] dereferenced garbage -> printStatus's
 // `printf("%s", line1)` strlen-faulted when graphing/solving (the "crashes when
 // selecting graph" report). Use the array form like the sibling owners.
 extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
@@ -168,7 +168,7 @@ const dynamicSoftmenu_t = abi.DynamicSoftmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 // C `dynamicSoftmenu[N]` / `softmenuStack[N]` are ARRAYS: the symbol address IS
 // the data. `extern var x: [*]T` loads the array's first 8 bytes AS the pointer
-// (gotcha #1) -> dynamicSoftmenu[softmenuStack[0].softmenuId] dereferenced garbage
+// -> dynamicSoftmenu[softmenuStack[0].softmenuId] dereferenced garbage
 // and crashed in fnSolveVar (the grapher/solver variable path). Bind the array
 // address like the frontier owners.
 const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });

@@ -12,11 +12,10 @@ const const39_pi = consts.const39_pi;
 // become fixed moreInfoOnError strings (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_gamma = @import("gamma.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_gamma = @import("gamma.zig");
+const math_runtime_helpers = @import("../runtime_helpers.zig");
+const math_wp34s = @import("wp34s.zig");
 const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

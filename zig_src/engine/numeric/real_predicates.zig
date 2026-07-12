@@ -6,10 +6,9 @@
 // many math owners (`realIsPositive` alone appeared identically in 13 files). They
 // read only the std-only abi layout types -- `Real.bits`, `Real34.bytes`,
 // `Mpz._mp_size` -- so they collect here as one shared, C-oracle-independent
-// module that `zig build test:unit` exercises natively. This is the first testable
-// seam carved out of the mathematics module (REPORT-27 Phase 2, groups A1 + C1):
-// behavior is byte-identical to the former per-file copies, and the owners alias
-// these instead of redefining them.
+// module that `zig build test:unit` exercises natively. This is a testable seam
+// carved out of the mathematics module: behavior is byte-identical to the former
+// per-file copies, and the owners alias these instead of redefining them.
 //
 // Only genuinely-pure predicates belong here. Sign tests that dispatch into
 // decNumber/decQuad (`realIsZero`'s special-value check, `real34IsZero` via

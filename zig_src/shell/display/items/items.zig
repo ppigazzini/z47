@@ -24,8 +24,8 @@
 //     always itemToBeCoded (no comptime needed).
 //   option_xfn_1000 == !(dmcp_build and old_hw), mirroring softmenus.c.
 //
-// RENAMED-AWAY: fnNop is owned by frontier.zig (the retired shim renamed items.c's
-// fnNop to z47_frontier_legacy_fnNop to avoid the collision); here it is an extern.
+// fnNop is not owned here -- frontier.zig owns it; this module references it as an
+// extern.
 //
 // item_t layout (probed: sizeof 48): func@0 (fn ptr), param@8 (u16),
 // itemCatalogName@10 ([16]u8), itemSoftmenuName@26 ([16]u8), tamMinMax@42 (u16),
@@ -61,21 +61,21 @@ else
 const bool_t = u8;
 const calcRegister_t = i16;
 const dataType_t = u32;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("../text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_units = @import("../../convert/conversion_units.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("../../program/lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_print = @import("../../print/print.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("../../stats.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("../statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("../../input/tam.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../../timer.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../text/char_string.zig");
+const frontier_conversion_units = @import("../../convert/conversion_units.zig");
+const frontier_error = @import("../../error.zig");
+const frontier_lbl_gto_xeq = @import("../../program/lbl_gto_xeq.zig");
+const frontier_manage = @import("../../program/manage.zig");
+const frontier_print = @import("../../print/print.zig");
+const frontier_real_type = @import("../../real_type.zig");
+const frontier_register_value_conversions = @import("../../register_value_conversions.zig");
+const frontier_screen = @import("../screen.zig");
+const frontier_softmenus = @import("../softmenus/softmenus.zig");
+const frontier_stats = @import("../../stats.zig");
+const frontier_status_bar = @import("../statusbar/status_bar.zig");
+const frontier_tam = @import("../../input/tam.zig");
+const frontier_timer = @import("../../timer.zig");
 const real_t = abi.RealBlob;
 
 const ItemFn = ?*const fn (u16) callconv(.c) void;

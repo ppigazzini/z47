@@ -2,13 +2,11 @@
 // Zig port of the matrix row/column delete cluster of
 // src/c47/mathematics/matrix.c: delRowRealMatrix / delColRealMatrix and
 // delRowComplexMatrix / delColComplexMatrix (shrink the matrix by one row or
-// column). The rest of the engine stays in the matrix bridge until the later
-// B clusters land.
+// column). The rest of the engine stays in the matrix bridge.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
-const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -16,7 +14,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 
-// Owned by math_matrix_lifecycle.zig (B1).
+// Owned by math_matrix_lifecycle.zig.
 
 const realElems = abi.matrixRealElems;
 const complexElems = abi.matrixComplexElems;

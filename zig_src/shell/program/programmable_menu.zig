@@ -21,15 +21,15 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const calcRegister_t = i16;
 const font_t = abi.Font;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_lbl_gto_xeq = @import("lbl_gto_xeq.zig");
+const frontier_manage = @import("manage.zig");
+const frontier_next_step = @import("next_step.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const irfracOption_t = c_int;
@@ -110,7 +110,7 @@ extern var dynamicMenuItem: i16;
 extern var errorMessage: [*c]u8;
 extern var programmableMenu: programmableMenu_t;
 extern var tam: tamState_t;
-// C `softmenu[]` / `softmenuStack[N]` are ARRAYS: bind the address (gotcha #1).
+// C `softmenu[]` / `softmenuStack[N]` are ARRAYS: bind the address.
 // The `[*]` pointer form loaded array bytes as the pointer -> wild deref.
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });

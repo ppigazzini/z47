@@ -298,8 +298,8 @@ pub extern var currentStep: [*c]u8;
 pub extern var currentLocalStepNumber: u16;
 pub extern var programListEnd: bool_t;
 pub extern var pemCursorIsZerothStep: bool_t;
-// Defined here (was keyboard.c) so the bridge can retire; the now-Zig button
-// handlers + other owners extern these. Initialisers match keyboard.c.
+// Defined here (was keyboard.c); the now-Zig button handlers + other owners
+// extern these. Initialisers match keyboard.c.
 pub export var asnKey: [4]u8 = .{ 0, 0, 0, 0 };
 // standardFont is a `const font_t`; we only need its address for showString().
 pub const standardFont = @extern(*const anyopaque, .{ .name = "standardFont" });
@@ -339,9 +339,9 @@ pub inline fn isShowMode() bool {
 // --- fnKeyUp / fnKeyDown dependencies ---------------------------------------
 const softmenuStack_t = abi.SoftmenuStack;
 const softmenu_t = abi.Softmenu;
-const abi = @import("abi"); // L1 shared bindings
+const abi = @import("abi"); // shared ABI bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
-/// M24: byte-exact sprintf replacement for the errorMessage hint writers.
+/// byte-exact sprintf replacement for the errorMessage hint writers.
 pub const fmtCStr = abi.fmtCStr;
 pub const sliceTo = std.mem.sliceTo;
 

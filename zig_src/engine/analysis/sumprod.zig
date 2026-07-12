@@ -6,10 +6,9 @@ const consts = abi.constants;
 // testSuite (no test gate) - it is verified by build only. Faithful line-by-line
 // translation preserving the exact order of every real_t / real34_t operation.
 //
-// The bridge (sumprod_legacy.c, removed) renamed fnProgrammableSum ->
-// z47_solver_fnProgrammableSum and fnProgrammableProduct ->
-// z47_solver_fnProgrammableProduct; those are the symbols solve.zig's
-// dispatcher calls. We export them with those names. The static
+// fnProgrammableSum / fnProgrammableProduct are exported under the names
+// z47_solver_fnProgrammableSum and z47_solver_fnProgrammableProduct; those are
+// the symbols solve.zig's dispatcher calls. The static
 // _programmableSumProd / _checkArgument become private. showProgressReal is also
 // defined in sumprod.c and is used by graph.c, so it is re-exported here.
 //
@@ -25,7 +24,7 @@ const consts = abi.constants;
 const runtime = @import("solve_runtime.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;

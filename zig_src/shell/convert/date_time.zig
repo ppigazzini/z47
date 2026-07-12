@@ -41,11 +41,11 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // Types
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_bufferize = @import("../display/bufferize.zig");
+const frontier_error = @import("../error.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -1160,7 +1160,7 @@ pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_sectio
     fnToDateCore() catch |e| reportDateError(e);
 }
 
-// L2 error surface (REPORT-23 P1/P5): the time-conversion command cores return
+// Error surface: the time-conversion command cores return
 // an invalid-data-type error instead of calling displayCalcErrorMessage inline;
 // reportTimeError maps each to its static message (all ERROR_INVALID_DATA_TYPE
 // on REGISTER_X). The error paths return before the trailing range-check work,

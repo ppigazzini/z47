@@ -27,8 +27,7 @@ const const_2 = consts.const_2;
 // the real defines.h values. CF_* and orOrtho match defines.h.
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_command_wrappers = @import("command_wrappers.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("command_wrappers.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;

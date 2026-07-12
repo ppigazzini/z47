@@ -1,6 +1,6 @@
-const frontier_config = @import("config.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("config.zig");
+const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig");
+const frontier_softmenus = @import("display/softmenus/softmenus.zig");
 const FLAG_FRACT: c_uint = 0x8007;
 const FLAG_PROPFR: c_uint = 0x8008;
 const FLAG_FRCYC: c_uint = 0x8041;

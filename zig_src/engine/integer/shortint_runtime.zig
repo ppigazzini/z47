@@ -29,7 +29,7 @@ pub const FLAG_ASLIFT: u32 = 0xc023;
 const DECNUMUNITS = 25;
 const DECSPECIAL: u8 = 0x70;
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 pub const real_t = abi.Real;
 
 comptime {

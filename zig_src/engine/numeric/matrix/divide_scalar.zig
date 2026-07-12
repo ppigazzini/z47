@@ -6,14 +6,13 @@
 // _divideByRealMatrix and divideByComplexMatrix / _divideByComplexMatrix
 // (a real34/real or complex scalar divided elementwise by each matrix
 // element). The matrix-by-matrix divide (which needs the linear-algebra
-// solver) and the rest of the engine stay in the matrix bridge until the
-// final B cluster.
+// solver) and the rest of the engine live in other matrix owners, not in
+// this scalar-divide owner.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../real_predicates.zig");
-const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real_t = runtime.real_t;
@@ -22,7 +21,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 
-// Owned by math_matrix_lifecycle.zig (B1).
+// Owned by math_matrix_lifecycle.zig.
 
 const realElems = abi.matrixRealElems;
 const constRealElems = abi.matrixConstRealElems;

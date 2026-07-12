@@ -37,7 +37,7 @@ const C47_NULL: u16 = 65535;
 const configFileVersion: u32 = 10000024; // C saveRestoreCalcState.c:7 (FLAG_SIGZEROS bump)
 
 // --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
-const abi = @import("abi"); // L1 shared bindings
+const abi = @import("abi"); // shared ABI bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 const calcKey_t = abi.CalcKey;
@@ -444,7 +444,7 @@ pub fn writeSaveSections() void {
 // for the value portion (e.g. "%u\n"); args are the already-promoted variadic
 // arguments matching it.
 fn saveField(comptime name: []const u8, comptime value_format: []const u8, args: anytype) void {
-    // M24: the only value formats in use are "%u\n"/"%d\n" (plain decimal; args
+    // The only value formats in use are "%u\n"/"%d\n" (plain decimal; args
     // pre-cast via cu()/ci() to the right signedness, so both -> "{d}\n") and
     // "%f\n" (== "%.6f\n", routed through the byte-exact fixed formatter). A new
     // spec trips the @compileError rather than silently mis-formatting the save.

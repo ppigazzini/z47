@@ -9,9 +9,8 @@
 // DMCP).
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_wp34s = @import("wp34s.zig");
 const real_t = runtime.real_t;
 
 const REGISTER_X = runtime.REGISTER_X;

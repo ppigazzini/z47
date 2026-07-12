@@ -14,8 +14,8 @@ const NUMBER_OF_LOCAL_FLAGS: u8 = 32;
 
 const register_header_t = abi.RegisterHeader;
 
-// subroutineLevels_t layout is centralized in abi (oracle-verified == C
-// subroutineLevels_t by abi-layout-parity); alias instead of re-mirroring it.
+// subroutineLevels_t layout is centralized in abi (oracle-verified to match the
+// C subroutineLevels_t layout); alias instead of re-mirroring it.
 const subroutine_levels_t = abi.SubroutineLevels;
 
 const subroutine_level_header_t = abi.SubroutineLevelHeader;

@@ -27,17 +27,16 @@ const const2139_2pi = consts.const2139_2pi;
 // use1071: true under TESTSUITE_BUILD and on DM42n/PC (HIMEMORY), matching the C
 // `use1071 = HIMEMORY && user1071Flag`. The OPTION_XFN_1000 #else empty stubs
 // (DM42 old_hw) are NOT reproduced as no-ops; the full bodies are emitted for
-// every build and pushed to executable QSPI via linksection (the batch-1 XIP
+// every build and pushed to executable QSPI via linksection (the execute-in-place
 // mechanism), so the flash-limited firmware still fits. The DEBUG_XFN console
 // diagnostics and the unconditional getSingleParameter printf have no effect on
 // the computed result and are dropped. EXTRA_INFO sprintf hints become fixed
 // moreInfoOnError strings.
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_rdp = @import("rdp.zig"); // M-callconv: Zig-to-Zig
-const math_rsd = @import("rsd.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_rdp = @import("rdp.zig");
+const math_rsd = @import("rsd.zig");
+const math_wp34s = @import("special/wp34s.zig");
 const math_real_predicates = @import("real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

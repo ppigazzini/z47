@@ -7,10 +7,10 @@ const consts = abi.constants;
 // preserving the exact order of every real34_t operation and the byte-for-byte
 // string/menu buffer manipulations.
 //
-// No renames (equation_legacy.c just #include'd equation.c). All public commands
-// are exported under their REAL C names: fnEqNew, fnEqEdit, fnEqCla, fnEqDelete,
-// fnEqCursorLeft, fnEqCursorRight, fnEqCalc, setEquation, deleteEquation,
-// showEquation, parseEquation, isDyadicFunction. The static helpers stay private.
+// All public commands are exported under their REAL C names: fnEqNew, fnEqEdit,
+// fnEqCla, fnEqDelete, fnEqCursorLeft, fnEqCursorRight, fnEqCalc, setEquation,
+// deleteEquation, showEquation, parseEquation, isDyadicFunction. The static
+// helpers stay private.
 //
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under TESTSUITE/DMCP and
 // omitted. The host-only display in showEquation is reproduced faithfully (it is
@@ -25,7 +25,7 @@ const solve_build_options = @import("solve_build_options");
 const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_build_options.is_dmcp_build;
 
 const real34_t = abi.Real34;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
@@ -244,12 +244,12 @@ extern var displayFormatDigits: u8;
 extern var updateOldConstants: bool;
 extern var ram: [*c]u32;
 
-// C `item_t indexOfItems[]` is an ARRAY: bind the address (gotcha #1). The `[*]`
+// C `item_t indexOfItems[]` is an ARRAY: bind the address. The `[*]`
 // pointer form loaded the array's first bytes as the pointer -> wild deref in the
 // EIM equation-catalog search.
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 extern const standardFont: font_t;
-// C arrays: bind the address, not the data-as-pointer (gotcha #1). The pointer
+// C arrays: bind the address, not the data-as-pointer. The pointer
 // form would crash dynamicSoftmenu[...] accesses like fnSolveVar/fnIntegrateVar.
 const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });

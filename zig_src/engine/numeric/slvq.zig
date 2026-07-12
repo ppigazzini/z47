@@ -24,12 +24,11 @@ const const_4 = consts.const_4;
 // moreInfoOnError strings.
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_addition_cells = @import("arithmetic/addition_cells.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
-
+const math_addition_cells = @import("arithmetic/addition_cells.zig");
+const math_division_cells = @import("arithmetic/division_cells.zig");
+const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig");
+const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig");
+const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;

@@ -13,8 +13,7 @@
 //! is only reachable through the C oracle. The owner keeps the thin _alphaMid
 //! shim that resolves the glyph length, calls this core into the scratch buffer,
 //! and writes the result into REGISTER_X. This module uses Zig many-item
-//! pointers rather than C pointers, so it stays out of the idiom-ratchet cptr
-//! ceiling.
+//! pointers rather than C pointers.
 
 const std = @import("std");
 const abi = @import("abi");

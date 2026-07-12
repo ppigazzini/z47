@@ -23,14 +23,13 @@ const const34_1 = consts.const34_1;
 // a no-op).
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_command_wrappers = @import("command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_lifecycle = @import("matrix/lifecycle.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_register_link = @import("matrix/register_link.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_register_memory = @import("matrix/register_memory.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_power = @import("powerlog/power.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("command_wrappers.zig");
+const math_comparison_reals = @import("comparison_reals.zig");
+const math_matrix_lifecycle = @import("matrix/lifecycle.zig");
+const math_matrix_register_link = @import("matrix/register_link.zig");
+const math_matrix_register_memory = @import("matrix/register_memory.zig");
+const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig");
+const math_power = @import("powerlog/power.zig");
 const calcRegister_t = runtime.calcRegister_t;
 const math_real_predicates = @import("real_predicates.zig");
 const small_prime_list = @import("small_prime_list.zig"); // std-only small-prime index->value list

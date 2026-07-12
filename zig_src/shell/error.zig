@@ -40,10 +40,10 @@ else
 // Types
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("display/screen.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("display/text/char_string.zig");
+const frontier_register_value_conversions = @import("register_value_conversions.zig");
+const frontier_screen = @import("display/screen.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -336,9 +336,9 @@ pub export const errorMessages linksection(code_section) = [NUMBER_OF_ERROR_CODE
 
 // ---------------------------------------------------------------------------
 // moreInfoOnError. Upstream defines the printf console popup only for PC_BUILD;
-// the error_legacy.c shim supplied a no-op stub for !PC_BUILD because the Zig
-// math owners call moreInfoOnError unconditionally. Reproduce both: a no-op on
-// firmware, the real popup on host.
+// on firmware the Zig math owners still call moreInfoOnError unconditionally, so
+// a no-op stub is provided there. Reproduce both: a no-op on firmware, the real
+// popup on host.
 // ---------------------------------------------------------------------------
 fn moreInfoOnErrorImpl(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void {
     var utf8m1: [2000]u8 = undefined;
@@ -378,8 +378,8 @@ fn moreInfoOnErrorStub(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8
 }
 
 // The C symbol `moreInfoOnError` exists on every target: the real popup on host,
-// a no-op stub on firmware (matching error.c's #if PC_BUILD + the legacy shim's
-// !PC_BUILD stub). Zig math owners call it unconditionally.
+// a no-op stub on firmware (matching error.c's #if PC_BUILD, with a no-op on
+// !PC_BUILD). Zig math owners call it unconditionally.
 comptime {
     @export(if (dmcp_build) &moreInfoOnErrorStub else &moreInfoOnErrorImpl, .{ .name = "moreInfoOnError", .linkage = .strong });
 }

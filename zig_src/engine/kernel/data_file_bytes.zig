@@ -4,8 +4,7 @@
 //! Restoring a saved state parses uppercase hex nibbles and normalizes a
 //! localized decimal comma to a period. Both are pure byte operations. Lift them
 //! here for native coverage -- the restore owner is only reachable through the C
-//! oracle. This module uses Zig many-item pointers rather than C pointers, so it
-//! stays out of the idiom-ratchet cptr ceiling.
+//! oracle. This module uses Zig many-item pointers rather than C pointers.
 
 const std = @import("std");
 

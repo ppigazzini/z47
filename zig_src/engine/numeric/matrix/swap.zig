@@ -3,13 +3,12 @@
 // src/c47/mathematics/matrix.c: realMatrixSwapRows / realMatrixSwapColumns and
 // complexMatrixSwapRows / complexMatrixSwapColumns (and their shared static
 // workers _realMatrixSwap / _complexMatrixSwap). The remaining matrix engine
-// stays in the matrix bridge until the later B clusters land.
+// stays in the matrix bridge until it is ported.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../real_predicates.zig");
-const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -17,7 +16,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 
-// Owned by math_matrix_lifecycle.zig (B1).
+// Owned by math_matrix_lifecycle.zig.
 
 const realElems = abi.matrixRealElems;
 const complexElems = abi.matrixComplexElems;

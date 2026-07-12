@@ -14,7 +14,7 @@
 //! keeps _getGlyphCode / _isSameGlyph / _toUpperOrLowerCase as thin wrappers so
 //! its several call sites are unchanged; each delegates here (passing the glyph
 //! length and the case table in). This module uses Zig many-item pointers rather
-//! than C pointers, so it stays out of the idiom-ratchet cptr ceiling.
+//! than C pointers.
 
 const std = @import("std");
 const abi = @import("abi");

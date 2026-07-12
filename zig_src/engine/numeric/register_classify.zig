@@ -1,5 +1,5 @@
 //! Register address-band classification -- the pure core of the predicates in
-//! math_register_compare.zig.
+//! register_compare.zig.
 //!
 //! compareRegisters must decide which address band a register index falls in
 //! (global / spare / named variable / reserved variable / local / the temp

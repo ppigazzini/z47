@@ -26,10 +26,9 @@
 // INLINE_TEST is #undef'd unconditionally upstream, so its table/render branches
 // take the !INLINE_TEST path.
 //
-// RENAMED-AWAY: fnDynamicMenu is owned elsewhere (the retired shim renamed it to
-// z47_frontier_legacy_fnDynamicMenu); here it is an extern. The two helpers the
-// shim provided (z47_frontier_dynamic_menu_softmenu_id / _item) are reproduced
-// as pub export fn reading softmenuStack[0].softmenuId and dynamicMenuItem.
+// fnDynamicMenu itself is owned by shell.zig. This module provides two bridge
+// helpers (z47_frontier_dynamic_menu_softmenu_id / _item) that read its inputs,
+// softmenuStack[0].softmenuId and dynamicMenuItem.
 //
 // DMCP ROM trampolines (lcd_fill_rect, bitblt24 behind setBlackPixel/setWhitePixel)
 // are fixed-address jump-table calls on firmware (LIBRARY_FN_BASE + offset from
@@ -106,25 +105,25 @@ const registerHeader_t = abi.RegisterHeader;
 
 // real_t for placeSubscript / changeSoftKey local math.
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const label_truncate = @import("../text/label_truncate.zig"); // std-only label arrow truncation
 const str_concat = @import("../text/str_concat.zig"); // std-only scratch string concat
-const frontier = @import("../../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("../../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_assign = @import("../../input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("../../program/next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_plotstat = @import("../../plot/plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("../../extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("../sort.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../../shell.zig");
+const frontier_addons = @import("../../extensions/addons.zig");
+const frontier_assign = @import("../../input/assign.zig");
+const frontier_calc_mode = @import("../../calc_mode.zig");
+const frontier_char_string = @import("../text/char_string.zig");
+const frontier_debug = @import("../../debug.zig");
+const frontier_error = @import("../../error.zig");
+const frontier_items = @import("../items/items.zig");
+const frontier_manage = @import("../../program/manage.zig");
+const frontier_next_step = @import("../../program/next_step.zig");
+const frontier_plotstat = @import("../../plot/plotstat.zig");
+const frontier_radio_button_catalog = @import("../../extensions/radio_button_catalog.zig");
+const frontier_real_type = @import("../../real_type.zig");
+const frontier_register_value_conversions = @import("../../register_value_conversions.zig");
+const frontier_screen = @import("../screen.zig");
+const frontier_sort = @import("../sort.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 
@@ -794,7 +793,7 @@ inline fn realIsZero(r: *const real_t) bool_t {
 }
 extern fn showShiftState() void;
 
-// fnDynamicMenu is owned elsewhere (renamed away by the retired shim).
+// fnDynamicMenu is owned by shell.zig.
 
 // libc.
 extern fn malloc(n: usize) [*c]u8;

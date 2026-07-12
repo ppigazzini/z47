@@ -5,31 +5,29 @@ const consts = abi.constants;
 // Zig owner for src/c47/ui/matrixEditor.c — the *residue* of the matrix editor
 // that the sibling matrix_* owners do NOT already provide.
 //
-// Division of labour (verified by grep across zig_src/frontier/):
+// Division of labour (verified by grep across zig_src/shell/):
 //   * The ~30 PUBLIC matrixEditor.c functions (fnEditMatrix, fnOldMatrix,
 //     fnGoToElement, fnGoToRow, fnGoToColumn, fnSetGrowMode, fnIncDecI,
 //     fnIncDecJ, fnInsRow, fnAddRow, fnInsCol, fnAddCol, fnDelRow, fnDelCol,
 //     getIRegisterAsInt, getJRegisterAsInt, setIRegisterAsInt,
 //     setJRegisterAsInt, wrapIJ, _fnInsRow, _fnInsCol, mimFinalize, mimRestore,
 //     mimAddNumber, mimRunFunction, showMatrixEditor, mimEnter) are reimplemented
-//     in Zig and exported by frontier.zig (which dispatches into the matrix_*
+//     in Zig and exported by shell.zig (which dispatches into the matrix_*
 //     module owners: matrix_editor_entry, matrix_editor_refresh, matrix_nav,
 //     matrix_goto_grow, matrix_lifecycle, matrix_mim_add, matrix_mim_run,
-//     matrix_mutation). The matrix_editor_legacy.c shim #defines those names away
-//     to z47_frontier_legacy_* so the C bodies never collide. Those legacy
-//     symbols are dead (nothing references z47_frontier_legacy_<matrix>).
+//     matrix_mutation).
 //     => This owner does NOT export any of them.
 //
-//   * What the legacy object STILL provided to the link and no Zig owner did:
+//   * The parts of matrixEditor.c that no sibling matrix_* owner provides:
 //       (a) the 4 NON-renamed publics of matrixEditor.c:
 //           showRealMatrix, showComplexMatrix, getRealMatrixColumnWidths,
 //           getComplexMatrixColumnWidths;
 //       (b) the file-scope globals: openMatrixMIMPointer, matEditMode, scrollRow,
 //           scrollColumn, tmpRow, matrixIndex (the sibling owners declare these
 //           `extern` — calc_mode_owned, goto_grow_owned, etc. — but the
-//           DEFINITION lived in the legacy object);
+//           DEFINITION lives here);
 //       (c) all 49 z47_frontier_matrix_* bridge helpers the sibling modules call
-//           (defined ONLY in the shim, declared `extern fn` by the siblings).
+//           (defined here, declared `extern fn` by the siblings).
 //     => This owner provides (a)+(b)+(c). It is, in effect, the rest of
 //        matrixEditor.c plus the bridge layer.
 //
@@ -61,7 +59,7 @@ else
     ".text";
 
 // ===========================================================================
-// Types (reused verbatim from frontier_calc_mode.zig so the union/struct
+// Types (reused verbatim from calc_mode.zig so the union/struct
 // layout matches the siblings' externs exactly).
 // ===========================================================================
 const bool_t = bool;
@@ -76,17 +74,17 @@ const complex34_t = abi.Complex34;
 // locals. DECNUMDIGITS=75 -> lsu has ceil(75/3)=25 units (uint16). Header is
 // digits(i32)+exponent(i32)+bits(u8)+pad. Use the canonical c47 layout.
 const decNumberUnit = u16;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const matrix_wrap = @import("matrix_wrap.zig"); // std-only matrix I/J cursor wrap
-const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_angles = @import("../convert/conversion_angles.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("../display/bufferize.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 // decContext layout is centralized in abi.RealContext (oracle-verified == C
@@ -243,7 +241,7 @@ const FLAG_CPXj: c_int = 0x8005;
 // ===========================================================================
 // Globals — DEFINED HERE (the siblings declare these `extern`).
 // matEditMode is file-local in matrixEditor.c and referenced nowhere else; we
-// still export it so the legacy symbol set is preserved exactly.
+// still export it to mirror matrixEditor.c's symbol set exactly.
 // ===========================================================================
 // These are mutable RAM globals (matrixEditor.c file-scope, normal .data/.bss);
 // they must NOT go into .qspi (read-only XIP flash). Default section.
@@ -293,7 +291,7 @@ extern var ctxtReal39: realContext_t;
 // const39_pi / const39_piOn2 / const_0 are `#define`s into the shared
 // `constants` byte blob ((real_t *)(constants + offset)), NOT linkable symbols.
 // Bind the blob by address and index by the generated byte offsets, matching
-// frontier_conversion_angles.zig.
+// conversion_angles.zig.
 const const39_pi = consts.c1848();
 const const39_piOn2 = consts.c4880();
 const const_0 = consts.c1708();
@@ -1510,7 +1508,7 @@ inline fn strcmpEq(a: [*c]const u8, b: [*c]const u8) bool {
 }
 
 // ===========================================================================
-// z47_frontier_matrix_* BRIDGE HELPERS (defined only in the shim previously).
+// z47_frontier_matrix_* BRIDGE HELPERS.
 // Signatures must match the siblings' `extern fn` declarations exactly.
 // ===========================================================================
 
@@ -2112,7 +2110,7 @@ pub fn z47_frontier_matrix_mim_enter_commit_open_matrix() void {
 
 // ===========================================================================
 // wrapIJ — file-local copy used by the inc/dec helpers above. The PUBLIC wrapIJ
-// is exported by frontier.zig (matrix_nav module); this private impl mirrors it
+// is exported by shell.zig (matrix_nav module); this private impl mirrors it
 // so callByIndexedMatrix stays self-contained without taking a dependency on the
 // sibling's internal name.
 // ===========================================================================
@@ -2133,7 +2131,7 @@ fn wrapIJImpl(rows: u16, cols: u16) bool_t {
 
 comptime {
     // Force-reference the lifecycle/dead globals so they are not stripped and so
-    // the legacy symbol set is preserved exactly.
+    // matrixEditor.c's symbol set is preserved exactly.
     _ = &matEditMode;
     _ = &tmpRow;
 }

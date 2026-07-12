@@ -1,9 +1,9 @@
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
-const frontier_print = @import("../print/print.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("../input/tam.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig");
+const frontier_error = @import("../error.zig");
+const frontier_matrix_editor = @import("matrix_editor.zig");
+const frontier_print = @import("../print/print.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_tam = @import("../input/tam.zig");
 const NOPARAM: u16 = 9876;
 
 const CM_MIM: u8 = 12;

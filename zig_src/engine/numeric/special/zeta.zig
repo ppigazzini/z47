@@ -17,13 +17,12 @@ const const39_ln2 = consts.const39_ln2;
 // body is ported unconditionally.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_power = @import("../powerlog/power.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_division_cells = @import("../arithmetic/division_cells.zig");
+const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
+const math_power = @import("../powerlog/power.zig");
+const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig");
+const math_wp34s = @import("wp34s.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 
