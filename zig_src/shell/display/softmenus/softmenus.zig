@@ -137,7 +137,6 @@ const SCREEN_WIDTH: i16 = 400;
 const SCREEN_HEIGHT: i16 = 240;
 const TMP_STR_LENGTH: usize = 2560;
 const AIM_BUFFER_LENGTH: usize = 1024;
-const ON_PIXEL: i32 = 0x303030;
 const LCD_SET_VALUE: c_int = 0;
 const LCD_EMPTY_VALUE: c_int = 255;
 
@@ -3510,8 +3509,10 @@ const c_gtk_widget_queue_draw = if (!dmcp_build) @extern(*const fn (?*anyopaque)
 const c_gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
 const c_gtk_main_iteration = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_main_iteration" }) else {};
 const screen_ptr = if (!dmcp_build) @extern(*?*anyopaque, .{ .name = "screen" }) else {};
-const screenData_ptr = if (!dmcp_build) @extern(*[*c]u32, .{ .name = "screenData" }) else {};
-const screenStride_ptr = if (!dmcp_build) @extern(*i16, .{ .name = "screenStride" }) else {};
+// lcd_buffer_pixel_on tests one pixel of the 1bpp frame buffer for the menu
+// dump; bound on non-firmware builds only, and its C bool_t return is a
+// one-byte 0/1 here.
+const c_lcd_buffer_pixel_on = if (!dmcp_build) @extern(*const fn (x: u32, y: u32) callconv(.c) u8, .{ .name = "lcd_buffer_pixel_on" }) else {};
 
 pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callconv(.c) void {
     if (comptime dmcp_build) {
@@ -3577,9 +3578,11 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0x000030c0;
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = 0x00001a7c;
+        // Horizontal and vertical print resolution: 2835 pixels/m (72 dpi), so
+        // sim and hardware menu dumps produce byte-identical BMPs.
+        uint32 = 0x00000b13;
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = 0x00001a7c;
+        uint32 = 0x00000b13;
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0x00000002;
         _ = fwrite(&uint32, 1, 4, bmp);
@@ -3618,7 +3621,7 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
             x = 0;
             while (x < SCREEN_WIDTH) : (x += 1) {
                 uint8 <<= 1;
-                if (screenData_ptr.*[@intCast(y * screenStride_ptr.* + @as(i16, @intCast(x)))] == ON_PIXEL) {
+                if (c_lcd_buffer_pixel_on(@intCast(x), @intCast(y)) != 0) {
                     uint8 |= 1;
                 }
                 if (@rem(x, 8) == 7) {

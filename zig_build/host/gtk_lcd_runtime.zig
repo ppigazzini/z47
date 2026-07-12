@@ -159,6 +159,19 @@ pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callco
     }
 }
 
+// Reads one pixel out of the 1bpp frame buffer; the screen and menu dumps use
+// it to serialise the LCD into a BMP. bool_t is a one-byte 0/1 here.
+pub export fn lcd_buffer_pixel_on(x: u32, y: u32) callconv(.c) u8 {
+    if (x >= SCREEN_WIDTH or y >= SCREEN_HEIGHT) {
+        return 0;
+    }
+    const line_buf = lcd_buffer + 52 * y;
+    const bit_index = SCREEN_WIDTH - 1 - x;
+    const byte_i = bit_index >> 3;
+    const bit_j: u3 = @intCast(bit_index & 7);
+    return (line_buf[2 + byte_i] >> bit_j) & 1;
+}
+
 pub export fn refresh_gui() callconv(.c) void {
     while (gtk_events_pending() != 0) {
         if (ui_is_active != 0) break;
