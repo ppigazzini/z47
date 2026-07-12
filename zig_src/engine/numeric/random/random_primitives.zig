@@ -1,4 +1,4 @@
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi"); // std-only PCG32 kernels (math owners keep abi private via runtime)
 
 // The pure PCG32 kernels live in abi.pcg32; these owners keep the calculator-global

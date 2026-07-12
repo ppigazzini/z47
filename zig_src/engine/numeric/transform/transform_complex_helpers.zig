@@ -11,9 +11,9 @@
 const std = @import("std");
 const abi = @import("abi");
 const atan2_owned = @import("../trig/atan2.zig");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_real_predicates = @import("../math_real_predicates.zig");
-const wrappers = @import("../math_command_wrappers.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_real_predicates = @import("../real_predicates.zig");
+const wrappers = @import("../command_wrappers.zig");
 
 // Upstream realType.c functions (canonical symbols in the product link).
 extern fn realSetPlusInfinity(value: *runtime.real_t) void;

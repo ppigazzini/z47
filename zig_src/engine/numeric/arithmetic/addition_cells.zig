@@ -14,7 +14,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 // trimLeadingSpace (stringFuncs owner) — master fd83b4a4 strips the leading
 // FRONTSPACE from a formatted number before appending it to a string.

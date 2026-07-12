@@ -1,7 +1,7 @@
 const std = @import("std");
 const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 

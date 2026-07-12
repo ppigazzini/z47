@@ -10,9 +10,9 @@ const consts = abi.constants;
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings
 // (no-op under TESTSUITE/DMCP).
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_transform_complex_helpers = @import("transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("../special/wp34s.zig"); // M-callconv: Zig-to-Zig
 

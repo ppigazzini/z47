@@ -1,4 +1,4 @@
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 fn doParallelReal() callconv(.c) void {
     var y_value: runtime.real_t = undefined;

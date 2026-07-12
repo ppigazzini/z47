@@ -6,8 +6,8 @@
 // creation / redimension commands.
 
 const std = @import("std");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_real_predicates = @import("../math_real_predicates.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_real_predicates = @import("../real_predicates.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
 const real34Matrix_t = runtime.real34Matrix_t;

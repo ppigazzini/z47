@@ -1,6 +1,6 @@
 const logxy_owned = @import("logxy.zig");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const transcendental_command_owned = @import("../math_transcendental_command.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
+const transcendental_command_owned = @import("../transcendental_command.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -17,8 +17,8 @@ fn logXYComplex(
     var ln_x_real: runtime.real_t = undefined;
     var ln_x_imag: runtime.real_t = undefined;
 
-    @import("../math_ln_complex.zig").lnComplex(y_real, y_imag, result_real, result_imag, &runtime.ctxtReal39);
-    @import("../math_ln_complex.zig").lnComplex(x_real, x_imag, &ln_x_real, &ln_x_imag, &runtime.ctxtReal39);
+    @import("../ln_complex.zig").lnComplex(y_real, y_imag, result_real, result_imag, &runtime.ctxtReal39);
+    @import("../ln_complex.zig").lnComplex(x_real, x_imag, &ln_x_real, &ln_x_imag, &runtime.ctxtReal39);
     runtime.divComplexComplex(result_real, result_imag, &ln_x_real, &ln_x_imag, result_real, result_imag, &runtime.ctxtReal39);
 }
 

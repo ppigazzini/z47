@@ -10,7 +10,7 @@
 // dispatchers used by the MIM-routed commands (fnGetMatrix/fnPutMatrix/...).
 const abi = @import("abi");
 const std = @import("std");
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

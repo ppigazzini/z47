@@ -28,9 +28,9 @@ const const39_egamma = consts.const39_egamma;
 // become fixed moreInfoOnError strings (no-op under TESTSUITE / DMCP). The
 // SAVE_SPACE_DM42_12BESSEL guard is dead on every z47 build.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
 const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig

@@ -25,18 +25,18 @@ const const_1e_34 = consts.const_1e_34;
 // This owner mirrors the real-op + BigReal scaffolding of math_slvq.zig.
 
 const std = @import("std");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_complex_core = @import("complex_core.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_product = @import("product.zig"); // M-callconv: Zig-to-Zig
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_slvc = @import("../math_slvc.zig"); // M-callconv: Zig-to-Zig
-const math_slvq = @import("../math_slvq.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_slvc = @import("../slvc.zig"); // M-callconv: Zig-to-Zig
+const math_slvq = @import("../slvq.zig"); // M-callconv: Zig-to-Zig
 const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
-const math_real_predicates = @import("../math_real_predicates.zig");
+const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;

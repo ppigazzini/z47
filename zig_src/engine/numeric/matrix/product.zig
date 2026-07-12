@@ -5,7 +5,7 @@
 // precision). The divide family, the vector ops and the linear-algebra
 // engine stay in the matrix bridge until the later B clusters land.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
 const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
 

@@ -11,13 +11,13 @@ const const39_pi = consts.const39_pi;
 // with C linkage; the static helpers stay private. EXTRA_INFO_MESSAGE hints
 // become fixed moreInfoOnError strings (no-op under TESTSUITE/DMCP).
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_gamma = @import("gamma.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
 
-const math_real_predicates = @import("../math_real_predicates.zig");
+const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 
