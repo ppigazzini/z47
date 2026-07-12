@@ -2,10 +2,10 @@ const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_curve_fitting = @import("curve_fitting.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_plotstat = @import("plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
 const frontier_stats = @import("../frontier_stats.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("../frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("../display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
 const FLAG_SCALE: c_uint = 0x8052;
 
 const CM_NORMAL: u8 = 0;

@@ -1,4 +1,4 @@
-const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
 const DSP_MAX: u16 = 19;
 const FLAG_FRACT: c_uint = 0x8007;
 

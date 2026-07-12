@@ -20,9 +20,16 @@ os.chdir(ROOT)
 IMP=re.compile(r'@import\("([^"]+\.zig)"\)')
 REFDIRS=['zig_src','zig_build']
 # Path-reference surfaces beyond the build graph: the ledger, the extern/@cImport
-# boundary allowlist, and any .github/project audit file that names owner paths.
-REFFILES=['build.zig','.github/project/upstream-port-ledger.tsv',
-          '.github/project/zig-c-boundaries.txt']
+# boundary allowlist, the zig_build *.txt source-lists, and the .github/project
+# audit scripts (*.py / *.tsv) that hardcode owner paths. The gate enumerated
+# these one slice at a time; sweep them all.
+def extra_reffiles():
+    out=['build.zig']
+    for pat in ('.github/project/*.txt','.github/project/*.tsv','.github/project/*.py',
+                'zig_build/**/*.txt'):
+        out+=subprocess.check_output(['git','ls-files',pat],text=True).split()
+    return out
+REFFILES=None  # resolved at apply time via extra_reffiles()
 
 def tracked_zig():
     return subprocess.check_output(['git','ls-files','zig_src/**/*.zig','zig_build/**/*.zig'],text=True).split()
@@ -81,8 +88,8 @@ def main():
         s=open(fn).read()
         for a,b in pairs: s=s.replace(f'@import("{a}")',f'@import("{b}")')
         open(fn,'w').write(s)
-    # build-system path literals
-    reff=[x for x in REFFILES if os.path.exists(x)]
+    # build-system + audit path literals (all enumerated surfaces)
+    reff=[x for x in extra_reffiles() if os.path.exists(x)]
     for d in REFDIRS: reff+=subprocess.check_output(['git','ls-files',f'{d}/**/*.zig'],text=True).split()
     for fn in set(reff):
         s=open(fn).read(); orig=s

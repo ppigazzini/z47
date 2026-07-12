@@ -32,9 +32,9 @@ const bool_t = bool;
 const matrixHeader_t = abi.MatrixHeader;
 const registerHeader_t = abi.RegisterHeader;
 const abi = @import("abi"); // L1 shared bindings
-const frontier_char_string = @import("../frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_graph_text = @import("../plot/graph_text.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen_snap = @import("../frontier_screen_snap.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen_snap = @import("../display/screen_snap.zig"); // M-callconv: Zig-to-Zig
 const namedVariableHeader_t = abi.NamedVariableHeader;
 
 // ---------------------------------------------------------------------------
