@@ -21,7 +21,7 @@ const abi = @import("abi");
 const comparison_reals = @import("math_comparison_reals.zig");
 const math_real_predicates = @import("math_real_predicates.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
-const math_integer_division_cells = @import("math_integer_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_integer_division_cells = @import("arithmetic/integer_division_cells.zig"); // M-callconv: Zig-to-Zig
 const register_classify = @import("register_classify.zig"); // std-only register-band classification
 
 const calcRegister_t = runtime.calcRegister_t;

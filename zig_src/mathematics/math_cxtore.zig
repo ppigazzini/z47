@@ -9,7 +9,7 @@
 // (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("math_command_wrappers_runtime.zig");
-const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;

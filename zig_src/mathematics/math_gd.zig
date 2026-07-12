@@ -44,9 +44,9 @@ const abi = @import("abi");
 const math_real_predicates = @import("math_real_predicates.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_inverse_trig_command = @import("math_inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
+const math_inverse_trig_command = @import("trig/inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
 const math_ln_complex = @import("math_ln_complex.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
 const consts = abi.constants;
 
 // real ops / predicates not in runtime.

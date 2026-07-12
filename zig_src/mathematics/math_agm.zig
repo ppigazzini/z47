@@ -14,9 +14,9 @@ const const39_pi = consts.const39_pi;
 
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

@@ -28,8 +28,8 @@ const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callcon
 const math_matrix_lifecycle = @import("matrix/lifecycle.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_register_link = @import("matrix/register_link.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_register_memory = @import("matrix/register_memory.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_power = @import("powerlog/power.zig"); // M-callconv: Zig-to-Zig
 
 const calcRegister_t = runtime.calcRegister_t;
 const math_real_predicates = @import("math_real_predicates.zig");
