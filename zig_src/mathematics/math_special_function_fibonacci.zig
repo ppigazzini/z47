@@ -1,4 +1,4 @@
-const circular_trig_owned = @import("math_circular_trig.zig");
+const circular_trig_owned = @import("trig/circular_trig.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 

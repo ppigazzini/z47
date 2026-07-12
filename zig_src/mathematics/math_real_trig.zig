@@ -1,4 +1,4 @@
-const atan_owned = @import("math_atan.zig");
+const atan_owned = @import("trig/atan.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("math_command_wrappers_runtime.zig");
 

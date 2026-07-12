@@ -28,14 +28,14 @@ const const_2916 = consts.const_2916;
 // SAVE_SPACE_DM42_12 guard and the #undef'd DISCRIMINANT blocks are omitted.
 
 const runtime = @import("math_command_wrappers_runtime.zig");
-const math_addition_cells = @import("math_addition_cells.zig"); // M-callconv: Zig-to-Zig
+const math_addition_cells = @import("arithmetic/addition_cells.zig"); // M-callconv: Zig-to-Zig
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("math_division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
+const math_division_cells = @import("arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
 const math_runtime_helpers = @import("math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_slvq = @import("math_slvq.zig"); // M-callconv: Zig-to-Zig
-const math_subtraction_cells = @import("math_subtraction_cells.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("math_transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig"); // M-callconv: Zig-to-Zig
+const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

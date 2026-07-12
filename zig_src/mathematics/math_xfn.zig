@@ -36,7 +36,7 @@ const const2139_2pi = consts.const2139_2pi;
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_rdp = @import("math_rdp.zig"); // M-callconv: Zig-to-Zig
 const math_rsd = @import("math_rsd.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const math_real_predicates = @import("math_real_predicates.zig");
 const real_t = runtime.real_t;

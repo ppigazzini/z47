@@ -1,4 +1,4 @@
-const circular_trig_owned = @import("math_circular_trig.zig");
+const circular_trig_owned = @import("trig/circular_trig.zig");
 const real_trig_owned = @import("math_real_trig.zig");
 const runtime = @import("math_command_wrappers_runtime.zig");
 

@@ -12,7 +12,7 @@ const runtime = @import("math_command_wrappers_runtime.zig");
 const math_real_predicates = @import("math_real_predicates.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
