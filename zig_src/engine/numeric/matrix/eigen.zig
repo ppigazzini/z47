@@ -948,7 +948,13 @@ pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) callconv(.
 
 fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) bool {
     var mag: real_t = undefined;
-    math_runtime_helpers.complexMagnitude(@alignCast(value_re), @alignCast(value_im), &mag, realContext);
+    // Copy the align(1) blob operands into naturally-aligned locals before the
+    // naturally-aligned complexMagnitude call; @alignCast on a constant-pool
+    // pointer aborts on strict-alignment targets (macOS/aarch64) whenever the
+    // blob base lands at an under-aligned address.
+    var value_re_local: real_t = value_re.*;
+    var value_im_local: real_t = value_im.*;
+    math_runtime_helpers.complexMagnitude(&value_re_local, &value_im_local, &mag, realContext);
     return math_comparison_reals.realCompareLessThan(&mag, @alignCast(tol));
 }
 
