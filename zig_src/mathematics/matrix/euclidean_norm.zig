@@ -6,7 +6,7 @@
 // vector angle and the rest of the engine stay in the matrix bridge until the
 // later B clusters land.
 
-const runtime = @import("math_command_wrappers_runtime.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 const abi = @import("abi");
 
 const real_t = runtime.real_t;

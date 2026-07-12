@@ -1,5 +1,5 @@
-const runtime = @import("math_command_wrappers_runtime.zig");
-const validation_owned = @import("math_matrix_vector_validation.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
+const validation_owned = @import("vector_validation.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 

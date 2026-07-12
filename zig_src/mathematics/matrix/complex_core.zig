@@ -11,9 +11,9 @@ const consts = abi.constants;
 // canonical names so the later divide / invert owners reach them. The upstream
 // copies are file-local statics, so no bridge rename is needed.
 
-const runtime = @import("math_command_wrappers_runtime.zig");
-const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("math_wp34s.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../math_command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_wp34s = @import("../math_wp34s.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 

@@ -7,7 +7,7 @@
 // result.
 
 const std = @import("std");
-const runtime = @import("math_command_wrappers_runtime.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;

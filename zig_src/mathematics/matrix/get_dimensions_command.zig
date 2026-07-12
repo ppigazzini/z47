@@ -6,7 +6,7 @@
 // and long-integer surface stays in the bridge / runtime.
 
 const std = @import("std");
-const runtime = @import("math_command_wrappers_runtime.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
 
