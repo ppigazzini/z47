@@ -35,10 +35,10 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
 const frontier_graph_text = @import("plot/graph_text.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;

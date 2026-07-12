@@ -53,13 +53,13 @@ fn decodeShuffle(value: i16) [5]u8 {
     }
     return regists;
 }
-const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
 const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
 const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
 const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig

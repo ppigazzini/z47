@@ -16,7 +16,7 @@ const std = @import("std");
 const abi = @import("abi");
 const build_options = @import("frontier_build_options");
 const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("config.zig"); // M-callconv: Zig-to-Zig
 
 const dmcp_build: bool = build_options.dmcp_build;
 const old_hw: bool = build_options.old_hw;

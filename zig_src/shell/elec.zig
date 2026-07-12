@@ -25,9 +25,9 @@ const option_elec: bool = frontier_build_options.option_elec;
 // abi module; only the local spellings are aliased so the ported body is stable.
 // ---------------------------------------------------------------------------
 const abi = @import("abi");
-const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const consts = abi.constants;
 const real_t = abi.Real;
 const real34_t = abi.Real34;

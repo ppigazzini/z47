@@ -1,6 +1,6 @@
-const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("../input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
 const frontier_manage = @import("manage.zig"); // M-callconv: Zig-to-Zig
 const NOT_CONFIRMED: u16 = 9878;
 

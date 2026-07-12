@@ -1,9 +1,9 @@
-const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("shell.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("config.zig"); // M-callconv: Zig-to-Zig
 const frontier_softmenus = @import("display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("stats.zig"); // M-callconv: Zig-to-Zig
 const CONFIRMED: u16 = 9877;
 const NOT_CONFIRMED: u16 = 9878;
 const NOPARAM: u16 = 9876;

@@ -71,14 +71,14 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const plot_zoom = @import("../plot_zoom.zig"); // std-only plot viewport zoom
 const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
 const frontier_graph_text = @import("graph_text.zig"); // M-callconv: Zig-to-Zig
 const frontier_plotstat = @import("plotstat.zig"); // M-callconv: Zig-to-Zig
 const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("../frontier_stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_stats = @import("../stats.zig"); // M-callconv: Zig-to-Zig
 const frontier_status_bar = @import("../display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 

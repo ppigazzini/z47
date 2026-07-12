@@ -13,7 +13,7 @@
 // discrete searches via WP34S_qf_discrete_final. The testSuite drives every
 // branch via tests/f_{p,l,r,i}.txt.
 
-const dr = @import("../frontier_distribution_runtime.zig");
+const dr = @import("../distribution_runtime.zig");
 pub const real_t = dr.real_t;
 pub const realContext_t = dr.realContext_t;
 

@@ -18,7 +18,7 @@ const DECSPECIAL: u8 = 0x70;
 const DEC_ROUND_DOWN: c_int = 5;
 
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 
 const realContext_t = abi.RealContext;

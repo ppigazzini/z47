@@ -1,5 +1,5 @@
 const abi = @import("abi");
-const frontier_calc_mode = @import("../frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
+const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig

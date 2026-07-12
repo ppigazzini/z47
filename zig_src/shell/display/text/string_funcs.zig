@@ -22,7 +22,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier = @import("../../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../../shell.zig"); // M-callconv: Zig-to-Zig
 const frontier_addons = @import("../../extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("char_string.zig"); // M-callconv: Zig-to-Zig
 const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map
@@ -42,11 +42,11 @@ fn substringPosition(haystack: [*c]const u8, hay_len: i16, needle: [*c]const u8,
     }
     return -1;
 }
-const frontier_debug = @import("../../frontier_debug.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("../../debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_display = @import("../display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../../frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../../frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_store = @import("../../frontier_store.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../../error.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("../../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_store = @import("../../store.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
