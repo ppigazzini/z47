@@ -7,7 +7,7 @@
 // frontier_distribution_runtime. The testSuite has no Pareto dispatch entry, so
 // these are verified by the dedicated distributions parity harness instead.
 
-const dr = @import("frontier_distribution_runtime.zig");
+const dr = @import("../frontier_distribution_runtime.zig");
 const real_t = dr.real_t;
 
 // Shared parameter check for both GPD types. `mu` is non-null for Type II only.
