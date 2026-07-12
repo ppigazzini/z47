@@ -120,6 +120,9 @@ const CM_PLOT_STAT: u8 = 8;
 const CM_GRAPH: u8 = 15;
 const CM_NO_UNDO: u8 = 16;
 
+const PGM_RUNNING: u8 = 1;
+const PGM_PAUSED: u8 = 3;
+
 const SCRUPD_AUTO: u8 = 0x00;
 const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 
@@ -153,6 +156,7 @@ const COMPLEX_SOLVER: usize = 103;
 const NUMBER_OF_ERROR_CODES = 129; // defines.h: 129 (errorMessages row count)
 const SIZE_OF_EACH_ERROR_MESSAGE = 48;
 
+const EQUATION_PARSER_MVAR: u16 = 0;
 const EQUATION_PARSER_XEQ: u16 = 1;
 const AIM_BUFFER_LENGTH: usize = 1024;
 
@@ -224,6 +228,7 @@ var cpxSlvBestMagnitudeY: real_t = undefined;
 extern var lastErrorCode: u8;
 extern var temporaryInformation: u8;
 extern var calcMode: u8;
+extern var programRunStop: u8;
 extern var screenUpdatingMode: u8;
 extern var currentKeyCode: u8;
 extern var significantDigits: u8;
@@ -245,6 +250,7 @@ extern var y_min: f32;
 extern var y_max: f32;
 extern var SAVED_SIGMA_lastAddRem: i8;
 extern var tmpString: [*c]u8;
+extern var aimBuffer: [*c]u8;
 extern var ctxtReal34: realContext_t;
 extern var ctxtReal39: realContext_t;
 extern var ctxtReal51: realContext_t;
@@ -259,6 +265,8 @@ extern fn fnStore(r: u16) void;
 extern fn fnRCL(inp: i16) void;
 extern fn adjustResult(res: calcRegister_t, dropY: bool, setCpxRes: bool, errorReg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
+extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
+extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 extern fn fnDeleteVariable(regist: u16) void;
 extern fn isStatsMatrix(rows: *u16, mx: [*c]const u8) bool;
 extern fn isStatsMatrixN(rows: *u16, regStats: calcRegister_t) bool;
@@ -1739,6 +1747,16 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
         },
     }
 
+    if (!(currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable <= LAST_NAMED_VARIABLE)) {
+        // No plot variable assigned (e.g. a programmed Draw after X.SWAP loaded a
+        // fresh formula): auto-assign the sole variable like the interactive MVAR
+        // menu does; a formula with several variables still errors below.
+        equation.parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+        if (tmpString[0] != 0 and getNthString(tmpString, 1)[0] == 0) {
+            currentSolverVariable = @bitCast(findOrAllocateNamedVariable(tmpString));
+        }
+    }
+
     graphVariabl1 = @bitCast(currentSolverVariable);
     if (graphVariabl1 < 0) {
         graphVariabl1 = -graphVariabl1;
@@ -1804,6 +1822,13 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             screenUpdatingMode = SCRUPD_AUTO;
             screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
             refreshScreen(239);
+            if (programRunStop == PGM_RUNNING or programRunStop == PGM_PAUSED) {
+                // The refresh above dropped a running program back to CM_NORMAL, so
+                // a following programmed SNAP would capture the register display
+                // instead of the plot. Re-arm the graph so the SNAP re-renders it.
+                calcMode = CM_GRAPH;
+                reDraw = true;
+            }
         },
         else => {},
     }

@@ -12,6 +12,31 @@ void fnXSWAP (uint16_t mode) {
   #define isEdit (mode > 0)
   #define isSwap (!isEdit)
 
+    if(programRunStop == PGM_RUNNING) {
+      // Programmed X.SWAP/X.EDIT: a running program has no editor buffer (the interactive branches below open or serve an editor), so operate on the stored
+      // current formula directly, whatever calcMode the program started from. X.SWAP returns the old formula text in X; X.EDIT drops it.
+      if(getRegisterDataType(REGISTER_X) != dtString) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      }
+      else if(stringByteLength(REGISTER_STRING_DATA(REGISTER_X)) < AIM_BUFFER_LENGTH) {
+        if(numberOfFormulae == 0) {
+          fnEqNew(NOPARAM);
+        }
+        const char *oldFormula = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+        int16_t len = (oldFormula ? stringByteLength(oldFormula) : 0) + 1;
+        xcopy(tmpString, oldFormula ? oldFormula : "", len);
+        setEquation(currentFormula, REGISTER_STRING_DATA(REGISTER_X));
+        if(isSwap) {
+          reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(len), amNone);
+          xcopy(REGISTER_STRING_DATA(REGISTER_X), tmpString, len);
+        }
+        else {
+          fnDrop(NOPARAM);
+        }
+      }
+      return;
+    }
+
     if(calcMode == CM_EIM || calcMode == CM_AIM) {
       if(calcMode==CM_AIM) {
         fnSwapXY(0);

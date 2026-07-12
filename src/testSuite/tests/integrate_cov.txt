@@ -1,0 +1,40 @@
+;*************************************************************
+;** Coverage: formula integrator. fnIntegrateYX integrates  **
+;** the current formula f(X) over [Y,X] through the double-  **
+;** exponential integrator (integrate.c), evaluating the     **
+;** formula via parseEquation each iteration. FARG selects   **
+;** the integrand; lower limit in Y, upper in X; result in X.**
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; integral of X over [0,2] = 2
+Func: fnIntegrateCov
+In:  FARG=0 RY=Real:"0" RX=Real:"2"
+Out: EC=0 RX=Real:"2"
+; integral of X*X over [0,3] = 9
+Func: fnIntegrateCov
+In:  FARG=1 RY=Real:"0" RX=Real:"3"
+Out: EC=0 RX=Real:"9"
+; integral of X+1 over [0,2] = 4
+Func: fnIntegrateCov
+In:  FARG=2 RY=Real:"0" RX=Real:"2"
+Out: EC=0 RX=Real:"4"
+; integral of X^3 over [0,2] = 4
+Func: fnIntegrateCov
+In:  FARG=3 RY=Real:"0" RX=Real:"2"
+Out: EC=0 RX=Real:"4"
+; integral of 2*X over [0,3] = 9
+Func: fnIntegrateCov
+In:  FARG=4 RY=Real:"0" RX=Real:"3"
+Out: EC=0 RX=Real:"9"
+; zero-width interval [2,2] -> 0
+Func: fnIntegrateCov
+In:  FARG=0 RY=Real:"2" RX=Real:"2"
+Out: EC=0 RX=Real:"0"
+; dispatch errors: unknown label letter -> 6; named var, no program -> 54
+Func: fnIntegrateErrCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=6
+Func: fnIntegrateErrCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=54

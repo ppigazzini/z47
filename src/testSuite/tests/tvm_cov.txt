@@ -1,0 +1,99 @@
+;*************************************************************
+;** Coverage: time-value-of-money solver. fnTvmVar (tvm.c)   **
+;** solves one variable from the others for a consistent      **
+;** END-mode problem N=3, I%/yr=100, PV=-1000, PMT=0,         **
+;** FV=8000 (one payment/compounding period per year). Each   **
+;** solved variable is exact. FARG selects the target; the    **
+;** result is asserted in X.                                  **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnTvmCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"8000"
+Func: fnTvmCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=0 RX=Real:"-1000"
+Func: fnTvmCov
+In:  FARG=3 RX=Real:"0"
+Out: EC=0 RX=Real:"3"
+Func: fnTvmCov
+In:  FARG=4 RX=Real:"0"
+Out: EC=0 RX=Real:"100"
+Func: fnTvmCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+
+; annuity (PMT != 0): ordinary annuity N=3, i=100%, PMT=-100, PV=0 -> FV=700
+Func: fnTvmPmtCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"700"
+Func: fnTvmPmtCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0 RX=Real:"-100"
+Func: fnTvmPmtCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+; effective annual rate: 100%/yr compounded twice -> 125%
+Func: fnEffCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"125"
+
+; amortisation of a loan PV=1000, i=100%, PMT=-1200; period 1: interest 1000,
+; principal 200, balance falls to 800
+Func: fnAmortCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"800"
+Func: fnAmortCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=0 RX=Real:"-200"
+Func: fnAmortCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0 RX=Real:"-1000"
+
+; BEGIN mode (annuity due): the payment-timing factor lifts FV to 700*(1+i)=1400
+Func: fnTvmPmtCov
+In:  FARG=10 RX=Real:"0"
+Out: EC=0 RX=Real:"1400"
+Func: fnTvmPmtCov
+In:  FARG=12 RX=Real:"0"
+Out: EC=0 RX=Real:"-100"
+; HP12C amortisation (FLAG_AMORT_HP12C): rate 1.00 is exact, so BAL/PRN/INT match
+Func: fnAmortCov
+In:  FARG=10 RX=Real:"0"
+Out: EC=0 RX=Real:"800"
+Func: fnAmortCov
+In:  FARG=11 RX=Real:"0"
+Out: EC=0 RX=Real:"-200"
+Func: fnAmortCov
+In:  FARG=12 RX=Real:"0"
+Out: EC=0 RX=Real:"-1000"
+
+; effective -> nominal (inverse of fnEff): 125% effective compounded 2/yr -> 100%
+Func: fnEffToICov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"100"
+
+; multi-period amortisation range [1,2]: interest and principal accumulate over
+; both periods (INT=1000+800, PRN=200+400) and BAL is the balance after period 2
+Func: fnAmortCov
+In:  FARG=20 RX=Real:"0"
+Out: EC=0 RX=Real:"400"
+Func: fnAmortCov
+In:  FARG=21 RX=Real:"0"
+Out: EC=0 RX=Real:"-600"
+Func: fnAmortCov
+In:  FARG=22 RX=Real:"0"
+Out: EC=0 RX=Real:"-1800"
+
+; fnAmortNext advances the range [1,1] -> [2,2]; period 2: interest 800,
+; principal 400, balance 400
+Func: fnAmortNextCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"400"
+Func: fnAmortNextCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=0 RX=Real:"-400"
+Func: fnAmortNextCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0 RX=Real:"-800"

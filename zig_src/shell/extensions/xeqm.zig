@@ -18,6 +18,7 @@ const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // SPD
 // Types
 // ---------------------------------------------------------------------------
 const calcRegister_t = i16;
+const formulaHeader_t = abi.FormulaHeader;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / typeDefinitions.h)
@@ -42,6 +43,11 @@ const REGISTER_Z: calcRegister_t = 102;
 const TEMP_REGISTER_1: calcRegister_t = 135;
 
 const NOPARAM: u16 = 9876;
+const C47_NULL: u16 = 65535;
+
+const PGM_RUNNING: u8 = 1;
+const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 
 const AIM_BUFFER_LENGTH: i32 = 1024;
 const TMP_STR_LENGTH: usize = 2560;
@@ -61,6 +67,12 @@ extern var aimBuffer: [*c]u8;
 extern var T_cursorPos: i16;
 extern var xCursor: u32;
 extern var last_CM: u8;
+extern var programRunStop: u8;
+extern var currentFormula: u16;
+extern var numberOfFormulae: u16;
+extern var allFormulae: [*c]formulaHeader_t;
+extern var tmpString: [*c]u8;
+extern var ram: [*c]u32;
 
 const Fn0 = ?*const fn () callconv(.c) void;
 extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]Fn0;
@@ -85,6 +97,9 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn resetShiftState() void;
 
 extern fn liftStack() void;
+extern fn setEquation(equationId: u16, equationString: [*c]const u8) void;
+extern fn fnEqNew(unusedButMandatoryParameter: u16) void;
+extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) void;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
@@ -98,6 +113,11 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 inline fn toBlocks(n: i32) u16 {
     return @intCast((@as(u32, @bitCast(n)) +% 3) >> 2);
 }
+// TO_PCMEMPTR: byte pointer for a block index, or null for C47_NULL.
+inline fn TO_PCMEMPTR(p: u16) [*c]u8 {
+    if (p == C47_NULL) return null;
+    return @ptrCast(ram + p);
+}
 
 // ===========================================================================
 // fnXSWAP
@@ -105,6 +125,32 @@ inline fn toBlocks(n: i32) u16 {
 pub export fn fnXSWAP(mode: u16) callconv(.c) void {
     const isEdit: bool = mode > 0;
     const isSwap: bool = !isEdit;
+
+    if (programRunStop == PGM_RUNNING) {
+        // Programmed X.SWAP/X.EDIT: a running program has no editor buffer, so
+        // operate on the stored current formula directly, whatever calcMode the
+        // program started from. X.SWAP returns the old formula text in X; X.EDIT
+        // drops it.
+        if (getRegisterDataType(REGISTER_X) != dtString) {
+            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        } else if (stringByteLength(regString(REGISTER_X)) < AIM_BUFFER_LENGTH) {
+            if (numberOfFormulae == 0) {
+                fnEqNew(NOPARAM);
+            }
+            const oldFormula: [*c]u8 = TO_PCMEMPTR(allFormulae[currentFormula].pointerToFormulaData);
+            const len: i16 = @intCast((if (oldFormula != null) stringByteLength(oldFormula) else 0) + 1);
+            const src: [*c]const u8 = if (oldFormula != null) @as([*c]const u8, oldFormula) else @as([*c]const u8, "");
+            _ = frontier_char_string.xcopy(tmpString, src, @intCast(len));
+            setEquation(currentFormula, regString(REGISTER_X));
+            if (isSwap) {
+                reallocateRegister(REGISTER_X, dtString, toBlocks(len), amNone);
+                _ = frontier_char_string.xcopy(regString(REGISTER_X), tmpString, @intCast(len));
+            } else {
+                fnDrop(NOPARAM);
+            }
+        }
+        return;
+    }
 
     if (calcMode == CM_EIM or calcMode == CM_AIM) {
         if (calcMode == CM_AIM) {

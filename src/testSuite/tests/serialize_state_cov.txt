@@ -1,0 +1,63 @@
+;*************************************************************
+;** Coverage: full-state and program serializer round-trip.  **
+;** Drives both directions of saveRestoreCalcState.c (doSave  **
+;** / doLoad / restoreOneSection) and the save side of       **
+;** saveRestorePrograms.c. Seeds mixed state (statistical     **
+;** sums, real and long-integer registers), saves the whole   **
+;** calculator state to c47state.bin and c47.sav, and loads   **
+;** it back one section at a time. Loading rewrites the state **
+;** from file, so this runs late in the list; the state       **
+;** round-trip is lossless, so seeded registers survive it.   **
+;** The program saves need the sample programs staged in the  **
+;** run directory (res/testPgms/testPgms.bin); with none      **
+;** loaded they still exit cleanly. File I/O is observable    **
+;** only as the success exit code, so those cases assert EC.   **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; save the loaded sample programs to file and export one (saveRestorePrograms.c)
+Func: fnSaveAllPrograms
+In:  FARG=0
+Out: EC=0
+Func: fnExportProgram
+In:  FARG=0
+Out: EC=0
+
+; seed statistical sums so the STATISTICAL_SUMS section serializes and restores
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2"
+Out: EC=0
+
+; seed global registers of mixed data types so the round-trip exercises the
+; per-type serialize/restore branches: real, long integer, complex, string and
+; short integer
+Func: fnStore
+In:  FARG=0 RX=Real:"1234.5678"
+Out: EC=0
+Func: fnStore
+In:  FARG=1 RX=LonI:"42"
+Out: EC=0
+Func: fnStore
+In:  FARG=2 RX=Real:"-0.00123"
+Out: EC=0
+Func: fnStore
+In:  FARG=3 RX=Cplx:"1.5 i -2.5"
+Out: EC=0
+Func: fnStore
+In:  FARG=4 RX=Stri:"round trip"
+Out: EC=0
+Func: fnStore
+In:  FARG=5 RX=ShoI:"42#10"
+Out: EC=0
+
+; round-trip the whole state; every seeded register survives save+restore
+; losslessly, preserving both its value and its datatype
+Func: fnStateRoundtrip
+In:  FARG=0
+Out: EC=0 R00=Real:"1234.5678" R01=LonI:"42" R02=Real:"-0.00123" R03=Cplx:"1.5 i -2.5" R04=Stri:"round trip" R05=ShoI:"42#10"

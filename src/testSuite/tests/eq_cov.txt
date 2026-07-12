@@ -1,0 +1,72 @@
+;*************************************************************
+;** Coverage: equation engine. fnEqCalc() evaluates the      **
+;** current formula through parseEquation(EQUATION_PARSER_    **
+;** XEQ), driving the tokeniser, the operator-precedence      **
+;** parser, and the function dispatch in equation.c. Each     **
+;** case selects a formula from the covEqCalc table by FARG   **
+;** and asserts the evaluated result in X.                    **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnEqCalcCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=Real:"5"
+Func: fnEqCalcCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=0 RX=Real:"7"
+Func: fnEqCalcCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0 RX=Real:"9"
+Func: fnEqCalcCov
+In:  FARG=3 RX=Real:"0"
+Out: EC=0 RX=Real:"1024"
+Func: fnEqCalcCov
+In:  FARG=4 RX=Real:"0"
+Out: EC=0 RX=Real:"5"
+Func: fnEqCalcCov
+In:  FARG=5 RX=Real:"0"
+Out: EC=0 RX=Real:"98"
+Func: fnEqCalcCov
+In:  FARG=6 RX=Real:"0"
+Out: EC=0 RX=Real:"82"
+Func: fnEqCalcCov
+In:  FARG=7 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnEqCalcCov
+In:  FARG=8 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnEqCalcCov
+In:  FARG=9 RX=Real:"0"
+Out: EC=0 RX=Real:"-2"
+Func: fnEqCalcCov
+In:  FARG=10 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnEqCalcCov
+In:  FARG=11 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnEqCalcCov
+In:  FARG=12 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnEqCalcCov
+In:  FARG=13 RX=Real:"0"
+Out: EC=0 RX=Real:"24"
+Func: fnEqCalcCov
+In:  FARG=14 RX=Real:"0"
+Out: EC=0 RX=Real:"512"
+; named variable A is seeded from the corpus input X (=4 here)
+Func: fnEqCalcCov
+In:  FARG=15 RX=Real:"4"
+Out: EC=0 RX=Real:"6"
+Func: fnEqCalcCov
+In:  FARG=16 RX=Real:"4"
+Out: EC=0 RX=Real:"16"
+Func: fnEqCalcCov
+In:  FARG=17 RX=Real:"4"
+Out: EC=0 RX=Real:"17"
+; equations with '=' return the residual (RHS-LHS); drives the equals path
+Func: fnEqCalcCov
+In:  FARG=18 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnEqCalcCov
+In:  FARG=19 RX=Real:"0"
+Out: EC=0 RX=Real:"3"

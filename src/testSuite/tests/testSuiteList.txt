@@ -433,11 +433,31 @@ elec
 
 programs
 
-; These two coverage files mutate shared state that the per-test In: reset does
-; not clear - clcvar_cov clears the loaded sample programs' local variables and
-; matrix2_cov leaves the indexed-matrix pointer set - so they must run after
-; programs.txt (which consumes the pristine sample-program fixture), not before.
+; eq_cov/deriv_cov/solve_cov/integrate_cov/tvm_cov mutate shared state the
+; per-test In: reset does not clear - a formula in the pool, the named variables
+; A and X, and the reserved TVM registers - so they run after programs.txt, not
+; before it. They also run before pgm_solve_cov: their error cases assert that
+; the letter 'T' names no program label, which pgm_solve_cov's loaded program T
+; would otherwise satisfy.
+eq_cov
+deriv_cov
+solve_cov
+integrate_cov
+tvm_cov
+
+; These coverage files mutate shared state that the per-test In: reset does not
+; clear - clcvar_cov clears the loaded sample programs' local variables,
+; matrix2_cov leaves the indexed-matrix pointer set, serialize_state_cov saves
+; the loaded programs and reloads the whole state from file, and pgm_solve_cov
+; appends a program to memory - so they must run after programs.txt (which
+; consumes the pristine sample-program fixture), not before. serialize_cov resets
+; the calculator; graphs_cov then re-stages its own programs and statistics from
+; that clean slate to render the plots, so graphs_cov runs last.
 matrix2_cov
 clcvar_cov
+serialize_state_cov
+pgm_solve_cov
 
 serialize_cov
+
+graphs_cov
