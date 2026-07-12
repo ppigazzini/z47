@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 const abi = @import("abi");
-const math_real_predicates = @import("../real_predicates.zig");
+const math_real_predicates = @import("../compare/real_predicates.zig");
 const consts = abi.constants;
 // Zig port of WP34S_LU_decomposition from src/c47/mathematics/matrix.c: the real
 // partial-pivoting LU decomposition, packing the matrix into a plain real_t
@@ -8,8 +8,8 @@ const consts = abi.constants;
 // combined L/U factors back into the result matrix (the pivot vector is filled
 // in for the caller). complex_LU_decomposition stays in the matrix bridge.
 
-const runtime = @import("../command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../comparison_reals.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;

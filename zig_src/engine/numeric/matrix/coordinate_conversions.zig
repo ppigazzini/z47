@@ -14,7 +14,7 @@
 // matrix owners already express that as `dst.* = src.*` (math_matrix_insert,
 // math_matrix_determinant), so no runtime helper is needed.
 
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const abi = @import("abi");
 
 const real_t = runtime.real_t;

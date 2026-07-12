@@ -18,8 +18,8 @@ const const_1 = consts.const_1;
 // ERROR_NO_SUMMATION_DATA==28; TI_PERCD2==70 (real value); const_1 blob
 // offset 4368.
 
-const runtime = @import("../command_wrappers_runtime.zig");
-const math_deltaPercentXmean = @import("../deltaPercentXmean.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const math_deltaPercentXmean = @import("../statistics/deltaPercentXmean.zig");
 const math_percentSigma = @import("percentSigma.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

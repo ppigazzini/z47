@@ -11,8 +11,8 @@
 const std = @import("std");
 const abi = @import("abi");
 const atan2_owned = @import("../trig/atan2.zig");
-const runtime = @import("../command_wrappers_runtime.zig");
-const math_real_predicates = @import("../real_predicates.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const math_real_predicates = @import("../compare/real_predicates.zig");
 const wrappers = @import("../command_wrappers.zig");
 
 // Upstream realType.c functions (canonical symbols in the product link).

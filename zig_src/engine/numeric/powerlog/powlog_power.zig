@@ -1,5 +1,5 @@
-const runtime = @import("../command_wrappers_runtime.zig");
-const transcendental_command_owned = @import("../transcendental_command.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
 fn realPower10(
     x: *const runtime.real_t,

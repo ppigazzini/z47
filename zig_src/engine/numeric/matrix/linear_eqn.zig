@@ -5,7 +5,7 @@
 // public (declared in matrix.h) so they are bridge-renamed alongside the four
 // commands.
 const std = @import("std");
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const math_matrix_eigen = @import("eigen.zig");
 const math_matrix_named = @import("named.zig");
 const real_t = runtime.real_t;

@@ -6,7 +6,7 @@
 // the command-level wrapper that drives them.
 
 const std = @import("std");
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 const std_cross = "\x80\xd7";
 

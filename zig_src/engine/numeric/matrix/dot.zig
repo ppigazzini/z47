@@ -5,7 +5,7 @@
 // and the rest of the engine live in other matrix owners, not in this
 // dot-product owner.
 
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const abi = @import("abi");
 
 const real_t = runtime.real_t;

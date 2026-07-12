@@ -1,4 +1,4 @@
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const shortint_owned = @import("transform_shortint.zig");
 
 fn sqrtShoI() callconv(.c) void {

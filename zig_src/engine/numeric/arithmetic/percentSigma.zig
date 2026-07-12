@@ -16,7 +16,7 @@ const const_1 = consts.const_1;
 // + SUM_X (SUM_X == 1), strided by sizeof(real_t) == 60 bytes, verified against
 // defines.h. TI_PERC == 68 (real value; the runtime's TI_PERC is the fake one).
 
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

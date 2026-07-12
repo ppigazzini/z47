@@ -5,7 +5,7 @@
 // column, zero-filling the inserted line). The row/column delete cluster and
 // the rest of the engine stay in the matrix bridge.
 
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 const abi = @import("abi");
 const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;

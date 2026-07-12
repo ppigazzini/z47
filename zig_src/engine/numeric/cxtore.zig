@@ -8,7 +8,7 @@
 // EXTRA_INFO_ON_CALC_ERROR sprintf hint becomes a fixed moreInfoOnError string
 // (no-op under TESTSUITE/DMCP).
 
-const runtime = @import("command_wrappers_runtime.zig");
+const runtime = @import("dispatch/command_wrappers_runtime.zig");
 const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig");
 const real34_t = runtime.real34_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;

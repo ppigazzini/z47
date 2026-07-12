@@ -18,7 +18,7 @@
 // every canonical consumer resolves to this owner.
 
 const abi = @import("abi");
-const runtime = @import("../command_wrappers_runtime.zig");
+const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
 const real34_t = runtime.real34_t;
