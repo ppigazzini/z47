@@ -26,6 +26,17 @@ c47program.bin
 c47programs.bin
 c47program.rtf
 c47programs.rtf
+c47programTest.bin
+c47programsTest.bin
+c47programTest.rtf
+c47programsTest.rtf
+c47stateTest.bin
+c47Test.sav
+c47autoTest.sav
+c47Test.dat
+c47regsTest.txt
+c47regdumpTest.txt
+backupTest*.cfg
 c47.regs
 *.s47
 *.zip
