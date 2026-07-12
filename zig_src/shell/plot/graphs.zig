@@ -844,11 +844,11 @@ fn showGraphTickText1(tick_int_x_: f32, tick_int_y_: f32, xoff: i32, yoff1: i32,
     var buff: [32]u8 = undefined;
     var outstr: [bufLen]u8 = undefined;
     var tmpBuf: [100]u8 = undefined;
-    abi.fmtBufZ(tmpString[0..2560], "  y {s}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
+    abi.fmtBufZ(tmpString[0..2560], "  y {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
     frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
     _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, 1, 1);
 
-    abi.fmtBufZ(tmpString[0..2560], "  x {s}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
+    abi.fmtBufZ(tmpString[0..2560], "  x {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
     frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
     _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, 1, 1);
 }
