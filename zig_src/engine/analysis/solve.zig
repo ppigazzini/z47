@@ -40,11 +40,36 @@ pub export fn fnPgmPlt(label: u16) callconv(.c) void {
 }
 
 pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
-    // PENDING faithful port of solve.c:fnMvarPlot -- the RPN-grapher launch
-    // (SOLVER_STATUS_RPN_GRAPHER + fnPlotf), part of the testSuite-blind
-    // graph/plot rework. Stubbed so the all-Zig product build links; the full
-    // behavioral port is deferred to the graph-rework re-sync slice.
-    _ = labelOrVariable;
+    if (runtime.isLabelOrStackRegister(labelOrVariable)) {
+        // Interactive mode: arm the RPN grapher over the selected program.
+        fnPgmSlv(labelOrVariable);
+        if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+            runtime.currentSolverStatus = runtime.SOLVER_STATUS_INTERACTIVE | runtime.SOLVER_STATUS_RPN_GRAPHER;
+        }
+    } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_USES_FORMULA) == 0 and runtime.isNamedVariable(labelOrVariable) and runtime.currentSolverProgram >= runtime.numberOfLabels) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_NO_PROGRAM_SPECIFIED, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+    } else if (runtime.isNamedVariable(labelOrVariable)) {
+        // Execute: plot the program over labelOrVariable across [Y, X].
+        var xl: runtime.real34_t = undefined;
+        var xh: runtime.real34_t = undefined;
+        if (runtime.getRegisterAsReal34Quiet(runtime.REGISTER_Y, &xl) and runtime.getRegisterAsReal34Quiet(runtime.REGISTER_X, &xh)) {
+            runtime.saveForUndo(); // repeat after dropping the input parameters
+            runtime.currentSolverVariable = labelOrVariable;
+            runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
+            runtime.refreshScreen(0);
+            runtime.currentSolverStatus |= runtime.SOLVER_STATUS_RPN_GRAPHER;
+            runtime.currentSolverStatus &= ~runtime.SOLVER_STATUS_EQUATION_GRAPHER;
+            runtime.fnPlotf(0);
+            runtime.fnUndo(0);
+        } else {
+            runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+            runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+        }
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
+    }
 }
 
 pub export fn fnPgmInt(label: u16) callconv(.c) void {
