@@ -1,4 +1,4 @@
-const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
 const INVALID_VARIABLE: u16 = 2199;
 
 pub fn enter(commit: bool) void {

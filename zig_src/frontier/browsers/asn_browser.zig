@@ -27,10 +27,10 @@ const bool_t = bool;
 const videoMode_t = c_int;
 
 const abi = @import("abi"); // L1 shared bindings
-const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("../frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("../frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("../frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("../frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
 const calcKey_t = abi.CalcKey;
 const normKey_t = abi.NormKey;
 const item_t = abi.Item;

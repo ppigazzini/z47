@@ -1,5 +1,5 @@
-const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
 const FLAG_WRAPEND: c_uint = 0xc01a;
 const FLAG_WRAPEDG: c_uint = 0xc03f;
 const FLAG_GROW: c_uint = 0x801d;
