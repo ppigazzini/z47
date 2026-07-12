@@ -6,13 +6,13 @@
 // _row_columnNorm) are static in matrix.c, so they stay file-local here; only
 // the public commands are bridge-renamed.
 const std = @import("std");
-const math_mim_util = @import("math_mim_util.zig"); // std-only matrix-input helpers
-const runtime = @import("math_command_wrappers_runtime.zig");
-const math_real_predicates = @import("math_real_predicates.zig");
-const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_elementwise = @import("math_matrix_elementwise.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_euclidean_norm_command = @import("math_matrix_euclidean_norm_command.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_swap = @import("math_matrix_swap.zig"); // M-callconv: Zig-to-Zig
+const math_mim_util = @import("../math_mim_util.zig"); // std-only matrix-input helpers
+const runtime = @import("../math_command_wrappers_runtime.zig");
+const math_real_predicates = @import("../math_real_predicates.zig");
+const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_elementwise = @import("elementwise.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_euclidean_norm_command = @import("euclidean_norm_command.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_swap = @import("swap.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

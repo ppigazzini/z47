@@ -9,10 +9,10 @@
 // solver) and the rest of the engine stay in the matrix bridge until the
 // final B cluster.
 
-const runtime = @import("math_command_wrappers_runtime.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 const abi = @import("abi");
-const math_real_predicates = @import("math_real_predicates.zig");
-const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
+const math_real_predicates = @import("../math_real_predicates.zig");
+const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
 
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;

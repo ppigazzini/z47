@@ -1,8 +1,8 @@
-const diagnostics_owned = @import("math_matrix_vector_linpol_diagnostics.zig");
-const compute_owned = @import("math_matrix_vector_linpol_compute.zig");
-const io_owned = @import("math_matrix_vector_linpol_io.zig");
-const result_owned = @import("math_matrix_vector_linpol_result.zig");
-const runtime = @import("math_command_wrappers_runtime.zig");
+const diagnostics_owned = @import("vector_linpol_diagnostics.zig");
+const compute_owned = @import("vector_linpol_compute.zig");
+const io_owned = @import("vector_linpol_io.zig");
+const result_owned = @import("vector_linpol_result.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 
 pub fn linpol() callconv(.c) void {
     var a_real: runtime.real_t = undefined;

@@ -6,7 +6,7 @@
 // mulCpxMat is owned by math_matrix_complex_core.zig; this owner drives
 // it and packs/unpacks the real34/complex34 matrices.
 
-const runtime = @import("math_command_wrappers_runtime.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 const abi = @import("abi");
 
 const real_t = runtime.real_t;

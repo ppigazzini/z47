@@ -77,7 +77,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/mathematics/math_real_predicates.zig",
         "zig_src/mathematics/register_classify.zig",
         "zig_src/mathematics/small_prime_list.zig",
-        "zig_src/mathematics/math_matrix_kinds.zig",
+        "zig_src/mathematics/matrix/kinds.zig",
         "zig_src/mathematics/math_type_encode.zig",
         "zig_src/mathematics/math_mim_util.zig",
         "zig_src/abi/int_math.zig",

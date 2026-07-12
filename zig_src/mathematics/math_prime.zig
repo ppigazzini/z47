@@ -25,9 +25,9 @@ const const34_1 = consts.const34_1;
 const runtime = @import("math_command_wrappers_runtime.zig");
 const math_command_wrappers = @import("math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
 const math_comparison_reals = @import("math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_lifecycle = @import("math_matrix_lifecycle.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_register_link = @import("math_matrix_register_link.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_register_memory = @import("math_matrix_register_memory.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_lifecycle = @import("matrix/lifecycle.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_register_link = @import("matrix/register_link.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_register_memory = @import("matrix/register_memory.zig"); // M-callconv: Zig-to-Zig
 const math_multiplication_cells = @import("math_multiplication_cells.zig"); // M-callconv: Zig-to-Zig
 const math_power = @import("math_power.zig"); // M-callconv: Zig-to-Zig
 

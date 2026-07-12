@@ -5,8 +5,8 @@
 // spherical / cylindrical form. is_2D3D_Register_Ready is public (other units
 // call it); the V3Recto* commands are public too -> all three bridge-renamed.
 const std = @import("std");
-const runtime = @import("math_command_wrappers_runtime.zig");
-const math_matrix_vector_helpers = @import("math_matrix_vector_helpers.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../math_command_wrappers_runtime.zig");
+const math_matrix_vector_helpers = @import("vector_helpers.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const calcRegister_t = runtime.calcRegister_t;

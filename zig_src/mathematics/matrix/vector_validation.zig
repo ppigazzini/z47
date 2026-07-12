@@ -1,6 +1,6 @@
-const runtime = @import("math_command_wrappers_runtime.zig");
+const runtime = @import("../math_command_wrappers_runtime.zig");
 
-const math_matrix_kinds = @import("math_matrix_kinds.zig"); // std-only matrix operand kinds + size validity
+const math_matrix_kinds = @import("kinds.zig"); // std-only matrix operand kinds + size validity
 pub const MatrixOperandKinds = math_matrix_kinds.MatrixOperandKinds;
 
 pub fn classifyCurrentOperands() MatrixOperandKinds {

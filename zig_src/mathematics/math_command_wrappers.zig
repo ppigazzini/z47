@@ -40,15 +40,15 @@ const erf_owned = @import("math_special_function_erf.zig");
 const factorial_owned = @import("math_special_function_factorial.zig");
 const fibonacci_owned = @import("math_special_function_fibonacci.zig");
 const ixyz_owned = @import("math_special_function_ixyz.zig");
-const matrix_vector_diagnostics_owned = @import("math_matrix_vector_diagnostics.zig");
-const matrix_vector_cross_matrix_owned = @import("math_matrix_vector_cross_matrix.zig");
-const matrix_vector_cross_scalar_owned = @import("math_matrix_vector_cross_scalar.zig");
-const matrix_vector_dot_matrix_owned = @import("math_matrix_vector_dot_matrix.zig");
-const matrix_vector_dot_scalar_owned = @import("math_matrix_vector_dot_scalar.zig");
-const matrix_vector_validation_owned = @import("math_matrix_vector_validation.zig");
+const matrix_vector_diagnostics_owned = @import("matrix/vector_diagnostics.zig");
+const matrix_vector_cross_matrix_owned = @import("matrix/vector_cross_matrix.zig");
+const matrix_vector_cross_scalar_owned = @import("matrix/vector_cross_scalar.zig");
+const matrix_vector_dot_matrix_owned = @import("matrix/vector_dot_matrix.zig");
+const matrix_vector_dot_scalar_owned = @import("matrix/vector_dot_scalar.zig");
+const matrix_vector_validation_owned = @import("matrix/vector_validation.zig");
 const rectangular_to_polar_owned = @import("math_rectangular_to_polar.zig");
-const linpol_pipeline_owned = @import("math_matrix_vector_linpol_pipeline.zig");
-const linpol_compute_owned = @import("math_matrix_vector_linpol_compute.zig");
+const linpol_pipeline_owned = @import("matrix/vector_linpol_pipeline.zig");
+const linpol_compute_owned = @import("matrix/vector_linpol_compute.zig");
 const shift_digits_command_owned = @import("math_shift_digits_command.zig");
 const parallel_command_owned = @import("math_transform_parallel_command.zig");
 const polar_rect_command_owned = @import("math_transform_polar_rect_command.zig");
@@ -106,116 +106,116 @@ comptime {
         // bridge keeps the renamed legacy copies (still called by the rest of
         // the not-yet-ported matrix engine); the parity harness has its own
         // matrix surface in math_wrappers_fake_runtime.c.
-        _ = @import("math_matrix_lifecycle.zig");
+        _ = @import("matrix/lifecycle.zig");
         // The matrix arithmetic owner replaces the elementwise add/subtract and
         // scalar-multiply functions of mathematics/matrix.c (the matrix*matrix
         // products, divide family and vector ops stay in the bridge for now).
-        _ = @import("math_matrix_arithmetic.zig");
+        _ = @import("matrix/arithmetic.zig");
         // The matrix-by-matrix product owner replaces multiplyRealMatrices and
         // multiplyComplexMatrices of mathematics/matrix.c.
-        _ = @import("math_matrix_product.zig");
+        _ = @import("matrix/product.zig");
         // The matrix-by-scalar divide owner replaces divideRealMatrix and
         // divideComplexMatrix (and their _-prefixed real_t variants).
-        _ = @import("math_matrix_divide_scalar.zig");
+        _ = @import("matrix/divide_scalar.zig");
         // The matrix swap owner replaces realMatrixSwapRows / realMatrixSwapColumns
         // and complexMatrixSwapRows / complexMatrixSwapColumns of mathematics/matrix.c.
-        _ = @import("math_matrix_swap.zig");
+        _ = @import("matrix/swap.zig");
         // The matrix insert owner replaces insRowRealMatrix / insColRealMatrix
         // and insRowComplexMatrix / insColComplexMatrix of mathematics/matrix.c.
-        _ = @import("math_matrix_insert.zig");
+        _ = @import("matrix/insert.zig");
         // The matrix delete owner replaces delRowRealMatrix / delColRealMatrix
         // and delRowComplexMatrix / delColComplexMatrix of mathematics/matrix.c.
-        _ = @import("math_matrix_delete.zig");
+        _ = @import("matrix/delete.zig");
         // The euclidean-norm owner replaces realVectorSize / complexVectorSize
         // and euclideanNormRealMatrix / euclideanNormComplexMatrix (with the
         // shared worker _euclideanNormRealMatrix) of mathematics/matrix.c.
-        _ = @import("math_matrix_euclidean_norm.zig");
+        _ = @import("matrix/euclidean_norm.zig");
         // The dot-product owner replaces dotRealVectors / dotComplexVectors
         // (with the shared worker _dotRealVectors) of mathematics/matrix.c.
-        _ = @import("math_matrix_dot.zig");
+        _ = @import("matrix/dot.zig");
         // The cross-product owner replaces crossRealVectors / crossComplexVectors
         // of mathematics/matrix.c.
-        _ = @import("math_matrix_cross.zig");
+        _ = @import("matrix/cross.zig");
         // The vector-angle owner replaces vectorAngle of mathematics/matrix.c;
         // it reuses the Zig-owned _dotRealVectors / _euclideanNormRealMatrix.
-        _ = @import("math_matrix_vector_angle.zig");
+        _ = @import("matrix/vector_angle.zig");
         // The determinant owner replaces detRealMatrix / detComplexMatrix of
         // mathematics/matrix.c (the complex LU workers are private to it).
-        _ = @import("math_matrix_determinant.zig");
+        _ = @import("matrix/determinant.zig");
         // The register-link owner replaces linkToRealMatrixRegister /
         // linkToComplexMatrixRegister of mathematics/matrix.c.
-        _ = @import("math_matrix_register_link.zig");
+        _ = @import("matrix/register_link.zig");
         // The matrix fn* command owners replace the register-level command
         // wrappers of mathematics/matrix.c (fnTranspose, ...).
-        _ = @import("math_matrix_transpose_command.zig");
-        _ = @import("math_matrix_determinant_command.zig");
-        _ = @import("math_matrix_vector_angle_command.zig");
-        _ = @import("math_matrix_euclidean_norm_command.zig");
-        _ = @import("math_matrix_invert_command.zig");
-        _ = @import("math_matrix_identity_command.zig");
-        _ = @import("math_matrix_lu_command.zig");
-        _ = @import("math_matrix_qr_command.zig");
-        _ = @import("math_matrix_new_command.zig");
-        _ = @import("math_matrix_set_dimensions_command.zig");
+        _ = @import("matrix/transpose_command.zig");
+        _ = @import("matrix/determinant_command.zig");
+        _ = @import("matrix/vector_angle_command.zig");
+        _ = @import("matrix/euclidean_norm_command.zig");
+        _ = @import("matrix/invert_command.zig");
+        _ = @import("matrix/identity_command.zig");
+        _ = @import("matrix/lu_command.zig");
+        _ = @import("matrix/qr_command.zig");
+        _ = @import("matrix/new_command.zig");
+        _ = @import("matrix/set_dimensions_command.zig");
         // The complex dense core owner exports invCpxMat / mulCpxMat (LU-based
         // inverse and product on interleaved-complex real_t arrays) for the
         // matrix-divide and inverse owners. The upstream copies are file-local
         // statics, so no bridge rename is needed.
-        _ = @import("math_matrix_complex_core.zig");
+        _ = @import("matrix/complex_core.zig");
         // The matrix-by-matrix divide owner replaces divideRealMatrices /
         // divideComplexMatrices (y * inverse(x)) via the dense core.
-        _ = @import("math_matrix_divide_matrices.zig");
+        _ = @import("matrix/divide_matrices.zig");
         // The matrix inverse owner replaces invertRealMatrix /
         // invertComplexMatrix via the dense core.
-        _ = @import("math_matrix_invert.zig");
+        _ = @import("matrix/invert.zig");
         // The real LU owner replaces WP34S_LU_decomposition of mathematics/matrix.c.
-        _ = @import("math_matrix_real_lu.zig");
+        _ = @import("matrix/real_lu.zig");
         // The complex LU owner replaces complex_LU_decomposition of
         // mathematics/matrix.c (it reuses the Zig dense-core luCpxMat).
-        _ = @import("math_matrix_complex_lu.zig");
+        _ = @import("matrix/complex_lu.zig");
         // The dimension-arg owner replaces getMatrixDims and getDimensionArg
         // (with the static worker getSingleDimension) of mathematics/matrix.c.
-        _ = @import("math_matrix_dimension_arg.zig");
+        _ = @import("matrix/dimension_arg.zig");
         // The named-matrix owner replaces allocateNamedMatrix and
         // appendRowAtMatrixRegister of mathematics/matrix.c.
-        _ = @import("math_matrix_named.zig");
+        _ = @import("matrix/named.zig");
         // The register-memory owner replaces initMatrixRegister and
         // redimMatrixRegister (the matrix-register allocate/reshape core) of
         // mathematics/matrix.c.
-        _ = @import("math_matrix_register_memory.zig");
+        _ = @import("matrix/register_memory.zig");
         // The coordinate-conversions owner replaces the OPTION_VECTOR
         // rectangular <-> spherical/cylindrical/polar helpers of
         // mathematics/matrix.c.
-        _ = @import("math_matrix_coordinate_conversions.zig");
+        _ = @import("matrix/coordinate_conversions.zig");
         // The vector-helpers owner replaces the OPTION_VECTOR V3err error
         // reporter and VtoAngleMode of mathematics/matrix.c.
-        _ = @import("math_matrix_vector_helpers.zig");
+        _ = @import("matrix/vector_helpers.zig");
         // The eigen owner replaces the eigenvalue/eigenvector/matrix-sqrt
         // numeric engine of mathematics/matrix.c (built up bottom-up).
-        _ = @import("math_matrix_eigen.zig");
+        _ = @import("matrix/eigen.zig");
         // The element-wise dispatch family + indexed-element dispatchers
         // (callByVectorElement/callByIndexedMatrix) of mathematics/matrix.c.
-        _ = @import("math_matrix_elementwise.zig");
+        _ = @import("matrix/elementwise.zig");
         // The MIM-routed commands (fnGetMatrix/fnPutMatrix/fnSwapRows/
         // fnSwapColumns/fnRowColSum/fnPNorm + getMatrixFromRegister).
-        _ = @import("math_matrix_mim_commands.zig");
+        _ = @import("matrix/mim_commands.zig");
         // The simultaneous-linear-equation cluster (SIMQ + Mat_A/B/X editors +
         // real/complex_matrix_linear_eqn solvers).
-        _ = @import("math_matrix_linear_eqn.zig");
+        _ = @import("matrix/linear_eqn.zig");
         // Column min/max + matrix-find indexed commands.
-        _ = @import("math_matrix_column_commands.zig");
+        _ = @import("matrix/column_commands.zig");
         // Residual OPTION_VECTOR commands: is_2D3D_Register_Ready +
         // V3RectoToSph / V3RectoToCyl.
-        _ = @import("math_matrix_vector3d.zig");
+        _ = @import("matrix/vector3d.zig");
         // The stats-matrix owner replaces saveStatsMatrix / recallStatsMatrix
         // (the STATS undo backup/restore) of mathematics/matrix.c.
-        _ = @import("math_matrix_stats.zig");
+        _ = @import("matrix/stats.zig");
         // The get-dimensions command owner replaces fnGetMatrixDimensions /
         // fnGetMatrixDimensions42 of mathematics/matrix.c.
-        _ = @import("math_matrix_get_dimensions_command.zig");
+        _ = @import("matrix/get_dimensions_command.zig");
         // The matrix-index owner replaces isMatrixIndexed and fnIndexMatrix of
         // mathematics/matrix.c.
-        _ = @import("math_matrix_index_command.zig");
+        _ = @import("matrix/index_command.zig");
         _ = @import("math_prime.zig");
         _ = @import("math_wp34s.zig");
         _ = @import("math_cpyx.zig");

@@ -5,9 +5,9 @@
 // public (declared in matrix.h) so they are bridge-renamed alongside the four
 // commands.
 const std = @import("std");
-const runtime = @import("math_command_wrappers_runtime.zig");
-const math_matrix_eigen = @import("math_matrix_eigen.zig"); // M-callconv: Zig-to-Zig
-const math_matrix_named = @import("math_matrix_named.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../math_command_wrappers_runtime.zig");
+const math_matrix_eigen = @import("eigen.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_named = @import("named.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
