@@ -188,7 +188,12 @@ const Generator = struct {
 
         var real_array = try std.ArrayList(u8).initCapacity(allocator, 0);
         errdefer real_array.deinit(allocator);
-        try real_array.appendSlice(allocator, "TO_QSPI const uint8_t constants[] = {\n");
+        // Align the blob base to real_t (4) so typed accessors that @alignCast a
+        // blob pointer up to natural alignment never abort on strict-alignment
+        // targets (macOS/aarch64): every constant offset is a multiple of 4, so a
+        // 4-aligned base keeps every element 4-aligned regardless of where the
+        // linker places the symbol.
+        try real_array.appendSlice(allocator, "TO_QSPI __attribute__((aligned(4))) const uint8_t constants[] = {\n");
 
         var real_t_array = try std.ArrayList(u8).initCapacity(allocator, 0);
         errdefer real_t_array.deinit(allocator);
