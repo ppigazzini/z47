@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure legacy external-ADM angular-mode encoding, lifted from frontier_config.zig
+// Pure legacy external-ADM angular-mode encoding, lifted from config.zig
 // (src/c47/config.c). The RCL/SET ADM interface stores the angular mode in an
 // external encoding (0=DEG, 1=D.MS, 2=RAD, 3=MULT-pi, 4=GRAD) that differs from
 // angularMode_t order (amRadian, amGrad, amDegree, amDMS, amMultPi). It is a pure

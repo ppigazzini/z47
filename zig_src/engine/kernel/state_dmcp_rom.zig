@@ -4,11 +4,8 @@
 // (calc_state_io_owned, program_serialization_io_owned). power_check_screen,
 // sys_timer_disable and sys_timer_start are DMCP library function-table macros
 // (lft_ifc.h), not linkable symbols, so a Zig extern cannot resolve them on
-// firmware. They were previously wrapped in C in the (now retired)
-// keyboard_state_legacy.c bridge (where the macros were in scope via the
-// keyboard.c include chain); this module reconstructs them as lane-aware ROM
-// trampolines, which let that bridge be deleted. On host (no power button / DMCP
-// timers) they are trivial no-ops.
+// firmware. This module reconstructs them as lane-aware ROM trampolines. On
+// host (no power button / DMCP timers) they are trivial no-ops.
 //
 // Offsets verified against lft_ifc.h: power_check_screen LIBRARY_FN_BASE+340,
 // sys_timer_disable +500, sys_timer_start +504. LIBRARY_FN_BASE is selected by

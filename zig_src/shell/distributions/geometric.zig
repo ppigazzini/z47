@@ -3,7 +3,7 @@
 // Zig owner for src/c47/distributions/geometric.c: the Geometric distribution
 // commands (fnGeometricP/L/R/I) plus the WP34S math borrowings, including the
 // shared discrete-quantile dispatcher WP34S_qf_discrete_final used by the f
-// distribution. Exported from frontier.zig under the strip_17 guard.
+// distribution. Exported from shell.zig under the strip_17 guard.
 //
 // Upstream strips the SAVE_SPACE_DM42_17 cluster (poisson/hyper/binomial/
 // geometric/f) on every DM42 package, so this owner is compiled only where that
@@ -179,7 +179,7 @@ fn wp34sQfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realCont
     wp34sQfDiscreteFinal(QF_DISCRETE_CDF_GEOMETRIC, &p, x, p0, null, null, res, ctx);
 }
 
-// Shared discrete-quantile final step. Exported (C linkage) from frontier.zig so
+// Shared discrete-quantile final step. Exported (C linkage) from shell.zig so
 // the f distribution can reach it; i/j/k are nullable to match the C prototype.
 pub fn wp34sQfDiscreteFinal(
     dist: u16,

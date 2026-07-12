@@ -3,10 +3,10 @@
 // stack as polar/2D-rect/spherical/cylindrical/3D-rect input) and the
 // V3RectoToSph / V3RectoToCyl commands that convert a 3D rectangular vector to
 // spherical / cylindrical form. is_2D3D_Register_Ready is public (other units
-// call it); the V3Recto* commands are public too -> all three bridge-renamed.
+// call it); the V3Recto* commands are public too -> all three are exported.
 const std = @import("std");
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_matrix_vector_helpers = @import("vector_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_matrix_vector_helpers = @import("vector_helpers.zig");
 
 const real_t = runtime.real_t;
 const calcRegister_t = runtime.calcRegister_t;

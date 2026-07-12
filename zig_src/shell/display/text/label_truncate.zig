@@ -12,8 +12,7 @@
 //! Lifting it here dedupes the two copies and gives the logic its first native
 //! coverage -- the softmenu/conversion owners are only reachable through the C
 //! oracle. Each owner keeps a thin truncateAtArrow wrapper that passes its arrow
-//! constants in. This module uses Zig many-item pointers rather than C pointers,
-//! so it stays out of the idiom-ratchet cptr ceiling.
+//! constants in. This module uses Zig many-item pointers rather than C pointers.
 
 const std = @import("std");
 

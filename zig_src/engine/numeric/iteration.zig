@@ -46,9 +46,8 @@ const consts = abi.constants;
 // =====================================================================
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_comparison_reals = @import("comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_register_compare = @import("register_compare.zig"); // M-callconv: Zig-to-Zig
-
+const math_comparison_reals = @import("comparison_reals.zig");
+const math_register_compare = @import("register_compare.zig");
 const math_real_predicates = @import("real_predicates.zig");
 const real34_t = runtime.real34_t;
 const real_t = runtime.real_t;
@@ -132,7 +131,7 @@ inline fn SET_TI_TRUE_FALSE(condition: bool) void {
     runtime.temporaryInformation = TI_FALSE + @as(u8, @intFromBool(condition));
 }
 
-// Blob constants (real34) routed through the abi typed accessors (M22).
+// Blob constants (real34) routed through the abi typed accessors.
 inline fn const34_1() *const real34_t {
     return consts.q16312();
 }

@@ -2,8 +2,8 @@
 //
 // Zig owner for the Generalised Extreme Value distribution commands, porting
 // `src/c47/distributions/gev.c`. The four fn* entry points are dispatched from
-// the items.c function table (exported via frontier.zig). All decNumber/register
-// access goes through frontier_distribution_runtime. The testSuite has no GEV
+// the items.c function table (exported via shell.zig). All decNumber/register
+// access goes through distribution_runtime.zig. The testSuite has no GEV
 // dispatch entry, so these are verified by the distributions parity harness.
 //
 // The port reproduces upstream behaviour exactly, including the PDF's t^(t+1)

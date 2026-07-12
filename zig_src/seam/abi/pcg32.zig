@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Pure PCG32 (XSH-RR 64/32) permuted-congruential generator, lifted from
-// math_random_primitives.zig. The state advance, the xorshift+rotate output
+// engine/numeric/random/random_primitives.zig. The state advance, the xorshift+rotate output
 // permutation, and the Lemire-style bounded rejection sampler depend on nothing
 // but plain u32/u64 arithmetic, so they live here as a std-only module exercised
 // natively under `zig build test:unit`, reachable as abi.pcg32.

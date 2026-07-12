@@ -13,7 +13,7 @@
 const runtime = @import("command_wrappers_runtime.zig");
 
 const abi = @import("abi");
-const math_comparison_reals = @import("comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("comparison_reals.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;

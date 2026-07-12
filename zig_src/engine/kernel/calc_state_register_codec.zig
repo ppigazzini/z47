@@ -12,7 +12,7 @@ const abi = @import("abi");
 const vector_shape = @import("vector_shape.zig"); // std-only matrix vector-shape
 const data_file_bytes = @import("data_file_bytes.zig"); // std-only data-file byte transforms
 const text = @import("calc_state_text.zig");
-const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
+const calc_state = @import("calc_state.zig"); // intra-object Zig-to-Zig
 
 // data types (typeDefinitions.h)
 const dtLongInteger: u32 = 0;

@@ -2,9 +2,9 @@
 //
 // Zig owner for the Exponential distribution commands, porting
 // `src/c47/distributions/exponential.c`. The four fn* entry points are
-// dispatched from the items.c function table (exported via frontier.zig); the
+// dispatched from the items.c function table (exported via shell.zig); the
 // WP34S_*_Expon helpers are exponential-internal and stay private. All
-// decNumber/register access goes through frontier_distribution_runtime.
+// decNumber/register access goes through distribution_runtime.zig.
 
 const dr = @import("distribution_runtime.zig");
 const real_t = dr.real_t;

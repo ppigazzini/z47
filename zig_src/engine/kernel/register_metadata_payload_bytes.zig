@@ -56,7 +56,7 @@ pub fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void
     copyValueToBytes(u32, data_ptr, &descriptor);
 }
 
-// Native unit tests (REPORT-27 M-IDIOM-3). Pure byte/bit codec; no C oracle, no
+// Native unit tests. Pure byte/bit codec; no C oracle, no
 // global state.
 const testing = std.testing;
 

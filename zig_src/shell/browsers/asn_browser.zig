@@ -26,11 +26,11 @@ const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 const bool_t = bool;
 const videoMode_t = c_int;
 
-const abi = @import("abi"); // L1 shared bindings
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("../display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
 const calcKey_t = abi.CalcKey;
 const normKey_t = abi.NormKey;
 const item_t = abi.Item;
@@ -111,7 +111,7 @@ extern const kbd_std_D47: [37]calcKey_t;
 extern const kbd_std_V47: [37]calcKey_t;
 extern const kbd_std_N47: [37]calcKey_t;
 
-// C `item_t indexOfItems[]` is an ARRAY: bind the address (gotcha #1). The `[*]`
+// C `item_t indexOfItems[]` is an ARRAY: bind the address. The `[*]`
 // pointer form loaded the array's first bytes as the pointer -> wild deref.
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 

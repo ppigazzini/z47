@@ -5,12 +5,10 @@
 // testSuite (no test gate) - verified by build only. Faithful line-by-line
 // translation preserving the exact order of every longInteger / real34_t op.
 //
-// The bridge (isumprod_legacy.c, removed) renamed fnProgrammableiSum ->
-// z47_solver_fnProgrammableiSum and fnProgrammableiProduct ->
-// z47_solver_fnProgrammableiProduct; those are the symbols solve.zig's
-// dispatcher calls and we export them with those names. The static
-// _showProgress / _programmableiSumProd / _checkRegisters / _checkiArgument
-// become private. The host-only _showProgress (ENABLE_SOLVER_PROGRESS == 1)
+// fnProgrammableiSum and fnProgrammableiProduct are exported here as
+// z47_solver_fnProgrammableiSum and z47_solver_fnProgrammableiProduct; those
+// are the symbols solve.zig's dispatcher calls. The static _showProgress /
+// _programmableiSumProd / _checkRegisters / _checkiArgument become private. The host-only _showProgress (ENABLE_SOLVER_PROGRESS == 1)
 // is reduced to a no-op (no effect on the computed result), matching the
 // prime / sumprod owner precedent. The VERBOSE_COUNTER debug blocks are #undef'd
 // and omitted; the EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under
@@ -18,7 +16,7 @@
 
 const runtime = @import("solve_runtime.zig");
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const real34_t = abi.Real34;
 
 const calcRegister_t = runtime.calcRegister_t;

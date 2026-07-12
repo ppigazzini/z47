@@ -1,5 +1,5 @@
 //! Fraction numerator/denominator glyph encoding -- the pure core shared by
-//! frontier_display's _numerator and _denominator.
+//! the display owner's _numerator and _denominator.
 //!
 //! When a value is displayed as a fraction, the numerator renders as superscript
 //! digit glyphs and the denominator as subscript ones, each digit a two-byte
@@ -13,8 +13,7 @@
 //! Lifting it here gives the encoder its first native coverage -- the display
 //! owner is only reachable through the C oracle. The _numerator / _denominator
 //! exports keep their C-ABI signatures and delegate. This module uses Zig
-//! many-item pointers rather than C pointers, so it stays out of the
-//! idiom-ratchet cptr ceiling.
+//! many-item pointers rather than C pointers.
 
 const std = @import("std");
 

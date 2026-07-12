@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // WP34S inverse-circular functions (atan / atan2 / asin / acos), split out of
-// math_wp34s.zig to break up that ~2600-line grab-bag. This family is fully
+// wp34s.zig to break up that ~2600-line grab-bag. This family is fully
 // self-contained: it calls no forward-trig or gamma function, only the shared
 // low-level real helpers and constant accessors, which stay single-sourced in
-// math_wp34s.zig (their constant-blob offsets are remapped on every pin advance,
+// wp34s.zig (their constant-blob offsets are remapped on every pin advance,
 // so duplicating them would double that sync cost) and are aliased here via a
 // benign circular import. The owner keeps thin pub-export C-ABI wrappers and
 // delegates; the four WP34S atan oracles gate byte-exactness. Transcription is

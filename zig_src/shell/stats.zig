@@ -20,7 +20,7 @@ const const_3 = consts.const_3;
 //   - fnClSigma(u16): externed by state/register_metadata_clear_sigma_owned.
 //   - fnSigmaAddRem(u16): externed by math_command_wrappers.
 // The statisticalSumsPointer / statMx / statisticalSumsUpdate globals stay
-// defined in c47.c (compiled through the c47_legacy.c shim) and are externed
+// defined in c47.c and are externed
 // here, exactly as the other Zig owners do.
 //
 // stats.c is not reachable from the testSuite; verification is by build/link
@@ -34,11 +34,11 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // Types
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
-const frontier_graph_text = @import("plot/graph_text.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_error = @import("error.zig");
+const frontier_graph_text = @import("plot/graph_text.zig");
+const frontier_real_type = @import("real_type.zig");
+const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -151,7 +151,7 @@ const DEC_ROUND_CEILING: c_int = 0;
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-// Globals (defined in c47.c / plotstat.c, compiled through the legacy shims)
+// Globals (defined in c47.c / plotstat.c)
 // ---------------------------------------------------------------------------
 extern var statisticalSumsPointer: ?[*]real_t;
 extern var statisticalSumsUpdate: bool;

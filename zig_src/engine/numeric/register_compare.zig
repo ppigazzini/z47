@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Zig owner for src/c47/mathematics/compare.c and incDec.c (M3.2).
+// Zig owner for src/c47/mathematics/compare.c and incDec.c.
 //
 // Canonical exports kept at the C boundary:
 //   - registerCmp / registerMax / registerMin    (compare.c)
 //   - incDecLonI / incDecReal / incDecShoI       (incDec.c, used by iteration.c)
 // The legacy command entry points fnX*/fnDec/fnInc stay link-dead under their
-// upstream names (the live ones are Zig-owned in math_command_wrappers.zig),
+// upstream names (the live ones are Zig-owned in command_wrappers.zig),
 // but the wrappers still fall back to the retained copies for non-stack
 // registers, so the full compareRegisters/almostEqual/incDec machinery is
-// ported here and exported under the z47_math_wrappers_legacy_* names that
-// used to be provided by the C dispatch shim.
+// ported here and exported under the z47_math_wrappers_legacy_* names.
 //
 // This file must only be analyzed in product builds (gated in
 // math_command_wrappers.zig on !use_fake_wp34s_harness_surface): the parity
@@ -21,7 +20,7 @@ const abi = @import("abi");
 const comparison_reals = @import("comparison_reals.zig");
 const math_real_predicates = @import("real_predicates.zig");
 const runtime = @import("command_wrappers_runtime.zig");
-const math_integer_division_cells = @import("arithmetic/integer_division_cells.zig"); // M-callconv: Zig-to-Zig
+const math_integer_division_cells = @import("arithmetic/integer_division_cells.zig");
 const register_classify = @import("register_classify.zig"); // std-only register-band classification
 
 const calcRegister_t = runtime.calcRegister_t;

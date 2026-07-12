@@ -23,8 +23,7 @@ const const_1 = consts.const_1;
 // TI_* values are the real defines.h values.
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_command_wrappers = @import("command_wrappers.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("command_wrappers.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;

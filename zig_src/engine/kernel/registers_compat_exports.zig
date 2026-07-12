@@ -5,7 +5,7 @@ const reg_param_product = @import("stack_runtime_reg_param_product.zig");
 const product_real = @import("stack_runtime_product_real.zig");
 const stack_runtime = @import("stack_runtime.zig");
 const register_metadata_build_options = @import("register_metadata_build_options");
-const register_metadata_variables = @import("register_metadata_variables.zig"); // M-callconv: intra-object Zig-to-Zig
+const register_metadata_variables = @import("register_metadata_variables.zig");
 
 // The parity harness links register_metadata_oracle.c, which defines its own
 // allReservedVariables fixture table. In that build the Zig owner must not also

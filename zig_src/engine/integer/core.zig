@@ -252,7 +252,7 @@ pub fn unzipBits(a: u64, word_size: u8) UnzipResult {
     return .{ .x = x, .y = y };
 }
 
-// Native unit tests (REPORT-27 M-IDIOM-3). Pure bit logic; expected values are
+// Native unit tests. Pure bit logic; expected values are
 // hand-computed. No C oracle, no global state.
 const testing = std.testing;
 

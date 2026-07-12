@@ -50,10 +50,10 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const videoMode_t = c_int;
 const real34_t = abi.Real34;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_screen = @import("../display/screen.zig");
 const realContext_t = abi.RealContext;
 
 const item_t = abi.Item;

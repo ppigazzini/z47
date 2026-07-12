@@ -38,7 +38,7 @@ else
 // ---------------------------------------------------------------------------
 const bool_t = bool;
 const calcRegister_t = i16;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 fn decodeShuffle(value: i16) [5]u8 {
     var regists: [5]u8 = undefined;
     regists[4] = 0;
@@ -53,20 +53,20 @@ fn decodeShuffle(value: i16) [5]u8 {
     }
     return regists;
 }
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_assign = @import("assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("../program/next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("../display/sort.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig");
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_assign = @import("assign.zig");
+const frontier_bufferize = @import("../display/bufferize.zig");
+const frontier_calc_mode = @import("../calc_mode.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig");
+const frontier_manage = @import("../program/manage.zig");
+const frontier_next_step = @import("../program/next_step.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_sort = @import("../display/sort.zig");
 const real34_t = abi.Real34;
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;

@@ -12,8 +12,7 @@
 //! Lifting these here gives them native coverage -- the manage owner is only
 //! reachable through the C oracle. The owner keeps the C-ABI exports, which pass
 //! the program-region end pointer in. Optional many-item pointers preserve the
-//! original null handling without C pointers, so this stays out of the
-//! idiom-ratchet cptr ceiling.
+//! original null handling without C pointers.
 
 const std = @import("std");
 

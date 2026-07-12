@@ -56,9 +56,9 @@ pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_real_type = @import("../real_type.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 pub const real_t = abi.Real;
 
 pub const realContext_t = abi.RealContext;

@@ -28,19 +28,18 @@ const const_3Off = consts.const_3Off;
 // The SAVE_SPACE_DM42_12ELLIP guard is dead on every z47 build.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_agm = @import("../agm.zig"); // M-callconv: Zig-to-Zig
-const math_circular_trig_command = @import("../trig/circular_trig_command.zig"); // M-callconv: Zig-to-Zig
-const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_gd = @import("../gd.zig"); // M-callconv: Zig-to-Zig
-const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
-const math_ln_complex = @import("../ln_complex.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_agm = @import("../agm.zig");
+const math_circular_trig_command = @import("../trig/circular_trig_command.zig");
+const math_command_wrappers = @import("../command_wrappers.zig");
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_division_cells = @import("../arithmetic/division_cells.zig");
+const math_gd = @import("../gd.zig");
+const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig");
+const math_ln_complex = @import("../ln_complex.zig");
+const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
+const math_runtime_helpers = @import("../runtime_helpers.zig");
+const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig");
+const math_wp34s = @import("wp34s.zig");
 const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
@@ -1813,8 +1812,8 @@ pub export fn fnJacobiAmplitude(unusedButMandatoryParameter: u16) linksection(ru
     adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
 
-// L2 error surface (REPORT-23 P1/P5): the command cores return a domain error
-// instead of calling displayCalcErrorMessage inline; the L3 shims map it and run
+// Error surface: the command cores return a domain error
+// instead of calling displayCalcErrorMessage inline; the shims map it and run
 // the trailing adjustResult (which the C runs on every path, including the error).
 const EllipticError = error{
     KNeedsCpxRes,

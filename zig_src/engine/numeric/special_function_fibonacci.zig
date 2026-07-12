@@ -1,7 +1,6 @@
 const circular_trig_owned = @import("trig/circular_trig.zig");
 const runtime = @import("command_wrappers_runtime.zig");
-const math_command_wrappers = @import("command_wrappers.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("command_wrappers.zig");
 fn fibonacciReal(n: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;

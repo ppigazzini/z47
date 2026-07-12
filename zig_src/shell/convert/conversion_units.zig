@@ -29,13 +29,13 @@ const noninverting: bool = false;
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const FLAG_SPCRES: i32 = 0x8017;
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const label_truncate = @import("../display/text/label_truncate.zig"); // std-only label arrow truncation
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_date_time = @import("date_time.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
@@ -87,7 +87,7 @@ inline fn setRegisterAngularMode(reg: i16, am: u32) void {
     setRegisterTag(reg, am);
 }
 
-// ---- generated data (offsets into `constants`); see scripted port note ----
+// ---- generated data (offsets into `constants`) ----
 const OFF_const_minusInfinity = 1684;
 const OFF_const_plusInfinity = 1696;
 const OFF_const_0 = 1708;
@@ -426,7 +426,7 @@ pub export fn fnCvtDbRatio(ten_or_twenty: u16) callconv(.c) void {
     adjustResult(REGISTER_X, false, false, -1, -1, -1);
 }
 
-// ─── M10.3 port: configurable-conversion pair subsystem (conversionUnits.c) ───
+// ─── configurable-conversion pair subsystem (conversionUnits.c) ───
 // NEW upstream feature (master fd83b4a4). Additive/unreached by the pinned
 // testSuite (no items.c dispatch wiring yet). convPair table + pure-logic
 // helpers; the softmenu/HPCONV name helpers are a later slice.
@@ -826,8 +826,8 @@ pub export fn runConversionFromSI(itemNr: i16) callconv(.c) void {
 }
 
 // ─── conversion-name slice: softmenu-name helpers (conversionUnits.c:778+) ───
-// item_t / indexOfItems: exact layout copied from frontier_items.zig /
-// frontier_softmenus.zig (must match src/c47 typeDefinitions.h item_t).
+// item_t / indexOfItems: exact layout copied from items.zig /
+// softmenus.zig (must match src/c47 typeDefinitions.h item_t).
 const item_t = abi.Item;
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
@@ -876,7 +876,7 @@ pub export fn fullConvSoftMenuItemNameInclHPCONV(item: i16, outString: [*c]u8) c
 }
 
 // Cross-owner globals for executionConversionPartner — EXACT decls copied from
-// frontier_softmenus.zig (struct layouts must match that owner).
+// softmenus.zig (struct layouts must match that owner).
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;
 const softmenu_t = abi.Softmenu;

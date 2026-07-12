@@ -3,12 +3,11 @@
 // src/c47/mathematics/matrix.c: insRowRealMatrix / insColRealMatrix and
 // insRowComplexMatrix / insColComplexMatrix (grow the matrix by one row or
 // column, zero-filling the inserted line). The row/column delete cluster and
-// the rest of the engine stay in the matrix bridge until the later B clusters.
+// the rest of the engine stay in the matrix bridge.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
-const math_matrix_lifecycle = @import("lifecycle.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;
 const complex34_t = runtime.complex34_t;
 const real34Matrix_t = runtime.real34Matrix_t;
@@ -16,7 +15,7 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 
 const nim_register_line = runtime.REGISTER_X;
 
-// Owned by math_matrix_lifecycle.zig (B1).
+// Owned by math_matrix_lifecycle.zig.
 extern fn decQuadZero(result: *real34_t) callconv(.c) *real34_t;
 
 const realElems = abi.matrixRealElems;

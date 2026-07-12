@@ -1,11 +1,11 @@
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_curve_fitting = @import("curve_fitting.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_plotstat = @import("plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("../stats.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("../display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig");
+const frontier_curve_fitting = @import("curve_fitting.zig");
+const frontier_error = @import("../error.zig");
+const frontier_plotstat = @import("plotstat.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_stats = @import("../stats.zig");
+const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
 const FLAG_SCALE: c_uint = 0x8052;
 
 const CM_NORMAL: u8 = 0;

@@ -26,7 +26,7 @@ pub fn loadProgram() void {
     // Reject a malformed/corrupt program size: the program-memory domain is u16
     // (addSpaceAfterPrograms/freeProgramBytes), so a size above 0xFFFF cannot be a
     // real program and would otherwise overflow the @intCast in applyLoadedProgram.
-    // Valid files are always well within this bound. (M1, REPORT-27 ANNEX B.)
+    // Valid files are always well within this bound.
     if (program_size_in_bytes > 0xFFFF) {
         runtime.displayReadError();
         return;

@@ -6,7 +6,7 @@
 //!
 //! Every `pub export` below keeps the exact symbol name and ABI of the retired
 //! C definition. The error reporters live in
-//! math_runtime_error_reporters.zig.
+//! runtime_error_reporters.zig.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -99,9 +99,8 @@ const offset_const75_piOn2 = 7548; // const75_piOn2
 const offset_const75_piOn4 = 7632; // const75_piOn4
 const offset_const_3600 = 5524; // const_3600
 
-// Constants the retired C file synthesized locally (lazily initialized statics
-// built via z47_math_wrappers_init_constant; here they are comptime values
-// with the exact same bit patterns).
+// Constants synthesized locally rather than read from the constants blob; here
+// they are comptime real_t values with fixed bit patterns.
 fn makeConstant(exponent: i32, bits: u8, lsu0: u16) real_t {
     var value = std.mem.zeroes(real_t);
     value.digits = 1;

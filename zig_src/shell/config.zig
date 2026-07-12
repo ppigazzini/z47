@@ -8,20 +8,20 @@ const std = @import("std");
 // run at every calculator reset, so this owner is test-reachable: zig build test
 // exercises it through the reset path.
 //
-// Functions renamed away by the retired shim zig_bridge/frontier/config_legacy.c
-// are owned by OTHER owners (frontier.zig delegates to frontend_settings/clear_all/
-// keys_management). They are NOT exported here; we declare them extern and call the
+// Some functions that config.c defines are owned by OTHER owners here
+// (frontend_settings/clear_all/keys_management; frontier.zig delegates to them).
+// They are NOT exported here; we declare them extern and call the
 // canonical symbols: fnSetGapChar, fnSettingsDispFormat{GrpL,Grp1Lo,Grp1L,GrpR},
 // fnMenuGap{L,RX,R}, fnIntegerMode, fnWho, fnVersion, fnSetRoundingMode,
 // fnSetSignificantDigits, fnSetBaseNr, fnSetFractionDigits, fnAngularMode,
 // fnFractionType, fnRange, fnHide, fnConfirmationYes, fnConfirmationNo, fnGetRange,
 // fnGetHide, fnGetLastErr, fnClAll, fnKeysManagement.
 //
-// The three keys helper functions and the three small bridge helpers that the
-// retired shim used to provide (z47_frontier_keys_to_user_case,
+// Three keys helper functions and three small bridge helpers
+// (z47_frontier_keys_to_user_case,
 // z47_frontier_keys_from_user_case, z47_frontier_keys_user_layout_reset_case,
 // z47_frontier_push_u32_to_x, z47_frontier_release_saved_statistical_sums,
-// z47_frontier_is_r47_fam) are reproduced here as pub export fn, because other
+// z47_frontier_is_r47_fam) are defined here as pub export fn, because other
 // owners (keys_management, clear_all, frontend_settings) extern them.
 //
 // C ARRAYS are bound by address via @extern([*c]const T, ...) — never via a
@@ -80,33 +80,33 @@ const angularMode_t = c_int;
 const DECNUMUNITS = 25;
 
 const real34_t = abi.Real34;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier = @import("shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("extensions/addons.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier = @import("shell.zig");
+const frontier_addons = @import("extensions/addons.zig");
 const adm_encoding = @import("input/adm_encoding.zig"); // pure external-ADM angular encoding
 const word_size_math = @import("word_size_math.zig"); // pure short-integer word-size resolution
 const vbat_integrator = @import("vbat_integrator.zig"); // pure battery-voltage integrator
-const frontier_assign = @import("input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
-const frontier_font_browser = @import("browsers/font_browser.zig"); // M-callconv: Zig-to-Zig
-const frontier_fractions = @import("convert/fractions.zig"); // M-callconv: Zig-to-Zig
-const frontier_graphs = @import("plot/graphs.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_programmable_menu = @import("program/programmable_menu.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_recall = @import("recall.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("stats.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
-const frontier_store = @import("store.zig"); // M-callconv: Zig-to-Zig
+const frontier_assign = @import("input/assign.zig");
+const frontier_bufferize = @import("display/bufferize.zig");
+const frontier_calc_mode = @import("calc_mode.zig");
+const frontier_char_string = @import("display/text/char_string.zig");
+const frontier_date_time = @import("convert/date_time.zig");
+const frontier_error = @import("error.zig");
+const frontier_font_browser = @import("browsers/font_browser.zig");
+const frontier_fractions = @import("convert/fractions.zig");
+const frontier_graphs = @import("plot/graphs.zig");
+const frontier_items = @import("display/items/items.zig");
+const frontier_manage = @import("program/manage.zig");
+const frontier_programmable_menu = @import("program/programmable_menu.zig");
+const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig");
+const frontier_real_type = @import("real_type.zig");
+const frontier_recall = @import("recall.zig");
+const frontier_register_value_conversions = @import("register_value_conversions.zig");
+const frontier_screen = @import("display/screen.zig");
+const frontier_softmenus = @import("display/softmenus/softmenus.zig");
+const frontier_stats = @import("stats.zig");
+const frontier_status_bar = @import("display/statusbar/status_bar.zig");
+const frontier_store = @import("store.zig");
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 
@@ -881,7 +881,7 @@ extern var varMenu42: bool;
 extern fn liftStack() void;
 extern fn getFreeRamMemory() u32;
 
-// Cross-owner canonical symbols (renamed away by the retired shim, owned by
+// Cross-owner canonical symbols (owned by
 // frontend_settings / clear_all / keys_management) -> extern, called by name.
 
 // Engine functions config.c calls (owned elsewhere, not by this file).

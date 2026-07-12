@@ -31,13 +31,13 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // Types
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const lr_selection = @import("../display/lr_selection.zig"); // std-only LR-selection bitmask helpers
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_stats = @import("../stats.zig"); // M-callconv: Zig-to-Zig
+const frontier_debug = @import("../debug.zig");
+const frontier_error = @import("../error.zig");
+const frontier_real_type = @import("../real_type.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_stats = @import("../stats.zig");
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const calcRegister_t = i16;

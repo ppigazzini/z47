@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Byte-exact C `%.<P>e` / `%.<P>f` / `%<w>.<P>g` float formatters (REPORT-23 /
-// MILESTONES-4 M24 float axis). std-only, zero externs -- so the format oracle
+// Byte-exact C `%.<P>e` / `%.<P>f` / `%<w>.<P>g` float formatters. std-only,
+// zero externs -- so the format oracle
 // (`zig_build/tests/format/format_parity.zig`) imports and proves THIS exact
 // code byte-identical to libc over a fuzz matrix, and the shipping `abi`
 // re-exports it.
@@ -361,7 +361,7 @@ pub fn fmtGBuf(buf: []u8, width: usize, precision: usize, upper: bool, value: f6
 }
 
 // ---------------------------------------------------------------------------
-// Native unit tests (REPORT-27 M-IDIOM-3). Self-contained: std-only, no C
+// Native unit tests. Self-contained: std-only, no C
 // oracle, no global state. Expected strings are libc `%.*f` / `%.*e` / `%.*g`
 // verified. These give a correctness signal for the byte-exact formatters that
 // does not depend on the upstream C testSuite.

@@ -29,13 +29,12 @@ const const39_egamma = consts.const39_egamma;
 // SAVE_SPACE_DM42_12BESSEL guard is dead on every z47 build.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("../command_wrappers.zig");
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_division_cells = @import("../arithmetic/division_cells.zig");
+const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig");
+const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
+const math_wp34s = @import("wp34s.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 
@@ -147,7 +146,7 @@ const REAL_SIZE_IN_BLOCKS_75: usize = 15;
 // ===========================================================================
 // fnBesselJ
 // ===========================================================================
-// L2 error surface (REPORT-23 P1/P5): the Bessel command cores return a domain
+// Error surface: the Bessel command cores return a domain
 // error instead of calling displayCalcErrorMessage inline; the shims map it and
 // run the trailing adjustResult, which the C runs on every path except the
 // saveLastX early-abort.

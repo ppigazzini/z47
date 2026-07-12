@@ -133,7 +133,7 @@ const DECSNAN: u8 = 0x10;
 const DECSPECIAL: u8 = 0x70;
 const DECNUMUNITS = 25;
 
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const math_real_predicates = @import("real_predicates.zig");
 pub const real_t = abi.Real;
 

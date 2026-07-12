@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// L1 bindings -- shared ABI types (REPORT-23 §5). Single source of truth for the
+// Shared ABI types. Single source of truth for the
 // C numeric layouts the owners previously each hand-mirrored (36 owners defined
 // their own `const real_t = extern struct {...}`; this centralizes that one copy
 // and pins the layout at comptime so a toolchain/pin change is caught here rather
-// than corrupting decNumber at runtime -- the M10.4/M16 crash class REPORT-23 §2
-// calls out).
+// than silently corrupting decNumber during a live computation).
 //
 // These mirror src/c47 (decNumber.h `decNumber`, decQuad `real34_t`,
 // decContext `realContext_t`). The layout is proven by the parity oracles that
 // already pass against the pinned upstream C; the asserts below pin the Zig side
-// of that contract. When the L1 generator lands (REPORT-23 Phase 0) it emits this
-// file from the pinned headers; until then it is hand-maintained and asserted.
+// of that contract. This file is hand-maintained and comptime-asserted against
+// the pinned upstream headers.
 
 const std = @import("std");
 
@@ -356,7 +355,7 @@ pub const Font = extern struct {
     numberOfGlyphs: u16,
     glyphs: [0]Glyph,
     /// glyphs[] begins at offset 8 (the [0]Glyph align-8 field). Single-source
-    /// accessor so every owner's font_t == abi.Font (M-callconv type unification).
+    /// accessor so every owner's font_t == abi.Font.
     pub inline fn glyphsPtr(self: *const Font) [*]const Glyph {
         return @ptrCast(&self.glyphs);
     }
@@ -576,7 +575,7 @@ comptime {
     std.debug.assert(@bitOffsetOf(MatrixHeader, "mtag") == 24);
 }
 
-// Colocated hermetic tests (REPORT-23 §7.2) -- run by `zig build idiom-test`.
+// Colocated hermetic tests -- run by `zig build idiom-test`.
 // These assert the ABI contract the C parity oracle cannot express directly.
 const testing = std.testing;
 
@@ -602,7 +601,7 @@ test "decNumber special-flag mask is INF|NAN|SNAN" {
 }
 
 // ===========================================================================
-// Typed register-data accessors (M22 / REPORT-23 §5): the extern binding of
+// Typed register-data accessors: the extern binding of
 // getRegisterDataPointer lives in the approved boundary file abi/registers.zig
 // so this pure-layout file stays extern-free (check-zig-c-boundaries); the
 // accessors are re-exported here so owners reach them as abi.registerReal34(...).
@@ -627,8 +626,8 @@ pub const matrixConstRealElems = registers.matrixConstRealElems;
 pub const matrixComplexElems = registers.matrixComplexElems;
 pub const matrixConstComplexElems = registers.matrixConstComplexElems;
 
-/// Format `args` into `buf` with a trailing NUL, like C `sprintf`/`snprintf`
-/// (M24). Built on the stable `std.fmt.bufPrint` -- NOT `bufPrintZ`, which Zig
+/// Format `args` into `buf` with a trailing NUL, like C `sprintf`/`snprintf`.
+/// Built on the stable `std.fmt.bufPrint` -- NOT `bufPrintZ`, which Zig
 /// 0.17-dev removed -- so the migrated call sites survive a toolchain bump and a
 /// future std.fmt change is absorbed in this single place. `buf` must fit the
 /// output (proven per call site by the format-equivalence oracle over a bounded
@@ -664,7 +663,7 @@ pub fn fmtCStrN(dst: [*c]u8, comptime fmt: []const u8, args: anytype) usize {
 }
 
 // ---------------------------------------------------------------------------
-// Byte-exact C `%.<precision>e` float formatter (M24 float axis). Lives in a
+// Byte-exact C `%.<precision>e` float formatter. Lives in a
 // std-only, extern-free sibling so the format oracle can import and prove the
 // EXACT shipping code byte-identical to libc `%.Pe`. See abi/float_format.zig.
 const float_format = @import("float_format.zig");

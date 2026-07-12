@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure glyph-table binary search, lifted from frontier_fonts.zig
+// Pure glyph-table binary search, lifted from the fonts owner fonts.zig
 // (src/c47/display.c findGlyph). A font stores its glyphs sorted by charCode; the
 // search is a plain index computation over the caller-supplied abi.Font -- no
 // register, dec, GTK, or global state -- so it lives here as a std+abi module
@@ -69,7 +69,7 @@ const Glyph = abi.Glyph;
 const FONT_BUF = @sizeOf(Font) + 8 * @sizeOf(Glyph);
 
 // The one pointer reinterpret in the module: an already-Font-aligned byte buffer
-// viewed as an abi.Font (net-neutral vs the owner's retired findGlyphExact cast).
+// viewed as an abi.Font.
 fn makeFont(buf: *align(@alignOf(Font)) [FONT_BUF]u8, id: i8, codes: []const u16) *Font {
     @memset(buf, 0);
     const font: *Font = @ptrCast(buf);

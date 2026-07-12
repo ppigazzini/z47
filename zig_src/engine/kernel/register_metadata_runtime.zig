@@ -41,9 +41,9 @@ pub const ERROR_TOO_MANY_VARIABLES: u8 = 49;
 const strLgIntHeader_t = payload_bytes_owned.strLgIntHeader_t;
 const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 
-const abi = @import("abi"); // L1 shared bindings
-const register_metadata = @import("register_metadata.zig"); // M-callconv: intra-object Zig-to-Zig
-const register_metadata_local_registers = @import("register_metadata_local_registers.zig"); // M-callconv: intra-object Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const register_metadata = @import("register_metadata.zig");
+const register_metadata_local_registers = @import("register_metadata_local_registers.zig");
 const userMenu_t = abi.UserMenu;
 
 const named_variable_header_t = abi.NamedVariableHeader;

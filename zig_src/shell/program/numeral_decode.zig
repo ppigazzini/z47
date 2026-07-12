@@ -15,7 +15,7 @@
 //! coverage -- the decode owner is only reachable through the C oracle. The
 //! owner keeps the thin _decodeNumeral shim that reads the globals into a Format
 //! and delegates. This module uses Zig many-item pointers rather than C
-//! pointers by construction, so it stays out of the idiom-ratchet cptr ceiling.
+//! pointers by construction, so it uses no C pointers.
 
 const std = @import("std");
 

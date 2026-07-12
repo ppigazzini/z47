@@ -107,7 +107,7 @@ pub export fn subError() callconv(.c) void {
 }
 
 /// The legacy C fnSubtract body: saveLastX, matrix dispatch, adjustResult.
-/// The Zig fnSubtract wrapper (math_command_wrappers.zig) calls this for the
+/// The Zig fnSubtract wrapper calls this for the
 /// cells it does not handle natively (the error cells).
 pub export fn z47_math_wrappers_legacy_fnSubtract(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;

@@ -25,9 +25,8 @@
 // fnEdit is reached by the testSuite (it drives the PEM program-step editor), so
 // byte-exactness of the transliteration is verified by `zig build test`.
 //
-// RENAMED-AWAY: fnCFGsettings is owned by frontier.zig (the retired shim renamed
-// addons.c's fnCFGsettings to z47_frontier_legacy_fnCFGsettings to avoid the
-// collision). Here it is an extern and not re-exported.
+// RENAMED-AWAY: fnCFGsettings is owned by frontier.zig; here it is an extern and
+// not re-exported.
 //
 // Build matrix (defines.h):
 //   * SAVE_SPACE_DM42_22_EDIT1 / SAVE_SPACE_DM42_23_EDIT2 are defined for every
@@ -95,33 +94,33 @@ const calcRegister_t = i16;
 const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_assign = @import("../input/assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_angles = @import("../convert/conversion_angles.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_decode = @import("../program/decode.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("../display/display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_fractions = @import("../convert/fractions.zig"); // M-callconv: Zig-to-Zig
-const frontier_integers = @import("../convert/integers.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("../program/next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_plotstat = @import("../plot/plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
-const frontier_recall = @import("../recall.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("../display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("../input/tam.zig"); // M-callconv: Zig-to-Zig
-const frontier_textfiles = @import("textfiles.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier = @import("../shell.zig");
+const frontier_assign = @import("../input/assign.zig");
+const frontier_bufferize = @import("../display/bufferize.zig");
+const frontier_calc_mode = @import("../calc_mode.zig");
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_config = @import("../config.zig");
+const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
+const frontier_decode = @import("../program/decode.zig");
+const frontier_display = @import("../display/display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_fractions = @import("../convert/fractions.zig");
+const frontier_integers = @import("../convert/integers.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_manage = @import("../program/manage.zig");
+const frontier_next_step = @import("../program/next_step.zig");
+const frontier_plotstat = @import("../plot/plotstat.zig");
+const frontier_radio_button_catalog = @import("radio_button_catalog.zig");
+const frontier_real_type = @import("../real_type.zig");
+const frontier_recall = @import("../recall.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_tam = @import("../input/tam.zig");
+const frontier_textfiles = @import("textfiles.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -528,7 +527,7 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 // ===========================================================================
 // const_* / const34_* / const39_* : constantPointers.h macros over `constants`.
 // ===========================================================================
-// M22: blob accessors via abi (single @ptrCast site) instead of a local @extern.
+// blob accessors via abi (single @ptrCast site) instead of a local @extern.
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
@@ -625,14 +624,13 @@ extern var ctxtReal39: realContext_t;
 extern var gapItemLeft: u16;
 extern var gapItemRight: u16;
 
-// fnCFGsettings is owned by frontier.zig (renamed-away); declared extern, not
-// re-exported.
+// fnCFGsettings is owned by frontier.zig; declared extern, not re-exported.
 
 // ===========================================================================
 // Function externs (cross-owner / runtime / libc / decNumber / GMP).
 // ===========================================================================
 extern fn getSystemFlag(sf: c_int) bool_t;
-// M-callconv: deferred — addons' stale signature (frontSpace: [*c]const u8, nim)
+// Deferred: addons' stale signature (frontSpace: [*c]const u8, nim)
 // differs from frontier_display's real34ToDisplayString (frontSpace: bool_t,
 // limitIrfrac); a faithful @import conversion needs semantic reconciliation, so
 // this one symbol stays extern to preserve exact current behavior.

@@ -5,8 +5,7 @@
 //! spaces, skip a word, jump to the next word, or stop at a space/newline. These
 //! are pure pointer walks with no globals (the sibling integer parsers use libc
 //! and stay in the owner). Lift the scanners here for native coverage. This
-//! module uses Zig many-item pointers rather than C pointers, so it stays out of
-//! the idiom-ratchet cptr ceiling.
+//! module uses Zig many-item pointers rather than C pointers.
 
 const std = @import("std");
 

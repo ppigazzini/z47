@@ -4,8 +4,7 @@ const circular_trig_owned = @import("trig/circular_trig.zig");
 const ln_complex_owned = @import("ln_complex.zig");
 const rectangular_to_polar_owned = @import("transform/rectangular_to_polar.zig");
 const runtime = @import("command_wrappers_runtime.zig");
-const math_command_wrappers = @import("command_wrappers.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("command_wrappers.zig");
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }

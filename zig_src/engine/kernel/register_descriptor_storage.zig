@@ -25,7 +25,7 @@ const register_header_t = abi.RegisterHeader;
 
 const named_variable_header_t = abi.NamedVariableHeader;
 
-const abi = @import("abi"); // L1 shared bindings
+const abi = @import("abi"); // shared ABI bindings
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 
 const GlobalRegisterBacking = if (use_array_backed_global_registers)

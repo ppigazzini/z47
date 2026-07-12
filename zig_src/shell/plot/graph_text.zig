@@ -24,11 +24,11 @@ const std = @import("std");
 // across every target plus the boundary gates.
 
 const frontier_build_options = @import("frontier_build_options");
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("../display/sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_textfiles = @import("../extensions/textfiles.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../timer.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_screen = @import("../display/screen.zig");
+const frontier_sort = @import("../display/sort.zig");
+const frontier_textfiles = @import("../extensions/textfiles.zig");
+const frontier_timer = @import("../timer.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Zig owner for src/c47/mathematics/comparisonReals.c (M3.2).
+// Zig owner for src/c47/mathematics/comparisonReals.c.
 //
 // Defines the canonical comparison/tolerance symbols at the C export
 // boundary.  This file must only be analyzed in product builds (gated in
@@ -16,8 +16,7 @@ const std = @import("std");
 const abi = @import("abi");
 const runtime = @import("command_wrappers_runtime.zig");
 const math_real_predicates = @import("real_predicates.zig");
-const math_runtime_helpers = @import("runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-
+const math_runtime_helpers = @import("runtime_helpers.zig");
 // Product ABI globals (uint8_t in src/c47/c47.c).  This file is only built
 // for the product surface, so the exact C types are used here even though
 // the shared runtime declares the fake-harness ABI for significantDigits.

@@ -31,10 +31,10 @@ const calcRegister_t = i16;
 const bool_t = bool;
 const matrixHeader_t = abi.MatrixHeader;
 const registerHeader_t = abi.RegisterHeader;
-const abi = @import("abi"); // L1 shared bindings
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_graph_text = @import("../plot/graph_text.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen_snap = @import("../display/screen_snap.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_graph_text = @import("../plot/graph_text.zig");
+const frontier_screen_snap = @import("../display/screen_snap.zig");
 const namedVariableHeader_t = abi.NamedVariableHeader;
 
 // ---------------------------------------------------------------------------

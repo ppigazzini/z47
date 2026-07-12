@@ -2,13 +2,13 @@
 // ~403-731). Generated faithful port: drives the ~200-field dump sequence in Zig,
 // calling the Zig typed value serializer (saveStateValue, below) + the progmem
 // pointer math. Verified by the parity harness Check C (Zig saveCalc -> C
-// restoreCalc -> state preserved). The restore half stays C this phase.
+// restoreCalc -> state preserved).
 
 const abi = @import("abi");
 const std = @import("std");
 const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
-const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
+const calc_state = @import("calc_state.zig");
 const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
 const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id")) build_options.calc_model_user_id else 46;
 
@@ -714,7 +714,7 @@ pub fn saveCalc() void {
     ioFileClose();
 }
 
-// ===================== RESTORE side (Phase A2) =====================
+// ===================== RESTORE side =====================
 // labelList/savedStatisticalSumsPointer are pointer globals not declared above.
 // --- backup.cfg parser + typed value deserializer (host-only) ---
 extern fn ioEof() c_int;

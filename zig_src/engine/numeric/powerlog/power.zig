@@ -16,9 +16,8 @@ const const_8 = consts.const_8;
 // fflush(stdout) has no calculation effect and is omitted.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("../command_wrappers.zig");
+const math_comparison_reals = @import("../comparison_reals.zig");
 const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

@@ -6,10 +6,10 @@
 // quantiles. Part of the SAVE_SPACE_DM42_17 cluster (stripped on every DM42
 // package), so compiled only on host and DMCP5 and gated by strip_17.
 //
-// WP34S_Qf_Newton is exported with C linkage (frontier.zig) so the other cluster
+// WP34S_Qf_Newton is exported with C linkage (shell.zig) so the other cluster
 // members link against it where the cluster is kept; on DM42 it collapses to an
 // empty stub. The solver dispatches to each distribution's CDF/PDF (the Zig
-// owners' exports, bound through frontier_distribution_runtime) and finishes
+// owners' exports, bound through distribution_runtime.zig) and finishes
 // discrete searches via WP34S_qf_discrete_final. The testSuite drives every
 // branch via tests/f_{p,l,r,i}.txt.
 

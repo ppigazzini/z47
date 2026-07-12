@@ -18,7 +18,7 @@ pub const amNone: angularMode_t = 5;
 pub const NOUC: usize = 84;
 
 pub const real_t = opaque {};
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 pub const real34_t = abi.Real34;
 
 pub extern var currentSolverStatus: u16;

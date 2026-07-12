@@ -123,8 +123,8 @@ fn TO_BLOCKS(n: anytype) u32 {
 }
 
 // --- Struct models (asserted against the C ABI) ---
-const abi = @import("abi"); // L1 shared bindings
-const calc_state = @import("calc_state.zig"); // M-callconv: intra-object Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const calc_state = @import("calc_state.zig"); // intra-object Zig-to-Zig
 const calcKey_t = abi.CalcKey;
 const userMenuItem_t = abi.UserMenuItem;
 const userMenu_t = abi.UserMenu;

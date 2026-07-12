@@ -3,7 +3,7 @@
 // src/c47/mathematics/matrix.c: allocate/free/identity/redim, copy and
 // transpose for real34 and complex34 matrices. The register-linking,
 // element-arithmetic and command-level matrix functions stay in the matrix
-// bridge until the later B clusters land.
+// bridge.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");

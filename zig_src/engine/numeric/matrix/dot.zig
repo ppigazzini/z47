@@ -2,8 +2,8 @@
 // Zig port of the vector dot-product cluster of
 // src/c47/mathematics/matrix.c: dotRealVectors / dotComplexVectors and the
 // shared real_t worker _dotRealVectors. The cross products, the vector angle
-// and the rest of the engine stay in the matrix bridge until the later B
-// clusters land.
+// and the rest of the engine live in other matrix owners, not in this
+// dot-product owner.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");
@@ -16,8 +16,8 @@ const complex34Matrix_t = runtime.complex34Matrix_t;
 const constRealElems = abi.matrixConstRealElems;
 const constComplexElems = abi.matrixConstComplexElems;
 
-// Static worker, exported so the vector-angle owner can reuse it. The bridge
-// renames the legacy copy that the not-yet-ported vectorAngle still calls.
+// Static worker, exported so the vector-angle owner can reuse it (upstream
+// vectorAngle in matrix.c is not yet ported and still calls this worker).
 pub export fn _dotRealVectors(y: *const real34Matrix_t, x: *const real34Matrix_t, res: *real_t, real_context: *runtime.realContext_t) callconv(.c) void {
     const elements = runtime.realVectorSize(y);
     var sum: real_t = undefined;

@@ -1,6 +1,6 @@
-//! Zig owners for the transform/complex helper symbols that used to be
-//! provided by zig_bridge/mathematics/math_wrappers_runtime_transform_helpers.c
-//! (upstream toPolar.c, toRect.c, squareRoot.c, cubeRoot.c, unitVector.c).
+//! Zig owners for the transform/complex helper symbols ported from the upstream
+//! C47 sources src/c47/mathematics/toPolar.c, toRect.c, squareRoot.c,
+//! cubeRoot.c, and unitVector.c.
 //!
 //! This file is only referenced from math_command_wrappers.zig when the build
 //! does NOT use the fake harness surface: the parity harness links

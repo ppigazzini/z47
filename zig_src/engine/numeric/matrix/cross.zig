@@ -2,7 +2,7 @@
 // Zig port of the vector cross-product cluster of
 // src/c47/mathematics/matrix.c: crossRealVectors / crossComplexVectors (the
 // 3D vector cross product, zero-padding 2D inputs). The vector angle and the
-// rest of the engine stay in the matrix bridge until the later B clusters land.
+// rest of the engine stay in the matrix bridge.
 
 const runtime = @import("../command_wrappers_runtime.zig");
 const abi = @import("abi");

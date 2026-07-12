@@ -28,15 +28,14 @@ const const_2916 = consts.const_2916;
 // SAVE_SPACE_DM42_12 guard and the #undef'd DISCRIMINANT blocks are omitted.
 
 const runtime = @import("command_wrappers_runtime.zig");
-const math_addition_cells = @import("arithmetic/addition_cells.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-const math_slvq = @import("slvq.zig"); // M-callconv: Zig-to-Zig
-const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig"); // M-callconv: Zig-to-Zig
-const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
-
+const math_addition_cells = @import("arithmetic/addition_cells.zig");
+const math_comparison_reals = @import("comparison_reals.zig");
+const math_division_cells = @import("arithmetic/division_cells.zig");
+const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig");
+const math_runtime_helpers = @import("runtime_helpers.zig");
+const math_slvq = @import("slvq.zig");
+const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig");
+const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
@@ -238,8 +237,9 @@ fn cmplxSortCompare(v1: ?*const anyopaque, v2: ?*const anyopaque) linksection(ru
 // ===========================================================================
 // fnSlvc
 // ===========================================================================
-// L2 error surface (REPORT-23 §6 P5): the core returns an error instead of
-// calling displayCalcErrorMessage inline; the L3 shim maps it at the ABI edge.
+// The core (fnSlvcCore) returns an error instead of calling
+// displayCalcErrorMessage inline; the exported fnSlvc wrapper maps it to a calc
+// error at the ABI edge.
 const SlvcError = error{LeadingCoeffsAllZero};
 
 fn reportSlvcError(e: SlvcError) void {

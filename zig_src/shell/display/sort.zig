@@ -11,9 +11,8 @@
 // TO_QSPI tables in the original sort.c byte-for-byte.
 
 const abi = @import("abi");
-const frontier_char_string = @import("text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_fonts = @import("fonts/fonts.zig"); // M-callconv: Zig-to-Zig
-
+const frontier_char_string = @import("text/char_string.zig");
+const frontier_fonts = @import("fonts/fonts.zig");
 // Comparison modes (src/c47/defines.h).
 const CMP_BINARY: i32 = 0;
 const CMP_EXTENSIVE: i32 = 2;

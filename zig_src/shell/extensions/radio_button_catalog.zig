@@ -42,11 +42,11 @@ const print_modes_t = c_int; // enum, 4 bytes
 const printerModel_t = c_int; // enum, 4 bytes
 const printerState_t = abi.PrinterState;
 const ItemFn = ?*const fn (u16) callconv(.c) void;
-const abi = @import("abi"); // L1 shared bindings
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_config = @import("../config.zig");
+const frontier_items = @import("../display/items/items.zig");
+const frontier_real_type = @import("../real_type.zig");
 const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------

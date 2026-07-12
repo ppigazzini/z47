@@ -13,8 +13,8 @@
 const std = @import("std");
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
-const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("../display/screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("../display/text/char_string.zig");
+const frontier_screen = @import("../display/screen.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 
 // ---------------------------------------------------------------------------

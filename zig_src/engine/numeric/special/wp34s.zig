@@ -25,14 +25,13 @@ const consts = abi.constants;
 // small-buffer path via the wp34s_mod_small_buffers build option.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
-pub const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_ln_complex = @import("../ln_complex.zig"); // M-callconv: Zig-to-Zig
-const math_lnbeta = @import("lnbeta.zig"); // M-callconv: Zig-to-Zig
-const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("../command_wrappers.zig");
+pub const math_comparison_reals = @import("../comparison_reals.zig");
+const math_division_cells = @import("../arithmetic/division_cells.zig");
+const math_ln_complex = @import("../ln_complex.zig");
+const math_lnbeta = @import("lnbeta.zig");
+const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
+const math_runtime_helpers = @import("../runtime_helpers.zig");
 const math_real_predicates = @import("../real_predicates.zig");
 const wp34s_atan = @import("../trig/wp34s_atan.zig"); // inverse-circular split
 const wp34s_trig = @import("wp34s_trig.zig"); // forward-circular split

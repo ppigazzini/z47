@@ -19,20 +19,20 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const RowCol = struct { row: i32, col: i32 };
 fn linearToRowCol(ix: i32, cols: i32) RowCol {
     return .{ .row = @divTrunc(ix - 1, cols) + 1, .col = @rem(ix - 1, cols) + 1 };
 }
-const frontier = @import("shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("error.zig"); // M-callconv: Zig-to-Zig
-const frontier_next_step = @import("program/next_step.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
-const frontier_store = @import("store.zig"); // M-callconv: Zig-to-Zig
-const frontier_string_funcs = @import("display/text/string_funcs.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("shell.zig");
+const frontier_char_string = @import("display/text/char_string.zig");
+const frontier_debug = @import("debug.zig");
+const frontier_error = @import("error.zig");
+const frontier_next_step = @import("program/next_step.zig");
+const frontier_register_value_conversions = @import("register_value_conversions.zig");
+const frontier_status_bar = @import("display/statusbar/status_bar.zig");
+const frontier_store = @import("store.zig");
+const frontier_string_funcs = @import("display/text/string_funcs.zig");
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;

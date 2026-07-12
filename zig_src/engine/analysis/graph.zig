@@ -7,8 +7,7 @@ const consts = abi.constants;
 // asymptote detection) and accumulates points in the DrwMX matrix;
 // complexSolver is the modified-3-point-secant complex root finder behind
 // cpxSlv; fnEqSolvGraph dispatches Draw / realSlv / cpxSlv from the equation
-// app. The shim (graph_legacy.c, removed) had NO renames, so every
-// non-static C symbol keeps its real name: drawMxN, fnClDrawMx, the
+// app. Every non-static C symbol keeps its real name: drawMxN, fnClDrawMx, the
 // asymptote/high-res helpers, check_osc, graph_stat, fnComplexSolver,
 // fnEqSolvGraph, plus the osc/DXR/DYR/DXI/DYI globals and the three
 // TO_QSPI asymptote offset tables.
@@ -32,10 +31,10 @@ const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_b
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const equation = @import("equation.zig"); // M-callconv: Zig-to-Zig
-const solve_owned = @import("solve_owned.zig"); // M-callconv: Zig-to-Zig
-const sumprod = @import("sumprod.zig"); // M-callconv: Zig-to-Zig
+const abi = @import("abi"); // shared ABI bindings
+const equation = @import("equation.zig");
+const solve_owned = @import("solve_owned.zig");
+const sumprod = @import("sumprod.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;

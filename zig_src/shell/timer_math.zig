@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure stopwatch elapsed-time math, lifted from frontier_timer.zig
+// Pure stopwatch elapsed-time math, lifted from timer.zig
 // (src/c47/timer.c). The timer polls a wall clock; antirewinder corrects for the
 // clock wrapping past midnight or rolling over an hour between reads, and
 // timerElapsed returns the accumulated milliseconds. It is std-only u32 arithmetic

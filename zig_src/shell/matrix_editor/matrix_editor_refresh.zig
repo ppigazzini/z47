@@ -1,7 +1,6 @@
 const matrix_nav = @import("matrix_nav.zig");
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
-
+const frontier = @import("../shell.zig");
+const frontier_matrix_editor = @import("matrix_editor.zig");
 const Geometry = struct {
     rows: i16,
     cols: i16,

@@ -4,7 +4,7 @@
 //! open-coded -- round bytes up to whole blocks, and multiply blocks back to
 //! bytes. The frontier PC-memory helpers map the same 4-byte calc blocks into
 //! the simulator's flat `ram`, so they share this arithmetic; it lives in abi
-//! (the L1 shared layer) because both subsystems use it, reachable as
+//! (the shared ABI layer) because both subsystems use it, reachable as
 //! `abi.block_math`.
 //!
 //! The functions are width-parameterised so each owner keeps its exact return

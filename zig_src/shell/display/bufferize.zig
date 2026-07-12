@@ -44,28 +44,28 @@ const calcRegister_t = i16;
 const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
-const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
+const abi = @import("abi"); // shared ABI bindings
 const gap_insert = @import("text/gap_insert.zig"); // std-only digit-group gap insertion
-const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
-const frontier_calc_mode = @import("../calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_angles = @import("../convert/conversion_angles.zig"); // M-callconv: Zig-to-Zig
-const frontier_date_time = @import("../convert/date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_debug = @import("../debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_manage = @import("../program/manage.zig"); // M-callconv: Zig-to-Zig
-const frontier_print = @import("../print/print.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("../input/tam.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../timer.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig");
+const frontier_addons = @import("../extensions/addons.zig");
+const frontier_calc_mode = @import("../calc_mode.zig");
+const frontier_char_string = @import("text/char_string.zig");
+const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
+const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
+const frontier_display = @import("display.zig");
+const frontier_error = @import("../error.zig");
+const frontier_items = @import("items/items.zig");
+const frontier_manage = @import("../program/manage.zig");
+const frontier_print = @import("../print/print.zig");
+const frontier_radio_button_catalog = @import("../extensions/radio_button_catalog.zig");
+const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+const frontier_screen = @import("screen.zig");
+const frontier_softmenus = @import("softmenus/softmenus.zig");
+const frontier_sort = @import("sort.zig");
+const frontier_status_bar = @import("statusbar/status_bar.zig");
+const frontier_tam = @import("../input/tam.zig");
+const frontier_timer = @import("../timer.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
@@ -884,7 +884,7 @@ extern var asmBuffer: [5]u8;
 
 // const_0 / const39_pi / const34_0 are NOT symbols: they are
 // constantPointers.h macros over the shared `constants` blob, by byte offset.
-// M22: named constants via the oracle-gated abi accessors (offsets verified by
+// Named constants via the oracle-gated abi accessors (offsets verified by
 // .github/project/check-constant-offsets.py) instead of raw blob @ptrCast.
 const const_0 = abi.constants.const_0();
 const const39_pi = abi.constants.const39_pi();
@@ -1039,7 +1039,7 @@ inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn setRegisterAngularMode(reg: calcRegister_t, am: angularMode_t) void {
     setRegisterTag(reg, @intCast(am));
 }
-// M22: typed register views centralized in abi (single @ptrCast per shape).
+// Typed register views centralized in abi (single @ptrCast per shape).
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 const regShortInteger = abi.registerShortInteger;

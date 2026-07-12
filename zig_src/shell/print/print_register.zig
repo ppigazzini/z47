@@ -1,9 +1,8 @@
 const std = @import("std");
-const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
-const frontier_graph_text = @import("../plot/graph_text.zig"); // M-callconv: Zig-to-Zig
-const frontier_print = @import("print.zig"); // M-callconv: Zig-to-Zig
-const frontier_textfiles = @import("../extensions/textfiles.zig"); // M-callconv: Zig-to-Zig
-
+const frontier_error = @import("../error.zig");
+const frontier_graph_text = @import("../plot/graph_text.zig");
+const frontier_print = @import("print.zig");
+const frontier_textfiles = @import("../extensions/textfiles.zig");
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_PRTEN: u16 = 0x8067;
 

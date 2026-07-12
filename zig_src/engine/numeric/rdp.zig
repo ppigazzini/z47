@@ -18,9 +18,8 @@ const const_1 = consts.const_1;
 
 const runtime = @import("command_wrappers_runtime.zig");
 const math_real_predicates = @import("real_predicates.zig");
-const math_matrix_elementwise = @import("matrix/elementwise.zig"); // M-callconv: Zig-to-Zig
-const math_rsd = @import("rsd.zig"); // M-callconv: Zig-to-Zig
-
+const math_matrix_elementwise = @import("matrix/elementwise.zig");
+const math_rsd = @import("rsd.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;

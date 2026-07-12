@@ -9,7 +9,7 @@
 //! owner resolves the widths, the enabled flags, and whether the separator is a
 //! single-byte one. Lift it here for native coverage -- the bufferize owner is
 //! only reachable through the C oracle. This module uses Zig many-item pointers
-//! rather than C pointers, so it stays out of the idiom-ratchet cptr ceiling.
+//! rather than C pointers.
 
 const std = @import("std");
 

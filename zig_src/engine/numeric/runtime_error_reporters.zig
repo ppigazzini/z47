@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
-//! Zig owner for the z47_math_wrappers_report_* domain-error reporters that
-//! used to live in zig_bridge/mathematics/math_wrappers_runtime_helpers.c
-//! (now parity-only). Message strings are byte-for-byte the upstream ones,
-//! including the C47 font glyph escapes (src/c47/fonts.h).
+//! Zig owner for the z47_math_wrappers_report_* domain-error reporters; a
+//! parity-only C copy lives at
+//! zig_build/tests/math_wrappers/math_wrappers_runtime_helpers.c. Message
+//! strings are byte-for-byte the upstream ones, including the C47 font glyph
+//! escapes (src/c47/fonts.h).
 
 const builtin = @import("builtin");
 const runtime = @import("command_wrappers_runtime.zig");

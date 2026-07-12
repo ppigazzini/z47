@@ -42,11 +42,11 @@ inline fn const_1on2() *const real_t {
 
 const abi = @import("abi");
 const math_real_predicates = @import("real_predicates.zig");
-const math_command_wrappers = @import("command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_inverse_trig_command = @import("trig/inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
-const math_ln_complex = @import("ln_complex.zig"); // M-callconv: Zig-to-Zig
-const math_wp34s = @import("special/wp34s.zig"); // M-callconv: Zig-to-Zig
+const math_command_wrappers = @import("command_wrappers.zig");
+const math_comparison_reals = @import("comparison_reals.zig");
+const math_inverse_trig_command = @import("trig/inverse_trig_command.zig");
+const math_ln_complex = @import("ln_complex.zig");
+const math_wp34s = @import("special/wp34s.zig");
 const consts = abi.constants;
 
 // real ops / predicates not in runtime.

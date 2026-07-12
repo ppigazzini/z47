@@ -1,6 +1,6 @@
-//! The small-prime lookup list -- the pure core lifted out of math_prime.zig.
+//! The small-prime lookup list -- the pure core lifted out of prime.zig.
 //!
-//! math_prime enumerates the first 169 primes for trial division, the
+//! prime.zig enumerates the first 169 primes for trial division, the
 //! Euler-phi/factoring fast paths, and next-prime search. The first block is a
 //! direct table of the primes up to 251; the second block is stored as a table
 //! of prime gaps that are accumulated from 251 upward. That index -> prime map is

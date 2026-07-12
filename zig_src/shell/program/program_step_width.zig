@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Pure program-step byte-width arithmetic, lifted from frontier_next_step.zig
+// Pure program-step byte-width arithmetic, lifted from next_step.zig
 // (src/c47/programming/nextStep.c). Given a pointer into a step buffer and a
 // parameter mode / literal kind, these return the pointer advanced past that
 // step's parameter or literal bytes (or null on a malformed step). It is plain

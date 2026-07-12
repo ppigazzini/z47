@@ -14,11 +14,10 @@ const const_NaN = consts.const_NaN;
 // unconditionally.
 
 const runtime = @import("../command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
-const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_power = @import("power.zig"); // M-callconv: Zig-to-Zig
-
+const math_command_wrappers = @import("../command_wrappers.zig");
+const math_comparison_reals = @import("../comparison_reals.zig");
+const math_division_cells = @import("../arithmetic/division_cells.zig");
+const math_power = @import("power.zig");
 const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
