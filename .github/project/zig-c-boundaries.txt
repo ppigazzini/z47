@@ -134,7 +134,7 @@ zig_src/shell/program/next_step.zig
 zig_src/shell/program/decode.zig
 zig_src/shell/plot/curve_fitting.zig
 zig_src/shell/display/input.zig
-zig_src/shell/jm.zig
+zig_src/shell/extensions/jm.zig
 zig_src/shell/browsers/flag_browser.zig
 zig_src/shell/calc_mode.zig
 zig_src/shell/browsers/register_browser.zig

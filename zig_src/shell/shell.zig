@@ -68,7 +68,7 @@ comptime {
     _ = @import("program/decode.zig");
     _ = @import("plot/curve_fitting.zig");
     _ = @import("display/input.zig");
-    _ = @import("jm.zig");
+    _ = @import("extensions/jm.zig");
     _ = @import("browsers/flag_browser.zig");
     _ = @import("calc_mode.zig");
     _ = @import("browsers/register_browser.zig");
