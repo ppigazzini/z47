@@ -54,7 +54,7 @@ const bool_t = bool; // C `bool`, 1 byte
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const keycode_remap = @import("keycode_remap.zig"); // std-only R47/WP43 key-code table
+const keycode_remap = @import("input/keycode_remap.zig"); // std-only R47/WP43 key-code table
 const real_t = abi.RealBlob; // decNumber, zero-init here
 const real34_t = abi.Real34; // decQuad, zero-init here
 
