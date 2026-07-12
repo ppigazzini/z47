@@ -217,7 +217,12 @@ fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) runti
     var byte_len: u8 = 0;
     while (variable_name[byte_len] != 0) : (byte_len += 1) {}
 
-    var reg: runtime.calcRegister_t = 0;
+    // Only the NAMED reserved variables (ACC, ULIM, ... UY, LY) are name-lookup
+    // targets -- the upstream gperf table excludes the lettered variables
+    // (X/Y/Z/T/A-W). So a name like "X" allocates a fresh named variable rather
+    // than resolving to the lettered reserved register, which aliases the stack.
+    const first_named_offset: runtime.calcRegister_t = runtime.FIRST_NAMED_RESERVED_VARIABLE - runtime.FIRST_RESERVED_VARIABLE;
+    var reg: runtime.calcRegister_t = first_named_offset;
     while (reg < reserved_count) : (reg += 1) {
         // reservedVariableName[0] holds the byte length (a multibyte glyph counts >1),
         // so a name like sigma-Lim (4 glyphs / 5 bytes) must match on 5, not 4.
