@@ -2,8 +2,7 @@
 # check-build-paths.sh — every zig_src/*.zig path literal named by the build
 # system (build.zig pure_modules + zig_build module roots) must resolve to a
 # tracked file. Guards against a rename/edit that desyncs a build root from the
-# owner it points at. Cheap; runnable as a local-gate / CI step. See REPORT-28
-# §12.4 / §14.6.
+# owner it points at. Cheap; runnable as a local-gate / CI step.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 missing=0
