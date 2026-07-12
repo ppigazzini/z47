@@ -77,7 +77,7 @@ const complex34_t = abi.Complex34;
 // digits(i32)+exponent(i32)+bits(u8)+pad. Use the canonical c47 layout.
 const decNumberUnit = u16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const matrix_wrap = @import("../matrix_wrap.zig"); // std-only matrix I/J cursor wrap
+const matrix_wrap = @import("matrix_wrap.zig"); // std-only matrix I/J cursor wrap
 const frontier_bufferize = @import("../display/bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_conversion_angles = @import("../convert/conversion_angles.zig"); // M-callconv: Zig-to-Zig

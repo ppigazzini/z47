@@ -94,7 +94,7 @@ zig_src/shell/runtime.zig
 zig_src/engine/kernel/register_descriptor_storage.zig
 zig_src/engine/kernel/register_memory.zig
 zig_src/engine/kernel/register_metadata_local_registers.zig
-zig_src/shell/distribution_runtime.zig
+zig_src/shell/distributions/distribution_runtime.zig
 zig_src/shell/real_type.zig
 zig_src/shell/free_list.zig
 zig_src/shell/convert/conversion_units.zig

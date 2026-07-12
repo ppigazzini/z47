@@ -16,7 +16,7 @@
 // The testSuite exercises every branch directly (tests/geometric_{p,l,r,i}.txt),
 // so this owner is parity-gated by `zig build test`.
 
-const dr = @import("../distribution_runtime.zig");
+const dr = @import("distribution_runtime.zig");
 pub const real_t = dr.real_t;
 pub const realContext_t = dr.realContext_t;
 

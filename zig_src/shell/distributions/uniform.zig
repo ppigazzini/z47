@@ -8,7 +8,7 @@
 // Uniform dispatch entry, so these are verified by the distributions parity
 // harness.
 
-const dr = @import("../distribution_runtime.zig");
+const dr = @import("distribution_runtime.zig");
 const real_t = dr.real_t;
 
 // Reads X, low (REGISTER_M) and high (REGISTER_N); validates and, when
