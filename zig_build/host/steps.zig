@@ -1062,7 +1062,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     tone_parity_step.dependOn(&run_tone_parity.step);
 
     const distribution_owners_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/frontier/distributions/distributions_test_owners.zig"),
+        .root_source_file = b.path("zig_src/shell/distributions/distributions_test_owners.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
