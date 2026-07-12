@@ -9,7 +9,7 @@
 // The port reproduces upstream behaviour exactly, including the PDF's t^(t+1)
 // exponent (upstream computes realPower(t, t+1); its comment says t^(xi+1)).
 
-const dr = @import("../frontier_distribution_runtime.zig");
+const dr = @import("../distribution_runtime.zig");
 const real_t = dr.real_t;
 
 // noinline: called from all four entry points; a single shared copy keeps the

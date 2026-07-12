@@ -40,7 +40,7 @@ const abi = @import("abi"); // L1 shared bindings
 const frontier_date_time = @import("../../convert/date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_plotstat = @import("../../plot/plotstat.zig"); // M-callconv: Zig-to-Zig
 const frontier_screen = @import("../screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("../../frontier_timer.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("../../timer.zig"); // M-callconv: Zig-to-Zig
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 

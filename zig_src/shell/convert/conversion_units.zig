@@ -33,9 +33,9 @@ const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
 const label_truncate = @import("../display/text/label_truncate.zig"); // std-only label arrow truncation
 const frontier_addons = @import("../extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
 const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("../frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("../register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 

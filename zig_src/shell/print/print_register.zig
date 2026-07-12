@@ -1,5 +1,5 @@
 const std = @import("std");
-const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../error.zig"); // M-callconv: Zig-to-Zig
 const frontier_graph_text = @import("../plot/graph_text.zig"); // M-callconv: Zig-to-Zig
 const frontier_print = @import("print.zig"); // M-callconv: Zig-to-Zig
 const frontier_textfiles = @import("../extensions/textfiles.zig"); // M-callconv: Zig-to-Zig

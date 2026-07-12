@@ -6,7 +6,7 @@
 // WP34S_*_Expon helpers are exponential-internal and stay private. All
 // decNumber/register access goes through frontier_distribution_runtime.
 
-const dr = @import("../frontier_distribution_runtime.zig");
+const dr = @import("../distribution_runtime.zig");
 const real_t = dr.real_t;
 const realContext_t = dr.realContext_t;
 

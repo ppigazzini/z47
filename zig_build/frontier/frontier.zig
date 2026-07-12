@@ -107,7 +107,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const root_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/shell/frontier.zig"),
+        .root_source_file = b.path("zig_src/shell/shell.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,

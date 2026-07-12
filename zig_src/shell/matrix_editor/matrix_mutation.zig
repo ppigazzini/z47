@@ -1,4 +1,4 @@
-const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../shell.zig"); // M-callconv: Zig-to-Zig
 const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
 pub const Kind = enum {
     insert_row_before,

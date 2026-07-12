@@ -44,9 +44,9 @@ const printerState_t = abi.PrinterState;
 const ItemFn = ?*const fn (u16) callconv(.c) void;
 const abi = @import("abi"); // L1 shared bindings
 const frontier_char_string = @import("../display/text/char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_config = @import("../frontier_config.zig"); // M-callconv: Zig-to-Zig
+const frontier_config = @import("../config.zig"); // M-callconv: Zig-to-Zig
 const frontier_items = @import("../display/items/items.zig"); // M-callconv: Zig-to-Zig
-const frontier_real_type = @import("../frontier_real_type.zig"); // M-callconv: Zig-to-Zig
+const frontier_real_type = @import("../real_type.zig"); // M-callconv: Zig-to-Zig
 const item_t = abi.Item;
 
 // ---------------------------------------------------------------------------
