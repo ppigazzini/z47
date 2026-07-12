@@ -131,7 +131,7 @@ closing a real hazard. The honest posture is scoped, not aspirational:
   (state-file overflow, restore/decode out-of-bounds). The arithmetic and display
   core takes no untrusted input.
 - z47 already defends that surface three ways: the load owner LOGIC
-  (`zig_src/state/calc_state_load.zig`, `program_serialization.zig` and its
+  (`zig_src/kernel/calc_state_load.zig`, `program_serialization.zig` and its
   `_header` / `_load_apply` / `_save` parts) is `[*c]`-free idiomatic Zig, with
   `[*c]` confined to the paired `*_io.zig` / `*_runtime.zig` C-ABI file-I/O
   seams; the full shared testSuite runs under AddressSanitizer in CI
@@ -181,9 +181,9 @@ whole-project porting strategy. Repo policy requires:
 Naming policy is layer-specific, not one global rule.
 
 - semantic owner file: the domain name, for example
-  `../zig_src/state/calc_state.zig`
+  `../zig_src/kernel/calc_state.zig`
 - direct legacy-boundary bindings: `*_runtime.zig`, for example
-  `../zig_src/state/calc_state_runtime.zig`
+  `../zig_src/kernel/calc_state_runtime.zig`
 - thin ABI-facing forwarders: `*_export.zig`; the implementation behind a paired
   export shim: `*_owned.zig`
 - legacy C helper files: `*_legacy.c` or `*_runtime_helpers.c`

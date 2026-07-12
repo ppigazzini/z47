@@ -62,7 +62,7 @@ extern fn fnSwapX(regist: u16) void;
 extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // Upstream macro currentNumberOfLocalRegisters expands to
 // currentSubroutineLevelData->numberOfLocalRegisters (defines.h:2281); the
-// struct layout matches zig_src/state/register_metadata_local_registers.zig.
+// struct layout matches zig_src/kernel/register_metadata_local_registers.zig.
 const subroutine_level_header_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: ?*subroutine_level_header_t;
 
