@@ -904,7 +904,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // firmware lane verifiable without a device.
     const progmem_test = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/kernel/calc_state_progmem.zig"),
+            .root_source_file = b.path("zig_src/engine/kernel/calc_state_progmem.zig"),
             .target = context.host_target,
             .optimize = optimize,
         }),
@@ -917,7 +917,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // never reaches it; its embedded tests make the buffer mechanics verifiable
     // without a device before the bridge port wires it onto the firmware lanes.
     const ringbuffer_test_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/kernel/keyboard_state_ringbuffer.zig"),
+        .root_source_file = b.path("zig_src/engine/kernel/keyboard_state_ringbuffer.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
