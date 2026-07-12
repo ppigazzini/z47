@@ -29,7 +29,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/constants/constants.zig"),
+        .root_source_file = b.path("zig_src/seam/constants/constants.zig"),
         .target = target,
         .optimize = optimize,
         .strip = options.strip,
@@ -41,7 +41,7 @@ fn addRuntimeObject(
     });
     // L1 shared ABI bindings (REPORT-23 §5), imported as `@import("abi")`.
     const abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = target,
         .optimize = optimize,
     });

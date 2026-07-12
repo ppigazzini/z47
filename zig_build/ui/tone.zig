@@ -53,7 +53,7 @@ fn addRuntimeObject(
     });
     // L1 shared ABI bindings (REPORT-23 §5).
     const abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
         .target = target,
         .optimize = optimize,
     });
