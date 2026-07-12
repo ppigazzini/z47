@@ -54,7 +54,7 @@ fn decodeShuffle(value: i16) [5]u8 {
     return regists;
 }
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig

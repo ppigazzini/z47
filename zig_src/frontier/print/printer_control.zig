@@ -1,6 +1,6 @@
 const abi = @import("abi");
-const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("print.zig"); // M-callconv: Zig-to-Zig
 
 const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;

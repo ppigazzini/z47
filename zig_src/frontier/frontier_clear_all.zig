@@ -1,5 +1,5 @@
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_addons = @import("frontier_addons.zig"); // M-callconv: Zig-to-Zig
+const frontier_addons = @import("extensions/addons.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
 const frontier_config = @import("frontier_config.zig"); // M-callconv: Zig-to-Zig
 const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig

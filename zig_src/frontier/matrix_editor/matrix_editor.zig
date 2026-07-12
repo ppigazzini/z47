@@ -77,16 +77,16 @@ const complex34_t = abi.Complex34;
 // digits(i32)+exponent(i32)+bits(u8)+pad. Use the canonical c47 layout.
 const decNumberUnit = u16;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const matrix_wrap = @import("matrix_wrap.zig"); // std-only matrix I/J cursor wrap
-const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
-const frontier_conversion_angles = @import("frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
-const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const matrix_wrap = @import("../matrix_wrap.zig"); // std-only matrix I/J cursor wrap
+const frontier_bufferize = @import("../frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("../frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_conversion_angles = @import("../frontier_conversion_angles.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("../frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("../frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_register_value_conversions = @import("../frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("../frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("../frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 // decContext layout is centralized in abi.RealContext (oracle-verified == C

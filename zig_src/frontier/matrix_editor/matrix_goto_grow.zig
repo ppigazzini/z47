@@ -1,7 +1,7 @@
-const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("../frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
 const FLAG_GROW: c_uint = 0x801d;
 
 const CM_MIM: u8 = 12;

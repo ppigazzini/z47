@@ -18,7 +18,7 @@ const abi = @import("abi");
 const integer_pure = abi.int_math;
 const arith = abi.shortint_arith;
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_radio_button_catalog = @import("frontier_radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
+const frontier_radio_button_catalog = @import("extensions/radio_button_catalog.zig"); // M-callconv: Zig-to-Zig
 const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 

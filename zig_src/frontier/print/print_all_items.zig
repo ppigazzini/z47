@@ -1,5 +1,5 @@
 const std = @import("std");
-const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("print.zig"); // M-callconv: Zig-to-Zig
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);

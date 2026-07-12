@@ -1,9 +1,9 @@
-const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_matrix_editor = @import("frontier_matrix_editor.zig"); // M-callconv: Zig-to-Zig
-const frontier_print = @import("frontier_print.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_tam = @import("frontier_tam.zig"); // M-callconv: Zig-to-Zig
+const frontier = @import("../frontier.zig"); // M-callconv: Zig-to-Zig
+const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_matrix_editor = @import("matrix_editor.zig"); // M-callconv: Zig-to-Zig
+const frontier_print = @import("../print/print.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("../frontier_screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_tam = @import("../frontier_tam.zig"); // M-callconv: Zig-to-Zig
 const NOPARAM: u16 = 9876;
 
 const CM_MIM: u8 = 12;
