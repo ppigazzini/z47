@@ -32,13 +32,13 @@ fn hpRangeShift(char_code: u16, std_1: u16, std_9: u16, std_hp_1: u16, std_sup_1
 }
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
-const conversion_name_codec = @import("conversion_name_codec.zig");
+const conversion_name_codec = @import("../../conversion_name_codec.zig");
 const display_string_transform = @import("display_string_transform.zig");
 const glyph_export = @import("glyph_export.zig");
 const glyph_text_lookup = @import("glyph_text_lookup.zig");
-const string_edit = @import("string_edit.zig");
-const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_fonts = @import("frontier_fonts.zig"); // M-callconv: Zig-to-Zig
+const string_edit = @import("../../string_edit.zig");
+const frontier_error = @import("../../frontier_error.zig"); // M-callconv: Zig-to-Zig
+const frontier_fonts = @import("../fonts/fonts.zig"); // M-callconv: Zig-to-Zig
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 

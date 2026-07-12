@@ -65,20 +65,20 @@ const program_step_opcode = @import("program_step_opcode.zig"); // std-only prog
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
 const frontier_assign = @import("frontier_assign.zig"); // M-callconv: Zig-to-Zig
-const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("display/bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_calc_mode = @import("frontier_calc_mode.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_decode = @import("frontier_decode.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_items = @import("frontier_items.zig"); // M-callconv: Zig-to-Zig
+const frontier_items = @import("display/items/items.zig"); // M-callconv: Zig-to-Zig
 const frontier_lbl_gto_xeq = @import("frontier_lbl_gto_xeq.zig"); // M-callconv: Zig-to-Zig
 const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
 const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
-const frontier_sort = @import("frontier_sort.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("display/screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_sort = @import("display/sort.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
 const realContext_t = abi.RealContext;
 
 // ---------------------------------------------------------------------------

@@ -120,9 +120,9 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
     # Owner-local offset tables (NOT covered by the abi oracle, testSuite-gated
     # only): the same by-name remap, keyed on each file's offset-literal pattern.
     OWNERS = {
-        "zig_src/frontier/frontier_display.zig": [r"constR3?4?\((\d+)\)"],
+        "zig_src/frontier/display/display.zig": [r"constR3?4?\((\d+)\)"],
         "zig_src/frontier/frontier_addons.zig": [r"constR3?4?\((\d+)\)"],
-        "zig_src/frontier/frontier_screen.zig": [r"constR3?4?\((\d+)\)"],
+        "zig_src/frontier/display/screen.zig": [r"constR3?4?\((\d+)\)"],
         "zig_src/frontier/frontier_conversion_units.zig": [
             r"constR3?4?\((\d+)\)",
             r"OFF_const\w* = (\d+)",

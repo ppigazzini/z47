@@ -25,14 +25,14 @@ fn linearToRowCol(ix: i32, cols: i32) RowCol {
     return .{ .row = @divTrunc(ix - 1, cols) + 1, .col = @rem(ix - 1, cols) + 1 };
 }
 const frontier = @import("frontier.zig"); // M-callconv: Zig-to-Zig
-const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_next_step = @import("frontier_next_step.zig"); // M-callconv: Zig-to-Zig
 const frontier_register_value_conversions = @import("frontier_register_value_conversions.zig"); // M-callconv: Zig-to-Zig
-const frontier_status_bar = @import("frontier_status_bar.zig"); // M-callconv: Zig-to-Zig
+const frontier_status_bar = @import("display/statusbar/status_bar.zig"); // M-callconv: Zig-to-Zig
 const frontier_store = @import("frontier_store.zig"); // M-callconv: Zig-to-Zig
-const frontier_string_funcs = @import("frontier_string_funcs.zig"); // M-callconv: Zig-to-Zig
+const frontier_string_funcs = @import("display/text/string_funcs.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;

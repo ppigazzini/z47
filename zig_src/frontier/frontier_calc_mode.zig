@@ -31,10 +31,10 @@ const bool_t = bool;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_bufferize = @import("frontier_bufferize.zig"); // M-callconv: Zig-to-Zig
+const frontier_bufferize = @import("display/bufferize.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_softmenus = @import("frontier_softmenus.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("display/screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_softmenus = @import("display/softmenus/softmenus.zig"); // M-callconv: Zig-to-Zig
 const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const real34_t = abi.Real34;
 

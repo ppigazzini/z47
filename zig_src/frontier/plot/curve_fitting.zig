@@ -32,7 +32,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const lr_selection = @import("../lr_selection.zig"); // std-only LR-selection bitmask helpers
+const lr_selection = @import("../display/lr_selection.zig"); // std-only LR-selection bitmask helpers
 const frontier_debug = @import("../frontier_debug.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("../frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_real_type = @import("../frontier_real_type.zig"); // M-callconv: Zig-to-Zig

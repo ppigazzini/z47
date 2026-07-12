@@ -22,7 +22,7 @@
 // across every target plus the boundary gates.
 
 const std = @import("std");
-const status_bar_geometry = @import("status_bar_geometry.zig"); // std-only status-bar geometry
+const status_bar_geometry = @import("../../status_bar_geometry.zig"); // std-only status-bar geometry
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -37,10 +37,10 @@ const angularMode_t = c_int;
 const videoMode_t = c_int;
 const font_t = abi.Font;
 const abi = @import("abi"); // L1 shared bindings
-const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
-const frontier_plotstat = @import("plot/plotstat.zig"); // M-callconv: Zig-to-Zig
-const frontier_screen = @import("frontier_screen.zig"); // M-callconv: Zig-to-Zig
-const frontier_timer = @import("frontier_timer.zig"); // M-callconv: Zig-to-Zig
+const frontier_date_time = @import("../../frontier_date_time.zig"); // M-callconv: Zig-to-Zig
+const frontier_plotstat = @import("../../plot/plotstat.zig"); // M-callconv: Zig-to-Zig
+const frontier_screen = @import("../screen.zig"); // M-callconv: Zig-to-Zig
+const frontier_timer = @import("../../frontier_timer.zig"); // M-callconv: Zig-to-Zig
 const softmenu_t = abi.Softmenu;
 const softmenuStack_t = abi.SoftmenuStack;
 

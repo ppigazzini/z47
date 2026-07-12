@@ -37,10 +37,10 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // L1 shared bindings (REPORT-23 §5)
-const frontier_char_string = @import("frontier_char_string.zig"); // M-callconv: Zig-to-Zig
+const frontier_char_string = @import("display/text/char_string.zig"); // M-callconv: Zig-to-Zig
 const frontier_date_time = @import("frontier_date_time.zig"); // M-callconv: Zig-to-Zig
 const frontier_debug = @import("frontier_debug.zig"); // M-callconv: Zig-to-Zig
-const frontier_display = @import("frontier_display.zig"); // M-callconv: Zig-to-Zig
+const frontier_display = @import("display/display.zig"); // M-callconv: Zig-to-Zig
 const frontier_error = @import("frontier_error.zig"); // M-callconv: Zig-to-Zig
 const frontier_integers = @import("frontier_integers.zig"); // M-callconv: Zig-to-Zig
 const frontier_real_type = @import("frontier_real_type.zig"); // M-callconv: Zig-to-Zig

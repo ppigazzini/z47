@@ -42,7 +42,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ITEMS_C = ROOT / "src/c47/items.c"
 ITEMS_H = ROOT / "src/c47/items.h"
-ZIG_ITEMS = ROOT / "zig_src/frontier/frontier_items.zig"
+ZIG_ITEMS = ROOT / "zig_src/frontier/display/items/items.zig"
 
 
 def _split_top_level(text, sep=","):
