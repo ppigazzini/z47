@@ -141,8 +141,10 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
 pub export var clearScreenCounter: i16 = 0;
 
 pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void {
-    const end_x = x + dx;
-    const end_y = y + dy;
+    // Unsigned wraparound (as in C) so an off-screen rect from a negative-width
+    // caller is rejected by the bounds test rather than panicking.
+    const end_x = x +% dx;
+    const end_y = y +% dy;
 
     if (end_x > SCREEN_WIDTH or end_y > SCREEN_HEIGHT) return;
 
