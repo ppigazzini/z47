@@ -316,6 +316,13 @@ pub export fn fnUnitConvert(arg: u16) callconv(.c) void {
     const md: u16 = arg & 0x8000;
     const invert = (arg & 0x4000) != 0;
     const idx: usize = arg & 0x3fff;
+    // C indexes conversionFactors[idx] without a bounds check; a non-conversion
+    // arg (idx past the table) reads a null/absent factor there and converts
+    // nothing. Guard the index so the safe-indexed Zig array matches that
+    // do-nothing behaviour instead of panicking.
+    if (idx >= conversionFactorOffsets.len) {
+        return;
+    }
     if (conversionFactorOffsets[idx]) |offset| {
         unitConversion(cst(offset), md, invert);
     }
