@@ -243,8 +243,8 @@ build-output directories.
 ## File Naming Conventions
 
 Use one naming stratum per file. The suffixes below are the layout-visible part
-of that contract; the deeper layer-scoped casing policy lives in the naming
-milestones under `__DEV/`.
+of that contract; the deeper layer-scoped casing policy is maintained in the repo naming
+contract, not in this layout page.
 
 - semantic owner files use the domain name directly, for example
   `zig_src/frontier/frontier.zig`, `zig_src/kernel/calc_state.zig`, and

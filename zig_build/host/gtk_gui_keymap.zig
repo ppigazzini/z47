@@ -6,7 +6,7 @@
 // keyboard-shortcut path. The lookup tables gdkKeyMap[] / deadKeysMap[] stay as
 // C-defined `const` data in gtkGui.c and are reached here as extern arrays.
 
-// --- item codes (probed from items.h via __DEV/gen_consts.c) ---
+// --- item codes (probed from items.h) ---
 const ITM_0: i16 = 540;
 const ITM_A: i16 = 550;
 const ITM_ALPHA: i16 = 602;
