@@ -518,6 +518,7 @@ pub fn isFunctionAllowingNewVariable(op: u16) bool {
         runtime.ITM_M_DIM,
         runtime.ITM_MVAR,
         runtime.ITM_SOLVE,
+        runtime.ITM_PLTf,
         runtime.ITM_STOCFG,
         runtime.ITM_STOMAX,
         runtime.ITM_STOMIN,
@@ -527,6 +528,7 @@ pub fn isFunctionAllowingNewVariable(op: u16) bool {
         runtime.ITM_Zex,
         runtime.ITM_Tex,
         runtime.ITM_INTEGRAL,
+        runtime.ITM_INTEGRAL_YX,
         => true,
         else => false,
     };
