@@ -18,7 +18,11 @@ import os,sys,re,subprocess,collections
 ROOT=subprocess.check_output(['git','rev-parse','--show-toplevel'],text=True).strip()
 os.chdir(ROOT)
 IMP=re.compile(r'@import\("([^"]+\.zig)"\)')
-REFDIRS=['zig_src','zig_build']; REFFILES=['build.zig','.github/project/upstream-port-ledger.tsv']
+REFDIRS=['zig_src','zig_build']
+# Path-reference surfaces beyond the build graph: the ledger, the extern/@cImport
+# boundary allowlist, and any .github/project audit file that names owner paths.
+REFFILES=['build.zig','.github/project/upstream-port-ledger.tsv',
+          '.github/project/zig-c-boundaries.txt']
 
 def tracked_zig():
     return subprocess.check_output(['git','ls-files','zig_src/**/*.zig','zig_build/**/*.zig'],text=True).split()
