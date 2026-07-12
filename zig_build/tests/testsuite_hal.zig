@@ -156,8 +156,9 @@ fn ioFileNameFromFilePath(path: c_int) ?[*:0]const u8 {
         ioPathExportRTFProgram => "c47program.rtf",
         ioPathSaveAllPrograms => "c47programs.bin",
         ioPathExportRTFAllPrograms => "c47programs.rtf",
-        // Headless .p47 runner: return the path the harness set, if any.
-        ioPathLoadProgram => z47_pgm_run_file,
+        // Headless .p47 runner sets z47_pgm_run_file; otherwise the coverage
+        // suites' covWriteAndLoadPgm writes c47programTest.bin and loads it back.
+        ioPathLoadProgram => z47_pgm_run_file orelse "c47programTest.bin",
         else => null,
     };
 }
