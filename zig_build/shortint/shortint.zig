@@ -108,11 +108,11 @@ pub fn addRuntimeObjectsWithOptions(
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
     return .{
-        .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_src/shortint/logical_mask.zig", options),
-        .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_src/shortint/logical_count_bits.zig", options),
-        .logical_boolean_ops = addRuntimeObject(b, target, optimize, name_prefix, "logical-boolean-ops", "zig_src/shortint/logical_boolean_ops.zig", options),
-        .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/shortint/rotate_bits.zig", options),
-        .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_src/shortint/logical_set_clear_flip_bits.zig", options),
+        .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_src/engine/integer/logical_mask.zig", options),
+        .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_src/engine/integer/logical_count_bits.zig", options),
+        .logical_boolean_ops = addRuntimeObject(b, target, optimize, name_prefix, "logical-boolean-ops", "zig_src/engine/integer/logical_boolean_ops.zig", options),
+        .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/engine/integer/rotate_bits.zig", options),
+        .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_src/engine/integer/logical_set_clear_flip_bits.zig", options),
     };
 }
 
