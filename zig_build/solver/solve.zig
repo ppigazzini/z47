@@ -44,7 +44,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/solver/solve.zig"),
+        .root_source_file = b.path("zig_src/engine/analysis/solve.zig"),
         .target = target,
         .optimize = optimize,
         .link_libc = true,
