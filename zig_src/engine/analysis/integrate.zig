@@ -469,6 +469,12 @@ fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t,
     } else if (!realIsSpecial(x)) { // abscissa is good?
         reallocateRegister(regist, dtReal34, 0, amNone);
         realToReal34(x, registerReal34Ptr(regist));
+        // Put the node's x value in REGISTER_X too (like _executeSolver) so
+        // fnFillStack feeds a program integrand its x on the stack, not a stale
+        // prior result. Without this a program that reads stack X (rather than the
+        // integration variable) integrates garbage.
+        reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+        realToReal34(x, registerReal34Ptr(REGISTER_X));
         fnFillStack(NOPARAM);
         _integratorIteration();
         real34ToReal(registerReal34Ptr(REGISTER_X), res);
