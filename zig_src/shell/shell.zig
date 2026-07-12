@@ -35,7 +35,7 @@ const t_dist = @import("distributions/t.zig");
 // everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
 // exponential) and SAVE_SPACE_DM42_17C (pareto/uniform) guards so flash-limited
 // firmware packages compile those distribution owners out of the shared object.
-const dr = @import("distribution_runtime.zig");
+const dr = @import("distributions/distribution_runtime.zig");
 const frontier_build_options = @import("frontier_build_options");
 const strip_16: bool = frontier_build_options.strip_16;
 const strip_17: bool = frontier_build_options.strip_17;

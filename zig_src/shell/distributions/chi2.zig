@@ -9,7 +9,7 @@
 // Newton solver), so no helpers are exported. The testSuite drives every branch
 // via tests/chi2_{p,l,r,i}.txt.
 
-const dr = @import("../distribution_runtime.zig");
+const dr = @import("distribution_runtime.zig");
 pub const real_t = dr.real_t;
 pub const realContext_t = dr.realContext_t;
 

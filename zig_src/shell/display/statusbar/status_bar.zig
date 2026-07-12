@@ -22,7 +22,7 @@
 // across every target plus the boundary gates.
 
 const std = @import("std");
-const status_bar_geometry = @import("../../status_bar_geometry.zig"); // std-only status-bar geometry
+const status_bar_geometry = @import("status_bar_geometry.zig"); // std-only status-bar geometry
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;

@@ -18,7 +18,7 @@
 
 const builtin = @import("builtin");
 const build_options = @import("frontier_build_options");
-const dr = @import("distribution_runtime.zig");
+const dr = @import("distributions/distribution_runtime.zig");
 
 const dmcp_build: bool = build_options.dmcp_build;
 const old_hw: bool = build_options.old_hw;
