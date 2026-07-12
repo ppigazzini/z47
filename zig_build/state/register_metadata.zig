@@ -29,7 +29,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/state/register_metadata.zig"),
+        .root_source_file = b.path("zig_src/kernel/register_metadata.zig"),
         .target = target,
         .optimize = optimize,
         .strip = options.strip,

@@ -247,11 +247,11 @@ of that contract; the deeper layer-scoped casing policy lives in the naming
 milestones under `__DEV/`.
 
 - semantic owner files use the domain name directly, for example
-  `zig_src/frontier/frontier.zig`, `zig_src/state/calc_state.zig`, and
+  `zig_src/frontier/frontier.zig`, `zig_src/kernel/calc_state.zig`, and
   `zig_src/ui/tone.zig`
 - direct legacy-boundary Zig seams use `*_runtime.zig`, for example
   `zig_src/frontier/frontier_runtime.zig` and
-  `zig_src/state/calc_state_runtime.zig`
+  `zig_src/kernel/calc_state_runtime.zig`
 - pure ABI shim forwarders use `*_export.zig`, for example
   `zig_src/frontier/glyph_export.zig`
 - internal implementation helpers that exist only behind a paired export shim use
