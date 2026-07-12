@@ -1,6 +1,6 @@
 const build_options = @import("math_command_wrappers_build_options");
-const ln_complex_owned = @import("../math_ln_complex.zig");
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const ln_complex_owned = @import("../ln_complex.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;

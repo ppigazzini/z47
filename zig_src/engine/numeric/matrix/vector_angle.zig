@@ -5,7 +5,7 @@
 // arc-cosine. The remaining matrix engine stays in the matrix bridge until the
 // later B clusters land.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

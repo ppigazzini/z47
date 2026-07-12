@@ -18,8 +18,8 @@ const const_1 = consts.const_1;
 // ERROR_NO_SUMMATION_DATA==28; TI_PERCD2==70 (real value); const_1 blob
 // offset 4368.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_deltaPercentXmean = @import("../math_deltaPercentXmean.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_deltaPercentXmean = @import("../deltaPercentXmean.zig"); // M-callconv: Zig-to-Zig
 const math_percentSigma = @import("percentSigma.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;

@@ -7,8 +7,8 @@ const consts = abi.constants;
 // now-Zig callByIndexedMatrix; the static reducer/search callbacks stay
 // file-local here.
 const std = @import("std");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_matrix_elementwise = @import("elementwise.zig"); // M-callconv: Zig-to-Zig
 
 const real_t = runtime.real_t;

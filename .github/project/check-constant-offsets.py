@@ -128,7 +128,7 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
             r"OFF_const\w* = (\d+)",
             r"^\s*(\d+), // \d+ constFactor",
         ],
-        "zig_src/engine/numeric/math_runtime_helpers.zig": [r"offset_const\w* = (\d+)"],
+        "zig_src/engine/numeric/runtime_helpers.zig": [r"offset_const\w* = (\d+)"],
         "zig_src/engine/numeric/math_wp34s.zig": [r"OFF_const51_gammaC01: u32 = (\d+)"],
     }
     for rel, pats in OWNERS.items():

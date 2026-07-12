@@ -1,4 +1,4 @@
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 fn dotCplx(
     x_real: *const runtime.real_t,

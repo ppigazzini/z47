@@ -1,6 +1,6 @@
-const ln_complex_owned = @import("../math_ln_complex.zig");
+const ln_complex_owned = @import("../ln_complex.zig");
 const inverse_trig_command_owned = @import("inverse_trig_command.zig");
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;

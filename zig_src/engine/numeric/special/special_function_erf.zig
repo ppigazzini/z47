@@ -1,4 +1,4 @@
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 fn erfReal() callconv(.c) void {
     var x: runtime.real_t = undefined;

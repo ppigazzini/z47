@@ -1,7 +1,7 @@
 const circular_trig_owned = @import("circular_trig.zig");
-const real_trig_owned = @import("../math_real_trig.zig");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const real_trig_owned = @import("../real_trig.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
 
 fn coshReal() callconv(.c) void {
     math_command_wrappers.sinhCoshReal(runtime.trigCos);

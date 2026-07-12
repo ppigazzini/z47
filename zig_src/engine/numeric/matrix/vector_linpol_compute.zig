@@ -1,4 +1,4 @@
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 pub fn linpolScalar(a: *const runtime.real_t, b: *const runtime.real_t, p: *const runtime.real_t, res: *runtime.real_t) void {
     var x: runtime.real_t = undefined;

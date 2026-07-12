@@ -16,8 +16,8 @@ const const39_ln2 = consts.const39_ln2;
 // stay private. The SAVE_SPACE_DM42_12 gate is dead on every z47 build, so the
 // body is ported unconditionally.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
 const math_power = @import("../powerlog/power.zig"); // M-callconv: Zig-to-Zig

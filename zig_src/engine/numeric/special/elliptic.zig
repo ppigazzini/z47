@@ -27,21 +27,21 @@ const const_3Off = consts.const_3Off;
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 // The SAVE_SPACE_DM42_12ELLIP guard is dead on every z47 build.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_agm = @import("../math_agm.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_agm = @import("../agm.zig"); // M-callconv: Zig-to-Zig
 const math_circular_trig_command = @import("../trig/circular_trig_command.zig"); // M-callconv: Zig-to-Zig
-const math_command_wrappers = @import("../math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
-const math_gd = @import("../math_gd.zig"); // M-callconv: Zig-to-Zig
+const math_gd = @import("../gd.zig"); // M-callconv: Zig-to-Zig
 const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig"); // M-callconv: Zig-to-Zig
-const math_ln_complex = @import("../math_ln_complex.zig"); // M-callconv: Zig-to-Zig
+const math_ln_complex = @import("../ln_complex.zig"); // M-callconv: Zig-to-Zig
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig"); // M-callconv: Zig-to-Zig
-const math_runtime_helpers = @import("../math_runtime_helpers.zig"); // M-callconv: Zig-to-Zig
+const math_runtime_helpers = @import("../runtime_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig"); // M-callconv: Zig-to-Zig
 const math_wp34s = @import("wp34s.zig"); // M-callconv: Zig-to-Zig
 
-const math_real_predicates = @import("../math_real_predicates.zig");
+const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;

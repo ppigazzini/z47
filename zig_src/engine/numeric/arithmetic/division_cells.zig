@@ -3,8 +3,8 @@
 
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const support = @import("../math_dispatch_cells_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
+const support = @import("../dispatch_cells_runtime.zig");
 
 const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
 const table_section: ?[]const u8 = if (dm42_pkg_xip) ".qspi_data" else null;

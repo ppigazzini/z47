@@ -15,7 +15,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 const CellFn = *const fn () callconv(.c) void;

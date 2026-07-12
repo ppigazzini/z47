@@ -4,7 +4,7 @@
 // to a matrix; appendRowAtMatrixRegister grows a matrix register by one row.
 // Both delegate to the still-bridged redimMatrixRegister.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers_runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
 

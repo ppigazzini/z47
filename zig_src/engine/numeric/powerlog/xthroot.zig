@@ -13,13 +13,13 @@ const const_NaN = consts.const_NaN;
 // SAVE_SPACE_DM42_12 guard is dead on every z47 build, so the body is ported
 // unconditionally.
 
-const runtime = @import("../math_command_wrappers_runtime.zig");
-const math_command_wrappers = @import("../math_command_wrappers.zig"); // M-callconv: Zig-to-Zig
-const math_comparison_reals = @import("../math_comparison_reals.zig"); // M-callconv: Zig-to-Zig
+const runtime = @import("../command_wrappers_runtime.zig");
+const math_command_wrappers = @import("../command_wrappers.zig"); // M-callconv: Zig-to-Zig
+const math_comparison_reals = @import("../comparison_reals.zig"); // M-callconv: Zig-to-Zig
 const math_division_cells = @import("../arithmetic/division_cells.zig"); // M-callconv: Zig-to-Zig
 const math_power = @import("power.zig"); // M-callconv: Zig-to-Zig
 
-const math_real_predicates = @import("../math_real_predicates.zig");
+const math_real_predicates = @import("../real_predicates.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;
 
