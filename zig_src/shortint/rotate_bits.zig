@@ -1,5 +1,5 @@
 const runtime = @import("shortint_runtime.zig");
-const shortint_core = @import("shortint_core.zig");
+const shortint_core = @import("core.zig");
 
 fn getShiftInput(word: *u64, base: *u32) bool {
     if (!runtime.getRegisterAsRawShortInt(runtime.REGISTER_X, word, base)) {

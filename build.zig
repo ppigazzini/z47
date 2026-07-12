@@ -55,7 +55,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
     const pure_modules = [_][]const u8{
         "zig_src/abi/float_format.zig",
         "zig_src/abi/types.zig",
-        "zig_src/shortint/shortint_core.zig",
+        "zig_src/shortint/core.zig",
         "zig_src/state/calc_state_progmem.zig",
         "zig_src/state/register_metadata_payload_bytes.zig",
         "zig_src/state/register_descriptor_codec.zig",

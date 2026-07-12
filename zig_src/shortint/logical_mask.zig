@@ -1,4 +1,4 @@
-const core = @import("shortint_core.zig");
+const core = @import("core.zig");
 const runtime = @import("shortint_runtime.zig");
 
 pub export fn fnMaskl(number_of_bits: u16) callconv(.c) void {

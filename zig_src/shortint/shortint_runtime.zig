@@ -1,7 +1,7 @@
 const std = @import("std");
-const register_storage_owned = @import("shortint_runtime_register_storage.zig");
-const real_owned = @import("shortint_runtime_real.zig");
-const error_info_owned = @import("shortint_runtime_error_info.zig");
+const register_storage_owned = @import("runtime_register_storage.zig");
+const real_owned = @import("runtime_real.zig");
+const error_info_owned = @import("runtime_error_info.zig");
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
