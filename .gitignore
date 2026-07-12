@@ -191,6 +191,6 @@ __pycache__/
 cov_pcs.txt
 
 # Maintainer working surface: planning/audit docs and reports. Policy is to
-# never commit this tree (see __DEV/PROMPT.md); ignore it so it cannot be staged
+# never commit this tree; ignore it so it cannot be staged
 # by accident.
 __DEV/

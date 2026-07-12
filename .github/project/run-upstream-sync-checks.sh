@@ -34,7 +34,3 @@ else
   exit 1
 fi
 
-echo
-echo "[5/5] Iteration report governance-section validation"
-python3 .github/project/check-iteration-report-sections.py \
-  --report "$repo_root/__DEV/reports/REPORT-13-CODEBASE.md"
