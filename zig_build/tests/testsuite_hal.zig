@@ -106,8 +106,10 @@ pub export fn bitblt24(x_in: u32, dx: u32, y: u32, val: u32, blt_op: c_int, fill
 }
 
 pub export fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void {
-    const endX = x + dx;
-    const endY = y + dy;
+    // C computes endX/endY with unsigned wraparound and rejects anything past
+    // the screen; mirror the wrap so an off-screen rect is dropped, not panicked.
+    const endX = x +% dx;
+    const endY = y +% dy;
     if (endX > SCREEN_WIDTH or endY > SCREEN_HEIGHT) return;
     const blt_op: c_int = if (val != 0) BLT_OR else BLT_ANDN;
     var col = x;
