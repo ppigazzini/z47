@@ -148,6 +148,8 @@ const FLAG_PLINE_U: c_uint = 0x8051;
 const ITM_RAD: i16 = 1557;
 
 const SOLVER_STATUS_READY_TO_EXECUTE: u16 = 0x0001;
+const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
+const ERROR_SOLVER_ABORT: u8 = 60;
 const SOLVER_RESULT_NORMAL: f64 = 0;
 const SOLVER_RESULT_OTHER_FAILURE: f64 = 5;
 const SOLVER_RESULT_CONJUGATES: f64 = 200;
@@ -318,6 +320,7 @@ extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const rea
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn showHideHourGlass() void;
 extern fn refreshScreen(src: u16) void;
+extern fn realSetNaN(value: *real_t) void;
 extern fn refreshStatusBar() void;
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;
 extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, video_mode: c_int, show_leading_cols: bool, show_ending_cols: bool) u32;
@@ -473,21 +476,36 @@ fn execute_rpn_function() void {
     if (regStats != INVALID_VARIABLE) {
         fnStore(@bitCast(regStats)); // place X register into x
 
-        equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+        if ((currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) != 0) {
+            // RPN grapher: run the program over the plot variable at this sample.
+            var xReal: real_t = undefined;
+            var resReal: real_t = undefined;
+            real34ToReal(reg34(REGISTER_X), &xReal);
+            solve_owned._executeSolverReal(@bitCast(currentSolverVariable), &xReal, &resReal, null);
+            realToReal34(&resReal, reg34(REGISTER_X));
+        } else {
+            equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
+        }
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-        if (comptime !is_dmcp_build) {
-            if (lastErrorCode != 0) {
+        if (lastErrorCode != 0) { // failed sample: NaN it so stale register content is not plotted
+            var nanR: real_t = undefined;
+            realSetNaN(&nanR);
+            reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
+            realToReal34(&nanR, reg34(REGISTER_X));
+            if (lastErrorCode != ERROR_SOLVER_ABORT) { // keep an abort alive to stop the plot; ordinary errors just NaN this sample
                 lastErrorCode = 0;
             }
         }
         fnRCL(regStats);
 
         // ENABLE_COMPLEXSOLVER_FILE_OUTPUT == 2 block: compile-time dead.
-    } else {
-        if (comptime !is_dmcp_build) {
-            lastErrorCode = 0;
-        }
+    } else { // invalid plot variable: NaN REGISTER_Y so the caller does not sample stale content
+        var nanR: real_t = undefined;
+        realSetNaN(&nanR);
+        reallocateRegister(REGISTER_Y, dtReal34, 0, @bitCast(amNone));
+        realToReal34(&nanR, reg34(REGISTER_Y));
+        lastErrorCode = 0;
     }
 }
 
@@ -1831,5 +1849,18 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             }
         },
         else => {},
+    }
+}
+
+// ===========================================================================
+// fnPlotf
+// ===========================================================================
+pub export fn fnPlotf(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnEqSolvGraph(EQ_PLOT); // picks up X1 X2 from the stack
+    if (lastErrorCode == ERROR_NONE) {
+        // On a rejected range CM_NORMAL is already set; skip fnPlotSQ so it does
+        // not force CM_GRAPH back and hide the error.
+        fnPlotSQ(0);
     }
 }

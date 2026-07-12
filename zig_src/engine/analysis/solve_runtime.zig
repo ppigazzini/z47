@@ -13,20 +13,52 @@ else
 
 pub const bool_t = bool;
 pub const calcRegister_t = i16;
+// decimal128 register value; fnMvarPlot only needs its address for the quiet
+// range read, so treat the 16 bytes opaquely.
+pub const real34_t = extern struct { bytes: [16]u8 };
 pub const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 pub const LAST_LABEL: u16 = 6999;
 pub const REGISTER_X: calcRegister_t = 100;
+pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
 pub const REGISTER_T: calcRegister_t = 103;
 pub const INVALID_VARIABLE: u16 = 2199;
+pub const FIRST_NAMED_VARIABLE: u16 = 256;
+pub const LAST_NAMED_VARIABLE: u16 = 1999;
 pub const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
+pub const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
+pub const ERROR_NONE: u8 = 0;
 pub const ERROR_LABEL_NOT_FOUND: u8 = 6;
 pub const ERROR_OUT_OF_RANGE: u8 = 8;
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+pub const ERROR_NO_PROGRAM_SPECIFIED: u8 = 54;
 pub const FLAG_ENDPMT: u32 = 0xc029;
 pub const SOLVER_STATUS_USES_FORMULA: u16 = 0x0100;
+pub const SOLVER_STATUS_INTERACTIVE: u16 = 0x0002;
+pub const SOLVER_STATUS_EQUATION_GRAPHER: u16 = 0x2000;
+pub const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
+pub const SCRUPD_MANUAL_MENU: u8 = 4;
 
 pub extern var currentSolverProgram: u16;
 pub extern var currentSolverStatus: u16;
+pub extern var currentSolverVariable: u16;
+pub extern var numberOfLabels: u16;
+pub extern var screenUpdatingMode: u8;
+pub extern var lastErrorCode: u8;
+
+pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *align(1) real34_t) bool;
+pub extern fn saveForUndo() void;
+pub extern fn fnUndo(unused_but_mandatory_parameter: u16) void;
+pub extern fn fnPlotf(unused_but_mandatory_parameter: u16) void;
+pub extern fn refreshScreen(src: u16) void;
+pub extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, error_reg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
+
+pub inline fn isNamedVariable(v: u16) bool {
+    return v >= FIRST_NAMED_VARIABLE and v <= LAST_NAMED_VARIABLE;
+}
+pub inline fn isLabelOrStackRegister(v: u16) bool {
+    return (v >= FIRST_LABEL and v <= LAST_LABEL) or (v >= REGISTER_X and v <= REGISTER_T);
+}
 
 pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
 // namedLabels_t label-scope selector (typeDefinitions.h): GLOBAL_LABELS ==

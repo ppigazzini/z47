@@ -568,7 +568,7 @@ fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: 
     }
 }
 
-fn _executeSolverReal(variable: calcRegister_t, val: *const real_t, res: *real_t, deriv: ?*real_t) linksection(runtime.code_section) void {
+pub fn _executeSolverReal(variable: calcRegister_t, val: *const real_t, res: *real_t, deriv: ?*real_t) linksection(runtime.code_section) void {
     if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0) {
         // pass real_t value via ioVal, result comes back in same variable as real_t
         realCopy(val, res);
