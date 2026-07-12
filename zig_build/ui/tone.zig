@@ -41,7 +41,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/ui/tone.zig"),
+        .root_source_file = b.path("zig_src/shell/audio/tone.zig"),
         .target = target,
         .optimize = optimize,
         .strip = options.strip,
