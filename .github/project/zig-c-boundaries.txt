@@ -39,7 +39,7 @@ zig_build/tools/generate_catalogs.zig
 zig_build/tools/generate_testpgms.zig
 zig_src/seam/abi/runtime.zig
 zig_src/seam/abi/registers.zig
-zig_src/shortint/shortint_runtime.zig
+zig_src/engine/integer/shortint_runtime.zig
 zig_src/seam/constants/constants_runtime.zig
 zig_src/engine/numeric/math_command_wrappers_runtime.zig
 zig_src/engine/numeric/arithmetic/addition_cells.zig
