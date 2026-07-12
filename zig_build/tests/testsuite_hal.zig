@@ -98,9 +98,14 @@ extern fn remove(path: [*:0]const u8) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 const ioPathManualSave: c_int = 0;
+const ioPathAutoSave: c_int = 1;
 const ioPathPgmFile: c_int = 2;
 const ioPathTestPgms: c_int = 3;
 const ioPathBackup: c_int = 4;
+// State-file paths (SAVEST / LOADST), used by the serialize-state coverage suite
+// to round-trip the whole calculator state. io.h: SaveStateFile=6, LoadStateFile=7.
+const ioPathSaveStateFile: c_int = 6;
+const ioPathLoadStateFile: c_int = 7;
 // Program write/export paths (WRITEP / EXPORTP / write-all), added upstream with
 // the save/restore coverage suites. io.h: SaveProgram=8, ExportRTFProgram=10,
 // SaveAllPrograms=12, ExportRTFAllPrograms=13.
@@ -135,6 +140,9 @@ pub export var _ioFileNameOverride: [1024]u8 = [_]u8{0} ** 1024;
 fn ioFileNameFromFilePath(path: c_int) ?[*:0]const u8 {
     return switch (path) {
         ioPathManualSave => "c47.sav",
+        ioPathAutoSave => "c47auto.sav",
+        // Whole-state save/load round-trip to one headless file.
+        ioPathSaveStateFile, ioPathLoadStateFile => "c47state.bin",
         ioPathPgmFile => "c47.dat",
         ioPathTestPgms => "res/testPgms/testPgms.bin",
         ioPathBackup => "backup.cfg",
