@@ -23,9 +23,10 @@ fn restoreCalcBackupHost() callconv(.c) void {
 }
 
 comptime {
-    // Force the shared decNumber contexts + solver context (base kernel state).
+    // Force the shared decNumber contexts + solver context + error state (base).
     _ = @import("decimal_context.zig");
     _ = @import("solver_context.zig");
+    _ = @import("error_state.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
