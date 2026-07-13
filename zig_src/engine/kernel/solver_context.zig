@@ -10,4 +10,7 @@
 
 pub export var currentSolverStatus: u16 = 0;
 pub export var currentSolverVariable: u16 = 0;
+pub export var currentSolverProgram: u16 = 0;
+pub export var currentSolverNestingDepth: u16 = 0;
 pub export var currentFormula: u16 = 0;
+pub export var numberOfFormulae: u16 = 0;
