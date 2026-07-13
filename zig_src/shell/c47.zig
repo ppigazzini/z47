@@ -167,11 +167,8 @@ pub export var cleanupAfterShift: bool_t = false;
 pub export var solverEstimatesUsed: bool_t = false;
 pub export var updateOldConstants: bool_t = false;
 
-pub export var ctxtReal4: realContext_t = std.mem.zeroes(realContext_t);
-pub export var ctxtReal34: realContext_t = std.mem.zeroes(realContext_t);
-pub export var ctxtReal39: realContext_t = std.mem.zeroes(realContext_t);
-pub export var ctxtReal51: realContext_t = std.mem.zeroes(realContext_t);
-pub export var ctxtReal75: realContext_t = std.mem.zeroes(realContext_t);
+// ctxtReal4/34/39/51/75 (the shared decNumber contexts) now live in the base
+// kernel at engine/kernel/decimal_context.zig; consumers extern them unchanged.
 
 pub export var allSubroutineLevels: subroutineLevels_t = std.mem.zeroes(subroutineLevels_t);
 pub export var currentSubroutineLevelData: ?*anyopaque = null;
