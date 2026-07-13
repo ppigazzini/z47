@@ -18,12 +18,12 @@ const DECSPECIAL: u8 = 0x70;
 const DEC_ROUND_DOWN: c_int = 5;
 
 const abi = @import("abi"); // shared ABI bindings
-const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const real_t = abi.Real;
 
 const realContext_t = abi.RealContext;
 
 extern var ctxtReal39: realContext_t;
+extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void;
 
 inline fn realIsSpecial(r: *const real_t) bool {
     return (r.bits & DECSPECIAL) != 0;
@@ -38,7 +38,7 @@ fn realToInt(r: *const real_t, magnitude_limit: u64, round: c_int, err: ?*bool) 
     }
 
     var integer: real_t = undefined;
-    frontier_register_value_conversions.realToIntegralValue(r, &integer, round, &ctxtReal39);
+    realToIntegralValue(r, &integer, round, &ctxtReal39);
 
     var value: u64 = 0;
     var i: i32 = @divTrunc(integer.digits - 1, DECDPUN);
