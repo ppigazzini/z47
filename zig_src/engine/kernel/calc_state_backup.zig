@@ -15,7 +15,7 @@ const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id"
 const FILE_OK: c_int = 1;
 const ioPathBackup: c_int = 4;
 const ioModeWrite: c_int = 1;
-const BACKUP_VERSION: u32 = 1015; // C saveRestoreBackup.c:14 (FLAG_SIGZEROS bump)
+const BACKUP_VERSION: u32 = 1016; // C saveRestoreBackup.c:14 (graph range defaults float -> real)
 const INVALID_VARIABLE: i16 = 2199;
 const CM_CONFIRMATION: u8 = 11;
 const USER_C47: u16 = 46;
@@ -50,6 +50,9 @@ extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // realToStr
 extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // real34ToString
 extern fn decQuadIsInfinite(src: [*c]const u8) u32; // real34IsInfinite
 const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
+const real_t = opaque {}; // decNumber; range globals hold a *real_t (see graphs.zig)
+// REAL_SIZE_IN_BYTES(34) = 10 + sizeof(decNumberUnit=2) * (REAL_MAX_DIGITS(34)=39 / DECDPUN=3) = 36.
+const REAL_SIZE_IN_BYTES_34: u32 = 36; // C realType.h REAL_SIZE_IN_BYTES(34)
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
 extern fn refreshScreen(source: u16) void;
@@ -194,10 +197,12 @@ extern var PLOT_ZOOM: [1]u8;
 extern var plotmode: [1]u8;
 extern var tick_int_x: [4]u8;
 extern var tick_int_y: [4]u8;
-extern var x_min: [4]u8;
-extern var x_max: [4]u8;
-extern var y_min: [4]u8;
-extern var y_max: [4]u8;
+// Graph range globals are now pointers to a real_t (34-digit decNumber) buffer,
+// matching c43's REAL_T_PTR(x_min, 34) in graphs.c. Use the pointer directly (no &).
+extern var x_min: *real_t;
+extern var x_max: *real_t;
+extern var y_min: *real_t;
+extern var y_max: *real_t;
 extern var xzero: [4]u8;
 extern var yzero: [4]u8;
 extern var regStatsXY: [2]u8;
@@ -557,10 +562,10 @@ pub fn saveCalc() void {
     sv(&plotmode[0], 1, "plotmode", "int8");
     sv(&tick_int_x[0], 4, "tick_int_x", "float");
     sv(&tick_int_y[0], 4, "tick_int_y", "float");
-    sv(&x_min[0], 4, "x_min", "float");
-    sv(&x_max[0], 4, "x_max", "float");
-    sv(&y_min[0], 4, "y_min", "float");
-    sv(&y_max[0], 4, "y_max", "float");
+    sv(x_min, REAL_SIZE_IN_BYTES_34, "x_min", "real");
+    sv(x_max, REAL_SIZE_IN_BYTES_34, "x_max", "real");
+    sv(y_min, REAL_SIZE_IN_BYTES_34, "y_min", "real");
+    sv(y_max, REAL_SIZE_IN_BYTES_34, "y_max", "real");
     sv(&xzero[0], 4, "xzero", "uint32");
     sv(&yzero[0], 4, "yzero", "uint32");
     sv(&regStatsXY[0], 2, "regStatsXY", "int16");
@@ -868,6 +873,31 @@ const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
     restoreStateValue(buffer, size, name, type_str);
 }
+extern fn stringToDouble(str: [*c]const u8) f64; // locale-free strtod (accepts '.' or ',')
+extern fn convertDoubleToReal(x: f64, destination: *real_t, ctxt: *OpaqueCtx) void;
+// One-time migration of a pre-1016 float parameter into its new real (or double)
+// variable (saveRestoreBackup.c migrateFloatValue). Not an error: the old value is
+// converted and the next save writes the new type. Leaves the default in place when
+// no old float value is present.
+fn migrateFloatValue(buffer: ?*anyopaque, valueName: [*c]const u8, newType: [*c]const u8) void {
+    var search: [60]u8 = undefined;
+    const s: [*c]u8 = &search[0];
+    _ = strcpy(s, valueName);
+    _ = strcat(s, ":float:");
+    paramCurrent = paramHead;
+    while (paramCurrent) |pc| {
+        if (strncmp(pc.param, s, strlen(s)) == 0) break;
+        paramCurrent = pc.next;
+    }
+    if (paramCurrent == null) return; // old float value absent: keep the default
+    var d = stringToDouble(paramCurrent.?.param + strlen(s));
+    if (!std.math.isFinite(d)) d = 0; // unusable old value: store the default 0
+    if (streq(newType, "real")) {
+        convertDoubleToReal(d, @ptrCast(buffer), &ctxtReal39);
+    } else {
+        @as(*f64, @ptrCast(@alignCast(buffer))).* = d;
+    }
+}
 fn toPcmem(blk: u32) [*c]u8 {
     return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk)));
 }
@@ -1131,10 +1161,18 @@ pub fn restoreCalc() void {
     rv(&plotmode[0], 1, "plotmode", "int8");
     rv(&tick_int_x[0], 4, "tick_int_x", "float");
     rv(&tick_int_y[0], 4, "tick_int_y", "float");
-    rv(&x_min[0], 4, "x_min", "float");
-    rv(&x_max[0], 4, "x_max", "float");
-    rv(&y_min[0], 4, "y_min", "float");
-    rv(&y_max[0], 4, "y_max", "float");
+    if (backupVersion >= 1016) {
+        rv(x_min, REAL_SIZE_IN_BYTES_34, "x_min", "real");
+        rv(x_max, REAL_SIZE_IN_BYTES_34, "x_max", "real");
+        rv(y_min, REAL_SIZE_IN_BYTES_34, "y_min", "real");
+        rv(y_max, REAL_SIZE_IN_BYTES_34, "y_max", "real");
+    } else {
+        // pre-1016 backups stored the ranges as float: convert each once; the next save writes "real".
+        migrateFloatValue(x_min, "x_min", "real");
+        migrateFloatValue(x_max, "x_max", "real");
+        migrateFloatValue(y_min, "y_min", "real");
+        migrateFloatValue(y_max, "y_max", "real");
+    }
     rv(&xzero[0], 4, "xzero", "uint32");
     rv(&yzero[0], 4, "yzero", "uint32");
     rv(&regStatsXY[0], 2, "regStatsXY", "int16");

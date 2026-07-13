@@ -109,6 +109,7 @@ const frontier_status_bar = @import("display/statusbar/status_bar.zig");
 const frontier_store = @import("store.zig");
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
+const consts = abi.constants; // decNumber constant pool (const_1, ...)
 
 const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
@@ -731,10 +732,12 @@ extern var loBinR: real34_t;
 extern var nBins: real34_t;
 extern var hiBinR: real34_t;
 extern var histElementXorY: i16;
-extern var x_min: f32;
-extern var x_max: f32;
-extern var y_min: f32;
-extern var y_max: f32;
+// Graph range limits: real_t (decNumber) POINTERs (real_t *const in upstream).
+// The symbol holds a pointer to a backing real_t; deref/pass the pointer directly.
+extern var x_min: *real_t;
+extern var x_max: *real_t;
+extern var y_min: *real_t;
+extern var y_max: *real_t;
 extern var watchIconEnabled: bool_t;
 extern var serialIOIconEnabled: bool_t;
 extern var printerIconEnabled: bool_t;
@@ -816,6 +819,8 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 // decNumber primitives behind int32ToReal / realToReal34 / real34SetZero / realSetZero.
 extern fn decNumberFromInt32(result: *real_t, rhs: i32) *real_t;
+// realCopy(src,dst) macro -> decNumberCopy(dst, src) (used by doFnReset range init).
+extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
 // realToReal34/decQuadFromNumber are macros over decimal128FromNumber.
 extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadZero(dst: *real34_t) *real34_t;
@@ -911,6 +916,9 @@ inline fn toC47MemPtr(p: ?*anyopaque) u16 {
 // int32ToReal(s,d) / realToReal34(s,d) / real34SetZero(d)
 inline fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
+}
+inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
+    _ = decNumberCopy(destination, source);
 }
 inline fn realToReal34(source: *const real_t, destination: *real34_t) void {
     _ = decimal128FromNumber(destination, @ptrCast(source), &ctxtReal34);
@@ -2111,10 +2119,12 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         real34SetZero(&hiBinR);
         histElementXorY = -1;
 
-        x_min = -10;
-        x_max = 10;
-        y_min = 0;
-        y_max = 1;
+        // x_min/x_max/y_min/y_max are real_t *const; write through the pointers
+        // exactly as config.c does (int32ToReal / realSetZero / realCopy(const_1)).
+        int32ToReal(-10, x_min);
+        int32ToReal(10, x_max);
+        frontier_real_type.realSetZero(y_min);
+        realCopy(consts.const_1(), y_max);
 
         systemFlags0 = 0;
         systemFlags1 = 0;

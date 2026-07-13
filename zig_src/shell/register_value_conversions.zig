@@ -1187,6 +1187,22 @@ fn fnRealToDouble(r: *const real_t) f64 {
 
 extern fn strtod(s: [*c]const u8, endptr: ?*[*c]u8) f64;
 
+// Locale-free strtod: normalise '.'/',' to the locale radix, then strtod.
+// (Ports registerValueConversions.c stringToDouble; used by the save-state
+// float->real migration path.)
+const c_lconv = extern struct { decimal_point: [*:0]const u8 };
+extern fn localeconv() *c_lconv;
+pub export fn stringToDouble(str: [*c]const u8) callconv(.c) f64 {
+    var buf: [120]u8 = undefined;
+    const radix: u8 = localeconv().decimal_point[0];
+    var i: usize = 0;
+    while (str[i] != 0 and i < buf.len - 1) : (i += 1) {
+        buf[i] = if (str[i] == '.' or str[i] == ',') radix else str[i];
+    }
+    buf[i] = 0;
+    return strtod(&buf, null);
+}
+
 pub export fn realToDouble(vv: *const real_t, v: *f64) callconv(.c) void {
     v.* = fnRealToDouble(vv);
 }

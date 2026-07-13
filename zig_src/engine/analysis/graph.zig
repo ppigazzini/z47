@@ -258,10 +258,10 @@ extern var regStatsXY: calcRegister_t;
 extern var plotStatMx: [8]u8;
 extern var PLOT_SHADE: bool;
 extern var PLOT_ZOOM: i8;
-extern var x_min: f32;
-extern var x_max: f32;
-extern var y_min: f32;
-extern var y_max: f32;
+extern var x_min: *real_t;
+extern var x_max: *real_t;
+extern var y_min: *real_t;
+extern var y_max: *real_t;
 extern var SAVED_SIGMA_lastAddRem: i8;
 extern var tmpString: [*c]u8;
 extern var aimBuffer: [*c]u8;
@@ -742,7 +742,7 @@ fn execute_rpn_function_graphAcc() void {
 // Swap the range if entered reversed; widen a span too small to plot at the
 // graph working precision. Uses ctxtReal39, not ctxtGraphs. (Wired in by the
 // range-reconcile slice; compiled ahead of its caller.)
-fn graphRangeGuard(lo: *real_t, hi: *real_t) void {
+pub export fn graphRangeGuard(lo: *real_t, hi: *real_t) callconv(.c) void {
     var span: real_t = undefined;
     var mag: real_t = undefined;
     var tmpR: real_t = undefined;
@@ -1256,10 +1256,10 @@ fn graph_eqn(mode: u16) void {
     var asymptotes: [MAX_ASYMPTOTES]AsymptoteInfo = undefined;
     var asymptoteCount: c_int = 0;
 
-    convertDoubleToReal(@as(f64, x_min), &x_min_r, ctxtGraphs); // x_min_r = x_min rounded to the graph working digits
-    convertDoubleToReal(@as(f64, x_max), &x_max_r, ctxtGraphs);
-    convertDoubleToReal(@as(f64, y_min), &y_min_r, ctxtGraphs);
-    convertDoubleToReal(@as(f64, y_max), &y_max_r, ctxtGraphs);
+    realPlus(x_min, &x_min_r, ctxtGraphs); // x_min_r = x_min rounded to the graph working digits
+    realPlus(x_max, &x_max_r, ctxtGraphs);
+    realPlus(y_min, &y_min_r, ctxtGraphs);
+    realPlus(y_max, &y_max_r, ctxtGraphs);
     realCopy(&x_min_r, &x01);
     realSetZero(&y01);
     realSetZero(&y02);
@@ -2368,30 +2368,18 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
 
         EQ_PLOT_LU, EQ_PLOT => {
             //      PLOT_ZMY = 0; removed default zeroing of the zoom factor in eqn
-            const higherXStartValue: f64 = convertRegisterToDouble(REGISTER_X);
-            const lowerXStartValue: f64 = convertRegisterToDouble(REGISTER_Y);
+            var loX: real_t = undefined;
+            var hiX: real_t = undefined;
+            const rangeOK = getRegisterAsReal(REGISTER_X, &hiX) and getRegisterAsReal(REGISTER_Y, &loX);
 
             fnClDrawMx(5);
             _ = strcpy(&plotStatMx, "DrwMX");
 
-            if (higherXStartValue > lowerXStartValue + 0.0001 and higherXStartValue != DOUBLE_NOT_INIT and lowerXStartValue != DOUBLE_NOT_INIT) { // pre-condition the plotter
-                x_min = @floatCast(lowerXStartValue);
-                x_max = @floatCast(higherXStartValue);
+            if (rangeOK and realCompareGreaterThan(&hiX, &loX)) { // pre-condition the plotter: x_min = Y, x_max = X
+                realCopy(&loX, x_min);
+                realCopy(&hiX, x_max);
             }
-            if (x_min > x_max) { // swap if entered in incorrect sequence
-                const kk: f32 = x_max;
-                x_max = x_min;
-                x_min = kk;
-            }
-            var x_d: f32 = @floatCast(fabs(@as(f64, x_max - x_min)));
-            if (x_d < 0.0001) { // too close together for float type
-                x_d = 0.0001 * 10;
-                if (fabs(@as(f64, x_min)) < 0.0001 or fabs(@as(f64, x_max)) < 0.0001) { // abort old values typically 0 - 0 and change to -1 to 1
-                    x_d = 10;
-                }
-                x_min = @floatCast(@as(f64, x_min) - 0.1 * @as(f64, x_d));
-                x_max = @floatCast(@as(f64, x_max) + 0.1 * @as(f64, x_d));
-            }
+            graphRangeGuard(x_min, x_max); // swap reversed limits; widen spans too small to plot at working precision
 
             initialize_function();
             graph_eqn(noInitDrwMx);
