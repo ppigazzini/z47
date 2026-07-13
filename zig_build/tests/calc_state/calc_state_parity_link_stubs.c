@@ -87,7 +87,6 @@ alignas(4) unsigned char lastDenominator[4];
 alignas(4) unsigned char lastIntegerBase[4];
 alignas(2) unsigned char lrChosen[2];
 alignas(2) unsigned char lrSelection[2];
-alignas(2) unsigned char numberOfFormulae[2];
 alignas(2) unsigned char numberOfNamedVariables[2];
 alignas(2) unsigned char numberOfUserMenus[2];
 alignas(8) unsigned char pcg32_global[16];
