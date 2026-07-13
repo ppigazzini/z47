@@ -158,6 +158,9 @@ const FLAG_PCURVE = 0x805A;
 // menus / equations
 const MNU_PLOT_STAT: i16 = 1907;
 const MNU_PLOT_FUNC: i16 = 2028;
+const MNU_SHOW: i16 = 2315;
+const PGM_RUNNING: u8 = 1;
+const PGM_PAUSED: u8 = 3;
 const EQ_PLOT_LU: u16 = 5;
 
 // PLOT_NOTHING (defines.h)
@@ -225,6 +228,7 @@ extern var previousCalcMode: u8;
 extern var hourGlassIconEnabled: bool_t;
 extern var currentKeyCode: u8;
 extern var reDraw: bool_t;
+extern var programRunStop: u8;
 extern var lastPlotMode: u16;
 extern var ListXYposition: i16;
 extern var regStatsXY: calcRegister_t;
@@ -667,7 +671,6 @@ pub export fn fnPlotSQ(unusedButMandatoryParameter: u16) callconv(.c) void {
         previousCalcMode = CM_NORMAL;
     } else {
         previousCalcMode = calcMode;
-        frontier_screen.clearScreenOld(@intFromBool(clrStatusBar), @intFromBool(!clrRegisterLines), @intFromBool(!clrSoftkeys)); // Change over hourglass to the left side
     }
 
     calcMode = CM_GRAPH;
@@ -675,7 +678,13 @@ pub export fn fnPlotSQ(unusedButMandatoryParameter: u16) callconv(.c) void {
     frontier_status_bar.showHideHourGlass();
     frontier_status_bar.refreshStatusBar();
 
-    if (frontier_softmenus.menu(0) != -MNU_PLOT_FUNC and plotStatMx[0] == 'D') {
+    if (programRunStop == PGM_RUNNING or programRunStop == PGM_PAUSED) {
+        // Blank menu under a programmed plot so a following SNAP captures the
+        // plot alone; EXIT pops the interactive menu back afterwards.
+        if (frontier_softmenus.menu(0) != -MNU_SHOW) {
+            frontier_softmenus.showSoftmenu(-MNU_SHOW);
+        }
+    } else if (frontier_softmenus.menu(0) != -MNU_PLOT_FUNC and plotStatMx[0] == 'D') {
         frontier_softmenus.showSoftmenu(-MNU_PLOT_FUNC);
     } else if (frontier_softmenus.menu(0) != -MNU_PLOT_STAT and plotStatMx[0] == 'S') {
         frontier_softmenus.showSoftmenu(-MNU_PLOT_STAT);
