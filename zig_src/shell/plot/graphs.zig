@@ -81,6 +81,7 @@ const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const frontier_stats = @import("../stats.zig");
 const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
 const realContext_t = abi.RealContext;
+const real_t = abi.Real;
 
 // GMP mpz_struct. Limb width == pointer width on every z47 target. longInteger_t
 // is mpz_t == __mpz_struct[1]; an array decays to a *mpz_struct on call.
@@ -192,10 +193,21 @@ pub export var invalid_intg: bool_t = true;
 pub export var invalid_diff: bool_t = true;
 pub export var invalid_rms: bool_t = true;
 
-pub export var x_min: f32 = 0;
-pub export var x_max: f32 = 1;
-pub export var y_min: f32 = 0;
-pub export var y_max: f32 = 1;
+// Graph range limits. real_t (decimal) so the plot curve maps to the same pixel
+// as the upstream reference at boundary cases; the whole plot/stat range flow
+// (graph_Include0, graph_plotmem autoscale + mapping, axis/text, save-state) is
+// decimal, matching c43. The exported symbol is a `real_t *const` to a backing
+// buffer, ABI-identical to upstream's REAL_T_PTR(name, 34), so the C and Zig
+// owners are drop-in swappable (the buffer rounds up to 39-digit capacity).
+const real_zero: real_t = .{ .digits = 1, .exponent = 0, .bits = 0, .lsu = [_]u16{0} ** abi.DECNUMUNITS };
+var _x_min_data: real_t = real_zero;
+var _x_max_data: real_t = real_zero;
+var _y_min_data: real_t = real_zero;
+var _y_max_data: real_t = real_zero;
+pub export var x_min: *real_t = &_x_min_data;
+pub export var x_max: *real_t = &_x_max_data;
+pub export var y_min: *real_t = &_y_min_data;
+pub export var y_max: *real_t = &_y_max_data;
 pub export var PLOT_ZMY: i8 = 0;
 
 // function-local statics (preserve across calls)
@@ -260,6 +272,7 @@ extern fn flipSystemFlag(sf: c_uint) void;
 extern fn fnClDrawMx(origin: u8) void;
 
 extern fn fnEqSolvGraph(func: u16) void;
+extern fn graphRangeGuard(lo: *real_t, hi: *real_t) void;
 
 extern fn drawMxN() i32;
 
@@ -326,6 +339,82 @@ inline fn real34SetZero(d: *real34_t) void {
 }
 inline fn real34IsZero(s: *real34_t) bool {
     return decQuadIsZero(s) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// real_t (decNumber) API for the decimal range flow. The range globals x_min/
+// x_max/y_min/y_max are real_t pointers; graph_Include0, the graph_plotmem
+// autoscale + curve mapping and the axis text compute in real_t via ctxtReal39,
+// matching the upstream decimal grapher so pixels round the same at boundaries.
+// ---------------------------------------------------------------------------
+const consts = abi.constants;
+extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberCopyAbs(res: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberMultiply(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFromString(res: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
+extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
+extern fn realSetZero(v: *real_t) void;
+extern fn realSetOne(v: *real_t) void;
+extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
+extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
+extern fn realToDouble(vv: *align(1) const real_t, v: *f64) void;
+extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
+extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
+extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
+extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
+
+inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+    _ = decNumberCopy(dst, src);
+}
+inline fn realCopyAbs(src: *align(1) const real_t, dst: *real_t) void {
+    _ = decNumberCopyAbs(dst, src);
+}
+inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberAdd(res, a, b, ctx);
+}
+inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberSubtract(res, a, b, ctx);
+}
+inline fn realMultiply(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberMultiply(res, a, b, ctx);
+}
+inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberDivide(res, a, b, ctx);
+}
+inline fn stringToReal(s: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
+    _ = decNumberFromString(dst, s, ctx);
+}
+inline fn int32ToReal(source: i32, dst: *real_t) void {
+    _ = decNumberFromInt32(dst, source);
+}
+inline fn realIsZero(v: *align(1) const real_t) bool {
+    return v.lsu[0] == 0 and v.digits == 1 and (v.bits & 0x70) == 0;
+}
+inline fn realIsNegative(v: *align(1) const real_t) bool {
+    return (v.bits & 0x80) == 0x80;
+}
+inline fn realSetPositiveSign(v: *real_t) void {
+    v.bits &= 0x7F;
+}
+inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+    _ = decimal128ToNumber(src, dst);
+}
+inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
+    return decQuadIsNaN(v) != 0 or decQuadIsInfinite(v) != 0 or decQuadIsSignaling(v) != 0;
+}
+inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
+    frontier_register_value_conversions.convertDoubleToReal(x, dst, ctx);
+}
+inline fn realToDoubleVal(r: *align(1) const real_t) f64 {
+    var d: f64 = undefined;
+    realToDouble(r, &d);
+    return d;
 }
 
 // GRAPHMODE macro (calcMode comparison)
@@ -563,7 +652,7 @@ fn calculateZoomFactor(factor: f32, aa: *f32) void {
     }
 }
 
-fn multiplyZoomFactors(plotzoomx: f32, plotzoomy: f32, histofactor: f32, x_min_: *f32, x_max_: *f32, y_min_: *f32, y_max_: *f32, dx: *f32, dy: *f32) void {
+fn multiplyZoomFactors(plotzoomx: f32, plotzoomy: f32, histofactor: f32, x_min_: *real_t, x_max_: *real_t, y_min_: *real_t, y_max_: *real_t, dx: *real_t, dy: *real_t) void {
     plot_zoom.multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, zoomfactor, x_min_, x_max_, y_min_, y_max_, dx, dy);
 }
 
@@ -872,17 +961,17 @@ pub export fn graph_text() callconv(.c) void {
     var tt: [100]u8 = undefined;
     var tmpbuf: [PLOT_TMP_BUF_SIZE]u8 = undefined;
     var n: i32 = undefined;
-    frontier_plotstat.grphNumFormatter(&ss, "(", @floatCast(x_max), 2, "");
+    frontier_plotstat.grphNumFormatter(&ss, "(", realToDoubleVal(x_max), 2, "");
     const ssw: u16 = @truncate(frontier_screen.showStringEnhanced(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
-    frontier_plotstat.grphNumFormatter(&tt, frontier_plotstat.radixProcess(&tmpbuf, "#"), @floatCast(y_max), 2, ")");
+    frontier_plotstat.grphNumFormatter(&tt, frontier_plotstat.radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
     const ttw: u16 = @truncate(frontier_screen.showStringEnhanced(frontier_plotstat.padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
     ypos += 38;
     n = @bitCast(frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, @bitCast(@as(i32, 160) - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), ypos, vmNormal, 0, 0));
     _ = frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &tt), &standardFont, @bitCast(n + 3), ypos, vmNormal, 0, 0);
-    frontier_plotstat.grphNumFormatter(&ss, "(", @floatCast(x_min), 2, "");
+    frontier_plotstat.grphNumFormatter(&ss, "(", realToDoubleVal(x_min), 2, "");
     ypos += 19;
     n = @bitCast(frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, 1, ypos, vmNormal, 0, 0));
-    frontier_plotstat.grphNumFormatter(&ss, frontier_plotstat.radixProcess(&tmpbuf, "#"), @floatCast(y_min), 2, ")");
+    frontier_plotstat.grphNumFormatter(&ss, frontier_plotstat.radixProcess(&tmpbuf, "#"), realToDoubleVal(y_min), 2, ")");
     _ = frontier_screen.showString(frontier_plotstat.padEquals(&tmpbuf, &ss), &standardFont, @bitCast(n + 3), ypos, vmNormal, 0, 0);
     ypos -%= 38;
     showGraphTickText1(tick_int_x, tick_int_y, 1, @bitCast(ypos), @bitCast(ypos -% 12), 3);
@@ -961,62 +1050,73 @@ pub export fn graph_text() callconv(.c) void {
 // graph_Include0
 // ===========================================================================
 pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
-    // Check and correct if min and max is swapped
-    if (x_min > 0.0 and x_min > x_max) {
-        x_min = x_min - (-x_max + x_min) * 1.1;
+    const ctx = &ctxtReal39;
+    var tmp: real_t = undefined;
+    var k: real_t = undefined;
+
+    // Check and correct if min and max is swapped: x_min -/+ (x_min - x_max)*1.1
+    if (realCompareGreaterThan(x_min, consts.const_0()) and realCompareGreaterThan(x_min, x_max)) {
+        realSubtract(x_min, x_max, &tmp, ctx);
+        convertDoubleToReal(1.1, &k, ctx);
+        realMultiply(&tmp, &k, &tmp, ctx);
+        realSubtract(x_min, &tmp, x_min, ctx);
     }
-    if (x_min < 0.0 and x_min > x_max) {
-        x_min = x_min + (-x_max + x_min) * 1.1;
+    if (realCompareLessThan(x_min, consts.const_0()) and realCompareGreaterThan(x_min, x_max)) {
+        realSubtract(x_min, x_max, &tmp, ctx);
+        convertDoubleToReal(1.1, &k, ctx);
+        realMultiply(&tmp, &k, &tmp, ctx);
+        realAdd(x_min, &tmp, x_min, ctx);
     }
 
-    // include the 0 axis
+    // include the 0 axis: the clamped bound becomes -0.05 * the far bound
+    convertDoubleToReal(-0.05, &k, ctx);
     if (getSystemFlag(FLAG_SHOWX)) {
-        if (x_min > 0.0 and x_max > 0.0) {
-            if (x_min <= x_max) {
-                x_min = -0.05 * x_max;
+        if (realCompareGreaterThan(x_min, consts.const_0()) and realCompareGreaterThan(x_max, consts.const_0())) {
+            if (realCompareLessEqual(x_min, x_max)) {
+                realMultiply(x_max, &k, x_min, ctx);
             } else {
-                x_min = 0.0;
+                realSetZero(x_min);
             }
         }
-        if (x_min < 0.0 and x_max < 0.0) {
-            if (x_min >= x_max) {
-                x_min = -0.05 * x_max;
+        if (realCompareLessThan(x_min, consts.const_0()) and realCompareLessThan(x_max, consts.const_0())) {
+            if (realCompareGreaterEqual(x_min, x_max)) {
+                realMultiply(x_max, &k, x_min, ctx);
             } else {
-                x_max = 0.0;
+                realSetZero(x_max);
             }
         }
     }
     if (getSystemFlag(FLAG_SHOWY)) {
-        if (y_min > 0.0 and y_max > 0.0) {
-            if (y_min <= y_max) {
-                y_min = -0.05 * y_max;
+        if (realCompareGreaterThan(y_min, consts.const_0()) and realCompareGreaterThan(y_max, consts.const_0())) {
+            if (realCompareLessEqual(y_min, y_max)) {
+                realMultiply(y_max, &k, y_min, ctx);
             } else {
-                y_min = 0.0;
+                realSetZero(y_min);
             }
         }
-        if (y_min < 0.0 and y_max < 0.0) {
-            if (y_min >= y_max) {
-                y_min = -0.05 * y_max;
+        if (realCompareLessThan(y_min, consts.const_0()) and realCompareLessThan(y_max, consts.const_0())) {
+            if (realCompareGreaterEqual(y_min, y_max)) {
+                realMultiply(y_max, &k, y_min, ctx);
             } else {
-                y_max = 0.0;
+                realSetZero(y_max);
             }
         }
     }
 
-    // modify the draw range if the min == max
-    var dx: f32 = x_max - x_min;
-    var dy: f32 = y_max - y_min;
-    if (dy == 0.0) {
-        dy = 1.0;
-        y_max = y_min + dy / 2.0;
-        y_min = y_max - dy;
-        dy = y_max - y_min;
+    // modify the draw range if the min == max: manufacture a 1-wide window
+    var dx: real_t = undefined;
+    var dy: real_t = undefined;
+    realSubtract(x_max, x_min, &dx, ctx);
+    realSubtract(y_max, y_min, &dy, ctx);
+    if (realIsZero(&dy)) {
+        realAdd(y_min, consts.const_1on2(), y_max, ctx);
+        realSubtract(y_max, consts.const_1(), y_min, ctx);
+        realSubtract(y_max, y_min, &dy, ctx);
     }
-    if (dx == 0.0) {
-        dx = 1.0;
-        x_max = x_min + dx / 2.0;
-        x_min = x_max - dx;
-        dx = x_max - x_min;
+    if (realIsZero(&dx)) {
+        realAdd(x_min, consts.const_1on2(), x_max, ctx);
+        realSubtract(x_max, consts.const_1(), x_min, ctx);
+        realSubtract(x_max, x_min, &dx, ctx);
     }
 
     // Calc zoom scales
@@ -1028,9 +1128,9 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
         // C: PLOT_ZOOM * 0.75 is (int8 * double) -> double, narrowed to float at the arg.
         calculateZoomFactor(@floatCast(@as(f64, @floatFromInt(PLOT_ZOOM)) * 0.75), &plotzoomx);
         plotzoomy = if (drawHistogram == 1) 1 else plotzoomx;
-        multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+        multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, x_min, x_max, y_min, y_max, &dx, &dy);
         if (drawHistogram == 1) {
-            y_min = 0;
+            realSetZero(y_min);
         }
     } else { // mode != PLOTSTAT
         if (PLOT_ZMY != zoomOverride) {
@@ -1043,47 +1143,61 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
             }
             // C: PLOT_ZMY * 0.55 is (int8 * double) -> double, narrowed to float at the arg.
             calculateZoomFactor(@floatCast(@as(f64, @floatFromInt(PLOT_ZMY)) * 0.55), &plotzoomy);
-            multiplyZoomFactors(plotzoomx, plotzoomy, 1, &x_min, &x_max, &y_min, &y_max, &dx, &dy);
+            multiplyZoomFactors(plotzoomx, plotzoomy, 1, x_min, x_max, y_min, y_max, &dx, &dy);
         } else {
-            // PLOT_ZMY = 18, special case to allow Ylo Yhi
-            // _LY _UY override only if ZOOM is not set, AND Yup and Ylo are not zero
-            if (@abs(plotzoomx - 1) < 0.00001 and @abs(plotzoomy - 1) < 0.00001 and !(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) and real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY)))) {
-                y_min = @floatCast(frontier_register_value_conversions.convertRegisterToDouble(RESERVED_VARIABLE_LY));
-                y_max = @floatCast(frontier_register_value_conversions.convertRegisterToDouble(RESERVED_VARIABLE_UY));
+            // PLOT_ZMY = 18, special case to allow Ylo Yhi; _LY/_UY override only if
+            // ZOOM is not set, Yup/Ylo are not both zero, and both are finite.
+            if (@abs(plotzoomx - 1) < 0.00001 and @abs(plotzoomy - 1) < 0.00001 and
+                !(real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) and real34IsZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY))) and
+                !real34IsSpecial(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY)) and !real34IsSpecial(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY)))
+            {
+                real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY), y_min);
+                real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY), y_max);
+                graphRangeGuard(y_min, y_max); // swap reversed limits; widen Ylo == Yhi
             } else {
-                y_min = -10;
-                y_max = 10;
+                int32ToReal(-10, y_min);
+                int32ToReal(10, y_max);
             }
         }
     }
 
     // Cause scales to be the same
     if (getSystemFlag(FLAG_SCALE)) {
-        // if y >> x, then y simply takes on the X range and can be increased using ZMY
         if (mode == PLOTSTAT) {
-            x_min = fminf(x_min, y_min);
-            x_max = fmaxf(x_max, y_max);
-            y_min = x_min;
-            y_max = x_max;
+            // if y >> x, then y simply takes on the X range and can be increased using ZMY
+            if (realCompareGreaterThan(x_min, y_min)) realCopy(y_min, x_min);
+            if (realCompareLessThan(x_max, y_max)) realCopy(y_max, x_max);
+            realCopy(x_min, y_min);
+            realCopy(x_max, y_max);
         } else { // new equal scale calculation to keep the graph centre of screen
-            var dx2: f32 = @abs(x_max - x_min);
-            var dy2: f32 = @abs(y_max - y_min);
-            if (dx2 > 1e-10 and dy2 / dx2 > 100000) {
-                y_min = x_min;
-                y_max = x_max;
-                dx2 = @abs(x_max - x_min);
-                dy2 = @abs(y_max - y_min);
-            } else {
-                if (dx2 > dy2) {
-                    dy2 = dx2;
-                } else {
-                    dx2 = dy2;
-                }
+            realSubtract(x_max, x_min, &dx, ctx); // dx = |x_max - x_min|
+            realSetPositiveSign(&dx);
+            realSubtract(y_max, y_min, &dy, ctx); // dy = |y_max - y_min|
+            realSetPositiveSign(&dy);
+            convertDoubleToReal(1e-10, &k, ctx);
+            realDivide(&dy, &dx, &tmp, ctx); // tmp = dy/dx (inf when dx==0; the dx>1e-10 test excludes that)
+            const dxBigEnough = realCompareGreaterThan(&dx, &k);
+            int32ToReal(100000, &k);
+            if (dxBigEnough and realCompareGreaterThan(&tmp, &k)) { // dy/dx > 100000: y takes on the x range
+                realCopy(x_min, y_min);
+                realCopy(x_max, y_max);
+                realSubtract(x_max, x_min, &dx, ctx);
+                realSetPositiveSign(&dx);
+                realSubtract(y_max, y_min, &dy, ctx);
+                realSetPositiveSign(&dy);
+            } else { // the larger of dx and dy rules both axes
+                if (realCompareGreaterThan(&dx, &dy)) realCopy(&dx, &dy) else realCopy(&dy, &dx);
             }
-            x_min = (x_min + x_max) / 2 - dx2 / 2;
-            x_max = x_min + dx2;
-            y_min = (y_min + y_max) / 2 - dy2 / 2;
-            y_max = y_min + dy2;
+            realAdd(x_min, x_max, &tmp, ctx);
+            realMultiply(&tmp, consts.const_1on2(), &tmp, ctx); // x centre
+            realMultiply(&dx, consts.const_1on2(), &k, ctx); // dx/2
+            realSubtract(&tmp, &k, x_min, ctx); // x_min = centre - dx/2
+            realAdd(x_min, &dx, x_max, ctx); // x_max = x_min + dx
+            realAdd(y_min, y_max, &tmp, ctx);
+            realMultiply(&tmp, consts.const_1on2(), &tmp, ctx); // y centre
+            realMultiply(&dy, consts.const_1on2(), &k, ctx); // dy/2
+            realSubtract(&tmp, &k, y_min, ctx); // y_min = centre - dy/2
+            realAdd(y_min, &dy, y_max, ctx); // y_max = y_min + dy
         }
     }
 }
@@ -1123,6 +1237,8 @@ pub export fn graph_plotmem() callconv(.c) void {
     var yN1: i16 = 0;
     var x: f32 = undefined;
     var y: f32 = undefined;
+    var xr: real_t = undefined; // real_t mirror of the sample x for the decimal range/mapping
+    var yr: real_t = undefined;
     var sx: f32 = undefined;
     var sy: f32 = undefined;
     var ddx: f32 = FLoatingMax;
@@ -1165,11 +1281,12 @@ pub export fn graph_plotmem() callconv(.c) void {
             inty_off = rmsy;
         }
 
-        // AUTOSCALE
-        x_min = FLoatingMax;
-        x_max = FLoatingMin;
-        y_min = FLoatingMax;
-        y_max = FLoatingMin;
+        // AUTOSCALE: the range accumulates in real_t so the first data point
+        // replaces both sentinels and the min/max survive any exponent.
+        convertDoubleToReal(@as(f64, FLoatingMax), x_min, &ctxtReal39);
+        convertDoubleToReal(@as(f64, FLoatingMin), x_max, &ctxtReal39);
+        convertDoubleToReal(@as(f64, FLoatingMax), y_min, &ctxtReal39);
+        convertDoubleToReal(@as(f64, FLoatingMin), y_max, &ctxtReal39);
 
         if (plotmode != _VECT) {
             invalid_intg = false; // integral scale
@@ -1188,21 +1305,18 @@ pub export fn graph_plotmem() callconv(.c) void {
                     if (ix != 0) {
                         ddx = frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1)); // used in DIFF and INT
                         if (ddx <= 0) { // Cannot get slope or area if x is not growing positively
-                            x_min = FLoatingMax;
-                            x_max = FLoatingMin;
-                            y_min = FLoatingMax;
-                            y_max = FLoatingMin;
+                            convertDoubleToReal(@as(f64, FLoatingMax), x_min, &ctxtReal39);
+                            convertDoubleToReal(@as(f64, FLoatingMin), x_max, &ctxtReal39);
+                            convertDoubleToReal(@as(f64, FLoatingMax), y_min, &ctxtReal39);
+                            convertDoubleToReal(@as(f64, FLoatingMin), y_max, &ctxtReal39);
                             invalid_diff = true;
                             invalid_intg = true;
                             invalid_rms = true;
                             break;
                         } else {
-                            if (frontier_plotstat.grf_x(@intCast(ix)) < x_min) {
-                                x_min = frontier_plotstat.grf_x(@intCast(ix));
-                            }
-                            if (frontier_plotstat.grf_x(@intCast(ix)) > x_max) {
-                                x_max = frontier_plotstat.grf_x(@intCast(ix));
-                            }
+                            frontier_plotstat.grf_x_r(@intCast(ix), &xr);
+                            if (realCompareLessThan(&xr, x_min)) realCopy(&xr, x_min);
+                            if (realCompareGreaterThan(&xr, x_max)) realCopy(&xr, x_max);
                             if (PLOT_DIFF) {
                                 // Differential
                                 if (ddx != 0) {
@@ -1214,31 +1328,21 @@ pub export fn graph_plotmem() callconv(.c) void {
                                 } else {
                                     dydx = FLoatingMax;
                                 }
-
-                                if (dydx < y_min) {
-                                    y_min = dydx;
-                                }
-                                if (dydx > y_max) {
-                                    y_max = dydx;
-                                }
+                                convertDoubleToReal(@as(f64, dydx), &yr, &ctxtReal39); // float overlay value as y-range candidate
+                                if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
+                                if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                             }
                             if (PLOT_INTG) {
                                 inty = inty + (frontier_plotstat.grf_y(@intCast(ix)) + frontier_plotstat.grf_y(@intCast(ix - 1))) / 2 * ddx;
-                                if (inty < y_min) {
-                                    y_min = inty;
-                                }
-                                if (inty > y_max) {
-                                    y_max = inty;
-                                }
+                                convertDoubleToReal(@as(f64, inty), &yr, &ctxtReal39);
+                                if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
+                                if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                             }
                             if (PLOT_RMS) {
                                 rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + frontier_plotstat.grf_y(@intCast(ix)) * frontier_plotstat.grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
-                                if (rmsy < y_min) {
-                                    y_min = rmsy;
-                                }
-                                if (rmsy > y_max) {
-                                    y_max = rmsy;
-                                }
+                                convertDoubleToReal(@as(f64, rmsy), &yr, &ctxtReal39);
+                                if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
+                                if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                             }
                         }
                     }
@@ -1266,33 +1370,36 @@ pub export fn graph_plotmem() callconv(.c) void {
             var scaleRmsy: f32 = 0;
 
             if (getSystemFlag(FLAG_PBOX) or getSystemFlag(FLAG_PLINE) or getSystemFlag(FLAG_PCROS) or getSystemFlag(FLAG_PPLUS) or !(PLOT_DIFF or PLOT_INTG)) {
-                // pre-loop to cover trivial cases of symmetrical axis
+                // pre-loop to cover trivial cases of symmetrical axis: real_t min/max
                 cnt = 0;
                 while (cnt < statnum) : (cnt += 1) {
-                    if (frontier_plotstat.grf_x(@intCast(cnt)) < x_min) {
-                        x_min = frontier_plotstat.grf_x(@intCast(cnt));
-                    }
-                    if (frontier_plotstat.grf_x(@intCast(cnt)) > x_max) {
-                        x_max = frontier_plotstat.grf_x(@intCast(cnt));
-                    }
-                    if (frontier_plotstat.grf_y(@intCast(cnt)) < y_min) {
-                        y_min = frontier_plotstat.grf_y(@intCast(cnt));
-                    }
-                    if (frontier_plotstat.grf_y(@intCast(cnt)) > y_max) {
-                        y_max = frontier_plotstat.grf_y(@intCast(cnt));
-                    }
+                    frontier_plotstat.grf_x_r(@intCast(cnt), &xr);
+                    if (realCompareLessThan(&xr, x_min)) realCopy(&xr, x_min);
+                    if (realCompareGreaterThan(&xr, x_max)) realCopy(&xr, x_max);
+                    frontier_plotstat.grf_y_r(@intCast(cnt), &yr);
+                    if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
+                    if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                     scaleRmsy = @sqrt((scaleRmsy * scaleRmsy * @as(f32, @floatFromInt(cnt)) + frontier_plotstat.grf_y(@intCast(cnt)) * frontier_plotstat.grf_y(@intCast(cnt))) / (@as(f32, @floatFromInt(cnt)) + 1.0));
                 }
 
+                // The peak filter and symmetry heuristics are dimensionless float
+                // logic: run them on float mirrors of the real_t y range and commit
+                // only values they actually change, so an extreme-magnitude range (and
+                // its full decimal precision) passes through untouched.
+                var fy_min: f32 = @floatCast(realToDoubleVal(y_min));
+                var fy_max: f32 = @floatCast(realToDoubleVal(y_max));
+                const fy_min0: f32 = fy_min;
+                const fy_max0: f32 = fy_max;
+
                 // pre-loop to cover trivial quasi symmetrical axis
-                if (y_max > 0 and y_min < 0 and (y_max > 4 * scaleRmsy)) { // force the RMS if large peaks occur
-                    y_max = scaleRmsy;
-                } else if (y_max > 0 and y_min < 0 and (-y_min > 4 * scaleRmsy)) {
-                    y_min = -scaleRmsy;
-                } else if (y_max > 0 and y_min < 0 and (y_max > -y_min) and (y_max / y_min < 1.2)) { // make x-axis sit in the middle if close enough
-                    y_min = -y_max;
-                } else if (y_max > 0 and y_min < 0 and (y_max < -y_min) and (y_min / y_max < 1.2)) {
-                    y_max = -y_min;
+                if (fy_max > 0 and fy_min < 0 and (fy_max > 4 * scaleRmsy)) { // force the RMS if large peaks occur
+                    fy_max = scaleRmsy;
+                } else if (fy_max > 0 and fy_min < 0 and (-fy_min > 4 * scaleRmsy)) {
+                    fy_min = -scaleRmsy;
+                } else if (fy_max > 0 and fy_min < 0 and (fy_max > -fy_min) and (fy_max / fy_min < 1.2)) { // make x-axis sit in the middle if close enough
+                    fy_min = -fy_max;
+                } else if (fy_max > 0 and fy_min < 0 and (fy_max < -fy_min) and (fy_min / fy_max < 1.2)) {
+                    fy_max = -fy_min;
                 }
 
                 {
@@ -1312,30 +1419,30 @@ pub export fn graph_plotmem() callconv(.c) void {
                         } else {
                             aa = a8 * 0.2 + a7 * 0.2 + a6 * 0.1 + a5 * 0.1 + a4 * 0.1 + a3 * 0.1 + a2 * 0.1 + a1 * 0.1;
                         }
-                        if (aa < y_min) {
+                        if (aa < fy_min) {
                             y_mincnt += 1;
-                            if (@abs(aa / y_min) < 4) {
-                                if (aa < y_min) {
-                                    y_min = aa;
+                            if (@abs(aa / fy_min) < 4) {
+                                if (aa < fy_min) {
+                                    fy_min = aa;
                                 }
                                 y_mincnt = 0;
                             } else if (y_mincnt == 3) {
-                                y_min = aa;
+                                fy_min = aa;
                                 y_mincnt = 0;
                             }
                         } else {
                             y_mincnt = 0;
                         }
 
-                        if (aa > y_max) {
+                        if (aa > fy_max) {
                             y_maxcnt += 1;
-                            if (@abs(aa / y_max) < 4) {
-                                if (aa > y_max) {
-                                    y_max = aa;
+                            if (@abs(aa / fy_max) < 4) {
+                                if (aa > fy_max) {
+                                    fy_max = aa;
                                 }
                                 y_maxcnt = 0;
                             } else if (y_maxcnt == 3) {
-                                y_max = aa;
+                                fy_max = aa;
                                 y_maxcnt = 0;
                             }
                         } else {
@@ -1347,6 +1454,10 @@ pub export fn graph_plotmem() callconv(.c) void {
                         }
                     }
                 }
+                // commit back only the mirrors the float filter actually changed,
+                // so the real_t y range keeps its full precision otherwise
+                if (fy_min != fy_min0) convertDoubleToReal(@as(f64, fy_min), y_min, &ctxtReal39);
+                if (fy_max != fy_max0) convertDoubleToReal(@as(f64, fy_max), y_max, &ctxtReal39);
             }
         } else { // VECTOR
             sx = 0;
@@ -1355,17 +1466,17 @@ pub export fn graph_plotmem() callconv(.c) void {
             while (cnt < statnum) : (cnt += 1) { // ### Note XXX E- will stuff up statnum!
                 sx = sx + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_x(@intCast(cnt)) else frontier_plotstat.grf_y(@intCast(cnt)));
                 sy = sy + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_y(@intCast(cnt)) else frontier_plotstat.grf_x(@intCast(cnt)));
-                if (sx < x_min) {
-                    x_min = sx;
+                convertDoubleToReal(@as(f64, sx), &xr, &ctxtReal39); // xr = sx, the running vector sum
+                convertDoubleToReal(@as(f64, sy), &yr, &ctxtReal39);
+                if (realCompareLessThan(&xr, x_min)) {
+                    realCopy(&xr, x_min);
+                } else if (realCompareGreaterThan(&xr, x_max)) {
+                    realCopy(&xr, x_max);
                 }
-                if (sx > x_max) {
-                    x_max = sx;
-                }
-                if (sy < y_min) {
-                    y_min = sy;
-                }
-                if (sy > y_max) {
-                    y_max = sy;
+                if (realCompareLessThan(&yr, y_min)) {
+                    realCopy(&yr, y_min);
+                } else if (realCompareGreaterThan(&yr, y_max)) {
+                    realCopy(&yr, y_max);
                 }
                 if (frontier_addons.exitKeyWaiting() != 0) {
                     return;
@@ -1383,16 +1494,16 @@ pub export fn graph_plotmem() callconv(.c) void {
         }
 
         if (plotmode != _VECT) {
-            yn = frontier_plotstat.screen_window_y(y_min, frontier_plotstat.grf_y(0), y_max);
-            xn = frontier_plotstat.screen_window_x(x_min, frontier_plotstat.grf_x(0), x_max);
-            xN1 = xn;
-            yN1 = yn;
+            frontier_plotstat.grf_y_r(0, &yr);
+            frontier_plotstat.grf_x_r(0, &xr);
         } else {
-            yn = frontier_plotstat.screen_window_y(y_min, 0, y_max);
-            xn = frontier_plotstat.screen_window_x(x_min, 0, x_max);
-            xN1 = xn;
-            yN1 = yn;
+            realSetZero(&yr);
+            realSetZero(&xr);
         }
+        yn = frontier_plotstat.screen_window_y_r(y_min, &yr, y_max);
+        xn = frontier_plotstat.screen_window_x_r(x_min, &xr, x_max);
+        xN1 = xn;
+        yN1 = yn;
 
         sx = 0;
         sy = 0;
@@ -1438,20 +1549,24 @@ pub export fn graph_plotmem() callconv(.c) void {
                     }
                 }
 
-                x = frontier_plotstat.grf_x(@intCast(ix));
+                x = frontier_plotstat.grf_x(@intCast(ix)); // float x stays for the overlay maths above
                 y = frontier_plotstat.grf_y(@intCast(ix));
+                frontier_plotstat.grf_x_r(@intCast(ix), &xr); // xr = grf_x(ix)
+                frontier_plotstat.grf_y_r(@intCast(ix), &yr); // yr = grf_y(ix)
             } else { // _VECT
                 sx = sx + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_x(@intCast(ix)) else frontier_plotstat.grf_y(@intCast(ix)));
                 sy = sy + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_y(@intCast(ix)) else frontier_plotstat.grf_x(@intCast(ix)));
                 x = sx;
                 y = sy;
+                convertDoubleToReal(@as(f64, sx), &xr, &ctxtReal39);
+                convertDoubleToReal(@as(f64, sy), &yr, &ctxtReal39);
             }
             xo = xN1;
             yo = yN1;
             yN0 = gpm_prev_y_unclipped;
 
-            xN1 = frontier_plotstat.screen_window_x(x_min, x, x_max);
-            yN1 = frontier_plotstat.screen_window_y_nolimit(y_min, y, y_max);
+            xN1 = frontier_plotstat.screen_window_x_r(x_min, &xr, x_max);
+            yN1 = frontier_plotstat.screen_window_y_nolimit_r(y_min, &yr, y_max);
             const current_y_unclipped: i16 = yN1;
 
             if (ix == 0) {
@@ -1532,16 +1647,18 @@ pub export fn graph_plotmem() callconv(.c) void {
                     );
 
                     if (PLOT_DIFF and !invalid_diff and ix != 0) {
-                        plotdelta(frontier_plotstat.screen_window_x(x_min, dxx, x_max), frontier_plotstat.screen_window_y(y_min, dydx, y_max));
+                        plotdelta(frontier_plotstat.screenX(@as(f64, dxx)), frontier_plotstat.screenY(@as(f64, dydx)));
                     }
 
                     if (PLOT_RMS and !invalid_rms and ix != 0) {
-                        plotrms(frontier_plotstat.screen_window_x(x_min, x - ddx / 2, x_max), frontier_plotstat.screen_window_y(y_min, rmsy, y_max));
+                        plotrms(frontier_plotstat.screenX(@as(f64, x - ddx / 2)), frontier_plotstat.screenY(@as(f64, rmsy)));
                     }
 
                     if (PLOT_INTG and !invalid_intg and ix != 0) {
-                        const xN0: i16 = frontier_plotstat.screen_window_x(x_min, frontier_plotstat.grf_x(@intCast(ix - 1)), x_max);
-                        const yNintg: i16 = frontier_plotstat.screen_window_y(y_min, inty, y_max);
+                        var xPrevR: real_t = undefined;
+                        frontier_plotstat.grf_x_r(@intCast(ix - 1), &xPrevR);
+                        const xN0: i16 = frontier_plotstat.screen_window_x_r(x_min, &xPrevR, x_max);
+                        const yNintg: i16 = frontier_plotstat.screenY(@as(f64, inty));
                         const xAvg: i16 = @intCast((@as(i32, xN0) + @as(i32, xN1)) >> 1);
 
                         // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6
@@ -1563,7 +1680,7 @@ pub export fn graph_plotmem() callconv(.c) void {
                         }
 
                         if (PLOT_SHADE) {
-                            const yNoff: i16 = frontier_plotstat.screen_window_y(y_min, 0, y_max);
+                            const yNoff: i16 = frontier_plotstat.screenY(0);
                             frontier_plotstat.plotrect(xN0, yN0, xN1, yN1);
                             frontier_plotstat.plotrect(xN0, yNoff, xN1, yN0);
                             if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {

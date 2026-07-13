@@ -249,10 +249,10 @@ pub export var yzero: u32 = 0;
 // Externs - globals
 // ---------------------------------------------------------------------------
 extern var currentKeyCode: u8;
-extern var x_min: f32;
-extern var x_max: f32;
-extern var y_min: f32;
-extern var y_max: f32;
+extern var x_min: *real_t;
+extern var x_max: *real_t;
+extern var y_min: *real_t;
+extern var y_max: *real_t;
 extern var regStatsXY: calcRegister_t;
 extern var statisticalSumsPointer: ?[*]real_t;
 extern var ctxtReal4: realContext_t;
@@ -334,6 +334,120 @@ inline fn realIsNegative(src: *align(1) const real_t) bool_t {
 }
 inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
+}
+// Additional real_t primitives for the decimal range flow / screen mapping.
+extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberCopyAbs(res: *real_t, src: *align(1) const real_t) *real_t;
+extern fn decNumberAdd(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
+extern fn realSetZero(v: *real_t) void;
+extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool_t;
+extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
+inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
+    _ = decNumberCopy(dst, src);
+}
+inline fn realCopyAbs(src: *align(1) const real_t, dst: *real_t) void {
+    _ = decNumberCopyAbs(dst, src);
+}
+inline fn realAdd(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberAdd(res, a, b, ctx);
+}
+inline fn realSubtract(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberSubtract(res, a, b, ctx);
+}
+inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberDivide(res, a, b, ctx);
+}
+inline fn int32ToReal(source: i32, dst: *real_t) void {
+    _ = decNumberFromInt32(dst, source);
+}
+inline fn realToFloatL(v: *const real_t) f32 {
+    var f: f32 = 0;
+    frontier_register_value_conversions.realToFloat(v, &f);
+    return f;
+}
+extern fn realToDouble(vv: *const real_t, v: *f64) void;
+inline fn realToDoubleVal(v: *const real_t) f64 {
+    var d: f64 = 0;
+    realToDouble(v, &d);
+    return d;
+}
+inline fn convertDoubleToReal(x: f64, dst: *real_t, ctx: *realContext_t) void {
+    frontier_register_value_conversions.convertDoubleToReal(x, dst, ctx);
+}
+
+// real_t screen-window mapping: (v - v_min)/(v_max - v_min)*scale in ctxtReal39,
+// rounded half away from zero, saturated at +-32767, then clamped/flipped into
+// the graph area. The plot curve maps its real_t samples through these so pixel
+// rounding matches the decimal reference at boundary cases.
+fn screenWindowRatio(v_min: *align(1) const real_t, v: *align(1) const real_t, v_max: *align(1) const real_t, scale: i32) i16 {
+    var temp: i32 = undefined;
+    var tempr: real_t = undefined;
+    var den: real_t = undefined;
+    var err: bool_t = false;
+    realSubtract(v, v_min, &tempr, &ctxtReal39);
+    realSubtract(v_max, v_min, &den, &ctxtReal39);
+    realDivide(&tempr, &den, &tempr, &ctxtReal39);
+    int32ToReal(scale, &den);
+    realMultiply(&tempr, &den, &tempr, &ctxtReal39);
+    if (realIsNegative(&tempr)) {
+        realSubtract(&tempr, consts.const_1on2(), &tempr, &ctxtReal39);
+    } else {
+        realAdd(&tempr, consts.const_1on2(), &tempr, &ctxtReal39);
+    }
+    temp = realToInt32C47(&tempr, &err);
+    if (err) {
+        temp = if (realIsNegative(&tempr)) -32767 else 32767;
+    } else if (temp > 32766) {
+        temp = 32767;
+    } else if (temp < -32766) {
+        temp = -32767;
+    }
+    return @intCast(temp);
+}
+
+pub export fn screen_window_x_r(x_minp: *align(1) const real_t, xp: *align(1) const real_t, x_maxp: *align(1) const real_t) callconv(.c) i16 {
+    var temp: i16 = screenWindowRatio(x_minp, xp, x_maxp, SCREEN_HEIGHT_GRAPH - 1);
+    if (temp > SCREEN_HEIGHT_GRAPH - 1) {
+        temp = @intCast(SCREEN_HEIGHT_GRAPH - 1);
+    } else if (temp < 0) {
+        temp = 0;
+    }
+    return @intCast(@as(i32, temp) + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
+}
+
+fn screenWindowYr(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t, nolimit: bool_t) i16 {
+    var temp: i16 = screenWindowRatio(y_minp, yp, y_maxp, SCREEN_HEIGHT_GRAPH - 1 - minn);
+    if (!nolimit) {
+        if (temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
+            temp = @intCast(SCREEN_HEIGHT_GRAPH - 1 - minn);
+        } else if (temp < 0) {
+            temp = 0;
+        }
+    }
+    return @intCast(SCREEN_HEIGHT_GRAPH - 1 - @as(i32, temp));
+}
+
+pub export fn screen_window_y_r(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t) callconv(.c) i16 {
+    return screenWindowYr(y_minp, yp, y_maxp, false);
+}
+pub export fn screen_window_y_nolimit_r(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t) callconv(.c) i16 {
+    return screenWindowYr(y_minp, yp, y_maxp, true);
+}
+
+// Map a float data value against the real_t range globals (stat data stays
+// float precision; the range survives any exponent).
+pub export fn screenX(x: f64) callconv(.c) i16 {
+    var t: real_t = undefined;
+    frontier_register_value_conversions.convertDoubleToReal(x, &t, &ctxtReal39);
+    return screen_window_x_r(x_min, &t, x_max);
+}
+pub export fn screenY(y: f64) callconv(.c) i16 {
+    var t: real_t = undefined;
+    frontier_register_value_conversions.convertDoubleToReal(y, &t, &ctxtReal39);
+    return screen_window_y_r(y_min, &t, y_max);
 }
 
 // screen / drawing primitives (real linkable c47 functions)
@@ -454,8 +568,8 @@ pub export fn statGraphReset() callconv(.c) void {
     roundedTicks = true;
     clearSystemFlag(FLAG_SHOWX);
     clearSystemFlag(FLAG_PLINE);
-    y_min = 0;
-    y_max = 1;
+    realSetZero(y_min);
+    realCopy(const_1(), y_max);
 }
 
 // ===========================================================================
@@ -493,6 +607,31 @@ pub export fn grf_y(i: c_int) callconv(.c) f32 {
         yf = 0;
     }
     return yf;
+}
+
+// real_t readers of the stat/draw matrix; the float grf_x/grf_y stay for the
+// float-precision overlay consumers.
+pub export fn grf_x_r(i: c_int, v: *real_t) callconv(.c) void {
+    const regStats: calcRegister_t = regStatsXY;
+    if (regStats != INVALID_VARIABLE) {
+        var stats: real34Matrix_t = undefined;
+        linkToRealMatrixRegister(regStats, &stats);
+        const cols: u16 = stats.header.matrixColumns;
+        real34ToReal(&stats.matrixElements.?[@intCast(i * @as(c_int, cols))], v);
+    } else {
+        realSetZero(v);
+    }
+}
+pub export fn grf_y_r(i: c_int, v: *real_t) callconv(.c) void {
+    const regStats: calcRegister_t = regStatsXY;
+    if (regStats != INVALID_VARIABLE) {
+        var stats: real34Matrix_t = undefined;
+        linkToRealMatrixRegister(regStats, &stats);
+        const cols: u16 = stats.header.matrixColumns;
+        real34ToReal(&stats.matrixElements.?[@intCast(i * @as(c_int, cols) + 1)], v);
+    } else {
+        realSetZero(v);
+    }
 }
 
 // ===========================================================================
@@ -641,14 +780,18 @@ pub export fn pixelline(xo_in: i16, yo_in: i16, xn: i16, yn: i16, vmNormalArg: b
 // graphAxisDraw
 // ===========================================================================
 pub export fn graphAxisDraw() callconv(.c) void {
-    if (x_min <= FLoatingMin or x_min >= FLoatingMax or x_max <= FLoatingMin or x_max >= FLoatingMax or y_min <= FLoatingMin or y_min >= FLoatingMax or y_max <= FLoatingMin or y_max >= FLoatingMax) {
+    const fx_min = realToFloatL(x_min);
+    const fx_max = realToFloatL(x_max);
+    const fy_min = realToFloatL(y_min);
+    const fy_max = realToFloatL(y_max);
+    if (fx_min <= FLoatingMin or fx_min >= FLoatingMax or fx_max <= FLoatingMin or fx_max >= FLoatingMax or fy_min <= FLoatingMin or fy_min >= FLoatingMax or fy_max <= FLoatingMin or fy_max >= FLoatingMax) {
         return;
     }
     var cnt: u32 = undefined;
 
     clearScreenPixels();
-    yzero = @intCast(screen_window_y(y_min, 0, y_max));
-    xzero = @intCast(screen_window_x(x_min, 0, x_max));
+    yzero = @intCast(screenY(0));
+    xzero = @intCast(screenX(0));
 
     const minny: u32 = 0;
     const minnx: u32 = @intCast(SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
@@ -674,45 +817,45 @@ pub export fn graphAxisDraw() callconv(.c) void {
 
         frontier_screen.force_refresh(timed);
 
-        if (0 < x_max and 0 > x_min) {
+        if (0 < fx_max and 0 > fx_min) {
             x = 0;
-            while (x <= x_max) : (x += tick_int_x) {
-                cnt = @intCast(screen_window_x(x_min, x, x_max));
+            while (x <= fx_max) : (x += tick_int_x) {
+                cnt = @intCast(screenX(@as(f64, x)));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 1, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 1, @intCast(minny))));
             }
             x = 0;
-            while (x >= x_min) : (x += -tick_int_x) {
-                cnt = @intCast(screen_window_x(x_min, x, x_max));
+            while (x >= fx_min) : (x += -tick_int_x) {
+                cnt = @intCast(screenX(@as(f64, x)));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 1, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 1, @intCast(minny))));
             }
             x = 0;
-            while (x <= x_max) : (x += tick_int_x * 5) {
-                cnt = @intCast(screen_window_x(x_min, x, x_max));
+            while (x <= fx_max) : (x += tick_int_x * 5) {
+                cnt = @intCast(screenX(@as(f64, x)));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 2, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 2, @intCast(minny))));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 3, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 3, @intCast(minny))));
             }
             x = 0;
-            while (x >= x_min) : (x += -tick_int_x * 5) {
-                cnt = @intCast(screen_window_x(x_min, x, x_max));
+            while (x >= fx_min) : (x += -tick_int_x * 5) {
+                cnt = @intCast(screenX(@as(f64, x)));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 2, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 2, @intCast(minny))));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 3, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 3, @intCast(minny))));
             }
         } else {
-            x = x_min;
-            while (x <= x_max) : (x += tick_int_x) {
-                cnt = @intCast(screen_window_x(x_min, x, x_max));
+            x = fx_min;
+            while (x <= fx_max) : (x += tick_int_x) {
+                cnt = @intCast(screenX(@as(f64, x)));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 1, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 1, @intCast(minny))));
             }
-            x = x_min;
-            while (x <= x_max) : (x += tick_int_x * 5) {
-                cnt = @intCast(screen_window_x(x_min, x, x_max));
+            x = fx_min;
+            while (x <= fx_max) : (x += tick_int_x * 5) {
+                cnt = @intCast(screenX(@as(f64, x)));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 2, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 2, @intCast(minny))));
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 3, SCREEN_HEIGHT_GRAPH - 1)));
@@ -737,45 +880,45 @@ pub export fn graphAxisDraw() callconv(.c) void {
         lcd_fill_rect(xzero, minny, 1, @intCast(SCREEN_HEIGHT_GRAPH - @as(i32, @intCast(minny))), LCD_EMPTY_VALUE);
 
         frontier_screen.force_refresh(timed);
-        if (0 < y_max and 0 > y_min) {
+        if (0 < fy_max and 0 > fy_min) {
             y = 0;
-            while (y <= y_max) : (y += tick_int_y) {
-                cnt = @intCast(screen_window_y(y_min, y, y_max));
+            while (y <= fy_max) : (y += tick_int_y) {
+                cnt = @intCast(screenY(@as(f64, y)));
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 1, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 1, SCREEN_WIDTH_GRAPH - 1)), cnt);
             }
             y = 0;
-            while (y >= y_min) : (y += -tick_int_y) {
-                cnt = @intCast(screen_window_y(y_min, y, y_max));
+            while (y >= fy_min) : (y += -tick_int_y) {
+                cnt = @intCast(screenY(@as(f64, y)));
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 1, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 1, SCREEN_WIDTH_GRAPH - 1)), cnt);
             }
             y = 0;
-            while (y <= y_max) : (y += tick_int_y * 5) {
-                cnt = @intCast(screen_window_y(y_min, y, y_max));
+            while (y <= fy_max) : (y += tick_int_y * 5) {
+                cnt = @intCast(screenY(@as(f64, y)));
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 2, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 2, SCREEN_WIDTH_GRAPH - 1)), cnt);
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 3, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 3, SCREEN_WIDTH_GRAPH - 1)), cnt);
             }
             y = 0;
-            while (y >= y_min) : (y += -tick_int_y * 5) {
-                cnt = @intCast(screen_window_y(y_min, y, y_max));
+            while (y >= fy_min) : (y += -tick_int_y * 5) {
+                cnt = @intCast(screenY(@as(f64, y)));
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 2, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 2, SCREEN_WIDTH_GRAPH - 1)), cnt);
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 3, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 3, SCREEN_WIDTH_GRAPH - 1)), cnt);
             }
         } else {
-            y = y_min;
-            while (y <= y_max) : (y += tick_int_y) {
-                cnt = @intCast(screen_window_y(y_min, y, y_max));
+            y = fy_min;
+            while (y <= fy_max) : (y += tick_int_y) {
+                cnt = @intCast(screenY(@as(f64, y)));
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 1, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 1, SCREEN_WIDTH_GRAPH - 1)), cnt);
             }
-            y = y_min;
-            while (y <= y_max) : (y += tick_int_y * 5) {
-                cnt = @intCast(screen_window_y(y_min, y, y_max));
+            y = fy_min;
+            while (y <= fy_max) : (y += tick_int_y * 5) {
+                cnt = @intCast(screenY(@as(f64, y)));
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 2, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 2, SCREEN_WIDTH_GRAPH - 1)), cnt);
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 3, 0)), cnt);
@@ -834,14 +977,17 @@ pub export fn graph_axis() callconv(.c) void {
     graph_dx = 0;
     graph_dy = 0;
 
+    var w: real_t = undefined;
     if (graph_dx == 0) {
-        tick_int_x = auto_tick((x_max - x_min) / 20);
+        realSubtract(x_max, x_min, &w, &ctxtReal39); // w = x_max - x_min
+        tick_int_x = auto_tick(@floatCast(realToDoubleVal(&w) / 20.0));
     } else {
         tick_int_x = graph_dx;
     }
 
     if (graph_dy == 0) {
-        tick_int_y = auto_tick((y_max - y_min) / 20);
+        realSubtract(y_max, y_min, &w, &ctxtReal39); // w = y_max - y_min
+        tick_int_y = auto_tick(@floatCast(realToDoubleVal(&w) / 20.0));
     } else {
         tick_int_y = graph_dy;
     }
@@ -1096,36 +1242,32 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             reDraw = false;
             frontier_screen.clearScreenGraphs(3, 0, 1); // !clrTextArea, clrGraphArea
 
-            // AUTOSCALE
-            x_min = FLoatingMax;
-            x_max = FLoatingMin;
-            y_min = FLoatingMax;
-            y_max = FLoatingMin;
+            // AUTOSCALE (real_t range)
+            convertDoubleToReal(@as(f64, FLoatingMax), x_min, &ctxtReal39);
+            convertDoubleToReal(@as(f64, FLoatingMin), x_max, &ctxtReal39);
+            convertDoubleToReal(@as(f64, FLoatingMax), y_min, &ctxtReal39);
+            convertDoubleToReal(@as(f64, FLoatingMin), y_max, &ctxtReal39);
 
             // SCALING LOOP
             cnt = 0;
             while (cnt < numberOfPlotPoints) : (cnt += 1) {
-                if (grf_x(cnt) < x_min) {
-                    x_min = grf_x(cnt);
-                }
-                if (grf_x(cnt) > x_max) {
-                    x_max = grf_x(cnt);
-                }
-                if (grf_y(cnt) < y_min) {
-                    y_min = grf_y(cnt);
-                }
-                if (grf_y(cnt) > y_max) {
-                    y_max = grf_y(cnt);
-                }
+                var xr: real_t = undefined;
+                var yr: real_t = undefined;
+                grf_x_r(@intCast(cnt), &xr);
+                if (realCompareLessThan(&xr, x_min)) realCopy(&xr, x_min);
+                if (realCompareGreaterThan(&xr, x_max)) realCopy(&xr, x_max);
+                grf_y_r(@intCast(cnt), &yr);
+                if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
+                if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                 if (frontier_addons.exitKeyWaiting() != 0) {
                     return;
                 }
             }
 
-            if (x_min <= FLoatingMin or x_max <= FLoatingMin or y_min <= FLoatingMin or y_max <= FLoatingMin) {
+            if (realToFloatL(x_min) <= FLoatingMin or realToFloatL(x_max) <= FLoatingMin or realToFloatL(y_min) <= FLoatingMin or realToFloatL(y_max) <= FLoatingMin) {
                 return scaleMinusInfinity();
             }
-            if (x_min >= FLoatingMax or x_max >= FLoatingMax or y_min >= FLoatingMax or y_max >= FLoatingMax) {
+            if (realToFloatL(x_min) >= FLoatingMax or realToFloatL(x_max) >= FLoatingMax or realToFloatL(y_min) >= FLoatingMax or realToFloatL(y_max) >= FLoatingMax) {
                 return scalePlusInfinity();
             }
 
@@ -1133,21 +1275,21 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
 
             roundedTicks = false;
 
-            if (x_min <= FLoatingMin or x_max <= FLoatingMin or y_min <= FLoatingMin or y_max <= FLoatingMin) {
+            if (realToFloatL(x_min) <= FLoatingMin or realToFloatL(x_max) <= FLoatingMin or realToFloatL(y_min) <= FLoatingMin or realToFloatL(y_max) <= FLoatingMin) {
                 return scaleMinusInfinity();
             }
-            if (x_min >= FLoatingMax or x_max >= FLoatingMax or y_min >= FLoatingMax or y_max >= FLoatingMax) {
+            if (realToFloatL(x_min) >= FLoatingMax or realToFloatL(x_max) >= FLoatingMax or realToFloatL(y_min) >= FLoatingMax or realToFloatL(y_max) >= FLoatingMax) {
                 return scalePlusInfinity();
             }
 
             graph_axis();
-            yn = screen_window_y(y_min, grf_y(0), y_max);
-            xn = screen_window_x(x_min, grf_x(0), x_max);
+            yn = screenY(@as(f64, grf_y(0)));
+            xn = screenX(@as(f64, grf_x(0)));
             xN = xn;
             yN = yn;
 
             const colw: i16 = @as(i16, @intFromFloat(
-                (@as(f32, @floatFromInt(@as(i32, screen_window_x(x_min, grf_x(1), x_max)) - @as(i32, screen_window_x(x_min, grf_x(0), x_max)))) / 2.0),
+                (@as(f32, @floatFromInt(@as(i32, screenX(@as(f64, grf_x(1)))) - @as(i32, screenX(@as(f64, grf_x(0)))))) / 2.0),
             )) - 1;
 
             // MAIN GRAPH LOOP
@@ -1157,8 +1299,8 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                 y = grf_y(ix);
                 xo = xN;
                 yo = yN;
-                xN = screen_window_x(x_min, x, x_max);
-                yN = screen_window_y(y_min, y, y_max);
+                xN = screenX(@as(f64, x));
+                yN = screenY(@as(f64, y));
 
                 const minN_y: i16 = 0;
                 const minN_x: i16 = @intCast(SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
@@ -1210,17 +1352,17 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset + 17), yLine(autoinc * @as(i32, index) - 7 + autoshift), vmNormal, 0, 0);
             index += 1;
 
-            grphNumFormatter(&ss, "(", x_max, 2, "");
-            grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), y_max, 2, ")");
+            grphNumFormatter(&ss, "(", realToDoubleVal(x_max), 2, "");
+            grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
             _ = strcat(&tt, padEquals(&tmpbuf, &ss));
             var n: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 2 - 3 - 2 - @as(i32, frontier_char_string.stringWidth(&tt, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 - 3 + autoshift), vmNormal, 0, 0);
-            grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), y_max, 2, ")");
+            grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 3 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
 
-            grphNumFormatter(&ss, "(", x_min, 2, "");
+            grphNumFormatter(&ss, "(", realToDoubleVal(x_min), 2, "");
             n = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 6 + autoshift + 2), vmNormal, 0, 0);
-            grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), y_min, 2, ")");
+            grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_min), 2, ")");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 6 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
 
@@ -1394,17 +1536,17 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
         var yo: i16 = 0;
         var yn: i16 = undefined;
         var yN: i16 = 0;
-        var xd: f64 = x_min;
+        var xd: f64 = realToDoubleVal(x_min);
         var yd: f64 = 0.0;
         const Intervals: i16 = numberIntervals;
         var iterations: u16 = 0;
-        const intervalW: f64 = @as(f64, @floatCast(x_max - x_min)) / @as(f64, @floatFromInt(Intervals));
+        const intervalW: f64 = (realToDoubleVal(x_max) - realToDoubleVal(x_min)) / @as(f64, @floatFromInt(Intervals));
 
         const minN_y: i16 = 0;
         const minN_x: i16 = @intCast(SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
 
-        ixd = @as(f64, @floatCast(x_min)) - intervalW;
-        while (iterations < 2000 and xd < @as(f64, @floatCast(x_max)) + @as(f64, @floatCast(x_max - x_min)) * 0.5 and xN < SCREEN_WIDTH - 1) : (iterations += 1) {
+        ixd = realToDoubleVal(x_min) - intervalW;
+        while (iterations < 2000 and xd < realToDoubleVal(x_max) + (realToDoubleVal(x_max) - realToDoubleVal(x_min)) * 0.5 and xN < SCREEN_WIDTH - 1) : (iterations += 1) {
             xo = xN;
             yo = yN;
             var xx: u16 = 0;
@@ -1416,8 +1558,8 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
                     frontier_register_value_conversions.convertDoubleToReal(xd, &XX, &ctxtReal39);
                 }
                 frontier_curve_fitting.yIsFnx(USEFLOATING, selection, xd, &yd, a0, a1, a2, &XX, &YY, RR, SMI, aa0, aa1, aa2);
-                xN = screen_window_x(x_min, @floatCast(xd), x_max);
-                yN = screen_window_y(y_min, @floatCast(yd), y_max);
+                xN = screenX(xd);
+                yN = screenY(yd);
                 if ((@abs(@as(i32, yN) - @as(i32, yo)) <= 2) or iterations == 0 or xN <= minN_x) {
                     break;
                 }
@@ -1498,16 +1640,16 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
 
-            grphNumFormatter(&ss, "(", x_max, 2, "");
+            grphNumFormatter(&ss, "(", realToDoubleVal(x_max), 2, "");
             const ssw: u16 = @intCast(frontier_screen.showStringEnhanced(padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, @intFromBool(NO_LF)));
-            grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), y_max, 2, ")");
+            grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
             const ttw: u16 = @intCast(frontier_screen.showStringEnhanced(padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, @intFromBool(NO_LF)));
             var nn: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             _ = frontier_screen.showString(padEquals(&tmpbuf, &tt), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) + autoshift + 2), vmNormal, 0, 0);
             index += 1;
-            grphNumFormatter(&ss, "(", x_min, 2, "");
+            grphNumFormatter(&ss, "(", realToDoubleVal(x_min), 2, "");
             nn = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift + 2), vmNormal, 0, 0);
-            grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), y_min, 2, ")");
+            grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_min), 2, ")");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) - 2 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
         } else { // ORTHOF
