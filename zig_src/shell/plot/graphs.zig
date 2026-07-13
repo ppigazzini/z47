@@ -1574,6 +1574,10 @@ pub export fn graph_plotmem() callconv(.c) void {
                 yo = yN1;
                 yN0 = yN1;
                 gpm_prev_y_unclipped = yN1; // Initialize for next iteration
+                if (plotmode != _VECT and xN1 < SCREEN_WIDTH_GRAPH and xN1 >= (SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH) and yN1 < SCREEN_HEIGHT_GRAPH and yN1 >= 0) {
+                    // draw the first point's marker; no line (no previous point)
+                    frontier_plotstat.plotPointGeneric(xN1, yN1, xN1, yN1, getSystemFlag(FLAG_PCROS), false, getSystemFlag(FLAG_PBOX), getSystemFlag(FLAG_PPLUS), false);
+                }
                 continue; // Skip clipping for first point
             }
 
