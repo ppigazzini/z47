@@ -242,7 +242,10 @@ extern fn decNumberGetBCD(r: *const real_t, bcd: [*]u8) [*c]u8;
 extern fn decNumberFMA(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberPlus(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberQuantize(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn decNumberToIntegralValue(r: *real_t, a: *const real_t, ctx: *realContext_t) *real_t;
+// realToIntegralValue is the base round-to-integral primitive; it now lives with
+// the engine/numeric rounding owners (integer_part.zig). rvc re-exposes the
+// declaration so its own callers and the other shell owners still reach it.
+pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) void;
 
 // ---------------------------------------------------------------------------
 // GMP externs
@@ -743,14 +746,6 @@ pub export fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRe
     convertRealToLongInteger(real, &lgInt, roundingMode);
     convertLongIntegerToLongIntegerRegister(&lgInt, dest);
     mpz_clear(&lgInt);
-}
-
-pub export fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void {
-    const savedRoundingMode: c_int = realContext.round;
-    realContext.round = mode;
-    realContext.status = 0;
-    _ = decNumberToIntegralValue(destination, source, realContext);
-    realContext.round = savedRoundingMode;
 }
 
 // ===========================================================================

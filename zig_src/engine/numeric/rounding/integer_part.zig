@@ -2,13 +2,26 @@ const runtime = @import("../dispatch/command_wrappers_runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
+extern fn decNumberToIntegralValue(r: *runtime.real_t, a: *const runtime.real_t, ctx: *runtime.realContext_t) *runtime.real_t;
+
+// Round a real_t to an integral value at the given rounding mode. This is the
+// base decNumber round-to-integral primitive; it lives with the other rounding
+// owners in engine/numeric so the engine does not reach up into shell for it.
+pub export fn realToIntegralValue(source: *const runtime.real_t, destination: *runtime.real_t, mode: runtime.rounding_t, real_context: *runtime.realContext_t) callconv(.c) void {
+    const saved_rounding_mode = real_context.round;
+    real_context.round = mode;
+    real_context.status = 0;
+    _ = decNumberToIntegralValue(destination, source, real_context);
+    real_context.round = saved_rounding_mode;
+}
+
 fn doIP(x: *runtime.real_t, mode: runtime.rounding_t) void {
     if (runtime.realIsSpecial(x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         }
     } else {
-        runtime.realToIntegralValue(x, x, mode, &runtime.ctxtReal39);
+        realToIntegralValue(x, x, mode, &runtime.ctxtReal39);
     }
 }
 

@@ -4,7 +4,7 @@
     "cptr_files": 90,
     "ptrcast_sites": 1336,
     "callconv_c_sites": 2783,
-    "extern_fn_sites": 3409,
+    "extern_fn_sites": 3411,
     "printf_family_files": 47,
     "anyopaque_files": 85,
     "off_offset_sites": 77,
