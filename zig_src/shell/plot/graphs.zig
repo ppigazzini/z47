@@ -954,7 +954,7 @@ fn showGraphTickText1(tick_int_x_: f32, tick_int_y_: f32, xoff: i32, yoff1: i32,
 // ===========================================================================
 // graph_text (DEFINED here -> pub export fn)
 // ===========================================================================
-pub export fn graph_text() callconv(.c) void {
+pub export fn graph_text() linksection(code_section) callconv(.c) void {
     var ypos: u32 = @intCast(Y_POSITION_OF_REGISTER_T_LINE - 11 + 12 * 5 - 45);
     var ii: i16 = undefined;
     var ss: [100]u8 = undefined;
@@ -1049,7 +1049,7 @@ pub export fn graph_text() callconv(.c) void {
 // ===========================================================================
 // graph_Include0
 // ===========================================================================
-pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
+pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_section) callconv(.c) void {
     const ctx = &ctxtReal39;
     var tmp: real_t = undefined;
     var k: real_t = undefined;
@@ -1205,7 +1205,7 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) callconv(.c) void {
 // ===========================================================================
 // graph_plotmem
 // ===========================================================================
-pub export fn graph_plotmem() callconv(.c) void {
+pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
     currentKeyCode = 255;
     // SAVE_SPACE_DM42_13GRF_JM is NOT defined -> this whole body is LIVE.
 
