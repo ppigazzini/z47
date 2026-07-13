@@ -294,7 +294,6 @@ pub export var cursorEnabled: u8 = 0;
 pub export var nimNumberPart: u8 = 0;
 pub export var nimRealPart: u8 = 0;
 pub export var hexDigits: u8 = 0;
-pub export var lastErrorCode: u8 = 0;
 pub export var previousErrorCode: u8 = 0;
 pub export var temporaryInformation: u8 = 0;
 pub export var rbrMode: u8 = 0;

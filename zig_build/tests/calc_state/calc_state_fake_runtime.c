@@ -6,7 +6,6 @@
 
 #include "calc_state_test_runtime.h"
 
-uint8_t lastErrorCode = 77;
 uint8_t previousErrorCode = 88;
 uint8_t temporaryInformation = 19;
 uint8_t screenUpdatingMode = (uint8_t)(SCRUPD_MANUAL_MENU | 0x20u);
