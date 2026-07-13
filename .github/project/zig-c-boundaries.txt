@@ -154,6 +154,7 @@ zig_src/shell/display/bufferize.zig
 zig_src/shell/plot/plotstat.zig
 zig_src/shell/matrix_editor/matrix_editor.zig
 zig_src/shell/plot/graphs.zig
+zig_src/shell/plot/plot_zoom.zig
 zig_src/shell/program/manage.zig
 zig_src/shell/input/tam.zig
 zig_src/shell/input/assign.zig
