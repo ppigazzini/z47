@@ -78,7 +78,6 @@ zig_src/engine/numeric/slvc.zig
 zig_src/engine/numeric/slvq.zig
 zig_src/engine/numeric/rounding/rsd.zig
 zig_src/engine/numeric/rounding/rdp.zig
-zig_src/engine/numeric/rounding/integer_part.zig
 zig_src/engine/numeric/special/ortho_polynom.zig
 zig_src/engine/numeric/arithmetic/percentSigma.zig
 zig_src/engine/numeric/statistics/mean.zig
