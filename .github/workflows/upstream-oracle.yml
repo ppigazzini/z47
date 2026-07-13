@@ -284,6 +284,17 @@ jobs:
           set -euo pipefail
           python3 .github/project/generate-font-seams.py --repo-root . --check
 
+  engine-shell-severance-guard:
+    name: Enforce headless-engine severance (engine must not reach into shell)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Enforce engine->shell import invariant + extern ratchet
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-engine-shell-severance.py --repo-root .
+
   c-dependency-policy:
     name: Verify Phase I C dependency policy
     runs-on: ubuntu-latest
