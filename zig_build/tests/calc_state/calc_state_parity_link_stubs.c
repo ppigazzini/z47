@@ -50,7 +50,6 @@ alignas(1) unsigned char bcdDisplaySign[1];
 alignas(1) unsigned char calcModel[1];
 alignas(1) unsigned char cancelFilename[1];
 alignas(4) unsigned char currentAngularMode[4];
-alignas(2) unsigned char currentFormula[2];
 alignas(2) unsigned char currentProgramNumber[2];
 alignas(4) unsigned char denMax[4];
 alignas(1) unsigned char dispBase[1];
