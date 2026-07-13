@@ -263,7 +263,7 @@ pub export var displayFormat: u8 = 0;
 pub export var displayFormatDigits: u8 = 0;
 pub export var timeDisplayFormatDigits: u8 = 0;
 pub export var shortIntegerWordSize: u8 = 0;
-pub export var significantDigits: u8 = 0;
+// significantDigits (decimal working precision) moved to kernel/decimal_context.zig
 pub export var dispBase: u8 = 0;
 pub export var fractionDigits: u8 = 0;
 pub export var shortIntegerMode: u8 = 0;
@@ -272,7 +272,7 @@ pub export var grpGroupingLeft: u8 = 0;
 pub export var grpGroupingGr1LeftOverflow: u8 = 0;
 pub export var grpGroupingGr1Left: u8 = 0;
 pub export var grpGroupingRight: u8 = 0;
-pub export var roundingMode: u8 = 0;
+// roundingMode (decimal rounding mode) moved to kernel/decimal_context.zig
 pub export var calcMode: u8 = 0;
 pub export var nextChar: u8 = 0;
 pub export var displayStack: u8 = 0;

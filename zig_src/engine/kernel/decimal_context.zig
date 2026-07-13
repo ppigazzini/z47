@@ -18,3 +18,7 @@ pub export var ctxtReal34: realContext_t = std.mem.zeroes(realContext_t);
 pub export var ctxtReal39: realContext_t = std.mem.zeroes(realContext_t);
 pub export var ctxtReal51: realContext_t = std.mem.zeroes(realContext_t);
 pub export var ctxtReal75: realContext_t = std.mem.zeroes(realContext_t);
+
+// The decimal working precision and rounding mode that drive the contexts above.
+pub export var significantDigits: u8 = 0;
+pub export var roundingMode: u8 = 0;
