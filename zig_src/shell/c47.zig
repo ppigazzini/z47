@@ -403,13 +403,11 @@ pub export var numberOfUserMenus: u16 = 0;
 pub export var currentUserMenu: u16 = 0;
 pub export var userKeyLabelSize: u16 = 0;
 pub export var currentInputVariable: u16 = INVALID_VARIABLE;
-pub export var currentMvarLabel: u16 = INVALID_VARIABLE;
 // REAL34_WIDTH_TEST == 0: largeur skipped.
 
 pub export var numberOfFreeMemoryRegions: i32 = 0;
 
 pub export var lgCatalogSelection: i32 = 0;
-pub export var graphVariabl1: calcRegister_t = 0;
 
 pub export var firstGregorianDay: u32 = 0;
 pub export var denMax: u32 = 0;
