@@ -280,6 +280,8 @@ extern fn fnRCL(inp: i16) void;
 extern fn adjustResult(res: calcRegister_t, dropY: bool, setCpxRes: bool, errorReg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
+extern var allNamedVariables: ?[*]abi.NamedVariableHeader; // named-variable header table (length-prefixed names)
+extern var numberOfNamedVariables: u16;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 extern fn fnDeleteVariable(regist: u16) void;
 extern fn isStatsMatrix(rows: *u16, mx: [*c]const u8) bool;
@@ -2372,8 +2374,32 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             var hiX: real_t = undefined;
             const rangeOK = getRegisterAsReal(REGISTER_X, &hiX) and getRegisterAsReal(REGISTER_Y, &loX);
 
+            // fnClDrawMx deletes DrwMX, and deleting a named variable shifts every
+            // higher-indexed slot down by one -- so a plot variable allocated above
+            // DrwMX (e.g. a programmed `PLTf 'x'`) has its cached register go stale.
+            // Snapshot the plot variable's name first, then re-resolve it by name
+            // after the delete so the sampler stores into the right register.
+            var plotVarName: [16]u8 = [_]u8{0} ** 16;
+            const named_end: u16 = @as(u16, @intCast(FIRST_NAMED_VARIABLE)) + numberOfNamedVariables;
+            if (currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable < named_end) {
+                if (allNamedVariables) |vars| {
+                    const stored = &vars[@intCast(currentSolverVariable - FIRST_NAMED_VARIABLE)].variableName;
+                    const len = @min(stored[0], plotVarName.len - 1);
+                    @memcpy(plotVarName[0..len], stored[1 .. 1 + len]);
+                    plotVarName[len] = 0;
+                }
+            }
+
             fnClDrawMx(5);
             _ = strcpy(&plotStatMx, "DrwMX");
+
+            if (plotVarName[0] != 0) {
+                const reResolved = findNamedVariable(&plotVarName);
+                if (reResolved != INVALID_VARIABLE) {
+                    currentSolverVariable = @bitCast(reResolved);
+                    graphVariabl1 = reResolved;
+                }
+            }
 
             if (rangeOK and realCompareGreaterThan(&hiX, &loX)) { // pre-condition the plotter: x_min = Y, x_max = X
                 realCopy(&loX, x_min);
