@@ -206,7 +206,7 @@ var _ioFileHandle: ?*FILE = null;
 // SNAP capture's bitmap path here; the screen SNAP writer consumes and clears it.
 // Storage-only in the headless HAL, matching io.c's definition (the SNAP path in
 // screen reads it). The array is unsized in io.h, so any adequate size links.
-pub export var _ioFileNameOverride: [1024]u8 = [_]u8{0} ** 1024;
+pub export var _ioFileNameOverride: [1024]u8 = std.mem.zeroes([1024]u8);
 
 // The testSuite is the C47 model (-DCALCMODEL=USER_C47), so the backup file is
 // "backup.cfg". Returns null for an unknown path (C returned `false`/NULL).

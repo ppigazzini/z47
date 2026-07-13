@@ -199,7 +199,7 @@ pub export var invalid_rms: bool_t = true;
 // decimal, matching c43. The exported symbol is a `real_t *const` to a backing
 // buffer, ABI-identical to upstream's REAL_T_PTR(name, 34), so the C and Zig
 // owners are drop-in swappable (the buffer rounds up to 39-digit capacity).
-const real_zero: real_t = .{ .digits = 1, .exponent = 0, .bits = 0, .lsu = [_]u16{0} ** abi.DECNUMUNITS };
+const real_zero: real_t = .{ .digits = 1, .exponent = 0, .bits = 0, .lsu = std.mem.zeroes([abi.DECNUMUNITS]u16) };
 var _x_min_data: real_t = real_zero;
 var _x_max_data: real_t = real_zero;
 var _y_min_data: real_t = real_zero;
