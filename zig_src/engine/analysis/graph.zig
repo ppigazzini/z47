@@ -2379,7 +2379,8 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             // DrwMX (e.g. a programmed `PLTf 'x'`) has its cached register go stale.
             // Snapshot the plot variable's name first, then re-resolve it by name
             // after the delete so the sampler stores into the right register.
-            var plotVarName: [16]u8 = [_]u8{0} ** 16;
+            var plotVarName: [16]u8 = undefined;
+            plotVarName[0] = 0; // empty-name sentinel; filled below when a plot variable is set
             const named_end: u16 = @as(u16, @intCast(FIRST_NAMED_VARIABLE)) + numberOfNamedVariables;
             if (currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable < named_end) {
                 if (allNamedVariables) |vars| {
