@@ -859,19 +859,19 @@ pub export fn exponentToDisplayString(exponent: i32, displayString_in: [*c]u8, d
     displayString += 2;
     displayString[0] = 0;
 
-    if (displayValueString_in != null) {
-        var dv = displayValueString_in;
-        dv[0] = 'e';
-        dv += 1;
-        dv[0] = 0;
+    var displayValueString = displayValueString_in;
+    if (displayValueString != null) {
+        displayValueString[0] = 'e';
+        displayValueString += 1;
+        displayValueString[0] = 0;
     }
 
     if (nimMode != 0) {
         if (exponent != 0) {
-            supNumberToDisplayString(exponent, displayString, displayValueString_in, 0);
+            supNumberToDisplayString(exponent, displayString, displayValueString, 0);
         }
     } else {
-        supNumberToDisplayString(exponent, displayString, displayValueString_in, 0);
+        supNumberToDisplayString(exponent, displayString, displayValueString, 0);
     }
 }
 
