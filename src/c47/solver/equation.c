@@ -1263,6 +1263,16 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
 }
 
 void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *mvarBuffer) {
+  // No equation, or an empty one: allFormulae may be NULL here, so this check must precede the dereference below.
+  if(equationId >= numberOfFormulae || allFormulae[equationId].pointerToFormulaData == C47_NULL) {
+    buffer[0] = 0;
+    mvarBuffer[0] = 0;
+    displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function parseEquation:", "no equation defined", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
   const char *strPtr = (char *)TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
   char *bufPtr = buffer;
   const char *pointerInFormula = strPtr;

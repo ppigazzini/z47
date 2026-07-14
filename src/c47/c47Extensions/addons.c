@@ -881,8 +881,17 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           uint16_t regNumber;
           uint16_t paramMode = (indexOfItems[func].status & PTP_STATUS) >> 9;
           if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE) || (opParam == INDIRECT_VARIABLE)) {
-            for(index = 0;  index < opParam2; index++) {
-              varOrLblName[index] = currentStep[i++];
+            // opParam2 is a name length read from the step; a corrupt or imported
+            // step can make it exceed varOrLblName, so clamp the copy and the
+            // terminator to the buffer while still consuming opParam2 bytes.
+            for(index = 0; index < opParam2; index++) {
+              if(index < (int16_t)(sizeof(varOrLblName) - 1)) {
+                varOrLblName[index] = currentStep[i];
+              }
+              i++;
+            }
+            if(index > (int16_t)(sizeof(varOrLblName) - 1)) {
+              index = (int16_t)(sizeof(varOrLblName) - 1);
             }
             varOrLblName[index] = 0;
           }

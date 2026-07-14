@@ -1,0 +1,24 @@
+;*************************************************************
+;** Coverage: bulk clear of registers and named variables   **
+;** (registers.c). fnClearRegisters zeroes the numbered     **
+;** registers; fnClearAllVariables and fnDeleteAllVariables **
+;** empty the named-variable pool. All take FARG =          **
+;** CONFIRMED (9877). This clears shared state, so it runs  **
+;** late, before the resetting serialize_cov.               **
+;*************************************************************
+In: FL_SPCRES=0 SD=0
+
+; clear the numbered registers: R00 = 5 -> 0
+Func: fnClearRegisters
+In:  FARG=9877 R00=Real:"5"
+Out: EC=0 R00=Real:"0"
+
+; clear all named variables
+Func: fnClearAllVariables
+In:  FARG=9877
+Out: EC=0
+
+; delete all named variables
+Func: fnDeleteAllVariables
+In:  FARG=9877
+Out: EC=0

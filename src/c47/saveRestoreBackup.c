@@ -368,8 +368,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     saveStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
     saveStateValue(&errorMessageRegisterLine,       sizeof(errorMessageRegisterLine),                            "errorMessageRegisterLine",       "int16");
-    saveStateValue(&shortIntegerMask,               sizeof(shortIntegerMask),                                    "shortIntegerMask",               "uint64");
-    saveStateValue(&shortIntegerSignBit,            sizeof(shortIntegerSignBit),                                 "shortIntegerSignBit",            "uint64");
     saveStateValue(&temporaryInformation,           sizeof(temporaryInformation),                                "temporaryInformation",           "uint8");
     saveStateValue(&funcOK,                         sizeof(funcOK),                                              "funcOK",                         "bool");
     saveStateValue(&screenChange,                   sizeof(screenChange),                                        "screenChange",                   "bool");
@@ -930,6 +928,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&displayFormatDigits,            sizeof(displayFormatDigits),                                 "displayFormatDigits",            "uint8");
     restoreStateValue(&timeDisplayFormatDigits,        sizeof(timeDisplayFormatDigits),                             "timeDisplayFormatDigits",        "uint8");
     restoreStateValue(&shortIntegerWordSize,           sizeof(shortIntegerWordSize),                                "shortIntegerWordSize",           "uint8");
+    updateShortIntegerMasks();  // rederive shortIntegerMask and shortIntegerSignBit from the word size just restored; the file copies (older backups) are ignored
     restoreStateValue(&significantDigits,              sizeof(significantDigits),                                   "significantDigits",              "uint8");
     fractionDigits = 34;
     restoreStateValue(&fractionDigits,                 sizeof(fractionDigits),                                      "fractionDigits",                 "uint8");
@@ -979,8 +978,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&displayStack,                   sizeof(displayStack),                                        "displayStack",                   "uint8");
     restoreStateValue(&hexDigits,                      sizeof(hexDigits),                                           "hexDigits",                      "uint8");
     restoreStateValue(&errorMessageRegisterLine,       sizeof(errorMessageRegisterLine),                            "errorMessageRegisterLine",       "int16");
-    restoreStateValue(&shortIntegerMask,               sizeof(shortIntegerMask),                                    "shortIntegerMask",               "uint64");
-    restoreStateValue(&shortIntegerSignBit,            sizeof(shortIntegerSignBit),                                 "shortIntegerSignBit",            "uint64");
     restoreStateValue(&temporaryInformation,           sizeof(temporaryInformation),                                "temporaryInformation",           "uint8");
     restoreStateValue(&funcOK,                         sizeof(funcOK),                                              "funcOK",                         "bool");
     restoreStateValue(&screenChange,                   sizeof(screenChange),                                        "screenChange",                   "bool");
@@ -1394,6 +1391,11 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       free(paramCurrent);
       paramCurrent = paramHead;
     }
+
+    // Sanitise restored short integers: the backup restores raw register bytes, so a file written by an older build can
+    // carry values wider than the word size. The mask and sign bit were restored above; clamp every short-integer
+    // register (all classes, not just the global block) to the word size so stale bits cannot survive.
+    clampShortIntegerRegistersToWordSize();
 
     printf("End of calc's restoration\n");
     fflush(stdout);

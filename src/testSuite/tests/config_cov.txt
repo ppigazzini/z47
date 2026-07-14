@@ -1,0 +1,136 @@
+;*************************************************************
+;** Coverage: configuration modes, display settings and     **
+;** getters (config.c). Each setting is written and then     **
+;** read back with its getter asserting the stored value, so **
+;** a broken getter or a malfunctioning setter is caught,    **
+;** not just a clean exit. The register-reading setters take **
+;** their value from the register named by FARG. Fixed       **
+;** setters and toggles that have no value getter are        **
+;** exercised for EC=0. SETHP35 stores the config into R35   **
+;** before SETC47 recalls it. fnClAll takes FARG = CONFIRMED.**
+;*************************************************************
+In: FL_SPCRES=0 SD=0
+
+; last error code is clear at the start of this file
+Func: fnGetLastErr
+Out: EC=0 RX=LonI:"0"
+
+; --- set each mode/limit, then read it back and assert the value ---
+
+; significant digits
+Func: fnSetSignificantDigits
+In:  FARG=12
+Out: EC=0
+Func: fnGetSignificantDigits
+Out: EC=0 RX=LonI:"12"
+
+; rounding mode
+Func: fnSetRoundingMode
+In:  FARG=1
+Out: EC=0
+Func: fnGetRoundingMode
+Out: EC=0 RX=LonI:"1"
+
+; exponent range (values below 99 are floored to 99, 150 echoes back)
+Func: fnRange
+In:  FARG=150
+Out: EC=0
+Func: fnGetRange
+Out: EC=0 RX=LonI:"150"
+
+; hide-exponent limit (default is 0, and fnHide clamps 1..11 up to 12, so set 12)
+Func: fnHide
+In:  FARG=12
+Out: EC=0
+Func: fnGetHide
+Out: EC=0 RX=LonI:"12"
+
+; number of displayed decimals (value taken from R00)
+Func: fnSetNDEC
+In:  FARG=0 R00=Real:"4"
+Out: EC=0
+Func: fnGetNDEC
+Out: EC=0 RX=LonI:"4"
+
+; real display format (value taken from R00, 3 = ENG)
+Func: fnSetREALDF
+In:  FARG=0 R00=Real:"3"
+Out: EC=0
+Func: fnGetREALDF
+Out: EC=0 RX=LonI:"3"
+
+; fraction digits
+Func: fnSetFractionDigits
+In:  FARG=3
+Out: EC=0
+Func: fnGetFractionDigits
+Out: EC=0 RX=LonI:"3"
+
+; integer sign mode (1 = 1's complement; default is 2's complement, so use 1)
+Func: fnIntegerMode
+In:  FARG=1
+Out: EC=0
+Func: fnGetIntegerSignMode
+Out: EC=0 RX=LonI:"1"
+
+; angular display mode (value from R00, 2 = radian; ADM round-trips)
+Func: fnSetADM
+In:  FARG=0 R00=Real:"2"
+Out: EC=0
+Func: fnGetADM
+Out: EC=0 RX=LonI:"2"
+
+; denominator max (value taken from R00; 64 is a profile default, so use 50)
+Func: fnSetDMX
+In:  FARG=0 R00=Real:"50"
+Out: EC=0
+Func: fnGetDMX
+Out: EC=0 RX=LonI:"50"
+
+; word size (set on the In: line) read back
+Func: fnGetWordSize
+In:  WS=32
+Out: EC=0 RX=LonI:"32"
+
+; --- setters without a value getter: exercised for EC=0 ---
+Func: fnAngularMode
+In:  FARG=2
+Out: EC=0
+Func: fnSetBaseNr
+In:  FARG=10
+Out: EC=0
+Func: fnSetISM
+In:  FARG=0 R00=Real:"1"
+Out: EC=0
+Func: fnFractionType
+Out: EC=0
+
+; SETHP35 stores the current config into R35, which SETC47 then recalls;
+; SETHP35 must run first or the recall reads an empty R35
+Func: fnSetHP35
+Out: EC=0
+Func: fnSetC47
+Out: EC=0
+Func: fnSetRJ
+Out: EC=0
+Func: fnSetJM
+Out: EC=0
+Func: fnResetTVM
+Out: EC=0
+Func: fnMenuGapL
+Out: EC=0
+Func: fnMenuGapR
+Out: EC=0
+Func: fnMenuGapRX
+Out: EC=0
+Func: fnSettingsDispFormatGrpL
+In:  FARG=3
+Out: EC=0
+Func: fnSettingsDispFormatGrpR
+In:  FARG=3
+Out: EC=0
+Func: fnWho
+Out: EC=0
+Func: fnClAll
+In:  FARG=9877
+Out: EC=0

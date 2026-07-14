@@ -1041,6 +1041,44 @@ static int savestCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 }
 
 /**
+ * impreg [<filename>] - Import a data (.d47) register file, IMPORTr with a filename override so the
+ * GTK file chooser is bypassed in headless runs. Mirrors loadst.
+ */
+static int impregCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  if(argc > 1) {
+    strncpy(_ioFileNameOverride, Jim_String(argv[1]), C47_PATH_MAX - 1);
+    _ioFileNameOverride[C47_PATH_MAX - 1] = '\0';
+  }
+
+  fnLoadRegisters(NOPARAM);
+  return JIM_OK;
+}
+
+/**
+ * expreg <register> [<filename>] - Export one register to a data (.d47) file, EXPreg with a filename
+ * override so the GTK file chooser is bypassed in headless runs. Mirrors savest; register as for reg.
+ */
+static int expregCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  if(argc < 2) {
+    Jim_SetResultString(interp, "expreg: missing register argument", -1);
+    return JIM_ERR;
+  }
+
+  uint16_t param;
+  if(dslParseRegisterArg(interp, ITM_STO, Jim_String(argv[1]), &param) != JIM_OK) {
+    return JIM_ERR;
+  }
+
+  if(argc > 2) {
+    strncpy(_ioFileNameOverride, Jim_String(argv[2]), C47_PATH_MAX - 1);
+    _ioFileNameOverride[C47_PATH_MAX - 1] = '\0';
+  }
+
+  fnSaveRegister(param);
+  return JIM_OK;
+}
+
+/**
  * tsvfnSet <path> - Set the TSV file name override
  */
 static void tsvfnSet(const char *baseName) {
@@ -1231,6 +1269,8 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "reg",    regCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "readp",  readpCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "savest", savestCmd, NULL, NULL);
+  Jim_CreateCommand(interp, "impreg", impregCmd, NULL, NULL);
+  Jim_CreateCommand(interp, "expreg", expregCmd, NULL, NULL);
   Jim_CreateCommand(interp, "snap",   snapCmd,   NULL, NULL);
   Jim_CreateCommand(interp, "tsvfn",  tsvfnCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "var",    varCmd,    NULL, NULL);

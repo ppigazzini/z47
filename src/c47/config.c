@@ -694,6 +694,23 @@ void fnGetWordSize(uint16_t unusedButMandatoryParameter) {
 
 
 
+void updateShortIntegerMasks(void) {
+  // Derive the word-size-dependent short-integer bit masks from the current shortIntegerWordSize. fnSetWordSize uses this when the size changes interactively;
+  // code that assigns shortIntegerWordSize directly (state-file restore, which stores neither mask) must call it too, so that shortIntegerMask and 
+  // shortIntegerSignBit stay consistent with the word size.
+  if(shortIntegerWordSize == 64) {
+    shortIntegerMask    = -1;
+  }
+  else {
+    shortIntegerMask    = ((uint64_t)1 << shortIntegerWordSize) - 1;
+  }
+
+  shortIntegerSignBit = (uint64_t)1 << (shortIntegerWordSize - 1);
+  //printf("shortIntegerMask  =   %08x-%08x\n", (unsigned int)(shortIntegerMask>>32), (unsigned int)(shortIntegerMask&0xffffffff));
+  //printf("shortIntegerSignBit = %08x-%08x\n", (unsigned int)(shortIntegerSignBit>>32), (unsigned int)(shortIntegerSignBit&0xffffffff));
+}
+
+
 void fnSetWordSize(uint16_t WS) {
   if(shortIntegerWordSize != WS) {
     setSystemFlagChanged(SETTING_SINT_WS);
@@ -709,16 +726,7 @@ void fnSetWordSize(uint16_t WS) {
 
   shortIntegerWordSize = WS;
 
-  if(shortIntegerWordSize == 64) {
-    shortIntegerMask    = -1;
-  }
-  else {
-    shortIntegerMask    = ((uint64_t)1 << shortIntegerWordSize) - 1;
-  }
-
-  shortIntegerSignBit = (uint64_t)1 << (shortIntegerWordSize - 1);
-  //printf("shortIntegerMask  =   %08x-%08x\n", (unsigned int)(shortIntegerMask>>32), (unsigned int)(shortIntegerMask&0xffffffff));
-  //printf("shortIntegerSignBit = %08x-%08x\n", (unsigned int)(shortIntegerSignBit>>32), (unsigned int)(shortIntegerSignBit&0xffffffff));
+  updateShortIntegerMasks();
 
   if(reduceWordSize) {
     // reduce the word size of integers on the stack
@@ -1161,6 +1169,7 @@ void fnClAll(uint16_t confirmation) {
     fnClSigma(CONFIRMED); // Clears and releases the memory of all statistical sums
     if(savedStatisticalSumsPointer != NULL) {
       freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
+      savedStatisticalSumsPointer = NULL;
     }
 
     // Clear local registers

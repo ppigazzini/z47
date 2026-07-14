@@ -1,0 +1,53 @@
+;*************************************************************
+;** Coverage: statistics readouts (stats.c). A leading      **
+;** fnClSigma empties the accumulator, three points         **
+;** (1,2) (3,5) (5,8) are added with fnSigmaAddRem, then    **
+;** the sum, min, max, range and a raw statistical sum      **
+;** are read back, and a closing fnClSigma clears the       **
+;** accumulator so it cannot leak into later tests.         **
+;*************************************************************
+In: FL_SPCRES=0 SD=0
+
+; clear the accumulator before adding points
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+; accumulate (x,y) = (1,2)
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0
+; accumulate (x,y) = (3,5)
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"5" RX=Real:"3"
+Out: EC=0
+; accumulate (x,y) = (5,8)
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8" RX=Real:"5"
+Out: EC=0
+
+; sum: SumX = 1+3+5 = 9, SumY = 2+5+8 = 15
+Func: fnSumXY
+Out: EC=0 RX=Real:"9" RY=Real:"15"
+
+; minimum: Xmin = 1, Ymin = 2
+Func: fnXmin
+Out: EC=0 RX=Real:"1" RY=Real:"2"
+
+; maximum: Xmax = 5, Ymax = 8
+Func: fnXmax
+Out: EC=0 RX=Real:"5" RY=Real:"8"
+
+; range: Xmax-Xmin = 4, Ymax-Ymin = 6
+Func: fnRangeXY
+Out: EC=0 RX=Real:"4" RY=Real:"6"
+
+; raw statistical sum 0 (number of data points) = 3
+Func: fnStatSum
+In:  FARG=0
+Out: EC=0 RX=Real:"3"
+
+; clear the accumulator so it does not leak into later tests
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
