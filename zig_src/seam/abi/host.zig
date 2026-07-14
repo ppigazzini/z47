@@ -70,6 +70,25 @@ pub fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, cl
     return hook(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
 }
 
+// requestRefresh (refreshScreen): the core signals the shell that the display is
+// dirty and should redraw; the u16 argument is an upstream debug tag for the
+// refresh source. The default is a no-op, which matches the no-op refreshScreen
+// fakes the parity harnesses link. The shell installs its implementation once at
+// startup, before any core code runs, so no interactive redraw is lost.
+var request_refresh_hook: ?*const fn (u16) callconv(.c) void = null;
+
+/// Install the shell's screen-refresh implementation.
+pub fn installRequestRefresh(hook: *const fn (u16) callconv(.c) void) void {
+    request_refresh_hook = hook;
+}
+
+/// Signal the host that the display should redraw. A no-op when the core runs
+/// headless (no hook installed).
+pub fn requestRefresh(source: u16) void {
+    const hook = request_refresh_hook orelse return;
+    hook(source);
+}
+
 const std = @import("std");
 const testing = std.testing;
 

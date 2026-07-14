@@ -55,7 +55,7 @@ const real_t = opaque {}; // decNumber; range globals hold a *real_t (see graphs
 const REAL_SIZE_IN_BYTES_34: u32 = 36; // C realType.h REAL_SIZE_IN_BYTES(34)
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
-extern fn refreshScreen(source: u16) void;
+const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern var calcModel: u8;
 extern var calcMode: u8;
 extern var previousCalcMode: u8;

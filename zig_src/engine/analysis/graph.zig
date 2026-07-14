@@ -333,7 +333,7 @@ extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real
 extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn showHideHourGlass() void;
-extern fn refreshScreen(src: u16) void;
+const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn realSetNaN(value: *real_t) void;
 extern fn refreshStatusBar() void;
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;

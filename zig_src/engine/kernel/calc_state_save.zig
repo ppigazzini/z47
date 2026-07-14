@@ -509,7 +509,7 @@ const registerLetters = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
-extern fn refreshScreen(caller: u16) void;
+const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn showHideHourGlass() void;
 extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
 extern fn findNamedVariable(variableName: [*c]const u8) i16;

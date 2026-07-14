@@ -113,7 +113,10 @@ pub extern fn runConversionToSI(itemNr: i16) void;
 pub extern fn runConversionFromSI(itemNr: i16) void;
 pub extern fn conversionPartner(input: i16, unity: ?*i16, exponent: ?*i8, type_out: ?*u8) i16;
 pub extern fn addItemToNimBuffer(item: i16) void;
-pub extern fn refreshScreen(reason: i16) void;
+// routed through the host-callback boundary; keeps the i16 caller interface
+pub fn refreshScreen(reason: i16) void {
+    abi.host.requestRefresh(@bitCast(reason));
+}
 extern fn z47_keyboard_state_processKeyAction(item: i16) void;
 extern fn z47_keyboard_state_fnKeyEnter(unused_but_mandatory_parameter: u16) void;
 extern fn z47_keyboard_state_fnKeyExit(unused_but_mandatory_parameter: u16) void;
