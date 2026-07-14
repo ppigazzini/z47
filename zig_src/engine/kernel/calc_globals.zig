@@ -26,3 +26,6 @@ pub export var calcMode: u8 = 0; // the calculator mode (CM_NORMAL/CM_BUG_ON_SCR
 pub export var shortIntegerMode: u8 = 0; // short-integer sign mode (2's complement/...); read by the integer ops
 pub export var shortIntegerMask: u64 = 0; // word-size mask derived from the mode; read by the integer ops
 pub export var shortIntegerSignBit: u64 = 0; // sign-bit mask derived from the mode; read by the integer ops
+pub export var shortIntegerWordSize: u8 = 0; // short-integer word size in bits; read by the integer ops (28 sites)
+pub export var lrChosen: u16 = 0; // the chosen linear-regression model; read by the stat/curve-fit engine
+pub export var lrSelection: u16 = 0; // the linear-regression model selection bitmap; read by the stat engine

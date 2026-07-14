@@ -263,7 +263,7 @@ pub export var lastFlgScr: u8 = 0;
 pub export var displayFormat: u8 = 0;
 pub export var displayFormatDigits: u8 = 0;
 pub export var timeDisplayFormatDigits: u8 = 0;
-pub export var shortIntegerWordSize: u8 = 0;
+// shortIntegerWordSize moved to the base kernel (engine/kernel/calc_globals.zig).
 // significantDigits (decimal working precision) moved to kernel/decimal_context.zig
 pub export var dispBase: u8 = 0;
 pub export var fractionDigits: u8 = 0;
@@ -397,9 +397,9 @@ pub export var numberOfPrograms: u16 = 0;
 // numberOfNamedVariables moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var currentLocalStepNumber: u16 = 0;
 pub export var currentProgramNumber: u16 = 0;
-pub export var lrSelection: u16 = 0;
+// lrSelection moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lrSelectionUndo: u16 = 0;
-pub export var lrChosen: u16 = 0;
+// lrChosen moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lrChosenUndo: u16 = 0;
 pub export var lastPlotMode: u16 = 0;
 pub export var plotSelection: u16 = 0;
