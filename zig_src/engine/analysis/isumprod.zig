@@ -133,7 +133,7 @@ const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 
-extern fn checkHalfSec() bool;
+const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
 extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
 
 // ===========================================================================

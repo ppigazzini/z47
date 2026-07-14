@@ -382,7 +382,7 @@ extern fn refreshRegisterLine(regist: calcRegister_t) void;
 extern fn refreshScreen(source: u16) void;
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;
 extern fn force_refresh(mode: u8) void;
-extern fn checkHalfSec() bool;
+const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;
