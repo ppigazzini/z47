@@ -35,7 +35,7 @@ const testing = std.testing;
 test "xcopy copies forward and backward for overlapping ranges" {
     var buf = [_]u8{ 1, 2, 3, 4, 5, 6, 7, 8 };
     // non-overlapping
-    var out = [_]u8{0} ** 4;
+    var out: [4]u8 = @splat(0);
     _ = xcopy(&out, &buf, 4);
     try testing.expectEqualSlices(u8, &[_]u8{ 1, 2, 3, 4 }, &out);
     // overlap, dest < source (forward): shift left by 2

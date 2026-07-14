@@ -183,7 +183,7 @@ pub fn fileSelectionScreen(
 ) c_int {
     const data_buffer = data orelse return FILE_ERROR;
     const filename: [*c]u8 = @ptrCast(data_buffer);
-    var untitled: [DEFAULT_SAVE_NAME_BUFFER_LENGTH]u8 = [_]u8{0} ** DEFAULT_SAVE_NAME_BUFFER_LENGTH;
+    var untitled: [DEFAULT_SAVE_NAME_BUFFER_LENGTH]u8 = @splat(0);
 
     _ = strcpy(&untitled, filename);
     _ = strcat(&untitled, ext + 1);
@@ -239,7 +239,7 @@ pub fn fileSelectionScreen(
 }
 
 pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
-    var base_dir: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
+    var base_dir: [FILENAME_BUFFER_LENGTH]u8 = @splat(0);
 
     switch (path) {
         IO_PATH_MANUAL_SAVE => {
@@ -301,7 +301,7 @@ pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
             if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
             if (createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
             stringToASCII(tmpStringLabelOrVariableName, filename);
-            var filename_all: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
+            var filename_all: [FILENAME_BUFFER_LENGTH]u8 = @splat(0);
             _ = strcpy(&filename_all, PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR ++ "/");
             _ = strcat(&filename_all, filename);
             _ = strcpy(filename, &filename_all);
@@ -312,7 +312,7 @@ pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
             if (createDir(PROGRAMS_DIR) != 0) return FILE_ERROR;
             if (createDir(PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR) != 0) return FILE_ERROR;
             stringToASCII(tmpStringLabelOrVariableName, filename);
-            var filename_all: [FILENAME_BUFFER_LENGTH]u8 = [_]u8{0} ** FILENAME_BUFFER_LENGTH;
+            var filename_all: [FILENAME_BUFFER_LENGTH]u8 = @splat(0);
             _ = strcpy(&filename_all, PROGRAMS_DIR ++ "/" ++ ALL_PROGRAMS_SUBDIR ++ "/");
             _ = strcat(&filename_all, filename);
             _ = strcpy(filename, &filename_all);
@@ -326,7 +326,7 @@ pub fn ioFileNameFromFilePath(path: c_int, filename: [*c]u8) c_int {
 pub fn ioFileOpen(handle: *?*anyopaque, path: c_int, mode: c_int) c_int {
     if (handle.* != null) return FILE_ERROR;
 
-    var filename: [400]u8 = [_]u8{0} ** 400;
+    var filename: [400]u8 = @splat(0);
     _ = strcpy(&filename, "untitled");
     fileNameSelected[0] = 0;
 
@@ -384,7 +384,7 @@ pub fn ioEof(handle: ?*anyopaque) c_int {
 }
 
 pub fn ioFileRemove(path: c_int, error_number: ?*u32) c_int {
-    var filename: [400]u8 = [_]u8{0} ** 400;
+    var filename: [400]u8 = @splat(0);
     const ret = ioFileNameFromFilePath(path, &filename);
     if (ret != FILE_OK) return ret;
 

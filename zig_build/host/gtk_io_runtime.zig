@@ -5,7 +5,7 @@ const STATE_FILE_NAME_VAR_LENGTH: usize = 20;
 // SNAP filename override consumed by fnScreenDump: when non-empty the next screen
 // dump writes to this path instead of a timestamped name. The GTK HAL leaves it
 // empty; the graph coverage suite sets it. io.h declares it as an unsized array.
-pub export var _ioFileNameOverride: [1024]u8 = [_]u8{0} ** 1024;
+pub export var _ioFileNameOverride: [1024]u8 = @splat(0);
 
 var io_file_handle: ?*anyopaque = null;
 

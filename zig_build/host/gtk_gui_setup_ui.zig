@@ -45,7 +45,7 @@ extern var enableFunctionKeysDisplay: bool;
 extern var calcModel: u8;
 
 fn s16(comptime str: []const u8) [16]u8 {
-    var a = [_]u8{0} ** 16;
+    var a: [16]u8 = @splat(0);
     @memcpy(a[0..str.len], str);
     return a;
 }
