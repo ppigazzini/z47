@@ -37,10 +37,10 @@ zig_build/tests/distributions/distribution_fake_runtime.zig
 zig_build/tests/abi_layout/abi_layout_oracle.zig
 zig_build/tools/generate_catalogs.zig
 zig_build/tools/generate_testpgms.zig
-zig_src/seam/abi/runtime.zig
-zig_src/seam/abi/registers.zig
+zig_src/abi/runtime.zig
+zig_src/abi/registers.zig
 zig_src/core/integer/shortint_runtime.zig
-zig_src/seam/constants/constants_runtime.zig
+zig_src/abi/constants/constants_runtime.zig
 zig_src/core/numeric/dispatch/command_wrappers_runtime.zig
 zig_src/core/numeric/arithmetic/addition_cells.zig
 zig_src/core/numeric/dispatch/dispatch_cells_runtime.zig

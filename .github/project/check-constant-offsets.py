@@ -22,7 +22,7 @@ import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CPTR = ROOT / "src/generated/constantPointers.h"
-ABI = ROOT / "zig_src/seam/abi/constants.zig"
+ABI = ROOT / "zig_src/abi/constants.zig"
 
 # C: #define const_1 ((real_t *)(constants + 4856))  /  real34_t variant too
 C_DEF = re.compile(

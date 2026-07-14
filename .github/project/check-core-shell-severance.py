@@ -54,9 +54,9 @@ def exports_in(root: str, zone: str) -> set[str]:
 def measure(root: str):
     shell_exports = exports_in(root, "shell")
     core_exports = exports_in(root, "core")
-    seam_exports = exports_in(root, "seam")
+    abi_exports = exports_in(root, "abi")
     # Symbols whose only first-party definition is in shell.
-    shell_owned = shell_exports - core_exports - seam_exports
+    shell_owned = shell_exports - core_exports - abi_exports
 
     extern_edges: list[tuple[str, str]] = []
     import_edges: list[tuple[str, str]] = []
