@@ -580,6 +580,7 @@ const dmcp = struct {
     // ---- Runtime C symbols (resolved at firmware link) ----
     extern fn doFnReset(confirmation: u16, autoSav: bool_t) void;
     extern fn refreshScreen(source: u16) void;
+    extern fn installCoreHostHooks() void;
     extern fn refreshLcd() void;
     extern fn refreshTimer() void;
     extern fn fnTimerReset() void;
@@ -635,6 +636,7 @@ const dmcp = struct {
         var key: c_int = 0;
         var charKey: [3]u8 = undefined;
 
+        installCoreHostHooks(); // wire the core->shell host boundary before any core code runs
         c47MemInBlocks = 0;
         gmpMemInBytes = 0;
         mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);

@@ -99,6 +99,7 @@ extern fn mockupSB() void;
 extern fn fnScreenDump(param: u16) void;
 extern fn fnDumpMenus(param: u16) void;
 extern fn refreshScreen(source: u16) void;
+extern fn installCoreHostHooks() void;
 extern fn refreshFn(timerType: u16) void;
 extern fn fnTimerReset() void;
 extern fn fnTimerConfig(nr: u8, func: TimerFn, param: u16) void;
@@ -220,6 +221,7 @@ fn relocateToResourceDir(argv0: [*:0]const u8) void {
 pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
     relocateToResourceDir(argv[0]);
 
+    installCoreHostHooks(); // wire the core->shell host boundary before any core code runs
     c47MemInBlocks = 0;
     gmpMemInBytes = 0;
     __gmp_set_memory_functions(&allocGmp, &reallocGmp, &freeGmp);

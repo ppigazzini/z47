@@ -379,7 +379,9 @@ extern fn refreshScreen(source: u16) void;
 extern fn showSoftmenu(id: i16) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
-extern fn exitKeyWaiting() bool;
+// exitKeyWaiting now routes through the host-callback boundary (abi.host),
+// severing the direct engine->shell link; it reports "no abort" when headless.
+const exitKeyWaiting = abi.host.exitKeyWaiting;
 extern fn checkHalfSec() bool;
 extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
 

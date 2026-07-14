@@ -74,7 +74,9 @@ extern fn realSetOne(r: *align(1) real_t) void;
 extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;
 extern fn freeC47Blocks(ptr: ?[*]align(4) real_t, size_in_blocks: usize) void;
 extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t) *align(1) real_t;
-extern fn exitKeyWaiting() bool;
+// exitKeyWaiting now routes through the host-callback boundary (abi.host),
+// severing the direct engine->shell link; it reports "no abort" when headless.
+const exitKeyWaiting = abi.host.exitKeyWaiting;
 extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
 extern var significantDigits: u8;
