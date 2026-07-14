@@ -32,6 +32,24 @@ pub fn exitKeyWaiting() bool {
     return hook() != 0;
 }
 
+// checkHalfSec: has the half-second progress interval elapsed? The long
+// computations poll it to decide when to refresh their on-screen progress. The
+// default reports "not elapsed", so a headless core never takes the progress
+// branch -- exactly the non-interactive behaviour.
+var check_half_sec_hook: ?*const fn () callconv(.c) bool_t = null;
+
+/// Install the shell's half-second progress-clock implementation.
+pub fn installCheckHalfSec(hook: *const fn () callconv(.c) bool_t) void {
+    check_half_sec_hook = hook;
+}
+
+/// True when the half-second progress interval has elapsed. Reports false when
+/// the core runs headless (no hook installed).
+pub fn checkHalfSec() bool {
+    const hook = check_half_sec_hook orelse return false;
+    return hook() != 0;
+}
+
 const std = @import("std");
 const testing = std.testing;
 

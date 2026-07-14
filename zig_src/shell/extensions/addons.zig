@@ -1984,6 +1984,7 @@ pub export fn exitKeyWaiting() callconv(.c) bool_t {
 // the parity harnesses skip it and the core falls back to the neutral defaults.
 pub export fn installCoreHostHooks() callconv(.c) void {
     abi.host.installExitKeyWaiting(&exitKeyWaiting);
+    abi.host.installCheckHalfSec(&frontier_screen.checkHalfSec);
 }
 
 pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_int {
