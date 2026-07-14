@@ -58,7 +58,7 @@ pub fn real34IsPositive(value: *align(1) const real34_t) bool {
 
 // error.c / items.c
 pub extern fn doNothing() void;
-pub extern fn displayBugScreen(msg: [*:0]const u8) void;
+pub const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 
 // debug.c
 pub extern fn getDataTypeName(dt: u16, article: bool, pad_with_blanks: bool) [*:0]const u8;

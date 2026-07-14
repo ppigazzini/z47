@@ -19,7 +19,7 @@ const wrappers = @import("../command_wrappers.zig");
 extern fn realSetPlusInfinity(value: *runtime.real_t) void;
 extern fn realSetMinusInfinity(value: *runtime.real_t) void;
 // Upstream error.c.
-extern fn displayBugScreen(msg: [*:0]const u8) void;
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 // decNumber functions behind the upstream realCopy/realMinus macros
 // (src/c47/realType.h: realCopy -> decNumberCopy, realMinus -> decNumberMinus).
 extern fn decNumberCopy(destination: *runtime.real_t, source: *const runtime.real_t) *runtime.real_t;
