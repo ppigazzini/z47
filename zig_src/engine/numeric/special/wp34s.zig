@@ -255,7 +255,7 @@ const ORTHOPOLY_CHEBYSHEV_U: u16 = 6;
 // Host-only progress / abort control flow (preserved for side effects).
 pub const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
 pub const exitKeyWaiting = abi.host.exitKeyWaiting;
-pub extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+pub const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
 

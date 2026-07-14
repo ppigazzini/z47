@@ -383,7 +383,7 @@ extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;
 const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
-extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 
 // libc helpers
 extern fn strlen(s: [*c]const u8) usize;

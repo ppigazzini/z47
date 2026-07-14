@@ -50,6 +50,26 @@ pub fn checkHalfSec() bool {
     return hook() != 0;
 }
 
+// progressHalfSecUpdate_Integer: refresh the on-screen progress line of a long
+// computation with an iteration label and counter, returning whether the user
+// interrupted. The default reports "no interrupt", so a headless core runs to
+// completion -- exactly the non-interactive behaviour. The hook keeps the shell
+// owner's C-ABI shape (char* label, byte booleans); the forwarder exposes an
+// idiomatic sentinel-string / bool signature to the callers.
+var progress_half_sec_hook: ?*const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t = null;
+
+/// Install the shell's progress-line refresh implementation.
+pub fn installProgressHalfSec(hook: *const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t) void {
+    progress_half_sec_hook = hook;
+}
+
+/// Refresh the progress line; returns true when the user interrupted. Reports
+/// false (no interrupt) when the core runs headless (no hook installed).
+pub fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool {
+    const hook = progress_half_sec_hook orelse return false;
+    return hook(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
+}
+
 const std = @import("std");
 const testing = std.testing;
 

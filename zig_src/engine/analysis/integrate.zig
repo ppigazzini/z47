@@ -282,7 +282,7 @@ extern fn showSoftmenu(id: i16) void;
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;
 const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
-extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 
 // fnPgmInt is owned by solve.zig (its own Zig impl); call the real symbol.
 

@@ -1985,6 +1985,7 @@ pub export fn exitKeyWaiting() callconv(.c) bool_t {
 pub export fn installCoreHostHooks() callconv(.c) void {
     abi.host.installExitKeyWaiting(&exitKeyWaiting);
     abi.host.installCheckHalfSec(&frontier_screen.checkHalfSec);
+    abi.host.installProgressHalfSec(&frontier_screen.progressHalfSecUpdate_Integer);
 }
 
 pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_int {
