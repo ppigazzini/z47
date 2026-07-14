@@ -228,7 +228,7 @@ var numberOfAllocatedMemoryRegions: i32 = 0;
 pub export var pcg32_global: pcg32_random_t = .{ .state = 0x853c49e6748fea9b, .inc = 0xda3e39cb94b95bdb };
 pub export var labelList: ?*anyopaque = null;
 pub export var programList: ?*anyopaque = null;
-pub export var currentAngularMode: angularMode_t = 0;
+// currentAngularMode moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var allFormulae: ?*anyopaque = null;
 
 pub export var beginOfCurrentProgram: ?[*]u8 = null;
@@ -300,7 +300,9 @@ pub export var previousErrorCode: u8 = 0;
 // (engine/kernel/transient_status.zig).
 pub export var rbrMode: u8 = 0;
 pub export var timerCraAndDeciseconds: u8 = 128;
-pub export var programRunStop: u8 = 0;
+// programRunStop moved to the base kernel (engine/kernel/calc_globals.zig);
+// the firmware event loop reaches it through this extern re-declaration.
+extern var programRunStop: u8;
 pub export var lastKeyCode: u8 = 0;
 pub export var keyStateCode: u8 = 0;
 pub export var entryStatus: u8 = 0;
@@ -390,7 +392,7 @@ pub export var freeProgramBytes: u16 = 0;
 pub export var glyphRow: [NUMBER_OF_GLYPH_ROWS]u16 = std.mem.zeroes([NUMBER_OF_GLYPH_ROWS]u16);
 pub export var firstDisplayedLocalStepNumber: u16 = 0;
 pub export var numberOfPrograms: u16 = 0;
-pub export var numberOfNamedVariables: u16 = 0;
+// numberOfNamedVariables moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var currentLocalStepNumber: u16 = 0;
 pub export var currentProgramNumber: u16 = 0;
 pub export var lrSelection: u16 = 0;
@@ -413,7 +415,7 @@ pub export var lgCatalogSelection: i32 = 0;
 pub export var firstGregorianDay: u32 = 0;
 pub export var denMax: u32 = 0;
 pub export var lastDenominator: u32 = 4;
-pub export var lastIntegerBase: u32 = 0;
+// lastIntegerBase moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var decodedIntegerBase: u32 = 0;
 pub export var xCursor: u32 = 0;
 pub export var yCursor: u32 = 0;
