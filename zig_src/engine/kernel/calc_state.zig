@@ -26,7 +26,6 @@ comptime {
     // Force the shared decNumber contexts + solver context + error state (base).
     _ = @import("base/decimal_context.zig");
     _ = @import("base/solver_context.zig");
-    _ = @import("base/error_state.zig");
     _ = @import("state/keyboard_input_state.zig");
     _ = @import("state/program_state.zig");
     _ = @import("state/calc_mode_state.zig");
