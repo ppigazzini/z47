@@ -171,13 +171,13 @@ pub export var updateOldConstants: bool_t = false;
 // kernel at engine/kernel/decimal_context.zig; consumers extern them unchanged.
 
 pub export var allSubroutineLevels: subroutineLevels_t = std.mem.zeroes(subroutineLevels_t);
-pub export var currentSubroutineLevelData: ?*anyopaque = null;
-pub export var statisticalSumsPointer: ?*real_t = null;
+// currentSubroutineLevelData moved to the base kernel.
+// statisticalSumsPointer moved to the base kernel.
 pub export var savedStatisticalSumsPointer: ?*real_t = null;
-pub export var ram: ?[*]u32 = null;
+// ram moved to the base kernel.
 pub export var currentLocalFlags: ?*localFlags_t = null;
 
-pub export var allNamedVariables: ?*anyopaque = null;
+// allNamedVariables moved to the base kernel.
 pub export var softmenuStack: [SOFTMENU_STACK_SIZE]softmenuStack_t = std.mem.zeroes([SOFTMENU_STACK_SIZE]softmenuStack_t);
 pub export var menuPageNumber: u16 = 0;
 pub export var userMenuItems: [18]userMenuItem_t = std.mem.zeroes([18]userMenuItem_t);
@@ -236,9 +236,9 @@ pub export var endOfCurrentProgram: ?[*]u8 = null;
 pub export var firstDisplayedStep: ?[*]u8 = null;
 pub export var currentStep: ?[*]u8 = null;
 
-pub export var tmpString: ?[*]u8 = null;
+// tmpString moved to the base kernel (engine/kernel/scratch_buffers.zig).
 pub export var tmpStringLabelOrVariableName: ?[*]u8 = null;
-pub export var errorMessage: ?[*]u8 = null;
+// errorMessage moved to the base kernel.
 pub export var aimBuffer: ?[*]u8 = null;
 pub export var nimBufferDisplay: ?[*]u8 = null;
 pub export var tamBuffer: ?[*]u8 = null;
@@ -311,7 +311,7 @@ pub export var entryStatus: u8 = 0;
 // it through the extern re-declaration in the dmcp namespace.
 extern var screenUpdatingMode: u8;
 pub export var beginOfProgramMemory: ?[*]u8 = null;
-pub export var firstFreeProgramByte: ?[*]u8 = null;
+// firstFreeProgramByte moved to the base kernel.
 pub export var statisticalSumsUpdate: bool_t = false;
 
 pub export var tam: tamState_t = std.mem.zeroes(tamState_t);

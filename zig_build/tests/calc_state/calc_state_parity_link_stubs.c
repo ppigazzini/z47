@@ -13,23 +13,43 @@
 // --- pointer globals (point at backing storage) ---
 static alignas(16) unsigned char aimBuffer__stg[8192]; void *aimBuffer = aimBuffer__stg;
 static alignas(16) unsigned char allFormulae__stg[8192]; void *allFormulae = allFormulae__stg;
-static alignas(16) unsigned char allNamedVariables__stg[8192]; void *allNamedVariables = allNamedVariables__stg;
+static alignas(16) unsigned char allNamedVariables__stg[8192];
 static alignas(16) unsigned char beginOfCurrentProgram__stg[8192]; void *beginOfCurrentProgram = beginOfCurrentProgram__stg;
 static alignas(16) unsigned char beginOfProgramMemory__stg[8192]; void *beginOfProgramMemory = beginOfProgramMemory__stg;
 static alignas(16) unsigned char currentLocalFlags__stg[8192]; void *currentLocalFlags = currentLocalFlags__stg;
 static alignas(16) unsigned char currentLocalRegisters__stg[8192]; void *currentLocalRegisters = currentLocalRegisters__stg;
 static alignas(16) unsigned char currentStep__stg[8192]; void *currentStep = currentStep__stg;
-static alignas(16) unsigned char currentSubroutineLevelData__stg[8192]; void *currentSubroutineLevelData = currentSubroutineLevelData__stg;
+static alignas(16) unsigned char currentSubroutineLevelData__stg[8192];
 static alignas(16) unsigned char endOfCurrentProgram__stg[8192]; void *endOfCurrentProgram = endOfCurrentProgram__stg;
-static alignas(16) unsigned char errorMessage__stg[8192]; void *errorMessage = errorMessage__stg;
+static alignas(16) unsigned char errorMessage__stg[8192];
 static alignas(16) unsigned char firstDisplayedStep__stg[8192]; void *firstDisplayedStep = firstDisplayedStep__stg;
-static alignas(16) unsigned char firstFreeProgramByte__stg[8192]; void *firstFreeProgramByte = firstFreeProgramByte__stg;
+static alignas(16) unsigned char firstFreeProgramByte__stg[8192];
 static alignas(16) unsigned char programList__stg[8192]; void *programList = programList__stg;
-static alignas(16) unsigned char ram__stg[8192]; void *ram = ram__stg;
-static alignas(16) unsigned char statisticalSumsPointer__stg[8192]; void *statisticalSumsPointer = statisticalSumsPointer__stg;
-static alignas(16) unsigned char tmpString__stg[8192]; void *tmpString = tmpString__stg;
+static alignas(16) unsigned char ram__stg[8192];
+static alignas(16) unsigned char statisticalSumsPointer__stg[8192];
 static alignas(16) unsigned char userKeyLabel__stg[8192]; void *userKeyLabel = userKeyLabel__stg;
 static alignas(16) unsigned char userMenus__stg[8192]; void *userMenus = userMenus__stg;
+
+// --- relocated pointer globals: the symbol now links from the core kernel
+// (engine/kernel/scratch_buffers.zig, ...); keep the backing here and point the
+// core-owned symbol at it before the header-only fixture dereferences it. ---
+static alignas(16) unsigned char tmpString__stg[8192];
+extern void *tmpString;
+extern void *errorMessage;
+extern void *ram;
+extern void *statisticalSumsPointer;
+extern void *allNamedVariables;
+extern void *currentSubroutineLevelData;
+extern void *firstFreeProgramByte;
+__attribute__((constructor)) static void z47_init_relocated_pointer_globals(void) {
+    tmpString = tmpString__stg;
+    errorMessage = errorMessage__stg;
+    ram = ram__stg;
+    statisticalSumsPointer = statisticalSumsPointer__stg;
+    allNamedVariables = allNamedVariables__stg;
+    currentSubroutineLevelData = currentSubroutineLevelData__stg;
+    firstFreeProgramByte = firstFreeProgramByte__stg;
+}
 
 // --- storage globals (exact size + alignment) ---
 alignas(1) unsigned char DM_Cycling[1];
