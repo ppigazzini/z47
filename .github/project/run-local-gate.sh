@@ -35,6 +35,8 @@ step "[1/11] zig fmt"
 ./.github/project/check-fmt.sh
 step "[1b/11] filename hygiene (NM10-0)"
 bash .github/project/check-filename-hygiene.sh
+step "[1c/11] file cohesion (NM11-0)"
+bash .github/project/check-file-cohesion.sh
 step "[2/11] native unit tests (zig build test:unit)"
 zig build test:unit
 step "[3/11] tracked source ownership"
