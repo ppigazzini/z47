@@ -77,6 +77,12 @@ jobs:
           set -euo pipefail
           ./.github/project/check-fmt.sh
 
+      - name: Check filename hygiene (NM10-0)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/check-filename-hygiene.sh
+
   zig-native-unit-tests:
     name: Native Zig unit tests (no C oracle)
     runs-on: ubuntu-latest
