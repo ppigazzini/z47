@@ -745,13 +745,8 @@ pub export fn convertRealToLongIntegerRegister(real: *const real_t, dest: calcRe
     mpz_clear(&lgInt);
 }
 
-pub export fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void {
-    const savedRoundingMode: c_int = realContext.round;
-    realContext.round = mode;
-    realContext.status = 0;
-    _ = decNumberToIntegralValue(destination, source, realContext);
-    realContext.round = savedRoundingMode;
-}
+// Moved to the base kernel (engine/kernel/register_real34_convert.zig).
+pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void;
 
 // ===========================================================================
 // real result registers
