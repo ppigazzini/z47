@@ -1,60 +1,100 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// The bulk of the register value conversions, lifted out of the shell
-// register_value_conversions god-adapter into the base kernel: long/short
-// integer, real34, complex34, matrix, double and float register conversions plus
-// the int/real/complex dispatch shims. Pure value-model operations on the
-// calculator's own registers; every dependency is engine-side, a decNumber/GMP
-// leaf, or the host boundary. The math and distribution oracles keep their
-// fake-real versions (they do not link the kernel); the testSuite exercises the
-// real ones. Date/time and WP34S integer-helper conversions stay on the shell
-// adapter for a later slice.
+// The register value-conversion layer (Zig owner for src/c47/
+// registerValueConversions.c): convert the calculator's register payloads
+// between their datatypes -- long/short integers, real34, complex34, matrices,
+// doubles and floats -- read a register as a real/complex, and dispatch the
+// int/real/complex monadic and dyadic numeric operations. Pure value-model
+// operations on the core's own registers; every dependency is engine-side, a
+// decNumber/GMP leaf, or the host boundary. The math and distribution parity
+// oracles keep their fake-real versions (they do not link the kernel); the real
+// implementations are exercised by the testSuite.
+//
+// The date/time and WP34S integer-helper conversions still live on the shell
+// register_value_conversions adapter (they reach convert/date_time and
+// convert/integers) and follow once those owners move.
 
-const std = @import("std");
 const abi = @import("abi");
+const std = @import("std");
+const builtin = @import("builtin");
+
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
+const calcRegister_t = i16;
+const angularMode_t = c_int;
+const dtReal34: u32 = 1;
+const REAL34_SIZE_IN_BLOCKS: u16 = 4;
+const reg34 = abi.registerReal34;
+extern var significantDigits: u8;
+extern var ctxtReal34: realContext_t;
+extern var ctxtReal75: realContext_t;
+extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *realContext_t) void;
+extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
+extern fn decNumberToIntegralValue(dst: *real_t, src: *const real_t, ctx: *realContext_t) *real_t;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
+const DECDPUN = 3;
+const DECNEG: u8 = 0x80;
+const DECSPECIAL: u8 = 0x70;
+const DEC_ROUND_DOWN: c_int = 5; // decContext.h rounding enum order
+
+extern var ctxtReal39: realContext_t;
+const mpz_struct = abi.Mpz;
+const longInteger_t = [1]mpz_struct;
+extern var errorMessage: [*c]u8;
+extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) ?*anyopaque;
+const consts = abi.constants;
+const mp_limb_t = usize;
+const dtLongInteger: u32 = 0;
+const dtComplex34: u32 = 2;
+const dtTime: u32 = 3;
+const dtDate: u32 = 4;
+const dtShortInteger: u32 = 8;
+const REGISTER_Z: calcRegister_t = 102;
+const REGISTER_T: calcRegister_t = 103;
+const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
+const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+const REAL34_SIZE_IN_BYTES: u32 = 16;
+const LIMB_SIZE: u32 = @sizeOf(mp_limb_t);
+const LI_NEGATIVE: u32 = 1;
+const SIM_1COMPL: u8 = 1;
+const SIM_2COMPL: u8 = 2;
+const SIM_SIGNMT: u8 = 3;
+const SIM_UNSIGN: u8 = 0;
+const TMP_STR_LENGTH: i32 = 2560;
+const const_2p32 = consts.const_2p32;
+const regShortInt = abi.registerShortInteger;
+extern var shortIntegerMode: u8;
+extern var shortIntegerMask: u64;
+extern var shortIntegerSignBit: u64;
+extern var tmpString: [*c]u8;
+extern fn getRegisterDataType(regist: calcRegister_t) u32;
+extern fn getRegisterTag(regist: calcRegister_t) u32;
+extern fn getRegisterMaxDataLengthInBlocks(regist: calcRegister_t) u16;
+extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) void;
+extern fn decNumberFromString(r: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
+extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
+extern fn decNumberFMA(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, c: *align(1) const real_t, ctx: *realContext_t) *real_t;
+extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
+extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
+const mpz_init2 = __gmpz_init2;
+const mpz_clear = __gmpz_clear;
 const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
 const complex34Matrix_t = abi.Complex34Matrix;
-const angularMode_t = c_int;
-const mpz_struct = abi.Mpz;
-const mp_limb_t = usize;
-
-// kernel-resolved and host-boundary symbols
-const builtin = @import("builtin");
 const extra_info: bool = builtin.target.os.tag != .freestanding;
-extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: i16, disUsedCanBeRemoved: i16) void;
-extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) ?*anyopaque;
-extern fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) void;
 extern fn realSetZero(r: *real_t) void;
-
-const consts = abi.constants;
 const const34_2p32 = consts.const34_2p32;
 const const6147_2pi = consts.const6147_2pi;
 const const_2p64 = consts.const_2p64;
 const const_0 = consts.const_0;
 const const_2p63 = consts.const_2p63;
 const const34_3600 = consts.const34_3600;
-const calcRegister_t = i16;
-const LIMB_SIZE: u32 = @sizeOf(mp_limb_t);
 const is32: bool = @sizeOf(*anyopaque) == 4;
-const dtLongInteger: u32 = 0;
-const dtReal34: u32 = 1;
-const dtComplex34: u32 = 2;
-const dtTime: u32 = 3;
-const dtDate: u32 = 4;
 const dtReal34Matrix: u32 = 6;
 const dtComplex34Matrix: u32 = 7;
-const dtShortInteger: u32 = 8;
-const SIM_UNSIGN: u8 = 0;
-const SIM_1COMPL: u8 = 1;
-const SIM_2COMPL: u8 = 2;
-const SIM_SIGNMT: u8 = 3;
 const LI_ZERO: u32 = 0;
-const LI_NEGATIVE: u32 = 1;
 const LI_POSITIVE: u32 = 2;
 const amRadian: angularMode_t = 0;
 const amGrad: angularMode_t = 1;
@@ -70,60 +110,29 @@ const ERROR_NONE: u8 = 0;
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_RAM_FULL: u8 = 11;
-const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
-const REGISTER_Z: calcRegister_t = 102;
-const REGISTER_T: calcRegister_t = 103;
-const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
-const DEC_ROUND_DOWN: c_int = 5;
 const ITM_CHS: i16 = 97;
-const REAL34_SIZE_IN_BLOCKS: u16 = 4;
-const REAL34_SIZE_IN_BYTES: u32 = 16;
 const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 const COMPLEX34_SIZE_IN_BYTES: u32 = 32;
 const SHORT_INTEGER_SIZE_IN_BLOCKS: u16 = 2;
 const DECQUAD_Pmax: usize = 34;
-const DECDPUN: i32 = 3;
-const TMP_STR_LENGTH: i32 = 2560;
 const DOUBLE_NOT_INIT: f64 = 3.402823466e+38;
 const DECINF: u8 = 0x40;
 const DECNAN: u8 = 0x20;
 const DECSNAN: u8 = 0x10;
-const DECSPECIAL: u8 = DECINF | DECNAN | DECSNAN; // 0x70
-
-// ---------------------------------------------------------------------------
-// Constant blob
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Globals
-// ---------------------------------------------------------------------------
-extern var tmpString: [*c]u8;
-extern var shortIntegerMode: u8;
-extern var shortIntegerMask: u64;
-extern var shortIntegerSignBit: u64;
-extern var significantDigits: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lastErrorCode: u8;
 extern var lastFunc: i16;
-extern var ctxtReal34: realContext_t;
-extern var ctxtReal39: realContext_t;
-extern var ctxtReal75: realContext_t;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, size_blocks: u16, tag: u32) void;
-extern fn getRegisterDataType(regist: calcRegister_t) u32;
-extern fn getRegisterTag(regist: calcRegister_t) u32;
 extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn adjustResult(result: calcRegister_t, drop_y: bool, set_cpx: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn saveLastX() bool;
 extern fn liftStack() void;
-const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) bool;
 extern fn complexMatrixFree(matrix: *complex34Matrix_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linked: *real34Matrix_t) void;
-extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: u16, real_context: *realContext_t) void;
 extern fn WP34S_Mod(x: *const real_t, y: *align(1) const real_t, res: *real_t, real_context: *realContext_t) void;
 extern fn getSystemFlag(flag: c_int) bool;
 extern fn setSystemFlag(flag: c_uint) void;
@@ -152,28 +161,12 @@ extern fn decQuadDivide(r: *real34_t, a: *align(1) const real34_t, b: *align(1) 
 extern fn decQuadMultiply(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadFMA(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, c: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
 extern fn decQuadToIntegralValue(r: *real34_t, a: *align(1) const real34_t, ctx: *realContext_t, round: c_int) *real34_t;
-extern fn decimal128ToNumber(src: *align(1) const real34_t, dst: *real_t) *real_t;
-extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
-extern fn decNumberFromUInt32(r: *real_t, v: u32) *real_t;
-extern fn decNumberFromString(r: *real_t, s: [*c]const u8, ctx: *realContext_t) *real_t;
 extern fn decNumberToString(r: *const real_t, s: [*]u8) [*c]u8;
 extern fn decNumberToUInt64(r: *const real_t, ctx: *realContext_t) u64;
 extern fn decNumberGetBCD(r: *const real_t, bcd: [*]u8) [*c]u8;
 extern fn decNumberPlus(r: *real_t, a: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberQuantize(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
-extern fn __gmpz_init(p: *mpz_struct) void;
-extern fn __gmpz_init2(p: *mpz_struct, bits: c_ulong) void;
-extern fn __gmpz_clear(p: *mpz_struct) void;
-extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
-extern fn __gmpz_add_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn __gmpz_mul_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn __gmpz_mul_2exp(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
-extern fn __gmpz_fdiv_ui(op: *const mpz_struct, c: c_ulong) c_ulong;
-extern fn __gmpz_get_str(str: [*c]u8, radix: c_int, op: *const mpz_struct) [*c]u8;
-extern fn __gmpz_sizeinbase(op: *const mpz_struct, base: c_int) usize;
 const mpz_init = __gmpz_init;
-const mpz_init2 = __gmpz_init2;
-const mpz_clear = __gmpz_clear;
 const mpz_set_ui = __gmpz_set_ui;
 const mpz_add_ui = __gmpz_add_ui;
 const mpz_mul_ui = __gmpz_mul_ui;
@@ -181,38 +174,325 @@ const mpz_mul_2exp = __gmpz_mul_2exp;
 const mpz_fdiv_ui = __gmpz_fdiv_ui;
 const mpz_get_str = __gmpz_get_str;
 const mpz_sizeinbase = __gmpz_sizeinbase;
-pub extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void;
-pub extern fn convertLongIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
-pub extern fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
-pub extern fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) callconv(.c) void;
-pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void;
-pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void;
-pub extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void;
 extern fn strtod(s: [*c]const u8, endptr: ?*[*c]u8) f64;
 extern fn localeconv() *c_lconv;
-pub extern fn badTypeError(reg: calcRegister_t) callconv(.c) void;
-pub extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
-extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
-pub extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
-pub extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
+const regMatrixHeader = abi.registerMatrixHeader;
+const amNoneU: u32 = @bitCast(amNone);
 
-inline fn real34SetZero(dst: *real34_t) void {
-    _ = decQuadZero(dst);
+pub export fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void {
+    const savedRoundingMode: c_int = realContext.round;
+    realContext.round = mode;
+    realContext.status = 0;
+    _ = decNumberToIntegralValue(destination, source, realContext);
+    realContext.round = savedRoundingMode;
 }
 
-inline fn dataPtr(reg: calcRegister_t) [*]u8 {
-    return abi.registerBytes(reg);
+inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
+    _ = decimal128FromNumber(dst, src, &ctxtReal34);
+}
+
+pub export fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void {
+    var rounded: real_t = undefined;
+    roundToSignificantDigits(real, &rounded, if (significantDigits == 0) 34 else significantDigits, &ctxtReal75);
+    realToReal34(&rounded, reg34(dest));
+}
+
+pub export fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void {
+    reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, @bitCast(angle));
+    convertRealToReal34ResultRegister(x, dest);
+}
+
+inline fn realIsSpecial(r: *const real_t) bool {
+    return (r.bits & DECSPECIAL) != 0;
+}
+
+inline fn realIsNegative(r: *const real_t) bool {
+    return (r.bits & DECNEG) != 0;
+}
+
+fn realToInt(r: *const real_t, magnitude_limit: u64, round: c_int, err: ?*bool) u64 {
+    if (realIsSpecial(r)) {
+        return 0;
+    }
+
+    var integer: real_t = undefined;
+    realToIntegralValue(r, &integer, round, &ctxtReal39);
+
+    var value: u64 = 0;
+    var i: i32 = @divTrunc(integer.digits - 1, DECDPUN);
+    while (i >= 0) : (i -= 1) {
+        value = value * 1000 + integer.lsu[@intCast(i)]; // 1000 = 10^DECDPUN
+        if (value > magnitude_limit) {
+            return 0;
+        }
+    }
+
+    var e: i32 = integer.exponent;
+    while (e > 0) : (e -= 1) {
+        value *= 10;
+        if (value > magnitude_limit) {
+            return 0;
+        }
+    }
+
+    if (err) |ep| ep.* = false;
+    return value;
+}
+
+pub export fn realToInt32C47(r: *const real_t, err: ?*bool) callconv(.c) i32 {
+    const sign = realIsNegative(r);
+    const magnitude_limit: u64 = @as(u64, 2147483647) + @intFromBool(sign); // INT32_MAX (+1 if negative)
+    if (err) |ep| ep.* = true;
+    const value: i64 = @intCast(realToInt(r, magnitude_limit, DEC_ROUND_DOWN, err));
+    return if (sign) @intCast(-value) else @intCast(value);
+}
+
+pub export fn realToUint32C47(r: *const real_t, err: ?*bool) callconv(.c) u32 {
+    if (err) |ep| ep.* = true;
+
+    if (realIsNegative(r)) {
+        return 0;
+    }
+
+    const magnitude_limit: u64 = 4294967295; // UINT32_MAX
+    return @intCast(realToInt(r, magnitude_limit, DEC_ROUND_DOWN, err));
+}
+
+extern fn __gmpz_init2(op: [*c]mpz_struct, n: c_ulong) void;
+
+extern fn __gmpz_clear(op: [*c]mpz_struct) void;
+
+extern fn __gmpz_add_ui(rop: [*c]mpz_struct, op1: [*c]const mpz_struct, op2: c_ulong) void;
+
+extern fn __gmpz_tdiv_q_ui(q: [*c]mpz_struct, n: [*c]const mpz_struct, d: c_ulong) c_ulong;
+
+extern fn __gmpz_tdiv_ui(n: [*c]const mpz_struct, d: c_ulong) c_ulong;
+
+extern fn __gmpz_sizeinbase(op: [*c]const mpz_struct, base: c_int) usize;
+
+pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c]u8, strLen: i32) callconv(.c) void {
+    var numberOfDigits: i32 = undefined;
+    var stringLen: i32 = undefined;
+    var counter: i32 = undefined;
+    var x: longInteger_t = undefined;
+
+    str[0] = '0';
+    str[1] = 0;
+    if (lgInt[0]._mp_size == 0) {
+        return;
+    }
+
+    numberOfDigits = @intCast(__gmpz_sizeinbase(lgInt, 10));
+    if (lgInt[0]._mp_size < 0) {
+        stringLen = numberOfDigits + 2;
+        str[0] = '-';
+    } else {
+        stringLen = numberOfDigits + 1;
+    }
+
+    if (strLen < stringLen) {
+        abi.fmtBufZ(errorMessage[0..512], "In function longIntegerToAllocatedString: the string str ({d} bytes) is too small to hold the base 10 representation of lgInt, {d} are needed!", .{ strLen, stringLen });
+        abi.host.showBugScreen(errorMessage);
+        return;
+    }
+
+    str[@intCast(stringLen - 1)] = 0;
+
+    __gmpz_init2(&x[0], @intCast(__gmpz_sizeinbase(lgInt, 2)));
+    __gmpz_add_ui(&x[0], lgInt, 0);
+    x[0]._mp_size = if (x[0]._mp_size < 0) -x[0]._mp_size else x[0]._mp_size;
+
+    stringLen -= 2;
+    counter = numberOfDigits;
+    while (x[0]._mp_size != 0) {
+        str[@intCast(stringLen)] = '0' + @as(u8, @intCast(__gmpz_tdiv_ui(&x[0], 10)));
+        stringLen -= 1;
+        _ = __gmpz_tdiv_q_ui(&x[0], &x[0], 10);
+        counter -= 1;
+    }
+
+    if (counter == 1) {
+        _ = xcopy(str + @as(usize, @intCast(stringLen)), str + @as(usize, @intCast(stringLen + 1)), @intCast(numberOfDigits));
+    }
+
+    __gmpz_clear(&x[0]);
+}
+
+pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+    // the extra_info diagnostic enrichment (register type name) is a shell-side
+    // debug concern, routed through the host boundary; a no-op unless installed.
+    abi.host.reportBadTypeDetail(reg);
+}
+
+pub export fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
+    const res = getRegisterAsRealQuiet(reg, val);
+    if (!res) {
+        badTypeError(reg);
+    }
+    return res;
+}
+
+pub export fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
+    const t = getRegisterDataType(reg);
+    if (t == dtDate or t == dtTime) {
+        return false;
+    }
+    return getRegisterAsAnyRealQuiet(reg, val);
+}
+
+pub export fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
+    switch (getRegisterDataType(reg)) {
+        dtLongInteger => convertLongIntegerRegisterToReal(reg, val, &ctxtReal75),
+        dtShortInteger => convertShortIntegerRegisterToReal(reg, val, &ctxtReal34),
+        dtDate, dtTime, dtReal34 => real34ToReal(reg34(reg), val),
+        dtComplex34 => {
+            if (real34IsZero(regImag34(reg))) {
+                real34ToReal(reg34(reg), val);
+            } else {
+                return false;
+            }
+        },
+        else => return false,
+    }
+    return true;
+}
+
+pub export fn convertLongIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
+    var lgInt: mpz_struct = undefined;
+
+    convertLongIntegerRegisterToLongInteger(source, &lgInt);
+    convertLongIntegerToReal(&lgInt, destination, ctxt);
+    mpz_clear(&lgInt);
+}
+
+pub export fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
+    longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
+    stringToReal(tmpString, destination, ctxt);
+}
+
+pub export fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void {
+    var sizeInBytes: u32 = toBytes(getRegisterMaxDataLengthInBlocks(regist));
+
+    mpz_init2(lgInt, 8 * @as(c_ulong, @max(sizeInBytes, LIMB_SIZE)));
+
+    _ = xcopy(@ptrCast(lgInt._mp_d), @ptrCast(regLongIntData(regist)), sizeInBytes);
+
+    // Trim trailing zero limbs.
+    while (sizeInBytes >= LIMB_SIZE and lgInt._mp_d[sizeInBytes / LIMB_SIZE - 1] == 0) {
+        sizeInBytes -= LIMB_SIZE;
+    }
+
+    if (sizeInBytes > 0 and getRegisterLongIntegerSign(regist) == LI_NEGATIVE) {
+        lgInt._mp_size = -@as(c_int, @intCast(sizeInBytes / LIMB_SIZE));
+    } else {
+        lgInt._mp_size = @intCast(sizeInBytes / LIMB_SIZE);
+    }
+}
+
+pub export fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
+    var value: u64 = undefined;
+    var sign: i16 = undefined;
+    var lowWord: real_t = undefined;
+
+    convertShortIntegerRegisterToUInt64(source, &sign, &value);
+
+    uInt32ToReal(@intCast(value >> 32), destination);
+    uInt32ToReal(@intCast(value & 0x00000000ffffffff), &lowWord);
+    realFMA(destination, const_2p32(), &lowWord, destination, ctxt);
+
+    if (sign != 0) {
+        realSetNegativeSign(destination);
+    }
+}
+
+pub export fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) callconv(.c) void {
+    value.* = regShortInt(regist).* & shortIntegerMask;
+
+    if (shortIntegerMode == SIM_UNSIGN) {
+        sign.* = 0;
+    } else {
+        if ((value.* & shortIntegerSignBit) != 0) { // Negative value
+            sign.* = 1;
+
+            if (shortIntegerMode == SIM_2COMPL) {
+                value.* = ((~value.*) +% 1) & shortIntegerMask;
+            } else if (shortIntegerMode == SIM_1COMPL) {
+                value.* = (~value.*) & shortIntegerMask;
+            } else if (shortIntegerMode == SIM_SIGNMT) {
+                value.* -%= shortIntegerSignBit;
+            } else {
+                abi.host.showBugScreen("convertShortIntegerRegisterToUInt64: bad shortIntegerMode");
+                sign.* = 0;
+                value.* = 0;
+            }
+        } else { // Positive value
+            sign.* = 0;
+        }
+    }
+}
+
+inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
+    _ = decimal128ToNumber(src, dst);
+}
+
+inline fn real34IsZero(v: *align(1) const real34_t) bool {
+    return decQuadIsZero(v) != 0;
 }
 
 inline fn regImag34(reg: calcRegister_t) *align(1) real34_t {
     return @ptrCast(dataPtr(reg) + REAL34_SIZE_IN_BYTES);
 }
 
+inline fn dataPtr(reg: calcRegister_t) [*]u8 {
+    return abi.registerBytes(reg);
+}
+
 inline fn regLongIntData(reg: calcRegister_t) [*]u8 {
     return dataPtr(reg) + 4; // sizeof(strLgIntHeader_t)
 }
 
-const regMatrixHeader = abi.registerMatrixHeader;
+inline fn getRegisterLongIntegerSign(reg: calcRegister_t) u32 {
+    return getRegisterTag(reg);
+}
+
+inline fn toBytes(n: u16) u32 {
+    return @as(u32, n) << 2;
+}
+
+inline fn uInt32ToReal(src: u32, dst: *real_t) void {
+    _ = decNumberFromUInt32(dst, src);
+}
+
+inline fn realFMA(f1: *align(1) const real_t, f2: *align(1) const real_t, term: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
+    _ = decNumberFMA(res, f1, f2, term, ctx);
+}
+
+inline fn realSetNegativeSign(v: *real_t) void {
+    v.bits |= 0x80;
+}
+
+inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
+    _ = decNumberFromString(dst, src, ctx);
+}
+
+const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+
+extern fn __gmpz_init(p: *mpz_struct) void;
+
+extern fn __gmpz_set_ui(p: *mpz_struct, v: c_ulong) void;
+
+extern fn __gmpz_mul_ui(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+
+extern fn __gmpz_mul_2exp(r: *mpz_struct, op: *const mpz_struct, c: c_ulong) void;
+
+extern fn __gmpz_fdiv_ui(op: *const mpz_struct, c: c_ulong) c_ulong;
+
+extern fn __gmpz_get_str(str: [*c]u8, radix: c_int, op: *const mpz_struct) [*c]u8;
+
+inline fn real34SetZero(dst: *real34_t) void {
+    _ = decQuadZero(dst);
+}
 
 inline fn regRealMatrixElems(reg: calcRegister_t) [*]align(1) real34_t {
     return @ptrCast(dataPtr(reg) + 4);
@@ -257,16 +537,8 @@ inline fn realIsNaN(v: *const real_t) bool {
     return (v.bits & (DECNAN | DECSNAN)) != 0;
 }
 
-inline fn realIsNegative(v: *const real_t) bool {
-    return (v.bits & 0x80) == 0x80;
-}
-
 inline fn realIsPositive(v: *const real_t) bool {
     return (v.bits & 0x80) == 0x00;
-}
-
-inline fn realIsSpecial(v: *const real_t) bool {
-    return (v.bits & DECSPECIAL) != 0;
 }
 
 inline fn realIsZero(v: *const real_t) bool {
@@ -293,16 +565,8 @@ inline fn real34GetExponent(src: *align(1) const real34_t) i32 {
     return decQuadGetExponent(src);
 }
 
-inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
-    _ = decimal128ToNumber(src, dst);
-}
-
 inline fn stringToReal34(src: [*c]const u8, dst: *real34_t) void {
     _ = decQuadFromString(dst, src, &ctxtReal34);
-}
-
-inline fn uInt32ToReal(src: u32, dst: *real_t) void {
-    _ = decNumberFromUInt32(dst, src);
 }
 
 inline fn realGetCoefficient(src: *const real_t, bcd: [*]u8) void {
@@ -311,14 +575,6 @@ inline fn realGetCoefficient(src: *const real_t, bcd: [*]u8) void {
 
 inline fn realPlus(op: *align(1) const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberPlus(res, op, ctx);
-}
-
-inline fn stringToReal(src: [*c]const u8, dst: *real_t, ctx: *realContext_t) void {
-    _ = decNumberFromString(dst, src, ctx);
-}
-
-inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
-    _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 
 fn fnRealToFloat(r: *const real_t) f32 {
@@ -493,10 +749,6 @@ const REAL_2139_BYTES: usize = blk: {
 
 const c_lconv = extern struct { decimal_point: [*:0]const u8 };
 
-const reg34 = abi.registerReal34;
-
-const regShortInt = abi.registerShortInteger;
-
 inline fn absI(x: c_int) u32 {
     return if (x < 0) @intCast(-x) else @intCast(x);
 }
@@ -504,8 +756,6 @@ inline fn absI(x: c_int) u32 {
 inline fn longIntegerIsNegative(lg: *const mpz_struct) bool {
     return lg._mp_size < 0;
 }
-
-const amNoneU: u32 = @bitCast(amNone);
 
 inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
@@ -529,10 +779,6 @@ inline fn real34SetNegativeSign(v: *real34_t) void {
 
 inline fn real34ToIntegralValue(src: *align(1) const real34_t, dst: *real34_t, mode: c_int) void {
     _ = decQuadToIntegralValue(dst, src, &ctxtReal34, mode);
-}
-
-inline fn real34IsZero(v: *align(1) const real34_t) bool {
-    return decQuadIsZero(v) != 0;
 }
 
 inline fn uInt32ToReal34(src: u32, dst: *real34_t) void {
