@@ -280,7 +280,7 @@ extern var calcMode: u8;
 pub export var nextChar: u8 = 0;
 pub export var displayStack: u8 = 0;
 pub export var cachedDisplayStack: u8 = 0;
-pub export var alphaCase: u8 = 0;
+// alphaCase moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var numLinesNumericFont: u8 = 0;
 pub export var numLinesStandardFont: u8 = 0;
 pub export var numLinesTinyFont: u8 = 0;
@@ -320,7 +320,7 @@ pub export var tam: tamState_t = std.mem.zeroes(tamState_t);
 pub export var currentRegisterBrowserScreen: i16 = 0;
 pub export var lineTWidth: i16 = 0;
 pub export var rbrRegister: i16 = 0;
-pub export var catalog: i16 = 0;
+// catalog moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lastCatalogPosition: [NUMBER_OF_CATALOGS]i16 = std.mem.zeroes([NUMBER_OF_CATALOGS]i16);
 pub export var lastKeyItemDetermined: i16 = 0;
 pub export var lastUserMode: bool_t = false;
@@ -336,9 +336,9 @@ pub export var tvmIKnown: bool_t = false;
 pub export var tvmIChanges: bool_t = false;
 
 pub export var Norm_Key_00: normKey_t = std.mem.zeroes(normKey_t);
-pub export var Input_Default: u8 = 0;
-pub export var DRG_Cycling: u8 = 0;
-pub export var DM_Cycling: u8 = 0;
+// Input_Default moved to the base kernel (engine/kernel/calc_globals.zig).
+// DRG_Cycling moved to the base kernel (engine/kernel/calc_globals.zig).
+// DM_Cycling moved to the base kernel (engine/kernel/calc_globals.zig).
 // INLINE_TEST never defined: testEnabled / testBitset skipped.
 pub export var longpressDelayedkey2: i16 = 0;
 pub export var longpressDelayedkey3: i16 = 0;
@@ -359,7 +359,7 @@ pub export var JM_auto_longpress_enabled: i16 = 0;
 pub export var JM_SHIFT_HOME_TIMER1: u8 = 0;
 pub export var ULFL: bool_t = false;
 pub export var ULGL: bool_t = false;
-pub export var FN_key_pressed: i16 = 0;
+// FN_key_pressed moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var FN_key_pressed_last: i16 = 0;
 pub export var FN_timeouts_in_progress: bool_t = false;
 pub export var Shft_timeouts: bool_t = false;
@@ -369,11 +369,11 @@ pub export var FN_timed_out_to_RELEASE_EXEC: bool_t = false;
 pub export var FN_handle_timed_out_to_EXEC: bool_t = false;
 pub export var fnAsnDisplayUSER: bool_t = true;
 
-pub export var bcdDisplaySign: u8 = 0;
-pub export var LongPressM: u8 = 0;
+// bcdDisplaySign moved to the base kernel (engine/kernel/calc_globals.zig).
+// LongPressM moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var LongPressF: u8 = 0;
 pub export var last_CM: u8 = 255;
-pub export var FN_state: u8 = 0;
+// FN_state moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var editingLiteralType: u8 = 0;
 
 pub export var exponentSignLocation: i16 = 0;
@@ -395,8 +395,8 @@ pub export var glyphRow: [NUMBER_OF_GLYPH_ROWS]u16 = std.mem.zeroes([NUMBER_OF_G
 pub export var firstDisplayedLocalStepNumber: u16 = 0;
 pub export var numberOfPrograms: u16 = 0;
 // numberOfNamedVariables moved to the base kernel (engine/kernel/calc_globals.zig).
-pub export var currentLocalStepNumber: u16 = 0;
-pub export var currentProgramNumber: u16 = 0;
+// currentLocalStepNumber moved to the base kernel (engine/kernel/calc_globals.zig).
+// currentProgramNumber moved to the base kernel (engine/kernel/calc_globals.zig).
 // lrSelection moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lrSelectionUndo: u16 = 0;
 // lrChosen moved to the base kernel (engine/kernel/calc_globals.zig).
@@ -442,8 +442,8 @@ pub export var SAVED_SIGMA_LASTX: real_t = std.mem.zeroes(real_t);
 pub export var SAVED_SIGMA_LASTY: real_t = std.mem.zeroes(real_t);
 pub export var SAVED_SIGMA_lastAddRem: i8 = 0;
 
-pub export var amortP1: u16 = 0;
-pub export var amortP2: u16 = 0;
+// amortP1 moved to the base kernel (engine/kernel/calc_globals.zig).
+// amortP2 moved to the base kernel (engine/kernel/calc_globals.zig).
 
 pub export var lrSelectionHistobackup: u16 = 0;
 pub export var lrChosenHistobackup: u16 = 0;

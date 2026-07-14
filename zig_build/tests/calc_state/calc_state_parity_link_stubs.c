@@ -56,11 +56,7 @@ __attribute__((constructor)) static void z47_init_relocated_pointer_globals(void
 }
 
 // --- storage globals (exact size + alignment) ---
-alignas(1) unsigned char DM_Cycling[1];
-alignas(1) unsigned char DRG_Cycling[1];
-alignas(1) unsigned char Input_Default[1];
 alignas(1) unsigned char LongPressF[1];
-alignas(1) unsigned char LongPressM[1];
 alignas(2) unsigned char Norm_Key_00[20];
 alignas(1) unsigned char PLOT_AXIS[1];
 alignas(1) unsigned char PLOT_DIFF[1];
@@ -68,12 +64,8 @@ alignas(1) unsigned char PLOT_INTG[1];
 alignas(1) unsigned char PLOT_RMS[1];
 alignas(1) unsigned char PLOT_SHADE[1];
 alignas(1) unsigned char PLOT_ZMY[1];
-alignas(2) unsigned char amortP1[2];
-alignas(2) unsigned char amortP2[2];
-alignas(1) unsigned char bcdDisplaySign[1];
 alignas(1) unsigned char calcModel[1];
 alignas(1) unsigned char cancelFilename[1];
-alignas(2) unsigned char currentProgramNumber[2];
 alignas(1) unsigned char displayStack[1];
 alignas(1) unsigned char displayStackSHOIDISP[1];
 alignas(2) unsigned char exponentHideLimit[2];

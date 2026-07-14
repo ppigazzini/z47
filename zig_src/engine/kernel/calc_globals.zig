@@ -38,3 +38,18 @@ pub export var dispBase: u8 = 0; // integer display base (2..16)
 pub export var fractionDigits: u8 = 0; // denominator digits for fraction display
 pub export var firstDayOfWeek: u8 = 1; // first day of the week for the calendar
 pub export var firstWeekOfYearDay: u8 = 4; // first-week-of-year rule day for the calendar
+
+// Keyboard/input/program/TVM state the engine reads for its own logic.
+pub export var DM_Cycling: u8 = 0;
+pub export var DRG_Cycling: u8 = 0;
+pub export var Input_Default: u8 = 0;
+pub export var LongPressM: u8 = 0;
+pub export var amortP1: u16 = 0;
+pub export var amortP2: u16 = 0;
+pub export var bcdDisplaySign: u8 = 0;
+pub export var currentProgramNumber: u16 = 0;
+pub export var FN_key_pressed: i16 = 0;
+pub export var FN_state: u8 = 0;
+pub export var alphaCase: u8 = 0;
+pub export var catalog: i16 = 0;
+pub export var currentLocalStepNumber: u16 = 0;
