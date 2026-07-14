@@ -123,14 +123,16 @@ int8_t checkOpCodeOfStep(void *a0, int16_t a1) { return 0; }
 void clearSystemFlag(int32_t a0) {}
 int32_t compareString(void *a0, void *a1, int32_t a2) { return 0; }
 void configCommon(int16_t a0) {}
-void convertLongIntegerRegisterToLongInteger(int16_t a0, int64_t a1) {}
 void convertLongIntegerToLongIntegerRegister(int64_t a0, int16_t a1) {}
-void convertShortIntegerRegisterToUInt64(int16_t a0, void *a1, void *a2) {}
 void convertUInt64ToShortIntegerRegister(int16_t a0, int64_t a1, int32_t a2, int16_t a3) {}
 void createMenu(void *a0) {}
 void * decNumberFromString(void *a0, void *a1, void *a2) { return 0; }
 void * decimal128FromNumber(void *a0, void *a1, void *a2) { return a0; }
 void * decNumberToIntegralValue(void *a0, void *a1, void *a2) { return a0; }
+void * decimal128ToNumber(void *a0, void *a1) { return a1; }
+unsigned int decQuadIsZero(void *a0) { (void)a0; return 1; }
+void * decNumberFromUInt32(void *a0, unsigned int a1) { (void)a1; return a0; }
+void * decNumberFMA(void *a0, void *a1, void *a2, void *a3, void *a4) { return a0; }
 void roundToSignificantDigits(void *a0, void *a1, int16_t a2, void *a3) {}
 void * decNumberToString(void *a0, void *a1) { return 0; }
 void * decQuadFromString(void *a0, void *a1, void *a2) { return 0; }
@@ -168,6 +170,8 @@ void utf8ToString(void *a0, void *a1) {}
 void __gmpz_init(void *x) { (void)x; }
 int __gmpz_set_str(void *r, const char *s, int b) { (void)r; (void)s; (void)b; return 0; }
 void __gmpz_clear(void *x) { (void)x; }
+unsigned short getRegisterMaxDataLengthInBlocks(short a0) { (void)a0; return 0; }
+unsigned char constants[65536];
 unsigned long __gmpz_sizeinbase(const void *op, int base) { (void)op; (void)base; return 1; }
 void __gmpz_init2(void *op, unsigned long n) { (void)op; (void)n; }
 void __gmpz_add_ui(void *rop, const void *op1, unsigned long op2) { (void)rop; (void)op1; (void)op2; }

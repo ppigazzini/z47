@@ -125,6 +125,24 @@ pub fn showBugScreen(msg: [*c]const u8) void {
     hook(msg);
 }
 
+// reportBadTypeDetail: the debug-only enrichment appended to a bad-register-type
+// error -- the human-readable register data-type name. Pure diagnostics; the
+// shell formats and appends it (it owns the type-name table and the info line).
+// A no-op when the core runs headless or the extra-info diagnostics are off.
+var report_bad_type_detail_hook: ?*const fn (i16) callconv(.c) void = null;
+
+/// Install the shell's bad-register-type diagnostic enrichment.
+pub fn installReportBadTypeDetail(hook: *const fn (i16) callconv(.c) void) void {
+    report_bad_type_detail_hook = hook;
+}
+
+/// Append the register data-type name to a bad-type error report. A no-op when
+/// the core runs headless (no hook installed).
+pub fn reportBadTypeDetail(reg: i16) void {
+    const hook = report_bad_type_detail_hook orelse return;
+    hook(reg);
+}
+
 const std = @import("std");
 const testing = std.testing;
 

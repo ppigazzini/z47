@@ -1989,6 +1989,7 @@ pub export fn installCoreHostHooks() callconv(.c) void {
     abi.host.installRequestRefresh(&frontier_screen.refreshScreen);
     abi.host.installReportBugError(&frontier_error.reportBugError);
     abi.host.installShowBugScreen(&frontier_error.displayBugScreen);
+    abi.host.installReportBadTypeDetail(&frontier_register_value_conversions.reportBadTypeDetail);
 }
 
 pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_int {
