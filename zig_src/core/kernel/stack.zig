@@ -55,7 +55,7 @@ comptime {
 }
 
 fn z47RegistersSortRegExport(range_start: u16, range_end: u16) callconv(.c) void {
-    runtime.sortRegisterRange(range_start, range_end);
+    register_commands_owned.sortRegisterRange(range_start, range_end);
 }
 
 pub export fn fnToReal(unused_but_mandatory_parameter: u16) void {

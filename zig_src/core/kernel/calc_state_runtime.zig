@@ -184,3 +184,26 @@ pub inline fn saveCalcBackup() void {
 pub inline fn restoreCalcBackup() void {
     io_owned.restoreCalc();
 }
+
+extern var shortIntegerWordSize: u8;
+extern var shortIntegerMask: u64;
+extern var shortIntegerSignBit: u64;
+
+// Port of config.c updateShortIntegerMasks: rederive the word-size-dependent
+// short-integer masks from shortIntegerWordSize. The state file stores neither
+// the mask nor the sign bit, so doLoad must recompute both after restoring the
+// word size -- otherwise the mask keeps its pre-load value (-1 when a narrow
+// state is loaded into the 64-bit default) and later short-integer operations
+// mask against the wrong width.
+pub fn updateShortIntegerMasks() void {
+    // Match config.c exactly, including its reliance on the x86 shift-count mask
+    // (only the low 6 bits count): a degenerate word size of 0 yields mask 0 and
+    // sign bit 1<<63, as it does in C, rather than a Zig shift/underflow panic.
+    // For the live 1..64 range this is the ordinary (1<<ws)-1 / 1<<(ws-1).
+    const ws = shortIntegerWordSize;
+    shortIntegerMask = if (ws == 64)
+        ~@as(u64, 0)
+    else
+        (@as(u64, 1) << @truncate(ws)) - 1;
+    shortIntegerSignBit = @as(u64, 1) << @truncate(ws -% 1);
+}
