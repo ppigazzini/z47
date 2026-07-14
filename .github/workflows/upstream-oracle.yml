@@ -83,6 +83,12 @@ jobs:
           set -euo pipefail
           bash .github/project/check-filename-hygiene.sh
 
+      - name: Check file cohesion (NM11-0)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/check-file-cohesion.sh
+
   zig-native-unit-tests:
     name: Native Zig unit tests (no C oracle)
     runs-on: ubuntu-latest
