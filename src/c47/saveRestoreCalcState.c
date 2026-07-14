@@ -4,7 +4,7 @@
 #include "c47.h"
 
 // This is used for the state files
-#define configFileVersion                  10000025 // FLAG_PDIFF PINTG PRMS PSHADE
+#define configFileVersion                  10000026 // FLAG_SBadm
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -34,6 +34,7 @@
 10000023 // 2025-12-06 long press f/g
 10000024 // 2026-06-21 FLAG_SIGIP
 10000025 // 2026-07-03 FLAG_PDIFF PINTG PRMS PSHADE
+10000026 // 2026-07-14 FLAG_SBadm
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -1736,6 +1737,9 @@ int64_t stringToInt64(const char *str) {
         }
         if(loadedVersion < 10000024) {
           setSystemFlag(FLAG_SIGZEROS); //SIGZEROS is on per default
+        }
+        if(loadedVersion < 10000026) {
+          setSystemFlag(FLAG_SBadm); //the angular mode annunciator is on per default
         }
 
         // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ

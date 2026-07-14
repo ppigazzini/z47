@@ -935,8 +935,9 @@
 #define FLAG_PINTG                            0x806C
 #define FLAG_PDIFF                            0x806D
 #define FLAG_PSHADE                           0x806E //47
+#define FLAG_SBadm                            0x806F //48
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+47 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+48 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -1445,7 +1446,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SBARUPD_ComplexResult                   (getSystemFlag(FLAG_SBcr   ))
 #define SBARUPD_ComplexMode                     (getSystemFlag(FLAG_SBcpx  ))
 #define SBARUPD_AngularModeBasic                (getSystemFlag(FLAG_SBang  ))
-#define SBARUPD_AngularMode                     ( 1                         )
+#define SBARUPD_AngularMode                     (getSystemFlag(FLAG_SBadm  ))
 #define SBARUPD_FractionModeAndBaseMode         (getSystemFlag(FLAG_SBfrac ))
 #define SBARUPD_IntegerMode                     (getSystemFlag(FLAG_SBint  ))
 #define SBARUPD_MatrixMode                      (getSystemFlag(FLAG_SBmx   ))

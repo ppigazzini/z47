@@ -70,7 +70,7 @@ TO_QSPI const uint16_t clearStatusBarFlags[] = {       //these flags need to cle
   FLAG_SBdate, FLAG_SBcr, FLAG_SBcpx, FLAG_SBang, FLAG_SBint, FLAG_SBmx,
   FLAG_SBtvm, FLAG_SBoc, FLAG_SBss, FLAG_SBstpw, FLAG_SBser, FLAG_SBprn,
   FLAG_SBbatV, FLAG_SBshfR, FLAG_SBfrac, FLAG_SBwoy, FLAG_SBtime, FLAG_FRACT,
-  FLAG_IRFRAC, FLAG_IRFRQ
+  FLAG_IRFRAC, FLAG_IRFRQ, FLAG_SBadm
 };
 
 static void systemFlagAction(uint16_t systemFlag, flagAction_t action) {
@@ -104,6 +104,16 @@ doInteractionFlags:
   switch(systemFlag) {
     case FLAG_SBfrac:
               lastIntegerBase = 0; //needed to reset the annunciator
+              break;
+
+    case FLAG_SBadm:
+    case FLAG_SBang:
+              if(systemFlag == FLAG_SBadm && !getSystemFlag(FLAG_SBadm)) {  //the basic angular mode annunciator cannot remain without the angular mode display
+                _clearSystemFlag(FLAG_SBang);
+              }
+              else if(systemFlag == FLAG_SBang && getSystemFlag(FLAG_SBang)) { //and the basic annunciator requires the angular mode display
+                _setSystemFlag(FLAG_SBadm);
+              }
               break;
 
     case FLAG_SBwoy :

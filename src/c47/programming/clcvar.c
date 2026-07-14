@@ -124,10 +124,10 @@
         if(opParam <= LAST_LOCAL_FLAG) { // Global flag from 00 to 99, Lettered flag from X to K, or Local flag from .00 to .31
           // nothing to do
         }
-        else if(FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam && opParam < FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS + NUMBER_OF_SYSTEM_FLAGS) { // Local register from .00 to .31
+        else if(FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam && opParam < SYSTEM_FLAG_NUMBER) { // Lettered flag from M to S or E to W, or unused codes
           // nothing to do
         }
-        else if(opParam == SYSTEM_FLAG_NUMBER) {
+        else if(opParam == SYSTEM_FLAG_NUMBER) { // System flag, index in the next byte
           // nothing to do
         }
         else if(opParam == INDIRECT_REGISTER) {

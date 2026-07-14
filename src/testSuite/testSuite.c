@@ -168,6 +168,7 @@ const funcTest_t funcTestNoParam[] = {
   // Alpha register / string ops (build ALPHA with fnClearAlpha + fnXToAlpha).
   {"fnClearAlpha",           fnClearAlpha          },
   {"fnXToAlpha",             fnXToAlpha            },
+  {"fnXToAlphaOld",          fnXToAlphaOld         },
   {"fnAlphaToX",             fnAlphaToX            },
   {"fnAlphaLeng",            fnAlphaLeng           },
   {"fnAlphaPos",             fnAlphaPos            },
@@ -176,6 +177,23 @@ const funcTest_t funcTestNoParam[] = {
   {"fnAlphaRR",              fnAlphaRR             },
   {"fnAlphaSL",              fnAlphaSL             },
   {"fnAlphaSR",              fnAlphaSR             },
+  {"fnAlphaLeft",            fnAlphaLeft           },
+  {"fnAlphaRight",           fnAlphaRight          },
+  {"fnAlphaMid",             fnAlphaMid            },
+  {"fnAlphaUpper",           fnAlphaUpper          },
+  {"fnAlphaLower",           fnAlphaLower          },
+  {"fnAlphaRev",             fnAlphaRev            },
+  {"fnAlphaTrim",            fnAlphaTrim           },
+  // HP-42S ALPHA ops on the alpha register (REGISTER_K): thin wrappers over the fnAlpha* family.
+  {"fn42Cla",                fn42Cla               },
+  {"fn42Xtoa",               fn42Xtoa              },
+  {"fn42Atox",               fn42Atox              },
+  {"fn42Aleng",              fn42Aleng             },
+  {"fn42Posa",               fn42Posa              },
+  {"fn42Aip",                fn42Aip               },
+  {"fn42AlphaRotate",        fn42AlphaRotate       },
+  {"fn42AlphaShift",         fn42AlphaShift        },
+  {"fn42Alpha",              fn42Alpha             },
   // Program engine: navigate to a global step (selects the current program) and clear the local variables of the current program (walks the loaded program steps;
   // needs res/testPgms/testPgms.bin staged in the CWD).
   {"fnGotoDot",              fnGotoDot             },
