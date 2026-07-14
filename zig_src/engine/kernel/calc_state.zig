@@ -29,6 +29,7 @@ comptime {
     _ = @import("error_state.zig");
     _ = @import("calc_globals.zig");
     _ = @import("real_special_values.zig");
+    _ = @import("system_flags_state.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
