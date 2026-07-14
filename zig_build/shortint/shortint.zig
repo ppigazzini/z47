@@ -26,24 +26,18 @@ fn firstManifestPath(manifest: []const u8) []const u8 {
 }
 
 pub const RuntimeObjects = struct {
-    logical_mask: *std.Build.Step.Compile,
-    logical_count_bits: *std.Build.Step.Compile,
-    logical_set_clear_flip_bits: *std.Build.Step.Compile,
+    bit_manipulation: *std.Build.Step.Compile,
     logical_boolean_ops: *std.Build.Step.Compile,
     rotate_bits: *std.Build.Step.Compile,
 
     pub fn link(self: RuntimeObjects, module: *std.Build.Module) void {
-        module.addObject(self.logical_mask);
-        module.addObject(self.logical_count_bits);
-        module.addObject(self.logical_set_clear_flip_bits);
+        module.addObject(self.bit_manipulation);
         module.addObject(self.logical_boolean_ops);
         module.addObject(self.rotate_bits);
     }
 
     pub fn addToCommand(self: RuntimeObjects, cmd: *std.Build.Step.Run) void {
-        cmd.addFileArg(self.logical_mask.getEmittedBin());
-        cmd.addFileArg(self.logical_count_bits.getEmittedBin());
-        cmd.addFileArg(self.logical_set_clear_flip_bits.getEmittedBin());
+        cmd.addFileArg(self.bit_manipulation.getEmittedBin());
         cmd.addFileArg(self.logical_boolean_ops.getEmittedBin());
         cmd.addFileArg(self.rotate_bits.getEmittedBin());
     }
@@ -108,11 +102,9 @@ pub fn addRuntimeObjectsWithOptions(
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
     return .{
-        .logical_mask = addRuntimeObject(b, target, optimize, name_prefix, "logical-mask", "zig_src/engine/integer/logical_mask.zig", options),
-        .logical_count_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-count-bits", "zig_src/engine/integer/logical_count_bits.zig", options),
+        .bit_manipulation = addRuntimeObject(b, target, optimize, name_prefix, "bit-manipulation", "zig_src/engine/integer/bit_manipulation.zig", options),
         .logical_boolean_ops = addRuntimeObject(b, target, optimize, name_prefix, "logical-boolean-ops", "zig_src/engine/integer/logical_boolean_ops.zig", options),
         .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/engine/integer/rotate_bits.zig", options),
-        .logical_set_clear_flip_bits = addRuntimeObject(b, target, optimize, name_prefix, "logical-set-clear-flip-bits", "zig_src/engine/integer/logical_set_clear_flip_bits.zig", options),
     };
 }
 
@@ -156,9 +148,7 @@ pub fn addParityExecutable(
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, mask_source), .flags = &.{ "-DfnMaskl=oracle_fnMaskl", "-DfnMaskr=oracle_fnMaskr" } });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, count_bits_source), .flags = &.{"-DfnCountBits=oracle_fnCountBits"} });
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, set_clear_flip_bits_source), .flags = &.{ "-DfnCb=oracle_fnCb", "-DfnSb=oracle_fnSb", "-DfnFb=oracle_fnFb", "-DfnBc=oracle_fnBc", "-DfnBs=oracle_fnBs" } });
-    exe.root_module.addObject(runtime_objects.logical_mask);
-    exe.root_module.addObject(runtime_objects.logical_count_bits);
-    exe.root_module.addObject(runtime_objects.logical_set_clear_flip_bits);
+    exe.root_module.addObject(runtime_objects.bit_manipulation);
     return exe;
 }
 
