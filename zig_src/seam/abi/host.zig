@@ -108,6 +108,23 @@ pub fn reportBugError(errorCode: u8, errMessageRegisterLine: i16) void {
     hook(errorCode, errMessageRegisterLine);
 }
 
+// showBugScreen: paint the full-screen internal-error report with a formatted
+// message the core already built. Genuine UI; a no-op when the core runs
+// headless, which matches the no-op displayBugScreen fakes the harnesses link.
+var show_bug_screen_hook: ?*const fn ([*:0]const u8) callconv(.c) void = null;
+
+/// Install the shell's bug-screen renderer.
+pub fn installShowBugScreen(hook: *const fn ([*:0]const u8) callconv(.c) void) void {
+    show_bug_screen_hook = hook;
+}
+
+/// Paint the internal-error bug screen with the given message. A no-op when the
+/// core runs headless (no hook installed).
+pub fn showBugScreen(msg: [*c]const u8) void {
+    const hook = show_bug_screen_hook orelse return;
+    hook(msg);
+}
+
 const std = @import("std");
 const testing = std.testing;
 

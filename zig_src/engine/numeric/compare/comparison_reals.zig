@@ -24,7 +24,7 @@ extern var significantDigits: u8;
 extern var fractionDigits: u8;
 extern var errorMessage: [*c]u8;
 
-extern fn displayBugScreen(msg: [*:0]const u8) void;
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn realSetOne(value: *runtime.real_t) void;
 extern fn realToIntegralValue(
     source: *const runtime.real_t,

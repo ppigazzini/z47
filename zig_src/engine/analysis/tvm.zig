@@ -355,7 +355,7 @@ extern fn fnToReal(unused: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-extern fn displayBugScreen(msg: [*:0]const u8) void;
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
 // severing the direct engine->shell link; it reports "no abort" when headless.

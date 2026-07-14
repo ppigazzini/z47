@@ -179,7 +179,7 @@ extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, 
 extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
 extern fn memcpy(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn displayBugScreen(msg: [*c]const u8) void;
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn __gmpz_init(li: *MpzStruct) void;
 extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
 extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;

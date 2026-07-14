@@ -260,7 +260,7 @@ pub inline fn getRegisterAngularMode(regist: i16) u32 {
 // Shared by every fnKey* handler's default (unexpected-calcMode) branch.
 pub extern var errorMessage: [*c]u8;
 pub extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
-pub extern fn displayBugScreen(message: [*c]const u8) void;
+pub const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 const bugMsgCalcModeWhileProcKey: usize = 1;
 const commonBugScreenMessages = @extern([*c]const u8, .{ .name = "commonBugScreenMessages" });
