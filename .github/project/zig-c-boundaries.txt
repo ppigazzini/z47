@@ -187,6 +187,7 @@ zig_src/engine/kernel/calc_state_io_flow.zig
 zig_src/engine/kernel/error_report.zig
 zig_src/engine/kernel/register_real34_convert.zig
 zig_src/engine/kernel/long_integer_format.zig
+zig_src/engine/kernel/register_integer_convert.zig
 zig_src/engine/kernel/calc_state_save.zig
 zig_src/engine/kernel/calc_state_restore.zig
 zig_src/engine/kernel/calc_state_text.zig

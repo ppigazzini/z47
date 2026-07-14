@@ -461,24 +461,8 @@ pub export fn convertLongIntegerToLongIntegerRegister(lgInt: *const mpz_struct, 
     _ = frontier_char_string.xcopy(@ptrCast(regLongIntData(regist)), @ptrCast(lgInt._mp_d), sizeInBytes);
 }
 
-pub export fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void {
-    var sizeInBytes: u32 = toBytes(getRegisterMaxDataLengthInBlocks(regist));
-
-    mpz_init2(lgInt, 8 * @as(c_ulong, @max(sizeInBytes, LIMB_SIZE)));
-
-    _ = frontier_char_string.xcopy(@ptrCast(lgInt._mp_d), @ptrCast(regLongIntData(regist)), sizeInBytes);
-
-    // Trim trailing zero limbs.
-    while (sizeInBytes >= LIMB_SIZE and lgInt._mp_d[sizeInBytes / LIMB_SIZE - 1] == 0) {
-        sizeInBytes -= LIMB_SIZE;
-    }
-
-    if (sizeInBytes > 0 and getRegisterLongIntegerSign(regist) == LI_NEGATIVE) {
-        lgInt._mp_size = -@as(c_int, @intCast(sizeInBytes / LIMB_SIZE));
-    } else {
-        lgInt._mp_size = @intCast(sizeInBytes / LIMB_SIZE);
-    }
-}
+// convertLongIntegerRegisterToLongInteger moved to engine/kernel/register_integer_convert.zig.
+pub extern fn convertLongIntegerRegisterToLongInteger(regist: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void;
 
 pub export fn convertLongIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) callconv(.c) void {
     var lgInt: mpz_struct = undefined;
@@ -499,18 +483,10 @@ pub export fn convertLongIntegerRegisterToReal34(source: calcRegister_t, destina
     stringToReal34(tmpString, destination);
 }
 
-pub export fn convertLongIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
-    var lgInt: mpz_struct = undefined;
+// convertLongIntegerRegisterToReal moved to engine/kernel/register_integer_convert.zig.
+pub extern fn convertLongIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
 
-    convertLongIntegerRegisterToLongInteger(source, &lgInt);
-    convertLongIntegerToReal(&lgInt, destination, ctxt);
-    mpz_clear(&lgInt);
-}
-
-pub export fn convertLongIntegerToReal(source: *mpz_struct, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
-    frontier_display.longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
-    stringToReal(tmpString, destination, ctxt);
-}
+// convertLongIntegerToReal moved to engine/kernel/register_integer_convert.zig.
 
 pub export fn convertLongIntegerToReal34(source: *mpz_struct, destination: *real34_t) callconv(.c) void {
     frontier_display.longIntegerToAllocatedString(source, tmpString, TMP_STR_LENGTH);
@@ -579,47 +555,11 @@ pub export fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t
     }
 }
 
-pub export fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void {
-    var value: u64 = undefined;
-    var sign: i16 = undefined;
-    var lowWord: real_t = undefined;
+// convertShortIntegerRegisterToReal moved to engine/kernel/register_integer_convert.zig.
+pub extern fn convertShortIntegerRegisterToReal(source: calcRegister_t, destination: *real_t, ctxt: *realContext_t) callconv(.c) void;
 
-    convertShortIntegerRegisterToUInt64(source, &sign, &value);
-
-    uInt32ToReal(@intCast(value >> 32), destination);
-    uInt32ToReal(@intCast(value & 0x00000000ffffffff), &lowWord);
-    realFMA(destination, const_2p32(), &lowWord, destination, ctxt);
-
-    if (sign != 0) {
-        realSetNegativeSign(destination);
-    }
-}
-
-pub export fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) callconv(.c) void {
-    value.* = regShortInt(regist).* & shortIntegerMask;
-
-    if (shortIntegerMode == SIM_UNSIGN) {
-        sign.* = 0;
-    } else {
-        if ((value.* & shortIntegerSignBit) != 0) { // Negative value
-            sign.* = 1;
-
-            if (shortIntegerMode == SIM_2COMPL) {
-                value.* = ((~value.*) +% 1) & shortIntegerMask;
-            } else if (shortIntegerMode == SIM_1COMPL) {
-                value.* = (~value.*) & shortIntegerMask;
-            } else if (shortIntegerMode == SIM_SIGNMT) {
-                value.* -%= shortIntegerSignBit;
-            } else {
-                frontier_error.displayBugScreen("convertShortIntegerRegisterToUInt64: bad shortIntegerMode");
-                sign.* = 0;
-                value.* = 0;
-            }
-        } else { // Positive value
-            sign.* = 0;
-        }
-    }
-}
+// convertShortIntegerRegisterToUInt64 moved to engine/kernel/register_integer_convert.zig.
+pub extern fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: *i16, value: *u64) callconv(.c) void;
 
 pub export fn convertShortIntegerRegisterToLongInteger(source: calcRegister_t, lgInt: *mpz_struct) callconv(.c) void {
     var value: u64 = undefined;
@@ -1213,8 +1153,13 @@ fn typeIsNumber(t: u32, cmplx: ?*bool) bool {
     return false;
 }
 
-pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
-    frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
+// badTypeError moved to engine/kernel/register_integer_convert.zig.
+pub extern fn badTypeError(reg: calcRegister_t) callconv(.c) void;
+
+// Shell implementation of the host bad-register-type diagnostic hook: append the
+// human-readable register data-type name to the error report. Debug-only
+// (extra_info builds); the type-name table and info line are shell-owned.
+pub export fn reportBadTypeDetail(reg: calcRegister_t) callconv(.c) void {
     if (comptime extra_info) {
         const name = frontier_debug.getRegisterDataTypeName(reg, true, false);
         const slice = bufPrintZ(errorMessageBuf(), "cannot convert Register {d} from {s}", .{ reg, std.mem.span(name) }) catch return;
@@ -1304,22 +1249,8 @@ pub export fn getRegisterAsComplexOrReal(reg: calcRegister_t, r: *real_t, i: *re
     return ret;
 }
 
-pub export fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
-    switch (getRegisterDataType(reg)) {
-        dtLongInteger => convertLongIntegerRegisterToReal(reg, val, &ctxtReal75),
-        dtShortInteger => convertShortIntegerRegisterToReal(reg, val, &ctxtReal34),
-        dtDate, dtTime, dtReal34 => real34ToReal(reg34(reg), val),
-        dtComplex34 => {
-            if (real34IsZero(regImag34(reg))) {
-                real34ToReal(reg34(reg), val);
-            } else {
-                return false;
-            }
-        },
-        else => return false,
-    }
-    return true;
-}
+// getRegisterAsAnyRealQuiet moved to engine/kernel/register_integer_convert.zig.
+pub extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
 pub export fn convertComplexRegisterToRealIfZeroImag(regist: calcRegister_t) callconv(.c) void {
     var b: real_t = undefined;
@@ -1334,21 +1265,11 @@ inline fn real34IsZero(v: *align(1) const real34_t) bool {
 }
 extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 
-pub export fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
-    const t = getRegisterDataType(reg);
-    if (t == dtDate or t == dtTime) {
-        return false;
-    }
-    return getRegisterAsAnyRealQuiet(reg, val);
-}
+// getRegisterAsRealQuiet moved to engine/kernel/register_integer_convert.zig.
+pub extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
-pub export fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
-    const res = getRegisterAsRealQuiet(reg, val);
-    if (!res) {
-        badTypeError(reg);
-    }
-    return res;
-}
+// getRegisterAsReal moved to engine/kernel/register_integer_convert.zig.
+pub extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool;
 
 pub export fn getRegisterAsAnyReal(reg: calcRegister_t, val: *real_t) callconv(.c) bool {
     const res = getRegisterAsAnyRealQuiet(reg, val);
