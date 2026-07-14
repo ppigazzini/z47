@@ -149,7 +149,6 @@ int32_t getRegisterTag(int16_t a0) { return 0; }
 int8_t getSystemFlag(int32_t a0) { return 0; }
 void initStatisticalSums(void) {}
 void ioFileWrite(void *a0, int32_t a1) {}
-void longIntegerToAllocatedString(int64_t a0, void *a1, int32_t a2) {}
 void parseEquation(int16_t a0, int16_t a1, void *a2, void *a3) {}
 void reLoadStatisticalSums(void) {}
 void reallocateRegister(int16_t a0, int32_t a1, int16_t a2, int32_t a3) {}
@@ -170,6 +169,11 @@ void utf8ToString(void *a0, void *a1) {}
 void __gmpz_init(void *x) { (void)x; }
 int __gmpz_set_str(void *r, const char *s, int b) { (void)r; (void)s; (void)b; return 0; }
 void __gmpz_clear(void *x) { (void)x; }
+unsigned long __gmpz_sizeinbase(const void *op, int base) { (void)op; (void)base; return 1; }
+void __gmpz_init2(void *op, unsigned long n) { (void)op; (void)n; }
+void __gmpz_add_ui(void *rop, const void *op1, unsigned long op2) { (void)rop; (void)op1; (void)op2; }
+unsigned long __gmpz_tdiv_ui(const void *n, unsigned long d) { (void)n; (void)d; return 0; }
+unsigned long __gmpz_tdiv_q_ui(void *q, const void *n, unsigned long d) { (void)q; (void)n; (void)d; return 0; }
 
 // --- XFN register data-file save/load family (M10.4) externs ---
 // Referenced by the calc-state save/codec/io-flow owners but never invoked by
