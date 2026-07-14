@@ -10,7 +10,7 @@ extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileClose() void;
 extern fn liftStack() void;
 extern fn show_warning(string: [*c]u8) void;
-extern fn refreshScreen(caller: u16) void;
+const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn showHideHourGlass() void;
 extern fn displayCalcErrorMessage(error_code: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;

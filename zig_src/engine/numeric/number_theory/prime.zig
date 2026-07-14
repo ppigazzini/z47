@@ -379,7 +379,7 @@ extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcReg
 // Screen / progress (host-only; called for control-flow side effects)
 extern fn updateMatrixHeightCache() void;
 extern fn refreshRegisterLine(regist: calcRegister_t) void;
-extern fn refreshScreen(source: u16) void;
+const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;
 extern fn force_refresh(mode: u8) void;
 const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary

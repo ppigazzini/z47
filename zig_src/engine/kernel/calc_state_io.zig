@@ -79,7 +79,7 @@ extern fn fnReturn(skip: u16) void;
 extern fn getDateString(date_string: [*c]u8) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn fnClearFlag(flag: u16) void;
-extern fn refreshScreen(source: u16) void;
+const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 
 // power_check_screen / sys_timer_* are DMCP function-table macros, not link
 // symbols; route through the Zig ROM-HAL trampolines (no-op on host).

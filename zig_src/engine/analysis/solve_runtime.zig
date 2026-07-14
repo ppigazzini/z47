@@ -1,4 +1,5 @@
 const solve_build_options = @import("solve_build_options");
+const abi = @import("abi");
 
 // Heavy/cold solver owners (tvm, sumprod) run from executable QSPI (XIP) on the
 // flash-limited DM42 old_hw firmware to keep main FLASH free; host/dmcp5/macOS
@@ -50,7 +51,7 @@ pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *align(1) real3
 pub extern fn saveForUndo() void;
 pub extern fn fnUndo(unused_but_mandatory_parameter: u16) void;
 pub extern fn fnPlotf(unused_but_mandatory_parameter: u16) void;
-pub extern fn refreshScreen(src: u16) void;
+pub const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 pub extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, error_reg: calcRegister_t, op1: calcRegister_t, op2: calcRegister_t) void;
 
 pub inline fn isNamedVariable(v: u16) bool {
