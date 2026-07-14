@@ -3,15 +3,15 @@
     "extern_struct_files": 12,
     "cptr_files": 91,
     "ptrcast_sites": 1336,
-    "callconv_c_sites": 2799,
-    "extern_fn_sites": 3386,
+    "callconv_c_sites": 2803,
+    "extern_fn_sites": 3387,
     "printf_family_files": 47,
     "anyopaque_files": 86,
     "off_offset_sites": 77,
     "constants_blob_sites": 1,
     "qspi_section_files": 24
   },
-  "owner_count": 408,
+  "owner_count": 411,
   "seam_totals": {
     "extern_struct_files": 2,
     "cptr_files": 0,

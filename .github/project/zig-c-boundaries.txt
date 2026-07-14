@@ -184,6 +184,7 @@ zig_src/engine/kernel/keyboard_state_ringbuffer.zig
 zig_src/engine/kernel/memory_runtime.zig
 zig_src/engine/kernel/calc_state_io.zig
 zig_src/engine/kernel/calc_state_io_flow.zig
+zig_src/engine/kernel/error_report.zig
 zig_src/engine/kernel/calc_state_save.zig
 zig_src/engine/kernel/calc_state_restore.zig
 zig_src/engine/kernel/calc_state_text.zig

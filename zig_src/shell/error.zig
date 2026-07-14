@@ -437,22 +437,27 @@ inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
 // ---------------------------------------------------------------------------
 // displayCalcErrorMessage
 // ---------------------------------------------------------------------------
-pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
-    // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577 ("Fixed blank X register"); its
-    // 100..103 validation was removed too. Param kept (not dropped) due to ~924 call sites.
-    _ = disUsedCanBeRemoved;
+// The error-report entry point moved to the base kernel
+// (engine/kernel/error_report.zig): its normal path is pure state recording, not
+// display. Only the defensive bug-screen branch is UI, and it is installed here
+// as the host boundary's reportBugError hook. The engine reaches the entry point
+// intra-core; the shell owners that call it (displayDomainErrorMessage below)
+// resolve it through this extern re-declaration.
+pub extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void;
+
+// reportBugError: the shell implementation of the host bug-report hook. It fires
+// only for an out-of-range error code or register line -- a programming error,
+// never a normal calculation error -- so it formats the diagnostic and paints
+// the bug screen. The condition order mirrors the original entry point (error
+// code checked before register line).
+pub export fn reportBugError(errorCode: u8, errMessageRegisterLine: calcRegister_t) callconv(.c) void {
     if (errorCode >= NUMBER_OF_ERROR_CODES or errorCode == 0) {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "displayCalcErrorMessage", @as(c_int, errorCode), "errorCode" });
         displayBugScreen(@ptrCast(errorMessage));
-    } else if (errMessageRegisterLine > REGISTER_T or errMessageRegisterLine < REGISTER_X) {
+    } else {
         abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "displayCalcErrorMessage", @as(c_int, errMessageRegisterLine), "errMessageRegisterLine" });
         abi.fmtBufZ(errorMessage[strlen(errorMessage)..512], "Must be from 100 (register X) to 103 (register T)", .{});
         displayBugScreen(@ptrCast(errorMessage));
-    } else {
-        lastErrorCode = errorCode;
-        errorMessageRegisterLine = errMessageRegisterLine;
-        screenUpdatingMode = SCRUPD_AUTO;
-        // IR_PRINTING block omitted (never defined for any z47 build).
     }
 }
 

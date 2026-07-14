@@ -185,7 +185,8 @@ pub export var userAlphaItems: [18]userMenuItem_t = std.mem.zeroes([18]userMenuI
 pub export var userMenus: ?*anyopaque = null;
 pub export var programmableMenu: ProgrammableMenuBlob = std.mem.zeroes(ProgrammableMenuBlob);
 pub export var kbd_usr: [37]calcKey_t = std.mem.zeroes([37]calcKey_t);
-pub export var errorMessageRegisterLine: calcRegister_t = 0;
+// errorMessageRegisterLine moved to the base kernel
+// (engine/kernel/error_state.zig, alongside lastErrorCode).
 pub export var glyphNotFound: glyph_t = .{
     .charCode = 0x0000,
     .colsBeforeGlyph = 0,

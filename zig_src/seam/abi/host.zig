@@ -89,6 +89,25 @@ pub fn requestRefresh(source: u16) void {
     hook(source);
 }
 
+// reportBugError: the defensive branch of error reporting. It fires only for an
+// out-of-range error code or register line (a programming error, never a normal
+// calculation error), so the core hands the two raw values to the shell, which
+// formats the diagnostic string and paints the bug screen. The default is a
+// no-op, so a headless core simply ignores the malformed report.
+var report_bug_error_hook: ?*const fn (u8, i16) callconv(.c) void = null;
+
+/// Install the shell's bug-screen reporter.
+pub fn installReportBugError(hook: *const fn (u8, i16) callconv(.c) void) void {
+    report_bug_error_hook = hook;
+}
+
+/// Report a malformed error code / register line to the host for display. A
+/// no-op when the core runs headless (no hook installed).
+pub fn reportBugError(errorCode: u8, errMessageRegisterLine: i16) void {
+    const hook = report_bug_error_hook orelse return;
+    hook(errorCode, errMessageRegisterLine);
+}
+
 const std = @import("std");
 const testing = std.testing;
 
