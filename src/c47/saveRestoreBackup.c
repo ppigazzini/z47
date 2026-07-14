@@ -11,7 +11,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1016     // Graph defaults changing from float to real
+#define BACKUP_VERSION                     1017     // FLAG_SBadm
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -21,6 +21,7 @@
 1009     // Change matrix headers, add tag
 1010     // Change constant format in equation, adding a # prefix
 1011     // Added reserve variables UY, LY, UEST, LEST.
+1016     // Graph defaults changing from float to real
 */
 
 #define backupFileName (CALCMODEL == USER_C47 ? "backup.cfg" : "backupR47.cfg")
@@ -1187,6 +1188,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
     if(backupVersion < 1015) {
       setSystemFlag(FLAG_SIGZEROS); //SIGZEROS is on per default
+    }
+    if(backupVersion < 1017) {
+      setSystemFlag(FLAG_SBadm); //the angular mode annunciator is on per default
     }
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
     if(getSystemFlag(FLAG_FRACT)) {

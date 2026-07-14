@@ -2350,7 +2350,7 @@
 #define SFL_PINTG                   2295
 #define SFL_PDIFF                   2296
 #define SFL_PSHADE                  2297
-#define SFL_2298                    2298
+#define SFL_SBadm                   2298
 #define SFL_2299                    2299
 #define SFL_2300                    2300
 #define SFL_2301                    2301

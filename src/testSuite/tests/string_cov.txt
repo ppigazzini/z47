@@ -46,3 +46,493 @@ Out: EC=0 R00=Stri:"HELL"
 Func: fnAlphaIP
 In:  FARG=0 R00=Stri:"HELLO" RX=Real:"3"
 Out: EC=0 R00=Stri:"HELLO3"
+; push the leftmost X glyphs to X; the register is left unchanged
+Func: fnAlphaLeft
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"2"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:"HE"
+; push the rightmost X glyphs to X; the register is left unchanged
+Func: fnAlphaRight
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"2"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:"LO"
+; push len=X glyphs starting at glyph Y to X; the register is left unchanged
+Func: fnAlphaMid
+In:  FARG=0 R00=Stri:"HELLO" RY=Real:"2" RX=Real:"3"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:"ELL"
+; uppercase the register content
+Func: fnAlphaUpper
+In:  FARG=0 R00=Stri:"hello"
+Out: EC=0 R00=Stri:"HELLO"
+; lowercase the register content
+Func: fnAlphaLower
+In:  FARG=0 R00=Stri:"HELLO"
+Out: EC=0 R00=Stri:"hello"
+; reverse the glyph order of the register
+Func: fnAlphaRev
+In:  FARG=0 R00=Stri:"HELLO"
+Out: EC=0 R00=Stri:"OLLEH"
+; trim the leading/trailing X character from the register
+Func: fnAlphaTrim
+In:  FARG=0 R00=Stri:"XXHELLOXX" RX=Stri:"X"
+Out: EC=0 R00=Stri:"HELLO"
+; clear the HP-42S alpha register (K)
+Func: fn42Cla
+In:  FARG=0 RK=Stri:"XX"
+Out: EC=0 RK=Stri:""
+; append the X string to the alpha register
+Func: fn42Xtoa
+In:  FARG=0 RK=Stri:"AB" RX=Stri:"CD"
+Out: EC=0 RK=Stri:"ABCD"
+; ATOX on the alpha register: drop the first glyph
+Func: fn42Atox
+In:  FARG=0 RK=Stri:"HELLO"
+Out: EC=0 RK=Stri:"ELLO"
+; length of the alpha register pushed to X
+Func: fn42Aleng
+In:  FARG=0 RK=Stri:"HELLO" RX=Real:"0"
+Out: EC=0 RX=LonI:"5"
+; position of the X string inside the alpha register
+Func: fn42Posa
+In:  FARG=0 RK=Stri:"HELLO" RX=Stri:"L"
+Out: EC=0 RX=LonI:"2"
+; append the integer part of X to the alpha register
+Func: fn42Aip
+In:  FARG=0 RK=Stri:"HELLO" RX=Real:"3"
+Out: EC=0 RK=Stri:"HELLO3"
+; rotate the alpha register left when X is positive
+Func: fn42AlphaRotate
+In:  FARG=0 RK=Stri:"HELLO" RX=Real:"1"
+Out: EC=0 RK=Stri:"ELLOH"
+; rotate the alpha register right when X is negative
+Func: fn42AlphaRotate
+In:  FARG=0 RK=Stri:"HELLO" RX=Real:"-1"
+Out: EC=0 RK=Stri:"OHELL"
+; shift the alpha register left, dropping up to six leading glyphs
+Func: fn42AlphaShift
+In:  FARG=0 RK=Stri:"ABCDEFGH"
+Out: EC=0 RK=Stri:"GH"
+
+;=== error branches (non-string source register -> ERROR_INVALID_DATA_TYPE_FOR_OP=24) ===
+; ALENG? on a non-string register errors and leaves the register untouched
+Func: fnAlphaLeng
+In:  FARG=0 R00=Real:"1"
+Out: EC=24 R00=Real:"1"
+; ATOX on a non-string register errors and leaves the register untouched
+Func: fnAlphaToX
+In:  FARG=0 R00=Real:"1"
+Out: EC=24 R00=Real:"1"
+; APOS? on a non-string register errors
+Func: fnAlphaPos
+In:  FARG=0 R00=Real:"1" RX=Stri:"L"
+Out: EC=24 R00=Real:"1"
+; ARR on a non-string register errors
+Func: fnAlphaRR
+In:  FARG=0 R00=Real:"1" RX=Real:"1"
+Out: EC=24 R00=Real:"1"
+; ARL on a non-string register errors
+Func: fnAlphaRL
+In:  FARG=0 R00=Real:"1" RX=Real:"1"
+Out: EC=24 R00=Real:"1"
+; ASR on a non-string register errors
+Func: fnAlphaSR
+In:  FARG=0 R00=Real:"1" RX=Real:"1"
+Out: EC=24 R00=Real:"1"
+; ASL on a non-string register errors
+Func: fnAlphaSL
+In:  FARG=0 R00=Real:"1" RX=Real:"1"
+Out: EC=24 R00=Real:"1"
+; toLower on a non-string register errors
+Func: fnAlphaLower
+In:  FARG=0 R00=Real:"1"
+Out: EC=24 R00=Real:"1"
+; toUpper on a non-string register errors
+Func: fnAlphaUpper
+In:  FARG=0 R00=Real:"1"
+Out: EC=24 R00=Real:"1"
+; AREV on a non-string register errors (badTypeError)
+Func: fnAlphaRev
+In:  FARG=0 R00=Real:"1"
+Out: EC=24 R00=Real:"1"
+; ATRIM on a non-string target register errors (badTypeError)
+Func: fnAlphaTrim
+In:  FARG=0 R00=Real:"1" RX=Stri:"X"
+Out: EC=24 R00=Real:"1"
+; ALEFT on a non-string register errors (badTypeError)
+Func: fnAlphaLeft
+In:  FARG=0 R00=Real:"1" RX=Real:"2"
+Out: EC=24 R00=Real:"1"
+
+;=== ATOX edge cases ===
+; ATOX on an empty string pushes 0 and leaves the register empty
+Func: fnAlphaToX
+In:  FARG=0 R00=Stri:"" RX=Real:"7"
+Out: EC=0 R00=Stri:"" RX=LonI:"0"
+; ATOX on a leading two-byte glyph: both bytes consumed, code = (b1&0x7f)*256+b2
+Func: fnAlphaToX
+In:  FARG=0 R00=Stri:"\x83\xb1XY" RX=Real:"0"
+Out: EC=0 R00=Stri:"XY" RX=ShoI:"3B1#16"
+
+;=== x->ALPHA numeric, destination is X (regist==REGISTER_X, FARG=100) ===
+; long-integer character code 65 -> 'A'
+Func: fnXToAlpha
+In:  FARG=100 RX=LonI:"65"
+Out: EC=0 RX=Stri:"A"
+; small real character code 66 -> 'B'
+Func: fnXToAlpha
+In:  FARG=100 RX=Real:"66"
+Out: EC=0 RX=Stri:"B"
+; short-integer character code 67 -> 'C'
+Func: fnXToAlpha
+In:  FARG=100 RX=ShoI:"67#10"
+Out: EC=0 RX=Stri:"C"
+; code 0 -> empty glyph (both chars 0)
+Func: fnXToAlpha
+In:  FARG=100 RX=Real:"0"
+Out: EC=0 RX=Stri:""
+; code 200 -> two-byte glyph 0x80 0xC8
+Func: fnXToAlpha
+In:  FARG=100 RX=Real:"200"
+Out: EC=0 RX=Stri:"\x80\xc8"
+; code >= 32768 out of range -> ERROR_OUT_OF_RANGE=8
+Func: fnXToAlpha
+In:  FARG=100 RX=LonI:"40000"
+Out: EC=8 RX=LonI:"40000"
+; real > 1e6 is clamped to 1000000 which is still out of range -> EC=8
+Func: fnXToAlpha
+In:  FARG=100 RX=Real:"2000000"
+Out: EC=8
+
+;=== x->ALPHA numeric, destination != X reads the destination register display ===
+; destination holds a long integer: its display string gets the glyph appended
+Func: fnXToAlpha
+In:  FARG=0 R00=LonI:"123" RX=Real:"90"
+Out: EC=0 R00=Stri:"123Z"
+; destination holds a short integer
+Func: fnXToAlpha
+In:  FARG=0 R00=ShoI:"255#16" RX=Real:"90"
+Out: EC=0 R00=Stri:"\x32\xa0\x08\x35\x35\xa4\x6f\x5a"
+; destination holds a real
+Func: fnXToAlpha
+In:  FARG=0 R00=Real:"3.5" RX=Real:"90"
+Out: EC=0 R00=Stri:"3.5Z"
+; destination holds a complex (pin rectangular mode so the display is order-independent)
+Func: fnXToAlpha
+In:  FARG=0 CM=RECT R00=Cplx:"1i2" RX=Real:"90"
+Out: EC=0 R00=Stri:"\x31\x2e\xa0\x0a\x2b\x32\x2e\xa0\x0a\xa0\x0a\xa1\x48\x5a"
+; destination holds a time value
+Func: fnXToAlpha
+In:  FARG=0 R00=Time:"12:00:00" RX=Real:"90"
+Out: EC=0 R00=Stri:" 12:00:00Z"
+; destination holds a date value (YMD display format)
+Func: fnXToAlpha
+In:  FARG=0 FL_YMD=1 FL_MDY=0 FL_DMY=0 R00=Date:"2020.0615" RX=Real:"90"
+Out: EC=0 R00=Stri:"2020-06-15Z"
+
+;=== x->ALPHA with a string X and destination of various types (_readDestinationRegister) ===
+; long integer destination + string X appended
+Func: fnXToAlpha
+In:  FARG=0 R00=LonI:"42" RX=Stri:"!"
+Out: EC=0 R00=Stri:"42!"
+; default type errors when X is neither numeric, string nor matrix
+Func: fnXToAlpha
+In:  FARG=0 R00=Stri:"AB" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"AB"
+
+;=== x->ALPHA matrix operand ===
+; matrix X, destination R00 accumulates one glyph per element (X matrix preserved)
+Func: fnXToAlpha
+In:  FARG=0 R00=Stri:"Z" RX=Rema:"M 1,3[65,66,67]"
+Out: EC=0 R00=Stri:"ZABC"
+
+;=== deprecated >x->ALPHA< (fnXToAlphaOld), operates on X, lifts stack ===
+; long integer 65 -> 'A'
+Func: fnXToAlphaOld
+In:  RX=LonI:"65"
+Out: EC=0 RX=Stri:"A"
+; small real 66 -> 'B'
+Func: fnXToAlphaOld
+In:  RX=Real:"66"
+Out: EC=0 RX=Stri:"B"
+; short integer 67 -> 'C'
+Func: fnXToAlphaOld
+In:  RX=ShoI:"67#10"
+Out: EC=0 RX=Stri:"C"
+; code 0 -> empty glyph
+Func: fnXToAlphaOld
+In:  RX=Real:"0"
+Out: EC=0 RX=Stri:""
+; code 200 -> two-byte glyph
+Func: fnXToAlphaOld
+In:  RX=Real:"200"
+Out: EC=0 RX=Stri:"\x80\xc8"
+; out of range -> EC=8
+Func: fnXToAlphaOld
+In:  RX=LonI:"40000"
+Out: EC=8
+; real > 1e6 clamps to 1000000, out of range -> EC=8
+Func: fnXToAlphaOld
+In:  RX=Real:"2000000"
+Out: EC=8
+; complex X is an invalid type -> EC=24
+Func: fnXToAlphaOld
+In:  RX=Cplx:"1i2"
+Out: EC=24
+
+;=== APOS? with a numeric X (converted to a single glyph first) ===
+; numeric X converted to 'Z' then located at its non-zero position (catches a return-0 bug)
+Func: fnAlphaPos
+In:  FARG=0 R00=Stri:"XAZ" RX=Real:"90"
+Out: EC=0 R00=Stri:"XAZ" RX=LonI:"2"
+; numeric X out of range while converting -> EC=8
+Func: fnAlphaPos
+In:  FARG=0 R00=Stri:"AB" RX=Real:"40000"
+Out: EC=8
+; substring not present -> position -1
+Func: fnAlphaPos
+In:  FARG=0 R00=Stri:"HELLO" RX=Stri:"Z"
+Out: EC=0 R00=Stri:"HELLO" RX=LonI:"-1"
+
+;=== ARR / ARL / ASR / ASL type and edge branches ===
+; ARR by a long integer count
+Func: fnAlphaRR
+In:  FARG=0 R00=Stri:"HELLO" RX=LonI:"1"
+Out: EC=0 R00=Stri:"OHELL"
+; ARR by a short integer count
+Func: fnAlphaRR
+In:  FARG=0 R00=Stri:"HELLO" RX=ShoI:"1#10"
+Out: EC=0 R00=Stri:"OHELL"
+; ARR with a complex count is an invalid type -> EC=24
+Func: fnAlphaRR
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"
+; ARL by a long integer count
+Func: fnAlphaRL
+In:  FARG=0 R00=Stri:"HELLO" RX=LonI:"1"
+Out: EC=0 R00=Stri:"ELLOH"
+; ARL by a short integer count
+Func: fnAlphaRL
+In:  FARG=0 R00=Stri:"HELLO" RX=ShoI:"1#10"
+Out: EC=0 R00=Stri:"ELLOH"
+; ARL with a complex count is an invalid type -> EC=24
+Func: fnAlphaRL
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"
+; ASR by a long integer count
+Func: fnAlphaSR
+In:  FARG=0 R00=Stri:"HELLO" RX=LonI:"1"
+Out: EC=0 R00=Stri:"HELL"
+; ASR by a short integer count
+Func: fnAlphaSR
+In:  FARG=0 R00=Stri:"HELLO" RX=ShoI:"1#10"
+Out: EC=0 R00=Stri:"HELL"
+; ASR by more than the length drops everything (count clamped to length)
+Func: fnAlphaSR
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"10"
+Out: EC=0 R00=Stri:""
+; ASR with a huge real (>1e6) clamps then drops everything
+Func: fnAlphaSR
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"2000000"
+Out: EC=0 R00=Stri:""
+; ASR with a complex count is an invalid type -> EC=24
+Func: fnAlphaSR
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"
+; ASL by a long integer count
+Func: fnAlphaSL
+In:  FARG=0 R00=Stri:"HELLO" RX=LonI:"1"
+Out: EC=0 R00=Stri:"ELLO"
+; ASL by a short integer count
+Func: fnAlphaSL
+In:  FARG=0 R00=Stri:"HELLO" RX=ShoI:"1#10"
+Out: EC=0 R00=Stri:"ELLO"
+; ASL by more than the length drops everything (count clamped to length)
+Func: fnAlphaSL
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"10"
+Out: EC=0 R00=Stri:""
+; ASL with a huge real (>1e6) clamps then drops everything
+Func: fnAlphaSL
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"2000000"
+Out: EC=0 R00=Stri:""
+; ASL with a complex count is an invalid type -> EC=24
+Func: fnAlphaSL
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"
+
+;=== AIP type branches ===
+; AIP appends the integer part of a short integer X
+Func: fnAlphaIP
+In:  FARG=0 R00=Stri:"HELLO" RX=ShoI:"3#10"
+Out: EC=0 R00=Stri:"HELLO3"
+; AIP appends the integer part of a long integer X
+Func: fnAlphaIP
+In:  FARG=0 R00=Stri:"HELLO" RX=LonI:"7"
+Out: EC=0 R00=Stri:"HELLO7"
+; AIP with a complex X is an invalid type -> EC=24
+Func: fnAlphaIP
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24
+
+;=== case conversion of two-byte glyphs (alpha <-> ALPHA) ===
+; uppercase the greek small alpha (0x83 0xb1) to capital ALPHA (0x83 0x91)
+Func: fnAlphaUpper
+In:  FARG=0 R00=Stri:"\x83\xb1"
+Out: EC=0 R00=Stri:"\x83\x91"
+; lowercase the greek capital ALPHA to small alpha
+Func: fnAlphaLower
+In:  FARG=0 R00=Stri:"\x83\x91"
+Out: EC=0 R00=Stri:"\x83\xb1"
+
+;=== AREV with a two-byte glyph ===
+; reverse "A" + small-alpha to small-alpha + "A"
+Func: fnAlphaRev
+In:  FARG=0 R00=Stri:"A\x83\xb1"
+Out: EC=0 R00=Stri:"\x83\xb1A"
+
+;=== ATRIM branches ===
+; numeric X is converted to a single glyph then trimmed from both ends
+Func: fnAlphaTrim
+In:  FARG=0 R00=Stri:"ZZHELLOZZ" RX=Real:"90"
+Out: EC=0 R00=Stri:"HELLO"
+; multi-character string X is out of range -> EC=8
+Func: fnAlphaTrim
+In:  FARG=0 R00=Stri:"HELLO" RX=Stri:"AB"
+Out: EC=8 R00=Stri:"HELLO"
+; complex X is an invalid trim character -> EC=24
+Func: fnAlphaTrim
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"
+; trim a two-byte glyph from both ends
+Func: fnAlphaTrim
+In:  FARG=0 R00=Stri:"\x83\xb1HELLO\x83\xb1" RX=Stri:"\x83\xb1"
+Out: EC=0 R00=Stri:"HELLO"
+
+;=== ALEFT / AMID / ARIGHT branches ===
+; ALEFT with a negative count yields the empty string
+Func: fnAlphaLeft
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"-2"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:""
+; ALEFT with a count beyond the length yields the whole string
+Func: fnAlphaLeft
+In:  FARG=0 R00=Stri:"HELLO" RX=Real:"99"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:"HELLO"
+; ALEFT with a non-convertible X (complex) errors
+Func: fnAlphaLeft
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"
+; AMID with a negative start clamps start to 0 -> empty
+Func: fnAlphaMid
+In:  FARG=0 R00=Stri:"HELLO" RY=Real:"-1" RX=Real:"2"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:""
+; AMID with a start beyond the length -> empty
+Func: fnAlphaMid
+In:  FARG=0 R00=Stri:"HELLO" RY=Real:"99" RX=Real:"2"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:""
+; AMID whose start+len runs past the end is clamped to the tail
+Func: fnAlphaMid
+In:  FARG=0 R00=Stri:"HELLO" RY=Real:"4" RX=Real:"5"
+Out: EC=0 R00=Stri:"HELLO" RX=Stri:"LO"
+; AMID with a non-convertible start (complex Y) errors
+Func: fnAlphaMid
+In:  FARG=0 R00=Stri:"HELLO" RY=Cplx:"1i2" RX=Real:"2"
+Out: EC=24 R00=Stri:"HELLO"
+; AMID crossing a two-byte glyph copies both bytes
+Func: fnAlphaMid
+In:  FARG=0 R00=Stri:"AB\x83\xb1CD" RY=Real:"3" RX=Real:"1"
+Out: EC=0 RX=Stri:"\x83\xb1"
+
+;=== 42AROT type branches and no-string error ===
+; 42AROT rotates left by a long integer count
+Func: fn42AlphaRotate
+In:  FARG=0 RK=Stri:"HELLO" RX=LonI:"1"
+Out: EC=0 RK=Stri:"ELLOH"
+; 42AROT rotates left by a short integer count
+Func: fn42AlphaRotate
+In:  FARG=0 RK=Stri:"HELLO" RX=ShoI:"1#10"
+Out: EC=0 RK=Stri:"ELLOH"
+; 42AROT with a complex count is an invalid type -> EC=24
+Func: fn42AlphaRotate
+In:  FARG=0 RK=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 RK=Stri:"HELLO"
+; 42AROT with no string in the alpha register -> EC=64
+Func: fn42AlphaRotate
+In:  FARG=0 RK=Real:"1" RX=Real:"1"
+Out: EC=64 RK=Real:"1"
+; 42ASHF with no string in the alpha register -> EC=64
+Func: fn42AlphaShift
+In:  FARG=0 RK=Real:"1"
+Out: EC=64 RK=Real:"1"
+
+;=== 42Xtoa long-alpha-register truncation to 44 glyphs ===
+; append a glyph pushing the alpha register past 44 chars -> truncated to the last 44
+Func: fn42Xtoa
+In:  FARG=0 RK=Stri:"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHI" RX=Stri:"Z"
+Out: EC=0 RK=Stri:"CDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIZ"
+
+;=== 42-alpha buffer wrappers (aimBuffer is empty headless) ===
+; 42ALPHA replaces the alpha register with the (empty) alpha input buffer
+Func: fn42Alpha
+In:  FARG=0 RK=Stri:"XYZ"
+Out: EC=0 RK=Stri:""
+
+;=== additional coverage: mid-stack ATOX, matrix/complex-in-APOS, string-too-long ===
+; ATOX on a mid-stack source register (Y) drops its first glyph; the remainder is
+; shifted up into Z (regist++ path) and the stack lifts the old X (0) into Y
+Func: fnAlphaToX
+In:  FARG=101 RY=Stri:"HELLO" RZ=Stri:"ZZZ" RX=Real:"0"
+Out: EC=0 RY=Real:"0" RZ=Stri:"ELLO" RT=Stri:"ZZZ"
+; APOS? with a complex X: _doXToAlpha rejects the complex type -> EC=24
+Func: fnAlphaPos
+In:  FARG=0 R00=Stri:"AB" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"AB"
+; x->ALPHA of a numeric code whose destination already holds MAX (508) glyphs
+; overflows the string limit -> ERROR_STRING_WOULD_BE_TOO_LONG=33, register untouched
+Func: fnXToAlpha
+In:  FARG=0 R00=Stri:"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" RX=Real:"65"
+Out: EC=33 R00=Stri:"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+; x->ALPHA of a string X whose combined length would exceed MAX (508) glyphs -> EC=33
+Func: fnXToAlpha
+In:  FARG=0 R00=Stri:"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" RX=Stri:"X"
+Out: EC=33 R00=Stri:"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+; x->ALPHA when the destination register holds a matrix: its display string is read and X appended
+Func: fnXToAlpha
+In:  FARG=1 R01=Rema:"M 1,2[65,66]" RX=Stri:"Z"
+Out: EC=0 R01=Stri:"[2D Vector]Z"
+; x->ALPHA of a matrix into X: each element is taken as a glyph code (65,66 -> "AB")
+Func: fnXToAlpha
+In:  FARG=100 RX=Rema:"M 1,2[65,66]"
+Out: EC=0 RX=Stri:"AB"
+; x->ALPHA when the destination holds a complex matrix: its display string is read and X appended
+Func: fnXToAlpha
+In:  FARG=1 R01=CxMa:"M 1,1[1i2]" RX=Stri:"Z"
+Out: EC=0 R01=Stri:"[1\x80\xd71 \xa1\x02 Matrix]Z"
+; AIP targeting the Y register appends the integer part of X to the Y register
+Func: fnAlphaIP
+In:  FARG=101 RY=Stri:"AB" RX=Real:"5"
+Out: EC=0 RY=Stri:"AB5"
+
+;=== tightened error branches: pin the operand as well as the code ===
+; The error cases above assert only the error code; a case that leaves the code correct but
+; corrupts the operand would still pass. These variants pin the untouched operand as well.
+; x->ALPHA into X, real >1e6 clamps to 1e6 which is still out of range -> EC=8, X untouched
+Func: fnXToAlpha
+In:  FARG=100 RX=Real:"2000000"
+Out: EC=8 RX=Real:"2000000"
+; deprecated >x->ALPHA< with an out-of-range long integer -> EC=8, X untouched
+Func: fnXToAlphaOld
+In:  RX=LonI:"40000"
+Out: EC=8 RX=LonI:"40000"
+; deprecated >x->ALPHA< with a real >1e6 clamped then out of range -> EC=8, X untouched
+Func: fnXToAlphaOld
+In:  RX=Real:"2000000"
+Out: EC=8 RX=Real:"2000000"
+; deprecated >x->ALPHA< with a complex operand -> EC=24, X untouched
+Func: fnXToAlphaOld
+In:  RX=Cplx:"1i2"
+Out: EC=24 RX=Cplx:"1i2"
+; APOS? with a numeric X out of range while converting to a glyph -> EC=8, searched register untouched
+Func: fnAlphaPos
+In:  FARG=0 R00=Stri:"AB" RX=Real:"40000"
+Out: EC=8 R00=Stri:"AB"
+; AIP with a complex X is an invalid type -> EC=24, target register untouched
+Func: fnAlphaIP
+In:  FARG=0 R00=Stri:"HELLO" RX=Cplx:"1i2"
+Out: EC=24 R00=Stri:"HELLO"

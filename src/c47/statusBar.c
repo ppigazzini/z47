@@ -141,7 +141,7 @@ void drawBattery(uint16_t voltage);
 
 
   static void showAngularMode(void) {
-    if(!((SBARUPD_AngularModeBasic) | (SBARUPD_AngularMode))) {
+    if(!((SBARUPD_AngularModeBasic) || (SBARUPD_AngularMode))) {
       return;
     }
 
@@ -152,35 +152,37 @@ void drawBattery(uint16_t voltage);
         x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
       }
 
-      switch(currentAngularMode) {
-        case amRadian: {
-          x = showGlyph(STD_SUP_BOLD_r,         &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
-          break;
-        }
-
-        case amMultPi: {
-          x = showGlyph(STD_SUP_pir,            &standardFont, x, 0, vmNormal, true, false, false); // pi is 0+9 pixel wide
-          break;
-        }
-
-        case amGrad: {
-          x = showGlyph(STD_SUP_BOLD_g,         &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
-          break;
-        }
-
-        case amDegree: {
-          x = showGlyph(STD_DEGREE,             &standardFont, x, 0, vmNormal, true, false, false); // °  is 0+6 pixel wide
-          break;
-        }
-
-        case amDMS: {
-          x = showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false, false); // "  is 0+6 pixel wide
-          break;
-        }
-
-          default: {
-            x = showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
+      if(SBARUPD_AngularMode) {
+        switch(currentAngularMode) {
+          case amRadian: {
+            x = showGlyph(STD_SUP_BOLD_r,         &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
+            break;
           }
+
+          case amMultPi: {
+            x = showGlyph(STD_SUP_pir,            &standardFont, x, 0, vmNormal, true, false, false); // pi is 0+9 pixel wide
+            break;
+          }
+
+          case amGrad: {
+            x = showGlyph(STD_SUP_BOLD_g,         &standardFont, x, 0, vmNormal, true, false, false); // g  is 0+6 pixel wide
+            break;
+          }
+
+          case amDegree: {
+            x = showGlyph(STD_DEGREE,             &standardFont, x, 0, vmNormal, true, false, false); // °  is 0+6 pixel wide
+            break;
+          }
+
+          case amDMS: {
+            x = showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, true, false, false); // "  is 0+6 pixel wide
+            break;
+          }
+
+            default: {
+              x = showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
+            }
+        }
       }
       lcd_fill_rect(x, 0, X_FRAC_MODE - x, 20, LCD_SET_VALUE);
     }

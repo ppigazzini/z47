@@ -361,12 +361,6 @@ static void _doXToAlpha(uint16_t regist) {
       break;
     }
 
-    case dtReal34Matrix: {
-      longIntegerFree(lgInt); // the converter re-initialises lgInt; free the pre-init first
-      convertShortIntegerRegisterToLongInteger(REGISTER_X, lgInt);
-      break;
-    }
-
     default: {
       displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
