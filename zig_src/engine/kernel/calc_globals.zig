@@ -18,3 +18,7 @@ pub export var programRunStop: u8 = 0; // program run/stop status; polled across
 pub export var currentAngularMode: angularMode_t = 0; // active angular mode (amNone/amDegree/...); read across trig
 pub export var lastIntegerBase: u32 = 0; // last integer base (2..16); read by the shortint/base ops
 pub export var numberOfNamedVariables: u16 = 0; // count of user named variables; the named-variable model
+pub export var denMax: u32 = 0; // max denominator for fraction display; read by the fraction formatter
+pub export var lastDenominator: u32 = 4; // last fraction denominator used; read by the fraction math
+pub export var firstGregorianDay: u32 = 0; // Gregorian calendar epoch; read by the date functions
+pub export var lastCenturyHighUsed: u16 = 0; // two-digit-year century pivot; read by the date parser

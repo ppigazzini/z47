@@ -250,7 +250,7 @@ pub export var displayValueX: [DISPLAY_VALUE_LEN]u8 = undefined;
 pub export var gapItemLeft: u16 = 0;
 pub export var gapItemRight: u16 = 0;
 pub export var gapItemRadix: u16 = 0;
-pub export var lastCenturyHighUsed: u16 = 0;
+// lastCenturyHighUsed moved to the base kernel (engine/kernel/calc_globals.zig).
 
 pub export var lcd_buffer: ?[*]u8 = null;
 pub export var numScreensStandardFont: u8 = 0;
@@ -412,9 +412,9 @@ pub export var numberOfFreeMemoryRegions: i32 = 0;
 
 pub export var lgCatalogSelection: i32 = 0;
 
-pub export var firstGregorianDay: u32 = 0;
-pub export var denMax: u32 = 0;
-pub export var lastDenominator: u32 = 4;
+// firstGregorianDay moved to the base kernel (engine/kernel/calc_globals.zig).
+// denMax moved to the base kernel (engine/kernel/calc_globals.zig).
+// lastDenominator moved to the base kernel (engine/kernel/calc_globals.zig).
 // lastIntegerBase moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var decodedIntegerBase: u32 = 0;
 pub export var xCursor: u32 = 0;
