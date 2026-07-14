@@ -127,6 +127,7 @@ void convertUInt64ToShortIntegerRegister(int16_t a0, int64_t a1, int32_t a2, int
 void createMenu(void *a0) {}
 void * decNumberFromString(void *a0, void *a1, void *a2) { return 0; }
 void * decimal128FromNumber(void *a0, void *a1, void *a2) { return a0; }
+void * decNumberToIntegralValue(void *a0, void *a1, void *a2) { return a0; }
 void roundToSignificantDigits(void *a0, void *a1, int16_t a2, void *a3) {}
 void * decNumberToString(void *a0, void *a1) { return 0; }
 void * decQuadFromString(void *a0, void *a1, void *a2) { return 0; }
