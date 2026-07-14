@@ -223,7 +223,7 @@ extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 
 const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
-extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 
 // ===========================================================================
 // showProgressReal: host-only progress display. The drawing is reduced to a

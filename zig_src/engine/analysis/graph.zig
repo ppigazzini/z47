@@ -340,7 +340,7 @@ extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSo
 extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, video_mode: c_int, show_leading_cols: bool, show_ending_cols: bool) u32;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
-extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*c]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;

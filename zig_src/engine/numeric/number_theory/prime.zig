@@ -386,7 +386,7 @@ const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback 
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;
-extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
 
 // PCG32 RNG (exported by the random primitives owner).
