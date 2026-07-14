@@ -12,10 +12,10 @@
 
 // --- pointer globals (point at backing storage) ---
 static alignas(16) unsigned char aimBuffer__stg[8192]; void *aimBuffer = aimBuffer__stg;
-static alignas(16) unsigned char allFormulae__stg[8192]; void *allFormulae = allFormulae__stg;
+static alignas(16) unsigned char allFormulae__stg[8192];
 static alignas(16) unsigned char allNamedVariables__stg[8192];
 static alignas(16) unsigned char beginOfCurrentProgram__stg[8192]; void *beginOfCurrentProgram = beginOfCurrentProgram__stg;
-static alignas(16) unsigned char beginOfProgramMemory__stg[8192]; void *beginOfProgramMemory = beginOfProgramMemory__stg;
+static alignas(16) unsigned char beginOfProgramMemory__stg[8192];
 static alignas(16) unsigned char currentLocalFlags__stg[8192]; void *currentLocalFlags = currentLocalFlags__stg;
 static alignas(16) unsigned char currentLocalRegisters__stg[8192]; void *currentLocalRegisters = currentLocalRegisters__stg;
 static alignas(16) unsigned char currentStep__stg[8192]; void *currentStep = currentStep__stg;
@@ -41,6 +41,8 @@ extern void *statisticalSumsPointer;
 extern void *allNamedVariables;
 extern void *currentSubroutineLevelData;
 extern void *firstFreeProgramByte;
+extern void *beginOfProgramMemory;
+extern void *allFormulae;
 __attribute__((constructor)) static void z47_init_relocated_pointer_globals(void) {
     tmpString = tmpString__stg;
     errorMessage = errorMessage__stg;
@@ -49,6 +51,8 @@ __attribute__((constructor)) static void z47_init_relocated_pointer_globals(void
     allNamedVariables = allNamedVariables__stg;
     currentSubroutineLevelData = currentSubroutineLevelData__stg;
     firstFreeProgramByte = firstFreeProgramByte__stg;
+    beginOfProgramMemory = beginOfProgramMemory__stg;
+    allFormulae = allFormulae__stg;
 }
 
 // --- storage globals (exact size + alignment) ---

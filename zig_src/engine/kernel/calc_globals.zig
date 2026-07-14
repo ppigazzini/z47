@@ -22,3 +22,4 @@ pub export var denMax: u32 = 0; // max denominator for fraction display; read by
 pub export var lastDenominator: u32 = 4; // last fraction denominator used; read by the fraction math
 pub export var firstGregorianDay: u32 = 0; // Gregorian calendar epoch; read by the date functions
 pub export var lastCenturyHighUsed: u16 = 0; // two-digit-year century pivot; read by the date parser
+pub export var calcMode: u8 = 0; // the calculator mode (CM_NORMAL/CM_BUG_ON_SCREEN/...); read across the engine (166 sites)

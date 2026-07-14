@@ -14,3 +14,5 @@ pub export var statisticalSumsPointer: ?*anyopaque = null; // the statistical su
 pub export var allNamedVariables: ?*anyopaque = null; // the named-variable table
 pub export var currentSubroutineLevelData: ?*anyopaque = null; // the active subroutine level
 pub export var firstFreeProgramByte: ?[*]u8 = null; // first free byte of program memory
+pub export var beginOfProgramMemory: ?[*]u8 = null; // start of program memory
+pub export var allFormulae: ?*anyopaque = null; // the equation/formula table
