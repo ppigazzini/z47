@@ -229,7 +229,7 @@ pub export var pcg32_global: pcg32_random_t = .{ .state = 0x853c49e6748fea9b, .i
 pub export var labelList: ?*anyopaque = null;
 pub export var programList: ?*anyopaque = null;
 // currentAngularMode moved to the base kernel (engine/kernel/calc_globals.zig).
-pub export var allFormulae: ?*anyopaque = null;
+// allFormulae moved to the base kernel (memory_model_pointers.zig).
 
 pub export var beginOfCurrentProgram: ?[*]u8 = null;
 pub export var endOfCurrentProgram: ?[*]u8 = null;
@@ -274,7 +274,9 @@ pub export var grpGroupingGr1LeftOverflow: u8 = 0;
 pub export var grpGroupingGr1Left: u8 = 0;
 pub export var grpGroupingRight: u8 = 0;
 // roundingMode (decimal rounding mode) moved to kernel/decimal_context.zig
-pub export var calcMode: u8 = 0;
+// calcMode moved to the base kernel (engine/kernel/calc_globals.zig);
+// the firmware event loop reaches it through this extern re-declaration.
+extern var calcMode: u8;
 pub export var nextChar: u8 = 0;
 pub export var displayStack: u8 = 0;
 pub export var cachedDisplayStack: u8 = 0;
@@ -310,7 +312,7 @@ pub export var entryStatus: u8 = 0;
 // (engine/kernel/screen_update_state.zig); the firmware event loop below reaches
 // it through the extern re-declaration in the dmcp namespace.
 extern var screenUpdatingMode: u8;
-pub export var beginOfProgramMemory: ?[*]u8 = null;
+// beginOfProgramMemory moved to the base kernel (memory_model_pointers.zig).
 // firstFreeProgramByte moved to the base kernel.
 pub export var statisticalSumsUpdate: bool_t = false;
 
