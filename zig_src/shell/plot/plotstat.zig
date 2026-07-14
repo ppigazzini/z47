@@ -1524,7 +1524,6 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     frontier_register_value_conversions.realToFloat(aa2, &a2);
     frontier_register_value_conversions.realToFloat(sa0, &ssa0);
     frontier_register_value_conversions.realToFloat(sa1, &ssa1);
-
     if (isValidDraw) {
         if (selection == 0 and a2 == 0 and a1 == 0 and a0 == 0) {
             return;
@@ -1558,8 +1557,12 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
                     frontier_register_value_conversions.convertDoubleToReal(xd, &XX, &ctxtReal39);
                 }
                 frontier_curve_fitting.yIsFnx(USEFLOATING, selection, xd, &yd, a0, a1, a2, &XX, &YY, RR, SMI, aa0, aa1, aa2);
-                xN = screenX(xd);
-                yN = screenY(yd);
+                // C maps through screenX((float)x)/screenY((float)y): the double
+                // sample is truncated to f32 precision before the pixel window
+                // rounding, so keep the same narrowing or the curve rounds to a
+                // different pixel at boundary cases.
+                xN = screenX(@as(f64, @as(f32, @floatCast(xd))));
+                yN = screenY(@as(f64, @as(f32, @floatCast(yd))));
                 if ((@abs(@as(i32, yN) - @as(i32, yo)) <= 2) or iterations == 0 or xN <= minN_x) {
                     break;
                 }
