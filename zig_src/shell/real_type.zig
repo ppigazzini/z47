@@ -10,8 +10,6 @@ const DECNUMUNITS = 25;
 const DECDPUN = 3;
 
 const DECNEG: u8 = 0x80;
-const DECINF: u8 = 0x40;
-const DECNAN: u8 = 0x20;
 const DECSPECIAL: u8 = 0x70;
 
 // decContext.h rounding enum order: CEILING,UP,HALF_UP,HALF_EVEN,HALF_DOWN,DOWN,..
@@ -80,37 +78,12 @@ pub export fn realToUint32C47(r: *const real_t, err: ?*bool) callconv(.c) u32 {
     return @intCast(realToInt(r, magnitude_limit, DEC_ROUND_DOWN, err));
 }
 
-pub export fn realSetZero(r: *real_t) callconv(.c) void {
-    r.bits = 0;
-    r.exponent = 0;
-    r.digits = 1;
-    r.lsu[0] = 0;
-}
-
-pub export fn realSetOne(r: *real_t) callconv(.c) void {
-    r.bits = 0;
-    r.exponent = 0;
-    r.digits = 1;
-    r.lsu[0] = 1;
-}
-
-pub export fn realSetNaN(r: *real_t) callconv(.c) void {
-    r.bits = DECNAN;
-    r.exponent = 0;
-    r.digits = 1;
-    r.lsu[0] = 0;
-}
-
-pub export fn realSetPlusInfinity(r: *real_t) callconv(.c) void {
-    r.bits = DECINF;
-    r.exponent = 0;
-    r.digits = 1;
-    r.lsu[0] = 0;
-}
-
-pub export fn realSetMinusInfinity(r: *real_t) callconv(.c) void {
-    r.bits = DECINF | DECNEG;
-    r.exponent = 0;
-    r.digits = 1;
-    r.lsu[0] = 0;
-}
+// The real_t special-value setters moved to the headless base kernel
+// (engine/kernel/real_special_values.zig); they are pure constructors with no
+// shell coupling. They are re-declared here so the shell owners that reach them
+// through this module keep resolving; the definitions now link from the kernel.
+pub extern fn realSetZero(r: *real_t) callconv(.c) void;
+pub extern fn realSetOne(r: *real_t) callconv(.c) void;
+pub extern fn realSetNaN(r: *real_t) callconv(.c) void;
+pub extern fn realSetPlusInfinity(r: *real_t) callconv(.c) void;
+pub extern fn realSetMinusInfinity(r: *real_t) callconv(.c) void;
