@@ -39,6 +39,7 @@ comptime {
     _ = @import("register_real34_convert.zig");
     _ = @import("long_integer_format.zig");
     _ = @import("register_integer_convert.zig");
+    _ = @import("register_convert_bulk.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });

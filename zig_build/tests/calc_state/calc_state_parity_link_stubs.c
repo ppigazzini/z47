@@ -113,8 +113,6 @@ int8_t checkOpCodeOfStep(void *a0, int16_t a1) { return 0; }
 void clearSystemFlag(int32_t a0) {}
 int32_t compareString(void *a0, void *a1, int32_t a2) { return 0; }
 void configCommon(int16_t a0) {}
-void convertLongIntegerToLongIntegerRegister(int64_t a0, int16_t a1) {}
-void convertUInt64ToShortIntegerRegister(int16_t a0, int64_t a1, int32_t a2, int16_t a3) {}
 void createMenu(void *a0) {}
 void * decNumberFromString(void *a0, void *a1, void *a2) { return 0; }
 void * decimal128FromNumber(void *a0, void *a1, void *a2) { return a0; }
@@ -186,3 +184,46 @@ void refreshScreen(uint16_t a0) { (void)a0; }
 /* displayCalcErrorMessage now links from engine/kernel/error_report.zig. */
 void showHideHourGlass(void) {}
 int16_t findNamedVariable(void *a0) { (void)a0; return 0; }
+/* --- bulk register-conversion leaves (linked but not exercised in calc_state) --- */
+void * decQuadFromUInt32(void *r, unsigned int v) { (void)v; return r; }
+int decQuadGetCoefficient(const void *r, unsigned char *bcd) { (void)r; (void)bcd; return 0; }
+int decQuadGetExponent(const void *r) { (void)r; return 0; }
+void * decQuadZero(void *r) { return r; }
+void * decQuadDivide(void *r, const void *a, const void *b, void *ctx) { (void)a;(void)b;(void)ctx; return r; }
+void * decQuadMultiply(void *r, const void *a, const void *b, void *ctx) { (void)a;(void)b;(void)ctx; return r; }
+void * decQuadFMA(void *r, const void *a, const void *b, const void *c, void *ctx) { (void)a;(void)b;(void)c;(void)ctx; return r; }
+void * decQuadToIntegralValue(void *r, const void *a, void *ctx, int round) { (void)a;(void)ctx;(void)round; return r; }
+unsigned long decNumberToUInt64(const void *r, void *ctx) { (void)r;(void)ctx; return 0; }
+void * decNumberGetBCD(const void *r, unsigned char *bcd) { (void)r; return bcd; }
+void * decNumberPlus(void *r, const void *a, void *ctx) { (void)a;(void)ctx; return r; }
+void * decNumberQuantize(void *r, const void *a, const void *b, void *ctx) { (void)a;(void)b;(void)ctx; return r; }
+void __gmpz_set_ui(void *r, unsigned long v) { (void)r;(void)v; }
+void __gmpz_mul_ui(void *r, const void *a, unsigned long v) { (void)r;(void)a;(void)v; }
+void __gmpz_mul_2exp(void *r, const void *a, unsigned long v) { (void)r;(void)a;(void)v; }
+unsigned long __gmpz_fdiv_ui(const void *n, unsigned long d) { (void)n;(void)d; return 0; }
+char * __gmpz_get_str(char *str, int base, const void *op) { (void)base;(void)op; return str; }
+void setRegisterTag(short r, unsigned int tag) { (void)r;(void)tag; }
+void adjustResult(short a, signed char b, signed char c, short d, short e, short f) { (void)a;(void)b;(void)c;(void)d;(void)e;(void)f; }
+signed char saveLastX(void) { return 0; }
+void WP34S_Mod(const void *x, const void *y, void *res, void *ctx) { (void)x;(void)y;(void)res;(void)ctx; }
+signed char realIsAnInteger(const void *x) { (void)x; return 0; }
+signed char realCompareGreaterEqual(const void *a, const void *b) { (void)a;(void)b; return 0; }
+signed char realCompareGreaterThan(const void *a, const void *b) { (void)a;(void)b; return 0; }
+signed char realMatrixInit(void *m, unsigned short r, unsigned short c) { (void)m;(void)r;(void)c; return 0; }
+signed char complexMatrixInit(void *m, unsigned short r, unsigned short c) { (void)m;(void)r;(void)c; return 0; }
+void complexMatrixFree(void *m) { (void)m; }
+void linkToRealMatrixRegister(short r, void *linked) { (void)r;(void)linked; }
+void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4) { (void)m1;(void)m2;(void)m3;(void)m4; }
+void elementwiseRema(void *f) { (void)f; }
+void elementwiseCxma(void *f) { (void)f; }
+void elementwiseRemaRema(void *f) { (void)f; }
+void elementwiseCxmaRema(void *f) { (void)f; }
+void elementwiseCplxRema(void *f) { (void)f; }
+void elementwiseRealRema(void *f) { (void)f; }
+void elementwiseRemaCxma(void *f) { (void)f; }
+void elementwiseCxmaCxma(void *f) { (void)f; }
+void elementwiseCplxCxma(void *f) { (void)f; }
+void elementwiseRemaReal(void *f) { (void)f; }
+void elementwiseRemaCplx(void *f) { (void)f; }
+void elementwiseCxmaCplx(void *f) { (void)f; }
+short lastFunc;
