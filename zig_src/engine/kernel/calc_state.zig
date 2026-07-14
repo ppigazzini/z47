@@ -27,7 +27,13 @@ comptime {
     _ = @import("decimal_context.zig");
     _ = @import("solver_context.zig");
     _ = @import("error_state.zig");
-    _ = @import("calc_globals.zig");
+    _ = @import("keyboard_input_state.zig");
+    _ = @import("program_state.zig");
+    _ = @import("calc_mode_state.zig");
+    _ = @import("number_format_state.zig");
+    _ = @import("calendar_state.zig");
+    _ = @import("statistics_state.zig");
+    _ = @import("tvm_state.zig");
     _ = @import("real_special_values.zig");
     _ = @import("system_flags_state.zig");
     _ = @import("byte_copy.zig");
