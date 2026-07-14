@@ -34,6 +34,8 @@ comptime {
     _ = @import("transient_status.zig");
     _ = @import("screen_update_state.zig");
     _ = @import("error_report.zig");
+    _ = @import("scratch_buffers.zig");
+    _ = @import("memory_model_pointers.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
