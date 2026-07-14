@@ -24,25 +24,25 @@ fn restoreCalcBackupHost() callconv(.c) void {
 
 comptime {
     // Force the shared decNumber contexts + solver context + error state (base).
-    _ = @import("decimal_context.zig");
-    _ = @import("solver_context.zig");
-    _ = @import("error_state.zig");
-    _ = @import("keyboard_input_state.zig");
-    _ = @import("program_state.zig");
-    _ = @import("calc_mode_state.zig");
-    _ = @import("number_format_state.zig");
-    _ = @import("calendar_state.zig");
-    _ = @import("statistics_state.zig");
-    _ = @import("tvm_state.zig");
-    _ = @import("real_special_values.zig");
-    _ = @import("system_flags_state.zig");
-    _ = @import("byte_copy.zig");
-    _ = @import("transient_status.zig");
-    _ = @import("screen_update_state.zig");
-    _ = @import("error_report.zig");
-    _ = @import("scratch_buffers.zig");
-    _ = @import("memory_model_pointers.zig");
-    _ = @import("register_conversions.zig");
+    _ = @import("base/decimal_context.zig");
+    _ = @import("base/solver_context.zig");
+    _ = @import("base/error_state.zig");
+    _ = @import("state/keyboard_input_state.zig");
+    _ = @import("state/program_state.zig");
+    _ = @import("state/calc_mode_state.zig");
+    _ = @import("state/number_format_state.zig");
+    _ = @import("state/calendar_state.zig");
+    _ = @import("state/statistics_state.zig");
+    _ = @import("state/tvm_state.zig");
+    _ = @import("value/real_special_values.zig");
+    _ = @import("state/system_flags_state.zig");
+    _ = @import("base/byte_copy.zig");
+    _ = @import("state/transient_status.zig");
+    _ = @import("state/screen_update_state.zig");
+    _ = @import("base/error_report.zig");
+    _ = @import("state/scratch_buffers.zig");
+    _ = @import("state/memory_model_pointers.zig");
+    _ = @import("value/register_conversions.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
