@@ -303,7 +303,10 @@ pub export var programRunStop: u8 = 0;
 pub export var lastKeyCode: u8 = 0;
 pub export var keyStateCode: u8 = 0;
 pub export var entryStatus: u8 = 0;
-pub export var screenUpdatingMode: u8 = 0;
+// screenUpdatingMode moved to the base kernel
+// (engine/kernel/screen_update_state.zig); the firmware event loop below reaches
+// it through the extern re-declaration in the dmcp namespace.
+extern var screenUpdatingMode: u8;
 pub export var beginOfProgramMemory: ?[*]u8 = null;
 pub export var firstFreeProgramByte: ?[*]u8 = null;
 pub export var statisticalSumsUpdate: bool_t = false;

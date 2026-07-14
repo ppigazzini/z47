@@ -9,7 +9,8 @@
 uint8_t previousErrorCode = 88;
 /* temporaryInformation now links from engine/kernel/transient_status.zig; the
    setup reset below still seeds the parity value. */
-uint8_t screenUpdatingMode = (uint8_t)(SCRUPD_MANUAL_MENU | 0x20u);
+/* screenUpdatingMode now links from engine/kernel/screen_update_state.zig; the
+   setup reset below still seeds the parity value. */
 int16_t cachedDynamicMenu = 17;
 
 static char loadFile[MAX_CALC_STATE_PARITY_FILE_BYTES];
