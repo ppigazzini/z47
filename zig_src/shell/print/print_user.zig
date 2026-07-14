@@ -39,8 +39,8 @@ const print_user_phase_order = [_]PrintUserPhase{
 };
 
 const PrintUserTelemetry = struct {
-    started: std.EnumSet(PrintUserPhase) = std.EnumSet(PrintUserPhase).initEmpty(),
-    completed: std.EnumSet(PrintUserPhase) = std.EnumSet(PrintUserPhase).initEmpty(),
+    started: std.EnumSet(PrintUserPhase) = std.EnumSet(PrintUserPhase).empty,
+    completed: std.EnumSet(PrintUserPhase) = std.EnumSet(PrintUserPhase).empty,
     aborted: bool = false,
 
     fn start(self: *PrintUserTelemetry, phase: PrintUserPhase) void {

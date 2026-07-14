@@ -863,8 +863,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     );
     const run_pgm_run = b.addRunArtifact(pgm_run_harness);
     run_pgm_run.setCwd(b.path("."));
-    if (b.args) |args| run_pgm_run.addArgs(args);
-    const pgm_run_step = b.step("pgm_run", "Load and XEQ a .p47 program on the full core (args: <file.p47>)");
+    if (b.option([]const u8, "pgm", "the .p47 program to load and run")) |pgm| {
+        run_pgm_run.addArgs(&.{pgm});
+    }
+    const pgm_run_step = b.step("pgm_run", "Load and XEQ a .p47 program on the full core (-Dpgm=<file.p47>)");
     pgm_run_step.dependOn(&run_pgm_run.step);
 
     // M1 (REPORT-27 ANNEX B): run a corpus of MALFORMED .p47 files through the real
@@ -1230,7 +1232,10 @@ fn addCleanStep(b: *std.Build) void {
 }
 
 fn addDocsStep(b: *std.Build) void {
-    const docs_build_root = b.getInstallPath(.prefix, "docs/code");
+    // The bash command runs in the build root (addBashCommandFmt sets cwd to "."),
+    // so a build-root-relative install path is what the tools want; b.pathJoin is
+    // stable across the 0.16 baseline and the monitored Zig master.
+    const docs_build_root = b.pathJoin(&.{ "zig-out", "docs/code" });
     const docs_source_root = build_common.upstreamPathString(b, "docs/code");
     const cmd = build_common.addBashCommandFmt(b,
         \\for tool in python3 doxygen; do

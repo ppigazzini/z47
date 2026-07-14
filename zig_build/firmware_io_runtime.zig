@@ -345,7 +345,7 @@ pub export fn _ioFileNameFromFilePath(path: c_int, filename: [*c]u8) callconv(.c
 }
 
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
-    var filename: [40]u8 = [_]u8{0} ** 40;
+    var filename: [40]u8 = @splat(0);
     var filemode: u8 = 0;
 
     fileNameSelected[0] = 0;
@@ -431,7 +431,7 @@ pub export fn ioEof() callconv(.c) c_int {
 }
 
 pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int {
-    var filename: [40]u8 = [_]u8{0} ** 40;
+    var filename: [40]u8 = @splat(0);
 
     sysDiskWriteEnable(1);
     const ret = _ioFileNameFromFilePath(path, &filename);

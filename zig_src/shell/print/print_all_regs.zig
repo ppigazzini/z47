@@ -70,8 +70,8 @@ const print_all_regs_phase_order = [_]PrintAllRegsPhase{
 };
 
 const PrintAllRegsTelemetry = struct {
-    started: std.EnumSet(PrintAllRegsPhase) = std.EnumSet(PrintAllRegsPhase).initEmpty(),
-    completed: std.EnumSet(PrintAllRegsPhase) = std.EnumSet(PrintAllRegsPhase).initEmpty(),
+    started: std.EnumSet(PrintAllRegsPhase) = std.EnumSet(PrintAllRegsPhase).empty,
+    completed: std.EnumSet(PrintAllRegsPhase) = std.EnumSet(PrintAllRegsPhase).empty,
     aborted: bool = false,
 
     fn start(self: *PrintAllRegsTelemetry, phase: PrintAllRegsPhase) void {

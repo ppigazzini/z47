@@ -17,7 +17,7 @@ const calcKeyboard_t = extern struct {
 };
 
 // --- program globals (defined here; other units extern-declare them) -------
-pub export var modelString: [50]u8 = [_]u8{0} ** 50;
+pub export var modelString: [50]u8 = @splat(0);
 pub export var mockup: bool = false;
 pub export var dumpMenus: u16 = 0;
 pub export var writeExportAll: bool = false;
