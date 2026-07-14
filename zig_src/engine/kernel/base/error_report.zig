@@ -1,5 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
+// The calculator's error status and the entry point that records it.
+//
+// lastErrorCode is THE error status: every operation across the engine sets and
+// checks it via `extern var`, and it is part of the saved backup.
+// errorMessageRegisterLine is the companion state -- which register line the
+// pending error message annotates -- also part of the backup. Both were defined
+// in the shell globals hub (c47.zig), so the headless engine reached up into
+// shell for its own error status; they live here now, owned alongside the one
+// entry point that writes them. Symbols, types and zero initialisers are
+// unchanged, so every extern consumer resolves as before.
+//
 // displayCalcErrorMessage: the calculator's error-report entry point, called
 // pervasively across the engine (~133 owners) to raise a calculation error. Its
 // name is a misnomer inherited from the C source -- the normal path does no
@@ -23,8 +34,8 @@ const SCRUPD_AUTO: u8 = 0x00;
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_T: calcRegister_t = 103;
 
-extern var lastErrorCode: u8;
-extern var errorMessageRegisterLine: calcRegister_t;
+pub export var lastErrorCode: u8 = 0;
+pub export var errorMessageRegisterLine: calcRegister_t = 0;
 extern var screenUpdatingMode: u8;
 
 pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
