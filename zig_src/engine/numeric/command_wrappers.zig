@@ -40,7 +40,6 @@ const erf_owned = @import("special/special_function_erf.zig");
 const factorial_owned = @import("special/special_function_factorial.zig");
 const fibonacci_owned = @import("special/special_function_fibonacci.zig");
 const ixyz_owned = @import("special/special_function_ixyz.zig");
-const matrix_vector_diagnostics_owned = @import("matrix/vector_diagnostics.zig");
 const matrix_vector_cross_matrix_owned = @import("matrix/vector_cross_matrix.zig");
 const matrix_vector_cross_scalar_owned = @import("matrix/vector_cross_scalar.zig");
 const matrix_vector_dot_matrix_owned = @import("matrix/vector_dot_matrix.zig");
@@ -1212,7 +1211,7 @@ pub export fn fnCross(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
 
     if (matrix_vector_validation_owned.classifyCurrentOperands().hasAnyMatrix()) {
-        matrix_vector_diagnostics_owned.crossDotMatrixTypeError("In function fnCross:");
+        matrix_vector_validation_owned.crossDotMatrixTypeError("In function fnCross:");
         return;
     }
 
@@ -1226,7 +1225,7 @@ pub export fn fnDot(unused_but_mandatory_parameter: u16) callconv(.c) void {
     }
 
     if (matrix_vector_validation_owned.classifyCurrentOperands().hasAnyMatrix()) {
-        matrix_vector_diagnostics_owned.crossDotMatrixTypeError("In function fnDot:");
+        matrix_vector_validation_owned.crossDotMatrixTypeError("In function fnDot:");
         return;
     }
 
