@@ -23,3 +23,6 @@ pub export var lastDenominator: u32 = 4; // last fraction denominator used; read
 pub export var firstGregorianDay: u32 = 0; // Gregorian calendar epoch; read by the date functions
 pub export var lastCenturyHighUsed: u16 = 0; // two-digit-year century pivot; read by the date parser
 pub export var calcMode: u8 = 0; // the calculator mode (CM_NORMAL/CM_BUG_ON_SCREEN/...); read across the engine (166 sites)
+pub export var shortIntegerMode: u8 = 0; // short-integer sign mode (2's complement/...); read by the integer ops
+pub export var shortIntegerMask: u64 = 0; // word-size mask derived from the mode; read by the integer ops
+pub export var shortIntegerSignBit: u64 = 0; // sign-bit mask derived from the mode; read by the integer ops

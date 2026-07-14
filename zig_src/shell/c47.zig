@@ -267,7 +267,7 @@ pub export var shortIntegerWordSize: u8 = 0;
 // significantDigits (decimal working precision) moved to kernel/decimal_context.zig
 pub export var dispBase: u8 = 0;
 pub export var fractionDigits: u8 = 0;
-pub export var shortIntegerMode: u8 = 0;
+// shortIntegerMode moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var previousCalcMode: u8 = 0;
 pub export var grpGroupingLeft: u8 = 0;
 pub export var grpGroupingGr1LeftOverflow: u8 = 0;
@@ -428,8 +428,8 @@ pub export var timerTotalTime: u32 = 0;
 pub export var pointerOfFlashPgmLibrary: u32 = 0;
 pub export var sizeOfFlashPgmLibrary: u32 = 0;
 
-pub export var shortIntegerMask: u64 = 0;
-pub export var shortIntegerSignBit: u64 = 0;
+// shortIntegerMask moved to the base kernel (engine/kernel/calc_globals.zig).
+// shortIntegerSignBit moved to the base kernel (engine/kernel/calc_globals.zig).
 // systemFlags0/systemFlags1 moved to the base kernel
 // (engine/kernel/system_flags_state.zig).
 pub export var savedSystemFlags0: u64 = 0;
