@@ -56,7 +56,7 @@ fn addMathLnComplexOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = context.raw_core_sources, .flags = core_c_flags });
 
     const math_ln_complex_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -121,7 +121,7 @@ fn addMathEigenOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = eigen_core_sources, .flags = core_c_flags });
 
     const eigen_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -187,7 +187,7 @@ fn addMathRealRectangularToPolarOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -253,7 +253,7 @@ fn addMathAtan2Oracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -319,7 +319,7 @@ fn addMathAtanOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -385,7 +385,7 @@ fn addMathRealTrigPrimitivesOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -451,7 +451,7 @@ fn addMathCircularTrigOracle(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47"), .files = filtered_core_sources, .flags = core_c_flags });
 
     const helper_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });
@@ -904,7 +904,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // firmware lane verifiable without a device.
     const progmem_test = b.addTest(.{
         .root_module = b.createModule(.{
-            .root_source_file = b.path("zig_src/engine/kernel/calc_state_progmem.zig"),
+            .root_source_file = b.path("zig_src/core/kernel/calc_state_progmem.zig"),
             .target = context.host_target,
             .optimize = optimize,
         }),
@@ -917,7 +917,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // never reaches it; its embedded tests make the buffer mechanics verifiable
     // without a device before the bridge port wires it onto the firmware lanes.
     const ringbuffer_test_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/kernel/keyboard_state_ringbuffer.zig"),
+        .root_source_file = b.path("zig_src/core/kernel/keyboard_state_ringbuffer.zig"),
         .target = context.host_target,
         .optimize = optimize,
     });

@@ -1,4 +1,4 @@
-# Core sources replaced by zig_src/engine/numeric/command_wrappers.zig.
+# Core sources replaced by zig_src/core/numeric/command_wrappers.zig.
 mathematics/min.c
 mathematics/max.c
 mathematics/percent.c

@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """NM9 headless-engine severance lint.
 
-The z47 target architecture is a headless `engine/` that never depends on the
-interactive `shell/`: no file under `zig_src/engine/` may reach up into
+The z47 target architecture is a headless `core/` that never depends on the
+interactive `shell/`: no file under `zig_src/core/` may reach up into
 `zig_src/shell/`. Cross-zone consumption in this codebase is via the frozen
 C-ABI (`extern`), so this lint measures two directed couplings:
 
-  * import edges  -- an engine file that `@import`s a shell source file. The
+  * import edges  -- a core file that `@import`s a shell source file. The
                      architecture routes every cross-zone dependency through the
                      ABI, so this must stay at ZERO (an absolute invariant).
-  * extern edges  -- an engine file that `extern`-consumes a symbol whose sole
+  * extern edges  -- a core file that `extern`-consumes a symbol whose sole
                      first-party definition (`pub export`) lives in shell. These
                      are the up-couplings NM9 severs by moving each symbol's
-                     definition into its correct zone (kernel/engine). Far from
+                     definition into its correct zone (core). Far from
                      zero today, so this is ratcheted: it may only shrink.
 
-Baseline lives in engine-shell-severance-baseline.json. Run with --update to
+Baseline lives in core-shell-severance-baseline.json. Run with --update to
 re-pin it after a slice legitimately lowers the count (it can never raise it).
 """
 
@@ -28,7 +28,7 @@ import re
 import sys
 
 REPO_DEFAULT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-BASELINE = os.path.join(os.path.dirname(__file__), "engine-shell-severance-baseline.json")
+BASELINE = os.path.join(os.path.dirname(__file__), "core-shell-severance-baseline.json")
 
 EXPORT_RE = re.compile(r"^\s*pub\s+export\s+(?:fn|var|const)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
 EXTERN_RE = re.compile(r"^\s*(?:pub\s+)?extern\s+(?:fn|var|const)\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
@@ -53,14 +53,14 @@ def exports_in(root: str, zone: str) -> set[str]:
 
 def measure(root: str):
     shell_exports = exports_in(root, "shell")
-    engine_exports = exports_in(root, "engine")
+    core_exports = exports_in(root, "core")
     seam_exports = exports_in(root, "seam")
     # Symbols whose only first-party definition is in shell.
-    shell_owned = shell_exports - engine_exports - seam_exports
+    shell_owned = shell_exports - core_exports - seam_exports
 
     extern_edges: list[tuple[str, str]] = []
     import_edges: list[tuple[str, str]] = []
-    for path in zig_files(root, "engine"):
+    for path in zig_files(root, "core"):
         rel = os.path.relpath(path, root)
         with open(path, encoding="utf-8") as fh:
             text = fh.read()
@@ -111,15 +111,15 @@ def main() -> int:
     ok = True
     if n_import != 0:
         ok = False
-        print(f"FAIL: {n_import} engine->shell @import edge(s) (must be 0):", file=sys.stderr)
+        print(f"FAIL: {n_import} core->shell @import edge(s) (must be 0):", file=sys.stderr)
         for f, s in import_edges:
             print(f"  {f} @imports {s}", file=sys.stderr)
     if n_extern > base_extern:
         ok = False
-        print(f"FAIL: engine->shell extern edges rose {base_extern} -> {n_extern} (ratchet):", file=sys.stderr)
+        print(f"FAIL: core->shell extern edges rose {base_extern} -> {n_extern} (ratchet):", file=sys.stderr)
 
     status = "below" if n_extern < base_extern else "at"
-    print(f"engine->shell severance: import={n_import} (cap 0), extern={n_extern} ({status} ceiling {base_extern})")
+    print(f"core->shell severance: import={n_import} (cap 0), extern={n_extern} ({status} ceiling {base_extern})")
     if n_extern < base_extern:
         print(f"note: extern edges dropped {base_extern} -> {n_extern}; run --update to re-pin the ratchet.")
     return 0 if ok else 1

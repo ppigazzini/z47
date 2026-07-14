@@ -1,7 +1,7 @@
 # State subsystem C bridges compiled into the host sim (one path per line).
 # Empty: the keyboard-state bridge (keyboard_state_legacy.c) was retired once
 # every keyboard handler, the ring buffer and the keyboard globals moved to Zig
-# (zig_src/engine/kernel/keyboard_state*.zig). No first-party state C bridge remains.
+# (zig_src/core/kernel/keyboard_state*.zig). No first-party state C bridge remains.
 
 # Newly-imported upstream master file not yet ported to a Zig owner (pin-advance
 # fd83b4a4): the elec (delta-star / symmetrical-components / triple-phase)

@@ -51,7 +51,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/numeric/command_wrappers.zig"),
+        .root_source_file = b.path("zig_src/core/numeric/command_wrappers.zig"),
         .target = target,
         .optimize = optimize,
         .strip = options.strip,
