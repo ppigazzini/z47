@@ -48,7 +48,7 @@ bash .github/project/check-zig-c-boundaries.sh
 step "[6/11] idiomatic-Zig ratchet"
 bash .github/project/check-idiom-ratchet.sh
 step "[6b/11] headless-engine severance (engine->shell)"
-python3 .github/project/check-engine-shell-severance.py --repo-root .
+python3 .github/project/check-core-shell-severance.py --repo-root .
 step "[7/11] Phase I C dependency policy"
 bash .github/project/check-c-dependency-phase-i-policy.sh .
 step "[8/11] workflow script locality"

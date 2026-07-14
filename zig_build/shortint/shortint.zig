@@ -102,9 +102,9 @@ pub fn addRuntimeObjectsWithOptions(
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
     return .{
-        .bit_manipulation = addRuntimeObject(b, target, optimize, name_prefix, "bit-manipulation", "zig_src/engine/integer/bit_manipulation.zig", options),
-        .logical_boolean_ops = addRuntimeObject(b, target, optimize, name_prefix, "logical-boolean-ops", "zig_src/engine/integer/logical_boolean_ops.zig", options),
-        .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/engine/integer/rotate_bits.zig", options),
+        .bit_manipulation = addRuntimeObject(b, target, optimize, name_prefix, "bit-manipulation", "zig_src/core/integer/bit_manipulation.zig", options),
+        .logical_boolean_ops = addRuntimeObject(b, target, optimize, name_prefix, "logical-boolean-ops", "zig_src/core/integer/logical_boolean_ops.zig", options),
+        .rotate_bits = addRuntimeObject(b, target, optimize, name_prefix, "rotate-bits", "zig_src/core/integer/rotate_bits.zig", options),
     };
 }
 

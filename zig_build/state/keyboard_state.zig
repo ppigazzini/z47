@@ -200,7 +200,7 @@ pub fn addHostRuntimeObjectsWithOptions(
     config: HostModuleConfig,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
-    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/engine/kernel/keyboard_state.zig"), options);
+    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/core/kernel/keyboard_state.zig"), options);
     configureHostModule(object.root_module, config);
     return .{ .keyboard_state = object };
 }
@@ -223,7 +223,7 @@ pub fn addFirmwareRuntimeObjectsWithOptions(
     config: FirmwareModuleConfig,
     options: RuntimeObjectOptions,
 ) RuntimeObjects {
-    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/engine/kernel/keyboard_state.zig"), options);
+    const object = addRuntimeObjectWithIncludeDir(b, target, optimize, name_prefix, b.path("zig_src/core/kernel/keyboard_state.zig"), options);
     configureFirmwareModule(object.root_module, config);
     return .{ .keyboard_state = object };
 }
@@ -251,7 +251,7 @@ pub fn addParityExecutable(
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObjectWithIncludeDir(b, target, optimize, "parity", b.path("zig_build/tests/keyboard_state/keyboard_state_parity.zig"), .{});
     runtime_object.root_module.addImport("z47_keyboard_state_shared", b.createModule(.{
-        .root_source_file = b.path("zig_src/engine/kernel/keyboard_state_shared.zig"),
+        .root_source_file = b.path("zig_src/core/kernel/keyboard_state_shared.zig"),
         .target = target,
         .optimize = optimize,
     }));
