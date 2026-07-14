@@ -70,6 +70,11 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         const allow_user_keys = runtime.allowUserKeys(header.saved_calc_model);
         while (runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
         runtime.fixupR47ShiftKeys();
+
+        // The register section precedes shortIntegerWordSize in the file and the
+        // file stores neither mask, so rederive both from the loaded word size
+        // (config.c updateShortIntegerMasks) before any later short-integer op.
+        runtime.updateShortIntegerMasks();
     }
 
     runtime.lastErrorCode = runtime.ERROR_NONE;

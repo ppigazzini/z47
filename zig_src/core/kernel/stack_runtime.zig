@@ -119,6 +119,10 @@ extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
 extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
 
+// The value comparison behind REGSORT (mathematics/compare.c registerCmp): res>0
+// when regist1 must sort after regist2, res<0 before, 0 equal; returns false when
+// the pair cannot be compared. Linked from the numeric compare owner.
+pub extern fn registerCmp(regist1: calcRegister_t, regist2: calcRegister_t, res: *i8) bool;
 pub extern fn clearRegister(reg: calcRegister_t) void;
 pub extern fn getSystemFlag(sf: i32) bool;
 pub extern fn setSystemFlag(sf: u32) void;

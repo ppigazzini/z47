@@ -1,6 +1,28 @@
 const runtime = @import("stack_runtime.zig");
 const register_range_ops = @import("register_range_ops.zig"); // std-only register-range geometry
 
+// Port of registers.c sortReg: order the register descriptors across the range by
+// registerCmp (value comparison). A selection pass yields the same ordering as the
+// C merge sort without the scratch allocation; swapping the 32-bit descriptors
+// moves the register contents. A pair registerCmp cannot compare (returns false)
+// is left untouched, as in C. This is the full-build body behind z47_registers_
+// sort_reg (the parity harness supplies its own fake).
+pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
+    var i: runtime.calcRegister_t = @intCast(range_start);
+    const last: runtime.calcRegister_t = @intCast(range_end);
+    while (i < last) : (i += 1) {
+        var j: runtime.calcRegister_t = i + 1;
+        while (j <= last) : (j += 1) {
+            var res: i8 = 0;
+            if (runtime.registerCmp(i, j, &res) and res > 0) {
+                const saved = runtime.globalDescriptor(i);
+                runtime.setGlobalDescriptor(i, runtime.globalDescriptor(j));
+                runtime.setGlobalDescriptor(j, saved);
+            }
+        }
+    }
+}
+
 pub fn regClr() void {
     var s: u16 = 0;
     var n: u16 = 0;
