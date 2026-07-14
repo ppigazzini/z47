@@ -29,3 +29,12 @@ pub export var shortIntegerSignBit: u64 = 0; // sign-bit mask derived from the m
 pub export var shortIntegerWordSize: u8 = 0; // short-integer word size in bits; read by the integer ops (28 sites)
 pub export var lrChosen: u16 = 0; // the chosen linear-regression model; read by the stat/curve-fit engine
 pub export var lrSelection: u16 = 0; // the linear-regression model selection bitmap; read by the stat engine
+// Number/date format parameters: read by the engine's number and date formatting
+// (the format parity oracle covers them), set by the config UI.
+pub export var displayFormat: u8 = 0; // number display mode (SCI/ENG/FIX/ALL)
+pub export var displayFormatDigits: u8 = 0; // significant/decimal digits for the display mode
+pub export var timeDisplayFormatDigits: u8 = 0; // fractional-second digits for time display
+pub export var dispBase: u8 = 0; // integer display base (2..16)
+pub export var fractionDigits: u8 = 0; // denominator digits for fraction display
+pub export var firstDayOfWeek: u8 = 1; // first day of the week for the calendar
+pub export var firstWeekOfYearDay: u8 = 4; // first-week-of-year rule day for the calendar

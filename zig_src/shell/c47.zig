@@ -260,13 +260,13 @@ pub export var currentAsnScr: u8 = 0;
 pub export var currentFntScr: u8 = 0;
 pub export var currentFlgScr: u8 = 0;
 pub export var lastFlgScr: u8 = 0;
-pub export var displayFormat: u8 = 0;
-pub export var displayFormatDigits: u8 = 0;
-pub export var timeDisplayFormatDigits: u8 = 0;
+// displayFormat moved to the base kernel (engine/kernel/calc_globals.zig).
+// displayFormatDigits moved to the base kernel (engine/kernel/calc_globals.zig).
+// timeDisplayFormatDigits moved to the base kernel (engine/kernel/calc_globals.zig).
 // shortIntegerWordSize moved to the base kernel (engine/kernel/calc_globals.zig).
 // significantDigits (decimal working precision) moved to kernel/decimal_context.zig
-pub export var dispBase: u8 = 0;
-pub export var fractionDigits: u8 = 0;
+// dispBase moved to the base kernel (engine/kernel/calc_globals.zig).
+// fractionDigits moved to the base kernel (engine/kernel/calc_globals.zig).
 // shortIntegerMode moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var previousCalcMode: u8 = 0;
 pub export var grpGroupingLeft: u8 = 0;
@@ -468,8 +468,8 @@ pub export var filename_csv: [FILENAMELEN]u8 = std.mem.zeroes([FILENAMELEN]u8);
 pub export var mem__32: u32 = 0;
 pub export var cancelFilename: bool_t = false;
 
-pub export var firstDayOfWeek: u8 = 1;
-pub export var firstWeekOfYearDay: u8 = 4;
+// firstDayOfWeek moved to the base kernel (engine/kernel/calc_globals.zig).
+// firstWeekOfYearDay moved to the base kernel (engine/kernel/calc_globals.zig).
 
 pub export var printerState: printerState_t = std.mem.zeroes(printerState_t);
 pub export var printerColumn: u16 = 0;
