@@ -977,30 +977,11 @@ pub export fn stringToFileNameChars(strIn: [*c]const u8, asciiIn: [*c]u8, distin
 // ---------------------------------------------------------------------------
 // xcopy
 // ---------------------------------------------------------------------------
-pub export fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) callconv(.c) ?*anyopaque {
-    const pDest: [*c]u8 = @ptrCast(dest);
-    const pSource: [*c]const u8 = @ptrCast(source);
-    if (nIn == 0 or pDest == null or pSource == null) {
-        return dest;
-    }
-    var n = nIn;
-    if (@intFromPtr(pSource) > @intFromPtr(pDest)) {
-        var d = pDest;
-        var s = pSource;
-        while (n != 0) {
-            n -%= 1;
-            d[0] = s[0];
-            d += 1;
-            s += 1;
-        }
-    } else if (@intFromPtr(pSource) < @intFromPtr(pDest)) {
-        while (n != 0) {
-            n -%= 1;
-            pDest[n] = pSource[n];
-        }
-    }
-    return dest;
-}
+// Moved to the base kernel (engine/kernel/byte_copy.zig); it is a pure
+// overlap-safe byte copy with no text coupling. Re-declared here so the owners
+// that reach it through this module resolve unchanged; the definition now links
+// from the kernel.
+pub extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) callconv(.c) ?*anyopaque;
 
 // On Windows (MINGW) the ucrt has no stpcpy, so charString.h declares stringCopy
 // as a real function (`#if defined(__MINGW64__)`) instead of a `#define
