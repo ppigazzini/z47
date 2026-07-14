@@ -243,11 +243,11 @@ pub export fn fnAlphaToX(regist_arg: u16) callconv(.c) void {
     }
 
     if (stringByteLength(regString(@intCast(regist))) == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1\xa1\x92x on an empty string", .{});
-            moreInfoOnError("In function fnAlphaToX:", errorMessage);
-        }
+        liftStack();
+        longIntegerInit(&lgInt[0]);
+        int32ToLongInteger(0, &lgInt[0]);
+        frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
+        longIntegerFree(&lgInt[0]);
         return;
     }
 
@@ -362,6 +362,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
                 abi.fmtBufZ(errorMessage[0..512], "cannot x\xa1\x92\x83\xb1 when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnXToAlpha:", errorMessage);
             }
+            longIntegerFree(&lgInt[0]); // free the pre-init before the error return (matches C)
             return;
         },
     }
@@ -373,6 +374,7 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
             abi.fmtBufZ(errorMessage[0..512], "for x\xa1\x92\x83\xb1, X must be < 32768. Here X = {d}", .{@as(u32, @truncate(lgInt[0]._mp_d[0]))}); // OK for 32 and 64 bit limbs
             moreInfoOnError("In function fnXToAlpha:", errorMessage);
         }
+        longIntegerFree(&lgInt[0]); // free the pre-init before the error return (matches C)
         return;
     }
 
@@ -413,12 +415,12 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
     }
 
     if (getRegisterDataType(REGISTER_X) != dtString) {
-        frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on {s} (reg X)", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@intCast(regist), true, false))});
-            moreInfoOnError("In function fnAlphaPos:", errorMessage);
+        // A numeric X is converted to a single-glyph string first (matches C); a
+        // conversion error (out-of-range -> EC=8, bad type -> EC=24) aborts here.
+        _doXToAlpha(REGISTER_X);
+        if (lastErrorCode != ERROR_NONE) {
+            return;
         }
-        return;
     }
 
     if (frontier_char_string.stringGlyphLength(regString(@intCast(regist))) == 0 or frontier_char_string.stringGlyphLength(regString(REGISTER_X)) == 0) {
@@ -1295,10 +1297,6 @@ fn _doXToAlpha(regist: u16) callconv(.c) void {
             }
         },
         dtShortInteger => {
-            longIntegerFree(&lgInt[0]);
-            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
-        },
-        dtReal34Matrix => {
             longIntegerFree(&lgInt[0]);
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
