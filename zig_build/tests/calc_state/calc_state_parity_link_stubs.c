@@ -166,6 +166,6 @@ void ioFileClose(void) {}
 void liftStack(void) {}
 void show_warning(void *a0) { (void)a0; }
 void refreshScreen(uint16_t a0) { (void)a0; }
-void displayCalcErrorMessage(uint8_t a0, int16_t a1, int16_t a2) { (void)a0; (void)a1; (void)a2; }
+/* displayCalcErrorMessage now links from engine/kernel/error_report.zig. */
 void showHideHourGlass(void) {}
 int16_t findNamedVariable(void *a0) { (void)a0; return 0; }

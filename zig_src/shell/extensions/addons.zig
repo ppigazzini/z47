@@ -1987,6 +1987,7 @@ pub export fn installCoreHostHooks() callconv(.c) void {
     abi.host.installCheckHalfSec(&frontier_screen.checkHalfSec);
     abi.host.installProgressHalfSec(&frontier_screen.progressHalfSecUpdate_Integer);
     abi.host.installRequestRefresh(&frontier_screen.refreshScreen);
+    abi.host.installReportBugError(&frontier_error.reportBugError);
 }
 
 pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_int {
