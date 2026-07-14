@@ -1,4 +1,4 @@
-const block_availability_owned = @import("memory_block_availability.zig");
+const availability_pure = @import("block_availability_pure.zig"); // std-only bin-packing predicate
 const c47_alloc_owned = @import("memory_c47_alloc.zig");
 const abi = @import("abi");
 const block_math = abi.block_math;
@@ -28,7 +28,17 @@ pub export fn getFreeRamMemory() u32 {
 }
 
 pub export fn isMemoryBlockAvailable(sizeInBlocks: usize, numBlocks: u16, extraFraction: f32) bool {
-    return block_availability_owned.isMemoryBlockAvailable(sizeInBlocks, numBlocks, extraFraction);
+    const extra_size = runtime.scaleExtraSize(sizeInBlocks, extraFraction);
+    var acc = availability_pure.Availability.init(sizeInBlocks, numBlocks, extra_size);
+
+    var index: i32 = 0;
+    while (index < runtime.numberOfFreeMemoryRegions) : (index += 1) {
+        if (acc.accept(runtime.getFreeRegion(@intCast(index)).sizeInBlocks)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 pub export fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque {
