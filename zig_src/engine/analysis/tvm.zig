@@ -357,7 +357,9 @@ extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 extern fn displayBugScreen(msg: [*:0]const u8) void;
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
-extern fn exitKeyWaiting() bool;
+// exitKeyWaiting now routes through the host-callback boundary (abi.host),
+// severing the direct engine->shell link; it reports "no abort" when headless.
+const exitKeyWaiting = abi.host.exitKeyWaiting;
 
 // Generic solver (stays C in solve.c). Returns int; C reads it as uint16_t.
 

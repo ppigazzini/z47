@@ -341,7 +341,9 @@ extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, vid
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn checkHalfSec() bool;
 extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*c]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
-extern fn exitKeyWaiting() bool;
+// exitKeyWaiting now routes through the host-callback boundary (abi.host),
+// severing the direct engine->shell link; it reports "no abort" when headless.
+const exitKeyWaiting = abi.host.exitKeyWaiting;
 extern fn refreshLcd(unused: ?*anyopaque) void;
 
 // decNumber / decQuad externs behind the real* / real34* macros.

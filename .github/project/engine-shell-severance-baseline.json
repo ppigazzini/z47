@@ -1,4 +1,4 @@
 {
-  "extern_edges": 1295,
+  "extern_edges": 1288,
   "note": "NM9 headless-engine severance ratchet; engine->shell @import must be 0, extern edges only shrink"
 }

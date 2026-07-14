@@ -383,7 +383,9 @@ extern fn refreshScreen(source: u16) void;
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;
 extern fn force_refresh(mode: u8) void;
 extern fn checkHalfSec() bool;
-extern fn exitKeyWaiting() bool;
+// exitKeyWaiting now routes through the host-callback boundary (abi.host),
+// severing the direct engine->shell link; it reports "no abort" when headless.
+const exitKeyWaiting = abi.host.exitKeyWaiting;
 extern fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool;
 extern fn monitorExit(loop: *i32, str: [*:0]const u8) bool;
 

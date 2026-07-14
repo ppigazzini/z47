@@ -1978,6 +1978,14 @@ pub export fn exitKeyWaiting() callconv(.c) bool_t {
     }
 }
 
+// Install the shell's host-boundary hooks (abi.host) so the headless core can
+// signal the interactive shell without a link-time dependency. Called once at
+// app startup by every real entrypoint (firmware program_main, the GTK sim);
+// the parity harnesses skip it and the core falls back to the neutral defaults.
+pub export fn installCoreHostHooks() callconv(.c) void {
+    abi.host.installExitKeyWaiting(&exitKeyWaiting);
+}
+
 pub export fn C47PopKeyNoBuffer(displayWaitForRelease: bool_t) callconv(.c) c_int {
     var tmpf: c_int = -1;
     if (comptime dmcp_build) {

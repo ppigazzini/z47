@@ -527,6 +527,11 @@ pub const constants = @import("constants.zig");
 /// Typed C-runtime wrappers (L1), reached as `abi.runtime.add(&a, &b, &r)`.
 pub const runtime = @import("runtime.zig");
 
+/// The host-callback boundary (`core/host` port): the headless core signals the
+/// interactive shell through this installable hook table, reached as
+/// `abi.host.exitKeyWaiting()`, with no engine->shell link dependency.
+pub const host = @import("host.zig");
+
 // decNumber bit flags (realType.h), shared by the owners that inspect `Real.bits`.
 pub const DECNEG: u8 = 0x80;
 pub const DECINF: u8 = 0x40;
