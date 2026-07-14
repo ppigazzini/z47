@@ -32,6 +32,7 @@ comptime {
     _ = @import("system_flags_state.zig");
     _ = @import("byte_copy.zig");
     _ = @import("transient_status.zig");
+    _ = @import("screen_update_state.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
