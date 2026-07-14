@@ -1,0 +1,60 @@
+;*************************************************************
+;** Coverage: flag test and test-and-modify (flags.c). FARG **
+;** is the flag number. The test-and-modify ops apply their **
+;** action unconditionally - Set sets, Clear clears, Flip   **
+;** toggles - so the flag result is asserted via FL_n.      **
+;** fnIsFlagSet and fnGetSystemFlag leave the result in     **
+;** temporaryInformation, so those assert only the exit     **
+;** code. fnClFAll clears every flag (FARG = CONFIRMED).    **
+;*************************************************************
+In: WS=64
+
+; is flag 5 set? (test result in temporaryInformation)
+Func: fnIsFlagSet
+In:  FL_5=1 FARG=5
+Out: EC=0 FL_5=1
+
+; flip flag 7: 0 -> 1
+Func: fnFlipFlag
+In:  FL_7=0 FARG=7
+Out: EC=0 FL_7=1
+
+; test-and-set flag 3: 0 -> 1
+Func: fnIsFlagSetSet
+In:  FL_3=0 FARG=3
+Out: EC=0 FL_3=1
+
+; test-and-clear flag 3: 1 -> 0
+Func: fnIsFlagSetClear
+In:  FL_3=1 FARG=3
+Out: EC=0 FL_3=0
+
+; test-and-flip flag 3: 0 -> 1
+Func: fnIsFlagSetFlip
+In:  FL_3=0 FARG=3
+Out: EC=0 FL_3=1
+
+; test-and-set flag 4: 0 -> 1
+Func: fnIsFlagClearSet
+In:  FL_4=0 FARG=4
+Out: EC=0 FL_4=1
+
+; test-and-clear flag 4: 1 -> 0
+Func: fnIsFlagClearClear
+In:  FL_4=1 FARG=4
+Out: EC=0 FL_4=0
+
+; test-and-flip flag 4: 1 -> 0
+Func: fnIsFlagClearFlip
+In:  FL_4=1 FARG=4
+Out: EC=0 FL_4=0
+
+; read system flag FLAG_CPXRES (0x8004 = 32772; result in temporaryInformation)
+Func: fnGetSystemFlag
+In:  FARG=32772
+Out: EC=0
+
+; clear all flags (CONFIRMED = 9877): flag 5 set -> cleared
+Func: fnClFAll
+In:  FL_5=1 FARG=9877
+Out: EC=0 FL_5=0

@@ -82,6 +82,10 @@ xnor
 xor
 mirror
 shift_rotate
+bits_cov
+flags_cov
+statsx_cov
+regmgmt_cov
 
 addition_longInteger
 addition_time
@@ -448,16 +452,31 @@ tvm_cov
 ; These coverage files mutate shared state that the per-test In: reset does not
 ; clear - clcvar_cov clears the loaded sample programs' local variables,
 ; matrix2_cov leaves the indexed-matrix pointer set, serialize_state_cov saves
-; the loaded programs and reloads the whole state from file, and pgm_solve_cov
-; appends a program to memory - so they must run after programs.txt (which
-; consumes the pristine sample-program fixture), not before. serialize_cov resets
-; the calculator; graphs_cov then re-stages its own programs and statistics from
-; that clean slate to render the plots, so graphs_cov runs last.
+; the loaded programs and reloads the whole state from file, pgm_solve_cov
+; appends a program to memory, histo_cov builds a HISTO matrix from the
+; statistical accumulator, clearvars_cov deletes named variables, and
+; program_flow_cov appends programs and then clears them all - so they must run
+; after programs.txt (which consumes the pristine sample-program fixture), not
+; before. serialize_cov resets the calculator; graphs_cov then re-stages its own
+; programs and statistics from that clean slate to render the plots. config_cov
+; changes the display, format, range and grouping modes, which would leak
+; through serialize_cov's lossless round-trip into the graphs_cov plot hashes,
+; so it runs dead last, after graphs_cov.
 matrix2_cov
 clcvar_cov
 serialize_state_cov
 pgm_solve_cov
+histo_cov
+clearvars_cov
+program_flow_cov
+
+; short-integer masks must be rederived on state restore; saves/reloads state
+; and changes the word size, so it runs after the other state tests and before
+; serialize_cov resets the calculator.
+shortint_restore_cov
 
 serialize_cov
 
 graphs_cov
+
+config_cov

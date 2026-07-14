@@ -1,7 +1,10 @@
-Appnote 0025           C47 / R47 REGISTER EXPORT DATA FILE (.d47) FORMAT           2026-06-16
+Appnote 0025           C47 / R47 REGISTER EXPORT DATA FILE (.d47) FORMAT           2026-07-13
 =============================================================================================
 
 This appnote briefly explains the .d47 data interchange file format.
+
+Revised 2026-07-13: added the optional file version line (see FILE VERSION) and updated the
+handling of a stored configuration (see SPECIAL, Conf).
 
 
 The data file is written to the /DATA folder and the files are expected to be in that folder.
@@ -10,6 +13,28 @@ Each register is written as three lines:
   1. its name   (RX, R007, or a variable name)
   2. its type   (a 4-character code, optionally with an angle/polar tag)
   3. its value  (matrices add a "rows cols" line and then the element rows)
+
+
+FILE VERSION
+------------
+
+After the two fixed header lines (DATA_FILE_REVISION and 0) an export now writes a version line
+pair that records the firmware version that produced the file:
+
+  DATA_FILE_REVISION
+  0
+  C47/R47_data_file_00   (model-independent tag; the number below is the firmware version)
+  10000025
+  GLOBAL_REGISTERS
+  ...
+
+The version pair is OPTIONAL. A file without it (an older export, or a hand-written file) is read
+as if written by the current firmware. When the pair is present, version-dependent content is
+judged on the recorded version. At present only the stored configuration (Conf, see SPECIAL) uses
+this: a configuration is a raw image of the internal settings record, whose layout is only
+compatible from firmware version 10000020 onward, so a Conf entry from an older file is skipped
+rather than decoded into the wrong settings. Every other register type is version-independent and
+loads the same with or without the version line.
 
 
 VALUE TYPES
@@ -132,7 +157,7 @@ See example file below:
 SPECIAL
 -------
 
-Conf - a stored configuration. You cannot write this by hand and should never put it in a data file. If a Conf entry IS present, the loader does NOT ignore it: it decodes the data straight into the configuration, overwriting calculator settings. A stray or hand-edited Conf line can silently break your calculator setup. Leave Conf out of data files entirely.
+Conf - a stored configuration (as produced by STOCFG and consumed by RCLCFG). It is a raw byte image of the internal settings record; you cannot meaningfully write or edit it by hand. If a Conf entry is present the loader decodes it straight into that register, so a stray or hand-edited Conf line can break your stored configuration. Two safeguards apply: the decode is bounded to the register size so a wrong-length entry cannot corrupt other data, and the entry is only decoded when the file version (see FILE VERSION) is 10000020 or newer, or absent (treated as current). A Conf entry from an older file is skipped and the target register is left unchanged, because the settings-record layout before 10000020 does not match the current one and its bytes would recall as the wrong settings. Best practice remains to keep Conf out of data files; if you do export one, import it only on the same or a newer firmware version.
 
 ???? - only appears in exports if something broke during a save. Never write it.
 
@@ -162,6 +187,8 @@ COMMENTED FILE EXAMPLE
 
 DATA_FILE_REVISION (this is fixed)
 0                  (this is fixed)
+C47/R47_data_file_00 (OPTIONAL version line, written by exports; omit it and the file reads as current)
+10000025           (the firmware version, present only with the line above)
 Cmnt               (this is the main comment command)
 MAIN COMMENTS GO here, BEFORE GLOBAL_REGISTERS: between the revision header and the first section
 GLOBAL_REGISTERS   (this is fixed)

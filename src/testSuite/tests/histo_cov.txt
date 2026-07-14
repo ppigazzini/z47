@@ -1,0 +1,49 @@
+;*************************************************************
+;** Coverage: histogram setup (stats.c). Data points are    **
+;** accumulated, fnConvertStatsToHisto arms the histogram   **
+;** on X (FARG = ITM_X = 573), which sets the low/high bin  **
+;** estimates and histElementXorY, and then fnSetLoBin,     **
+;** fnSetHiBin and fnSetNBins override the bin bounds and   **
+;** count from X. This builds a HISTO matrix, so it runs    **
+;** before the resetting serialize_cov.                     **
+;*************************************************************
+In: FL_SPCRES=0 SD=0
+
+; clear the accumulator first: earlier tests (serialize_state_cov) leave points
+; in it, which would be histogrammed together with the three added below
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+
+; accumulate (x,y) = (1,1)
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+; accumulate (x,y) = (5,3)
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"3" RX=Real:"5"
+Out: EC=0
+; accumulate (x,y) = (9,7)
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"7" RX=Real:"9"
+Out: EC=0
+
+; arm the histogram on the X column (ITM_X = 573)
+Func: fnConvertStatsToHisto
+In:  FARG=573
+Out: EC=0
+
+; set the low bin bound to 0
+Func: fnSetLoBin
+In:  RX=Real:"0"
+Out: EC=0
+
+; set the high bin bound to 10
+Func: fnSetHiBin
+In:  RX=Real:"10"
+Out: EC=0
+
+; set the number of bins to 5
+Func: fnSetNBins
+In:  RX=Real:"5"
+Out: EC=0

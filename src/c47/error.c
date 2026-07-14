@@ -87,7 +87,7 @@ TO_QSPI const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSA
 /* 62 */  "Invalid register type/angle",
 /* 63 */  "Printing Is Disabled",
 /* 64 */  "No string in alpha register",
-/* 65 */  "",
+/* 65 */  "No equation defined",
 /* 66 */  "",
 /* 67 */  "",
 /* 68 */  "",

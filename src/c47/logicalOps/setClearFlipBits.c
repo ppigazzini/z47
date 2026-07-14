@@ -18,7 +18,7 @@ void fnCb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
   uint32_t base;
 
-  if(bit > shortIntegerWordSize) {
+  if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
     displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate CB(%d) word size is %d", bit, shortIntegerWordSize);
@@ -31,7 +31,7 @@ void fnCb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   }
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w & ~((uint64_t)1 << bit);
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = (w & ~((uint64_t)1 << bit)) & shortIntegerMask;  // mask like the other logical ops: keeps the result inside the word and cleanses out-of-range values inherited from older saved states
 }
 
 
@@ -47,7 +47,7 @@ void fnSb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
   uint32_t base;
 
-  if(bit > shortIntegerWordSize) {
+  if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
     displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate SB(%d) word size is %d", bit, shortIntegerWordSize);
@@ -60,7 +60,7 @@ void fnSb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   }
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w | ((uint64_t)1 << bit);
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = (w | ((uint64_t)1 << bit)) & shortIntegerMask;
 }
 
 
@@ -76,7 +76,7 @@ void fnFb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
   uint32_t base;
 
-  if(bit > shortIntegerWordSize) {
+  if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
     displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate FB(%d) word size is %d", bit, shortIntegerWordSize);
@@ -89,7 +89,7 @@ void fnFb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   }
 
   reallocateRegister(REGISTER_X, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
-  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = w ^ ((uint64_t)1 << bit);
+  *(REGISTER_SHORT_INTEGER_DATA(REGISTER_X)) = (w ^ ((uint64_t)1 << bit)) & shortIntegerMask;
 }
 
 
@@ -103,7 +103,7 @@ void fnFb(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
 void fnBc(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
 
-  if(bit > shortIntegerWordSize) {
+  if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
     displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate BC?(%d) word size is %d", bit, shortIntegerWordSize);
@@ -129,7 +129,7 @@ void fnBc(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
 void fnBs(uint16_t bit) { // bit from 0=LSB to shortIntegerWordSize-1=MSB
   uint64_t w;
 
-  if(bit > shortIntegerWordSize) {
+  if(bit >= shortIntegerWordSize) {  // valid bits are 0=LSB .. wordsize-1=MSB; bit == wordsize previously slipped through and operated one past the word
     displayCalcErrorMessage(ERROR_WORD_SIZE_TOO_SMALL, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "cannot calculate BS?(%d) word size is %d", bit, shortIntegerWordSize);

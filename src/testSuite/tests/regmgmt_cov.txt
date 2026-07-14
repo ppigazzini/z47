@@ -1,0 +1,32 @@
+;*************************************************************
+;** Coverage: register range management (registers.c).      **
+;** getRegParam packs the range in X as s.NNDDD - start,    **
+;** 2-digit count, 3-digit destination. Sort and Clr take a **
+;** start and count; Swap and Copy also take a destination. **
+;** fnGetLocR pushes the local-register count.              **
+;*************************************************************
+In: FL_SPCRES=0 SD=0
+
+; sort R00..R02 = {3,1,2} ascending -> {1,2,3} (X = 0.03: start 0, count 3)
+Func: fnRegSort
+In:  R00=Real:"3" R01=Real:"1" R02=Real:"2" RX=Real:"0.03"
+Out: EC=0 R00=Real:"1" R01=Real:"2" R02=Real:"3"
+
+; clear R00..R02 (X = 0.03: start 0, count 3)
+Func: fnRegClr
+In:  R00=Real:"5" R01=Real:"6" R02=Real:"7" RX=Real:"0.03"
+Out: EC=0 R00=Real:"0" R01=Real:"0" R02=Real:"0"
+
+; swap R00 with R05 (X = 0.01005: start 0, count 1, dest 5)
+Func: fnRegSwap
+In:  R00=Real:"1" R05=Real:"9" RX=Real:"0.01005"
+Out: EC=0 R00=Real:"9" R05=Real:"1"
+
+; copy R00 to R10 (X = 0.01010: start 0, count 1, dest 10)
+Func: fnRegCopy
+In:  R00=Real:"7" RX=Real:"0.01010"
+Out: EC=0 R00=Real:"7" R10=Real:"7"
+
+; number of local registers at the top level = 0
+Func: fnGetLocR
+Out: EC=0 RX=LonI:"0"

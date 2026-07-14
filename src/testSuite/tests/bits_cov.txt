@@ -1,0 +1,34 @@
+;*************************************************************
+;** Coverage: single-bit set / clear / flip / test on the   **
+;** short integer in X (setClearFlipBits.c). FARG is the    **
+;** bit number, 0 = LSB. SB/CB/FB write the result back to  **
+;** X; BS?/BC? leave the test result in                     **
+;** temporaryInformation, so those assert only the exit     **
+;** code.                                                   **
+;*************************************************************
+In: WS=16 IM=UNSIGN
+
+; SB: set bit 3 of 0 -> 8
+Func: fnSb
+In:  FARG=3 RX=ShoI:"0#16"
+Out: EC=0 RX=ShoI:"8#16"
+
+; CB: clear bit 1 of 7 -> 5
+Func: fnCb
+In:  FARG=1 RX=ShoI:"7#16"
+Out: EC=0 RX=ShoI:"5#16"
+
+; FB: flip bit 0 of 6 -> 7
+Func: fnFb
+In:  FARG=0 RX=ShoI:"6#16"
+Out: EC=0 RX=ShoI:"7#16"
+
+; BS?: is bit 1 of 6 set? (test result in temporaryInformation)
+Func: fnBs
+In:  FARG=1 RX=ShoI:"6#16"
+Out: EC=0
+
+; BC?: is bit 0 of 6 clear? (test result in temporaryInformation)
+Func: fnBc
+In:  FARG=0 RX=ShoI:"6#16"
+Out: EC=0

@@ -1,0 +1,25 @@
+;*************************************************************
+;** Regression: the short-integer bit masks are rederived    **
+;** when a saved state is restored. doLoad restores           **
+;** shortIntegerWordSize but the state file stores neither    **
+;** shortIntegerMask nor the sign bit, so the loader must     **
+;** recompute them from the loaded word size. Otherwise the   **
+;** mask keeps its pre-load value and later short-integer     **
+;** operations mask against the wrong width.                  **
+;**                                                           **
+;** covShortIntWordSizeRestore saves an 8-bit state, moves    **
+;** the live word size to 64 (shortIntegerMask := -1),        **
+;** reloads the 8-bit state, then stores 300 as a short       **
+;** integer. The store masks with shortIntegerMask: a correct **
+;** 8-bit mask gives 300 & 0xff = 44; a stale -1 mask leaves  **
+;** 300. The case asserts 44, so it fails unless the loader   **
+;** rederives the mask.                                       **
+;**                                                           **
+;** It saves and reloads the whole state and changes the word **
+;** size, so it runs late, just before serialize_cov resets.  **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=UNSIGN SS=4 WS=64
+
+Func: fnShortIntWSRestoreCov
+In:  FARG=0
+Out: EC=0 RX=ShoI:"44#10"

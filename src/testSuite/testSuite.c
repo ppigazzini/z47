@@ -39,6 +39,7 @@ void covBackupRoundtrip(uint16_t unusedButMandatoryParameter);
 void covConvToSI(uint16_t itemNr);
 void covConvFromSI(uint16_t itemNr);
 void covStateRoundtrip(uint16_t unusedButMandatoryParameter);
+void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter);
 void covEqCalc(uint16_t unusedButMandatoryParameter);
 void covDerivEq(uint16_t order);
 void covSolveRoot(uint16_t which);
@@ -52,6 +53,7 @@ void covIntegrateErr(uint16_t which);
 void covIntegratePgm(uint16_t unusedButMandatoryParameter);
 void covSumProd(uint16_t which);
 void covISumProd(uint16_t which);
+void covProgramFlow(uint16_t which);
 void covTvm(uint16_t which);
 void covTvmPmt(uint16_t which);
 void covEff(uint16_t unusedButMandatoryParameter);
@@ -188,6 +190,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnBmpNameCov",           covBmpName, 1 },
   {"fnHashBmpCov",           covHashBmp, 1 },
   {"fnStateRoundtrip",       covStateRoundtrip, 1 },
+  {"fnShortIntWSRestoreCov", covShortIntWordSizeRestore, 1 },
   {"fnEqCalcCov",            covEqCalc, 1 },
   {"fnDerivEqCov",           covDerivEq, 1 },
   {"fnSolveRootCov",         covSolveRoot, 1 },
@@ -201,6 +204,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnIntegratePgmCov",      covIntegratePgm, 1 },
   {"fnSumProdCov",           covSumProd, 1 },
   {"fnISumProdCov",          covISumProd, 1 },
+  {"fnProgramFlowCov",       covProgramFlow, 1 },
   {"fnTvmCov",               covTvm, 1 },
   {"fnTvmPmtCov",            covTvmPmt, 1 },
   {"fnEffCov",               covEff, 1 },
@@ -542,6 +546,74 @@ const funcTest_t funcTestNoParam[] = {
   {"fnTripleVfromIZ",        fnTripleVfromIZ       },
   {"fnTripleIfromVZ",        fnTripleIfromVZ       },
   {"fnTripleFlipPolar",      fnTripleFlipPolar     },
+  // Bit set/flip on X and the bit-set/clear tests (FARG = bit number).
+  {"fnSb",                   fnSb                  },
+  {"fnBs",                   fnBs                  },
+  {"fnBc",                   fnBc                  },
+  {"fnFb",                   fnFb                  },
+  // Flag test and test-and-modify (FARG = flag number).
+  {"fnIsFlagSet",            fnIsFlagSet           },
+  {"fnIsFlagSetSet",         fnIsFlagSetSet        },
+  {"fnIsFlagSetClear",       fnIsFlagSetClear      },
+  {"fnIsFlagSetFlip",        fnIsFlagSetFlip       },
+  {"fnIsFlagClearSet",       fnIsFlagClearSet      },
+  {"fnIsFlagClearClear",     fnIsFlagClearClear    },
+  {"fnIsFlagClearFlip",      fnIsFlagClearFlip     },
+  {"fnFlipFlag",             fnFlipFlag            },
+  {"fnGetSystemFlag",        fnGetSystemFlag       },
+  // Clear / delete all named variables (FARG = confirmation).
+  {"fnClearAllVariables",    fnClearAllVariables   },
+  {"fnDeleteAllVariables",   fnDeleteAllVariables  },
+  // Register range management (range packed in X as s.NNDDD).
+  {"fnRegSort",              fnRegSort             },
+  {"fnRegSwap",              fnRegSwap             },
+  {"fnRegCopy",              fnRegCopy             },
+  {"fnRegClr",               fnRegClr              },
+  // Statistics readouts (need accumulated sigma data; FARG selects the sum).
+  {"fnXmin",                 fnXmin                },
+  {"fnXmax",                 fnXmax                },
+  {"fnRangeXY",              fnRangeXY             },
+  {"fnStatSum",              fnStatSum             },
+  // Histogram setup (fnConvertStatsToHisto arms it; FARG = ITM_X / ITM_Y).
+  {"fnSetNBins",             fnSetNBins            },
+  {"fnSetLoBin",             fnSetLoBin            },
+  {"fnSetHiBin",             fnSetHiBin            },
+  {"fnConvertStatsToHisto",  fnConvertStatsToHisto },
+  // Configuration: modes, display settings, getters (config.c).
+  {"fnAngularMode",          fnAngularMode         },
+  {"fnIntegerMode",          fnIntegerMode         },
+  {"fnFractionType",         fnFractionType        },
+  {"fnRange",                fnRange               },
+  {"fnHide",                 fnHide                },
+  {"fnResetTVM",             fnResetTVM            },
+  {"fnSetADM",               fnSetADM              },
+  {"fnSetDMX",               fnSetDMX              },
+  {"fnSetISM",               fnSetISM              },
+  {"fnSetNDEC",              fnSetNDEC             },
+  {"fnSetBaseNr",            fnSetBaseNr           },
+  {"fnSetC47",               fnSetC47              },
+  {"fnSetRJ",                fnSetRJ               },
+  {"fnSetJM",                fnSetJM               },
+  {"fnSetHP35",              fnSetHP35             },
+  {"fnSetREALDF",            fnSetREALDF           },
+  {"fnSetFractionDigits",    fnSetFractionDigits   },
+  {"fnSetSignificantDigits", fnSetSignificantDigits},
+  {"fnSetRoundingMode",      fnSetRoundingMode     },
+  {"fnGetADM",               fnGetADM              },
+  {"fnGetDMX",               fnGetDMX              },
+  {"fnGetRange",             fnGetRange            },
+  {"fnGetHide",              fnGetHide             },
+  {"fnGetNDEC",              fnGetNDEC             },
+  {"fnGetREALDF",            fnGetREALDF           },
+  {"fnGetFractionDigits",    fnGetFractionDigits   },
+  {"fnGetLastErr",           fnGetLastErr          },
+  {"fnMenuGapL",             fnMenuGapL            },
+  {"fnMenuGapR",             fnMenuGapR            },
+  {"fnMenuGapRX",            fnMenuGapRX           },
+  {"fnSettingsDispFormatGrpL", fnSettingsDispFormatGrpL},
+  {"fnSettingsDispFormatGrpR", fnSettingsDispFormatGrpR},
+  {"fnClAll",                fnClAll               },
+  {"fnWho",                  fnWho                 },
 
   {"fnExecute",              runPgm                },
   {"",                       NULL                  }
@@ -672,6 +744,27 @@ void covStateRoundtrip(uint16_t unusedButMandatoryParameter) {
   fnLoad(LM_NAMED_VARIABLES);
   fnLoad(LM_SUMS);
   fnLoad(LM_SYSTEM_STATE);
+}
+
+void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter) {
+  // Regression for the short-integer masks after a state restore. The state file
+  // records shortIntegerWordSize but neither shortIntegerMask nor the sign bit,
+  // and doLoad restores the word size by plain assignment. If the mask is not
+  // rederived from the loaded word size, it keeps its pre-load value (-1 when a
+  // file saved at a narrow word size is loaded into the 64-bit default), and
+  // every later short-integer operation masks against the wrong width.
+  //
+  // Save an 8-bit state, move the live word size to 64 so shortIntegerMask
+  // becomes -1, reload the 8-bit state, then store 300 as a short integer. The
+  // store masks with shortIntegerMask: with a correct 8-bit mask that is
+  // 300 & 0xff = 44; with the stale -1 mask it stays 300. The corpus asserts 44,
+  // so the case fails unless the loader rederives the mask.
+  fnSetWordSize(8);
+  convertUInt64ToShortIntegerRegister(0, 200u, 10u, REGISTER_X); // a valid 8-bit seed to serialize
+  fnSave(SM_STATE_SAVE);
+  fnSetWordSize(64);                                             // shortIntegerMask := -1
+  fnLoad(LM_STATE_LOAD);                                         // restores word size 8; the fix rederives the mask
+  convertUInt64ToShortIntegerRegister(0, 300u, 10u, REGISTER_X); // masks with shortIntegerMask -> 44 or 300
 }
 
 void covEqCalc(uint16_t formulaIndex) {
@@ -806,6 +899,114 @@ void covLoadPgm(uint16_t unusedButMandatoryParameter) {
   };
   covWriteAndLoadPgm(pgmS, sizeof(pgmS));
   covWriteAndLoadPgm(pgmT, sizeof(pgmT));
+}
+
+void covProgramFlow(uint16_t which) {
+  // Drive the program flow-control engine (lblGtoXeq.c) and program clearing
+  // (manage.c): a cross-program subroutine call and return, a forward GTO over a
+  // dead step, an unresolved XEQ, clearing one program and all programs, a
+  // step-number goto, the top-routine check, and a literal of each string-encoded
+  // type. Named global labels are encoded like covLoadPgm; each program ends with
+  // END.
+  static const uint8_t pgmQ[] = {                          // Q: X -> X + 10, return
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'Q',
+    ITM_LITERAL, STRING_REAL34, 2, '1', '0',
+    ITM_ADD,
+    ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmP[] = {                          // P: 5, XEQ Q -> 15
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'P',
+    ITM_LITERAL, STRING_REAL34, 1, '5',
+    ITM_XEQ, STRING_LABEL_VARIABLE, 1, 'Q',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmG[] = {                          // G: 7, GTO H, (dead 999), H: 3, + -> 10
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'G',
+    ITM_LITERAL, STRING_REAL34, 1, '7',
+    ITM_GTO, STRING_LABEL_VARIABLE, 1, 'H',
+    ITM_LITERAL, STRING_REAL34, 3, '9', '9', '9',
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'H',
+    ITM_LITERAL, STRING_REAL34, 1, '3',
+    ITM_ADD,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmE[] = {                          // E: XEQ Z (undefined) -> label not found
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'E',
+    ITM_XEQ, STRING_LABEL_VARIABLE, 1, 'Z',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmC[] = {                          // C: trivial program to clear
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'C',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+
+  // Start from an empty program memory (this also drives fnClPAll in manage.c) so
+  // the freshly loaded labels are unambiguous and the missing-label lookup in
+  // case 2 cannot resolve to a sample program.
+  fnClPAll(CONFIRMED);
+  dynamicMenuItem = -1; // fnGoto and goToGlobalStep divert to a dynamic-menu label when this is >= 0
+
+  switch(which) {
+    case 0: { // cross-program subroutine call (XEQ) and return (RTN): 5 + 10 = 15
+      covWriteAndLoadPgm(pgmQ, sizeof(pgmQ));
+      covWriteAndLoadPgm(pgmP, sizeof(pgmP));
+      fnExecute(findNamedLabel("P", GLOBAL_LABELS));
+      break;
+    }
+    case 1: { // forward GTO past the dead 999 step into H: 7 + 3 = 10
+      covWriteAndLoadPgm(pgmG, sizeof(pgmG));
+      fnExecute(findNamedLabel("G", GLOBAL_LABELS));
+      break;
+    }
+    case 2: { // XEQ of an undefined label leaves ERROR_LABEL_NOT_FOUND
+      covWriteAndLoadPgm(pgmE, sizeof(pgmE));
+      fnExecute(findNamedLabel("E", GLOBAL_LABELS));
+      break;
+    }
+    case 3: { // clear a single loaded program by its global label (manage.c fnClP)
+      covWriteAndLoadPgm(pgmC, sizeof(pgmC));
+      fnClP(findNamedLabel("C", GLOBAL_LABELS));
+      break;
+    }
+    case 4: { // go to a program step by number, driving goToGlobalStep (fnGotoDot)
+      covWriteAndLoadPgm(pgmG, sizeof(pgmG));
+      fnGotoDot(2);
+      break;
+    }
+    case 5: { // fnIsTopRoutine reports TI_TRUE at the top level; leave 1/0 in X
+      fnIsTopRoutine(NOPARAM);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      int32ToReal34(temporaryInformation == TI_TRUE ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+      break;
+    }
+    case 6: { // push a literal of each string-encoded type, driving _putLiteral;
+              // the last literal (long integer 42) is left in X
+      static const uint8_t pgmL[] = {
+        ITM_LBL, STRING_LABEL_VARIABLE, 1, 'L',
+        ITM_LITERAL, STRING_LONG_INTEGER, 3, '1', '2', '3',
+        ITM_LITERAL, STRING_REAL34, 3, '3', '.', '5',
+        ITM_LITERAL, STRING_COMPLEX34, 4, '3', '+', 'i', '4',
+        ITM_LITERAL, STRING_ANGLE_DEGREE, 2, '4', '5',
+        ITM_LITERAL, STRING_ANGLE_RADIAN, 1, '1',
+        ITM_LITERAL, STRING_ANGLE_GRAD, 2, '5', '0',
+        ITM_LITERAL, STRING_ANGLE_MULTPI, 3, '0', '.', '5',
+        ITM_LITERAL, STRING_ANGLE_DMS, 3, '1', '.', '3',
+        ITM_LITERAL, STRING_DATE, 7, '2', '4', '5', '1', '5', '4', '5',
+        ITM_LITERAL, STRING_TIME, 3, '1', '.', '3',
+        ITM_LITERAL, STRING_LABEL_VARIABLE, 2, 'h', 'i',
+        ITM_LITERAL, STRING_SHORT_INTEGER, 16, 2, 'F', 'F',
+        ITM_LITERAL, STRING_LONG_INTEGER, 2, '4', '2',
+        (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+      };
+      covWriteAndLoadPgm(pgmL, sizeof(pgmL));
+      fnExecute(findNamedLabel("L", GLOBAL_LABELS));
+      break;
+    }
+    default: break;
+  }
+  programRunStop = PGM_STOPPED; // leave the run state idle for the next test
+  calcMode = CM_NORMAL;
 }
 
 void covDerivPgm(uint16_t order) {

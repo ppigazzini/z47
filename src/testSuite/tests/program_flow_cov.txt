@@ -1,0 +1,48 @@
+;*************************************************************
+;** Coverage: the RPN program flow-control engine.          **
+;** covProgramFlow builds small labelled programs and runs  **
+;** them through fnExecute, driving the XEQ/RTN subroutine  **
+;** call, a forward GTO, an unresolved XEQ, a step-number   **
+;** goto, the top-routine check, a literal of each          **
+;** string-encoded type through _putLiteral, and the single **
+;** and all program-clear paths in manage.c. Empties and    **
+;** then appends programs, so this runs late                **
+;** (serialize_cov, which resets, stays last).              **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; subroutine: P pushes 5 and XEQ Q (X -> X + 10) then RTN back -> 15
+Func: fnProgramFlowCov
+In:  FARG=0
+Out: EC=0 RX=Real:"15"
+
+; forward GTO: G pushes 7, GTO H skips the dead 999 step, H adds 3 -> 10
+Func: fnProgramFlowCov
+In:  FARG=1
+Out: EC=0 RX=Real:"10"
+
+; unresolved XEQ Z leaves ERROR_LABEL_NOT_FOUND (6)
+Func: fnProgramFlowCov
+In:  FARG=2
+Out: EC=6
+
+; clear a single program by its global label
+Func: fnProgramFlowCov
+In:  FARG=3
+Out: EC=0
+
+; go to a program step by number (drives goToGlobalStep)
+Func: fnProgramFlowCov
+In:  FARG=4
+Out: EC=0
+
+; fnIsTopRoutine reports true (1) at the top level
+Func: fnProgramFlowCov
+In:  FARG=5
+Out: EC=0 RX=Real:"1"
+
+; push a literal of each string-encoded type, exercising _putLiteral; the last
+; literal (long integer 42) is left in X
+Func: fnProgramFlowCov
+In:  FARG=6
+Out: EC=0 RX=LonI:"42"

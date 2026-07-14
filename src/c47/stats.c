@@ -787,7 +787,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
   }
 
 
-  static void initHistoMatrix(real_t *s) {
+  static bool_t initHistoMatrix(real_t *s) {
     uint16_t rows = 0, cols;
     calcRegister_t regHisto = findNamedVariable("HISTO");
     if(!isHistoMatrix(&rows, "HISTO")) {
@@ -809,6 +809,14 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
       linkToRealMatrixRegister(regHisto, &histo);
       rows = histo.header.matrixRows;
       cols = histo.header.matrixColumns;
+      if(rows == 0) {           // matrixRows is a 12-bit field: >= 4096 rows wrap to 0, making (rows-1) index far out of bounds
+        displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          sprintf(errorMessage, "HISTO row count wrapped the 12-bit matrixRows field");
+          moreInfoOnError("In function initHistoMatrix:", errorMessage, NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return false;
+      }
       realToReal34(s,       &histo.matrixElements[(rows-1) * cols    ]);
       real34SetZero(&histo.matrixElements[(rows-1) * cols + 1]);
       //printf(">>>>>HISTO rows=%d  cols=%d  ",rows, cols);
@@ -822,6 +830,7 @@ void fnRangeXY(uint16_t unusedButMandatoryParameter) {
         moreInfoOnError("In function initHistoMatrix:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
+    return regHisto != INVALID_VARIABLE;
   }
 
 
@@ -955,6 +964,7 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
       linkToRealMatrixRegister(regStats, &stats);
       const uint16_t rows = stats.header.matrixRows, cols = stats.header.matrixColumns;
       if(cols == 2) {
+        bool_t histoBuilt = true;
 
         for(i = 0; i < NN; i++) {
           int32ToReal(i, &ii);
@@ -962,7 +972,10 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
           realMultiply(&ii, &bw, &ii, &ctxtReal39);
           realAdd(&ii, &lb, &ii, &ctxtReal39);                      //bin midpoint
           //printRealToConsole(&ii, "midpoint ", " \n");
-          initHistoMatrix(&ii);                                     // Set up all x-mid-points of the bins in HISTO, with 0 in y
+          if(!initHistoMatrix(&ii)) {                               // append failed (RAM full): stop before the populate loop writes past HISTO
+            histoBuilt = false;
+            break;
+          }
           linkToRealMatrixRegister(regHisto, &histo);
           //#if defined(PC_BUILD)
           //  printf("Histo Matrix init: %d ",i);
@@ -971,7 +984,7 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
           //#endif // PC_BUILD
         }
 
-        if(isStatsMatrix(&i, statMx) && isHistoMatrix(&i, "HISTO")) {
+        if(histoBuilt && isStatsMatrix(&i, statMx) && isHistoMatrix(&i, "HISTO")) {
           for(i = 0; i < rows; i++) {
             //printf("n=%d ^^^^ i=%d ", n, i);
             for(j = 0; j < NN; j++) {
@@ -1016,15 +1029,17 @@ static void convertStatsMatrixToHistoMatrix(uint16_t statsVariableToHistogram) {
           //#endif // PC_BUILD
         }
 
-        liftStack();
-        setSystemFlag(FLAG_ASLIFT);
-        liftStack();
-        setSystemFlag(FLAG_ASLIFT);
-        liftStack();
-        convertRealToResultRegister(&nb, REGISTER_Z, amNone);
-        convertRealToResultRegister(&lb, REGISTER_Y, amNone);
-        convertRealToResultRegister(&hb, REGISTER_X, amNone);
-        temporaryInformation = TI_STATISTIC_HISTO;
+        if(histoBuilt) {        // a failed build has the memory error on display; do not lift the stack and overwrite it with results
+          liftStack();
+          setSystemFlag(FLAG_ASLIFT);
+          liftStack();
+          setSystemFlag(FLAG_ASLIFT);
+          liftStack();
+          convertRealToResultRegister(&nb, REGISTER_Z, amNone);
+          convertRealToResultRegister(&lb, REGISTER_Y, amNone);
+          convertRealToResultRegister(&hb, REGISTER_X, amNone);
+          temporaryInformation = TI_STATISTIC_HISTO;
+        }
       }
       else {
         displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation

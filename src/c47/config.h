@@ -103,6 +103,7 @@ void     fnGetWordSize                (uint16_t unusedButMandatoryParameter);
  * \param[in] unusedButMandatoryParameter uint16_t
  ***********************************************/
 void     fnSetWordSize                (uint16_t WS);
+void     updateShortIntegerMasks      (void);
 
 /********************************************//**
  * \brief Sets X to the amount of free flash memory

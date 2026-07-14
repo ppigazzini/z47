@@ -12,16 +12,28 @@
 10000003 // 2022-12-06 version 108_08h, added LongPressM & LongPressF
 10000004 // 2022-12-26 version 108_08n, added lastIntegerBase
 10000005 // 2022-01-08 version 108_08q, Pauli changed the real number saver representaiton
-...
+10000006 // 2023-08-25 StatusBar config flags; Shift left / right (the define comment carried only the boilerplate; change taken from the commit)
+10000007 // 2023-08-27 Corrects the gapItemLeft bug in the file format
 10000008 // 2023-09-12 version 108.13   Jaco added the missing STOCFG items, remove the unneccary STOCFG items, added the missing STATe file items.
-...
+10000009 // 2024-02-24 Add MONIT flag; improve abort/key-exit (the define comment still read "New STOCFG/STATE", stale from 10000008)
+10000010 // 2024-05-28 Changes to 2 flags
+10000011 // 2024-06-08 END_OTHER_PARAM added
 10000012 // 5 flags converted from C47
 10000013 // Replace Norm_Key_00_VAR by the structure Norm_Key_00; Arbitrary starting point version 10 000 001 of STATE files. Allowable values are 10000000 to 20000000
 10000014 // 2024-11-07 configFileVersion                  10000014 // Remove Aspect and add PLOT_PLUS
 10000015 // 2024-11    configFileVersion                  10000015 // Remove all PLSTAT flags incl. PLOT_PLUS...
 10000016 // 2024-11-18 configFileVersion                  10000016 // Add lastCenturyHighUsed
-...
+10000017 // 2025-02-11 Add dispBase
+10000018 // 2025-03-15 Change matrix headers, add tag
+10000019 // 2025-04-10 Change tophex
 10000020 // Change bcd
+10000020 is also the oldest version stamp whose dtConfigDescriptor_t layout matches the current one (layout frozen 2025-04-21, 957a8d02);
+         Conf registers in files older than 10000020 are skipped on load because their bytes would recall into the wrong settings (see restoreRegister).
+10000021 // 2025-07-27 Change constant format in equation, adding a # prefix
+10000022 // 2025-10-11 Converted flags
+10000023 // 2025-12-06 long press f/g
+10000024 // 2026-06-21 FLAG_SIGIP
+10000025 // 2026-07-03 FLAG_PDIFF PINTG PRMS PSHADE
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -488,6 +500,11 @@ static void doSaveDataFile(uint16_t *beginR, uint16_t *endR, char *registerName,
 
   dataFileMode = true;                                                           // write complex values in the compact human-readable form for the duration of this file
   sprintf(header, "DATA_FILE_REVISION\n%" PRIu8 "\n", (uint8_t)0);
+  save(header, strlen(header));
+  // Data file version number, mirroring the state file convention. Files without this line pair (older firmware, hand-written files) are treated as
+  // current on load; with it, version-dependent content such as the Conf register descriptor is gated on the version of the firmware that wrote the file.
+  // The tag is model-independent (unlike the save file's C47_/R47_ tags): a data file carries no model-specific content, so C47 and R47 read each other's.
+  sprintf(header, "C47/R47_data_file_00\n%" PRIu32 "\n", (uint32_t)configFileVersion);
   save(header, strlen(header));
 
   fnSaveDataRegisters(beginR, endR, registerName, isXFNRegister);
@@ -1316,6 +1333,11 @@ int64_t stringToInt64(const char *str) {
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
+      // A register's data size is a uint16_t block count. Refuse file-supplied dimensions that would overflow it, or reallocateRegister would truncate the size,
+      // under-allocate, and restoreMatrixData would write out of bounds.
+      if((uint64_t)rows * cols * REAL34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)) > 0xFFFFu) {
+        rows = cols = 0;
+      }
       reallocateRegister(regist, dtReal34Matrix, REAL34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
@@ -1330,6 +1352,10 @@ int64_t stringToInt64(const char *str) {
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
+      // See the dtReal34Matrix branch: refuse dimensions that would overflow the uint16_t register data size and cause an out-of-bounds restore write.
+      if((uint64_t)rows * cols * COMPLEX34_SIZE_IN_BLOCKS + TO_BLOCKS(sizeof(matrixHeader_t)) > 0xFFFFu) {
+        rows = cols = 0;
+      }
       reallocateRegister(regist, dtComplex34Matrix, COMPLEX34_SIZE_IN_BLOCKS * rows * cols, tag);
       REGISTER_MATRIX_HEADER(regist)->matrixRows = rows;
       REGISTER_MATRIX_HEADER(regist)->matrixColumns = cols;
@@ -1338,20 +1364,15 @@ int64_t stringToInt64(const char *str) {
     else if(strcmp(type, "Conf") == 0) {
       char *cfg;
 
-      reallocateRegister(regist, dtConfig, 0, amNone);
-      for(cfg=(char *)REGISTER_CONFIG_DATA(regist), tag=0;  tag < (loadedVersion < 10000008 ? 896 : sizeof(dtConfigDescriptor_t)); tag++, value+=2, cfg++) {
-        *cfg = ((*value >= 'A' ? *value - 'A' + 10 : *value - '0') << 4) | (*(value + 1) >= 'A' ? *(value + 1) - 'A' + 10 : *(value + 1) - '0');
-      }
-      if(loadedVersion < 10000008) {
-        // For earlier version config files of 896 desxcriptor length, the above Write into the register must only be up to the old descriptor content.
-        // We add the defaults for the new portion of the new descriptor in the following string.
-        static const unsigned char tmpvalue[] = {
-          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-          0xF7, 0x77, 0xDC, 0x2C, 0x2B, 0x84, 0x2A, 0x1C,
-          0x33, 0x20, 0x30, 0x33, 0x46, 0x0C, 0x2A, 0x33,
-          0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        };
-        memcpy(cfg, tmpvalue, sizeof(tmpvalue));
+      // The config register is a raw byte image of dtConfigDescriptor_t, whose field layout is only guaranteed from version 10000020 (2025-05-15).
+      // Older files hold earlier layouts (896, 928, 832, 856 or reordered 840 bytes) whose bytes would recall into the wrong settings, and C43-era files
+      // parse as loadedVersion 0; for all of those, skip the entry and leave the register untouched rather than decode a descriptor RCLCFG cannot apply.
+      if(loadedVersion >= 10000020) {
+        reallocateRegister(regist, dtConfig, 0, amNone);
+        // The register holds exactly sizeof(dtConfigDescriptor_t) bytes; bound the decode so a longer payload cannot overrun it into the following pool block.
+        for(cfg=(char *)REGISTER_CONFIG_DATA(regist), tag=0;  tag < sizeof(dtConfigDescriptor_t); tag++, value+=2, cfg++) {
+          *cfg = ((*value >= 'A' ? *value - 'A' + 10 : *value - '0') << 4) | (*(value + 1) >= 'A' ? *(value + 1) - 'A' + 10 : *(value + 1) - '0');
+        }
       }
     }
 
@@ -1424,6 +1445,11 @@ int64_t stringToInt64(const char *str) {
       *(numOfCols++) = 0;
       rows = toUint16(value);
       cols = toUint16(numOfCols);
+      // Mirror restoreRegister()'s rejection of dimensions that overflow the uint16_t register data size: restoreMatrixData() reads no elements for such an entry,
+      // so skip none either (same file position) - and unclamped, the rows * cols products below would overflow int.
+      if((uint64_t)rows * cols * (strcmp(type, "Cxma") == 0 ? COMPLEX34_SIZE_IN_BLOCKS : REAL34_SIZE_IN_BLOCKS) + TO_BLOCKS(sizeof(matrixHeader_t)) > 0xFFFFu) {
+        rows = cols = 0;
+      }
 
       for(i = 0; i < rows * cols; ++i) {
         if(dataFileMode) {
@@ -1539,6 +1565,14 @@ int64_t stringToInt64(const char *str) {
           str = next_word(str);
         }
         globalFlags[i] = toUint16(str);
+      }
+    }
+
+    else if(strcmp(tmpString, "C47/R47_data_file_00") == 0) {
+      readLine(tmpString, TMP_STR_LENGTH); // data file version number, same numbering and bounds as the state file version
+      loadedVersion = toUint32(tmpString);
+      if(loadedVersion < 10000000 || loadedVersion > 20000000) {
+        loadedVersion = 0;
       }
     }
 
@@ -2406,9 +2440,19 @@ static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d
 
   liftStack();
 
+  // A data file without a version line pair is treated as written by the current version; the C47/R47_data_file_00 branch in restoreOneSection
+  // overrides this when the pair is present, so version-gated content (the Conf register descriptor) is judged on the writing firmware's version.
+  loadedVersion = configFileVersion;
+
   while(!ioEof()) {                                                             // Loop on ioEof(): restoreOneSection() only returns false after SYSTEM_STATE, absent from data files.
     restoreOneSection(loadMode, s, n, d, false);
   }
+
+  // Sanitise loaded short integers, as doLoad does. A normal data file carries no word size, so this is a no-op; but a hand-crafted file could include an
+  // OTHER_CONFIGURATION_STUFF section that reassigns shortIntegerWordSize without rederiving the mask. Rederive the mask and sign bit from the current word
+  // size, then clamp every short-integer register (whole global block, named variables, local registers) to it, so no out-of-range bits survive the import.
+  updateShortIntegerMasks();
+  clampShortIntegerRegistersToWordSize();
 
   dataFileMode = false;
   ioFileClose();
@@ -2557,6 +2601,14 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
         kbd_usr[i].primaryTam = kbd_std[i].primaryTam;
       }
     }
+
+    // Sanitise loaded short integers. The register section precedes
+    // shortIntegerWordSize in the file, and the state file stores neither the
+    // mask nor the sign bit, so shortIntegerMask still holds the PRE-load value
+    // here (-1 when loading into the 64-bit default). Rederive both from the
+    // loaded word size first, then clamp every short-integer register to it.
+    updateShortIntegerMasks();
+    clampShortIntegerRegistersToWordSize();
   }
 
   lastErrorCode = ERROR_NONE;

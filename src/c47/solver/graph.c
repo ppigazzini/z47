@@ -2652,6 +2652,16 @@ void graphRangeGuard(real_t *lo, real_t *hi) {
 //-----------------------------------------------------//-----------------------------------------------------
 void fnEqSolvGraph (uint16_t func) {
   #if !defined(SAVE_SPACE_DM42_13GRF)
+      // No equation defined: error out before any stack or reserved-variable writes;
+      // running these items without a formula crashed in parseEquation (NULL allFormulae).
+      if(currentFormula >= numberOfFormulae || allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+        calcMode = CM_NORMAL;
+        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+          moreInfoOnError("In function fnEqSolvGraph:", "no equation defined", NULL, NULL);
+        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+        return;
+      }
       hourGlassIconEnabled = true;
       showHideHourGlass();
       #if defined(DMCP_BUILD)
