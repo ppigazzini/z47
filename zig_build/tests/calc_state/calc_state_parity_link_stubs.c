@@ -94,8 +94,6 @@ alignas(4) unsigned char printerState[16];
 alignas(1) unsigned char roundedTicks[1];
 alignas(1) unsigned char shortIntegerMode[1];
 alignas(1) unsigned char shortIntegerWordSize[1];
-alignas(8) unsigned char systemFlags0[8];
-alignas(8) unsigned char systemFlags1[8];
 alignas(1) unsigned char timeDisplayFormatDigits[1];
 alignas(1) unsigned char updateOldConstants[1];
 alignas(2) unsigned char userAlphaItems[360];

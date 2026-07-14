@@ -421,8 +421,8 @@ pub export var sizeOfFlashPgmLibrary: u32 = 0;
 
 pub export var shortIntegerMask: u64 = 0;
 pub export var shortIntegerSignBit: u64 = 0;
-pub export var systemFlags0: u64 = 0;
-pub export var systemFlags1: u64 = 0;
+// systemFlags0/systemFlags1 moved to the base kernel
+// (engine/kernel/system_flags_state.zig).
 pub export var savedSystemFlags0: u64 = 0;
 pub export var savedSystemFlags1: u64 = 0;
 
