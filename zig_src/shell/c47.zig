@@ -295,7 +295,8 @@ pub export var nimNumberPart: u8 = 0;
 pub export var nimRealPart: u8 = 0;
 pub export var hexDigits: u8 = 0;
 pub export var previousErrorCode: u8 = 0;
-pub export var temporaryInformation: u8 = 0;
+// temporaryInformation moved to the base kernel
+// (engine/kernel/transient_status.zig).
 pub export var rbrMode: u8 = 0;
 pub export var timerCraAndDeciseconds: u8 = 128;
 pub export var programRunStop: u8 = 0;
