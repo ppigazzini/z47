@@ -16,3 +16,5 @@ pub export var shortIntegerMask: u64 = 0; // word-size mask derived from the mod
 pub export var shortIntegerSignBit: u64 = 0; // sign-bit mask derived from the mode
 pub export var shortIntegerWordSize: u8 = 0; // short-integer word size in bits
 pub export var lastIntegerBase: u32 = 0; // last integer base (2..16)
+pub export var systemFlags0: u64 = 0; // system-flag bitmap 0 (user SF/CF flags)
+pub export var systemFlags1: u64 = 0; // system-flag bitmap 1 (user SF/CF flags)

@@ -30,18 +30,12 @@ comptime {
     _ = @import("state/keyboard_input_state.zig");
     _ = @import("state/program_state.zig");
     _ = @import("state/calc_mode_state.zig");
-    _ = @import("state/number_format_state.zig");
-    _ = @import("state/calendar_state.zig");
-    _ = @import("state/statistics_state.zig");
-    _ = @import("state/tvm_state.zig");
+    _ = @import("state/display_state.zig");
+    _ = @import("state/memory_state.zig");
+    _ = @import("state/app_state.zig");
     _ = @import("value/real_special_values.zig");
-    _ = @import("state/system_flags_state.zig");
     _ = @import("base/byte_copy.zig");
-    _ = @import("state/transient_status.zig");
-    _ = @import("state/screen_update_state.zig");
     _ = @import("base/error_report.zig");
-    _ = @import("state/scratch_buffers.zig");
-    _ = @import("state/memory_model_pointers.zig");
     _ = @import("value/register_conversions.zig");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });

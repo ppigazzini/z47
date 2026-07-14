@@ -1,4 +1,4 @@
 {
-  "micro_files": 9,
+  "micro_files": 5,
   "note": "REPORT-28 NM11: count of <15-line zig_src files; monotonic downward -- barnacles only shrink."
 }
