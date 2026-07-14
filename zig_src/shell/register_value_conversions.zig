@@ -756,11 +756,9 @@ pub export fn realToIntegralValue(source: *const real_t, destination: *real_t, m
 // ===========================================================================
 // real result registers
 // ===========================================================================
-pub export fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void {
-    var rounded: real_t = undefined;
-    roundToSignificantDigits(real, &rounded, if (significantDigits == 0) 34 else significantDigits, &ctxtReal75);
-    realToReal34(&rounded, reg34(dest));
-}
+// Moved to the base kernel (engine/kernel/register_real34_convert.zig); the shell
+// owners that reach it through this module resolve it via this re-declaration.
+pub extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void;
 
 pub export fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcRegister_t) callconv(.c) void {
     var rounded: real_t = undefined;
@@ -772,10 +770,8 @@ inline fn realToReal34(src: *const real_t, dst: *real34_t) void {
     _ = decimal128FromNumber(dst, src, &ctxtReal34);
 }
 
-pub export fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void {
-    reallocateRegister(dest, dtReal34, REAL34_SIZE_IN_BLOCKS, @bitCast(angle));
-    convertRealToReal34ResultRegister(x, dest);
-}
+// Moved to the base kernel (engine/kernel/register_real34_convert.zig).
+pub extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: angularMode_t) callconv(.c) void;
 
 pub export fn convertComplexToResultRegister(real: *const real_t, imag: *const real_t, dest: calcRegister_t) callconv(.c) void {
     reallocateRegister(dest, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNoneU);
