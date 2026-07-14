@@ -6,7 +6,6 @@ const long_integer_owned = @import("stack_runtime_long_integer.zig");
 const reg_param_product_owned = @import("stack_runtime_reg_param_product.zig");
 const product_real_owned = @import("stack_runtime_product_real.zig");
 const reg_params_owned = @import("stack_runtime_reg_params.zig");
-const sigma_owned = @import("stack_runtime_sigma.zig");
 const store_owned = @import("stack_runtime_store.zig");
 const swap_descriptor_owned = @import("stack_runtime_swap_descriptor.zig");
 
@@ -301,17 +300,9 @@ pub fn reportRegisterCommandError(error_code: u8) void {
 }
 
 pub fn restoreSavedSigmaLastXYAndAdd() void {
-    sigma_owned.restoreSavedSigmaLastXYAndAdd(
-        real_t,
-        &SAVED_SIGMA_LASTX,
-        &SAVED_SIGMA_LASTY,
-        REGISTER_X,
-        REGISTER_Y,
-        amNone,
-        SIGMA_PLUS,
-        convertRealToResultRegister,
-        fnSigmaAddRem,
-    );
+    convertRealToResultRegister(&SAVED_SIGMA_LASTX, REGISTER_X, amNone);
+    convertRealToResultRegister(&SAVED_SIGMA_LASTY, REGISTER_Y, amNone);
+    fnSigmaAddRem(SIGMA_PLUS);
 }
 
 pub fn getRegClrRange(s: *u16, n: *u16) u8 {
