@@ -8,7 +8,7 @@
 // represent a C bitfield -- so the Zig oracle (abi_layout_oracle.zig) cannot
 // @sizeOf/@offsetOf them. This file pins their C ground-truth layout with
 // _Static_assert. The matching Zig side is pinned by the comptime asserts in
-// zig_src/seam/abi/types.zig; together they cross-check what translate-c leaves opaque.
+// zig_src/abi/types.zig; together they cross-check what translate-c leaves opaque.
 //
 // (2) Drift-fragile value mirrors: owners hardcode copies of defines.h #define
 // values and C sizeof()s with no other continuous guard (constants_parity.zig is

@@ -53,8 +53,8 @@ fn buildImpl(b: *std.Build) !void {
 // more owners are made standalone-testable.
 fn registerNativeUnitTests(b: *std.Build) void {
     const pure_modules = [_][]const u8{
-        "zig_src/seam/abi/float_format.zig",
-        "zig_src/seam/abi/types.zig",
+        "zig_src/abi/float_format.zig",
+        "zig_src/abi/types.zig",
         "zig_src/core/integer/core.zig",
         "zig_src/core/kernel/calc_state_progmem.zig",
         "zig_src/core/kernel/register_metadata_payload_bytes.zig",
@@ -80,13 +80,13 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/core/numeric/matrix/kinds.zig",
         "zig_src/core/numeric/compare/type_encode.zig",
         "zig_src/core/numeric/matrix/mim_util.zig",
-        "zig_src/seam/abi/int_math.zig",
-        "zig_src/seam/abi/shortint_arith.zig",
-        "zig_src/seam/abi/sci_format.zig",
-        "zig_src/seam/abi/glyph_code.zig",
-        "zig_src/seam/abi/complex_text.zig",
-        "zig_src/seam/abi/pcg32.zig",
-        "zig_src/seam/abi/c47_string.zig",
+        "zig_src/abi/int_math.zig",
+        "zig_src/abi/shortint_arith.zig",
+        "zig_src/abi/sci_format.zig",
+        "zig_src/abi/glyph_code.zig",
+        "zig_src/abi/complex_text.zig",
+        "zig_src/abi/pcg32.zig",
+        "zig_src/abi/c47_string.zig",
         "zig_src/shell/input/keycode_remap.zig",
         "zig_src/shell/display/lr_selection.zig",
         "zig_src/shell/plot/plot_viewport.zig",
@@ -124,13 +124,13 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/shell/display/text/glyph_text_lookup.zig",
         "zig_src/shell/display/text/glyph_export.zig",
         "zig_src/shell/register_data_type.zig",
-        "zig_src/seam/abi/block_math.zig",
+        "zig_src/abi/block_math.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");
     // provide that module so they stay self-contained under test:unit.
     const abi_module = b.createModule(.{
-        .root_source_file = b.path("zig_src/seam/abi/types.zig"),
+        .root_source_file = b.path("zig_src/abi/types.zig"),
         .target = target,
         .optimize = .Debug,
     });
