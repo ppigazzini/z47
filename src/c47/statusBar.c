@@ -83,23 +83,29 @@ void drawBattery(uint16_t voltage);
     uint32_t x = X_DATE;
     lcd_fill_rect(0, 0, x - 0, 20, LCD_SET_VALUE);
 
+    // Always fetch fresh for both WoY and Date display, as the WoY display below overwrites dateTimeString with a "Wnn-d" string;
+    //   a non-digit start in dateTimeString means date not yet initialized, block skipped entirely; time-only display bypasses the test.
     if(SBARUPD_Date || SBARUPD_WoY) {
       getDateString(dateTimeString);
     }
 
-    if((dateTimeString[0] >= '0' && dateTimeString[0] <= '9')) {                      // not yet initialized, senseless to continue
+    if((dateTimeString[0] >= '0' && dateTimeString[0] <= '9') || !(SBARUPD_Date || SBARUPD_WoY)) { // not yet initialized, senseless to continue
       if(SBARUPD_Date) {
         x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, true);
       }
       else {
         lcd_fill_rect(x, 0, X_TIME - x, 20, LCD_SET_VALUE);
-        x = X_TIME;
+        x = SBARUPD_Time ? (SBARUPD_WoY ? X_TIME_WOY : X_TIME_NODATE) : X_TIME;  // with the date absent the time takes the date position, one character further left when WoY follows
       }
       if(SBARUPD_Time) {
         x = showGlyph(getSystemFlag(FLAG_TDM24) ? " " : STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false); // is 0+0+8 pixel wide
         x = showString(oldTime, &standardFont, x, 0, vmNormal, true, false);
       }
       if(SBARUPD_WoY) {
+        if((SBARUPD_Date || SBARUPD_Time) && x < X_WOY) {  // WoY aligns on one column behind either the date or the time; a shorter predecessor is padded up to it
+          lcd_fill_rect(x, 0, X_WOY - x, 20, LCD_SET_VALUE);
+          x = X_WOY;
+        }
         x = showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, true, true, false);
         getWeekOfYearString(dateTimeString);
         x = showString(dateTimeString, &standardFont, x, 0, vmNormal, true, false);
@@ -141,7 +147,8 @@ void drawBattery(uint16_t voltage);
 
 
   static void showAngularMode(void) {
-    if(!((SBARUPD_AngularModeBasic) || (SBARUPD_AngularMode))) {
+    #define actualSBARUPD_AngularMode  (SBARUPD_AngularMode || currentAngularMode != amDegree)
+    if(!(SBARUPD_AngularModeBasic || actualSBARUPD_AngularMode)) {
       return;
     }
 
@@ -152,7 +159,7 @@ void drawBattery(uint16_t voltage);
         x = showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, true, true, false); // Angle is 0+9 pixel wide
       }
 
-      if(SBARUPD_AngularMode) {
+      if(actualSBARUPD_AngularMode) {
         switch(currentAngularMode) {
           case amRadian: {
             x = showGlyph(STD_SUP_BOLD_r,         &standardFont, x, 0, vmNormal, true, false, false); // r  is 0+6 pixel wide
@@ -179,9 +186,9 @@ void drawBattery(uint16_t voltage);
             break;
           }
 
-            default: {
-              x = showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
-            }
+          default: {
+            x = showGlyph(STD_QUESTION_MARK,      &standardFont, x, 0, vmNormal, true, false, false); // ?
+          }
         }
       }
       lcd_fill_rect(x, 0, X_FRAC_MODE - x, 20, LCD_SET_VALUE);
