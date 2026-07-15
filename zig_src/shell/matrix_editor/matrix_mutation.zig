@@ -1,4 +1,4 @@
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 pub const Kind = enum {
     insert_row_before,

@@ -67,7 +67,7 @@ const irfracOption_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_asn_browser = @import("../browsers/asn_browser.zig");
 const frontier_assign = @import("../input/assign.zig");

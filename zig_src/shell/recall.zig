@@ -24,7 +24,7 @@ const RowCol = struct { row: i32, col: i32 };
 fn linearToRowCol(ix: i32, cols: i32) RowCol {
     return .{ .row = @divTrunc(ix - 1, cols) + 1, .col = @rem(ix - 1, cols) + 1 };
 }
-const frontier = @import("shell.zig");
+const frontier = @import("../frontier.zig");
 const frontier_char_string = @import("display/text/char_string.zig");
 const frontier_debug = @import("debug.zig");
 const frontier_error = @import("error.zig");

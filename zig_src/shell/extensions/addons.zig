@@ -95,7 +95,7 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_assign = @import("../input/assign.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");

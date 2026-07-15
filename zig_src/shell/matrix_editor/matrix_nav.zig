@@ -1,4 +1,4 @@
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const FLAG_WRAPEND: c_uint = 0xc01a;
 const FLAG_WRAPEDG: c_uint = 0xc03f;

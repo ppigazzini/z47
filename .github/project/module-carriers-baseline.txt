@@ -7,4 +7,4 @@ zig_src/core/analysis/solve.zig
 zig_src/core/input/keyboard_state.zig
 zig_src/core/numeric/command_wrappers.zig
 zig_src/core/state/state.zig
-zig_src/shell/shell.zig
+zig_src/frontier.zig

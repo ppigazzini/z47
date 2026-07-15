@@ -1,4 +1,4 @@
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_curve_fitting = @import("curve_fitting.zig");
 const frontier_error = @import("../error.zig");
 const frontier_plotstat = @import("plotstat.zig");

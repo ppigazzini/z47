@@ -1,5 +1,5 @@
 const abi = @import("abi");
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_print = @import("print.zig");
 const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;

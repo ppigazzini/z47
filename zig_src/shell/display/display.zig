@@ -60,7 +60,7 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_char_string = @import("text/char_string.zig");
 const numeral_grouping = @import("text/numeral_grouping.zig"); // std-only digit-group separator math

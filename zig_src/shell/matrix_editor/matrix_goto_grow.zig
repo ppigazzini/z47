@@ -1,4 +1,4 @@
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");

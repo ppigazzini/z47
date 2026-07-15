@@ -1,4 +1,4 @@
-const frontier = @import("shell.zig");
+const frontier = @import("../frontier.zig");
 const frontier_addons = @import("extensions/addons.zig");
 const frontier_assign = @import("input/assign.zig");
 const frontier_config = @import("config.zig");
