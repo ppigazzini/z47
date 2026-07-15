@@ -19,7 +19,7 @@ const const_1 = consts.const_1;
 // SUM_X==1. FLAG_SPCRES==0x8017 (runtime value is correct here). TI_PERCD==69
 // (real value); ERROR_NO_SUMMATION_DATA==28; const_1 blob offset 4368.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

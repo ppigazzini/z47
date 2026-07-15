@@ -6,11 +6,11 @@
 //!
 //! Every `pub export` below keeps the exact symbol name and ABI of the retired
 //! C definition. The error reporters live in
-//! runtime_error_reporters.zig.
+//! error_reporters.zig.
 
 const std = @import("std");
 const builtin = @import("builtin");
-const runtime = @import("command_wrappers_runtime.zig");
+const runtime = @import("runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 
 const real_t = runtime.real_t;

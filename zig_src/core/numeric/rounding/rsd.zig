@@ -21,7 +21,7 @@ const const_100 = consts.const_100;
 // senaryDigitToDecimal / decimalDigitToSenary are exported (rdp.c's rdpTime
 // calls them). The commented-out alternate rsdReal in the C is dropped.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_matrix_elementwise = @import("../matrix/elementwise.zig");
 const real_t = runtime.real_t;

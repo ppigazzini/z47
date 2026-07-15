@@ -467,7 +467,7 @@ pub const Pcg32Random = extern struct {
 };
 
 /// GMP limb: pointer-width on every z47 target (usize, NOT c_ulong which is
-/// 32-bit on Win64 -- see math_command_wrappers_runtime).
+/// 32-bit on Win64 -- see core/numeric/command_wrappers/runtime.zig).
 pub const MpLimb = usize;
 
 /// GMP mpz_t element (mpz_struct, gmp.h __mpz_struct): {_mp_alloc, _mp_size,

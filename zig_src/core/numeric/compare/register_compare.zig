@@ -19,7 +19,7 @@ const std = @import("std");
 const abi = @import("abi");
 const comparison_reals = @import("comparison_reals.zig");
 const math_real_predicates = @import("real_predicates.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_integer_division_cells = @import("../arithmetic/integer_division_cells.zig");
 const register_classify = @import("register_classify.zig"); // std-only register-band classification
 

@@ -10,7 +10,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const calcRegister_t = runtime.calcRegister_t;
 const angularMode_t = runtime.angularMode_t;

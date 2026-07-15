@@ -2,7 +2,7 @@ const diagnostics_owned = @import("vector_linpol_diagnostics.zig");
 const compute_owned = @import("vector_linpol_compute.zig");
 const io_owned = @import("vector_linpol_io.zig");
 const result_owned = @import("vector_linpol_result.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 pub fn linpol() callconv(.c) void {
     var a_real: runtime.real_t = undefined;

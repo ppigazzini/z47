@@ -8,7 +8,7 @@ const consts = abi.constants;
 // combined L/U factors back into the result matrix (the pivot vector is filled
 // in for the caller). complex_LU_decomposition stays in the matrix bridge.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

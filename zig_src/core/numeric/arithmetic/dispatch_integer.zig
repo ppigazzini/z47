@@ -1,4 +1,4 @@
-const runtime = @import("command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 
 const no_register = @as(runtime.calcRegister_t, -1);

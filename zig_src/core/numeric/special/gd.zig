@@ -7,7 +7,7 @@
 // points with C linkage; the static helpers stay private. The
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

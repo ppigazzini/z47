@@ -5,7 +5,7 @@
 // products, the divide family and the vector ops stay in the matrix bridge
 // for now.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_matrix_lifecycle = @import("lifecycle.zig");

@@ -3,10 +3,10 @@ const build_options = @import("math_command_wrappers_build_options");
 const compare_owned = @import("compare/compare.zig");
 const convergence_owned = @import("convergence.zig");
 const integer_part_owned = @import("rounding/integer_part.zig");
-const runtime = @import("dispatch/command_wrappers_runtime.zig");
+const runtime = @import("command_wrappers/runtime.zig");
 const get_type_owned = @import("compare/get_type.zig");
 const projection_owned = @import("projection.zig");
-const arithmetic_dispatch_command_owned = @import("dispatch/arithmetic_dispatch_command.zig");
+const arithmetic_dispatch_command_owned = @import("arithmetic/dispatch_command.zig");
 const atan2_command_owned = @import("trig/atan2_command.zig");
 const double_width_command_owned = @import("arithmetic/double_width_command.zig");
 const percent_base_owned = @import("arithmetic/percent_base.zig");
@@ -98,8 +98,8 @@ comptime {
         // sign/integer-part helpers) and the thin real/real34 wrapper symbols.
         // The parity harness compiles the relocated C file instead, so these
         // owners are excluded there to avoid duplicate symbols.
-        _ = @import("dispatch/runtime_helpers.zig");
-        _ = @import("dispatch/runtime_error_reporters.zig");
+        _ = @import("command_wrappers/helpers.zig");
+        _ = @import("command_wrappers/error_reporters.zig");
         // The matrix lifecycle owner replaces the allocate/free/identity/redim,
         // copy and transpose primitives of mathematics/matrix.c. The matrix
         // bridge keeps the renamed legacy copies (still called by the rest of

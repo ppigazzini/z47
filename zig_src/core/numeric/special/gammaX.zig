@@ -8,7 +8,7 @@
 // sprintf hint becomes a fixed moreInfoOnError string (no-op under TESTSUITE/
 // DMCP).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_wp34s = @import("wp34s.zig");
 const real_t = runtime.real_t;

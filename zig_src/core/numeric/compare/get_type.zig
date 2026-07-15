@@ -1,6 +1,6 @@
 const std = @import("std");
 const math_type_encode = @import("type_encode.zig"); // std-only type-report encoders
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn pushIntegerOut(value: u32) void {
     var long_integer: runtime.longInteger_t = undefined;

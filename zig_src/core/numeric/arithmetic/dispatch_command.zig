@@ -1,7 +1,7 @@
-const runtime = @import("command_wrappers_runtime.zig");
-const selectors_coordinator = @import("arithmetic_dispatch_selectors_coordinator.zig");
-const arithmetic_scalar = @import("arithmetic_dispatch_scalar.zig");
-const arithmetic_integer = @import("arithmetic_dispatch_integer.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
+const selectors_coordinator = @import("dispatch_selectors_coordinator.zig");
+const arithmetic_scalar = @import("dispatch_scalar.zig");
+const arithmetic_integer = @import("dispatch_integer.zig");
 
 pub fn fnAdd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (arithmetic_integer.tryIntegerAdd()) {

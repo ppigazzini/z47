@@ -6,7 +6,7 @@
 //! escapes (src/c47/fonts.h).
 
 const builtin = @import("builtin");
-const runtime = @import("command_wrappers_runtime.zig");
+const runtime = @import("runtime.zig");
 
 const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
 const std_infinity = "\xa2\x1e"; // STD_INFINITY

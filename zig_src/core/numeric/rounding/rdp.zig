@@ -16,7 +16,7 @@ const const_1 = consts.const_1;
 // reproduced exactly. The commented-out alternate rdpReal in the C is dropped.
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_matrix_elementwise = @import("../matrix/elementwise.zig");
 const math_rsd = @import("rsd.zig");

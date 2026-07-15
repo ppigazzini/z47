@@ -2,7 +2,7 @@ const atan_owned = @import("atan.zig");
 const inverse_trig_complex_command_owned = @import("inverse_trig_complex_command.zig");
 const inverse_trig_command_owned = @import("inverse_trig_command.zig");
 const real_trig_owned = @import("real_trig.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;

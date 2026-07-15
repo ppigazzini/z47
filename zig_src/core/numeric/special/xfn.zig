@@ -33,7 +33,7 @@ const const2139_2pi = consts.const2139_2pi;
 // the computed result and are dropped. EXTRA_INFO sprintf hints become fixed
 // moreInfoOnError strings.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_rdp = @import("../rounding/rdp.zig");
 const math_rsd = @import("../rounding/rsd.zig");
 const math_wp34s = @import("wp34s.zig");

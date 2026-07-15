@@ -5,7 +5,7 @@
 // the I/J row/column pointers and the wrap flags).
 
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const nim_register_line = runtime.REGISTER_X;
 

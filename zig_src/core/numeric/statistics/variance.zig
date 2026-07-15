@@ -26,7 +26,7 @@ const const_2 = consts.const_2;
 // REGISTER_REAL34_DATA(regIndex). FLAG_ASLIFT == 0xc023 (real value). TI_* are
 // the real defines.h values. CF_* and orOrtho match defines.h.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

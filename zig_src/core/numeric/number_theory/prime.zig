@@ -22,7 +22,7 @@ const const34_1 = consts.const34_1;
 // (matching the sibling owners; under TESTSUITE/DMCP builds moreInfoOnError is
 // a no-op).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_matrix_lifecycle = @import("../matrix/lifecycle.zig");

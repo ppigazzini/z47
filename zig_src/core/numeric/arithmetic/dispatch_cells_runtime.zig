@@ -3,7 +3,7 @@
 // Values below mirror src/c47/defines.h and src/c47/typeDefinitions.h exactly.
 
 const abi = @import("abi");
-const runtime = @import("command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 pub const calcRegister_t = runtime.calcRegister_t;
 pub const real_t = runtime.real_t;

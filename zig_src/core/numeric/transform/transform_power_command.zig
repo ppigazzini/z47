@@ -1,4 +1,4 @@
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn squareLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;

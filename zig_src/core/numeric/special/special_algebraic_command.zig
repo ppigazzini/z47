@@ -1,4 +1,4 @@
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const transcendental_command_owned = @import("transcendental_command.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {

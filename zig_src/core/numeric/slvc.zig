@@ -27,12 +27,12 @@ const const_2916 = consts.const_2916;
 // ordering uses libc qsort with the exact cmplxSortCompare comparator. The dead
 // SAVE_SPACE_DM42_12 guard and the #undef'd DISCRIMINANT blocks are omitted.
 
-const runtime = @import("dispatch/command_wrappers_runtime.zig");
+const runtime = @import("command_wrappers/runtime.zig");
 const math_addition_cells = @import("arithmetic/addition_cells.zig");
 const math_comparison_reals = @import("compare/comparison_reals.zig");
 const math_division_cells = @import("arithmetic/division_cells.zig");
 const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig");
-const math_runtime_helpers = @import("dispatch/runtime_helpers.zig");
+const math_runtime_helpers = @import("command_wrappers/helpers.zig");
 const math_slvq = @import("slvq.zig");
 const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig");
 const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig");

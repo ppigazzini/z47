@@ -4,7 +4,7 @@
 // delRowComplexMatrix / delColComplexMatrix (shrink the matrix by one row or
 // column). The rest of the engine stays in the matrix bridge.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_matrix_lifecycle = @import("lifecycle.zig");
 const real34_t = runtime.real34_t;

@@ -34,7 +34,7 @@ const const_1on2 = consts.const_1on2;
 // realChangeSign, const_1on2.
 // TI_* are the real defines.h values; FLAG_ASLIFT == 0xc023 (real value).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

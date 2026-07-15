@@ -5,7 +5,7 @@
 // spherical / cylindrical form. is_2D3D_Register_Ready is public (other units
 // call it); the V3Recto* commands are public too -> all three are exported.
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_matrix_vector_helpers = @import("vector_helpers.zig");
 
 const real_t = runtime.real_t;

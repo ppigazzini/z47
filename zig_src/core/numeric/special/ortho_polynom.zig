@@ -16,7 +16,7 @@ const const__1 = consts.const__1;
 // kind values are verified against defines.h (H=0, HE=1, L=2, L_ALPHA=3,
 // LEGENDRE_P=4, CHEBYSHEV_T=5, CHEBYSHEV_U=6).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_wp34s = @import("wp34s.zig");
 const real_t = runtime.real_t;

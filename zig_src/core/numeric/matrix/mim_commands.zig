@@ -7,7 +7,7 @@
 // the public commands are bridge-renamed.
 const std = @import("std");
 const math_mim_util = @import("mim_util.zig"); // std-only matrix-input helpers
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_matrix_elementwise = @import("elementwise.zig");
