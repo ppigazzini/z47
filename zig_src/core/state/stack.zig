@@ -1,10 +1,10 @@
-const descriptor_owned = @import("stack_descriptor.zig");
-const clear_owned = @import("stack_clear.zig");
-const register_commands_owned = @import("stack_register_commands.zig");
-const mutation_owned = @import("stack_mutation.zig");
-const result_owned = @import("stack_result.zig");
-const undo_owned = @import("stack_undo.zig");
-const runtime = @import("stack_runtime.zig");
+const descriptor_owned = @import("stack/stack_descriptor.zig");
+const clear_owned = @import("stack/stack_clear.zig");
+const register_commands_owned = @import("stack/stack_register_commands.zig");
+const mutation_owned = @import("stack/stack_mutation.zig");
+const result_owned = @import("stack/stack_result.zig");
+const undo_owned = @import("stack/stack_undo.zig");
+const runtime = @import("runtime/stack_runtime.zig");
 const build_options = @import("stack_state_build_options");
 
 const use_fake_stack_state_harness_surface =

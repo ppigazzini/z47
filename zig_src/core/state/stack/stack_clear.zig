@@ -1,5 +1,5 @@
-const runtime = @import("stack_runtime.zig");
-const memory_owned = @import("register_memory.zig");
+const runtime = @import("../runtime/stack_runtime.zig");
+const memory_owned = @import("../runtime/register_memory.zig");
 
 fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;

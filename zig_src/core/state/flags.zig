@@ -1,7 +1,7 @@
 const builtin = @import("builtin");
-const runtime = @import("flags_runtime.zig");
-const flag_classify = @import("flag_classify.zig"); // std-only flag classification
-const flag_bits = @import("flag_bits.zig"); // std-only user-flag bit location
+const runtime = @import("flags/flags_runtime.zig");
+const flag_classify = @import("flags/flag_classify.zig"); // std-only flag classification
+const flag_bits = @import("flags/flag_bits.zig"); // std-only user-flag bit location
 const SysFlagBit = struct { word: u1, shift: u6 };
 fn systemFlagBitLocation(masked_flag: i32) SysFlagBit {
     if (masked_flag < 64) return .{ .word = 0, .shift = @intCast(masked_flag) };

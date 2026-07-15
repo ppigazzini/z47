@@ -1,6 +1,6 @@
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const runtime = @import("register_metadata_runtime.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque, type_reg: *runtime.calcRegister_t) bool {
     var descriptor: runtime.register_descriptor_t = 0;

@@ -1,4 +1,4 @@
-const runtime = @import("stack_runtime.zig");
+const runtime = @import("../runtime/stack_runtime.zig");
 const register_range_ops = @import("register_range_ops.zig"); // std-only register-range geometry
 
 // Port of registers.c sortReg: order the register descriptors across the range by

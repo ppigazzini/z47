@@ -1,5 +1,5 @@
 const runtime = @import("register_metadata_runtime.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 const codec = @import("register_descriptor_codec.zig"); // std-only descriptor bit-field codec
 
 const invalid_data_type: u32 = 31;

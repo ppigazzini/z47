@@ -3,10 +3,10 @@ const real34_sign = @import("real34_sign.zig"); // std-only real34 sign-byte ops
 
 const build_options = @import("stack_state_build_options");
 const mutation_owned = @import("stack_mutation.zig");
-const memory_owned = @import("register_memory.zig");
+const memory_owned = @import("../runtime/register_memory.zig");
 const undo_owned = @import("stack_undo.zig");
 
-const runtime = @import("stack_runtime.zig");
+const runtime = @import("../runtime/stack_runtime.zig");
 const use_fake_stack_state_harness_surface = @hasDecl(build_options, "use_fake_stack_state_harness_surface") and build_options.use_fake_stack_state_harness_surface;
 
 const matrix_header_size_in_blocks: u16 = 1;

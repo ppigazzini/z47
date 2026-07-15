@@ -1,9 +1,9 @@
 const build_options = @import("register_metadata_build_options");
 const abi = @import("abi");
-const memory_owned = @import("register_memory.zig");
+const memory_owned = @import("../runtime/register_memory.zig");
 const block_math = abi.block_math;
 const runtime = @import("register_metadata_runtime.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and

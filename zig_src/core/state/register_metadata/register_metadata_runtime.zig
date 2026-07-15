@@ -1,9 +1,9 @@
 const build_options = @import("register_metadata_build_options");
 const clear_sigma_owned = @import("register_metadata_clear_sigma.zig");
-const descriptor_storage = @import("register_descriptor_storage.zig");
+const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 const named_menu_owned = @import("register_metadata_named_menu.zig");
 const size_owned = @import("register_metadata_size.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 const tables_owned = @import("register_metadata_tables.zig");
 const confirmation_owned = @import("register_metadata_confirmation.zig");
 const error_owned = @import("register_metadata_error.zig");
@@ -42,7 +42,7 @@ const strLgIntHeader_t = payload_bytes_owned.strLgIntHeader_t;
 const matrixHeader_t = payload_bytes_owned.matrixHeader_t;
 
 const abi = @import("abi"); // shared ABI bindings
-const register_metadata = @import("register_metadata.zig");
+const register_metadata = @import("../register_metadata.zig");
 const register_metadata_local_registers = @import("register_metadata_local_registers.zig");
 const userMenu_t = abi.UserMenu;
 

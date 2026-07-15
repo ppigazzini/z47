@@ -1,5 +1,5 @@
-const runtime = @import("stack_runtime.zig");
-const memory_owned = @import("register_memory.zig");
+const runtime = @import("../runtime/stack_runtime.zig");
+const memory_owned = @import("../runtime/register_memory.zig");
 
 fn registerWithOffset(base: runtime.calcRegister_t, offset: u16) runtime.calcRegister_t {
     return base + @as(runtime.calcRegister_t, @intCast(offset));
