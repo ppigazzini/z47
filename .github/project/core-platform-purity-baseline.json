@@ -1,4 +1,4 @@
 {
-  "platform_files": 19,
-  "note": "REPORT-28 §36 L7: core files naming a platform symbol (hal/io.c surface or DMCP ROM). Monotonic downward -- core reaches the platform ONLY through abi.host."
+  "platform_leak_files": 8,
+  "note": "REPORT-28 §38 L8: core files reaching platform WITHOUT a hal contract (raw DMCP ROM/timers/keys). FROZEN at upstream parity -- upstream leaks these into its own library too, so z47 copies are faithful ports (L6). This is a NON-REGRESSION guard: it answers only \"did z47 add a platform reach upstream does not have?\". Calling the hal (ioFile*, readLine, lcd_*) is CORRECT and is not counted."
 }

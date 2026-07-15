@@ -1,59 +1,62 @@
 #!/usr/bin/env bash
 #
-# Core platform-purity gate (REPORT-28 §36, law L7).
+# Core platform-leak gate (REPORT-28 §38, law L8). Supersedes the §36 version,
+# which was WRONG in a way worth recording so it is not re-introduced.
 #
-# The "headless core" milestone was UNFALSIFIABLE: check-core-shell-severance.py
-# only counts a core extern when the symbol's sole first-party `pub export` lives
-# in a Zig shell/ file. Every platform symbol core actually reaches -- ioFileOpen
-# and friends (defined per target in src/{testSuite,c47-dmcp,c47-dmcp5}/hal/io.c)
-# and the DMCP ROM trampolines (absolute LIBRARY_FN_BASE offsets) -- is a C symbol
-# or an address, so the severance ratchet CANNOT see it. That number could reach
-# zero while core still opened files and drove hardware timers.
+# THE §36 ERROR: it treated every platform symbol core names as a violation and
+# ratcheted the count toward 0. But ioFileOpen/ioFileClose/ioFileRead/ioFileWrite/
+# readLine ARE upstream's hal (src/c47/hal/io.h), and upstream's OWN library calls
+# them (saveRestoreCalcState.c, saveRestorePrograms.c, saveRestoreBackup.c).
+# CALLING THE HAL IS THE ARCHITECTURE -- it is how a platform-independent library
+# does I/O. Driving that to zero would mean core may not do file I/O at all, which
+# upstream does. The gate's success condition would have been a PARITY VIOLATION.
 #
-# This gate closes that hole: core/ must be PLATFORM-FREE. A platform need crosses
-# through abi.host (the Free42 shell-callback model already shipping in
-# abi/host.zig), never by naming the platform symbol directly. Corollary: if a
-# capability needs a per-target implementation (upstream proves it by keeping N
-# copies under hal/), it does not belong in core.
+# WHAT IS ACTUALLY WRONG: symbols that are NOT in any hal header -- the raw DMCP
+# ROM/hardware entries (LIBRARY_FN_BASE offsets, power_check_screen, sys_timer_*,
+# key_pop). Upstream leaks those into its own library too (key_pop in 7 src/c47
+# files, sys_timer_start in 4, power_check_screen in 2), so z47's copies are
+# FAITHFUL PORTS, frozen under law L6 (parity outranks purity), NOT debt.
 #
-# Ratchets on the COUNT OF CORE FILES that name a platform symbol; monotonic
-# downward, exactly like the severance/cohesion ratchets.
+# SO THIS GATE ASKS THE ONE QUESTION THAT HAS A RIGHT ANSWER:
+#   "Did z47 introduce a platform reach that upstream does not have?"
+# It is FROZEN at upstream-parity, not ratcheted to 0. Absorbing upstream's leak
+# into the hal is a conscious value-add deviation (§37 class (b)) to be planned --
+# never a silent ratchet.
 #
 # Usage: check-core-platform-purity.sh          # enforce
-#        check-core-platform-purity.sh --bump   # re-pin after a real reduction
-# Exit: 0 clean; 1 on a regression above the baseline.
+#        check-core-platform-purity.sh --bump   # re-pin (only with justification)
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$repo_root"
 baseline_file=".github/project/core-platform-purity-baseline.json"
 
-# Platform surfaces core must not name directly:
-#   file I/O  -- the per-target hal/io.c surface
-#   ROM/clock -- DMCP function-table trampolines and hardware timers
-platform_re='\b(ioFileOpen|ioFileClose|ioFileRead|ioFileWrite|readLine|LIBRARY_FN_BASE|power_check_screen|sys_timer_disable|sys_timer_start|key_pop)\b'
+# NOT flagged: the sanctioned hal surface (src/c47/hal/*.h) -- ioFile*, readLine,
+# lcd_*, audio, print_ir, gui. Core is SUPPOSED to call these.
+# Flagged: platform reach with NO hal contract behind it.
+leak_re='\b(LIBRARY_FN_BASE|power_check_screen|sys_timer_disable|sys_timer_start|key_pop)\b'
 
-mapfile -t offenders < <(git ls-files 'zig_src/core/*.zig' | xargs -r grep -lE "$platform_re" 2>/dev/null | sort)
+mapfile -t offenders < <(git ls-files 'zig_src/core/*.zig' | xargs -r grep -lE "$leak_re" 2>/dev/null | sort)
 count=${#offenders[@]}
-
-baseline=$(grep -oE '"platform_files"[[:space:]]*:[[:space:]]*[0-9]+' "$baseline_file" | grep -oE '[0-9]+')
+baseline=$(grep -oE '"platform_leak_files"[[:space:]]*:[[:space:]]*[0-9]+' "$baseline_file" | grep -oE '[0-9]+')
 
 if [ "${1:-}" = "--bump" ]; then
-    printf '{\n  "platform_files": %d,\n  "note": "REPORT-28 §36 L7: core files naming a platform symbol (hal/io.c surface or DMCP ROM). Monotonic downward -- core reaches the platform ONLY through abi.host."\n}\n' "$count" > "$baseline_file"
-    echo "check-core-platform-purity: re-pinned platform_files baseline to $count"
+    printf '{\n  "platform_leak_files": %d,\n  "note": "REPORT-28 §38 L8: core files reaching platform WITHOUT a hal contract (raw DMCP ROM/timers/keys). FROZEN at upstream parity -- upstream leaks these into its own library too, so z47 copies are faithful ports (L6). This is a NON-REGRESSION guard: it answers only \\"did z47 add a platform reach upstream does not have?\\". Calling the hal (ioFile*, readLine, lcd_*) is CORRECT and is not counted."\n}\n' "$count" > "$baseline_file"
+    echo "check-core-platform-purity: re-pinned platform_leak_files baseline to $count"
     exit 0
 fi
 
 if [ "$count" -gt "$baseline" ]; then
-    echo "CORE PLATFORM-PURITY REGRESSION: $count core files name a platform symbol (ceiling $baseline)."
+    echo "CORE PLATFORM LEAK: $count core files reach the platform with no hal contract (frozen ceiling $baseline)."
     for f in "${offenders[@]}"; do
-        echo "  $f -- $(grep -ohE "$platform_re" "$f" | sort -u | tr '\n' ' ')"
+        echo "  $f -- $(grep -ohE "$leak_re" "$f" | sort -u | tr '\n' ' ')"
     done
     echo ""
-    echo "core/ must be platform-free (L7): route the need through abi.host"
-    echo "(install/call, like abi/host.zig already does for progress+render), or the"
-    echo "owner belongs in shell/. Reduce the count -- do not raise the ceiling."
+    echo "z47 must not leak MORE platform than upstream does (L8). Route the need"
+    echo "through the hal contract (src/c47/hal/*.h -- ioFile*, lcd_*, audio, gui,"
+    echo "print_ir), which core is free to call. Do not raise the ceiling: the"
+    echo "existing entries are faithful ports of upstream's own leak and are frozen."
     exit 1
 fi
 
-echo "check-core-platform-purity: OK (core files reaching platform: $count <= ceiling $baseline)"
+echo "check-core-platform-purity: OK (non-hal platform leaks: $count <= frozen $baseline; hal calls are correct and uncounted)"
