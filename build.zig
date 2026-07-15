@@ -3,6 +3,7 @@ const build_common = @import("zig_build/common.zig");
 const dist_steps = @import("zig_build/dist.zig");
 const firmware_steps = @import("zig_build/firmware.zig");
 const host_steps = @import("zig_build/host.zig");
+const object_manifest = @import("zig_build/object_manifest.zig");
 
 pub fn build(b: *std.Build) void {
     buildImpl(b) catch |err| {
@@ -30,6 +31,41 @@ fn buildImpl(b: *std.Build) !void {
         dmcp_package,
         decnumber_fastmul,
     );
+
+    // The object graph is what the linker builds, and it is orthogonal to the
+    // @import graph a reader navigates: moving a file between directories changes
+    // the second and cannot change the first. Here the build DECLARES the object
+    // set of each product so check-object-graph.py can consume the declaration.
+    // Every wrong object-set number produced against this codebase came from
+    // asking something other than the build -- a cache glob, a name-prefix filter,
+    // a --verbose-link scrape that prints nothing on a cached build.
+    {
+        const writer = object_manifest.addWriter(b, host_context.host_target, optimize);
+        const step = b.step(
+            "object-manifest",
+            "Declare the linked object set of each product target for the object-graph gate",
+        );
+
+        // The simulator hands its objects to a module, so the manifest walks it.
+        step.dependOn(&b.addInstallFile(
+            object_manifest.add(b, writer, "sim", host_outputs.c47_exe),
+            "object-graph/sim-objects.txt",
+        ).step);
+
+        // The firmware drives arm-none-eabi-gcc directly, so its object set is the
+        // same named list the link command consumes.
+        for ([_]struct { name: []const u8, build: firmware_steps.Build }{
+            .{ .name = "dmcp", .build = firmware_bundle.dmcp },
+            .{ .name = "dmcp5", .build = firmware_bundle.dmcp5 },
+        }) |target| {
+            const pending = object_manifest.start(b, writer, target.name);
+            target.build.objects.addToCommand(pending.run);
+            step.dependOn(&b.addInstallFile(
+                pending.path,
+                b.fmt("object-graph/{s}-objects.txt", .{target.name}),
+            ).step);
+        }
+    }
 
     const dist_version = if (ci_commit_tag.len > 0)
         ci_commit_tag

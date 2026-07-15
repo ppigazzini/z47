@@ -42,6 +42,9 @@ pub const Context = struct {
 };
 
 pub const SimulatorOutputs = struct {
+    /// The C47 simulator itself. Exposed so the object-manifest step can walk the
+    /// object set the linker is assembled from; see zig_build/object_manifest.zig.
+    c47_exe: *std.Build.Step.Compile,
     c47_bin: std.Build.LazyPath,
     r47_bin: std.Build.LazyPath,
 };

@@ -27,6 +27,9 @@ pub const Outputs = struct {
 };
 
 pub const Build = struct {
+    /// The object set this firmware links, named once so the object-manifest
+    /// step and the linker cannot disagree.
+    objects: FirmwareObjects,
     step: *std.Build.Step,
     outputs: Outputs,
 };
@@ -82,9 +85,58 @@ const BuildPhase = enum {
     final,
 };
 
+/// The firmware product's object set, named once.
+///
+/// The link command and the object manifest both consume THIS list, so the
+/// manifest cannot drift from what is linked. Before it existed the set had no
+/// single name, and every attempt to measure it from outside the build -- a cache
+/// glob, a name-prefix filter, a `--verbose-link` scrape -- produced a different
+/// wrong answer. A build that cannot name its own product object set is why.
+const FirmwareObjects = struct {
+    flags_state: FlagsStateObjects,
+    math_command_wrappers: MathCommandWrapperObjects,
+    constants: ConstantsObjects,
+    tone: ToneObjects,
+    audio_runtime: *std.Build.Step.Compile,
+    print_ir_runtime: *std.Build.Step.Compile,
+    io_runtime: *std.Build.Step.Compile,
+    keyboard_state: KeyboardStateObjects,
+    memory_state: MemoryStateObjects,
+    calc_state: CalcStateObjects,
+    program_serialization: ProgramSerializationObjects,
+    frontier: FrontierObjects,
+    solve: SolveObjects,
+    register_metadata: RegisterMetadataObjects,
+    shortint: ShortIntObjects,
+    stack_state: StackStateObjects,
+
+    /// Append every object, in link order. Works against any `Run` step: the
+    /// firmware linker takes them as inputs, the manifest writer takes them as
+    /// paths to record.
+    pub fn addToCommand(self: FirmwareObjects, cmd: *std.Build.Step.Run) void {
+        self.flags_state.addToCommand(cmd);
+        self.math_command_wrappers.addToCommand(cmd);
+        self.constants.addToCommand(cmd);
+        self.tone.addToCommand(cmd);
+        cmd.addFileArg(self.audio_runtime.getEmittedBin());
+        cmd.addFileArg(self.print_ir_runtime.getEmittedBin());
+        cmd.addFileArg(self.io_runtime.getEmittedBin());
+        self.keyboard_state.addToCommand(cmd);
+        self.memory_state.addToCommand(cmd);
+        self.calc_state.addToCommand(cmd);
+        self.program_serialization.addToCommand(cmd);
+        self.frontier.addToCommand(cmd);
+        self.solve.addToCommand(cmd);
+        self.register_metadata.addToCommand(cmd);
+        self.shortint.addToCommand(cmd);
+        self.stack_state.addToCommand(cmd);
+    }
+};
+
 const ElfBuildOutputs = struct {
     elf: std.Build.LazyPath,
     map: std.Build.LazyPath,
+    objects: FirmwareObjects,
 };
 
 const ObjcopyOptions = struct {
@@ -652,6 +704,7 @@ fn addFirmwareBuild(
 
     return .{
         .step = step,
+        .objects = final_build.objects,
         .outputs = .{
             .program = program.path,
             .qspi = qspi.path,
@@ -726,22 +779,25 @@ fn addFirmwareElfBuild(
     cmd.addArg(build_common.upstreamPathString(b, firmwareSdkStartupSource(config.board)));
     for (build_common.decnumber_sources) |source| cmd.addArg(build_common.upstreamPathString(b, b.fmt("dep/{s}", .{source})));
     std.debug.assert(core_sources.len == 0);
-    flags_state_objects.addToCommand(cmd);
-    math_command_wrapper_objects.addToCommand(cmd);
-    constants_objects.addToCommand(cmd);
-    tone_objects.addToCommand(cmd);
-    cmd.addFileArg(audio_runtime_object.getEmittedBin());
-    cmd.addFileArg(print_ir_runtime_object.getEmittedBin());
-    cmd.addFileArg(io_runtime_object.getEmittedBin());
-    keyboard_state_objects.addToCommand(cmd);
-    memory_state_objects.addToCommand(cmd);
-    calc_state_objects.addToCommand(cmd);
-    program_serialization_objects.addToCommand(cmd);
-    frontier_objects.addToCommand(cmd);
-    solve_objects.addToCommand(cmd);
-    register_metadata_objects.addToCommand(cmd);
-    shortint_objects.addToCommand(cmd);
-    stack_state_objects.addToCommand(cmd);
+    const objects: FirmwareObjects = .{
+        .flags_state = flags_state_objects,
+        .math_command_wrappers = math_command_wrapper_objects,
+        .constants = constants_objects,
+        .tone = tone_objects,
+        .audio_runtime = audio_runtime_object,
+        .print_ir_runtime = print_ir_runtime_object,
+        .io_runtime = io_runtime_object,
+        .keyboard_state = keyboard_state_objects,
+        .memory_state = memory_state_objects,
+        .calc_state = calc_state_objects,
+        .program_serialization = program_serialization_objects,
+        .frontier = frontier_objects,
+        .solve = solve_objects,
+        .register_metadata = register_metadata_objects,
+        .shortint = shortint_objects,
+        .stack_state = stack_state_objects,
+    };
+    objects.addToCommand(cmd);
     for (firmwareBoardHalSources(config.board)) |source| cmd.addArg(build_common.upstreamPathString(b, source));
     cmd.addFileArg(generated.raster_fonts_data);
     cmd.addFileArg(generated.constant_pointers_c);
@@ -767,7 +823,7 @@ fn addFirmwareElfBuild(
     cmd.addArg("-lgmp");
     cmd.addFileInput(arm_gmp.library);
 
-    return .{ .elf = elf, .map = map };
+    return .{ .elf = elf, .map = map, .objects = objects };
 }
 
 fn resolveFirmwareTarget(b: *std.Build, board: Board) std.Build.ResolvedTarget {
