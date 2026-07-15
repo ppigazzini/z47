@@ -1,4 +1,5 @@
 const std = @import("std");
+const print_register = @import("print_register.zig");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/printing/print.c: the HP-82240 / Martel infrared
@@ -56,7 +57,6 @@ const printArgument_t = c_int;
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
@@ -1500,7 +1500,7 @@ fn _printRegRange(firstRegisterNo: u16, lastRegisterNo: u16) bool_t {
     if (firstRegisterNo <= lastRegisterNo) {
         var regist: u16 = firstRegisterNo;
         while (regist <= lastRegisterNo) : (regist += 1) {
-            frontier.fnP_Regs(regist);
+            print_register.fnP_Regs(regist);
             if (_exitKeyPressed()) {
                 return true;
             }
@@ -1508,7 +1508,7 @@ fn _printRegRange(firstRegisterNo: u16, lastRegisterNo: u16) bool_t {
     } else {
         var regist: u16 = firstRegisterNo;
         while (regist >= lastRegisterNo) : (regist -= 1) {
-            frontier.fnP_Regs(regist);
+            print_register.fnP_Regs(regist);
             if (_exitKeyPressed()) {
                 return true;
             }

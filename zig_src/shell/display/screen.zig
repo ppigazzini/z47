@@ -1,4 +1,8 @@
 const std = @import("std");
+const print_all_regs = @import("../print/print_all_regs.zig");
+const print_register = @import("../print/print_register.zig");
+const matrix_editor_refresh = @import("../matrix_editor/matrix_editor_refresh.zig");
+const frontier_screen_snap = @import("screen_snap.zig");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/screen.c: the master LCD renderer. Faithful, byte-for-byte
@@ -67,7 +71,6 @@ const irfracOption_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../../frontier.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_asn_browser = @import("../browsers/asn_browser.zig");
 const frontier_assign = @import("../input/assign.zig");
@@ -5785,7 +5788,7 @@ fn _refreshNormalScreen() void {
     }
 
     if (calcMode == CM_MIM) {
-        frontier.showMatrixEditor();
+        matrix_editor_refresh.showMatrixEditor();
     }
     if (calcMode == CM_TIMER) {
         frontier_timer.fnShowTimerApp();
@@ -6331,4 +6334,23 @@ pub export fn fnClDisplay(unusedButMandatoryParameter: u16) callconv(.c) void {
         screenUpdatingMode &= ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
         refreshScreen(151);
     }
+}
+
+pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    _ = unused_but_mandatory_parameter;
+
+    resetShiftState();
+    refreshScreen(80);
+    frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();
+
+    var tam_backup: [TAM_BUFFER_LENGTH]u8 = undefined;
+    frontier_screen_snap.z47_frontier_snap_backup_tam(&tam_backup);
+    if (calcMode == CM_AIM) {
+        print_register.fnP_Alpha(NOPARAM);
+    } else {
+        print_all_regs.fnP_All_Regs(PRN_STK);
+    }
+    frontier_screen_snap.z47_frontier_snap_restore_tam(&tam_backup);
+
+    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }

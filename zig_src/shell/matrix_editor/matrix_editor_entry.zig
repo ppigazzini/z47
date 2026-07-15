@@ -1,4 +1,4 @@
-const frontier = @import("../../frontier.zig");
+const matrix_editor_refresh = @import("matrix_editor_refresh.zig");
 const frontier_error = @import("../error.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const frontier_print = @import("../print/print.zig");
@@ -51,7 +51,7 @@ pub fn edit(regist: u16) void {
     scrollRow = 0;
     scrollColumn = 0;
 
-    frontier.showMatrixEditor();
+    matrix_editor_refresh.showMatrixEditor();
     frontier_screen.refreshScreen(MATRIX_EDITOR_REFRESH_SOURCE);
     frontier_print.printTraceMatElement(@as(u16, @intCast(LINE_FULL)));
 }
@@ -86,3 +86,7 @@ extern var scrollColumn: u16;
 extern fn saveStatsMatrix() void;
 extern fn getRegisterDataType(regist: i16) u32;
 extern fn getMatrixFromRegister(regist: u16) void;
+
+pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
+    edit(regist);
+}

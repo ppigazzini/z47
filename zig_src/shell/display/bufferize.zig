@@ -31,6 +31,7 @@
 //     splits here.
 
 const std = @import("std");
+const matrix_lifecycle = @import("../matrix_editor/matrix_lifecycle.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
@@ -46,7 +47,6 @@ const angularMode_t = c_int;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const gap_insert = @import("text/gap_insert.zig"); // std-only digit-group gap insertion
-const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");
@@ -2854,25 +2854,25 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
             }
 
             if (item == ITM_RIGHT_ARROW) {
-                frontier.mimEnter(true);
+                matrix_lifecycle.mimEnter(true);
                 frontier_matrix_editor.setJRegisterAsInt(true, frontier_matrix_editor.getJRegisterAsInt(true) + 1);
                 frontier_screen.refreshScreen(51);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_LEFT_ARROW) {
-                frontier.mimEnter(true);
+                matrix_lifecycle.mimEnter(true);
                 frontier_matrix_editor.setJRegisterAsInt(true, frontier_matrix_editor.getJRegisterAsInt(true) - 1);
                 frontier_screen.refreshScreen(52);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_UP_ARROW) {
-                frontier.mimEnter(true);
+                matrix_lifecycle.mimEnter(true);
                 frontier_matrix_editor.setIRegisterAsInt(true, frontier_matrix_editor.getIRegisterAsInt(true) - 1);
                 frontier_screen.refreshScreen(53);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_DOWN_ARROW) {
-                frontier.mimEnter(true);
+                matrix_lifecycle.mimEnter(true);
                 frontier_matrix_editor.setIRegisterAsInt(true, frontier_matrix_editor.getIRegisterAsInt(true) + 1);
                 frontier_screen.refreshScreen(54);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
@@ -2887,7 +2887,7 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
 
             switch (item) {
                 ITM_SHOW => {
-                    frontier.mimEnter(true);
+                    matrix_lifecycle.mimEnter(true);
                     temporaryInformation = TI_SHOW_REGISTER;
                 },
                 ITM_OFF => {
@@ -2895,13 +2895,13 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 },
                 else => {
                     if (isFunctionInMim(@bitCast(item), 0)) {
-                        frontier.mimAddNumber(@bitCast(item));
+                        frontier_matrix_editor.mimAddNumber(@bitCast(item));
                     } else if (isFunctionInMim(@bitCast(item), 1)) {
                         lastErrorCode = ERROR_NONE;
-                        frontier.mimEnter(true);
+                        matrix_lifecycle.mimEnter(true);
                         frontier_items.runFunction(@bitCast(item));
                     } else if (isFunctionInMim(@bitCast(item), 2)) {
-                        frontier.mimRunFunction(@bitCast(item), indexOfItems[item].param);
+                        frontier_matrix_editor.mimRunFunction(@bitCast(item), indexOfItems[item].param);
                     }
                 },
             }

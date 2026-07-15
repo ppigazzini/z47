@@ -30,3 +30,11 @@ pub fn restore() void {
 extern var matrixIndex: u16;
 
 extern fn getMatrixFromRegister(regist: u16) void;
+
+pub export fn mimEnter(commit: bool) callconv(.c) void {
+    enter(commit);
+}
+
+pub export fn mimFinalize() callconv(.c) void {
+    finalize();
+}

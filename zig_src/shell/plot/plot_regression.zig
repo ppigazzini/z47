@@ -31,3 +31,7 @@ pub fn run(plot_mode: u16) void {
     sel.applyCommand(&ctx);
     finalize(ctx);
 }
+
+pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
+    run(plot_mode);
+}

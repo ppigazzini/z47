@@ -460,3 +460,7 @@ extern fn getSystemFlag(sf: c_int) bool;
 extern fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8;
 
 extern fn getRegisterDataType(regist: i16) u32;
+
+pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
+    run(option);
+}

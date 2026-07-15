@@ -1,11 +1,11 @@
 {
  "abi_cycles": 0,
- "acd": 44.1,
- "ccd": 18796,
+ "acd": 36.7,
+ "ccd": 15632,
  "cycles": [
   {
-   "size": 87,
-   "zone": "shell/distributions"
+   "size": 56,
+   "zone": "shell/display"
   },
   {
    "size": 36,
@@ -36,9 +36,9 @@
    "zone": "core/state"
   }
  ],
- "edges": 1377,
+ "edges": 1386,
  "files": 426,
- "files_in_cycles": 157,
- "nccd": 5.64,
+ "files_in_cycles": 126,
+ "nccd": 4.69,
  "note": "REPORT-28 M1.3. Cycles in the @import graph, frozen by (size, zone) so a new cycle cannot hide behind a disappearing one. abi_cycles must reach 0 (the contract layer is the bottom). ccd/acd/nccd are REPORTED, not gated: Lakos's NCCD threshold assumes cycles cost compile time, and in z47 they cost neither compile time, flash nor test isolation."
 }

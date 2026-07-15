@@ -1,4 +1,7 @@
 const std = @import("std");
+const matrix_mim_run = @import("matrix_mim_run.zig");
+const matrix_mim_add = @import("matrix_mim_add.zig");
+const matrix_nav = @import("matrix_nav.zig");
 const consts = abi.constants;
 // SPDX-License-Identifier: GPL-3.0-only
 //
@@ -2153,4 +2156,46 @@ pub export fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(
 
 pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
     z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
+}
+
+// The matrix-editor mode guard. It answers a question about THIS editor's own
+// state, so it lives with that state rather than in the module root.
+pub fn matrixInEditorMode() bool {
+    return calcMode == CM_MIM;
+}
+
+pub fn matrixEnsureEditorMode() bool {
+    if (matrixInEditorMode()) {
+        return true;
+    }
+    matrixModeUndefinedError();
+    return false;
+}
+
+pub fn matrixModeUndefinedError() void {
+    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+}
+
+pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
+    if (!matrixEnsureEditorMode()) {
+        return;
+    }
+
+    matrix_nav.incDec(.col, mode);
+}
+
+pub export fn mimAddNumber(item: i16) callconv(.c) void {
+    if (!matrixEnsureEditorMode()) {
+        return;
+    }
+
+    matrix_mim_add.run(item);
+}
+
+pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
+    if (!matrixEnsureEditorMode()) {
+        return;
+    }
+
+    matrix_mim_run.run(func, param);
 }

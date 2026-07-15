@@ -1,5 +1,5 @@
 const abi = @import("abi");
-const frontier = @import("../../frontier.zig");
+const screen = @import("../display/screen.zig");
 const frontier_print = @import("print.zig");
 const FLAG_TRACE: c_uint = 0x8013;
 const FLAG_PRTACT: c_uint = 0xc020;
@@ -126,7 +126,7 @@ fn applyLcd(unused_but_mandatory_parameter: u16) void {
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
         return;
     }
-    frontier.fnSNAP(9876);
+    screen.fnSNAP(9876);
 }
 
 pub fn run(command: Command, value: u16) void {

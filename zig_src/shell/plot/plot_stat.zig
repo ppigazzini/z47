@@ -1,4 +1,4 @@
-const frontier = @import("../../frontier.zig");
+const plot_regression = @import("plot_regression.zig");
 const frontier_curve_fitting = @import("curve_fitting.zig");
 const frontier_error = @import("../error.zig");
 const frontier_plotstat = @import("plotstat.zig");
@@ -167,7 +167,7 @@ fn showSoftmenuForMode(ctx: PlotStatContext) void {
 
 fn updateRegressionLine(ctx: *PlotStatContext) void {
     if (ctx.effective_mode != PLOT_START and ctx.effective_mode != H_PLOT and ctx.effective_mode != H_NORM) {
-        frontier.fnPlotRegressionLine(ctx.effective_mode);
+        plot_regression.fnPlotRegressionLine(ctx.effective_mode);
     } else {
         lastPlotMode = ctx.effective_mode;
     }

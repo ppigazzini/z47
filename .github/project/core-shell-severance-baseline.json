@@ -1,4 +1,4 @@
 {
-  "extern_edges": 817,
+  "extern_edges": 813,
   "note": "REPORT-28 s42: FROZEN non-regression guard, NOT a ratchet toward 0. core->shell extern edges are core files calling symbols upstream declares in its own src/c47 headers (465 of 469 = 99.1%); upstream is ONE library with no core/shell split, so this mirrors how upstream's own code is written and driving it to 0 would deviate from upstream in its hottest files. The gate asks only: did z47 ADD a coupling it did not have? The separate import-edge invariant (core @importing shell source) is genuine and stays at 0."
 }
