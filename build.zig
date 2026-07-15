@@ -59,7 +59,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/core/kernel/calc_state_progmem.zig",
         "zig_src/core/kernel/register_metadata_payload_bytes.zig",
         "zig_src/core/kernel/register_descriptor_codec.zig",
-        "zig_src/core/kernel/block_availability_pure.zig",
+        "zig_src/core/memory/block_availability_pure.zig",
         "zig_src/core/kernel/flag_classify.zig",
         "zig_src/core/kernel/vector_shape.zig",
         "zig_src/core/kernel/register_range_ops.zig",
