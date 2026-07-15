@@ -326,6 +326,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/project/check-item-seam-drift.py --repo-root .
+      - name: Enforce module-graph cycles do not grow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-module-graph.py --repo-root .
 
   c-dependency-policy:
     name: Verify Phase I C dependency policy
