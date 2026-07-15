@@ -9,7 +9,7 @@
 // shared ctxtReal39 context so call sites read as complex arithmetic, not six
 // pointer args.
 
-const types = @import("types.zig");
+const types = @import("primitives.zig");
 const Real = types.Real;
 const Complex = types.Complex;
 const RealContext = types.RealContext;

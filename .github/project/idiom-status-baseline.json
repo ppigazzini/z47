@@ -1,28 +1,29 @@
 {
-  "totals": {
-    "extern_struct_files": 13,
-    "cptr_files": 92,
-    "ptrcast_sites": 1336,
-    "callconv_c_sites": 2875,
-    "extern_fn_sites": 3517,
-    "printf_family_files": 47,
-    "anyopaque_files": 88,
-    "off_offset_sites": 77,
-    "constants_blob_sites": 1,
-    "qspi_section_files": 24
-  },
-  "owner_count": 407,
-  "seam_totals": {
-    "extern_struct_files": 2,
-    "cptr_files": 0,
-    "ptrcast_sites": 0,
-    "callconv_c_sites": 0,
-    "extern_fn_sites": 0,
-    "printf_family_files": 0,
-    "anyopaque_files": 0,
-    "off_offset_sites": 0,
-    "constants_blob_sites": 0,
-    "qspi_section_files": 2
-  },
-  "seam_file_count": 2
+ "note_extern_struct_files": "Raised 13 -> 14 for zig_src/abi/primitives.zig (REPORT-28 M2). This metric counts FILES CONTAINING an extern struct, as a proxy for transliteration debt. M2 added no extern struct: it MOVED existing layout mirrors out of abi/types.zig into a leaf so abi/ stops being an import cycle. Verified from the git object store -- extern struct declarations are 75 -> 75 tree-wide and 49 -> 49 within abi/. The +1 is the new file and nothing else. Note the metric's blind spot: it cannot distinguish adding debt from redistributing it, so any file split reads as a regression here.",
+ "owner_count": 410,
+ "seam_file_count": 2,
+ "seam_totals": {
+  "anyopaque_files": 0,
+  "callconv_c_sites": 0,
+  "constants_blob_sites": 0,
+  "cptr_files": 0,
+  "extern_fn_sites": 0,
+  "extern_struct_files": 2,
+  "off_offset_sites": 0,
+  "printf_family_files": 0,
+  "ptrcast_sites": 0,
+  "qspi_section_files": 2
+ },
+ "totals": {
+  "anyopaque_files": 88,
+  "callconv_c_sites": 2875,
+  "constants_blob_sites": 1,
+  "cptr_files": 92,
+  "extern_fn_sites": 3517,
+  "extern_struct_files": 14,
+  "off_offset_sites": 77,
+  "printf_family_files": 47,
+  "ptrcast_sites": 1336,
+  "qspi_section_files": 24
+ }
 }

@@ -12,7 +12,7 @@
 // constantPointers.h, seeded with the elec pilot's constants and grown per
 // owner as the refactor rolls out.
 
-const types = @import("types.zig");
+const types = @import("primitives.zig");
 const Real = types.Real;
 
 const constants = @extern([*]const u8, .{ .name = "constants" });

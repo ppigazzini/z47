@@ -11,7 +11,7 @@
 // types.zig re-exports these accessors by name so owners reach them as
 // abi.registerReal34(...). The inline fns codegen only where used.
 
-const types = @import("types.zig");
+const types = @import("primitives.zig");
 const Real34 = types.Real34;
 const Complex34 = types.Complex34;
 const MatrixHeader = types.MatrixHeader;
