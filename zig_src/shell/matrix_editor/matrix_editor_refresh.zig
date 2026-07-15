@@ -1,5 +1,4 @@
 const matrix_nav = @import("matrix_nav.zig");
-const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const Geometry = struct {
     rows: i16,
@@ -61,8 +60,8 @@ fn applyWrapGrowthIfNeeded(geometry: Geometry) void {
 
 fn readSelection(geometry: Geometry) Selection {
     return .{
-        .row = if (geometry.col_vector) frontier.getJRegisterAsInt(true) else frontier.getIRegisterAsInt(true),
-        .col = if (geometry.col_vector) frontier.getIRegisterAsInt(true) else frontier.getJRegisterAsInt(true),
+        .row = if (geometry.col_vector) frontier_matrix_editor.getJRegisterAsInt(true) else frontier_matrix_editor.getIRegisterAsInt(true),
+        .col = if (geometry.col_vector) frontier_matrix_editor.getIRegisterAsInt(true) else frontier_matrix_editor.getJRegisterAsInt(true),
     };
 }
 

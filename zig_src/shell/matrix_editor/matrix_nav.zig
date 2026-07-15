@@ -1,4 +1,3 @@
-const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const FLAG_WRAPEND: c_uint = 0xc01a;
 const FLAG_WRAPEDG: c_uint = 0xc03f;
@@ -20,19 +19,19 @@ pub fn wrap(rows: u16, cols: u16) bool {
     clearSystemFlag(FLAG_WRAPEDG);
     clearSystemFlag(FLAG_WRAPEND);
 
-    if (frontier.getIRegisterAsInt(true) < 0) {
+    if (frontier_matrix_editor.getIRegisterAsInt(true) < 0) {
         wrapNegativeRow(rows, cols);
-    } else if (frontier.getIRegisterAsInt(true) == @as(i16, @intCast(rows))) {
+    } else if (frontier_matrix_editor.getIRegisterAsInt(true) == @as(i16, @intCast(rows))) {
         wrapOverflowRow(rows, cols);
     }
 
-    if (frontier.getJRegisterAsInt(true) < 0) {
+    if (frontier_matrix_editor.getJRegisterAsInt(true) < 0) {
         wrapNegativeCol(rows, cols);
-    } else if (frontier.getJRegisterAsInt(true) == @as(i16, @intCast(cols))) {
+    } else if (frontier_matrix_editor.getJRegisterAsInt(true) == @as(i16, @intCast(cols))) {
         wrapOverflowCol(rows, cols);
     }
 
-    return frontier.getIRegisterAsInt(true) == @as(i16, @intCast(rows));
+    return frontier_matrix_editor.getIRegisterAsInt(true) == @as(i16, @intCast(rows));
 }
 
 fn lastRow(rows: u16) i16 {
@@ -52,49 +51,49 @@ fn markWrapEnd() void {
 }
 
 fn atTopLeft() bool {
-    return frontier.getIRegisterAsInt(true) == 0 and frontier.getJRegisterAsInt(true) == 0;
+    return frontier_matrix_editor.getIRegisterAsInt(true) == 0 and frontier_matrix_editor.getJRegisterAsInt(true) == 0;
 }
 
 fn atBottomRight(rows: u16, cols: u16) bool {
-    return frontier.getIRegisterAsInt(true) == lastRow(rows) and frontier.getJRegisterAsInt(true) == lastCol(cols);
+    return frontier_matrix_editor.getIRegisterAsInt(true) == lastRow(rows) and frontier_matrix_editor.getJRegisterAsInt(true) == lastCol(cols);
 }
 
 fn advanceRowWithGrow(rows: u16) void {
-    const reached_last_row = frontier.getIRegisterAsInt(true) == lastRow(rows);
+    const reached_last_row = frontier_matrix_editor.getIRegisterAsInt(true) == lastRow(rows);
     const should_wrap_to_top = !getSystemFlag(@as(c_int, @intCast(FLAG_GROW))) and reached_last_row;
     if (should_wrap_to_top) {
-        frontier.setIRegisterAsInt(true, 0);
+        frontier_matrix_editor.setIRegisterAsInt(true, 0);
     } else {
-        frontier.setIRegisterAsInt(true, frontier.getIRegisterAsInt(true) + 1);
+        frontier_matrix_editor.setIRegisterAsInt(true, frontier_matrix_editor.getIRegisterAsInt(true) + 1);
     }
 }
 
 fn decrementRowWithBottomWrap(rows: u16) void {
-    if (frontier.getIRegisterAsInt(true) == 0) {
-        frontier.setIRegisterAsInt(true, lastRow(rows));
+    if (frontier_matrix_editor.getIRegisterAsInt(true) == 0) {
+        frontier_matrix_editor.setIRegisterAsInt(true, lastRow(rows));
     } else {
-        frontier.setIRegisterAsInt(true, frontier.getIRegisterAsInt(true) - 1);
+        frontier_matrix_editor.setIRegisterAsInt(true, frontier_matrix_editor.getIRegisterAsInt(true) - 1);
     }
 }
 
 fn incrementColWithLeftWrap(cols: u16) void {
-    if (frontier.getJRegisterAsInt(true) == lastCol(cols)) {
-        frontier.setJRegisterAsInt(true, 0);
+    if (frontier_matrix_editor.getJRegisterAsInt(true) == lastCol(cols)) {
+        frontier_matrix_editor.setJRegisterAsInt(true, 0);
     } else {
-        frontier.setJRegisterAsInt(true, frontier.getJRegisterAsInt(true) + 1);
+        frontier_matrix_editor.setJRegisterAsInt(true, frontier_matrix_editor.getJRegisterAsInt(true) + 1);
     }
 }
 
 fn decrementColWithRightWrap(cols: u16) void {
-    if (frontier.getJRegisterAsInt(true) == 0) {
-        frontier.setJRegisterAsInt(true, lastCol(cols));
+    if (frontier_matrix_editor.getJRegisterAsInt(true) == 0) {
+        frontier_matrix_editor.setJRegisterAsInt(true, lastCol(cols));
     } else {
-        frontier.setJRegisterAsInt(true, frontier.getJRegisterAsInt(true) - 1);
+        frontier_matrix_editor.setJRegisterAsInt(true, frontier_matrix_editor.getJRegisterAsInt(true) - 1);
     }
 }
 
 fn wrapNegativeRow(rows: u16, cols: u16) void {
-    frontier.setIRegisterAsInt(true, lastRow(rows));
+    frontier_matrix_editor.setIRegisterAsInt(true, lastRow(rows));
     markWrapEdge();
     decrementColWithRightWrap(cols);
     if (atBottomRight(rows, cols)) {
@@ -104,7 +103,7 @@ fn wrapNegativeRow(rows: u16, cols: u16) void {
 
 fn wrapOverflowRow(rows: u16, cols: u16) void {
     _ = rows;
-    frontier.setIRegisterAsInt(true, 0);
+    frontier_matrix_editor.setIRegisterAsInt(true, 0);
     markWrapEdge();
     incrementColWithLeftWrap(cols);
     if (atTopLeft()) {
@@ -113,7 +112,7 @@ fn wrapOverflowRow(rows: u16, cols: u16) void {
 }
 
 fn wrapNegativeCol(rows: u16, cols: u16) void {
-    frontier.setJRegisterAsInt(true, lastCol(cols));
+    frontier_matrix_editor.setJRegisterAsInt(true, lastCol(cols));
     markWrapEdge();
     decrementRowWithBottomWrap(rows);
     if (atBottomRight(rows, cols)) {
@@ -123,7 +122,7 @@ fn wrapNegativeCol(rows: u16, cols: u16) void {
 
 fn wrapOverflowCol(rows: u16, cols: u16) void {
     _ = cols;
-    frontier.setJRegisterAsInt(true, 0);
+    frontier_matrix_editor.setJRegisterAsInt(true, 0);
     markWrapEdge();
     advanceRowWithGrow(rows);
     if (atTopLeft()) {

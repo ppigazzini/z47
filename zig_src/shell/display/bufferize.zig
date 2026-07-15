@@ -47,6 +47,7 @@ const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const gap_insert = @import("text/gap_insert.zig"); // std-only digit-group gap insertion
 const frontier = @import("../../frontier.zig");
+const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");
 const frontier_char_string = @import("text/char_string.zig");
@@ -2854,25 +2855,25 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
 
             if (item == ITM_RIGHT_ARROW) {
                 frontier.mimEnter(true);
-                frontier.setJRegisterAsInt(true, frontier.getJRegisterAsInt(true) + 1);
+                frontier_matrix_editor.setJRegisterAsInt(true, frontier_matrix_editor.getJRegisterAsInt(true) + 1);
                 frontier_screen.refreshScreen(51);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_LEFT_ARROW) {
                 frontier.mimEnter(true);
-                frontier.setJRegisterAsInt(true, frontier.getJRegisterAsInt(true) - 1);
+                frontier_matrix_editor.setJRegisterAsInt(true, frontier_matrix_editor.getJRegisterAsInt(true) - 1);
                 frontier_screen.refreshScreen(52);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_UP_ARROW) {
                 frontier.mimEnter(true);
-                frontier.setIRegisterAsInt(true, frontier.getIRegisterAsInt(true) - 1);
+                frontier_matrix_editor.setIRegisterAsInt(true, frontier_matrix_editor.getIRegisterAsInt(true) - 1);
                 frontier_screen.refreshScreen(53);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);
             } else if (item == ITM_DOWN_ARROW) {
                 frontier.mimEnter(true);
-                frontier.setIRegisterAsInt(true, frontier.getIRegisterAsInt(true) + 1);
+                frontier_matrix_editor.setIRegisterAsInt(true, frontier_matrix_editor.getIRegisterAsInt(true) + 1);
                 frontier_screen.refreshScreen(54);
                 frontier_print.printTrace(@bitCast(item), @bitCast(item));
                 frontier_print.printTraceMatElement(LINE_FULL_U);

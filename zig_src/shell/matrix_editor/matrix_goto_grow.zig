@@ -44,8 +44,8 @@ pub fn goToColumn(col: u16) void {
     // either way); only the register commit is gated on the bounds check.
     if (validateBounds(row, col)) {
         frontier_matrix_editor.z47_frontier_matrix_commit_open_to_register();
-        frontier.setIRegisterAsInt(false, @as(i16, @intCast(row)));
-        frontier.setJRegisterAsInt(false, @as(i16, @intCast(col)));
+        frontier_matrix_editor.setIRegisterAsInt(false, @as(i16, @intCast(row)));
+        frontier_matrix_editor.setJRegisterAsInt(false, @as(i16, @intCast(col)));
     }
     frontier_matrix_editor.z47_frontier_matrix_calc_mode_normal_gui();
 }

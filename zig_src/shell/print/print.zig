@@ -57,6 +57,7 @@ const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // shared ABI bindings
 const frontier = @import("../../frontier.zig");
+const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_char_string = @import("../display/text/char_string.zig");
@@ -1651,8 +1652,8 @@ pub export fn printTraceX(where: u16) callconv(.c) void {
 pub export fn printTraceMatElement(where: u16) callconv(.c) void {
     if (comptime !ir_printing) return;
     if (getSystemFlag(FLAG_TRACE) and getSystemFlag(FLAG_PRTACT)) {
-        const i: i16 = frontier.getIRegisterAsInt(true);
-        const j: i16 = frontier.getJRegisterAsInt(true);
+        const i: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
+        const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
         if (getRegisterDataType(matrixIndexReg()) == dtReal34Matrix) {
             var mat: real34Matrix_t = undefined;
             const matrix = &mat;

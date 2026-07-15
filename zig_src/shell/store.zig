@@ -23,6 +23,7 @@ const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const store_register_range = @import("store_register_range.zig"); // std-only store register-range validity
 const frontier = @import("../frontier.zig");
+const frontier_matrix_editor = @import("matrix_editor/matrix_editor.zig");
 const frontier_char_string = @import("display/text/char_string.zig");
 const frontier_debug = @import("debug.zig");
 const frontier_error = @import("error.zig");
@@ -342,8 +343,8 @@ fn _checkReadOnlyVariable(regist: u16) bool {
 // Indexed-matrix element store callbacks (static in the C)
 // ===========================================================================
 fn storeElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
-    const i: i16 = frontier.getIRegisterAsInt(true);
-    const j: i16 = frontier.getJRegisterAsInt(true);
+    const i: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
+    const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
 
     if (getRegisterDataType(REGISTER_X) == dtLongInteger) {
@@ -362,8 +363,8 @@ fn storeElementReal(matrix: *real34Matrix_t) callconv(.c) bool {
 }
 
 fn storeElementComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
-    const i: i16 = frontier.getIRegisterAsInt(true);
-    const j: i16 = frontier.getJRegisterAsInt(true);
+    const i: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
+    const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(i32, i) * @as(i32, @as(u16, matrix.header.matrixColumns)) + @as(i32, j));
     const elem: *align(1) complex34_t = @ptrCast(&matrix.matrixElements.?[idx]);
 
@@ -809,8 +810,8 @@ pub export fn fnStoreStack(regist: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
     const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = frontier.getIRegisterAsInt(true);
-    const jBak: i16 = frontier.getJRegisterAsInt(true);
+    const iBak: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
+    const jBak: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     var rx: real_t = undefined;
     var rows: u16 = undefined;
     var cols: u16 = undefined;
@@ -826,20 +827,20 @@ pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
         return;
     }
     // C int promotion: (ix-1)/cols is signed int arithmetic.
-    frontier.setIRegisterAsInt(false, @intCast(@divTrunc(@as(i32, ix) - 1, @as(i32, cols)) + 1));
-    frontier.setJRegisterAsInt(false, @intCast(@rem(@as(i32, ix) - 1, @as(i32, cols)) + 1));
+    frontier_matrix_editor.setIRegisterAsInt(false, @intCast(@divTrunc(@as(i32, ix) - 1, @as(i32, cols)) + 1));
+    frontier_matrix_editor.setJRegisterAsInt(false, @intCast(@rem(@as(i32, ix) - 1, @as(i32, cols)) + 1));
     matrixIndex = @intCast(REGISTER_Y);
     _fnStoreElement(false);
-    frontier.setIRegisterAsInt(false, iBak);
-    frontier.setJRegisterAsInt(false, jBak);
+    frontier_matrix_editor.setIRegisterAsInt(false, iBak);
+    frontier_matrix_editor.setJRegisterAsInt(false, jBak);
     matrixIndex = matrixIndexBak;
 }
 
 pub export fn fnStoreVector(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
     const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = frontier.getIRegisterAsInt(true);
-    const jBak: i16 = frontier.getJRegisterAsInt(true);
+    const iBak: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
+    const jBak: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_X, "In function fnStoreVector:", &rows, &cols)) {
@@ -851,8 +852,8 @@ pub export fn fnStoreVector(regist_arg: u16) callconv(.c) void {
     matrixIndex = @intCast(REGISTER_Y);
     var ix: u16 = 1;
     while (@as(u32, ix) <= @as(u32, rows) * @as(u32, cols) and lastErrorCode == 0) : (ix +%= 1) { // for 5x5, from 1 to 25
-        frontier.setIRegisterAsInt(false, @intCast((ix - 1) / cols + 1));
-        frontier.setJRegisterAsInt(false, @intCast((ix - 1) % cols + 1));
+        frontier_matrix_editor.setIRegisterAsInt(false, @intCast((ix - 1) / cols + 1));
+        frontier_matrix_editor.setJRegisterAsInt(false, @intCast((ix - 1) % cols + 1));
         fnDrop(NOPARAM);
         frontier_recall.fnRecall(regist);
         regist +%= 1;
@@ -867,8 +868,8 @@ pub export fn fnStoreVector(regist_arg: u16) callconv(.c) void {
             return;
         }
     }
-    frontier.setIRegisterAsInt(false, iBak);
-    frontier.setJRegisterAsInt(false, jBak);
+    frontier_matrix_editor.setIRegisterAsInt(false, iBak);
+    frontier_matrix_editor.setJRegisterAsInt(false, jBak);
     matrixIndex = matrixIndexBak;
     fnDrop(NOPARAM);
     copySourceRegisterToDestRegister(TEMP_REGISTER_1, getStackTop());

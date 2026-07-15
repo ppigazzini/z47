@@ -60,7 +60,6 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../../frontier.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_char_string = @import("text/char_string.zig");
 const numeral_grouping = @import("text/numeral_grouping.zig"); // std-only digit-group separator math
@@ -3597,8 +3596,8 @@ pub export fn mimShowElement() callconv(.c) void {
     const savedDisplayFormat = displayFormat;
     const savedDisplayFormatDigits = displayFormatDigits;
 
-    const i: i16 = frontier.getIRegisterAsInt(true);
-    const j: i16 = frontier.getJRegisterAsInt(true);
+    const i: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
+    const j: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
 
     displayFormat = DF_ALL;
     displayFormatDigits = 0;

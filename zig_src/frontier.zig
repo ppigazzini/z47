@@ -693,22 +693,6 @@ pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
     plot_stat.run(plot_mode);
 }
 
-pub export fn getIRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
-    return frontier_matrix_editor.z47_frontier_matrix_get_register_as_int(REGISTER_I, as_array_pointer);
-}
-
-pub export fn getJRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
-    return frontier_matrix_editor.z47_frontier_matrix_get_register_as_int(REGISTER_J, as_array_pointer);
-}
-
-pub export fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
-    frontier_matrix_editor.z47_frontier_matrix_set_register_as_int(REGISTER_I, as_array_pointer, to_store);
-}
-
-pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
-    frontier_matrix_editor.z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
-}
-
 fn matrixModeUndefinedError() void {
     frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }

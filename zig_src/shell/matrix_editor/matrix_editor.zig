@@ -2135,3 +2135,22 @@ comptime {
     _ = &matEditMode;
     _ = &tmpRow;
 }
+
+// The I and J register accessors. Upstream defines them here (ui/matrixEditor.c:364),
+// and they are the matrix editor's own row/column cursor: they belong with the
+// state they read, not in the module root. A root force-imports; it does not export.
+pub export fn getIRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
+    return z47_frontier_matrix_get_register_as_int(REGISTER_I, as_array_pointer);
+}
+
+pub export fn getJRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
+    return z47_frontier_matrix_get_register_as_int(REGISTER_J, as_array_pointer);
+}
+
+pub export fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
+    z47_frontier_matrix_set_register_as_int(REGISTER_I, as_array_pointer, to_store);
+}
+
+pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
+    z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
+}
