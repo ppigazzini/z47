@@ -6,7 +6,7 @@
 // wrapper that links the register, drives it and reports type errors.
 
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const real34Matrix_t = runtime.real34Matrix_t;
 const complex34Matrix_t = runtime.complex34Matrix_t;

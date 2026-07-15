@@ -22,7 +22,7 @@ const const_1 = consts.const_1;
 // FLAG_ASLIFT == 0xc023 (real value; runtime's 0x8019 is stale).
 // TI_* values are the real defines.h values.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const real_t = runtime.real_t;
 const realContext_t = runtime.realContext_t;

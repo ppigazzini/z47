@@ -12,7 +12,7 @@ const const39_pi = consts.const39_pi;
 // _realAgm / _complexAgm stay private. The EXTRA_INFO_ON_CALC_ERROR sprintf
 // hint becomes a fixed moreInfoOnError string.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
 const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig");

@@ -1,6 +1,6 @@
 const circular_trig_owned = @import("../trig/circular_trig.zig");
 const real_trig_owned = @import("../trig/real_trig.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;

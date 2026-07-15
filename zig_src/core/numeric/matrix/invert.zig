@@ -5,7 +5,7 @@
 // math_matrix_complex_core.zig) and write the result back, copying the
 // source first when res differs from the input.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 

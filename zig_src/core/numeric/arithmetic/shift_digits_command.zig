@@ -1,5 +1,5 @@
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn shiftDigitsError(function_name: [:0]const u8, operation_name: []const u8) void {
     var message_buffer: [96]u8 = undefined;

@@ -1,6 +1,6 @@
-const runtime = @import("command_wrappers_runtime.zig");
-const selectors_add_sub = @import("arithmetic_dispatch_selectors_add_sub.zig");
-const selectors_mul_div = @import("arithmetic_dispatch_selectors_mul_div.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
+const selectors_add_sub = @import("dispatch_selectors_add_sub.zig");
+const selectors_mul_div = @import("dispatch_selectors_mul_div.zig");
 
 const BranchFn = selectors_add_sub.BranchFn;
 const no_register = @as(runtime.calcRegister_t, -1);

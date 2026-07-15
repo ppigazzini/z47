@@ -41,10 +41,10 @@ zig_src/abi/runtime.zig
 zig_src/abi/registers.zig
 zig_src/core/numeric/integer/shortint_runtime.zig
 zig_src/abi/constants/constants_runtime.zig
-zig_src/core/numeric/dispatch/command_wrappers_runtime.zig
+zig_src/core/numeric/command_wrappers/runtime.zig
 zig_src/core/numeric/arithmetic/addition_cells.zig
-zig_src/core/numeric/dispatch/dispatch_cells_runtime.zig
-zig_src/core/numeric/dispatch/runtime_helpers.zig
+zig_src/core/numeric/arithmetic/dispatch_cells_runtime.zig
+zig_src/core/numeric/command_wrappers/helpers.zig
 zig_src/core/numeric/matrix/lifecycle.zig
 zig_src/core/numeric/matrix/insert.zig
 zig_src/core/numeric/matrix/determinant.zig

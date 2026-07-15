@@ -1,5 +1,5 @@
 const abi = @import("abi");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn real34DataPointer(regist: runtime.calcRegister_t) *runtime.real34_t {
     return abi.registerReal34Aligned(regist);

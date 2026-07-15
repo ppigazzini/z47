@@ -8,7 +8,7 @@
 // L, U and permutation matrices.
 
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 
 const real34_t = runtime.real34_t;

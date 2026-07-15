@@ -5,7 +5,7 @@
 // shared real_t worker _euclideanNormRealMatrix). The dot/cross products, the
 // vector angle and the rest of the engine stay in the matrix bridge.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 
 const real_t = runtime.real_t;

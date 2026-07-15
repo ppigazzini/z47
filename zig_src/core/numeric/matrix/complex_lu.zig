@@ -5,7 +5,7 @@
 // luCpxMat worker and writing the combined L/U factors back (the pivot vector is
 // filled in for the caller).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 

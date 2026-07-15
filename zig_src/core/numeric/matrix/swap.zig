@@ -5,7 +5,7 @@
 // workers _realMatrixSwap / _complexMatrixSwap). The remaining matrix engine
 // stays in the matrix bridge until it is ported.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_matrix_lifecycle = @import("lifecycle.zig");

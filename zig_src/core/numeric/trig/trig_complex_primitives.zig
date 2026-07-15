@@ -1,6 +1,6 @@
 const circular_trig_owned = @import("circular_trig.zig");
 const real_trig_owned = @import("real_trig.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 pub fn sinComplex(
     real: *const runtime.real_t,

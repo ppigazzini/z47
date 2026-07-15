@@ -1,6 +1,6 @@
 const build_options = @import("math_command_wrappers_build_options");
 const atan_owned = @import("atan.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;

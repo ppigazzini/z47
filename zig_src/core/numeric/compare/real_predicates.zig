@@ -12,7 +12,7 @@
 //
 // Only genuinely-pure predicates belong here. Sign tests that dispatch into
 // decNumber/decQuad (`realIsZero`'s special-value check, `real34IsZero` via
-// `decQuadIsZero`) stay in `math_command_wrappers_runtime.zig`; they are not
+// `decQuadIsZero`) stay in `command_wrappers/runtime.zig`; they are not
 // std-only and cannot be unit-tested without the C runtime.
 
 const std = @import("std");

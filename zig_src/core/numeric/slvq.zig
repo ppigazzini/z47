@@ -23,7 +23,7 @@ const const_4 = consts.const_4;
 // DISCRIMINANT blocks are omitted. EXTRA_INFO sprintf hints become fixed
 // moreInfoOnError strings.
 
-const runtime = @import("dispatch/command_wrappers_runtime.zig");
+const runtime = @import("command_wrappers/runtime.zig");
 const math_addition_cells = @import("arithmetic/addition_cells.zig");
 const math_division_cells = @import("arithmetic/division_cells.zig");
 const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig");

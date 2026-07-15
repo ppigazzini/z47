@@ -1,5 +1,5 @@
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const math_matrix_kinds = @import("kinds.zig"); // std-only matrix operand kinds + size validity
 pub const MatrixOperandKinds = math_matrix_kinds.MatrixOperandKinds;

@@ -10,7 +10,7 @@ const consts = abi.constants;
 // not-yet-ported engine still calls stay in the matrix bridge as their own C
 // statics; only the two public determinant entry points are renamed.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

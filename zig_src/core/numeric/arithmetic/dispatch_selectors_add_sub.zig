@@ -1,4 +1,4 @@
-const runtime = @import("command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 pub const BranchFn = *const fn () callconv(.c) void;
 

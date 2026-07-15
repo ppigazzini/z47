@@ -6,7 +6,7 @@
 // checks squareness and stores the scalar result.
 
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const real34_t = runtime.real34_t;
 const real34Matrix_t = runtime.real34Matrix_t;

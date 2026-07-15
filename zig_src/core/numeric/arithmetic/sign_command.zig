@@ -1,4 +1,4 @@
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn signReal() callconv(.c) void {
     const x = runtime.registerReal34Ptr(runtime.REGISTER_X);

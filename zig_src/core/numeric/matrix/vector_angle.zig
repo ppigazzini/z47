@@ -4,7 +4,7 @@
 // product divided by the product of the euclidean (p=2) norms, fed through
 // arc-cosine. The remaining matrix engine stays in the matrix bridge.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;

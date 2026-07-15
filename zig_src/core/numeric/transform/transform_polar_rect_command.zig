@@ -1,5 +1,5 @@
 const rectangular_to_polar_owned = @import("rectangular_to_polar.zig");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
     switch (data_type) {

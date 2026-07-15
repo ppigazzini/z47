@@ -27,7 +27,7 @@ const const_3Off = consts.const_3Off;
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 // The SAVE_SPACE_DM42_12ELLIP guard is dead on every z47 build.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_agm = @import("agm.zig");
 const math_circular_trig_command = @import("../trig/circular_trig_command.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
@@ -37,7 +37,7 @@ const math_gd = @import("gd.zig");
 const math_inverse_trig_command = @import("../trig/inverse_trig_command.zig");
 const math_ln_complex = @import("../ln_complex.zig");
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
-const math_runtime_helpers = @import("../dispatch/runtime_helpers.zig");
+const math_runtime_helpers = @import("../command_wrappers/helpers.zig");
 const math_transform_complex_helpers = @import("../transform/transform_complex_helpers.zig");
 const math_wp34s = @import("wp34s.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");

@@ -2,7 +2,7 @@ const std = @import("std");
 const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const rectangular_to_polar_owned = @import("transform/rectangular_to_polar.zig");
-const runtime = @import("dispatch/command_wrappers_runtime.zig");
+const runtime = @import("command_wrappers/runtime.zig");
 
 fn realMatrixElementCount(matrix: *const runtime.real34Matrix_t) usize {
     return @as(usize, matrix.header.matrixRows) * @as(usize, matrix.header.matrixColumns);

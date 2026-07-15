@@ -10,7 +10,7 @@
 // longInteger_* helpers. The EXTRA_INFO_ON_CALC_ERROR sprintf hints become
 // fixed moreInfoOnError strings (no-op under TESTSUITE / DMCP).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 const abi = @import("abi");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");

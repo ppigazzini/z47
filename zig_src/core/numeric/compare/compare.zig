@@ -1,5 +1,5 @@
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const legacy = runtime.legacy;
 
 pub const Mode = enum(u8) {

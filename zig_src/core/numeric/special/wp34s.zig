@@ -24,14 +24,14 @@ const consts = abi.constants;
 // buffers cast to *real_t. WP34S_Mod / WP34S_BigMod reproduce the DM42-only
 // small-buffer path via the wp34s_mod_small_buffers build option.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 pub const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_division_cells = @import("../arithmetic/division_cells.zig");
 const math_ln_complex = @import("../ln_complex.zig");
 const math_lnbeta = @import("lnbeta.zig");
 const math_multiplication_cells = @import("../arithmetic/multiplication_cells.zig");
-const math_runtime_helpers = @import("../dispatch/runtime_helpers.zig");
+const math_runtime_helpers = @import("../command_wrappers/helpers.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const wp34s_atan = @import("../trig/wp34s_atan.zig"); // inverse-circular split
 const wp34s_trig = @import("wp34s_trig.zig"); // forward-circular split

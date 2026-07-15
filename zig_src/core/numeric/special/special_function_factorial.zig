@@ -1,4 +1,4 @@
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi"); // std-only integer primitives (math owners keep abi private via runtime)
 
 fn factReal() callconv(.c) void {

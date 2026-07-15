@@ -14,9 +14,9 @@
 
 const std = @import("std");
 const abi = @import("abi");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("real_predicates.zig");
-const math_runtime_helpers = @import("../dispatch/runtime_helpers.zig");
+const math_runtime_helpers = @import("../command_wrappers/helpers.zig");
 // Product ABI globals (uint8_t in src/c47/c47.c).  This file is only built
 // for the product surface, so the exact C types are used here even though
 // the shared runtime declares the fake-harness ABI for significantDigits.

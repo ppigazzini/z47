@@ -9,7 +9,7 @@
 // solver) and the rest of the engine live in other matrix owners, not in
 // this scalar-divide owner.
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_matrix_lifecycle = @import("lifecycle.zig");

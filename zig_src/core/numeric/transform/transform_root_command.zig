@@ -1,4 +1,4 @@
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn sqrtShoI() callconv(.c) void {
     var sign_value: i32 = 0;

@@ -8,7 +8,7 @@
 // helpers stay private. EXTRA_INFO_MESSAGE hints become fixed moreInfoOnError
 // strings (no-op under TESTSUITE/DMCP).
 
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");

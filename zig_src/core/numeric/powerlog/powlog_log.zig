@@ -1,4 +1,4 @@
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn log2LonI() callconv(.c) void {
     runtime.logxyLonI(runtime.z47_math_wrappers_const_ln2());

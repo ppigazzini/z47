@@ -6,7 +6,7 @@
 // surface.
 
 const std = @import("std");
-const runtime = @import("../dispatch/command_wrappers_runtime.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
