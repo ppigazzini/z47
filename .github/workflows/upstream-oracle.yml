@@ -316,6 +316,11 @@ jobs:
         run: |
           set -euo pipefail
           bash .github/project/check-module-carriers.sh
+      - name: Enforce transliteration contract (hot upstream files stay 1:1)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-transliteration-contract.py --repo-root .
 
   c-dependency-policy:
     name: Verify Phase I C dependency policy
