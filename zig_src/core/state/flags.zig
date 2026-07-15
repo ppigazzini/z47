@@ -84,7 +84,7 @@ fn needsRefreshState(system_flag: u16) bool {
 
 fn needsClearStatusBar(system_flag: u16) bool {
     return switch (system_flag) {
-        0x802c,
+        runtime.FLAG_SBdate,
         0x802e,
         0x802f,
         runtime.FLAG_SBang,
@@ -223,10 +223,18 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
                 setSystemFlagBit(runtime.FLAG_SBadm);
             }
         },
+        runtime.FLAG_SBdate => {
+            if (getSystemFlag(@intCast(runtime.FLAG_SBdate)) and getSystemFlag(@intCast(runtime.FLAG_SBtime)) and getSystemFlag(@intCast(runtime.FLAG_SBwoy))) {
+                // Date, time and WoY do not fit together; the default clears the time.
+                clearSystemFlagBit(runtime.FLAG_SBtime);
+            }
+        },
         runtime.FLAG_SBwoy, runtime.FLAG_SBtime => {
-            if (system_flag == runtime.FLAG_SBtime and getSystemFlag(@intCast(runtime.FLAG_SBtime))) {
+            // Time and WoY are exclusive only while the date shows; with the date
+            // off both fit, the time taking the date position.
+            if (system_flag == runtime.FLAG_SBtime and getSystemFlag(@intCast(runtime.FLAG_SBtime)) and getSystemFlag(@intCast(runtime.FLAG_SBdate))) {
                 clearSystemFlagBit(runtime.FLAG_SBwoy);
-            } else if (system_flag == runtime.FLAG_SBwoy and getSystemFlag(@intCast(runtime.FLAG_SBwoy))) {
+            } else if (system_flag == runtime.FLAG_SBwoy and getSystemFlag(@intCast(runtime.FLAG_SBwoy)) and getSystemFlag(@intCast(runtime.FLAG_SBdate))) {
                 clearSystemFlagBit(runtime.FLAG_SBtime);
             }
         },

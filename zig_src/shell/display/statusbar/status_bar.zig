@@ -60,7 +60,19 @@ const timed: u8 = 0;
 
 // X positions
 const X_TIME: i32 = 45;
+// Time start with the date absent: the date position, keeps the top left
+// shift area free.
+const X_TIME_NODATE: i32 = 25;
+// WoY start behind the date or the time (10 character date width); a shorter
+// predecessor is padded up to this column.
+const X_WOY: i32 = 81;
 const X_REAL_COMPLEX: i32 = 136;
+
+// Time start when WoY follows and the date is absent; left of X_TIME_NODATE,
+// the longer 12h time further.
+fn xTimeWoY() i32 {
+    return if (getSystemFlag(FLAG_TDM24)) 17 else 12;
+}
 const X_COMPLEX_MODE: i32 = 146;
 const X_COMPLEX_MODE_ADJ: i32 = -8;
 const X_ANGULAR_MODE: i32 = 160;
@@ -148,6 +160,7 @@ const FLAG_SBwoy: i32 = 0x8057;
 const FLAG_SBcr: i32 = 0x802E;
 const FLAG_SBcpx: i32 = 0x802F;
 const FLAG_SBang: i32 = 0x8030;
+const FLAG_SBadm: i32 = 0x806f;
 const FLAG_SBfrac: i32 = 0x8031;
 const FLAG_SBint: i32 = 0x8032;
 const FLAG_SBmx: i32 = 0x8033;
@@ -367,6 +380,14 @@ inline fn sbComplexMode() bool {
 inline fn sbAngularModeBasic() bool {
     return getSystemFlag(FLAG_SBang);
 }
+inline fn sbAngularMode() bool {
+    return getSystemFlag(FLAG_SBadm);
+}
+// The angular-mode display is optional only in degree mode: any other mode
+// always shows, so the reading is never ambiguous.
+inline fn actualSbAngularMode() bool {
+    return sbAngularMode() or currentAngularMode != amDegree;
+}
 inline fn sbFractionModeAndBaseMode() bool {
     return getSystemFlag(FLAG_SBfrac);
 }
@@ -500,18 +521,26 @@ pub export fn showDateTime() callconv(.c) bool_t {
         frontier_date_time.getDateString(&dateTimeString);
     }
 
-    if (dateTimeString[0] >= '0' and dateTimeString[0] <= '9') {
+    if ((dateTimeString[0] >= '0' and dateTimeString[0] <= '9') or !(sbDate() or sbWoY())) { // not yet initialized, senseless to continue
         if (sbDate()) {
             x = frontier_screen.showString(&dateTimeString, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true));
         } else {
             lcd_fill_rect(x, 0, @intCast(X_TIME - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
-            x = @intCast(X_TIME);
+            // With the date absent the time takes the date position, one
+            // character further left when WoY follows.
+            x = @intCast(if (sbTime()) (if (sbWoY()) xTimeWoY() else X_TIME_NODATE) else X_TIME);
         }
         if (sbTime()) {
             x = frontier_screen.showGlyph(if (getSystemFlag(FLAG_TDM24)) " " else STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false));
             x = frontier_screen.showString(&oldTime, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false));
         }
         if (sbWoY()) {
+            // WoY aligns on one column behind either the date or the time; a
+            // shorter predecessor is padded up to it.
+            if ((sbDate() or sbTime()) and @as(i32, @intCast(x)) < X_WOY) {
+                lcd_fill_rect(x, 0, @intCast(X_WOY - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
+                x = @intCast(X_WOY);
+            }
             x = frontier_screen.showGlyph(STD_SPACE_3_PER_EM, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false));
             frontier_date_time.getWeekOfYearString(&dateTimeString);
             x = frontier_screen.showString(&dateTimeString, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false));
@@ -558,7 +587,7 @@ fn showComplexMode() void {
 // showAngularMode (static)
 // ===========================================================================
 fn showAngularMode() void {
-    if (!(sbAngularModeBasic() or true)) { // SBARUPD_AngularMode == 1
+    if (!(sbAngularModeBasic() or actualSbAngularMode())) {
         return;
     }
 
@@ -568,25 +597,27 @@ fn showAngularMode() void {
             x = frontier_screen.showGlyph(STD_MEASURED_ANGLE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(true), @intFromBool(false));
         }
 
-        switch (currentAngularMode) {
-            amRadian => {
-                x = frontier_screen.showGlyph(STD_SUP_BOLD_r, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
-            },
-            amMultPi => {
-                x = frontier_screen.showGlyph(STD_SUP_pir, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
-            },
-            amGrad => {
-                x = frontier_screen.showGlyph(STD_SUP_BOLD_g, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
-            },
-            amDegree => {
-                x = frontier_screen.showGlyph(STD_DEGREE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
-            },
-            amDMS => {
-                x = frontier_screen.showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
-            },
-            else => {
-                x = frontier_screen.showGlyph(STD_QUESTION_MARK, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
-            },
+        if (actualSbAngularMode()) {
+            switch (currentAngularMode) {
+                amRadian => {
+                    x = frontier_screen.showGlyph(STD_SUP_BOLD_r, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
+                },
+                amMultPi => {
+                    x = frontier_screen.showGlyph(STD_SUP_pir, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
+                },
+                amGrad => {
+                    x = frontier_screen.showGlyph(STD_SUP_BOLD_g, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
+                },
+                amDegree => {
+                    x = frontier_screen.showGlyph(STD_DEGREE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
+                },
+                amDMS => {
+                    x = frontier_screen.showGlyph(STD_RIGHT_DOUBLE_QUOTE, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
+                },
+                else => {
+                    x = frontier_screen.showGlyph(STD_QUESTION_MARK, &standardFont, x, 0, vmNormal, @intFromBool(true), @intFromBool(false), @intFromBool(false));
+                },
+            }
         }
         lcd_fill_rect(x, 0, @intCast(X_FRAC_MODE - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
     }
