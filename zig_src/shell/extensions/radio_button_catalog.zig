@@ -127,10 +127,6 @@ const JC_PARABOLIC_FITTING: u16 = 205;
 const JC_CAUCHY_FITTING: u16 = 206;
 const JC_GAUSS_FITTING: u16 = 207;
 const JC_ORTHOGONAL_FITTING: u16 = 208;
-const JC_DIFF: u16 = 192;
-const JC_INTG: u16 = 191;
-const JC_RMS: u16 = 193;
-const JC_SHADE: u16 = 194;
 const JC_UC: u16 = 198;
 const JC_SS: u16 = 214;
 
@@ -278,10 +274,6 @@ extern var statisticalSumsPointer: ?*anyopaque;
 // with @extern, not a pointer-typed extern (which loads the data as an address).
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
 
-extern var PLOT_INTG: bool_t;
-extern var PLOT_DIFF: bool_t;
-extern var PLOT_RMS: bool_t;
-extern var PLOT_SHADE: bool_t;
 extern var PLOT_ZOOM: i8;
 extern var PLOT_ZMY: i8;
 
@@ -429,10 +421,6 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1797, .param = 32861, .radioButton = 142 },
     .{ .itemNr = 1855, .param = 32865, .radioButton = 142 },
     .{ .itemNr = 1884, .param = 180, .radioButton = 142 },
-    .{ .itemNr = 2024, .param = 191, .radioButton = 142 },
-    .{ .itemNr = 2025, .param = 192, .radioButton = 142 },
-    .{ .itemNr = 2026, .param = 193, .radioButton = 142 },
-    .{ .itemNr = 2027, .param = 194, .radioButton = 142 },
     .{ .itemNr = 1856, .param = 32772, .radioButton = 142 },
     .{ .itemNr = 1940, .param = 32791, .radioButton = 142 },
     .{ .itemNr = 1857, .param = 32781, .radioButton = 142 },
@@ -463,6 +451,10 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 2007, .param = 32850, .radioButton = 142 },
     .{ .itemNr = 2012, .param = 32851, .radioButton = 142 },
     .{ .itemNr = 2013, .param = 32852, .radioButton = 142 },
+    .{ .itemNr = 2026, .param = 32875, .radioButton = 142 }, // ITM_RMS   FLAG_PRMS
+    .{ .itemNr = 2024, .param = 32876, .radioButton = 142 }, // ITM_INTG  FLAG_PINTG
+    .{ .itemNr = 2025, .param = 32877, .radioButton = 142 }, // ITM_DIFF  FLAG_PDIFF
+    .{ .itemNr = 2027, .param = 32878, .radioButton = 142 }, // ITM_SHADE FLAG_PSHADE
     .{ .itemNr = 2029, .param = 32835, .radioButton = 142 },
     .{ .itemNr = 1729, .param = 32788, .radioButton = 142 },
     .{ .itemNr = 2039, .param = 32830, .radioButton = 142 },
@@ -585,6 +577,10 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32850, // FLAG_SCALE
     32851, // FLAG_VECT
     32852, // FLAG_NVECT
+    32875, // FLAG_PRMS
+    32876, // FLAG_PINTG
+    32877, // FLAG_PDIFF
+    32878, // FLAG_PSHADE
     32835, // FLAG_NUMLOCK
     32788, // FLAG_USER
     32830, // FLAG_SH_LONGPRESS
@@ -724,10 +720,6 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                         switch (param) {
                             USER_R47f_g, USER_R47bk_fg, USER_R47fg_bk, USER_R47fg_g => cb_param = calcModel == param,
                             JC_ORTHOGONAL_FITTING => cb_param = (orOrtho(lrSelection) == CF_ORTHOGONAL_FITTING),
-                            JC_DIFF => cb_param = PLOT_DIFF,
-                            JC_INTG => cb_param = PLOT_INTG,
-                            JC_RMS => cb_param = PLOT_RMS,
-                            JC_SHADE => cb_param = PLOT_SHADE,
                             JC_UC => cb_param = !(alphaCase != 0),
                             JC_SS => cb_param = scrLock != NC_NORMAL,
                             FLAG_MYM_TRIPLE, FLAG_HOME_TRIPLE => {

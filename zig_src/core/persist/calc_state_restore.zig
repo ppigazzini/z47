@@ -100,6 +100,11 @@ const FLAG_FRACT: c_uint = 32775;
 const FLAG_IRFRAC: c_uint = 32839;
 const FLAG_IRFRQ: c_uint = 49224;
 const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
+const FLAG_PRMS: c_uint = 32875; // 0x806B
+const FLAG_PINTG: c_uint = 32876; // 0x806C
+const FLAG_PDIFF: c_uint = 32877; // 0x806D
+const FLAG_PSHADE: c_uint = 32878; // 0x806E
+const FLAG_SBadm: c_uint = 32879; // 0x806F
 const FLAG_FGLNLIM: c_uint = 32866;
 const FLAG_FGLNFUL: c_uint = 32867;
 const FLAG_HOME_TRIPLE: c_uint = 32864;
@@ -300,10 +305,6 @@ extern var lrChosen: u16;
 extern var graph_dx: f32;
 extern var graph_dy: f32;
 extern var roundedTicks: u8;
-extern var PLOT_INTG: u8;
-extern var PLOT_DIFF: u8;
-extern var PLOT_RMS: u8;
-extern var PLOT_SHADE: u8;
 extern var PLOT_AXIS: u8;
 extern var PLOT_ZMY: i8;
 extern var firstDayOfWeek: u8;
@@ -490,7 +491,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 clearSystemFlag(FLAG_IRFRAC);
                 clearSystemFlag(FLAG_IRFRQ);
             }
-            if (loaded_version < 10000024) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreCalcState.c:1696-1698
+            if (loaded_version < 10000024) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreCalcState.c:1738-1740
+            // The angular mode annunciator is on per default.
+            if (loaded_version < 10000026) setSystemFlag(FLAG_SBadm); // C saveRestoreCalcState.c:1741-1743
             if (getSystemFlag(@intCast(FLAG_FRACT))) {
                 setSystemFlag(FLAG_FRACT);
             } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {
@@ -917,13 +920,13 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "roundedTicks")) {
         roundedTicks = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_INTG")) {
-        PLOT_INTG = @intFromBool(text.toUint8(tmpString) != 0);
+        if (loaded_version < 10000025) forceSystemFlag(FLAG_PINTG, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "PLOT_DIFF")) {
-        PLOT_DIFF = @intFromBool(text.toUint8(tmpString) != 0);
+        if (loaded_version < 10000025) forceSystemFlag(FLAG_PDIFF, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "PLOT_RMS")) {
-        PLOT_RMS = @intFromBool(text.toUint8(tmpString) != 0);
+        if (loaded_version < 10000025) forceSystemFlag(FLAG_PRMS, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "PLOT_SHADE")) {
-        PLOT_SHADE = @intFromBool(text.toUint8(tmpString) != 0);
+        if (loaded_version < 10000025) forceSystemFlag(FLAG_PSHADE, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "PLOT_AXIS")) {
         PLOT_AXIS = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_ZMY")) {

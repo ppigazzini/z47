@@ -155,6 +155,11 @@ const FLAG_SCALE = 0x8052;
 const FLAG_VECT = 0x8053;
 const FLAG_NVECT = 0x8054;
 const FLAG_PCURVE = 0x805A;
+// Upstream replaced the PLOT_* globals with these system flags (c43 cfd637bb2).
+const FLAG_PRMS = 0x806B;
+const FLAG_PINTG = 0x806C;
+const FLAG_PDIFF = 0x806D;
+const FLAG_PSHADE = 0x806E;
 
 // menus / equations
 const MNU_PLOT_STAT: i16 = 1907;
@@ -221,10 +226,6 @@ var gpm_prev_y_unclipped: i16 = 0; // graph_plotmem's static int16_t prev_y_uncl
 extern var graph_dx: f32;
 extern var graph_dy: f32;
 extern var roundedTicks: bool_t;
-extern var PLOT_INTG: bool_t;
-extern var PLOT_DIFF: bool_t;
-extern var PLOT_RMS: bool_t;
-extern var PLOT_SHADE: bool_t;
 extern var PLOT_AXIS: bool_t;
 extern var PLOT_ZOOM: i8;
 extern var drawHistogram: u8;
@@ -455,14 +456,14 @@ pub export fn graphResetCommon() callconv(.c) void {
     clearSystemFlag(FLAG_PCURVE);
     clearSystemFlag(FLAG_PCROS);
     clearSystemFlag(FLAG_PPLUS);
+    clearSystemFlag(FLAG_PINTG);
+    clearSystemFlag(FLAG_PDIFF);
+    clearSystemFlag(FLAG_PRMS);
+    clearSystemFlag(FLAG_PSHADE);
 
     real34SetZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_UY));
     real34SetZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_LY));
 
-    PLOT_INTG = false;
-    PLOT_DIFF = false;
-    PLOT_RMS = false;
-    PLOT_SHADE = false;
     PLOT_ZMY = 0;
     PLOT_ZOOM = 0;
     plotmode = _SCAT;
@@ -492,65 +493,30 @@ pub export fn fnClGrf(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnPline(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_PLINE);
-    if (!getSystemFlag(FLAG_PLINE) and !getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
-        setSystemFlag(FLAG_PBOX);
-    }
-    if (!getSystemFlag(FLAG_PLINE)) {
-        clearSystemFlag(FLAG_PCURVE);
-    }
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnPcros(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_PCROS);
-    if (getSystemFlag(FLAG_PCROS)) {
-        clearSystemFlag(FLAG_PBOX);
-        clearSystemFlag(FLAG_PPLUS);
-    }
-    if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
-        setSystemFlag(FLAG_PLINE);
-    }
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnPplus(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_PPLUS);
-    if (getSystemFlag(FLAG_PPLUS)) {
-        clearSystemFlag(FLAG_PBOX);
-        clearSystemFlag(FLAG_PCROS);
-    }
-    if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
-        setSystemFlag(FLAG_PLINE);
-    }
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnPbox(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_PBOX);
-    if (getSystemFlag(FLAG_PBOX)) {
-        clearSystemFlag(FLAG_PCROS);
-        clearSystemFlag(FLAG_PPLUS);
-    }
-    if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
-        setSystemFlag(FLAG_PLINE);
-    }
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnPcurve(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_PCURVE);
-    if (getSystemFlag(FLAG_PCURVE)) {
-        setSystemFlag(FLAG_PLINE);
-    }
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -559,31 +525,19 @@ pub export fn fnPcurve(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn fnPintg(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    PLOT_INTG = !PLOT_INTG;
-    if (!PLOT_INTG) {
-        PLOT_SHADE = false;
-    }
-    clearSystemFlag(FLAG_VECT);
-    clearSystemFlag(FLAG_NVECT);
-    frontier_radio_button_catalog.fnRefreshState();
+    flipSystemFlag(FLAG_PINTG);
     fnPlotSQ(0);
 }
 
 pub export fn fnPdiff(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    PLOT_DIFF = !PLOT_DIFF;
-    clearSystemFlag(FLAG_VECT);
-    clearSystemFlag(FLAG_NVECT);
-    frontier_radio_button_catalog.fnRefreshState();
+    flipSystemFlag(FLAG_PDIFF);
     fnPlotSQ(0);
 }
 
 pub export fn fnPrms(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    PLOT_RMS = !PLOT_RMS;
-    clearSystemFlag(FLAG_VECT);
-    clearSystemFlag(FLAG_NVECT);
-    frontier_radio_button_catalog.fnRefreshState();
+    flipSystemFlag(FLAG_PRMS);
     fnPlotSQ(0);
 }
 
@@ -662,28 +616,12 @@ fn multiplyZoomFactors(plotzoomx: f32, plotzoomy: f32, histofactor: f32, x_min_:
 pub export fn fnPvect(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_VECT);
-    if (getSystemFlag(FLAG_VECT)) {
-        clearSystemFlag(FLAG_NVECT);
-    }
-    PLOT_INTG = false;
-    PLOT_DIFF = false;
-    PLOT_RMS = false;
-    PLOT_SHADE = false;
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
 pub export fn fnPNvect(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_NVECT);
-    if (getSystemFlag(FLAG_NVECT)) {
-        clearSystemFlag(FLAG_VECT);
-    }
-    PLOT_INTG = false;
-    PLOT_DIFF = false;
-    PLOT_RMS = false;
-    PLOT_SHADE = false;
-    frontier_radio_button_catalog.fnRefreshState();
     fnPlotSQ(0);
 }
 
@@ -696,13 +634,7 @@ pub export fn fnScale(unusedButMandatoryParameter: u16) callconv(.c) void {
 
 pub export fn fnPshade(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    PLOT_SHADE = !PLOT_SHADE;
-    if (PLOT_SHADE) {
-        PLOT_INTG = true;
-    }
-    clearSystemFlag(FLAG_VECT);
-    clearSystemFlag(FLAG_NVECT);
-    frontier_radio_button_catalog.fnRefreshState();
+    flipSystemFlag(FLAG_PSHADE);
     fnPlotSQ(0);
 }
 
@@ -799,7 +731,6 @@ pub export fn fnPlotStatAdv(unusedButMandatoryParameter: u16) callconv(.c) void 
     lastPlotMode = PLOT_NOTHING;
     _ = strcpy(&plotStatMx, "STATS");
     setSystemFlag(FLAG_PLINE);
-    PLOT_SHADE = true;
     fnPlotSQ(0);
 }
 
@@ -1016,7 +947,7 @@ pub export fn graph_text() linksection(code_section) callconv(.c) void {
     }
     ypos +%= 48 + 2 * 19;
 
-    if (PLOT_INTG and !invalid_intg) {
+    if (getSystemFlag(FLAG_PINTG) and !invalid_intg) {
         abi.fmtBufZ(tmpString[0..bufLen], "  Trapezoid integral", .{});
         _ = frontier_screen.showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, 0, 0, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
 
@@ -1026,7 +957,7 @@ pub export fn graph_text() linksection(code_section) callconv(.c) void {
         ypos += 20;
     }
 
-    if (PLOT_DIFF and !invalid_diff) {
+    if (getSystemFlag(FLAG_PDIFF) and !invalid_diff) {
         abi.fmtBufZ(tmpString[0..bufLen], "  Numerical slope", .{});
         _ = frontier_screen.showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, 0, 0, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
@@ -1034,7 +965,7 @@ pub export fn graph_text() linksection(code_section) callconv(.c) void {
         ypos += 20;
     }
 
-    if (PLOT_RMS and !invalid_rms) {
+    if (getSystemFlag(FLAG_PRMS) and !invalid_rms) {
         abi.fmtBufZ(tmpString[0..bufLen], "  Root Mean Square RMS", .{});
         _ = frontier_screen.showStringEnhanced(tmpString, &tinyFont, 1, ypos, vmNormal, 0, 0, NO_compress, NO_raise, DO_Show, DO_Bold, DO_LF);
         const yp: i16 = @truncate(@as(i32, @bitCast(ypos)));
@@ -1272,7 +1203,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             plotmode = _SCAT;
         }
 
-        if (PLOT_INTG) {
+        if (getSystemFlag(FLAG_PINTG)) {
             rmsy = @abs(frontier_plotstat.grf_y(0));
             ix = 0;
             while (ix < statnum) : (ix += 1) {
@@ -1294,9 +1225,9 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             invalid_rms = false; // RMSy
 
             // ###### SCALING LOOP DIFF INTG RMS ######
-            if (PLOT_DIFF or PLOT_INTG or PLOT_RMS) {
+            if (getSystemFlag(FLAG_PDIFF) or getSystemFlag(FLAG_PINTG) or getSystemFlag(FLAG_PRMS)) {
                 inty = inty_off; // integral starting constant co-incides with graph
-                if (PLOT_RMS) {
+                if (getSystemFlag(FLAG_PRMS)) {
                     rmsy = @abs(frontier_plotstat.grf_y(0));
                 }
 
@@ -1317,7 +1248,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                             frontier_plotstat.grf_x_r(@intCast(ix), &xr);
                             if (realCompareLessThan(&xr, x_min)) realCopy(&xr, x_min);
                             if (realCompareGreaterThan(&xr, x_max)) realCopy(&xr, x_max);
-                            if (PLOT_DIFF) {
+                            if (getSystemFlag(FLAG_PDIFF)) {
                                 // Differential
                                 if (ddx != 0) {
                                     if (ix == 1) { // only two samples available
@@ -1332,13 +1263,13 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                                 if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
                                 if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                             }
-                            if (PLOT_INTG) {
+                            if (getSystemFlag(FLAG_PINTG)) {
                                 inty = inty + (frontier_plotstat.grf_y(@intCast(ix)) + frontier_plotstat.grf_y(@intCast(ix - 1))) / 2 * ddx;
                                 convertDoubleToReal(@as(f64, inty), &yr, &ctxtReal39);
                                 if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
                                 if (realCompareGreaterThan(&yr, y_max)) realCopy(&yr, y_max);
                             }
-                            if (PLOT_RMS) {
+                            if (getSystemFlag(FLAG_PRMS)) {
                                 rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + frontier_plotstat.grf_y(@intCast(ix)) * frontier_plotstat.grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
                                 convertDoubleToReal(@as(f64, rmsy), &yr, &ctxtReal39);
                                 if (realCompareLessThan(&yr, y_min)) realCopy(&yr, y_min);
@@ -1369,7 +1300,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
 
             var scaleRmsy: f32 = 0;
 
-            if (getSystemFlag(FLAG_PBOX) or getSystemFlag(FLAG_PLINE) or getSystemFlag(FLAG_PCROS) or getSystemFlag(FLAG_PPLUS) or !(PLOT_DIFF or PLOT_INTG)) {
+            if (getSystemFlag(FLAG_PBOX) or getSystemFlag(FLAG_PLINE) or getSystemFlag(FLAG_PCROS) or getSystemFlag(FLAG_PPLUS) or !(getSystemFlag(FLAG_PDIFF) or getSystemFlag(FLAG_PINTG))) {
                 // pre-loop to cover trivial cases of symmetrical axis: real_t min/max
                 cnt = 0;
                 while (cnt < statnum) : (cnt += 1) {
@@ -1511,7 +1442,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
         ix = 0;
         inty = inty_off; // integral starting constant co-incides with graph
         rmsy = 0;
-        if (PLOT_RMS) {
+        if (getSystemFlag(FLAG_PRMS)) {
             rmsy = @abs(frontier_plotstat.grf_y(0));
         }
 
@@ -1527,9 +1458,9 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                 x = 0;
                 y = 0;
 
-                if (ix != 0 and ((PLOT_DIFF and !invalid_diff) or (PLOT_INTG and !invalid_intg) or (PLOT_RMS and !invalid_rms))) {
+                if (ix != 0 and ((getSystemFlag(FLAG_PDIFF) and !invalid_diff) or (getSystemFlag(FLAG_PINTG) and !invalid_intg) or (getSystemFlag(FLAG_PRMS) and !invalid_rms))) {
                     ddx = frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1));
-                    if (PLOT_DIFF and ddx != 0) {
+                    if (getSystemFlag(FLAG_PDIFF) and ddx != 0) {
                         if (ix == 1 or (@abs(((frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1))) / (frontier_plotstat.grf_x(@intCast(ix - 1)) - frontier_plotstat.grf_x(@intCast(ix - 2)))) - 1) > 0.0001)) { // only two samples available
                             dydx = (frontier_plotstat.grf_y(@intCast(ix)) - frontier_plotstat.grf_y(@intCast(ix - 1))) / ddx; // Differential
                             dxx = (frontier_plotstat.grf_x(@intCast(ix)) + frontier_plotstat.grf_x(@intCast(ix - 1))) / 2;
@@ -1541,10 +1472,10 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                         dydx = FLoatingMax;
                     }
 
-                    if (PLOT_RMS) {
+                    if (getSystemFlag(FLAG_PRMS)) {
                         rmsy = @sqrt((rmsy * rmsy * @as(f32, @floatFromInt(ix)) + frontier_plotstat.grf_y(@intCast(ix)) * frontier_plotstat.grf_y(@intCast(ix))) / (@as(f32, @floatFromInt(ix)) + 1.0));
                     }
-                    if (PLOT_INTG) {
+                    if (getSystemFlag(FLAG_PINTG)) {
                         inty = inty + (frontier_plotstat.grf_y(@intCast(ix)) + frontier_plotstat.grf_y(@intCast(ix - 1))) / 2 * ddx;
                     }
                 }
@@ -1650,15 +1581,15 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                         false // line
                     );
 
-                    if (PLOT_DIFF and !invalid_diff and ix != 0) {
+                    if (getSystemFlag(FLAG_PDIFF) and !invalid_diff and ix != 0) {
                         plotdelta(frontier_plotstat.screenX(@as(f64, dxx)), frontier_plotstat.screenY(@as(f64, dydx)));
                     }
 
-                    if (PLOT_RMS and !invalid_rms and ix != 0) {
+                    if (getSystemFlag(FLAG_PRMS) and !invalid_rms and ix != 0) {
                         plotrms(frontier_plotstat.screenX(@as(f64, x - ddx / 2)), frontier_plotstat.screenY(@as(f64, rmsy)));
                     }
 
-                    if (PLOT_INTG and !invalid_intg and ix != 0) {
+                    if (getSystemFlag(FLAG_PINTG) and !invalid_intg and ix != 0) {
                         var xPrevR: real_t = undefined;
                         frontier_plotstat.grf_x_r(@intCast(ix - 1), &xPrevR);
                         const xN0: i16 = frontier_plotstat.screen_window_x_r(x_min, &xPrevR, x_max);
@@ -1683,7 +1614,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                             frontier_plotstat.plotline1(xAvg - 2, yNintg, xN0, yNintg);
                         }
 
-                        if (PLOT_SHADE) {
+                        if (getSystemFlag(FLAG_PSHADE)) {
                             const yNoff: i16 = frontier_plotstat.screenY(0);
                             frontier_plotstat.plotrect(xN0, yN0, xN1, yN1);
                             frontier_plotstat.plotrect(xN0, yNoff, xN1, yN0);

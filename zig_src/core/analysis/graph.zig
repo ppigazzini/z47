@@ -256,7 +256,6 @@ extern var currentFormula: u16;
 extern var graphVariabl1: calcRegister_t;
 extern var regStatsXY: calcRegister_t;
 extern var plotStatMx: [8]u8;
-extern var PLOT_SHADE: bool;
 extern var PLOT_ZOOM: i8;
 extern var x_min: *real_t;
 extern var x_max: *real_t;
@@ -528,7 +527,6 @@ fn fnPlot(unusedButMandatoryParameter: u16) void {
     _ = unusedButMandatoryParameter;
     lastPlotMode = PLOT_NOTHING;
     _ = strcpy(&plotStatMx, "DrwMX");
-    PLOT_SHADE = true;
     fnPlotSQ(0);
     //  C47 advanced plot ^^
 }
@@ -1789,7 +1787,6 @@ pub export fn graph_stat(unusedButMandatoryParameter: u16) callconv(.c) void {
         lastPlotMode = PLOT_NOTHING;
         calcMode = CM_GRAPH;
         reDraw = true;
-        PLOT_SHADE = true;
 
         if (!getSystemFlag(FLAG_PLINE) and !getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
             fnPline(NOPARAM);
