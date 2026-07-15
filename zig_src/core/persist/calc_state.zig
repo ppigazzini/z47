@@ -23,19 +23,9 @@ fn restoreCalcBackupHost() callconv(.c) void {
 }
 
 comptime {
-    // Force the shared decNumber contexts + solver context + error state (base).
-    _ = @import("base/decimal_context.zig");
-    _ = @import("base/solver_context.zig");
-    _ = @import("state/keyboard_input_state.zig");
-    _ = @import("state/program_state.zig");
-    _ = @import("state/calc_mode_state.zig");
-    _ = @import("state/display_state.zig");
-    _ = @import("state/memory_state.zig");
-    _ = @import("state/app_state.zig");
-    _ = @import("value/real_special_values.zig");
-    _ = @import("base/byte_copy.zig");
-    _ = @import("base/error_report.zig");
-    _ = @import("value/register_conversions.zig");
+    // The scalar-state owners live in their own module (core/state/state.zig).
+    // Imported by NAME so this owner is not their compilation carrier.
+    _ = @import("core_state");
     if (!is_dmcp_build) {
         @export(&saveCalcBackupHost, .{ .name = "saveCalc" });
         @export(&restoreCalcBackupHost, .{ .name = "restoreCalc" });
