@@ -1,9 +1,9 @@
 const std = @import("std");
 const abi = @import("abi");
 const register_runtime = @import("register_metadata_runtime.zig");
-const reg_param_product = @import("stack_runtime_reg_param_product.zig");
-const product_real = @import("stack_runtime_product_real.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const reg_param_product = @import("../runtime/stack_runtime_reg_param_product.zig");
+const product_real = @import("../runtime/stack_runtime_product_real.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 const register_metadata_build_options = @import("register_metadata_build_options");
 const register_metadata_variables = @import("register_metadata_variables.zig");
 

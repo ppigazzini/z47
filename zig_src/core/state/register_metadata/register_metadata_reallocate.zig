@@ -1,9 +1,9 @@
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const reserved_register = @import("reserved_register.zig"); // std-only reserved-register predicates
 const payload_owned = @import("register_metadata_payload.zig");
-const memory_owned = @import("register_memory.zig");
+const memory_owned = @import("../runtime/register_memory.zig");
 const runtime = @import("register_metadata_runtime.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 fn isSyntheticReservedCopySource(reg: runtime.calcRegister_t) bool {
     return reg == runtime.RESERVED_VARIABLE_ADM or

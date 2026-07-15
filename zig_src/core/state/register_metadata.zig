@@ -1,4 +1,4 @@
-const descriptor_owned = @import("register_metadata_descriptor.zig");
+const descriptor_owned = @import("register_metadata/register_metadata_descriptor.zig");
 fn isValidRegisterId(reg: i32, last_global: i32, first_named: i32, last_reserved: i32, first_local: i32, last_local: i32) bool {
     if (reg < 0) return false;
     if (reg > last_global and reg < first_named) return false;
@@ -6,12 +6,12 @@ fn isValidRegisterId(reg: i32, last_global: i32, first_named: i32, last_reserved
     if (reg > last_local) return false;
     return true;
 }
-const local_registers_owned = @import("register_metadata_local_registers.zig");
-const payload_owned = @import("register_metadata_payload.zig");
-const reallocate_owned = @import("register_metadata_reallocate.zig");
-const _registers_compat_exports = @import("registers_compat_exports.zig");
-const variables_owned = @import("register_metadata_variables.zig");
-const runtime = @import("register_metadata_runtime.zig");
+const local_registers_owned = @import("register_metadata/register_metadata_local_registers.zig");
+const payload_owned = @import("register_metadata/register_metadata_payload.zig");
+const reallocate_owned = @import("register_metadata/register_metadata_reallocate.zig");
+const _registers_compat_exports = @import("register_metadata/registers_compat_exports.zig");
+const variables_owned = @import("register_metadata/register_metadata_variables.zig");
+const runtime = @import("register_metadata/register_metadata_runtime.zig");
 
 comptime {
     _ = _registers_compat_exports.varDescr;

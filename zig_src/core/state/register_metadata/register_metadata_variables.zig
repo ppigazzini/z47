@@ -4,10 +4,10 @@ const abi = @import("abi");
 const build_options = @import("register_metadata_build_options");
 
 const descriptor_owned = @import("register_metadata_descriptor.zig");
-const memory_owned = @import("register_memory.zig");
+const memory_owned = @import("../runtime/register_memory.zig");
 const reallocate_owned = @import("register_metadata_reallocate.zig");
 const runtime = @import("register_metadata_runtime.zig");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 const validate_name_max_glyphs: usize = 7;
 const glyph_A: u16 = 0x41;

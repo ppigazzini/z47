@@ -1,5 +1,5 @@
 const build_options = @import("register_metadata_build_options");
-const descriptor_storage = @import("register_descriptor_storage.zig");
+const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 const block_math = abi.block_math;
 
 const use_fake_register_metadata_harness_surface =

@@ -1,4 +1,4 @@
-const runtime = @import("stack_runtime.zig");
+const runtime = @import("../runtime/stack_runtime.zig");
 
 fn savedRegisterFor(reg: runtime.calcRegister_t) runtime.calcRegister_t {
     // each live register's saved shadow sits a fixed offset away

@@ -1,6 +1,6 @@
 const build_options = @import("register_metadata_build_options");
-const stack_runtime = @import("stack_runtime.zig");
-const register_metadata = @import("register_metadata.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
+const register_metadata = @import("../register_metadata.zig");
 const register_metadata_variables = @import("register_metadata_variables.zig");
 const use_fake_register_metadata_harness_surface =
     @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and

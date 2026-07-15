@@ -1,4 +1,4 @@
-const runtime = @import("stack_runtime.zig");
+const runtime = @import("../runtime/stack_runtime.zig");
 fn shuffleOrder(regist_order: u16) [4]u16 {
     var out: [4]u16 = undefined;
     var i: u16 = 0;

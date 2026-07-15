@@ -1,5 +1,5 @@
 const build_options = @import("flags_build_options");
-const stack_runtime = @import("stack_runtime.zig");
+const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 pub const FLAG_BCD: u16 = 0x8059;
 pub const FLAG_ALPHA: u16 = 0x800e;
@@ -121,7 +121,7 @@ const REGISTER_X: calcRegister_t = stack_runtime.REGISTER_X;
 const formulaHeader_t = abi.FormulaHeader;
 
 const abi = @import("abi"); // shared ABI bindings
-const flags = @import("flags.zig"); // intra-object Zig-to-Zig
+const flags = @import("../flags.zig"); // intra-object Zig-to-Zig
 const softmenu_t = abi.Softmenu;
 
 const softmenuStack_t = abi.SoftmenuStack;
