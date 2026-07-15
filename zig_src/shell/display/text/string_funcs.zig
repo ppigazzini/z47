@@ -22,7 +22,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../../shell.zig");
+const frontier = @import("../../../frontier.zig");
 const frontier_addons = @import("../../extensions/addons.zig");
 const frontier_char_string = @import("char_string.zig");
 const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map

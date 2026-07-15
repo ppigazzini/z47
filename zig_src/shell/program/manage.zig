@@ -8,7 +8,7 @@
 // reproduced exactly.
 //
 // fnClPAll is NOT exported here, so it does not collide with the canonical owner:
-// zig_src/shell/shell.zig exports `pub export fn fnClPAll` (delegating to
+// zig_src/frontier.zig exports `pub export fn fnClPAll` (delegating to
 // program_clear.run in program_clear.zig, a faithful copy of manage.c's fnClPAll
 // body). The internal callers below (_clearProgram / fnClP) invoke that canonical
 // fnClPAll through the `frontier` (../shell.zig) import. This owner also provides
@@ -60,7 +60,7 @@ const tamState_t = abi.TamState;
 const abi = @import("abi"); // shared ABI bindings
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_assign = @import("../input/assign.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");

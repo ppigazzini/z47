@@ -53,7 +53,7 @@ fn decodeShuffle(value: i16) [5]u8 {
     }
     return regists;
 }
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_assign = @import("assign.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");

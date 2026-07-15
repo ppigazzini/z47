@@ -81,7 +81,7 @@ const DECNUMUNITS = 25;
 
 const real34_t = abi.Real34;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("shell.zig");
+const frontier = @import("../frontier.zig");
 const frontier_addons = @import("extensions/addons.zig");
 const adm_encoding = @import("input/adm_encoding.zig"); // pure external-ADM angular encoding
 const word_size_math = @import("word_size_math.zig"); // pure short-integer word-size resolution

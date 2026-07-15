@@ -1,5 +1,5 @@
 const matrix_nav = @import("matrix_nav.zig");
-const frontier = @import("../shell.zig");
+const frontier = @import("../../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const Geometry = struct {
     rows: i16,

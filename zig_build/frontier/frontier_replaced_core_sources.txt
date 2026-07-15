@@ -1,4 +1,4 @@
-# Core sources replaced by zig_src/shell/shell.zig ownership.
+# Core sources replaced by zig_src/frontier.zig ownership.
 assign.c
 calcMode.c
 bufferize.c

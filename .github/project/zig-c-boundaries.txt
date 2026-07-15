@@ -86,7 +86,7 @@ zig_src/core/numeric/statistics/variance.zig
 zig_src/core/numeric/statistics/deltaPercentXmean.zig
 zig_src/core/numeric/iteration.zig
 zig_src/core/numeric/arithmetic/percentSigmaDeltaPercentXmean.zig
-zig_src/shell/shell.zig
+zig_src/frontier.zig
 zig_src/shell/extensions/addons.zig
 zig_src/shell/elec.zig
 zig_src/shell/config.zig
