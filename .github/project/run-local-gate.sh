@@ -49,6 +49,8 @@ step "[6/11] idiomatic-Zig ratchet"
 bash .github/project/check-idiom-ratchet.sh
 step "[6b/11] headless-engine severance (engine->shell)"
 python3 .github/project/check-core-shell-severance.py --repo-root .
+step "[6c/11] core platform purity (REPORT-28 §36 L7)"
+bash .github/project/check-core-platform-purity.sh
 step "[7/11] Phase I C dependency policy"
 bash .github/project/check-c-dependency-phase-i-policy.sh .
 step "[8/11] workflow script locality"

@@ -1,0 +1,4 @@
+{
+  "platform_files": 19,
+  "note": "REPORT-28 §36 L7: core files naming a platform symbol (hal/io.c surface or DMCP ROM). Monotonic downward -- core reaches the platform ONLY through abi.host."
+}
