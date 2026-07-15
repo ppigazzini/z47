@@ -14,6 +14,7 @@ const const34_1e6 = consts.const34_1e6;
 // build/link across every target plus the boundary gates.
 
 const std = @import("std");
+const print_register = @import("../../print/print_register.zig");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -22,7 +23,6 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // ---------------------------------------------------------------------------
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../../../frontier.zig");
 const frontier_addons = @import("../../extensions/addons.zig");
 const frontier_char_string = @import("char_string.zig");
 const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map
@@ -900,7 +900,7 @@ pub export fn fn42Aview(unusedButMandatoryParameter: u16) callconv(.c) void {
 // 42PRA: print the alpha register.
 pub export fn fn42Pra(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    frontier.fnP_Alpha(alphaRegister);
+    print_register.fnP_Alpha(alphaRegister);
 }
 
 // 42PROMPT: prompt with the alpha register.

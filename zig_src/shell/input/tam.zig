@@ -20,6 +20,7 @@ const consts = abi.constants;
 // every target plus the boundary gates.
 
 const std = @import("std");
+const matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -53,7 +54,6 @@ fn decodeShuffle(value: i16) [5]u8 {
     }
     return regists;
 }
-const frontier = @import("../../frontier.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_assign = @import("assign.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
@@ -1011,7 +1011,7 @@ fn _tamProcessInput(item: u16) void {
                     if (item == ITM_dddEL or item == ITM_dddIJ) {
                         switch (calcMode) {
                             CM_MIM => {
-                                frontier.mimRunFunction(tamOperation(), NOPARAM);
+                                matrix_editor.mimRunFunction(tamOperation(), NOPARAM);
                             },
                             CM_PEM => {
                                 frontier_manage.addStepInProgram(tamOperation());
@@ -1245,7 +1245,7 @@ fn _tamProcessInput(item: u16) void {
             } else if (run) {
                 switch (calcMode) {
                     CM_MIM => {
-                        frontier.mimRunFunction(tamOperation(), @bitCast(value));
+                        matrix_editor.mimRunFunction(tamOperation(), @bitCast(value));
                     },
                     CM_PEM => {
                         frontier_manage.addStepInProgram(tamOperation());
@@ -1404,7 +1404,7 @@ fn _tamProcessInput(item: u16) void {
         }
         if (value != INVALID_VARIABLE or tamOperation() == ITM_LBLQ) {
             if (calcMode == CM_MIM) {
-                frontier.mimRunFunction(tamOperation(), @bitCast(value));
+                matrix_editor.mimRunFunction(tamOperation(), @bitCast(value));
             } else if (tam.function == ITM_GTOP) {
                 frontier_lbl_gto_xeq.goToGlobalStep(@intCast(@abs(labelList[@intCast(value - FIRST_LABEL)].step)));
             } else if (tam.function == ITM_DELP) {

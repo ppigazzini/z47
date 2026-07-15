@@ -28,6 +28,7 @@
 // the error owner). IR_PRINTING/DEBUG_PGM/MONITOR_CLRSCR are never defined here.
 
 const std = @import("std");
+const program_clear = @import("program_clear.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -60,7 +61,6 @@ const tamState_t = abi.TamState;
 const abi = @import("abi"); // shared ABI bindings
 const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode inspection
 const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
-const frontier = @import("../../frontier.zig");
 const frontier_assign = @import("../input/assign.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");
@@ -721,7 +721,7 @@ fn _removeLabelsAssignments() void {
 // _clearProgram (static) -> int
 fn _clearProgram() c_int {
     if (beginOfCurrentProgram == beginOfProgramMemory and (@intFromPtr(endOfCurrentProgram) >= @intFromPtr(firstFreeProgramByte) or (endOfCurrentProgram[0] == 255 and endOfCurrentProgram[1] == 255))) { // There is only one program in memory
-        frontier.fnClPAll(CONFIRMED);
+        program_clear.fnClPAll(CONFIRMED);
         return 1;
     } else {
         // Remove assignments of global labels in the program being deleted, before deleting the program
@@ -2018,7 +2018,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                     }
                 },
                 ITM_DELPALL => {
-                    frontier.fnClPAll(NOT_CONFIRMED);
+                    program_clear.fnClPAll(NOT_CONFIRMED);
                 },
                 ITM_BST => {
                     frontier_next_step.fnBst(NOPARAM);

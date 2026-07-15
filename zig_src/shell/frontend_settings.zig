@@ -273,3 +273,15 @@ extern fn setSystemFlag(sf: c_uint) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn flipSystemFlag(sf: c_uint) void;
 extern fn setSystemFlagChanged(sf: c_int) void;
+
+pub export fn fnAngularMode(am: u16) callconv(.c) void {
+    run(.angular_mode, am);
+}
+
+pub export fn fnIntegerMode(mode: u16) callconv(.c) void {
+    run(.integer_mode, mode);
+}
+
+pub export fn fnSetGapChar(char_param: u16) callconv(.c) void {
+    run(.set_gap_char, char_param);
+}

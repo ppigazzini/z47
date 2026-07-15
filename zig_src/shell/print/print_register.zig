@@ -117,3 +117,11 @@ extern var currentKeyCode: u8;
 extern var statisticalSumsPointer: ?*anyopaque;
 
 extern fn getSystemFlag(sf: c_int) bool;
+
+pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
+    run(.alpha, register_no);
+}
+
+pub export fn fnP_Regs(register_no: u16) callconv(.c) void {
+    run(.regs, register_no);
+}

@@ -22,7 +22,6 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const store_register_range = @import("store_register_range.zig"); // std-only store register-range validity
-const frontier = @import("../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor/matrix_editor.zig");
 const frontier_char_string = @import("display/text/char_string.zig");
 const frontier_debug = @import("debug.zig");
@@ -899,7 +898,7 @@ fn _fnStoreElement(stepForward: bool) void {
         }
         callByIndexedMatrix(storeElementReal, storeElementComplex);
         if (stepForward) {
-            frontier.fnIncDecJ(INC_FLAG);
+            frontier_matrix_editor.fnIncDecJ(INC_FLAG);
         }
         var rows: u16 = 1;
         if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and @as(calcRegister_t, @intCast(matrixIndex)) == findNamedVariable("STATS")) {

@@ -57,6 +57,9 @@
 // `if (comptime dmcp_build)` via LIBRARY_FN_BASE trampolines.
 
 const std = @import("std");
+const matrix_editor_entry = @import("../matrix_editor/matrix_editor_entry.zig");
+const display_format = @import("../display/display_format.zig");
+const frontend_settings = @import("../frontend_settings.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -95,7 +98,6 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../../frontier.zig");
 const frontier_assign = @import("../input/assign.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");
@@ -1387,7 +1389,7 @@ fn editNormalDispatch(index: *i16, grpGroupingLeftOld: *u8, grpGroupingRightOld:
             }
         },
         dtReal34Matrix, dtComplex34Matrix => {
-            frontier.fnEditMatrix(NOPARAM);
+            matrix_editor_entry.fnEditMatrix(NOPARAM);
         },
         else => {
             if (comptime !save_space_edit) {
@@ -2865,19 +2867,19 @@ const FLAG_MULTx: c_int = 32795; // 0x801b
 pub export fn fnDisplayFormatCycle(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (DM_Cycling == 0 and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_PREFIX) {
-        frontier.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_UN) {
-        frontier.fnDisplayFormatSigFig(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatSigFig(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_SF) {
-        frontier.fnDisplayFormatAll(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatAll(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_ALL) {
-        frontier.fnDisplayFormatFix(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatFix(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_FIX) {
-        frontier.fnDisplayFormatSci(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatSci(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_SCI) {
-        frontier.fnDisplayFormatEng(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatEng(@as(u16, displayFormatDigits));
     } else if (displayFormat == DF_ENG) {
-        frontier.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
+        display_format.fnDisplayFormatUnit(@as(u16, displayFormatDigits));
     }
     DM_Cycling = 1;
 }
@@ -3079,12 +3081,12 @@ pub export fn fnInDefault(inputDefault: u16) callconv(.c) void {
 
 pub export fn fnByteShortcutsS(size: u16) callconv(.c) void {
     frontier_config.fnSetWordSize(size);
-    frontier.fnIntegerMode(SIM_2COMPL);
+    frontend_settings.fnIntegerMode(SIM_2COMPL);
 }
 
 pub export fn fnByteShortcutsU(size: u16) callconv(.c) void {
     frontier_config.fnSetWordSize(size);
-    frontier.fnIntegerMode(SIM_UNSIGN);
+    frontend_settings.fnIntegerMode(SIM_UNSIGN);
 }
 
 pub export fn doubleToXRegisterReal34(x: f64) callconv(.c) void {

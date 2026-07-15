@@ -24,7 +24,6 @@ const RowCol = struct { row: i32, col: i32 };
 fn linearToRowCol(ix: i32, cols: i32) RowCol {
     return .{ .row = @divTrunc(ix - 1, cols) + 1, .col = @rem(ix - 1, cols) + 1 };
 }
-const frontier = @import("../frontier.zig");
 const frontier_matrix_editor = @import("matrix_editor/matrix_editor.zig");
 const frontier_char_string = @import("display/text/char_string.zig");
 const frontier_debug = @import("debug.zig");
@@ -691,7 +690,7 @@ fn _fnRecallElement(stepForward: bool) void {
     } else {
         callByIndexedMatrix(recallElementReal, recallElementComplex);
         if (stepForward) {
-            frontier.fnIncDecJ(INC_FLAG);
+            frontier_matrix_editor.fnIncDecJ(INC_FLAG);
         }
     }
 }

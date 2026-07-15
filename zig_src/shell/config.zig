@@ -1,4 +1,8 @@
 const std = @import("std");
+const keys_management = @import("program/keys_management.zig");
+const matrix_lifecycle = @import("matrix_editor/matrix_lifecycle.zig");
+const frontend_settings = @import("frontend_settings.zig");
+const display_format = @import("display/display_format.zig");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/config.c: calculator configuration, the RESET machinery
@@ -81,7 +85,6 @@ const DECNUMUNITS = 25;
 
 const real34_t = abi.Real34;
 const abi = @import("abi"); // shared ABI bindings
-const frontier = @import("../frontier.zig");
 const frontier_addons = @import("extensions/addons.zig");
 const adm_encoding = @import("input/adm_encoding.zig"); // pure external-ADM angular encoding
 const word_size_math = @import("word_size_math.zig"); // pure short-integer word-size resolution
@@ -1112,13 +1115,13 @@ pub export fn configCommon(idx: u16) callconv(.c) void {
     frontier_date_time.fnSetWeekOfYearRule(@intCast(cs.woy));
     temporaryInformation = TI_DISP_JULIAN_WOY;
 
-    frontier.fnSetGapChar(@intCast(0 + cs.gapl));
+    frontend_settings.fnSetGapChar(@intCast(0 + cs.gapl));
     grpGroupingLeft = @intCast(cs.gprl);
     grpGroupingGr1LeftOverflow = @intCast(cs.gpr1x);
     grpGroupingGr1Left = @intCast(cs.gpr1);
     grpGroupingRight = @intCast(cs.gprr);
-    frontier.fnSetGapChar(@intCast(32768 + cs.gapr));
-    frontier.fnSetGapChar(@intCast(49152 + cs.gaprx));
+    frontend_settings.fnSetGapChar(@intCast(32768 + cs.gapr));
+    frontend_settings.fnSetGapChar(@intCast(49152 + cs.gaprx));
     forceSystemFlag(FLAG_US, @intCast(cs.us));
 }
 
@@ -1146,9 +1149,9 @@ fn Sett(grp: i16) void {
             const value = Settings[base + 1 + grpU];
             switch (opcode) {
                 op_InputDefaultDataType => frontier_addons.fnInDefault(@intCast(value)),
-                op_SigFigNumberOfDigits => frontier.fnDisplayFormatSigFig(@intCast(value)),
-                op_AllNumberOfDigits => frontier.fnDisplayFormatAll(@intCast(value)),
-                op_FixNumberOfDigits => frontier.fnDisplayFormatFix(@intCast(value)),
+                op_SigFigNumberOfDigits => display_format.fnDisplayFormatSigFig(@intCast(value)),
+                op_AllNumberOfDigits => display_format.fnDisplayFormatAll(@intCast(value)),
+                op_FixNumberOfDigits => display_format.fnDisplayFormatFix(@intCast(value)),
                 op_RNG => exponentLimit = @intCast(value),
                 op_SDIGS => significantDigits = @intCast(value),
                 op_FDIGS => fractionDigits = @intCast(value),
@@ -1185,7 +1188,7 @@ fn Sett(grp: i16) void {
 
                 2 => SetSetting(@intCast(value)),
                 3 => forceSystemFlag(@intCast(@as(u32, @bitCast(value))), Settings[base + 1]),
-                4 => frontier.fnSetGapChar(@intCast(@as(u32, @bitCast(value)) & 0xFFFF)),
+                4 => frontend_settings.fnSetGapChar(@intCast(@as(u32, @bitCast(value)) & 0xFFFF)),
                 else => {},
             }
         }
@@ -1226,9 +1229,9 @@ pub export fn fnSetJM(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     roundingMode = RM_HALF_UP;
     if (!isR47FAM()) {
-        frontier.fnKeysManagement(ITM_RIBBON_C47PL);
+        keys_management.fnKeysManagement(ITM_RIBBON_C47PL);
     } else {
-        frontier.fnKeysManagement(ITM_RIBBON_R47PL);
+        keys_management.fnKeysManagement(ITM_RIBBON_R47PL);
     }
 
     itemToBeAssigned = ITM_op_j;
@@ -1470,7 +1473,7 @@ pub export fn fnSetADM(regist: u16) callconv(.c) void {
     }
     const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
     if (adm_encoding.angularModeFromAdm(value)) |angularMode| {
-        frontier.fnAngularMode(angularMode);
+        frontend_settings.fnAngularMode(angularMode);
     }
     mpz_clear(&lgInt);
 }
@@ -1546,7 +1549,7 @@ pub export fn fnSetNDEC(regist: u16) callconv(.c) void {
         return;
     }
     const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    frontier.fnDisplayFormatDsp(@intCast(value & 0xFFFF));
+    display_format.fnDisplayFormatDsp(@intCast(value & 0xFFFF));
     mpz_clear(&lgInt);
 }
 
@@ -2173,7 +2176,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         frontier_bufferize.resetAlphaSelectionBuffer();
 
         if (calcMode == CM_MIM) {
-            frontier.mimFinalize();
+            matrix_lifecycle.mimFinalize();
         }
 
         clearScreen(10);
@@ -2229,19 +2232,19 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         current_cursor_y = 0;
         lastT_cursorPos = 0;
 
-        frontier.fnKeysManagement(USER_PRESET);
-        frontier.fnKeysManagement(USER_HRESET);
-        frontier.fnKeysManagement(USER_ARESET);
-        frontier.fnKeysManagement(USER_MRESET);
+        keys_management.fnKeysManagement(USER_PRESET);
+        keys_management.fnKeysManagement(USER_HRESET);
+        keys_management.fnKeysManagement(USER_ARESET);
+        keys_management.fnKeysManagement(USER_MRESET);
 
         if (isR47FAM()) {
-            frontier.fnKeysManagement(ITM_RIBBON_R47);
+            keys_management.fnKeysManagement(ITM_RIBBON_R47);
         } else {
-            frontier.fnKeysManagement(ITM_RIBBON_C47);
+            keys_management.fnKeysManagement(ITM_RIBBON_C47);
         }
 
         frontier_softmenus.showSoftmenu(-MNU_MyMenu);
-        frontier.fnKeysManagement(USER_KRESET);
+        keys_management.fnKeysManagement(USER_KRESET);
         temporaryInformation = TI_NO_INFO;
         screenUpdatingMode = SCRUPD_AUTO;
         frontier_screen.refreshScreen(163);

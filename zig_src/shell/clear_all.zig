@@ -1,4 +1,6 @@
-const frontier = @import("../frontier.zig");
+const keys_management = @import("program/keys_management.zig");
+const program_clear = @import("program/program_clear.zig");
+const clear_all = @import("clear_all.zig");
 const frontier_addons = @import("extensions/addons.zig");
 const frontier_assign = @import("input/assign.zig");
 const frontier_config = @import("config.zig");
@@ -24,11 +26,11 @@ const PGM_WAITING: u8 = 2;
 const ConfirmedFunction = *const fn (u16) callconv(.c) void;
 
 fn requestConfirmation() void {
-    frontier_config.setConfirmationMode(&frontier.fnClAll);
+    frontier_config.setConfirmationMode(&clear_all.fnClAll);
 }
 
 fn clearPrograms() void {
-    frontier.fnClPAll(CONFIRMED);
+    program_clear.fnClPAll(CONFIRMED);
 }
 
 fn clearSigma() void {
@@ -66,7 +68,7 @@ fn rebuildCoreMenus() void {
 }
 
 fn resetKeysAndVariables() void {
-    frontier.fnKeysManagement(USER_KRESET);
+    keys_management.fnKeysManagement(USER_KRESET);
     frontier_assign.initUserKeyArgument();
     fnDeleteAllVariables(CONFIRMED);
     fnClFAll(CONFIRMED);
@@ -105,3 +107,7 @@ extern fn clearRegister(regist: i16) void;
 
 extern fn fnDeleteAllVariables(confirmation: u16) void;
 extern fn fnClFAll(confirmation: u16) void;
+
+pub export fn fnClAll(confirmation: u16) callconv(.c) void {
+    run(confirmation);
+}

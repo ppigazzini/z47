@@ -1,4 +1,4 @@
-const frontier = @import("../../frontier.zig");
+const program_clear = @import("program_clear.zig");
 const frontier_assign = @import("../input/assign.zig");
 const frontier_config = @import("../config.zig");
 const frontier_manage = @import("manage.zig");
@@ -17,7 +17,7 @@ const PGM_RUNNING: u8 = 1;
 const ConfirmedFunction = *const fn (u16) callconv(.c) void;
 
 fn requestConfirmation() void {
-    frontier_config.setConfirmationMode(&frontier.fnClPAll);
+    frontier_config.setConfirmationMode(&program_clear.fnClPAll);
 }
 
 fn seedProgramEndMarker() void {
@@ -91,3 +91,7 @@ extern var beginOfCurrentProgram: [*]u8;
 extern var endOfCurrentProgram: [*]u8;
 
 extern fn resizeProgramMemory(new_size_in_blocks: u16) void;
+
+pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
+    run(confirmation);
+}

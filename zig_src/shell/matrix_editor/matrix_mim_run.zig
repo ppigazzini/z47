@@ -1,4 +1,4 @@
-const frontier = @import("../../frontier.zig");
+const matrix_lifecycle = @import("matrix_lifecycle.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 const frontier_screen = @import("../display/screen.zig");
 const FLAG_ASLIFT: c_uint = 0xc023;
@@ -35,7 +35,7 @@ pub fn run(func: i16, param: u16) void {
 
 fn prepareExecution() void {
     frontier_matrix_editor.z47_frontier_matrix_capture_selected_before();
-    frontier.mimEnter(true);
+    matrix_lifecycle.mimEnter(true);
     clearSystemFlag(FLAG_ASLIFT);
     lastErrorCode = ERROR_NONE;
     frontier_matrix_editor.z47_frontier_matrix_load_selected_into_register_x();

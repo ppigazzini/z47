@@ -1,4 +1,4 @@
-const frontier = @import("../../frontier.zig");
+const matrix_lifecycle = @import("matrix_lifecycle.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
@@ -21,7 +21,7 @@ pub fn goToElement() void {
         return;
     }
 
-    frontier.mimEnter(false);
+    matrix_lifecycle.mimEnter(false);
     frontier_items.runFunction(ITM_M_GOTO_ROW);
 }
 

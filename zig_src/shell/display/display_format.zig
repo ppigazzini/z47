@@ -99,3 +99,31 @@ extern var timeDisplayFormatDigits: u8;
 extern var DM_Cycling: u8;
 
 extern fn clearSystemFlag(sf: c_uint) void;
+
+pub export fn fnDisplayFormatAll(display_format_n: u16) callconv(.c) void {
+    run(.all, display_format_n);
+}
+
+pub export fn fnDisplayFormatDsp(display_format_n: u16) callconv(.c) void {
+    run(.dsp, display_format_n);
+}
+
+pub export fn fnDisplayFormatEng(display_format_n: u16) callconv(.c) void {
+    run(.eng, display_format_n);
+}
+
+pub export fn fnDisplayFormatFix(display_format_n: u16) callconv(.c) void {
+    run(.fix, display_format_n);
+}
+
+pub export fn fnDisplayFormatSci(display_format_n: u16) callconv(.c) void {
+    run(.sci, display_format_n);
+}
+
+pub export fn fnDisplayFormatSigFig(display_format_n: u16) callconv(.c) void {
+    run(.sig_fig, display_format_n);
+}
+
+pub export fn fnDisplayFormatUnit(display_format_n: u16) callconv(.c) void {
+    run(.unit, display_format_n);
+}

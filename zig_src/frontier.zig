@@ -1,19 +1,13 @@
 const std = @import("std");
 const abi = @import("abi");
-const clear_all = @import("shell/clear_all.zig");
 const display_format = @import("shell/display/display_format.zig");
 const frontend_settings = @import("shell/frontend_settings.zig");
 const matrix_editor_entry = @import("shell/matrix_editor/matrix_editor_entry.zig");
-const matrix_editor_refresh = @import("shell/matrix_editor/matrix_editor_refresh.zig");
 const matrix_goto_grow = @import("shell/matrix_editor/matrix_goto_grow.zig");
 const matrix_lifecycle = @import("shell/matrix_editor/matrix_lifecycle.zig");
-const matrix_mim_add = @import("shell/matrix_editor/matrix_mim_add.zig");
 const matrix_mutation = @import("shell/matrix_editor/matrix_mutation.zig");
 const matrix_nav = @import("shell/matrix_editor/matrix_nav.zig");
-const matrix_mim_run = @import("shell/matrix_editor/matrix_mim_run.zig");
-const plot_regression = @import("shell/plot/plot_regression.zig");
 const print_register = @import("shell/print/print_register.zig");
-const program_clear = @import("shell/program/program_clear.zig");
 const cauchy = @import("shell/distributions/cauchy.zig");
 const weibull = @import("shell/distributions/weibull.zig");
 const logistic = @import("shell/distributions/logistic.zig");
@@ -45,6 +39,25 @@ const strip_17c: bool = frontier_build_options.strip_17c;
 // realType.c owner: exports low-level real<->int helpers with C linkage. It has
 // no command dispatch wrappers, so force its inclusion in the frontier object.
 comptime {
+    // These owners hold the dispatch wrappers that used to live in this root. The
+    // root's own bodies were what pulled them into the frontier object; with the
+    // wrappers moved to them, nothing references them and Zig would not analyse
+    // them at all -- their exports would vanish from the link. A root force-imports
+    // its members; it does not export on their behalf.
+    _ = @import("shell/clear_all.zig");
+    _ = @import("shell/matrix_editor/matrix_editor_refresh.zig");
+    _ = @import("shell/matrix_editor/matrix_mim_add.zig");
+    _ = @import("shell/matrix_editor/matrix_mim_run.zig");
+    _ = @import("shell/plot/plot_regression.zig");
+    _ = @import("shell/print/print_all_regs.zig");
+    _ = @import("shell/program/keys_management.zig");
+    _ = @import("shell/program/program_clear.zig");
+    _ = @import("shell/runtime.zig");
+    // These owners hold the dispatch wrappers that used to live in this root.
+    // The root's own bodies were what pulled them into the frontier object; with
+    // the wrappers moved to them, nothing references them any more and Zig would
+    // not analyse them at all -- their exports would silently vanish from the
+    // link. A root force-imports its members; it does not export on their behalf.
     _ = @import("shell/real_type.zig");
     _ = @import("shell/free_list.zig");
     _ = @import("shell/display/fonts/fonts.zig");
@@ -102,11 +115,8 @@ comptime {
     _ = @import("shell/debug.zig");
 }
 const printer_control = @import("shell/print/printer_control.zig");
-const runtime = @import("shell/runtime.zig");
 const plot_stat = @import("shell/plot/plot_stat.zig");
-const print_all_regs = @import("shell/print/print_all_regs.zig");
 const print_all_items = @import("shell/print/print_all_items.zig");
-const keys_management = @import("shell/program/keys_management.zig");
 const print_user = @import("shell/print/print_user.zig");
 const frontier_addons = @import("shell/extensions/addons.zig");
 const frontier_assign = @import("shell/input/assign.zig");
@@ -410,53 +420,6 @@ fn isPrintableScalarType(dt: u32) bool {
     return register_data_type.isPrintableScalarType(dt);
 }
 
-pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-
-    resetShiftState();
-    frontier_screen.refreshScreen(80);
-    frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();
-
-    var tam_backup: [TAM_BUFFER_LENGTH]u8 = undefined;
-    frontier_screen_snap.z47_frontier_snap_backup_tam(&tam_backup);
-    if (calcMode == CM_AIM) {
-        fnP_Alpha(NOPARAM);
-    } else {
-        fnP_All_Regs(PRN_STK);
-    }
-    frontier_screen_snap.z47_frontier_snap_restore_tam(&tam_backup);
-
-    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
-}
-
-pub export fn fnDisplayFormatFix(display_format_n: u16) callconv(.c) void {
-    display_format.run(.fix, display_format_n);
-}
-
-pub export fn fnDisplayFormatSci(display_format_n: u16) callconv(.c) void {
-    display_format.run(.sci, display_format_n);
-}
-
-pub export fn fnDisplayFormatEng(display_format_n: u16) callconv(.c) void {
-    display_format.run(.eng, display_format_n);
-}
-
-pub export fn fnDisplayFormatAll(display_format_n: u16) callconv(.c) void {
-    display_format.run(.all, display_format_n);
-}
-
-pub export fn fnDisplayFormatSigFig(display_format_n: u16) callconv(.c) void {
-    display_format.run(.sig_fig, display_format_n);
-}
-
-pub export fn fnDisplayFormatUnit(display_format_n: u16) callconv(.c) void {
-    display_format.run(.unit, display_format_n);
-}
-
-pub export fn fnDisplayFormatDsp(display_format_n: u16) callconv(.c) void {
-    display_format.run(.dsp, display_format_n);
-}
-
 pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
     display_format.run(.time, display_format_n);
 }
@@ -547,10 +510,6 @@ pub export fn fnP_LCD(unused_but_mandatory_parameter: u16) callconv(.c) void {
     printer_control.run(.lcd, unused_but_mandatory_parameter);
 }
 
-pub export fn fnSetGapChar(char_param: u16) callconv(.c) void {
-    frontend_settings.run(.set_gap_char, char_param);
-}
-
 pub export fn fnSettingsDispFormatGrpL(param: u16) callconv(.c) void {
     frontend_settings.run(.set_group_left, param);
 }
@@ -582,10 +541,6 @@ pub export fn fnMenuGapR(unused_but_mandatory_parameter: u16) callconv(.c) void 
     frontend_settings.run(.menu_gap_r, 0);
 }
 
-pub export fn fnIntegerMode(mode: u16) callconv(.c) void {
-    frontend_settings.run(.integer_mode, mode);
-}
-
 pub export fn fnWho(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     frontend_settings.run(.who, 0);
@@ -610,10 +565,6 @@ pub export fn fnSetBaseNr(s: u16) callconv(.c) void {
 
 pub export fn fnSetFractionDigits(s: u16) callconv(.c) void {
     frontend_settings.run(.set_fraction_digits, s);
-}
-
-pub export fn fnAngularMode(am: u16) callconv(.c) void {
-    frontend_settings.run(.angular_mode, am);
 }
 
 pub export fn fnFractionType(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -654,21 +605,9 @@ pub export fn fnGetLastErr(unused_but_mandatory_parameter: u16) callconv(.c) voi
     frontend_settings.run(.get_last_error, 0);
 }
 
-pub export fn fnClAll(confirmation: u16) callconv(.c) void {
-    clear_all.run(confirmation);
-}
-
 pub export fn fnP_User(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     print_user.run();
-}
-
-pub export fn fnP_Alpha(register_no: u16) callconv(.c) void {
-    print_register.run(.alpha, register_no);
-}
-
-pub export fn fnP_Regs(register_no: u16) callconv(.c) void {
-    print_register.run(.regs, register_no);
 }
 
 pub export fn fnP_Sigma(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -676,45 +615,17 @@ pub export fn fnP_Sigma(unused_but_mandatory_parameter: u16) callconv(.c) void {
     print_register.run(.sigma, 0);
 }
 
-pub export fn fnP_All_Regs(option: u16) callconv(.c) void {
-    print_all_regs.run(option);
-}
-
 pub export fn fnP_PrintAllItems(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     print_all_items.run();
-}
-
-pub export fn fnKeysManagement(choice: u16) callconv(.c) void {
-    keys_management.run(choice);
 }
 
 pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
     plot_stat.run(plot_mode);
 }
 
-fn matrixModeUndefinedError() void {
-    frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-}
-
-fn matrixInEditorMode() bool {
-    return calcMode == CM_MIM;
-}
-
-fn matrixEnsureEditorMode() bool {
-    if (matrixInEditorMode()) {
-        return true;
-    }
-    matrixModeUndefinedError();
-    return false;
-}
-
-fn matrixEnsureEditorModeOrReturn() bool {
-    return matrixEnsureEditorMode();
-}
-
 fn matrixRunMutation(kind: matrix_mutation.Kind) void {
-    if (!matrixEnsureEditorModeOrReturn()) {
+    if (!frontier_matrix_editor.matrixEnsureEditorMode()) {
         return;
     }
 
@@ -723,14 +634,6 @@ fn matrixRunMutation(kind: matrix_mutation.Kind) void {
 
 pub export fn wrapIJ(rows: u16, cols: u16) callconv(.c) bool {
     return matrix_nav.wrap(rows, cols);
-}
-
-pub export fn showMatrixEditor() callconv(.c) void {
-    matrix_editor_refresh.run();
-}
-
-pub export fn fnEditMatrix(regist: u16) callconv(.c) void {
-    matrix_editor_entry.edit(regist);
 }
 
 pub export fn fnOldMatrix(unused_param_but_mandatory: u16) callconv(.c) void {
@@ -755,24 +658,12 @@ pub export fn fnSetGrowMode(grow_flag: u16) callconv(.c) void {
     matrix_goto_grow.setGrowMode(grow_flag);
 }
 
-pub export fn mimEnter(commit: bool) callconv(.c) void {
-    matrix_lifecycle.enter(commit);
-}
-
 pub export fn fnIncDecI(mode: u16) callconv(.c) void {
-    if (!matrixEnsureEditorModeOrReturn()) {
+    if (!frontier_matrix_editor.matrixEnsureEditorMode()) {
         return;
     }
 
     matrix_nav.incDec(.row, mode);
-}
-
-pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
-    if (!matrixEnsureEditorModeOrReturn()) {
-        return;
-    }
-
-    matrix_nav.incDec(.col, mode);
 }
 
 pub export fn _fnInsRow(add: bool) callconv(.c) void {
@@ -815,36 +706,8 @@ pub export fn fnDelCol(unused_param_but_mandatory: u16) callconv(.c) void {
     matrixRunMutation(.delete_col);
 }
 
-pub export fn mimFinalize() callconv(.c) void {
-    matrix_lifecycle.finalize();
-}
-
 pub export fn mimRestore() callconv(.c) void {
     matrix_lifecycle.restore();
-}
-
-pub export fn mimAddNumber(item: i16) callconv(.c) void {
-    if (!matrixEnsureEditorModeOrReturn()) {
-        return;
-    }
-
-    matrix_mim_add.run(item);
-}
-
-pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
-    if (!matrixEnsureEditorModeOrReturn()) {
-        return;
-    }
-
-    matrix_mim_run.run(func, param);
-}
-
-pub export fn fnClPAll(confirmation: u16) callconv(.c) void {
-    program_clear.run(confirmation);
-}
-
-pub export fn fnPlotRegressionLine(plot_mode: u16) callconv(.c) void {
-    plot_regression.run(plot_mode);
 }
 
 // Cauchy/Weibull/Logistic/Exponential are stripped upstream under

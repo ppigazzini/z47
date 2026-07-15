@@ -1,4 +1,4 @@
-const frontier = @import("../../frontier.zig");
+const matrix_lifecycle = @import("matrix_lifecycle.zig");
 const frontier_matrix_editor = @import("matrix_editor.zig");
 pub const Kind = enum {
     insert_row_before,
@@ -10,8 +10,8 @@ pub const Kind = enum {
 };
 
 pub fn run(kind: Kind) void {
-    frontier.mimEnter(false);
-    defer frontier.mimEnter(true);
+    matrix_lifecycle.mimEnter(false);
+    defer matrix_lifecycle.mimEnter(true);
 
     apply(kind);
 }
