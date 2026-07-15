@@ -44,8 +44,8 @@ pub fn edit(regist: u16) void {
     matrixIndex = reg;
     getMatrixFromRegister(reg);
 
-    frontier.setIRegisterAsInt(true, 0);
-    frontier.setJRegisterAsInt(true, 0);
+    frontier_matrix_editor.setIRegisterAsInt(true, 0);
+    frontier_matrix_editor.setJRegisterAsInt(true, 0);
     aimBuffer[0] = 0;
     nimBufferDisplay[0] = 0;
     scrollRow = 0;
