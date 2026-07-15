@@ -331,6 +331,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/project/check-module-graph.py --repo-root .
+      - name: Enforce z47's authored ABI surface does not grow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-authored-abi.py --repo-root .
 
   c-dependency-policy:
     name: Verify Phase I C dependency policy
