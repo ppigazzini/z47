@@ -29,7 +29,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/core/kernel/calc_state.zig"),
+        .root_source_file = b.path("zig_src/core/persist/calc_state.zig"),
         .target = target,
         .optimize = optimize,
         .strip = options.strip,
@@ -55,6 +55,17 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("dmcp_rom", dmcp_rom_module);
+    // The scalar-state owners have their own root (core/state/state.zig) and are
+    // pulled in by NAME, so no unrelated owner has to carry their compilation.
+    // They still land in THIS object, exactly as when calc_state force-imported
+    // them by path -- only the directory coupling is gone.
+    const core_state_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/core/state/state.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    core_state_module.addImport("abi", abi_module);
+    module.addImport("core_state", core_state_module);
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_calc_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     // R47 build variants ("r47", "dmcpr47") select USER_R47 (66); otherwise
