@@ -53,6 +53,8 @@ step "[6c/11] core platform leak vs upstream (REPORT-28 §38 L8)"
 bash .github/project/check-core-platform-purity.sh
 step "[6d/11] compilation carriers are module roots (REPORT-28 §39 L9)"
 bash .github/project/check-module-carriers.sh
+step "[6f/11] item seam vs owner drift (REPORT-28 M1.1)"
+python3 .github/project/check-item-seam-drift.py --repo-root .
 step "[6e/11] transliteration contract (hot 1:1 ports intact)"
 python3 .github/project/check-transliteration-contract.py --repo-root .
 step "[7/11] Phase I C dependency policy"

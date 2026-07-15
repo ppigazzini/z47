@@ -39,6 +39,12 @@ The seams re-sync deterministically; run their audits after importing:
 - **abi struct layout** — gate: `zig build abi-layout-parity`.
 - **Constant/enum mirrors** — gate: `audit-constant-parity.py`.
 
+- **Item seam vs owner** -- `check-item-seam-drift.py` FAILS on any changed
+  `(func, param)` row. That is the point: the table is byte-dumped and advances by
+  itself, so each changed row is a behavioural change whose OWNER must be checked
+  before `--bump`. The other seam gates verify the table against the C and will
+  pass while an owner is stale.
+
 ## 2. Re-port behavioral drift
 
 Re-derive changed C behavior into the Zig owners (never edit `src/`). Prefer
