@@ -1,0 +1,11491 @@
+{
+ "note": "Item-seam baseline. indexOfItems[] is byte-dumped from the C, so it advances by itself on a pin advance while hand-written owners do not. A changed (func, param) means a row now binds different behaviour: confirm the owner implementing that symbol followed, THEN --bump. Re-pinning without checking the owners reintroduces the dead-toggle class of defect that the other seam gates cannot see.",
+ "rows": {
+  "0": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1": [
+   "ext_fnNop",
+   "10009"
+  ],
+  "10": [
+   "ext_fnDsz",
+   "10003"
+  ],
+  "100": [
+   "ext_fnIDiv",
+   "9876"
+  ],
+  "1000": [
+   "ext_addItemToBuffer",
+   "1000"
+  ],
+  "1001": [
+   "ext_addItemToBuffer",
+   "1001"
+  ],
+  "1002": [
+   "ext_fnIntVar",
+   "9876"
+  ],
+  "1003": [
+   "ext_addItemToBuffer",
+   "1003"
+  ],
+  "1004": [
+   "ext_addItemToBuffer",
+   "1004"
+  ],
+  "1005": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1006": [
+   "ext_addItemToBuffer",
+   "1006"
+  ],
+  "1007": [
+   "ext_addItemToBuffer",
+   "1007"
+  ],
+  "1008": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1009": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "101": [
+   "ext_fnView",
+   "10003"
+  ],
+  "1010": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1011": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1012": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1013": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1014": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1015": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1016": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1017": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1018": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1019": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "102": [
+   "ext_fnMod",
+   "9876"
+  ],
+  "1020": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1021": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1022": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1023": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1024": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1025": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1026": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1027": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1028": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1029": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "103": [
+   "ext_fnMax",
+   "9876"
+  ],
+  "1030": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1031": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1032": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1033": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1034": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1035": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1036": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1037": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1038": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1039": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "104": [
+   "ext_fnMin",
+   "9876"
+  ],
+  "1040": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1041": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1042": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1043": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1044": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1045": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1046": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1047": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1048": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1049": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "105": [
+   "ext_fnMagnitude",
+   "9876"
+  ],
+  "1050": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1051": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1052": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1053": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1054": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1055": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1056": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1057": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1058": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1059": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "106": [
+   "ext_fnNeighb",
+   "9876"
+  ],
+  "1060": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1061": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1062": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1063": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1064": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1065": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1066": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1067": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1068": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1069": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "107": [
+   "ext_fnNextPrime",
+   "9876"
+  ],
+  "1070": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1071": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1072": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1073": [
+   "ext_addItemToBuffer",
+   "1073"
+  ],
+  "1074": [
+   "ext_addItemToBuffer",
+   "1074"
+  ],
+  "1075": [
+   "ext_addItemToBuffer",
+   "1075"
+  ],
+  "1076": [
+   "ext_addItemToBuffer",
+   "1076"
+  ],
+  "1077": [
+   "ext_addItemToBuffer",
+   "1077"
+  ],
+  "1078": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1079": [
+   "ext_addItemToBuffer",
+   "1079"
+  ],
+  "108": [
+   "ext_fnFactorial",
+   "9876"
+  ],
+  "1080": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1081": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1082": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1083": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1084": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1085": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1086": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1087": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1088": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1089": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "109": [
+   "ext_fnPi",
+   "9876"
+  ],
+  "1090": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1091": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1092": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1093": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1094": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1095": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1096": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1097": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1098": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1099": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "11": [
+   "ext_fnXEqualsTo",
+   "10022"
+  ],
+  "110": [
+   "ext_fnClearFlag",
+   "10005"
+  ],
+  "1100": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1101": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1102": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1103": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1104": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1105": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1106": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1107": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1108": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1109": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "111": [
+   "ext_fnSetFlag",
+   "10005"
+  ],
+  "1110": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1111": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1112": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1113": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1114": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1115": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1116": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1117": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1118": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1119": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "112": [
+   "ext_fnFlipFlag",
+   "10005"
+  ],
+  "1120": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1121": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1122": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1123": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1124": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1125": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1126": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1127": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1128": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1129": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "113": [
+   "ext_fnCheckMatrixSquare",
+   "9876"
+  ],
+  "1130": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1131": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1132": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1133": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1134": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1135": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1136": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1137": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1138": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1139": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "114": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1140": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1141": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1142": [
+   "ext_addItemToBuffer",
+   "1142"
+  ],
+  "1143": [
+   "ext_addItemToBuffer",
+   "1143"
+  ],
+  "1144": [
+   "ext_addItemToBuffer",
+   "1144"
+  ],
+  "1145": [
+   "ext_addItemToBuffer",
+   "1145"
+  ],
+  "1146": [
+   "ext_addItemToBuffer",
+   "1146"
+  ],
+  "1147": [
+   "ext_addItemToBuffer",
+   "1147"
+  ],
+  "1148": [
+   "ext_addItemToBuffer",
+   "1148"
+  ],
+  "1149": [
+   "ext_addItemToBuffer",
+   "1149"
+  ],
+  "115": [
+   "ext_fnAngularModeJM",
+   "2"
+  ],
+  "1150": [
+   "ext_addItemToBuffer",
+   "1150"
+  ],
+  "1151": [
+   "ext_addItemToBuffer",
+   "1151"
+  ],
+  "1152": [
+   "ext_addItemToBuffer",
+   "1152"
+  ],
+  "1153": [
+   "ext_addItemToBuffer",
+   "1153"
+  ],
+  "1154": [
+   "ext_addItemToBuffer",
+   "1154"
+  ],
+  "1155": [
+   "ext_addItemToBuffer",
+   "1155"
+  ],
+  "1156": [
+   "ext_addItemToBuffer",
+   "1156"
+  ],
+  "1157": [
+   "ext_addItemToBuffer",
+   "1157"
+  ],
+  "1158": [
+   "ext_addItemToBuffer",
+   "1158"
+  ],
+  "1159": [
+   "ext_addItemToBuffer",
+   "1159"
+  ],
+  "116": [
+   "ext_fnAngularModeJM",
+   "3"
+  ],
+  "1160": [
+   "ext_addItemToBuffer",
+   "1160"
+  ],
+  "1161": [
+   "ext_addItemToBuffer",
+   "1161"
+  ],
+  "1162": [
+   "ext_addItemToBuffer",
+   "1162"
+  ],
+  "1163": [
+   "ext_addItemToBuffer",
+   "1163"
+  ],
+  "1164": [
+   "ext_addItemToBuffer",
+   "1164"
+  ],
+  "1165": [
+   "ext_addItemToBuffer",
+   "1165"
+  ],
+  "1166": [
+   "ext_addItemToBuffer",
+   "9876"
+  ],
+  "1167": [
+   "ext_addItemToBuffer",
+   "1167"
+  ],
+  "1168": [
+   "ext_addItemToBuffer",
+   "1168"
+  ],
+  "1169": [
+   "ext_addItemToBuffer",
+   "1169"
+  ],
+  "117": [
+   "ext_fnAngularModeJM",
+   "1"
+  ],
+  "1170": [
+   "ext_addItemToBuffer",
+   "1170"
+  ],
+  "1171": [
+   "ext_addItemToBuffer",
+   "1171"
+  ],
+  "1172": [
+   "ext_addItemToBuffer",
+   "1172"
+  ],
+  "1173": [
+   "ext_addItemToBuffer",
+   "1173"
+  ],
+  "1174": [
+   "ext_addItemToBuffer",
+   "1174"
+  ],
+  "1175": [
+   "ext_addItemToBuffer",
+   "100"
+  ],
+  "1176": [
+   "ext_addItemToBuffer",
+   "101"
+  ],
+  "1177": [
+   "ext_addItemToBuffer",
+   "102"
+  ],
+  "1178": [
+   "ext_addItemToBuffer",
+   "103"
+  ],
+  "1179": [
+   "ext_addItemToBuffer",
+   "104"
+  ],
+  "118": [
+   "ext_fnAngularModeJM",
+   "4"
+  ],
+  "1180": [
+   "ext_addItemToBuffer",
+   "105"
+  ],
+  "1181": [
+   "ext_addItemToBuffer",
+   "106"
+  ],
+  "1182": [
+   "ext_addItemToBuffer",
+   "107"
+  ],
+  "1183": [
+   "ext_addItemToBuffer",
+   "108"
+  ],
+  "1184": [
+   "ext_addItemToBuffer",
+   "109"
+  ],
+  "1185": [
+   "ext_addItemToBuffer",
+   "110"
+  ],
+  "1186": [
+   "ext_addItemToBuffer",
+   "111"
+  ],
+  "1187": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1188": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1189": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "119": [
+   "ext_fnAngularModeJM",
+   "0"
+  ],
+  "1190": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1191": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1192": [
+   "ext_fnIntegrate",
+   "2031"
+  ],
+  "1193": [
+   "ext_fnIntegrate",
+   "2032"
+  ],
+  "1194": [
+   "ext_fnIntegrate",
+   "2033"
+  ],
+  "1195": [
+   "ext_fnTvmVar",
+   "2034"
+  ],
+  "1196": [
+   "ext_fnTvmVar",
+   "2035"
+  ],
+  "1197": [
+   "ext_fnTvmVar",
+   "2036"
+  ],
+  "1198": [
+   "ext_fnTvmVar",
+   "2037"
+  ],
+  "1199": [
+   "ext_fnTvmVar",
+   "2038"
+  ],
+  "12": [
+   "ext_fnXNotEqual",
+   "10022"
+  ],
+  "120": [
+   "ext_fnLint",
+   "9876"
+  ],
+  "1200": [
+   "ext_fnTvmVar",
+   "2039"
+  ],
+  "1201": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1202": [
+   "ext_fnEditLinearEquationMatrixA",
+   "9876"
+  ],
+  "1203": [
+   "ext_fnEditLinearEquationMatrixB",
+   "9876"
+  ],
+  "1204": [
+   "ext_fnEditLinearEquationMatrixX",
+   "9876"
+  ],
+  "1205": [
+   "ext_fnStore",
+   "2041"
+  ],
+  "1206": [
+   "ext_fnStore",
+   "2042"
+  ],
+  "1207": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1208": [
+   "ext_fnBinomialP",
+   "9876"
+  ],
+  "1209": [
+   "ext_fnBinomialL",
+   "9876"
+  ],
+  "121": [
+   "ext_fnSetRoundingMode",
+   "10001"
+  ],
+  "1210": [
+   "ext_fnBinomialR",
+   "9876"
+  ],
+  "1211": [
+   "ext_fnBinomialI",
+   "9876"
+  ],
+  "1212": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1213": [
+   "ext_fnCauchyP",
+   "9876"
+  ],
+  "1214": [
+   "ext_fnCauchyL",
+   "9876"
+  ],
+  "1215": [
+   "ext_fnCauchyR",
+   "9876"
+  ],
+  "1216": [
+   "ext_fnCauchyI",
+   "9876"
+  ],
+  "1217": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1218": [
+   "ext_fnExponentialP",
+   "9876"
+  ],
+  "1219": [
+   "ext_fnExponentialL",
+   "9876"
+  ],
+  "122": [
+   "ext_fnRmd",
+   "9876"
+  ],
+  "1220": [
+   "ext_fnExponentialR",
+   "9876"
+  ],
+  "1221": [
+   "ext_fnExponentialI",
+   "9876"
+  ],
+  "1222": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1223": [
+   "ext_fnF_P",
+   "9876"
+  ],
+  "1224": [
+   "ext_fnF_L",
+   "9876"
+  ],
+  "1225": [
+   "ext_fnF_R",
+   "9876"
+  ],
+  "1226": [
+   "ext_fnF_I",
+   "9876"
+  ],
+  "1227": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1228": [
+   "ext_fnGeometricP",
+   "9876"
+  ],
+  "1229": [
+   "ext_fnGeometricL",
+   "9876"
+  ],
+  "123": [
+   "ext_fnLogicalNot",
+   "9876"
+  ],
+  "1230": [
+   "ext_fnGeometricR",
+   "9876"
+  ],
+  "1231": [
+   "ext_fnGeometricI",
+   "9876"
+  ],
+  "1232": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1233": [
+   "ext_fnHypergeometricP",
+   "9876"
+  ],
+  "1234": [
+   "ext_fnHypergeometricL",
+   "9876"
+  ],
+  "1235": [
+   "ext_fnHypergeometricR",
+   "9876"
+  ],
+  "1236": [
+   "ext_fnHypergeometricI",
+   "9876"
+  ],
+  "1237": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1238": [
+   "ext_fnLogNormalP",
+   "9876"
+  ],
+  "1239": [
+   "ext_fnLogNormalL",
+   "9876"
+  ],
+  "124": [
+   "ext_fnLogicalAnd",
+   "9876"
+  ],
+  "1240": [
+   "ext_fnLogNormalR",
+   "9876"
+  ],
+  "1241": [
+   "ext_fnLogNormalI",
+   "9876"
+  ],
+  "1242": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1243": [
+   "ext_fnLogisticP",
+   "9876"
+  ],
+  "1244": [
+   "ext_fnLogisticL",
+   "9876"
+  ],
+  "1245": [
+   "ext_fnLogisticR",
+   "9876"
+  ],
+  "1246": [
+   "ext_fnLogisticI",
+   "9876"
+  ],
+  "1247": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1248": [
+   "ext_fnNegBinomialP",
+   "9876"
+  ],
+  "1249": [
+   "ext_fnNegBinomialL",
+   "9876"
+  ],
+  "125": [
+   "ext_fnLogicalOr",
+   "9876"
+  ],
+  "1250": [
+   "ext_fnNegBinomialR",
+   "9876"
+  ],
+  "1251": [
+   "ext_fnNegBinomialI",
+   "9876"
+  ],
+  "1252": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1253": [
+   "ext_fnNormalP",
+   "9876"
+  ],
+  "1254": [
+   "ext_fnNormalL",
+   "9876"
+  ],
+  "1255": [
+   "ext_fnNormalR",
+   "9876"
+  ],
+  "1256": [
+   "ext_fnNormalI",
+   "9876"
+  ],
+  "1257": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1258": [
+   "ext_fnPoissonP",
+   "9876"
+  ],
+  "1259": [
+   "ext_fnPoissonL",
+   "9876"
+  ],
+  "126": [
+   "ext_fnLogicalXor",
+   "9876"
+  ],
+  "1260": [
+   "ext_fnPoissonR",
+   "9876"
+  ],
+  "1261": [
+   "ext_fnPoissonI",
+   "9876"
+  ],
+  "1262": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1263": [
+   "ext_fnT_P",
+   "9876"
+  ],
+  "1264": [
+   "ext_fnT_L",
+   "9876"
+  ],
+  "1265": [
+   "ext_fnT_R",
+   "9876"
+  ],
+  "1266": [
+   "ext_fnT_I",
+   "9876"
+  ],
+  "1267": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1268": [
+   "ext_fnWeibullP",
+   "9876"
+  ],
+  "1269": [
+   "ext_fnWeibullL",
+   "9876"
+  ],
+  "127": [
+   "ext_fnSwapX",
+   "10003"
+  ],
+  "1270": [
+   "ext_fnWeibullR",
+   "9876"
+  ],
+  "1271": [
+   "ext_fnWeibullI",
+   "9876"
+  ],
+  "1272": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1273": [
+   "ext_fnChi2P",
+   "9876"
+  ],
+  "1274": [
+   "ext_fnChi2L",
+   "9876"
+  ],
+  "1275": [
+   "ext_fnChi2R",
+   "9876"
+  ],
+  "1276": [
+   "ext_fnChi2I",
+   "9876"
+  ],
+  "1277": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1278": [
+   "ext_fnStdNormalP",
+   "9876"
+  ],
+  "1279": [
+   "ext_fnStdNormalL",
+   "9876"
+  ],
+  "128": [
+   "ext_fnConstant",
+   "0"
+  ],
+  "1280": [
+   "ext_fnStdNormalR",
+   "9876"
+  ],
+  "1281": [
+   "ext_fnStdNormalI",
+   "9876"
+  ],
+  "1282": [
+   "ext_fnGEVP",
+   "9876"
+  ],
+  "1283": [
+   "ext_fnGEVL",
+   "9876"
+  ],
+  "1284": [
+   "ext_fnGEVR",
+   "9876"
+  ],
+  "1285": [
+   "ext_fnGEVI",
+   "9876"
+  ],
+  "1286": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1287": [
+   "ext_fnParetoP",
+   "9876"
+  ],
+  "1288": [
+   "ext_fnParetoL",
+   "9876"
+  ],
+  "1289": [
+   "ext_fnParetoU",
+   "9876"
+  ],
+  "129": [
+   "ext_fnConstant",
+   "1"
+  ],
+  "1290": [
+   "ext_fnParetoI",
+   "9876"
+  ],
+  "1291": [
+   "ext_fnPareto2P",
+   "9876"
+  ],
+  "1292": [
+   "ext_fnPareto2L",
+   "9876"
+  ],
+  "1293": [
+   "ext_fnPareto2U",
+   "9876"
+  ],
+  "1294": [
+   "ext_fnPareto2I",
+   "9876"
+  ],
+  "1295": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1296": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1297": [
+   "ext_fnCurveFitting",
+   "10001"
+  ],
+  "1298": [
+   "ext_fnCurveFitting_T",
+   "2"
+  ],
+  "1299": [
+   "ext_fnCurveFitting_T",
+   "1"
+  ],
+  "13": [
+   "ext_fnCheckPlusZero",
+   "9876"
+  ],
+  "130": [
+   "ext_fnConstant",
+   "2"
+  ],
+  "1300": [
+   "ext_fnCurveFitting_T",
+   "4"
+  ],
+  "1301": [
+   "ext_fnCurveFitting_T",
+   "512"
+  ],
+  "1302": [
+   "ext_fnCurveFitting_T",
+   "8"
+  ],
+  "1303": [
+   "ext_fnCurveFitting_T",
+   "256"
+  ],
+  "1304": [
+   "ext_fnCurveFitting_T",
+   "128"
+  ],
+  "1305": [
+   "ext_fnCurveFitting_T",
+   "64"
+  ],
+  "1306": [
+   "ext_fnCurveFitting_T",
+   "32"
+  ],
+  "1307": [
+   "ext_fnCurveFitting_T",
+   "16"
+  ],
+  "1308": [
+   "ext_fnCurveFittingReset",
+   "1"
+  ],
+  "1309": [
+   "ext_fnCurveFittingReset",
+   "0"
+  ],
+  "131": [
+   "ext_fnConstant",
+   "3"
+  ],
+  "1310": [
+   "ext_fnCurveFitting",
+   "10001"
+  ],
+  "1311": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1312": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1313": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1314": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1315": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1316": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1317": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1318": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1319": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "132": [
+   "ext_fnConstant",
+   "4"
+  ],
+  "1320": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1321": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1322": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1323": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1324": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1325": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1326": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1327": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1328": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1329": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "133": [
+   "ext_fnConstant",
+   "5"
+  ],
+  "1330": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1331": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1332": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1333": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1334": [
+   "ext_fnBaseMenu",
+   "9876"
+  ],
+  "1335": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1336": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1337": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1338": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1339": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "134": [
+   "ext_fnConstant",
+   "6"
+  ],
+  "1340": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1341": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1342": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1343": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1344": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1345": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1346": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1347": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1348": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1349": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "135": [
+   "ext_fnConstant",
+   "7"
+  ],
+  "1350": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1351": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1352": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1353": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1354": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1355": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1356": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1357": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1358": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1359": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "136": [
+   "ext_fnConstant",
+   "8"
+  ],
+  "1360": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1361": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1362": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1363": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1364": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1365": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1366": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1367": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1368": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1369": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "137": [
+   "ext_fnConstant",
+   "9"
+  ],
+  "1370": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1371": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1372": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1373": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1374": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1375": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1376": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1377": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1378": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1379": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "138": [
+   "ext_fnConstant",
+   "10"
+  ],
+  "1380": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1381": [
+   "ext_fnIntegrate",
+   "10018"
+  ],
+  "1382": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1383": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1384": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1385": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1386": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1387": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1388": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1389": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "139": [
+   "ext_fnConstant",
+   "11"
+  ],
+  "1390": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1391": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1392": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1393": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1394": [
+   "ext_fnDynamicMenu",
+   "9876"
+  ],
+  "1395": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1396": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1397": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1398": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1399": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "14": [
+   "ext_fnCheckMinusZero",
+   "9876"
+  ],
+  "140": [
+   "ext_fnConstant",
+   "12"
+  ],
+  "1400": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1401": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1402": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1403": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1404": [
+   "ext_fnIntegerMode",
+   "1"
+  ],
+  "1405": [
+   "ext_fnSNAP",
+   "9876"
+  ],
+  "1406": [
+   "ext_fnIntegerMode",
+   "2"
+  ],
+  "1407": [
+   "ext_fnMagnitude",
+   "9876"
+  ],
+  "1408": [
+   "ext_fnAgm",
+   "9876"
+  ],
+  "1409": [
+   "ext_fnAGraph",
+   "10003"
+  ],
+  "141": [
+   "ext_fnConstant",
+   "13"
+  ],
+  "1410": [
+   "ext_fnDisplayFormatAll",
+   "10001"
+  ],
+  "1411": [
+   "ext_fnAssign",
+   "0"
+  ],
+  "1412": [
+   "ext_fnBack",
+   "10001"
+  ],
+  "1413": [
+   "ext_fnBatteryVoltage",
+   "9876"
+  ],
+  "1414": [
+   "ext_fnBeep",
+   "9876"
+  ],
+  "1415": [
+   "ext_fnTvmBeginMode",
+   "9876"
+  ],
+  "1416": [
+   "ext_fnBn",
+   "9876"
+  ],
+  "1417": [
+   "ext_fnBnStar",
+   "9876"
+  ],
+  "1418": [
+   "ext_fnCase",
+   "10003"
+  ],
+  "1419": [
+   "ext_fnClAll",
+   "9878"
+  ],
+  "142": [
+   "ext_fnConstant",
+   "14"
+  ],
+  "1420": [
+   "ext_fnClCVar",
+   "9876"
+  ],
+  "1421": [
+   "ext_fnClFAll",
+   "9878"
+  ],
+  "1422": [
+   "ext_fnFractionType",
+   "9876"
+  ],
+  "1423": [
+   "ext_fnClLcd",
+   "1"
+  ],
+  "1424": [
+   "ext_fnClearMenu",
+   "9876"
+  ],
+  "1425": [
+   "ext_fnClP",
+   "10018"
+  ],
+  "1426": [
+   "ext_fnClPAll",
+   "9878"
+  ],
+  "1427": [
+   "ext_fnClearRegisters",
+   "9878"
+  ],
+  "1428": [
+   "ext_fnClearStack",
+   "9876"
+  ],
+  "1429": [
+   "ext_fnClSigma",
+   "9876"
+  ],
+  "143": [
+   "ext_fnConstant",
+   "15"
+  ],
+  "1430": [
+   "ext_fnStoreMax",
+   "10003"
+  ],
+  "1431": [
+   "ext_fnConjugate",
+   "9876"
+  ],
+  "1432": [
+   "ext_fnRecallMax",
+   "10003"
+  ],
+  "1433": [
+   "ext_fnCoefficientDetermination",
+   "9876"
+  ],
+  "1434": [
+   "ext_fnPopulationCovariance",
+   "9876"
+  ],
+  "1435": [
+   "ext_fnCurveFittingLR",
+   "9876"
+  ],
+  "1436": [
+   "ext_fnCross",
+   "9876"
+  ],
+  "1437": [
+   "ext_fnCxToRe",
+   "9876"
+  ],
+  "1438": [
+   "ext_fnDate",
+   "9876"
+  ],
+  "1439": [
+   "ext_fnDateTo",
+   "9876"
+  ],
+  "144": [
+   "ext_fnConstant",
+   "16"
+  ],
+  "1440": [
+   "ext_fnDay",
+   "9876"
+  ],
+  "1441": [
+   "ext_fnDblDivideRemainder",
+   "9876"
+  ],
+  "1442": [
+   "ext_fnDblMultiply",
+   "9876"
+  ],
+  "1443": [
+   "ext_fnDblDivide",
+   "9876"
+  ],
+  "1444": [
+   "ext_fnDecomp",
+   "9876"
+  ],
+  "1445": [
+   "ext_fnAngularMode",
+   "2"
+  ],
+  "1446": [
+   "ext_fnLoadedFile",
+   "9876"
+  ],
+  "1447": [
+   "ext_fnStatSa",
+   "9876"
+  ],
+  "1448": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1449": [
+   "ext_fnDot",
+   "9876"
+  ],
+  "145": [
+   "ext_fnConstant",
+   "17"
+  ],
+  "1450": [
+   "ext_fnDisplayStack",
+   "10001"
+  ],
+  "1451": [
+   "ext_fnAngularMode",
+   "3"
+  ],
+  "1452": [
+   "ext_fnResetTVM",
+   "9876"
+  ],
+  "1453": [
+   "ext_fnSetDateFormat",
+   "1453"
+  ],
+  "1454": [
+   "ext_fnDateToJulian",
+   "9876"
+  ],
+  "1455": [
+   "ext_fnDeleteVariable",
+   "10014"
+  ],
+  "1456": [
+   "ext_fnEigenvalues",
+   "9876"
+  ],
+  "1457": [
+   "ext_fnEigenvectors",
+   "9876"
+  ],
+  "1458": [
+   "ext_fnReturn",
+   "0"
+  ],
+  "1459": [
+   "ext_fnTvmEndMode",
+   "9876"
+  ],
+  "146": [
+   "ext_fnConstant",
+   "18"
+  ],
+  "1460": [
+   "ext_fnDisplayFormatEng",
+   "10001"
+  ],
+  "1461": [
+   "ext_fnPNorm",
+   "2"
+  ],
+  "1462": [
+   "ext_fnRecallMin",
+   "10003"
+  ],
+  "1463": [
+   "ext_fnEqDelete",
+   "9876"
+  ],
+  "1464": [
+   "ext_fnEqEdit",
+   "9876"
+  ],
+  "1465": [
+   "ext_fnEqNew",
+   "9876"
+  ],
+  "1466": [
+   "ext_fnErf",
+   "9876"
+  ],
+  "1467": [
+   "ext_fnErfc",
+   "9876"
+  ],
+  "1468": [
+   "ext_fnRaiseError",
+   "10001"
+  ],
+  "1469": [
+   "ext_fnExitAllMenus",
+   "9876"
+  ],
+  "147": [
+   "ext_fnConstant",
+   "19"
+  ],
+  "1470": [
+   "ext_fnExpt",
+   "9876"
+  ],
+  "1471": [
+   "ext_fnGetFirstGregorianDay",
+   "9876"
+  ],
+  "1472": [
+   "ext_fnFib",
+   "9876"
+  ],
+  "1473": [
+   "ext_fnDisplayFormatFix",
+   "10001"
+  ],
+  "1474": [
+   "ext_fnDiskInfo",
+   "9876"
+  ],
+  "1475": [
+   "ext_fn1stDeriv",
+   "10018"
+  ],
+  "1476": [
+   "ext_fn2ndDeriv",
+   "10018"
+  ],
+  "1477": [
+   "ext_fnPrimeFactors",
+   "9876"
+  ],
+  "1478": [
+   "ext_fnGd",
+   "9876"
+  ],
+  "1479": [
+   "ext_fnInvGd",
+   "9876"
+  ],
+  "148": [
+   "ext_fnConstant",
+   "20"
+  ],
+  "1480": [
+   "ext_fnAngularMode",
+   "1"
+  ],
+  "1481": [
+   "ext_fnGetFractionDigits",
+   "9876"
+  ],
+  "1482": [
+   "ext_fnGotoDot",
+   "9876"
+  ],
+  "1483": [
+   "ext_fnHermite",
+   "9876"
+  ],
+  "1484": [
+   "ext_fnHermiteP",
+   "9876"
+  ],
+  "1485": [
+   "ext_fnImaginaryPart",
+   "9876"
+  ],
+  "1486": [
+   "ext_fnIndexMatrix",
+   "10003"
+  ],
+  "1487": [
+   "ext_fnIxyz",
+   "9876"
+  ],
+  "1488": [
+   "ext_fnGammaX",
+   "1"
+  ],
+  "1489": [
+   "ext_fnGammaX",
+   "3"
+  ],
+  "149": [
+   "ext_fnConstant",
+   "21"
+  ],
+  "1490": [
+   "ext_fnIncDecI",
+   "0"
+  ],
+  "1491": [
+   "ext_fnIncDecI",
+   "1"
+  ],
+  "1492": [
+   "ext_fnBesselJ",
+   "9876"
+  ],
+  "1493": [
+   "ext_fnIncDecJ",
+   "0"
+  ],
+  "1494": [
+   "ext_fnIncDecJ",
+   "1"
+  ],
+  "1495": [
+   "ext_fnSetFirstGregorianDay",
+   "9876"
+  ],
+  "1496": [
+   "ext_fnErrorMessage",
+   "10001"
+  ],
+  "1497": [
+   "ext_fnKeyGtoXeq",
+   "10001"
+  ],
+  "1498": [
+   "ext_fnKeyGto",
+   "10012"
+  ],
+  "1499": [
+   "ext_fnKeyXeq",
+   "10012"
+  ],
+  "15": [
+   "ext_fnXAlmostEqual",
+   "10022"
+  ],
+  "150": [
+   "ext_fnConstant",
+   "22"
+  ],
+  "1500": [
+   "ext_fnSinc",
+   "9876"
+  ],
+  "1501": [
+   "ext_fnKeyType",
+   "10003"
+  ],
+  "1502": [
+   "ext_fnLastX",
+   "9876"
+  ],
+  "1503": [
+   "ext_fnCheckLabel",
+   "10009"
+  ],
+  "1504": [
+   "ext_fnIsLeap",
+   "9876"
+  ],
+  "1505": [
+   "ext_fnLaguerre",
+   "9876"
+  ],
+  "1506": [
+   "ext_fnLaguerreAlpha",
+   "9876"
+  ],
+  "1507": [
+   "ext_fnLnBeta",
+   "9876"
+  ],
+  "1508": [
+   "ext_fnLnGamma",
+   "9876"
+  ],
+  "1509": [
+   "ext_fnLoad",
+   "0"
+  ],
+  "151": [
+   "ext_fnConstant",
+   "23"
+  ],
+  "1510": [
+   "ext_fnLoad",
+   "1"
+  ],
+  "1511": [
+   "ext_fnLoad",
+   "2"
+  ],
+  "1512": [
+   "ext_fnLoad",
+   "5"
+  ],
+  "1513": [
+   "ext_fnLoad",
+   "4"
+  ],
+  "1514": [
+   "ext_allocateLocalRegisters",
+   "10001"
+  ],
+  "1515": [
+   "ext_fnGetLocR",
+   "9876"
+  ],
+  "1516": [
+   "ext_fnProcessLR",
+   "7"
+  ],
+  "1517": [
+   "ext_fnMant",
+   "9876"
+  ],
+  "1518": [
+   "ext_fnEditLinearEquationMatrixX",
+   "9876"
+  ],
+  "1519": [
+   "ext_fnFreeMemory",
+   "9876"
+  ],
+  "152": [
+   "ext_fnConstant",
+   "24"
+  ],
+  "1520": [
+   "ext_fnProgrammableMenu",
+   "9876"
+  ],
+  "1521": [
+   "ext_fnMonth",
+   "9876"
+  ],
+  "1522": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1523": [
+   "ext_fnAngularMode",
+   "4"
+  ],
+  "1524": [
+   "ext_fnNop",
+   "10019"
+  ],
+  "1525": [
+   "ext_fnDelRow",
+   "9876"
+  ],
+  "1526": [
+   "ext_fnSetMatrixDimensions",
+   "10007"
+  ],
+  "1527": [
+   "ext_fnGetMatrixDimensions42",
+   "9876"
+  ],
+  "1528": [
+   "ext_fnSetDateFormat",
+   "1528"
+  ],
+  "1529": [
+   "ext_fnEditMatrix",
+   "9876"
+  ],
+  "153": [
+   "ext_fnConstant",
+   "25"
+  ],
+  "1530": [
+   "ext_fnEditMatrix",
+   "10003"
+  ],
+  "1531": [
+   "ext_fnGetMatrix",
+   "9876"
+  ],
+  "1532": [
+   "ext_fnGoToElement",
+   "9876"
+  ],
+  "1533": [
+   "ext_fnSetGrowMode",
+   "1"
+  ],
+  "1534": [
+   "ext_fnInsRow",
+   "9876"
+  ],
+  "1535": [
+   "ext_fnLuDecomposition",
+   "9876"
+  ],
+  "1536": [
+   "ext_fnNewMatrix",
+   "9876"
+  ],
+  "1537": [
+   "ext_fnOldMatrix",
+   "9876"
+  ],
+  "1538": [
+   "ext_fnPutMatrix",
+   "9876"
+  ],
+  "1539": [
+   "ext_fnSwapRows",
+   "9876"
+  ],
+  "154": [
+   "ext_fnConstant",
+   "26"
+  ],
+  "1540": [
+   "ext_fnSincpi",
+   "9876"
+  ],
+  "1541": [
+   "ext_fnSetGrowMode",
+   "0"
+  ],
+  "1542": [
+   "ext_fnNop",
+   "9876"
+  ],
+  "1543": [
+   "ext_fnOff",
+   "9876"
+  ],
+  "1544": [
+   "ext_fnDropY",
+   "9876"
+  ],
+  "1545": [
+   "ext_fnStoreMin",
+   "10003"
+  ],
+  "1546": [
+   "ext_fnPgmInt",
+   "10018"
+  ],
+  "1547": [
+   "ext_fnPgmSlv",
+   "10018"
+  ],
+  "1548": [
+   "ext_fnPixel",
+   "9876"
+  ],
+  "1549": [
+   "ext_fnPlotStat",
+   "4"
+  ],
+  "155": [
+   "ext_fnConstant",
+   "27"
+  ],
+  "1550": [
+   "ext_fnLegendre",
+   "9876"
+  ],
+  "1551": [
+   "ext_fnPoint",
+   "9876"
+  ],
+  "1552": [
+   "ext_fnLoad",
+   "3"
+  ],
+  "1553": [
+   "ext_allocateLocalRegisters",
+   "0"
+  ],
+  "1554": [
+   "ext_fnNop",
+   "9876"
+  ],
+  "1555": [
+   "ext_fnSlvc",
+   "9876"
+  ],
+  "1556": [
+   "ext_fnPutKey",
+   "10003"
+  ],
+  "1557": [
+   "ext_fnAngularMode",
+   "0"
+  ],
+  "1558": [
+   "ext_fnGetDMX",
+   "9876"
+  ],
+  "1559": [
+   "ext_fnRandom",
+   "9876"
+  ],
+  "156": [
+   "ext_fnConstant",
+   "28"
+  ],
+  "1560": [
+   "ext_registerBrowser",
+   "9876"
+  ],
+  "1561": [
+   "ext_fnRecallConfig",
+   "10003"
+  ],
+  "1562": [
+   "ext_fnRecallElement",
+   "9876"
+  ],
+  "1563": [
+   "ext_fnRecallIJ",
+   "9876"
+  ],
+  "1564": [
+   "ext_fnRecallStack",
+   "10003"
+  ],
+  "1565": [
+   "ext_fnRdp",
+   "10001"
+  ],
+  "1566": [
+   "ext_fnRealPart",
+   "9876"
+  ],
+  "1567": [
+   "ext_fnLoadProgram",
+   "9876"
+  ],
+  "1568": [
+   "ext_fnReset",
+   "9878"
+  ],
+  "1569": [
+   "ext_fnReToCx",
+   "9876"
+  ],
+  "157": [
+   "ext_fnConstant",
+   "29"
+  ],
+  "1570": [
+   "ext_fnSwapRealImaginary",
+   "9876"
+  ],
+  "1571": [
+   "ext_fnClP",
+   "10014"
+  ],
+  "1572": [
+   "ext_fnDeleteMenu",
+   "10014"
+  ],
+  "1573": [
+   "ext_fnDisplayFormatDsp",
+   "10001"
+  ],
+  "1574": [
+   "ext_fnPNorm",
+   "924"
+  ],
+  "1575": [
+   "ext_fnExpM1",
+   "9876"
+  ],
+  "1576": [
+   "ext_fnExportProgram",
+   "10018"
+  ],
+  "1577": [
+   "ext_fnRsd",
+   "10001"
+  ],
+  "1578": [
+   "ext_fnRowColSum",
+   "1"
+  ],
+  "1579": [
+   "ext_fnReturn",
+   "1"
+  ],
+  "158": [
+   "ext_fnConstant",
+   "30"
+  ],
+  "1580": [
+   "ext_fnRegClr",
+   "9876"
+  ],
+  "1581": [
+   "ext_fnRegCopy",
+   "9876"
+  ],
+  "1582": [
+   "ext_fnRegSort",
+   "9876"
+  ],
+  "1583": [
+   "ext_fnRegSwap",
+   "9876"
+  ],
+  "1584": [
+   "ext_fnJacobiAmplitude",
+   "9876"
+  ],
+  "1585": [
+   "ext_fnSampleStdDev",
+   "9876"
+  ],
+  "1586": [
+   "ext_fnSave",
+   "0"
+  ],
+  "1587": [
+   "ext_fnDisplayFormatSci",
+   "10001"
+  ],
+  "1588": [
+   "ext_fnGetSignificantDigits",
+   "9876"
+  ],
+  "1589": [
+   "ext_fnSeed",
+   "9876"
+  ],
+  "159": [
+   "ext_fnConstant",
+   "31"
+  ],
+  "1590": [
+   "ext_fnSaveProgram",
+   "10018"
+  ],
+  "1591": [
+   "ext_configCommon",
+   "1"
+  ],
+  "1592": [
+   "ext_fnSetDate",
+   "9876"
+  ],
+  "1593": [
+   "ext_configCommon",
+   "2"
+  ],
+  "1594": [
+   "ext_configCommon",
+   "3"
+  ],
+  "1595": [
+   "ext_configCommon",
+   "4"
+  ],
+  "1596": [
+   "ext_configCommon",
+   "0"
+  ],
+  "1597": [
+   "ext_fnSetTime",
+   "9876"
+  ],
+  "1598": [
+   "ext_configCommon",
+   "5"
+  ],
+  "1599": [
+   "ext_configCommon",
+   "6"
+  ],
+  "16": [
+   "ext_fnXLessThan",
+   "10022"
+  ],
+  "160": [
+   "ext_fnConstant",
+   "32"
+  ],
+  "1600": [
+   "ext_fnSign",
+   "9876"
+  ],
+  "1601": [
+   "ext_fnIntegerMode",
+   "3"
+  ],
+  "1602": [
+   "ext_fnSimultaneousLinearEquation",
+   "10001"
+  ],
+  "1603": [
+   "ext_fnSkip",
+   "10001"
+  ],
+  "1604": [
+   "ext_fnSlvq",
+   "9876"
+  ],
+  "1605": [
+   "ext_fnStandardError",
+   "9876"
+  ],
+  "1606": [
+   "ext_fnGetIntegerSignMode",
+   "9876"
+  ],
+  "1607": [
+   "ext_fnWeightedStandardError",
+   "9876"
+  ],
+  "1608": [
+   "ext_fnSolve",
+   "10010"
+  ],
+  "1609": [
+   "ext_fnGetStackSize",
+   "9876"
+  ],
+  "161": [
+   "ext_fnConstant",
+   "33"
+  ],
+  "1610": [
+   "ext_flagBrowser",
+   "1"
+  ],
+  "1611": [
+   "ext_fnStoreConfig",
+   "10003"
+  ],
+  "1612": [
+   "ext_fnStoreElement",
+   "9876"
+  ],
+  "1613": [
+   "ext_fnStoreIJ",
+   "9876"
+  ],
+  "1614": [
+   "ext_fnLnP1",
+   "9876"
+  ],
+  "1615": [
+   "ext_fnStoreStack",
+   "10003"
+  ],
+  "1616": [
+   "ext_fnSumXY",
+   "9876"
+  ],
+  "1617": [
+   "ext_fnWeightedSampleStdDev",
+   "9876"
+  ],
+  "1618": [
+   "ext_fnSampleCovariance",
+   "9876"
+  ],
+  "1619": [
+   "ext_fnDisplayFormatTime",
+   "10001"
+  ],
+  "162": [
+   "ext_fnConstant",
+   "34"
+  ],
+  "1620": [
+   "ext_fnTicks",
+   "9876"
+  ],
+  "1621": [
+   "ext_fnTime",
+   "9876"
+  ],
+  "1622": [
+   "ext_fnItemTimerApp",
+   "9876"
+  ],
+  "1623": [
+   "ext_fnChebyshevT",
+   "9876"
+  ],
+  "1624": [
+   "ext_fnTone",
+   "10001"
+  ],
+  "1625": [
+   "ext_fnSwapT",
+   "10003"
+  ],
+  "1626": [
+   "ext_fnUlp",
+   "9876"
+  ],
+  "1627": [
+   "ext_fnChebyshevU",
+   "9876"
+  ],
+  "1628": [
+   "ext_fnUnitVector",
+   "9876"
+  ],
+  "1629": [
+   "ext_fnIntegerMode",
+   "0"
+  ],
+  "163": [
+   "ext_fnConstant",
+   "35"
+  ],
+  "1630": [
+   "ext_fnVarMnu",
+   "10018"
+  ],
+  "1631": [
+   "ext_fnVersion",
+   "9876"
+  ],
+  "1632": [
+   "ext_fnIDivR",
+   "9876"
+  ],
+  "1633": [
+   "ext_fnWday",
+   "9876"
+  ],
+  "1634": [
+   "ext_fnWho",
+   "9876"
+  ],
+  "1635": [
+   "ext_fnWnegative",
+   "9876"
+  ],
+  "1636": [
+   "ext_fnWpositive",
+   "9876"
+  ],
+  "1637": [
+   "ext_fnWinverse",
+   "9876"
+  ],
+  "1638": [
+   "ext_fnSetWordSize",
+   "10001"
+  ],
+  "1639": [
+   "ext_fnGetWordSize",
+   "9876"
+  ],
+  "164": [
+   "ext_fnConstant",
+   "36"
+  ],
+  "1640": [
+   "ext_fnMeanXY",
+   "9876"
+  ],
+  "1641": [
+   "ext_fnGeometricMeanXY",
+   "9876"
+  ],
+  "1642": [
+   "ext_fnWeightedMeanX",
+   "9876"
+  ],
+  "1643": [
+   "ext_fnXIsFny",
+   "9876"
+  ],
+  "1644": [
+   "ext_fnXToDate",
+   "9876"
+  ],
+  "1645": [
+   "ext_fnXToAlphaOld",
+   "9876"
+  ],
+  "1646": [
+   "ext_fnQrDecomposition",
+   "9876"
+  ],
+  "1647": [
+   "ext_fnYear",
+   "9876"
+  ],
+  "1648": [
+   "ext_fnYIsFnx",
+   "9876"
+  ],
+  "1649": [
+   "ext_fnSetDateFormat",
+   "1649"
+  ],
+  "165": [
+   "ext_fnConstant",
+   "37"
+  ],
+  "1650": [
+   "ext_fnSwapY",
+   "10003"
+  ],
+  "1651": [
+   "ext_fnSwapZ",
+   "10003"
+  ],
+  "1652": [
+   "ext_fnAlphaLeng",
+   "10003"
+  ],
+  "1653": [
+   "ext_fnXmax",
+   "9876"
+  ],
+  "1654": [
+   "ext_fnXmin",
+   "9876"
+  ],
+  "1655": [
+   "ext_fnAlphaPos",
+   "10003"
+  ],
+  "1656": [
+   "ext_fnAlphaRL",
+   "10003"
+  ],
+  "1657": [
+   "ext_fnAlphaRR",
+   "10003"
+  ],
+  "1658": [
+   "ext_fnAlphaSL",
+   "10003"
+  ],
+  "1659": [
+   "ext_fnAlphaSR",
+   "10003"
+  ],
+  "166": [
+   "ext_fnConstant",
+   "38"
+  ],
+  "1660": [
+   "ext_fnAlphaToX",
+   "10003"
+  ],
+  "1661": [
+   "ext_fnBeta",
+   "9876"
+  ],
+  "1662": [
+   "ext_fnGammaX",
+   "0"
+  ],
+  "1663": [
+   "ext_fnGammaX",
+   "2"
+  ],
+  "1664": [
+   "ext_fnGamma",
+   "9876"
+  ],
+  "1665": [
+   "ext_fnBesselY",
+   "9876"
+  ],
+  "1666": [
+   "ext_fnDeltaPercent",
+   "9876"
+  ],
+  "1667": [
+   "ext_fnGeometricSampleStdDev",
+   "9876"
+  ],
+  "1668": [
+   "ext_fnGeometricStandardError",
+   "9876"
+  ],
+  "1669": [
+   "ext_fnGeometricPopulationStdDev",
+   "9876"
+  ],
+  "167": [
+   "ext_fnConstant",
+   "39"
+  ],
+  "1670": [
+   "ext_fnZeta",
+   "9876"
+  ],
+  "1671": [
+   "ext_fnProgrammableProduct",
+   "10018"
+  ],
+  "1672": [
+   "ext_fnProgrammableSum",
+   "10018"
+  ],
+  "1673": [
+   "ext_fnPopulationStdDev",
+   "9876"
+  ],
+  "1674": [
+   "ext_fnWeightedPopulationStdDev",
+   "9876"
+  ],
+  "1675": [
+   "ext_fnRandomI",
+   "9876"
+  ],
+  "1676": [
+   "ext_fnP_All_Regs",
+   "6"
+  ],
+  "1677": [
+   "ext_fnLastT",
+   "9876"
+  ],
+  "1678": [
+   "ext_fnGetRange",
+   "9876"
+  ],
+  "1679": [
+   "ext_fnM1Pow",
+   "9876"
+  ],
+  "168": [
+   "ext_fnConstant",
+   "40"
+  ],
+  "1680": [
+   "ext_fnMulMod",
+   "9876"
+  ],
+  "1681": [
+   "ext_fnToDate",
+   "9876"
+  ],
+  "1682": [
+   "ext_fnJacobiSn",
+   "9876"
+  ],
+  "1683": [
+   "ext_fnJacobiCn",
+   "9876"
+  ],
+  "1684": [
+   "ext_fnJacobiDn",
+   "9876"
+  ],
+  "1685": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1686": [
+   "ext_fnHRtoTM",
+   "9876"
+  ],
+  "1687": [
+   "ext_fnChangeBase",
+   "10002"
+  ],
+  "1688": [
+   "ext_fnHMStoTM",
+   "9876"
+  ],
+  "1689": [
+   "ext_fnSetBaseNr",
+   "10001"
+  ],
+  "169": [
+   "ext_fnConstant",
+   "41"
+  ],
+  "1690": [
+   "ext_fnIntegrateYX",
+   "10003"
+  ],
+  "1691": [
+   "ext_fnToReal",
+   "9876"
+  ],
+  "1692": [
+   "ext_fnPcSigmaDeltaPcXmean",
+   "9876"
+  ],
+  "1693": [
+   "ext_fnDeltaPercentXmean",
+   "9876"
+  ],
+  "1694": [
+   "ext_fnShuffle",
+   "10008"
+  ],
+  "1695": [
+   "ext_fnPercent",
+   "9876"
+  ],
+  "1696": [
+   "ext_fnPercentMRR",
+   "9876"
+  ],
+  "1697": [
+   "ext_fnPercentT",
+   "9876"
+  ],
+  "1698": [
+   "ext_fnPercentSigma",
+   "9876"
+  ],
+  "1699": [
+   "ext_fnPercentPlusMG",
+   "9876"
+  ],
+  "17": [
+   "ext_fnXLessEqual",
+   "10022"
+  ],
+  "170": [
+   "ext_fnConstant",
+   "42"
+  ],
+  "1700": [
+   "ext_fnIntegrate",
+   "10003"
+  ],
+  "1701": [
+   "ext_fnExpMod",
+   "9876"
+  ],
+  "1702": [
+   "ext_fnDeterminant",
+   "9876"
+  ],
+  "1703": [
+   "ext_fnParallel",
+   "9876"
+  ],
+  "1704": [
+   "ext_fnTranspose",
+   "9876"
+  ],
+  "1705": [
+   "ext_fnInvertMatrix",
+   "9876"
+  ],
+  "1706": [
+   "ext_fnArg",
+   "9876"
+  ],
+  "1707": [
+   "ext_fnP_All_Regs",
+   "7"
+  ],
+  "1708": [
+   "ext_fnP_Advance",
+   "9876"
+  ],
+  "1709": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "171": [
+   "ext_fnConstant",
+   "43"
+  ],
+  "1710": [
+   "ext_fnP_SetDelay",
+   "10001"
+  ],
+  "1711": [
+   "ext_fnP_LCD",
+   "9876"
+  ],
+  "1712": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1713": [
+   "ext_fnExportProgram",
+   "10018"
+  ],
+  "1714": [
+   "ext_fnP_Regs",
+   "10003"
+  ],
+  "1715": [
+   "ext_fnP_All_Regs",
+   "2"
+  ],
+  "1716": [
+   "ext_fnP_All_Regs",
+   "1"
+  ],
+  "1717": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1718": [
+   "ext_fnP_User",
+   "9876"
+  ],
+  "1719": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "172": [
+   "ext_fnConstant",
+   "44"
+  ],
+  "1720": [
+   "ext_fnP_Sigma",
+   "9876"
+  ],
+  "1721": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1722": [
+   "ext_fontBrowser",
+   "9876"
+  ],
+  "1723": [
+   "ext_fnUndo",
+   "9876"
+  ],
+  "1724": [
+   "ext_fnPem",
+   "9876"
+  ],
+  "1725": [
+   "ext_fnRunProgram",
+   "9876"
+  ],
+  "1726": [
+   "ext_fnEllipticK",
+   "9876"
+  ],
+  "1727": [
+   "ext_fnEllipticE",
+   "9876"
+  ],
+  "1728": [
+   "ext_fnEllipticPi",
+   "9876"
+  ],
+  "1729": [
+   "ext_fnFlipFlag",
+   "32788"
+  ],
+  "173": [
+   "ext_fnConstant",
+   "45"
+  ],
+  "1730": [
+   "ext_fnKeyCC",
+   "9876"
+  ],
+  "1731": [
+   "ext_fnSHIFTf",
+   "9876"
+  ],
+  "1732": [
+   "ext_fnSHIFTg",
+   "9876"
+  ],
+  "1733": [
+   "ext_fnKeyUp",
+   "9876"
+  ],
+  "1734": [
+   "ext_fnBst",
+   "9876"
+  ],
+  "1735": [
+   "ext_fnKeyDown",
+   "9876"
+  ],
+  "1736": [
+   "ext_fnSst",
+   "9876"
+  ],
+  "1737": [
+   "ext_fnKeyExit",
+   "9876"
+  ],
+  "1738": [
+   "ext_fnKeyBackspace",
+   "9876"
+  ],
+  "1739": [
+   "ext_fnSetMatrixDimensionsGr",
+   "10007"
+  ],
+  "174": [
+   "ext_fnConstant",
+   "46"
+  ],
+  "1740": [
+   "ext_fnAim",
+   "9876"
+  ],
+  "1741": [
+   "ext_fnKeyDotD",
+   "9876"
+  ],
+  "1742": [
+   "ext_fnC47Show",
+   "9876"
+  ],
+  "1743": [
+   "ext_fnMeanX",
+   "9876"
+  ],
+  "1744": [
+   "ext_SetSetting",
+   "32775"
+  ],
+  "1745": [
+   "ext_fnVectorAngle",
+   "9876"
+  ],
+  "1746": [
+   "ext_fnHarmonicMeanXY",
+   "9876"
+  ],
+  "1747": [
+   "ext_fnRMSMeanXY",
+   "9876"
+  ],
+  "1748": [
+   "ext_fnArccos",
+   "9876"
+  ],
+  "1749": [
+   "ext_fnArcsin",
+   "9876"
+  ],
+  "175": [
+   "ext_fnConstant",
+   "47"
+  ],
+  "1750": [
+   "ext_fnArctan",
+   "9876"
+  ],
+  "1751": [
+   "ext_fnDeterminant",
+   "9876"
+  ],
+  "1752": [
+   "ext_fnInvertMatrix",
+   "9876"
+  ],
+  "1753": [
+   "ext_fnTranspose",
+   "9876"
+  ],
+  "1754": [
+   "ext_fnProgrammableiProduct",
+   "10018"
+  ],
+  "1755": [
+   "ext_fnProgrammableiSum",
+   "10018"
+  ],
+  "1756": [
+   "ext_fnPlotStat",
+   "0"
+  ],
+  "1757": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1758": [
+   "ext_fnPlotCloseSmi",
+   "9876"
+  ],
+  "1759": [
+   "ext_fnPlotStat",
+   "3"
+  ],
+  "176": [
+   "ext_fnConstant",
+   "48"
+  ],
+  "1760": [
+   "ext_fnPlotStat",
+   "1"
+  ],
+  "1761": [
+   "ext_fnPlotStat",
+   "2"
+  ],
+  "1762": [
+   "ext_fnPlotZoom",
+   "9876"
+  ],
+  "1763": [
+   "ext_fnEllipticFphi",
+   "9876"
+  ],
+  "1764": [
+   "ext_fnEllipticEphi",
+   "9876"
+  ],
+  "1765": [
+   "ext_fnJacobiZeta",
+   "9876"
+  ],
+  "1766": [
+   "ext_fnGetHide",
+   "9876"
+  ],
+  "1767": [
+   "ext_fnEqCalc",
+   "9876"
+  ],
+  "1768": [
+   "ext_fnSquareRoot",
+   "9876"
+  ],
+  "1769": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "177": [
+   "ext_fnConstant",
+   "49"
+  ],
+  "1770": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1771": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1772": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1773": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1774": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "1775": [
+   "ext_fnAtan2",
+   "9876"
+  ],
+  "1776": [
+   "ext_fnEffToI",
+   "9876"
+  ],
+  "1777": [
+   "ext_fnDecisecondTimerApp",
+   "9876"
+  ],
+  "1778": [
+   "ext_fnResetTimerApp",
+   "9876"
+  ],
+  "1779": [
+   "ext_fnRecallTimerApp",
+   "10003"
+  ],
+  "178": [
+   "ext_fnConstant",
+   "50"
+  ],
+  "1780": [
+   "ext_fnDeleteBackup",
+   "9878"
+  ],
+  "1781": [
+   "ext_fnEff",
+   "9876"
+  ],
+  "1782": [
+   "ext_fnAddTimerApp",
+   "9876"
+  ],
+  "1783": [
+   "ext_fnAddLapTimerApp",
+   "9876"
+  ],
+  "1784": [
+   "ext_fnRegAddTimerApp",
+   "9876"
+  ],
+  "1785": [
+   "ext_fnRegAddLapTimerApp",
+   "9876"
+  ],
+  "1786": [
+   "ext_fnStartStopTimerApp",
+   "9876"
+  ],
+  "1787": [
+   "ext_fnSetNBins",
+   "9876"
+  ],
+  "1788": [
+   "ext_fnSetLoBin",
+   "9876"
+  ],
+  "1789": [
+   "ext_fnSetHiBin",
+   "9876"
+  ],
+  "179": [
+   "ext_fnConstant",
+   "51"
+  ],
+  "1790": [
+   "ext_fnConvertStatsToHisto",
+   "573"
+  ],
+  "1791": [
+   "ext_fnConvertStatsToHisto",
+   "574"
+  ],
+  "1792": [
+   "ext_fnPlotStat",
+   "7"
+  ],
+  "1793": [
+   "ext_fnPlotStat",
+   "8"
+  ],
+  "1794": [
+   "ext_fnSqrt1Px2",
+   "9876"
+  ],
+  "1795": [
+   "ext_fn_cnst_op_j_pol",
+   "9876"
+  ],
+  "1796": [
+   "ext_SetSetting",
+   "32860"
+  ],
+  "1797": [
+   "ext_SetSetting",
+   "32861"
+  ],
+  "1798": [
+   "ext_SetSetting",
+   "32836"
+  ],
+  "1799": [
+   "ext_fnP_All_Regs",
+   "0"
+  ],
+  "18": [
+   "ext_fnXGreaterEqual",
+   "10022"
+  ],
+  "180": [
+   "ext_fnConstant",
+   "52"
+  ],
+  "1800": [
+   "ext_fnMultiplySI",
+   "85"
+  ],
+  "1801": [
+   "ext_fnMultiplySI",
+   "88"
+  ],
+  "1802": [
+   "ext_fnMultiplySI",
+   "91"
+  ],
+  "1803": [
+   "ext_fnMultiplySI",
+   "94"
+  ],
+  "1804": [
+   "ext_fnMultiplySI",
+   "97"
+  ],
+  "1805": [
+   "ext_fnMultiplySI",
+   "103"
+  ],
+  "1806": [
+   "ext_fnMultiplySI",
+   "106"
+  ],
+  "1807": [
+   "ext_fnMultiplySI",
+   "109"
+  ],
+  "1808": [
+   "ext_fnMultiplySI",
+   "112"
+  ],
+  "1809": [
+   "ext_addItemToBuffer",
+   "1809"
+  ],
+  "181": [
+   "ext_fnConstant",
+   "53"
+  ],
+  "1810": [
+   "ext_addItemToBuffer",
+   "1810"
+  ],
+  "1811": [
+   "ext_addItemToBuffer",
+   "1811"
+  ],
+  "1812": [
+   "ext_fnStarToDelta",
+   "9876"
+  ],
+  "1813": [
+   "ext_fnDeltaToStar",
+   "9876"
+  ],
+  "1814": [
+   "ext_fnAbcToSym",
+   "9876"
+  ],
+  "1815": [
+   "ext_fnSymToAbc",
+   "9876"
+  ],
+  "1816": [
+   "ext_fnEulersFormula",
+   "9876"
+  ],
+  "1817": [
+   "ext_fn3Sto",
+   "96"
+  ],
+  "1818": [
+   "ext_fn3Rcl",
+   "96"
+  ],
+  "1819": [
+   "ext_fn3Sto",
+   "90"
+  ],
+  "182": [
+   "ext_fnConstant",
+   "54"
+  ],
+  "1820": [
+   "ext_fn3Rcl",
+   "90"
+  ],
+  "1821": [
+   "ext_fn3Sto",
+   "93"
+  ],
+  "1822": [
+   "ext_fn3Rcl",
+   "93"
+  ],
+  "1823": [
+   "ext_fnTripleZfromVI",
+   "9876"
+  ],
+  "1824": [
+   "ext_fnTripleVfromIZ",
+   "9876"
+  ],
+  "1825": [
+   "ext_fnTripleIfromVZ",
+   "9876"
+  ],
+  "1826": [
+   "ext_fnCopyXtoAbc",
+   "9876"
+  ],
+  "1827": [
+   "ext_fn_cnst_op_A",
+   "1827"
+  ],
+  "1828": [
+   "ext_fn_cnst_op_a",
+   "9876"
+  ],
+  "1829": [
+   "ext_fn_cnst_op_aa",
+   "9876"
+  ],
+  "183": [
+   "ext_fnConstant",
+   "55"
+  ],
+  "1830": [
+   "ext_fn_cnst_op_j",
+   "9876"
+  ],
+  "1831": [
+   "ext_fnChangeBaseJM",
+   "2"
+  ],
+  "1832": [
+   "ext_fnChangeBaseJM",
+   "8"
+  ],
+  "1833": [
+   "ext_fnChangeBaseJM",
+   "10"
+  ],
+  "1834": [
+   "ext_fnChangeBaseJM",
+   "16"
+  ],
+  "1835": [
+   "ext_fnSetWordSize",
+   "8"
+  ],
+  "1836": [
+   "ext_fnSetWordSize",
+   "16"
+  ],
+  "1837": [
+   "ext_fnSetWordSize",
+   "32"
+  ],
+  "1838": [
+   "ext_fnSetWordSize",
+   "64"
+  ],
+  "1839": [
+   "ext_fnHrDeg",
+   "9876"
+  ],
+  "184": [
+   "ext_fnConstant",
+   "56"
+  ],
+  "1840": [
+   "ext_fnMinute",
+   "9876"
+  ],
+  "1841": [
+   "ext_fnSecond",
+   "9876"
+  ],
+  "1842": [
+   "ext_fnToTime",
+   "9876"
+  ],
+  "1843": [
+   "ext_fnTimeTo",
+   "9876"
+  ],
+  "1844": [
+   "ext_fnSetCountDownTimerApp",
+   "10003"
+  ],
+  "1845": [
+   "ext_addItemToBuffer",
+   "1845"
+  ],
+  "1846": [
+   "ext_addItemToBuffer",
+   "1846"
+  ],
+  "1847": [
+   "ext_addItemToBuffer",
+   "1847"
+  ],
+  "1848": [
+   "ext_fnKeyCC",
+   "1848"
+  ],
+  "1849": [
+   "ext_fnToPolar2",
+   "9876"
+  ],
+  "185": [
+   "ext_fnConstant",
+   "57"
+  ],
+  "1850": [
+   "ext_fnToRect2",
+   "9876"
+  ],
+  "1851": [
+   "ext_SetSetting",
+   "32779"
+  ],
+  "1852": [
+   "ext_SetSetting",
+   "32780"
+  ],
+  "1853": [
+   "ext_SetSetting",
+   "32837"
+  ],
+  "1854": [
+   "ext_SetSetting",
+   "32864"
+  ],
+  "1855": [
+   "ext_SetSetting",
+   "32865"
+  ],
+  "1856": [
+   "ext_SetSetting",
+   "32772"
+  ],
+  "1857": [
+   "ext_SetSetting",
+   "32781"
+  ],
+  "1858": [
+   "ext_SetSetting",
+   "198"
+  ],
+  "1859": [
+   "ext_SetSetting",
+   "32862"
+  ],
+  "186": [
+   "ext_fnConstant",
+   "58"
+  ],
+  "1860": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1861": [
+   "ext_SetSetting",
+   "32863"
+  ],
+  "1862": [
+   "ext_fnDateTimeToJulian",
+   "9876"
+  ],
+  "1863": [
+   "ext_fnJulianToDateTime",
+   "9876"
+  ],
+  "1864": [
+   "ext_fnDisplayFormatCycle",
+   "9876"
+  ],
+  "1865": [
+   "ext_SetSetting",
+   "32838"
+  ],
+  "1866": [
+   "ext_fnDisplayFormatSigFig",
+   "10001"
+  ],
+  "1867": [
+   "ext_fnDisplayFormatUnit",
+   "10001"
+  ],
+  "1868": [
+   "ext_fnRound",
+   "9876"
+  ],
+  "1869": [
+   "ext_fnRoundi",
+   "9876"
+  ],
+  "187": [
+   "ext_fnConstant",
+   "59"
+  ],
+  "1870": [
+   "ext_fnDumpMenus",
+   "9876"
+  ],
+  "1871": [
+   "ext_fnJM_2SI",
+   "9876"
+  ],
+  "1872": [
+   "ext_fnChangeBaseMNU",
+   "10002"
+  ],
+  "1873": [
+   "ext_fnDRG",
+   "9876"
+  ],
+  "1874": [
+   "ext_fnCla",
+   "9876"
+  ],
+  "1875": [
+   "ext_fnCln",
+   "9876"
+  ],
+  "1876": [
+   "ext_SetSetting",
+   "32777"
+  ],
+  "1877": [
+   "ext_SetSetting",
+   "32778"
+  ],
+  "1878": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1879": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "188": [
+   "ext_fnConstant",
+   "60"
+  ],
+  "1880": [
+   "ext_fnListXY",
+   "9876"
+  ],
+  "1881": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1882": [
+   "ext_fnSysFreeMem",
+   "9876"
+  ],
+  "1883": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1884": [
+   "ext_fnSetInlineTest",
+   "180"
+  ],
+  "1885": [
+   "ext_fnGetInlineTestBsToX",
+   "9876"
+  ],
+  "1886": [
+   "ext_fnSetInlineTestXToBs",
+   "9876"
+  ],
+  "1887": [
+   "ext_fnInDefault",
+   "2"
+  ],
+  "1888": [
+   "ext_SetSetting",
+   "32776"
+  ],
+  "1889": [
+   "ext_fnInDefault",
+   "4"
+  ],
+  "189": [
+   "ext_fnConstant",
+   "61"
+  ],
+  "1890": [
+   "ext_fnInDefault",
+   "0"
+  ],
+  "1891": [
+   "ext_fnInDefault",
+   "7"
+  ],
+  "1892": [
+   "ext_fnMultiplySI",
+   "115"
+  ],
+  "1893": [
+   "ext_fnSHIFTfg",
+   "9876"
+  ],
+  "1894": [
+   "ext_fnKeysManagement",
+   "30"
+  ],
+  "1895": [
+   "ext_SetSetting",
+   "32828"
+  ],
+  "1896": [
+   "ext_SetSetting",
+   "32833"
+  ],
+  "1897": [
+   "ext_SetSetting",
+   "32868"
+  ],
+  "1898": [
+   "ext_fnSigmaAssign",
+   "18124"
+  ],
+  "1899": [
+   "ext_SetSetting",
+   "1899"
+  ],
+  "19": [
+   "ext_fnXGreaterThan",
+   "10022"
+  ],
+  "190": [
+   "ext_fnConstant",
+   "62"
+  ],
+  "1900": [
+   "ext_fnSigmaAssign",
+   "18116"
+  ],
+  "1901": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1902": [
+   "ext_fnUnitConvert",
+   "131"
+  ],
+  "1903": [
+   "ext_fnUnitConvert",
+   "32900"
+  ],
+  "1904": [
+   "ext_fnSigmaAssign",
+   "18113"
+  ],
+  "1905": [
+   "ext_fnGetLastErr",
+   "9876"
+  ],
+  "1906": [
+   "ext_fnSigmaAssign",
+   "16817"
+  ],
+  "1907": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1908": [
+   "ext_fnSigmaAssign",
+   "18115"
+  ],
+  "1909": [
+   "ext_fnTo_ms",
+   "9876"
+  ],
+  "191": [
+   "ext_fnConstant",
+   "63"
+  ],
+  "1910": [
+   "ext_fnFrom_ms",
+   "9876"
+  ],
+  "1911": [
+   "ext_fnFrom_ymd",
+   "9876"
+  ],
+  "1912": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1913": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1914": [
+   "ext_fnKeysManagement",
+   "29"
+  ],
+  "1915": [
+   "ext_fnSigmaAssign",
+   "16384"
+  ],
+  "1916": [
+   "ext_fnKeysManagement",
+   "45"
+  ],
+  "1917": [
+   "ext_SetSetting",
+   "32811"
+  ],
+  "1918": [
+   "ext_fnSigmaAssign",
+   "18277"
+  ],
+  "1919": [
+   "ext_fnYYDflt",
+   "2"
+  ],
+  "192": [
+   "ext_fnConstant",
+   "64"
+  ],
+  "1920": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1921": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1922": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1923": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1924": [
+   "ext_SetSetting",
+   "32854"
+  ],
+  "1925": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1926": [
+   "ext_fnT_ARROW",
+   "1926"
+  ],
+  "1927": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1928": [
+   "ext_fnT_ARROW",
+   "1928"
+  ],
+  "1929": [
+   "ext_fnT_ARROW",
+   "1929"
+  ],
+  "193": [
+   "ext_fnConstant",
+   "65"
+  ],
+  "1930": [
+   "ext_fnT_ARROW",
+   "1930"
+  ],
+  "1931": [
+   "ext_fnConvertStkToMx",
+   "9"
+  ],
+  "1932": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1933": [
+   "ext_fnSaveAllPrograms",
+   "9876"
+  ],
+  "1934": [
+   "ext_fnRange",
+   "10001"
+  ],
+  "1935": [
+   "ext_flagBrowser",
+   "4"
+  ],
+  "1936": [
+   "ext_SetSetting",
+   "232"
+  ],
+  "1937": [
+   "ext_SetSetting",
+   "233"
+  ],
+  "1938": [
+   "ext_SetSetting",
+   "236"
+  ],
+  "1939": [
+   "ext_SetSetting",
+   "237"
+  ],
+  "194": [
+   "ext_fnConstant",
+   "66"
+  ],
+  "1940": [
+   "ext_SetSetting",
+   "32791"
+  ],
+  "1941": [
+   "ext_fnCFGsettings",
+   "9876"
+  ],
+  "1942": [
+   "ext_SetSetting",
+   "231"
+  ],
+  "1943": [
+   "ext_SetSetting",
+   "230"
+  ],
+  "1944": [
+   "ext_SetSetting",
+   "235"
+  ],
+  "1945": [
+   "ext_SetSetting",
+   "234"
+  ],
+  "1946": [
+   "ext_SetSetting",
+   "239"
+  ],
+  "1947": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1948": [
+   "ext_SetSetting",
+   "49184"
+  ],
+  "1949": [
+   "ext_SetSetting",
+   "238"
+  ],
+  "195": [
+   "ext_fnConstant",
+   "67"
+  ],
+  "1950": [
+   "ext_SetSetting",
+   "240"
+  ],
+  "1951": [
+   "ext_SetSetting",
+   "241"
+  ],
+  "1952": [
+   "ext_fnT_ARROW",
+   "1952"
+  ],
+  "1953": [
+   "ext_fnT_ARROW",
+   "1953"
+  ],
+  "1954": [
+   "ext_fnT_ARROW",
+   "1954"
+  ],
+  "1955": [
+   "ext_fnT_ARROW",
+   "1955"
+  ],
+  "1956": [
+   "ext_fnRlc",
+   "1"
+  ],
+  "1957": [
+   "ext_fnRrc",
+   "1"
+  ],
+  "1958": [
+   "ext_fnAsnViewer",
+   "9876"
+  ],
+  "1959": [
+   "ext_fnKeysManagement",
+   "46"
+  ],
+  "196": [
+   "ext_fnConstant",
+   "68"
+  ],
+  "1960": [
+   "ext_fnKeysManagement",
+   "40"
+  ],
+  "1961": [
+   "ext_fnKeysManagement",
+   "47"
+  ],
+  "1962": [
+   "ext_fnKeysManagement",
+   "51"
+  ],
+  "1963": [
+   "ext_fnKeysManagement",
+   "43"
+  ],
+  "1964": [
+   "ext_fnKeysManagement",
+   "61"
+  ],
+  "1965": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1966": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1967": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1968": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1969": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "197": [
+   "ext_fnConstant",
+   "69"
+  ],
+  "1970": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1971": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1972": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1973": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1974": [
+   "ext_fnSigmaAssign",
+   "16492"
+  ],
+  "1975": [
+   "ext_fnSigmaAssign",
+   "18257"
+  ],
+  "1976": [
+   "ext_fnSigmaAssign",
+   "16423"
+  ],
+  "1977": [
+   "ext_fnSigmaAssign",
+   "18179"
+  ],
+  "1978": [
+   "ext_fnSigmaAssign",
+   "17789"
+  ],
+  "1979": [
+   "ext_fnSigmaAssign",
+   "18006"
+  ],
+  "198": [
+   "ext_fnConstant",
+   "70"
+  ],
+  "1980": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "1981": [
+   "ext_fnToPolar_HP",
+   "9876"
+  ],
+  "1982": [
+   "ext_fnToRect_HP",
+   "9876"
+  ],
+  "1983": [
+   "ext_fnToPolar_CX",
+   "9876"
+  ],
+  "1984": [
+   "ext_fnToRect_CX",
+   "9876"
+  ],
+  "1985": [
+   "ext_SetSetting",
+   "32857"
+  ],
+  "1986": [
+   "ext_fnSetBCD",
+   "219"
+  ],
+  "1987": [
+   "ext_fnSetBCD",
+   "220"
+  ],
+  "1988": [
+   "ext_fnSetBCD",
+   "218"
+  ],
+  "1989": [
+   "ext_fnByteShortcutsS",
+   "6"
+  ],
+  "199": [
+   "ext_fnConstant",
+   "71"
+  ],
+  "1990": [
+   "ext_fnByteShortcutsS",
+   "8"
+  ],
+  "1991": [
+   "ext_fnByteShortcutsS",
+   "16"
+  ],
+  "1992": [
+   "ext_fnByteShortcutsS",
+   "32"
+  ],
+  "1993": [
+   "ext_fnByteShortcutsS",
+   "64"
+  ],
+  "1994": [
+   "ext_fnByteShortcutsU",
+   "6"
+  ],
+  "1995": [
+   "ext_fnByteShortcutsU",
+   "8"
+  ],
+  "1996": [
+   "ext_fnByteShortcutsU",
+   "16"
+  ],
+  "1997": [
+   "ext_fnByteShortcutsU",
+   "32"
+  ],
+  "1998": [
+   "ext_fnByteShortcutsU",
+   "64"
+  ],
+  "1999": [
+   "ext_fnSl",
+   "1"
+  ],
+  "2": [
+   "ext_fnGoto",
+   "10009"
+  ],
+  "20": [
+   "ext_fnIsFlagClear",
+   "10004"
+  ],
+  "200": [
+   "ext_fnConstant",
+   "72"
+  ],
+  "2000": [
+   "ext_fnSr",
+   "1"
+  ],
+  "2001": [
+   "ext_fnRl",
+   "1"
+  ],
+  "2002": [
+   "ext_fnRr",
+   "1"
+  ],
+  "2003": [
+   "ext_fnSwapEndian",
+   "16"
+  ],
+  "2004": [
+   "ext_fnSwapEndian",
+   "8"
+  ],
+  "2005": [
+   "ext_fnClrMod",
+   "9876"
+  ],
+  "2006": [
+   "ext_fnShoiXRepeats",
+   "10001"
+  ],
+  "2007": [
+   "ext_fnScale",
+   "9876"
+  ],
+  "2008": [
+   "ext_SetSetting",
+   "32856"
+  ],
+  "2009": [
+   "ext_fnPline",
+   "9876"
+  ],
+  "201": [
+   "ext_fnConstant",
+   "73"
+  ],
+  "2010": [
+   "ext_fnPcros",
+   "9876"
+  ],
+  "2011": [
+   "ext_fnPbox",
+   "9876"
+  ],
+  "2012": [
+   "ext_fnPvect",
+   "9876"
+  ],
+  "2013": [
+   "ext_fnPNvect",
+   "9876"
+  ],
+  "2014": [
+   "ext_fnPx",
+   "9876"
+  ],
+  "2015": [
+   "ext_fnPy",
+   "9876"
+  ],
+  "2016": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2017": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2018": [
+   "ext_fnAview",
+   "10003"
+  ],
+  "2019": [
+   "ext_fnGetRoundingMode",
+   "9876"
+  ],
+  "202": [
+   "ext_fnConstant",
+   "74"
+  ],
+  "2020": [
+   "ext_fnPrompt",
+   "10003"
+  ],
+  "2021": [
+   "ext_fnKeysManagement",
+   "48"
+  ],
+  "2022": [
+   "ext_fnKeysManagement",
+   "49"
+  ],
+  "2023": [
+   "ext_fnKeysManagement",
+   "50"
+  ],
+  "2024": [
+   "ext_fnPintg",
+   "9876"
+  ],
+  "2025": [
+   "ext_fnPdiff",
+   "9876"
+  ],
+  "2026": [
+   "ext_fnPrms",
+   "9876"
+  ],
+  "2027": [
+   "ext_fnPshade",
+   "9876"
+  ],
+  "2028": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2029": [
+   "ext_SetSetting",
+   "197"
+  ],
+  "203": [
+   "ext_fnConstant",
+   "75"
+  ],
+  "2030": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2031": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2032": [
+   "ext_addItemToBuffer",
+   "2032"
+  ],
+  "2033": [
+   "ext_fnClGrf",
+   "9876"
+  ],
+  "2034": [
+   "ext_fnPMzoom",
+   "1"
+  ],
+  "2035": [
+   "ext_fnPMzoom",
+   "2"
+  ],
+  "2036": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2037": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2038": [
+   "ext_fnSafeReset",
+   "9876"
+  ],
+  "2039": [
+   "ext_fnFlipFlag",
+   "32830"
+  ],
+  "204": [
+   "ext_fnConstant",
+   "76"
+  ],
+  "2040": [
+   "ext_graph_stat",
+   "9876"
+  ],
+  "2041": [
+   "ext_fnConvertMxToStk",
+   "9"
+  ],
+  "2042": [
+   "ext_fnPlotReset",
+   "9876"
+  ],
+  "2043": [
+   "ext_runDMCPmenu",
+   "9877"
+  ],
+  "2044": [
+   "ext_activateUSBdisk",
+   "9877"
+  ],
+  "2045": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2046": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2047": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2048": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2049": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "205": [
+   "ext_fnConstant",
+   "77"
+  ],
+  "2050": [
+   "ext_SetSetting",
+   "32874"
+  ],
+  "2051": [
+   "ext_SetSetting",
+   "32873"
+  ],
+  "2052": [
+   "ext_SetSetting",
+   "32785"
+  ],
+  "2053": [
+   "ext_SetSetting",
+   "32829"
+  ],
+  "2054": [
+   "ext_fnKeysManagement",
+   "58"
+  ],
+  "2055": [
+   "ext_fnKeysManagement",
+   "59"
+  ],
+  "2056": [
+   "ext_SetSetting",
+   "32839"
+  ],
+  "2057": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2058": [
+   "ext_SetSetting",
+   "32866"
+  ],
+  "2059": [
+   "ext_SetSetting",
+   "32867"
+  ],
+  "206": [
+   "&itemToBeCoded",
+   "78"
+  ],
+  "2060": [
+   "ext_fnLongPressSwitches",
+   "225"
+  ],
+  "2061": [
+   "ext_fnLongPressSwitches",
+   "223"
+  ],
+  "2062": [
+   "ext_fnLongPressSwitches",
+   "226"
+  ],
+  "2063": [
+   "ext_fnLongPressSwitches",
+   "221"
+  ],
+  "2064": [
+   "ext_fnLongPressSwitches",
+   "224"
+  ],
+  "2065": [
+   "ext_fnLongPressSwitches",
+   "222"
+  ],
+  "2066": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2067": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2068": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2069": [
+   "ext_addItemToBuffer",
+   "2069"
+  ],
+  "207": [
+   "ext_fnConstant",
+   "10001"
+  ],
+  "2070": [
+   "ext_addItemToBuffer",
+   "2070"
+  ],
+  "2071": [
+   "ext_addItemToBuffer",
+   "2071"
+  ],
+  "2072": [
+   "ext_addItemToBuffer",
+   "2072"
+  ],
+  "2073": [
+   "ext_addItemToBuffer",
+   "2073"
+  ],
+  "2074": [
+   "ext_fnMedianXY",
+   "9876"
+  ],
+  "2075": [
+   "ext_fnLowerQuartileXY",
+   "9876"
+  ],
+  "2076": [
+   "ext_fnUpperQuartileXY",
+   "9876"
+  ],
+  "2077": [
+   "ext_fnMADXY",
+   "9876"
+  ],
+  "2078": [
+   "ext_fnIQRXY",
+   "9876"
+  ],
+  "2079": [
+   "ext_fnRangeXY",
+   "9876"
+  ],
+  "208": [
+   "ext_fnConstant",
+   "79"
+  ],
+  "2080": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2081": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2082": [
+   "ext_fnPercentileXY",
+   "9876"
+  ],
+  "2083": [
+   "ext_fnLINPOL",
+   "9876"
+  ],
+  "2084": [
+   "ext_fnUnitConvert",
+   "39"
+  ],
+  "2085": [
+   "ext_fnUnitConvert",
+   "32807"
+  ],
+  "2086": [
+   "ext_fnUnitConvert",
+   "63"
+  ],
+  "2087": [
+   "ext_fnUnitConvert",
+   "32831"
+  ],
+  "2088": [
+   "ext_fnUnitConvert",
+   "64"
+  ],
+  "2089": [
+   "ext_fnUnitConvert",
+   "32832"
+  ],
+  "209": [
+   "ext_fnConstant",
+   "80"
+  ],
+  "2090": [
+   "ext_fnUnitConvert",
+   "38"
+  ],
+  "2091": [
+   "ext_fnUnitConvert",
+   "32806"
+  ],
+  "2092": [
+   "ext_fnUnitConvert",
+   "65"
+  ],
+  "2093": [
+   "ext_fnUnitConvert",
+   "32833"
+  ],
+  "2094": [
+   "ext_fnUnitConvert",
+   "66"
+  ],
+  "2095": [
+   "ext_fnUnitConvert",
+   "32834"
+  ],
+  "2096": [
+   "ext_fnCvtDegRad",
+   "32768"
+  ],
+  "2097": [
+   "ext_fnCvtDegRad",
+   "0"
+  ],
+  "2098": [
+   "ext_fnCvtDegGrad",
+   "32768"
+  ],
+  "2099": [
+   "ext_fnCvtDegGrad",
+   "0"
+  ],
+  "21": [
+   "ext_fnIsFlagSet",
+   "10004"
+  ],
+  "210": [
+   "ext_fnConstant",
+   "81"
+  ],
+  "2100": [
+   "ext_fnCvtGradRad",
+   "32768"
+  ],
+  "2101": [
+   "ext_fnCvtGradRad",
+   "0"
+  ],
+  "2102": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2103": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2104": [
+   "ext_fnKtoM",
+   "9876"
+  ],
+  "2105": [
+   "ext_fnMtoK",
+   "9876"
+  ],
+  "2106": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2107": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2108": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2109": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "211": [
+   "ext_fnConstant",
+   "82"
+  ],
+  "2110": [
+   "ext_fnDenMax",
+   "0"
+  ],
+  "2111": [
+   "ext_fnSetGapChar",
+   "849"
+  ],
+  "2112": [
+   "ext_fnSetGapChar",
+   "2143"
+  ],
+  "2113": [
+   "ext_fnSetGapChar",
+   "820"
+  ],
+  "2114": [
+   "ext_fnSetGapChar",
+   "2144"
+  ],
+  "2115": [
+   "ext_fnSetGapChar",
+   "818"
+  ],
+  "2116": [
+   "ext_fnSetGapChar",
+   "2145"
+  ],
+  "2117": [
+   "ext_fnSetGapChar",
+   "813"
+  ],
+  "2118": [
+   "ext_fnSetGapChar",
+   "2146"
+  ],
+  "2119": [
+   "ext_fnSetGapChar",
+   "873"
+  ],
+  "212": [
+   "ext_fnConstant",
+   "83"
+  ],
+  "2120": [
+   "ext_fnSetGapChar",
+   "870"
+  ],
+  "2121": [
+   "ext_fnSetGapChar",
+   "868"
+  ],
+  "2122": [
+   "ext_fnSetGapChar",
+   "833"
+  ],
+  "2123": [
+   "ext_fnSetGapChar",
+   "0"
+  ],
+  "2124": [
+   "ext_fnSetGapChar",
+   "33617"
+  ],
+  "2125": [
+   "ext_fnSetGapChar",
+   "34911"
+  ],
+  "2126": [
+   "ext_fnSetGapChar",
+   "33588"
+  ],
+  "2127": [
+   "ext_fnSetGapChar",
+   "34912"
+  ],
+  "2128": [
+   "ext_fnSetGapChar",
+   "33586"
+  ],
+  "2129": [
+   "ext_fnSetGapChar",
+   "34913"
+  ],
+  "213": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2130": [
+   "ext_fnSetGapChar",
+   "33581"
+  ],
+  "2131": [
+   "ext_fnSetGapChar",
+   "34914"
+  ],
+  "2132": [
+   "ext_fnSetGapChar",
+   "33641"
+  ],
+  "2133": [
+   "ext_fnSetGapChar",
+   "33638"
+  ],
+  "2134": [
+   "ext_fnSetGapChar",
+   "33636"
+  ],
+  "2135": [
+   "ext_fnSetGapChar",
+   "33601"
+  ],
+  "2136": [
+   "ext_fnSetGapChar",
+   "32768"
+  ],
+  "2137": [
+   "ext_fnSetGapChar",
+   "50001"
+  ],
+  "2138": [
+   "ext_fnSetGapChar",
+   "51295"
+  ],
+  "2139": [
+   "ext_fnSetGapChar",
+   "49972"
+  ],
+  "214": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2140": [
+   "ext_fnSetGapChar",
+   "51296"
+  ],
+  "2141": [
+   "ext_fnSetGapChar",
+   "49970"
+  ],
+  "2142": [
+   "ext_fnSetGapChar",
+   "51297"
+  ],
+  "2143": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2144": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2145": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2146": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2147": [
+   "ext_fnSetFirstGregorianDay",
+   "2147"
+  ],
+  "2148": [
+   "ext_fnSetFirstGregorianDay",
+   "2148"
+  ],
+  "2149": [
+   "ext_fnSetFirstGregorianDay",
+   "2149"
+  ],
+  "215": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2150": [
+   "ext_fnSetFirstGregorianDay",
+   "2150"
+  ],
+  "2151": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2152": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2153": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2154": [
+   "ext_fnSetFractionDigits",
+   "10001"
+  ],
+  "2155": [
+   "ext_fnSettingsDispFormatGrpL",
+   "10001"
+  ],
+  "2156": [
+   "ext_fnSettingsDispFormatGrp1Lo",
+   "10001"
+  ],
+  "2157": [
+   "ext_fnSettingsDispFormatGrp1L",
+   "10001"
+  ],
+  "2158": [
+   "ext_fnSettingsDispFormatGrpR",
+   "10001"
+  ],
+  "2159": [
+   "ext_fnMenuGapL",
+   "2151"
+  ],
+  "216": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2160": [
+   "ext_fnMenuGapRX",
+   "2152"
+  ],
+  "2161": [
+   "ext_fnMenuGapR",
+   "2153"
+  ],
+  "2162": [
+   "ext_fnPplus",
+   "9876"
+  ],
+  "2163": [
+   "ext_fnUnitConvert",
+   "67"
+  ],
+  "2164": [
+   "ext_fnUnitConvert",
+   "32835"
+  ],
+  "2165": [
+   "ext_addItemToBuffer",
+   "2165"
+  ],
+  "2166": [
+   "ext_addItemToBuffer",
+   "2166"
+  ],
+  "2167": [
+   "ext_fnUnitConvert",
+   "68"
+  ],
+  "2168": [
+   "ext_fnUnitConvert",
+   "32836"
+  ],
+  "2169": [
+   "ext_fnUnitConvert",
+   "69"
+  ],
+  "217": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2170": [
+   "ext_fnUnitConvert",
+   "32837"
+  ],
+  "2171": [
+   "ext_fnUnitConvert",
+   "70"
+  ],
+  "2172": [
+   "ext_fnUnitConvert",
+   "32838"
+  ],
+  "2173": [
+   "ext_fnUnitConvert",
+   "71"
+  ],
+  "2174": [
+   "ext_fnUnitConvert",
+   "32839"
+  ],
+  "2175": [
+   "ext_fnUnitConvert",
+   "72"
+  ],
+  "2176": [
+   "ext_fnUnitConvert",
+   "32840"
+  ],
+  "2177": [
+   "ext_fnUnitConvert",
+   "73"
+  ],
+  "2178": [
+   "ext_fnUnitConvert",
+   "32841"
+  ],
+  "2179": [
+   "ext_fnUnitConvert",
+   "74"
+  ],
+  "218": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2180": [
+   "ext_fnUnitConvert",
+   "32842"
+  ],
+  "2181": [
+   "ext_fnUnitConvert",
+   "75"
+  ],
+  "2182": [
+   "ext_fnUnitConvert",
+   "32843"
+  ],
+  "2183": [
+   "ext_fnUnitConvert",
+   "76"
+  ],
+  "2184": [
+   "ext_fnUnitConvert",
+   "32844"
+  ],
+  "2185": [
+   "ext_fnUnitConvert",
+   "77"
+  ],
+  "2186": [
+   "ext_fnUnitConvert",
+   "32845"
+  ],
+  "2187": [
+   "ext_fnUnitConvert",
+   "78"
+  ],
+  "2188": [
+   "ext_fnUnitConvert",
+   "32846"
+  ],
+  "2189": [
+   "ext_fnUnitConvert",
+   "79"
+  ],
+  "219": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2190": [
+   "ext_fnUnitConvert",
+   "32847"
+  ],
+  "2191": [
+   "ext_SetSetting",
+   "214"
+  ],
+  "2192": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2193": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2194": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2195": [
+   "ext_fnHide",
+   "10001"
+  ],
+  "2196": [
+   "ext_fnDenMax",
+   "10015"
+  ],
+  "2197": [
+   "ext_fnSetSignificantDigits",
+   "10001"
+  ],
+  "2198": [
+   "ext_fnSetVolume",
+   "10001"
+  ],
+  "2199": [
+   "ext_fnGetVolume",
+   "9876"
+  ],
+  "22": [
+   "ext_fnCheckInteger",
+   "1"
+  ],
+  "220": [
+   "ext_fnCvtTemp",
+   "0"
+  ],
+  "2200": [
+   "ext_fnVolumeUp",
+   "9876"
+  ],
+  "2201": [
+   "ext_fnVolumeDown",
+   "9876"
+  ],
+  "2202": [
+   "ext_fnBuzz",
+   "9876"
+  ],
+  "2203": [
+   "ext_fnPlay",
+   "10003"
+  ],
+  "2204": [
+   "ext_fnUnitConvert",
+   "16464"
+  ],
+  "2205": [
+   "ext_fnUnitConvert",
+   "16464"
+  ],
+  "2206": [
+   "ext_fnKmletok100K",
+   "0"
+  ],
+  "2207": [
+   "ext_fnKmletok100K",
+   "32768"
+  ],
+  "2208": [
+   "ext_fnUnitConvert",
+   "16466"
+  ],
+  "2209": [
+   "ext_fnUnitConvert",
+   "16466"
+  ],
+  "221": [
+   "ext_fnCvtTemp",
+   "1"
+  ],
+  "2210": [
+   "ext_fnL100Tomgus",
+   "0"
+  ],
+  "2211": [
+   "ext_fnL100Tomgus",
+   "32768"
+  ],
+  "2212": [
+   "ext_fnMgeustok100M",
+   "0"
+  ],
+  "2213": [
+   "ext_fnMgeustok100M",
+   "32768"
+  ],
+  "2214": [
+   "ext_fnUnitConvert",
+   "85"
+  ],
+  "2215": [
+   "ext_fnUnitConvert",
+   "32853"
+  ],
+  "2216": [
+   "ext_fnL100Tomguk",
+   "0"
+  ],
+  "2217": [
+   "ext_fnL100Tomguk",
+   "32768"
+  ],
+  "2218": [
+   "ext_fnMgeuktok100M",
+   "0"
+  ],
+  "2219": [
+   "ext_fnMgeuktok100M",
+   "32768"
+  ],
+  "222": [
+   "ext_fnCvtDbRatio",
+   "10"
+  ],
+  "2220": [
+   "ext_fnUnitConvert",
+   "16472"
+  ],
+  "2221": [
+   "ext_fnUnitConvert",
+   "16472"
+  ],
+  "2222": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2223": [
+   "ext_fnExecutePlusSkip",
+   "10009"
+  ],
+  "2224": [
+   "ext_fnRecallPlusSkip",
+   "10006"
+  ],
+  "2225": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2226": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2227": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2228": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2229": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "223": [
+   "ext_fnUnitConvert",
+   "0"
+  ],
+  "2230": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2231": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2232": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2233": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2234": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2235": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2236": [
+   "ext_fnYYDflt",
+   "10016"
+  ],
+  "2237": [
+   "ext_fnYYDflt",
+   "1"
+  ],
+  "2238": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2239": [
+   "ext_fnClearUserMenus",
+   "9878"
+  ],
+  "224": [
+   "ext_fnUnitConvert",
+   "32768"
+  ],
+  "2240": [
+   "ext_fnClearAllVariables",
+   "9878"
+  ],
+  "2241": [
+   "ext_fnDeleteUserMenus",
+   "9878"
+  ],
+  "2242": [
+   "ext_fnDeleteAllVariables",
+   "9878"
+  ],
+  "2243": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2244": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2245": [
+   "ext_fnConfirmationYes",
+   "9876"
+  ],
+  "2246": [
+   "ext_fnConfirmationNo",
+   "9876"
+  ],
+  "2247": [
+   "ext_fnRecallVElement",
+   "10001"
+  ],
+  "2248": [
+   "ext_fnStoreVElement",
+   "10001"
+  ],
+  "2249": [
+   "ext_fnRecallElementPlus",
+   "9876"
+  ],
+  "225": [
+   "ext_fnCvtDbRatio",
+   "20"
+  ],
+  "2250": [
+   "ext_fnStoreElementPlus",
+   "9876"
+  ],
+  "2251": [
+   "ext_fnGetSystemFlag",
+   "32832"
+  ],
+  "2252": [
+   "ext_fnGetSystemFlag",
+   "32833"
+  ],
+  "2253": [
+   "ext_fnGetSystemFlag",
+   "32834"
+  ],
+  "2254": [
+   "ext_fnGetSystemFlag",
+   "32835"
+  ],
+  "2255": [
+   "ext_fnGetSystemFlag",
+   "32836"
+  ],
+  "2256": [
+   "ext_fnGetSystemFlag",
+   "32837"
+  ],
+  "2257": [
+   "ext_fnGetSystemFlag",
+   "32838"
+  ],
+  "2258": [
+   "ext_fnGetSystemFlag",
+   "32839"
+  ],
+  "2259": [
+   "ext_fnGetSystemFlag",
+   "49224"
+  ],
+  "226": [
+   "ext_fnUnitConvert",
+   "1"
+  ],
+  "2260": [
+   "ext_fnGetSystemFlag",
+   "32841"
+  ],
+  "2261": [
+   "ext_fnGetSystemFlag",
+   "32842"
+  ],
+  "2262": [
+   "ext_fnGetSystemFlag",
+   "32843"
+  ],
+  "2263": [
+   "ext_fnGetSystemFlag",
+   "32844"
+  ],
+  "2264": [
+   "ext_fnGetSystemFlag",
+   "32845"
+  ],
+  "2265": [
+   "ext_fnGetSystemFlag",
+   "32846"
+  ],
+  "2266": [
+   "ext_fnGetSystemFlag",
+   "32847"
+  ],
+  "2267": [
+   "ext_fnGetSystemFlag",
+   "32848"
+  ],
+  "2268": [
+   "ext_fnGetSystemFlag",
+   "32849"
+  ],
+  "2269": [
+   "ext_fnGetSystemFlag",
+   "32850"
+  ],
+  "227": [
+   "ext_fnUnitConvert",
+   "32769"
+  ],
+  "2270": [
+   "ext_fnGetSystemFlag",
+   "32851"
+  ],
+  "2271": [
+   "ext_fnGetSystemFlag",
+   "32852"
+  ],
+  "2272": [
+   "ext_fnGetSystemFlag",
+   "32853"
+  ],
+  "2273": [
+   "ext_fnGetSystemFlag",
+   "32854"
+  ],
+  "2274": [
+   "ext_fnGetSystemFlag",
+   "32855"
+  ],
+  "2275": [
+   "ext_fnGetSystemFlag",
+   "32856"
+  ],
+  "2276": [
+   "ext_fnGetSystemFlag",
+   "32857"
+  ],
+  "2277": [
+   "ext_fnGetSystemFlag",
+   "32858"
+  ],
+  "2278": [
+   "ext_fnGetSystemFlag",
+   "32859"
+  ],
+  "2279": [
+   "ext_fnGetSystemFlag",
+   "32860"
+  ],
+  "228": [
+   "ext_fnCvtRatioDb",
+   "10"
+  ],
+  "2280": [
+   "ext_fnGetSystemFlag",
+   "32861"
+  ],
+  "2281": [
+   "ext_fnGetSystemFlag",
+   "32862"
+  ],
+  "2282": [
+   "ext_fnGetSystemFlag",
+   "32863"
+  ],
+  "2283": [
+   "ext_fnGetSystemFlag",
+   "32864"
+  ],
+  "2284": [
+   "ext_fnGetSystemFlag",
+   "32865"
+  ],
+  "2285": [
+   "ext_fnGetSystemFlag",
+   "32866"
+  ],
+  "2286": [
+   "ext_fnGetSystemFlag",
+   "32867"
+  ],
+  "2287": [
+   "ext_fnGetSystemFlag",
+   "32868"
+  ],
+  "2288": [
+   "ext_fnGetSystemFlag",
+   "32869"
+  ],
+  "2289": [
+   "ext_fnGetSystemFlag",
+   "32870"
+  ],
+  "229": [
+   "ext_fnUnitConvert",
+   "32770"
+  ],
+  "2290": [
+   "ext_fnGetSystemFlag",
+   "32871"
+  ],
+  "2291": [
+   "ext_fnGetSystemFlag",
+   "32872"
+  ],
+  "2292": [
+   "ext_fnGetSystemFlag",
+   "32873"
+  ],
+  "2293": [
+   "ext_fnGetSystemFlag",
+   "32874"
+  ],
+  "2294": [
+   "ext_fnGetSystemFlag",
+   "32875"
+  ],
+  "2295": [
+   "ext_fnGetSystemFlag",
+   "32876"
+  ],
+  "2296": [
+   "ext_fnGetSystemFlag",
+   "32877"
+  ],
+  "2297": [
+   "ext_fnGetSystemFlag",
+   "32878"
+  ],
+  "2298": [
+   "ext_fnGetSystemFlag",
+   "32879"
+  ],
+  "2299": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "23": [
+   "ext_fnCheckInteger",
+   "2"
+  ],
+  "230": [
+   "ext_fnUnitConvert",
+   "2"
+  ],
+  "2300": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2301": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2302": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2303": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2304": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2305": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2306": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2307": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2308": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2309": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "231": [
+   "ext_fnCvtRatioDb",
+   "20"
+  ],
+  "2310": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2311": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2312": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2313": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2314": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2315": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2316": [
+   "ext_fnStore",
+   "114"
+  ],
+  "2317": [
+   "ext_fnStore",
+   "113"
+  ],
+  "2318": [
+   "ext_fnStore",
+   "112"
+  ],
+  "2319": [
+   "ext_fnStore",
+   "117"
+  ],
+  "232": [
+   "ext_fnUnitConvert",
+   "129"
+  ],
+  "2320": [
+   "ext_fnStore",
+   "112"
+  ],
+  "2321": [
+   "ext_fnStore",
+   "116"
+  ],
+  "2322": [
+   "ext_fnStore",
+   "112"
+  ],
+  "2323": [
+   "ext_fnStore",
+   "113"
+  ],
+  "2324": [
+   "ext_fnStore",
+   "112"
+  ],
+  "2325": [
+   "ext_fnStore",
+   "115"
+  ],
+  "2326": [
+   "ext_fnStore",
+   "112"
+  ],
+  "2327": [
+   "ext_fnStore",
+   "117"
+  ],
+  "2328": [
+   "ext_fnStore",
+   "117"
+  ],
+  "2329": [
+   "ext_fnStore",
+   "115"
+  ],
+  "233": [
+   "ext_fnUnitConvert",
+   "32898"
+  ],
+  "2330": [
+   "ext_fnStore",
+   "115"
+  ],
+  "2331": [
+   "ext_fnStore",
+   "115"
+  ],
+  "2332": [
+   "ext_fnStore",
+   "117"
+  ],
+  "2333": [
+   "ext_fnStore",
+   "112"
+  ],
+  "2334": [
+   "ext_fnStore",
+   "113"
+  ],
+  "2335": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2336": [
+   "ext_addItemToBuffer",
+   "112"
+  ],
+  "2337": [
+   "ext_addItemToBuffer",
+   "113"
+  ],
+  "2338": [
+   "ext_addItemToBuffer",
+   "114"
+  ],
+  "2339": [
+   "ext_addItemToBuffer",
+   "115"
+  ],
+  "234": [
+   "ext_fnUnitConvert",
+   "3"
+  ],
+  "2340": [
+   "ext_addItemToBuffer",
+   "116"
+  ],
+  "2341": [
+   "ext_addItemToBuffer",
+   "117"
+  ],
+  "2342": [
+   "ext_addItemToBuffer",
+   "118"
+  ],
+  "2343": [
+   "ext_addItemToBuffer",
+   "119"
+  ],
+  "2344": [
+   "ext_addItemToBuffer",
+   "120"
+  ],
+  "2345": [
+   "ext_addItemToBuffer",
+   "121"
+  ],
+  "2346": [
+   "ext_addItemToBuffer",
+   "122"
+  ],
+  "2347": [
+   "ext_addItemToBuffer",
+   "123"
+  ],
+  "2348": [
+   "ext_addItemToBuffer",
+   "124"
+  ],
+  "2349": [
+   "ext_addItemToBuffer",
+   "125"
+  ],
+  "235": [
+   "ext_fnUnitConvert",
+   "32889"
+  ],
+  "2350": [
+   "ext_addItemToBuffer",
+   "112"
+  ],
+  "2351": [
+   "ext_addItemToBuffer",
+   "113"
+  ],
+  "2352": [
+   "ext_addItemToBuffer",
+   "114"
+  ],
+  "2353": [
+   "ext_addItemToBuffer",
+   "115"
+  ],
+  "2354": [
+   "ext_addItemToBuffer",
+   "116"
+  ],
+  "2355": [
+   "ext_addItemToBuffer",
+   "117"
+  ],
+  "2356": [
+   "ext_addItemToBuffer",
+   "118"
+  ],
+  "2357": [
+   "ext_addItemToBuffer",
+   "119"
+  ],
+  "2358": [
+   "ext_addItemToBuffer",
+   "120"
+  ],
+  "2359": [
+   "ext_addItemToBuffer",
+   "121"
+  ],
+  "236": [
+   "ext_fnUnitConvert",
+   "32771"
+  ],
+  "2360": [
+   "ext_addItemToBuffer",
+   "122"
+  ],
+  "2361": [
+   "ext_addItemToBuffer",
+   "123"
+  ],
+  "2362": [
+   "ext_addItemToBuffer",
+   "124"
+  ],
+  "2363": [
+   "ext_addItemToBuffer",
+   "125"
+  ],
+  "2364": [
+   "ext_fnInsCol",
+   "9876"
+  ],
+  "2365": [
+   "ext_fnDelCol",
+   "9876"
+  ],
+  "2366": [
+   "ext_fnAddRow",
+   "9876"
+  ],
+  "2367": [
+   "ext_fnAddCol",
+   "9876"
+  ],
+  "2368": [
+   "ext_fnEqSolvGraph",
+   "2"
+  ],
+  "2369": [
+   "ext_fnEqSolvGraph",
+   "3"
+  ],
+  "237": [
+   "ext_fnUnitConvert",
+   "122"
+  ],
+  "2370": [
+   "ext_fnEqSolvGraph",
+   "0"
+  ],
+  "2371": [
+   "ext_fnEqSolvGraph",
+   "1"
+  ],
+  "2372": [
+   "ext_fnEqSolvGraph",
+   "4"
+  ],
+  "2373": [
+   "ext_fnEqSolvGraph",
+   "5"
+  ],
+  "2374": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2375": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2376": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2377": [
+   "ext_fn1stDerivEq",
+   "9876"
+  ],
+  "2378": [
+   "ext_fn2ndDerivEq",
+   "9876"
+  ],
+  "2379": [
+   "ext_fnTvmVar",
+   "2043"
+  ],
+  "238": [
+   "ext_fnUnitConvert",
+   "4"
+  ],
+  "2380": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2381": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2382": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2383": [
+   "ext_addItemToBuffer",
+   "2383"
+  ],
+  "2384": [
+   "ext_fnComplexPlot",
+   "2384"
+  ],
+  "2385": [
+   "ext_fnEvPFacts",
+   "5"
+  ],
+  "2386": [
+   "ext_fnEvPFacts",
+   "6"
+  ],
+  "2387": [
+   "ext_fnSave",
+   "1"
+  ],
+  "2388": [
+   "ext_fnLoad",
+   "7"
+  ],
+  "2389": [
+   "ext_fnSaveAuto",
+   "9876"
+  ],
+  "239": [
+   "ext_fnUnitConvert",
+   "123"
+  ],
+  "2390": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2391": [
+   "ext_fnKeysManagement",
+   "61"
+  ],
+  "2392": [
+   "ext_fnKeysManagement",
+   "62"
+  ],
+  "2393": [
+   "ext_fnKeysManagement",
+   "63"
+  ],
+  "2394": [
+   "ext_fnKeysManagement",
+   "64"
+  ],
+  "2395": [
+   "ext_fnEllipse",
+   "9876"
+  ],
+  "2396": [
+   "ext_fnCheckAngle",
+   "9876"
+  ],
+  "2397": [
+   "ext_fnCheckType",
+   "4"
+  ],
+  "2398": [
+   "ext_fnCheckType",
+   "0"
+  ],
+  "2399": [
+   "ext_fnCheckNumber",
+   "9876"
+  ],
+  "24": [
+   "ext_fnCheckInteger",
+   "3"
+  ],
+  "240": [
+   "ext_fnUnitConvert",
+   "32772"
+  ],
+  "2400": [
+   "ext_fnCheckType",
+   "8"
+  ],
+  "2401": [
+   "ext_fnCheckType",
+   "3"
+  ],
+  "2402": [
+   "ext_fnGetType",
+   "9876"
+  ],
+  "2403": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2404": [
+   "ext_fnEdit",
+   "9876"
+  ],
+  "2405": [
+   "ext_fnOpenMenu",
+   "10017"
+  ],
+  "2406": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2407": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2408": [
+   "ext_fnGetMenu",
+   "9876"
+  ],
+  "2409": [
+   "ext_fnEvPFacts",
+   "0"
+  ],
+  "241": [
+   "ext_fnUnitConvert",
+   "32892"
+  ],
+  "2410": [
+   "ext_fnEvPFacts",
+   "1"
+  ],
+  "2411": [
+   "ext_fnEvPFacts",
+   "2"
+  ],
+  "2412": [
+   "ext_fnEvPFacts",
+   "3"
+  ],
+  "2413": [
+   "ext_fnEvPFacts",
+   "4"
+  ],
+  "2414": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2415": [
+   "ext_addItemToBuffer",
+   "100"
+  ],
+  "2416": [
+   "ext_addItemToBuffer",
+   "102"
+  ],
+  "2417": [
+   "ext_addItemToBuffer",
+   "101"
+  ],
+  "2418": [
+   "ext_addItemToBuffer",
+   "103"
+  ],
+  "2419": [
+   "ext_fnXSWAP",
+   "0"
+  ],
+  "242": [
+   "ext_fnUnitConvert",
+   "32773"
+  ],
+  "2420": [
+   "ext_fnXSWAP",
+   "1"
+  ],
+  "2421": [
+   "ext_addItemToBuffer",
+   "1037"
+  ],
+  "2422": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2423": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2424": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2425": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2426": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2427": [
+   "ext_addItemToBuffer",
+   "2427"
+  ],
+  "2428": [
+   "ext_addItemToBuffer",
+   "2428"
+  ],
+  "2429": [
+   "ext_addItemToBuffer",
+   "2429"
+  ],
+  "243": [
+   "ext_fnUnitConvert",
+   "5"
+  ],
+  "2430": [
+   "ext_addItemToBuffer",
+   "2430"
+  ],
+  "2431": [
+   "ext_addItemToBuffer",
+   "2431"
+  ],
+  "2432": [
+   "ext_addItemToBuffer",
+   "2432"
+  ],
+  "2433": [
+   "ext_addItemToBuffer",
+   "2433"
+  ],
+  "2434": [
+   "ext_addItemToBuffer",
+   "2434"
+  ],
+  "2435": [
+   "ext_addItemToBuffer",
+   "2435"
+  ],
+  "2436": [
+   "ext_addItemToBuffer",
+   "2436"
+  ],
+  "2437": [
+   "ext_addItemToBuffer",
+   "2437"
+  ],
+  "2438": [
+   "ext_addItemToBuffer",
+   "2438"
+  ],
+  "2439": [
+   "ext_addItemToBuffer",
+   "2439"
+  ],
+  "244": [
+   "ext_fnUnitConvert",
+   "6"
+  ],
+  "2440": [
+   "ext_addItemToBuffer",
+   "2440"
+  ],
+  "2441": [
+   "ext_addItemToBuffer",
+   "2441"
+  ],
+  "2442": [
+   "ext_addItemToBuffer",
+   "2442"
+  ],
+  "2443": [
+   "ext_addItemToBuffer",
+   "2443"
+  ],
+  "2444": [
+   "ext_addItemToBuffer",
+   "2444"
+  ],
+  "2445": [
+   "ext_addItemToBuffer",
+   "2445"
+  ],
+  "2446": [
+   "ext_addItemToBuffer",
+   "2446"
+  ],
+  "2447": [
+   "ext_addItemToBuffer",
+   "2447"
+  ],
+  "2448": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2449": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "245": [
+   "ext_fnUnitConvert",
+   "32774"
+  ],
+  "2450": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2451": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2452": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2453": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2454": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2455": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2456": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2457": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2458": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2459": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "246": [
+   "ext_fnUnitConvert",
+   "7"
+  ],
+  "2460": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2461": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2462": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2463": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2464": [
+   "ext_fnUnitConvert",
+   "133"
+  ],
+  "2465": [
+   "ext_fnUnitConvert",
+   "32902"
+  ],
+  "2466": [
+   "ext_fnUnitConvert",
+   "138"
+  ],
+  "2467": [
+   "ext_fnUnitConvert",
+   "32905"
+  ],
+  "2468": [
+   "ext_fnUnitConvert",
+   "136"
+  ],
+  "2469": [
+   "ext_fnUnitConvert",
+   "32903"
+  ],
+  "247": [
+   "ext_fnUnitConvert",
+   "32775"
+  ],
+  "2470": [
+   "ext_V3RectoToCyl",
+   "255"
+  ],
+  "2471": [
+   "ext_V3RectoToSph",
+   "255"
+  ],
+  "2472": [
+   "ext_fnVectorDist",
+   "9876"
+  ],
+  "2473": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2474": [
+   "ext_fnConvertStkToMx",
+   "2"
+  ],
+  "2475": [
+   "ext_fnConvertStkToMx",
+   "6"
+  ],
+  "2476": [
+   "ext_fnConvertMxToStk",
+   "2"
+  ],
+  "2477": [
+   "ext_fnConvertMxToStk",
+   "6"
+  ],
+  "2478": [
+   "&itemToBeCoded",
+   "10003"
+  ],
+  "2479": [
+   "ext_fnConvertStkToMx",
+   "3"
+  ],
+  "248": [
+   "ext_fnUnitConvert",
+   "8"
+  ],
+  "2480": [
+   "ext_fnConvertStkToMx",
+   "4"
+  ],
+  "2481": [
+   "ext_fnConvertStkToMx",
+   "5"
+  ],
+  "2482": [
+   "ext_fnRecallVElement",
+   "1"
+  ],
+  "2483": [
+   "ext_fnRecallVElement",
+   "2"
+  ],
+  "2484": [
+   "ext_fnRecallVElement",
+   "3"
+  ],
+  "2485": [
+   "ext_fnStoreVElement",
+   "1"
+  ],
+  "2486": [
+   "ext_fnStoreVElement",
+   "2"
+  ],
+  "2487": [
+   "ext_fnStoreVElement",
+   "3"
+  ],
+  "2488": [
+   "ext_fnConvertStkToMx",
+   "1"
+  ],
+  "2489": [
+   "ext_fnConvertMxToStk",
+   "1"
+  ],
+  "249": [
+   "ext_fnUnitConvert",
+   "32776"
+  ],
+  "2490": [
+   "ext_fnConvertStkToMx",
+   "7"
+  ],
+  "2491": [
+   "ext_fnConvertStkToMx",
+   "8"
+  ],
+  "2492": [
+   "ext_fnComplexToVector",
+   "2492"
+  ],
+  "2493": [
+   "ext_fnComplexToVector",
+   "2493"
+  ],
+  "2494": [
+   "ext_fnComplexToVector",
+   "2494"
+  ],
+  "2495": [
+   "ext_fnExchangeStkToMx",
+   "2495"
+  ],
+  "2496": [
+   "ext_fnExchangeStkToMx",
+   "2496"
+  ],
+  "2497": [
+   "ext_fnStoreVector",
+   "10003"
+  ],
+  "2498": [
+   "ext_fnRecallVector",
+   "10003"
+  ],
+  "2499": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "25": [
+   "ext_fnCheckInteger",
+   "0"
+  ],
+  "250": [
+   "ext_fnUnitConvert",
+   "9"
+  ],
+  "2500": [
+   "ext_fnPseudoMenu",
+   "34088"
+  ],
+  "2501": [
+   "ext_fnSetWeekOfYearRule",
+   "2501"
+  ],
+  "2502": [
+   "ext_fnSetWeekOfYearRule",
+   "2502"
+  ],
+  "2503": [
+   "ext_fnSetWeekOfYearRule",
+   "2503"
+  ],
+  "2504": [
+   "ext_fnGetWeekOfYearRule",
+   "9876"
+  ],
+  "2505": [
+   "ext_fnWeekOfYear",
+   "9876"
+  ],
+  "2506": [
+   "ext_fnKeysManagement",
+   "2506"
+  ],
+  "2507": [
+   "ext_fnKeysManagement",
+   "2507"
+  ],
+  "2508": [
+   "ext_fnKeysManagement",
+   "2508"
+  ],
+  "2509": [
+   "ext_fnKeysManagement",
+   "2509"
+  ],
+  "251": [
+   "ext_fnUnitConvert",
+   "32777"
+  ],
+  "2510": [
+   "ext_fnKeysManagement",
+   "2510"
+  ],
+  "2511": [
+   "ext_fnKeysManagement",
+   "2511"
+  ],
+  "2512": [
+   "ext_fnKeysManagement",
+   "2512"
+  ],
+  "2513": [
+   "ext_fnKeysManagement",
+   "2513"
+  ],
+  "2514": [
+   "ext_fnKeysManagement",
+   "2514"
+  ],
+  "2515": [
+   "ext_fnKeysManagement",
+   "2515"
+  ],
+  "2516": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2517": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2518": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2519": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "252": [
+   "ext_fnUnitConvert",
+   "10"
+  ],
+  "2520": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2521": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2522": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2523": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2524": [
+   "ext_fnCheckType",
+   "6"
+  ],
+  "2525": [
+   "ext_fnCheckType",
+   "7"
+  ],
+  "2526": [
+   "ext_fnCheckType",
+   "9"
+  ],
+  "2527": [
+   "ext_fnCheckForZero",
+   "2527"
+  ],
+  "2528": [
+   "ext_fnCheckForZero",
+   "2528"
+  ],
+  "2529": [
+   "ext_fnCheckForZero",
+   "2529"
+  ],
+  "253": [
+   "ext_fnUnitConvert",
+   "32893"
+  ],
+  "2530": [
+   "ext_fnCheckForZero",
+   "2530"
+  ],
+  "2531": [
+   "ext_fnCheckIsVect2d",
+   "9876"
+  ],
+  "2532": [
+   "ext_fnCheckIsVect3d",
+   "9876"
+  ],
+  "2533": [
+   "ext_fnMultiplySI",
+   "210"
+  ],
+  "2534": [
+   "ext_fnMultiplySI",
+   "220"
+  ],
+  "2535": [
+   "ext_fnMultiplySI",
+   "230"
+  ],
+  "2536": [
+   "ext_fnMultiplySI",
+   "240"
+  ],
+  "2537": [
+   "ext_fnMultiplySI",
+   "250"
+  ],
+  "2538": [
+   "ext_fnAlphaTrim",
+   "10003"
+  ],
+  "2539": [
+   "ext_fnAlphaRev",
+   "10003"
+  ],
+  "254": [
+   "ext_fnUnitConvert",
+   "32778"
+  ],
+  "2540": [
+   "ext_fnAlphaMid",
+   "10003"
+  ],
+  "2541": [
+   "ext_fnAlphaLeft",
+   "10003"
+  ],
+  "2542": [
+   "ext_fnAlphaRight",
+   "10003"
+  ],
+  "2543": [
+   "ext_fnAlphaLower",
+   "10003"
+  ],
+  "2544": [
+   "ext_fnAlphaUpper",
+   "10003"
+  ],
+  "2545": [
+   "ext_fnStore",
+   "2044"
+  ],
+  "2546": [
+   "ext_fnStore",
+   "2045"
+  ],
+  "2547": [
+   "ext_fnStore",
+   "2046"
+  ],
+  "2548": [
+   "ext_fnStore",
+   "2047"
+  ],
+  "2549": [
+   "ext_fnRange",
+   "10001"
+  ],
+  "255": [
+   "ext_fnUnitConvert",
+   "126"
+  ],
+  "2550": [
+   "ext_fnYYDflt",
+   "10016"
+  ],
+  "2551": [
+   "ext_fnDenMax",
+   "10015"
+  ],
+  "2552": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2553": [
+   "ext_fnPseudoMenu",
+   "34085"
+  ],
+  "2554": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2554"
+  ],
+  "2555": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2555"
+  ],
+  "2556": [
+   "if (option_xfn_1000) ext_fnXXfn_RDP else &itemToBeCoded",
+   "10001"
+  ],
+  "2557": [
+   "if (option_xfn_1000) ext_fnXXfn_RSD else &itemToBeCoded",
+   "10001"
+  ],
+  "2558": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2558"
+  ],
+  "2559": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2559"
+  ],
+  "256": [
+   "ext_fnUnitConvert",
+   "11"
+  ],
+  "2560": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2560"
+  ],
+  "2561": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2561"
+  ],
+  "2562": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2562"
+  ],
+  "2563": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2563"
+  ],
+  "2564": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2564"
+  ],
+  "2565": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2565"
+  ],
+  "2566": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2566"
+  ],
+  "2567": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2567"
+  ],
+  "2568": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2568"
+  ],
+  "2569": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2569"
+  ],
+  "257": [
+   "ext_fnUnitConvert",
+   "32779"
+  ],
+  "2570": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2570"
+  ],
+  "2571": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2571"
+  ],
+  "2572": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2572"
+  ],
+  "2573": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2573"
+  ],
+  "2574": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2574"
+  ],
+  "2575": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2575"
+  ],
+  "2576": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2576"
+  ],
+  "2577": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2577"
+  ],
+  "2578": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2578"
+  ],
+  "2579": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2579"
+  ],
+  "258": [
+   "ext_fnUnitConvert",
+   "12"
+  ],
+  "2580": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2580"
+  ],
+  "2581": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2582": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2582"
+  ],
+  "2583": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2583"
+  ],
+  "2584": [
+   "if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded",
+   "2584"
+  ],
+  "2585": [
+   "ext_fnDupN",
+   "3"
+  ],
+  "2586": [
+   "ext_fnSwapN",
+   "3"
+  ],
+  "2587": [
+   "ext_fnDropN",
+   "3"
+  ],
+  "2588": [
+   "ext_fn3Sto",
+   "10003"
+  ],
+  "2589": [
+   "ext_fn3Rcl",
+   "10003"
+  ],
+  "259": [
+   "ext_fnUnitConvert",
+   "32780"
+  ],
+  "2590": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2591": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2592": [
+   "ext_fnOldItemError",
+   "9876"
+  ],
+  "2593": [
+   "ext_fn2Sto",
+   "10003"
+  ],
+  "2594": [
+   "ext_fn2Rcl",
+   "10003"
+  ],
+  "2595": [
+   "ext_fnSwapN",
+   "4"
+  ],
+  "2596": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2597": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2598": [
+   "ext_fnMtoTheta",
+   "9876"
+  ],
+  "2599": [
+   "ext_fnThetatoM",
+   "9876"
+  ],
+  "26": [
+   "ext_fnCheckType",
+   "2"
+  ],
+  "260": [
+   "ext_fnUnitConvert",
+   "13"
+  ],
+  "2600": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2601": [
+   "ext_fnUniformP",
+   "0"
+  ],
+  "2602": [
+   "ext_fnUniformL",
+   "0"
+  ],
+  "2603": [
+   "ext_fnUniformU",
+   "0"
+  ],
+  "2604": [
+   "ext_fnUniformI",
+   "0"
+  ],
+  "2605": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2606": [
+   "ext_fnUniformP",
+   "1"
+  ],
+  "2607": [
+   "ext_fnUniformL",
+   "1"
+  ],
+  "2608": [
+   "ext_fnUniformU",
+   "1"
+  ],
+  "2609": [
+   "ext_fnUniformI",
+   "1"
+  ],
+  "261": [
+   "ext_fnUnitConvert",
+   "127"
+  ],
+  "2610": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2611": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2612": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2613": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2614": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2615": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2616": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2617": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2618": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2619": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "262": [
+   "ext_fnUnitConvert",
+   "32896"
+  ],
+  "2620": [
+   "ext_fnDupN",
+   "10001"
+  ],
+  "2621": [
+   "ext_fnSwapN",
+   "10001"
+  ],
+  "2622": [
+   "ext_fnDropN",
+   "10001"
+  ],
+  "2623": [
+   "ext_fn_cnst_op_A",
+   "2623"
+  ],
+  "2624": [
+   "ext_fnTripleFlipPolar",
+   "9876"
+  ],
+  "2625": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2626": [
+   "ext_fnSetHP35",
+   "9876"
+  ],
+  "2627": [
+   "ext_fnSetC47",
+   "9876"
+  ],
+  "2628": [
+   "ext_fnSetJM",
+   "9876"
+  ],
+  "2629": [
+   "ext_fnSetRJ",
+   "9876"
+  ],
+  "263": [
+   "ext_fnUnitConvert",
+   "32781"
+  ],
+  "2630": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2631": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2632": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2633": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2634": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2635": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2636": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2637": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2638": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2639": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "264": [
+   "ext_fnUnitConvert",
+   "32782"
+  ],
+  "2640": [
+   "ext_addItemToBuffer",
+   "2036"
+  ],
+  "2641": [
+   "ext_addItemToBuffer",
+   "2035"
+  ],
+  "2642": [
+   "ext_addItemToBuffer",
+   "2039"
+  ],
+  "2643": [
+   "ext_addItemToBuffer",
+   "2034"
+  ],
+  "2644": [
+   "ext_addItemToBuffer",
+   "2038"
+  ],
+  "2645": [
+   "ext_addItemToBuffer",
+   "2037"
+  ],
+  "2646": [
+   "ext_addItemToBuffer",
+   "2043"
+  ],
+  "2647": [
+   "ext_addItemToBuffer",
+   "2647"
+  ],
+  "2648": [
+   "ext_addItemToBuffer",
+   "2648"
+  ],
+  "2649": [
+   "ext_addItemToBuffer",
+   "2649"
+  ],
+  "265": [
+   "ext_fnUnitConvert",
+   "14"
+  ],
+  "2650": [
+   "ext_addItemToBuffer",
+   "2650"
+  ],
+  "2651": [
+   "ext_addItemToBuffer",
+   "2651"
+  ],
+  "2652": [
+   "ext_addItemToBuffer",
+   "2652"
+  ],
+  "2653": [
+   "ext_addItemToBuffer",
+   "2653"
+  ],
+  "2654": [
+   "ext_addItemToBuffer",
+   "2654"
+  ],
+  "2655": [
+   "ext_addItemToBuffer",
+   "2655"
+  ],
+  "2656": [
+   "ext_addItemToBuffer",
+   "2656"
+  ],
+  "2657": [
+   "ext_addItemToBuffer",
+   "2657"
+  ],
+  "2658": [
+   "ext_fnUnitConvert",
+   "32907"
+  ],
+  "2659": [
+   "ext_fnUnitConvert",
+   "139"
+  ],
+  "266": [
+   "ext_fnUnitConvert",
+   "15"
+  ],
+  "2660": [
+   "ext_fnUnitConvert",
+   "32908"
+  ],
+  "2661": [
+   "ext_fnUnitConvert",
+   "140"
+  ],
+  "2662": [
+   "ext_fnProcessLR",
+   "1"
+  ],
+  "2663": [
+   "ext_fnProcessLR",
+   "2"
+  ],
+  "2664": [
+   "ext_fnProcessLR",
+   "4"
+  ],
+  "2665": [
+   "ext_fnCvtTemp",
+   "2"
+  ],
+  "2666": [
+   "ext_fnCvtTemp",
+   "3"
+  ],
+  "2667": [
+   "ext_fnCvtTemp",
+   "4"
+  ],
+  "2668": [
+   "ext_fnCvtTemp",
+   "5"
+  ],
+  "2669": [
+   "ext_fnCvtTemp",
+   "6"
+  ],
+  "267": [
+   "ext_fnUnitConvert",
+   "32784"
+  ],
+  "2670": [
+   "ext_fnCvtTemp",
+   "7"
+  ],
+  "2671": [
+   "ext_fnCvtTemp",
+   "8"
+  ],
+  "2672": [
+   "ext_fnCvtTemp",
+   "9"
+  ],
+  "2673": [
+   "ext_fnCvtTemp",
+   "10"
+  ],
+  "2674": [
+   "ext_fnCvtTemp",
+   "11"
+  ],
+  "2675": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2676": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2677": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2678": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2679": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "268": [
+   "ext_fnUnitConvert",
+   "32783"
+  ],
+  "2680": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2681": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2682": [
+   "ext_fnP_Alpha",
+   "10003"
+  ],
+  "2683": [
+   "ext_fnSetPrinter",
+   "0"
+  ],
+  "2684": [
+   "ext_fnSetPrinter",
+   "1"
+  ],
+  "2685": [
+   "ext_fnSetPrinter",
+   "2"
+  ],
+  "2686": [
+   "ext_fnP_GetDelay",
+   "9876"
+  ],
+  "2687": [
+   "ext_fnP_PrinterOnOff",
+   "1"
+  ],
+  "2688": [
+   "ext_fnP_PrinterOnOff",
+   "0"
+  ],
+  "2689": [
+   "ext_fnP_PrinterMode",
+   "0"
+  ],
+  "269": [
+   "ext_fnUnitConvert",
+   "16"
+  ],
+  "2690": [
+   "ext_fnP_PrinterMode",
+   "1"
+  ],
+  "2691": [
+   "ext_fnP_PrinterMode",
+   "2"
+  ],
+  "2692": [
+   "ext_fnP_PrinterMode",
+   "3"
+  ],
+  "2693": [
+   "ext_fnP_PrinterList",
+   "10001"
+  ],
+  "2694": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2695": [
+   "ext_fnP_Char",
+   "10003"
+  ],
+  "2696": [
+   "ext_fnP_Tab",
+   "10001"
+  ],
+  "2697": [
+   "ext_fnP_Byte",
+   "10001"
+  ],
+  "2698": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2699": [
+   "ext_fnP_PrintAllItems",
+   "9876"
+  ],
+  "27": [
+   "ext_fnCheckMatrix",
+   "9876"
+  ],
+  "270": [
+   "ext_fnUnitConvert",
+   "17"
+  ],
+  "2700": [
+   "ext_fnFlipFlag",
+   "32869"
+  ],
+  "2701": [
+   "ext_fnFlipFlag",
+   "32870"
+  ],
+  "2702": [
+   "ext_fnConvertStkToMx",
+   "0"
+  ],
+  "2703": [
+   "ext_fnConvertMxToStk",
+   "0"
+  ],
+  "2704": [
+   "ext_fnPNorm",
+   "10020"
+  ],
+  "2705": [
+   "ext_fnPNorm",
+   "0"
+  ],
+  "2706": [
+   "ext_fnPNorm",
+   "1"
+  ],
+  "2707": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2708": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2709": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "271": [
+   "ext_fnUnitConvert",
+   "18"
+  ],
+  "2710": [
+   "ext_fnRowColSum",
+   "0"
+  ],
+  "2711": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2712": [
+   "ext_fnSwapColumns",
+   "9876"
+  ],
+  "2713": [
+   "ext_fnColumnMax",
+   "9876"
+  ],
+  "2714": [
+   "ext_fnColumnMin",
+   "9876"
+  ],
+  "2715": [
+   "ext_fnMatrixFind",
+   "9876"
+  ],
+  "2716": [
+   "ext_fnAmortP",
+   "1"
+  ],
+  "2717": [
+   "ext_fnAmortP",
+   "2"
+  ],
+  "2718": [
+   "ext_fnAmortInt",
+   "9876"
+  ],
+  "2719": [
+   "ext_fnAmortPrn",
+   "9876"
+  ],
+  "272": [
+   "ext_fnUnitConvert",
+   "32785"
+  ],
+  "2720": [
+   "ext_fnAmortBal",
+   "9876"
+  ],
+  "2721": [
+   "ext_fnAmortNext",
+   "9876"
+  ],
+  "2722": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2723": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2724": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2725": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2726": [
+   "ext_fnMatrixIdentity",
+   "9876"
+  ],
+  "2727": [
+   "ext_fnMatrixSquareRoot",
+   "9876"
+  ],
+  "2728": [
+   "ext_fnRecallVElement",
+   "10001"
+  ],
+  "2729": [
+   "ext_fnStoreVElement",
+   "10001"
+  ],
+  "273": [
+   "ext_fnUnitConvert",
+   "32786"
+  ],
+  "2730": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2731": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2732": [
+   "ext_fnPgmPlt",
+   "10018"
+  ],
+  "2733": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2734": [
+   "ext_fnMvarPlot",
+   "10010"
+  ],
+  "2735": [
+   "ext_fnComplexPlot",
+   "2735"
+  ],
+  "2736": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2737": [
+   "ext_fnGetMatrixDimensions",
+   "10003"
+  ],
+  "2738": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2739": [
+   "&itemToBeCoded",
+   "10003"
+  ],
+  "274": [
+   "ext_fnUnitConvert",
+   "19"
+  ],
+  "2740": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2741": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2742": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2743": [
+   "ext_fnUnitConvert",
+   "141"
+  ],
+  "2744": [
+   "ext_fnUnitConvert",
+   "32909"
+  ],
+  "2745": [
+   "ext_fnUnitConvert",
+   "32910"
+  ],
+  "2746": [
+   "ext_fnUnitConvert",
+   "142"
+  ],
+  "2747": [
+   "ext_fnUnitConvert",
+   "143"
+  ],
+  "2748": [
+   "ext_fnUnitConvert",
+   "32911"
+  ],
+  "2749": [
+   "ext_fnUnitConvert",
+   "144"
+  ],
+  "275": [
+   "ext_fnUnitConvert",
+   "32787"
+  ],
+  "2750": [
+   "ext_fnUnitConvert",
+   "32912"
+  ],
+  "2751": [
+   "ext_fnUnitConvert",
+   "145"
+  ],
+  "2752": [
+   "ext_fnUnitConvert",
+   "32913"
+  ],
+  "2753": [
+   "ext_fnUnitConvert",
+   "146"
+  ],
+  "2754": [
+   "ext_fnUnitConvert",
+   "32914"
+  ],
+  "2755": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2756": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2757": [
+   "ext_fnSaveXFNRegister",
+   "9876"
+  ],
+  "2758": [
+   "ext_fnSaveLetteredRegisters",
+   "9876"
+  ],
+  "2759": [
+   "ext_fnSaveStackRegisters",
+   "9876"
+  ],
+  "276": [
+   "ext_fnUnitConvert",
+   "20"
+  ],
+  "2760": [
+   "ext_fnSaveNRegisters",
+   "10001"
+  ],
+  "2761": [
+   "ext_fnSaveRegister",
+   "10003"
+  ],
+  "2762": [
+   "ext_fnLoadRegisters",
+   "9876"
+  ],
+  "2763": [
+   "ext_fnGetADM",
+   "9876"
+  ],
+  "2764": [
+   "ext_fnSetADM",
+   "100"
+  ],
+  "2765": [
+   "ext_fnSetISM",
+   "100"
+  ],
+  "2766": [
+   "ext_fnGetREALDF",
+   "9876"
+  ],
+  "2767": [
+   "ext_fnSetREALDF",
+   "100"
+  ],
+  "2768": [
+   "ext_fnGetNDEC",
+   "9876"
+  ],
+  "2769": [
+   "ext_fnSetNDEC",
+   "100"
+  ],
+  "277": [
+   "ext_fnUnitConvert",
+   "32788"
+  ],
+  "2770": [
+   "ext_fnSetDMX",
+   "100"
+  ],
+  "2771": [
+   "ext_fnClDisplay",
+   "9876"
+  ],
+  "2772": [
+   "ext_fnClLcd",
+   "0"
+  ],
+  "2773": [
+   "ext_fnClearAlpha",
+   "10003"
+  ],
+  "2774": [
+   "ext_fnAlphaIP",
+   "10003"
+  ],
+  "2775": [
+   "ext_fn42Alpha",
+   "10021"
+  ],
+  "2776": [
+   "ext_fn42Append",
+   "10021"
+  ],
+  "2777": [
+   "ext_fn42AlphaRecall",
+   "10003"
+  ],
+  "2778": [
+   "ext_fn42AlphaStore",
+   "10003"
+  ],
+  "2779": [
+   "ext_fn42AlphaRotate",
+   "9876"
+  ],
+  "278": [
+   "ext_fnUnitConvert",
+   "21"
+  ],
+  "2780": [
+   "ext_fn42AlphaShift",
+   "9876"
+  ],
+  "2781": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2782": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2783": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2784": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2785": [
+   "ext_fnXToAlpha",
+   "10003"
+  ],
+  "2786": [
+   "ext_fn42Aip",
+   "9876"
+  ],
+  "2787": [
+   "ext_fn42Aleng",
+   "9876"
+  ],
+  "2788": [
+   "ext_fn42Atox",
+   "9876"
+  ],
+  "2789": [
+   "ext_fn42Aview",
+   "9876"
+  ],
+  "279": [
+   "ext_fnUnitConvert",
+   "32789"
+  ],
+  "2790": [
+   "ext_fn42Cla",
+   "9876"
+  ],
+  "2791": [
+   "ext_fn42Posa",
+   "9876"
+  ],
+  "2792": [
+   "ext_fn42Pra",
+   "9876"
+  ],
+  "2793": [
+   "ext_fn42Xtoa",
+   "9876"
+  ],
+  "2794": [
+   "ext_fnKeyGtoXeq",
+   "10001"
+  ],
+  "2795": [
+   "ext_fnKeyGto",
+   "10012"
+  ],
+  "2796": [
+   "ext_fnKeyXeq",
+   "10012"
+  ],
+  "2797": [
+   "ext_fn42VarMnu",
+   "10018"
+  ],
+  "2798": [
+   "ext_fn42Prompt",
+   "9876"
+  ],
+  "2799": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "28": [
+   "ext_fnCheckNaN",
+   "9876"
+  ],
+  "280": [
+   "ext_fnUnitConvert",
+   "22"
+  ],
+  "2800": [
+   "ext_fnUnitConvert",
+   "147"
+  ],
+  "2801": [
+   "ext_fnUnitConvert",
+   "32915"
+  ],
+  "2802": [
+   "ext_fnUnitConvert",
+   "148"
+  ],
+  "2803": [
+   "ext_fnUnitConvert",
+   "32916"
+  ],
+  "2804": [
+   "ext_fnUnitConvert",
+   "149"
+  ],
+  "2805": [
+   "ext_fnUnitConvert",
+   "32917"
+  ],
+  "2806": [
+   "ext_fnUnitConvert",
+   "150"
+  ],
+  "2807": [
+   "ext_fnUnitConvert",
+   "32918"
+  ],
+  "2808": [
+   "ext_fnUnitConvert",
+   "32780"
+  ],
+  "2809": [
+   "ext_fnUnitConvert",
+   "12"
+  ],
+  "281": [
+   "ext_fnUnitConvert",
+   "32790"
+  ],
+  "2810": [
+   "ext_fnUnitConvert",
+   "32931"
+  ],
+  "2811": [
+   "ext_fnUnitConvert",
+   "163"
+  ],
+  "2812": [
+   "ext_fnUnitConvert",
+   "151"
+  ],
+  "2813": [
+   "ext_fnUnitConvert",
+   "32919"
+  ],
+  "2814": [
+   "ext_fnUnitConvert",
+   "32920"
+  ],
+  "2815": [
+   "ext_fnUnitConvert",
+   "152"
+  ],
+  "2816": [
+   "ext_fnUnitConvert",
+   "153"
+  ],
+  "2817": [
+   "ext_fnUnitConvert",
+   "32921"
+  ],
+  "2818": [
+   "ext_fnUnitConvert",
+   "154"
+  ],
+  "2819": [
+   "ext_fnUnitConvert",
+   "32922"
+  ],
+  "282": [
+   "ext_fnUnitConvert",
+   "23"
+  ],
+  "2820": [
+   "ext_fnUnitConvert",
+   "155"
+  ],
+  "2821": [
+   "ext_fnUnitConvert",
+   "32923"
+  ],
+  "2822": [
+   "ext_fnUnitConvert",
+   "156"
+  ],
+  "2823": [
+   "ext_fnUnitConvert",
+   "32924"
+  ],
+  "2824": [
+   "ext_fnUnitConvert",
+   "157"
+  ],
+  "2825": [
+   "ext_fnUnitConvert",
+   "32925"
+  ],
+  "2826": [
+   "ext_fnUnitConvert",
+   "158"
+  ],
+  "2827": [
+   "ext_fnUnitConvert",
+   "32926"
+  ],
+  "2828": [
+   "ext_fnUnitConvert",
+   "159"
+  ],
+  "2829": [
+   "ext_fnUnitConvert",
+   "32927"
+  ],
+  "283": [
+   "ext_fnUnitConvert",
+   "32791"
+  ],
+  "2830": [
+   "ext_fnUnitConvert",
+   "160"
+  ],
+  "2831": [
+   "ext_fnUnitConvert",
+   "32928"
+  ],
+  "2832": [
+   "ext_fnUnitConvert",
+   "161"
+  ],
+  "2833": [
+   "ext_fnUnitConvert",
+   "32929"
+  ],
+  "2834": [
+   "ext_fnUnitConvert",
+   "162"
+  ],
+  "2835": [
+   "ext_fnUnitConvert",
+   "32930"
+  ],
+  "2836": [
+   "ext_fnUnitConvert",
+   "32932"
+  ],
+  "2837": [
+   "ext_fnUnitConvert",
+   "164"
+  ],
+  "2838": [
+   "ext_fnUnitConvert",
+   "143"
+  ],
+  "2839": [
+   "ext_fnUnitConvert",
+   "32911"
+  ],
+  "284": [
+   "ext_fnUnitConvert",
+   "24"
+  ],
+  "2840": [
+   "ext_fnUnitConvert",
+   "144"
+  ],
+  "2841": [
+   "ext_fnUnitConvert",
+   "32912"
+  ],
+  "2842": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2843": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2844": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2845": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2846": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2847": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2848": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2849": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "285": [
+   "ext_fnUnitConvert",
+   "89"
+  ],
+  "2850": [
+   "ext_fnCheckLessEqualMinusZero",
+   "9876"
+  ],
+  "2851": [
+   "ext_fnCheckGreaterEqualPlusZero",
+   "9876"
+  ],
+  "2852": [
+   "ext_fnPseudoMenu",
+   "18412"
+  ],
+  "2853": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2854": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2855": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2856": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2857": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2858": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2859": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "286": [
+   "ext_fnUnitConvert",
+   "32792"
+  ],
+  "2860": [
+   "ext_fnUnitConvert",
+   "165"
+  ],
+  "2861": [
+   "ext_fnUnitConvert",
+   "32933"
+  ],
+  "2862": [
+   "ext_fnUnitConvert",
+   "166"
+  ],
+  "2863": [
+   "ext_fnUnitConvert",
+   "32934"
+  ],
+  "2864": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2865": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2866": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2867": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2868": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2869": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "287": [
+   "ext_fnUnitConvert",
+   "90"
+  ],
+  "2870": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "288": [
+   "ext_fnUnitConvert",
+   "25"
+  ],
+  "289": [
+   "ext_fnUnitConvert",
+   "32793"
+  ],
+  "29": [
+   "ext_fnCheckType",
+   "1"
+  ],
+  "290": [
+   "ext_fnUnitConvert",
+   "26"
+  ],
+  "291": [
+   "ext_fnUnitConvert",
+   "32794"
+  ],
+  "292": [
+   "ext_fnUnitConvert",
+   "32795"
+  ],
+  "293": [
+   "ext_fnUnitConvert",
+   "27"
+  ],
+  "294": [
+   "ext_fnUnitConvert",
+   "32796"
+  ],
+  "295": [
+   "ext_fnUnitConvert",
+   "28"
+  ],
+  "296": [
+   "ext_fnUnitConvert",
+   "32797"
+  ],
+  "297": [
+   "ext_fnUnitConvert",
+   "91"
+  ],
+  "298": [
+   "ext_fnUnitConvert",
+   "29"
+  ],
+  "299": [
+   "ext_fnUnitConvert",
+   "92"
+  ],
+  "3": [
+   "ext_fnExecute",
+   "10009"
+  ],
+  "30": [
+   "ext_fnCheckSpecial",
+   "9876"
+  ],
+  "300": [
+   "ext_fnUnitConvert",
+   "32798"
+  ],
+  "301": [
+   "ext_fnUnitConvert",
+   "32861"
+  ],
+  "302": [
+   "ext_fnUnitConvert",
+   "30"
+  ],
+  "303": [
+   "ext_fnUnitConvert",
+   "94"
+  ],
+  "304": [
+   "ext_fnUnitConvert",
+   "32799"
+  ],
+  "305": [
+   "ext_fnUnitConvert",
+   "95"
+  ],
+  "306": [
+   "ext_fnUnitConvert",
+   "32864"
+  ],
+  "307": [
+   "ext_fnUnitConvert",
+   "31"
+  ],
+  "308": [
+   "ext_fnUnitConvert",
+   "97"
+  ],
+  "309": [
+   "ext_fnUnitConvert",
+   "98"
+  ],
+  "31": [
+   "ext_fnCheckType",
+   "5"
+  ],
+  "310": [
+   "ext_fnUnitConvert",
+   "32800"
+  ],
+  "311": [
+   "ext_fnUnitConvert",
+   "33"
+  ],
+  "312": [
+   "ext_fnUnitConvert",
+   "32867"
+  ],
+  "313": [
+   "ext_fnUnitConvert",
+   "32"
+  ],
+  "314": [
+   "ext_fnUnitConvert",
+   "32801"
+  ],
+  "315": [
+   "ext_fnUnitConvert",
+   "32868"
+  ],
+  "316": [
+   "ext_fnUnitConvert",
+   "32802"
+  ],
+  "317": [
+   "ext_fnUnitConvert",
+   "32869"
+  ],
+  "318": [
+   "ext_fnUnitConvert",
+   "34"
+  ],
+  "319": [
+   "ext_fnUnitConvert",
+   "32870"
+  ],
+  "32": [
+   "ext_fnCheckInfinite",
+   "9876"
+  ],
+  "320": [
+   "ext_fnUnitConvert",
+   "35"
+  ],
+  "321": [
+   "ext_fnUnitConvert",
+   "32803"
+  ],
+  "322": [
+   "ext_fnUnitConvert",
+   "36"
+  ],
+  "323": [
+   "ext_fnUnitConvert",
+   "32804"
+  ],
+  "324": [
+   "ext_fnUnitConvert",
+   "37"
+  ],
+  "325": [
+   "ext_fnUnitConvert",
+   "32871"
+  ],
+  "326": [
+   "ext_fnUnitConvert",
+   "32805"
+  ],
+  "327": [
+   "ext_fnUnitConvert",
+   "32872"
+  ],
+  "328": [
+   "ext_fnUnitConvert",
+   "38"
+  ],
+  "329": [
+   "ext_fnUnitConvert",
+   "32806"
+  ],
+  "33": [
+   "ext_fnIsPrime",
+   "9876"
+  ],
+  "330": [
+   "ext_fnUnitConvert",
+   "32807"
+  ],
+  "331": [
+   "ext_fnUnitConvert",
+   "39"
+  ],
+  "332": [
+   "ext_fnUnitConvert",
+   "32808"
+  ],
+  "333": [
+   "ext_fnUnitConvert",
+   "40"
+  ],
+  "334": [
+   "ext_fnUnitConvert",
+   "32809"
+  ],
+  "335": [
+   "ext_fnUnitConvert",
+   "32873"
+  ],
+  "336": [
+   "ext_fnUnitConvert",
+   "42"
+  ],
+  "337": [
+   "ext_fnUnitConvert",
+   "41"
+  ],
+  "338": [
+   "ext_fnUnitConvert",
+   "32874"
+  ],
+  "339": [
+   "ext_fnUnitConvert",
+   "32810"
+  ],
+  "34": [
+   "ext_fnIsTopRoutine",
+   "9876"
+  ],
+  "340": [
+   "ext_fnUnitConvert",
+   "32811"
+  ],
+  "341": [
+   "ext_fnUnitConvert",
+   "43"
+  ],
+  "342": [
+   "ext_fnUnitConvert",
+   "44"
+  ],
+  "343": [
+   "ext_fnUnitConvert",
+   "32812"
+  ],
+  "344": [
+   "ext_fnUnitConvert",
+   "32813"
+  ],
+  "345": [
+   "ext_fnUnitConvert",
+   "32875"
+  ],
+  "346": [
+   "ext_fnUnitConvert",
+   "45"
+  ],
+  "347": [
+   "ext_fnUnitConvert",
+   "32876"
+  ],
+  "348": [
+   "ext_fnUnitConvert",
+   "32814"
+  ],
+  "349": [
+   "ext_fnUnitConvert",
+   "46"
+  ],
+  "35": [
+   "ext_fnKeyEnter",
+   "9876"
+  ],
+  "350": [
+   "ext_fnUnitConvert",
+   "47"
+  ],
+  "351": [
+   "ext_fnUnitConvert",
+   "109"
+  ],
+  "352": [
+   "ext_fnUnitConvert",
+   "32816"
+  ],
+  "353": [
+   "ext_fnUnitConvert",
+   "32815"
+  ],
+  "354": [
+   "ext_fnUnitConvert",
+   "110"
+  ],
+  "355": [
+   "ext_fnUnitConvert",
+   "48"
+  ],
+  "356": [
+   "ext_fnUnitConvert",
+   "49"
+  ],
+  "357": [
+   "ext_fnUnitConvert",
+   "32817"
+  ],
+  "358": [
+   "ext_fnUnitConvert",
+   "50"
+  ],
+  "359": [
+   "ext_fnUnitConvert",
+   "111"
+  ],
+  "36": [
+   "ext_fnSwapXY",
+   "9876"
+  ],
+  "360": [
+   "ext_fnUnitConvert",
+   "51"
+  ],
+  "361": [
+   "ext_fnUnitConvert",
+   "32818"
+  ],
+  "362": [
+   "ext_fnUnitConvert",
+   "112"
+  ],
+  "363": [
+   "ext_fnUnitConvert",
+   "32819"
+  ],
+  "364": [
+   "ext_fnUnitConvert",
+   "52"
+  ],
+  "365": [
+   "ext_fnUnitConvert",
+   "32881"
+  ],
+  "366": [
+   "ext_fnUnitConvert",
+   "32820"
+  ],
+  "367": [
+   "ext_fnCvtHMSHR",
+   "32768"
+  ],
+  "368": [
+   "ext_fnCvtHMSHR",
+   "0"
+  ],
+  "369": [
+   "ext_fnUnitConvert",
+   "114"
+  ],
+  "37": [
+   "ext_fnDrop",
+   "9876"
+  ],
+  "370": [
+   "ext_fnUnitConvert",
+   "53"
+  ],
+  "371": [
+   "ext_fnUnitConvert",
+   "32821"
+  ],
+  "372": [
+   "ext_fnUnitConvert",
+   "32822"
+  ],
+  "373": [
+   "ext_fnUnitConvert",
+   "54"
+  ],
+  "374": [
+   "ext_fnUnitConvert",
+   "55"
+  ],
+  "375": [
+   "ext_fnUnitConvert",
+   "32823"
+  ],
+  "376": [
+   "ext_fnUnitConvert",
+   "32824"
+  ],
+  "377": [
+   "ext_fnUnitConvert",
+   "56"
+  ],
+  "378": [
+   "ext_fnUnitConvert",
+   "32825"
+  ],
+  "379": [
+   "ext_fnUnitConvert",
+   "57"
+  ],
+  "38": [
+   "ext_fnPause",
+   "10001"
+  ],
+  "380": [
+   "ext_fnUnitConvert",
+   "32826"
+  ],
+  "381": [
+   "ext_fnUnitConvert",
+   "58"
+  ],
+  "382": [
+   "ext_fnUnitConvert",
+   "32827"
+  ],
+  "383": [
+   "ext_fnUnitConvert",
+   "32883"
+  ],
+  "384": [
+   "ext_fnUnitConvert",
+   "59"
+  ],
+  "385": [
+   "ext_fnUnitConvert",
+   "116"
+  ],
+  "386": [
+   "ext_fnUnitConvert",
+   "32828"
+  ],
+  "387": [
+   "ext_fnUnitConvert",
+   "60"
+  ],
+  "388": [
+   "ext_fnUnitConvert",
+   "61"
+  ],
+  "389": [
+   "ext_fnUnitConvert",
+   "32829"
+  ],
+  "39": [
+   "ext_fnRollUp",
+   "9876"
+  ],
+  "390": [
+   "ext_fnUnitConvert",
+   "62"
+  ],
+  "391": [
+   "ext_fnUnitConvert",
+   "32830"
+  ],
+  "392": [
+   "ext_fnUnitConvert",
+   "32885"
+  ],
+  "393": [
+   "ext_fnUnitConvert",
+   "118"
+  ],
+  "394": [
+   "ext_fnUnitConvert",
+   "32887"
+  ],
+  "395": [
+   "ext_fnUnitConvert",
+   "120"
+  ],
+  "396": [
+   "ext_fnIsFlagClearClear",
+   "10005"
+  ],
+  "397": [
+   "ext_fnIsFlagClearSet",
+   "10005"
+  ],
+  "398": [
+   "ext_fnIsFlagClearFlip",
+   "10005"
+  ],
+  "399": [
+   "ext_fnIsFlagSetClear",
+   "10005"
+  ],
+  "4": [
+   "ext_fnReturn",
+   "0"
+  ],
+  "40": [
+   "ext_fnRollDown",
+   "9876"
+  ],
+  "400": [
+   "ext_fnIsFlagSetSet",
+   "10005"
+  ],
+  "401": [
+   "ext_fnIsFlagSetFlip",
+   "10005"
+  ],
+  "402": [
+   "ext_fnLogicalNand",
+   "9876"
+  ],
+  "403": [
+   "ext_fnLogicalNor",
+   "9876"
+  ],
+  "404": [
+   "ext_fnLogicalXnor",
+   "9876"
+  ],
+  "405": [
+   "ext_fnBs",
+   "10001"
+  ],
+  "406": [
+   "ext_fnBc",
+   "10001"
+  ],
+  "407": [
+   "ext_fnCb",
+   "10001"
+  ],
+  "408": [
+   "ext_fnSb",
+   "10001"
+  ],
+  "409": [
+   "ext_fnFb",
+   "10001"
+  ],
+  "41": [
+   "ext_fnClX",
+   "9876"
+  ],
+  "410": [
+   "ext_fnRl",
+   "10001"
+  ],
+  "411": [
+   "ext_fnRlc",
+   "10001"
+  ],
+  "412": [
+   "ext_fnRr",
+   "10001"
+  ],
+  "413": [
+   "ext_fnRrc",
+   "10001"
+  ],
+  "414": [
+   "ext_fnSl",
+   "10001"
+  ],
+  "415": [
+   "ext_fnSr",
+   "10001"
+  ],
+  "416": [
+   "ext_fnAsr",
+   "10001"
+  ],
+  "417": [
+   "ext_fnLj",
+   "9876"
+  ],
+  "418": [
+   "ext_fnRj",
+   "9876"
+  ],
+  "419": [
+   "ext_fnMaskl",
+   "10001"
+  ],
+  "42": [
+   "ext_fnFillStack",
+   "9876"
+  ],
+  "420": [
+   "ext_fnMaskr",
+   "10001"
+  ],
+  "421": [
+   "ext_fnMirror",
+   "9876"
+  ],
+  "422": [
+   "ext_fnCountBits",
+   "9876"
+  ],
+  "423": [
+   "ext_fnSdl",
+   "10001"
+  ],
+  "424": [
+   "ext_fnSdr",
+   "10001"
+  ],
+  "425": [
+   "ext_fnZip",
+   "9876"
+  ],
+  "426": [
+   "ext_fnUnzip",
+   "9876"
+  ],
+  "427": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "428": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "429": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "43": [
+   "ext_fnInput",
+   "10003"
+  ],
+  "430": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "431": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "432": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "433": [
+   "ext_fnSigmaAddRem",
+   "1"
+  ],
+  "434": [
+   "ext_fnSigmaAddRem",
+   "2"
+  ],
+  "435": [
+   "ext_fnStatSum",
+   "0"
+  ],
+  "436": [
+   "ext_fnStatSum",
+   "1"
+  ],
+  "437": [
+   "ext_fnStatSum",
+   "2"
+  ],
+  "438": [
+   "ext_fnStatSum",
+   "3"
+  ],
+  "439": [
+   "ext_fnStatSum",
+   "4"
+  ],
+  "44": [
+   "ext_fnStore",
+   "10006"
+  ],
+  "440": [
+   "ext_fnStatSum",
+   "5"
+  ],
+  "441": [
+   "ext_fnStatSum",
+   "6"
+  ],
+  "442": [
+   "ext_fnStatSum",
+   "7"
+  ],
+  "443": [
+   "ext_fnStatSum",
+   "8"
+  ],
+  "444": [
+   "ext_fnStatSum",
+   "9"
+  ],
+  "445": [
+   "ext_fnStatSum",
+   "10"
+  ],
+  "446": [
+   "ext_fnStatSum",
+   "11"
+  ],
+  "447": [
+   "ext_fnStatSum",
+   "12"
+  ],
+  "448": [
+   "ext_fnStatSum",
+   "13"
+  ],
+  "449": [
+   "ext_fnStatSum",
+   "14"
+  ],
+  "45": [
+   "ext_fnStoreAdd",
+   "10003"
+  ],
+  "450": [
+   "ext_fnStatSum",
+   "15"
+  ],
+  "451": [
+   "ext_fnStatSum",
+   "16"
+  ],
+  "452": [
+   "ext_fnStatSum",
+   "17"
+  ],
+  "453": [
+   "ext_fnStatSum",
+   "18"
+  ],
+  "454": [
+   "ext_fnStatSum",
+   "19"
+  ],
+  "455": [
+   "ext_fnStatSum",
+   "20"
+  ],
+  "456": [
+   "ext_fnStatSum",
+   "21"
+  ],
+  "457": [
+   "ext_fnStatSum",
+   "22"
+  ],
+  "458": [
+   "ext_fnStatSum",
+   "23"
+  ],
+  "459": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "46": [
+   "ext_fnStoreSub",
+   "10003"
+  ],
+  "460": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "461": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "462": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "463": [
+   "ext_fnGetSystemFlag",
+   "32768"
+  ],
+  "464": [
+   "ext_fnGetSystemFlag",
+   "49153"
+  ],
+  "465": [
+   "ext_fnGetSystemFlag",
+   "49154"
+  ],
+  "466": [
+   "ext_fnGetSystemFlag",
+   "49155"
+  ],
+  "467": [
+   "ext_fnGetSystemFlag",
+   "32772"
+  ],
+  "468": [
+   "ext_fnGetSystemFlag",
+   "32773"
+  ],
+  "469": [
+   "ext_fnGetSystemFlag",
+   "32774"
+  ],
+  "47": [
+   "ext_fnStoreMult",
+   "10003"
+  ],
+  "470": [
+   "ext_fnGetSystemFlag",
+   "32775"
+  ],
+  "471": [
+   "ext_fnGetSystemFlag",
+   "32776"
+  ],
+  "472": [
+   "ext_fnGetSystemFlag",
+   "32777"
+  ],
+  "473": [
+   "ext_fnGetSystemFlag",
+   "32778"
+  ],
+  "474": [
+   "ext_fnGetSystemFlag",
+   "32779"
+  ],
+  "475": [
+   "ext_fnGetSystemFlag",
+   "32780"
+  ],
+  "476": [
+   "ext_fnGetSystemFlag",
+   "32781"
+  ],
+  "477": [
+   "ext_fnGetSystemFlag",
+   "32782"
+  ],
+  "478": [
+   "ext_fnGetSystemFlag",
+   "49167"
+  ],
+  "479": [
+   "ext_fnGetSystemFlag",
+   "49168"
+  ],
+  "48": [
+   "ext_fnStoreDiv",
+   "10003"
+  ],
+  "480": [
+   "ext_fnGetSystemFlag",
+   "32785"
+  ],
+  "481": [
+   "ext_fnGetSystemFlag",
+   "32786"
+  ],
+  "482": [
+   "ext_fnGetSystemFlag",
+   "32787"
+  ],
+  "483": [
+   "ext_fnGetSystemFlag",
+   "32788"
+  ],
+  "484": [
+   "ext_fnGetSystemFlag",
+   "49173"
+  ],
+  "485": [
+   "ext_fnGetSystemFlag",
+   "32790"
+  ],
+  "486": [
+   "ext_fnGetSystemFlag",
+   "32791"
+  ],
+  "487": [
+   "ext_fnGetSystemFlag",
+   "32792"
+  ],
+  "488": [
+   "ext_fnGetSystemFlag",
+   "32793"
+  ],
+  "489": [
+   "ext_fnGetSystemFlag",
+   "49178"
+  ],
+  "49": [
+   "ext_fnCyx",
+   "9876"
+  ],
+  "490": [
+   "ext_fnGetSystemFlag",
+   "32795"
+  ],
+  "491": [
+   "ext_fnGetSystemFlag",
+   "32796"
+  ],
+  "492": [
+   "ext_fnGetSystemFlag",
+   "32797"
+  ],
+  "493": [
+   "ext_fnGetSystemFlag",
+   "32798"
+  ],
+  "494": [
+   "ext_fnGetSystemFlag",
+   "32799"
+  ],
+  "495": [
+   "ext_fnGetSystemFlag",
+   "49184"
+  ],
+  "496": [
+   "ext_fnGetSystemFlag",
+   "32801"
+  ],
+  "497": [
+   "ext_fnGetSystemFlag",
+   "32802"
+  ],
+  "498": [
+   "ext_fnGetSystemFlag",
+   "49187"
+  ],
+  "499": [
+   "ext_fnGetSystemFlag",
+   "32804"
+  ],
+  "5": [
+   "ext_fnIse",
+   "10003"
+  ],
+  "50": [
+   "ext_fnPyx",
+   "9876"
+  ],
+  "500": [
+   "ext_fnGetSystemFlag",
+   "49189"
+  ],
+  "501": [
+   "ext_fnGetSystemFlag",
+   "49190"
+  ],
+  "502": [
+   "ext_fnGetSystemFlag",
+   "49191"
+  ],
+  "503": [
+   "ext_fnGetSystemFlag",
+   "49192"
+  ],
+  "504": [
+   "ext_fnGetSystemFlag",
+   "49193"
+  ],
+  "505": [
+   "ext_fnGetSystemFlag",
+   "32810"
+  ],
+  "506": [
+   "ext_fnGetSystemFlag",
+   "32811"
+  ],
+  "507": [
+   "ext_fnGetSystemFlag",
+   "32812"
+  ],
+  "508": [
+   "ext_fnGetSystemFlag",
+   "32813"
+  ],
+  "509": [
+   "ext_fnGetSystemFlag",
+   "32814"
+  ],
+  "51": [
+   "ext_fnRecall",
+   "10006"
+  ],
+  "510": [
+   "ext_fnGetSystemFlag",
+   "32815"
+  ],
+  "511": [
+   "ext_fnGetSystemFlag",
+   "32816"
+  ],
+  "512": [
+   "ext_fnGetSystemFlag",
+   "32817"
+  ],
+  "513": [
+   "ext_fnGetSystemFlag",
+   "32818"
+  ],
+  "514": [
+   "ext_fnGetSystemFlag",
+   "32819"
+  ],
+  "515": [
+   "ext_fnGetSystemFlag",
+   "32820"
+  ],
+  "516": [
+   "ext_fnGetSystemFlag",
+   "32821"
+  ],
+  "517": [
+   "ext_fnGetSystemFlag",
+   "32822"
+  ],
+  "518": [
+   "ext_fnGetSystemFlag",
+   "32823"
+  ],
+  "519": [
+   "ext_fnGetSystemFlag",
+   "32824"
+  ],
+  "52": [
+   "ext_fnRecallAdd",
+   "10003"
+  ],
+  "520": [
+   "ext_fnGetSystemFlag",
+   "32825"
+  ],
+  "521": [
+   "ext_fnGetSystemFlag",
+   "32826"
+  ],
+  "522": [
+   "ext_fnGetSystemFlag",
+   "32827"
+  ],
+  "523": [
+   "ext_fnGetSystemFlag",
+   "32828"
+  ],
+  "524": [
+   "ext_fnGetSystemFlag",
+   "32829"
+  ],
+  "525": [
+   "ext_fnGetSystemFlag",
+   "32830"
+  ],
+  "526": [
+   "ext_fnGetSystemFlag",
+   "49215"
+  ],
+  "527": [
+   "ext_addItemToBuffer",
+   "100"
+  ],
+  "528": [
+   "ext_addItemToBuffer",
+   "101"
+  ],
+  "529": [
+   "ext_addItemToBuffer",
+   "102"
+  ],
+  "53": [
+   "ext_fnRecallSub",
+   "10003"
+  ],
+  "530": [
+   "ext_addItemToBuffer",
+   "103"
+  ],
+  "531": [
+   "ext_addItemToBuffer",
+   "104"
+  ],
+  "532": [
+   "ext_addItemToBuffer",
+   "105"
+  ],
+  "533": [
+   "ext_addItemToBuffer",
+   "106"
+  ],
+  "534": [
+   "ext_addItemToBuffer",
+   "107"
+  ],
+  "535": [
+   "ext_addItemToBuffer",
+   "108"
+  ],
+  "536": [
+   "ext_addItemToBuffer",
+   "109"
+  ],
+  "537": [
+   "ext_addItemToBuffer",
+   "110"
+  ],
+  "538": [
+   "ext_addItemToBuffer",
+   "111"
+  ],
+  "539": [
+   "ext_addItemToBuffer",
+   "539"
+  ],
+  "54": [
+   "ext_fnRecallMult",
+   "10003"
+  ],
+  "540": [
+   "ext_addItemToBuffer",
+   "540"
+  ],
+  "541": [
+   "ext_addItemToBuffer",
+   "541"
+  ],
+  "542": [
+   "ext_addItemToBuffer",
+   "542"
+  ],
+  "543": [
+   "ext_addItemToBuffer",
+   "543"
+  ],
+  "544": [
+   "ext_addItemToBuffer",
+   "544"
+  ],
+  "545": [
+   "ext_addItemToBuffer",
+   "545"
+  ],
+  "546": [
+   "ext_addItemToBuffer",
+   "546"
+  ],
+  "547": [
+   "ext_addItemToBuffer",
+   "547"
+  ],
+  "548": [
+   "ext_addItemToBuffer",
+   "548"
+  ],
+  "549": [
+   "ext_addItemToBuffer",
+   "549"
+  ],
+  "55": [
+   "ext_fnRecallDiv",
+   "10003"
+  ],
+  "550": [
+   "ext_addItemToBuffer",
+   "550"
+  ],
+  "551": [
+   "ext_addItemToBuffer",
+   "551"
+  ],
+  "552": [
+   "ext_addItemToBuffer",
+   "552"
+  ],
+  "553": [
+   "ext_addItemToBuffer",
+   "553"
+  ],
+  "554": [
+   "ext_addItemToBuffer",
+   "554"
+  ],
+  "555": [
+   "ext_addItemToBuffer",
+   "555"
+  ],
+  "556": [
+   "ext_addItemToBuffer",
+   "556"
+  ],
+  "557": [
+   "ext_addItemToBuffer",
+   "557"
+  ],
+  "558": [
+   "ext_addItemToBuffer",
+   "558"
+  ],
+  "559": [
+   "ext_addItemToBuffer",
+   "559"
+  ],
+  "56": [
+   "ext_fnIsConverged",
+   "10001"
+  ],
+  "560": [
+   "ext_addItemToBuffer",
+   "560"
+  ],
+  "561": [
+   "ext_addItemToBuffer",
+   "561"
+  ],
+  "562": [
+   "ext_addItemToBuffer",
+   "562"
+  ],
+  "563": [
+   "ext_addItemToBuffer",
+   "563"
+  ],
+  "564": [
+   "ext_addItemToBuffer",
+   "564"
+  ],
+  "565": [
+   "ext_addItemToBuffer",
+   "565"
+  ],
+  "566": [
+   "ext_addItemToBuffer",
+   "566"
+  ],
+  "567": [
+   "ext_addItemToBuffer",
+   "567"
+  ],
+  "568": [
+   "ext_addItemToBuffer",
+   "568"
+  ],
+  "569": [
+   "ext_addItemToBuffer",
+   "569"
+  ],
+  "57": [
+   "ext_fnEntryQ",
+   "9876"
+  ],
+  "570": [
+   "ext_addItemToBuffer",
+   "570"
+  ],
+  "571": [
+   "ext_addItemToBuffer",
+   "571"
+  ],
+  "572": [
+   "ext_addItemToBuffer",
+   "572"
+  ],
+  "573": [
+   "ext_addItemToBuffer",
+   "573"
+  ],
+  "574": [
+   "ext_addItemToBuffer",
+   "574"
+  ],
+  "575": [
+   "ext_addItemToBuffer",
+   "575"
+  ],
+  "576": [
+   "ext_addItemToBuffer",
+   "576"
+  ],
+  "577": [
+   "ext_addItemToBuffer",
+   "577"
+  ],
+  "578": [
+   "ext_addItemToBuffer",
+   "578"
+  ],
+  "579": [
+   "ext_addItemToBuffer",
+   "579"
+  ],
+  "58": [
+   "ext_fnSquare",
+   "9876"
+  ],
+  "580": [
+   "ext_addItemToBuffer",
+   "580"
+  ],
+  "581": [
+   "ext_addItemToBuffer",
+   "581"
+  ],
+  "582": [
+   "ext_addItemToBuffer",
+   "582"
+  ],
+  "583": [
+   "ext_addItemToBuffer",
+   "583"
+  ],
+  "584": [
+   "ext_addItemToBuffer",
+   "584"
+  ],
+  "585": [
+   "ext_addItemToBuffer",
+   "585"
+  ],
+  "586": [
+   "ext_addItemToBuffer",
+   "586"
+  ],
+  "587": [
+   "ext_addItemToBuffer",
+   "587"
+  ],
+  "588": [
+   "ext_addItemToBuffer",
+   "588"
+  ],
+  "589": [
+   "ext_addItemToBuffer",
+   "589"
+  ],
+  "59": [
+   "ext_fnCube",
+   "9876"
+  ],
+  "590": [
+   "ext_addItemToBuffer",
+   "590"
+  ],
+  "591": [
+   "ext_addItemToBuffer",
+   "591"
+  ],
+  "592": [
+   "ext_addItemToBuffer",
+   "592"
+  ],
+  "593": [
+   "ext_addItemToBuffer",
+   "593"
+  ],
+  "594": [
+   "ext_addItemToBuffer",
+   "594"
+  ],
+  "595": [
+   "ext_addItemToBuffer",
+   "595"
+  ],
+  "596": [
+   "ext_addItemToBuffer",
+   "596"
+  ],
+  "597": [
+   "ext_addItemToBuffer",
+   "597"
+  ],
+  "598": [
+   "ext_addItemToBuffer",
+   "598"
+  ],
+  "599": [
+   "ext_addItemToBuffer",
+   "599"
+  ],
+  "6": [
+   "ext_fnIsg",
+   "10003"
+  ],
+  "60": [
+   "ext_fnPower",
+   "9876"
+  ],
+  "600": [
+   "ext_addItemToBuffer",
+   "600"
+  ],
+  "601": [
+   "ext_addItemToBuffer",
+   "601"
+  ],
+  "602": [
+   "ext_addItemToBuffer",
+   "602"
+  ],
+  "603": [
+   "ext_addItemToBuffer",
+   "603"
+  ],
+  "604": [
+   "ext_addItemToBuffer",
+   "604"
+  ],
+  "605": [
+   "ext_addItemToBuffer",
+   "605"
+  ],
+  "606": [
+   "ext_addItemToBuffer",
+   "606"
+  ],
+  "607": [
+   "ext_addItemToBuffer",
+   "607"
+  ],
+  "608": [
+   "ext_addItemToBuffer",
+   "608"
+  ],
+  "609": [
+   "ext_addItemToBuffer",
+   "609"
+  ],
+  "61": [
+   "ext_fnSquareRoot",
+   "9876"
+  ],
+  "610": [
+   "ext_addItemToBuffer",
+   "610"
+  ],
+  "611": [
+   "ext_addItemToBuffer",
+   "611"
+  ],
+  "612": [
+   "ext_addItemToBuffer",
+   "612"
+  ],
+  "613": [
+   "ext_addItemToBuffer",
+   "613"
+  ],
+  "614": [
+   "ext_addItemToBuffer",
+   "614"
+  ],
+  "615": [
+   "ext_addItemToBuffer",
+   "615"
+  ],
+  "616": [
+   "ext_addItemToBuffer",
+   "616"
+  ],
+  "617": [
+   "ext_addItemToBuffer",
+   "617"
+  ],
+  "618": [
+   "ext_addItemToBuffer",
+   "618"
+  ],
+  "619": [
+   "ext_addItemToBuffer",
+   "619"
+  ],
+  "62": [
+   "ext_fnCubeRoot",
+   "9876"
+  ],
+  "620": [
+   "ext_addItemToBuffer",
+   "620"
+  ],
+  "621": [
+   "ext_addItemToBuffer",
+   "621"
+  ],
+  "622": [
+   "ext_addItemToBuffer",
+   "622"
+  ],
+  "623": [
+   "ext_addItemToBuffer",
+   "623"
+  ],
+  "624": [
+   "ext_addItemToBuffer",
+   "624"
+  ],
+  "625": [
+   "ext_addItemToBuffer",
+   "625"
+  ],
+  "626": [
+   "ext_addItemToBuffer",
+   "626"
+  ],
+  "627": [
+   "ext_addItemToBuffer",
+   "627"
+  ],
+  "628": [
+   "ext_addItemToBuffer",
+   "628"
+  ],
+  "629": [
+   "ext_addItemToBuffer",
+   "629"
+  ],
+  "63": [
+   "ext_fnXthRoot",
+   "9876"
+  ],
+  "630": [
+   "ext_addItemToBuffer",
+   "630"
+  ],
+  "631": [
+   "ext_addItemToBuffer",
+   "631"
+  ],
+  "632": [
+   "ext_addItemToBuffer",
+   "632"
+  ],
+  "633": [
+   "ext_addItemToBuffer",
+   "633"
+  ],
+  "634": [
+   "ext_addItemToBuffer",
+   "634"
+  ],
+  "635": [
+   "ext_addItemToBuffer",
+   "635"
+  ],
+  "636": [
+   "ext_addItemToBuffer",
+   "636"
+  ],
+  "637": [
+   "ext_addItemToBuffer",
+   "637"
+  ],
+  "638": [
+   "ext_addItemToBuffer",
+   "638"
+  ],
+  "639": [
+   "ext_addItemToBuffer",
+   "639"
+  ],
+  "64": [
+   "ext_fn2Pow",
+   "9876"
+  ],
+  "640": [
+   "ext_addItemToBuffer",
+   "640"
+  ],
+  "641": [
+   "ext_addItemToBuffer",
+   "641"
+  ],
+  "642": [
+   "ext_addItemToBuffer",
+   "642"
+  ],
+  "643": [
+   "ext_addItemToBuffer",
+   "643"
+  ],
+  "644": [
+   "ext_addItemToBuffer",
+   "644"
+  ],
+  "645": [
+   "ext_addItemToBuffer",
+   "645"
+  ],
+  "646": [
+   "ext_addItemToBuffer",
+   "646"
+  ],
+  "647": [
+   "ext_addItemToBuffer",
+   "647"
+  ],
+  "648": [
+   "ext_addItemToBuffer",
+   "648"
+  ],
+  "649": [
+   "ext_addItemToBuffer",
+   "649"
+  ],
+  "65": [
+   "ext_fnExp",
+   "9876"
+  ],
+  "650": [
+   "ext_addItemToBuffer",
+   "650"
+  ],
+  "651": [
+   "ext_addItemToBuffer",
+   "651"
+  ],
+  "652": [
+   "ext_addItemToBuffer",
+   "652"
+  ],
+  "653": [
+   "ext_addItemToBuffer",
+   "653"
+  ],
+  "654": [
+   "ext_addItemToBuffer",
+   "654"
+  ],
+  "655": [
+   "ext_addItemToBuffer",
+   "655"
+  ],
+  "656": [
+   "ext_addItemToBuffer",
+   "656"
+  ],
+  "657": [
+   "ext_addItemToBuffer",
+   "657"
+  ],
+  "658": [
+   "ext_addItemToBuffer",
+   "658"
+  ],
+  "659": [
+   "ext_addItemToBuffer",
+   "659"
+  ],
+  "66": [
+   "ext_fnSint",
+   "9876"
+  ],
+  "660": [
+   "ext_addItemToBuffer",
+   "660"
+  ],
+  "661": [
+   "ext_addItemToBuffer",
+   "661"
+  ],
+  "662": [
+   "ext_addItemToBuffer",
+   "662"
+  ],
+  "663": [
+   "ext_addItemToBuffer",
+   "663"
+  ],
+  "664": [
+   "ext_addItemToBuffer",
+   "664"
+  ],
+  "665": [
+   "ext_addItemToBuffer",
+   "665"
+  ],
+  "666": [
+   "ext_addItemToBuffer",
+   "666"
+  ],
+  "667": [
+   "ext_addItemToBuffer",
+   "667"
+  ],
+  "668": [
+   "ext_addItemToBuffer",
+   "668"
+  ],
+  "669": [
+   "ext_addItemToBuffer",
+   "669"
+  ],
+  "67": [
+   "ext_fn10Pow",
+   "9876"
+  ],
+  "670": [
+   "ext_addItemToBuffer",
+   "670"
+  ],
+  "671": [
+   "ext_addItemToBuffer",
+   "671"
+  ],
+  "672": [
+   "ext_addItemToBuffer",
+   "672"
+  ],
+  "673": [
+   "ext_addItemToBuffer",
+   "673"
+  ],
+  "674": [
+   "ext_addItemToBuffer",
+   "674"
+  ],
+  "675": [
+   "ext_addItemToBuffer",
+   "675"
+  ],
+  "676": [
+   "ext_addItemToBuffer",
+   "676"
+  ],
+  "677": [
+   "ext_addItemToBuffer",
+   "677"
+  ],
+  "678": [
+   "ext_addItemToBuffer",
+   "678"
+  ],
+  "679": [
+   "ext_addItemToBuffer",
+   "679"
+  ],
+  "68": [
+   "ext_fnLog2",
+   "9876"
+  ],
+  "680": [
+   "ext_addItemToBuffer",
+   "680"
+  ],
+  "681": [
+   "ext_addItemToBuffer",
+   "681"
+  ],
+  "682": [
+   "ext_addItemToBuffer",
+   "682"
+  ],
+  "683": [
+   "ext_addItemToBuffer",
+   "683"
+  ],
+  "684": [
+   "ext_addItemToBuffer",
+   "684"
+  ],
+  "685": [
+   "ext_addItemToBuffer",
+   "685"
+  ],
+  "686": [
+   "ext_addItemToBuffer",
+   "686"
+  ],
+  "687": [
+   "ext_addItemToBuffer",
+   "687"
+  ],
+  "688": [
+   "ext_addItemToBuffer",
+   "688"
+  ],
+  "689": [
+   "ext_addItemToBuffer",
+   "689"
+  ],
+  "69": [
+   "ext_fnLn",
+   "9876"
+  ],
+  "690": [
+   "ext_addItemToBuffer",
+   "690"
+  ],
+  "691": [
+   "ext_addItemToBuffer",
+   "691"
+  ],
+  "692": [
+   "ext_addItemToBuffer",
+   "692"
+  ],
+  "693": [
+   "ext_addItemToBuffer",
+   "693"
+  ],
+  "694": [
+   "ext_addItemToBuffer",
+   "694"
+  ],
+  "695": [
+   "ext_addItemToBuffer",
+   "695"
+  ],
+  "696": [
+   "ext_addItemToBuffer",
+   "696"
+  ],
+  "697": [
+   "ext_addItemToBuffer",
+   "697"
+  ],
+  "698": [
+   "ext_addItemToBuffer",
+   "698"
+  ],
+  "699": [
+   "ext_addItemToBuffer",
+   "699"
+  ],
+  "7": [
+   "ext_fnIsz",
+   "10003"
+  ],
+  "70": [
+   "ext_fnStopProgram",
+   "9876"
+  ],
+  "700": [
+   "ext_addItemToBuffer",
+   "700"
+  ],
+  "701": [
+   "ext_addItemToBuffer",
+   "701"
+  ],
+  "702": [
+   "ext_addItemToBuffer",
+   "702"
+  ],
+  "703": [
+   "ext_addItemToBuffer",
+   "703"
+  ],
+  "704": [
+   "ext_addItemToBuffer",
+   "704"
+  ],
+  "705": [
+   "ext_addItemToBuffer",
+   "705"
+  ],
+  "706": [
+   "ext_addItemToBuffer",
+   "706"
+  ],
+  "707": [
+   "ext_addItemToBuffer",
+   "707"
+  ],
+  "708": [
+   "ext_addItemToBuffer",
+   "708"
+  ],
+  "709": [
+   "ext_addItemToBuffer",
+   "709"
+  ],
+  "71": [
+   "ext_fnLog10",
+   "9876"
+  ],
+  "710": [
+   "ext_addItemToBuffer",
+   "710"
+  ],
+  "711": [
+   "ext_addItemToBuffer",
+   "711"
+  ],
+  "712": [
+   "ext_addItemToBuffer",
+   "712"
+  ],
+  "713": [
+   "ext_addItemToBuffer",
+   "713"
+  ],
+  "714": [
+   "ext_addItemToBuffer",
+   "714"
+  ],
+  "715": [
+   "ext_addItemToBuffer",
+   "715"
+  ],
+  "716": [
+   "ext_addItemToBuffer",
+   "716"
+  ],
+  "717": [
+   "ext_addItemToBuffer",
+   "717"
+  ],
+  "718": [
+   "ext_addItemToBuffer",
+   "718"
+  ],
+  "719": [
+   "ext_addItemToBuffer",
+   "719"
+  ],
+  "72": [
+   "ext_fnLogXY",
+   "9876"
+  ],
+  "720": [
+   "ext_addItemToBuffer",
+   "720"
+  ],
+  "721": [
+   "ext_addItemToBuffer",
+   "721"
+  ],
+  "722": [
+   "ext_addItemToBuffer",
+   "722"
+  ],
+  "723": [
+   "ext_addItemToBuffer",
+   "723"
+  ],
+  "724": [
+   "ext_addItemToBuffer",
+   "724"
+  ],
+  "725": [
+   "ext_addItemToBuffer",
+   "725"
+  ],
+  "726": [
+   "ext_addItemToBuffer",
+   "726"
+  ],
+  "727": [
+   "ext_addItemToBuffer",
+   "727"
+  ],
+  "728": [
+   "ext_addItemToBuffer",
+   "728"
+  ],
+  "729": [
+   "ext_addItemToBuffer",
+   "729"
+  ],
+  "73": [
+   "ext_fnInvert",
+   "9876"
+  ],
+  "730": [
+   "ext_addItemToBuffer",
+   "730"
+  ],
+  "731": [
+   "ext_addItemToBuffer",
+   "731"
+  ],
+  "732": [
+   "ext_addItemToBuffer",
+   "732"
+  ],
+  "733": [
+   "ext_addItemToBuffer",
+   "733"
+  ],
+  "734": [
+   "ext_addItemToBuffer",
+   "734"
+  ],
+  "735": [
+   "ext_addItemToBuffer",
+   "735"
+  ],
+  "736": [
+   "ext_addItemToBuffer",
+   "736"
+  ],
+  "737": [
+   "ext_addItemToBuffer",
+   "737"
+  ],
+  "738": [
+   "ext_addItemToBuffer",
+   "738"
+  ],
+  "739": [
+   "ext_addItemToBuffer",
+   "739"
+  ],
+  "74": [
+   "ext_fnCos",
+   "9876"
+  ],
+  "740": [
+   "ext_addItemToBuffer",
+   "740"
+  ],
+  "741": [
+   "ext_addItemToBuffer",
+   "741"
+  ],
+  "742": [
+   "ext_addItemToBuffer",
+   "742"
+  ],
+  "743": [
+   "ext_addItemToBuffer",
+   "743"
+  ],
+  "744": [
+   "ext_addItemToBuffer",
+   "744"
+  ],
+  "745": [
+   "ext_addItemToBuffer",
+   "745"
+  ],
+  "746": [
+   "ext_addItemToBuffer",
+   "746"
+  ],
+  "747": [
+   "ext_addItemToBuffer",
+   "747"
+  ],
+  "748": [
+   "ext_addItemToBuffer",
+   "748"
+  ],
+  "749": [
+   "ext_addItemToBuffer",
+   "749"
+  ],
+  "75": [
+   "ext_fnCosh",
+   "9876"
+  ],
+  "750": [
+   "ext_addItemToBuffer",
+   "750"
+  ],
+  "751": [
+   "ext_addItemToBuffer",
+   "751"
+  ],
+  "752": [
+   "ext_addItemToBuffer",
+   "752"
+  ],
+  "753": [
+   "ext_addItemToBuffer",
+   "753"
+  ],
+  "754": [
+   "ext_addItemToBuffer",
+   "754"
+  ],
+  "755": [
+   "ext_addItemToBuffer",
+   "755"
+  ],
+  "756": [
+   "ext_addItemToBuffer",
+   "756"
+  ],
+  "757": [
+   "ext_addItemToBuffer",
+   "757"
+  ],
+  "758": [
+   "ext_addItemToBuffer",
+   "758"
+  ],
+  "759": [
+   "ext_addItemToBuffer",
+   "759"
+  ],
+  "76": [
+   "ext_fnSin",
+   "9876"
+  ],
+  "760": [
+   "ext_addItemToBuffer",
+   "760"
+  ],
+  "761": [
+   "ext_addItemToBuffer",
+   "761"
+  ],
+  "762": [
+   "ext_addItemToBuffer",
+   "762"
+  ],
+  "763": [
+   "ext_addItemToBuffer",
+   "763"
+  ],
+  "764": [
+   "ext_addItemToBuffer",
+   "764"
+  ],
+  "765": [
+   "ext_addItemToBuffer",
+   "765"
+  ],
+  "766": [
+   "ext_addItemToBuffer",
+   "766"
+  ],
+  "767": [
+   "ext_addItemToBuffer",
+   "767"
+  ],
+  "768": [
+   "ext_addItemToBuffer",
+   "768"
+  ],
+  "769": [
+   "ext_addItemToBuffer",
+   "769"
+  ],
+  "77": [
+   "ext_fnKey",
+   "10003"
+  ],
+  "770": [
+   "ext_addItemToBuffer",
+   "770"
+  ],
+  "771": [
+   "ext_addItemToBuffer",
+   "771"
+  ],
+  "772": [
+   "ext_addItemToBuffer",
+   "772"
+  ],
+  "773": [
+   "ext_addItemToBuffer",
+   "773"
+  ],
+  "774": [
+   "ext_addItemToBuffer",
+   "774"
+  ],
+  "775": [
+   "ext_addItemToBuffer",
+   "775"
+  ],
+  "776": [
+   "ext_addItemToBuffer",
+   "776"
+  ],
+  "777": [
+   "ext_addItemToBuffer",
+   "777"
+  ],
+  "778": [
+   "ext_addItemToBuffer",
+   "778"
+  ],
+  "779": [
+   "ext_addItemToBuffer",
+   "779"
+  ],
+  "78": [
+   "ext_fnSinh",
+   "9876"
+  ],
+  "780": [
+   "ext_addItemToBuffer",
+   "780"
+  ],
+  "781": [
+   "ext_addItemToBuffer",
+   "781"
+  ],
+  "782": [
+   "ext_addItemToBuffer",
+   "782"
+  ],
+  "783": [
+   "ext_addItemToBuffer",
+   "783"
+  ],
+  "784": [
+   "ext_addItemToBuffer",
+   "784"
+  ],
+  "785": [
+   "ext_addItemToBuffer",
+   "785"
+  ],
+  "786": [
+   "ext_addItemToBuffer",
+   "786"
+  ],
+  "787": [
+   "ext_addItemToBuffer",
+   "787"
+  ],
+  "788": [
+   "ext_addItemToBuffer",
+   "788"
+  ],
+  "789": [
+   "ext_addItemToBuffer",
+   "789"
+  ],
+  "79": [
+   "ext_fnTan",
+   "9876"
+  ],
+  "790": [
+   "ext_addItemToBuffer",
+   "790"
+  ],
+  "791": [
+   "ext_addItemToBuffer",
+   "791"
+  ],
+  "792": [
+   "ext_addItemToBuffer",
+   "792"
+  ],
+  "793": [
+   "ext_addItemToBuffer",
+   "793"
+  ],
+  "794": [
+   "ext_addItemToBuffer",
+   "794"
+  ],
+  "795": [
+   "ext_addItemToBuffer",
+   "795"
+  ],
+  "796": [
+   "ext_addItemToBuffer",
+   "796"
+  ],
+  "797": [
+   "ext_addItemToBuffer",
+   "797"
+  ],
+  "798": [
+   "ext_addItemToBuffer",
+   "798"
+  ],
+  "799": [
+   "ext_addItemToBuffer",
+   "799"
+  ],
+  "8": [
+   "ext_fnDse",
+   "10003"
+  ],
+  "80": [
+   "ext_fnTanh",
+   "9876"
+  ],
+  "800": [
+   "ext_addItemToBuffer",
+   "800"
+  ],
+  "801": [
+   "ext_addItemToBuffer",
+   "801"
+  ],
+  "802": [
+   "ext_addItemToBuffer",
+   "802"
+  ],
+  "803": [
+   "ext_addItemToBuffer",
+   "803"
+  ],
+  "804": [
+   "ext_addItemToBuffer",
+   "804"
+  ],
+  "805": [
+   "ext_addItemToBuffer",
+   "805"
+  ],
+  "806": [
+   "ext_addItemToBuffer",
+   "806"
+  ],
+  "807": [
+   "ext_addItemToBuffer",
+   "807"
+  ],
+  "808": [
+   "ext_addItemToBuffer",
+   "808"
+  ],
+  "809": [
+   "ext_addItemToBuffer",
+   "809"
+  ],
+  "81": [
+   "ext_fnArccos",
+   "9876"
+  ],
+  "810": [
+   "ext_addItemToBuffer",
+   "810"
+  ],
+  "811": [
+   "ext_addItemToBuffer",
+   "811"
+  ],
+  "812": [
+   "ext_addItemToBuffer",
+   "812"
+  ],
+  "813": [
+   "ext_addItemToBuffer",
+   "813"
+  ],
+  "814": [
+   "ext_addItemToBuffer",
+   "814"
+  ],
+  "815": [
+   "ext_addItemToBuffer",
+   "815"
+  ],
+  "816": [
+   "ext_addItemToBuffer",
+   "816"
+  ],
+  "817": [
+   "ext_addItemToBuffer",
+   "817"
+  ],
+  "818": [
+   "ext_addItemToBuffer",
+   "818"
+  ],
+  "819": [
+   "ext_addItemToBuffer",
+   "819"
+  ],
+  "82": [
+   "ext_fnArccosh",
+   "9876"
+  ],
+  "820": [
+   "ext_addItemToBuffer",
+   "820"
+  ],
+  "821": [
+   "ext_addItemToBuffer",
+   "821"
+  ],
+  "822": [
+   "ext_addItemToBuffer",
+   "822"
+  ],
+  "823": [
+   "ext_addItemToBuffer",
+   "823"
+  ],
+  "824": [
+   "ext_addItemToBuffer",
+   "824"
+  ],
+  "825": [
+   "ext_addItemToBuffer",
+   "825"
+  ],
+  "826": [
+   "ext_addItemToBuffer",
+   "826"
+  ],
+  "827": [
+   "ext_addItemToBuffer",
+   "827"
+  ],
+  "828": [
+   "ext_addItemToBuffer",
+   "828"
+  ],
+  "829": [
+   "ext_addItemToBuffer",
+   "829"
+  ],
+  "83": [
+   "ext_fnArcsin",
+   "9876"
+  ],
+  "830": [
+   "ext_addItemToBuffer",
+   "830"
+  ],
+  "831": [
+   "ext_addItemToBuffer",
+   "831"
+  ],
+  "832": [
+   "ext_addItemToBuffer",
+   "832"
+  ],
+  "833": [
+   "ext_addItemToBuffer",
+   "833"
+  ],
+  "834": [
+   "ext_addItemToBuffer",
+   "834"
+  ],
+  "835": [
+   "ext_addItemToBuffer",
+   "835"
+  ],
+  "836": [
+   "ext_addItemToBuffer",
+   "836"
+  ],
+  "837": [
+   "ext_addItemToBuffer",
+   "837"
+  ],
+  "838": [
+   "ext_addItemToBuffer",
+   "838"
+  ],
+  "839": [
+   "ext_addItemToBuffer",
+   "839"
+  ],
+  "84": [
+   "ext_fnArcsinh",
+   "9876"
+  ],
+  "840": [
+   "ext_addItemToBuffer",
+   "840"
+  ],
+  "841": [
+   "ext_addItemToBuffer",
+   "841"
+  ],
+  "842": [
+   "ext_addItemToBuffer",
+   "842"
+  ],
+  "843": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "844": [
+   "ext_addItemToBuffer",
+   "844"
+  ],
+  "845": [
+   "ext_addItemToBuffer",
+   "845"
+  ],
+  "846": [
+   "ext_addItemToBuffer",
+   "846"
+  ],
+  "847": [
+   "ext_addItemToBuffer",
+   "847"
+  ],
+  "848": [
+   "ext_addItemToBuffer",
+   "848"
+  ],
+  "849": [
+   "ext_addItemToBuffer",
+   "849"
+  ],
+  "85": [
+   "ext_fnArctan",
+   "9876"
+  ],
+  "850": [
+   "ext_addItemToBuffer",
+   "850"
+  ],
+  "851": [
+   "ext_addItemToBuffer",
+   "851"
+  ],
+  "852": [
+   "ext_addItemToBuffer",
+   "852"
+  ],
+  "853": [
+   "ext_addItemToBuffer",
+   "853"
+  ],
+  "854": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "855": [
+   "ext_addItemToBuffer",
+   "855"
+  ],
+  "856": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "857": [
+   "ext_addItemToBuffer",
+   "857"
+  ],
+  "858": [
+   "ext_addItemToBuffer",
+   "858"
+  ],
+  "859": [
+   "ext_addItemToBuffer",
+   "859"
+  ],
+  "86": [
+   "ext_fnArctanh",
+   "9876"
+  ],
+  "860": [
+   "ext_addItemToBuffer",
+   "860"
+  ],
+  "861": [
+   "ext_addItemToBuffer",
+   "861"
+  ],
+  "862": [
+   "ext_addItemToBuffer",
+   "862"
+  ],
+  "863": [
+   "ext_addItemToBuffer",
+   "863"
+  ],
+  "864": [
+   "ext_addItemToBuffer",
+   "864"
+  ],
+  "865": [
+   "ext_addItemToBuffer",
+   "865"
+  ],
+  "866": [
+   "ext_addItemToBuffer",
+   "866"
+  ],
+  "867": [
+   "ext_addItemToBuffer",
+   "867"
+  ],
+  "868": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "869": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "87": [
+   "ext_fnCeil",
+   "9876"
+  ],
+  "870": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "871": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "872": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "873": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "874": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "875": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "876": [
+   "ext_addItemToBuffer",
+   "876"
+  ],
+  "877": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "878": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "879": [
+   "ext_addItemToBuffer",
+   "879"
+  ],
+  "88": [
+   "ext_fnFloor",
+   "9876"
+  ],
+  "880": [
+   "ext_addItemToBuffer",
+   "880"
+  ],
+  "881": [
+   "ext_addItemToBuffer",
+   "881"
+  ],
+  "882": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "883": [
+   "ext_addItemToBuffer",
+   "883"
+  ],
+  "884": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "885": [
+   "ext_addItemToBuffer",
+   "885"
+  ],
+  "886": [
+   "ext_addItemToBuffer",
+   "886"
+  ],
+  "887": [
+   "ext_addItemToBuffer",
+   "887"
+  ],
+  "888": [
+   "ext_addItemToBuffer",
+   "888"
+  ],
+  "889": [
+   "ext_addItemToBuffer",
+   "889"
+  ],
+  "89": [
+   "ext_fnGcd",
+   "9876"
+  ],
+  "890": [
+   "ext_addItemToBuffer",
+   "890"
+  ],
+  "891": [
+   "ext_addItemToBuffer",
+   "891"
+  ],
+  "892": [
+   "ext_addItemToBuffer",
+   "892"
+  ],
+  "893": [
+   "ext_addItemToBuffer",
+   "893"
+  ],
+  "894": [
+   "ext_addItemToBuffer",
+   "894"
+  ],
+  "895": [
+   "ext_addItemToBuffer",
+   "895"
+  ],
+  "896": [
+   "ext_addItemToBuffer",
+   "896"
+  ],
+  "897": [
+   "ext_addItemToBuffer",
+   "897"
+  ],
+  "898": [
+   "ext_addItemToBuffer",
+   "898"
+  ],
+  "899": [
+   "ext_addItemToBuffer",
+   "899"
+  ],
+  "9": [
+   "ext_fnDsl",
+   "10003"
+  ],
+  "90": [
+   "ext_fnLcm",
+   "9876"
+  ],
+  "900": [
+   "ext_addItemToBuffer",
+   "900"
+  ],
+  "901": [
+   "ext_addItemToBuffer",
+   "901"
+  ],
+  "902": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "903": [
+   "ext_addItemToBuffer",
+   "903"
+  ],
+  "904": [
+   "ext_addItemToBuffer",
+   "904"
+  ],
+  "905": [
+   "ext_addItemToBuffer",
+   "905"
+  ],
+  "906": [
+   "ext_addItemToBuffer",
+   "906"
+  ],
+  "907": [
+   "ext_addItemToBuffer",
+   "907"
+  ],
+  "908": [
+   "ext_addItemToBuffer",
+   "908"
+  ],
+  "909": [
+   "ext_addItemToBuffer",
+   "909"
+  ],
+  "91": [
+   "ext_fnDec",
+   "10003"
+  ],
+  "910": [
+   "ext_addItemToBuffer",
+   "910"
+  ],
+  "911": [
+   "ext_addItemToBuffer",
+   "911"
+  ],
+  "912": [
+   "ext_addItemToBuffer",
+   "912"
+  ],
+  "913": [
+   "ext_addItemToBuffer",
+   "913"
+  ],
+  "914": [
+   "ext_addItemToBuffer",
+   "914"
+  ],
+  "915": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "916": [
+   "ext_addItemToBuffer",
+   "916"
+  ],
+  "917": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "918": [
+   "ext_addItemToBuffer",
+   "918"
+  ],
+  "919": [
+   "ext_addItemToBuffer",
+   "919"
+  ],
+  "92": [
+   "ext_fnInc",
+   "10003"
+  ],
+  "920": [
+   "ext_addItemToBuffer",
+   "920"
+  ],
+  "921": [
+   "ext_addItemToBuffer",
+   "921"
+  ],
+  "922": [
+   "ext_addItemToBuffer",
+   "922"
+  ],
+  "923": [
+   "ext_addItemToBuffer",
+   "923"
+  ],
+  "924": [
+   "ext_addItemToBuffer",
+   "924"
+  ],
+  "925": [
+   "ext_addItemToBuffer",
+   "925"
+  ],
+  "926": [
+   "ext_addItemToBuffer",
+   "926"
+  ],
+  "927": [
+   "ext_addItemToBuffer",
+   "927"
+  ],
+  "928": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "929": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "93": [
+   "ext_fnIp",
+   "9876"
+  ],
+  "930": [
+   "ext_addItemToBuffer",
+   "930"
+  ],
+  "931": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "932": [
+   "ext_addItemToBuffer",
+   "932"
+  ],
+  "933": [
+   "ext_addItemToBuffer",
+   "933"
+  ],
+  "934": [
+   "ext_addItemToBuffer",
+   "934"
+  ],
+  "935": [
+   "ext_addItemToBuffer",
+   "935"
+  ],
+  "936": [
+   "ext_addItemToBuffer",
+   "936"
+  ],
+  "937": [
+   "ext_addItemToBuffer",
+   "937"
+  ],
+  "938": [
+   "ext_addItemToBuffer",
+   "938"
+  ],
+  "939": [
+   "ext_addItemToBuffer",
+   "939"
+  ],
+  "94": [
+   "ext_fnFp",
+   "9876"
+  ],
+  "940": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "941": [
+   "ext_addItemToBuffer",
+   "941"
+  ],
+  "942": [
+   "ext_addItemToBuffer",
+   "942"
+  ],
+  "943": [
+   "ext_addItemToBuffer",
+   "943"
+  ],
+  "944": [
+   "ext_addItemToBuffer",
+   "944"
+  ],
+  "945": [
+   "ext_addItemToBuffer",
+   "945"
+  ],
+  "946": [
+   "ext_addItemToBuffer",
+   "946"
+  ],
+  "947": [
+   "ext_addItemToBuffer",
+   "947"
+  ],
+  "948": [
+   "ext_addItemToBuffer",
+   "948"
+  ],
+  "949": [
+   "ext_addItemToBuffer",
+   "949"
+  ],
+  "95": [
+   "ext_fnAdd",
+   "95"
+  ],
+  "950": [
+   "ext_addItemToBuffer",
+   "950"
+  ],
+  "951": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "952": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "953": [
+   "ext_addItemToBuffer",
+   "953"
+  ],
+  "954": [
+   "ext_addItemToBuffer",
+   "954"
+  ],
+  "955": [
+   "ext_addItemToBuffer",
+   "955"
+  ],
+  "956": [
+   "ext_addItemToBuffer",
+   "956"
+  ],
+  "957": [
+   "ext_addItemToBuffer",
+   "957"
+  ],
+  "958": [
+   "ext_addItemToBuffer",
+   "958"
+  ],
+  "959": [
+   "ext_addItemToBuffer",
+   "959"
+  ],
+  "96": [
+   "ext_fnSubtract",
+   "96"
+  ],
+  "960": [
+   "ext_addItemToBuffer",
+   "960"
+  ],
+  "961": [
+   "ext_addItemToBuffer",
+   "961"
+  ],
+  "962": [
+   "ext_addItemToBuffer",
+   "962"
+  ],
+  "963": [
+   "ext_addItemToBuffer",
+   "963"
+  ],
+  "964": [
+   "ext_addItemToBuffer",
+   "964"
+  ],
+  "965": [
+   "ext_addItemToBuffer",
+   "965"
+  ],
+  "966": [
+   "ext_addItemToBuffer",
+   "966"
+  ],
+  "967": [
+   "ext_addItemToBuffer",
+   "967"
+  ],
+  "968": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "969": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "97": [
+   "ext_fnChangeSign",
+   "97"
+  ],
+  "970": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "971": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "972": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "973": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "974": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "975": [
+   "ext_addItemToBuffer",
+   "975"
+  ],
+  "976": [
+   "ext_addItemToBuffer",
+   "976"
+  ],
+  "977": [
+   "ext_addItemToBuffer",
+   "977"
+  ],
+  "978": [
+   "ext_addItemToBuffer",
+   "978"
+  ],
+  "979": [
+   "ext_addItemToBuffer",
+   "979"
+  ],
+  "98": [
+   "ext_fnMultiply",
+   "98"
+  ],
+  "980": [
+   "ext_addItemToBuffer",
+   "980"
+  ],
+  "981": [
+   "ext_addItemToBuffer",
+   "981"
+  ],
+  "982": [
+   "ext_addItemToBuffer",
+   "982"
+  ],
+  "983": [
+   "ext_addItemToBuffer",
+   "983"
+  ],
+  "984": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "985": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "986": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "987": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "988": [
+   "ext_addItemToBuffer",
+   "988"
+  ],
+  "989": [
+   "ext_addItemToBuffer",
+   "989"
+  ],
+  "99": [
+   "ext_fnDivide",
+   "99"
+  ],
+  "990": [
+   "ext_addItemToBuffer",
+   "990"
+  ],
+  "991": [
+   "ext_addItemToBuffer",
+   "991"
+  ],
+  "992": [
+   "ext_fnGoToRow",
+   "10001"
+  ],
+  "993": [
+   "ext_fnGoToColumn",
+   "10001"
+  ],
+  "994": [
+   "ext_fnSolveVar",
+   "9876"
+  ],
+  "995": [
+   "ext_fnEqCursorLeft",
+   "9876"
+  ],
+  "996": [
+   "ext_fnEqCursorRight",
+   "9876"
+  ],
+  "997": [
+   "ext_addItemToBuffer",
+   "997"
+  ],
+  "998": [
+   "ext_addItemToBuffer",
+   "998"
+  ],
+  "999": [
+   "ext_addItemToBuffer",
+   "999"
+  ]
+ },
+ "rows_total": 2871,
+ "unparsed_rows": 0
+}
