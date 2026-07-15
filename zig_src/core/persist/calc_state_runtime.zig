@@ -4,7 +4,7 @@ pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
 
 pub const VERSION_ALLOWED: u32 = 10000005;
-pub const CONFIG_FILE_VERSION: u32 = 10000024; // C saveRestoreCalcState.c:7 configFileVersion (FLAG_SIGZEROS bump)
+pub const CONFIG_FILE_VERSION: u32 = 10000026; // C saveRestoreCalcState.c:7 configFileVersion (FLAG_SBadm bump)
 
 pub const autoLoad: u16 = 0;
 pub const manualLoad: u16 = 1;

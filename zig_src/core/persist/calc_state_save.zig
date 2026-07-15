@@ -34,7 +34,7 @@ const FIRST_LOCAL_REGISTER: i16 = 7000;
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const NUMBER_OF_STATISTICAL_SUMS: u16 = 28;
 const C47_NULL: u16 = 65535;
-const configFileVersion: u32 = 10000024; // C saveRestoreCalcState.c:7 (FLAG_SIGZEROS bump)
+const configFileVersion: u32 = 10000026; // C saveRestoreCalcState.c:7 (FLAG_SBadm bump)
 
 // --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
 const abi = @import("abi"); // shared ABI bindings
@@ -148,10 +148,6 @@ extern var lrChosen: u16;
 extern var graph_dx: f32;
 extern var graph_dy: f32;
 extern var roundedTicks: u8;
-extern var PLOT_INTG: u8;
-extern var PLOT_DIFF: u8;
-extern var PLOT_RMS: u8;
-extern var PLOT_SHADE: u8;
 extern var PLOT_AXIS: u8;
 extern var PLOT_ZMY: i8;
 extern var firstDayOfWeek: u8;
@@ -420,10 +416,6 @@ pub fn writeSaveSections() void {
     saveField("graph_dx", "%f\n", .{@as(f64, graph_dx)});
     saveField("graph_dy", "%f\n", .{@as(f64, graph_dy)});
     saveField("roundedTicks", "%u\n", .{cu(roundedTicks)});
-    saveField("PLOT_INTG", "%u\n", .{cu(PLOT_INTG)});
-    saveField("PLOT_DIFF", "%u\n", .{cu(PLOT_DIFF)});
-    saveField("PLOT_RMS", "%u\n", .{cu(PLOT_RMS)});
-    saveField("PLOT_SHADE", "%u\n", .{cu(PLOT_SHADE)});
     saveField("PLOT_AXIS", "%u\n", .{cu(PLOT_AXIS)});
     saveField("PLOT_ZMY", "%u\n", .{cu(@as(u8, @bitCast(PLOT_ZMY)))});
     saveField("firstDayOfWeek", "%u\n", .{cu(firstDayOfWeek)});

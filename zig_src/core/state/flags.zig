@@ -60,6 +60,10 @@ const flip_flags = [_]u16{
     runtime.FLAG_SCALE,
     runtime.FLAG_VECT,
     runtime.FLAG_NVECT,
+    runtime.FLAG_PRMS,
+    runtime.FLAG_PINTG,
+    runtime.FLAG_PDIFF,
+    runtime.FLAG_PSHADE,
     runtime.FLAG_TOPHEX,
     runtime.FLAG_BCD,
     runtime.FLAG_LARGELI,
@@ -83,7 +87,7 @@ fn needsClearStatusBar(system_flag: u16) bool {
         0x802c,
         0x802e,
         0x802f,
-        0x8030,
+        runtime.FLAG_SBang,
         0x8032,
         0x8033,
         0x8034,
@@ -100,6 +104,7 @@ fn needsClearStatusBar(system_flag: u16) bool {
         runtime.FLAG_FRACT,
         runtime.FLAG_IRFRAC,
         runtime.FLAG_IRFRQ,
+        runtime.FLAG_SBadm,
         => true,
         else => false,
     };
@@ -208,6 +213,16 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
 
     switch (system_flag) {
         runtime.FLAG_SBfrac => runtime.lastIntegerBase = 0,
+        runtime.FLAG_SBadm, runtime.FLAG_SBang => {
+            if (system_flag == runtime.FLAG_SBadm and !getSystemFlag(@intCast(runtime.FLAG_SBadm))) {
+                // The basic angular-mode annunciator cannot remain without the
+                // angular-mode display.
+                clearSystemFlagBit(runtime.FLAG_SBang);
+            } else if (system_flag == runtime.FLAG_SBang and getSystemFlag(@intCast(runtime.FLAG_SBang))) {
+                // ... and the basic annunciator requires the angular-mode display.
+                setSystemFlagBit(runtime.FLAG_SBadm);
+            }
+        },
         runtime.FLAG_SBwoy, runtime.FLAG_SBtime => {
             if (system_flag == runtime.FLAG_SBtime and getSystemFlag(@intCast(runtime.FLAG_SBtime))) {
                 clearSystemFlagBit(runtime.FLAG_SBwoy);
@@ -231,6 +246,113 @@ fn systemFlagAction(system_flag: u16, action: FlagAction) void {
             if (getSystemFlag(@intCast(runtime.FLAG_FRACT))) {
                 clearSystemFlagBit(runtime.FLAG_FRACT);
                 setSystemFlagBit(runtime.FLAG_IRFRAC);
+            }
+        },
+
+        // Graph plot marker interlocks: at least one of PLINE/PBOX/PCROS/PPLUS
+        // stays on; PBOX/PCROS/PPLUS are mutually exclusive; PCURVE implies PLINE.
+        runtime.FLAG_PLINE => {
+            if (!getSystemFlag(@intCast(runtime.FLAG_PLINE)) and !getSystemFlag(@intCast(runtime.FLAG_PCROS)) and !getSystemFlag(@intCast(runtime.FLAG_PBOX)) and !getSystemFlag(@intCast(runtime.FLAG_PPLUS))) {
+                setSystemFlagBit(runtime.FLAG_PBOX);
+            }
+            if (!getSystemFlag(@intCast(runtime.FLAG_PLINE))) {
+                clearSystemFlagBit(runtime.FLAG_PCURVE);
+            }
+        },
+
+        runtime.FLAG_PBOX => {
+            if (getSystemFlag(@intCast(runtime.FLAG_PBOX))) {
+                clearSystemFlagBit(runtime.FLAG_PCROS);
+                clearSystemFlagBit(runtime.FLAG_PPLUS);
+            }
+            if (!getSystemFlag(@intCast(runtime.FLAG_PCROS)) and !getSystemFlag(@intCast(runtime.FLAG_PBOX)) and !getSystemFlag(@intCast(runtime.FLAG_PPLUS))) {
+                setSystemFlagBit(runtime.FLAG_PLINE);
+            }
+        },
+
+        runtime.FLAG_PCROS => {
+            if (getSystemFlag(@intCast(runtime.FLAG_PCROS))) {
+                clearSystemFlagBit(runtime.FLAG_PBOX);
+                clearSystemFlagBit(runtime.FLAG_PPLUS);
+            }
+            if (!getSystemFlag(@intCast(runtime.FLAG_PCROS)) and !getSystemFlag(@intCast(runtime.FLAG_PBOX)) and !getSystemFlag(@intCast(runtime.FLAG_PPLUS))) {
+                setSystemFlagBit(runtime.FLAG_PLINE);
+            }
+        },
+
+        runtime.FLAG_PPLUS => {
+            if (getSystemFlag(@intCast(runtime.FLAG_PPLUS))) {
+                clearSystemFlagBit(runtime.FLAG_PBOX);
+                clearSystemFlagBit(runtime.FLAG_PCROS);
+            }
+            if (!getSystemFlag(@intCast(runtime.FLAG_PCROS)) and !getSystemFlag(@intCast(runtime.FLAG_PBOX)) and !getSystemFlag(@intCast(runtime.FLAG_PPLUS))) {
+                setSystemFlagBit(runtime.FLAG_PLINE);
+            }
+        },
+
+        runtime.FLAG_PCURVE => {
+            if (getSystemFlag(@intCast(runtime.FLAG_PCURVE))) {
+                setSystemFlagBit(runtime.FLAG_PLINE);
+            }
+        },
+
+        // Graph plot overlay interlocks: overlays and vectors are mutually
+        // exclusive groups; PSHADE implies PINTG (nothing to shade without the
+        // integral).
+        runtime.FLAG_PINTG => {
+            if (getSystemFlag(@intCast(runtime.FLAG_PINTG))) {
+                clearSystemFlagBit(runtime.FLAG_VECT);
+                clearSystemFlagBit(runtime.FLAG_NVECT);
+            } else {
+                clearSystemFlagBit(runtime.FLAG_PSHADE);
+            }
+        },
+
+        runtime.FLAG_PDIFF, runtime.FLAG_PRMS => {
+            if (getSystemFlag(@intCast(system_flag))) {
+                clearSystemFlagBit(runtime.FLAG_VECT);
+                clearSystemFlagBit(runtime.FLAG_NVECT);
+            }
+        },
+
+        runtime.FLAG_PSHADE => {
+            if (getSystemFlag(@intCast(runtime.FLAG_PSHADE))) {
+                setSystemFlagBit(runtime.FLAG_PINTG);
+                clearSystemFlagBit(runtime.FLAG_VECT);
+                clearSystemFlagBit(runtime.FLAG_NVECT);
+            }
+        },
+
+        runtime.FLAG_VECT => {
+            if (getSystemFlag(@intCast(runtime.FLAG_VECT))) {
+                clearSystemFlagBit(runtime.FLAG_NVECT);
+                clearSystemFlagBit(runtime.FLAG_PINTG);
+                clearSystemFlagBit(runtime.FLAG_PDIFF);
+                clearSystemFlagBit(runtime.FLAG_PRMS);
+                clearSystemFlagBit(runtime.FLAG_PSHADE);
+            }
+        },
+
+        runtime.FLAG_NVECT => {
+            if (getSystemFlag(@intCast(runtime.FLAG_NVECT))) {
+                clearSystemFlagBit(runtime.FLAG_VECT);
+                clearSystemFlagBit(runtime.FLAG_PINTG);
+                clearSystemFlagBit(runtime.FLAG_PDIFF);
+                clearSystemFlagBit(runtime.FLAG_PRMS);
+                clearSystemFlagBit(runtime.FLAG_PSHADE);
+            }
+        },
+
+        // Complex plot interlocks: CPXPLOT and IMPLOT are mutually exclusive.
+        runtime.FLAG_CPXPLOT => {
+            if (getSystemFlag(@intCast(runtime.FLAG_CPXPLOT))) {
+                clearSystemFlagBit(runtime.FLAG_IMPLOT);
+            }
+        },
+
+        runtime.FLAG_IMPLOT => {
+            if (getSystemFlag(@intCast(runtime.FLAG_IMPLOT))) {
+                clearSystemFlagBit(runtime.FLAG_CPXPLOT);
             }
         },
         else => {},

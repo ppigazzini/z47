@@ -59,10 +59,6 @@ __attribute__((constructor)) static void z47_init_relocated_pointer_globals(void
 alignas(1) unsigned char LongPressF[1];
 alignas(2) unsigned char Norm_Key_00[20];
 alignas(1) unsigned char PLOT_AXIS[1];
-alignas(1) unsigned char PLOT_DIFF[1];
-alignas(1) unsigned char PLOT_INTG[1];
-alignas(1) unsigned char PLOT_RMS[1];
-alignas(1) unsigned char PLOT_SHADE[1];
 alignas(1) unsigned char PLOT_ZMY[1];
 alignas(1) unsigned char calcModel[1];
 alignas(1) unsigned char cancelFilename[1];

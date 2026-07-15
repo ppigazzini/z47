@@ -5,6 +5,9 @@ pub const FLAG_BCD: u16 = 0x8059;
 pub const FLAG_ALPHA: u16 = 0x800e;
 pub const FLAG_TDM24: u16 = 0x8000;
 pub const FLAG_SBfrac: u16 = 0x8031;
+pub const FLAG_SBang: u16 = 0x8030;
+// Angular-mode-display annunciator; added by upstream alongside the plot flags.
+pub const FLAG_SBadm: u16 = 0x806f;
 pub const FLAG_SBtime: u16 = 0x802d;
 pub const FLAG_SBwoy: u16 = 0x8057;
 pub const FLAG_CPXj: u16 = 0x8005;
@@ -36,6 +39,7 @@ pub const FLAG_ERPN: u16 = 0x8045;
 pub const FLAG_LARGELI: u16 = 0x8046;
 pub const FLAG_DREAL: u16 = 0x804a;
 pub const FLAG_CPXPLOT: u16 = 0x804b;
+pub const FLAG_IMPLOT: u16 = 0x8012;
 pub const FLAG_SHOWX: u16 = 0x804c;
 pub const FLAG_SHOWY: u16 = 0x804d;
 pub const FLAG_PBOX: u16 = 0x804e;
@@ -58,6 +62,14 @@ pub const FLAG_FGLNLIM: u16 = 0x8062;
 pub const FLAG_FGLNFUL: u16 = 0x8063;
 pub const FLAG_FGGR: u16 = 0x8064;
 pub const FLAG_NORM: u16 = 0x8068;
+pub const FLAG_BOLD: u16 = 0x8069;
+pub const FLAG_SIGZEROS: u16 = 0x806a;
+// Graph plot overlays. Upstream replaced the PLOT_* globals with these system
+// flags in c43 cfd637bb2 (defines.h:934-937).
+pub const FLAG_PRMS: u16 = 0x806b;
+pub const FLAG_PINTG: u16 = 0x806c;
+pub const FLAG_PDIFF: u16 = 0x806d;
+pub const FLAG_PSHADE: u16 = 0x806e;
 pub const FLAG_K: u16 = 111;
 pub const FLAG_M: u16 = 211;
 pub const FLAG_W: u16 = 224;
