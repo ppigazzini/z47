@@ -6,6 +6,7 @@ pub const FLAG_ALPHA: u16 = 0x800e;
 pub const FLAG_TDM24: u16 = 0x8000;
 pub const FLAG_SBfrac: u16 = 0x8031;
 pub const FLAG_SBang: u16 = 0x8030;
+pub const FLAG_SBdate: u16 = 0x802c;
 // Angular-mode-display annunciator; added by upstream alongside the plot flags.
 pub const FLAG_SBadm: u16 = 0x806f;
 pub const FLAG_SBtime: u16 = 0x802d;

@@ -23,12 +23,14 @@ static const uint16_t refreshStateFlags[] = {
   0x8043, 0x8044, 0x8045, 0x800b, 0x800c, 0x8041, 0x8046, 0xc00f, 0x803d,
   0x8011, 0x804b, 0x804c, 0x804d, 0x804e, 0x805a, 0x804f, 0x8050, 0x8051,
   0x8052, 0x8053, 0x8054, 0x8058, 0x8064,
+  0x8069, 0x806a, // FLAG_BOLD, FLAG_SIGZEROS
+  FLAG_PRMS, FLAG_PINTG, FLAG_PDIFF, FLAG_PSHADE,
 };
 
 static const uint16_t clearStatusBarFlags[] = {
   0x802c, 0x802e, 0x802f, 0x8030, 0x8032, 0x8033, 0x8034, 0x8035, 0x8036,
   0x8037, 0x8038, 0x8039, 0x803a, 0x803b, FLAG_SBfrac, FLAG_SBwoy,
-  FLAG_SBtime, FLAG_FRACT, FLAG_IRFRAC, FLAG_IRFRQ,
+  FLAG_SBtime, FLAG_FRACT, FLAG_IRFRAC, FLAG_IRFRQ, FLAG_SBadm,
 };
 
 static const clear_set_pair_t clearSetPairs[] = {
@@ -478,13 +480,137 @@ doInteractionFlags:
       lastIntegerBase = 0;
       break;
 
+    case FLAG_SBadm:
+    case FLAG_SBang:
+      if(systemFlag == FLAG_SBadm && !oracle_getSystemFlag(FLAG_SBadm)) {
+        oracle_clearSystemFlagBit(FLAG_SBang);
+      }
+      else if(systemFlag == FLAG_SBang && oracle_getSystemFlag(FLAG_SBang)) {
+        oracle_setSystemFlagBit(FLAG_SBadm);
+      }
+      break;
+
+    case FLAG_SBdate:
+      if(oracle_getSystemFlag(FLAG_SBdate) && oracle_getSystemFlag(FLAG_SBtime) && oracle_getSystemFlag(FLAG_SBwoy)) {
+        oracle_clearSystemFlagBit(FLAG_SBtime);  // date, time and WoY do not fit together; the default clears the time
+      }
+      break;
+
     case FLAG_SBwoy:
     case FLAG_SBtime:
-      if(systemFlag == FLAG_SBtime && oracle_getSystemFlag(FLAG_SBtime)) {
+      if(systemFlag == FLAG_SBtime && oracle_getSystemFlag(FLAG_SBtime) && oracle_getSystemFlag(FLAG_SBdate)) {    // time and WoY are exclusive only while the date shows;
         oracle_clearSystemFlagBit(FLAG_SBwoy);
       }
-      else if(systemFlag == FLAG_SBwoy && oracle_getSystemFlag(FLAG_SBwoy)) {
+      else if(systemFlag == FLAG_SBwoy && oracle_getSystemFlag(FLAG_SBwoy) && oracle_getSystemFlag(FLAG_SBdate)) { // with the date off both fit, the time in the date position.
         oracle_clearSystemFlagBit(FLAG_SBtime);
+      }
+      break;
+
+    // Graph plot marker interlocks: at least one of PLINE/PBOX/PCROS/PPLUS stays on;
+    // PBOX/PCROS/PPLUS are mutually exclusive; PCURVE implies PLINE
+    case FLAG_PLINE:
+      if(!oracle_getSystemFlag(FLAG_PLINE) && !oracle_getSystemFlag(FLAG_PCROS) && !oracle_getSystemFlag(FLAG_PBOX) && !oracle_getSystemFlag(FLAG_PPLUS)) {
+        oracle_setSystemFlagBit(FLAG_PBOX);
+      }
+      if(!oracle_getSystemFlag(FLAG_PLINE)) {
+        oracle_clearSystemFlagBit(FLAG_PCURVE);
+      }
+      break;
+
+    case FLAG_PBOX:
+      if(oracle_getSystemFlag(FLAG_PBOX)) {
+        oracle_clearSystemFlagBit(FLAG_PCROS);
+        oracle_clearSystemFlagBit(FLAG_PPLUS);
+      }
+      if(!oracle_getSystemFlag(FLAG_PCROS) && !oracle_getSystemFlag(FLAG_PBOX) && !oracle_getSystemFlag(FLAG_PPLUS)) {
+        oracle_setSystemFlagBit(FLAG_PLINE);
+      }
+      break;
+
+    case FLAG_PCROS:
+      if(oracle_getSystemFlag(FLAG_PCROS)) {
+        oracle_clearSystemFlagBit(FLAG_PBOX);
+        oracle_clearSystemFlagBit(FLAG_PPLUS);
+      }
+      if(!oracle_getSystemFlag(FLAG_PCROS) && !oracle_getSystemFlag(FLAG_PBOX) && !oracle_getSystemFlag(FLAG_PPLUS)) {
+        oracle_setSystemFlagBit(FLAG_PLINE);
+      }
+      break;
+
+    case FLAG_PPLUS:
+      if(oracle_getSystemFlag(FLAG_PPLUS)) {
+        oracle_clearSystemFlagBit(FLAG_PBOX);
+        oracle_clearSystemFlagBit(FLAG_PCROS);
+      }
+      if(!oracle_getSystemFlag(FLAG_PCROS) && !oracle_getSystemFlag(FLAG_PBOX) && !oracle_getSystemFlag(FLAG_PPLUS)) {
+        oracle_setSystemFlagBit(FLAG_PLINE);
+      }
+      break;
+
+    case FLAG_PCURVE:
+      if(oracle_getSystemFlag(FLAG_PCURVE)) {
+        oracle_setSystemFlagBit(FLAG_PLINE);
+      }
+      break;
+
+    // Graph plot overlay interlocks: overlays and vectors are mutually exclusive
+    // groups; PSHADE implies PINTG (nothing to shade without the integral)
+    case FLAG_PINTG:
+      if(oracle_getSystemFlag(FLAG_PINTG)) {
+        oracle_clearSystemFlagBit(FLAG_VECT);
+        oracle_clearSystemFlagBit(FLAG_NVECT);
+      }
+      else {
+        oracle_clearSystemFlagBit(FLAG_PSHADE);
+      }
+      break;
+
+    case FLAG_PDIFF:
+    case FLAG_PRMS:
+      if(oracle_getSystemFlag(systemFlag)) {
+        oracle_clearSystemFlagBit(FLAG_VECT);
+        oracle_clearSystemFlagBit(FLAG_NVECT);
+      }
+      break;
+
+    case FLAG_PSHADE:
+      if(oracle_getSystemFlag(FLAG_PSHADE)) {
+        oracle_setSystemFlagBit(FLAG_PINTG);
+        oracle_clearSystemFlagBit(FLAG_VECT);
+        oracle_clearSystemFlagBit(FLAG_NVECT);
+      }
+      break;
+
+    case FLAG_VECT:
+      if(oracle_getSystemFlag(FLAG_VECT)) {
+        oracle_clearSystemFlagBit(FLAG_NVECT);
+        oracle_clearSystemFlagBit(FLAG_PINTG);
+        oracle_clearSystemFlagBit(FLAG_PDIFF);
+        oracle_clearSystemFlagBit(FLAG_PRMS);
+        oracle_clearSystemFlagBit(FLAG_PSHADE);
+      }
+      break;
+
+    case FLAG_NVECT:
+      if(oracle_getSystemFlag(FLAG_NVECT)) {
+        oracle_clearSystemFlagBit(FLAG_VECT);
+        oracle_clearSystemFlagBit(FLAG_PINTG);
+        oracle_clearSystemFlagBit(FLAG_PDIFF);
+        oracle_clearSystemFlagBit(FLAG_PRMS);
+        oracle_clearSystemFlagBit(FLAG_PSHADE);
+      }
+      break;
+
+    // Complex plot interlocks: CPXPLOT and IMPLOT are mutually exclusive
+    case FLAG_CPXPLOT:
+      if(oracle_getSystemFlag(FLAG_CPXPLOT)) {
+        oracle_clearSystemFlagBit(FLAG_IMPLOT);
+      }
+      break;
+
+    case FLAG_IMPLOT:
+      if(oracle_getSystemFlag(FLAG_IMPLOT)) {
+        oracle_clearSystemFlagBit(FLAG_CPXPLOT);
       }
       break;
 

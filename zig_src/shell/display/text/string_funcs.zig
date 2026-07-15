@@ -1210,7 +1210,8 @@ pub export fn fnAlphaRev(regist: u16) callconv(.c) void {
     const ptrString: [*c]u8 = regString(@intCast(regist));
     const lgString: i32 = frontier_char_string.stringGlyphLength(ptrString);
 
-    if (strlen(ptrString) > @as(usize, @intCast(TMP_STR_LENGTH))) {
+    // >= : the reversed copy needs strlen + 1 bytes (trailing 0) in tmpString[TMP_STR_LENGTH]
+    if (strlen(ptrString) >= @as(usize, @intCast(TMP_STR_LENGTH))) {
         frontier_error.displayCalcErrorMessage(ERROR_INPUT_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             abi.fmtBufZ(errorMessage[0..512], "string in regist {d} is too long, size {d} bytes doesn't fit in tmpString ({d} bytes max)", .{ @as(c_int, @intCast(regist)), @as(c_uint, @truncate(strlen(ptrString))), @as(c_int, TMP_STR_LENGTH) });

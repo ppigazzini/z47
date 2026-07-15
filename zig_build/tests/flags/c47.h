@@ -13,6 +13,14 @@ typedef bool bool_t;
 #define FLAG_SBfrac 0x8031
 #define FLAG_SBtime 0x802d
 #define FLAG_SBwoy 0x8057
+#define FLAG_SBdate 0x802c
+#define FLAG_SBang 0x8030
+#define FLAG_SBadm 0x806f
+#define FLAG_IMPLOT 0x8012
+#define FLAG_PRMS 0x806b
+#define FLAG_PINTG 0x806c
+#define FLAG_PDIFF 0x806d
+#define FLAG_PSHADE 0x806e
 #define FLAG_TDM24 0x8000
 #define FLAG_CPXj 0x8005
 #define FLAG_POLAR 0x8006
