@@ -181,7 +181,7 @@ zig_src/core/kernel/flags_runtime.zig
 zig_src/core/kernel/keyboard_state_runtime.zig
 zig_src/core/kernel/keyboard_state_dmcp.zig
 zig_src/core/kernel/keyboard_state_ringbuffer.zig
-zig_src/core/kernel/memory_runtime.zig
+zig_src/core/memory/memory_runtime.zig
 zig_src/core/kernel/calc_state_io.zig
 zig_src/core/kernel/calc_state_io_flow.zig
 zig_src/core/kernel/base/error_report.zig
