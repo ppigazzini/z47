@@ -191,8 +191,8 @@ zig_src/core/kernel/calc_state_restore.zig
 zig_src/core/kernel/calc_state_text.zig
 zig_src/core/kernel/calc_state_register_codec.zig
 zig_src/core/kernel/calc_state_backup.zig
-zig_src/core/kernel/program_serialization_io.zig
-zig_src/core/kernel/program_serialization_runtime.zig
+zig_src/core/program/program_serialization_io.zig
+zig_src/core/program/program_serialization_runtime.zig
 zig_src/core/kernel/register_metadata_clear_sigma.zig
 zig_src/core/kernel/register_metadata_confirmation.zig
 zig_src/core/kernel/register_metadata_error.zig

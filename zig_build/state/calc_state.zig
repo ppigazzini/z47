@@ -46,6 +46,15 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    // The DMCP ROM shim is shared by the calc-state and program-serialization
+    // owners, so it is a REGISTERED module: directory-free, letting each owner
+    // family live in its own subdirectory without a cross-module relative import.
+    const dmcp_rom_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/core/hal/dmcp_rom.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("dmcp_rom", dmcp_rom_module);
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_calc_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     // R47 build variants ("r47", "dmcpr47") select USER_R47 (66); otherwise
@@ -113,7 +122,7 @@ pub fn addToModule(
 
     // The calc-state save/restore/load path is now fully Zig-owned; the former
     // calc_state_legacy.c bridge is gone. The DMCP ROM-macro shims it once needed
-    // (power_check_screen / sys_timer) are now Zig-owned in state_dmcp_rom.zig.
+    // (power_check_screen / sys_timer) are now Zig-owned in core/hal/dmcp_rom.zig.
     _ = c_flags;
     module.addObject(runtime_object);
 }

@@ -83,7 +83,7 @@ const refreshScreen = abi.host.requestRefresh; // routed through the host-callba
 
 // power_check_screen / sys_timer_* are DMCP function-table macros, not link
 // symbols; route through the Zig ROM-HAL trampolines (no-op on host).
-const rom = @import("state_dmcp_rom.zig");
+const rom = @import("dmcp_rom");
 const calc_state = @import("calc_state.zig"); // intra-object Zig-to-Zig
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 

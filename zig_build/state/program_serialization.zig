@@ -29,7 +29,7 @@ fn addRuntimeObject(
     options: RuntimeObjectOptions,
 ) *std.Build.Step.Compile {
     const module = b.createModule(.{
-        .root_source_file = b.path("zig_src/core/kernel/program_serialization.zig"),
+        .root_source_file = b.path("zig_src/core/program/program_serialization.zig"),
         .target = target,
         .optimize = optimize,
         .strip = options.strip,
@@ -46,6 +46,15 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    // The DMCP ROM shim is shared by the calc-state and program-serialization
+    // owners, so it is a REGISTERED module: directory-free, letting each owner
+    // family live in its own subdirectory without a cross-module relative import.
+    const dmcp_rom_module = b.createModule(.{
+        .root_source_file = b.path("zig_src/core/hal/dmcp_rom.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("dmcp_rom", dmcp_rom_module);
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_program_serialization_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("program_serialization_build_options", build_options);

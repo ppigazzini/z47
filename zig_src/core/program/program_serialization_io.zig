@@ -100,7 +100,7 @@ extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8
 
 // power_check_screen is a DMCP function-table macro, not a link symbol; the Zig
 // ROM-HAL trampoline (no-op on host) supplies it.
-const rom = @import("state_dmcp_rom.zig");
+const rom = @import("dmcp_rom");
 
 fn cStringLength(text: [*c]const u8) usize {
     var len: usize = 0;
