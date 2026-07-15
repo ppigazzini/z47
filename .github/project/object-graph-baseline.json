@@ -1,0 +1,41 @@
+{
+ "note": "REPORT-28 M1.2. The graph the LINKER builds, per target, from the object set the build DECLARES (zig build object-manifest). Distinct from the @import graph in check-module-graph.py: moving a file between directories changes that one and cannot change this one. Cycles/size/trapped are gated and must not rise. ccd/acd/nccd and the one-symbol cycle edges are REPORTED: Lakos's NCCD threshold assumes cycles cost compile time, and z47's cost neither compile time, flash (--gc-sections) nor test isolation (owners already link standalone).",
+ "targets": {
+  "dmcp": {
+   "acd": 18.0,
+   "ccd": 324,
+   "cycles": [
+    18
+   ],
+   "edges": 95,
+   "nccd": 5.06,
+   "objects": 18,
+   "objects_in_cycles": 18,
+   "one_symbol_cycle_edges": 19
+  },
+  "dmcp5": {
+   "acd": 18.0,
+   "ccd": 324,
+   "cycles": [
+    18
+   ],
+   "edges": 95,
+   "nccd": 5.06,
+   "objects": 18,
+   "objects_in_cycles": 18,
+   "one_symbol_cycle_edges": 19
+  },
+  "sim": {
+   "acd": 18.1,
+   "ccd": 343,
+   "cycles": [
+    18
+   ],
+   "edges": 106,
+   "nccd": 4.97,
+   "objects": 19,
+   "objects_in_cycles": 18,
+   "one_symbol_cycle_edges": 19
+  }
+ }
+}

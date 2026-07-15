@@ -1205,6 +1205,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     generated_step.dependOn(&update_testpgms.step);
 
     const outputs: host_types.SimulatorOutputs = .{
+        .c47_exe = sim,
         .c47_bin = sim.getEmittedBin(),
         .r47_bin = simr47.getEmittedBin(),
     };
