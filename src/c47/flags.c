@@ -116,12 +116,18 @@ doInteractionFlags:
               }
               break;
 
+    case FLAG_SBdate:
+              if(getSystemFlag(FLAG_SBdate) && getSystemFlag(FLAG_SBtime) && getSystemFlag(FLAG_SBwoy)) {
+                _clearSystemFlag(FLAG_SBtime);  // date, time and WoY do not fit together; the default clears the time
+              }
+              break;
+
     case FLAG_SBwoy :
     case FLAG_SBtime:
-              if(systemFlag == FLAG_SBtime && getSystemFlag(FLAG_SBtime)) {
+              if(systemFlag == FLAG_SBtime && getSystemFlag(FLAG_SBtime) && getSystemFlag(FLAG_SBdate)) {    // time and WoY are exclusive only while the date shows;
                 _clearSystemFlag(FLAG_SBwoy);
               }
-              else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy)) {
+              else if(systemFlag == FLAG_SBwoy && getSystemFlag(FLAG_SBwoy) && getSystemFlag(FLAG_SBdate)) { // with the date off both fit, the time in the date position.
                 _clearSystemFlag(FLAG_SBtime);
               }
               break;

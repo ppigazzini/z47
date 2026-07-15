@@ -1469,6 +1469,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 // Horizontal offsets in the status bar
 #define X_DATE                           ((SBARUPD_Time || SBARUPD_WoY) ? 1 : 25)
 #define X_TIME                                     45 // note: this is used only if DATE is not displayed, otherwise TIME is printed directly next to date's end
+#define X_TIME_NODATE                              25 // note: time start with the date absent: the date position, keeps the top left shift area free
+#define X_TIME_WOY      (getSystemFlag(FLAG_TDM24) ? 17 : 12) // note: time start when WoY follows and the date is absent; left of X_TIME_NODATE, the longer 12h time further
+#define X_WOY                                      81 // note: WoY start behind the date or the time (10 character date width); a shorter predecessor is padded up to this column
 #define X_REAL_COMPLEX        (X_TIME             +91)// note: this is for both dow or time, not both
 #define X_HOURGLASS_GRAPHS    (X_REAL_COMPLEX     + 4)//
 #define X_COMPLEX_MODE        (X_HOURGLASS_GRAPHS + 6)//
