@@ -51,6 +51,8 @@ step "[6b/11] headless-engine severance (engine->shell)"
 python3 .github/project/check-core-shell-severance.py --repo-root .
 step "[6c/11] core platform leak vs upstream (REPORT-28 §38 L8)"
 bash .github/project/check-core-platform-purity.sh
+step "[6d/11] compilation carriers are module roots (REPORT-28 §39 L9)"
+bash .github/project/check-module-carriers.sh
 step "[7/11] Phase I C dependency policy"
 bash .github/project/check-c-dependency-phase-i-policy.sh .
 step "[8/11] workflow script locality"
