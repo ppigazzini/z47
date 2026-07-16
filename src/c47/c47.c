@@ -256,7 +256,7 @@ int16_t                imaginaryDenominatorLocation;
 int16_t                exponentLimit;
 int16_t                exponentHideLimit;
 int16_t                showFunctionNameCounter;
-int16_t                dynamicMenuItem;
+int16_t                dynamicMenuItem = -1; // -1: no dynamic menu item is selected. fnGoto and goToGlobalStep divert to a dynamic menu label when this is >= 0
 int16_t               *menu_RAM;
 int16_t                numberOfTamMenusToPop;
 int16_t                itemToBeAssigned;

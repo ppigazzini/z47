@@ -43,7 +43,6 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_SHOWX);
   clearSystemFlag(FLAG_VECT);
   clearSystemFlag(FLAG_NVECT);
-  clearSystemFlag(FLAG_SCALE);
   setSystemFlag(FLAG_PLINE);
   setSystemFlag(FLAG_PBOX);
   clearSystemFlag(FLAG_PCURVE);
@@ -70,6 +69,7 @@ void graphResetCommon() {
 
 void graph_reset(void){
   graphResetCommon();
+  clearSystemFlag(FLAG_SCALE);    //fnPlotSQ option; the stat plots (statGraphReset) run on plotStatScale and leave the user's flag alone
 }
 
 
@@ -692,7 +692,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 //    else if(PLOT_ZOOM < RangeLo) {
 //      PLOT_ZOOM = RangeLo;
 //    }
-    float histofactor = drawHistogram == 0 ? 1 : 1/zoomfactor * (((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f) - 1)/2;     //Create space on the sides of the graph for the wider histogram columns
+    //widen the histogram range to (n+2)/(n-1) of the bin-mid span: 1.5 bin widths of margin per side for the columns
+    float histofactor = drawHistogram == 0 ? 1 : ((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f);
     calculateZoomFactor(PLOT_ZOOM * 0.75, &plotzoomx);
     plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
     multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, x_min, x_max, y_min, y_max, &dx, &dy);
@@ -743,8 +744,8 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 
 
 
-  //Cause scales to be the same
-  if(getSystemFlag(FLAG_SCALE)) {
+  //Cause scales to be the same: plotStatScale rules the fnPlotStat plots, the user's SCALE flag the fnPlotSQ plots
+  if(mode == PLOTSTAT ? (plotStatScale != 0) : getSystemFlag(FLAG_SCALE)) {
     // if y >> x, then y simply takes on the X range and can be increased using ZMY
     if(mode == PLOTSTAT) {
       if(realCompareGreaterThan(x_min, y_min)) {       // x_min = min(x_min, y_min)

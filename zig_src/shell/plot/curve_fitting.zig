@@ -38,6 +38,8 @@ const frontier_error = @import("../error.zig");
 const frontier_real_type = @import("../real_type.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_stats = @import("../stats.zig");
+extern var statMx: [8]u8; // active statistics matrix name; 'S' == "STATS" (config.zig owns restoreStats)
+extern fn restoreStats() void;
 const real_t = abi.Real;
 const realContext_t = abi.RealContext;
 const calcRegister_t = i16;
@@ -223,6 +225,9 @@ inline fn orOrtho(a: u16) u16 {
 // fnCurveFitting
 // ===========================================================================
 pub export fn fnCurveFitting(curveFitting_arg: u16) callconv(.c) void {
+    if (statMx[0] != 'S') {
+        restoreStats(); // any stats operation restores a pending HNORM takeover; must precede the selection writes below
+    }
     var curveFitting = curveFitting_arg & 0x01FF;
     temporaryInformation = TI_STATISTIC_LR;
 
@@ -253,6 +258,9 @@ pub export fn fnCurveFitting(curveFitting_arg: u16) callconv(.c) void {
 // fnCurveFittingReset
 // ===========================================================================
 pub export fn fnCurveFittingReset(control: u16) callconv(.c) void {
+    if (statMx[0] != 'S') {
+        restoreStats(); // any stats operation restores a pending HNORM takeover; must precede the selection writes below
+    }
     temporaryInformation = TI_STATISTIC_LR;
     if (control == 0) {
         lrSelection = CF_LINEAR_FITTING;
@@ -275,6 +283,9 @@ pub export fn fnCurveFittingReset(control: u16) callconv(.c) void {
 // fnCurveFitting_T (toggle)
 // ===========================================================================
 pub export fn fnCurveFitting_T(curveFitting_arg: u16) callconv(.c) void {
+    if (statMx[0] != 'S') {
+        restoreStats(); // any stats operation restores a pending HNORM takeover; must precede the selection writes below
+    }
     temporaryInformation = TI_STATISTIC_LR;
     var curveFitting = curveFitting_arg & 0x01FF; // clear ORTHO
 

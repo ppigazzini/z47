@@ -451,6 +451,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&graphVariabl1,                  sizeof(graphVariabl1),                                       "graphVariabl1",                  "int16");
     saveStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     saveStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
+    saveStateValue(&plotStatScale,                  sizeof(plotStatScale),                                       "plotStatScale",                  "uint8");
     saveStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
     saveStateValue(&lrSelectionHistobackup,         sizeof(lrSelectionHistobackup),                              "lrSelectionHistobackup",         "uint16");
     saveStateValue(&lrChosenHistobackup,            sizeof(lrChosenHistobackup),                                 "lrChosenHistobackup",            "uint16");
@@ -1099,6 +1100,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
     restoreStateValue(&plotStatMx,                     sizeof(plotStatMx),                                          "plotStatMx",                     "hexDump");
     restoreStateValue(&drawHistogram,                  sizeof(drawHistogram),                                       "drawHistogram",                  "uint8");
+    restoreStateValue(&plotStatScale,                  sizeof(plotStatScale),                                       "plotStatScale",                  "uint8");
     restoreStateValue(&statMx,                         sizeof(statMx),                                              "statMx",                         "hexDump");
     restoreStateValue(&lrSelectionHistobackup,         sizeof(lrSelectionHistobackup),                              "lrSelectionHistobackup",         "uint16");
     restoreStateValue(&lrChosenHistobackup,            sizeof(lrChosenHistobackup),                                 "lrChosenHistobackup",            "uint16");

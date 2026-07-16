@@ -1145,10 +1145,22 @@ fn _tamProcessInput(item: u16) void {
             tam.value = @intCast(programList[numberOfPrograms - 1].step);
             pemCursorIsZerothStep = true;
             frontier_items.reallyRunFunction(ITM_GTOP, @bitCast(tam.value));
-            if ((currentStep[0] != 0xff) or (currentStep[1] != 0xff)) {
-                currentStep = firstFreeProgramByte;
-                frontier_manage.insertStepInProgram(ITM_END);
-                frontier_manage.scanLabelsAndPrograms();
+            var currentOp: u16 = currentStep[0];
+            if ((currentOp & 0x80) != 0) {
+                currentOp &= 0x7f;
+                currentOp <<= 8;
+                currentOp |= currentStep[1];
+            }
+            if ((currentOp != 0x7fff) and (currentOp != ITM_END)) { // Not .END. and not END
+                const initialNumberOfProgram = numberOfPrograms;
+                while (true) { // do until inserting ITM_END has added a new program
+                    tam.value = @intCast(programList[numberOfPrograms - 1].step);
+                    frontier_items.reallyRunFunction(ITM_GTOP, @bitCast(tam.value));
+                    currentStep = firstFreeProgramByte;
+                    frontier_manage.insertStepInProgram(ITM_END);
+                    frontier_manage.scanLabelsAndPrograms();
+                    if (numberOfPrograms != initialNumberOfProgram) break;
+                }
                 tam.value = @intCast(programList[numberOfPrograms - 1].step);
                 frontier_items.reallyRunFunction(ITM_GTOP, @bitCast(tam.value));
             }

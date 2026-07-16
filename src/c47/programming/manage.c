@@ -1395,6 +1395,9 @@ void insertStepInProgram(const int16_t func) {
     if(catalog) {      // If called from a catalog such as FNCS, exit catalog and Asm Mode
       leaveAsmMode();
       popSoftmenu();
+      if(currentMenu() == -MNU_CATALOG) {   // drop the CAT menu too
+        popSoftmenu();
+      }
     }
     tam.function = func;
     pemAlpha(func);

@@ -771,10 +771,21 @@ printf("tam.value: %d\n", tam.value);
         tam.value = programList[numberOfPrograms - 1].step;
         pemCursorIsZerothStep = true;
         reallyRunFunction(ITM_GTOP, tam.value);
-        if((*currentStep != 0xff) || (*(currentStep + 1) != 0xff)) {
-          currentStep = firstFreeProgramByte;
-          insertStepInProgram(ITM_END);
-          scanLabelsAndPrograms();
+        uint16_t currentOp = *currentStep;
+        if(currentOp & 0x80) {
+          currentOp &= 0x7f;
+          currentOp <<= 8;
+          currentOp |= *(currentStep + 1);
+        }
+        if((currentOp != 0x7fff) && (currentOp != ITM_END)) {    // Not .END. and not END
+          uint16_t initialNumberOfProgram = numberOfPrograms;
+          do {
+            tam.value = programList[numberOfPrograms - 1].step;
+            reallyRunFunction(ITM_GTOP, tam.value);
+            currentStep = firstFreeProgramByte;
+            insertStepInProgram(ITM_END);
+            scanLabelsAndPrograms();
+          } while(numberOfPrograms == initialNumberOfProgram);  // do until inserting ITM_END has added a new program
           tam.value = programList[numberOfPrograms - 1].step;
           reallyRunFunction(ITM_GTOP, tam.value);
         }

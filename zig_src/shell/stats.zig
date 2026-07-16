@@ -192,6 +192,7 @@ extern fn redimMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, dimM
 extern fn fnDeleteVariable(regist: u16) void;
 extern fn clearRegister(regist: calcRegister_t) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
+extern fn restoreStats() void; // config.zig owns it; any stats operation restores an HNORM takeover
 extern fn allocC47Blocks(sizeInBlocks: usize) ?*anyopaque;
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 
@@ -1124,6 +1125,9 @@ pub export fn fnConvertStatsToHisto(statsVariableToHistogram: u16) callconv(.c) 
     var nb: real_t = undefined;
     var nn: real_t = undefined;
 
+    if (statMx[0] != 'S') {
+        restoreStats(); // any stats operation restores the stats matrix (HNORM retargets statMx and the sums at "HISTO")
+    }
     if (statMx[0] == 'S' and isStatsMatrix(&rows, &statMx)) {
         if (checkMinimumDataPoints(const_3())) {
             if (statsVariableToHistogram == ITM_Y) {
@@ -1166,7 +1170,6 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
     var hb: real_t = undefined;
     var nb: real_t = undefined;
     var bw: real_t = undefined;
-    var bwon2: real_t = undefined;
     var i: u16 = 0;
     var j: u16 = 0;
 
@@ -1182,8 +1185,8 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         return;
     }
 
-    const regStats: calcRegister_t = findNamedVariable(&statMx); // connect to STATS matrix
     const regHisto: calcRegister_t = fnClHisto(false); // clear and connect to HISTO matrix
+    const regStats: calcRegister_t = findNamedVariable(&statMx); // connect to STATS only after fnClHisto: allocating "HISTO" can shift the STATS register index
 
     if (isStatsMatrix(&i, &statMx) and regStats != INVALID_VARIABLE and regHisto != INVALID_VARIABLE) {
         real34ToReal(&loBinR, &lb);
@@ -1192,7 +1195,6 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         const NN: i32 = real34ToInt32(&nBins);
         realSubtract(&hb, &lb, &bw, &ctxtReal39);
         realDivide(&bw, &nb, &bw, &ctxtReal39);
-        realMultiply(&bw, const_1on2(), &bwon2, &ctxtReal39); // calculate bin width bw and half bin width bw_on_2
 
         var stats: real34Matrix_t = undefined;
         var histo: real34Matrix_t = undefined;
@@ -1211,6 +1213,7 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
             }
 
             if (isStatsMatrix(&i, &statMx) and isHistoMatrix(&i, "HISTO")) {
+                linkToRealMatrixRegister(regStats, &stats); // every initHistoMatrix append above reallocates the pool and can move the STATS data
                 i = 0;
                 while (i < rows) : (i += 1) {
                     j = 0;
@@ -1219,9 +1222,15 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
                         var tl: real_t = undefined;
                         var th: real_t = undefined;
                         real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + @as(usize, @intCast(histElementXorY))]), &t); // from X or Y, depending
-                        real34ToReal(@ptrCast(&histo.matrixElements.?[@as(usize, j) * @as(u16, histo.header.matrixColumns)]), &tl); // get the bin mid x
-                        realSubtract(&tl, &bwon2, &tl, &ctxtReal39); // get the bin x low
-                        realAdd(&tl, &bw, &th, &ctxtReal39); // get the bin x hi
+                        // bin edges from loBin + j*bw, last high edge hiBin exactly: points equal to the limits fall inside
+                        int32ToReal(j, &tl);
+                        realMultiply(&tl, &bw, &tl, &ctxtReal39);
+                        realAdd(&tl, &lb, &tl, &ctxtReal39); // get the bin x low, exact at j == 0
+                        if (@as(i32, j) == NN - 1) {
+                            realCopy(&hb, &th); // get the last bin x hi: hiBin itself
+                        } else {
+                            realAdd(&tl, &bw, &th, &ctxtReal39); // get the bin x hi
+                        }
                         if ((@as(i32, j) < NN - 1 and realCompareLessThan(&t, &th) and realCompareGreaterEqual(&t, &tl)) or
                             (@as(i32, j) == NN - 1 and realCompareLessEqual(&t, &th) and realCompareGreaterEqual(&t, &tl)))
                         {

@@ -12,4 +12,4 @@ pub export var programRunStop: u8 = 0; // program run/stop status; polled in the
 pub export var numberOfNamedVariables: u16 = 0; // count of user named variables
 pub export var currentProgramNumber: u16 = 0; // the current program
 pub export var currentLocalStepNumber: u16 = 0; // the current program step
-pub export var dynamicMenuItem: i16 = 0; // current dynamic soft-menu item (-1 disables menu-driven behaviour)
+pub export var dynamicMenuItem: i16 = -1; // -1: no dynamic menu item selected; fnGoto and goToGlobalStep divert to a dynamic menu label only when this is >= 0

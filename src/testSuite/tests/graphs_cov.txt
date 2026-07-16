@@ -1,12 +1,12 @@
 ;*******************************************************************************************************************************
-;** Coverage: plot regression. Each graph is rendered by XEQ of a small RPN program ending in SNAP (G1..G4, staged below),    **
+;** Coverage: plot regression. Each graph is rendered by XEQ of a small RPN program ending in SNAP (G1..G9, staged below),    **
 ;** i.e. the real programmed UI context. fnBmpNameCov names the SNAP bitmap c47plotTest<N>.bmp (kept on disk for inspection); **
 ;** fnHashBmpCov pins its SHA-256, so a change to the grapher, fonts or the blitter fails the test. Own file, so it can be    **
 ;** commented out if an upstream change legitimately alters the render.                                                       **
 ;*******************************************************************************************************************************
 In: AM=RAD FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
-; stage program S (f(X)=X^2-4; serialize_cov's reset wiped program memory) and the graph programs G1..G4
+; stage program S (f(X)=X^2-4; serialize_cov's reset wiped program memory) and the graph programs G1..G9
 Func: fnLoadPgmCov
 In:  FARG=0
 Out: EC=0
@@ -83,22 +83,124 @@ Func: fnHashBmpCov
 In:  FARG=3
 Out: EC=0 RX=Stri:"710088EB701BC2B5D706DCEA8A338F4B9BCDA326D5D92468D53D1E6B1E43B05F"
 
-; scatter plot: points only - clear the line flag PLSTAT's default set above
+; scatter plot: points only - every fnPlotStat plot resets the plot flags itself (statGraphReset), no forcing needed
 Func: fnBmpNameCov
 In:  FARG=4
 Out: EC=0
 Func: fnExecute
-In:  FL_ASLIFT=1 FL_PLINE=0 PGM="G4"
+In:  FL_ASLIFT=1 PGM="G4"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=4
 Out: EC=0 RX=Stri:"2A237EFC7B341273E460CB641130471FEE9358BAE1128F9CB8653793F2FEFF1A"
 
+; assessment plot (G5: BestF 1 then ASSESS = PLOT_LR) - draws the linear-regression
+; assessment (fit y=a0+a1x, r^2, and the fit line) from the seeded STATS sums.
+; BestF 1 selects the linear model in-program (the power-on default), pinning the
+; render against a model chosen by an earlier plot (CENTRL sets the orthogonal
+; model).
+Func: fnBmpNameCov
+In:  FARG=5
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G5"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=5
+Out: EC=0 RX=Stri:"4E21C2E4531F626867CAB399CD586F8CEB3703C532AAB9A389F1EDFBFFB38918"
+
+; centroid plot (G7: CENTRL = PLOT_ORTHOF) - draws the data with the orthogonal
+; fit and centroid cross from the seeded STATS sums. CENTRL selects the
+; orthogonal model itself (lrChosen), which is persistent user state - G5 pins
+; its own model in-program, so the order here stays free.
+Func: fnBmpNameCov
+In:  FARG=7
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G7"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=7
+Out: EC=0 RX=Stri:"F37EED64A93C6CB35C0BD76526CB561F4B19A4E8B3E28A19E5BCFA39156DE8FC"
+
+; power-fit assessment (G9: BestF 8 then ASSESS) - the programmed model selection
+; pattern of G5 with the power model y = a0*x^a1. The rendered fit of the seeded
+; points is a0 = 0.3323, a1 = 1.767, r^2 = 0.95, matching an independent
+; least-squares computation (ln y on ln x: a0 = 0.33233, a1 = 1.76692, r^2 = 0.94856).
+Func: fnBmpNameCov
+In:  FARG=9
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G9"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=9
+Out: EC=0 RX=Stri:"B31C4FC3A3EA1DA8A187709A2BA56EB9EBF796015AF25BB3709EAB2890916AB1"
+
+; histogram data: the fit-plot points above give a 2-1-2 histogram (a valley - the Gauss "peak" fits upside down), so the histogram
+; plots get their own nine points: three bins (nBINS = ceil(sqrt(9)) = 3, edges 1/2/3/4), counts 3-4-2 - the middle bar highest and
+; the side bars close but not equal, so HNORM's Gauss peaks upright. x = 1 and x = 4 sit exactly on vBIN/^BIN, pinning the
+; inclusive bin edges (points equal to the limits used to be dropped).
+Func: fnClSigma
+In:  FARG=0 RX=Real:"0"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"2" RX=Real:"1.4"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"3" RX=Real:"1.8"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"4" RX=Real:"2.2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"5" RX=Real:"2.4"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"6" RX=Real:"2.6"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"7" RX=Real:"2.8"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"8" RX=Real:"3.2"
+Out: EC=0
+Func: fnSigmaAddRem
+In:  FARG=1 RY=Real:"9" RX=Real:"4"
+Out: EC=0
+
+; histogram plot (G6: HISTOX builds the HISTO matrix from the seeded STATS sums -
+; bins auto-default to ceil(sqrt(N)), no interactive entry - then HPLOT draws it).
+; Programming the HISTOX build is the setup the "interactive only" note lacked.
+Func: fnBmpNameCov
+In:  FARG=6
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G6"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=6
+Out: EC=0 RX=Stri:"15FD5C5BF124AA48F6BCC1E822A0CCF1AF46150764D5E5D0B564C0E753F54777"
+
+; histogram with normal fit (G8: HISTOX builds the HISTO matrix, HNORM overlays
+; the Gauss fit). The window auto-ranges to the fitted bell (x to a1 +- 3 sigma,
+; y_max clearing the peak), so both tails render to the frame edges. HNORM
+; retargets the statistical sums at the HISTO matrix; fnPlotStat and HISTOX
+; restore them at the next plot, so G8 needs no ordering.
+Func: fnBmpNameCov
+In:  FARG=8
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G8"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=8
+Out: EC=0 RX=Stri:"16AFB6FB03F7353ECB5DCF58B8333DF5031C5BF96EAC5594428269CA611A2D3A"
+
 ; clear the statistical sums so they do not leak past this file
 Func: fnClSigma
 In:  FARG=0 RX=Real:"0"
 Out: EC=0
-
-; Graph items still to be covered here, and why they are not yet:
-; HISTO  - not yet programmable (interactive only); also needs bin setup pinned
-; ASSESS - not yet programmable (interactive only)

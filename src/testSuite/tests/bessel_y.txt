@@ -5,7 +5,7 @@
 ;**                                                         **
 ;*************************************************************
 ;*************************************************************
-;In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnBesselY
 
 
@@ -45,8 +45,8 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"2" RX=Real:"-0.1070324315409375468883
 ;=======================================
 ; Yn(String) --> Error24
 ;=======================================
-;In:  FL_ASLIFT=0 RX=Stri:"String test"
-;Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
+In:  FL_ASLIFT=0 RX=Stri:"String test"
+Out: EC=24 FL_ASLIFT=0 RX=Stri:"String test"
 
 
 

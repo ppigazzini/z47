@@ -7,6 +7,9 @@
 
 #include "c47.h"
 
+#define INTEGRATEDEBUG // integrator debug prints
+#undef  INTEGRATEDEBUG
+
 void fnPgmInt(uint16_t label) {
   if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
@@ -145,13 +148,13 @@ saveForUndo();
     WP34S_Ln(&acc, &digits, &ctxtReal39);
     realDivide(&digits, const39_ln10, &digits, &ctxtReal39);
     digitsN = max(min(-realToInt32C47(&digits, NULL), 34-3), 1);
-    #if defined(PC_BUILD)
-      printRealToConsole(&digits, "digits: ", "\n");
-      printf("----->>>> digitsN=%i, smallerEpsilon=%u\n", digitsN, smallerEpsilon);
-      printRealToConsole(&acc, "acc: ", "\n");
-      printRealToConsole(&llim, "llim: ", "\n");
-      printRealToConsole(&ulim, "ulim: ", "\n");
-    #endif // PC_BUILD
+    #if (defined PC_BUILD) && (defined INTEGRATEDEBUG)
+      printf("integrate: digitsN=%i smallerEpsilon=%u\n", digitsN, smallerEpsilon);
+      printRealToConsole(&digits, "  digits: ", "\n");
+      printRealToConsole(&acc,    "  acc:    ", "\n");
+      printRealToConsole(&llim,   "  llim:   ", "\n");
+      printRealToConsole(&ulim,   "  ulim:   ", "\n");
+    #endif // PC_BUILD && INTEGRATEDEBUG
 
     if(digitsN == 6) {
       #if defined(PC_BUILD)
@@ -208,17 +211,15 @@ saveForUndo();
       ctxtReal75.digits = s75;
     }
     else {
-    #if defined(PC_BUILD)
-      printf("Temporary Debugging info. Can be deleted once done.\n");
-      printRealToConsole(&llim, "llim:", "\n");
-      printRealToConsole(&ulim, "ulim:", "\n");
-      printRealToConsole(&acc, "acc:", "\n");
-    #endif // PC_BUILD
+    #if (defined PC_BUILD) && (defined INTEGRATEDEBUG)
+      printRealToConsole(&llim, "integrate in:  llim: ", "\n");
+      printRealToConsole(&ulim, "               ulim: ", "\n");
+      printRealToConsole(&acc,  "               acc:  ", "\n");
+    #endif // PC_BUILD && INTEGRATEDEBUG
     integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
-    #if defined(PC_BUILD)
-      printf("Temporary Debugging info. Can be deleted once done.\n");
-      printRealToConsole(&res, "res:", "\n");
-    #endif // PC_BUILD
+    #if (defined PC_BUILD) && (defined INTEGRATEDEBUG)
+      printRealToConsole(&res,  "integrate out: res:  ", "\n\n");
+    #endif // PC_BUILD && INTEGRATEDEBUG
     }
 #else // !SPEEDUPEXPERIMENT
     integrate(regist, &llim, &ulim, &acc, &res, smallerEpsilon ? &ctxtReal75 : &ctxtReal39);
@@ -951,14 +952,11 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
   // max level
   maxlevel = 7;
 
-  #if defined(PC_BUILD)
-    printf"Temporary Debugging info. Can be deleted once done.\n";
-    printRealToConsole(acc, "acc:", "\n");
-    printRealToConsole(&eps, "eps:", "\n");
-    printf("digits %i\n", realContext->digits);
-    printf("regist %u\n", regist);
-    printf("currentSolverStatus=%u, screenUpdatingMode=%u\n", currentSolverStatus, screenUpdatingMode);
-  #endif // PC_BUILD
+  #if (defined PC_BUILD) && (defined INTEGRATEDEBUG)
+    printRealToConsole(acc,  "integrate_mm: acc: ", "\n");
+    printRealToConsole(&eps, "              eps: ", "\n");
+    printf("              digits=%i regist=%u currentSolverStatus=%u screenUpdatingMode=%u\n", realContext->digits, regist, currentSolverStatus, screenUpdatingMode);
+  #endif // PC_BUILD && INTEGRATEDEBUG
 
   realSubtract(&b, &a, &bma2, realContext); // interval half-length
   realMultiply(&bma2, const_1on2, &bma2, realContext);
@@ -1081,6 +1079,17 @@ static void _integrate_mm(calcRegister_t regist, const real_t *llim, const real_
     realSetPositiveSign(&errval);
     realCopy(&ss, &sslast);
     ++k;
+    #if (defined PC_BUILD) && (defined INTEGRATEDEBUG)
+      {
+        float dbgErr;
+        char dbgBuf[16];
+        realToFloat(&errval, &dbgErr);
+        sprintf(dbgBuf, "%9.2e", (double)dbgErr);
+        for(char *cp = dbgBuf; *cp != 0; cp++) { if(*cp == ',') { *cp = '.'; } } // host locale may print a comma
+        printf("#%-2i evals=%-5i err=%s ", k, evals, dbgBuf);
+        printRealToConsole(&ss, "ss=", "\n");
+      }
+    #endif // PC_BUILD && INTEGRATEDEBUG
 
   } while(realCompareGreaterEqual(&errval, &tol) && k <= maxlevel);
   realMultiply(&ss, &bma2, res, realContext);
@@ -1545,6 +1554,17 @@ static void dbl_exp_int_new(calcRegister_t regist, const real_t *a, const real_t
     if(realIsNaN(error)) {
       realSetOne(error); // only happens when v, s both zero
     }
+    #if (defined PC_BUILD) && (defined INTEGRATEDEBUG)
+      {
+        float dbgErr;
+        char dbgBuf[16];
+        realToFloat(error, &dbgErr);
+        sprintf(dbgBuf, "%9.2e", (double)dbgErr);
+        for(char *cp = dbgBuf; *cp != 0; cp++) { if(*cp == ',') { *cp = '.'; } } // host locale may print a comma
+        printf("#%-2i mode=%i loop=%-6i err=%s ", k, mode, loop, dbgBuf);
+        printRealToConsole(result, "res=", "\n");
+      }
+    #endif // PC_BUILD && INTEGRATEDEBUG
   } while(realCompareGreaterThan( &s2, realMultiply(const_10, realMultiply(&eps, &s1, &s3, realContext), &s3, realContext)) && k <= maxlevel); // while abs(v) > 10*eps*abs(s)
   return;
 }

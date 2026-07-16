@@ -14,7 +14,7 @@
   // #define VERBOSE_SOLVER0  // a lot less text
   // #define VERBOSE_SOLVER1  // a lot less text
   // #define VERBOSE_SOLVER2  // verbose a lot
-  #define VERBOSE_SOLVER_ITERDATA // One long line for each iteration
+  // #define VERBOSE_SOLVER_ITERDATA // One long line for each iteration
 #else // !PC_BUILD
   #undef VERBOSE_SOLVER00
   #undef VERBOSE_SOLVER0
