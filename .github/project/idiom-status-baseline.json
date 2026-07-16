@@ -1,5 +1,5 @@
 {
- "note_extern_struct_files": "Raised 13 -> 14 for zig_src/abi/primitives.zig (REPORT-28 M2). This metric counts FILES CONTAINING an extern struct, as a proxy for transliteration debt. M2 added no extern struct: it MOVED existing layout mirrors out of abi/types.zig into a leaf so abi/ stops being an import cycle. Verified from the git object store -- extern struct declarations are 75 -> 75 tree-wide and 49 -> 49 within abi/. The +1 is the new file and nothing else. Note the metric's blind spot: it cannot distinguish adding debt from redistributing it, so any file split reads as a regression here.",
+ "note_extern_fn_sites": "Raised 3517 -> 3518 for free_list.zig's own `extern fn xcopy` (REPORT-28 M7.2). free_list previously reached xcopy by importing char_string.zig -- a 1047-line DISPLAY file that merely re-declares the same extern. xcopy is defined in core/state/base/byte_copy.zig, force-imported by core/state/state.zig: a DIFFERENT build root. Cross-object references must be extern (an @import would compile the owner into both objects and collide at link), which is why all 12 other core consumers declare it locally. The extern relationship already existed; it was being borrowed from an unrelated display file rather than declared where it is used. The trade is one honest extern site for one spurious module edge into display code.",
  "owner_count": 410,
  "seam_file_count": 2,
  "seam_totals": {
@@ -19,7 +19,7 @@
   "callconv_c_sites": 2875,
   "constants_blob_sites": 1,
   "cptr_files": 92,
-  "extern_fn_sites": 3517,
+  "extern_fn_sites": 3518,
   "extern_struct_files": 14,
   "off_offset_sites": 77,
   "printf_family_files": 47,

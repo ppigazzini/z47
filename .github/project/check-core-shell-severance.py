@@ -89,7 +89,13 @@ def measure(root: str):
             # relative @import that resolves into zig_src/shell/
             if "/" in imp or imp.endswith(".zig"):
                 target = os.path.normpath(os.path.join(os.path.dirname(path), imp))
-                if os.path.commonpath([target, os.path.join(root, "zig_src", "shell")]) == os.path.join(root, "zig_src", "shell"):
+                # Both sides MUST be normalized. os.path.join('.', 'zig_src', 'shell')
+                # is './zig_src/shell', while commonpath() returns 'zig_src/shell', so
+                # the unnormalized comparison was NEVER true: this cap could not fire,
+                # and every caller passes --repo-root '.'. The invariant read zero
+                # because it was vacuous, not because the tree was clean.
+                shell_root = os.path.normpath(os.path.join(root, "zig_src", "shell"))
+                if os.path.commonpath([target, shell_root]) == shell_root:
                     import_edges.append((rel, imp))
     return extern_edges, import_edges
 
