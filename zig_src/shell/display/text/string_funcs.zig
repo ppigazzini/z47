@@ -25,8 +25,8 @@ const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const frontier_addons = @import("../../extensions/addons.zig");
 const frontier_char_string = @import("char_string.zig");
-const glyph_case = @import("glyph_case.zig"); // std-only glyph codec + case map
-const alpha_substring = @import("alpha_substring.zig"); // std-only ALPHAMID substring
+const glyph_case = @import("../../../core/text/glyph_case.zig"); // std-only glyph codec + case map
+const alpha_substring = @import("../../../core/text/alpha_substring.zig"); // std-only ALPHAMID substring
 fn substringPosition(haystack: [*c]const u8, hay_len: i16, needle: [*c]const u8, needle_len: i16) i16 {
     var i: i16 = 0;
     while (i <= hay_len - needle_len) : (i += 1) {

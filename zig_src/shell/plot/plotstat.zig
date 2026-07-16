@@ -81,7 +81,7 @@ const frontier_real_type = @import("../real_type.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("../display/screen.zig");
 const frontier_stats = @import("../stats.zig");
-const display_string_transform = @import("../display/text/display_string_transform.zig");
+const display_string_transform = @import("../../core/text/display_string_transform.zig");
 const real_t = abi.Real;
 comptime {
     if (@sizeOf(real_t) != 60) @compileError("real_t must be 60 bytes");

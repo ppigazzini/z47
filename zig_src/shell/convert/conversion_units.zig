@@ -30,7 +30,7 @@ const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const FLAG_SPCRES: i32 = 0x8017;
 
 const abi = @import("abi"); // shared ABI bindings
-const label_truncate = @import("../display/text/label_truncate.zig"); // std-only label arrow truncation
+const label_truncate = @import("../../core/text/label_truncate.zig"); // std-only label arrow truncation
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_date_time = @import("date_time.zig");
 const frontier_error = @import("../error.zig");

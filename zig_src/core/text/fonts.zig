@@ -25,7 +25,21 @@ const glyph_t = abi.Glyph;
 const font_t = abi.Font;
 const glyph_font_search = @import("glyph_font_search.zig"); // std+abi pure search
 
-extern var glyphNotFound: glyph_t;
+// The not-found placeholder glyph. Upstream parks it in c47.c with the rest of its
+// globals; it is font data, this file generates and mutates it, and it is the only
+// reason this owner reached back into the shell. Same symbol, same C layout.
+pub export var glyphNotFound: glyph_t = .{
+    .charCode = 0x0000,
+    .colsBeforeGlyph = 0,
+    .colsGlyph = 13,
+    .colsAfterGlyph = 0,
+    .rowsAboveGlyph = 0,
+    .rowsGlyph = 19,
+    .rowsBelowGlyph = 0,
+    .rank1 = 0,
+    .rank2 = 0,
+    .data = null,
+};
 
 // Little hexadecimal font for generating a not-found glyph (4 bytes per nibble
 // row, 16 rows: 0-9 A-F).

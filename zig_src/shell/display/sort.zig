@@ -12,7 +12,7 @@
 
 const abi = @import("abi");
 const frontier_char_string = @import("text/char_string.zig");
-const frontier_fonts = @import("fonts/fonts.zig");
+const frontier_fonts = @import("../../core/text/fonts.zig");
 // Comparison modes (src/c47/defines.h).
 const CMP_BINARY: i32 = 0;
 const CMP_EXTENSIVE: i32 = 2;
