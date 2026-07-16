@@ -36,8 +36,6 @@ const strip_17: bool = frontier_build_options.strip_17;
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
 
-// realType.c owner: exports low-level real<->int helpers with C linkage. It has
-// no command dispatch wrappers, so force its inclusion in the frontier object.
 comptime {
     // These owners hold the dispatch wrappers that used to live in this root. The
     // root's own bodies were what pulled them into the frontier object; with the
@@ -46,19 +44,15 @@ comptime {
     // its members; it does not export on their behalf.
     _ = @import("shell/clear_all.zig");
     _ = @import("shell/matrix_editor/matrix_editor_refresh.zig");
-    _ = @import("shell/matrix_editor/matrix_mim_add.zig");
-    _ = @import("shell/matrix_editor/matrix_mim_run.zig");
     _ = @import("shell/plot/plot_regression.zig");
     _ = @import("shell/print/print_all_regs.zig");
     _ = @import("shell/program/keys_management.zig");
     _ = @import("shell/program/program_clear.zig");
-    _ = @import("shell/runtime.zig");
     // These owners hold the dispatch wrappers that used to live in this root.
     // The root's own bodies were what pulled them into the frontier object; with
     // the wrappers moved to them, nothing references them any more and Zig would
     // not analyse them at all -- their exports would silently vanish from the
     // link. A root force-imports its members; it does not export on their behalf.
-    _ = @import("shell/real_type.zig");
     _ = @import("shell/free_list.zig");
     _ = @import("core/text/fonts.zig");
     _ = @import("shell/generated/frontier_martel_fonts.zig");

@@ -90,7 +90,6 @@ zig_src/frontier.zig
 zig_src/shell/extensions/addons.zig
 zig_src/shell/elec.zig
 zig_src/shell/config.zig
-zig_src/shell/runtime.zig
 zig_src/core/state/runtime/register_descriptor_storage.zig
 zig_src/core/state/runtime/register_memory.zig
 zig_src/core/state/register_metadata/register_metadata_local_registers.zig

@@ -54,6 +54,7 @@ step "[6c/11] core platform leak vs upstream (REPORT-28 §38 L8)"
 bash .github/project/check-core-platform-purity.sh
 step "[6d/11] compilation carriers are module roots (REPORT-28 §39 L9)"
 bash .github/project/check-module-carriers.sh
+python3 .github/project/check-dead-force-imports.py --repo-root .
 step "[6h/11] authored ABI surface (REPORT-28 M8 / G6)"
 python3 .github/project/check-authored-abi.py --repo-root .
 step "[6g/11] module graph cycles (REPORT-28 M1.3)"
