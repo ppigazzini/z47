@@ -60,7 +60,7 @@ comptime {
     // link. A root force-imports its members; it does not export on their behalf.
     _ = @import("shell/real_type.zig");
     _ = @import("shell/free_list.zig");
-    _ = @import("shell/display/fonts/fonts.zig");
+    _ = @import("core/text/fonts.zig");
     _ = @import("shell/generated/frontier_martel_fonts.zig");
     _ = @import("shell/generated/frontier_printer_font8.zig");
     _ = @import("shell/convert/conversion_units.zig");

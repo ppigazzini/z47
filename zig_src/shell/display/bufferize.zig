@@ -46,7 +46,7 @@ const angularMode_t = c_int;
 
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const gap_insert = @import("text/gap_insert.zig"); // std-only digit-group gap insertion
+const gap_insert = @import("../../core/text/gap_insert.zig"); // std-only digit-group gap insertion
 const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_calc_mode = @import("../calc_mode.zig");

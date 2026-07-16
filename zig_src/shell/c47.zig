@@ -187,18 +187,8 @@ pub export var programmableMenu: ProgrammableMenuBlob = std.mem.zeroes(Programma
 pub export var kbd_usr: [37]calcKey_t = std.mem.zeroes([37]calcKey_t);
 // errorMessageRegisterLine moved to the base kernel
 // (engine/kernel/error_state.zig, alongside lastErrorCode).
-pub export var glyphNotFound: glyph_t = .{
-    .charCode = 0x0000,
-    .colsBeforeGlyph = 0,
-    .colsGlyph = 13,
-    .colsAfterGlyph = 0,
-    .rowsAboveGlyph = 0,
-    .rowsGlyph = 19,
-    .rowsBelowGlyph = 0,
-    .rank1 = 0,
-    .rank2 = 0,
-    .data = null,
-};
+// glyphNotFound moved to its owner: core/text/fonts.zig generates and mutates
+// it (generateNotFoundGlyph), so the placeholder glyph lives with the font code.
 
 pub export var currentLocalRegisters: ?*registerHeader_t = null;
 

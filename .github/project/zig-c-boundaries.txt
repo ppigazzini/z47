@@ -104,7 +104,6 @@ zig_src/shell/convert/integers.zig
 zig_src/shell/convert/date_time.zig
 zig_src/shell/program/lbl_gto_xeq.zig
 zig_src/shell/error.zig
-zig_src/shell/display/fonts/fonts.zig
 zig_src/shell/display/sort.zig
 zig_src/shell/clear_all.zig
 zig_src/shell/display/display_format.zig

@@ -106,8 +106,8 @@ const registerHeader_t = abi.RegisterHeader;
 // real_t for placeSubscript / changeSoftKey local math.
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
-const label_truncate = @import("../text/label_truncate.zig"); // std-only label arrow truncation
-const str_concat = @import("../text/str_concat.zig"); // std-only scratch string concat
+const label_truncate = @import("../../../core/text/label_truncate.zig"); // std-only label arrow truncation
+const str_concat = @import("../../../core/text/str_concat.zig"); // std-only scratch string concat
 const frontier_addons = @import("../../extensions/addons.zig");
 const frontier_assign = @import("../../input/assign.zig");
 const frontier_calc_mode = @import("../../calc_mode.zig");
