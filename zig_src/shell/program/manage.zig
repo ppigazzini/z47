@@ -303,6 +303,7 @@ const VAR_UY: u16 = 2547;
 const VAR_LY: u16 = 2548;
 
 // MNU_* (for _closeAlphaMenus)
+const MNU_CATALOG: i16 = 1318;
 const MNU_MyAlpha: i16 = 1350;
 const MNU_ALPHAINTL: i16 = 1374;
 const MNU_ALPHAMATH: i16 = 1375;
@@ -802,11 +803,20 @@ pub export fn fnClP(label: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn _getProgramSize() callconv(.c) u32 {
     if (currentProgramNumber == numberOfPrograms) {
-        var step: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
-        while (!(isAtEndOfProgram(step) or isAtEndOfPrograms(step))) { // END or .END.
-            step = frontier_next_step.findNextStep(step);
+        const beginPtr: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
+        const memEnd = @intFromPtr(firstFreeProgramByte);
+        var step: [*c]u8 = beginPtr;
+        // A truncated or corrupt last program can lack its END/.END. sentinel; bound
+        // the walk to the used program-memory region (as boundProgramNameLength does)
+        // so findNextStep cannot run into garbage and leave step below beginPtr, which
+        // would underflow the pointer subtraction below on malformed input.
+        while (@intFromPtr(step) < memEnd and !(isAtEndOfProgram(step) or isAtEndOfPrograms(step))) { // END or .END.
+            const next = frontier_next_step.findNextStep(step);
+            if (@intFromPtr(next) <= @intFromPtr(step)) break; // no forward progress: corrupt opcode
+            step = next;
         }
-        return @intCast((@intFromPtr(step) - @intFromPtr(programList[currentProgramNumber - 1].instructionPointer)) + 2);
+        if (@intFromPtr(step) > memEnd) step = firstFreeProgramByte;
+        return @intCast((@intFromPtr(step) - @intFromPtr(beginPtr)) + 2);
     } else {
         return @intCast(@intFromPtr(programList[currentProgramNumber].instructionPointer) - @intFromPtr(programList[currentProgramNumber - 1].instructionPointer));
     }
@@ -1880,6 +1890,9 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
         if (catalog != 0) { // exit catalog and Asm Mode
             frontier_calc_mode.leaveAsmMode();
             frontier_softmenus.popSoftmenu();
+            if (frontier_softmenus.currentMenu() == -MNU_CATALOG) { // drop the CAT menu too
+                frontier_softmenus.popSoftmenu();
+            }
         }
         tam.function = @intCast(ITM_REM);
         pemAlpha(func);

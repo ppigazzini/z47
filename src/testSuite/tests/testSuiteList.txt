@@ -59,8 +59,6 @@
 ;
 ; This file is only a list of files containing the tests to perform
 
-initialSettings
-
 ;debug
 
 ulp

@@ -27,6 +27,7 @@ extern  bool_t   roundedTicks;
 extern  bool_t   PLOT_AXIS;
 extern  int8_t   PLOT_ZOOM;
 extern  uint8_t  drawHistogram;
+extern  uint8_t  plotStatScale;
 
 #define _VECT 0
 #define _SCAT 1

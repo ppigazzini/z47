@@ -222,6 +222,7 @@ extern var SAVED_SIGMA_lastAddRem: [1]u8;
 extern var currentMvarLabel: [2]u8;
 extern var plotStatMx: [8]u8;
 extern var drawHistogram: [1]u8;
+extern var plotStatScale: [1]u8;
 extern var statMx: [8]u8;
 extern var lrSelectionHistobackup: [2]u8;
 extern var lrChosenHistobackup: [2]u8;
@@ -581,6 +582,7 @@ pub fn saveCalc() void {
     sv(&currentMvarLabel[0], 2, "currentMvarLabel", "uint16");
     sv(&plotStatMx[0], 8, "plotStatMx", "hexDump");
     sv(&drawHistogram[0], 1, "drawHistogram", "uint8");
+    sv(&plotStatScale[0], 1, "plotStatScale", "uint8");
     sv(&statMx[0], 8, "statMx", "hexDump");
     sv(&lrSelectionHistobackup[0], 2, "lrSelectionHistobackup", "uint16");
     sv(&lrChosenHistobackup[0], 2, "lrChosenHistobackup", "uint16");
@@ -1184,6 +1186,7 @@ pub fn restoreCalc() void {
     rv(&currentMvarLabel[0], 2, "currentMvarLabel", "uint16");
     rv(&plotStatMx[0], 8, "plotStatMx", "hexDump");
     rv(&drawHistogram[0], 1, "drawHistogram", "uint8");
+    rv(&plotStatScale[0], 1, "plotStatScale", "uint8");
     rv(&statMx[0], 8, "statMx", "hexDump");
     rv(&lrSelectionHistobackup[0], 2, "lrSelectionHistobackup", "uint16");
     rv(&lrChosenHistobackup[0], 2, "lrChosenHistobackup", "uint16");

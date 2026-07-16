@@ -234,6 +234,7 @@ pub export var roundedTicks: bool_t = false;
 pub export var PLOT_AXIS: bool_t = false;
 pub export var PLOT_ZOOM: i8 = 0;
 pub export var drawHistogram: u8 = 0;
+pub export var plotStatScale: u8 = 0; // equal-scale axes for the fnPlotStat plots (SCATR/CENTRL) only
 
 pub export var plotmode: i8 = 0;
 pub export var tick_int_x: f32 = 0;
@@ -330,6 +331,13 @@ inline fn realIsNegative(src: *align(1) const real_t) bool_t {
 }
 inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
+}
+extern fn decNumberSquareRoot(res: *real_t, rhs: *align(1) const real_t, ctx: *realContext_t) *real_t;
+inline fn realSquareRoot(op: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
+    _ = decNumberSquareRoot(res, op, ctxt);
+}
+inline fn realSetPositiveSign(v: *real_t) void {
+    v.bits &= 0x7F;
 }
 // Additional real_t primitives for the decimal range flow / screen mapping.
 extern fn decNumberCopy(res: *real_t, src: *align(1) const real_t) *real_t;
@@ -1269,6 +1277,33 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
 
             frontier_graphs.graph_Include0(PLOTSTAT, numberOfPlotPoints);
 
+            if (drawHistogram == 1 and selection == CF_GAUSS_FITTING) {
+                // HNORM window covers the fitted bell: x = a1 +- 3 sigma (1.1% of peak) unioned with the bar
+                // range, y_max clears the peak by 10%; a flipped fit (a2 >= 0) has no finite tails and keeps the bar range
+                var rr: real_t = undefined;
+                var smi: real_t = undefined;
+                var ga0: real_t = undefined;
+                var ga1: real_t = undefined;
+                var ga2: real_t = undefined;
+                var t: real_t = undefined;
+                var sig3: real_t = undefined;
+                frontier_curve_fitting.processCurvefitSelection(selection, &rr, &smi, &ga0, &ga1, &ga2);
+                if (!realIsNaN(&ga0) and !realIsNaN(&ga1) and !realIsNaN(&ga2) and realIsNegative(&ga2)) {
+                    realMultiply(&ga2, consts.const_1on2(), &sig3, &ctxtReal39); // sigma^2 = -a2/2
+                    realSetPositiveSign(&sig3);
+                    realSquareRoot(&sig3, &sig3, &ctxtReal39); // sigma
+                    int32ToReal(3, &t);
+                    realMultiply(&sig3, &t, &sig3, &ctxtReal39); // 3 sigma
+                    realSubtract(&ga1, &sig3, &t, &ctxtReal39); // a1 - 3 sigma
+                    if (realCompareLessThan(&t, x_min)) realCopy(&t, x_min);
+                    realAdd(&ga1, &sig3, &t, &ctxtReal39); // a1 + 3 sigma
+                    if (realCompareGreaterThan(&t, x_max)) realCopy(&t, x_max);
+                    convertDoubleToReal(1.1, &t, &ctxtReal39);
+                    realMultiply(&ga0, &t, &t, &ctxtReal39); // 1.1 * a0
+                    if (realCompareGreaterThan(&t, y_max)) realCopy(&t, y_max);
+                }
+            }
+
             roundedTicks = false;
 
             if (realToFloatL(x_min) <= FLoatingMin or realToFloatL(x_max) <= FLoatingMin or realToFloatL(y_min) <= FLoatingMin or realToFloatL(y_max) <= FLoatingMin) {
@@ -1565,7 +1600,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
             }
             ixd = xd;
             if (iterations > 0) {
-                const tol: i16 = 4;
+                const tol: i16 = 1; // Gauss tails asymptote along the bottom and must draw to the frame edges
                 if (xN < SCREEN_WIDTH_GRAPH and xN > minN_x and yN < SCREEN_HEIGHT_GRAPH - tol and yN > minN_y) {
                     yn = yN;
                     xn = xN;

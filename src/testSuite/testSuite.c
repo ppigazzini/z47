@@ -1385,14 +1385,20 @@ static void sha256Final(sha256Ctx *c, char outHex[65]) {
   outHex[64] = 0;
 }
 
-// Plot-regression drivers (graphs_cov.txt). Each graph is rendered by XEQ of a small RPN program ending in SNAP (G1..G4, staged by covLoadGraphPgms), i.e.
+// Plot-regression drivers (graphs_cov.txt). Each graph is rendered by XEQ of a small RPN program ending in SNAP (G1..G6, staged by covLoadGraphPgms), i.e.
 // in the real programmed UI context, and pinned by a SHA-256 of the SNAP screen capture:
 //   EQN Draw_y^x: G1 - X.SWAP the formula in from the X string, then Draw it;
 //   ADV PLTf    : G2 - program plot (PGMPLT ->00 via R00, then PLTf 'x');
 //   PLOT PLSTAT : G3 - statistics plot from the seeded sums;
 //   REGR SCATR  : G4 - scatter plot from the same seeded sums;
-//   REGR HISTO  : (not yet programmable, interactive only).
-//   REGR ASSESS : (not yet programmable, interactive only).
+//   REGR ASSESS : G5 - BestF 1 selects the linear model in-program, then ASSESS (PLOT_LR) lays out the assessment (a0/a1/r^2/fit line);
+//   REGR HISTO  : G6 - HISTOX builds the HISTO matrix (auto bins) from the sums, then HPLOT draws the histogram;
+//   REGR CENTRL : G7 - CENTRL (PLOT_ORTHOF) draws the centroid/orthogonal-fit plot;
+//   REGR HNORM  : G8 - HISTOX builds the HISTO matrix, then HNORM draws the histogram with the normal (Gauss) fit overlay;
+//   REGR ASSESS : G9 - BestF 8 selects the power model in-program, then ASSESS draws that assessment (programmed model selection).
+// Every plot program renders self-contained: fnPlotStat starts the requested plot regardless of the plot on screen (an explicit request
+// resets lastPlotMode and, for HPLOT, the leftover fit selection; HNORM's sums takeover is restored at the next plot), so the G programs
+// can run in any order. G5 pins its fit model in-program because the chosen model (lrChosen, set by CENTRL) is persistent user state.
 // covBmpName numbers the bitmap (c47plotTest<N>.bmp) so every graph stays on disk; covHashBmp pins its SHA-256.
 void covEqSet(uint16_t which) {
   // Stage the fallback formula G1 swaps out; also allocates the formula slot and the solver variable. The plot range comes from the stack on the XEQ line.
@@ -1436,10 +1442,67 @@ void covLoadGraphPgms(uint16_t unusedButMandatoryParameter) {
     OP2(ITM_SNAP),                                  // SNAP
     OP2(ITM_END),                                   // END
   };
+  // G5 (REGR ASSESS): ASSESS (PLOT_LR) lays out the linear-regression assessment
+  // (fit coefficients a0/a1, r-squared, and the fit line) from the seeded "STATS"
+  // sums. BestF 1 selects the linear model in-program (the power-on default), so
+  // the pinned render is immune to a fit model chosen by an earlier plot (CENTRL
+  // sets the orthogonal model) - and doubles as the programmed-model-selection
+  // demonstration: BestF <mask> then ASSESS assesses that model.
+  static const uint8_t pgmG5[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '5',    // LBL "G5"
+    OP2(ITM_BESTF), 0, CF_LINEAR_FITTING,           // BestF 1 (linear model; big-endian 16-bit value)
+    OP2(ITM_PLOT_ASSESS),                           // ASSESS (PLOT_LR)
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  // G6 (REGR HISTO): HISTOX builds the "HISTO" matrix from the seeded "STATS"
+  // sums (bins auto-default to ceil(sqrt(N)) - no interactive entry), then HPLOT
+  // renders the histogram. Programming the HISTOX build is the step that makes
+  // the previously "interactive only" histogram reachable headlessly.
+  static const uint8_t pgmG6[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '6',    // LBL "G6"
+    OP2(ITM_HISTOX),                                // HISTOX (build HISTO matrix from STATS X)
+    OP2(ITM_HPLOT),                                 // HPLOT  (draw the histogram)
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  // G7 (REGR CENTRL): the centroid/orthogonal-fit plot (PLOT_ORTHOF) from the
+  // seeded "STATS" sums; selects the orthogonal model itself, no setup needed.
+  static const uint8_t pgmG7[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '7',    // LBL "G7"
+    OP2(ITM_PLOT_CENTRL),                           // CENTRL (PLOT_ORTHOF)
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  // G8 (REGR HNORM): HISTOX builds the "HISTO" matrix, then HNORM draws the
+  // histogram with the normal (Gauss) fit overlay. HNORM retargets the sums at
+  // the HISTO matrix; fnPlotStat/HISTOX restore them at the next plot, so G8
+  // stays order-independent like the rest.
+  static const uint8_t pgmG8[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '8',    // LBL "G8"
+    OP2(ITM_HISTOX),                                // HISTOX (build HISTO matrix from STATS X)
+    OP2(ITM_HNORM),                                 // HNORM  (histogram + normal fit)
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
+  // G9 (REGR ASSESS, power model): the same programmed model-selection pattern as
+  // G5 with the power fit - proves a program can select any model and assess it.
+  static const uint8_t pgmG9[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '9',    // LBL "G9"
+    OP2(ITM_BESTF), 0, CF_POWER_FITTING,            // BestF 8 (power model y = a0*x^a1)
+    OP2(ITM_PLOT_ASSESS),                           // ASSESS (PLOT_LR)
+    OP2(ITM_SNAP),                                  // SNAP
+    OP2(ITM_END),                                   // END
+  };
   covWriteAndLoadPgm(pgmG1, sizeof(pgmG1));
   covWriteAndLoadPgm(pgmG2, sizeof(pgmG2));
   covWriteAndLoadPgm(pgmG3, sizeof(pgmG3));
   covWriteAndLoadPgm(pgmG4, sizeof(pgmG4));
+  covWriteAndLoadPgm(pgmG5, sizeof(pgmG5));
+  covWriteAndLoadPgm(pgmG6, sizeof(pgmG6));
+  covWriteAndLoadPgm(pgmG7, sizeof(pgmG7));
+  covWriteAndLoadPgm(pgmG8, sizeof(pgmG8));
+  covWriteAndLoadPgm(pgmG9, sizeof(pgmG9));
 }
 
 // The on-disk name of graph <which>'s bitmap. covBmpName points the SNAP capture at it and covHashBmp reads it back; one builder keeps the two from drifting.
@@ -1687,7 +1750,7 @@ void getString(char *str) {
 
 void setParameter(char *p) {
   calcRegister_t regist = 0;
-  char l[200], r[1400], real[200], imag[200], angMod[200]; //, letter;
+  char l[1400], r[1400], real[1400], imag[1400], angMod[1400]; //, letter;
   int32_t i;
   angularMode_t am = amDegree;
 
@@ -1703,6 +1766,11 @@ void setParameter(char *p) {
   }
 
   p[i] = 0;
+  if((size_t)i >= sizeof(l) || strlen(p + i + 1) >= sizeof(r)) {
+    printf("\nParameter setting is too long for the parser buffers.\n");
+    abortTest();
+    return;
+  }
   strcpy(l, p);
   strcpy(r, p + i + 1);
 
@@ -1781,6 +1849,14 @@ void setParameter(char *p) {
         }
         else {
           setSystemFlag(FLAG_PLINE);
+        }
+      }
+      else if(!strcmp(l+3, "SCALE")) {
+        if(r[0] == '0') {
+          clearSystemFlag(FLAG_SCALE);
+        }
+        else {
+          setSystemFlag(FLAG_SCALE);
         }
       }
       else if(!strcmp(l+3, "CPXRES")) {
@@ -2576,9 +2652,19 @@ void inParameters(char *token) {
     while(*token != ' ' && *token != 0) {
       if(*token == '"') { // Inside a string
         lg = endOfString(token) - token;
+        if(index + lg >= (int)sizeof(parameter)) {
+          printf("\nParameter token is too long for the %d-byte parser buffer.\n", (int)sizeof(parameter));
+          abortTest();
+          return;
+        }
         strncpy(parameter + index, token, lg--);
         index += lg;
         token += lg;
+      }
+      if(index >= (int)sizeof(parameter) - 1) {
+        printf("\nParameter token is too long for the %d-byte parser buffer.\n", (int)sizeof(parameter));
+        abortTest();
+        return;
       }
       parameter[index++] = *(token++);
     }
@@ -2864,7 +2950,7 @@ bool_t real34AreEqual(real34_t *a, real34_t *b) {
 
 void checkExpectedOutParameter(char *p) {
   calcRegister_t regist = 0;
-  char l[2000], r[2000], real[200], imag[200], angMod[200], letter = 0;
+  char l[2000], r[2000], real[2000], imag[2000], angMod[2000], letter = 0;
   int32_t i;
   angularMode_t am = amDegree;
   real34_t expectedReal34, expectedImag34;
@@ -2881,6 +2967,11 @@ void checkExpectedOutParameter(char *p) {
   }
 
   p[i] = 0;
+  if((size_t)i >= sizeof(l) || strlen(p + i + 1) >= sizeof(r)) {
+    printf("\nParameter setting is too long for the parser buffers.\n");
+    abortTest();
+    return;
+  }
   strcpy(l, p);
   strcpy(r, p + i + 1);
 
@@ -4027,9 +4118,19 @@ void outParameters(char *token) {
     while(*token != ' ' && *token != 0) {
       if(*token == '"') { // Inside a string
         lg = endOfString(token) - token;
+        if(index + lg >= (int)sizeof(parameter)) {
+          printf("\nParameter token is too long for the %d-byte parser buffer.\n", (int)sizeof(parameter));
+          abortTest();
+          return;
+        }
         strncpy(parameter + index, token, lg--);
         index += lg;
         token += lg;
+      }
+      if(index >= (int)sizeof(parameter) - 1) {
+        printf("\nParameter token is too long for the %d-byte parser buffer.\n", (int)sizeof(parameter));
+        abortTest();
+        return;
       }
       parameter[index++] = *(token++);
     }

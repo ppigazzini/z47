@@ -6,7 +6,6 @@ const frontier_screen = @import("../display/screen.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const frontier_stats = @import("../stats.zig");
 const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
-const FLAG_SCALE: c_uint = 0x8052;
 
 const CM_NORMAL: u8 = 0;
 const CM_PLOT_STAT: u8 = 8;
@@ -60,30 +59,40 @@ fn classifyMode(mode: u16) PlotStatModeClass {
     };
 }
 
-fn configureRegressionPreset() void {
+fn configureRegressionPreset(ctx: *PlotStatContext) void {
     drawHistogram = 0;
     frontier_plotstat.z47_frontier_plot_set_plotstatmx_stats();
+    // PLOT_ORTHOF/PLOT_START/PLOT_LR are explicit plot requests: reset lastPlotMode
+    // so it cannot override the requested mode below. PLOT_REV/PLOT_NXT modify the
+    // plot on screen, so lastPlotMode stays.
+    if (ctx.effective_mode != PLOT_REV and ctx.effective_mode != PLOT_NXT) {
+        lastPlotMode = PLOT_NOTHING;
+    }
 }
 
 fn configureHistogramPreset() void {
     drawHistogram = 1;
     frontier_plotstat.z47_frontier_plot_set_plotstatmx_histo();
+    lastPlotMode = PLOT_NOTHING;
+    plotSelection = 0; // no fit overlay on a plain histogram
 }
 
 fn configureHistogramNormPreset(ctx: *PlotStatContext) void {
     drawHistogram = 1;
+    frontier_plotstat.z47_frontier_plot_set_plotstatmx_histo(); // HNORM plots the HISTO matrix
+    lrSelectionHistobackup = lrSelection;
+    lrChosenHistobackup = lrChosen;
+    // must precede the statMx takeover below: fnCurveFitting restores the stats when statMx is "HISTO"
+    frontier_curve_fitting.fnCurveFitting(CF_GAUSS_FITTING);
     frontier_plotstat.z47_frontier_plot_set_statmx_histo();
     frontier_stats.calcSigma(0);
     ctx.effective_mode = PLOT_LR;
     lastPlotMode = PLOT_START;
-    lrSelectionHistobackup = lrSelection;
-    lrChosenHistobackup = lrChosen;
-    frontier_curve_fitting.fnCurveFitting(CF_GAUSS_FITTING);
 }
 
 fn configureModePre(ctx: *PlotStatContext) void {
     switch (ctx.class) {
-        .regression => configureRegressionPreset(),
+        .regression => configureRegressionPreset(ctx),
         .histogram => configureHistogramPreset(),
         .histogram_normal => configureHistogramNormPreset(ctx),
         .other => {},
@@ -117,7 +126,7 @@ fn normalizeEffectiveModeFromLast(ctx: *PlotStatContext) void {
 }
 
 fn prepareRuntime(ctx: *PlotStatContext) void {
-    clearSystemFlag(FLAG_SCALE);
+    plotStatScale = 0; // per-mode default; SCATR/CENTRL set it
     normalizeEffectiveModeFromLast(ctx);
     calcMode = CM_PLOT_STAT;
     frontier_plotstat.statGraphReset();
@@ -157,7 +166,7 @@ fn showSoftmenuForMode(ctx: PlotStatContext) void {
         },
         PLOT_NXT, PLOT_REV => frontier_softmenus.showSoftmenu(-MNU_PLOT_ASSESS),
         PLOT_ORTHOF, PLOT_START => {
-            setSystemFlag(FLAG_SCALE);
+            plotStatScale = 1;
             frontier_softmenus.showSoftmenu(-MNU_PLOT_SCATR);
         },
         PLOT_NOTHING => {},
@@ -179,6 +188,11 @@ fn finishFailure() void {
 }
 
 pub fn run(plot_mode: u16) void {
+    // a new plot starts from restored stats after an HNORM takeover, as EXIT does
+    if (plot_mode != PLOT_NXT and plot_mode != PLOT_REV and statMx[0] != 'S') {
+        restoreStats();
+    }
+
     var ctx = PlotStatContext.init(plot_mode);
 
     configureModePre(&ctx);
@@ -207,6 +221,6 @@ extern var lrChosen: u16;
 extern var lastPlotMode: u16;
 extern var lrSelectionHistobackup: u16;
 extern var lrChosenHistobackup: u16;
-
-extern fn clearSystemFlag(sf: c_uint) void;
-extern fn setSystemFlag(sf: c_uint) void;
+extern var plotStatScale: u8;
+extern var statMx: [8]u8;
+extern fn restoreStats() void;

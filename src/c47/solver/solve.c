@@ -15,7 +15,7 @@
 
 
 #define  SOLVERDEBUG // only progress indicators
-//#undef  SOLVERDEBUG
+#undef  SOLVERDEBUG
 #define SOLVERDEBUG2 // more details
 #undef SOLVERDEBUG2
 

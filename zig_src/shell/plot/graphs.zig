@@ -229,6 +229,7 @@ extern var roundedTicks: bool_t;
 extern var PLOT_AXIS: bool_t;
 extern var PLOT_ZOOM: i8;
 extern var drawHistogram: u8;
+extern var plotStatScale: u8;
 extern var plotmode: i8;
 extern var tick_int_x: f32;
 extern var tick_int_y: f32;
@@ -450,7 +451,6 @@ pub export fn graphResetCommon() callconv(.c) void {
     clearSystemFlag(FLAG_SHOWX);
     clearSystemFlag(FLAG_VECT);
     clearSystemFlag(FLAG_NVECT);
-    clearSystemFlag(FLAG_SCALE);
     setSystemFlag(FLAG_PLINE);
     setSystemFlag(FLAG_PBOX);
     clearSystemFlag(FLAG_PCURVE);
@@ -474,6 +474,7 @@ pub export fn graphResetCommon() callconv(.c) void {
 
 pub export fn graph_reset() callconv(.c) void {
     graphResetCommon();
+    clearSystemFlag(FLAG_SCALE); // fnPlotSQ option; the stat plots (statGraphReset) run on plotStatScale and leave the user's flag alone
 }
 
 // ===========================================================================
@@ -1055,7 +1056,8 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
     var plotzoomx: f32 = 1;
     if (mode == PLOTSTAT) {
         // the ZOOM command from outside the PLOT mode only works for PLSTAT
-        const histofactor: f32 = if (drawHistogram == 0) 1 else 1 / zoomfactor * ((@as(f32, @floatFromInt(statnum)) + 2.0) / (@as(f32, @floatFromInt(statnum)) - 1.0) - 1) / 2; // Create space on the sides of the graph for the wider histogram columns
+        // widen the histogram range to (n+2)/(n-1) of the bin-mid span: 1.5 bin widths of margin per side for the columns
+        const histofactor: f32 = if (drawHistogram == 0) 1 else (@as(f32, @floatFromInt(statnum)) + 2.0) / (@as(f32, @floatFromInt(statnum)) - 1.0);
         // C: PLOT_ZOOM * 0.75 is (int8 * double) -> double, narrowed to float at the arg.
         calculateZoomFactor(@floatCast(@as(f64, @floatFromInt(PLOT_ZOOM)) * 0.75), &plotzoomx);
         plotzoomy = if (drawHistogram == 1) 1 else plotzoomx;
@@ -1092,8 +1094,8 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
         }
     }
 
-    // Cause scales to be the same
-    if (getSystemFlag(FLAG_SCALE)) {
+    // Cause scales to be the same: plotStatScale rules the fnPlotStat plots, the user's SCALE flag the fnPlotSQ plots
+    if (if (mode == PLOTSTAT) (plotStatScale != 0) else getSystemFlag(FLAG_SCALE)) {
         if (mode == PLOTSTAT) {
             // if y >> x, then y simply takes on the X range and can be increased using ZMY
             if (realCompareGreaterThan(x_min, y_min)) realCopy(y_min, x_min);
