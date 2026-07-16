@@ -49,6 +49,7 @@ step "[6/11] idiomatic-Zig ratchet"
 bash .github/project/check-idiom-ratchet.sh
 step "[6b/11] headless-engine severance (engine->shell)"
 python3 .github/project/check-core-shell-severance.py --repo-root .
+bash .github/project/test-check-core-shell-severance.sh
 step "[6c/11] core platform leak vs upstream (REPORT-28 §38 L8)"
 bash .github/project/check-core-platform-purity.sh
 step "[6d/11] compilation carriers are module roots (REPORT-28 §39 L9)"
