@@ -203,6 +203,8 @@ extern var xzero: [4]u8;
 extern var yzero: [4]u8;
 extern var regStatsXY: [2]u8;
 extern var matrixIndex: [2]u8;
+extern var shadowI: [2]u8;
+extern var shadowJ: [2]u8;
 extern var currentViewRegister: [2]u8;
 extern var currentSolverStatus: [2]u8;
 extern var currentSolverProgram: [2]u8;
@@ -563,6 +565,8 @@ pub fn saveCalc() void {
     sv(&yzero[0], 4, "yzero", "uint32");
     sv(&regStatsXY[0], 2, "regStatsXY", "int16");
     sv(&matrixIndex[0], 2, "matrixIndex", "uint16");
+    sv(&shadowI[0], 2, "shadowI", "int16");
+    sv(&shadowJ[0], 2, "shadowJ", "int16");
     sv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
     sv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
     sv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
@@ -1167,6 +1171,8 @@ pub fn restoreCalc() void {
     rv(&yzero[0], 4, "yzero", "uint32");
     rv(&regStatsXY[0], 2, "regStatsXY", "int16");
     rv(&matrixIndex[0], 2, "matrixIndex", "uint16");
+    rv(&shadowI[0], 2, "shadowI", "int16");
+    rv(&shadowJ[0], 2, "shadowJ", "int16");
     rv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
     rv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
     rv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");

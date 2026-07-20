@@ -2139,22 +2139,68 @@ comptime {
     _ = &tmpRow;
 }
 
+// The shadow row/column pair: the Matrix Editor's cursor while it is open, and the
+// vector functions' walking index while they cross a matrix. The user's I and J keep
+// their value and their type. While the shadow is closed the accessors address the
+// real registers; while it is open (editor mode, or a vector function's walk) they
+// address the shadow, so the user's I/J are never clobbered. shadowI/J persist to
+// backup.cfg beside matrixIndex, so the editor reopens on the cell it was left on.
+pub export var shadowI: i16 = 0; // 0-based, i.e. what asArrayPointer=true reports
+pub export var shadowJ: i16 = 0;
+var ijShadowActive: bool = false; // for the vector functions; the editor is spotted by its calcMode
+
+fn ijIsShadowed() bool {
+    return calcMode == CM_MIM or ijShadowActive;
+}
+
+/// Which matrix was indexed, and the shadow row/column under it. Opaque: filled by
+/// saveMatrixIndexState and put back by restoreMatrixIndexState.
+pub const MatrixIndexState = extern struct {
+    matrixIndex: u16,
+    savedI: i16,
+    savedJ: i16,
+};
+
+pub export fn saveMatrixIndexState(state: *MatrixIndexState) callconv(.c) void {
+    state.matrixIndex = matrixIndex;
+    state.savedI = shadowI;
+    state.savedJ = shadowJ;
+    ijShadowActive = true; // from here the walking index goes to the shadow; the user's I and J are not touched
+}
+
+pub export fn restoreMatrixIndexState(state: *const MatrixIndexState) callconv(.c) void {
+    ijShadowActive = false;
+    shadowI = state.savedI; // an editor open underneath keeps the cursor it had
+    shadowJ = state.savedJ;
+    matrixIndex = state.matrixIndex;
+}
+
 // The I and J register accessors. Upstream defines them here (ui/matrixEditor.c:364),
 // and they are the matrix editor's own row/column cursor: they belong with the
 // state they read, not in the module root. A root force-imports; it does not export.
 pub export fn getIRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
+    if (ijIsShadowed()) return if (as_array_pointer) shadowI else shadowI + 1;
     return z47_frontier_matrix_get_register_as_int(REGISTER_I, as_array_pointer);
 }
 
 pub export fn getJRegisterAsInt(as_array_pointer: bool) callconv(.c) i16 {
+    if (ijIsShadowed()) return if (as_array_pointer) shadowJ else shadowJ + 1;
     return z47_frontier_matrix_get_register_as_int(REGISTER_J, as_array_pointer);
 }
 
 pub export fn setIRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
+    if (ijIsShadowed()) {
+        shadowI = if (as_array_pointer) to_store else to_store - 1;
+        return;
+    }
     z47_frontier_matrix_set_register_as_int(REGISTER_I, as_array_pointer, to_store);
 }
 
 pub export fn setJRegisterAsInt(as_array_pointer: bool, to_store: i16) callconv(.c) void {
+    if (ijIsShadowed()) {
+        shadowJ = if (as_array_pointer) to_store else to_store - 1;
+        return;
+    }
     z47_frontier_matrix_set_register_as_int(REGISTER_J, as_array_pointer, to_store);
 }
 
