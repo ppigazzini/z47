@@ -255,7 +255,7 @@ const SCRUPD_AUTO: u8 = 0x00;
 const SCRUPD_SKIP_STACK_ONE_TIME: u8 = 0x20;
 const SCRUPD_SKIP_MENU_ONE_TIME: u8 = 0x40;
 
-const TAM_BUFFER_LENGTH: usize = 32;
+const TAM_BUFFER_LENGTH: usize = 56;
 
 const PGM_STOPPED: u8 = 0;
 const PGM_RUNNING: u8 = 1;

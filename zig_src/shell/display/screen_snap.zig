@@ -63,7 +63,7 @@ const STR_LGINT_HEADER_SIZE: usize = 4;
 const ERROR_MESSAGE_LENGTH: i32 = 512;
 const AIM_BUFFER_LENGTH: u32 = 1024;
 const NIM_BUFFER_LENGTH: u32 = 200;
-const TAM_BUFFER_LENGTH: u32 = 32;
+const TAM_BUFFER_LENGTH: u32 = 56;
 
 const SCREEN_WIDTH: c_int = 400;
 const SCREEN_HEIGHT: c_int = 240;

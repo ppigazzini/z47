@@ -104,9 +104,7 @@ const TI_SOLVER_VARIABLE_RESULT: u8 = 110;
 const ITM_STO: i16 = 44;
 const ITM_SOLVE: i16 = 1608;
 
-const REAL_SOLVER: usize = 106;
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48; // defines.h 48 (errorMessages row width); 64 gave a wrong stride
-const NUMBER_OF_ERROR_CODES: usize = 129;
+const REAL_SOLVER: u8 = 106; // status-message code passed to errorMessageOf
 
 const SCRUPD_MANUAL_MENU: u8 = 0x04;
 
@@ -155,13 +153,10 @@ inline fn ctxtSolverHi() *realContext_t {
     return &ctxtReal39;
 }
 
-// C `const char errorMessages[NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]`
-// is a 2D ARRAY: the symbol address IS the data. Binding it as `[*]const [M]u8`
-// (a pointer type) made Zig load the array's first 8 bytes AS the pointer value,
-// so errorMessages[REAL_SOLVER] dereferenced garbage -> printStatus's
-// `printf("%s", line1)` strlen-faulted when graphing/solving (the "crashes when
-// selecting graph" report). Use the array form like the sibling owners.
-extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
+// Upstream packed the fixed-width errorMessages[N][M] 2D array into a static pool
+// reached through this accessor (error.c), so the array symbol no longer exists;
+// errorMessageOf(code) returns the message pointer for one error/status code.
+extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 
 // softmenu globals
 const dynamicSoftmenu_t = abi.DynamicSoftmenu;
@@ -493,7 +488,7 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
 // ===========================================================================
 pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    printStatus(1, &errorMessages[REAL_SOLVER][0], force);
+    printStatus(1, errorMessageOf(REAL_SOLVER), force);
     const variable_str: [*c]u8 = getNthString(dynamicSoftmenu[@intCast(softmenuStack[0].softmenuId)].menuContent, dynamicMenuItem);
     const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(@ptrCast(variable_str)))));
     const nameLength: u16 = @intCast(stringByteLength(variable_str) + 1);

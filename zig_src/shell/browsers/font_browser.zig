@@ -40,7 +40,7 @@ const vmNormal: videoMode_t = 0;
 
 const NUMBER_OF_NUMERIC_FONT_LINES_PER_SCREEN: u16 = 5;
 const NUMBER_OF_STANDARD_FONT_LINES_PER_SCREEN: u16 = 8;
-const NUMBER_OF_GLYPH_ROWS: usize = 267; // defines.h: 267 (matches glyphRow[] global size)
+const NUMBER_OF_GLYPH_ROWS: usize = 268; // defines.h: 268 (matches glyphRow[] global size)
 const NUMERIC_FONT_HEIGHT: u16 = 36;
 const STANDARD_FONT_HEIGHT: u16 = 22;
 const SCREEN_WIDTH: i16 = 400;

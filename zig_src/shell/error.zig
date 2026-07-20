@@ -334,6 +334,15 @@ pub export const errorMessages linksection(code_section) = [NUMBER_OF_ERROR_CODE
     errRow("Undo failed: likely no memory"),
 };
 
+// Upstream (error.c) packed the fixed-width errorMessages[][] table into a static
+// pool reached through this accessor, dropping the global array symbol. z47 keeps
+// the 2D array as its owned storage (still consumed by the stats/screen owners) and
+// exposes the same public accessor over it, so callers get one message pointer per
+// error/status code exactly as the C does.
+pub export fn errorMessageOf(errorCode: u8) linksection(code_section) callconv(.c) [*c]const u8 {
+    return &errorMessages[errorCode][0];
+}
+
 // ---------------------------------------------------------------------------
 // moreInfoOnError. Upstream defines the printf console popup only for PC_BUILD;
 // on firmware the Zig math owners still call moreInfoOnError unconditionally, so

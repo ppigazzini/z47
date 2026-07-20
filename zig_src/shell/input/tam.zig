@@ -1315,7 +1315,7 @@ fn _tamProcessInput(item: u16) void {
                 }
             }
             if (value == INVALID_VARIABLE and ((tam.function == ITM_XEQ) or (tam.function == ITM_XEQP1))) {
-                if (!tam.indirect) {
+                if (!tam.indirect and !tam.colon) {
                     var i: i32 = 0;
                     while (i < LAST_ITEM) : (i += 1) {
                         if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_FNCT and frontier_sort.compareString(buffer, &indexOfItems[@intCast(i)].itemCatalogName, CMP_NAME) == 0) {
