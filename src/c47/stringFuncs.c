@@ -3,6 +3,16 @@
 
 #include "c47.h"
 
+#if !defined(OPTION_ASTRING)                                                  // stubs for the alpha string functions (real code is guarded below): aMID aLEFT aRIGHT aTRIM aREV aLOWER aUPPER
+  void fnAlphaLower(uint16_t regist) {}
+  void fnAlphaUpper(uint16_t regist) {}
+  void fnAlphaLeft (uint16_t regist) {}
+  void fnAlphaMid  (uint16_t regist) {}
+  void fnAlphaRight(uint16_t regist) {}
+  void fnAlphaRev  (uint16_t regist) {}
+  void fnAlphaTrim (uint16_t regist) {}
+#endif // !OPTION_ASTRING
+
 TO_QSPI const upperLower_t upperLowerTable[] = {
     { STD_A,                 STD_a                 },
     { STD_B,                 STD_b                 },
@@ -1141,6 +1151,7 @@ void fnAlphaIP(uint16_t regist) {
 }
 
 
+#if defined(OPTION_ASTRING)
 static uint16_t _getGlyphCode(char *ptrString) {
   uint16_t glyph;
 
@@ -1425,6 +1436,7 @@ end:
   copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X);    // Restore register X
   copySourceRegisterToDestRegister(REGISTER_L, SAVED_REGISTER_L);    // Save register L
 }
+#endif // OPTION_ASTRING
 
 
 //

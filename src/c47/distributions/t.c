@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17B)
+#if !defined(OPTION_DIST_2)
   void fnT_P   (uint16_t unusedButMandatoryParameter){}
   void fnT_L   (uint16_t unusedButMandatoryParameter){}
   void fnT_R   (uint16_t unusedButMandatoryParameter){}
@@ -275,5 +275,5 @@
     }
   }
 
-#endif //SAVE_SPACE_DM42_17B
+#endif // !OPTION_DIST_2
 

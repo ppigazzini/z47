@@ -407,7 +407,7 @@ void Sett(int16_t grp) {
 
 
   void fnSetHP35(uint16_t unusedButMandatoryParameter) {
-    #if !defined(SAVE_SPACE_DM42_21_HP35) && !defined(SAVE_SPACE_DM42_24_PROFILES)
+    #if defined(OPTION_HP35) && defined(OPTION_DEVPROFILES)
       getDateString(lastStateFileOpened);
       strcat(lastStateFileOpened, ": HP35 defaults");
       fnKeyExit(0);                            //Clear pending key input
@@ -423,12 +423,12 @@ void Sett(int16_t grp) {
       fnRefreshState();
       screenUpdatingMode = SCRUPD_AUTO;
       refreshScreen(160);
-    #endif //SAVE_SPACE_DM42_21_HP35
+    #endif //OPTION_HP35
   }
 
 
   void fnSetJM(uint16_t unusedButMandatoryParameter){
-  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
+  #if defined(OPTION_DEVPROFILES)
     fnDrop(NOPARAM);
     resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
@@ -462,12 +462,12 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(161);
-  #endif //#!SAVE_SPACE_DM42_24_PROFILES
+  #endif //#!OPTION_DEVPROFILES
   }
 
 
   void fnSetRJ(uint16_t unusedButMandatoryParameter){
-  #if !defined(SAVE_SPACE_DM42_24_PROFILES)
+  #if defined(OPTION_DEVPROFILES)
     resetOtherConfigurationStuff(true);
     getDateString(lastStateFileOpened);
     strcat(lastStateFileOpened, ": RJvM defaults");
@@ -480,7 +480,7 @@ void Sett(int16_t grp) {
     fnRefreshState();
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(165);
-  #endif //!SAVE_SPACE_DM42_24_PROFILES
+  #endif //!OPTION_DEVPROFILES
   }
 
 
@@ -1562,8 +1562,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
                                                                               // errorMessage     from    0 to (4095       )
        aimBuffer        = errorMessage + ERROR_MESSAGE_LENGTH;   // + 512     // aimBuffer        from  512 to (512  + 1024) or 1536
        nimBufferDisplay = aimBuffer + AIM_BUFFER_LENGTH;         // +1024     // nimBufferDisplay from 1536 to (1536 +  200) or 1736
-       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;  // + 200     // tamBuffer        from 1736 to (1736 +   32) or 1768
-                                          // TAM_BUFFER_LENGTH   // +  32
+       tamBuffer        = nimBufferDisplay + NIM_BUFFER_LENGTH;  // + 200     // tamBuffer        from 1736 to (1736 +   56) or 1792
+                                          // TAM_BUFFER_LENGTH   // +  56
 
        tmpStringLabelOrVariableName = tmpString + 1000;
     }
@@ -1866,14 +1866,14 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     // The following lines are test data
     #if defined(TESTSUITE_BUILD)
         addTestPrograms();
-    #elif !defined(SAVE_SPACE_DM42_14)
+    #elif defined(OPTION_SAMPLEPGMS)
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("addTestPrograms\n");
                                    #endif
       if(loadTestPrograms) {
         addTestPrograms();
       }
-    #endif // !SAVE_SPACE_DM42_14
+    #endif // !OPTION_SAMPLEPGMS
 
     // Equation formulae
     allFormulae = NULL;
@@ -1919,13 +1919,13 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     }
 
     //Initialize Printer status
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       printerState.print_on         = false;          ///< Printing off
       printerState.print_blank_line = 0;              ///< Print space between lines
       printerState.print_mode       = PMODE_DEFAULT;  ///< printer modes;
       printerState.printer_model    = PRINTER_HP;     ///< printer modes;
       printerState.delay            = getLineDelay(); ///< printer line delay
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
 
                                    #if defined(PC_BUILD) && (VERBOSE_LEVEL > -1)
                                      printf("version\n");

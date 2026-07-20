@@ -7,7 +7,10 @@
 
 #include "c47.h"
 
-#if !defined(SAVE_SPACE_DM42_12)
+#if !defined(OPTION_SLV_ZETA_BETA)
+  void fnBeta(uint16_t unusedButMandatoryParameter) {;}
+
+#else //OPTION_SLV_ZETA_BETA
 static bool_t complexBeta(real_t *xReal, real_t *xImag, real_t *yReal, real_t *yImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {
   // Beta(x, y) := Gamma(x) * Gamma(y) / Gamma(x+y)
   real_t tReal, tImag;
@@ -133,4 +136,4 @@ void fnBeta(uint16_t unusedButMandatoryParameter) {
   processRealComplexDyadicFunction(&betaReal, &betaComplex);
 }
 
-#endif // !SAVE_SPACE_DM42_12
+#endif // OPTION_SLV_ZETA_BETA

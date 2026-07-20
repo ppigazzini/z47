@@ -874,9 +874,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         }
         if(nameOp[0] == 0) {
           if(textVersion == MODE_ALIAS) {
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             nameAlias(op, nameOp);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
           }
           else {
             strcpy(nameOp, indexOfItems[op].itemCatalogName[0] != 0 ? indexOfItems[op].itemCatalogName : indexOfItems[op].itemSoftmenuName);
@@ -917,9 +917,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
         else {
           if(nameOp[0] == 0) {
             if(textVersion == MODE_ALIAS) {
-            #if defined(IR_PRINTING)
+            #if defined(OPTION_IR_PRINTING)
               nameAlias(op, nameOp);
-            #endif //IR_PRINTING
+            #endif //OPTION_IR_PRINTING
             }
             else {
               strcpy(nameOp, indexOfItems[op].itemCatalogName);

@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17B)
+#if !defined(OPTION_DIST_2)
   void fnWeibullP     (uint16_t unusedButMandatoryParameter){}
   void fnWeibullL     (uint16_t unusedButMandatoryParameter){}
   void fnWeibullR     (uint16_t unusedButMandatoryParameter){}
@@ -171,4 +171,4 @@
     realMultiply(&p, b, res, realContext);
   }
 
-#endif //SAVE_SPACE_DM42_17B
+#endif // !OPTION_DIST_2

@@ -100,7 +100,6 @@ uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimedLength) 
 
 
 void scanLabelsAndPrograms(void) {
-#if !defined(SAVE_SPACE_DM42_10)
   uint32_t stepNumber = 0;
   uint8_t *nextStep, *step = beginOfProgramMemory;
   // Hard upper bound of the program region; a step that would advance past it has
@@ -190,7 +189,6 @@ void scanLabelsAndPrograms(void) {
 
   defineCurrentProgramFromCurrentStep();
   defineFirstDisplayedStep();
-#endif // !SAVE_SPACE_DM42_10
 }
 
 
@@ -456,7 +454,6 @@ static bool_t _isAngleType(uint8_t literalType) {
 
 
 void fnPem(uint16_t unusedButMandatoryParameter) {
-#if !defined(SAVE_SPACE_DM42_10)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For this function to work properly we need the following variables set properly:
     //  - currentProgramNumber
@@ -672,7 +669,6 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       showSoftmenuCurrentPart();
       fnPem(NOPARAM);
     }
-#endif // !SAVE_SPACE_DM42_10
 }
 
 

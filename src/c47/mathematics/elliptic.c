@@ -9,7 +9,7 @@
 
 #define ELLIPTIC_N 16
 
-#if !defined(SAVE_SPACE_DM42_12ELLIP)
+#if defined(OPTION_ELLIPTIC)
 
 
 void _ellipseE(void) {
@@ -1798,7 +1798,7 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
   adjustResult(REGISTER_X, true, true, REGISTER_X, -1, -1);
 }
 
-#else //SAVE_SPACE_DM42_12ELLIP
+#else //OPTION_ELLIPTIC
   void fnEllipse(uint16_t unusedButMandatoryParameter) {;}
   void fnKtoM(uint16_t unusedButMandatoryParameter) {;}
   void fnMtoK(uint16_t unusedButMandatoryParameter) {;}
@@ -1824,5 +1824,5 @@ void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {
   void fnEllipticFphi(uint16_t unusedButMandatoryParameter) {;}
   void fnEllipticEphi(uint16_t unusedButMandatoryParameter) {;}
   void fnJacobiZeta(uint16_t unusedButMandatoryParameter) {;}
-#endif //SAVE_SPACE_DM42_12ELLIP
+#endif //OPTION_ELLIPTIC
 

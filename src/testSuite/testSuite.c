@@ -46,6 +46,7 @@ void covSolveRoot(uint16_t which);
 void covDerivErr(uint16_t which);
 void covSolveErr(uint16_t which);
 void covLoadPgm(uint16_t unusedButMandatoryParameter);
+void covIterationTi(uint16_t which);
 void covDerivPgm(uint16_t order);
 void covSolvePgm(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
@@ -215,6 +216,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDerivErrCov",          covDerivErr, 1 },
   {"fnSolveErrCov",          covSolveErr, 1 },
   {"fnLoadPgmCov",           covLoadPgm, 1 },
+  {"fnIterationTiCov",       covIterationTi, 1 },
   {"fnDerivPgmCov",          covDerivPgm, 1 },
   {"fnSolvePgmCov",          covSolvePgm, 1 },
   {"fnIntegrateCov",         covIntegrate, 1 },
@@ -897,6 +899,24 @@ static void covWriteAndLoadPgm(const uint8_t *pgm, size_t n) {
   }
   fclose(f);
   fnLoadProgram(NOPARAM);
+}
+
+void covIterationTi(uint16_t which) {
+  // Run one iteration op on the counter in R00 and leave 1 in X when it
+  // reports TI_TRUE (the decision a running program uses to skip the next
+  // step), else 0. The counter mutation itself is asserted through R00.
+  switch(which) {
+    case 0: fnIsz(0); break;
+    case 1: fnDsz(0); break;
+    case 2: fnIsg(0); break;
+    case 3: fnIse(0); break;
+    case 4: fnDse(0); break;
+    case 5: fnDsl(0); break;
+    default: break;
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(temporaryInformation == TI_TRUE ? 1 : 0, REGISTER_REAL34_DATA(REGISTER_X));
+  temporaryInformation = TI_NO_INFO;
 }
 
 void covLoadPgm(uint16_t unusedButMandatoryParameter) {
@@ -1930,9 +1950,25 @@ void setParameter(char *p) {
           setSystemFlag(FLAG_ENDPMT);
         }
       }
+      // Generic fallback: resolve any system flag by its CAT_SYFL catalog name (e.g. SIG0, ENGOVR, FRACT), as dslParseFlagArg does
       else {
-        printf("\nMalformed numbered flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag.\n");
-        abortTest();
+        bool_t found = false;
+        for(int16_t i = 0; i < LAST_ITEM; i++) {
+          if((indexOfItems[i].status & CAT_STATUS) == CAT_SYFL && compareString(l + 3, (char *)indexOfItems[i].itemCatalogName, CMP_NAME) == 0) {
+            if(r[0] == '0') {
+              clearSystemFlag(indexOfItems[i].param);
+            }
+            else {
+              setSystemFlag(indexOfItems[i].param);
+            }
+            found = true;
+            break;
+          }
+        }
+        if(!found) {
+          printf("\nMalformed flag setting. After FL_ there shall be a number from 0 to 111, a lettered, or a system flag name.\n");
+          abortTest();
+        }
       }
     }
   }
@@ -2068,6 +2104,37 @@ void setParameter(char *p) {
     }
     else {
       printf("\nMalformed grouping gap setting. The rvalue must be a number from 0 to 15.\n");
+      abortTest();
+    }
+  }
+
+  //Setting display format, e.g. DSP=FIX2, DSP=SCI4, DSP=ENG3, DSP=ALL3, DSP=SIG5, DSP=UN3
+  else if(strcmp(l, "DSP") == 0) {
+    int16_t p = 0;
+    while(r[p] != 0 && !(r[p] >= '0' && r[p] <= '9')) {   //length of the alphabetic prefix (FIX..UNIT)
+      p++;
+    }
+    uint16_t n = atoi(r + p);
+    if(!strncmp(r, "FIX", 3)) {
+      fnDisplayFormatFix(n);
+    }
+    else if(!strncmp(r, "SCI", 3)) {
+      fnDisplayFormatSci(n);
+    }
+    else if(!strncmp(r, "ENG", 3)) {
+      fnDisplayFormatEng(n);
+    }
+    else if(!strncmp(r, "ALL", 3)) {
+      fnDisplayFormatAll(n);
+    }
+    else if(!strncmp(r, "SIG", 3)) {
+      fnDisplayFormatSigFig(n);
+    }
+    else if(!strncmp(r, "UN", 2)) {                        //UN or UNIT
+      fnDisplayFormatUnit(n);
+    }
+    else {
+      printf("\nMalformed display format setting. The rvalue must be FIX, SCI, ENG, ALL, SIG or UN followed by a digit count.\n");
       abortTest();
     }
   }
@@ -2228,9 +2295,13 @@ var1:
         strcat(r, ":NONE");
       }
 
-      // separate real value and angular mode
+      // separate real value and angular mode; for a tagged value the closing
+      // quote of the register string ends up on the mode, strip it there
       r[i] = 0;
       strcpy(angMod, r + i + 1);
+      if(angMod[0] != 0 && angMod[strlen(angMod) - 1] == '"') {
+        angMod[strlen(angMod) - 1] = 0;
+      }
 
       if(strcmp(angMod, "DEG"   ) == 0) {
         am = amDegree;
@@ -2255,12 +2326,15 @@ var1:
         abortTest();
       }
 
-      // remove beginning and ending " and removing leading spaces
+      // remove beginning and ending " and removing leading spaces; a tagged
+      // value has already lost its closing quote to the mode split above
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // replace , with .
       for(i=0; i<(int)strlen(r); i++) {
@@ -2382,12 +2456,15 @@ var1:
       }
       am = amNone;
 
-      // remove beginning and ending " and removing leading spaces
+      // remove beginning and ending " and removing leading spaces; a tagged
+      // value has already lost its closing quote to the mode split above
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // replace , with .
       for(i=0; i<(int)strlen(r); i++) {
@@ -2403,12 +2480,15 @@ var1:
       }
     }
     else if(strcmp(l, "DATE") == 0) {
-      // remove beginning and ending " and removing leading spaces
+      // remove beginning and ending " and removing leading spaces; a tagged
+      // value has already lost its closing quote to the mode split above
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // replace , with .
       for(i=0; i<(int)strlen(r); i++) {
@@ -3341,7 +3421,7 @@ void checkExpectedOutParameter(char *p) {
 
       if(ec <= NUMBER_OF_ERROR_CODES) {
         if(lastErrorCode != ec) {
-          printf("\nLast error code should be %u (%s) but it is %u (%s)!\n", ec, errorMessages[ec], lastErrorCode, errorMessages[lastErrorCode]);
+          printf("\nLast error code should be %u (%s) but it is %u (%s)!\n", ec, errorMessageOf(ec), lastErrorCode, errorMessageOf(lastErrorCode));
           abortTest();
         }
       }
@@ -3457,9 +3537,13 @@ var2:
         strcat(r, ":NONE");
       }
 
-      // separate real value and angular mode
+      // separate real value and angular mode; for a tagged value the closing
+      // quote of the register string ends up on the mode, strip it there
       r[i] = 0;
       strcpy(angMod, r + i + 1);
+      if(angMod[0] != 0 && angMod[strlen(angMod) - 1] == '"') {
+        angMod[strlen(angMod) - 1] = 0;
+      }
 
            if(strcmp(angMod, "DEG"   ) == 0) am = amDegree;
       else if(strcmp(angMod, "DMS"   ) == 0) am = amDMS;
@@ -3473,12 +3557,15 @@ var2:
       }
 
 
-      // remove beginning and ending " and removing leading spaces
+      // remove beginning and ending " and removing leading spaces; a tagged
+      // value has already lost its closing quote to the mode split above
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // replace , with .
       for(i=0; i<(int)strlen(r); i++) {
@@ -3672,12 +3759,15 @@ var2:
       }
       am = amNone;
 
-      // remove beginning and ending " and removing leading spaces
+      // remove beginning and ending " and removing leading spaces; a tagged
+      // value has already lost its closing quote to the mode split above
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // replace , with .
       for(i=0; i<(int)strlen(r); i++) {
@@ -3699,12 +3789,15 @@ var2:
       }
     }
     else if(strcmp(l, "DATE") == 0) {
-      // remove beginning and ending " and removing leading spaces
+      // remove beginning and ending " and removing leading spaces; a tagged
+      // value has already lost its closing quote to the mode split above
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // replace , with .
       for(i=0; i<(int)strlen(r); i++) {

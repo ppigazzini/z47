@@ -9,7 +9,7 @@
 
 
 
-#if !defined(SAVE_SPACE_DM42_8)
+#if defined(OPTION_REGBROWSER)
   static void _showRegisterInRbr(calcRegister_t regist, int16_t registerNameWidth) {
     switch(getRegisterDataType(regist)) {
       case dtReal34: {
@@ -155,10 +155,10 @@
       sprintf(tmpString, "R%02d:", regist);
     }
   }
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !OPTION_REGBROWSER
 
   void registerBrowser(uint16_t unusedButMandatoryParameter) {
-  #if !defined(SAVE_SPACE_DM42_8)
+  #if defined(OPTION_REGBROWSER)
     int16_t registerNameWidth;
 
     hourGlassIconEnabled = false;
@@ -270,5 +270,5 @@
         }
       }
     }
-  #endif // !SAVE_SPACE_DM42_8
+  #endif // !OPTION_REGBROWSER
 }

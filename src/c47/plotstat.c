@@ -299,11 +299,11 @@ void plotrect(int16_t a, int16_t b, int16_t c, int16_t d) {                // Pl
 }
 
 
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
   static void plotHisto_coln(int16_t x, int16_t y, int16_t y_min, int16_t y_wid, int16_t colw) {  //x is 0..(n-1)
     plotrect(max((int16_t)x - colw, 0), y_min + y_wid,  x + colw, y);
     }
-#endif //SAVE_SPACE_DM42_13GRF
+#endif //OPTION_GRAPHICS
 
 
 
@@ -572,7 +572,7 @@ void pixelline(int16_t xo, int16_t yo, int16_t xn, int16_t yn, bool_t vmNormal) 
 
 
 void graphAxisDraw (void){
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
   if(realIsSpecial(x_min) || realIsSpecial(x_max) || realIsSpecial(y_min) || realIsSpecial(y_max)
      || realCompareGreaterEqual(x_min, x_max) || realCompareGreaterEqual(y_min, y_max)) {   //rejects NaN/infinite, reversed, empty and never-autoscaled ranges (the +-1E38 seeds); any magnitude is drawable
     return;
@@ -758,12 +758,12 @@ void graphAxisDraw (void){
   //printf("PLOT_ZMY=%i tick_int_x=%f, tick_int_y=%f\n",PLOT_ZMY, tick_int_x, tick_int_y);
   force_refresh(timed);
 //  #endif
-#endif //SAVE_SPACE_DM42_13GRF
+#endif //OPTION_GRAPHICS
 }
 
 
 double auto_tick(double tick_int_f) {
-  #if !defined(SAVE_SPACE_DM42_13GRF)
+  #if defined(OPTION_GRAPHICS)
     if(!roundedTicks) {
       return tick_int_f;
     }
@@ -833,14 +833,14 @@ double auto_tick(double tick_int_f) {
     tick_int_f *= tick_int_f_mult;
 
     //printf("tick2 %f\n",tick_int_f);
-  #endif // !SAVE_SPACE_DM42_13GRF
+  #endif // !OPTION_GRAPHICS
 
 return tick_int_f;
 }
 
 
 void graph_axis (void){
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
     graph_dx = 0; //XXX override manual setting from GRAPH to auto, temporarily. Can program these to fixed values.
     graph_dy = 0;
 
@@ -870,7 +870,7 @@ void graph_axis (void){
 
 
   graphAxisDraw();
-#endif //SAVE_SPACE_DM42_13GRF
+#endif //OPTION_GRAPHICS
 }
 
 
@@ -1251,7 +1251,7 @@ void plotPointGeneric(int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLO
 
 void graphPlotstat(uint16_t selection){
 currentKeyCode = 255;
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("#####>>> graphPlotstat: selection:%u:%s  lastplotmode:%u  lrSelection:%u lrChosen:%u\n", selection, getCurveFitModeName(selection), lastPlotMode, lrSelection, lrChosen);
   #endif // STATDEBUG && PC_BUILD
@@ -1561,7 +1561,7 @@ currentKeyCode = 255;
   #endif
 
 
-#endif //SAVE_SPACE_DM42_13GRF
+#endif //OPTION_GRAPHICS
 }
 
 
@@ -1607,7 +1607,7 @@ void graphDrawLRline(uint16_t selection) {
 
 
  static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1) {
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
     int32_t n = 0;
     uint16_t NN;
     char tmpbuf[PLOT_TMP_BUF_SIZE];
@@ -1894,7 +1894,7 @@ void graphDrawLRline(uint16_t selection) {
         showString("L.R. error", &standardFont, horOffset, Y_POSITION_OF_REGISTER_Z_LINE + autoinc * index++ -7+2 +autoshift, vmNormal, false, false);
     }
   }
-#endif // !SAVE_SPACE_DM42_13GRF
+#endif // !OPTION_GRAPHICS
   }
 
 
@@ -1912,7 +1912,7 @@ void fnPlotCloseSmi(uint16_t unusedButMandatoryParameter){
 //** plotSelection = 0 means that no curve fit is plotted
 //
 void fnPlotStat(uint16_t plotMode){
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
   if(plotMode != PLOT_NXT && plotMode != PLOT_REV && statMx[0] != 'S') {
     restoreStats();                   // a new plot starts from restored stats after an HNORM takeover, as EXIT does
   }
@@ -2061,12 +2061,12 @@ void fnPlotStat(uint16_t plotMode){
       moreInfoOnError("In function fnPlotStat:", errorMessage, NULL, NULL);
     #endif
   }
-#endif // SAVE_SPACE_DM42_13GRF
+#endif // OPTION_GRAPHICS
 }
 
 
 void fnPlotRegressionLine(uint16_t plotMode){
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
   #if defined(STATDEBUG) && defined(PC_BUILD)
     printf("fnPlotRegressionLine: plotSelection = %u; Plotmode=%u\n", plotSelection, plotMode);
   #endif // STATDEBUG && PC_BUILD
@@ -2140,7 +2140,7 @@ void fnPlotRegressionLine(uint16_t plotMode){
       break;
     }
   }
-#endif // !SAVE_SPACE_DM42_13GRF
+#endif // !OPTION_GRAPHICS
 }
 
 

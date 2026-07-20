@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if !defined(SAVE_SPACE_DM42_12ORTHO)
+#if defined(OPTION_ORTHO)
 static bool_t getOrthoPolyParam(calcRegister_t regist, real_t *val, realContext_t *realContext) {
   if(!getRegisterAsReal(regist, val)) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
@@ -19,10 +19,10 @@ static bool_t getOrthoPolyParam(calcRegister_t regist, real_t *val, realContext_
   }
   return true;
 }
-#endif // !SAVE_SPACE_DM42_12ORTHO
+#endif // !OPTION_ORTHO
 
 void fnOrthoPoly(uint16_t kind) {
-#if !defined(SAVE_SPACE_DM42_12ORTHO)
+#if defined(OPTION_ORTHO)
   real_t x, y, z, ans;
 
   if(!saveLastX()) {
@@ -47,7 +47,7 @@ void fnOrthoPoly(uint16_t kind) {
     }
   }
   adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, -1);
-#endif // !SAVE_SPACE_DM42_12ORTHO
+#endif // !OPTION_ORTHO
 }
 
 void fnHermite(uint16_t unusedButMandatoryParameter) {

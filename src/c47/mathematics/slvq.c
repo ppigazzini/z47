@@ -17,7 +17,7 @@
  * \return void
  ***********************************************/
 void fnSlvq(uint16_t unusedButMandatoryParameter) {
-#if !defined(SAVE_SPACE_DM42_12)
+#if defined(OPTION_SLV_ZETA_BETA)
   bool_t realCoefs=false, realRoots=true, complexCoefs=false;
   real_t aReal, bReal, cReal, rReal, x1Real, x2Real;
   real_t aImag, bImag, cImag, rImag, x1Imag, x2Imag;
@@ -137,7 +137,7 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   #else
     fnDropZ(0);
   #endif //DISCRIMINANT
-#endif // !SAVE_SPACE_DM42_12
+#endif // !OPTION_SLV_ZETA_BETA
 }
 
 

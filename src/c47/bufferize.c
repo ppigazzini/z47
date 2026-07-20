@@ -709,37 +709,37 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
           refreshScreen(51);
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             printTrace(item, item);
             printTraceMatElement(LINE_FULL);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
         }
         else if(item == ITM_LEFT_ARROW) {
           mimEnter(true);
           setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
           refreshScreen(52);
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             printTrace(item, item);
             printTraceMatElement(LINE_FULL);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
         }
         else if(item == ITM_UP_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
           refreshScreen(53);
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             printTrace(item, item);
             printTraceMatElement(LINE_FULL);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
         }
         else if(item == ITM_DOWN_ARROW) {
           mimEnter(true);
           setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
           refreshScreen(54);
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             printTrace(item, item);
             printTraceMatElement(LINE_FULL);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
         }
 
         if((int16_t)item < 0) {
@@ -844,11 +844,11 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       return;
     }
 
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       if(calcMode == CM_NIM) {
         lastItem = item;
       }
-    #endif // IR_PRINTING
+    #endif // OPTION_IR_PRINTING
 
     if(item >= ITM_A && item <= ITM_F && lastIntegerBase == 0) {
       lastIntegerBase = 16;
@@ -1570,9 +1570,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           return; // closeNim rejected buffer; skip display rebuild
         }
         if(calcMode != CM_NIM && lastErrorCode == 0) {
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
           setSystemFlag(FLAG_ASLIFT);
           if(item == ITM_EXIT1) {
             #if defined(DEBUGUNDO)
@@ -1691,10 +1691,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             setRegisterAngularMode(REGISTER_X, amDMS);
 
             setSystemFlag(FLAG_ASLIFT);
-            #if defined(IR_PRINTING)
+            #if defined(OPTION_IR_PRINTING)
               printTraceX(LINE_NOLF);
               printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
-            #endif //IR_PRINTING
+            #endif //OPTION_IR_PRINTING
             return;
           }
         }
@@ -1734,10 +1734,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
-              #if defined(IR_PRINTING)
+              #if defined(OPTION_IR_PRINTING)
                 printTraceX(LINE_NOLF);
                 printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
-              #endif //IR_PRINTING
+              #endif //OPTION_IR_PRINTING
             }
             else {
               #if defined(DEBUGUNDO)
@@ -1771,10 +1771,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             hmmssInRegisterToSeconds(REGISTER_X);
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
-              #if defined(IR_PRINTING)
+              #if defined(OPTION_IR_PRINTING)
                 printTraceX(LINE_NOLF);
                 printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
-              #endif //IR_PRINTING
+              #endif //OPTION_IR_PRINTING
             }
             else {
               #if defined(DEBUGUNDO)
@@ -1793,10 +1793,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           done = true;
           closeNim();
           fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             printTrace(ITM_DMS2, NOPARAM);
             printTraceX(LINE_FULL);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
         }
         break;
       }
@@ -1827,10 +1827,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
 
             if(lastErrorCode == 0) {
               setSystemFlag(FLAG_ASLIFT);
-              #if defined(IR_PRINTING)
+              #if defined(OPTION_IR_PRINTING)
                 printTraceX(LINE_NOLF);
                 printTrace(ITM_ENTER, NOPARAM);   // Close NIM ended with entering the value on the stack
-              #endif //IR_PRINTING
+              #endif //OPTION_IR_PRINTING
             }
             else {
               undo();
@@ -2676,7 +2676,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
   //    }
     }
 
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       if((lastItem != ITM_ms) && (lastItem != ITM_dotD) && (lastItem != ITM_DRG)) {  // Avoid double tracing for functions changing X after closeNim
         #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
           printf("**[DL]** closeNim printTraceX lastItem %d\n", lastItem);
@@ -2685,7 +2685,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         printTraceX(LINE_NOLF);
       }
       lastItem = 0;
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
 
     closeNim_exit:
     nimNumberPart = NP_EMPTY;   //Added to ensure test for nimNumberPart in insertStepInProgram() will have the correct value

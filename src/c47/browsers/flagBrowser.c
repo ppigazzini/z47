@@ -55,7 +55,7 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
    * \return void
    ***********************************************/
   void flagBrowser(uint16_t init) {
-  #if !defined(SAVE_SPACE_DM42_8FL)
+  #if defined(OPTION_FLAGBROWSER)
     static int16_t line;
     int16_t f, i;
     bool_t firstFlag;
@@ -346,5 +346,5 @@ TO_QSPI const  letteredFlagDisplay_t letteredFlagDisplay[] = {
       }
     }
     lastFlgScr = currentFlgScr;
-  #endif // !SAVE_SPACE_DM42_8FL
+  #endif // !OPTION_FLAGBROWSER
   }

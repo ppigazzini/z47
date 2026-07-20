@@ -287,6 +287,30 @@ In:  AM=DEG FL_CPXRES=1 FL_ASLIFT=0 FL_SPCRES=0 RY=Real:"0" RX=Real:"1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1" RX=Real:"0"
 
 
+;=========================================================
+; Finite negative base, infinite exponent
+; ReM p.202: (y != 0) ^ inf is inf, (y != 0) ^ -inf is 0, by |y| against 1.
+; An infinite exponent is neither odd nor even, so the base sign is not carried.
+;=========================================================
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-2" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-2" RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-0.5" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-0.5" RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-1" RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+
 ;=======================================
 ; Real ^ Complex --> Complex
 ;=======================================

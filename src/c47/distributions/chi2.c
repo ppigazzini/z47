@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17B)
+#if !defined(OPTION_DIST_2)
   bool_t checkRegisterNoFP(const real_t *reg){return false;}
   void fnChi2P(uint16_t unusedButMandatoryParameter){}
   void fnChi2L(uint16_t unusedButMandatoryParameter){}
@@ -294,4 +294,4 @@
     realSetNaN(res); // ERR 20
   }
 
-#endif //SAVE_SPACE_DM42_17B
+#endif // !OPTION_DIST_2

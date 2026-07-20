@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17)
+#if !defined(OPTION_DIST_1)
   void fnNegBinomialP  (uint16_t unusedButMandatoryParameter){}
   void fnNegBinomialL  (uint16_t unusedButMandatoryParameter){}
   void fnNegBinomialR  (uint16_t unusedButMandatoryParameter){}
@@ -256,5 +256,5 @@
     WP34S_Qf_Newton(QF_NEWTON_NEGBINOM, x, &s, p0, r, NULL, res, realContext);
   }
 
-#endif //SAVE_SPACE_DM42_17
+#endif // !OPTION_DIST_1
 

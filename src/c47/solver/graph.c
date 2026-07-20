@@ -41,6 +41,7 @@ int16_t osc = 0;
 uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
 
 
+#if defined(OPTION_GRAPHICS)
   static void fnPlot(uint16_t unusedButMandatoryParameter) {
       lastPlotMode = PLOT_NOTHING;
       strcpy(plotStatMx, "DrwMX");
@@ -49,7 +50,6 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
   }
 
 
-  #if !defined(SAVE_SPACE_DM42_13GRF)
     static void initialize_function(void){
       if(graphVariabl1 > 0) {
         #if defined(PC_BUILD)
@@ -71,7 +71,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
         #endif //PC_BUILD
       }
     }
-  #endif // !SAVE_SPACE_DM42_13GRF
+  #endif // !OPTION_GRAPHICS
 
 
   static void execute_rpn_function(void){
@@ -268,7 +268,9 @@ static  decContext  ctxtGraphsLocal;
 #pragma GCC diagnostic ignored "-Warray-bounds"
 __attribute__((noinline)) static bool_t graphIsZero    (const real_t *x) { return realIsZero(x);     }
 __attribute__((noinline)) static bool_t graphIsNegative(const real_t *x) { return realIsNegative(x); }
-__attribute__((noinline)) static bool_t graphIsPositive(const real_t *x) { return realIsPositive(x); }
+#if defined(OPTION_GRAPHICS)
+  __attribute__((noinline)) static bool_t graphIsPositive(const real_t *x) { return realIsPositive(x); }
+#endif //OPTION_GRAPHICS
 __attribute__((noinline)) static void   graphChangeSign(real_t *x)       { realChangeSign(x);        }
 #pragma GCC diagnostic pop
 
@@ -318,6 +320,7 @@ static void convertRegisterToReal(calcRegister_t source, real_t *destination) {
   realPlus(&tmp, destination, ctxtGraphs);
 }
 
+#if defined(OPTION_GRAPHICS)
 // Normalised read for the jump-back analysis: out = (v - origin) / span, dimensionless and O(1) at any data magnitude
 static double normCoord(const real_t *v, const real_t *origin, const real_t *span) {
   real_t t;
@@ -327,6 +330,8 @@ static double normCoord(const real_t *v, const real_t *origin, const real_t *spa
   realToDouble(&t, &d);
   return d;
 }
+#endif //OPTION_GRAPHICS
+
 
 // Reduce REGISTER_Y to either Re or Im (per getSystemFlagIM) before AddtoDrawMx etc.
 static void reduceRegisterYToComponent(void) {
@@ -1046,7 +1051,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
 // END OF ASYMPTOTE HELPER FUNCTIONS
 // =============================================================================
 
-
+#if defined(OPTION_GRAPHICS)
   static void graph_eqn(uint16_t mode) {
     #if defined(GRAPHDEBUG_MIN)
       print_caller(NULL);
@@ -1897,6 +1902,8 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
     #endif //LOW_GRAPH_ACC
 
   }
+#endif //OPTION_GRAPHICS
+
 //******************************************************************************************************************************
 
 
@@ -1930,7 +1937,7 @@ void graph_stat(uint16_t unusedButMandatoryParameter) {
 
 // COMPLEX SOLVER
 
-#if !defined(SAVE_SPACE_DM42_13GRF)
+#if defined(OPTION_GRAPHICS)
   // =============================================================================
   // SOLVER HELPERS
   // =============================================================================
@@ -2597,7 +2604,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
 
 
   void fnComplexSolver(void) {
-    printStatus(1, errorMessages[COMPLEX_SOLVER], force);
+    printStatus(1, errorMessageOf(COMPLEX_SOLVER), force);
     saveForUndo();
                                         #if defined(VERBOSE_SOLVER00) || defined(VERBOSE_SOLVER0)
                                           real_t loXd, hiXd;
@@ -2613,7 +2620,7 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
     complexSolver();
   }
 
-#endif //SAVE_SPACE_DM42_13GRF
+#endif //OPTION_GRAPHICS
 
 
 //-----------------------------------------------------//-----------------------------------------------------
@@ -2651,7 +2658,7 @@ void graphRangeGuard(real_t *lo, real_t *hi) {
 
 //-----------------------------------------------------//-----------------------------------------------------
 void fnEqSolvGraph (uint16_t func) {
-  #if !defined(SAVE_SPACE_DM42_13GRF)
+  #if defined(OPTION_GRAPHICS)
       // No equation defined: error out before any stack or reserved-variable writes;
       // running these items without a formula crashed in parseEquation (NULL allFormulae).
       if(currentFormula >= numberOfFormulae || allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
@@ -2838,5 +2845,5 @@ void fnEqSolvGraph (uint16_t func) {
         }
         default: ;
       }
-  #endif // SAVE_SPACE_DM42_13GRF
+  #endif // OPTION_GRAPHICS
 }

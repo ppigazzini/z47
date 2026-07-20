@@ -15,8 +15,12 @@ void PowerReal(const real_t *y, const real_t *x, real_t *res, realContext_t *rea
   real_t lny;
 
   if(realIsNegative(y) && realIsAnInteger(x)){
-    realDivideRemainder(x, const_2, &lny, realContext);
-    bool_t isOdd = !realIsZero(&lny);
+    bool_t isOdd = false;
+
+    if(!realIsInfinite(x)) {                             // realIsAnInteger() is true for an infinity, which is neither odd nor even
+      realDivideRemainder(x, const_2, &lny, realContext);
+      isOdd = !realIsZero(&lny);
+    }
     realCopyAbs(y, &lny);
     WP34S_Ln(&lny, &lny, realContext);
     realMultiply(x, &lny, res, realContext);

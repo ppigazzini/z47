@@ -389,7 +389,7 @@ void calcSigma(uint16_t maxOffset) {
       real_t x, y;
       char aa[100];
       for(uint16_t i = 0; i < rows - maxOffset; i++) {
-        sprintf(aa, "%s%s (%u of %u)", errorMessages[RECALC_SUMS], statMx, i, rows - maxOffset);
+        sprintf(aa, "%s%s (%u of %u)", errorMessageOf(RECALC_SUMS), statMx, i, rows - maxOffset);
         printStatus(0, aa, timed);
         real34ToReal(&stats.matrixElements[i * cols    ], &x);
         real34ToReal(&stats.matrixElements[i * cols + 1], &y);
