@@ -155,7 +155,7 @@ const cmplxPair = abi.CmplxPair;
 // ===========================================================================
 const AIM_BUFFER_LENGTH: usize = 1024;
 const NIM_BUFFER_LENGTH: usize = 200;
-const TAM_BUFFER_LENGTH: usize = 32;
+const TAM_BUFFER_LENGTH: usize = 56;
 const ERROR_MESSAGE_LENGTH: usize = 512;
 const TMP_STR_LENGTH: usize = 2560;
 const NIM_BUFFER_EXTENDED_LENGTH: usize = 1400;

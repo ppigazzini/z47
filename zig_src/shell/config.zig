@@ -267,7 +267,7 @@ const WRITE_BUFFER_LEN: usize = 4096;
 const ERROR_MESSAGE_LENGTH: usize = 512;
 const AIM_BUFFER_LENGTH: usize = 1024;
 const NIM_BUFFER_LENGTH: usize = 200;
-const TAM_BUFFER_LENGTH: usize = 32;
+const TAM_BUFFER_LENGTH: usize = 56;
 
 const dtReal34: u32 = 1;
 const dtReal34Matrix: u32 = 6;

@@ -166,9 +166,7 @@ const SOLVER_RESULT_NORMAL: f64 = 0;
 const SOLVER_RESULT_OTHER_FAILURE: f64 = 5;
 const SOLVER_RESULT_CONJUGATES: f64 = 200;
 
-const COMPLEX_SOLVER: usize = 103;
-const NUMBER_OF_ERROR_CODES = 129; // defines.h: 129 (errorMessages row count)
-const SIZE_OF_EACH_ERROR_MESSAGE = 48;
+const COMPLEX_SOLVER: u8 = 103; // status-message code passed to errorMessageOf
 
 const EQUATION_PARSER_MVAR: u16 = 0;
 const EQUATION_PARSER_XEQ: u16 = 1;
@@ -269,7 +267,9 @@ extern var ctxtReal39: realContext_t;
 extern var ctxtReal51: realContext_t;
 extern var ctxtReal75: realContext_t;
 extern const standardFont: font_t;
-extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
+// Upstream packed errorMessages[][] into a static pool reached via this accessor
+// (error.c); the array symbol is gone. errorMessageOf(code) -> message pointer.
+extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 
 // ---------------------------------------------------------------------------
 // Function externs (resolve at the final link; plotstat.c is still C)
@@ -2266,7 +2266,7 @@ fn complexSolver() void {
 // fnComplexSolver
 // ===========================================================================
 pub export fn fnComplexSolver() callconv(.c) void {
-    printStatus(1, @ptrCast(&errorMessages[COMPLEX_SOLVER]), force);
+    printStatus(1, errorMessageOf(COMPLEX_SOLVER), force);
     saveForUndo();
     // VERBOSE_SOLVER00/0 pre-conditioning block: never defined.
     // initialize_function();

@@ -430,7 +430,7 @@ pub fn saveCalc() void {
     sv(&errorMessage[0], 512, "errorMessage", "hexDump");
     sv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
     sv(&nimBufferDisplay[0], 200, "nimBufferDisplay", "hexDump");
-    sv(&tamBuffer[0], 32, "tamBuffer", "hexDump");
+    sv(&tamBuffer[0], 56, "tamBuffer", "hexDump");
     sv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
     sv(&oldTime[0], 8, "oldTime", "hexDump");
     sv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
@@ -1026,7 +1026,7 @@ pub fn restoreCalc() void {
     rv(&errorMessage[0], 512, "errorMessage", "hexDump");
     rv(&aimBuffer[0], 1024, "aimBuffer", "hexDump");
     rv(&nimBufferDisplay[0], 200, "nimBufferDisplay", "hexDump");
-    rv(&tamBuffer[0], 32, "tamBuffer", "hexDump");
+    rv(&tamBuffer[0], 56, "tamBuffer", "hexDump");
     rv(&asmBuffer[0], 5, "asmBuffer", "hexDump");
     rv(&oldTime[0], 8, "oldTime", "hexDump");
     rv(&dateTimeString[0], 12, "dateTimeString", "hexDump");

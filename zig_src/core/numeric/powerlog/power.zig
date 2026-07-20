@@ -150,8 +150,11 @@ pub export fn PowerReal(y: *const real_t, x: *const real_t, res: *real_t, realCo
     var lny: real_t = undefined;
 
     if (realIsNegative(y) and realIsAnInteger(x)) {
-        realDivideRemainder(x, const_2(), &lny, realContext);
-        const isOdd: bool = !realIsZero(&lny);
+        var isOdd: bool = false;
+        if (!realIsInfinite(x)) { // realIsAnInteger() is true for an infinity, which is neither odd nor even
+            realDivideRemainder(x, const_2(), &lny, realContext);
+            isOdd = !realIsZero(&lny);
+        }
         realCopyAbs(y, &lny);
         WP34S_Ln(&lny, &lny, realContext);
         realMultiply(x, &lny, res, realContext);

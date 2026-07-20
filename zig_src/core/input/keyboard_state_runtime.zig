@@ -610,9 +610,11 @@ pub extern var lastPlotMode: u16;
 pub extern var plotSelection: u16;
 pub extern var SAVED_SIGMA_lastAddRem: i8;
 pub extern var BASE_OVERRIDEONCE: bool_t;
-const errorMessages_base = @extern([*c]const u8, .{ .name = "errorMessages" });
+// Upstream packed errorMessages[][] into a static pool reached via this accessor
+// (error.c); the array symbol is gone. errorMessageOf(code) -> message pointer.
+pub extern fn errorMessageOf(errorCode: u8) [*c]const u8;
 pub inline fn errorMessageAt(row: usize) [*c]const u8 {
-    return errorMessages_base + row * SIZE_OF_EACH_ERROR_MESSAGE;
+    return errorMessageOf(@intCast(row));
 }
 
 pub extern fn leaveAsmMode() void;
