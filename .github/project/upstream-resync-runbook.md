@@ -47,7 +47,19 @@ The seams re-sync deterministically; run their audits after importing:
 
 ## 2. Re-port behavioral drift
 
-Re-derive changed C behavior into the Zig owners (never edit `src/`). Prefer
+Get the worklist first, do not grep and hope:
+
+```bash
+python3 .github/project/report-resync-worklist.py <oldpin> <newpin>
+```
+
+It diffs the imported C in `../c43` between the pins and, for each changed
+`src/c47/*.c`, names the owner(s) to re-port — resolved by the FUNCTION the diff
+touched (via the correspondence manifest), so a change inside a many-owner file
+like `matrix.c` points at the single owner that holds it, ranked by churn. It also
+flags added files with no owner yet and deleted files whose owner is now orphaned.
+
+Then re-derive the changed C behavior into those owners (never edit `src/`). Prefer
 **idiomatic fixed-width Zig** over transliterated C — see the Windows trap in §4 and
 `c-abi-width-types-are-transliteration-debt`.
 

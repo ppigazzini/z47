@@ -43,6 +43,8 @@ step "[3/11] tracked source ownership"
 bash .github/project/check-source-ownership.sh
 step "[4/11] upstream pin + port ledger"
 python3 .github/project/check-upstream-port-ledger.py --repo-root .
+step "[4b/11] upstream correspondence (symbol join owner coverage)"
+python3 .github/project/check-upstream-correspondence.py
 step "[5/11] curated Zig/C boundaries"
 bash .github/project/check-zig-c-boundaries.sh
 step "[6/11] idiomatic-Zig ratchet"
