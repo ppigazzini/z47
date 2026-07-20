@@ -215,17 +215,18 @@ fn gammaCplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&zReal, &zImag, REGISTER_X);
 }
 
-// Abramowitz & Stegun 6.1.41 (only approximation needed here)
+// Abramowitz & Stegun 6.1.41, leading terms only: (z-1/2)ln(z) - z + (1/2)ln(2pi).
+// Not a general-purpose lnGamma: complexLnGamma() uses it only as a reference to pick
+// the 2*pi winding integer for the imaginary part of the Lanczos result, so the
+// imaginary part need only be within pi of the true value. The asymptotic corrections
+// 1/(12z) - 1/(360z^3) + 1/(1260z^5) - ... are intentionally omitted: where |z| is large
+// enough for the truncated series to be accurate their total stays orders of magnitude
+// below the ~pi decision margin, and for small |z| the divergent tail grows past pi
+// (~6000 at z = 0.1i) and corrupts the winding choice.
 fn complexLnGamma_Stirling(xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) void {
-    // (z-1/2)ln(z) - z + (1/2)ln(2pi) + 1/(12z) - 1/(360z^3) + 1/(1260z^5) - 1/(1680z^7) ...
     var zReal: real_t = undefined;
     var zImag: real_t = undefined;
-    var z2Real: real_t = undefined;
-    var z2Imag: real_t = undefined;
-    var zxReal: real_t = undefined;
-    var zxImag: real_t = undefined;
     var tReal: real_t = undefined;
-    var tImag: real_t = undefined;
     realCopy(xReal, &zReal);
     realCopy(xImag, &zImag);
     math_ln_complex.lnComplex(&zReal, &zImag, rReal, rImag, realContext);
@@ -236,34 +237,6 @@ fn complexLnGamma_Stirling(xReal: *const real_t, xImag: *const real_t, rReal: *r
     realSubtract(rImag, &zImag, rImag, realContext);
 
     realAddB(rReal, const39_ln2piOn2(), rReal, realContext);
-
-    realMulB(const_12(), &zReal, &tReal, realContext);
-    realMulB(const_12(), &zImag, &tImag, realContext);
-    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
-    realAdd(rReal, &zReal, rReal, realContext);
-    realAdd(rImag, &zImag, rImag, realContext);
-
-    math_multiplication_cells.mulComplexComplex(&zReal, &zImag, &zReal, &zImag, &z2Real, &z2Imag, realContext);
-    math_multiplication_cells.mulComplexComplex(&zReal, &zImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-    realMulB(const_360(), &zxReal, &tReal, realContext);
-    realMulB(const_360(), &zxImag, &tImag, realContext);
-    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
-    realSubtract(rReal, &zReal, rReal, realContext);
-    realSubtract(rImag, &zImag, rImag, realContext);
-
-    math_multiplication_cells.mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-    realMulB(const_1260(), &zxReal, &tReal, realContext);
-    realMulB(const_1260(), &zxImag, &tImag, realContext);
-    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
-    realAdd(rReal, &zReal, rReal, realContext);
-    realAdd(rImag, &zImag, rImag, realContext);
-
-    math_multiplication_cells.mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-    realMulB(const_1680(), &zxReal, &tReal, realContext);
-    realMulB(const_1680(), &zxImag, &tImag, realContext);
-    math_division_cells.divRealComplex(const_1(), &tReal, &tImag, &tReal, &tImag, realContext);
-    realSubtract(rReal, &zReal, rReal, realContext);
-    realSubtract(rImag, &zImag, rImag, realContext);
 }
 
 pub export fn complexLnGamma(xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) callconv(.c) void {
