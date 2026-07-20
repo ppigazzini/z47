@@ -55,9 +55,13 @@ res/offimg/General
 res/r47.cmd
 res/r47.ico
 res/r47.reg
+src/c47-dmcp/hal/console.c
 src/c47-dmcp/hal/print_ir.c
+src/c47-dmcp5/hal/console.c
 src/c47-dmcp5/hal/print_ir.c
 src/c47-gtk/hal/print_ir.c
+src/testSuite/tests/angleConv.txt
+src/testSuite/tests/stack_cov.txt
 src/c47/distributions/uniform.c
 src/c47/distributions/uniform.h
 src/c47/hal/print_ir.h
