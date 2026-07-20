@@ -808,9 +808,6 @@ pub export fn fnStoreStack(regist: u16) callconv(.c) void {
 // Matrix element store
 // ===========================================================================
 pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
-    const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
-    const jBak: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     var rx: real_t = undefined;
     var rows: u16 = undefined;
     var cols: u16 = undefined;
@@ -825,26 +822,25 @@ pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
         }
         return;
     }
+    var bak: frontier_matrix_editor.MatrixIndexState = undefined;
+    frontier_matrix_editor.saveMatrixIndexState(&bak);
     // C int promotion: (ix-1)/cols is signed int arithmetic.
     frontier_matrix_editor.setIRegisterAsInt(false, @intCast(@divTrunc(@as(i32, ix) - 1, @as(i32, cols)) + 1));
     frontier_matrix_editor.setJRegisterAsInt(false, @intCast(@rem(@as(i32, ix) - 1, @as(i32, cols)) + 1));
     matrixIndex = @intCast(REGISTER_Y);
     _fnStoreElement(false);
-    frontier_matrix_editor.setIRegisterAsInt(false, iBak);
-    frontier_matrix_editor.setJRegisterAsInt(false, jBak);
-    matrixIndex = matrixIndexBak;
+    frontier_matrix_editor.restoreMatrixIndexState(&bak);
 }
 
 pub export fn fnStoreVector(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
-    const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
-    const jBak: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_X, "In function fnStoreVector:", &rows, &cols)) {
         return;
     }
+    var bak: frontier_matrix_editor.MatrixIndexState = undefined;
+    frontier_matrix_editor.saveMatrixIndexState(&bak);
     copySourceRegisterToDestRegister(getStackTop(), TEMP_REGISTER_1);
     setSystemFlag(FLAG_ASLIFT);
     liftStack();
@@ -860,16 +856,14 @@ pub export fn fnStoreVector(regist_arg: u16) callconv(.c) void {
             fnToReal(NOPARAM);
         }
         if (lastErrorCode != 0) {
-            return;
+            break;
         }
         _fnStoreElement(false);
         if (lastErrorCode != 0) {
-            return;
+            break;
         }
     }
-    frontier_matrix_editor.setIRegisterAsInt(false, iBak);
-    frontier_matrix_editor.setJRegisterAsInt(false, jBak);
-    matrixIndex = matrixIndexBak;
+    frontier_matrix_editor.restoreMatrixIndexState(&bak);
     fnDrop(NOPARAM);
     copySourceRegisterToDestRegister(TEMP_REGISTER_1, getStackTop());
 }

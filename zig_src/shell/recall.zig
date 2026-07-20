@@ -615,34 +615,30 @@ pub export fn fnRecallStack(regist: u16) callconv(.c) void {
 // Matrix element recall
 // ===========================================================================
 pub export fn fnRecallVElement(ix: u16) callconv(.c) void {
-    const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
-    const jBak: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (getMatrixDims(REGISTER_X, "In function fnRecallVElement:", &rows, &cols)) {
+        var bak: frontier_matrix_editor.MatrixIndexState = undefined;
+        frontier_matrix_editor.saveMatrixIndexState(&bak);
         // C int promotion: (ix-1)/cols is signed int arithmetic.
         const rc = linearToRowCol(@as(i32, ix), @as(i32, cols));
         frontier_matrix_editor.setIRegisterAsInt(false, @intCast(rc.row));
         frontier_matrix_editor.setJRegisterAsInt(false, @intCast(rc.col));
         matrixIndex = @intCast(REGISTER_X);
         _fnRecallElement(false);
-        frontier_matrix_editor.setIRegisterAsInt(false, iBak);
-        frontier_matrix_editor.setJRegisterAsInt(false, jBak);
-        matrixIndex = matrixIndexBak;
+        frontier_matrix_editor.restoreMatrixIndexState(&bak);
     }
 }
 
 pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
     var regist = regist_arg;
-    const matrixIndexBak: u16 = matrixIndex;
-    const iBak: i16 = frontier_matrix_editor.getIRegisterAsInt(true);
-    const jBak: i16 = frontier_matrix_editor.getJRegisterAsInt(true);
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_X, "In function fnRecallVector:", &rows, &cols)) {
         return;
     }
+    var bak: frontier_matrix_editor.MatrixIndexState = undefined;
+    frontier_matrix_editor.saveMatrixIndexState(&bak);
     matrixIndex = @intCast(REGISTER_X);
     var ix: u16 = 1;
     while (@as(u32, ix) <= @as(u32, rows) * @as(u32, cols) and lastErrorCode == 0) : (ix +%= 1) { // for 5x5, from 1 to 25
@@ -651,7 +647,7 @@ pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
         frontier_matrix_editor.setJRegisterAsInt(false, @intCast(rc.col));
         _fnRecallElement(false);
         if (lastErrorCode != 0) {
-            return;
+            break;
         }
         if (regist > @as(u16, @intCast(REGISTER_X)) and regist < @as(u16, @intCast(getStackTop()))) {
             frontier_store.fnStore(1 +% regist);
@@ -661,13 +657,11 @@ pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
             regist +%= 1;
         }
         if (lastErrorCode != 0) {
-            return;
+            break;
         }
         fnDrop(NOPARAM);
     }
-    frontier_matrix_editor.setIRegisterAsInt(false, iBak);
-    frontier_matrix_editor.setJRegisterAsInt(false, jBak);
-    matrixIndex = matrixIndexBak;
+    frontier_matrix_editor.restoreMatrixIndexState(&bak);
 }
 
 pub export fn fnRecallElementPlus(unusedButMandatoryParameter: u16) callconv(.c) void {
