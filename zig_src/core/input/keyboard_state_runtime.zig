@@ -594,7 +594,7 @@ pub const NP_INT_BASE: u8 = 3;
 pub const SCREEN_WIDTH: u32 = 400;
 pub const LCD_SET_VALUE: c_int = 0;
 pub const force_status: u8 = 1; // `force` enumerator passed to printStatus()
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48;
+const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
 
 pub extern var currentSolverStatus: u16;
 pub extern var systemFlags0: u64;

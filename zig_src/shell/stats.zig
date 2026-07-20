@@ -137,7 +137,7 @@ const ITM_M_DIM: u16 = 1526;
 const PLOT_NOTHING: u16 = 5;
 const RECALC_SUMS = 105;
 const NUMBER_OF_ERROR_CODES = 129; // defines.h: 129 (errorMessages row count)
-const SIZE_OF_EACH_ERROR_MESSAGE = 48;
+const SIZE_OF_EACH_ERROR_MESSAGE = 45;
 
 // screen.h
 const timed: u8 = 0;

@@ -116,7 +116,7 @@ _Static_assert(MAX_FACTORIAL == 450, "math_runtime_helpers factorial domain boun
 // Second batch: more owner-hardcoded defines.h mirrors, several bug-flagged.
 _Static_assert(C47_NULL == 65535, "free-list null-block sentinel 0xFFFF (was 0; block 0 is valid)");
 _Static_assert(FLAG_ASLIFT == 0xc023, "auto-stack-lift flag (was 0x8019 = FLAG_QUIET)");
-_Static_assert(SIZE_OF_EACH_ERROR_MESSAGE == 48, "solve_owned errorMessages row stride (64 gave a wrong stride); pairs with NUMBER_OF_ERROR_CODES above");
+_Static_assert(SIZE_OF_EACH_ERROR_MESSAGE == 45, "errorMessages row stride: longest message is 44 bytes + terminator (was 48); pairs with NUMBER_OF_ERROR_CODES above");
 _Static_assert(FIRST_RESERVED_VARIABLE == 2000, "solver/equation reserved-variable base = LAST_NAMED_VARIABLE+1");
 _Static_assert(ERROR_MESSAGE_LENGTH == 512, "math_runtime_helpers errorMessage buffer length");
 _Static_assert(SCREEN_WIDTH == 400, "screen width used in browser/display right-justification");

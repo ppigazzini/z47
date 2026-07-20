@@ -774,7 +774,7 @@ const registerFlagLetters = @extern([*c]const u8, .{ .name = "registerFlagLetter
 // errorMessages is a 2D char array [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]
 // (48-byte rows); errorMessages[i] is the row address (a char*), NOT a pointer to
 // deref. Bind as rows and pass &errorMessages[i].
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48;
+const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
 const errorMessages = @extern([*c]const [SIZE_OF_EACH_ERROR_MESSAGE]u8, .{ .name = "errorMessages" });
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
 
