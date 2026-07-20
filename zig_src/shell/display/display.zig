@@ -1293,7 +1293,8 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
                         if (tmpString100[@intCast(ii)] == 0) break;
                         ii += 1;
                     }
-                    if (tmpString100[@intCast(ii)] != 0) {
+                    // SIG0 clear keeps full precision for the FIX stage to round; only SIG0 set truncates here.
+                    if (tmpString100[@intCast(ii)] != 0 and forceSigZeroes) {
                         ii = ii + @as(i8, @intCast(displayFormatDigits)) + 1;
                         var jj: i8 = ii;
                         while (tmpString100[@intCast(jj)] != 0 and tmpString100[@intCast(jj)] != 'E') {
@@ -1821,6 +1822,17 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             firstDigit -= 1;
             numDigits = 1;
             exponent += 1;
+        }
+
+        // SIG no-zero: clamp to the significant digits (ignore noise past numDigits),
+        // then drop trailing zeros left by the value or by rounding.
+        if (displayFormat == DF_SF and !forceSigZeroes) {
+            if (digitsToDisplay > numDigits - 1) {
+                digitsToDisplay = numDigits - 1;
+            }
+            while (digitsToDisplay > 0 and bcd[@intCast(firstDigit + digitsToDisplay)] == 0) {
+                digitsToDisplay -= 1;
+            }
         }
 
         if (sign != 0) {
