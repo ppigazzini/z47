@@ -168,12 +168,25 @@ fn incDecAndCompare(regist: u16, mode: u16) linksection(runtime.code_section) vo
     var step: real34_t = undefined;
     var compared: i8 = undefined;
 
-    reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @intCast(amNone));
-    getIterParam(regist, &fp, registerReal34Data(TEMP_REGISTER_1), &step);
-    switch (getRegisterDataType(@intCast(regist))) {
+    const dataType = getRegisterDataType(@intCast(regist));
+
+    // The decoded ccccccc.fffii parameters and the TEMP_REGISTER_1 comparand are
+    // not needed on every path, and this runs once per loop iteration of every
+    // counted program loop. A long-integer counter always compares against 0
+    // with step 1 (getIterParam's non-real34 branch returns exactly that), and
+    // ISZ and DSZ on a real34 or time counter set their own step and compare
+    // against a constant below. Skip the reallocation and the decode for those.
+    if (dataType != dtLongInteger and !(((mode & 2) == 2) and (dataType == dtReal34 or dataType == dtTime))) {
+        reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @intCast(amNone));
+        getIterParam(regist, &fp, registerReal34Data(TEMP_REGISTER_1), &step);
+    }
+    switch (dataType) {
         dtLongInteger => {
+            // registerCmp against a real34 zero reduces to the sign of the counter,
+            // which the long-integer register tag already holds.
             math_register_compare.incDecLonI(regist, @intCast(mode >> 2));
-            _ = math_register_compare.registerCmp(@intCast(regist), TEMP_REGISTER_1, &compared);
+            const sign = runtime.getRegisterLongIntegerSign(@intCast(regist));
+            compared = if (sign == runtime.LI_ZERO) 0 else if (sign == runtime.LI_POSITIVE) 1 else -1;
         },
         dtShortInteger => {
             math_register_compare.incDecShoI(regist, @intCast(mode >> 2));
