@@ -71,6 +71,7 @@ fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]cons
 
 pub export fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) callconv(.c) bool {
     const needed_size = @as(usize, rows) * @as(usize, cols) * real34_size_in_blocks;
+    matrix.header.mtag = @intCast(runtime.amNone);
     if (!isMemoryBlockAvailable(needed_size, 2, 0.1)) {
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;
@@ -136,6 +137,7 @@ pub export fn realMatrixRedim(matrix: *real34Matrix_t, rows: u16, cols: u16) cal
 
 pub export fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16) callconv(.c) bool {
     const needed_size = @as(usize, rows) * @as(usize, cols) * complex34_size_in_blocks;
+    matrix.header.mtag = @intCast(runtime.amNone);
     if (!isMemoryBlockAvailable(needed_size, 2, 0.1)) {
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;

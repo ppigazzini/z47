@@ -128,6 +128,7 @@ pub export fn initMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, c
         const header = runtime.registerMatrixHeader(regist);
         header.matrixRows = @truncate(rows);
         header.matrixColumns = @truncate(cols);
+        header.mtag = @intCast(runtime.amNone);
         const count: usize = @as(usize, rows) * cols;
         if (complex) {
             const elems = registerComplexElements(regist);

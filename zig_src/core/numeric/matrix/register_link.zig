@@ -34,10 +34,11 @@ pub export fn linkToRealMatrixRegister(regist: calcRegister_t, linked_matrix: *r
     const header = registerHeader(regist);
     linked_matrix.header.matrixRows = header.matrixRows;
     linked_matrix.header.matrixColumns = header.matrixColumns;
-    if ((runtime.REGISTER_X <= regist and regist <= runtime.REGISTER_T) and
-        isMatrixVector(linked_matrix.header.matrixRows, linked_matrix.header.matrixColumns))
-    {
-        // Read straight from the (global) register; used only for X-T display.
+    // Default first: without it a non-vector or non-X-T link leaves mtag
+    // uninitialised and displayVectorAngle reads it.
+    linked_matrix.header.mtag = @intCast(runtime.amNone);
+    if (isMatrixVector(linked_matrix.header.matrixRows, linked_matrix.header.matrixColumns)) {
+        // Any register class: SHOW and VIEW link registers outside X-T.
         linked_matrix.header.mtag = @truncate(runtime.getRegisterTag(regist));
     }
     const elements = registerBytes(regist) + @sizeOf(matrixHeader_t);
@@ -48,6 +49,8 @@ pub export fn linkToComplexMatrixRegister(regist: calcRegister_t, linked_matrix:
     const header = registerHeader(regist);
     linked_matrix.header.matrixRows = header.matrixRows;
     linked_matrix.header.matrixColumns = header.matrixColumns;
+    // Same as the real link: keep mtag defined for readers.
+    linked_matrix.header.mtag = @intCast(runtime.amNone);
     const elements = registerBytes(regist) + @sizeOf(matrixHeader_t);
     linked_matrix.matrixElements = @ptrCast(@alignCast(elements));
 }
