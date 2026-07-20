@@ -269,6 +269,21 @@ jobs:
           fi
           python3 .github/project/check-upstream-port-ledger.py "${args[@]}"
 
+  correspondence-guard:
+    name: Verify upstream<->owner correspondence manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Enforce the symbol-join correspondence is current
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Recomputes the src/c47 <-> owner symbol join and fails if the committed
+          # manifest is stale (a resync moved a symbol without regenerating it) or
+          # an upstream file is unowned. Keeps report-resync-worklist.py's answers
+          # trustworthy. Pure Python; no Zig toolchain needed.
+          python3 .github/project/check-upstream-correspondence.py
+
   zig-c-boundary-guard:
     name: Verify curated Zig/C boundaries
     runs-on: ubuntu-latest
