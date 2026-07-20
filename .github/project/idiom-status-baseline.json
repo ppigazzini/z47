@@ -16,11 +16,11 @@
  },
  "totals": {
   "anyopaque_files": 88,
-  "callconv_c_sites": 2875,
+  "callconv_c_sites": 2878,
   "constants_blob_sites": 1,
   "cptr_files": 92,
   "extern_fn_sites": 3518,
-  "extern_struct_files": 14,
+  "extern_struct_files": 15,
   "off_offset_sites": 77,
   "printf_family_files": 47,
   "ptrcast_sites": 1336,
