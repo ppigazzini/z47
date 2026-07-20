@@ -40,3 +40,11 @@ Out: EC=21
 Func: fnDeterminant
 In:  FARG=0 RX=CxMa:"M2,2[1,0,0,1]"
 Out: EC=0 RX=Cplx:"1 i 0"
+
+; fnSetMatrixDimensions dimensions the register named by the parameter to Y rows
+; by X columns (matrix.c:554), filling it with zeros. R99 is named on the In:
+; line: the case then inherits nothing, and a matrix left in a low register
+; outlives the file for the ones that read R00.
+Func: fnSetMatrixDimensions
+In:  FARG=99 R99=Real:"0" RY=Real:"2" RX=Real:"3"
+Out: EC=0 R99=ReMa:"M2,3[0,0,0,0,0,0]"

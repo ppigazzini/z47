@@ -18,7 +18,7 @@
 //  +-----+---------------------------+
 //  |  1  |   "PROGRAM_FILE_FORMAT"   |
 //  |  2  |       <file format>       |
-//  |  3  |"WP43_program_file_version"|
+//  |  3  |"C47_program_file_version" |
 //  |  4  |   <program file version>  |
 //  |  5  |         "PROGRAM"         |
 //  |  6  |       <program size>      |
@@ -121,7 +121,6 @@
 
 
 
-#if !defined(SAVE_SPACE_DM42_10)
   static bool_t subStrWildCardCompare(const char *in1, const char *in2) { //wild card is '*', active from the second character being compared
     int16_t i = 0;
     bool_t areEqual = true;
@@ -156,11 +155,9 @@ static int16_t findIndents(bool_t *newLine, int8_t *indent, int8_t *addnextLineI
         return jj;
       }
 
-#endif //SAVE_SPACE_DM42_10
 
 
 void fnPExport(void) {
-#if !defined(SAVE_SPACE_DM42_10)
     ///////////////////////////////////////////////////////////////////////////////////////
     // For details, see fnPem(). This is a modified copy.
     //
@@ -267,7 +264,6 @@ void fnPExport(void) {
       }
       step = nextStep;
     }
-#endif // !SAVE_SPACE_DM42_10
 }
 
 
@@ -372,10 +368,10 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
 
     _selectProgram(label);
     if((getSystemFlag(FLAG_PRTACT)) && (lastFunc == ITM_PRINTERPROG)) {     // If printer active and command is to print program then print to IR printer
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       printProgram(PROG, 0);
       temporaryInformation = TI_PRINT_COMPLETE;
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
     }
     else {                                                                  // else print to file
       _fnExportProgram(path);

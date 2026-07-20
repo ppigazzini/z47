@@ -60,3 +60,52 @@ Out: EC=0 R00=LonI:"4"
 Func: fnDse
 In:  FARG=0 R00=LonI:"3"
 Out: EC=0 R00=LonI:"2"
+
+; --- long-integer counters crossing zero: the register comes back mutated and
+; --- X holds 1 when the op reports TI_TRUE (the program skip decision), 0 when
+; --- TI_FALSE. FARG: 0=ISZ 1=DSZ 2=ISG 3=ISE 4=DSE 5=DSL.
+Func: fnIterationTiCov
+In:  FARG=1 R00=LonI:"2" RX=Real:"9"
+Out: EC=0 R00=LonI:"1" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=1 R00=LonI:"1" RX=Real:"9"
+Out: EC=0 R00=LonI:"0" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=1 R00=LonI:"0" RX=Real:"9"
+Out: EC=0 R00=LonI:"-1" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=0 R00=LonI:"-2" RX=Real:"9"
+Out: EC=0 R00=LonI:"-1" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=0 R00=LonI:"-1" RX=Real:"9"
+Out: EC=0 R00=LonI:"0" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=0 R00=LonI:"0" RX=Real:"9"
+Out: EC=0 R00=LonI:"1" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=2 R00=LonI:"-2" RX=Real:"9"
+Out: EC=0 R00=LonI:"-1" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=2 R00=LonI:"-1" RX=Real:"9"
+Out: EC=0 R00=LonI:"0" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=2 R00=LonI:"0" RX=Real:"9"
+Out: EC=0 R00=LonI:"1" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=3 R00=LonI:"-1" RX=Real:"9"
+Out: EC=0 R00=LonI:"0" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=3 R00=LonI:"0" RX=Real:"9"
+Out: EC=0 R00=LonI:"1" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=4 R00=LonI:"1" RX=Real:"9"
+Out: EC=0 R00=LonI:"0" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=4 R00=LonI:"0" RX=Real:"9"
+Out: EC=0 R00=LonI:"-1" RX=Real:"0"
+Func: fnIterationTiCov
+In:  FARG=5 R00=LonI:"1" RX=Real:"9"
+Out: EC=0 R00=LonI:"0" RX=Real:"1"
+Func: fnIterationTiCov
+In:  FARG=5 R00=LonI:"0" RX=Real:"9"
+Out: EC=0 R00=LonI:"-1" RX=Real:"0"

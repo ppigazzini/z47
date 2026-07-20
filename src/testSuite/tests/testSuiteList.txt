@@ -427,6 +427,7 @@ jacobi_audit
 LINPOL
 
 tempConv
+angleConv
 conversions
 conversionsSI
 constants
@@ -459,7 +460,7 @@ tvm_cov
 ; programs and statistics from that clean slate to render the plots. config_cov
 ; changes the display, format, range and grouping modes, which would leak
 ; through serialize_cov's lossless round-trip into the graphs_cov plot hashes,
-; so it runs dead last, after graphs_cov.
+; so it must run after graphs_cov.
 matrix2_cov
 clcvar_cov
 serialize_state_cov
@@ -478,3 +479,4 @@ serialize_cov
 graphs_cov
 
 config_cov
+stack_cov

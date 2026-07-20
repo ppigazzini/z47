@@ -201,9 +201,9 @@ void resetKeytimers(void) {
           }
           if(getSystemFlag(FLAG_USER)) {    // USER mode
             if((calcMode != CM_AIM) && (calcMode != CM_EIM) && (item > 0)) {
-              #if defined(LONGPRESS_CFG)   // only when allowed by LONGPRESS_CFG
+              #if defined(OPTION_LONGPRESS_CFG)   // only when allowed by OPTION_LONGPRESS_CFG
                 _executeItem(item, keyCode);
-              #endif // LONGPRESS_CFG
+              #endif // OPTION_LONGPRESS_CFG
 
               screenUpdatingMode = SCRUPD_AUTO;
               refreshScreen(1000);

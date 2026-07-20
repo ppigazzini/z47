@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17B)
+#if !defined(OPTION_DIST_2)
   void fnCauchyP              (uint16_t unusedButMandatoryParameter){}
   void fnCauchyL              (uint16_t unusedButMandatoryParameter){}
   void fnCauchyR              (uint16_t unusedButMandatoryParameter){}
@@ -167,4 +167,4 @@
     realAdd(&p, x0, res, realContext);
   }
 
-#endif //SAVE_SPACE_DM42_17B
+#endif // !OPTION_DIST_2

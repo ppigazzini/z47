@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17B)
+#if !defined(OPTION_DIST_2)
   void fnLogisticP     (uint16_t unusedButMandatoryParameter){}
   void fnLogisticL     (uint16_t unusedButMandatoryParameter){}
   void fnLogisticR     (uint16_t unusedButMandatoryParameter){}
@@ -173,4 +173,4 @@
     realAdd(&p, mu, res, realContext);
   }
 
-#endif //SAVE_SPACE_DM42_17B
+#endif // !OPTION_DIST_2

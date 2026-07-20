@@ -1117,28 +1117,27 @@ void fnCvtTemp(uint16_t ix) {
 }
 
 
-void fnCvtDegRad(uint16_t multiplyDivide) {
+// The three angle converters share one body: clear the angular tag when converting away
+// from the tagged unit, then scale. Folded because each referenced a different pair of
+// angular modes and a different constant, which identical-code folding cannot merge.
+static void _cvtAngle(uint16_t multiplyDivide, uint16_t amDiv, uint16_t amMul, const real_t *factor) {
   if(getRegisterDataType(REGISTER_X) == dtReal34 && (
-    ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == multiply) )) {
+    ((getRegisterAngularMode(REGISTER_X) == amDiv) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amMul) && multiplyDivide == multiply) )) {
     setRegisterAngularMode(REGISTER_X, amNone);
   }
-  unitConversion(const39_180onPi, multiplyDivide, noninverting);
+  unitConversion(factor, multiplyDivide, noninverting);
+}
+
+void fnCvtDegRad(uint16_t multiplyDivide) {
+  _cvtAngle(multiplyDivide, amDegree, amRadian, const39_180onPi);
 }
 
 void fnCvtDegGrad(uint16_t multiplyDivide) {
-  if(getRegisterDataType(REGISTER_X) == dtReal34 && (
-    ((getRegisterAngularMode(REGISTER_X) == amDegree) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amGrad) && multiplyDivide == multiply) )) {
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-  unitConversion(const_9on10, multiplyDivide, noninverting);
+  _cvtAngle(multiplyDivide, amDegree, amGrad, const_9on10);
 }
 
 void fnCvtGradRad(uint16_t multiplyDivide) {
-  if(getRegisterDataType(REGISTER_X) == dtReal34 && (
-    ((getRegisterAngularMode(REGISTER_X) == amGrad) && multiplyDivide == divide) || ((getRegisterAngularMode(REGISTER_X) == amRadian) && multiplyDivide == multiply) )) {
-    setRegisterAngularMode(REGISTER_X, amNone);
-  }
-  unitConversion(const39_200onPi, multiplyDivide, noninverting);
+  _cvtAngle(multiplyDivide, amGrad, amRadian, const39_200onPi);
 }
 
 void fnKmletok100K   (uint16_t multiplyDivide) {

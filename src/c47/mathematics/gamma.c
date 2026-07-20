@@ -113,49 +113,28 @@ static void gammaCplx(void) {
 
 
 
-// Abramowitz & Stegun §6.1.41
-// (only approximation needed here)
+// Abramowitz & Stegun §6.1.41, leading terms only: (z-1/2)ln(z) - z + (1/2)ln(2pi)
+// Not a general-purpose lnGamma: complexLnGamma() uses this solely as a reference to
+// pick the 2*pi winding integer for the imaginary part of the Lanczos result, so the
+// imaginary part only needs to be within pi of the true lnGamma. The leading terms
+// achieve that for every z off the real axis: the imaginary-part error stays below
+// ~pi/2 (approached near the negative real axis and, as |z| -> 0, tending to
+// arg(z)/2), a full factor of 2 inside the margin. The asymptotic corrections
+// 1/(12z) - 1/(360z^3) + 1/(1260z^5) - ... are intentionally omitted: where |z| is
+// large enough for the truncated series to be accurate their total stays orders of
+// magnitude below the ~pi decision margin, and for small |z| the divergent tail
+// grows past pi (~6000 at z = 0.1i) and corrupts the winding choice.
 static void complexLnGamma_Stirling(const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {
-  // (z-1/2)ln(z) - z + (1/2)ln(2pi) + 1/(12z) - 1/(360z^3) + 1/(1260z^5) - 1/(1680z^7) ...
-  real_t zReal, zImag, z2Real, z2Imag, zxReal, zxImag, tReal, tImag;
-  realCopy(xReal, &zReal);
-  realCopy(xImag, &zImag);
-  lnComplex(&zReal, &zImag, rReal, rImag, realContext);
-  realSubtract(&zReal, const_1on2, &tReal, realContext);
-  mulComplexComplex(&tReal, &zImag, rReal, rImag, rReal, rImag, realContext);
+  real_t tReal;
 
-  realSubtract(rReal, &zReal, rReal, realContext);
-  realSubtract(rImag, &zImag, rImag, realContext);
+  lnComplex(xReal, xImag, rReal, rImag, realContext);
+  realSubtract(xReal, const_1on2, &tReal, realContext);
+  mulComplexComplex(&tReal, xImag, rReal, rImag, rReal, rImag, realContext);
+
+  realSubtract(rReal, xReal, rReal, realContext);
+  realSubtract(rImag, xImag, rImag, realContext);
 
   realAdd(rReal, const39_ln2piOn2, rReal, realContext);
-
-  realMultiply(const_12, &zReal, &tReal, realContext);
-  realMultiply(const_12, &zImag, &tImag, realContext);
-  divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realAdd(rReal, &zReal, rReal, realContext);
-  realAdd(rImag, &zImag, rImag, realContext);
-
-  mulComplexComplex(&zReal, &zImag, &zReal, &zImag, &z2Real, &z2Imag, realContext);
-  mulComplexComplex(&zReal, &zImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-  realMultiply(const_360, &zxReal, &tReal, realContext);
-  realMultiply(const_360, &zxImag, &tImag, realContext);
-  divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realSubtract(rReal, &zReal, rReal, realContext);
-  realSubtract(rImag, &zImag, rImag, realContext);
-
-  mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-  realMultiply(const_1260, &zxReal, &tReal, realContext);
-  realMultiply(const_1260, &zxImag, &tImag, realContext);
-  divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realAdd(rReal, &zReal, rReal, realContext);
-  realAdd(rImag, &zImag, rImag, realContext);
-
-  mulComplexComplex(&zxReal, &zxImag, &z2Real, &z2Imag, &zxReal, &zxImag, realContext);
-  realMultiply(const_1680, &zxReal, &tReal, realContext);
-  realMultiply(const_1680, &zxImag, &tImag, realContext);
-  divRealComplex(const_1, &tReal, &tImag, &tReal, &tImag, realContext);
-  realSubtract(rReal, &zReal, rReal, realContext);
-  realSubtract(rImag, &zImag, rImag, realContext);
 }
 
 

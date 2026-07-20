@@ -1871,14 +1871,14 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
             screenUpdatingMode &= !(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
             programRunStop = PGM_WAITING;
             showFunctionNameItem = 0;
-            #if defined(IR_PRINTING)
+            #if defined(OPTION_IR_PRINTING)
               #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
                 printf("**[DL]** STOP program\n");
                 fflush(stdout);
               #endif //MONITOR_IRPRINT
               refreshStatusBar();
               printTrace(ITM_STOP, NOPARAM);   // STOP program
-            #endif //IR_PRINTING
+            #endif //OPTION_IR_PRINTING
           }
           else if(programRunStop == PGM_PAUSED) {
             programRunStop = PGM_KEY_PRESSED_WHILE_PAUSED;
@@ -3459,13 +3459,13 @@ void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
           reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(lenInBytes), amNone);
           xcopy(REGISTER_STRING_DATA(REGISTER_X), aimBuffer, lenInBytes);
 
-          #if defined(IR_PRINTING)
+          #if defined(OPTION_IR_PRINTING)
             #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
               printf("**[DL]** fnKeyEnter printTraceX\n");
               fflush(stdout);
             #endif //PC_BUILD
             printTraceX(LINE_FULL);
-          #endif //IR_PRINTING
+          #endif //OPTION_IR_PRINTING
 
           if(!getSystemFlag(FLAG_ERPN)) {                                  //PHM eRPN 2021-07
                     #if defined(DEBUGUNDO)
@@ -4024,7 +4024,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
         systemFlags1 = sf1;
         fnClDrawMx(1);
         if(statMx[0]!='S') {
-          printStatus(0, errorMessages[RESTORING_STATS], force);
+          printStatus(0, errorMessageOf(RESTORING_STATS), force);
           restoreStats();
         }
         screenUpdatingMode = SCRUPD_AUTO;
@@ -4211,9 +4211,7 @@ void fnKeyCC(uint16_t complex_Type) {    //JM Using 'unusedButMandatoryParameter
 
 void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
     uint16_t lg;
-  #if !defined(SAVE_SPACE_DM42_10)
     uint8_t *nextStep;
-  #endif //SAVE_SPACE_DM42_10
 
     if(tam.mode) {
       tamProcessInput(ITM_BACKSPACE);
@@ -4356,8 +4354,6 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
       }
 
       case CM_PEM: {
-        #if !defined(SAVE_SPACE_DM42_10)
-
         if(lastErrorCode != 0) {
           lastErrorCode = 0;
           return;
@@ -4406,7 +4402,6 @@ void fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
             }
           }
         }
-        #endif // !SAVE_SPACE_DM42_10
         break;
       }
 

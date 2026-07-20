@@ -84,14 +84,14 @@ bool_t isFunctionOldParam16(uint16_t func) {
   //Items in here are both struck through in the softmenu, and are prevented from running, including TAM if in use, and TI_NOT_AVAILABE.
   bool_t itemNotAvail(int16_t itemNr) {
   #if defined(DMCP_BUILD) || defined(PC_BUILD)
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       if(itemNr == ITM_PRINTERLCD && printerState.printer_model != PRINTER_MARTEL) {
         #if defined(PC_BUILD) && (VERBOSE_LEVEL >= 0)
           printf("Item %i Printer softkey item not available, not executing and/or struck through.\n", itemNr);
         #endif
         return true;
       }
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
     if(itemERRTIVal(itemNr) != _TO_ITM_NONE) {
       #if defined(PC_BUILD) && (VERBOSE_LEVEL >= 0)
         printf("Item %i Softkey item not available in simulator, not executing and/or struck through.\n", itemNr);
@@ -243,7 +243,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
       //printf("**[DL]** reallyRunFunction func %d param %d tam.mode %d tam.value0 %d tam.value %d ALPHA %d tam.alpha %d aimBuffer %s\n",func,param,tam.mode,tam.value0,tam.value,getSystemFlag(FLAG_ALPHA),tam.alpha,aimBuffer);fflush(stdout);
     #endif // PC_BUILD
 
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       if(!isFunctionItemAMenu(func) && (indexOfItems[func].func != addItemToBuffer)) {  // Menu tracing is done in showSoftmenu
         if((programRunStop != PGM_RUNNING) && (programRunStop != PGM_SINGLE_STEP)) {    // Program tracing is done in decodeOneStep
           if((calcMode != CM_MIM) || (func != ITM_LEFT_ARROW  && func != ITM_UP_ARROW   &&
@@ -256,7 +256,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           }
         }
       }
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
 
     //do not store parameters for the commands ending or stopping a program as that is killing the prior RCL TI
     bool_t funcIsProgramStopControl = (func == ITM_END || func == ITM_RTN || func == ITM_STOP || func == ITM_RTNP1);
@@ -390,18 +390,18 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
     refreshStatusBar();
     //DL] removed to fix issue with GTO and XEQ tam menus - but don't remember why it was needed initially
-    //#if defined(IR_PRINTING)
+    //#if defined(OPTION_IR_PRINTING)
     //  if(tam.mode && getSystemFlag(FLAG_PRTACT)) {
     //    leaveTamModeIfEnabled();
     //  }
-    //#endif// IR_PRINTING
+    //#endif// OPTION_IR_PRINTING
 
 
     //**RunFunction
     if(!itemNotAvail(func)) {
       indexOfItems[func].func(param);
 
-      #if defined(IR_PRINTING)
+      #if defined(OPTION_IR_PRINTING)
         printTraceTI();
         if(getSystemFlag(FLAG_TRACE) && (indexOfItems[func].status & RESULT_IN_X)){  // Trace X if function returns result in X
           #if defined(PC_BUILD) && defined(MONITOR_IRPRINT)
@@ -413,7 +413,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
           }
         }
         printerState.trace_done = false;
-      #endif //IR_PRINTING
+      #endif //OPTION_IR_PRINTING
 
     }
     else {

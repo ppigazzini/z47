@@ -267,7 +267,11 @@ void fnSquareRoot(uint16_t unusedButMandatoryParameter) {
   const uint32_t type = getRegisterDataType(REGISTER_X);
 
   if(type == dtReal34Matrix || type == dtComplex34Matrix) {
+#if defined(OPTION_EIGEN)
     fnMatrixSquareRoot(NOPARAM);
+#else
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+#endif // OPTION_EIGEN
   }
   else {
     processIntRealComplexMonadicFunction(&sqrtReal, &sqrtCplx, &sqrtShoI, &sqrtLonI);

@@ -40,13 +40,25 @@ static void getIterParam(uint16_t regist, real34_t *fp, real34_t *target, real34
 static void incDecAndCompare(uint16_t regist, uint16_t mode) {
   real34_t fp, step;
   int8_t compared;
+  const uint32_t dataType = getRegisterDataType(regist);
 
-  reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
-  getIterParam(regist, &fp, REGISTER_REAL34_DATA(TEMP_REGISTER_1), &step);
-  switch(getRegisterDataType(regist)) {
+  // The decoded ccccccc.fffii parameters and the TEMP_REGISTER_1 comparand are
+  // not needed on every path, and this runs once per loop iteration of every
+  // counted program loop. A long-integer counter always compares against 0
+  // with step 1 (getIterParam's non-real34 branch returns exactly that), and
+  // ISZ and DSZ on a real34 or time counter set their own step and compare
+  // against a constant below. Skip the reallocation and the decode for those.
+  if(dataType != dtLongInteger && !(((mode & 2) == 2) && (dataType == dtReal34 || dataType == dtTime))) {
+    reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, amNone);
+    getIterParam(regist, &fp, REGISTER_REAL34_DATA(TEMP_REGISTER_1), &step);
+  }
+  switch(dataType) {
     case dtLongInteger: {
+      // registerCmp against a real34 zero reduces to the sign of the counter,
+      // which the long-integer register tag already holds.
       incDecLonI(regist, mode >> 2);
-      registerCmp(regist, TEMP_REGISTER_1, &compared);
+      const uint32_t sign = getRegisterLongIntegerSign(regist);
+      compared = (sign == LI_ZERO) ? 0 : ((sign == LI_POSITIVE) ? 1 : -1);
       break;
     }
     case dtShortInteger: {

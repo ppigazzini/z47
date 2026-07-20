@@ -1,0 +1,41 @@
+; stack.c: the drops, the roll and the clears.
+; An In: line sets only what it names, so SS is named wherever the result
+; depends on the stack depth.
+
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 AM=DEG SS=4
+
+; fnDrop and fnRollDown leave the same X, so both assert the stack top:
+; fnDrop clears it, fnRollDown receives the old X there (stack.c:94 writes to
+; getStackTop(), REGISTER_D under FLAG_SSIZE8, defines.h:2203).
+Func: fnDrop
+In:  SS=8 RD=Real:"0" RT=Real:"4" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"2" RY=Real:"3" RZ=Real:"4" RD=Real:"0"
+Func: fnRollDown
+In:  SS=8 RT=Real:"4" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"2" RY=Real:"3" RZ=Real:"4" RD=Real:"1"
+
+; fnDropY removes Y, the levels above shift down and the top duplicates.
+; fnDropZ and fnDropT carry no catalog item, so Func: cannot resolve them:
+; functionToCall requires the function to appear in indexOfItems.
+Func: fnDropY
+In:  SS=4 RT=Real:"4" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"1" RY=Real:"3" RZ=Real:"4" RT=Real:"4"
+; item 2587 is 3DROP: fnDropN with the count in the parameter, so X takes what
+; was in T. NDROP (2622) carries TM_VALUE and needs parameter entry.
+Item: 2587
+In:  SS=4 RT=Real:"4" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+Out: EC=0 RX=Real:"4" RY=Real:"4" RZ=Real:"4" RT=Real:"4"
+
+; fnClX clears X only
+Func: fnClX
+In:  SS=4 RZ=Real:"9" RY=Real:"7" RX=Real:"42"
+Out: EC=0 RZ=Real:"9" RY=Real:"7" RX=Real:"0"
+
+; fnClearStack zeroes to the top of the current stack, eight levels or four.
+; SS=4 goes last so the file leaves the depth its preamble declares.
+Func: fnClearStack
+In:  SS=8 RD=Real:"9" RT=Real:"8" RZ=Real:"7" RY=Real:"6" RX=Real:"5"
+Out: EC=0 RD=Real:"0" RT=Real:"0" RZ=Real:"0" RY=Real:"0" RX=Real:"0"
+Func: fnClearStack
+In:  SS=4 RT=Real:"8" RZ=Real:"7" RY=Real:"6" RX=Real:"5"
+Out: EC=0 RT=Real:"0" RZ=Real:"0" RY=Real:"0" RX=Real:"0"

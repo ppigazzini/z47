@@ -29,6 +29,9 @@ void fnMaskl(uint16_t numberOfBits) {
     if(numberOfBits == 0) {
       mask = 0;
     }
+    else if(numberOfBits >= shortIntegerWordSize) {
+      mask = shortIntegerMask; // avoid the undefined 1ULL << 64 when numberOfBits == shortIntegerWordSize == 64
+    }
     else {
       mask = (((1ULL << numberOfBits) - 1) & shortIntegerMask) << (shortIntegerWordSize - numberOfBits);
     }
@@ -61,6 +64,9 @@ void fnMaskr(uint16_t numberOfBits) {
 
     if(numberOfBits == 0) {
       mask = 0;
+    }
+    else if(numberOfBits >= shortIntegerWordSize) {
+      mask = shortIntegerMask; // avoid the undefined 1ULL << 64 when numberOfBits == shortIntegerWordSize == 64
     }
     else {
       mask = (1ULL << numberOfBits) - 1;

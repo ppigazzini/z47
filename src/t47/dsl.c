@@ -748,7 +748,7 @@ static int readpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 
   if(temporaryInformation != TI_PROGRAM_LOADED) {
     const char *detail = (lastErrorCode != ERROR_NONE)
-        ? errorMessages[lastErrorCode]
+        ? errorMessageOf(lastErrorCode)
         : "unknown error";
     Jim_SetResultFormatted(interp, "readp: failed to load '%s': %s", filename, detail);
     return JIM_ERR;
@@ -789,7 +789,7 @@ static int xportpCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   reallyRunFunction(ITM_EXPORTP, (uint16_t)label);
 
   if(lastErrorCode != ERROR_NONE) {
-    Jim_SetResultFormatted(interp, "xportp: export of '%s' failed: %s", labelName, errorMessages[lastErrorCode]);
+    Jim_SetResultFormatted(interp, "xportp: export of '%s' failed: %s", labelName, errorMessageOf(lastErrorCode));
     return JIM_ERR;
   }
 
@@ -890,6 +890,12 @@ static int pressOne(Jim_Interp *interp, const char *keyCode) {
       Jim_SetResultFormatted(interp, "press: invalid @k token '%s' (expected '@k NN')", keyCode);
       return JIM_ERR;
     }
+    // kbd_std_*/kbd_usr hold 37 keys; see c47.h and the kbd_usr declaration in c47.c. No caller range-checks the index.
+    const int keyNumber = (keyId[0] - '0') * 10 + (keyId[1] - '0');
+    if(keyNumber >= 37) {
+      Jim_SetResultFormatted(interp, "press: '%s' is out of range (physical keys are 00..36)", keyCode);
+      return JIM_ERR;
+    }
     btnClicked(NULL, (gpointer)keyId);
     return JIM_OK;
   }
@@ -907,7 +913,7 @@ static int pressOne(Jim_Interp *interp, const char *keyCode) {
     return injectScriptKey(interp, keyCode, GDK_KEY_backslash);
   }
 
-  Jim_SetResultFormatted(interp, "press: Invalid key code '%s' (expected single char, Enter/Return, or 2 digits)", keyCode);
+  Jim_SetResultFormatted(interp, "press: Invalid key code '%s' (expected F1..F6, @f, @g, \"@k NN\" with NN 00..36, a single char, Enter or R/S)", keyCode);
   return JIM_ERR;
 }
 
@@ -987,6 +993,13 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
  * press <keycode> - Press a keyboard key (like pressing the button)
  */
 static int pressCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  // Registered in every build so the refusal names the reason: an unregistered command reports only "invalid command name".
+  if(headlessMode) {
+    Jim_SetResultString(interp, "press: needs the GTK GUI, which t47 and --headless do not start. Run ./c47 or ./r47 without --headless, "
+                                "or drive the function directly with item, xeq or menu.", -1);
+    return JIM_ERR;
+  }
+
   if(argc < 2) {
     Jim_SetResultString(interp, "press: missing key code argument", -1);
     return JIM_ERR;
@@ -1266,6 +1279,7 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "loadst", loadstCmd, NULL, NULL);
   Jim_CreateCommand(interp, "menu",   menuCmd,   NULL, NULL);
   Jim_CreateCommand(interp, "nim",    nimCmd,    NULL, NULL);
+  Jim_CreateCommand(interp, "press",  pressCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "reg",    regCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "readp",  readpCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "savest", savestCmd, NULL, NULL);
@@ -1277,10 +1291,6 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "xeq",    xeqCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "xportp", xportpCmd, NULL, NULL);
   // clang-format on
-  if(!headlessMode) {
-    // Conditionally add commands that require the GTK GUI
-    Jim_CreateCommand(interp, "press", pressCmd, NULL, NULL);
-  }
 }
 
 // =====================================================================

@@ -30,7 +30,7 @@ All the below: because both Last x and savestack does not work due to multiple s
  Check for savestack in jm.c
 */
 
-#if !defined(SAVE_SPACE_DM42_22_EDIT1)
+#if defined(OPTION_EDIT_X)
 void _fractionToString(calcRegister_t regist, char *displayString, int16_t *lessEqualGreater) {
   int16_t  sign;
   uint64_t intPart, numer, denom;
@@ -277,21 +277,21 @@ static void _real34ToNim(const real34_t *real34, char *nimInput, char *nimDispla
 // nimDisplay : used to fill nimBufferDisplay
 
 //}
-#endif // !SAVE_SPACE_DM42_22_EDIT1
+#endif // !OPTION_EDIT_X
 
 
 void fnEdit (uint16_t unusedParamButMandatory) {
   //fnEdit: this is simply the stub with the currently working edit routines, linked via ITM_EDIT, which is also located on long press Backspace.
   //All might have to be changed have a propoer generic EDIT function.
-    #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+    #if defined(OPTION_EDIT_X) || defined(OPTION_EDIT_PEM)
       int16_t index;
-    #endif //!defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+    #endif //defined(OPTION_EDIT_X) || defined(OPTION_EDIT_PEM)
 
-    #if !defined(SAVE_SPACE_DM42_22_EDIT1) || !defined(SAVE_SPACE_DM42_23_EDIT2)
+    #if defined(OPTION_EDIT_X) || defined(OPTION_EDIT_PEM)
       uint8_t grpGroupingLeftOld;
       uint8_t grpGroupingRightOld;
     #endif
-    #if !defined(SAVE_SPACE_DM42_23_EDIT2)
+    #if defined(OPTION_EDIT_PEM)
       char    varOrLblName[32];
     #endif
 
@@ -307,7 +307,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
         }
         else {
           switch(getRegisterDataType(REGISTER_X)) {
-#if !defined(SAVE_SPACE_DM42_22_EDIT1)
+#if defined(OPTION_EDIT_X)
             case dtLongInteger: {
               #define NIM_BUFFER_EXTENDED_LENGTH    1400      // provision for very long integers (up to 1000 digits + separators)
               memset(nimBufferDisplay, 0, NIM_BUFFER_EXTENDED_LENGTH);
@@ -554,7 +554,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               goto edit_dtReal34;
               break;
             }
-#endif // !SAVE_SPACE_DM42_22_EDIT1
+#endif // !OPTION_EDIT_X
 
             case dtString: {
               setSystemFlag(FLAG_ASLIFT);
@@ -576,7 +576,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               break;
             }
 
-#if !defined(SAVE_SPACE_DM42_22_EDIT1)
+#if defined(OPTION_EDIT_X)
             case dtShortInteger: {
               uint16_t i;
               grpGroupingLeftOld  = grpGroupingLeft;
@@ -627,7 +627,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
               cursorFont = &numericFont;
               break;
             }
-#endif // !SAVE_SPACE_DM42_22_EDIT1
+#endif // !OPTION_EDIT_X
 
             // case dtConfig: Not relevant for EDIT
             default: {
@@ -655,7 +655,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           func |= currentStep[i++];
         }
         uint8_t opParam  = currentStep[i++];
-        #if !defined(SAVE_SPACE_DM42_23_EDIT2)
+        #if defined(OPTION_EDIT_PEM)
           uint8_t opParam2 = currentStep[i++];
           uint8_t opParam3 = currentStep[i];
         #endif
@@ -669,7 +669,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
           if(opParam == STRING_LABEL_VARIABLE) {
             pemAlphaEdit(NOPARAM);
           }
-#if !defined(SAVE_SPACE_DM42_23_EDIT2)
+#if defined(OPTION_EDIT_PEM)
           else if((opParam == BINARY_SHORT_INTEGER) || (opParam == STRING_SHORT_INTEGER) || (opParam == STRING_LONG_INTEGER) ||
                   (opParam == BINARY_REAL34)        || (opParam == STRING_REAL34)        ||
                   (opParam == BINARY_COMPLEX34)     || (opParam == STRING_COMPLEX34)     ||
@@ -871,12 +871,12 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             //printf("**[DL]** fnEdit editingLiteralType %d aimBuffer %s\n", editingLiteralType, aimBuffer);
             //fflush(stdout);
           }
-#endif // !SAVE_SPACE_DM42_23_EDIT2
+#endif // !OPTION_EDIT_PEM
           else {
             ;
           }
         }
-#if !defined(SAVE_SPACE_DM42_23_EDIT2)
+#if defined(OPTION_EDIT_PEM)
         else {
           uint16_t regNumber;
           uint16_t paramMode = (indexOfItems[func].status & PTP_STATUS) >> 9;
@@ -1053,7 +1053,7 @@ void fnEdit (uint16_t unusedParamButMandatory) {
             }
           }
         }
-#endif // !SAVE_SPACE_DM42_23_EDIT2
+#endif // !OPTION_EDIT_PEM
         break;
       }
 

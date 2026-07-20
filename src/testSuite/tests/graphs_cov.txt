@@ -5,6 +5,8 @@
 ;** commented out if an upstream change legitimately alters the render.                                                       **
 ;*******************************************************************************************************************************
 In: AM=RAD FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+; Set the display state the axis-label render depends on, so an upstream test leaking a display setting cannot change the plot bitmap:
+In: DSP=ALL3 FL_SIG0=1 FL_ENGOVR=0 FL_FRACT=0 GAP=3
 
 ; stage program S (f(X)=X^2-4; serialize_cov's reset wiped program memory) and the graph programs G1..G9
 Func: fnLoadPgmCov

@@ -430,6 +430,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
     saveStateValue(&regStatsXY,                     sizeof(regStatsXY),                                          "regStatsXY",                     "int16");
     saveStateValue(&matrixIndex,                    sizeof(matrixIndex),                                         "matrixIndex",                    "uint16");
+    saveStateValue(&shadowI,                        sizeof(shadowI),                                             "shadowI",                        "int16");
+    saveStateValue(&shadowJ,                        sizeof(shadowJ),                                             "shadowJ",                        "int16");
     saveStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
     saveStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
     saveStateValue(&currentSolverProgram,           sizeof(currentSolverProgram),                                "currentSolverProgram",           "uint16");
@@ -1061,6 +1063,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&yzero,                          sizeof(yzero),                                               "yzero",                          "uint32");
     restoreStateValue(&regStatsXY,                     sizeof(regStatsXY),                                          "regStatsXY",                     "int16");
     restoreStateValue(&matrixIndex,                    sizeof(matrixIndex),                                         "matrixIndex",                    "uint16");
+    restoreStateValue(&shadowI,                        sizeof(shadowI),                                             "shadowI",                        "int16");
+    restoreStateValue(&shadowJ,                        sizeof(shadowJ),                                             "shadowJ",                        "int16");
     restoreStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
     restoreStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
     restoreStateValue(&currentSolverProgram,           sizeof(currentSolverProgram),                                "currentSolverProgram",           "uint16");

@@ -351,6 +351,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   }
 
 
+#if defined(OPTION_MOREGRAPHICS)
   static void plotarrow(int16_t xo, int16_t yo, int16_t xn, int16_t yn) {              // Plots line from xo,yo to xn,yn; uses temporary x1,y1
     float dx, dy, ddx, dydx, zz, zzz;
     dydx = yn-yo;
@@ -370,6 +371,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       placePixel(xn, yn);
     }
   }
+#endif // OPTION_MOREGRAPHICS
 
 
     typedef struct {              //JM VALUES DEMO
@@ -395,6 +397,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   }
 
 
+#if defined(OPTION_MOREGRAPHICS)
     TO_QSPI const plotdeltas tabDelta[] = {
       {1, +0, -2, 0, 0},
       {1, -1, -1, 0, 0},
@@ -417,6 +420,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       ii++;
     }
   }
+#endif // OPTION_MOREGRAPHICS
 
 
     TO_QSPI const plotdeltas tabDeltaIntBig[] = {
@@ -437,6 +441,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   }
 
 
+#if defined(OPTION_MOREGRAPHICS)
     TO_QSPI const plotdeltas tabDeltaInt[] = {
       {1, +0, +0, 0, 0},
       {1, +0, -1, 0, 0},
@@ -454,6 +459,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
       ii++;
     }
   }
+#endif // OPTION_MOREGRAPHICS
 
 
     TO_QSPI const plotdeltas tabDeltaRms[] = {
@@ -808,7 +814,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 
 void graph_plotmem(void) {
   currentKeyCode = 255;
-  #if !defined(SAVE_SPACE_DM42_13GRF_JM)
+  #if defined(OPTION_MOREGRAPHICS)
       #if defined(STATDEBUG) && defined(PC_BUILD)
         uint16_t i;
         int16_t cnt1;
@@ -1537,7 +1543,7 @@ plotmemExit: ;
         ctxtReal51.digits = s51;
         ctxtReal75.digits = s75;
       #endif //LOW_GRAPH_ACC
-  #endif // !SAVE_SPACE_DM42_13GRF_JM
+  #endif // !OPTION_MOREGRAPHICS
 }
 
 

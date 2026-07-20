@@ -33,6 +33,13 @@ int file_selection_screen(const char * title, const char * base_dir, const char 
   gint res;
 
 
+  // No GUI: frmCalc is NULL, so no chooser can run and no filename can be produced. Scripts naming their file take the _ioFileNameOverride path, not this one.
+  // FILE_ERROR, not FILE_CANCEL: callers return quietly on FILE_CANCEL with lastErrorCode at ERROR_NONE, while FILE_ERROR raises their cannot-read/write error.
+  if(headlessMode) {
+    fprintf(stderr, "%s: no file chooser without a GUI; name the file in the script instead (loadst, savest, readp, impreg and expreg all take one)\n", title);
+    return FILE_ERROR;
+  }
+
   strcpy(untitled, data);
   strcat(untitled, ext+1);
 
@@ -301,6 +308,12 @@ int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
 
 
 void show_warning(char *string) {
+  // No GUI: gtk_dialog_run has no window to run on, so the terminal is the only place a warning can go.
+  if(headlessMode) {
+    fprintf(stderr, "Warning: %s\n", string);
+    return;
+  }
+
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wformat-security"
   GtkWidget *dialog;

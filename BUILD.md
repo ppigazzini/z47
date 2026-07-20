@@ -73,3 +73,16 @@ distS                       - Runs dist, with a pipe to display used/remaining s
 - Hardware and dist builds wipe the build directory and reconfigure each time by default, so GMP is cross-compiled from scratch on every build. Append `f=1` (e.g. `make dmcp f=1`, `make dist_dmcp5 f=1`) to reuse the existing build directory and skip the GMP rebuild. The first build of a directory still pays the GMP cross-compile, every `f=1` build after that reuses it. Reach for `f=1` during active development, drop it for a guaranteed clean build. Note `make clean` wipes all the build.dmcp* directories and subprojects/gmp-6.2.1, so the next build pays the full GMP cost regardless of `f=1`.
 - Options: By default a hardware build wipes its build directory and reconfigures from scratch, which rebuilds GMP. Append `f=1` to any hardware or dist target to reuse the existing build directory and skip the GMP rebuild for a fast incremental build. Drop `f=1` when you want the clean rebuild. `f=1` works on `dmcp`, `dmcpr47`, `dmcp5`, `dmcp5r47` and all the `dist_dmcp*` targets.
 
+## Measuring per-feature FLASH/QSPI size (Mem=1)
+Normal hardware builds use `-flto` (link-time optimisation) for the smallest shipped binary. LTO optimises the whole program globally, so when you remove one feature (an `OPTION_*` in `src/c47/defines.h`) LTO expands other code into the freed space and the size report's `flash left` barely changes — the per-feature saving is hidden. This is harmless for fitting (when FLASH is actually full, LTO has no room to expand, so the saving is real), but it makes per-feature measurement meaningless.
+
+Append `Mem=1` to any DMCP build to disable `-flto` so each feature's real footprint shows in the size report:
+```
+make dist_dmcp Mem=1            - non-LTO diagnostic build; per-feature sizes are real
+make PKG=4 dmcp_pkg4 Mem=1      - same, for one package
+```
+- The `Mem=1` binary is ~14 KB bigger than the shipped LTO build. On a package with little headroom (e.g. PACKAGE 1, ~7 KB free) it **overflows FLASH and the link fails** - that is expected. Use `Mem=1` on a package/config with room (PACKAGE 4 fits), or just read the calibrated `✓` figures in `defines.h` for planning.
+- To read a feature's cost: build with `Mem=1` twice (feature on, then off) and compare `flash`/`qspi` `used` in the size report; the difference is the true footprint.
+- The calibrated `✓ NNNN bytes` figures beside each `OPTION_*` in `src/c47/defines.h` are exactly these non-LTO FLASH footprints — sum the ones you disable to plan a fit, no rebuild needed.
+- `Mem` is applied at configure time, so run it without `f=1` (fresh setup), or reconfigure an existing dir: `meson setup --reconfigure build.dmcp.p<N> -Dmem=true` (and `-Dmem=false` to go back).
+

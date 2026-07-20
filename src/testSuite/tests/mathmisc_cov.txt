@@ -87,6 +87,21 @@ Func: fnInc
 In:  FARG=0 R00=Real:"41" RX=Real:"1"
 Out: EC=0 R00=Real:"42"
 
+; decrement a numbered register; long integers take the same path (incDec.c:37)
+Func: fnDec
+In:  FARG=0 R00=Real:"5" RX=Real:"1"
+Out: EC=0 R00=Real:"4"
+Func: fnDec
+In:  FARG=0 R00=Real:"-0.5" RX=Real:"1"
+Out: EC=0 R00=Real:"-1.5"
+Func: fnDec
+In:  FARG=0 R00=LonI:"9" RX=Real:"1"
+Out: EC=0 R00=LonI:"8"
+; local register 7000 is not allocated, so the guard at incDec.c:38 rejects it
+Func: fnDec
+In:  FARG=7000 R00=Real:"5" RX=Real:"1"
+Out: EC=0 R00=Real:"5"
+
 ; random: the PRNG is deterministic under TESTSUITE_BUILD, so a fixed seed gives a
 ; fixed draw. Re-seed before each so the value is independent of draw order.
 Func: fnSeed

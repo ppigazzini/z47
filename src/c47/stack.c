@@ -341,7 +341,7 @@ void undo(void) {
     printf(">>> Undoing, calcMode = %i ...", calcMode);
   #endif // DEBUGUNDO
                                         #if defined(DEBUGUNDO)
-                                          printf("Pre-existing error code: Error number %d:%s\n", lastErrorCode, errorMessages[lastErrorCode]);
+                                          printf("Pre-existing error code: Error number %d:%s\n", lastErrorCode, errorMessageOf(lastErrorCode));
                                           print_caller(NULL);
                                         #endif // DEBUGUNDO
 

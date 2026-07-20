@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_16)
+#if !defined(OPTION_DIST_NORMAL)
   void fnNormalP   (uint16_t unusedButMandatoryParameter){}
   void fnNormalL   (uint16_t unusedButMandatoryParameter){}
   void fnNormalR   (uint16_t unusedButMandatoryParameter){}
@@ -419,5 +419,5 @@
     realCopy(&p, res);
   }
 
-#endif //SAVE_SPACE_DM42_16
+#endif // !OPTION_DIST_NORMAL
 

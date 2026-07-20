@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(SAVE_SPACE_DM42_17)
+#if !defined(OPTION_DIST_1)
   void fnF_P(uint16_t unusedButMandatoryParameter){}
   void fnF_L(uint16_t unusedButMandatoryParameter){}
   void fnF_R(uint16_t unusedButMandatoryParameter){}
@@ -385,4 +385,4 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
     return;
   }
 
-#endif //SAVE_SPACE_DM42_17
+#endif // !OPTION_DIST_1

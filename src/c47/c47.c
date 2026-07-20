@@ -360,14 +360,14 @@ bool_t                 cancelFilename;
 uint8_t                firstDayOfWeek = 1;     // Monday
 uint8_t                firstWeekOfYearDay = 4; // Thursday
 
-//#if defined(IR_PRINTING)
+//#if defined(OPTION_IR_PRINTING)
   printerState_t         printerState;
   /*
    *  Where will the next data be printed?
    *  Columns are in pixel units from 0 to 165 for the HP-82240 and 0 to 383 for the Martel graphic mode
    */
   uint16_t               printerColumn;
-//#endif //IR_PRINTING
+//#endif //OPTION_IR_PRINTING
 
 uint16_t                 alphaRegister;
 bool_t                   varMenu42;

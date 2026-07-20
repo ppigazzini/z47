@@ -3,6 +3,15 @@
 
 #include "c47.h"
 
+#if !defined(OPTION_DATAFILE)                                                 // stubs for .d47 register/variable export & import (real code is guarded below): EXPstk/ltr/nrg/reg/xfnx, IMPORTr
+  void fnSaveStackRegisters   (uint16_t unusedButMandatoryParameter) {}
+  void fnSaveLetteredRegisters(uint16_t unusedButMandatoryParameter) {}
+  void fnSaveNRegisters       (uint16_t N) {}
+  void fnSaveRegister         (uint16_t regist) {}
+  void fnSaveXFNRegister      (uint16_t unusedButMandatoryParameter) {}
+  void fnLoadRegisters        (uint16_t unusedButMandatoryParameter) {}
+#endif // !OPTION_DATAFILE
+
 // This is used for the state files
 #define configFileVersion                  10000026 // FLAG_SBadm
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
@@ -124,6 +133,7 @@ static calcRegister_t stringToRegisterNumber(const char *name) {
   return (calcRegister_t)toInt16(name + 1);
 }
 
+#if defined(OPTION_DATAFILE)
 // Build a register-name field for writing: the lettered short form "RX".."RW" for registers 100..125, otherwise "Rnnn".
 static void registerNumberToString(calcRegister_t regist, char *name) {
   if(regist >= FIRST_LETTERED_REGISTER && regist <= LAST_SPARE_REGISTER) {
@@ -133,6 +143,7 @@ static void registerNumberToString(calcRegister_t regist, char *name) {
     sprintf(name, "R%03" PRId16, (int16_t)regist);
   }
 }
+#endif // OPTION_DATAFILE
 
 //Utility to add angle and polar markers
 static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
@@ -437,6 +448,7 @@ static void saveMatrixElements(calcRegister_t regist) {
   }
 
 
+#if defined(OPTION_DATAFILE)
 bool_t fnSaveDataRegisters(uint16_t *beginR, uint16_t *endR, char *registerName, bool_t isXFNRegister) {
   // Appends a register section to the already-open file: header, count, then per register id/name line, type line,
   // value line, and matrix element lines. registerName != NULL saves that one named variable (beginR/endR ignored);
@@ -577,6 +589,7 @@ void fnSaveXFNRegister(uint16_t unusedButMandatoryParameter) {
     #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
+#endif // OPTION_DATAFILE
 
 
 static void doSave(uint16_t saveType);
@@ -598,7 +611,7 @@ void fnSave(uint16_t saveMode) {
 }
 
 void doSave(uint16_t saveType) {
-  printStatus(0, errorMessages[SAVING_STATE_FILE], force);
+  printStatus(0, errorMessageOf(SAVING_STATE_FILE), force);
   ioFilePath_t path;
   char tmpString[3000];           //The concurrent use of the global tmpString
                                   //as target does not work while the source is at
@@ -2317,11 +2330,11 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstDayOfWeek"              ) == 0) { firstDayOfWeek        = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstWeekOfYearDay"          ) == 0) { firstWeekOfYearDay    = toUint8(tmpString); }
-        #if defined(IR_PRINTING)
+        #if defined(OPTION_IR_PRINTING)
           else if(strcmp(aimBuffer, "printerOn"                   ) == 0) { printerState.print_on = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "printerModel"                ) == 0) { printerState.printer_model    = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "printerLineDelay"            ) == 0) { printerState.delay    = toUint16(tmpString); setLineDelay(printerState.delay);}
-        #endif //IR_PRINTING
+        #endif //OPTION_IR_PRINTING
           else if(strcmp(aimBuffer, "jm_LARGELI"                  ) == 0) {
             if(loadedVersion < 10000012) {
               forceSystemFlag(FLAG_LARGELI, toUint8(tmpString) != 0);
@@ -2401,6 +2414,7 @@ END_CONFIG:
 
 
 
+#if defined(OPTION_DATAFILE)
 static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d) {
   ioFilePath_t path;
   int ret;
@@ -2471,6 +2485,7 @@ static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d
 void fnLoadRegisters(uint16_t unusedButMandatoryParameter) {
   doLoadDataFile(LM_ALL, 0, 0, 0);
 }
+#endif // OPTION_DATAFILE
 
 
 
@@ -2710,7 +2725,7 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
 
 
 void fnLoad(uint16_t loadMode) {
-  printStatus(0, errorMessages[LOADING_STATE_FILE], force);
+  printStatus(0, errorMessageOf(LOADING_STATE_FILE), force);
   if(loadMode == LM_STATE_LOAD) {
     doLoad(LM_ALL, 0, 0, 0, stateLoad);
   }

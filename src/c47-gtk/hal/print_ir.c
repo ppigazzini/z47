@@ -37,7 +37,7 @@ void setLineDelay(uint16_t delay) {
 // Send Byte to over IR
 //
 void sendByteIR(uint8_t c) {
-#if defined(IR_PRINTING)
+#if defined(OPTION_IR_PRINTING)
   GError         *error = NULL;
   GInetAddress   *udpAddress;
   GSocketAddress *udpSocketAddress;
@@ -87,7 +87,7 @@ void sendByteIR(uint8_t c) {
     g_error_free(error);
   }
 
-#endif //IR_PRINTING
+#endif //OPTION_IR_PRINTING
 }
 
 void printer_advance_buf(int what) {

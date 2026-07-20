@@ -13,7 +13,7 @@ struct cmplxPair {
   real_t r, i;
 };
 
-#if !defined(SAVE_SPACE_DM42_12)
+#if defined(OPTION_SLV_ZETA_BETA)
 static int cmplxSortCompare(const void *v1, const void *v2) {
   const struct cmplxPair *p1 = (const struct cmplxPair *)v1;
   const struct cmplxPair *p2 = (const struct cmplxPair *)v2;
@@ -89,7 +89,7 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
   }
   return 0;
 }
-#endif //SAVE_SPACE_DM42_12
+#endif //OPTION_SLV_ZETA_BETA
 
 
 /********************************************//**
@@ -100,7 +100,7 @@ static int cmplxSortCompare(const void *v1, const void *v2) {
  * \return void
  ***********************************************/
 void fnSlvc(uint16_t unusedButMandatoryParameter) {
-#if !defined(SAVE_SPACE_DM42_12)
+#if defined(OPTION_SLV_ZETA_BETA)
   bool_t complexCoefs=false;
   real_t aReal, bReal, cReal, dReal, rReal;
   real_t aImag, bImag, cImag, dImag, rImag;
@@ -209,7 +209,7 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   #else // !DISCIMINANT
     fnDropT(0);
   #endif // DISCRIMINANT
-#endif // !SAVE_SPACE_DM42_12
+#endif // !OPTION_SLV_ZETA_BETA
 }
 
 

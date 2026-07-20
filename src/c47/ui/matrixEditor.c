@@ -94,10 +94,10 @@ void fnEditMatrix(uint16_t regist) {
     nimBufferDisplay[0] = 0;
     scrollRow = scrollColumn = 0;
     showMatrixEditor();
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       refreshScreen(80);
       printTraceMatElement(LINE_FULL);
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
   }
   else {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -360,25 +360,72 @@ static void setRegisterAsInt(bool_t asArrayPointer, int16_t toStore, calcRegiste
   longIntegerFree(tmp_lgInt);
 }
 
+// The shadow row/column pair: the Matrix Editor's cursor while it is open, and the vector functions' walking index while they cross a matrix.
+// The user's I and J keep their value and their type. While the shadow is closed the accessors address the real registers, so INDEX, STOIJ,
+// RCLIJ and storing to I or J drive the matrix index. Code reading REGISTER_I/J without these accessors reports the user's registers, not the cursor:
+// the I+/J+ labels in softmenus.c and items.c, lastI/lastJ in screen.c. None of it runs while the editor is open, as menu_M_EDIT carries no I+/J+.
+// shadowI/J go to backup.cfg beside matrixIndex, so the editor reopens on the cell it was left on.
+int16_t       shadowI, shadowJ; // 0-based, i.e. what asArrayPointer=true reports
+static bool_t ijShadowActive;   // for the vector functions; the editor is spotted by its calcMode
+
+static bool_t ijIsShadowed(void) {
+  return calcMode == CM_MIM || ijShadowActive;
+}
+
+static void beginShadowedIJ(void) {
+  ijShadowActive = true;
+}
+
+static void endShadowedIJ(void) {
+  ijShadowActive = false;
+}
+
 //Row of Matrix
 int16_t getIRegisterAsInt(bool_t asArrayPointer) {
+  if(ijIsShadowed()) {
+    return asArrayPointer ? shadowI : shadowI + 1;
+  }
   return getRegisterAsInt(asArrayPointer, REGISTER_I);
 }
 
 //Col of Matrix
 int16_t getJRegisterAsInt(bool_t asArrayPointer) {
+  if(ijIsShadowed()) {
+    return asArrayPointer ? shadowJ : shadowJ + 1;
+  }
   return getRegisterAsInt(asArrayPointer, REGISTER_J);
-
 }
 
 //Row of Matrix
 void setIRegisterAsInt(bool_t asArrayPointer, int16_t toStore) {
+  if(ijIsShadowed()) {
+    shadowI = asArrayPointer ? toStore : toStore - 1;
+    return;
+  }
   setRegisterAsInt(asArrayPointer, toStore, REGISTER_I);
 }
 
 //ColOfMatrix
 void setJRegisterAsInt(bool_t asArrayPointer, int16_t toStore) {
+  if(ijIsShadowed()) {
+    shadowJ = asArrayPointer ? toStore : toStore - 1;
+    return;
+  }
   setRegisterAsInt(asArrayPointer, toStore, REGISTER_J);
+}
+
+void saveMatrixIndexState(matrixIndexState_t *state) {
+  state->matrixIndex = matrixIndex;
+  state->savedI      = shadowI;
+  state->savedJ      = shadowJ;
+  beginShadowedIJ(); // from here the walking index goes to the shadow; the user's I and J are not touched
+}
+
+void restoreMatrixIndexState(const matrixIndexState_t *state) {
+  endShadowedIJ();
+  shadowI     = state->savedI; // an editor open underneath keeps the cursor it had
+  shadowJ     = state->savedJ;
+  matrixIndex = state->matrixIndex;
 }
 
 bool_t wrapIJ(uint16_t rows, uint16_t cols) {
@@ -558,14 +605,14 @@ void mimEnter(bool_t commit) {
   int16_t col = getJRegisterAsInt(true);
 
   if(aimBuffer[0] != 0) {
-    #if defined(IR_PRINTING)
+    #if defined(OPTION_IR_PRINTING)
       if(aimBuffer[0] == '+') {
         printTraceString(aimBuffer + 1, LINE_NOLF);
       }
       else {
         printTraceString(aimBuffer, LINE_NOLF);
       }
-    #endif //IR_PRINTING
+    #endif //OPTION_IR_PRINTING
     if(getRegisterDataType(matrixIndex) == dtReal34Matrix) {
       real34_t real34tmp;
       real34_t *real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements[row * cols + col];
@@ -809,9 +856,9 @@ void mimAddNumber(int16_t item) {
             real34SetOne(VARIABLE_IMAG34_DATA(elm));
           }
         }
-        #if defined(IR_PRINTING)
+        #if defined(OPTION_IR_PRINTING)
           printTrace(lastFunc, item);
-        #endif //IR_PRINTING
+        #endif //OPTION_IR_PRINTING
         return;
       }
       break;

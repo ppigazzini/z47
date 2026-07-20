@@ -1,0 +1,36 @@
+;*************************************************************
+;** Coverage: the three angle converters (conversionUnits). **
+;** Each op both directions: divide leaves the plain value  **
+;** converted away from the first unit and clears its tag;  **
+;** multiply converts back. One case checks a mismatched    **
+;** tag is preserved.                                       **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnCvtDegRad(32768) ;deg -> rad
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"90:DEG"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.570796326794896619231321691639751:NONE"
+
+Func: fnCvtDegRad(0) ;rad -> deg
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"1.570796326794896619231321691639751:RAD"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"89.99999999999999999999999999999992:NONE"
+
+Func: fnCvtDegGrad(32768) ;deg -> grad
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"90:DEG"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"1.0E+2:NONE"
+
+Func: fnCvtDegGrad(0) ;grad -> deg
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"100:GRAD"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"90.0:NONE"
+
+Func: fnCvtGradRad(32768) ;grad -> rad
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"200:GRAD"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"3.141592653589793238462643383279503:NONE"
+
+Func: fnCvtGradRad(0) ;rad -> grad
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"3.141592653589793238462643383279503:RAD"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"199.9999999999999999999999999999998:NONE"
+
+Func: fnCvtDegRad(32768) ;mismatched tag: RAD input converts by value, tag not carried
+In:  AM=DEG FL_ASLIFT=0 RX=Real:"1:RAD"
+Out: EC=0 FL_ASLIFT=1 RX=Real:"0.01745329251994329576923690768488613:NONE"
