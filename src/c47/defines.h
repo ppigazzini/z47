@@ -799,7 +799,7 @@
 
 
 #define NUMBER_OF_ERROR_CODES                    129
-#define SIZE_OF_EACH_ERROR_MESSAGE                48
+#define SIZE_OF_EACH_ERROR_MESSAGE                45  // longest message is 44 bytes plus the terminator
 
 #define NUMBER_OF_BUG_SCREEN_MESSAGES             10
 #define SIZE_OF_EACH_BUG_SCREEN_MESSAGE          100

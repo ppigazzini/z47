@@ -57,7 +57,7 @@ const angularMode_t = c_int;
 // Constants / enum values (defines.h / typeDefinitions.h)
 // ---------------------------------------------------------------------------
 const NUMBER_OF_ERROR_CODES: u8 = 129; // defines.h: 129 (not 127); error 128 = ERROR_TI_UNDO_FAILED. The bounds check below rejected codes 127/128 when this was 127.
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 48;
+const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
 const NUMBER_OF_BUG_SCREEN_MESSAGES: usize = 10;
 const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 
