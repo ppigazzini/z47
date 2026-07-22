@@ -46,6 +46,29 @@ SECTIONS {
     KEEP(*(.rodata))         /* Added by Martin .rodata  sections (constants, strings, etc.) */
     KEEP(*(.rodata*str1.1))  /* Added by Martin .rodata  sections (constants, strings, etc.) */
 
+    /* Cold read-only tables that -fdata-sections gives a .rodata.<symbol> name to, so they miss the
+       exact-name pattern above and fall through to internal FLASH. Listed individually rather than
+       globbed with *(.rodata*): a glob would also match .rodata.prog_info, and since ld assigns an
+       input section to the first matching output section in script order, prog_info would land in
+       QSPI. The .pgm is built by objcopy --remove-section .qspi, so it would ship without the magic
+       at 0x08050000 and the loader would reject it.
+       Deliberately NOT moved: the decNumber combination tables and __gmp_digit_value_tab /
+       __gmpn_clz_tab / __gmp_binvert_limb_table. Those are random-access lookups in the innermost
+       decimal and limb loops, the Cortex-M4 has no D-cache, and the STM32L476 ART accelerator caches
+       internal-FLASH instruction fetch only, so a QSPI read there costs on every operation. */
+    KEEP(*(.rodata.__gmpn_bases))         /* radix conversion, get_str/set_str display path only */
+    KEEP(*(.rodata.default_state))        /* GMP Mersenne Twister seed, one call site */
+    KEEP(*(.rodata.invsqrttab))
+    KEEP(*(.rodata.vexp*))
+    KEEP(*(.rodata.vlog*))
+    KEEP(*(.rodata.__gmp_fib_table))
+    KEEP(*(.rodata.__gmp_oddfac_table))
+    /* mpn_fft_table is read-only because FFT_TABLE_ATTRS defaults to "static const"
+       (gmp-impl.h:2349). A tune build redefines it to empty and makes the table writable
+       (gmp-impl.h:5066, inside #if TUNE_PROGRAM_BUILD), which we do not build. */
+    KEEP(*(.rodata.mpn_fft_table))
+    KEEP(*(.rodata.angle_ids*))
+
     . = ALIGN(8);
     _qspi_end = .;     /* define a global symbols at end of qspi */
   } >QSPI /* AT> FLASH */

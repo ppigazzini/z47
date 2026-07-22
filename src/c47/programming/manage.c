@@ -99,6 +99,26 @@ uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimedLength) 
 }
 
 
+// A label name longer than MAX_LABEL_NAME_LENGTH cannot have been produced by the calculator and can only come from a corrupt or crafted file.
+// Such a name does not fit the fixed name buffers of its consumers, ASSIGN's argumentName[16] and tamBuffer[32], so the loaders use this walk to reject it.
+// The walk runs from the given step to the end of program memory; a step the walker cannot decode ends it, where scanLabelsAndPrograms() truncates too.
+bool_t programMemoryHasOverlongLabelName(uint8_t *step) {
+  while(programBytesAvailable(step, 2) && !isAtEndOfPrograms(step)) {
+    if(checkOpCodeOfStep(step, ITM_LBL)
+        && (*(step + 1) == STRING_LABEL_VARIABLE || *(step + 1) == LOCAL_LABEL_VARIABLE)
+        && programBytesAvailable(step, 3)
+        && *(step + 2) > MAX_LABEL_NAME_LENGTH) {
+      return true;
+    }
+    step = findNextStep(step);
+    if(step == NULL) {
+      break;
+    }
+  }
+  return false;
+}
+
+
 void scanLabelsAndPrograms(void) {
   uint32_t stepNumber = 0;
   uint8_t *nextStep, *step = beginOfProgramMemory;
@@ -117,7 +137,8 @@ void scanLabelsAndPrograms(void) {
     }
     nextStep = findNextStep(step);
     if(nextStep == NULL || nextStep <= step || nextStep >= programRegionEnd) {
-      break; // malformed program: a step runs past program memory
+      lastErrorCode = ERROR_UNDEFINED_OPCODE; // this step and everything after it are dropped
+      break;
     }
     if(isAtEndOfProgram(step)) { // END
       if(!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
@@ -150,7 +171,8 @@ void scanLabelsAndPrograms(void) {
   while(!isAtEndOfPrograms(step)) { // .END.
     nextStep = findNextStep(step);
     if(nextStep == NULL || nextStep <= step || nextStep >= programRegionEnd) {
-      break; // malformed program: stop before walking past program memory
+      lastErrorCode = ERROR_UNDEFINED_OPCODE; // the labels and programs past it are dropped
+      break;
     }
     if(checkOpCodeOfStep(step, ITM_LBL)) { // LBL
       labelList[numberOfLabels].program = numberOfPrograms;

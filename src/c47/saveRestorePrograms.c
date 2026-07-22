@@ -6,6 +6,7 @@
 #define PROGRAM_VERSION                     01  // Original version
 #define EXPORT_VERSION                      03  // 02 Modified export version to indent LBL; 03 Add RTF method and revise fixed table
 #define OLDEST_COMPATIBLE_PROGRAM_VERSION   01  // Original version
+
 #define BACKUP_FORMAT                       00  // Same program format as in backup file
 #define TEXT_FORMAT                         01  // Text program format - for future use
 
@@ -59,6 +60,117 @@
       return false;
     }
     return true;
+  }
+
+
+  // First-pass screen of a program file, before anything is loaded, using the grammar tables paramTailBytes() and literalTailBytes() in programming/nextStep.c.
+  // It refuses a declared label name longer than MAX_LABEL_NAME_LENGTH, and any non-item opcode, which the in-memory walker decodes as a zero-parameter step,
+  // so quitting silently there would let a crafted file hide an overlong label behind one. A step the walker cannot otherwise decode ends the screening,
+  // without refusing, because scanLabelsAndPrograms() truncates the program area there anyway.
+
+  static bool_t _readFileProgramByte(uint32_t *remaining, uint8_t *value) {
+    if(*remaining == 0) {
+      return false;
+    }
+    readLine(tmpString, TMP_STR_LENGTH);
+    *value = stringToUint8(tmpString);
+    (*remaining)--;
+    return true;
+  }
+
+
+  static bool_t _skipFileProgramBytes(uint32_t *remaining, uint32_t count) {
+    uint8_t value;
+    while(count-- > 0) {
+      if(!_readFileProgramByte(remaining, &value)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  // Consumes one step; returns false at end of stream, on an undecodable step, or with *refuse set.
+  // allowKeyParam limits the embedded second parameter of KEY and 42KEY to one level, exactly like findNextStep().
+  static bool_t _screenFileStep(uint32_t *remaining, bool_t *refuse, bool_t allowKeyParam) {
+    uint8_t byte, length;
+    uint16_t op;
+    int16_t tail;
+    bool_t declaredLabel = false;
+
+    if(!_readFileProgramByte(remaining, &byte)) {
+      return false;
+    }
+    op = byte;
+    if(byte & 0x80) {
+      if(!_readFileProgramByte(remaining, &byte)) {
+        return false;
+      }
+      op = (uint16_t)((op & 0x7f) << 8) | byte;
+    }
+    if(op == 0x7fff) { // .END.
+      return false;
+    }
+    if(op >= LAST_ITEM) { // non-item opcode: only a corrupt or crafted file contains one
+      *refuse = true;
+      return false;
+    }
+
+    uint16_t ptp = indexOfItems[op].status & PTP_STATUS;
+    if(ptp == PTP_NONE || ptp == PTP_DISABLED) {
+      tail = 0;
+    }
+    else if(ptp == PTP_LITERAL || ptp == PTP_REM) {
+      if(!_readFileProgramByte(remaining, &byte)) { // literal type
+        return false;
+      }
+      tail = literalTailBytes(byte);
+      if(tail == PARAM_TAIL_BASE_LENGTH_PREFIXED) {
+        if(!_readFileProgramByte(remaining, &byte)) { // base
+          return false;
+        }
+        tail = PARAM_TAIL_LENGTH_PREFIXED;
+      }
+    }
+    else {
+      uint16_t paramMode = (ptp == PTP_KEYG_KEYX) ? PARAM_NUMBER_8 : ptp >> 9;
+      if(!_readFileProgramByte(remaining, &byte)) { // first parameter byte
+        return false;
+      }
+      tail = paramTailBytes(paramMode, op, byte);
+      declaredLabel = (paramMode == PARAM_DECLARE_LABEL); // its length-prefixed tails are exactly the named-label forms
+    }
+
+    bool_t ok;
+    if(tail == PARAM_TAIL_INVALID) {
+      return false;
+    }
+    else if(tail == PARAM_TAIL_LENGTH_PREFIXED) {
+      if(!_readFileProgramByte(remaining, &length)) {
+        return false;
+      }
+      if(declaredLabel && length > MAX_LABEL_NAME_LENGTH) { // the check this screen exists for
+        *refuse = true;
+        return false;
+      }
+      ok = _skipFileProgramBytes(remaining, length);
+    }
+    else {
+      ok = _skipFileProgramBytes(remaining, (uint32_t)tail);
+    }
+    if(ok && allowKeyParam && (op == ITM_KEY || op == ITM_42KEY)) {
+      return _screenFileStep(remaining, refuse, false);
+    }
+    return ok;
+  }
+
+
+  static bool_t _programFileRefused(uint32_t pgmSizeInByte) {
+    uint32_t remaining = pgmSizeInByte;
+    bool_t refuse = false;
+    while(remaining > 0 && _screenFileStep(&remaining, &refuse, true)) {
+    }
+    return refuse;
   }
 
 
@@ -505,6 +617,7 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     uint8_t *startOfProgram;
     int ret;
 
+    temporaryInformation = TI_NO_INFO; // only a completed load sets TI_PROGRAM_LOADED, so a refusal cannot leave the previous load's value standing.
     path = ioPathLoadProgram;
     ret = ioFileOpen(path, ioModeRead);
 
@@ -562,6 +675,24 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     else {
       ioFileClose();
       return;
+    }
+
+    // Refuse what cannot fit, before reserving anything. The second bound is the program area's own accounting: freeProgramBytes is a uint16_t,
+    // and _addSpaceAfterPrograms() takes a uint16_t size, so a larger claim would reserve only its low 16 bits while the read loop writes them all.
+    if((uint64_t)pgmSizeInByte + 2 > (uint64_t)freeProgramBytes + getFreeRamMemory() || (uint64_t)pgmSizeInByte + 2 > UINT16_MAX) {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      ioFileClose();
+      return;
+    }
+    // First pass: screen the file before loading anything, so a refusal needs no rollback.
+    if(_programFileRefused(pgmSizeInByte)) {
+      displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+      ioFileClose();
+      return;
+    }
+    ioFileSeek(0);
+    for(i=0; i<6; i++) { // skip the header lines the screening pass already validated
+      readLine(tmpString, TMP_STR_LENGTH);
     }
 
     if(_addEndNeeded()) {

@@ -135,52 +135,61 @@
 //THESE ARE DMCP COMPILE OPTIONS FOR TWO FILE QSPI
   #if defined(TWO_FILE_PGM) //---------THESE ARE THE EXCLUSIONS TO MAKE IT FIT INTO AVAILABLE FLASH EVEN WHILE USING QSPI
 
-  #undef PACKAGE1_NOBESSEL_NOORTHO
-  #undef PACKAGE2_NODISTR
-  #undef PACKAGE3_NOBESSEL_NOORTHO_NOFBR
-  #undef PACKAGE4_MINIMAL_MATH
+  #undef DMCP_PACKAGE1
+  #undef DMCP_PACKAGE2
+  #undef DMCP_PACKAGE3
+  #undef DMCP_PACKAGE4_NOOPT
 
   #if DMCP_PACKAGE == 1
-  #define PACKAGE1_NOBESSEL_NOORTHO
+  #define DMCP_PACKAGE1
   #elif DMCP_PACKAGE == 2
-  #define PACKAGE2_NODISTR
+  #define DMCP_PACKAGE2
   #elif DMCP_PACKAGE == 3
-  #define PACKAGE3_NOBESSEL_NOORTHO_NOFBR      //More aggressive removals in addition to package 1
+  #define DMCP_PACKAGE3
   #elif DMCP_PACKAGE == 4
-  #define PACKAGE4_MINIMAL_MATH                //Most aggressive removals to pass gitlab pipeline CI release compiles
+  #define DMCP_PACKAGE4_NOOPT    //aggressive removals to pass gitlab pipeline CI release compiles
   #endif
 
 
-//    Info 2026-07-17 00.109.03.04
+//    Info 2026-07-22 00.109.03.04
 //
 //       Pkg │ DIST    │ X.FN     │ FIN  │ EIGEN │ ELEC │ IR
 //      ─────┼─────────┼──────────┼──────┼───────┼──────┼────
-//        1  │ all     │ stripped │ fast │   ·   │  ·   │ ✓
-//        2  │ half    │ full     │ slow │   ·   │  ·   │ ·
-//        3  │ limited │ stripped │ slow │   ✓   │  ✓   │ ·
-//        4  │ none    │ stripped │ slow │   ·   │  ·   │ ✓
-//      Legend
-//      
+//        1  │ all     │ no ellip │ fast │   ❌  │  ✅  │ ✅
+//        2  │ all     │ full     │ slow │   ❌  │  ❌  │ ❌
+//        3  │ limited │ no ellip │ fast │   ✅  │  ✅  │ ✅
+//        4  │ none    │ no e-B-O │ slow │   ❌  │  ❌  │ ✅
+//
+//
 //      DIST   all      every distribution
-//             half     Normal, StdNormal, LogNormal, cauchy, chi, expo, logis, t, weibull
-//             limited  Normal, StdNormal, LogNormal only
+//             limited  Normal, StdNormal, LogNormal, gev, Pareto, Uniform, Discr Uniform
 //             none     no distributions
-//      X.FN   full     includes Elliptic, Bessel, Orthogonal
-//             stripped none of Elliptic, Bessel, Orthogonal
+//      X.FN   full     includes elliptic, Bessel, Orthogonal
+//             no ellip without elliptic
+//             no e-B-O none of elliptic, Bessel, Orthogonal
 //      FIN    fast     financial funcs at full precision/speed
 //             slow     financial funcs available, but lower precision and slower
-//      EIGEN  ✓        EIGVAL + EIGVEC (est. > 16 digits)
-//             ·        no EIGVAL, EIGVEC or MSQRT
-//      ELEC   ✓        Star/Delta, Impedance, phase-sequence, parallel funcs
-//             ·        none of the above
-//      IR     ✓        IR printing enabled
+//      EIGEN  ✅       EIGVAL + EIGVEC (est. > 16 digits) + MSQRT
+//             ❌       none of the above
+//      ELEC   ✅       Star/Delta, Impedance, phase-sequence, parallel funcs
+//             ❌       none of the above
+//      IR     ✅       IR printing
+//             ❌       no IR printing
 //      All C47 / DM42 packages (common to 1–4): no 2D/3D VECTOR conversions (matrix functions stay), no number editing, no 1000-digit XFN math.
 
+// Compiled 2026-07-22 
+// dist_dmcp5...          flash   1059704   1441792    382088
+// dist_dmcp5r47...       flash   1061616   1441792    380176
+// dist_dmcpr47...        flash    675712    720896     45184
+// dist_dmcp...package 1: flash    712664    720896      8232
+// dist_dmcp...package 2: flash    715800    720896      5096
+// dist_dmcp...package 3: flash    715104    720896      5792
+// dist_dmcp...package 4: flash    675200    720896     45696
 
-  #if defined(PACKAGE1_NOBESSEL_NOORTHO)   // PACKAGE 1 (free ✓7424) // ALL DIST, Stripped X.FN menu; NO EIGEN; NO ELEC; FAST FIN; NO VECTOR; IR PRINTING
+  #if defined(DMCP_PACKAGE1)             // PACKAGE 1 (free 6888) // ALL DIST, Stripped ELLIPSE X.FN menu; NO EIGEN; ELEC; FAST FIN; IR PRINTING
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
-            #undef  OPTION_BESSEL        // ✓  4968 bytes // Without X.FN BESSEL
-            #undef  OPTION_ORTHO         // ✓   656 bytes // Without X.FN ORTHO MENU
+    #define OPTION_BESSEL                // ✓  4968 bytes // Without X.FN BESSEL
+    #define OPTION_ORTHO                 // ✓   656 bytes // Without X.FN ORTHO MENU
     #define OPTION_DISTRIBUTIONS         // ✓     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define OPTION_DIST_NORMAL           // ✓  2000 bytes // (1) Without Norml, StdNrmal & LogNrml distributions
     #define OPTION_DIST_2                // ✓  7136 bytes // (2) Without cauchy, chi, expo, logis, t, weibull
@@ -188,20 +197,20 @@
     #define OPTION_DIST_3                // ✓  3280 bytes // (4) Without gev, Pareto, Uniform, Discr Uniform
     #define OPTION_TVM_FORMULAS          // ✓  2744 bytes // Use TVM analytical formulas where possible
     #define OPTION_TVM_NEWTON            // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
-            #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
+    #define OPTION_ELEC                  // ✓  6816 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
     #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE2_NODISTR)            // PACKAGE 2 (free ✓4256) // Half DIST; Full X.FN menu; NO EIGEN; NO ELEC; SLOW FIN; NO VECTOR; NO IR PRINTING
+  #if defined(DMCP_PACKAGE2)             // PACKAGE 2 (free 3744) // ALL DIST; Full X.FN menu; NO EIGEN; NO ELEC; SLOW FIN; NO IR PRINTING
     #define OPTION_ELLIPTIC              // ✓ 13112 bytes // Without ELLIPTIC
     #define OPTION_BESSEL                // ✓  4968 bytes // Without X.FN BESSEL
     #define OPTION_ORTHO                 // ✓   656 bytes // Without X.FN ORTHO MENU
     #define OPTION_DISTRIBUTIONS         // ✓     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define OPTION_DIST_NORMAL           // ✓  2000 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
     #define OPTION_DIST_2                // ✓  7136 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
-            #undef  OPTION_DIST_1        // ✓  9624 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
-            #undef  OPTION_DIST_3        // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
+    #define OPTION_DIST_1                // ✓  9624 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
+    #define OPTION_DIST_3                // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
             #undef  OPTION_TVM_FORMULAS  // ✓  2744 bytes // Use TVM analytical formulas where possible
             #undef  OPTION_TVM_NEWTON    // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
             #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   see below
@@ -209,20 +218,20 @@
             #undef  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(PACKAGE3_NOBESSEL_NOORTHO_NOFBR) // PACKAGE 3 (free ✓6200) // Limited DIST, Stripped X.FN menu; EIGEN; ELEC; SLOW FIN; NO VECTOR; NO IR PRINTING
+  #if defined(DMCP_PACKAGE3)             // PACKAGE 3 EXPERIMENTAL (free 4416) // Limited DIST, Stripped ELLIPSE X.FN menu; EIGEN; ELEC; FAST FIN; IR PRINTING
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
-            #undef  OPTION_BESSEL        // ✓  4968 bytes // Without X.FN BESSEL
-            #undef  OPTION_ORTHO         // ✓   656 bytes // Without X.FN ORTHO MENU
+    #define  OPTION_BESSEL               // ✓  4968 bytes // Without X.FN BESSEL
+    #define  OPTION_ORTHO                // ✓   656 bytes // Without X.FN ORTHO MENU
     #define OPTION_DISTRIBUTIONS         // ✓     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define OPTION_DIST_NORMAL           // ✓  2000 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
             #undef  OPTION_DIST_2        // ✓  7136 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
             #undef  OPTION_DIST_1        // ✓  9624 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
-            #undef  OPTION_DIST_3        // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
-            #undef  OPTION_TVM_FORMULAS  // ✓  2744 bytes // Use TVM analytical formulas where possible
-            #undef  OPTION_TVM_NEWTON    // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
+    #define OPTION_DIST_3                // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
+    #define OPTION_TVM_FORMULAS          // ✓  2744 bytes // Use TVM analytical formulas where possible
+    #define OPTION_TVM_NEWTON            // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #define OPTION_ELEC                  // ✓  6816 bytes // ELEC   see below
     #define OPTION_EIGEN                 // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-            #undef  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
+    #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif
             // ELEC VECT  FLASH cost   free   (pkg4, 720896 total)
             //  0    0          0     32692
@@ -230,7 +239,7 @@
             //  1    0       6240     26452   ELEC only
             //  1    1      15808     16884   both (ELEC+VECTOR share 3384)
 
-  #if defined(PACKAGE4_MINIMAL_MATH)       // PACKAGE 4 (free ✓32712) // Minimal, no math options included, IR PRINTING; FOR GITLAB PIPELINE COMPILE
+  #if defined(DMCP_PACKAGE4_NOOPT)       // PACKAGE 4 (free ✓32712) // Minimal, no math options included, IR PRINTING; FOR GITLAB PIPELINE COMPILE
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
             #undef  OPTION_BESSEL        // ✓  4968 bytes // Without X.FN BESSEL
             #undef  OPTION_ORTHO         // ✓   656 bytes // Without X.FN ORTHO MENU
@@ -274,7 +283,7 @@
             #undef  OPTION_VECTOR        // ✓ 13672 bytes // Vector 12952 saving if ELEC is not in; 9568 saving if ELEC is in
     #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_DATAFILE              // ✓  2112 bytes // Without register/variable .d47 export & import
-  
+
    // DECNUMBER_FASTMUL        // manually include or exclude this option in the Makefile, DECNUMBER_FASTMUL
   #endif // TWO_FILE_PGM
 #endif // DMCP_BUILD
@@ -553,6 +562,7 @@
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // 1 for PRINTXY to be done after every evaluation of the formula; Or the complex solver for every iteration;
+#define MAX_INTEGRATOR_NESTING_DEPTH     5 // Cap on nested integrate() re-entry; a self-referential integrand aborts past this. INT(INT(INT)) is depth 3, so real use never nears it.
 #define ENABLE_COMPLEXSOLVER_FILE_OUTPUT 0 // 1 for PRINTXY to be done for the complex solver for every iteration; 2 to print the RPN function; Corrupts Reg_K
 #define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
 #undef  INTEGRATION_TWO_STAGE_EXIT
@@ -1126,6 +1136,10 @@
 #define LAST_UC_LOCAL_LABEL    111                             //   L (last  upper case local label
 #define FIRST_LC_LOCAL_LABEL   112                             //   a (first lower case local label
 #define LAST_LOCAL_LABEL       123                             //   0 - 99, A to L and a to l
+
+#define MAX_LABEL_NAME_LENGTH   14                             // Longest label name the calculator can produce: TAM alpha entry is force-closed beyond 6 glyphs,
+                                                               // maxLen in _tamProcessInput, ui/tam.c, so a name is at most 7 glyphs of at most 2 bytes each.
+                                                               // A longer name in a loaded file marks the file as corrupt.
 
 //Variable names
 #define VAR_NO_X        0

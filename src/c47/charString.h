@@ -121,6 +121,7 @@ void     expandAbbreviations   (char *msg1);
 void     convertDigits         (char * refstr, char * outstr);
 void     stringToUtf8          (const char *str, uint8_t *utf8);
 void     utf8ToString          (const uint8_t *utf8, char *str);
+void     utf8ToStringWithLength (const uint8_t *utf8, char *str, size_t maxBytes);
 void     stringToASCII         (const char *str, char *ascii);
 void     stringToRTF           (const char *str, char *ascii);
 void     stringToFileNameChars (const char *str, char *ascii, uint8_t distinctQuotes);

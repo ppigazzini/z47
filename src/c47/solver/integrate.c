@@ -10,6 +10,10 @@
 #define INTEGRATEDEBUG // integrator debug prints
 #undef  INTEGRATEDEBUG
 
+// Cap integrator re-entry before a self-integrating program overflows the C stack. Dedicated, not the shared
+// currentSolverNestingDepth (which the solver/isumprod can leave inflated). MAX_INTEGRATOR_NESTING_DEPTH is in defines.h.
+static uint16_t integratorNestingDepth = 0;
+
 void fnPgmInt(uint16_t label) {
   if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
@@ -1576,6 +1580,11 @@ void integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *
   ++currentSolverNestingDepth;
   setSystemFlag(FLAG_INTING);
   clearSystemFlag(FLAG_SOLVING);
+  if(++integratorNestingDepth > MAX_INTEGRATOR_NESTING_DEPTH) { // too deep: skip the heavy frame, abort via the integrator's own ERROR_SOLVER_ABORT unwind
+    realSetZero(res);
+    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+  }
+  else {
   #if USE_NEW_DEI_INTEGRATION_CODE > 0
   if(realCompareLessThan(a, b)) {
     dbl_exp_int_new(regist, a, b, acc, res, 1, realContext);
@@ -1594,6 +1603,8 @@ void integrate(calcRegister_t regist, const real_t *a, const real_t *b, real_t *
       _integrate(regist, a, b, acc, res, realContext);
     }
   #endif // USE_NEW_DEI_INTEGRATION_CODE
+  }
+  --integratorNestingDepth;
   if((--currentSolverNestingDepth) == 0) {
     clearSystemFlag(FLAG_INTING);
   }

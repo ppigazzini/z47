@@ -1,0 +1,13 @@
+;******************************************************************************************************************************
+;** Coverage: named-variable lookup (registers.c). The calculator treats subscript and superscript letters in a name as      **
+;** the plain letter, so both spellings must reach the same variable. These tests check for equivalence and non-equivalence: **
+;** fnNamedVarFoldCov creates variables under one spelling and probes them under the other, in both creation orders;         **
+;** superscript 2 is excluded and stays distinct while superscript 3 matches; subscript digits; subscript alpha to alpha;    **
+;** 7-glyph boundary, 8-glyph rejection; shared prefixes; case sensitivity; lookup after a delete shifts the variable list.  **
+;** Cleans up after itself.                                                                                                  **
+;******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnNamedVarFoldCov
+In:  FARG=0
+Out: EC=0

@@ -234,6 +234,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
   }
 
 
+  static uint8_t pgmStepsSinceSBrefresh = 0; // statusbar cadence counter while a program runs; wraps every 256 steps
+
   void reallyRunFunction(int16_t func, uint16_t param) {
     #if defined(PC_BUILD) && defined(DEBUG_EXECUTE)
       printf("   >>>  reallyRunFunction: CM=%3u %5i%8s%8s\n", calcMode, func, indexOfItems[abs(func)].itemCatalogName, indexOfItems[abs(func)].itemSoftmenuName);
@@ -388,7 +390,11 @@ bool_t isFunctionOldParam16(uint16_t func) {
     }
 
 
-    refreshStatusBar();
+    // Refresh only every 256 program steps, and always once the program stops: the full statusbar walk is costly per step and nothing on the bar changes that fast.
+    // A plain step counter drives it, adding no per-step clock read; stop paths in runProgram() and the keyboard epilogue repaint the bar when the run ends.
+    if(programRunStop != PGM_RUNNING || ++pgmStepsSinceSBrefresh == 0) {
+      refreshStatusBar();
+    }
     //DL] removed to fix issue with GTO and XEQ tam menus - but don't remember why it was needed initially
     //#if defined(OPTION_IR_PRINTING)
     //  if(tam.mode && getSystemFlag(FLAG_PRTACT)) {

@@ -37,6 +37,52 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"0.25"
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-0.5" RX=Real:"3"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"-0.125"
 
+;=======================================
+; Infinite base  (inf ^ x)
+; A negative exponent must give 0, not infinity; a positive exponent
+; gives an infinity whose sign is that of the base raised to an odd
+; integer power (infinite results only checked via EC, not by value).
+;=======================================
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"-1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"-3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"NaN"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+; ReM p.202: (y != 0) ^ inf is inf, (y != 0) ^ -inf is 0
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1
+
 In:  AM=DEG FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"2" RX=Real:"123.4":DEG
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"123.4":DEG RX=Real:"14031414845271966722579997222050159552.088081736449456307453811"
 

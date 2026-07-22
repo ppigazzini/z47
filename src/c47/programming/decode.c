@@ -854,6 +854,9 @@ static void _decodeOneStep(uint8_t *step, uint16_t textVersion) {
   if(op == 0x7fff) { // .END.
     xcopy(tmpString, ".END.", 6);
   }
+  else if(op >= LAST_ITEM) { // render the step rather than index past the item table
+    xcopy(tmpString, "???", 4);
+  }
   else {
     char nameOp[36];
     nameOp[0]=0;

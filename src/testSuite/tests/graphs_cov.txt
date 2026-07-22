@@ -56,6 +56,22 @@ Func: fnHashBmpCov
 In:  FARG=2
 Out: EC=0 RX=Stri:"708E9B6A67A0B9BA2EBBAAAE35E5BE0D2CF67379885C7C2994AADE6FA5115217"
 
+; program plot from a no-equation state (G2b): fnEqClearCov drops every formula, then the same G2 plot runs. A program plot needs no formula and renders the identical
+; bitmap, so it pins G2's hash, while an over-broad no-equation guard aborts it and the hash mismatches. G2 alone misses this because it inherits a formula from the
+; equation plot before it.
+Func: fnEqClearCov
+In:  FARG=0
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=10
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 R00=Stri:"S" RY=Real:"-5" RX=Real:"5" PGM="G2"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=10
+Out: EC=0 RX=Stri:"708E9B6A67A0B9BA2EBBAAAE35E5BE0D2CF67379885C7C2994AADE6FA5115217"
+
 ; statistics plots: seed five (Y,X) data points once, then plot the same data with PLSTAT (G3) and with SCATR (G4)
 Func: fnClSigma
 In:  FARG=0 RX=Real:"0"

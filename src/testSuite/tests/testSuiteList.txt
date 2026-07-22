@@ -463,11 +463,16 @@ tvm_cov
 ; so it must run after graphs_cov.
 matrix2_cov
 clcvar_cov
+named_variable_cov
 serialize_state_cov
 pgm_solve_cov
 histo_cov
 clearvars_cov
 program_flow_cov
+
+; readp_cov appends one program, so it also runs after programs.txt and before
+; serialize_cov resets the calculator.
+readp_cov
 
 ; short-integer masks must be rederived on state restore; saves/reloads state
 ; and changes the word size, so it runs after the other state tests and before

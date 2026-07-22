@@ -1818,7 +1818,7 @@ int64_t stringToInt64(const char *str) {
           if(*str == ' ') {
             str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
-              utf8ToString((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2);
+              utf8ToStringWithLength((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
               setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
             }
           }
@@ -1844,7 +1844,7 @@ int64_t stringToInt64(const char *str) {
           if(*str == ' ') {
             str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
-              utf8ToString((uint8_t *)str, userMenuItems[i].argumentName);
+              utf8ToStringWithLength((uint8_t *)str, userMenuItems[i].argumentName, sizeof(userMenuItems[i].argumentName));
             }
           }
         }
@@ -1869,7 +1869,7 @@ int64_t stringToInt64(const char *str) {
           if(*str == ' ') {
             str = skip_space(str);
             if((*str != '\n') && (*str != 0)) {
-              utf8ToString((uint8_t *)str, userAlphaItems[i].argumentName);
+              utf8ToStringWithLength((uint8_t *)str, userAlphaItems[i].argumentName, sizeof(userAlphaItems[i].argumentName));
             }
           }
         }
@@ -1887,7 +1887,7 @@ int64_t stringToInt64(const char *str) {
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
             debugPrintf(12, "-", tmpString);
           #endif //LOADDEBUG
-          utf8ToString((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2);
+          utf8ToStringWithLength((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
           for(i = 0; i < numberOfUserMenus; ++i) {
             if(compareString(tmpString + TMP_STR_LENGTH / 2, userMenus[i].menuName, CMP_NAME) == 0) {
               target = i;
@@ -1916,7 +1916,7 @@ int64_t stringToInt64(const char *str) {
             if(*str == ' ') {
               str = skip_space(str);
               if((*str != '\n') && (*str != 0)) {
-                utf8ToString((uint8_t *)str, userMenus[target].menuItem[i].argumentName);
+                utf8ToStringWithLength((uint8_t *)str, userMenus[target].menuItem[i].argumentName, sizeof(userMenus[target].menuItem[i].argumentName));
               }
             }
           }
@@ -2099,7 +2099,7 @@ int64_t stringToInt64(const char *str) {
               sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
               debugPrintf(15, "C", tmpString);
             #endif //LOADDEBUG
-            utf8ToString((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2);
+            utf8ToStringWithLength((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
             setEquation(i, tmpString + TMP_STR_LENGTH / 2);
           }
         }
@@ -2632,6 +2632,14 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
 
   lastErrorCode = ERROR_NONE;
   previousErrorCode = lastErrorCode;
+
+  // The PROGRAMS section is applied in place, so a file claiming a label name longer than MAX_LABEL_NAME_LENGTH leaves nothing to roll back to.
+  // Clear the program area to an empty .END. and report the file as corrupt. fnClPAll also removes all XEQ key assignments, the right scope once every label is gone.
+  if(enableLoad && (loadMode == LM_ALL || loadMode == LM_PROGRAMS)
+      && programMemoryHasOverlongLabelName(beginOfProgramMemory)) {
+    fnClPAll(CONFIRMED);
+    displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+  }
 
   ioFileClose();
 

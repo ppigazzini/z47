@@ -33,11 +33,60 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"1.23456 i -6.78" RX=Cplx:"-1.254 i 7.54123
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-1.254 i 7.541235" RX=Cplx:"-2643.5259601628883080378974068256945580068612144918176355187774 i -1780.31910638893445028977232041694885428536067215736423604308"
 
 
+; ReM p.B-18: (inf ; 45 deg) squared is (inf ; 90 deg)
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"2 i 0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"0 i inf"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"0 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"NaN i NaN"
+
+; A negative real part in the exponent collapses the modulus to 0, the argument still turning by phi.x
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-2 i 0" RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-1 i 0" RX=Cplx:"0 i 0"
+
+; phi.x off a sector boundary, and an infinite exponent, are not representable
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i 0" RX=Cplx:"inf i inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"inf i 0" RX=Cplx:"inf i inf"
+
+; Argument phi.x on each axis and quadrant, from a real infinite base
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i 0" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"1.5 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1.5 i 0" RX=Cplx:"0 i -inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"3 i 0" RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"0.25 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.25 i 0" RX=Cplx:"inf i inf"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"0.75 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.75 i 0" RX=Cplx:"-inf i inf"
+
+; A purely imaginary infinite base
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i inf" RX=Cplx:"2 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"-inf i 0"
+
+; A pure-imaginary exponent leaves the magnitude indeterminate
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"0 i 2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 2" RX=Cplx:"NaN i NaN"
+
+; A NaN component in the exponent gives NaN
+In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i inf" RX=Cplx:"2 i NaN"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i NaN" RX=Cplx:"NaN i NaN"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i 0" RX=Cplx:"0 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"NaN i NaN"

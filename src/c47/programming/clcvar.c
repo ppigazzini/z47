@@ -265,7 +265,7 @@
       op |= *(step++);
     }
 
-    if(op == ITM_END || op == 0x7fff) {
+    if(op == ITM_END || op >= LAST_ITEM) { // stop the scan rather than index past the table
       return false;
     }
     else {

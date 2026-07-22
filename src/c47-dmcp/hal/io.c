@@ -12,6 +12,7 @@ static bool_t _ioReadEnabled  = false;
 
 int _ioFileNameFromFilePath(ioFilePath_t path, char * filename) {
   int ret = 0;
+  dmcpResetAutoOff();   // a long keyless program run leaves the menu auto-off timer expired, making file_selection_screen exit at once
   switch(path) {
     case ioPathManualSave:
       check_create_dir(SAVE_DIR);
