@@ -110,6 +110,60 @@ pub fn compareLeadChar(char1: [*]const u8, char2: [*]const u8) i32 {
     return @as(i32, code1) - @as(i32, code2);
 }
 
+/// Converts a name to its CMP_NAME character codes, sub- and superscript glyphs
+/// replaced by their plain form: a high-bit byte combines with the following
+/// byte, a truncated final glyph ends the walk. Returns the glyph count, or -1
+/// when the name has more than `folded.len` glyphs. Keep in sync with the
+/// CMP_NAME arm of compareString (foldNameToCharCodes from sort.c).
+pub fn foldNameToCharCodes(name: [*]const u8, folded: []u16) i32 {
+    var count: usize = 0;
+    var pos: usize = 0;
+
+    while (name[pos] != 0) {
+        const byte: u8 = name[pos];
+        if (count >= folded.len) {
+            return -1;
+        }
+        var char_code: u16 = byte;
+        if (byte & 0x80 != 0) {
+            char_code = (char_code << 8) + name[pos + 1];
+            pos += if (name[pos + 1] == 0) @as(usize, 1) else 2;
+        } else {
+            pos += 1;
+        }
+        folded[count] = foldUnSupSubStruck(char_code);
+        count += 1;
+    }
+    return @intCast(count);
+}
+
+/// True exactly when compareString(candidate, original, CMP_NAME) == 0, with the
+/// original pre-converted by foldNameToCharCodes (nameEqualsPrefolded from
+/// sort.c). Keep in sync with compareString.
+pub fn nameEqualsPrefolded(candidate: [*]const u8, folded: []const u16, foldedLength: i32) bool {
+    var count: i32 = 0;
+    var pos: usize = 0;
+
+    while (candidate[pos] != 0) {
+        const byte: u8 = candidate[pos];
+        if (count >= foldedLength) {
+            return false;
+        }
+        var char_code: u16 = byte;
+        if (byte & 0x80 != 0) {
+            char_code = (char_code << 8) + candidate[pos + 1];
+            pos += if (candidate[pos + 1] == 0) @as(usize, 1) else 2;
+        } else {
+            pos += 1;
+        }
+        if (foldUnSupSubStruck(char_code) != folded[@intCast(count)]) {
+            return false;
+        }
+        count += 1;
+    }
+    return count == foldedLength;
+}
+
 // ===========================================================================
 // Tests -- native (run under `zig build test:unit`).
 // ===========================================================================
@@ -198,4 +252,31 @@ test "charCodeFromString: sequential decode walks glyph by glyph" {
     try testing.expectEqual(@as(u16, 3), off);
     try testing.expectEqual(@as(u16, 0x39), charCodeFromString(&s, &off));
     try testing.expectEqual(@as(u16, 4), off);
+}
+
+test "foldNameToCharCodes: folds subscripts and counts glyphs" {
+    var folded: [7]u16 = undefined;
+    // STD_SUB_a (0xa4 0x9c, the STD_SUB_a..z range base) followed by 'q'.
+    const sub_a = [_]u8{ 0xa4, 0x9c, 'q', 0 };
+    const n = foldNameToCharCodes(&sub_a, &folded);
+    try testing.expectEqual(@as(i32, 2), n);
+    try testing.expectEqual(@as(u16, 'q'), folded[1]);
+    try testing.expectEqual(@as(u16, 'a'), folded[0]);
+}
+
+test "foldNameToCharCodes: more glyphs than the buffer returns -1" {
+    var folded: [7]u16 = undefined;
+    const eight = "abcdefgh";
+    try testing.expectEqual(@as(i32, -1), foldNameToCharCodes(eight, &folded));
+}
+
+test "nameEqualsPrefolded: matches by folded codes, exact length" {
+    var folded: [7]u16 = undefined;
+    const n = foldNameToCharCodes("aq", &folded);
+    try testing.expectEqual(@as(i32, 2), n);
+    const sub_a = [_]u8{ 0xa4, 0x9c, 'q', 0 }; // STD_SUB_a then 'q'
+    try testing.expect(nameEqualsPrefolded(&sub_a, &folded, n));
+    try testing.expect(!nameEqualsPrefolded("aqr", &folded, n)); // prefix is not a match
+    try testing.expect(!nameEqualsPrefolded("a", &folded, n)); // shorter is not a match
+    try testing.expect(!nameEqualsPrefolded("aq", &folded, -1)); // overflowed fold matches nothing
 }
