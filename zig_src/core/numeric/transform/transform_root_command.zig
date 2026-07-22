@@ -102,9 +102,13 @@ fn sqrtCplx() callconv(.c) void {
 
 fn curtShoI() callconv(.c) void {
     var value: runtime.real_t = undefined;
+    var operand: runtime.real_t = undefined;
+    var nearest: runtime.real_t = undefined;
+    var cube: runtime.real_t = undefined;
     var cube_root: i32 = 0;
 
     runtime.convertShortIntegerRegisterToReal(runtime.REGISTER_X, &value, &runtime.ctxtReal39);
+    operand = value;
 
     if (runtime.realIsNegative(&value)) {
         runtime.realSetPositiveSign(&value);
@@ -112,6 +116,13 @@ fn curtShoI() callconv(.c) void {
         runtime.realChangeSign(&value);
     } else {
         runtime.PowerReal(&value, runtime.z47_math_wrappers_const_1on3(), &value, &runtime.ctxtReal39);
+    }
+
+    runtime.realToIntegralValue(&value, &nearest, runtime.DEC_ROUND_HALF_UP, &runtime.ctxtReal39); // PowerReal() lands a hair under an exact cube
+    runtime.realMultiply(&nearest, &nearest, &cube, &runtime.ctxtReal39);
+    runtime.realMultiply(&cube, &nearest, &cube, &runtime.ctxtReal39);
+    if (runtime.realCompareEqual(&cube, &operand)) { // the operand is a cube, so its root is exact
+        value = nearest;
     }
 
     cube_root = runtime.realToInt32C47(&value, null);
