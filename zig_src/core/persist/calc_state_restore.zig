@@ -153,6 +153,7 @@ extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn memset(dst: ?*anyopaque, val: c_int, n: usize) ?*anyopaque;
 extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
+extern fn utf8ToStringWithLength(utf8: [*c]const u8, str: [*c]u8, maxBytes: usize) void;
 extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
 extern fn allocateLocalRegisters(num: u16) void;
 extern fn initStatisticalSums() void;
@@ -539,7 +540,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 if (str[0] == ' ') {
                     str = text.skipSpace(str);
                     if (str[0] != '\n' and str[0] != 0) {
-                        utf8ToString(str, tmpString + TMP_STR_LENGTH / 2);
+                        utf8ToStringWithLength(str, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
                         setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
                     }
                 }
@@ -573,7 +574,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
             var target: i16 = -1;
             if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
-                utf8ToString(tmpString, tmpString + TMP_STR_LENGTH / 2);
+                utf8ToStringWithLength(tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
                 i = 0;
                 while (i < numberOfUserMenus) : (i += 1) {
                     if (compareString(tmpString + TMP_STR_LENGTH / 2, &userMenus[@intCast(i)].menuName[0], CMP_NAME) == 0) {
@@ -617,7 +618,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             while (i < formulae) : (i += 1) {
                 calc_state.readLine(tmpString, TMP_STR_LENGTH);
                 if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
-                    utf8ToString(tmpString, tmpString + TMP_STR_LENGTH / 2);
+                    utf8ToStringWithLength(tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
                     setEquation(@intCast(i), tmpString + TMP_STR_LENGTH / 2);
                 }
             }
@@ -645,7 +646,7 @@ fn parseMenuItem(item: [*c]userMenuItem_t) void {
     if (str[0] == ' ') {
         str = text.skipSpace(str);
         if (str[0] != '\n' and str[0] != 0) {
-            utf8ToString(str, &item[0].argumentName[0]);
+            utf8ToStringWithLength(str, &item[0].argumentName[0], @sizeOf(@TypeOf(item[0].argumentName)));
         }
     }
 }

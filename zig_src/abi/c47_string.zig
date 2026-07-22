@@ -106,7 +106,7 @@ pub fn prevNumberGlyph(str: [*]const u8, pos: i16) i16 {
     var pos2: i16 = pos;
     while (true) {
         pos2 = prevGlyph(str, pos2);
-        if (('0' <= str[@intCast(pos2)] and str[@intCast(pos2)] <= '9') or str[@intCast(pos)] == '.' or str[@intCast(pos)] == ',') {
+        if (('0' <= str[@intCast(pos2)] and str[@intCast(pos2)] <= '9') or str[@intCast(pos2)] == '.' or str[@intCast(pos2)] == ',') {
             return pos2;
         }
         if (pos2 == 0) break;
@@ -183,10 +183,22 @@ pub fn utf8ToCodePoint(utf8: [*]const u8, codePoint: *u32) u32 {
         codePoint.* = utf8[0];
         return 1;
     } else if ((utf8[0] & 0xE0) == 0xC0) {
+        if (utf8[1] == 0) { // truncated 2-byte sequence at the terminating NUL: emit a placeholder, do not consume the NUL
+            codePoint.* = '?';
+            return 1;
+        }
         codePoint.* = (@as(u32, utf8[0]) & 0x1F) << 6;
         codePoint.* |= (@as(u32, utf8[1]) & 0x3F);
         return 2;
     } else {
+        if (utf8[1] == 0) { // truncated 3-byte sequence after the lead byte: stop on the NUL
+            codePoint.* = '?';
+            return 1;
+        }
+        if (utf8[2] == 0) { // truncated after one continuation byte: stop on the NUL (do not read past it)
+            codePoint.* = '?';
+            return 2;
+        }
         codePoint.* = (@as(u32, utf8[0]) & 0x0F) << 12;
         codePoint.* |= (@as(u32, utf8[1]) & 0x3F) << 6;
         codePoint.* |= (@as(u32, utf8[2]) & 0x3F);
@@ -230,7 +242,7 @@ pub fn stringToUtf8(strIn: [*]const u8, utf8In: [*]u8) void {
 /// is replaced with '?'. `onForbidden`, if given, is called with each replaced
 /// code point (the owner passes a host-diagnostic printf; std-only callers pass
 /// null). The relocation + placeholder output is identical either way.
-pub fn utf8ToString(utf8In: [*]const u8, strIn: [*]u8, onForbidden: ?*const fn (u32) void) void {
+fn utf8ToStringToEnd(utf8In: [*]const u8, strIn: [*]u8, end: ?[*]const u8, onForbidden: ?*const fn (u32) void) void { // end: last byte usable for output, null for no limit; a glyph crossing end stops the walk
     var utf8 = utf8In;
     var str = strIn;
     var codePoint: u32 = undefined;
@@ -244,13 +256,22 @@ pub fn utf8ToString(utf8In: [*]const u8, strIn: [*]u8, onForbidden: ?*const fn (
             else => {},
         }
         if (codePoint < 0x0080) {
+            if (end) |e| {
+                if (@intFromPtr(str) + 1 > @intFromPtr(e)) break;
+            }
             str[0] = @truncate(codePoint);
             str += 1;
         } else if ((codePoint & 0x00FF) == 0) {
             if (onForbidden) |cb| cb(codePoint);
+            if (end) |e| {
+                if (@intFromPtr(str) + 1 > @intFromPtr(e)) break;
+            }
             str[0] = '?';
             str += 1;
         } else {
+            if (end) |e| { // a 2-byte glyph must fit whole
+                if (@intFromPtr(str) + 2 > @intFromPtr(e)) break;
+            }
             codePoint |= 0x8000;
             str[0] = @truncate(codePoint >> 8);
             str += 1;
@@ -259,6 +280,20 @@ pub fn utf8ToString(utf8In: [*]const u8, strIn: [*]u8, onForbidden: ?*const fn (
         }
     }
     str[0] = 0;
+}
+
+pub fn utf8ToString(utf8In: [*]const u8, strIn: [*]u8, onForbidden: ?*const fn (u32) void) void {
+    utf8ToStringToEnd(utf8In, strIn, null, onForbidden);
+}
+
+/// utf8ToString into a fixed buffer fed by a file-supplied source: at most
+/// maxBytes bytes, the terminating NUL included, so an over-long name cannot
+/// overrun it.
+pub fn utf8ToStringWithLength(utf8In: [*]const u8, strIn: [*]u8, maxBytes: usize, onForbidden: ?*const fn (u32) void) void {
+    if (maxBytes == 0) {
+        return;
+    }
+    utf8ToStringToEnd(utf8In, strIn, strIn + maxBytes - 1, onForbidden); // maxBytes - 1 keeps the last byte for the terminating NUL
 }
 
 // ===========================================================================

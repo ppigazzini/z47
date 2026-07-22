@@ -497,6 +497,11 @@ pub export fn utf8ToString(utf8In: [*c]const u8, strIn: [*c]u8) callconv(.c) voi
     abi.c47_string.utf8ToString(utf8In, strIn, reportForbiddenUtf8);
 }
 
+// utf8ToString into a fixed buffer fed by a file-supplied source: at most maxBytes bytes, the terminating NUL included, so an over-long name cannot overrun it.
+pub export fn utf8ToStringWithLength(utf8In: [*c]const u8, strIn: [*c]u8, maxBytes: usize) callconv(.c) void {
+    abi.c47_string.utf8ToStringWithLength(utf8In, strIn, maxBytes, reportForbiddenUtf8);
+}
+
 // ---------------------------------------------------------------------------
 // indexOfStringsASCII / indexOfStringsRTF (TO_QSPI, pointer-bearing).
 // ---------------------------------------------------------------------------
