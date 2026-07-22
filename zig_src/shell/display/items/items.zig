@@ -639,6 +639,8 @@ pub export fn getItemFunc(itemNr: i16) callconv(.c) ItemFn {
 }
 const ext_addItemToBuffer = @extern(ItemFn, .{ .name = "addItemToBuffer" });
 
+var pgmStepsSinceSBrefresh: u8 = 0; // statusbar cadence counter while a program runs; wraps every 256 steps
+
 pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
     // IR_PRINTING tracing block
     if (comptime ir_printing) {
@@ -748,7 +750,15 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         lastJ = 0xFFFF;
     }
 
-    frontier_status_bar.refreshStatusBar();
+    // Refresh only every 256 program steps, and always once the program stops: the full statusbar walk is costly per step and nothing on the bar changes that fast.
+    // A plain step counter drives it, adding no per-step clock read; stop paths in runProgram() and the keyboard epilogue repaint the bar when the run ends.
+    // The C's short-circuit `||` only advances the counter while the program runs; blk mirrors that.
+    if (programRunStop != PGM_RUNNING or blk: {
+        pgmStepsSinceSBrefresh +%= 1;
+        break :blk pgmStepsSinceSBrefresh == 0;
+    }) {
+        frontier_status_bar.refreshStatusBar();
+    }
 
     // **RunFunction
     if (itemNotAvail(func) == 0) {

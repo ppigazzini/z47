@@ -45,6 +45,7 @@ const frontier_recall = @import("../recall.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("screen.zig");
 const frontier_softmenus = @import("softmenus/softmenus.zig");
+const frontier_status_bar = @import("statusbar/status_bar.zig");
 const frontier_tam = @import("../input/tam.zig");
 const realContext_t = abi.RealContext;
 const mp_limb_t = usize;
@@ -377,6 +378,9 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
     }
 
     var previousProgramRunStop: u8 = programRunStop;
+    if (previousProgramRunStop == PGM_RUNNING) {
+        frontier_status_bar.refreshStatusBar(); // the run-mode statusbar cadence can leave the bar stale; paint it once so the pause shows the current state
+    }
     programRunStop = PGM_PAUSED;
 
     if (previousProgramRunStop != PGM_RUNNING) {
