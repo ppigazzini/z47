@@ -22,6 +22,8 @@ const ioModeWrite: c_int = 1;
 const ioModeRead: c_int = 0;
 
 const ERROR_OUT_OF_RANGE: u8 = 8;
+const ERROR_RAM_FULL: u8 = 11;
+const ERROR_INVALID_CORRUPTED_DATA: u8 = 18;
 const ERROR_CANNOT_READ_FILE: u8 = 35;
 const ERROR_CANNOT_WRITE_FILE: u8 = 55;
 
@@ -80,6 +82,8 @@ extern fn fnGoto(label: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 extern fn readLine(line: [*c]u8, maxLen: usize) void;
+extern fn ioFileSeek(position: u32) void;
+extern fn getFreeRamMemory() u32;
 
 extern fn z47_program_serialization_runtime_check_power() bool;
 extern fn z47_program_serialization_runtime_select_program(label: u16) bool;
@@ -251,6 +255,24 @@ pub fn displayReadError() void {
         return;
     }
     displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+// Real-surface only (the fake parity surface models the pre-screen load flow;
+// its callers gate on use_fake_harness_surface).
+pub fn displayRamFullError() void {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+pub fn displayCorruptedDataError() void {
+    displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+pub fn getFreeRamMemoryBytes() u32 {
+    return getFreeRamMemory();
+}
+
+pub fn seekLoadFileStart() void {
+    ioFileSeek(0);
 }
 
 pub fn showWarning(message: [*c]const u8) void {

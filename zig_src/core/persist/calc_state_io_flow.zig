@@ -23,8 +23,15 @@ const ioModeRead: c_int = 0;
 const SCRUPD_AUTO: u8 = 0x00;
 const TI_DATA_LOADED: u16 = 142;
 const ERROR_CANNOT_READ_FILE: u8 = 35;
+const ERROR_INVALID_CORRUPTED_DATA: u8 = 18;
 const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
 const REGISTER_X_LINE: i16 = 100;
+const CONFIRMED: u16 = 9877; // items.h: confirmation for RESET, CLPALL, CLALL
+
+// Post-restore program-memory screen (manage.c owner, shell object).
+extern fn programMemoryHasOverlongLabelName(step: [*c]u8) bool;
+extern fn fnClPAll(confirmation: u16) void;
+extern var beginOfProgramMemory: [*c]u8;
 
 pub fn doSave(save_type: u16) void {
     runtime.showSavingStatus();
@@ -66,7 +73,8 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
     }
 
     const header = header_owned.parseSaveFileRevision();
-    if (policy_owned.canEnableLoad(load_mode, load_type, header.loaded_version)) {
+    const enable_load = policy_owned.canEnableLoad(load_mode, load_type, header.loaded_version);
+    if (enable_load) {
         const allow_user_keys = runtime.allowUserKeys(header.saved_calc_model);
         while (runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
         runtime.fixupR47ShiftKeys();
@@ -79,6 +87,15 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
 
     runtime.lastErrorCode = runtime.ERROR_NONE;
     runtime.previousErrorCode = runtime.lastErrorCode;
+
+    // The PROGRAMS section is applied in place, so a file claiming a label name longer than MAX_LABEL_NAME_LENGTH leaves nothing to roll back to.
+    // Clear the program area to an empty .END. and report the file as corrupt. fnClPAll also removes all XEQ key assignments, the right scope once every label is gone.
+    if (enable_load and (load_mode == runtime.LM_ALL or load_mode == runtime.LM_PROGRAMS) and
+        programMemoryHasOverlongLabelName(beginOfProgramMemory))
+    {
+        fnClPAll(CONFIRMED);
+        displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X_LINE);
+    }
 
     runtime.closeFile();
     runtime.restartPostLoadTimers();

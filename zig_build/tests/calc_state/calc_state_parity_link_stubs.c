@@ -139,6 +139,9 @@ void setSystemFlag(int32_t a0) {}
 void setUserKeyArgument(int16_t a0, void *a1) {}
 void stringToUtf8(void *a0, void *a1) {}
 void utf8ToString(void *a0, void *a1) {}
+void utf8ToStringWithLength(void *a0, void *a1, uintptr_t a2) {}
+_Bool programMemoryHasOverlongLabelName(void *a0) { (void)a0; return 0; }
+void fnClPAll(uint16_t a0) { (void)a0; }
 
 // gmp stubs — the register codec references these but the header-only fixture
 // never invokes it, so no-ops satisfy the link without a system gmp (which the
