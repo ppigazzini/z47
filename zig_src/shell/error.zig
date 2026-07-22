@@ -268,7 +268,7 @@ pub export const errorMessages linksection(code_section) = [NUMBER_OF_ERROR_CODE
     errRow("Invalid register type/angle"),
     errRow("Printing Is Disabled"),
     errRow("No string in alpha register"), // 64  ERROR_NO_STRING_IN_ALPHA_REGISTER (42S alpha ops)
-    errRow(""), // 65
+    errRow("No equation defined"), // 65  ERROR_NO_EQUATION_DEFINED
     errRow(""), // 66
     errRow(""), // 67
     errRow(""), // 68

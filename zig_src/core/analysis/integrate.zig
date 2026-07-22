@@ -848,17 +848,31 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
 // ===========================================================================
 // integrate
 // ===========================================================================
+
+// Cap integrator re-entry before a self-integrating program overflows the C stack. Dedicated, not the shared
+// currentSolverNestingDepth (which the solver/isumprod can leave inflated). MAX_INTEGRATOR_NESTING_DEPTH is in defines.h.
+var integratorNestingDepth: u16 = 0;
+// Cap on nested integrate() re-entry; a self-referential integrand aborts past this. INT(INT(INT)) is depth 3, so real use never nears it.
+const MAX_INTEGRATOR_NESTING_DEPTH: u16 = 5;
+
 pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *align(1) const real_t, acc: *real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const was_solving: bool_t = getSystemFlag(@bitCast(FLAG_SOLVING));
     currentSolverNestingDepth += 1;
     setSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
-    // USE_NEW_DEI_INTEGRATION_CODE > 0
-    if (realCompareLessThan(a, b)) {
-        dbl_exp_int_new(regist, a, b, acc, res, 1, realContext);
-    } else { // a, b might be NaN or both equal; handled in function.
-        dbl_exp_int_new(regist, b, a, acc, res, -1, realContext);
+    integratorNestingDepth += 1;
+    if (integratorNestingDepth > MAX_INTEGRATOR_NESTING_DEPTH) { // too deep: skip the heavy frame, abort via the integrator's own ERROR_SOLVER_ABORT unwind
+        realSetZero(res);
+        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    } else {
+        // USE_NEW_DEI_INTEGRATION_CODE > 0
+        if (realCompareLessThan(a, b)) {
+            dbl_exp_int_new(regist, a, b, acc, res, 1, realContext);
+        } else { // a, b might be NaN or both equal; handled in function.
+            dbl_exp_int_new(regist, b, a, acc, res, -1, realContext);
+        }
     }
+    integratorNestingDepth -= 1;
     currentSolverNestingDepth -= 1;
     if (currentSolverNestingDepth == 0) {
         clearSystemFlag(FLAG_INTING);
