@@ -170,6 +170,28 @@ fn xthRootComplex(aa: *const real_t, bb: *const real_t, cc: *const real_t, dd: *
     realCopy(cc, &c);
     realCopy(dd, &d);
 
+    if (realIsInfinite(&a) or realIsInfinite(&b)) { // an infinite base carries an angle, which PowerComplex() turns by 1/x
+        var er: real_t = undefined;
+        var ei: real_t = undefined;
+        var rr: real_t = undefined;
+        var ri: real_t = undefined;
+
+        if (realIsZero(&c) and realIsZero(&d)) { // a 0th root is not defined
+            convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
+            return;
+        }
+
+        math_division_cells.divComplexComplex(const_1(), const_0(), &c, &d, &er, &ei, realContext);
+        if (realIsZero(&er) and realIsZero(&ei)) { // an infinite order leaves y^0, indeterminate for an infinite base
+            convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
+            return;
+        }
+
+        _ = math_power.PowerComplex(&a, &b, &er, &ei, &rr, &ri, realContext);
+        convertComplexToResultRegister(&rr, &ri, REGISTER_X);
+        return;
+    }
+
     if (!getSystemFlag(FLAG_SPCRES)) {
         if (realIsZero(&c) and realIsZero(&d)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -241,7 +263,8 @@ pub export fn xthRootReal(yy: *real_t, xx: *real_t, realContext: *realContext_t)
 
         //NaN
         realDivideRemainder(&x, const_2(), &r, realContext);
-        if ((realIsNaN(&x) or realIsNaN(&y)) or ((realCompareLessThan(&y, const_0()) or (realIsInfinite(&y) and realIsNegative(&y))) and (realIsInfinite(&x))) or ((realCompareLessThan(&y, const_0()) and (!realIsInfinite(&y)) and (!realIsAnInteger(&x)))) or ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x)))) {
+        // (y=-inf) AND (x is even > 0) has a complex root when CPXRES is set, so the NaN arm keeps !CPXRES.
+        if ((realIsNaN(&x) or realIsNaN(&y)) or ((realCompareLessThan(&y, const_0()) or (realIsInfinite(&y) and realIsNegative(&y))) and (realIsInfinite(&x))) or ((realCompareLessThan(&y, const_0()) and (!realIsInfinite(&y)) and (!realIsAnInteger(&x)))) or ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x)) and !runtime.getFlag(FLAG_CPXRES))) {
             telltale += 8;
             realSetNaN(&o);
         }
@@ -440,15 +463,6 @@ fn doXthRootCplx() linksection(runtime.code_section) callconv(.c) void {
     var d: real_t = undefined;
 
     if (!runtime.getRegisterAsComplex(REGISTER_Y, &a, &b) or !runtime.getRegisterAsComplex(REGISTER_X, &c, &d)) {
-        return;
-    }
-
-    if (realIsInfinite(&a) or realIsInfinite(&b)) {
-        if (realIsZero(&c) and realIsZero(&d)) {
-            convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
-        } else {
-            convertComplexToResultRegister(const_plusInfinity(), const_plusInfinity(), REGISTER_X);
-        }
         return;
     }
 
