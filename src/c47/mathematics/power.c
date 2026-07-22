@@ -163,17 +163,40 @@ static void powReal(void) {
     return;
   }
 
-  if(realIsInfinite(&y)) {
-    if(realIsZero(&x)) {
+  if(realIsInfinite(&y)) {                             // y (the base) is +/- infinity
+    if(realIsNaN(&x)) {                                // inf ^ NaN is NaN; must precede the tests below, realIsPositive() is true for a NaN
+      realSetNaN(&res);
+    }
+    else if(realIsZero(&x)) {                          // inf ^ 0 is indeterminate
       realSetNaN(&res);
     }
     else {
-      if(realIsPositive(&x) && realIsAnInteger(&x)) {
-        WP34S_Mod(&x, const_2, &res, &ctxtReal39);
-        realCopy(realIsZero(&res) ? const_plusInfinity : const_minusInfinity, &res);
+      bool_t oddIntegerExponent = false;
+      if(!realIsInfinite(&x)) {                        // ReM p.202: y^(+/-inf) follows the exponent sign alone; realIsAnInteger() is true for an infinity
+        if(realIsAnInteger(&x)) {
+          WP34S_Mod(&x, const_2, &res, &ctxtReal39);
+          oddIntegerExponent = !realIsZero(&res);
+        }
+        else if(realIsNegative(&y)) {                  // (-inf) ^ non-integer is not a real number
+          if(getFlag(FLAG_CPXRES)) {
+            powCplx();
+            return;
+          }
+          displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+          #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+            moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", NULL, NULL);
+          #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+          return;
+        }
       }
-      else {
+      if(realIsPositive(&x)) {                         // exponent > 0  ==> +/- infinity
         realSetPlusInfinity(&res);
+      }
+      else {                                           // exponent < 0  ==> +/- zero
+        realSetZero(&res);
+      }
+      if(realIsNegative(&y) && oddIntegerExponent) {   // (-inf) ^ odd keeps the negative sign
+        realSetNegativeSign(&res);
       }
     }
     goto finish;
@@ -205,19 +228,67 @@ finish:
 /******************************************************************************************************************************************************************************************/
 
 /*
+ * ReM p.B-18: a power of (r ; phi) is (r^x ; phi.x). An infinite base sits on one of the 8 sector boundaries that
+ * getInfiniteComplexAngle() reports, so phi.x is representable only when it lands on one too. Returns false when it does
+ * not, the exponent being infinite or the product fractional, leaving the caller to return an infinity of no angle.
+ */
+static bool_t setInfiniteComplexPower(const real_t *yReal, const real_t *yImag, const real_t *xReal, real_t *rReal, real_t *rImag, realContext_t *realContext) {
+  real_t re, im, sector;
+
+  if(realIsInfinite(xReal)) {                            // phi.x is then unbounded, and WP34S_Mod() of it is a NaN
+    return false;
+  }
+
+  realCopy(yReal, &re);                                  // getInfiniteComplexAngle() takes non-const operands
+  realCopy(yImag, &im);
+  int32ToReal(getInfiniteComplexAngle(&re, &im), &sector);
+  realMultiply(&sector, xReal, &sector, realContext);
+  WP34S_Mod(&sector, const_8, &sector, realContext);     // remainder is truncated, so lift it into [0, 8) = one revolution
+  if(realIsNegative(&sector)) {
+    realAdd(&sector, const_8, &sector, realContext);
+  }
+
+  if(!realIsAnInteger(&sector)) {
+    return false;
+  }
+  setInfiniteComplexAngle(realToInt32C47(&sector, NULL), rReal, rImag);
+  return true;
+}
+
+
+/*
  * Calculate y^x for complex numbers.
  */
 uint8_t PowerComplex(const real_t *yReal, const real_t *yImag, const real_t *xReal, const real_t *xImag, real_t *rReal, real_t *rImag, realContext_t *realContext) {
   uint8_t errorCode = ERROR_NONE;
 
-  if(realIsInfinite(yReal) || realIsInfinite(yImag)) {
-    if(realIsZero(xReal) && realIsZero(xImag)) {
+  if(realIsInfinite(yReal) || realIsInfinite(yImag)) {   // the base has an infinite component
+    if(realIsNaN(xReal) || realIsNaN(xImag)) {           // inf ^ NaN is NaN
       realSetNaN(rReal);
       realSetNaN(rImag);
     }
-    else {
-      realSetPlusInfinity(rReal);
-      realSetPlusInfinity(rImag);
+    else if(realIsZero(xReal) && realIsZero(xImag)) {    // inf ^ 0 is indeterminate
+      realSetNaN(rReal);
+      realSetNaN(rImag);
+    }
+    else if(realIsZero(xReal)) {                         // Re(exponent) == 0 (pure imaginary) is indeterminate
+      realSetNaN(rReal);
+      realSetNaN(rImag);
+    }
+    else if(realIsNegative(xReal)) {                     // Re(exponent) < 0 ==> modulus collapses to 0, where the angle no longer counts
+      realSetZero(rReal);
+      realSetZero(rImag);
+    }
+    else {                                               // Re(exponent) > 0 ==> infinite modulus
+      bool_t onSector = false;
+
+      if(realIsZero(xImag)) {                            // Im(exponent) != 0 adds Im(x).ln r to the argument, leaving it unbounded
+        onSector = setInfiniteComplexPower(yReal, yImag, xReal, rReal, rImag, realContext);
+      }
+      if(!onSector) {
+        realSetPlusInfinity(rReal);
+        realSetPlusInfinity(rImag);
+      }
     }
   }
   else if(realIsZero(yReal) && realIsZero(yImag)) {

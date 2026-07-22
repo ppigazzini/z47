@@ -1,8 +1,9 @@
-; C47 graph gold-standard test: replicates the plot gold standards (testSuite graphs_cov.txt, G1..G9) through the
-; user programming path. XEQ 'GRAPHS' on a cleared machine; every plot ends in SNAP, ten captures in all. The SNAP
-; hashes must equal the pinned gold-standard hashes, proving the programmed path renders identically to the harness.
+# C47 graph gold-standard test: XEQ 'GRAPHS' on a cleared machine.
+NOP ; replicates the plot gold standards (testSuite graphs_cov.txt, G1..G9) through user programming. Every plot ends in SNAP, ten captures in all.
+NOP ; Thiis file is used internally to compare the SNAP hashes to the pinned gold-standard hashes. The file is replicated here for educational value.
 
-LBL 'S'                    ; f(X) = X^2 - 4, plotted by PLTf below
+
+LBL 01                    ; f(X) = X^2 - 4, plotted by PLTf below
   𝑥²
   4 -
 RTN
@@ -14,39 +15,43 @@ LBL 'GRAPHS'
   # 2026-07-15
   RAD                      ; the gold standards render in radians (SIN(X) below)
 
-; equation plot: X.SWAP swaps the formula in from the X string (allocates the formula slot if none);
-; plot range from Z and Y. f(X) = X^2 over [-5, 5]
+NOP ; equation plot: X.SWAP swaps the formula in from the X string (allocates the formula slot if none); plot range from Z and Y. f(X) = X^2 over [-5, 5]
+  # EQN PLOT 1
   -5 5 'X^2'
   X.SWAP DROP𝑥
+  NOP ; Draw_y^x PLTFCNS SNAP
   Draw_y^x OPENM 'PLFUNC' SNAP
 
-; equation plot: f(X) = SIN(X) over [-5, 5] (radians)
+NOP ; equation plot: f(X) = SIN(X) over [-5, 5] (radians)
+  # EQN PLOT 2
   -5 5 'SIN(X)'
   X.SWAP DROP𝑥
+  NOP ; Draw_y^x PLTFCNS SNAP
   Draw_y^x OPENM 'PLFUNC' SNAP
 
-; program plot: f(X) = X^2 - 4 over [-5, 5] via label S
-  PGMPLT 'S'
+NOP ; program plot: f(X) = X^2 - 4 over [-5, 5] via label S
+  # RPN PLOT 3
+  PGMPLT 01
   -5 5
   PLTf 'x'
   SNAP
 
-; statistics data: five (y, x) points shared by the fit plots below
+NOP ; statistics data: five (y, x) points shared by the fit plots below
+  # STAT PLOT 1-5
   CLΣ
   1   2   Σ+
   1.2 2.1 Σ+
   3.1 3   Σ+
   4.2 4.4 Σ+
   5   4.8 Σ+
-
   PLSTAT SNAP              ; statistics plot (sets the line flag itself)
   SCATR SNAP               ; scatter plot (every stat plot resets the plot flags itself)
   BestF 1 ASSESS SNAP      ; linear assessment: a0 = -1.512, a1 = 1.353, r^2 = 0.97
   CENTRL SNAP              ; centroid with the orthogonal fit
   BestF 8 ASSESS SNAP      ; power assessment y = a0 x^a1: a0 = 0.3323, a1 = 1.767, r^2 = 0.95
 
-; histogram data: nine points, three bins (edges 1/2/3/4), counts 3-4-2 - middle bar highest,
-; side bars close but not equal, so the HNORM Gauss peaks upright
+NOP ; histogram data: nine points, three bins (edges 1/2/3/4), counts 3-4-2 - middle bar highest, side bars close but not equal, so the HNORM Gauss peaks upright
+  # STAT PLOT 6-7
   CLΣ
   1 1   Σ+
   2 1.4 Σ+
@@ -57,8 +62,6 @@ LBL 'GRAPHS'
   7 2.8 Σ+
   8 3.2 Σ+
   9 4   Σ+
-
   HISTOX HPLOT SNAP        ; histogram, bars 3-4-2
   HISTOX HNORM SNAP        ; histogram with the Gauss fit: a0 = 4.085, a1 = 2.293, a2 = -2.039, r^2 = 1
-RTN                        ; the histogram data stays seeded: clearing it here would re-render the on-screen
-                           ; plot without data and raise "No statistic data present" as the program ends
+RTN                        ; the histogram data stays seeded: clearing it here would re-render the on-screen plot without data and raise "No statistic data present" as the program ends

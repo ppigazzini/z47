@@ -157,6 +157,14 @@
    */
   calcRegister_t findOrAllocateNamedVariable     (const char *variableName);
 
+  /********************************************//**
+   * \brief Allocates a new named variable; call only after findNamedVariable() returned INVALID_VARIABLE. The new variable is a real34 zero.
+   *
+   * \param[in] variableName const char* name of the variable
+   * \return calcRegister_t the new register, or INVALID_VARIABLE
+   ***********************************************/
+  calcRegister_t allocateNamedVariableOnMiss     (const char *variableName);
+
   /**
    * Returns the full data size of a register in blocks.
    *

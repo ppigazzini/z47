@@ -22,7 +22,7 @@ char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathN
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
-bool_t noFailForNow;
+bool_t noFailForNow = true; // abortTest counts a failure only while set; starts true so the run's first test can fail
 
 uint16_t label, functionParameter;
 
@@ -46,7 +46,10 @@ void covSolveRoot(uint16_t which);
 void covDerivErr(uint16_t which);
 void covSolveErr(uint16_t which);
 void covLoadPgm(uint16_t unusedButMandatoryParameter);
+void covLoadPgmLongLabel(uint16_t unusedButMandatoryParameter);
+void covLoadStateLongLabel(uint16_t unusedButMandatoryParameter);
 void covIterationTi(uint16_t which);
+void covNamedVariableFold(uint16_t unusedButMandatoryParameter);
 void covDerivPgm(uint16_t order);
 void covSolvePgm(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
@@ -62,6 +65,7 @@ void covEffToI(uint16_t unusedButMandatoryParameter);
 void covAmort(uint16_t which);
 void covAmortNext(uint16_t which);
 void covEqSet(uint16_t which);
+void covEqClear(uint16_t unusedButMandatoryParameter);
 void covLoadGraphPgms(uint16_t unusedButMandatoryParameter);
 void covBmpName(uint16_t which);
 void covHashBmp(uint16_t which);
@@ -205,6 +209,7 @@ const funcTest_t funcTestNoParam[] = {
   {"covConvToSI",            covConvToSI, 1 },
   {"covConvFromSI",          covConvFromSI, 1 },
   {"fnEqSetCov",             covEqSet, 1 },
+  {"fnEqClearCov",           covEqClear, 1 },
   {"fnLoadGraphPgmsCov",     covLoadGraphPgms, 1 },
   {"fnBmpNameCov",           covBmpName, 1 },
   {"fnHashBmpCov",           covHashBmp, 1 },
@@ -216,7 +221,10 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDerivErrCov",          covDerivErr, 1 },
   {"fnSolveErrCov",          covSolveErr, 1 },
   {"fnLoadPgmCov",           covLoadPgm, 1 },
+  {"fnLoadPgmLongLabelCov",  covLoadPgmLongLabel, 1 },
+  {"fnLoadStateLongLabelCov", covLoadStateLongLabel, 1 },
   {"fnIterationTiCov",       covIterationTi, 1 },
+  {"fnNamedVarFoldCov",      covNamedVariableFold, 1 },
   {"fnDerivPgmCov",          covDerivPgm, 1 },
   {"fnSolvePgmCov",          covSolvePgm, 1 },
   {"fnIntegrateCov",         covIntegrate, 1 },
@@ -919,6 +927,138 @@ void covIterationTi(uint16_t which) {
   temporaryInformation = TI_NO_INFO;
 }
 
+void covNamedVariableFold(uint16_t unusedButMandatoryParameter) {
+  // The calculator treats subscript and superscript letters in a name as the plain letter, so both spellings must reach the same variable. These tests check for
+  // equivalence and non-equivalence, in both creation orders; the stored bytes are whichever spelling was created first.
+  uint16_t before = numberOfNamedVariables;
+  calcRegister_t sub = findOrAllocateNamedVariable(STD_SUB_a "q");   // subscript-a followed by q
+  calcRegister_t plainFind = findNamedVariable("aq");
+  calcRegister_t plainAlloc = findOrAllocateNamedVariable("aq");
+  if(sub == INVALID_VARIABLE || plainFind != sub || plainAlloc != sub || numberOfNamedVariables != before + 1) {
+    printf("\nfold-equivalent variable lookup broken: sub=%d find=%d alloc=%d vars %d->%d\n",
+           (int)sub, (int)plainFind, (int)plainAlloc, (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // Plain spelling created first; the subscript spelling must find it.
+  calcRegister_t plain = findOrAllocateNamedVariable("bk");
+  calcRegister_t subFind = findNamedVariable(STD_SUB_b "k");
+  calcRegister_t subAlloc = findOrAllocateNamedVariable(STD_SUB_b "k");
+  if(plain == INVALID_VARIABLE || subFind != plain || subAlloc != plain || numberOfNamedVariables != before + 2) {
+    printf("\nfold-cov 2 plain-created, sub probe: plain=%d find=%d alloc=%d vars %d->%d (all three must be one variable)\n",
+           (int)plain, (int)subFind, (int)subAlloc, (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // A superscript letter is treated as the plain letter.
+  calcRegister_t supVar = findOrAllocateNamedVariable("m" STD_SUP_p);
+  if(supVar == INVALID_VARIABLE || findNamedVariable("mp") != supVar || findOrAllocateNamedVariable("mp") != supVar
+      || numberOfNamedVariables != before + 3) {
+    printf("\nfold-cov 3 superscript letter: supVar=%d find=%d vars %d->%d (probe of mp must hit supVar)\n",
+           (int)supVar, (int)findNamedVariable("mp"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // Superscript 2 is a deliberate exception: x-squared and x2 stay distinct; superscript 3 is treated as plain 3.
+  calcRegister_t xSq = findOrAllocateNamedVariable("x" STD_SUP_2);
+  calcRegister_t x2 = findOrAllocateNamedVariable("x2");
+  if(xSq == INVALID_VARIABLE || x2 == INVALID_VARIABLE || x2 == xSq || numberOfNamedVariables != before + 5) {
+    printf("\nfold-cov 4 sup-2 excluded: xSq=%d x2=%d vars %d->%d (two distinct variables required)\n",
+           (int)xSq, (int)x2, (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+  calcRegister_t x3 = findOrAllocateNamedVariable("x3");
+  if(x3 == INVALID_VARIABLE || findNamedVariable("x" STD_SUP_3) != x3 || numberOfNamedVariables != before + 6) {
+    printf("\nfold-cov 5 sup-3 folds: x3=%d find=%d vars %d->%d (probe of x-sup-3 must hit x3)\n",
+           (int)x3, (int)findNamedVariable("x" STD_SUP_3), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // A subscript digit is treated as the plain digit.
+  calcRegister_t d1 = findOrAllocateNamedVariable("d" STD_SUB_1);
+  if(d1 == INVALID_VARIABLE || findNamedVariable("d1") != d1 || numberOfNamedVariables != before + 7) {
+    printf("\nfold-cov 6 subscript digit: d1=%d find=%d vars %d->%d (probe of d1 must hit the sub-1 form)\n",
+           (int)d1, (int)findNamedVariable("d1"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // Subscript alpha is treated as alpha: a two-byte glyph converting to another two-byte glyph.
+  calcRegister_t ga = findOrAllocateNamedVariable(STD_SUB_alpha "z");
+  if(ga == INVALID_VARIABLE || findNamedVariable(STD_alpha "z") != ga || numberOfNamedVariables != before + 8) {
+    printf("\nfold-cov 7 sub-alpha to alpha: ga=%d find=%d vars %d->%d (probe of alpha-z must hit ga)\n",
+           (int)ga, (int)findNamedVariable(STD_alpha "z"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // A 7-glyph name still matches by either spelling; an 8-glyph probe matches nothing and allocates nothing.
+  calcRegister_t seven = findOrAllocateNamedVariable("efghij" STD_SUB_9);
+  if(seven == INVALID_VARIABLE || findNamedVariable("efghij9") != seven || numberOfNamedVariables != before + 9) {
+    printf("\nfold-cov 8 7-glyph boundary: seven=%d find=%d vars %d->%d (probe of efghij9 must hit seven)\n",
+           (int)seven, (int)findNamedVariable("efghij9"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+  if(findNamedVariable("efghij99") != INVALID_VARIABLE || findOrAllocateNamedVariable("efghij99") != INVALID_VARIABLE
+      || numberOfNamedVariables != before + 9) {
+    printf("\nfold-cov 9 8-glyph name: find=%d vars %d->%d (must be INVALID_VARIABLE and allocate nothing)\n",
+           (int)findNamedVariable("efghij99"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // A shared prefix is not a match; the subscript probe hits the 2-glyph name only.
+  calcRegister_t pq = findOrAllocateNamedVariable("pq");
+  calcRegister_t pqr = findOrAllocateNamedVariable("pqr");
+  if(pq == INVALID_VARIABLE || pqr == INVALID_VARIABLE || pq == pqr
+      || findNamedVariable(STD_SUB_p "q") != pq || findNamedVariable("pqr") != pqr || numberOfNamedVariables != before + 11) {
+    printf("\nfold-cov 10 prefix: pq=%d pqr=%d subProbe=%d vars %d->%d (sub-p q must hit pq, never pqr)\n",
+           (int)pq, (int)pqr, (int)findNamedVariable(STD_SUB_p "q"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  // Upper and lower case stay distinct.
+  if(findNamedVariable("AQ") != INVALID_VARIABLE) {
+    printf("\nfold-cov 11 case: find(AQ)=%d (aq exists, AQ must stay INVALID_VARIABLE)\n", (int)findNamedVariable("AQ"));
+    abortTest();
+    return;
+  }
+
+  // Deleting a variable shifts the ones after it; lookups by either spelling must follow the shift.
+  fnDeleteVariable(sub);
+  calcRegister_t bkAfter = findNamedVariable("bk");
+  if(findNamedVariable("aq") != INVALID_VARIABLE || bkAfter == INVALID_VARIABLE
+      || findNamedVariable(STD_SUB_b "k") != bkAfter || numberOfNamedVariables != before + 10) {
+    printf("\nfold-cov 12 after delete: find(aq)=%d bk=%d subProbe=%d vars %d->%d (aq gone, bk still found both ways)\n",
+           (int)findNamedVariable("aq"), (int)bkAfter, (int)findNamedVariable(STD_SUB_b "k"), (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+
+  const char *foldCovCleanup[] = {"bk", "mp", "x" STD_SUP_2, "x2", "x3", "d1", STD_alpha "z", "efghij9", "pq", "pqr"};
+  for(unsigned int i = 0; i < nbrOfElements(foldCovCleanup); i++) {
+    calcRegister_t regist = findNamedVariable(foldCovCleanup[i]);
+    if(regist == INVALID_VARIABLE) {
+      printf("\nfold-cov cleanup: %u not found\n", i);
+      abortTest();
+      return;
+    }
+    fnDeleteVariable(regist);
+  }
+  if(numberOfNamedVariables != before) {
+    printf("\nfold-cov cleanup: vars %d->%d (must return to the start count)\n", (int)before, (int)numberOfNamedVariables);
+    abortTest();
+    return;
+  }
+}
+
 void covLoadPgm(uint16_t unusedButMandatoryParameter) {
   // Build and import two labelled RPN programs: S = X^2 - 4 (root at X=2, derivative 2X) for the solver / differentiator / integrator / real summation,
   // and T = X^2 (which returns a long integer for a long-integer counter) for the indexed summation. Both reach the execProgram branches the formula corpus cannot.
@@ -937,6 +1077,152 @@ void covLoadPgm(uint16_t unusedButMandatoryParameter) {
   };
   covWriteAndLoadPgm(pgmS, sizeof(pgmS));
   covWriteAndLoadPgm(pgmT, sizeof(pgmT));
+}
+
+void covLoadPgmLongLabel(uint16_t unusedButMandatoryParameter) {
+  // A program file can claim a label name longer than the calculator can produce (TAM caps a name at 7 glyphs
+  // of at most 2 bytes, MAX_LABEL_NAME_LENGTH in defines.h); fnLoadProgram screens the file in a first pass,
+  // before loading anything, and refuses it with ERROR_INVALID_CORRUPTED_DATA. Load a file whose global label
+  // name claims 20 bytes and one whose named local label claims 20 bytes: both must be refused with the error
+  // set, no label registered, and program memory untouched (the screen runs before the load, so there is
+  // nothing to roll back). Then check the screen's step walk does not false-positive: a program with a
+  // legitimate 20-byte alpha string literal must load, and so must a full-length 14-byte label name.
+  static const uint8_t pgmBadGlobal[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 20, 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmBadLocal[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'V',
+    ITM_LBL, LOCAL_LABEL_VARIABLE, 20, 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmStrLiteral[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 1, 'U',
+    ITM_LITERAL, STRING_LABEL_VARIABLE, 20, 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  // Bypass regression: the screen must refuse a non-item opcode (here
+  // LAST_ITEM itself) rather than quit silently, because the in-memory
+  // walker decodes it as a zero-parameter step and would register the
+  // overlong label hidden behind it.
+  static const uint8_t pgmBadOpcode[] = {
+    (uint8_t)((LAST_ITEM >> 8) | 0x80), (uint8_t)(LAST_ITEM & 0xff),
+    ITM_LBL, STRING_LABEL_VARIABLE, 20, 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T',
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  static const uint8_t pgmMaxName[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 14, 'W','X','Y','Z','W','X','Y','Z','W','X','Y','Z','W','X',
+    ITM_LITERAL, 1 /* BINARY_SHORT_INTEGER */, 2, 0,0,0,0,0,0,0,0, // fixed-tail literal through the screen
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  uint16_t labelsBefore = numberOfLabels;
+  uint8_t *firstFreeBefore = firstFreeProgramByte;
+
+  temporaryInformation = TI_NO_INFO;
+  covWriteAndLoadPgm(pgmBadGlobal, sizeof(pgmBadGlobal));
+  if(lastErrorCode != ERROR_INVALID_CORRUPTED_DATA || temporaryInformation == TI_PROGRAM_LOADED
+      || numberOfLabels != labelsBefore || firstFreeProgramByte != firstFreeBefore) {
+    printf("\nfnLoadProgram did not cleanly refuse a program file with a 20-byte global label name\n");
+    abortTest();
+    return;
+  }
+  lastErrorCode = ERROR_NONE;
+
+  temporaryInformation = TI_NO_INFO;
+  covWriteAndLoadPgm(pgmBadLocal, sizeof(pgmBadLocal));
+  if(lastErrorCode != ERROR_INVALID_CORRUPTED_DATA || temporaryInformation == TI_PROGRAM_LOADED
+      || numberOfLabels != labelsBefore || firstFreeProgramByte != firstFreeBefore) {
+    printf("\nfnLoadProgram did not cleanly refuse a program file with a 20-byte local label name\n");
+    abortTest();
+    return;
+  }
+  lastErrorCode = ERROR_NONE;
+
+  temporaryInformation = TI_NO_INFO;
+  covWriteAndLoadPgm(pgmBadOpcode, sizeof(pgmBadOpcode));
+  if(lastErrorCode != ERROR_INVALID_CORRUPTED_DATA || temporaryInformation == TI_PROGRAM_LOADED
+      || numberOfLabels != labelsBefore || firstFreeProgramByte != firstFreeBefore) {
+    printf("\nfnLoadProgram did not refuse a file hiding an overlong label behind a non-item opcode\n");
+    abortTest();
+    return;
+  }
+  lastErrorCode = ERROR_NONE;
+
+  temporaryInformation = TI_NO_INFO;
+  covWriteAndLoadPgm(pgmStrLiteral, sizeof(pgmStrLiteral));
+  if(temporaryInformation != TI_PROGRAM_LOADED || lastErrorCode != ERROR_NONE || numberOfLabels != labelsBefore + 1) {
+    printf("\nfnLoadProgram refused a program with a legitimate 20-byte alpha string literal\n");
+    abortTest();
+    return;
+  }
+
+  temporaryInformation = TI_NO_INFO;
+  covWriteAndLoadPgm(pgmMaxName, sizeof(pgmMaxName));
+  if(temporaryInformation != TI_PROGRAM_LOADED || lastErrorCode != ERROR_NONE || numberOfLabels != labelsBefore + 2) {
+    printf("\nfnLoadProgram refused a program file with a legitimate 14-byte label name\n");
+    abortTest();
+    return;
+  }
+
+  // A file whose declared byte count cannot possibly fit is refused before any reservation.
+  temporaryInformation = TI_NO_INFO;
+  FILE *f = fopen("c47programTest.bin", "wb");
+  if(f == NULL) {
+    abortTest();
+    return;
+  }
+  fprintf(f, "PROGRAM_FILE_FORMAT\n0\nC47_program_file_version\n1\nPROGRAM\n100000000\n");
+  fclose(f);
+  fnLoadProgram(NOPARAM);
+  if(lastErrorCode != ERROR_RAM_FULL || temporaryInformation == TI_PROGRAM_LOADED || numberOfLabels != labelsBefore + 2) {
+    printf("\nfnLoadProgram did not refuse an impossibly large program file (EC=%d)\n", (int)lastErrorCode);
+    abortTest();
+    return;
+  }
+  lastErrorCode = ERROR_NONE;
+}
+
+void covLoadStateLongLabel(uint16_t unusedButMandatoryParameter) {
+  // The state loaders (LOAD, LOADP, LOADST) apply the PROGRAMS section in
+  // place, so doLoad screens program memory after the restore and, on an
+  // over-long label name, clears the program area and raises
+  // ERROR_INVALID_CORRUPTED_DATA. Build the corrupt state file honestly: load
+  // a valid program with a full-length name, bump its length byte in program
+  // memory past the limit, save the state, clear programs, and load the state
+  // back. The load must end with the error set and an empty program area.
+  // The six ITM_NULL padding steps keep the corrupted step decodable: the
+  // inflated length swallows exactly the padding, so the walk lands on the
+  // RTN and the overlong label registers instead of truncating the scan -
+  // the dangerous case the screen exists for.
+  static const uint8_t pgmVictim[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 14, 'S','T','A','T','E','B','A','D','L','B','L','X','Y','Z',
+    0, 0, 0, 0, 0, 0,
+    ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  covWriteAndLoadPgm(pgmVictim, sizeof(pgmVictim));
+  // The loader appended the victim, so its bytes end at firstFreeProgramByte;
+  // the label's claimed-length byte is at offset 2 of the program.
+  uint8_t *lengthByte = firstFreeProgramByte - sizeof(pgmVictim) + 2;
+  if(temporaryInformation != TI_PROGRAM_LOADED || *lengthByte != 14) {
+    printf("\ncovLoadStateLongLabel could not stage its victim program\n");
+    abortTest();
+    return;
+  }
+  *lengthByte = 20; // corrupt the claimed name length in program memory
+
+  fnSave(SM_MANUAL_SAVE);
+  fnClPAll(CONFIRMED);
+  lastErrorCode = ERROR_NONE;
+
+  fnLoad(LM_PROGRAMS);
+  if(lastErrorCode != ERROR_INVALID_CORRUPTED_DATA || numberOfLabels != 0) {
+    printf("\nfnLoad(LM_PROGRAMS) did not refuse a state file with a corrupt label name (EC=%u, labels=%u)\n",
+           lastErrorCode, numberOfLabels);
+    abortTest();
+    return;
+  }
+  lastErrorCode = ERROR_NONE;
 }
 
 void covProgramFlow(uint16_t which) {
@@ -1429,6 +1715,14 @@ void covEqSet(uint16_t which) {
   currentSolverVariable = findOrAllocateNamedVariable("X");
 }
 
+void covEqClear(uint16_t unusedButMandatoryParameter) {
+  // Delete every formula so a following program plot runs from a true no-equation state (numberOfFormulae 0, allFormulae NULL). A program plot needs no formula,
+  // so this exposes it to the no-equation guard in fnEqSolvGraph, which G2 masks by inheriting a formula from the equation plot before it. See graphs_cov.txt G2b.
+  while(numberOfFormulae > 0) {
+    deleteEquation(0);
+  }
+}
+
 // Two-byte program opcode: the high bit on the first byte marks that a second opcode byte follows (the decoder's (op & 0x80) convention).
 #define OP2(itm) (uint8_t)(((itm) >> 8) | 0x80), (uint8_t)((itm) & 0xff)
 
@@ -1533,6 +1827,8 @@ static void covPlotBmpName(char *out, uint16_t which) {
 void covBmpName(uint16_t which) {
   // Point the next SNAP capture at c47plotTest<FARG>.bmp; the override is consumed by one capture, so this runs before each XEQ of a graph program.
   covPlotBmpName(_ioFileNameOverride, which);
+  // Delete any stale copy first: a graph program that errors before its SNAP leaves no file, so covHashBmp fails instead of hashing an old bitmap - a false pass.
+  remove(_ioFileNameOverride);
 }
 
 void covHashBmp(uint16_t which) {

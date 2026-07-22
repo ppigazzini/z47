@@ -50,9 +50,10 @@ make dist_dmcp5             - Create DM42n (DMCP5) distribution package
 make dist_dmcp5r47          - Create R47 (DMCP5) distribution package
 make dist_dmcp5 f=1         - Fast DMCP5 dist package, reuse build dir, skip GMP rebuild (example only, f=1 can be applied to any build in this block)
 
-make DMCP_PACKAGE=1 dist_dmcp  - Create DM42 (DMCP) distribution package for feature set PACKAGE1_NOBESSEL_NOORTHO
-make DMCP_PACKAGE=2 dist_dmcp  - Create DM42 (DMCP) distribution package for feature set PACKAGE2_NODISTR
-make DMCP_PACKAGE=3 dist_dmcp  - Create DM42 (DMCP) distribution package for feature set PACKAGE3_NOBESSEL_NOORTHO_NOFBR
+make DMCP_PACKAGE=1 dist_dmcp  - Create DM42 (DMCP) distribution package DMCP_PACKAGE1
+make DMCP_PACKAGE=2 dist_dmcp  - Create DM42 (DMCP) distribution package DMCP_PACKAGE2
+make DMCP_PACKAGE=3 dist_dmcp  - Create DM42 (DMCP) distribution package DMCP_PACKAGE3
+make DMCP_PACKAGE=4 dist_dmcp  - Create DM42 (DMCP) distribution package DMCP_PACKAGE4_NOOPT
 ```
 
 ## Utilities

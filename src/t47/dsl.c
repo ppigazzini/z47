@@ -1092,6 +1092,31 @@ static int expregCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 }
 
 /**
+ * expnrg <n> [<filename>] - Export registers R00..R(n-1) to a data (.d47) file, EXPnrg with a
+ * filename override so the GTK file chooser is bypassed in headless runs. Mirrors expreg.
+ */
+static int expnrgCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  if(argc < 2) {
+    Jim_SetResultString(interp, "expnrg: missing register count argument", -1);
+    return JIM_ERR;
+  }
+
+  long n;
+  if(Jim_GetLong(interp, argv[1], &n) != JIM_OK || n < 1 || n > LAST_SPARE_REGISTER + 1) {
+    Jim_SetResultFormatted(interp, "expnrg: invalid register count '%#s'", argv[1]);
+    return JIM_ERR;
+  }
+
+  if(argc > 2) {
+    strncpy(_ioFileNameOverride, Jim_String(argv[2]), C47_PATH_MAX - 1);
+    _ioFileNameOverride[C47_PATH_MAX - 1] = '\0';
+  }
+
+  fnSaveNRegisters((uint16_t)n);
+  return JIM_OK;
+}
+
+/**
  * tsvfnSet <path> - Set the TSV file name override
  */
 static void tsvfnSet(const char *baseName) {
@@ -1285,6 +1310,7 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "savest", savestCmd, NULL, NULL);
   Jim_CreateCommand(interp, "impreg", impregCmd, NULL, NULL);
   Jim_CreateCommand(interp, "expreg", expregCmd, NULL, NULL);
+  Jim_CreateCommand(interp, "expnrg", expnrgCmd, NULL, NULL);
   Jim_CreateCommand(interp, "snap",   snapCmd,   NULL, NULL);
   Jim_CreateCommand(interp, "tsvfn",  tsvfnCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "var",    varCmd,    NULL, NULL);

@@ -18,218 +18,80 @@ bool_t programBytesAvailable(const uint8_t *address, uint16_t numberOfBytes) {
 }
 
 
-uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
-  uint8_t opParam = *(uint8_t *)(step++);
-
+// Parameter-tail grammar shared by the in-memory step walkers below and the program-file screening pass in saveRestorePrograms.c: given the parameter mode,
+// the operation, needed for PARAM_NUMBER_16 only, and the first parameter byte, the tail is a fixed byte count, a length byte and that many bytes, or invalid.
+int16_t paramTailBytes(uint16_t paramMode, uint16_t op, uint8_t opParam) {
   switch(paramMode) {
     case PARAM_DECLARE_LABEL: {
-      if(opParam <= LAST_LOCAL_LABEL) { // Local labels from 00 to 99 and from A to l
-        return step;
-      }
-      else if((opParam == STRING_LABEL_VARIABLE) || (opParam == LOCAL_LABEL_VARIABLE)) {
-        return step + *step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes case PARAM_DECLARE_LABEL: opParam %u is not a valid label!\n", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
+      if(opParam <= LAST_LOCAL_LABEL)                                                  return 0;
+      if(opParam == STRING_LABEL_VARIABLE || opParam == LOCAL_LABEL_VARIABLE)          return PARAM_TAIL_LENGTH_PREFIXED;
+      return PARAM_TAIL_INVALID;
     }
-
     case PARAM_LABEL: {
-      if(opParam <= LAST_LOCAL_LABEL) { // Local labels from 00 to 99 and from A to l
-        return step;
-      }
-      else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE || opParam == LOCAL_LABEL_VARIABLE) {
-        return step + *step + 1;
-      }
-      else if(opParam == INDIRECT_REGISTER) {
-        return step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_LABEL, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
+      if(opParam <= LAST_LOCAL_LABEL)                                                  return 0;
+      if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE || opParam == LOCAL_LABEL_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+      if(opParam == INDIRECT_REGISTER)                                                 return 1;
+      return PARAM_TAIL_INVALID;
     }
-
     case PARAM_REGISTER: {
-      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98
-        return step;
-      }
-      else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
-        return step + *step + 1;
-      }
-      else if(opParam == INDIRECT_REGISTER) {
-        return step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_REGISTER, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE)                                   return 0;
+      if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE)             return PARAM_TAIL_LENGTH_PREFIXED;
+      if(opParam == INDIRECT_REGISTER)                                                 return 1;
+      return PARAM_TAIL_INVALID;
     }
-
-    case PARAM_FLAG: {
-      if(opParam <= LAST_LOCAL_FLAG) { // Global flags from 00 to 99, lettered flags from X to K, and local flags from .00 to .31
-        return step;
-      }
-      else if(FLAG_M <= opParam && opParam <= FLAG_W) { // Global flags from M to W
-        return step;
-      }
-      else if(opParam == INDIRECT_REGISTER || opParam == SYSTEM_FLAG_NUMBER) {
-        return step + 1;
-      }
-      else if(opParam == INDIRECT_VARIABLE) {
-        return step + *step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_FLAG, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
-    }
-
-    case PARAM_NUMBER_8: {
-      if(opParam <= 249) { // Value from 0 to 99
-        return step;
-      }
-      else if(opParam == INDIRECT_REGISTER) {
-        return step + 1;
-      }
-      else if(opParam == INDIRECT_VARIABLE) {
-        return step + *step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_NUMBER, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
-    }
-
-    case PARAM_NUMBER_8_16: {
-      if(opParam <= 249) { // Value from 0 to 249
-        return step;
-      }
-      else if(opParam == CNST_BEYOND_250) { // Value from 250 to 499
-        return step + 1;
-      }
-      else if(opParam == INDIRECT_REGISTER) {
-        return step + 1;
-      }
-      else if(opParam == INDIRECT_VARIABLE) {
-        return step + *step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_NUMBER, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
-    }
-
-    case PARAM_NUMBER_16: {
-      uint16_t func = (*(step-3) << 8) + *(step -2);
-      func &= 0x7fff;
-      if(isFunctionOldParam16(func)) {  // original Param16 functions without indirection support (little endian parameter)
-        return step + 1;
-      }
-      else {                        // new Param1- functions with indirection support (big endian parameter)
-        if(opParam == INDIRECT_REGISTER) {
-          return step + 1;
-        }
-        else if(opParam == INDIRECT_VARIABLE) {
-          return step + *step + 1;
-        }
-        else {
-          return step + 1;
-        }
-      }
-    }
-
     case PARAM_COMPARE: {
-      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) { // Global registers from 00 to 99, lettered registers from X to W, and local registers from .00 to .98 OR value 0 OR value 1
-        return step;
-      }
-      else if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
-        return step + *step + 1;
-      }
-      else if(opParam == INDIRECT_REGISTER) {
-        return step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_COMPARE, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
+      if(opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE || opParam == VALUE_0 || opParam == VALUE_1) return 0;
+      if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE)             return PARAM_TAIL_LENGTH_PREFIXED;
+      if(opParam == INDIRECT_REGISTER)                                                 return 1;
+      return PARAM_TAIL_INVALID;
     }
-
+    case PARAM_FLAG: {
+      if(opParam <= LAST_LOCAL_FLAG || (FLAG_M <= opParam && opParam <= FLAG_W))       return 0;
+      if(opParam == INDIRECT_REGISTER || opParam == SYSTEM_FLAG_NUMBER)                return 1;
+      if(opParam == INDIRECT_VARIABLE)                                                 return PARAM_TAIL_LENGTH_PREFIXED;
+      return PARAM_TAIL_INVALID;
+    }
+    case PARAM_NUMBER_8: {
+      if(opParam <= 249)                                                               return 0;
+      if(opParam == INDIRECT_REGISTER)                                                 return 1;
+      if(opParam == INDIRECT_VARIABLE)                                                 return PARAM_TAIL_LENGTH_PREFIXED;
+      return PARAM_TAIL_INVALID;
+    }
+    case PARAM_NUMBER_8_16: {
+      if(opParam <= 249)                                                               return 0;
+      if(opParam == CNST_BEYOND_250 || opParam == INDIRECT_REGISTER)                   return 1;
+      if(opParam == INDIRECT_VARIABLE)                                                 return PARAM_TAIL_LENGTH_PREFIXED;
+      return PARAM_TAIL_INVALID;
+    }
+    case PARAM_NUMBER_16: {
+      // original Param16 functions have no indirection support (little endian parameter)
+      if(isFunctionOldParam16(op))                                                     return 1;
+      if(opParam == INDIRECT_VARIABLE)                                                 return PARAM_TAIL_LENGTH_PREFIXED;
+      return 1; // new Param16 form (big endian parameter), including INDIRECT_REGISTER
+    }
     case PARAM_SKIP_BACK:
     case PARAM_SHUFFLE: {
-      return step;
+      return 0;
     }
-
     case PARAM_MENU: {
-      if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE) {
-        return step + *step + 1;
-      }
-      else if(opParam == INDIRECT_REGISTER) {
-        return step + 1;
-      }
-      else {
-        #if !defined(DMCP_BUILD)
-          printf("\nIn function countOpBytes: case PARAM_MENU, %u is not a valid parameter!", opParam);
-        #endif // !DMCP_BUILD
-        return NULL;
-      }
+      if(opParam == STRING_LABEL_VARIABLE || opParam == INDIRECT_VARIABLE)             return PARAM_TAIL_LENGTH_PREFIXED;
+      if(opParam == INDIRECT_REGISTER)                                                 return 1;
+      return PARAM_TAIL_INVALID;
     }
-
     default: {
-      #if !defined(DMCP_BUILD)
-        printf("\nIn function countOpBytes: paramMode %u is not valid!\n", paramMode);
-      #endif // !DMCP_BUILD
-      return NULL;
+      return PARAM_TAIL_INVALID;
     }
   }
 }
 
 
-uint8_t *countLiteralBytes(uint8_t *step) {
-  switch(*(step++)) {
-    case BINARY_SHORT_INTEGER: {
-      return step + 9;
-    }
-
-    //case BINARY_LONG_INTEGER: {
-    //  break;
-    //}
-
-    case BINARY_REAL34: {
-      return step + REAL34_SIZE_IN_BYTES;
-    }
-
-    case BINARY_COMPLEX34: {
-      return step + TO_BYTES(REAL34_SIZE_IN_BLOCKS * 2);
-    }
-
-    //case BINARY_DATE: {
-    //  break;
-    //}
-
-    //case BINARY_TIME: {
-    //  break;
-    //}
-
-    case STRING_SHORT_INTEGER: {
-      return step + *(step + 1) + 2;
-    }
-
+// Literal-tail grammar, same contract, for the type byte following ITM_LITERAL.
+int16_t literalTailBytes(uint8_t literalType) {
+  switch(literalType) {
+    case BINARY_SHORT_INTEGER:  return 9;
+    case BINARY_REAL34:         return REAL34_SIZE_IN_BYTES;
+    case BINARY_COMPLEX34:      return TO_BYTES(REAL34_SIZE_IN_BLOCKS * 2);
+    case STRING_SHORT_INTEGER:  return PARAM_TAIL_BASE_LENGTH_PREFIXED; // base byte, then a length-prefixed string
     case STRING_LONG_INTEGER:
     case STRING_REAL34:
     case STRING_LABEL_VARIABLE:
@@ -240,22 +102,50 @@ uint8_t *countLiteralBytes(uint8_t *step) {
     case STRING_ANGLE_RADIAN:
     case STRING_ANGLE_GRAD:
     case STRING_ANGLE_DEGREE:
-    case STRING_ANGLE_MULTPI:
-
-    {
-      return step + *step + 1;
-    }
-
-    default: {
-      #if !defined(DMCP_BUILD)
-        printf("\nERROR: in countLiteralBytes() %u is not an acceptable parameter for ITM_LITERAL!\n", *(step - 1));
-        printf("At address ram + %" PRIu32 "\n", (uint32_t)((step - 1) - (uint8_t *)ram));
-      #endif // !DMCP_BUILD
-      return NULL;
-    }
+    case STRING_ANGLE_MULTPI:   return PARAM_TAIL_LENGTH_PREFIXED;
+    default:                    return PARAM_TAIL_INVALID;
   }
 }
 
+
+uint8_t *countOpBytes(uint8_t *step, uint16_t paramMode) {
+  uint8_t opParam = *(step++);
+  uint16_t op = 0;
+  if(paramMode == PARAM_NUMBER_16) { // only PARAM_NUMBER_16 needs the operation, read back as before
+    op = (((uint16_t)(*(step - 3)) << 8) + *(step - 2)) & 0x7fff;
+  }
+  int16_t tail = paramTailBytes(paramMode, op, opParam);
+  if(tail == PARAM_TAIL_INVALID) {
+    #if !defined(DMCP_BUILD)
+      printf("\nIn function countOpBytes: paramMode %u, %u is not a valid parameter!\n", paramMode, opParam);
+    #endif // !DMCP_BUILD
+    return NULL;
+  }
+  if(tail == PARAM_TAIL_LENGTH_PREFIXED) {
+    return step + *step + 1;
+  }
+  return step + tail;
+}
+
+
+uint8_t *countLiteralBytes(uint8_t *step) {
+  int16_t tail = literalTailBytes(*step);
+  step++;
+  if(tail == PARAM_TAIL_INVALID) {
+    #if !defined(DMCP_BUILD)
+      printf("\nERROR: in countLiteralBytes() %u is not an acceptable parameter for ITM_LITERAL!\n", *(step - 1));
+      printf("At address ram + %" PRIu32 "\n", (uint32_t)((step - 1) - (uint8_t *)ram));
+    #endif // !DMCP_BUILD
+    return NULL;
+  }
+  if(tail == PARAM_TAIL_BASE_LENGTH_PREFIXED) {
+    return step + *(step + 1) + 2;
+  }
+  if(tail == PARAM_TAIL_LENGTH_PREFIXED) {
+    return step + *step + 1;
+  }
+  return step + tail;
+}
 
 
 uint8_t *findNextStep(uint8_t *step) {
@@ -300,7 +190,7 @@ uint8_t *findKey2ndParam(uint8_t *step) {
   }
 
   uint8_t *secondParam;
-  if(op == 0x7fff) { // .END.
+  if(op >= LAST_ITEM) { // do not index past the item table; 0x7fff (.END.) lands here too
     return NULL;
   }
   else {

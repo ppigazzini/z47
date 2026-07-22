@@ -2661,7 +2661,14 @@ void fnEqSolvGraph (uint16_t func) {
   #if defined(OPTION_GRAPHICS)
       // No equation defined: error out before any stack or reserved-variable writes;
       // running these items without a formula crashed in parseEquation (NULL allFormulae).
-      if(currentFormula >= numberOfFormulae || allFormulae[currentFormula].pointerToFormulaData == C47_NULL) {
+      // A program plot has no formula by design (execute_rpn_function runs its program), so exempt it from the guard when the func is a plot func, RPN_GRAPHER is set,
+      // and currentSolverVariable is valid. The valid variable keeps this clear of the parseEquation fallback below, so its NULL deref stays unreachable,
+      // and the func check keeps the guard live for the solve items.
+      const bool_t rpnProgramPlot = (func == EQ_PLOT || func == EQ_PLOT_LU)
+                                    && (currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER)
+                                    && currentSolverVariable >= FIRST_NAMED_VARIABLE
+                                    && currentSolverVariable <= LAST_NAMED_VARIABLE;
+      if(!rpnProgramPlot && (currentFormula >= numberOfFormulae || allFormulae[currentFormula].pointerToFormulaData == C47_NULL)) {
         calcMode = CM_NORMAL;
         displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         #if (EXTRA_INFO_ON_CALC_ERROR == 1)

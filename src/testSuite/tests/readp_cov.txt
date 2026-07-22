@@ -1,0 +1,24 @@
+;*************************************************************
+;** Coverage: fnLoadProgram label-name screening.           **
+;** A program file can claim a label name longer than the   **
+;** calculator can produce (TAM caps a name at 7 glyphs of  **
+;** at most 2 bytes). covLoadPgmLongLabel imports a file    **
+;** with a 20-byte global label name and one with a 20-byte **
+;** named local label, checks both are refused whole, then  **
+;** checks a full-length 14-byte name is still accepted.    **
+;** Adds one program to memory, so it runs with the other   **
+;** program-loading tests, before serialize_cov resets.     **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnLoadPgmLongLabelCov
+In:  FARG=0
+Out: EC=0
+
+; state loaders (LOAD/LOADP/LOADST) screen restored program memory the same
+; way: a state file with a corrupt label name is refused and the program area
+; cleared. Saves and reloads the manual save file, so it runs here, before
+; serialize_cov resets the calculator.
+Func: fnLoadStateLongLabelCov
+In:  FARG=0
+Out: EC=0

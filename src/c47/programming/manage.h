@@ -9,6 +9,7 @@
 
   uint32_t _getProgramSize                     (void);
   uint8_t boundProgramNameLength               (const uint8_t *nameStart, uint8_t claimedLength);
+  bool_t programMemoryHasOverlongLabelName     (uint8_t *step);
   void scanLabelsAndPrograms                   (void);
   void defineCurrentProgramFromGlobalStepNumber(int16_t globalStepNumber);
   void defineCurrentProgramFromCurrentStep     (void);

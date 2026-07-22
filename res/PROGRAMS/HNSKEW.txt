@@ -1,9 +1,10 @@
-; Skewed-histogram HNORM test: eight points, three bins (edges 1/2/3/4), counts 4-3-1. The Gauss fit peaks left of
-; centre (a0 = 4.034, a1 = 1.559, a2 = -1.852, r^2 = 1) and the window follows the fitted bell (x = a1 +- 3 sigma
-; unioned with the bar range, y_max clearing the peak), so the peak and both tails render on screen.
+# Skewed-histogram HNORM test.
+NOP ;   Eight points, three bins (edges 1/2/3/4), counts 4-3-1. The Gauss fit peaks left of centre.
+NOP ;   (a0 = 4.034, a1 = 1.559, a2 = -1.852, r^2 = 1). The graphic window follows the fitted bell
+NOP ;   (x = a1 +- 3 sigma unioned with the bar range, y_max clearing the peak) and the peak and tails scale on screen.
 
 LBL 'HNSKEW'
-  # Skewed histogram HNORM
+  # Skewed histogram
   # JM
   # 2026-07-15
   CLΣ
@@ -15,7 +16,6 @@ LBL 'HNSKEW'
   6 2.5 Σ+
   7 2.7 Σ+
   8 3.6 Σ+
-
   HISTOX HPLOT SNAP        ; histogram, bars 4-3-1
   HISTOX HNORM SNAP        ; skewed Gauss: peak inside the frame, tails to both edges
 RTN
