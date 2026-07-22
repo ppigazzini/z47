@@ -117,7 +117,7 @@ const TAM_MAX_BITS: u4 = 14;
 const TAM_MAX_MASK: u16 = 0x3fff;
 
 const INVALID_VARIABLE: calcRegister_t = 2199;
-const INVALID_MENU: i16 = 2791;
+const INVALID_MENU: i16 = 2870; // items.h: LAST_ITEM
 const TEMP_REGISTER_1: calcRegister_t = 135;
 const NOPARAM: u16 = 9876;
 const REGISTER_X: calcRegister_t = 100;
