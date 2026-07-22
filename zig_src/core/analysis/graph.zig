@@ -125,6 +125,9 @@ const amNone: c_int = 5;
 const amNoneU: u32 = 5;
 
 const CM_NORMAL: u8 = 0;
+const formulaHeader_t = abi.FormulaHeader;
+const C47_NULL: u16 = 65535;
+const ERROR_NO_EQUATION_DEFINED: u8 = 65;
 const CM_PLOT_STAT: u8 = 8;
 const CM_GRAPH: u8 = 15;
 const CM_NO_UNDO: u8 = 16;
@@ -251,6 +254,8 @@ extern var lastPlotMode: u16;
 extern var currentSolverVariable: u16;
 extern var currentSolverStatus: u16;
 extern var currentFormula: u16;
+extern var numberOfFormulae: u16;
+extern var allFormulae: [*c]formulaHeader_t;
 extern var graphVariabl1: calcRegister_t;
 extern var regStatsXY: calcRegister_t;
 extern var plotStatMx: [8]u8;
@@ -2277,6 +2282,22 @@ pub export fn fnComplexSolver() callconv(.c) void {
 // fnEqSolvGraph
 // ===========================================================================
 pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
+    // OPTION_GRAPHICS is always on for z47 builds.
+    // No equation defined: error out before any stack or reserved-variable writes;
+    // running these items without a formula crashed in parseEquation (NULL allFormulae).
+    // A program plot has no formula by design (execute_rpn_function runs its program), so exempt it from the guard when the func is a plot func, RPN_GRAPHER is set,
+    // and currentSolverVariable is valid. The valid variable keeps this clear of the parseEquation fallback below, so its NULL deref stays unreachable,
+    // and the func check keeps the guard live for the solve items.
+    const rpnProgramPlot: bool = (func == EQ_PLOT or func == EQ_PLOT_LU) and
+        (currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) != 0 and
+        currentSolverVariable >= FIRST_NAMED_VARIABLE and
+        currentSolverVariable <= LAST_NAMED_VARIABLE;
+    if (!rpnProgramPlot and (currentFormula >= numberOfFormulae or allFormulae[currentFormula].pointerToFormulaData == C47_NULL)) {
+        calcMode = CM_NORMAL;
+        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function fnEqSolvGraph:", "no equation defined", null, null);
+        return;
+    }
     hourGlassIconEnabled = true;
     showHideHourGlass();
     lcdRefresh();
