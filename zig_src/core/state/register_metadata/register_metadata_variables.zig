@@ -456,6 +456,17 @@ pub fn clearAllVariables(confirmation: u16) void {
         runtime.TI_NO_INFO;
 }
 
+// The length-prefixed name header of variable `index` (variableName[0] is the
+// byte length, the chars follow), or null past the same surface guards
+// namedVariableName() applies.
+fn namedVariableHeaderName(index: u16) ?[*]const u8 {
+    if (index >= runtime.numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
+        return null;
+    }
+    const headers = allNamedVariables orelse return null;
+    return @ptrCast(&headers[index].variableName);
+}
+
 pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     const text: [*:0]const u8 = @ptrCast(variable_name);
     const glyph_length = validateNameGlyphLength(text);
@@ -469,9 +480,17 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
         return reserved;
     }
 
+    // Exact-bytes fast path first; the second compare treats sub- and superscript glyphs as their plain form.
+    const name_byte_length = std.mem.len(text);
+    var folded_name: [7]u16 = undefined;
+    const folded_length = abi.glyph_code.foldNameToCharCodes(text, &folded_name); // 1..7 glyphs checked at entry; on overflow (-1) no candidate compares equal
+
     var index: u16 = 0;
     while (index < runtime.numberOfNamedVariables) : (index += 1) {
-        if (compareMenuNames(runtime.namedVariableName(index), variable_name) == 0) {
+        const stored_name = namedVariableHeaderName(index) orelse break;
+        if ((stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1 .. 1 + name_byte_length], text[0..name_byte_length])) or
+            abi.glyph_code.nameEqualsPrefolded(stored_name + 1, &folded_name, folded_length))
+        {
             return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index));
         }
     }
@@ -479,17 +498,14 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     return runtime.INVALID_VARIABLE;
 }
 
-pub fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
+// Allocate half of findOrAllocateNamedVariable(); call only after
+// findNamedVariable() returned INVALID_VARIABLE. The new variable is a real34 zero.
+pub fn allocateNamedVariableOnMiss(variable_name: [*c]const u8) runtime.calcRegister_t {
     const text: [*:0]const u8 = @ptrCast(variable_name);
     const glyph_length = validateNameGlyphLength(text);
 
     if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {
         return runtime.INVALID_VARIABLE;
-    }
-
-    const register = findNamedVariable(variable_name);
-    if (register != runtime.INVALID_VARIABLE) {
-        return register;
     }
 
     if (runtime.numberOfNamedVariables > (runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE)) {
@@ -501,9 +517,19 @@ pub fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegi
         return runtime.INVALID_VARIABLE;
     }
 
+    // New variables are zero by default - although this might be immediately
+    // overridden, it might require an initial value, such as when STO+
     const new_register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
     memory_owned.zeroReal34(descriptor_owned.getRegisterDataPointer(new_register));
     return new_register;
+}
+
+pub fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
+    const register = findNamedVariable(variable_name);
+    if (register != runtime.INVALID_VARIABLE) {
+        return register;
+    }
+    return allocateNamedVariableOnMiss(variable_name);
 }
 
 pub fn isFunctionAllowingNewVariable(op: u16) bool {

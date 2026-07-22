@@ -39,6 +39,18 @@ pub export fn compareChar(char1: [*c]const u8, char2: [*c]const u8) callconv(.c)
     return glyph_code.compareLeadChar(char1, char2);
 }
 
+// The CMP_NAME pre-fold pair (sort.h): findNamedVariable's fast path folds the
+// probed name once and compares each stored candidate against the folded codes.
+// The pure walks live in abi.glyph_code; these are the C-ABI spellings.
+pub export fn foldNameToCharCodes(name: [*c]const u8, folded: [*c]u16, maxGlyphs: i32) callconv(.c) i32 {
+    return glyph_code.foldNameToCharCodes(name, folded[0..@intCast(maxGlyphs)]);
+}
+
+pub export fn nameEqualsPrefolded(candidate: [*c]const u8, folded: [*c]const u16, foldedLength: i32) callconv(.c) u32 {
+    const len: usize = if (foldedLength > 0) @intCast(foldedLength) else 0;
+    return @intFromBool(glyph_code.nameEqualsPrefolded(candidate, folded[0..len], foldedLength));
+}
+
 // Read the glyph char-code at byte offset `pos` (delegates to the shared decode).
 inline fn glyphCodeAt(str: [*c]const u8, pos: i16) u16 {
     return glyph_code.decodeGlyphAt(str, @intCast(pos));

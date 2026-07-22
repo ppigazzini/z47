@@ -76,6 +76,10 @@ pub export fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegiste
     return variables_owned.findNamedVariable(variable_name);
 }
 
+pub export fn allocateNamedVariableOnMiss(variable_name: [*c]const u8) runtime.calcRegister_t {
+    return variables_owned.allocateNamedVariableOnMiss(variable_name);
+}
+
 pub export fn findOrAllocateNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     return variables_owned.findOrAllocateNamedVariable(variable_name);
 }
