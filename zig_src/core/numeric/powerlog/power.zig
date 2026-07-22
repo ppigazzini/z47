@@ -37,6 +37,15 @@ const realToInt32C47 = runtime.realToInt32C47;
 const realRectangularToPolar = runtime.realRectangularToPolar;
 const realPolarToRectangular = runtime.realPolarToRectangular;
 const realSetPositiveSign = runtime.realSetPositiveSign;
+inline fn realSetNegativeSign(operand: *real_t) void {
+    operand.bits |= 0x80;
+}
+const int32ToReal = runtime.int32ToReal;
+const realAdd = runtime.realAdd;
+
+// Sector-boundary infinite-angle helpers (conversionAngles.c owner, shell object).
+extern fn getInfiniteComplexAngle(x: *real_t, y: *real_t) u32;
+extern fn setInfiniteComplexAngle(angle: u32, x: *real_t, y: *real_t) void;
 
 const WP34S_Ln = runtime.WP34S_Ln;
 const WP34S_Mod = runtime.WP34S_Mod;
@@ -273,15 +282,34 @@ fn powReal() linksection(runtime.code_section) callconv(.c) void {
         return;
     }
 
-    if (realIsInfinite(&y)) {
-        if (realIsZero(&x)) {
+    if (realIsInfinite(&y)) { // y (the base) is +/- infinity
+        if (realIsNaN(&x)) { // inf ^ NaN is NaN; must precede the tests below, realIsPositive() is true for a NaN
+            realSetNaN(&res);
+        } else if (realIsZero(&x)) { // inf ^ 0 is indeterminate
             realSetNaN(&res);
         } else {
-            if (realIsPositive(&x) and realIsAnInteger(&x)) {
-                WP34S_Mod(&x, const_2(), &res, &runtime.ctxtReal39);
-                realCopy(if (realIsZero(&res)) const_plusInfinity() else const_minusInfinity(), &res);
-            } else {
+            var oddIntegerExponent: bool = false;
+            if (!realIsInfinite(&x)) { // ReM p.202: y^(+/-inf) follows the exponent sign alone; realIsAnInteger() is true for an infinity
+                if (realIsAnInteger(&x)) {
+                    WP34S_Mod(&x, const_2(), &res, &runtime.ctxtReal39);
+                    oddIntegerExponent = !realIsZero(&res);
+                } else if (realIsNegative(&y)) { // (-inf) ^ non-integer is not a real number
+                    if (runtime.getFlag(FLAG_CPXRES)) {
+                        powCplx();
+                        return;
+                    }
+                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                    moreInfoOnError("In function powReal:", "cannot do complex results if CPXRES is not set", null, null);
+                    return;
+                }
+            }
+            if (realIsPositive(&x)) { // exponent > 0  ==> +/- infinity
                 realSetPlusInfinity(&res);
+            } else { // exponent < 0  ==> +/- zero
+                realSetZero(&res);
+            }
+            if (realIsNegative(&y) and oddIntegerExponent) { // (-inf) ^ odd keeps the negative sign
+                realSetNegativeSign(&res);
             }
         }
         // goto finish
@@ -309,16 +337,61 @@ fn powReal() linksection(runtime.code_section) callconv(.c) void {
 // ===========================================================================
 // PowerComplex
 // ===========================================================================
+
+// ReM p.B-18: a power of (r ; phi) is (r^x ; phi.x). An infinite base sits on one of the 8 sector boundaries that
+// getInfiniteComplexAngle() reports, so phi.x is representable only when it lands on one too. Returns false when it does
+// not, the exponent being infinite or the product fractional, leaving the caller to return an infinity of no angle.
+fn setInfiniteComplexPower(yReal: *const real_t, yImag: *const real_t, xReal: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+    var re: real_t = undefined;
+    var im: real_t = undefined;
+    var sector: real_t = undefined;
+
+    if (realIsInfinite(xReal)) { // phi.x is then unbounded, and WP34S_Mod() of it is a NaN
+        return false;
+    }
+
+    realCopy(yReal, &re); // getInfiniteComplexAngle() takes non-const operands
+    realCopy(yImag, &im);
+    int32ToReal(@intCast(getInfiniteComplexAngle(&re, &im)), &sector);
+    realMultiply(&sector, xReal, &sector, realContext);
+    WP34S_Mod(&sector, const_8(), &sector, realContext); // remainder is truncated, so lift it into [0, 8) = one revolution
+    if (realIsNegative(&sector)) {
+        realAdd(&sector, const_8(), &sector, realContext);
+    }
+
+    if (!realIsAnInteger(&sector)) {
+        return false;
+    }
+    setInfiniteComplexAngle(@intCast(realToInt32C47(&sector, null)), rReal, rImag);
+    return true;
+}
+
 pub export fn PowerComplex(yReal: *const real_t, yImag: *const real_t, xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) u8 {
     const errorCode: u8 = ERROR_NONE;
 
-    if (realIsInfinite(yReal) or realIsInfinite(yImag)) {
-        if (realIsZero(xReal) and realIsZero(xImag)) {
+    if (realIsInfinite(yReal) or realIsInfinite(yImag)) { // the base has an infinite component
+        if (realIsNaN(xReal) or realIsNaN(xImag)) { // inf ^ NaN is NaN
             realSetNaN(rReal);
             realSetNaN(rImag);
-        } else {
-            realSetPlusInfinity(rReal);
-            realSetPlusInfinity(rImag);
+        } else if (realIsZero(xReal) and realIsZero(xImag)) { // inf ^ 0 is indeterminate
+            realSetNaN(rReal);
+            realSetNaN(rImag);
+        } else if (realIsZero(xReal)) { // Re(exponent) == 0 (pure imaginary) is indeterminate
+            realSetNaN(rReal);
+            realSetNaN(rImag);
+        } else if (realIsNegative(xReal)) { // Re(exponent) < 0 ==> modulus collapses to 0, where the angle no longer counts
+            realSetZero(rReal);
+            realSetZero(rImag);
+        } else { // Re(exponent) > 0 ==> infinite modulus
+            var onSector: bool = false;
+
+            if (realIsZero(xImag)) { // Im(exponent) != 0 adds Im(x).ln r to the argument, leaving it unbounded
+                onSector = setInfiniteComplexPower(yReal, yImag, xReal, rReal, rImag, realContext);
+            }
+            if (!onSector) {
+                realSetPlusInfinity(rReal);
+                realSetPlusInfinity(rImag);
+            }
         }
     } else if (realIsZero(yReal) and realIsZero(yImag)) {
         if (realIsZero(xReal)) {
