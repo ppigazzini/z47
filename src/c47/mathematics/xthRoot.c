@@ -22,6 +22,25 @@ static void xthRootComplex(const real_t *aa, const real_t *bb, const real_t *cc,
   realCopy(cc, &c);
   realCopy(dd, &d);
 
+  if(realIsInfinite(&a) || realIsInfinite(&b)) {          // an infinite base carries an angle, which PowerComplex() turns by 1/x
+    real_t er, ei, rr, ri;
+
+    if(realIsZero(&c) && realIsZero(&d)) {                // a 0th root is not defined
+      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
+      return;
+    }
+
+    divComplexComplex(const_1, const_0, &c, &d, &er, &ei, realContext);
+    if(realIsZero(&er) && realIsZero(&ei)) {              // an infinite order leaves y^0, indeterminate for an infinite base
+      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
+      return;
+    }
+
+    PowerComplex(&a, &b, &er, &ei, &rr, &ri, realContext);
+    convertComplexToResultRegister(&rr, &ri, REGISTER_X);
+    return;
+  }
+
   if(!getSystemFlag(FLAG_SPCRES)) {
     if(realIsZero(&c)&&realIsZero(&d)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
@@ -104,7 +123,7 @@ void xthRootReal(real_t *yy, real_t *xx, realContext_t *realContext) {
     if(    (realIsNaN(&x) || realIsNaN(&y))
        || ((realCompareLessThan(&y, const_0) || (realIsInfinite(&y) && realIsNegative(&y))) && (realIsInfinite(&x)   ))                  // (-inf <= y < 0)  AND (x =(inf or -inf))
        || ((realCompareLessThan(&y, const_0) && (!realIsInfinite(&y)                      ) && (!realIsAnInteger(&x))))                  // (-inf < y < 0)  AND (x in non-integer)
-       || ((realIsInfinite(&y) && realIsNegative(&y)) && (realIsZero(&r) && realCompareGreaterThan(&x, const_0) && realIsAnInteger(&x))) // (y=-inf) AND (x is even > 0) [zero r means n/2 has no remainder, therefore even]
+       || ((realIsInfinite(&y) && realIsNegative(&y)) && (realIsZero(&r) && realCompareGreaterThan(&x, const_0) && realIsAnInteger(&x)) && !getFlag(FLAG_CPXRES)) // (y=-inf) AND (x is even > 0) [zero r means n/2 has no remainder, therefore even], which has a complex root when CPXRES is set
       ) {
       telltale += 8;
       realSetNaN(&o);
@@ -328,16 +347,6 @@ static void doXthRootCplx(void) {                       //checked
   real_t a, b, c, d;
 
   if(!getRegisterAsComplex(REGISTER_Y, &a, &b) || !getRegisterAsComplex(REGISTER_X, &c, &d)) {
-    return;
-  }
-
-  if(realIsInfinite(&a) || realIsInfinite(&b)) {
-    if(realIsZero(&c) && realIsZero(&d)) {
-      convertComplexToResultRegister(const_NaN, const_NaN, REGISTER_X);
-    }
-    else {
-      convertComplexToResultRegister(const_plusInfinity, const_plusInfinity, REGISTER_X);
-    }
     return;
   }
 

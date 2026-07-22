@@ -150,3 +150,49 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"2.8291482700798293982137125940030007122809296874876405894019422 i -1.3431604275348836034547660235585587989476134207607343755620103"
+
+
+;=========================================================
+; sqrt across operand types, negative and infinite
+; A negative operand has no real square root, so the real
+; rule falls through to the principal at every type.
+;=========================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"4#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"9#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"3#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=Real:"-4.0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=LonI:"-4"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ShoI:"-4#10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=ShoI:"-9#10"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 3"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-4 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 2"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"
+
+; No real square root and no complex results: a domain error, stack preserved
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"

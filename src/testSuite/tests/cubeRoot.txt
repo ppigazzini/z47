@@ -143,3 +143,87 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RX=Real:"-inf":GRAD
 ;=======================================
 In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Cplx:"6.2 i -7.6"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"6.2 i -7.6" RX=Cplx:"2.0477890059563993605878674711353032501056843427634424499720687 i -0.62337365477424462191731015529133991023246328104058833011841894"
+
+
+;=========================================================
+; curt across operand types, negative and infinite
+; Real-typed input takes the real root. A complex-typed
+; input with a zero imaginary part follows the real rule
+; and stays complex (curtComplex75, real symmetric matrices).
+;=========================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=LonI:"-8"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"-2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-8.0"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-8 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-2 i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"-inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"-inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-inf i 0"
+
+;=========================================================
+; curt(Short Integer): a perfect cube is exact, anything
+; else truncates. The root is computed as a real, so an
+; exact cube can land a hair under its integer.
+;=========================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"1#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"1#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"8#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"27#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"3#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"64#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"4#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"125#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"5#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"216#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"6#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"1000#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"10#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-1#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-1#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-8#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-27#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-3#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-125#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-5#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"7#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"1#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"10#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"26#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"63#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"3#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RX=ShoI:"-10#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-2#10"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RX=Cplx:"inf i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
