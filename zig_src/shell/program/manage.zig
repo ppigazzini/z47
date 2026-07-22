@@ -173,6 +173,11 @@ const amNone: u32 = 5;
 const ERROR_NONE: u8 = 0;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_RAM_FULL: u8 = 11;
+const ERROR_UNDEFINED_OPCODE: u8 = 3;
+// Longest label name the calculator can produce: TAM alpha entry is force-closed beyond 6 glyphs
+// (maxLen in _tamProcessInput, ui/tam.c), so a name is at most 7 glyphs of at most 2 bytes each.
+// A longer name in a loaded file marks the file as corrupt. defines.h MAX_LABEL_NAME_LENGTH.
+const MAX_LABEL_NAME_LENGTH: u8 = 14;
 const ERR_REGISTER_LINE: i16 = 102;
 const REGISTER_X: i16 = 100;
 
@@ -592,6 +597,30 @@ pub export fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8)
 }
 
 // ===========================================================================
+// programMemoryHasOverlongLabelName (public) — src/c47/programming/manage.c
+// ===========================================================================
+// A label name longer than MAX_LABEL_NAME_LENGTH cannot have been produced by the calculator and can only come from a corrupt or crafted file.
+// Such a name does not fit the fixed name buffers of its consumers, ASSIGN's argumentName[16] and tamBuffer[32], so the loaders use this walk to reject it.
+// The walk runs from the given step to the end of program memory; a step the walker cannot decode ends it, where scanLabelsAndPrograms() truncates too.
+pub export fn programMemoryHasOverlongLabelName(step_arg: [*c]u8) callconv(.c) bool_t {
+    var step = step_arg;
+    while (frontier_next_step.programBytesAvailable(step, 2) != 0 and !isAtEndOfPrograms(step)) {
+        if (checkOpCodeOfStep(step, ITM_LBL) and
+            (step[1] == STRING_LABEL_VARIABLE or step[1] == LOCAL_LABEL_VARIABLE) and
+            frontier_next_step.programBytesAvailable(step, 3) != 0 and
+            step[2] > MAX_LABEL_NAME_LENGTH)
+        {
+            return true;
+        }
+        step = frontier_next_step.findNextStep(step);
+        if (step == null) {
+            break;
+        }
+    }
+    return false;
+}
+
+// ===========================================================================
 // scanLabelsAndPrograms (public) — THE test-reached fn.
 // ===========================================================================
 pub export fn scanLabelsAndPrograms() callconv(.c) void {
@@ -614,7 +643,8 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
         }
         nextStep = frontier_next_step.findNextStep(step);
         if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
-            break; // malformed program: a step runs past program memory
+            lastErrorCode = ERROR_UNDEFINED_OPCODE; // this step and everything after it are dropped
+            break;
         }
         if (isAtEndOfProgram(step)) { // END
             if (!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
@@ -647,7 +677,8 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     while (!isAtEndOfPrograms(step)) { // .END.
         nextStep = frontier_next_step.findNextStep(step);
         if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
-            break; // malformed program: stop before walking past program memory
+            lastErrorCode = ERROR_UNDEFINED_OPCODE; // the labels and programs past it are dropped
+            break;
         }
         if (checkOpCodeOfStep(step, ITM_LBL)) { // LBL
             labelList[numberOfLabels].program = @intCast(numberOfPrograms);

@@ -8,6 +8,7 @@ pub const BACKUP_FORMAT: u8 = 0;
 pub const PROGRAM_VERSION: u32 = 1;
 pub const OLDEST_COMPATIBLE_PROGRAM_VERSION: u32 = 1;
 pub const ITM_END: u16 = 1458;
+pub const TI_NO_INFO: u8 = 0;
 pub const TI_SAVED: u8 = 32;
 pub const TI_PROGRAM_LOADED: u8 = 86;
 pub const BPB: u6 = 2;
@@ -115,6 +116,22 @@ pub inline fn displayWriteError() void {
 
 pub inline fn displayReadError() void {
     io_owned.displayReadError();
+}
+
+pub inline fn displayRamFullError() void {
+    io_owned.displayRamFullError();
+}
+
+pub inline fn displayCorruptedDataError() void {
+    io_owned.displayCorruptedDataError();
+}
+
+pub inline fn getFreeRamMemoryBytes() u32 {
+    return io_owned.getFreeRamMemoryBytes();
+}
+
+pub inline fn seekLoadFileStart() void {
+    io_owned.seekLoadFileStart();
 }
 
 pub inline fn showWarning(message: [*c]const u8) void {
