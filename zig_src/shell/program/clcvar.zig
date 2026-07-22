@@ -398,7 +398,7 @@ fn _processOneStep(step_arg: [*c]u8) bool {
         step += 1;
     }
 
-    if (op == ITM_END or op == 0x7fff) {
+    if (op == ITM_END or op >= LAST_ITEM) { // stop the scan rather than index past the table
         return false;
     } else {
         switch (indexOfItems[op].status & PTP_STATUS) {

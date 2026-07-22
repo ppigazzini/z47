@@ -109,6 +109,7 @@ const LAST_ITEM: u32 = 2870;
 extern var tmpString: [*c]u8;
 extern var errorMessage: [*c]u8;
 extern var beginOfProgramMemory: [*c]u8;
+extern var firstFreeProgramByte: [*c]u8;
 extern var numberOfLabels: u16;
 extern var labelList: [*c]labelList_t;
 extern var programList: [*c]programList_t;
@@ -177,9 +178,20 @@ inline fn toBytes(n: u16) u32 {
 // ===========================================================================
 // countOpBytes / countLiteralBytes -> program_step_width.zig (std+abi, tested).
 // Thin C-ABI wrappers; the pure byte-width arithmetic lives in the module.
+// paramTailBytes/literalTailBytes are the shared parameter-tail grammar
+// (nextStep.h), exported C-ABI for the program-file screening pass in the
+// saveRestorePrograms owner, exactly the upstream contract.
 // ===========================================================================
 fn isOldParam16(func: u16) bool {
     return frontier_items.isFunctionOldParam16(func) != 0;
+}
+
+pub export fn paramTailBytes(paramMode: u16, op: u16, opParam: u8) callconv(.c) i16 {
+    return program_step_width.paramTailBytes(paramMode, op, opParam, isOldParam16);
+}
+
+pub export fn literalTailBytes(literalType: u8) callconv(.c) i16 {
+    return program_step_width.literalTailBytes(literalType);
 }
 
 pub export fn countOpBytes(step: [*c]u8, paramMode: u16) callconv(.c) [*c]u8 {
@@ -188,6 +200,17 @@ pub export fn countOpBytes(step: [*c]u8, paramMode: u16) callconv(.c) [*c]u8 {
 
 pub export fn countLiteralBytes(step: [*c]u8) callconv(.c) [*c]u8 {
     return program_step_width.countLiteralBytes(step);
+}
+
+// ===========================================================================
+// programBytesAvailable
+// ===========================================================================
+pub export fn programBytesAvailable(address: [*c]const u8, numberOfBytes: u16) callconv(.c) bool_t {
+    const begin = @intFromPtr(beginOfProgramMemory);
+    const end = @intFromPtr(firstFreeProgramByte);
+    const current = @intFromPtr(address);
+
+    return @intFromBool(current >= begin and current <= end and numberOfBytes <= end - current);
 }
 
 // ===========================================================================
@@ -218,36 +241,52 @@ pub export fn findKey2ndParam(step_arg: [*c]u8) callconv(.c) [*c]u8 {
         // !DMCP_BUILD printf diagnostic dropped.
         return null;
     }
+    if (programBytesAvailable(step, 1) == 0) {
+        return null;
+    }
     var op: u16 = step[0];
     step += 1;
     if (op & 0x80 != 0) {
+        if (programBytesAvailable(step, 1) == 0) {
+            return null;
+        }
         op &= 0x7f;
         op <<= 8;
         op |= step[0];
         step += 1;
     }
 
-    if (op == 0x7fff) { // .END.
+    var secondParam: [*c]u8 = undefined;
+    if (op >= LAST_ITEM) { // do not index past the item table; 0x7fff (.END.) lands here too
         return null;
     } else {
         switch (indexOfItems[op].status & PTP_STATUS) {
             PTP_NONE, PTP_DISABLED => {
-                return step;
+                secondParam = step;
             },
 
             PTP_LITERAL, PTP_REM => {
-                return countLiteralBytes(step);
+                secondParam = countLiteralBytes(step);
             },
 
             PTP_KEYG_KEYX => {
-                return countOpBytes(step, PARAM_NUMBER_8);
+                secondParam = countOpBytes(step, PARAM_NUMBER_8);
             },
 
             else => {
-                return countOpBytes(step, (indexOfItems[op].status & PTP_STATUS) >> 9);
+                secondParam = countOpBytes(step, (indexOfItems[op].status & PTP_STATUS) >> 9);
             },
         }
     }
+
+    // countLiteralBytes()/countOpBytes() advance by lengths taken from the step
+    // itself, so corrupt or imported program memory can push the result outside
+    // the active program region. Reject any pointer that leaves it: the next byte
+    // must be at or before firstFreeProgramByte (equal is the valid end position).
+    if (secondParam != null and programBytesAvailable(secondParam, 0) == 0) {
+        return null;
+    }
+    return secondParam;
 }
 
 // ===========================================================================

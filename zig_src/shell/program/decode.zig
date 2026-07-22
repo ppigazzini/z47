@@ -970,6 +970,8 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
 
     if (op == 0x7fff) { // .END.
         _ = frontier_char_string.xcopy(@ptrCast(tmpString), ".END.", 6);
+    } else if (op >= LAST_ITEM) { // render the step rather than index past the item table
+        _ = frontier_char_string.xcopy(@ptrCast(tmpString), "???", 4);
     } else {
         var nameOp: [36]u8 = undefined;
         nameOp[0] = 0;

@@ -1,14 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Pure program-step byte-width arithmetic, lifted from next_step.zig
-// (src/c47/programming/nextStep.c). Given a pointer into a step buffer and a
-// parameter mode / literal kind, these return the pointer advanced past that
-// step's parameter or literal bytes (or null on a malformed step). It is plain
-// pointer + numeric-constant arithmetic -- no register, dec, GTK, or global state
-// -- so it lives here as a std+abi module exercised natively under
-// `zig build test:unit`. The one runtime dependency (whether an opcode is an
-// old-style Param16) is threaded in as a predicate callback. The owner keeps its
-// C-ABI export wrappers (and the runtime-coupled findNextStep/findKey2ndParam
+// (src/c47/programming/nextStep.c). Upstream b18a42df7 refactored the walkers
+// into a shared parameter-tail grammar: paramTailBytes/literalTailBytes report
+// one step's tail as a fixed byte count, a length-prefixed form, or invalid,
+// and countOpBytes/countLiteralBytes are thin wrappers over them. The grammar
+// is shared with the program-file screening pass in the saveRestorePrograms
+// owner (core/program/program_serialization.zig), exactly like the C. It is
+// plain numeric arithmetic -- no register, dec, GTK, or global state -- so it
+// lives here as a std+abi module exercised natively under `zig build
+// test:unit`. The one runtime dependency (whether an opcode is an old-style
+// Param16) is threaded in as a predicate callback. The owner keeps its C-ABI
+// export wrappers (and the runtime-coupled findNextStep/findKey2ndParam
 // walkers that call these) and delegates.
 //
 // testSuite-covered indirectly via programs.txt (program editing / SST-BST walks
@@ -64,163 +67,91 @@ const STRING_ANGLE_MULTPI: u8 = 22;
 const REAL34_SIZE_IN_BYTES: u32 = 16;
 const REAL34_SIZE_IN_BLOCKS: u16 = 4;
 
+// Shared parameter-tail grammar sentinels (nextStep.h).
+pub const PARAM_TAIL_INVALID: i16 = -1;
+pub const PARAM_TAIL_LENGTH_PREFIXED: i16 = -2;
+pub const PARAM_TAIL_BASE_LENGTH_PREFIXED: i16 = -3;
+
 inline fn toBytes(n: u16) u32 {
     return abi.block_math.toBytes(u32, n);
 }
 
-/// Advance `step` past one op's parameter bytes for `paramMode`; null on a
-/// malformed step. `isOldParam16` classifies a Param16 opcode (threaded from the
-/// owner's frontier_items.isFunctionOldParam16).
-pub fn countOpBytes(step_arg: [*]u8, paramMode: u16, isOldParam16: *const fn (u16) bool) ?[*]u8 {
-    var step = step_arg;
-    const opParam: u8 = step[0];
-    step += 1;
-
+/// Parameter-tail grammar shared by the in-memory step walkers and the
+/// program-file screening pass in the saveRestorePrograms owner: given the
+/// parameter mode, the operation (needed for PARAM_NUMBER_16 only), and the
+/// first parameter byte, the tail is a fixed byte count, a length byte and
+/// that many bytes, or invalid. `isOldParam16` classifies a Param16 opcode
+/// (threaded from the owner's frontier_items.isFunctionOldParam16).
+pub fn paramTailBytes(paramMode: u16, op: u16, opParam: u8, isOldParam16: *const fn (u16) bool) i16 {
     switch (paramMode) {
         PARAM_DECLARE_LABEL => {
-            if (opParam <= LAST_LOCAL_LABEL) {
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == LOCAL_LABEL_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
+            if (opParam <= LAST_LOCAL_LABEL) return 0;
+            if (opParam == STRING_LABEL_VARIABLE or opParam == LOCAL_LABEL_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            return PARAM_TAIL_INVALID;
         },
-
         PARAM_LABEL => {
-            if (opParam <= LAST_LOCAL_LABEL) {
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE or opParam == LOCAL_LABEL_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
+            if (opParam <= LAST_LOCAL_LABEL) return 0;
+            if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE or opParam == LOCAL_LABEL_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            if (opParam == INDIRECT_REGISTER) return 1;
+            return PARAM_TAIL_INVALID;
         },
-
         PARAM_REGISTER => {
-            if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) {
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
+            if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE) return 0;
+            if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            if (opParam == INDIRECT_REGISTER) return 1;
+            return PARAM_TAIL_INVALID;
         },
-
-        PARAM_FLAG => {
-            if (opParam <= LAST_LOCAL_FLAG) {
-                return step;
-            } else if (FLAG_M <= opParam and opParam <= FLAG_W) {
-                return step;
-            } else if (opParam == INDIRECT_REGISTER or opParam == SYSTEM_FLAG_NUMBER) {
-                return step + 1;
-            } else if (opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_NUMBER_8 => {
-            if (opParam <= 249) {
-                return step;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else if (opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_NUMBER_8_16 => {
-            if (opParam <= 249) {
-                return step;
-            } else if (opParam == CNST_BEYOND_250) {
-                return step + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else if (opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else {
-                return null;
-            }
-        },
-
-        PARAM_NUMBER_16 => {
-            var func: u16 = (@as(u16, (step - 3)[0]) << 8) +% @as(u16, (step - 2)[0]);
-            func &= 0x7fff;
-            if (isOldParam16(func)) {
-                return step + 1;
-            } else {
-                if (opParam == INDIRECT_REGISTER) {
-                    return step + 1;
-                } else if (opParam == INDIRECT_VARIABLE) {
-                    return step + step[0] + 1;
-                } else {
-                    return step + 1;
-                }
-            }
-        },
-
         PARAM_COMPARE => {
-            if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE or opParam == VALUE_0 or opParam == VALUE_1) {
-                return step;
-            } else if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
+            if (opParam <= LAST_SPARE_REGISTERS_IN_KS_CODE or opParam == VALUE_0 or opParam == VALUE_1) return 0;
+            if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            if (opParam == INDIRECT_REGISTER) return 1;
+            return PARAM_TAIL_INVALID;
         },
-
+        PARAM_FLAG => {
+            if (opParam <= LAST_LOCAL_FLAG or (FLAG_M <= opParam and opParam <= FLAG_W)) return 0;
+            if (opParam == INDIRECT_REGISTER or opParam == SYSTEM_FLAG_NUMBER) return 1;
+            if (opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            return PARAM_TAIL_INVALID;
+        },
+        PARAM_NUMBER_8 => {
+            if (opParam <= 249) return 0;
+            if (opParam == INDIRECT_REGISTER) return 1;
+            if (opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            return PARAM_TAIL_INVALID;
+        },
+        PARAM_NUMBER_8_16 => {
+            if (opParam <= 249) return 0;
+            if (opParam == CNST_BEYOND_250 or opParam == INDIRECT_REGISTER) return 1;
+            if (opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            return PARAM_TAIL_INVALID;
+        },
+        PARAM_NUMBER_16 => {
+            // original Param16 functions have no indirection support (little endian parameter)
+            if (isOldParam16(op)) return 1;
+            if (opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            return 1; // new Param16 form (big endian parameter), including INDIRECT_REGISTER
+        },
         PARAM_SKIP_BACK, PARAM_SHUFFLE => {
-            return step;
+            return 0;
         },
-
         PARAM_MENU => {
-            if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) {
-                return step + step[0] + 1;
-            } else if (opParam == INDIRECT_REGISTER) {
-                return step + 1;
-            } else {
-                return null;
-            }
+            if (opParam == STRING_LABEL_VARIABLE or opParam == INDIRECT_VARIABLE) return PARAM_TAIL_LENGTH_PREFIXED;
+            if (opParam == INDIRECT_REGISTER) return 1;
+            return PARAM_TAIL_INVALID;
         },
-
         else => {
-            return null;
+            return PARAM_TAIL_INVALID;
         },
     }
 }
 
-/// Advance `step` past one literal's bytes for its kind byte; null on unknown.
-pub fn countLiteralBytes(step_arg: [*]u8) ?[*]u8 {
-    var step = step_arg;
-    const kind: u8 = step[0];
-    step += 1;
-    switch (kind) {
-        BINARY_SHORT_INTEGER => {
-            return step + 9;
-        },
-
-        BINARY_REAL34 => {
-            return step + REAL34_SIZE_IN_BYTES;
-        },
-
-        BINARY_COMPLEX34 => {
-            return step + toBytes(REAL34_SIZE_IN_BLOCKS * 2);
-        },
-
-        STRING_SHORT_INTEGER => {
-            return step + (step + 1)[0] + 2;
-        },
-
+/// Literal-tail grammar, same contract, for the type byte following ITM_LITERAL.
+pub fn literalTailBytes(literalType: u8) i16 {
+    switch (literalType) {
+        BINARY_SHORT_INTEGER => return 9,
+        BINARY_REAL34 => return @intCast(REAL34_SIZE_IN_BYTES),
+        BINARY_COMPLEX34 => return @intCast(toBytes(REAL34_SIZE_IN_BLOCKS * 2)),
+        STRING_SHORT_INTEGER => return PARAM_TAIL_BASE_LENGTH_PREFIXED, // base byte, then a length-prefixed string
         STRING_LONG_INTEGER,
         STRING_REAL34,
         STRING_LABEL_VARIABLE,
@@ -232,14 +163,49 @@ pub fn countLiteralBytes(step_arg: [*]u8) ?[*]u8 {
         STRING_ANGLE_GRAD,
         STRING_ANGLE_DEGREE,
         STRING_ANGLE_MULTPI,
-        => {
-            return step + step[0] + 1;
-        },
-
-        else => {
-            return null;
-        },
+        => return PARAM_TAIL_LENGTH_PREFIXED,
+        else => return PARAM_TAIL_INVALID,
     }
+}
+
+/// Advance `step` past one op's parameter bytes for `paramMode`; null on a
+/// malformed step. `isOldParam16` classifies a Param16 opcode (threaded from the
+/// owner's frontier_items.isFunctionOldParam16).
+pub fn countOpBytes(step_arg: [*]u8, paramMode: u16, isOldParam16: *const fn (u16) bool) ?[*]u8 {
+    var step = step_arg;
+    const opParam: u8 = step[0];
+    step += 1;
+    var op: u16 = 0;
+    if (paramMode == PARAM_NUMBER_16) { // only PARAM_NUMBER_16 needs the operation, read back as before
+        op = ((@as(u16, (step - 3)[0]) << 8) +% @as(u16, (step - 2)[0])) & 0x7fff;
+    }
+    const tail: i16 = paramTailBytes(paramMode, op, opParam, isOldParam16);
+    if (tail == PARAM_TAIL_INVALID) {
+        // !DMCP_BUILD printf diagnostic dropped.
+        return null;
+    }
+    if (tail == PARAM_TAIL_LENGTH_PREFIXED) {
+        return step + step[0] + 1;
+    }
+    return step + @as(usize, @intCast(tail));
+}
+
+/// Advance `step` past one literal's bytes for its kind byte; null on unknown.
+pub fn countLiteralBytes(step_arg: [*]u8) ?[*]u8 {
+    var step = step_arg;
+    const tail: i16 = literalTailBytes(step[0]);
+    step += 1;
+    if (tail == PARAM_TAIL_INVALID) {
+        // !DMCP_BUILD printf diagnostics dropped.
+        return null;
+    }
+    if (tail == PARAM_TAIL_BASE_LENGTH_PREFIXED) {
+        return step + (step + 1)[0] + 2;
+    }
+    if (tail == PARAM_TAIL_LENGTH_PREFIXED) {
+        return step + step[0] + 1;
+    }
+    return step + @as(usize, @intCast(tail));
 }
 
 // ---------------------------------------------------------------------------
@@ -301,4 +267,24 @@ test "countOpBytes advances by the parameter width per mode" {
     // new-style (predicate false), indirect variable -> opParam + length + 1.
     var big2 = [_]u8{ 0, 0, 0, INDIRECT_VARIABLE, 3, 0, 0, 0 };
     try testing.expectEqual(@as(?usize, 1 + 3 + 1), advance(big2[3..].ptr, countOpBytes(big2[3..].ptr, PARAM_NUMBER_16, neverOld)));
+}
+
+test "paramTailBytes exposes the shared grammar the screening pass consumes" {
+    // Fixed tails.
+    try testing.expectEqual(@as(i16, 0), paramTailBytes(PARAM_DECLARE_LABEL, 0, 5, neverOld));
+    try testing.expectEqual(@as(i16, 1), paramTailBytes(PARAM_REGISTER, 0, INDIRECT_REGISTER, neverOld));
+    // Length-prefixed tails.
+    try testing.expectEqual(PARAM_TAIL_LENGTH_PREFIXED, paramTailBytes(PARAM_DECLARE_LABEL, 0, STRING_LABEL_VARIABLE, neverOld));
+    try testing.expectEqual(PARAM_TAIL_LENGTH_PREFIXED, paramTailBytes(PARAM_DECLARE_LABEL, 0, LOCAL_LABEL_VARIABLE, neverOld));
+    // Invalid parameter.
+    try testing.expectEqual(PARAM_TAIL_INVALID, paramTailBytes(PARAM_MENU, 0, 7, neverOld));
+    try testing.expectEqual(PARAM_TAIL_INVALID, paramTailBytes(999, 0, 0, neverOld));
+    // PARAM_NUMBER_16 consults the op through the predicate.
+    try testing.expectEqual(@as(i16, 1), paramTailBytes(PARAM_NUMBER_16, 42, 0, alwaysOld));
+    try testing.expectEqual(PARAM_TAIL_LENGTH_PREFIXED, paramTailBytes(PARAM_NUMBER_16, 42, INDIRECT_VARIABLE, neverOld));
+    // Literal grammar: base + length-prefixed string, plain length-prefixed, invalid.
+    try testing.expectEqual(PARAM_TAIL_BASE_LENGTH_PREFIXED, literalTailBytes(STRING_SHORT_INTEGER));
+    try testing.expectEqual(PARAM_TAIL_LENGTH_PREFIXED, literalTailBytes(STRING_LABEL_VARIABLE));
+    try testing.expectEqual(@as(i16, 9), literalTailBytes(BINARY_SHORT_INTEGER));
+    try testing.expectEqual(PARAM_TAIL_INVALID, literalTailBytes(99));
 }
