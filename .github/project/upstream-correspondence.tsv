@@ -217,7 +217,7 @@ solver/isumprod	core/analysis/solve	port	symbol
 solver/solve	core/analysis/solve;core/analysis/solve_owned	port	symbol
 solver/sumprod	core/analysis/solve;core/analysis/sumprod	port	symbol
 solver/tvm	core/analysis/solve;core/analysis/tvm	port	symbol
-sort	shell/display/sort	port	symbol
+sort	abi/glyph_code;shell/display/sort	port	symbol
 stack	core/state/stack;core/state/stack/stack_descriptor;core/state/stack/stack_mutation;core/state/stack/stack_undo	port	symbol
 stats	shell/stats	port	symbol
 statusBar	shell/display/statusbar/status_bar	port	symbol
@@ -251,7 +251,7 @@ printing/print	shell/print/printer_text_width	port	comment
 printing/printerFont8	shell/generated/frontier_printer_font8	port	comment
 realType	shell/real_type	port	comment
 registerValueConversions	abi/sci_format	port	comment
+saveRestorePrograms	core/program/program_serialization_screen	port	comment
 solver/isumprod	core/analysis/isumprod	port	comment
-sort	abi/glyph_code	port	comment
 stringFuncs	abi/c47_string	port	comment
 timer	shell/timer_math	port	comment

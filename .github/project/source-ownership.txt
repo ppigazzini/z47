@@ -102,12 +102,14 @@ src/testSuite/tests/mathspecial_cov.txt
 src/testSuite/tests/matrix2_cov.txt
 src/testSuite/tests/matrix_cov.txt
 src/testSuite/tests/matrixops_cov.txt
+src/testSuite/tests/named_variable_cov.txt
 src/testSuite/tests/numeric_diff_cov.txt
 src/testSuite/tests/numextra_cov.txt
 src/testSuite/tests/pgm_solve_cov.txt
 src/testSuite/tests/prime.txt
 src/testSuite/tests/prime_cov.txt
 src/testSuite/tests/program_flow_cov.txt
+src/testSuite/tests/readp_cov.txt
 src/testSuite/tests/regmgmt_cov.txt
 src/testSuite/tests/round_cov.txt
 src/testSuite/tests/saverestore_cov.txt

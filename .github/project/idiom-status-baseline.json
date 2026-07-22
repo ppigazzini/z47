@@ -1,29 +1,28 @@
 {
- "note_extern_fn_sites": "Raised 3517 -> 3518 for free_list.zig's own `extern fn xcopy` (REPORT-28 M7.2). free_list previously reached xcopy by importing char_string.zig -- a 1047-line DISPLAY file that merely re-declares the same extern. xcopy is defined in core/state/base/byte_copy.zig, force-imported by core/state/state.zig: a DIFFERENT build root. Cross-object references must be extern (an @import would compile the owner into both objects and collide at link), which is why all 12 other core consumers declare it locally. The extern relationship already existed; it was being borrowed from an unrelated display file rather than declared where it is used. The trade is one honest extern site for one spurious module edge into display code.",
- "owner_count": 410,
- "seam_file_count": 2,
- "seam_totals": {
-  "anyopaque_files": 0,
-  "callconv_c_sites": 0,
-  "constants_blob_sites": 0,
-  "cptr_files": 0,
-  "extern_fn_sites": 0,
-  "extern_struct_files": 2,
-  "off_offset_sites": 0,
-  "printf_family_files": 0,
-  "ptrcast_sites": 0,
-  "qspi_section_files": 2
- },
- "totals": {
-  "anyopaque_files": 88,
-  "callconv_c_sites": 2878,
-  "constants_blob_sites": 1,
-  "cptr_files": 92,
-  "extern_fn_sites": 3518,
-  "extern_struct_files": 15,
-  "off_offset_sites": 77,
-  "printf_family_files": 47,
-  "ptrcast_sites": 1336,
-  "qspi_section_files": 24
- }
+  "totals": {
+    "extern_struct_files": 15,
+    "cptr_files": 92,
+    "ptrcast_sites": 1336,
+    "callconv_c_sites": 2885,
+    "extern_fn_sites": 3515,
+    "printf_family_files": 46,
+    "anyopaque_files": 88,
+    "off_offset_sites": 77,
+    "constants_blob_sites": 1,
+    "qspi_section_files": 24
+  },
+  "owner_count": 410,
+  "seam_totals": {
+    "extern_struct_files": 2,
+    "cptr_files": 0,
+    "ptrcast_sites": 0,
+    "callconv_c_sites": 0,
+    "extern_fn_sites": 0,
+    "printf_family_files": 0,
+    "anyopaque_files": 0,
+    "off_offset_sites": 0,
+    "constants_blob_sites": 0,
+    "qspi_section_files": 2
+  },
+  "seam_file_count": 2
 }

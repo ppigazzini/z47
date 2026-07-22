@@ -191,6 +191,7 @@ zig_src/core/persist/calc_state_register_codec.zig
 zig_src/core/persist/calc_state_backup.zig
 zig_src/core/program/program_serialization_io.zig
 zig_src/core/program/program_serialization_runtime.zig
+zig_src/core/program/program_serialization_screen.zig
 zig_src/core/state/register_metadata/register_metadata_clear_sigma.zig
 zig_src/core/state/register_metadata/register_metadata_confirmation.zig
 zig_src/core/state/register_metadata/register_metadata_error.zig
