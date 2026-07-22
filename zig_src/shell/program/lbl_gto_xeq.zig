@@ -203,6 +203,7 @@ const ERROR_NONE: u8 = 0;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_RAM_FULL: u8 = 11;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
+const ERROR_UNDEFINED_OPCODE: u8 = 3;
 const ERROR_NON_PROGRAMMABLE_COMMAND: u8 = 50;
 const ERROR_UNDEF_MENU: u8 = 59;
 const ERROR_SOLVER_ABORT: u8 = 60;
@@ -303,6 +304,7 @@ extern fn isFunctionAllowingNewVariable(op: u16) bool_t;
 
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t;
+extern fn allocateNamedVariableOnMiss(variableName: [*c]const u8) calcRegister_t;
 
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
@@ -870,9 +872,13 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
                 }
             } else if (opParam == STRING_LABEL_VARIABLE) {
                 _getStringLabelOrVariableName(paramAddress);
-                const regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
+                var regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
                 if (tryAllocate != 0) {
-                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(findOrAllocateNamedVariable(tmpStringLabelOrVariableName)));
+                    // Reuses the regist from findNamedVariable above; on a failed allocation regist stays INVALID_VARIABLE and is passed on.
+                    if (regist == INVALID_VARIABLE) {
+                        regist = allocateNamedVariableOnMiss(tmpStringLabelOrVariableName);
+                    }
+                    frontier_items.reallyRunFunction(@bitCast(op), @bitCast(regist));
                 } else if (regist != INVALID_VARIABLE) {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(regist));
                 } else {
@@ -1104,6 +1110,12 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
         step += 1;
     }
 
+    // Stop before the switch below, which indexes indexOfItems[op].
+    if (op >= LAST_ITEM and op != 0x7fff) { // 0x7fff is .END., handled by its own case
+        frontier_error.displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
+        return 0;
+    }
+
     // IR_PRINTING and PC_BUILD+DEBUG_EXECUTE blocks omitted (never defined).
 
     switch (op) {
@@ -1287,6 +1299,12 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
     }
     if (programRunStop != PGM_RUNNING) {
         entryStatus &= 0xfe;
+    }
+    if (nestedEngine == 0) {
+        // Force a full statusbar repaint on every halt path and clear the one-time skip bit so the bar is current despite the cadence throttling in reallyRunFunction().
+        // A program-set manual statusbar mode is left as is.
+        frontier_status_bar.forceSBupdate();
+        screenUpdatingMode &= ~SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     }
     if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING)) {
         frontier_status_bar.showHideHourGlass();
