@@ -395,7 +395,7 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"NaN i 0" RX=Cplx:"NaN i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"NaN i 0" RX=Cplx:"NaN i NaN"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i 0" RX=Cplx:"2 i 0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i 0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Cplx:"inf i 0" RX=Cplx:"2 i 0"
 Out: EC=4 FL_CPXRES=0 FL_ASLIFT=0 RY=Cplx:"inf i 0" RX=Cplx:"2 i 0"
@@ -417,7 +417,7 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"123.456 i -6.78" RX=Cplx:"1.138905068
 
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Real:"inf" RX=Cplx:"2 i 0"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i 0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Real:"inf" RX=Cplx:"2 i 0"
 Out: EC=4 FL_CPXRES=0 FL_ASLIFT=0 RY=Real:"inf" RX=Cplx:"2 i 0"
@@ -438,7 +438,7 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"19111" RX=Cplx:"1.0006136385615369995
 
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"inf i 0" RX=Real:"2"
-Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"2" RX=Cplx:"inf i inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"2" RX=Cplx:"inf i 0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=0 RY=Cplx:"inf i 0" RX=Real:"2"
 Out: EC=4 FL_CPXRES=0 FL_ASLIFT=0 RY=Cplx:"inf i 0" RX=Real:"2"
@@ -518,3 +518,102 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=CxMa:"M2,3[1,23.1406926327792
 ;=======================================
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M2,3[-1,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=Cplx:"0i1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=CxMa:"M2,3[23.1406926327792690057290863679485473803,0.207879576350761908546955619834978770034,0.436084089641886390324521296483396451163i-0.453269239475994377948195489177736603734,3.65471447293299920050044213017415876365i-12.32261746741907919337063408363484183110,-0.07352174987390250352660863454605274852i-1.90171162679334310157591584149147785286,-0.0239372318218603676082252489922805915547i-0.0814051528676698143939329000233136823137]"
+
+
+;=========================================================
+; xthRoot across operand types, negative and infinite
+; Real-typed input takes the real root where one exists.
+; Complex-typed input takes the principal root.
+;=========================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"8" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"8#10" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"27#10" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"3#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-8.0" RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"-8" RX=LonI:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"-2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"-8#10" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"-27#10" RX=ShoI:"3#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"-3#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"-8 i 0" RX=Real:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 1.732050807568877293527446341505872"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=LonI:"4" RX=LonI:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=LonI:"2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"4#10" RX=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"2#10"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"9#10" RX=ShoI:"2#10"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=ShoI:"3#10"
+
+;=========================================================
+; xthRoot with an infinite base
+; An even order over a negative base goes complex when
+; CPXRES is set, matching sqrt, and errors when it is not.
+;=========================================================
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Real:"2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Real:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i inf"
+
+; An order off a 45 degree sector boundary is not representable, so an infinity of no angle
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i inf" RX=Real:"2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i inf"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i inf" RX=Real:"-2"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+; An infinite order leaves y^0, indeterminate for an infinite base, as the power key gives
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i inf" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=Real:"inf"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"1"
+
+; A complex-typed positive infinity is sector 0, so its roots stay on the positive real axis.
+; Order 2 is already pinned above in three operand spellings.
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Real:"3"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Real:"4"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"

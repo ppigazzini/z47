@@ -4,10 +4,11 @@
 #include "c47.h"
 
 static void curtShoI(void) {
-  real_t x;
+  real_t x, operand, nearest, cube;
   int32_t cubeRoot;
 
   convertShortIntegerRegisterToReal(REGISTER_X, &x, &ctxtReal39);
+  realCopy(&x, &operand);
 
   if(realIsPositive(&x)) {
     PowerReal(&x, const39_1on3, &x, &ctxtReal39);
@@ -16,6 +17,13 @@ static void curtShoI(void) {
     realSetPositiveSign(&x);
     PowerReal(&x, const39_1on3, &x, &ctxtReal39);
     realSetNegativeSign(&x);
+  }
+
+  realToIntegralValue(&x, &nearest, DEC_ROUND_HALF_UP, &ctxtReal39);   // PowerReal() lands a hair under an exact cube
+  realMultiply(&nearest, &nearest, &cube, &ctxtReal39);
+  realMultiply(&cube, &nearest, &cube, &ctxtReal39);
+  if(realCompareEqual(&cube, &operand)) {                             // the operand is a cube, so its root is exact
+    realCopy(&nearest, &x);
   }
 
   cubeRoot = realToInt32C47(&x, NULL);

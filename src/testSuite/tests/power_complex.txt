@@ -175,3 +175,11 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 FL_SPCRES=1 RY=Cplx:"0 i 1" RX=Cplx:"0.207 i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.207 i 0" RX=Cplx:"0.9476012733953600638913159607284064 i +0.3194555159321749309934368199032722"
 
 In:  FL_SPCRES=0
+
+; A complex-typed positive infinity as a root through the power key. The exponent is the
+; 34-digit real34 the machine stores for 1/3, which is what 3 1/x leaves in X.
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Real:"0.3333333333333333333333333333333333"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+In:  FL_SPCRES=1 FL_ASLIFT=0 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Real:"0.5"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
