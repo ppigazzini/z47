@@ -392,8 +392,8 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
             if ((regist >= 0 and regist <= LAST_GLOBAL_REGISTER) and // reject an out-of-range register number from a malformed state file
                 (load_mode == LM_ALL or
-                (load_mode == LM_REGISTERS and regist < REGISTER_X) or
-                (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n))))
+                    (load_mode == LM_REGISTERS and regist < REGISTER_X) or
+                    (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n))))
             {
                 const target: i16 = if (load_mode == LM_REGISTERS_PARTIAL) @intCast(@as(i32, regist) - @as(i32, s) + @as(i32, d)) else regist;
                 codec.restoreRegister(target, aimBuffer, tmpString, loaded_version);
