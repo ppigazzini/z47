@@ -57,7 +57,6 @@ const f_unlink_offset: usize = 768;
 
 var io_write_enabled: c_int = 0;
 var io_read_enabled: c_int = 0;
-var program_file: Fil = undefined;
 
 const DispStat = extern struct {
     f: ?*const anyopaque,
@@ -143,12 +142,23 @@ fn menuDisplay() ?*DispStat {
     return sdb.pds_t24;
 }
 
+// The file handle is DMCP's, not ours: upstream's hal/io.c passes the SDK's
+// `ppgm_fp` (dmcp.h: `#define ppgm_fp (sdb.ppgm_fp)`) to every f_open/f_read/
+// f_write, so the FIL -- and its 512-byte FatFS sector buffer -- lives in DMCP's
+// memory. Owning a private Fil here both diverged from that shared handle and
+// spent 564 bytes of the DM42's 8Kb .data+.bss budget below the system data
+// block, which the linker script asserts.
+fn programFile() *Fil {
+    const sdb: *const SysSdb = @ptrFromInt(build_options.sdb_base);
+    return @ptrCast(@alignCast(sdb.ppgm_fp));
+}
+
 fn programFileHandle() ?*anyopaque {
-    return &program_file;
+    return programFile();
 }
 
 fn programFileStruct() *Fil {
-    return &program_file;
+    return programFile();
 }
 
 fn lcdSetLine(display: *DispStat, line: c_int) void {
