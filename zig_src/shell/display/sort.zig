@@ -17,6 +17,7 @@ const frontier_fonts = @import("../../core/text/fonts.zig");
 const CMP_BINARY: i32 = 0;
 const CMP_EXTENSIVE: i32 = 2;
 const CMP_NAME: i32 = 3;
+const CMP_COMMAND: i32 = 4;
 
 // Glyph table layout copied from upstream fonts.h. findGlyph (Zig-owned in
 // frontier_fonts.zig) and standardFont need this exact extern layout.
@@ -61,17 +62,21 @@ pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonTy
     const lgb: i32 = frontier_char_string.stringGlyphLength(strb);
     const shorter: i32 = if (lga < lgb) lga else lgb;
 
-    // Compare using charCode only (binary or name ordering).
-    if (comparisonType == CMP_BINARY or comparisonType == CMP_NAME) {
+    // Compare using charCode only (binary, name, or command ordering).
+    if (comparisonType == CMP_BINARY or comparisonType == CMP_NAME or comparisonType == CMP_COMMAND) {
         var posa: i16 = 0;
         var posb: i16 = 0;
         var i: i32 = 0;
         while (i < shorter) : (i += 1) {
             var ca = glyphCodeAt(stra, posa);
             var cb = glyphCodeAt(strb, posb);
-            if (comparisonType == CMP_NAME) {
+            if (comparisonType == CMP_NAME or comparisonType == CMP_COMMAND) {
                 ca = glyph_code.foldUnSupSubStruck(ca);
                 cb = glyph_code.foldUnSupSubStruck(cb);
+            }
+            if (comparisonType == CMP_COMMAND) {
+                ca = glyph_code.foldSpaceLike(ca);
+                cb = glyph_code.foldSpaceLike(cb);
             }
             const ranka: i16 = @bitCast(ca);
             const rankb: i16 = @bitCast(cb);

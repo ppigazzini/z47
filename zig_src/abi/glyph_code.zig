@@ -64,6 +64,19 @@ pub fn foldUnSupSubStruck(char_code: u16) u16 {
     return char_code;
 }
 
+// Space-like glyphs folded to a plain space so a name matches whichever space kind it was typed or stored
+// with (CMP_COMMAND only). STD_SPACE_EM/3_PER_EM/4_PER_EM/6_PER_EM/FIGURE/PUNCTUATION/HAIR from fonts.h.
+const spaceLikeChars = [_]u16{ 0xa003, 0xa004, 0xa005, 0xa006, 0xa007, 0xa008, 0xa00a };
+
+/// Fold a space-like glyph code to a plain ASCII space (charCodeFoldSpace from sort.c). Codes outside the
+/// table pass through unchanged.
+pub fn foldSpaceLike(char_code: u16) u16 {
+    for (spaceLikeChars) |c| {
+        if (char_code == c) return ' ';
+    }
+    return char_code;
+}
+
 /// Decode the glyph char-code at byte offset `pos` (two bytes, KEEPING the lead
 /// byte's marker bit, when that high bit is set), matching glyphCodeAt in sort.c.
 /// Takes an unbounded many-item pointer because the C caller reads a NUL-checked
