@@ -181,6 +181,8 @@ extern uint32_t currentAngularMode;
 extern item_t indexOfItems[LAST_ITEM];
 extern userMenu_t *userMenus;
 extern uint16_t numberOfUserMenus;
+extern uint16_t currentSolverVariable;
+extern calcRegister_t graphVariabl1;
 
 bool_t isMemoryBlockAvailable(size_t size_in_blocks, uint16_t numBlocks, float extraFraction);
 void stackParitySetMemoryBlockAvailable(bool_t available);

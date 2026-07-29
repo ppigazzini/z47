@@ -40,6 +40,8 @@ item_t indexOfItems[MAX_FAKE_MENU_ITEMS];
 static userMenu_t fake_user_menus[MAX_FAKE_USER_MENUS];
 userMenu_t *userMenus = fake_user_menus;
 uint16_t numberOfUserMenus = 0;
+uint16_t currentSolverVariable = 0;
+calcRegister_t graphVariabl1 = 0;
 #endif
 uint32_t currentAngularMode = amNone;
 static char errorMessage__stg[ERROR_MESSAGE_LENGTH];
