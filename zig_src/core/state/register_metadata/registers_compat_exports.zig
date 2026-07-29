@@ -203,7 +203,13 @@ pub export const varDescr: [reserved_variable_count]reserved_variable_desc_t = .
     desc(""),
 };
 
-pub var allReservedVariables: [reserved_variable_count]reserved_variable_header_t = .{
+// Upstream declares this `TO_QSPI const reservedVariableHeader_t
+// allReservedVariables[]` (registers.c): the table is read-only -- callers read
+// .header.pointerToRegisterData and write *through* it, never into the entry --
+// so it belongs in flash, not RAM. Declaring it `var` here put 576 bytes into
+// .data, which on the DM42 shares the 8Kb below the DMCP system data block with
+// .bss. Every consumer already binds it as `extern const`.
+pub const allReservedVariables: [reserved_variable_count]reserved_variable_header_t = .{
     makeReserved(0, 0, 0, 0, 0, regName(1, 'X', 0, 0, 0, 0, 0, 0)),
     makeReserved(0, 0, 0, 0, 0, regName(1, 'Y', 0, 0, 0, 0, 0, 0)),
     makeReserved(0, 0, 0, 0, 0, regName(1, 'Z', 0, 0, 0, 0, 0, 0)),
