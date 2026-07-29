@@ -27,7 +27,11 @@ const old_hw: bool = build_options.old_hw;
 // Compile-time constants (from defines.h / typeDefinitions.h, probed)
 // ---------------------------------------------------------------------------
 const NUMBER_OF_GLOBAL_REGISTERS = 137;
-const MAX_FREE_REGIONS = 200;
+// defines.h: the old HW has ~64Kb of user RAM and caps the free list at 50; every
+// other target has ~512Kb and uses 200. freeMemoryRegions_arr below is the static
+// array the dmcp+old_hw build exports, so it has to honour the same conditional --
+// sizing it 200 there costs 600 bytes of a .bss budget the DM42 does not have.
+const MAX_FREE_REGIONS = if (dmcp_build and old_hw) 50 else 200;
 const MAX_ALLOCATED_REGIONS = 5000;
 const NUMBER_OF_CATALOGS = 23;
 const NUMBER_OF_GLYPH_ROWS = 268; // defines.h: 268. Sizes the exported glyphRow[] global that C declares as glyphRow[NUMBER_OF_GLYPH_ROWS].
