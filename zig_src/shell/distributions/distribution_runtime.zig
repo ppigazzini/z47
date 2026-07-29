@@ -275,26 +275,12 @@ pub fn constNaN() *const real_t {
     return const_NaN;
 }
 
-// const_4 has no c47 wrapper accessor; materialise it once from the integer 4.
-var const_4_value: real_t = undefined;
-var const_4_ready = false;
 pub fn const4() *const real_t {
-    if (!const_4_ready) {
-        _ = decNumberFromUInt32(&const_4_value, 4);
-        const_4_ready = true;
-    }
-    return &const_4_value;
+    return abi.constants.const_4();
 }
 
-// const_6 likewise has no c47 wrapper accessor; materialise it once from 6.
-var const_6_value: real_t = undefined;
-var const_6_ready = false;
 pub fn const6() *const real_t {
-    if (!const_6_ready) {
-        _ = decNumberFromUInt32(&const_6_value, 6);
-        const_6_ready = true;
-    }
-    return &const_6_value;
+    return abi.constants.const_6();
 }
 
 pub fn const2() *const real_t {
@@ -305,26 +291,13 @@ pub fn const5() *const real_t {
     return z47_math_wrappers_const_5();
 }
 
-var const_1on10_value: real_t = undefined;
-var const_1on10_ready = false;
 pub fn const1on10() *const real_t {
-    if (!const_1on10_ready) {
-        _ = decNumberFromUInt32(&const_1on10_value, 1);
-        const_1on10_value.exponent = -1; // 0.1
-        const_1on10_ready = true;
-    }
-    return &const_1on10_value;
+    return abi.constants.const_1on10();
 }
 
 // 2*pi at 39-digit precision; materialised once from pi.
-var const_2pi_value: real_t = undefined;
-var const_2pi_ready = false;
 pub fn const39_2pi() *const real_t {
-    if (!const_2pi_ready) {
-        _ = decNumberMultiply(&const_2pi_value, z47_math_wrappers_const_pi(), z47_math_wrappers_const_2(), &ctxtReal39);
-        const_2pi_ready = true;
-    }
-    return &const_2pi_value;
+    return abi.constants.const39_2pi();
 }
 
 pub fn const1on3() *const real_t {
@@ -334,96 +307,40 @@ pub fn constMinusInfinity() *const real_t {
     return z47_math_wrappers_const_minus_infinity();
 }
 
-var const_3_value: real_t = undefined;
-var const_3_ready = false;
 pub fn const3() *const real_t {
-    if (!const_3_ready) {
-        _ = decNumberFromUInt32(&const_3_value, 3);
-        const_3_ready = true;
-    }
-    return &const_3_value;
+    return abi.constants.const_3();
 }
 
-var const_3on2_value: real_t = undefined;
-var const_3on2_ready = false;
 pub fn const3on2() *const real_t {
-    if (!const_3on2_ready) {
-        _ = decNumberFromUInt32(&const_3on2_value, 15);
-        const_3on2_value.exponent = -1; // 1.5
-        const_3on2_ready = true;
-    }
-    return &const_3on2_value;
+    return abi.constants.const_3on2();
 }
 
-var const_60_value: real_t = undefined;
-var const_60_ready = false;
 pub fn const60() *const real_t {
-    if (!const_60_ready) {
-        _ = decNumberFromUInt32(&const_60_value, 60);
-        const_60_ready = true;
-    }
-    return &const_60_value;
+    return abi.constants.const_60();
 }
 
-// const_1e_37 (1e-37, the hypergeometric CDF convergence tolerance) has no c47
-// wrapper accessor; materialise it once as 1 with exponent -37.
-var const_1e_37_value: real_t = undefined;
-var const_1e_37_ready = false;
 pub fn const1e_37() *const real_t {
-    if (!const_1e_37_ready) {
-        _ = decNumberFromUInt32(&const_1e_37_value, 1);
-        const_1e_37_value.exponent = -37;
-        const_1e_37_ready = true;
-    }
-    return &const_1e_37_value;
+    return abi.constants.const_1e_37();
 }
 
 pub fn constLn2() *const real_t {
     return z47_math_wrappers_const_ln2();
 }
 
-var const_1on4_value: real_t = undefined;
-var const_1on4_ready = false;
 pub fn const1on4() *const real_t {
-    if (!const_1on4_ready) {
-        _ = decNumberFromUInt32(&const_1on4_value, 25);
-        const_1on4_value.exponent = -2; // 0.25
-        const_1on4_ready = true;
-    }
-    return &const_1on4_value;
+    return abi.constants.const_1on4();
 }
 
-var const_8_value: real_t = undefined;
-var const_8_ready = false;
 pub fn const8() *const real_t {
-    if (!const_8_ready) {
-        _ = decNumberFromUInt32(&const_8_value, 8);
-        const_8_ready = true;
-    }
-    return &const_8_value;
+    return abi.constants.const_8();
 }
 
-var const_7_value: real_t = undefined;
-var const_7_ready = false;
 pub fn const7() *const real_t {
-    if (!const_7_ready) {
-        _ = decNumberFromUInt32(&const_7_value, 7);
-        const_7_ready = true;
-    }
-    return &const_7_value;
+    return abi.constants.const_7();
 }
 
-// const_eE (Euler's e) has no c47 wrapper accessor; materialise it once as
-// exp(1) at 39-digit precision. It is only used to pick an initial estimate for
-// the chi-squared quantile refinement, so last-digit rounding is irrelevant.
-var const_eE_value: real_t = undefined;
-var const_eE_ready = false;
 pub fn constEE() *const real_t {
-    if (!const_eE_ready) {
-        realExp(z47_math_wrappers_const_1(), &const_eE_value, &ctxtReal39);
-        const_eE_ready = true;
-    }
-    return &const_eE_value;
+    return abi.constants.const39_eE();
 }
 
 // Shared NaN-on-FLAG_SPCRES error tail used by every checkParam* helper.

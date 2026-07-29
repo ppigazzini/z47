@@ -145,6 +145,12 @@ pub inline fn const_4() *const Real {
 pub inline fn const_5() *const Real {
     return at(5148);
 }
+pub inline fn const_6() *const Real {
+    return at(5160);
+}
+pub inline fn const39_eE() *const Real {
+    return at(176);
+}
 pub inline fn const_8() *const Real {
     return at(5184);
 }

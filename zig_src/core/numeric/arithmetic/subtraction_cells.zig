@@ -76,19 +76,13 @@ fn cplxElem(matrix: *runtime.complex34Matrix_t, index: i32) *runtime.complex34_t
     return &abi.matrixComplexElems(matrix)[@intCast(index)];
 }
 
-// const34_86400: generated constant pointer in C; same decimal value built
-// once through the decNumber library (exact: 86400 fits a real34).
-var const34_86400_storage: runtime.real34_t = undefined;
-var const34_86400_initialized = false;
-
-fn const34_86400() *const runtime.real34_t {
-    if (!const34_86400_initialized) {
-        var value: runtime.real_t = undefined;
-        runtime.uInt32ToReal(86400, &value);
-        runtime.realToReal34(&value, &const34_86400_storage);
-        const34_86400_initialized = true;
-    }
-    return &const34_86400_storage;
+// const34_86400 is a generated constant in C, so read it from the constant blob
+// (flash) through the shared typed accessor. Materialising it lazily into a
+// module-level real34_t instead put it, and its init flag, in RAM -- which on
+// the DM42 comes out of the 8Kb of SRAM2 that .data + .bss share below the DMCP
+// system data block.
+fn const34_86400() *align(1) const runtime.real34_t {
+    return abi.constants.const34_86400();
 }
 
 /// Data type error in subtraction (C: subError under EXTRA_INFO_ON_CALC_ERROR,

@@ -75,7 +75,7 @@ comptime {
     @export(&idiv_table, .{ .name = "idiv", .section = table_section });
 }
 
-pub export fn idivError() callconv(.c) void {
+pub export fn idivError() linksection(runtime.code_section) callconv(.c) void {
     var message1_buffer: [192]u8 = undefined;
     var message2_buffer: [192]u8 = undefined;
     const y_type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -87,7 +87,7 @@ pub export fn idivError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnIDiv:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnIDiv(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnIDiv(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -99,7 +99,7 @@ pub export fn z47_math_wrappers_legacy_fnIDiv(unused_but_mandatory_parameter: u1
     runtime.adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, no_register);
 }
 
-pub export fn idivLonILonI() callconv(.c) void {
+pub export fn idivLonILonI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -119,7 +119,7 @@ pub export fn idivLonILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivLonIShoI() callconv(.c) void {
+pub export fn idivLonIShoI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -139,7 +139,7 @@ pub export fn idivLonIShoI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivShoILonI() callconv(.c) void {
+pub export fn idivShoILonI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -159,7 +159,7 @@ pub export fn idivShoILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivLonIReal() callconv(.c) void {
+pub export fn idivLonIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivLonIReal:", "cannot IDIV a long integer by 0");
         return;
@@ -174,7 +174,7 @@ pub export fn idivLonIReal() callconv(.c) void {
     runtime.convertRealToLongIntegerRegister(&x, REGISTER_X, runtime.DEC_ROUND_DOWN);
 }
 
-pub export fn idivRealLonI() callconv(.c) void {
+pub export fn idivRealLonI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
@@ -190,7 +190,7 @@ pub export fn idivRealLonI() callconv(.c) void {
     runtime.convertRealToLongIntegerRegister(&x, REGISTER_X, runtime.DEC_ROUND_DOWN);
 }
 
-pub export fn idivShoIShoI() callconv(.c) void {
+pub export fn idivShoIShoI() linksection(runtime.code_section) callconv(.c) void {
     var sign: i16 = 0;
     var value: u64 = 0;
 
@@ -205,7 +205,7 @@ pub export fn idivShoIShoI() callconv(.c) void {
     }
 }
 
-pub export fn idivShoIReal() callconv(.c) void {
+pub export fn idivShoIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivShoIReal:", "cannot IDIV a short integer by 0");
         return;
@@ -220,7 +220,7 @@ pub export fn idivShoIReal() callconv(.c) void {
     runtime.convertRealToLongIntegerRegister(&x, REGISTER_X, runtime.DEC_ROUND_DOWN);
 }
 
-pub export fn idivRealShoI() callconv(.c) void {
+pub export fn idivRealShoI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.real_t = undefined;
 
     runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
@@ -236,7 +236,7 @@ pub export fn idivRealShoI() callconv(.c) void {
     runtime.convertRealToLongIntegerRegister(&x, REGISTER_X, runtime.DEC_ROUND_DOWN);
 }
 
-pub export fn idivRealReal() callconv(.c) void {
+pub export fn idivRealReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivRealReal:", "cannot IDIV a real34 by 0");
         return;
@@ -273,7 +273,7 @@ comptime {
     @export(&idivr_table, .{ .name = "idivr", .section = table_section });
 }
 
-pub export fn idivrError() callconv(.c) void {
+pub export fn idivrError() linksection(runtime.code_section) callconv(.c) void {
     var message1_buffer: [192]u8 = undefined;
     var message2_buffer: [192]u8 = undefined;
     const y_type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -285,7 +285,7 @@ pub export fn idivrError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnIDivR:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnIDivR(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnIDivR(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -298,7 +298,7 @@ pub export fn z47_math_wrappers_legacy_fnIDivR(unused_but_mandatory_parameter: u
     runtime.adjustResult(REGISTER_Y, false, false, REGISTER_X, REGISTER_Y, no_register);
 }
 
-pub export fn idivrLonILonI() callconv(.c) void {
+pub export fn idivrLonILonI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -327,7 +327,7 @@ pub export fn idivrLonILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivrLonIShoI() callconv(.c) void {
+pub export fn idivrLonIShoI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -356,7 +356,7 @@ pub export fn idivrLonIShoI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivrShoILonI() callconv(.c) void {
+pub export fn idivrShoILonI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -386,7 +386,7 @@ pub export fn idivrShoILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivrLonIReal() callconv(.c) void {
+pub export fn idivrLonIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivrLonIReal:", "cannot IDIVR a long integer by 0");
         return;
@@ -407,7 +407,7 @@ pub export fn idivrLonIReal() callconv(.c) void {
     runtime.convertRealToReal34ResultRegister(&y, REGISTER_Y);
 }
 
-pub export fn idivrRealLonI() callconv(.c) void {
+pub export fn idivrRealLonI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.real_t = undefined;
 
     runtime.convertLongIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
@@ -429,7 +429,7 @@ pub export fn idivrRealLonI() callconv(.c) void {
     runtime.setRegisterAngularMode(REGISTER_Y, runtime.amNone);
 }
 
-pub export fn idivrShoIShoI() callconv(.c) void {
+pub export fn idivrShoIShoI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
     runtime.convertShortIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
@@ -459,7 +459,7 @@ pub export fn idivrShoIShoI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn idivrShoIReal() callconv(.c) void {
+pub export fn idivrShoIReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivrShoIReal:", "cannot IDIVR a short integer by 0");
         return;
@@ -480,7 +480,7 @@ pub export fn idivrShoIReal() callconv(.c) void {
     runtime.convertRealToReal34ResultRegister(&y, REGISTER_Y);
 }
 
-pub export fn idivrRealShoI() callconv(.c) void {
+pub export fn idivrRealShoI() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.real_t = undefined;
 
     runtime.convertShortIntegerRegisterToReal(REGISTER_X, &x, &runtime.ctxtReal39);
@@ -502,7 +502,7 @@ pub export fn idivrRealShoI() callconv(.c) void {
     runtime.setRegisterAngularMode(REGISTER_Y, runtime.amNone);
 }
 
-pub export fn idivrRealReal() callconv(.c) void {
+pub export fn idivrRealReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.real34IsZero(runtime.registerReal34Ptr(REGISTER_X))) {
         domainError("In function idivrRealReal:", "cannot IDIVR a real34 by 0");
         return;
@@ -533,7 +533,7 @@ fn dblTypeError(comptime function_name: [:0]const u8, comptime operator_glyph: [
     runtime.moreInfoOnError(function_name, message, null, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDblMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnDblMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     const sim = runtime.shortIntegerMode;
@@ -723,16 +723,16 @@ fn dblDivideImpl(remainder_mode: bool) void {
     runtime.__gmpz_clear(&wd[0]);
 }
 
-pub export fn dblDivide(remainder_mode: bool) callconv(.c) void {
+pub export fn dblDivide(remainder_mode: bool) linksection(runtime.code_section) callconv(.c) void {
     dblDivideImpl(remainder_mode);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDblDivide(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnDblDivide(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     dblDivideImpl(false);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDblDivideRemainder(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnDblDivideRemainder(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     dblDivideImpl(true);
 }
@@ -750,7 +750,7 @@ comptime {
     @export(&round_table, .{ .name = "Round", .section = table_section });
 }
 
-pub export fn roundError() callconv(.c) void {
+pub export fn roundError() linksection(runtime.code_section) callconv(.c) void {
     var message_buffer: [192]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
     const message = bufPrintZ(&message_buffer, "cannot calculate ROUND for {s}", .{type_name});
@@ -759,7 +759,7 @@ pub export fn roundError() callconv(.c) void {
     runtime.moreInfoOnError("In function roundError:", message, null, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnRound(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnRound(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -777,7 +777,7 @@ fn real34FromInt32(value: i32) runtime.real34_t {
     return result;
 }
 
-pub export fn roundTime() callconv(.c) void {
+pub export fn roundTime() linksection(runtime.code_section) callconv(.c) void {
     var real34: runtime.real34_t = undefined;
 
     real34 = runtime.registerReal34Ptr(REGISTER_X).*;
@@ -805,7 +805,7 @@ pub export fn roundTime() callconv(.c) void {
     runtime.registerReal34Ptr(REGISTER_X).* = real34;
 }
 
-pub export fn roundDate() callconv(.c) void {
+pub export fn roundDate() linksection(runtime.code_section) callconv(.c) void {
     // For the case accidentally added fractions of a day. It should not occur.
     var real34: runtime.real34_t = undefined;
 
@@ -825,11 +825,11 @@ pub export fn roundDate() callconv(.c) void {
     runtime.registerReal34Ptr(REGISTER_X).* = real34;
 }
 
-pub export fn roundRema() callconv(.c) void {
+pub export fn roundRema() linksection(runtime.code_section) callconv(.c) void {
     runtime.elementwiseRema(&roundReal);
 }
 
-pub export fn roundCxma() callconv(.c) void {
+pub export fn roundCxma() linksection(runtime.code_section) callconv(.c) void {
     support.elementwiseCxma(&roundCplx);
 }
 
@@ -838,7 +838,7 @@ fn displayValueXCString(offset: i32) [*:0]const u8 {
     return @ptrCast(base + @as(usize, @intCast(offset)));
 }
 
-pub export fn roundReal() callconv(.c) void {
+pub export fn roundReal() linksection(runtime.code_section) callconv(.c) void {
     support.updateDisplayValueX = true;
     support.displayValueX[0] = 0;
     support.refreshRegisterLine(REGISTER_X);
@@ -887,7 +887,7 @@ pub export fn roundReal() callconv(.c) void {
     }
 }
 
-pub export fn roundCplx() callconv(.c) void {
+pub export fn roundCplx() linksection(runtime.code_section) callconv(.c) void {
     var polar = false;
 
     support.updateDisplayValueX = true;
@@ -949,7 +949,7 @@ comptime {
     @export(&decomp_table, .{ .name = "Decomp", .section = table_section });
 }
 
-pub export fn decompError() callconv(.c) void {
+pub export fn decompError() linksection(runtime.code_section) callconv(.c) void {
     var message_buffer: [192]u8 = undefined;
     const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
     const message = bufPrintZ(&message_buffer, "cannot calculate Decomp for {s}", .{type_name});
@@ -958,7 +958,7 @@ pub export fn decompError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnDecomp:", message, null, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnDecomp(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnDecomp(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -971,7 +971,7 @@ pub export fn z47_math_wrappers_legacy_fnDecomp(unused_but_mandatory_parameter: 
     runtime.adjustResult(REGISTER_Y, false, false, REGISTER_Y, no_register, no_register);
 }
 
-pub export fn decompLonI() callconv(.c) void {
+pub export fn decompLonI() linksection(runtime.code_section) callconv(.c) void {
     var lg_int: runtime.longInteger_t = undefined;
 
     runtime.liftStack();
@@ -981,7 +981,7 @@ pub export fn decompLonI() callconv(.c) void {
     runtime.__gmpz_clear(&lg_int[0]);
 }
 
-pub export fn decompReal() callconv(.c) void {
+pub export fn decompReal() linksection(runtime.code_section) callconv(.c) void {
     var x: runtime.real34_t = undefined;
 
     x = runtime.registerReal34Ptr(REGISTER_X).*;
