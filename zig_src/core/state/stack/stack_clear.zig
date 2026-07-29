@@ -21,6 +21,7 @@ pub fn clearX() void {
 
 pub fn clearStack() void {
     clearRange(runtime.REGISTER_X, runtime.getStackTop());
+    runtime.calcModeNormal(); // a cleared stack is only visible on the normal screen; nothing here halts a running program
 }
 
 pub fn clearRegister(reg: runtime.calcRegister_t) void {

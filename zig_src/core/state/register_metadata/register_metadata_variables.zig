@@ -401,6 +401,18 @@ pub fn deleteVariable(regist: u16) void {
         clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
         shrinkNamedVariableHeaderStorage();
         runtime.numberOfNamedVariables -= 1;
+        invalidateNamedVariableCache(); // one entry gone and the ones after it shifted: no remembered index still describes the table
+        // The table compacted: re-anchor the cached solver/plot variable so it keeps tracking the same variable.
+        if (runtime.currentSolverVariable == regist) {
+            runtime.currentSolverVariable = @intCast(runtime.INVALID_VARIABLE);
+        } else if (runtime.currentSolverVariable > regist and runtime.currentSolverVariable <= runtime.LAST_NAMED_VARIABLE) {
+            runtime.currentSolverVariable -= 1;
+        }
+        if (runtime.graphVariabl1 == register) {
+            runtime.graphVariabl1 = 0;
+        } else if (runtime.graphVariabl1 > register and runtime.graphVariabl1 <= runtime.LAST_NAMED_VARIABLE) {
+            runtime.graphVariabl1 -= 1;
+        }
         return;
     }
 
@@ -467,6 +479,29 @@ fn namedVariableHeaderName(index: u16) ?[*]const u8 {
     return @ptrCast(&headers[index].variableName);
 }
 
+// Indices of the last three findNamedVariable() scan hits, trusted only after the entry's stored name
+// re-matches the query.
+var last_found_named_variables: [3]u16 = .{ std.math.maxInt(u16), std.math.maxInt(u16), std.math.maxInt(u16) };
+var last_found_named_variable_insert: u8 = 0;
+
+pub export fn invalidateNamedVariableCache() void {
+    last_found_named_variables = .{ std.math.maxInt(u16), std.math.maxInt(u16), std.math.maxInt(u16) };
+}
+
+// Whether regist is the named variable STATS, the register findNamedVariable("STATS") returns, decided
+// from regist alone without a list scan.
+pub export fn namedVariableIsStats(regist: runtime.calcRegister_t) bool {
+    if (regist < runtime.FIRST_NAMED_VARIABLE or regist >= runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables))) {
+        return false;
+    }
+    const index: u16 = @intCast(regist - runtime.FIRST_NAMED_VARIABLE);
+    const stored_name = namedVariableHeaderName(index) orelse return false;
+    var folded_name: [5]u16 = undefined;
+    const folded_length = abi.glyph_code.foldNameToCharCodes("STATS", &folded_name);
+    return (stored_name[0] == 5 and std.mem.eql(u8, stored_name[1..6], "STATS")) or
+        abi.glyph_code.nameEqualsPrefolded(stored_name + 1, &folded_name, folded_length);
+}
+
 pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
     const text: [*:0]const u8 = @ptrCast(variable_name);
     const glyph_length = validateNameGlyphLength(text);
@@ -480,8 +515,19 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
         return reserved;
     }
 
-    // Exact-bytes fast path first; the second compare treats sub- and superscript glyphs as their plain form.
     const name_byte_length = std.mem.len(text);
+
+    // Exact-bytes probe of the last three hits; a folded-form query misses here and takes the scan below.
+    for (last_found_named_variables) |cached| {
+        if (cached < runtime.numberOfNamedVariables) {
+            const stored_name = namedVariableHeaderName(cached) orelse continue;
+            if (stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1 .. 1 + name_byte_length], text[0..name_byte_length])) {
+                return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(cached));
+            }
+        }
+    }
+
+    // Exact-bytes fast path first; the second compare treats sub- and superscript glyphs as their plain form.
     var folded_name: [7]u16 = undefined;
     const folded_length = abi.glyph_code.foldNameToCharCodes(text, &folded_name); // 1..7 glyphs checked at entry; on overflow (-1) no candidate compares equal
 
@@ -491,6 +537,8 @@ pub fn findNamedVariable(variable_name: [*c]const u8) runtime.calcRegister_t {
         if ((stored_name[0] == name_byte_length and std.mem.eql(u8, stored_name[1 .. 1 + name_byte_length], text[0..name_byte_length])) or
             abi.glyph_code.nameEqualsPrefolded(stored_name + 1, &folded_name, folded_length))
         {
+            last_found_named_variables[last_found_named_variable_insert] = index;
+            last_found_named_variable_insert = (last_found_named_variable_insert + 1) % 3;
             return runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(index));
         }
     }

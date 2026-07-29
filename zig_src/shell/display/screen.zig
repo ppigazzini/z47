@@ -941,9 +941,6 @@ extern var firstDayOfWeek: u8;
 extern var firstWeekOfYearDay: u8;
 extern var firstGregorianDay: u32;
 extern var skippedStackLines: bool_t;
-extern var secTick1: bool_t;
-extern var halfSecTick2: bool_t;
-extern var halfSecTick3: bool_t;
 extern var displayStackSHOIDISP: u8;
 extern var BASE_OVERRIDEONCE: bool_t;
 extern var systemFlags0: u64;
@@ -2617,14 +2614,27 @@ pub export fn incOffset() callconv(.c) void {
 
 const blockForcedRefreshes = false;
 
+// 1.024 s slot anchors, owned by the three functions below; RESET zeroes them through resetHalfSecTicks().
+var secTick1: u32 = 0;
+var halfSecTick2: u32 = 0;
+var halfSecTick3: u32 = 0;
+
+pub export fn resetHalfSecTicks() callconv(.c) void {
+    secTick1 = 0;
+    halfSecTick2 = 0;
+    halfSecTick3 = 0;
+}
+
 fn _force_refresh(modeArg: u8) bool_t {
-    var now: u16 = 0;
     var itIsTime: bool_t = 0;
     if (modeArg != force or blockForcedRefreshes) {
-        now = @truncate(frontier_timer.getUptimeMs() >> 4);
-        itIsTime = @intFromBool(((now >> 6) & 0x0001) == @as(u16, @intFromBool(secTick1 != 0)));
+        const nowMs = frontier_timer.getUptimeMs();
+        // the 32-bit slot compare costs the same as the old one-bit flip test (the M4 barrel shifter folds
+        // the >>10 into the compare) and has no alias period: the bit test went blind on any loop body near
+        // an even multiple of 2048 ms and then never fired
+        itIsTime = @intFromBool((nowMs >> 10) != secTick1);
         if (itIsTime != 0) {
-            secTick1 = @intFromBool(secTick1 == 0);
+            secTick1 = nowMs >> 10;
         }
     }
 
@@ -2669,8 +2679,11 @@ fn _printHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32, clearZ: bool
     var tmps: [100]u8 = undefined;
     var ret_value: bool_t = 0;
 
-    if ((modeArg != timed and !blockForcedRefreshes) or (((@as(u16, @truncate(frontier_timer.getUptimeMs())) >> 10) & 0x0001) == @as(u16, @intFromBool(halfSecTick3 != 0)))) {
-        halfSecTick3 = @intFromBool(halfSecTick3 == 0);
+    // the 32-bit slot compare costs the same as the old one-bit flip test (the M4 barrel shifter folds the
+    // >>10 into the compare) and has no alias period: the bit test went blind on any loop body near an even
+    // multiple of 2048 ms and then never fired
+    if ((modeArg != timed and !blockForcedRefreshes) or (frontier_timer.getUptimeMs() >> 10) != halfSecTick3) {
+        halfSecTick3 = frontier_timer.getUptimeMs() >> 10;
         ret_value = 1;
         if (comptime dmcp_build) {
             dmcpResetAutoOff();
@@ -2710,8 +2723,12 @@ pub export fn checkHalfSec() callconv(.c) bool_t {
     if (getSystemFlag(FLAG_MONIT) == 0) {
         return 0;
     }
-    if (((@as(u16, @truncate(frontier_timer.getUptimeMs())) >> 10) & 0x0001) == @as(u16, @intFromBool(halfSecTick2 != 0))) {
-        halfSecTick2 = @intFromBool(halfSecTick2 == 0);
+    // the 32-bit slot compare costs the same as the old one-bit flip test (the M4 barrel shifter folds the
+    // >>10 into the compare) and has no alias period: the bit test went blind on any loop body near an even
+    // multiple of 2048 ms and then never fired
+    const halfSecSlot = frontier_timer.getUptimeMs() >> 10;
+    if (halfSecSlot != halfSecTick2) {
+        halfSecTick2 = halfSecSlot;
         if (comptime dmcp_build) {
             dmcpResetAutoOff();
         }
@@ -5612,7 +5629,7 @@ inline fn clearScreen(cnt: u16) void {
 }
 inline fn clearScreenStatusBar(cnt: u16) void {
     _ = cnt;
-    lcd_fill_rect(0, 0, if (calcMode == CM_GRAPH) widthGraphInfoBox else @as(u32, @intCast(SCREEN_WIDTH)), 20, LCD_SET_VALUE);
+    lcd_fill_rect(0, 0, if (GRAPHMODE()) widthGraphInfoBox else @as(u32, @intCast(SCREEN_WIDTH)), 20, LCD_SET_VALUE);
     frontier_status_bar.forceSBupdate();
 }
 

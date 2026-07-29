@@ -141,6 +141,7 @@ pub extern fn fnRecall(reg: u16) void;
 pub extern fn recallStatsMatrix() void;
 pub extern fn fnSigmaAddRem(selection: u16) void;
 pub extern fn reallocateRegister(reg: calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void;
+pub extern fn calcModeNormal() void;
 
 pub extern var currentInputVariable: u16;
 pub extern var displayStack: u8;
