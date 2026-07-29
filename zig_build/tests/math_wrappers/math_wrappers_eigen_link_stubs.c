@@ -20,18 +20,22 @@ void realToSci(real_t *num, char *dispString) {
   }
 }
 
-bool_t lcd_buffer_pixel_on(uint32_t x, uint32_t y) {
-  (void)x; (void)y;
-  return 0;
-}
-
 int create_dir(char *dir) {
   (void)dir;
   return 0;
 }
 
+// Weak: oracles that filter mathematics/ln.c out of the link need *a* lnComplex
+// to resolve against, but the ln-complex oracle keeps the real ln.c so it has
+// something to compare the Zig owner with. Weak lets the real definition win
+// wherever it is present and this no-op stand in everywhere else.
+__attribute__((weak))
 void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext) {
   (void)real; (void)imag; (void)lnReal; (void)lnImag; (void)realContext;
 }
 
-char _ioFileNameOverride[1024];
+// lcd_buffer_pixel_on and _ioFileNameOverride are NOT stubbed here: every
+// consumer of this file also links zig_build/tests/testsuite_hal.zig, which
+// defines both, and duplicating them made all six oracles that use this file
+// fail to link with "duplicate symbol". addMathEigenOracle links the HAL
+// without this file, which is why it was the only one still building.

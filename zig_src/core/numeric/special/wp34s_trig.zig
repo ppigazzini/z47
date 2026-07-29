@@ -188,7 +188,7 @@ fn doWP34S_SinCosTanTaylor(
             swap.* = !(swap.*);
         }
         convertAngleFromTo(angle, angularMode, amRadian, realContext);
-        if (savedContextDigits >= 1071) {
+        if (runtime.option_xfn_1000 and savedContextDigits >= 1071) {
             C47_WP34S_SinCosTanTaylor_temp1071(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
         } else {
             C47_WP34S_SinCosTanTaylor_temp75(angle, swap.*, if (swap.*) cosOut else sinOut, if (swap.*) sinOut else cosOut, tanOut, realContext);
@@ -468,7 +468,12 @@ pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angul
 // ===========================================================================
 // C47_WP34S_SinCosTanTaylor_temp1071
 // ===========================================================================
+// Compiled only when OPTION_XFN_1000 is on (see runtime.option_xfn_1000). The
+// `if (!option) return` head is a comptime-known branch, so with the option off
+// the whole 1071-digit body is unreachable and dropped, which is what upstream's
+// `#if defined(OPTION_XFN_1000)` around this function achieves.
 fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+    if (comptime !runtime.option_xfn_1000) return;
     var angle_buf: BigReal(1071) = .{};
     var a2_buf: BigReal(1071) = .{};
     var t_buf: BigReal(1071) = .{};
@@ -512,7 +517,7 @@ fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sin
 // C47_WP34S_SinCosTanTaylor (dispatcher) - not in wp34s.h but defined in C
 // ===========================================================================
 pub fn C47_WP34S_SinCosTanTaylor(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
-    if (realContext.digits >= 1071) {
+    if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47_WP34S_SinCosTanTaylor_temp1071(a, swap, sinOut, cosOut, tanOut, realContext);
     } else {
         C47_WP34S_SinCosTanTaylor_temp75(a, swap, sinOut, cosOut, tanOut, realContext);

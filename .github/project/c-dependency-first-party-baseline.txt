@@ -25,7 +25,7 @@ zig_build/tests/keyboard_state/keyboard_state_parity.c
 zig_build/tests/keyboard_statusbar_flags_regression.c
 zig_build/tests/logical_shortint_fake_runtime.c
 zig_build/tests/logical_shortint_parity.c
-zig_build/tests/math_wrappers/math_ln_complex_runtime_constants.c
+zig_build/tests/math_wrappers/math_ln_complex_reference.c
 zig_build/tests/math_wrappers/math_random_dispatch_stubs.c
 zig_build/tests/math_wrappers/math_random_oracle.c
 zig_build/tests/math_wrappers/math_random_parity.c

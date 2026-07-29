@@ -23,7 +23,7 @@ const print_register = @import("print_register.zig");
 //     const ir_printing = !(dmcp_build and old_hw);
 // On the dead branch print.c's `#else` stubs are reproduced. The DMCP-ROM functions (printer_advance_buf / printer_busy_for /
 // sys_timer_* / sys_sleep / lcd_line_addr / start_buzzer_freq / stop_buzzer /
-// beep_volume_up / get_beep_volume / sys_delay) are fixed-address jump-table
+// sys_delay) are fixed-address jump-table
 // calls (LIBRARY_FN_BASE + verified offset from lft_ifc.h), only referenced
 // under `if (comptime dmcp_build)`. sendByteIR / getLineDelay / setLineDelay are
 // provided by the firmware/host runtime layer and are externed here.
@@ -38,6 +38,7 @@ const print_register = @import("print_register.zig");
 
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+pub const is_dmcp_build = dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
@@ -148,6 +149,7 @@ const MATRIX_HEADER_SIZE: usize = 4;
 const DISPLAY_WAIT_FOR_RELEASE: c_int = 1;
 
 const FLAG_PRTACT: c_int = 0xc020;
+const FLAG_QUIET: c_int = 0x8019; // defines.h
 const FLAG_PRTEN: c_uint = 0x8067;
 const FLAG_NORM: c_uint = 0x8068;
 const FLAG_TRACE: c_int = 0x8013;
@@ -612,22 +614,25 @@ inline fn stop_buzzer() void {
     const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 248);
     f();
 }
-inline fn beep_volume_up() void {
-    const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 252);
-    f();
-}
-inline fn get_beep_volume() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 260);
-    return f();
-}
 inline fn sys_delay(ms_delay: u32) void {
     const f: *const fn (u32) callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 516);
     f(ms_delay);
 }
-// beep(freq, len) macro (DMCP-only).
-inline fn beep(frequence: u32, length: u32) void {
-    while (get_beep_volume() < 11) {
-        beep_volume_up();
+// beep(freq, len) macro (DMCP-only), defines.h.
+//
+// The macro has two forms, selected by OUT_VOL_MAX -- "sound output raises the
+// volume to 11 and puts the user's setting back afterwards". defines.h defines
+// OUT_VOL_MAX and then #undef's it on the very next line, unconditionally, so
+// the !OUT_VOL_MAX form is the one every build actually compiles: sound at the
+// user's own volume, and do nothing at all when FLAG_QUIET is set.
+//
+// This owner had the other behaviour, and a third one at that: it raised the
+// volume to 11 without ever restoring it (the OUT_VOL_MAX form at least saves
+// and puts back getBeepVolume()), and it ignored FLAG_QUIET. So a single beep
+// left the calculator permanently loud, and beeped through the quiet flag.
+pub inline fn beep(frequence: u32, length: u32) void {
+    if (getSystemFlag(FLAG_QUIET)) {
+        return;
     }
     start_buzzer_freq(frequence * 1000);
     sys_delay(length);
