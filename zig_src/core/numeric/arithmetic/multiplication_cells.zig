@@ -42,7 +42,7 @@ comptime {
     @export(&multiplication_table, .{ .name = "multiplication", .section = table_section });
 }
 
-pub export fn mulError() callconv(.c) void {
+pub export fn mulError() linksection(runtime.code_section) callconv(.c) void {
     var message1_buffer: [192]u8 = undefined;
     var message2_buffer: [192]u8 = undefined;
     const y_type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
@@ -54,7 +54,7 @@ pub export fn mulError() callconv(.c) void {
     runtime.moreInfoOnError("In function fnMultiply:", message1, message2, null);
 }
 
-pub export fn z47_math_wrappers_legacy_fnMultiply(unused_but_mandatory_parameter: u16) callconv(.c) void {
+pub export fn z47_math_wrappers_legacy_fnMultiply(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     if (!runtime.saveLastX()) {
@@ -71,7 +71,7 @@ pub export fn mulComplexi(
     in_imag: *const runtime.real_t,
     product_real: *runtime.real_t,
     product_imag: *runtime.real_t,
-) callconv(.c) void {
+) linksection(runtime.code_section) callconv(.c) void {
     var tmp_i: runtime.real_t = undefined;
 
     _ = support.decNumberCopy(&tmp_i, in_imag);
@@ -198,7 +198,7 @@ pub export fn mulComplexComplex(
     product_real: *runtime.real_t,
     product_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
-) callconv(.c) void {
+) linksection(runtime.code_section) callconv(.c) void {
     if (real_context.digits <= 75) {
         mulComplexComplex75(factor1_real, factor1_imag, factor2_real, factor2_imag, product_real, product_imag, real_context);
     } else if (!dm42_pkg_xip and real_context.digits <= 159) {
@@ -219,14 +219,14 @@ pub export fn mulComplexReal(
     product_real: *runtime.real_t,
     product_imag: *runtime.real_t,
     real_context: *runtime.realContext_t,
-) callconv(.c) void {
+) linksection(runtime.code_section) callconv(.c) void {
     runtime.realMultiply(factor1_real, factor2, product_real, real_context);
     runtime.realMultiply(factor1_imag, factor2, product_imag, real_context);
 }
 
 // ===== long integer × ... =====
 
-pub export fn mulLonILonI() callconv(.c) void {
+pub export fn mulLonILonI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var x: runtime.longInteger_t = undefined;
 
@@ -241,7 +241,7 @@ pub export fn mulLonILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn mulLonITime() callconv(.c) void {
+pub export fn mulLonITime() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -252,7 +252,7 @@ pub export fn mulLonITime() callconv(.c) void {
     runtime.realToReal34(&x, runtime.registerReal34Ptr(REGISTER_X));
 }
 
-pub export fn mulTimeLonI() callconv(.c) void {
+pub export fn mulTimeLonI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -264,7 +264,7 @@ pub export fn mulTimeLonI() callconv(.c) void {
     runtime.realToReal34(&x, runtime.registerReal34Ptr(REGISTER_X));
 }
 
-pub export fn mulLonIRema() callconv(.c) void {
+pub export fn mulLonIRema() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
     var res: runtime.real34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
@@ -276,7 +276,7 @@ pub export fn mulLonIRema() callconv(.c) void {
     runtime.realMatrixFree(&res);
 }
 
-pub export fn mulRemaLonI() callconv(.c) void {
+pub export fn mulRemaLonI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
     var res: runtime.real34Matrix_t = undefined;
     var x: runtime.real_t = undefined;
@@ -288,7 +288,7 @@ pub export fn mulRemaLonI() callconv(.c) void {
     runtime.realMatrixFree(&res);
 }
 
-pub export fn mulLonICxma() callconv(.c) void {
+pub export fn mulLonICxma() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
     var res: runtime.complex34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
@@ -300,7 +300,7 @@ pub export fn mulLonICxma() callconv(.c) void {
     runtime.complexMatrixFree(&res);
 }
 
-pub export fn mulCxmaLonI() callconv(.c) void {
+pub export fn mulCxmaLonI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
     var res: runtime.complex34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
@@ -312,7 +312,7 @@ pub export fn mulCxmaLonI() callconv(.c) void {
     runtime.complexMatrixFree(&res);
 }
 
-pub export fn mulLonIShoI() callconv(.c) void {
+pub export fn mulLonIShoI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var x: runtime.longInteger_t = undefined;
 
@@ -329,7 +329,7 @@ pub export fn mulLonIShoI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn mulShoILonI() callconv(.c) void {
+pub export fn mulShoILonI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var x: runtime.longInteger_t = undefined;
 
@@ -344,7 +344,7 @@ pub export fn mulShoILonI() callconv(.c) void {
     runtime.__gmpz_clear(&x[0]);
 }
 
-pub export fn mulLonIReal() callconv(.c) void {
+pub export fn mulLonIReal() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -363,7 +363,7 @@ pub export fn mulLonIReal() callconv(.c) void {
     }
 }
 
-pub export fn mulRealLonI() callconv(.c) void {
+pub export fn mulRealLonI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -383,7 +383,7 @@ pub export fn mulRealLonI() callconv(.c) void {
     }
 }
 
-pub export fn mulLonICplx() callconv(.c) void {
+pub export fn mulLonICplx() linksection(runtime.code_section) callconv(.c) void {
     var a: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
     var d: runtime.real_t = undefined;
@@ -398,7 +398,7 @@ pub export fn mulLonICplx() callconv(.c) void {
     runtime.convertComplexToResultRegister(&c, &d, REGISTER_X);
 }
 
-pub export fn mulCplxLonI() callconv(.c) void {
+pub export fn mulCplxLonI() linksection(runtime.code_section) callconv(.c) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
     var c: runtime.real_t = undefined;
@@ -416,7 +416,7 @@ pub export fn mulCplxLonI() callconv(.c) void {
 
 // ===== time × ... =====
 
-pub export fn mulTimeShoI() callconv(.c) void {
+pub export fn mulTimeShoI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -428,7 +428,7 @@ pub export fn mulTimeShoI() callconv(.c) void {
     runtime.realToReal34(&x, runtime.registerReal34Ptr(REGISTER_X));
 }
 
-pub export fn mulShoITime() callconv(.c) void {
+pub export fn mulShoITime() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -439,7 +439,7 @@ pub export fn mulShoITime() callconv(.c) void {
     runtime.realToReal34(&x, runtime.registerReal34Ptr(REGISTER_X));
 }
 
-pub export fn mulTimeReal() callconv(.c) void {
+pub export fn mulTimeReal() linksection(runtime.code_section) callconv(.c) void {
     const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
 
     if (x_angular_mode == runtime.amNone) {
@@ -453,7 +453,7 @@ pub export fn mulTimeReal() callconv(.c) void {
     }
 }
 
-pub export fn mulRealTime() callconv(.c) void {
+pub export fn mulRealTime() linksection(runtime.code_section) callconv(.c) void {
     const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
 
     if (y_angular_mode == runtime.amNone) {
@@ -465,7 +465,7 @@ pub export fn mulRealTime() callconv(.c) void {
 
 // ===== real34 matrix × ... =====
 
-pub export fn mulRemaRema() callconv(.c) void {
+pub export fn mulRemaRema() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real34Matrix_t = undefined;
     var x: runtime.real34Matrix_t = undefined;
     var res: runtime.real34Matrix_t = undefined;
@@ -489,7 +489,7 @@ pub export fn mulRemaRema() callconv(.c) void {
     }
 }
 
-pub export fn mulRemaCxma() callconv(.c) void {
+pub export fn mulRemaCxma() linksection(runtime.code_section) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
     if (runtime.lastErrorCode != 0) {
         return;
@@ -497,7 +497,7 @@ pub export fn mulRemaCxma() callconv(.c) void {
     mulCxmaCxma();
 }
 
-pub export fn mulCxmaRema() callconv(.c) void {
+pub export fn mulCxmaRema() linksection(runtime.code_section) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
     if (runtime.lastErrorCode != 0) {
         return;
@@ -505,7 +505,7 @@ pub export fn mulCxmaRema() callconv(.c) void {
     mulCxmaCxma();
 }
 
-pub export fn mulRemaShoI() callconv(.c) void {
+pub export fn mulRemaShoI() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
     var res: runtime.real34Matrix_t = undefined;
     var x: runtime.real_t = undefined;
@@ -517,7 +517,7 @@ pub export fn mulRemaShoI() callconv(.c) void {
     runtime.realMatrixFree(&res);
 }
 
-pub export fn mulShoIRema() callconv(.c) void {
+pub export fn mulShoIRema() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.real34Matrix_t = undefined;
     var res: runtime.real34Matrix_t = undefined;
     var y: runtime.real_t = undefined;
@@ -530,7 +530,7 @@ pub export fn mulShoIRema() callconv(.c) void {
     runtime.realMatrixFree(&res);
 }
 
-pub export fn mulRemaReal() callconv(.c) void {
+pub export fn mulRemaReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.getRegisterAngularMode(REGISTER_X) == runtime.amNone) {
         var matrix: runtime.real34Matrix_t = undefined;
 
@@ -542,7 +542,7 @@ pub export fn mulRemaReal() callconv(.c) void {
     }
 }
 
-pub export fn mulRealRema() callconv(.c) void {
+pub export fn mulRealRema() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.getRegisterAngularMode(REGISTER_Y) == runtime.amNone) {
         var matrix: runtime.real34Matrix_t = undefined;
 
@@ -553,7 +553,7 @@ pub export fn mulRealRema() callconv(.c) void {
     }
 }
 
-pub export fn mulRemaCplx() callconv(.c) void {
+pub export fn mulRemaCplx() linksection(runtime.code_section) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_Y, REGISTER_Y);
     if (runtime.lastErrorCode != 0) {
         return;
@@ -561,7 +561,7 @@ pub export fn mulRemaCplx() callconv(.c) void {
     mulCxmaCplx();
 }
 
-pub export fn mulCplxRema() callconv(.c) void {
+pub export fn mulCplxRema() linksection(runtime.code_section) callconv(.c) void {
     runtime.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
     if (runtime.lastErrorCode != 0) {
         return;
@@ -571,7 +571,7 @@ pub export fn mulCplxRema() callconv(.c) void {
 
 // ===== complex34 matrix × ... =====
 
-pub export fn mulCxmaCxma() callconv(.c) void {
+pub export fn mulCxmaCxma() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.complex34Matrix_t = undefined;
     var x: runtime.complex34Matrix_t = undefined;
     var res: runtime.complex34Matrix_t = undefined;
@@ -595,17 +595,17 @@ pub export fn mulCxmaCxma() callconv(.c) void {
     }
 }
 
-pub export fn mulCxmaShoI() callconv(.c) void {
+pub export fn mulCxmaShoI() linksection(runtime.code_section) callconv(.c) void {
     support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
     mulCxmaReal();
 }
 
-pub export fn mulShoICxma() callconv(.c) void {
+pub export fn mulShoICxma() linksection(runtime.code_section) callconv(.c) void {
     support.convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
     mulRealCxma();
 }
 
-pub export fn mulCxmaReal() callconv(.c) void {
+pub export fn mulCxmaReal() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.getRegisterAngularMode(REGISTER_X) == runtime.amNone) {
         var matrix: runtime.complex34Matrix_t = undefined;
         var zero34: runtime.real34_t = undefined;
@@ -619,7 +619,7 @@ pub export fn mulCxmaReal() callconv(.c) void {
     }
 }
 
-pub export fn mulRealCxma() callconv(.c) void {
+pub export fn mulRealCxma() linksection(runtime.code_section) callconv(.c) void {
     if (runtime.getRegisterAngularMode(REGISTER_Y) == runtime.amNone) {
         var matrix: runtime.complex34Matrix_t = undefined;
         var zero34: runtime.real34_t = undefined;
@@ -632,7 +632,7 @@ pub export fn mulRealCxma() callconv(.c) void {
     }
 }
 
-pub export fn mulCxmaCplx() callconv(.c) void {
+pub export fn mulCxmaCplx() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(REGISTER_Y, &matrix);
@@ -640,7 +640,7 @@ pub export fn mulCxmaCplx() callconv(.c) void {
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
 }
 
-pub export fn mulCplxCxma() callconv(.c) void {
+pub export fn mulCplxCxma() linksection(runtime.code_section) callconv(.c) void {
     var matrix: runtime.complex34Matrix_t = undefined;
 
     runtime.linkToComplexMatrixRegister(REGISTER_X, &matrix);
@@ -649,14 +649,14 @@ pub export fn mulCplxCxma() callconv(.c) void {
 
 // ===== short integer × ... =====
 
-pub export fn mulShoIShoI() callconv(.c) void {
+pub export fn mulShoIShoI() linksection(runtime.code_section) callconv(.c) void {
     runtime.setRegisterTag(REGISTER_X, runtime.getRegisterTag(REGISTER_Y));
     const x_data = runtime.registerShortIntegerPtr(REGISTER_X);
     const y_data = runtime.registerShortIntegerPtr(REGISTER_Y);
     x_data.* = runtime.WP34S_intMultiply(y_data.*, x_data.*);
 }
 
-pub export fn mulShoIReal() callconv(.c) void {
+pub export fn mulShoIReal() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -675,7 +675,7 @@ pub export fn mulShoIReal() callconv(.c) void {
     }
 }
 
-pub export fn mulRealShoI() callconv(.c) void {
+pub export fn mulRealShoI() linksection(runtime.code_section) callconv(.c) void {
     var y: runtime.real_t = undefined;
     var x: runtime.real_t = undefined;
 
@@ -695,13 +695,13 @@ pub export fn mulRealShoI() callconv(.c) void {
     }
 }
 
-pub export fn mulShoICplx() callconv(.c) void {
+pub export fn mulShoICplx() linksection(runtime.code_section) callconv(.c) void {
     support.convertShortIntegerRegisterToReal34Register(REGISTER_Y, REGISTER_Y);
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X)); // real part
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_X)); // imaginary part
 }
 
-pub export fn mulCplxShoI() callconv(.c) void {
+pub export fn mulCplxShoI() linksection(runtime.code_section) callconv(.c) void {
     support.convertShortIntegerRegisterToReal34Register(REGISTER_X, REGISTER_X);
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_Y)); // real part
     runtime.real34Multiply(runtime.registerImag34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_Y)); // imaginary part
@@ -711,7 +711,7 @@ pub export fn mulCplxShoI() callconv(.c) void {
 
 // ===== real34 × ... =====
 
-pub export fn mulRealReal() callconv(.c) void {
+pub export fn mulRealReal() linksection(runtime.code_section) callconv(.c) void {
     const y_angular_mode = runtime.getRegisterAngularMode(REGISTER_Y);
     const x_angular_mode = runtime.getRegisterAngularMode(REGISTER_X);
 
@@ -735,12 +735,12 @@ pub export fn mulRealReal() callconv(.c) void {
     }
 }
 
-pub export fn mulRealCplx() callconv(.c) void {
+pub export fn mulRealCplx() linksection(runtime.code_section) callconv(.c) void {
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_X)); // real part
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerImag34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_X)); // imaginary part
 }
 
-pub export fn mulCplxReal() callconv(.c) void {
+pub export fn mulCplxReal() linksection(runtime.code_section) callconv(.c) void {
     runtime.real34Multiply(runtime.registerReal34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerReal34Ptr(REGISTER_Y)); // real part
     runtime.real34Multiply(runtime.registerImag34Ptr(REGISTER_Y), runtime.registerReal34Ptr(REGISTER_X), runtime.registerImag34Ptr(REGISTER_Y)); // imaginary part
     runtime.reallocateRegister(REGISTER_X, runtime.dtComplex34, 0, @intCast(runtime.amNone));
@@ -749,7 +749,7 @@ pub export fn mulCplxReal() callconv(.c) void {
 
 // ===== complex34 × ... =====
 
-pub export fn mulCplxCplx() callconv(.c) void {
+pub export fn mulCplxCplx() linksection(runtime.code_section) callconv(.c) void {
     var y_real: runtime.real_t = undefined;
     var y_imag: runtime.real_t = undefined;
     var x_real: runtime.real_t = undefined;
