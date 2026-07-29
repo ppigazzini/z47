@@ -898,7 +898,6 @@ pub export fn fnUpdateTimerApp() callconv(.c) void {
 // ===========================================================================
 pub export fn fnRegAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    _ = printf("fnRegAddTimerApp\n");
     if (rbr1stDigit) {
         var tmp: real_t = undefined;
         uInt32ToReal(getTimerValue() / 100, &tmp);
@@ -919,7 +918,6 @@ pub export fn fnRegAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
 // ===========================================================================
 pub export fn fnRegAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    _ = printf("fnRegAddLapTimerApp\n");
     const msec: u32 = getTimerValue();
     var tmp: real_t = undefined;
 
@@ -947,7 +945,6 @@ pub export fn fnRegAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c)
 // ===========================================================================
 pub export fn fnAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    _ = printf("fnAddTimerApp\n");
     var tmp: real_t = undefined;
 
     uInt32ToReal(getTimerValue() / 100, &tmp);
@@ -974,7 +971,6 @@ pub export fn fnAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void 
 // ===========================================================================
 pub export fn fnAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    _ = printf("fnAddLapTimerApp\n");
     const msec: u32 = getTimerValue();
     var tmp: real_t = undefined;
 
