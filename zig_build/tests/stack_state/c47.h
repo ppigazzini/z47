@@ -232,6 +232,7 @@ extern uint16_t currentInputVariable;
 extern uint8_t displayStack;
 extern bool_t thereIsSomethingToUndo;
 extern uint8_t calcMode;
+void calcModeNormal(void);
 extern uint8_t temporaryInformation;
 extern uint8_t programRunStop;
 extern uint8_t Input_Default;
