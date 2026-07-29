@@ -12,6 +12,12 @@ pub const wp34s_mod_small_buffers = @hasDecl(build_options, "wp34s_mod_small_buf
 // DM42 old_hw firmware to keep main FLASH free; host/dmcp5/macOS keep the
 // normal section (no-op there). Same mechanism as the dateTime owner.
 const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
+
+/// defines.h's OPTION_XFN_1000: the 1071-digit XFN math path. Enabled by
+/// default, #undef'd for every DM42 build ("does not work on DM42, due to stack
+/// constraint", ~5Kb of flash). Absent from a harness's options => on, matching
+/// the host default.
+pub const option_xfn_1000 = !@hasDecl(build_options, "option_xfn_1000") or build_options.option_xfn_1000;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)

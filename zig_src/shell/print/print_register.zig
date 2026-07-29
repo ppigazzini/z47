@@ -45,6 +45,19 @@ fn printEnabledWhileProgramRuns() bool {
     return getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) or (programRunStop != PGM_RUNNING and programRunStop != PGM_SINGLE_STEP);
 }
 
+// Upstream's fnP_Alpha/fnP_Regs chirp 440/4400/440 on DMCP before bailing out of
+// the print-to-file path in the wrong calc mode -- the only feedback the user
+// gets that the key did nothing. Host builds have no buzzer, so this is
+// firmware-only, matching the `#if defined(DMCP_BUILD)` around the C.
+fn beepWrongCalcMode() void {
+    if (comptime !frontier_print.is_dmcp_build) {
+        return;
+    }
+    frontier_print.beep(440, 50);
+    frontier_print.beep(4400, 50);
+    frontier_print.beep(440, 50);
+}
+
 fn runAlpha(register_no: u16) void {
     if (printerActive()) {
         frontier_print.z47_frontier_print_alpha_register(register_no);
@@ -52,6 +65,7 @@ fn runAlpha(register_no: u16) void {
     }
 
     if (calcMode != CM_AIM) {
+        beepWrongCalcMode();
         return;
     }
 
@@ -70,6 +84,7 @@ fn runRegister(register_no: u16) void {
     }
 
     if (calcMode != CM_NORMAL) {
+        beepWrongCalcMode();
         return;
     }
 

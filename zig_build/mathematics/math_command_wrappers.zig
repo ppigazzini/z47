@@ -86,6 +86,14 @@ fn addRuntimeObject(
     // from executable QSPI (XIP) to keep main FLASH free; same mechanism the
     // dateTime owner and the distribution owners use.
     build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
+    // OPTION_XFN_1000 gates the 1071-digit trig path. defines.h enables it by
+    // default and #undef's it for every DM42 build: TWO_FILE_PGM is defined for
+    // DMCP_BUILD and #undef'd again for NEW_HW, so both of the #undef sites
+    // (the !TWO_FILE_PGM && !NEW_HW block and the TWO_FILE_PGM block) reduce to
+    // "old hardware". Its own comment says it "does not work on DM42, due to
+    // stack constraint" and costs ~4850-5224 bytes of flash there. Host and
+    // DMCP5 keep it, so this is off for exactly the "dmcp" prefix.
+    build_options.addOption(bool, "option_xfn_1000", !std.mem.eql(u8, name_prefix, "dmcp"));
     module.addOptions("math_command_wrappers_build_options", build_options);
 
     return b.addObject(.{
