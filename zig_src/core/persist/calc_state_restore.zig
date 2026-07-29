@@ -37,6 +37,14 @@ const codec = @import("calc_state_register_codec.zig");
 
 // --- Resolved constants (probed from the real headers) ---
 const FIRST_LOCAL_REGISTER: i16 = 7000;
+const LAST_GLOBAL_REGISTER: i16 = 136;
+extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
+// currentNumberOfLocalRegisters macro: currentSubroutineLevelData->numberOfLocalRegisters.
+const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
+extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
+inline fn currentNumberOfLocalRegisters() u8 {
+    return currentSubroutineLevelData[0].numberOfLocalRegisters;
+}
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const REGISTER_X: i16 = 100; // == FIRST_LETTERED_REGISTER
 const INVALID_VARIABLE: i16 = 2199;
@@ -382,9 +390,10 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             readLineSkippingComments(tmpString, TMP_STR_LENGTH); // Register number, skipping any comments
             regist = stringToRegisterNumber(tmpString); // "RX".."RW" or "Rnnn"
             calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
-            if (load_mode == LM_ALL or
+            if ((regist >= 0 and regist <= LAST_GLOBAL_REGISTER) and // reject an out-of-range register number from a malformed state file
+                (load_mode == LM_ALL or
                 (load_mode == LM_REGISTERS and regist < REGISTER_X) or
-                (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n)))
+                (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n))))
             {
                 const target: i16 = if (load_mode == LM_REGISTERS_PARTIAL) @intCast(@as(i32, regist) - @as(i32, s) + @as(i32, d)) else regist;
                 codec.restoreRegister(target, aimBuffer, tmpString, loaded_version);
@@ -416,7 +425,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 calc_state.readLine(tmpString, TMP_STR_LENGTH);
                 regist = text.toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
                 calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
-                if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
+                if ((regist >= FIRST_LOCAL_REGISTER and regist < FIRST_LOCAL_REGISTER + @as(i16, @intCast(currentNumberOfLocalRegisters()))) and // reject an out-of-range register number from a malformed state file
+                    (load_mode == LM_ALL or load_mode == LM_REGISTERS))
+                {
                     codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);
                     codec.restoreMatrixData(regist);
                 } else {
@@ -792,7 +803,9 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
     } else if (cmpName(ab, "lastDenominator")) {
         lastDenominator = text.toUint32(tmpString);
         if (lastDenominator < 1 or lastDenominator > MAX_DENMAX) lastDenominator = 4;
-    } else if (matchU8("displayFormat", &displayFormat)) {} else if (matchU8("displayFormatDigits", &displayFormatDigits)) {} else if (matchU8("timeDisplayFormatDigits", &timeDisplayFormatDigits)) {} else if (matchU8("shortIntegerWordSize", &shortIntegerWordSize)) {} else if (matchU8("shortIntegerMode", &shortIntegerMode)) {} else if (matchU8("significantDigits", &significantDigits)) {} else if (matchU8("fractionDigits", &fractionDigits)) {} else if (cmpName(ab, "currentAngularMode")) {
+    } else if (matchU8("displayFormat", &displayFormat)) {} else if (matchU8("displayFormatDigits", &displayFormatDigits)) {} else if (matchU8("timeDisplayFormatDigits", &timeDisplayFormatDigits)) {} else if (cmpName(ab, "shortIntegerWordSize")) {
+        shortIntegerWordSize = boundShortIntegerWordSize(text.toUint8(tmpString));
+    } else if (matchU8("shortIntegerMode", &shortIntegerMode)) {} else if (matchU8("significantDigits", &significantDigits)) {} else if (matchU8("fractionDigits", &fractionDigits)) {} else if (cmpName(ab, "currentAngularMode")) {
         currentAngularMode = text.toUint8(tmpString);
     } else if (cmpName(ab, "groupingGap")) {
         configCommon(CFG_DFLT);
