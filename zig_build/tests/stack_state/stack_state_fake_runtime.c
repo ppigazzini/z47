@@ -456,6 +456,10 @@ void copySourceRegisterToDestRegister(calcRegister_t source_register, calcRegist
   xcopy(dest_ptr, getRegisterDataPointer(source_register), TO_BYTES(size_in_blocks));
 }
 
+void calcModeNormal(void) {
+  calcMode = 0; // CM_NORMAL
+}
+
 void displayCalcErrorMessage(uint8_t error_code, calcRegister_t err_message_register_line, calcRegister_t err_register_line) {
   (void)err_message_register_line;
   (void)err_register_line;
