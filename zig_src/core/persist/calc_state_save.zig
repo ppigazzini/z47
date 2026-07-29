@@ -153,13 +153,47 @@ extern var PLOT_ZMY: i8;
 extern var firstDayOfWeek: u8;
 extern var firstWeekOfYearDay: u8;
 
-// Section-framing scratch buffer; mirrors doSave's local `char tmpString[3000]`
-// (deliberately distinct from the global tmpString into which
-// registerToSaveString writes register values).
-var buf: [3000]u8 = undefined;
+// Section-framing scratch buffer; mirrors the `char *tmpString = malloc(3000)`
+// that doSave and fnSaveDataRegisters each own upstream (deliberately distinct
+// from the global tmpString into which registerToSaveString writes register
+// values). It has to come from the heap, not from a module-level array: as
+// static data it lands in .bss, and on the DM42 (DMCP_BUILD && OLD_HW) .data +
+// .bss share the 8Kb below the DMCP system data block at 0x10002000, so a
+// permanent 3000-byte buffer is 36% of that budget spent on a scratch area that
+// is only live while a save runs. The linker script asserts the bound.
+//
+// doSaveDataFile frames its own header and then calls fnSaveDataRegisters, so
+// the two owners nest; a depth count keeps the inner acquire from reallocating
+// and the inner release from freeing underneath the outer one.
+const SAVE_BUFFER_SIZE = 3000;
+
+var buf_ptr: [*c]u8 = null;
+var buf_depth: u32 = 0;
+
+extern fn malloc(n: usize) ?*anyopaque;
+extern fn free(p: ?*anyopaque) void;
+
+fn acquireBuf() bool {
+    if (buf_depth == 0) {
+        buf_ptr = @ptrCast(malloc(SAVE_BUFFER_SIZE));
+        if (buf_ptr == null) return false;
+        buf_ptr[0] = 0;
+    }
+    buf_depth += 1;
+    return true;
+}
+
+fn releaseBuf() void {
+    if (buf_depth == 0) return;
+    buf_depth -= 1;
+    if (buf_depth == 0) {
+        free(buf_ptr);
+        buf_ptr = null;
+    }
+}
 
 inline fn b() [*c]u8 {
-    return &buf[0];
+    return buf_ptr;
 }
 
 fn save(bytes: [*c]const u8) void {
@@ -187,6 +221,9 @@ fn toPcmemptr(p: u16) [*c]u8 {
 }
 
 pub fn writeSaveSections() void {
+    if (!acquireBuf()) return;
+    defer releaseBuf();
+
     // SAV file version number + identifying model line.
     abi.fmtCStr(b(), "SAVE_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
@@ -522,6 +559,9 @@ fn registerNumberToString(regist: i16, name: [*c]u8) void {
 // id/type/value (+ matrix element) block per register. registerName != null
 // saves that single named variable; otherwise the range *beginR..*endR.
 pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]const u8, isXFNRegister: bool) bool {
+    if (!acquireBuf()) return false;
+    defer releaseBuf();
+
     if (registerName != null) {
         const regist = findNamedVariable(registerName); // read-only lookup: must not allocate
         if (regist == INVALID_VARIABLE) return false;
@@ -551,6 +591,9 @@ pub fn fnSaveDataRegisters(beginR: ?*const u16, endR: ?*const u16, registerName:
 }
 
 fn doSaveDataFile(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]const u8, isXFNRegister: bool) void {
+    if (!acquireBuf()) return;
+    defer releaseBuf();
+
     const ret = ioFileOpen(ioPathRegExport_PATH, ioModeWrite_MODE);
     if (ret != FILE_OK_RC) {
         if (ret == FILE_CANCEL_RC) {
