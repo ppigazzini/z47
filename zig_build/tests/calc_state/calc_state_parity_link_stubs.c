@@ -120,6 +120,7 @@ int16_t findOrAllocateNamedVariable(void *a0) { return 0; }
 void forceSystemFlag(int32_t a0, int32_t a1) {}
 void freeC47Blocks(void *a0, int64_t a1) {}
 void * getNthString(void *a0, int16_t a1) { return 0; }
+int8_t getRegisterAsRawShortInt(int16_t a0, uint64_t *a1, uint32_t *a2) { return 0; }
 void * getRegisterDataPointer(int16_t a0) { return 0; }
 int32_t getRegisterDataType(int16_t a0) { return 0; }
 int32_t getRegisterTag(int16_t a0) { return 0; }
@@ -132,6 +133,8 @@ void reallocateRegister(int16_t a0, int32_t a1, int16_t a2, int32_t a3) {}
 void resetOtherConfigurationStuff(int8_t a0) {}
 void resizeProgramMemory(int16_t a0) {}
 void scanLabelsAndPrograms(void) {}
+uint8_t boundShortIntegerWordSize(uint8_t a0) { return a0; }
+void setRegisterDataType(int16_t a0, int32_t a1, int32_t a2) {}
 void setEquation(int16_t a0, void *a1) {}
 void setLineDelay(int16_t a0) {}
 void setLongPressFg(int32_t a0, int16_t a1) {}
