@@ -559,10 +559,19 @@ fn _executeSolver(variable: calcRegister_t, val: *align(1) const real34_t, res: 
     if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         equation.parseEquation(currentFormula, 1, tmpString, tmpString + 1024);
     } else {
+        // also stack the variable + control flags so a nested SOLVE cannot leak
+        // into the outer point (enables PLOT(SOLVE), SOLVE(SOLVE)). Saving only
+        // the program left the outer engine reading whichever variable and
+        // status the inner one finished with, so every later sample of the
+        // outer sweep evaluated against the wrong target.
         const savedCurrentSolverProgram: u16 = currentSolverProgram;
+        const savedCurrentSolverVariable: u16 = currentSolverVariable;
+        const savedCurrentSolverStatus: u16 = currentSolverStatus;
         dynamicMenuItem = -1;
         execProgram(currentSolverProgram + FIRST_LABEL);
         currentSolverProgram = savedCurrentSolverProgram;
+        currentSolverVariable = savedCurrentSolverVariable;
+        currentSolverStatus = savedCurrentSolverStatus;
     }
     if (lastErrorCode == ERROR_OVERFLOW_PLUS_INF) {
         realToReal34(const_plusInfinity(), res);

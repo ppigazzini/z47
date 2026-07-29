@@ -14,6 +14,13 @@ comptime {
 pub export fn fnPgmSlv(label: u16) callconv(.c) void {
     if (runtime.isLabel(label)) {
         runtime.currentSolverProgram = runtime.labelToProgram(label);
+        // solve.c clears USES_FORMULA alongside every currentSolverProgram
+        // assignment: naming a program is what switches the engine off the
+        // formula. Without it a PGMSLV/PGMPLT that follows an equation plot
+        // leaves the flag set, so _executeSolver re-parses the stale formula
+        // instead of running the program -- the sample comes back equal to its
+        // own input and the sweep plots the identity.
+        runtime.clearUsesFormulaStatus();
         return;
     }
 
@@ -27,6 +34,7 @@ pub export fn fnPgmSlv(label: u16) callconv(.c) void {
             runtime.reportLabelNotFound(@ptrCast(&buf[0]));
         } else {
             runtime.currentSolverProgram = runtime.labelToProgram(named_label);
+            runtime.clearUsesFormulaStatus();
         }
         return;
     }
