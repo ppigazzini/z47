@@ -133,6 +133,9 @@ const const34_28 = consts.const34_28();
 const const34_400 = consts.const34_400();
 const const34__4712 = consts.const34__4712();
 const const34_1 = consts.const34_1();
+const const_1 = consts.const_1();
+extern fn realSetZero(value: *real_t) void;
+extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 const const34_31 = consts.const34_31();
 const const34_12 = consts.const34_12();
 const const34_14 = consts.const34_14();
@@ -802,6 +805,10 @@ fn fnJulianToDateTimeCore() error{JulianBadType}!void {
             frontier_register_value_conversions.realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39); // round (3600*24*1000*(FP))
             realDivide(&x, const_86400, &x, &ctxtReal39); // (round (3600*24*1000*(FP))) / (3600*24)
             x.exponent -= 3; // x = x / 1000
+            if (realCompareGreaterEqual(&x, const_1)) { // rounding to 0.001s reaches a full day: zero the time and carry one day into the date
+                realSetZero(&x);
+                real34Add(reg34(REGISTER_Y), const34_1, reg34(REGISTER_Y));
+            }
 
             //Convert date to Y
             julianDayToInternalDate(reg34(REGISTER_Y), &date);
