@@ -840,9 +840,9 @@ pub fn implementation(comptime runtime: type) type {
                         item = runtime.ITM_NOP;
                     } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_INTERACTIVE) == 0) {
                         item = runtime.MNU_DYNAMIC;
-                    } else if (runtime.isEqnIntegrate() and runtime.dynamicMenuItem == 4) {
+                    } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_USES_FORMULA) != 0 and runtime.isEqnIntegrate() and runtime.dynamicMenuItem == 4) { // items 4 and 5 are the two action keys only in the formula menu, where parseEquation reserves them; a program's MVAR list puts its own variables there
                         item = -runtime.MNU_Sf_TOOL;
-                    } else if (runtime.isEqnIntegrate() and runtime.dynamicMenuItem == 5) {
+                    } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_USES_FORMULA) != 0 and runtime.isEqnIntegrate() and runtime.dynamicMenuItem == 5) {
                         item = runtime.ITM_INTEGRAL_YX;
                     } else if (runtime.isEqnIntegrate()) {
                         item = runtime.ITM_Sfdx_VAR;
@@ -1952,7 +1952,7 @@ pub fn implementation(comptime runtime: type) type {
                         if (runtime.lastErrorCode != 0) {
                             runtime.lastErrorCode = 0;
                         } else {
-                            if (runtime.currentMenu() == -runtime.MNU_SYSFL) { // auto recover out of SYSFL
+                            if (runtime.tam.mode != 0 and runtime.currentMenu() == -runtime.MNU_SYSFL) { // auto recover out of SYSFL in the CFLG TAM flow; a plain catalog SYS.FL exits via the standard path below
                                 runtime.numberOfTamMenusToPop = 2;
                                 runtime.leaveTamModeIfEnabled();
                                 return;
