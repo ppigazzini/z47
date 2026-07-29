@@ -104,6 +104,7 @@ void     fnGetWordSize                (uint16_t unusedButMandatoryParameter);
  ***********************************************/
 void     fnSetWordSize                (uint16_t WS);
 void     updateShortIntegerMasks      (void);
+uint8_t  boundShortIntegerWordSize    (uint8_t wordSize);
 
 /********************************************//**
  * \brief Sets X to the amount of free flash memory
@@ -183,6 +184,7 @@ void     fnConfirmationNo             (uint16_t unusedButMandatoryParameter);
 uint16_t getConfirmationTiId          (void);
 void     dmcpResetAutoOff             (void);
 int      updateVbatIntegrated         (bool_t minutePulse);
+void     resetVbatSampleSchedule      (void);
 void     checkBattery                 (void);
 void     fnClAll                      (uint16_t confirmation);
 void     backToSystem                 (uint16_t confirmation);

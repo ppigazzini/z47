@@ -1057,6 +1057,54 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
       print_caller(NULL);
     #endif //GRAPHDEBUG_MIN
     bool_t plotAborted = false;   // R/S/EXIT or a nested-engine abort: skip the draw and exit dead, do not enter the graph view
+    // graph_eqn's 36 working reals and its 10 asymptote records come from the heap, not the frame: 36 x 24 plus 10 x 76 is 1624 bytes, on a 6 kB DM42 program stack.
+    // Taken per call so a nested plot through PGMPLT gets its own; every exit leaves through freeWork. The frame falls from 3408 to 1904 bytes on the DM42 build.
+    REAL_T_ALLOC(x, PLOT_DIGITS);
+    REAL_T_ALLOC(x01, PLOT_DIGITS);
+    REAL_T_ALLOC(y01, PLOT_DIGITS);
+    REAL_T_ALLOC(y02, PLOT_DIGITS);
+    REAL_T_ALLOC(y00, PLOT_DIGITS);                        // Add y00 for improved discontinuity detection
+    REAL_T_ALLOC(dy, PLOT_DIGITS);
+    REAL_T_ALLOC(dx0, PLOT_DIGITS);
+    REAL_T_ALLOC(dx, PLOT_DIGITS);
+    REAL_T_ALLOC(grad2, PLOT_DIGITS);
+    REAL_T_ALLOC(grad1, PLOT_DIGITS);
+    REAL_T_ALLOC(grad0, PLOT_DIGITS);
+    REAL_T_ALLOC(prevDx, PLOT_DIGITS);                     // Track previous step size
+    REAL_T_ALLOC(yAvg, PLOT_DIGITS);
+    REAL_T_ALLOC(x_min_r, PLOT_DIGITS);                    // real_t copy of external double x_min
+    REAL_T_ALLOC(x_max_r, PLOT_DIGITS);                    // real_t copy of external double x_max
+    REAL_T_ALLOC(y_min_r, PLOT_DIGITS);                    // real_t copy of external double y_min
+    REAL_T_ALLOC(y_max_r, PLOT_DIGITS);                    // real_t copy of external double y_max
+    REAL_T_ALLOC(jumpBackStartX, PLOT_DIGITS);
+    REAL_T_ALLOC(jumpBackStartY, PLOT_DIGITS);
+    REAL_T_ALLOC(jumpBackX, PLOT_DIGITS);
+    REAL_T_ALLOC(jumpBackDx, PLOT_DIGITS);
+    REAL_T_ALLOC(jbY, PLOT_DIGITS);
+    REAL_T_ALLOC(discontinuityThreshold, PLOT_DIGITS);
+    REAL_T_ALLOC(maxCurvatureChange, PLOT_DIGITS);
+    REAL_T_ALLOC(linearSlope, PLOT_DIGITS);
+    REAL_T_ALLOC(interpolationError, PLOT_DIGITS);
+    REAL_T_ALLOC(curvatureChange, PLOT_DIGITS);
+    REAL_T_ALLOC(newDx, PLOT_DIGITS);
+    REAL_T_ALLOC(improvementRatio, PLOT_DIGITS);
+    REAL_T_ALLOC(highResStartX, PLOT_DIGITS);
+    REAL_T_ALLOC(cumulativeCurvatureChange, PLOT_DIGITS);
+    REAL_T_ALLOC(baselineCurvatureChange, PLOT_DIGITS);
+    REAL_T_ALLOC(savedXBeforeHighres, PLOT_DIGITS);
+    REAL_T_ALLOC(savedDxBeforeHighres, PLOT_DIGITS);
+    REAL_T_ALLOC(tmpA, PLOT_DIGITS);
+    REAL_T_ALLOC(tmpB, PLOT_DIGITS);
+    AsymptoteInfo *const asymptotes = malloc(sizeof(AsymptoteInfo) * MAX_ASYMPTOTES);
+    if(x == NULL || x01 == NULL || y01 == NULL || y02 == NULL || y00 == NULL || dy == NULL || dx0 == NULL || dx == NULL || grad2 == NULL || grad1 == NULL ||
+       grad0 == NULL || prevDx == NULL || yAvg == NULL || x_min_r == NULL || x_max_r == NULL || y_min_r == NULL || y_max_r == NULL || jumpBackStartX == NULL ||
+       jumpBackStartY == NULL || jumpBackX == NULL || jumpBackDx == NULL || jbY == NULL || discontinuityThreshold == NULL || maxCurvatureChange == NULL ||
+       linearSlope == NULL || interpolationError == NULL || curvatureChange == NULL || newDx == NULL || improvementRatio == NULL || highResStartX == NULL ||
+       cumulativeCurvatureChange == NULL || baselineCurvatureChange == NULL || savedXBeforeHighres == NULL || savedDxBeforeHighres == NULL || tmpA == NULL ||
+       tmpB == NULL || asymptotes == NULL) {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      goto freeWork;
+    }
     currentKeyCode = 255;
     calcMode = CM_GRAPH;
     saveForUndo();
@@ -1065,42 +1113,6 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
     // Configure the graph-local context: 14 working digits, full ctxtReal39 settings otherwise.
     ctxtGraphsLocal = ctxtReal39;
     ctxtGraphsLocal.digits = GRAPH_WORKING_DIGITS;
-    REAL_T_PTR(x, PLOT_DIGITS);
-    REAL_T_PTR(x01, PLOT_DIGITS);
-    REAL_T_PTR(y01, PLOT_DIGITS);
-    REAL_T_PTR(y02, PLOT_DIGITS);
-    REAL_T_PTR(y00, PLOT_DIGITS);                          // Add y00 for improved discontinuity detection
-    REAL_T_PTR(dy, PLOT_DIGITS);
-    REAL_T_PTR(dx0, PLOT_DIGITS);
-    REAL_T_PTR(dx, PLOT_DIGITS);
-    REAL_T_PTR(grad2, PLOT_DIGITS);
-    REAL_T_PTR(grad1, PLOT_DIGITS);
-    REAL_T_PTR(grad0, PLOT_DIGITS);
-    REAL_T_PTR(prevDx, PLOT_DIGITS);                       // Track previous step size
-    REAL_T_PTR(yAvg, PLOT_DIGITS);
-    REAL_T_PTR(x_min_r, PLOT_DIGITS);                      // real_t copy of external double x_min
-    REAL_T_PTR(x_max_r, PLOT_DIGITS);                      // real_t copy of external double x_max
-    REAL_T_PTR(y_min_r, PLOT_DIGITS);                      // real_t copy of external double y_min
-    REAL_T_PTR(y_max_r, PLOT_DIGITS);                      // real_t copy of external double y_max
-    REAL_T_PTR(jumpBackStartX, PLOT_DIGITS);
-    REAL_T_PTR(jumpBackStartY, PLOT_DIGITS);
-    REAL_T_PTR(jumpBackX, PLOT_DIGITS);
-    REAL_T_PTR(jumpBackDx, PLOT_DIGITS);
-    REAL_T_PTR(jbY, PLOT_DIGITS);
-    REAL_T_PTR(discontinuityThreshold, PLOT_DIGITS);
-    REAL_T_PTR(maxCurvatureChange, PLOT_DIGITS);
-    REAL_T_PTR(linearSlope, PLOT_DIGITS);
-    REAL_T_PTR(interpolationError, PLOT_DIGITS);
-    REAL_T_PTR(curvatureChange, PLOT_DIGITS);
-    REAL_T_PTR(newDx, PLOT_DIGITS);
-    REAL_T_PTR(improvementRatio, PLOT_DIGITS);
-    REAL_T_PTR(highResStartX, PLOT_DIGITS);
-    REAL_T_PTR(cumulativeCurvatureChange, PLOT_DIGITS);
-    REAL_T_PTR(baselineCurvatureChange, PLOT_DIGITS);
-    REAL_T_PTR(savedXBeforeHighres, PLOT_DIGITS);
-    REAL_T_PTR(savedDxBeforeHighres, PLOT_DIGITS);
-    REAL_T_PTR(tmpA, PLOT_DIGITS);
-    REAL_T_PTR(tmpB, PLOT_DIGITS);
     int16_t count = 0;
     int16_t ss0 = 0;
     int16_t ss1 = 0;
@@ -1109,7 +1121,6 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
     bool_t  grad2IncreaseDetected = false;
     int loop = 0;
     bool_t jumpedBack = false;
-    AsymptoteInfo asymptotes[MAX_ASYMPTOTES];
     int asymptoteCount = 0;
   #if defined(GRAPHDEBUG)
     char strBuf1[42], strBuf2[42], strBuf3[42], strBuf4[42], strBuf5[42], strBuf6[42];
@@ -1147,7 +1158,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
 
     if(graphVariabl1 < FIRST_NAMED_VARIABLE || graphVariabl1 > LAST_NAMED_VARIABLE) {
       regStatsXY = INVALID_VARIABLE;
-      return;
+      goto freeWork;
     }
 
     fillStackWithReal0();
@@ -1199,7 +1210,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
       if(realCompareGreaterThan(x, x_max_r)) break;
 
       if(lastErrorCode == ERROR_SOLVER_ABORT || programRunStop == PGM_WAITING || exitKeyWaiting()) {   // R/S/EXIT or a nested-engine abort stops the plot (PGM_WAITING survives, lastErrorCode does not)
-        lastErrorCode = ERROR_SOLVER_ABORT;
+        lastErrorCode = engineNestingWasRefused ? ERROR_NESTING_TOO_DEEP : ERROR_SOLVER_ABORT;   // a refusal names itself
         if(programRunStop == PGM_RUNNING) {   // halt the outer program too (a plain plot does not otherwise set this); interactive plot left untouched
           programRunStop = PGM_WAITING;
         }
@@ -1223,7 +1234,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
       execute_rpn_function_graphAcc();
 
       if(lastErrorCode == ERROR_SOLVER_ABORT || programRunStop == PGM_WAITING || exitKeyWaiting()) {   // catch the interrupt in the thin window, before this point is stored and x advanced
-        lastErrorCode = ERROR_SOLVER_ABORT;
+        lastErrorCode = engineNestingWasRefused ? ERROR_NESTING_TOO_DEEP : ERROR_SOLVER_ABORT;   // a refusal names itself
         if(programRunStop == PGM_RUNNING) { programRunStop = PGM_WAITING; }
         plotAborted = true;
         break;
@@ -1901,6 +1912,44 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
       ctxtReal75.digits = s75;
     #endif //LOW_GRAPH_ACC
 
+    freeWork:
+    REAL_T_FREE(x, PLOT_DIGITS);
+    REAL_T_FREE(x01, PLOT_DIGITS);
+    REAL_T_FREE(y01, PLOT_DIGITS);
+    REAL_T_FREE(y02, PLOT_DIGITS);
+    REAL_T_FREE(y00, PLOT_DIGITS);
+    REAL_T_FREE(dy, PLOT_DIGITS);
+    REAL_T_FREE(dx0, PLOT_DIGITS);
+    REAL_T_FREE(dx, PLOT_DIGITS);
+    REAL_T_FREE(grad2, PLOT_DIGITS);
+    REAL_T_FREE(grad1, PLOT_DIGITS);
+    REAL_T_FREE(grad0, PLOT_DIGITS);
+    REAL_T_FREE(prevDx, PLOT_DIGITS);
+    REAL_T_FREE(yAvg, PLOT_DIGITS);
+    REAL_T_FREE(x_min_r, PLOT_DIGITS);
+    REAL_T_FREE(x_max_r, PLOT_DIGITS);
+    REAL_T_FREE(y_min_r, PLOT_DIGITS);
+    REAL_T_FREE(y_max_r, PLOT_DIGITS);
+    REAL_T_FREE(jumpBackStartX, PLOT_DIGITS);
+    REAL_T_FREE(jumpBackStartY, PLOT_DIGITS);
+    REAL_T_FREE(jumpBackX, PLOT_DIGITS);
+    REAL_T_FREE(jumpBackDx, PLOT_DIGITS);
+    REAL_T_FREE(jbY, PLOT_DIGITS);
+    REAL_T_FREE(discontinuityThreshold, PLOT_DIGITS);
+    REAL_T_FREE(maxCurvatureChange, PLOT_DIGITS);
+    REAL_T_FREE(linearSlope, PLOT_DIGITS);
+    REAL_T_FREE(interpolationError, PLOT_DIGITS);
+    REAL_T_FREE(curvatureChange, PLOT_DIGITS);
+    REAL_T_FREE(newDx, PLOT_DIGITS);
+    REAL_T_FREE(improvementRatio, PLOT_DIGITS);
+    REAL_T_FREE(highResStartX, PLOT_DIGITS);
+    REAL_T_FREE(cumulativeCurvatureChange, PLOT_DIGITS);
+    REAL_T_FREE(baselineCurvatureChange, PLOT_DIGITS);
+    REAL_T_FREE(savedXBeforeHighres, PLOT_DIGITS);
+    REAL_T_FREE(savedDxBeforeHighres, PLOT_DIGITS);
+    REAL_T_FREE(tmpA, PLOT_DIGITS);
+    REAL_T_FREE(tmpB, PLOT_DIGITS);
+    free(asymptotes);
   }
 #endif //OPTION_GRAPHICS
 
@@ -2659,6 +2708,12 @@ void graphRangeGuard(real_t *lo, real_t *hi) {
 //-----------------------------------------------------//-----------------------------------------------------
 void fnEqSolvGraph (uint16_t func) {
   #if defined(OPTION_GRAPHICS)
+      // Ahead of the first switch below, which reallocates the reserved UX/LX registers and reassigns graphVariabl1. fnMvarPlot refuses a programmed PLTf earlier,
+      // this covers the menu entries.
+      if((func == EQ_PLOT || func == EQ_PLOT_LU) && engineNestingRefused(true)) {
+        return;
+      }
+
       // No equation defined: error out before any stack or reserved-variable writes;
       // running these items without a formula crashed in parseEquation (NULL allFormulae).
       // A program plot has no formula by design (execute_rpn_function runs its program), so exempt it from the guard when the func is a plot func, RPN_GRAPHER is set,
@@ -2832,7 +2887,11 @@ void fnEqSolvGraph (uint16_t func) {
           #endif // VERBOSE_SOLVER00 || VERBOSE_SOLVER0
 
           initialize_function();
+          ++engineNestingDepth;                                // one engine level for the whole sweep
+          ++plotEngineActive;
           graph_eqn(noInitDrwMx);
+          --plotEngineActive;
+          --engineNestingDepth;
 
           if(!getSystemFlag(FLAG_PCROS) && !getSystemFlag(FLAG_PBOX) && !getSystemFlag(FLAG_PPLUS)) {
             setSystemFlag(FLAG_PLINE);

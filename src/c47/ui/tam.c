@@ -973,7 +973,8 @@ printf("tam.value: %d\n", tam.value);
         if(value == INVALID_VARIABLE && ((tam.function == ITM_XEQ) || (tam.function == ITM_XEQP1))) {  // If no label found then look for XEQ 'function'
           if(!tam.indirect && !tam.colon) {                                                                          //  indirection (XEQ -> 'function') not supported
             for(int i = 0; i < LAST_ITEM; ++i) {
-              if((indexOfItems[i].status & CAT_STATUS) == CAT_FNCT && compareString(buffer, indexOfItems[i].itemCatalogName, CMP_NAME) == 0) { //change here to slacken the character check for commands: CMP_CLEANED_STRING_ONLY
+              // Match strictness: CMP_NAME strict (exact spelling & space), CMP_COMMAND relax (exact spelling, any space), CMP_CLEANED_STRING_ONLY loose (rank1 equiv., beware not tested)
+              if((indexOfItems[i].status & CAT_STATUS) == CAT_FNCT && compareString(buffer, indexOfItems[i].itemCatalogName, CMP_COMMAND) == 0) {
                 leaveTamModeIfEnabled();
                 if(calcMode == CM_PEM) {
                   aimBuffer[0] = 0;

@@ -155,14 +155,15 @@
 //
 //       Pkg │ DIST    │ X.FN     │ FIN  │ EIGEN │ ELEC │ IR
 //      ─────┼─────────┼──────────┼──────┼───────┼──────┼────
-//        1  │ all     │ no ellip │ fast │   ❌  │  ✅  │ ✅
-//        2  │ all     │ full     │ slow │   ❌  │  ❌  │ ❌
-//        3  │ limited │ no ellip │ fast │   ✅  │  ✅  │ ✅
+//        1  │ all     │ no ellip │ fast │   ❌  │  ✅  │ ❌
+//        2  │ limB    │ full     │ slow │   ❌  │  ❌  │ ✅
+//        3  │ limA    │ no ellip │ fast │   ✅  │  ✅  │ ❌
 //        4  │ none    │ no e-B-O │ slow │   ❌  │  ❌  │ ✅
 //
 //
 //      DIST   all      every distribution
-//             limited  Normal, StdNormal, LogNormal, gev, Pareto, Uniform, Discr Uniform
+//             limA     Normal, StdNormal, LogNormal
+//             limB     Normal, StdNormal, LogNormal, cauchy, chi, expo, logis, t, weibull
 //             none     no distributions
 //      X.FN   full     includes elliptic, Bessel, Orthogonal
 //             no ellip without elliptic
@@ -177,16 +178,8 @@
 //             ❌       no IR printing
 //      All C47 / DM42 packages (common to 1–4): no 2D/3D VECTOR conversions (matrix functions stay), no number editing, no 1000-digit XFN math.
 
-// Compiled 2026-07-22 
-// dist_dmcp5...          flash   1059704   1441792    382088
-// dist_dmcp5r47...       flash   1061616   1441792    380176
-// dist_dmcpr47...        flash    675712    720896     45184
-// dist_dmcp...package 1: flash    712664    720896      8232
-// dist_dmcp...package 2: flash    715800    720896      5096
-// dist_dmcp...package 3: flash    715104    720896      5792
-// dist_dmcp...package 4: flash    675200    720896     45696
 
-  #if defined(DMCP_PACKAGE1)             // PACKAGE 1 (free 6888) // ALL DIST, Stripped ELLIPSE X.FN menu; NO EIGEN; ELEC; FAST FIN; IR PRINTING
+  #if defined(DMCP_PACKAGE1)             // PACKAGE 1 (free 1016) // ALL DIST, Stripped ELLIPSE X.FN menu; NO EIGEN; ELEC; FAST FIN; NO IR PRINTING
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
     #define OPTION_BESSEL                // ✓  4968 bytes // Without X.FN BESSEL
     #define OPTION_ORTHO                 // ✓   656 bytes // Without X.FN ORTHO MENU
@@ -199,26 +192,26 @@
     #define OPTION_TVM_NEWTON            // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #define OPTION_ELEC                  // ✓  6816 bytes // ELEC   6240 saving if VECTOR is not in; 2856 saving if VECTOR is in
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-    #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
+            #undef  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(DMCP_PACKAGE2)             // PACKAGE 2 (free 3744) // ALL DIST; Full X.FN menu; NO EIGEN; NO ELEC; SLOW FIN; NO IR PRINTING
+  #if defined(DMCP_PACKAGE2)             // PACKAGE 2 (free 2032) // Limited2 DIST; Full X.FN menu; NO EIGEN; NO ELEC; SLOW FIN; IR PRINTING
     #define OPTION_ELLIPTIC              // ✓ 13112 bytes // Without ELLIPTIC
     #define OPTION_BESSEL                // ✓  4968 bytes // Without X.FN BESSEL
     #define OPTION_ORTHO                 // ✓   656 bytes // Without X.FN ORTHO MENU
     #define OPTION_DISTRIBUTIONS         // ✓     0 bytes // Without all distributions, i.e. , cauchy, chi, expo, logis, t, weibull
     #define OPTION_DIST_NORMAL           // ✓  2000 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
     #define OPTION_DIST_2                // ✓  7136 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
-    #define OPTION_DIST_1                // ✓  9624 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define OPTION_DIST_3                // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
+            #undef  OPTION_DIST_1        // ✓  9624 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
+            #undef  OPTION_DIST_3        // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
             #undef  OPTION_TVM_FORMULAS  // ✓  2744 bytes // Use TVM analytical formulas where possible
             #undef  OPTION_TVM_NEWTON    // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
             #undef  OPTION_ELEC          // ✓  6816 bytes // ELEC   see below
             #undef  OPTION_EIGEN         // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-            #undef  OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
+    #define OPTION_IR_PRINTING   // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif
 
-  #if defined(DMCP_PACKAGE3)             // PACKAGE 3 EXPERIMENTAL (free 4416) // Limited DIST, Stripped ELLIPSE X.FN menu; EIGEN; ELEC; FAST FIN; IR PRINTING
+  #if defined(DMCP_PACKAGE3)             // PACKAGE 3 (free 3280) // Limited0 DIST, Stripped ELLIPSE X.FN menu; EIGEN; ELEC; FAST FIN; IR PRINTING
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
     #define  OPTION_BESSEL               // ✓  4968 bytes // Without X.FN BESSEL
     #define  OPTION_ORTHO                // ✓   656 bytes // Without X.FN ORTHO MENU
@@ -226,12 +219,12 @@
     #define OPTION_DIST_NORMAL           // ✓  2000 bytes // Without (1) Norml, StdNrmal & LogNrml distributions
             #undef  OPTION_DIST_2        // ✓  7136 bytes // Without (2) cauchy, chi, expo, logis, t, weibull
             #undef  OPTION_DIST_1        // ✓  9624 bytes // Without (3) Poisson/Hyper/Binomial/Geometrical/f distributions
-    #define OPTION_DIST_3                // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
+            #undef  OPTION_DIST_3        // ✓  3280 bytes // Without (4) gev, Pareto, Uniform, Discr Uniform
     #define OPTION_TVM_FORMULAS          // ✓  2744 bytes // Use TVM analytical formulas where possible
     #define OPTION_TVM_NEWTON            // ✓  2032 bytes // Use TVM additional newton raphson in the brent solver for tvm where possible
     #define OPTION_ELEC                  // ✓  6816 bytes // ELEC   see below
     #define OPTION_EIGEN                 // ✓ 17440 bytes // Without EIGVAL, EIGVEC, M.QR, MSQRT
-    #define OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
+            #undef OPTION_IR_PRINTING           // ✓ 10040 bytes // Remove IR printing for old hardware
   #endif
             // ELEC VECT  FLASH cost   free   (pkg4, 720896 total)
             //  0    0          0     32692
@@ -239,7 +232,7 @@
             //  1    0       6240     26452   ELEC only
             //  1    1      15808     16884   both (ELEC+VECTOR share 3384)
 
-  #if defined(DMCP_PACKAGE4_NOOPT)       // PACKAGE 4 (free ✓32712) // Minimal, no math options included, IR PRINTING; FOR GITLAB PIPELINE COMPILE
+  #if defined(DMCP_PACKAGE4_NOOPT)       // PACKAGE 4 (free 30472) // Minimal, no math options included, IR PRINTING; FOR GITLAB PIPELINE COMPILE
             #undef  OPTION_ELLIPTIC      // ✓ 13112 bytes // Without ELLIPTIC
             #undef  OPTION_BESSEL        // ✓  4968 bytes // Without X.FN BESSEL
             #undef  OPTION_ORTHO         // ✓   656 bytes // Without X.FN ORTHO MENU
@@ -562,7 +555,25 @@
 #define USE_MICHALSKI_MOSIG_TANH_SINH    1 // Set to 1 to use Michalski & Mosig tanh-sinh integration
 #define USE_NEW_DEI_INTEGRATION_CODE     2 // 0 - use prior code. 1 - use new code. 2 - use new code with split point code.
 #define ENABLE_INTEGRATOR_FILE_OUTPUT    0 // 1 for PRINTXY to be done after every evaluation of the formula; Or the complex solver for every iteration;
-#define MAX_INTEGRATOR_NESTING_DEPTH     5 // Cap on nested integrate() re-entry; a self-referential integrand aborts past this. INT(INT(INT)) is depth 3, so real use never nears it.
+// Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by engineNestingDepth. Not levels below the first: at 3 INT(INT(INT)) runs and a
+// fourth engine is refused, at 2 INT(INT) runs and INT(INT(INT)) is refused. PLOT counts the same, and runs only as the outermost. Past the cap the program stops with
+// ERROR_NESTING_TOO_DEEP instead of overflowing the C stack. One level each way: the DM42's measured stack use leaves it the least room, the DM42n has more, and the
+// simulator runs on a host stack. This gates on OLD_HW and NEW_HW, not on DMCP_BUILD, which both calculators define.
+#if defined(OLD_HW)
+  #define MAX_ENGINE_NESTING_DEPTH       2
+#elif defined(NEW_HW)
+  #define MAX_ENGINE_NESTING_DEPTH       3
+#else // !OLD_HW && !NEW_HW
+  #define MAX_ENGINE_NESTING_DEPTH       4
+#endif // OLD_HW
+// Whether INT or SOLVE may run inside a plot. Measured: on the DM42 a plot alone takes 6932 bytes and INT inside INT takes 7684, the deepest it survives, while
+// a plot with an integral inside it hangs. The DM42n runs that same case and it takes 12020, well past what the DM42 has, so the hang is the overrun. Refused
+// there ahead of the count above. The DM42n has the room, so this gates on OLD_HW.
+#if defined(OLD_HW)
+  #define PLOT_NESTING_ALLOWED           0
+#else // !OLD_HW
+  #define PLOT_NESTING_ALLOWED           1
+#endif // OLD_HW
 #define ENABLE_COMPLEXSOLVER_FILE_OUTPUT 0 // 1 for PRINTXY to be done for the complex solver for every iteration; 2 to print the RPN function; Corrupts Reg_K
 #define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
 #undef  INTEGRATION_TWO_STAGE_EXIT
@@ -574,7 +585,7 @@
 #define XFN_EXTENDED_2PI_FOR_MOD         1 // for X_MOD only, if detect precise X_PI 1034 digits, it extends pi to 2139 (or as per contxt up to 6147) in XFN only. Needs to by exact, to 0 ULP difference.
 #define YYSystem                         true // Enable the shortcut system to allow two-digit year defaults, i.e. 23.1212 [.d] to decode to 2023.1212
 #define PGMPTR_TO_NEXT_AFTER_RTN         1 // 1: top-level RTN rests one step past the RTN (wraps at END). 0: rests on the program's first step as per legacy
-
+#define BAT_MINIMUM                      2100 // Battery level for abort program
 
 #if defined(TESTSUITE_BUILD)
   #undef VERBOSE_MINIMUM
@@ -770,7 +781,8 @@
 #define ERROR_PRINTING_DISABLED                   63
 #define ERROR_NO_STRING_IN_ALPHA_REGISTER         64
 #define ERROR_NO_EQUATION_DEFINED                 65
-#define LAST_ERROR_MESSAGE                        65
+#define ERROR_NESTING_TOO_DEEP                    66
+#define LAST_ERROR_MESSAGE                        66
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100
@@ -1140,6 +1152,8 @@
 #define MAX_LABEL_NAME_LENGTH   14                             // Longest label name the calculator can produce: TAM alpha entry is force-closed beyond 6 glyphs,
                                                                // maxLen in _tamProcessInput, ui/tam.c, so a name is at most 7 glyphs of at most 2 bytes each.
                                                                // A longer name in a loaded file marks the file as corrupt.
+
+#define MAX_MVAR_DECLARATIONS   18                             // Solver variables a program may declare, which is the MVAR softmenu's own limit.
 
 //Variable names
 #define VAR_NO_X        0
@@ -1918,6 +1932,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CMP_CLEANED_STRING_ONLY                    1
 #define CMP_EXTENSIVE                              2
 #define CMP_NAME                                   3
+#define CMP_COMMAND                                4
 
 // Indirect parameter mode
 #define INDPM_PARAM                                0
@@ -2048,6 +2063,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define MAX_DENMAX                              9999 // Biggest denominator in fraction display mode selector, and annunciator.
                                                      // The value 0 gets converted to MAX_INTERNAL_DENMAX
+#define MAX_SHORT_INTEGER_WORD_SIZE               64 // Widest short integer word. Shifts by the word size, and by one less, are undefined beyond it.
 #define MAX_INTERNAL_DENMAX                    32500 // Biggest denominator in fraction display mode
 
 #if defined(DMCP_BUILD)
@@ -2191,7 +2207,14 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #if !defined(DMCP_BUILD)
   #define TO_QSPI
 #else // DMCP_BUILD
-  #define beep(frequence, length)            do { while(get_beep_volume() < 11) beep_volume_up(); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } while(0)
+  #define    OUT_VOL_MAX                       //Sound output raises the volume to 11 and puts the user's setting back afterwards. Undefine to sound everything at the user's own volume
+  #undef     OUT_VOL_MAX
+
+  #if defined(OUT_VOL_MAX)
+    #define beep(frequence, length)          do { if(!getSystemFlag(FLAG_QUIET)) { uint16_t beepVol = getBeepVolume(); fnSetVolume(11); start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); fnSetVolume(beepVol); } } while(0)
+  #else // !OUT_VOL_MAX
+    #define beep(frequence, length)          do { if(!getSystemFlag(FLAG_QUIET)) { start_buzzer_freq(frequence * 1000); sys_delay(length); stop_buzzer(); } } while(0)
+  #endif // OUT_VOL_MAX
   #undef TO_QSPI
   #if defined(TWO_FILE_PGM)
     #define TO_QSPI                          __attribute__ ((section(".qspi_data")))

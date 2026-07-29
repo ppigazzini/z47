@@ -60,3 +60,10 @@ int _fflush_r(struct _reent *reent, FILE *stream) {
   (void)stream;
   return 0;
 }
+
+// newlib's exit references __stdio_exit_handler, which links findfp.o and its 312 byte __sf FILE array into SRAM2
+void exit(int status) {
+  (void)status;
+  for(;;) {
+  }
+}

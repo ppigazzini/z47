@@ -13,6 +13,7 @@ void fnClearStack(uint16_t unusedButMandatoryParameter) {
   for(calcRegister_t regist=REGISTER_X; regist<=getStackTop(); regist++) {
     clearRegister(regist);
   }
+  calcModeNormal();                                            // a cleared stack is only visible on the normal screen; nothing here halts a running program
 }
 
 

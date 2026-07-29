@@ -7,6 +7,7 @@
 #if !defined(SOLVE_H)
   #define SOLVE_H
 
+  bool_t engineNestingRefused(bool_t isPlot);
   void fnPgmSlv          (uint16_t label);
   void fnSolve           (uint16_t labelOrVariable);
   void fnPgmPlt          (uint16_t label);

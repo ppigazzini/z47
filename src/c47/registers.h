@@ -149,6 +149,14 @@
   calcRegister_t findNamedVariable               (const char *variableName);
 
   /**
+   * Whether regist is the named variable STATS, matching findNamedVariable("STATS") on the single register without scanning the list.
+   *
+   * \param[in] regist Register number
+   * \return true when regist is the STATS matrix variable
+   */
+  bool_t         namedVariableIsStats            (calcRegister_t regist);
+
+  /**
    * Retrieves the register number for the named variable, allocating it if it doesn't exist.
    *
    * \param[in] variableName Register name
@@ -164,6 +172,13 @@
    * \return calcRegister_t the new register, or INVALID_VARIABLE
    ***********************************************/
   calcRegister_t allocateNamedVariableOnMiss     (const char *variableName);
+
+  /**
+   * Drops the scan hits findNamedVariable() remembers. Call it from anything that removes a named variable or rebuilds the
+   * whole table, so a remembered index cannot outlive the entry it named. Appending a variable, and changing a variable's
+   * value or type, leave every index describing the same variable and need no call.
+   */
+  void           invalidateNamedVariableCache    (void);
 
   /**
    * Returns the full data size of a register in blocks.

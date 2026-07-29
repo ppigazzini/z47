@@ -3,6 +3,19 @@
 ;** calculator state to backup.cfg and restore it, driving  **
 ;** both directions of saveRestoreBackup.c. This resets the  **
 ;** calculator, so it must be the last file in the list.     **
+;**                                                          **
+;** Then a regression on the same loader: the memory region  **
+;** counts it reads from the file size the tables the        **
+;** hexDump reader fills and every later walk of those       **
+;** tables in freeList.c, so a count past the table ceiling  **
+;** puts the writes and the walks off the end of a fixed     **
+;** array. fnBackupBadRegionCount saves a genuine backup,    **
+;** shadows one count line with 100000 (FARG 0 the free      **
+;** regions, FARG 1 the allocated ones) and restores it. It  **
+;** reports 1 only if both counts are inside their tables    **
+;** afterwards, which they are when the loader refuses the   **
+;** file; without the check the file's count is live and the **
+;** case reports 0.                                          **
 ;*************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
@@ -14,3 +27,13 @@ Out: EC=0
 Func: fnBackupRoundtrip
 In:  FARG=0
 Out: EC=0 R00=Real:"1234.5678"
+
+; an out-of-range free region count in the file must not become the live one
+Func: fnBackupBadRegionCount
+In:  FARG=0
+Out: EC=0 RX=LonI:"1"
+
+; and the same for the allocated region count
+Func: fnBackupBadRegionCount
+In:  FARG=1
+Out: EC=0 RX=LonI:"1"

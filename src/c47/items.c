@@ -524,10 +524,6 @@ bool_t isFunctionOldParam16(uint16_t func) {
       bool_t inLocalRegisters =     (param >= FIRST_LOCAL_REGISTER && param < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters);
       bool_t isMatrix = (func == ITM_RCL || func == ITM_STO) ? ((inRegisterRange || inReservedRange || inNameRegisterRange || inLocalRegisters) ? (getRegisterDataType(param) == dtReal34Matrix || getRegisterDataType(param) == dtComplex34Matrix) : false) : false;
       uint16_t rr;
-      calcRegister_t regStats = FAILED_INDIRECTION;
-      if(inNameRegisterRange) {
-        regStats = findNamedVariable("STATS");
-      }
 
       switch(func) {
         case VAR_UEST        : solverEstimatesUsed = true; break;
@@ -540,7 +536,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
         case ITM_RCL         : temporaryInformation = \
                                (param == REGISTER_I) && isMatrixIndexed() ? TI_I : \
                                (param == REGISTER_J) && isMatrixIndexed() ? TI_J : \
-                               (inNameRegisterRange) ? ((isStatsMatrixN(&rr, regStats) && param == regStats) ? TI_STATISTIC_SUMS : TI_STORCL) : \
+                               (inNameRegisterRange) ? ((namedVariableIsStats(param) && isStatsMatrixN(&rr, param)) ? TI_STATISTIC_SUMS : TI_STORCL) : \
                                (isMatrix) ? TI_STORCL : \
                                (inReservedRange || inRegisterRange || inLocalRegisters) ? TI_STORCL : TI_NO_INFO;
                                break;
@@ -610,7 +606,14 @@ bool_t isFunctionOldParam16(uint16_t func) {
 
 
     #if defined(DMCP_BUILD)
-      updateVbatIntegrated(false);              //Check the battery directly after a task so that the worst case voltage is recorded
+      int vbat = updateVbatIntegrated(false);   //Check the battery directly after a task so that the worst case voltage is recorded
+      // refreshLcd() does not run while a program runs, so checkBattery() cannot stop a run on a collapsing battery; below its BAT_MINIMUM (2100) shutdown threshold on battery power,
+      // the run stops resumably between steps like an R/S press and the calculator powers down in an orderly manner. Keep the threshold in sync with checkBattery().
+      if(programRunStop == PGM_RUNNING && (vbat < BAT_MINIMUM || vbatVIntegrated < BAT_MINIMUM) && usb_powered() != 1) {
+        setSystemFlag(FLAG_LOWBAT);
+        programRunStop = PGM_WAITING;
+        SET_ST(STAT_PGM_END);
+      }
     #endif
 
 

@@ -255,7 +255,8 @@ static int runCatalogFunctionByName(Jim_Interp *interp, const char *fnName, int 
   for(int i = 0; i < LAST_ITEM; ++i) {
     item_t item = indexOfItems[i];
     const char *catName = item.itemCatalogName;
-    if((item.status & CAT_STATUS) == CAT_FNCT && compareString(internalName, catName, CMP_NAME) == 0) {  //change here to slacken the character check for commands: CMP_CLEANED_STRING_ONLY
+    // Match strictness: CMP_NAME strict (exact spelling & space), CMP_COMMAND relax (exact spelling, any space), CMP_CLEANED_STRING_ONLY loose (rank1 equiv., beware not tested)
+    if((item.status & CAT_STATUS) == CAT_FNCT && compareString(internalName, catName, CMP_COMMAND) == 0) {
       return runCatalogItem(interp, (int16_t)i, argArgc, argArgv, cmdName) == JIM_OK ? CATFN_OK : CATFN_ERROR;
     }
   }
@@ -924,6 +925,12 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   if(argc < 2) {
     Jim_SetResultString(interp, "nim: missing string argument", -1);
     return JIM_ERR;
+  }
+  if(calcMode == CM_GRAPH) {  // incoming digits, change modes and go to the GRAPHS input page as the keyboard digit path does; addItemToNimBuffer opens NIM only from CM_NORMAL
+    calcMode = CM_NORMAL;
+    showSoftmenu(-MNU_GRAPHS);
+    screenUpdatingMode &= SCRUPD_MANUAL_MENU;
+    refreshScreen(212);                //dsl.c owns trace id range 210..219
   }
   printf("NIM: ");  // NIM sequentially accepts numerals and - as typed. That means -4.5E-5 is to be entered as [4.5 - E5 -] and this is automated below
   const char *start = Jim_String(argv[1]);

@@ -1,0 +1,128 @@
+;*******************************************************************************************************************************
+;** Coverage: nested SOLVE/INT/PLOT regression. The programs are the AN0022 nested examples (fnLoadNestedPgmsCov), run by XEQ **
+;** as in the appnote: integrator inside integrator (DBLINT, TRPINT), solver over an integral (SLVINT), solver inside solver  **
+;** (SLVSLV), full-precision solve and integral (SLVF2, INTPI), and the four program plots of nested engines (PLTROOT,        **
+;** PLTINTG, PLTINT3, PLTDBL) hashed as c47plotTest11..14.bmp. Own file, so it can be commented out like graphs_cov if an     **
+;** upstream change legitimately alters the render.                                                                           **
+;*******************************************************************************************************************************
+In: AM=RAD FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+; Set the display state the axis-label render depends on, so an upstream test leaking a display setting cannot change the plot bitmap:
+In: DSP=ALL3 FL_SIG0=1 FL_ENGOVR=0 FL_FRACT=0 GAP=3
+
+TIMERON: With an ON, the timer function will list each designated test if it runs for longer than 1 second (on 1 sec resolution, so 1-2 second threshold)
+
+; stage the AN0022 nested programs
+Func: fnLoadNestedPgmsCov
+In:  FARG=0
+Out: EC=0
+
+; INT inside INT, fixed limits: DBLINT = INT(0..2) [INT(0..x) t dt] dx = INT(0..2) (x^2/2) dx = 4/3
+TIMER: 000 DBLINT: INT(INT), full precision
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="DBLINT"
+Out: EC=0 RX=Real:"1.333333333333333333333333333333333"
+
+; coupled triple INT: TRPINT = INT(0..2) [INT(0..y) [INT(0..x) t dt] dx] dy = INT(0..2) (y^3/6) dy = 2/3
+; (TRPINT runs at ACC=1e-8, staged in-program: three integrator levels at the full-precision default take ~10 minutes)
+TIMER: 001 TRPINT: INT(INT(INT)), ACC=1e-8
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="TRPINT"
+Out: EC=0 RX=Real:"0.6666666666390"
+
+; SOLVE over an INT: SI(x) = INT(0..x) t dt - 2 = x^2/2 - 2 = 0 -> x = 2
+TIMER: 002 SLVINT: SOLVE(INT), full precision
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="SLVINT"
+Out: EC=0 RX=Real:"2"
+
+; SOLVE inside SOLVE: EQ(p) = [root of x^2-p*x-2 from the inner solve] - 2 = 0 -> p = 1
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="SLVSLV"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999998"
+
+; standalone SOLVE at full precision: x^2 - 2 = 0 -> sqrt(2)
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="SLVF2"
+Out: EC=0 RX=Real:"1.414213562373095048801688724209698"
+
+; standalone INT at full precision: INT(0..1) 4/(1+x^2) dx = pi
+TIMER: 003 INTPI: INT 4/(1+x^2), full precision
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="INTPI"
+Out: EC=0 RX=Real:"3.141592653589793238462643383279503"
+
+; The four program plots run from a genuine no-formula state (the G2b pattern): a program plot needs no formula, so an over-broad
+; no-equation guard aborts the program and the gate fails three ways at once (EC set, no bitmap written, X not the hash string).
+Func: fnEqClearCov
+In:  FARG=0
+Out: EC=0
+
+; PLTRST before every plot and after the last one: the official clear, restoring the factory plot state and style
+; (the stat plots in graphs_cov leave line-drawing off, which would otherwise change these bitmaps)
+Func: fnPlotReset
+In:  FARG=0
+Out: EC=0
+
+; PLOT of SOLVE (PLTROOT): the root locus x*(p) of x^2-p*x-2 over p in [-5,5], a solver run per plotted sample
+Func: fnBmpNameCov
+In:  FARG=11
+Out: EC=0
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="PLTROOT"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=11
+Out: EC=0 RX=Stri:"35673531B44DA8A3ADA3D1A73B1E8CAAF16C1EC7DE7EC06D206CC96A7AA9A43E"
+
+; PLOT of INT (PLTINTG): INT(0..8) f dx over p in [-5,5], linear in p, an integrator run per plotted sample
+Func: fnPlotReset
+In:  FARG=0
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=12
+Out: EC=0
+TIMER: 004 PLTINTG: PLOT(INT), full precision per sample
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="PLTINTG"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=12
+Out: EC=0 RX=Stri:"8313AE9B19EEE211DC06AA390106B371735F1228355C79E29486226546B64A62"
+
+; PLOT of INT over a variable limit (PLTINT3): INT(0..u) f dx over u in [-5,5], cubic in u (p stored 0 in-program)
+Func: fnPlotReset
+In:  FARG=0
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=13
+Out: EC=0
+TIMER: 005 PLTINT3: PLOT(INT), variable limit, full precision per sample
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="PLTINT3"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=13
+Out: EC=0 RX=Stri:"E47D3A2FA1C860E7A5788C18BD4FCE40F513F80F052351D6E270B1630DA5438A"
+
+; PLOT of INT inside INT (PLTDBL): IY(y) = INT(0..y) (x^2/2) dx = y^3/6 over y in [-5,5], two integrator levels per plotted sample
+; (PLTDBL runs at ACC=1e-8, staged in-program; the render is pixel-identical to the full-precision one, measured 2026-07-22)
+Func: fnPlotReset
+In:  FARG=0
+Out: EC=0
+Func: fnBmpNameCov
+In:  FARG=14
+Out: EC=0
+TIMER: 006 PLTDBL: PLOT(INT(INT)), ACC=1e-8
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="PLTDBL"
+Out: EC=0
+Func: fnHashBmpCov
+In:  FARG=14
+Out: EC=0 RX=Stri:"AFFFA6EA1497C2F0A57336672A335EED3F2117B7ABF91D872319E0A839DD428A"
+
+; the official clear again after the graphs, so no plot state leaks past this file
+Func: fnPlotReset
+In:  FARG=0
+Out: EC=0
+
+TIMEROFF:

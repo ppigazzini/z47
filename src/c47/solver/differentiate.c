@@ -89,6 +89,11 @@ void fn2ndDeriv(uint16_t label) {
 }
 
 static void derivativeEquation(uint16_t order, uint8_t ti) {
+  // FLAG_SOLVING suppresses the per-item undo snapshot, so the one calcDeriv takes before sampling survives to be restored, and it is what lets execProgram run a
+  // body at all, which a user delta-x label needs.
+  bool_t solving = getSystemFlag(FLAG_SOLVING);
+
+  setSystemFlag(FLAG_SOLVING);
   //new method to maintain solver variable
   reallyRunFunction(ITM_RCL, currentSolverVariable);
   copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
@@ -98,6 +103,9 @@ static void derivativeEquation(uint16_t order, uint8_t ti) {
   reallyRunFunction(ITM_STO, currentSolverVariable);
   fnDrop(NOPARAM);
   temporaryInformation = ti;
+  if(!solving) {
+    clearSystemFlag(FLAG_SOLVING);
+  }
 }
 
 void fn1stDerivEq(uint16_t unusedButMandatoryParameter) {
@@ -144,11 +152,57 @@ static void deriv_default_h(real_t *h) {
     }
   }
   undo();
+  if(realIsZero(h)) {   // the step is relative to x, so at x=0 it collapses and the weighted sum is divided by zero
+    realCopy(const_1, h);
+  }
   h->exponent -= 16;
 }
 
 
-static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
+// A program that declares MVARs takes its argument from named storage (RCL 'x'), not from the stack, so the sample point has to be stored where the program will
+// recall it. Return the variable to perturb, or INVALID_VARIABLE for a program that declares none and therefore reads the stack. Among several MVARs the caller's
+// selection wins whenever the program declares it, matching what the MVAR softmenu and the equation derivative differentiate with respect to; otherwise the first
+// declaration, which is the argument by convention and the leftmost key of the MVAR menu.
+static calcRegister_t deriv_pgm_variable(calcRegister_t label) {
+  uint8_t *step;
+  char name[MAX_LABEL_NAME_LENGTH + 1];
+  calcRegister_t first = INVALID_VARIABLE;
+  uint16_t declared;
+
+  if(label < FIRST_LABEL || label > LAST_LABEL || (uint16_t)(label - FIRST_LABEL) >= numberOfLabels) {
+    return INVALID_VARIABLE;
+  }
+  step = labelList[label - FIRST_LABEL].instructionPointer;
+
+  for(declared = 0; declared < MAX_MVAR_DECLARATIONS; declared++) {
+    while(checkOpCodeOfStep(step, ITM_REM)) {   // a REM ahead of an MVAR is transparent, as in the MVAR softmenu
+      step = findNextStep(step);
+    }
+    if(!(checkOpCodeOfStep(step, ITM_MVAR) && *(step + 2) == STRING_LABEL_VARIABLE)) {
+      break;
+    }
+    uint8_t nameLength = boundProgramNameLength(step + 4, *(step + 3));
+    if(nameLength == 0 || nameLength > MAX_LABEL_NAME_LENGTH) {
+      break;
+    }
+    xcopy(name, step + 4, nameLength);
+    name[nameLength] = 0;
+    calcRegister_t variable = findOrAllocateNamedVariable(name);
+    if(variable != INVALID_VARIABLE) {
+      if((uint16_t)variable == currentSolverVariable) {
+        return variable;
+      }
+      if(first == INVALID_VARIABLE) {
+        first = variable;
+      }
+    }
+    step = findNextStep(step);
+  }
+  return first;
+}
+
+
+static void _differentiatorIteration(calcRegister_t label, calcRegister_t variable, real_t *r0) {
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   realToReal34(r0, REGISTER_REAL34_DATA(REGISTER_X));
   fnFillStack(NOPARAM);
@@ -158,6 +212,9 @@ static void _differentiatorIteration(calcRegister_t label, real_t *r0) {
     parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
   }
   else {
+    if(variable != INVALID_VARIABLE) {   // feed both channels: the stack for a program that consumes X, the variable for one that recalls its MVAR
+      reallyRunFunction(ITM_STO, variable);
+    }
     dynamicMenuItem = -1;
     execProgram(label);
     fnToReal(NOPARAM);
@@ -206,21 +263,35 @@ static bool_t calcOneDeriv(const FINITE_DIFF_COEFF *stencil, const real_t fxIn[]
 }
 
 // Compute the function values f(x + k h), k = -MAX_ORDER .. MAX_ORDER
-static void calcFuncValues(calcRegister_t label, const real_t *x, real_t fx[MAX_F_EVAL], real_t *h, realContext_t *realContext) {
+static void calcFuncValues(calcRegister_t label, calcRegister_t variable, const real_t *x, real_t fx[MAX_F_EVAL], real_t *h, realContext_t *realContext) {
   int i;
   real_t t;
 
   for(i=0; i < MAX_F_EVAL; i++) {
+    if(lastErrorCode == ERROR_SOLVER_ABORT || programRunStop == PGM_WAITING || exitKeyWaiting()) {
+      // calcOneDeriv rejects a stencil only on the samples that stencil reads, so a narrow one would still succeed on the points already taken and hand back a
+      // value beside the abort. Poison them all to make the abort the only outcome.
+      lastErrorCode = ERROR_SOLVER_ABORT;
+      if(programRunStop == PGM_RUNNING) {   // halt the outer program too, as every other abort point does
+        programRunStop = PGM_WAITING;
+      }
+      for(i = 0; i < MAX_F_EVAL; i++) {
+        realSetNaN(fx + i);
+      }
+      return;
+    }
     int32ToReal(i - MAX_ORDER, &t);
     realFMA(&t, h, x, fx + i, realContext);
-    _differentiatorIteration(label, fx + i);
+    _differentiatorIteration(label, variable, fx + i);
   }
 }
 
 
 // Evaluate the function at stencil points and compute "best" estimate
 static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finDiff) {
-  real_t x, h, fx[MAX_F_EVAL];
+  real_t x, h, probeValue, fx[MAX_F_EVAL];
+  snap_t savedRegister;
+  calcRegister_t variable = INVALID_VARIABLE;
   int i;
 
   if(!getRegisterAsReal(REGISTER_X, &x)) {
@@ -228,13 +299,36 @@ static void calcDeriv(calcRegister_t label, const FINITE_DIFF_COEFF *const *finD
   }
 
   if(!realIsSpecial(&x)) {
+    if(!(currentSolverStatus & SOLVER_STATUS_USES_FORMULA)) {
+      uint8_t probeError = lastErrorCode;   // an MVAR name the variable allocator rejects raises here, before any sampling the caller asked for
+
+      lastErrorCode = ERROR_NONE;
+      variable = deriv_pgm_variable(label);
+      if(lastErrorCode != ERROR_NONE) {   // no room for the MVAR: the user is told, rather than given the wrong answer a fall back to the stack would return
+        return;
+      }
+      lastErrorCode = probeError;
+      if(variable != INVALID_VARIABLE && !getRegisterAsRealQuiet(variable, &probeValue)) {
+        variable = INVALID_VARIABLE;   // differentiate only with respect to something numeric
+      }
+      if(variable != INVALID_VARIABLE) {
+        // Kept here rather than in a register: the user program runs between the save and the restore and every temporary register is scratch to something it can
+        // call, RCL of a stack register among them. The snapshot carries the type and the tag, so the value comes back as itself and not as the real34 the
+        // sampling stored. getRegisterAsRealQuiet above has already turned away everything the snapshot does not cover.
+        saveRegisterSnapshot(variable, &savedRegister);
+      }
+    }
+
     realCopy(&x, &h);   // Pass X into the h determination code to allow relative steps
     deriv_default_h(&h);
 
     // Compute the function at the finite difference points
     saveForUndo();
-    calcFuncValues(label, &x, fx, &h, &ctxtReal39);
+    calcFuncValues(label, variable, &x, fx, &h, &ctxtReal39);
     undo();
+    if(variable != INVALID_VARIABLE) {   // undo() rolls back the stack only, so the sampled variable is put back here
+      restoreRegisterSnapshot(variable, &savedRegister);
+    }
 
 #if 0
     // This block of code prints out all the function evaluations and

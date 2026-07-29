@@ -452,21 +452,29 @@ tvm_cov
 ; clear - clcvar_cov clears the loaded sample programs' local variables,
 ; matrix2_cov leaves the indexed-matrix pointer set, serialize_state_cov saves
 ; the loaded programs and reloads the whole state from file, pgm_solve_cov
-; appends a program to memory, histo_cov builds a HISTO matrix from the
-; statistical accumulator, clearvars_cov deletes named variables, and
-; program_flow_cov appends programs and then clears them all - so they must run
-; after programs.txt (which consumes the pristine sample-program fixture), not
-; before. serialize_cov resets the calculator; graphs_cov then re-stages its own
-; programs and statistics from that clean slate to render the plots. config_cov
-; changes the display, format, range and grouping modes, which would leak
-; through serialize_cov's lossless round-trip into the graphs_cov plot hashes,
-; so it must run after graphs_cov.
+; appends a program to memory, mvarmenu_cov appends one and leaves a formula in
+; the pool, histo_cov builds a HISTO matrix from the statistical accumulator,
+; clearvars_cov deletes named variables, and program_flow_cov appends programs
+; and then clears them all - so they must run after programs.txt (which consumes
+; the pristine sample-program fixture), not before. serialize_cov resets the
+; calculator; graphs_cov then re-stages its own programs and statistics from
+; that clean slate to render the plots. config_cov changes the display, format,
+; range and grouping modes, which would leak through serialize_cov's lossless
+; round-trip into the graphs_cov plot hashes, so it must run after graphs_cov.
 matrix2_cov
 clcvar_cov
 named_variable_cov
+stats_register_cov
 serialize_state_cov
 pgm_solve_cov
+mvarmenu_cov
+
+; deriv_mvar_cov loads a program and creates the named variables x and p, so it
+; belongs with pgm_solve_cov after programs.txt and before the resetting serialize_cov.
+deriv_mvar_cov
+
 histo_cov
+named_variable_cache_cov
 clearvars_cov
 program_flow_cov
 
@@ -482,6 +490,8 @@ shortint_restore_cov
 serialize_cov
 
 graphs_cov
+
+nested_cov
 
 config_cov
 stack_cov

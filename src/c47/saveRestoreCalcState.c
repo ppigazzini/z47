@@ -453,15 +453,20 @@ bool_t fnSaveDataRegisters(uint16_t *beginR, uint16_t *endR, char *registerName,
   // Appends a register section to the already-open file: header, count, then per register id/name line, type line,
   // value line, and matrix element lines. registerName != NULL saves that one named variable (beginR/endR ignored);
   // NULL saves the range *beginR..*endR inclusive. Lettered registers (100..125) use the short "RX".."RW" form. Returns false on invalid arguments.
-  char tmpString[3000];           // Local target buffer. registerToSaveString() emits the value through the global
+  char *tmpString = malloc(3000); // Local target buffer, on the heap: registerToSaveString() emits the value through the global
                                   // tmpRegisterString (== global tmpString + START_REGISTER_VALUE), so a separate
                                   // local target is required here while that source is live, exactly as in doSave().
   char regName[16];
   calcRegister_t regist;
 
+  if(tmpString == NULL) {
+    return false;
+  }
+
   if(registerName != NULL) {
     regist = findNamedVariable(registerName);   // read-only lookup: saving must not allocate a missing variable
     if(regist == INVALID_VARIABLE) {
+      free(tmpString);
       return false;
     }
     sprintf(tmpString, "NAMED_VARIABLES\n%" PRIu16 "\n", (uint16_t)1);
@@ -470,10 +475,12 @@ bool_t fnSaveDataRegisters(uint16_t *beginR, uint16_t *endR, char *registerName,
     sprintf(tmpString, "%s\n%s\n%s\n", registerName, aimBuffer1, tmpRegisterString);
     save(tmpString, strlen(tmpString));
     saveMatrixElements(regist);
+    free(tmpString);
     return true;
   }
 
   if(beginR == NULL || endR == NULL || *endR < *beginR) {
+    free(tmpString);
     return false;
   }
 
@@ -486,6 +493,7 @@ bool_t fnSaveDataRegisters(uint16_t *beginR, uint16_t *endR, char *registerName,
     save(tmpString, strlen(tmpString));
     saveMatrixElements(regist); ///only executes if really a matrix otherwise returns
   }
+  free(tmpString);
   return true;
 }
 
@@ -613,19 +621,24 @@ void fnSave(uint16_t saveMode) {
 void doSave(uint16_t saveType) {
   printStatus(0, errorMessageOf(SAVING_STATE_FILE), force);
   ioFilePath_t path;
-  char tmpString[3000];           //The concurrent use of the global tmpString
+  char *tmpString = malloc(3000); //The concurrent use of the global tmpString
                                   //as target does not work while the source is at
                                   //tmpRegisterString = tmpString + START_REGISTER_VALUE;
-                                  //Temporary solution is to use a local variable of sufficient length for the target.
+                                  //Temporary solution is to use a local variable of sufficient length for the target, on the heap to keep it off the stack.
 
   int ret;
   calcRegister_t regist;
   uint32_t i;
   char yy1[35], yy2[35];
 
+  if(tmpString == NULL) {
+    return;
+  }
+
 #if defined(DMCP_BUILD)
   // Don't pass through if the power is insufficient
   if( power_check_screen() ) {
+    free(tmpString);
     return;
   }
 #endif // DMCP_BUILD
@@ -644,6 +657,7 @@ void doSave(uint16_t saveType) {
 
   if(ret != FILE_OK ) {
     if(ret == FILE_CANCEL ) {
+      free(tmpString);
       return;
     }
     else {
@@ -651,6 +665,7 @@ void doSave(uint16_t saveType) {
         printf("Cannot SAVE in file C47.sav!\n");
       #endif // !DMCP_BUILD
       displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+      free(tmpString);
       return;
     }
   }
@@ -924,6 +939,7 @@ void doSave(uint16_t saveType) {
 
   hourGlassIconEnabled = false;
   temporaryInformation = TI_SAVED;
+  free(tmpString);
 }
 
 
@@ -1552,7 +1568,8 @@ int64_t stringToInt64(const char *str) {
         regist = stringToRegisterNumber(tmpString);
         read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Register data type & Register value
 
-        if(loadMode == LM_ALL || (loadMode == LM_REGISTERS && regist < REGISTER_X) || (loadMode == LM_REGISTERS_PARTIAL && regist >= s && regist < (s + n))) {
+        if((regist >= 0 && regist <= LAST_GLOBAL_REGISTER) &&  // reject an out-of-range register number from a malformed state file
+            (loadMode == LM_ALL || (loadMode == LM_REGISTERS && regist < REGISTER_X) || (loadMode == LM_REGISTERS_PARTIAL && regist >= s && regist < (s + n)))) {
           #if defined(LOADDEBUG)
             sprintf(line, ", register=%i loadMode:%d, ['%s'] = %s", regist - s + d, loadMode, aimBuffer, tmpString);
             debugPrintf(1, "-", line);
@@ -1611,7 +1628,8 @@ int64_t stringToInt64(const char *str) {
           regist = toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
           read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Register data type & Register value
 
-          if(loadMode == LM_ALL || loadMode == LM_REGISTERS) {
+          if((regist >= FIRST_LOCAL_REGISTER && regist < FIRST_LOCAL_REGISTER + currentNumberOfLocalRegisters) &&  // reject an out-of-range register number from a malformed state file
+             (loadMode == LM_ALL || loadMode == LM_REGISTERS)) {
             #if defined(LOADDEBUG)
               sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
               debugPrintf(3, "C", tmpString);
@@ -2166,7 +2184,7 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "displayFormat"               ) == 0) { displayFormat           = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "displayFormatDigits"         ) == 0) { displayFormatDigits     = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "timeDisplayFormatDigits"     ) == 0) { timeDisplayFormatDigits = toUint8(tmpString); }
-          else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize    = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "shortIntegerWordSize"        ) == 0) { shortIntegerWordSize    = boundShortIntegerWordSize(toUint8(tmpString)); }
           else if(strcmp(aimBuffer, "shortIntegerMode"            ) == 0) { shortIntegerMode        = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "significantDigits"           ) == 0) { significantDigits       = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "fractionDigits"              ) == 0) { fractionDigits          = toUint8(tmpString); }

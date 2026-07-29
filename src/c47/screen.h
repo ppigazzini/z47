@@ -94,11 +94,11 @@
   #if defined(MONITOR_CLRSCR)
     #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate(); printf("CLEARFULLSCREEN Macro %u\n",         (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
     #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                  printf("CLEARFULLSCREEN EXCL SB Macro %u\n", (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
-    #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate(); printf("CLEARSB Macro %u\n", (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
+    #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, GRAPHMODE ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate(); printf("CLEARSB Macro %u\n", (uint16_t)cnt);} while(0)  //set last to undefined to force first refresh condition to be true
   #else //!MONITOR_CLRSCR
     #define clearScreen(cnt)                        do { lcd_fill_rect(0,  0, SCREEN_WIDTH, 240, LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
     #define clearScreenExcludingStatusBar(cnt)      do { lcd_fill_rect(0, 20, SCREEN_WIDTH, 220, LCD_SET_VALUE);                 } while(0)  //set last to undefined to force first refresh condition to be true
-    #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, calcMode == CM_GRAPH ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
+    #define clearScreenStatusBar(cnt)               do { lcd_fill_rect(0,  0, GRAPHMODE ? widthGraphInfoBox : SCREEN_WIDTH, 20,  LCD_SET_VALUE); forceSBupdate();} while(0)  //set last to undefined to force first refresh condition to be true
   #endif //MONITOR_CLRSCR
 
 
@@ -155,6 +155,7 @@
   bool_t   progressHalfSecUpdate_Integer      (uint8_t mode, char *txt, int32_t loop, bool_t clearZ, bool_t clearT, bool_t disp);
   bool_t   monitorExit                        (int32_t *loop, char* str);
   bool_t   checkHalfSec                       (void);
+  void     resetHalfSecTicks                  (void);
 
   void     refreshScreen                      (uint16_t source);
   bool_t   showingProbMenu                    (void);

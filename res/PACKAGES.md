@@ -1,4 +1,4 @@
-Which of the 3 files (PACKAGE 1, PACKAGE 2 or dmcp5) do I load?
+Which of the 5 files (PACKAGE 1 ... PACKAGE 4 or dmcp5) do I load?
 
 ## Short answer
 
@@ -10,45 +10,48 @@ Which of the 3 files (PACKAGE 1, PACKAGE 2 or dmcp5) do I load?
 On the DM42n there is sufficient flash storage, so there is no package choice to make: all functions are always available.  
 **dmcp5** is the full C47 firmware and is the correct and only option. It does not fit on the original DM42.
 
-On the original DM42, flash space is constrained. To make C47 fit, the firmware is built in two mutually exclusive variants:
+On the original DM42, flash space is constrained. To make C47 fit, the firmware is built in four mutually exclusive variants:
 
-- **PACKAGE 1** retains probability and distribution functions, omits Elliptic, Bessel and Orthogonal polynomial, and eigenvalue functions including IR printing.
-- **PACKAGE 2** looses some distributions, retains all Elliptic, Bessel and Orthogonal polynomial functions and omits IR printing.
-- **PACKAGE 3** looses more distributions, omits Elliptic, Bessel and Orthogonal polynomial functions, retains eigenvalues and elec functions, and omits IR printing.
-- **PACKAGE 4** has no distributions, omits Elliptic, Bessel and Orthogonal polynomial, eigenvalues and elec functions, and includes IR printing.
+- **PACKAGE 1** retains all distributions, Bessel and Orthogonal polynomial functions, fast financial functions, ELEC functions and IR printing; omits Elliptic and eigenvalue functions.
+- **PACKAGE 2** retains all distributions and the full X.FN menu (Elliptic, Bessel, Orthogonal); financial functions are slower and lower precision; omits eigenvalues, eigenvectors, matrix sqrt, ELEC functions and IR printing.
+- **PACKAGE 3** loses some distributions (keeps Normal, StdNormal, LogNormal, gev, Pareto, Uniform, Discrete Uniform); retains Bessel and Orthogonal polynomial functions, fast financial functions, eigenvalues, eigenvectors, matrix sqrt, ELEC functions and IR printing; omits Elliptic functions.
+- **PACKAGE 4** has no distributions; omits Elliptic, Bessel and Orthogonal polynomial, eigenvalue and ELEC functions; financial functions are slower and lower precision; includes IR printing.
 
-Apart from these exclusions, the packages are functionally identical. Neither is “better”; each simply trades one feature set for another to meet the memory limit.
+
+Apart from these exclusions, the packages are functionally identical. None is “better”; each simply trades one feature set for another to meet the memory limit.
 
 If you have two original DM42 units converted to C47, installing different packages could make sense and effectively gives you access to the complete function set across the two machines.
 
 The precise feature balance may vary slightly between releases as code size fluctuates, but this split is deliberate and should be expected on the original DM42.
 
-## Feature matrix: 2026-07-17
+## Feature matrix: 2026-07-22
 
 ```
- Pkg │ DIST    │ X.FN     │ FIN  │ EIGEN │ ELEC │ IR
-─────┼─────────┼──────────┼──────┼───────┼──────┼────
-  1  │ all     │ stripped │ fast │   ·   │  ·   │ ✓
-  2  │ half    │ full     │ slow │   ·   │  ·   │ ·
-  3  │ limited │ stripped │ slow │   ✓   │  ✓   │ ·
-  4  │ none    │ stripped │ slow │   ·   │  ·   │ ✓
+Info 2026-07-22 00.109.04.00b0.RC1
 
-DIST   all      every distribution
-       half     Normal, StdNormal, LogNormal, cauchy, chi, expo, logis, t, weibull
-       limited  Normal, StdNormal, LogNormal only
-       none     no distributions
-X.FN   full     includes Elliptic, Bessel, Orthogonal
-       stripped none of Elliptic, Bessel, Orthogonal
-FIN    fast     financial functions at full precision/speed
-       slow     financial functions available, but lower precision and slower
-EIGEN  ✓        EIGVAL + EIGVEC (est. > 16 digits)
-       ·        no EIGVAL, EIGVEC or MSQRT
-ELEC   ✓        Star/Delta, Impedance, phase-sequence, parallel functions
-       ·        none of the above
-IR     ✓        IR printing enabled
-```
+   Pkg │ DIST    │ X.FN     │ FIN  │ EIGEN │ ELEC │ IR
+  ─────┼─────────┼──────────┼──────┼───────┼──────┼────
+    1  │ all     │ no ellip │ fast │   ❌  │  ✅  │ ✅
+    2  │ all     │ full     │ slow │   ❌  │  ❌  │ ❌
+    3  │ limited │ no ellip │ fast │   ✅  │  ✅  │ ✅
+    4  │ none    │ no e-B-O │ slow │   ❌  │  ❌  │ ✅
 
-Common to all C47 / DM42 packages: no 2D/3D VECTOR conversions (matrix functions stay), no number editing, no 1000-digit XFN math.
+
+  DIST   all      every distribution
+         limited  Normal, StdNormal, LogNormal, gev, Pareto, Uniform, Discr Uniform
+         none     no distributions
+  X.FN   full     includes elliptic, Bessel, Orthogonal
+         no ellip without elliptic
+         no e-B-O none of elliptic, Bessel, Orthogonal
+  FIN    fast     financial funcs at full precision/speed
+         slow     financial funcs available, but lower precision and slower
+  EIGEN  ✅       EIGVAL + EIGVEC (est. > 16 digits) + MSQRT
+         ❌       none of the above
+  ELEC   ✅       Star/Delta, Impedance, phase-sequence, parallel funcs
+         ❌       none of the above
+  IR     ✅       IR printing
+         ❌       no IR printing
+  All C47 / DM42 packages (common to 1–4): no 2D/3D VECTOR conversions (matrix functions stay), no number editing, no 1000-digit XFN math.
 
 ---
 

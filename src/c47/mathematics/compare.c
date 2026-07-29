@@ -598,69 +598,12 @@ static void almostEqualMatrix(uint16_t regist) {
     }
 }
 
-#define SNAPVAL(reg, s)                                          \
-  do {                                                             \
-  switch(s.t = getRegisterDataType(reg)) {                       \
-    case dtComplex34:                                            \
-      real34Copy(REGISTER_REAL34_DATA(reg), &s.r);               \
-      real34Copy(REGISTER_IMAG34_DATA(reg), &s.i);               \
-      break;                                                     \
-    case dtReal34:                                               \
-      case dtTime:                                                 \
-      real34Copy(REGISTER_REAL34_DATA(reg), &s.r);               \
-      real34SetZero(&s.i);                                       \
-      break;                                                     \
-    case dtLongInteger:                                          \
-      getRegisterAsLongInt(reg, s.li, NULL);                     \
-      break;                                                     \
-    case dtShortInteger:                                         \
-      getRegisterAsRawShortInt(reg, &s.siVal, &s.siBase);        \
-      break;                                                     \
-    }                                                              \
-    s.tag = getRegisterTag(reg);                                   \
-  } while(0)
-
-// reg may hold a different type (hence allocation size) than the snapshot, so reallocate to s.t before writing back
-#define RESTOREVAL(reg, s)                                                   \
-  do {                                                                       \
-  switch(s.t) {                                                            \
-    case dtComplex34:                                                      \
-      reallocateRegister(reg, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, s.tag); \
-      real34Copy(&s.i, REGISTER_IMAG34_DATA(reg));                         \
-      real34Copy(&s.r, REGISTER_REAL34_DATA(reg));                         \
-      break;                                                               \
-    case dtReal34:                                                         \
-      case dtTime:                                                           \
-      reallocateRegister(reg, s.t, REAL34_SIZE_IN_BLOCKS, s.tag);          \
-      real34Copy(&s.r, REGISTER_REAL34_DATA(reg));                         \
-      break;                                                               \
-    case dtLongInteger:                                                    \
-      convertLongIntegerToLongIntegerRegister(s.li, reg);                  \
-      longIntegerFree(s.li);                                               \
-      break;                                                               \
-    case dtShortInteger:                                                   \
-      reallocateRegister(reg, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.siBase); \
-      *(REGISTER_SHORT_INTEGER_DATA(reg))=s.siVal;                         \
-      setRegisterShortIntegerBase(reg, s.siBase);                          \
-      break;                                                               \
-    }                                                                        \
-    setRegisterDataType(reg, s.t, s.tag);                                    \
-  } while(0)
-
-
 static void almostEqualScalar(uint16_t regist, const uint16_t test) {
-  struct snap_t {
-      uint8_t t;
-      real34_t r, i;
-      longInteger_t li;
-      uint64_t siVal;
-      uint32_t siBase;
-      uint32_t tag;
-    } snap1, snap2;
+  snap_t snap1, snap2;   // saveRegisterSnapshot/restoreRegisterSnapshot are in registerValueConversions.h
 
   // Snapshot real values before rounding
-  SNAPVAL(REGISTER_X, snap1);
-  SNAPVAL(regist, snap2);
+  saveRegisterSnapshot(REGISTER_X, &snap1);
+  saveRegisterSnapshot(regist, &snap2);
 
   switch(test) {
     case type_pair_u8(dtComplex34, dtComplex34):
@@ -799,11 +742,8 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
 
   compareRegisters(regist, COMPARE_MODE_EQUAL);
 
-  #pragma GCC diagnostic push
-  #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-  RESTOREVAL(REGISTER_X, snap1);
-  RESTOREVAL(regist, snap2);
-  #pragma GCC diagnostic pop
+  restoreRegisterSnapshot(REGISTER_X, &snap1);
+  restoreRegisterSnapshot(regist, &snap2);
 }
 
 

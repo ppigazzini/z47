@@ -1401,10 +1401,12 @@ currentKeyCode = 255;
       printf("Axis3c: x: %f -> %f y: %f -> %f   \n", dbl(x_min), dbl(x_max), dbl(y_min), dbl(y_max));
       #endif // STATDEBUG && PC_BUILD
 
-      grf_x_r(1, &yr);                                 //yr and xr hold the first two x values just for the column width
-      int16_t colw = (int16_t) (
-                                 (  (screen_window_x_r(x_min, &yr, x_max) - screen_window_x_r(x_min, &xr, x_max))  / 2.0f  )
-                                ) - 1;
+      grf_x_r(numberOfPlotPoints - 1, &yr);            //yr and xr hold the last and first x values for the bar pitch
+      int16_t xLast = screen_window_x_r(x_min, &yr, x_max);
+      int16_t barPitch = (int16_t)(  (float)(xLast - xn)
+                                   / (float)(numberOfPlotPoints > 1 ? numberOfPlotPoints - 1 : 1) + 0.5f);   //centre-to-centre bar spacing, one integer for all bars
+      int16_t barX0 = (int16_t)((xn + xLast - (numberOfPlotPoints - 1) * barPitch + 1) / 2);   //bars go on the integer grid barX0 + ix*barPitch, anchored mid-span so drift splits between both ends
+      int16_t colw = (int16_t)(barPitch / 2.0f) - 1;   //half bar width; bar width 2*colw+1 and gap barPitch-2*colw-1 are constant across the plot
         //#################################################### vvv MAIN GRAPH LOOP vvv #########################
       for(ix = 0; (ix < numberOfPlotPoints); ++ix) {
         grf_x_r(ix, &xr);
@@ -1413,6 +1415,9 @@ currentKeyCode = 255;
         yo = yN;
         xN = screen_window_x_r(x_min, &xr, x_max);
         yN = screen_window_y_r(y_min, &yr, y_max);
+        if(drawHistogram != 0) {
+          xN = (int16_t)(barX0 + ix * barPitch);       //rounding each bin centre separately varied the gaps between bars
+        }
 
         #if defined(STATDEBUG) && defined(PC_BUILD)
           printf("plotting graph table[%d] = x:%f y:%f xN:%d yN:%d drawHistogram:%d ", ix, grf_x(ix), grf_y(ix), xN, yN, drawHistogram);

@@ -31,7 +31,8 @@ Out: EC=0 RX=Real:"9"
 Func: fnIntegrateCov
 In:  FARG=0 RY=Real:"2" RX=Real:"2"
 Out: EC=0 RX=Real:"0"
-; dispatch errors: unknown label letter -> 6; named var, no program -> 54
+; dispatch errors: unknown label letter -> 6; named var, no program -> 54. The staged-program selection cases
+; (no-MVAR and MVAR) are fnIntegrateErrCov FARG=2/3 in pgm_solve_cov, which loads the programs.
 Func: fnIntegrateErrCov
 In:  FARG=0 RX=Real:"0"
 Out: EC=6

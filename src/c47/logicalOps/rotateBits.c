@@ -259,6 +259,8 @@ void fnLj(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
+  w &= shortIntegerMask; // cleanse over-wide bits, else w <<= count is UB
+
   if(w == 0) {
     count = shortIntegerWordSize;
   }

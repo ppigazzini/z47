@@ -1,0 +1,11 @@
+;******************************************************************************************************************************
+;** Coverage: STATS-register detection (namedVariableIsStats, registers.c). The store path recomputes the statistical sums    **
+;** only when the target is the STATS matrix. fnStatsRegisterCov checks that namedVariableIsStats matches the                 **
+;** regist == findNamedVariable("STATS") test for every register: false with no STATS variable (named, numbered, reserved and **
+;** one-past-the-list indices), true only for STATS once created, and false again after it is deleted. Cleans up after itself.**
+;******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnStatsRegisterCov
+In:  FARG=0
+Out: EC=0

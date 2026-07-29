@@ -1,0 +1,13 @@
+NOP ; FFX  extreme-scaled exponential e^(x*1E50 - 1), plot and solve stress test at tiny x magnitudes in the range of -10E-50 to 10E-50
+LBL ‘FFX’
+  # Jaco Mostert
+  # Extreme-scaled exponential e^(x*1E50 - 1)
+  # 2026-07-24
+  MVAR ‘x’
+  RCL 'x'
+  1.e-50
+  -
+  1.e+50
+  ×
+  𝑒ˣ
+.END.

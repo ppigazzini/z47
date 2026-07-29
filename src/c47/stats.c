@@ -325,6 +325,10 @@ void initStatisticalSums(void) {
   if(statisticalSumsUpdate) {
     if(statisticalSumsPointer == NULL) {
       statisticalSumsPointer = allocC47Blocks(NUMBER_OF_STATISTICAL_SUMS * REAL_SIZE_IN_BLOCKS(75));
+      if(statisticalSumsPointer == NULL) {       // no room for the sums; raise the error so no caller writes through a NULL pointer
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return;
+      }
       clearStatisticalSums();
       strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     }
@@ -379,6 +383,9 @@ void calcSigma(uint16_t maxOffset) {
     clearStatisticalSums();
     if(!statisticalSumsPointer) {
       initStatisticalSums();
+      if(!statisticalSumsPointer) {              // sums not allocated; initStatisticalSums raises the error
+        return;
+      }
     }
     calcRegister_t regStats = findNamedVariable(statMx);
     uint16_t rr = 1;
@@ -423,7 +430,7 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
 
 
 
-  static void AddtoStatsMatrix(real_t *x, real_t *y) {
+  static bool_t AddtoStatsMatrix(real_t *x, real_t *y) {
     uint16_t rows = 0, cols;
     strcpy(statMx, "STATS");                     //any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
     calcRegister_t regStats = findNamedVariable(statMx);
@@ -455,6 +462,7 @@ static void getLastRowStatsMatrix(real_t *x, real_t *y) {
         moreInfoOnError("In function AddtoStatsMatrix:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
+    return regStats != INVALID_VARIABLE;
   }
 
 
@@ -588,10 +596,13 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
           reLoadStatisticalSums();
         }
 
+        // a failed append raises the error; sums stay in step with the matrix and SAVED_SIGMA_lastAddRem stays SIGMA_NONE so the error undo does not replay a Sigma-
+        if(!AddtoStatsMatrix(&x, &y)) {
+          return;
+        }
         if(statisticalSumsUpdate) {
           addSigma(&x, &y);
         }
-        AddtoStatsMatrix(&x, &y);
         realCopy(&x,      &SAVED_SIGMA_LASTX);
         realCopy(&y,      &SAVED_SIGMA_LASTY);
         SAVED_SIGMA_lastAddRem = SIGMA_PLUS;
@@ -630,10 +641,12 @@ void fnSigmaAddRem(uint16_t plusMinusSelection) {
           for(uint16_t i = 0; i < matrix.header.matrixRows; ++i) {
             real34ToReal(&matrix.matrixElements[i * 2    ], &x);
             real34ToReal(&matrix.matrixElements[i * 2 + 1], &y);
+            if(!AddtoStatsMatrix(&x, &y)) {      // stops at the first row that does not fit; the error is already raised
+              return;
+            }
             if(statisticalSumsUpdate) {
               addSigma(&x, &y);
             }
-            AddtoStatsMatrix(&x, &y);
           }
 
           liftStack();

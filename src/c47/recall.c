@@ -245,6 +245,8 @@ void fnRecallConfig(uint16_t regist) {
 
     recallFromDtConfigDescriptor(shortIntegerMode);
     recallFromDtConfigDescriptor(shortIntegerWordSize);
+    shortIntegerWordSize = boundShortIntegerWordSize(shortIntegerWordSize);
+    updateShortIntegerMasks();  // rederive shortIntegerMask and shortIntegerSignBit from the recalled word size; the config descriptor stores the size but neither mask
     recallFromDtConfigDescriptor(displayFormat);
     recallFromDtConfigDescriptor(displayFormatDigits);
     recallFromDtConfigDescriptor(gapItemLeft);
