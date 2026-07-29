@@ -1,5 +1,15 @@
 const build_options = @import("firmware_io_build_options");
 
+// Console sinks (upstream's hal/console.c). Carried here rather than given
+// their own build object because they are firmware-only io and this object is
+// already linked into every board build; the force-import emits their exports.
+// They must be in the link even though nothing here calls them -- see the file
+// header for why leaving them undefined costs 316 bytes of SRAM2.
+const console = @import("firmware_console_runtime.zig");
+comptime {
+    _ = console;
+}
+
 const FILE_ERROR: c_int = 0;
 const FILE_OK: c_int = 1;
 const FILE_CANCEL: c_int = 2;
@@ -101,7 +111,9 @@ const Fil = extern struct {
 
 const SysSdb = extern struct {
     calc_state: u32,
-    ppgm_fp: ?*anyopaque,
+    // dmcp.h declares this `FIL *ppgm_fp`, so bind it at its real type rather
+    // than as ?*anyopaque -- the handle is then usable without a cast.
+    ppgm_fp: ?*Fil,
     key_to_alpha_table: [*c]const u8,
     run_menu_item_app: ?*const anyopaque,
     menu_line_str_app: ?*const anyopaque,
@@ -137,9 +149,14 @@ const FileWriteFn = *const fn (?*anyopaque, ?*const anyopaque, u32, [*c]u32) cal
 const FileSeekFn = *const fn (?*anyopaque, u32) callconv(.c) c_uint;
 const FileUnlinkFn = *const fn ([*c]const u8) callconv(.c) c_uint;
 
+/// The DMCP system data block, at the fixed address the SDK publishes. Sole
+/// materialisation of that pointer, so the address literal is spelled once.
+fn sdb() *const SysSdb {
+    return @ptrFromInt(build_options.sdb_base);
+}
+
 fn menuDisplay() ?*DispStat {
-    const sdb: *const SysSdb = @ptrFromInt(build_options.sdb_base);
-    return sdb.pds_t24;
+    return sdb().pds_t24;
 }
 
 // The file handle is DMCP's, not ours: upstream's hal/io.c passes the SDK's
@@ -148,16 +165,19 @@ fn menuDisplay() ?*DispStat {
 // memory. Owning a private Fil here both diverged from that shared handle and
 // spent 564 bytes of the DM42's 8Kb .data+.bss budget below the system data
 // block, which the linker script asserts.
-fn programFile() *Fil {
-    const sdb: *const SysSdb = @ptrFromInt(build_options.sdb_base);
-    return @ptrCast(@alignCast(sdb.ppgm_fp));
+fn programFile() ?*Fil {
+    return sdb().ppgm_fp;
 }
 
 fn programFileHandle() ?*anyopaque {
     return programFile();
 }
 
-fn programFileStruct() *Fil {
+/// The DMCP-owned handle, for the two callers that read its FatFS fields.
+/// DMCP populates sdb.ppgm_fp before handing control to the program, so a null
+/// here means the system block is not what the SDK promises; treat that as
+/// "no file" rather than faulting.
+fn programFileStruct() ?*Fil {
     return programFile();
 }
 
@@ -436,7 +456,7 @@ pub export fn ioFileClose() callconv(.c) void {
 }
 
 pub export fn ioEof() callconv(.c) c_int {
-    const file = programFileStruct();
+    const file = programFileStruct() orelse return 1;
     return @intFromBool(file.fptr == file.obj.objsize);
 }
 
