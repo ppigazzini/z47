@@ -1376,6 +1376,26 @@ pub export fn fnGetRoundingMode(unusedButMandatoryParameter: u16) callconv(.c) v
     frontier_addons.fnIntInputLongint(@intCast(roundingMode));
 }
 
+// Bound a short integer word size arriving from a file. WSIZE's tamMinMax bounds the interactive path; the
+// state file, backup.cfg and a config register supply it raw, and every consumer shifts by it or by one
+// less. 0 already spells the widest word.
+const MAX_SHORT_INTEGER_WORD_SIZE: u8 = 64;
+pub export fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8 {
+    if (word_size < 1 or word_size > MAX_SHORT_INTEGER_WORD_SIZE) {
+        return MAX_SHORT_INTEGER_WORD_SIZE;
+    }
+    return word_size;
+}
+
+// Derive shortIntegerMask and shortIntegerSignBit from the current shortIntegerWordSize. Callers that
+// assign shortIntegerWordSize directly (state-file/backup restore, RCLCFG) must call this too, since
+// neither mask is itself stored.
+pub export fn updateShortIntegerMasks() callconv(.c) void {
+    const resolved = word_size_math.resolveWordSize(shortIntegerWordSize, shortIntegerWordSize);
+    shortIntegerMask = resolved.mask;
+    shortIntegerSignBit = resolved.sign_bit;
+}
+
 pub export fn fnGetWordSize(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     z47_frontier_push_u32_to_x(@intCast(shortIntegerWordSize));

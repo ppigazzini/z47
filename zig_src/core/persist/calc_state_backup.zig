@@ -106,6 +106,8 @@ extern var displayFormat: [1]u8;
 extern var displayFormatDigits: [1]u8;
 extern var timeDisplayFormatDigits: [1]u8;
 extern var shortIntegerWordSize: [1]u8;
+extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
+extern fn updateShortIntegerMasks() callconv(.c) void;
 extern var significantDigits: [1]u8;
 extern var fractionDigits: [1]u8;
 extern var shortIntegerMode: [1]u8;
@@ -832,25 +834,38 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
     } else if (streq(type_str, "hexDump")) {
         const numberOfBytes = calc_state.stringToUint32(vp);
         var bufp: [*c]u8 = @ptrCast(buffer);
-        var vv: [*c]const u8 = undefined;
+        // The two hex digits of byte b sit at offset 7 + 3*b of a dump line saveStateValue() wrote. A line in
+        // the file need not be that long, so index it against its own length. Offsets rather than pointers: a
+        // line shorter than 7 has no such position to point at, one-past-the-end or otherwise.
+        var dumpLine: [*c]const u8 = null;
+        var dumpLineLength: usize = 0;
+        var digit: usize = 0;
         var count: u32 = 0;
-        while (count < numberOfBytes) : (count += 1) {
+        while (count < numberOfBytes) : ({
+            count += 1;
+            bufp += 1;
+        }) {
             if (count % 32 == 0) {
                 paramCurrent = paramCurrent.?.next;
-                vv = paramCurrent.?.param + 7;
+                const pc = paramCurrent orelse break;
+                dumpLine = pc.param;
+                dumpLineLength = strlen(pc.param);
+                digit = 7;
             }
-            const hi = hexNibble(vv[0]);
-            vv += 1;
-            const lo = hexNibble(vv[0]);
-            vv += 2;
+            if (digit + 1 >= dumpLineLength) { // the line ends before the digit pair this byte needs: stop, as for a parameter list that runs out above
+                break;
+            }
+            const hi = hexNibble(dumpLine[digit]);
+            const lo = hexNibble(dumpLine[digit + 1]);
+            digit += 3;
             bufp[0] = (hi << 4) | lo;
-            bufp += 1;
         }
     }
 }
 extern fn atof(s: [*c]const u8) f64;
 extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong; // c47Ptr: "%u (0x..)" -> stop at space
 extern fn doFnReset(confirmation: u16, auto_sav: bool) void;
+extern fn invalidateNamedVariableCache() callconv(.c) void;
 extern fn scanLabelsAndPrograms() void;
 extern fn defineCurrentProgramFromGlobalStepNumber(global_step: i16) void;
 extern fn defineCurrentStep() void;
@@ -899,6 +914,52 @@ fn migrateFloatValue(buffer: ?*anyopaque, valueName: [*c]const u8, newType: [*c]
 fn toPcmem(blk: u32) [*c]u8 {
     return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(blk)));
 }
+const C47_NULL: u32 = 65535;
+const MAX_FREE_REGIONS: u32 = if (state_old_hw) 50 else 200;
+const MAX_ALLOCATED_REGIONS: u32 = 5000;
+
+// A memory region count read from backup.cfg is how many entries of freeMemoryRegions or
+// allocatedMemoryRegions freeList.c walks, so a count outside 0..ceiling cannot describe the file's own
+// tables. Report it and let the caller refuse the file, as it already does for a wrong RAM size. This is a
+// coherence check, not the bound on the restore: those writes are bounded by the destination.
+fn restoredRegionCountIsUsable(count: i32, ceiling: u32) bool {
+    return count >= 0 and @as(u32, @intCast(count)) <= ceiling;
+}
+
+// Restore one c47Ptr - a block index into ram - together with the byte offset saveCalc() stored beside it
+// where the field has one, and build the pointer from the two integers. TO_PCMEMPTR() has no range of its
+// own, so the range test here is what stops a block index the file chose forming a pointer outside the
+// pool, before scanLabelsAndPrograms() or the register walk is handed it.
+//
+// `current` seeds both numbers, so a field whose parameter the file omits keeps its own value.
+// restoreStateValue() writes nothing when it finds no match, so one scratch variable shared across the
+// fields would hand an omitted field whichever pointer was restored before it.
+//
+// Out of range clears poolPointersInRange, which makes the caller refuse the file, and returns null rather
+// than a pointer the caller might still use. C47_NULL is the file's own null and stays legal.
+fn restoredPoolPointer(current: [*c]u8, valueName: [*c]const u8, offsetValueName: ?[*c]const u8, poolPointersInRange: *bool) [*c]u8 {
+    const geo = geometry();
+    var blockAddress: u32 = progmem.toC47memptr(geo, @intFromPtr(current));
+    var byteOffset: u32 = if (current == null) 0 else progmem.offsetWithinBlock(geo, @intFromPtr(current));
+
+    rv(&blockAddress, 4, valueName, "c47Ptr");
+    if (offsetValueName) |ovn| {
+        rv(&byteOffset, 4, ovn, "uint32");
+    }
+
+    if (blockAddress == C47_NULL and byteOffset == 0) {
+        return null;
+    }
+    // Bound each number against what the format lets the writer produce, not against the pool as a whole:
+    // saveCalc() splits a pointer with TO_C47MEMPTR(), which divides by the block size, and stores the
+    // remainder as the offset, so an offset is never one block or more. The result is required to be
+    // strictly inside the pool: a block index of ram_size_in_blocks is the one-past-the-end position.
+    if (blockAddress >= geo.ram_size_in_blocks or byteOffset >= 4) {
+        poolPointersInRange.* = false;
+        return null;
+    }
+    return @ptrFromInt(progmem.toPcmemptr(geo, @intCast(blockAddress)) + byteOffset);
+}
 fn rdU16(p: [*c]const u8) u16 {
     return @as(u16, p[0]) | (@as(u16, p[1]) << 8);
 }
@@ -922,109 +983,65 @@ pub fn restoreCalc() void {
         backupFreeParams();
         return;
     }
+    // Both region counts are read into locals and checked before anything is committed, and ahead of the
+    // ram restore, so a file refused here leaves the calculator doFnReset() built at entry rather than one
+    // with half a pool in it. A parameter the file omits leaves its local at the live value, as for any
+    // other field.
+    var restoredFreeRegions: i32 = numberOfFreeMemoryRegions;
+    var restoredAllocatedRegions: i32 = numberOfAllocatedMemoryRegions;
+    rv(&restoredFreeRegions, 4, "numberOfFreeMemoryRegions", "int32");
+    rv(&restoredAllocatedRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
+    if (!restoredRegionCountIsUsable(restoredFreeRegions, MAX_FREE_REGIONS) or
+        !restoredRegionCountIsUsable(restoredAllocatedRegions, MAX_ALLOCATED_REGIONS))
+    {
+        backupFreeParams();
+        return;
+    }
+    numberOfFreeMemoryRegions = restoredFreeRegions;
+    numberOfAllocatedMemoryRegions = restoredAllocatedRegions;
+
     rv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
-    rv(&numberOfFreeMemoryRegions, 4, "numberOfFreeMemoryRegions", "int32");
-    rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfFreeMemoryRegions)), "freeMemoryRegions", "hexDump");
-    rv(&numberOfAllocatedMemoryRegions, 4, "numberOfAllocatedMemoryRegions", "int32");
-    rv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * @as(u32, @bitCast(numberOfAllocatedMemoryRegions)), "allocatedMemoryRegions", "hexDump");
+    // The size argument is what stops the reader writing off the end, so it is the room the destination
+    // has, the way every other call here passes a sizeof(). These writes cannot leave their table whatever
+    // count the file carries.
+    rv(freeMemoryRegions, FREE_MEM_REGION_SIZE * MAX_FREE_REGIONS, "freeMemoryRegions", "hexDump");
+    rv(&allocatedMemoryRegions[0], FREE_MEM_REGION_SIZE * MAX_ALLOCATED_REGIONS, "allocatedMemoryRegions", "hexDump");
     rv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
     rv(&calcMode, 1, "calcMode", "uint8");
     rv(&previousCalcMode, 1, "previousCalcMode", "uint8");
     rv(&calcModel, 1, "calcModel", "uint8");
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "allNamedVariables", "c47Ptr");
-        allNamedVariables = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "allFormulae", "c47Ptr");
-        allFormulae = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "userMenus", "c47Ptr");
-        userMenus = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "userKeyLabel", "c47Ptr");
-        userKeyLabel = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "statisticalSumsPointer", "c47Ptr");
-        statisticalSumsPointer = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "savedStatisticalSumsPointer", "c47Ptr");
-        savedStatisticalSumsPointer = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "labelList", "c47Ptr");
-        labelList = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "programList", "c47Ptr");
-        programList = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "currentSubroutineLevelData", "c47Ptr");
-        currentSubroutineLevelData = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "currentLocalFlags", "c47Ptr");
-        currentLocalFlags = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "currentLocalRegisters", "c47Ptr");
-        currentLocalRegisters = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "beginOfProgramMemory", "c47Ptr");
-        beginOfProgramMemory = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "beginOfProgramMemoryOffset", "uint32");
-        beginOfProgramMemory += ramPtr;
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "firstFreeProgramByte", "c47Ptr");
-        firstFreeProgramByte = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "firstFreeProgramByteOffset", "uint32");
-        firstFreeProgramByte += ramPtr;
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "firstDisplayedStep", "c47Ptr");
-        firstDisplayedStep = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "firstDisplayedStepOffset", "uint32");
-        firstDisplayedStep += ramPtr;
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "currentStep", "c47Ptr");
-        currentStep = toPcmem(ramPtr);
-    }
-    {
-        var ramPtr: u32 = 0;
-        rv(&ramPtr, 4, "currentStepOffset", "uint32");
-        currentStep += ramPtr;
+
+    var poolPointersInRange = true;
+    allNamedVariables = restoredPoolPointer(allNamedVariables, "allNamedVariables", null, &poolPointersInRange);
+    invalidateNamedVariableCache(); // the whole table arrives from the backup image: nothing findNamedVariable() remembers describes it any more
+    allFormulae = restoredPoolPointer(allFormulae, "allFormulae", null, &poolPointersInRange);
+    userMenus = restoredPoolPointer(userMenus, "userMenus", null, &poolPointersInRange);
+    userKeyLabel = restoredPoolPointer(userKeyLabel, "userKeyLabel", null, &poolPointersInRange);
+    statisticalSumsPointer = restoredPoolPointer(statisticalSumsPointer, "statisticalSumsPointer", null, &poolPointersInRange);
+    savedStatisticalSumsPointer = restoredPoolPointer(savedStatisticalSumsPointer, "savedStatisticalSumsPointer", null, &poolPointersInRange);
+    labelList = restoredPoolPointer(labelList, "labelList", null, &poolPointersInRange);
+    programList = restoredPoolPointer(programList, "programList", null, &poolPointersInRange);
+    currentSubroutineLevelData = restoredPoolPointer(currentSubroutineLevelData, "currentSubroutineLevelData", null, &poolPointersInRange);
+    currentLocalFlags = restoredPoolPointer(currentLocalFlags, "currentLocalFlags", null, &poolPointersInRange);
+    currentLocalRegisters = restoredPoolPointer(currentLocalRegisters, "currentLocalRegisters", null, &poolPointersInRange);
+
+    beginOfProgramMemory = restoredPoolPointer(beginOfProgramMemory, "beginOfProgramMemory", "beginOfProgramMemoryOffset", &poolPointersInRange);
+    firstFreeProgramByte = restoredPoolPointer(firstFreeProgramByte, "firstFreeProgramByte", "firstFreeProgramByteOffset", &poolPointersInRange);
+    firstDisplayedStep = restoredPoolPointer(firstDisplayedStep, "firstDisplayedStep", "firstDisplayedStepOffset", &poolPointersInRange);
+    currentStep = restoredPoolPointer(currentStep, "currentStep", "currentStepOffset", &poolPointersInRange);
+
+    // Every field above is restored before this is tested, so one file reports every pointer it got wrong
+    // rather than only the first. A file that describes pointers into some other pool is refused: nothing
+    // here can repair it, and the next thing to run is scanLabelsAndPrograms() walking program memory
+    // through exactly these pointers.
+    //
+    // Unlike the region-count check above, this one cannot simply return: by here ram holds the file's
+    // bytes, the region counts are the file's, every pointer that passed has been assigned, and the one
+    // that failed holds the null restoredPoolPointer() returns. So perform the reset this path implies.
+    if (!poolPointersInRange) {
+        backupFreeParams();
+        doFnReset(CONFIRMED, loadAutoSav);
+        return;
     }
     rv(&globalFlags[0], 16, "globalFlags", "hexDump");
     rv(&errorMessage[0], 512, "errorMessage", "hexDump");
@@ -1068,6 +1085,8 @@ pub fn restoreCalc() void {
     rv(&displayFormatDigits[0], 1, "displayFormatDigits", "uint8");
     rv(&timeDisplayFormatDigits[0], 1, "timeDisplayFormatDigits", "uint8");
     rv(&shortIntegerWordSize[0], 1, "shortIntegerWordSize", "uint8");
+    shortIntegerWordSize[0] = boundShortIntegerWordSize(shortIntegerWordSize[0]);
+    updateShortIntegerMasks(); // rederive shortIntegerMask and shortIntegerSignBit from the word size just restored; the file copies (older backups) are ignored
     rv(&significantDigits[0], 1, "significantDigits", "uint8");
     rv(&fractionDigits[0], 1, "fractionDigits", "uint8");
     rv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");

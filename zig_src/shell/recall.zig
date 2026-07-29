@@ -135,6 +135,8 @@ extern const division: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TY
 // Config globals mirrored by RCLCFG.
 extern var shortIntegerMode: u8;
 extern var shortIntegerWordSize: u8;
+extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
+extern fn updateShortIntegerMasks() callconv(.c) void;
 extern var displayFormat: u8;
 extern var displayFormatDigits: u8;
 extern var gapItemLeft: u16;
@@ -491,6 +493,8 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
 
         shortIntegerMode = configToRecall.shortIntegerMode;
         shortIntegerWordSize = configToRecall.shortIntegerWordSize;
+        shortIntegerWordSize = boundShortIntegerWordSize(shortIntegerWordSize);
+        updateShortIntegerMasks(); // rederive shortIntegerMask and shortIntegerSignBit from the recalled word size; the config descriptor stores the size but neither mask
         displayFormat = configToRecall.displayFormat;
         displayFormatDigits = configToRecall.displayFormatDigits;
         gapItemLeft = configToRecall.gapItemLeft;
