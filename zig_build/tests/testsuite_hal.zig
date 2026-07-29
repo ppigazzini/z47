@@ -236,6 +236,13 @@ fn ioFileNameFromFilePath(path: c_int) ?[*:0]const u8 {
     };
 }
 
+// Exported under the real HAL's name (no public header declares it; testSuite.c
+// forward-declares it itself) so covShadowBackupLine can read the path ioFileOpen
+// would use for a given ioFilePath_t, same mapping as the private helper above.
+pub export fn _ioFileNameFromFilePath(path: c_int) callconv(.c) ?[*:0]const u8 {
+    return ioFileNameFromFilePath(path);
+}
+
 pub export fn ioFileOpen(path: c_int, mode: c_int) callconv(.c) c_int {
     const filename = ioFileNameFromFilePath(path) orelse return FILE_ERROR;
     const filemode: [*:0]const u8 = switch (mode) {
