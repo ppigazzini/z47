@@ -338,6 +338,7 @@ const FROM_USER: u16 = 30;
 
 const ITM_SIGMAPLUS: i16 = 433;
 
+const PGM_RUNNING: u8 = 1;
 const PGM_STOPPED: u8 = 0;
 const PGM_WAITING: u8 = 2;
 
@@ -721,6 +722,7 @@ extern var firstDisplayedLocalStepNumber: u16;
 extern var currentLocalStepNumber: u16;
 extern var freeProgramBytes: u16;
 extern var numberOfNamedVariables: u16;
+extern fn invalidateNamedVariableCache() callconv(.c) void;
 extern var numberOfFreeMemoryRegions: i32;
 extern var matrixIndex: u16;
 extern var statisticalSumsUpdate: bool_t;
@@ -752,9 +754,7 @@ extern var shiftF: bool_t;
 extern var shiftG: bool_t;
 extern var lastshiftF: bool_t;
 extern var lastshiftG: bool_t;
-extern var secTick1: bool_t;
-extern var halfSecTick2: bool_t;
-extern var halfSecTick3: bool_t;
+extern fn resetHalfSecTicks() callconv(.c) void;
 extern var skippedStackLines: bool_t;
 extern var iterations: bool_t;
 extern var explicitTaylorIterVisibilitySelection: bool_t;
@@ -794,6 +794,8 @@ extern var currentSolverStatus: u16;
 extern var currentSolverProgram: u16;
 extern var currentSolverVariable: u16;
 extern var currentSolverNestingDepth: u16;
+extern var engineNestingDepth: u16;
+extern var plotEngineActive: u16;
 extern var graphVariabl1: calcRegister_t;
 extern var timerCraAndDeciseconds: u8;
 extern var timerValue: u32;
@@ -1314,7 +1316,9 @@ pub export fn fnClrMod(unusedButMandatoryParameter: u16) callconv(.c) void {
     clearSystemFlag(FLAG_IRFRAC);
     clearSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
-    programRunStop = PGM_STOPPED;
+    if (programRunStop != PGM_RUNNING) { // as a program step this leaves the graph and carries on; from the keyboard it still stops a halted run
+        programRunStop = PGM_STOPPED;
+    }
 
     if (calcMode == CM_NIM) {
         _ = strcpy(aimBuffer, "+");
@@ -2072,6 +2076,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 
         numberOfNamedVariables = 0;
         allNamedVariables = null;
+        invalidateNamedVariableCache(); // the table is gone: nothing findNamedVariable() remembers describes it any more
 
         initSimEqMatABX();
 
@@ -2149,9 +2154,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         shiftG = false;
         lastshiftF = false;
         lastshiftG = false;
-        secTick1 = false;
-        halfSecTick2 = false;
-        halfSecTick3 = false;
+        resetHalfSecTicks();
         skippedStackLines = false;
         iterations = false;
         explicitTaylorIterVisibilitySelection = false;
@@ -2260,6 +2263,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         currentSolverProgram = 0xffff;
         currentSolverVariable = INVALID_VARIABLE;
         currentSolverNestingDepth = 0;
+        engineNestingDepth = 0;
+        plotEngineActive = 0;
 
         graphVariabl1 = 0;
 

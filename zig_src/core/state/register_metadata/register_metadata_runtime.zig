@@ -93,6 +93,8 @@ pub extern var numberOfNamedVariables: u16;
 pub extern var temporaryInformation: u8;
 pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
+pub extern var currentSolverVariable: u16;
+pub extern var graphVariabl1: calcRegister_t;
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
