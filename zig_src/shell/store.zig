@@ -208,6 +208,7 @@ extern fn fnDrop(unusedButMandatoryParameter: u16) void;
 
 extern fn liftStack() void;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
+extern fn namedVariableIsStats(regist: calcRegister_t) callconv(.c) bool;
 
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn __gmpz_clear(p: *mpz_struct) void;
@@ -459,7 +460,7 @@ pub export fn fnStore(regist: u16) callconv(.c) void {
     if (_checkReadOnlyVariable(regist) and regInRange(regist)) {
         _storeValue(regist);
         var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and @as(calcRegister_t, @intCast(regist)) == findNamedVariable("STATS")) {
+        if (namedVariableIsStats(@intCast(regist))) {
             if (frontier_stats.isStatsMatrixN(&rows, @intCast(regist))) {
                 frontier_stats.calcSigma(0);
             } else {
@@ -529,7 +530,7 @@ pub export fn fnStoreAdd(regist: u16) callconv(.c) void {
 
         adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
         var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and @as(calcRegister_t, @intCast(regist)) == findNamedVariable("STATS")) {
+        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
             frontier_stats.calcSigma(0);
         }
     }
@@ -557,7 +558,7 @@ pub export fn fnStoreSub(regist: u16) callconv(.c) void {
 
         adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
         var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and @as(calcRegister_t, @intCast(regist)) == findNamedVariable("STATS")) {
+        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
             frontier_stats.calcSigma(0);
         }
     }
@@ -585,7 +586,7 @@ pub export fn fnStoreMult(regist: u16) callconv(.c) void {
 
         adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
         var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and @as(calcRegister_t, @intCast(regist)) == findNamedVariable("STATS")) {
+        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
             frontier_stats.calcSigma(0);
         }
     }
@@ -613,7 +614,7 @@ pub export fn fnStoreDiv(regist: u16) callconv(.c) void {
 
         adjustResult(REGISTER_X, false, true, REGISTER_X, @intCast(regist), -1);
         var rows: u16 = 1;
-        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and @as(calcRegister_t, @intCast(regist)) == findNamedVariable("STATS")) {
+        if (regist >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(regist)) and namedVariableIsStats(@intCast(regist))) {
             frontier_stats.calcSigma(0);
         }
     }
@@ -895,7 +896,7 @@ fn _fnStoreElement(stepForward: bool) void {
             frontier_matrix_editor.fnIncDecJ(INC_FLAG);
         }
         var rows: u16 = 1;
-        if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and @as(calcRegister_t, @intCast(matrixIndex)) == findNamedVariable("STATS")) {
+        if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and namedVariableIsStats(@intCast(matrixIndex))) {
             frontier_stats.calcSigma(0);
         }
     }
@@ -915,7 +916,7 @@ pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     } else {
         callByIndexedMatrix(storeIjReal, storeIjComplex);
         var rows: u16 = 1;
-        if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and @as(calcRegister_t, @intCast(matrixIndex)) == findNamedVariable("STATS")) {
+        if (matrixIndex >= FIRST_NAMED_VARIABLE and frontier_stats.isStatsMatrixN(&rows, @intCast(matrixIndex)) and namedVariableIsStats(@intCast(matrixIndex))) {
             frontier_stats.calcSigma(0);
         }
     }

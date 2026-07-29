@@ -393,6 +393,7 @@ extern fn undo() void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn isMatrixIndexed() bool_t;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
+extern fn namedVariableIsStats(regist: calcRegister_t) callconv(.c) bool;
 extern fn resetKeytimers() void;
 
 // libc
@@ -828,10 +829,6 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         else
             false;
         var rr: u16 = undefined;
-        var regStats: calcRegister_t = FAILED_INDIRECTION;
-        if (inNameRegisterRange) {
-            regStats = findNamedVariable("STATS");
-        }
 
         switch (func) {
             VAR_UEST => {
@@ -845,7 +842,7 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
             },
             ITM_STO, ITM_RCL => {
                 temporaryInformation =
-                    if (pi == REGISTER_I and isMatrixIndexed() != 0) TI_I else if (pi == REGISTER_J and isMatrixIndexed() != 0) TI_J else if (inNameRegisterRange) (if (frontier_stats.isStatsMatrixN(&rr, regStats) and pi == regStats) TI_STATISTIC_SUMS else TI_STORCL) else if (isMatrix) TI_STORCL else if (inReservedRange or inRegisterRange or inLocalRegisters) TI_STORCL else TI_NO_INFO;
+                    if (pi == REGISTER_I and isMatrixIndexed() != 0) TI_I else if (pi == REGISTER_J and isMatrixIndexed() != 0) TI_J else if (inNameRegisterRange) (if (namedVariableIsStats(pi) and frontier_stats.isStatsMatrixN(&rr, pi)) TI_STATISTIC_SUMS else TI_STORCL) else if (isMatrix) TI_STORCL else if (inReservedRange or inRegisterRange or inLocalRegisters) TI_STORCL else TI_NO_INFO;
             },
             ITM_RCLELPLUS, ITM_RCLEL, ITM_STOELPLUS, ITM_STOEL => {
                 if (isMatrixIndexed() != 0) temporaryInformation = TI_MIJEQ;

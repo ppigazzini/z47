@@ -1319,9 +1319,15 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             xN = xn;
             yN = yn;
 
-            const colw: i16 = @as(i16, @intFromFloat(
-                (@as(f32, @floatFromInt(@as(i32, screenX(@as(f64, grf_x(1)))) - @as(i32, screenX(@as(f64, grf_x(0)))))) / 2.0),
-            )) - 1;
+            // yr and xr hold the last and first x values for the bar pitch
+            const xLast: i16 = screenX(@as(f64, grf_x(@intCast(numberOfPlotPoints - 1))));
+            const pitchDivisor: i32 = if (numberOfPlotPoints > 1) @as(i32, numberOfPlotPoints) - 1 else 1;
+            // centre-to-centre bar spacing, one integer for all bars
+            const barPitch: i16 = @intFromFloat(@as(f32, @floatFromInt(@as(i32, xLast) - @as(i32, xn))) / @as(f32, @floatFromInt(pitchDivisor)) + 0.5);
+            // bars go on the integer grid barX0 + ix*barPitch, anchored mid-span so drift splits between both ends
+            const barX0: i16 = @intCast(@divTrunc(@as(i32, xn) + @as(i32, xLast) - (@as(i32, numberOfPlotPoints) - 1) * @as(i32, barPitch) + 1, 2));
+            // half bar width; bar width 2*colw+1 and gap barPitch-2*colw-1 are constant across the plot
+            const colw: i16 = @as(i16, @intFromFloat(@as(f32, @floatFromInt(barPitch)) / 2.0)) - 1;
 
             // MAIN GRAPH LOOP
             ix = 0;
@@ -1332,6 +1338,9 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                 yo = yN;
                 xN = screenX(@as(f64, x));
                 yN = screenY(@as(f64, y));
+                if (drawHistogram != 0) {
+                    xN = @intCast(@as(i32, barX0) + @as(i32, ix) * @as(i32, barPitch)); // rounding each bin centre separately varied the gaps between bars
+                }
 
                 const minN_y: i16 = 0;
                 const minN_x: i16 = @intCast(SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
