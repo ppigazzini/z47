@@ -1621,9 +1621,11 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
     dynamicSoftmenu[@intCast(mIdx)].numItems = @intCast(numberOfVars);
 }
 
+const MAX_MVAR_DECLARATIONS: u16 = 18; // Solver variables a program may declare, which is the MVAR softmenu's own limit.
+
 fn _dynmenuConstructMVarsFromPgm(label: u16, numberOfBytes: *u16, numberOfVars: *u16) void {
     var step: [*c]u8 = labelList[label].instructionPointer;
-    while (numberOfVars.* < 18) {
+    while (numberOfVars.* < MAX_MVAR_DECLARATIONS) {
         // Skip any user REM so a REM before an MVAR is transparent to the MVAR
         // count (matches C); a non-REM non-MVAR step (or .END) ends the count.
         while (frontier_manage.checkOpCodeOfStep(step, ITM_REM)) {
@@ -1663,8 +1665,9 @@ fn _dynmenuConstructMVars(mIdx: i16) void {
         _dynmenuConstructMVarsFromPgm(currentSolverProgram, &numberOfBytes, &numberOfVars);
     }
 
-    dynamicSoftmenu[@intCast(mIdx)].menuContent = malloc(numberOfBytes);
+    dynamicSoftmenu[@intCast(mIdx)].menuContent = malloc(@as(usize, numberOfBytes) + 1); // +1 for the terminator showSoftmenu writes after the last name; avoids malloc(0)
     _ = frontier_char_string.xcopy(dynamicSoftmenu[@intCast(mIdx)].menuContent, tmpString, numberOfBytes);
+    dynamicSoftmenu[@intCast(mIdx)].menuContent[numberOfBytes] = 0;
     dynamicSoftmenu[@intCast(mIdx)].numItems = @intCast(numberOfVars);
 }
 
@@ -3321,7 +3324,9 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
                 if (softmenu[@intCast(mm)].menuItem == -%@as(i16, MNU_MVAR)) {
                     initVariableSoftmenu(mm);
                     varList = dynamicSoftmenu[@intCast(mm)].menuContent;
-                    getNthString(varList, dynamicSoftmenu[@intCast(mm)].numItems)[0] = 0;
+                    if (varList != null) {
+                        getNthString(varList, dynamicSoftmenu[@intCast(mm)].numItems)[0] = 0; // lands in the extra byte _dynmenuConstructMVars allocates
+                    }
                     break;
                 }
             }
