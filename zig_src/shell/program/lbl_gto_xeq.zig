@@ -225,6 +225,7 @@ const FLAG_INTING: c_int = 0xc025;
 const FLAG_SOLVING: c_int = 0xc026;
 
 const SOLVER_STATUS_USES_FORMULA: u16 = 0x0100;
+const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
 
 const MNU_PROG: i16 = 1392;
 const MNU_PROGS: i16 = 1355;
@@ -1346,11 +1347,20 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
 // ===========================================================================
 pub export fn execProgram(label: u16) callconv(.c) void {
     const origLocalStepNumber: u16 = currentLocalStepNumber;
+    // the nested run repoints to the function's program; restore it too so the
+    // caller (and the final return to the system) stays in the right program
+    const origProgramNumber: u16 = currentProgramNumber;
     const origStep: [*c]u8 = currentStep;
     fnExecute(label);
-    if (programRunStop == PGM_RUNNING and (getSystemFlag(FLAG_INTING) or getSystemFlag(FLAG_SOLVING))) {
+    // RPN_GRAPHER belongs in this condition: a program plot runs its function
+    // with neither FLAG_INTING nor FLAG_SOLVING set, so without it the nested
+    // program is never stepped at all -- fnExecute only positions it. Every
+    // sample then came back equal to its own input, which is why a program plot
+    // rendered the identity and, with FL_SPCRES clear, overflowed.
+    if (programRunStop == PGM_RUNNING and (getSystemFlag(FLAG_INTING) or getSystemFlag(FLAG_SOLVING) or (currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) != 0)) {
         runProgram(0, INVALID_VARIABLE);
         currentLocalStepNumber = origLocalStepNumber;
+        currentProgramNumber = origProgramNumber;
         currentStep = origStep;
     }
 }

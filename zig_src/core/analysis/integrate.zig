@@ -357,6 +357,16 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
             // SPEEDUPEXPERIMENT
             var digits: real_t = undefined;
             const significantDigitsMem: u8 = significantDigits;
+            // save contexts for integration nesting: an inner integral must put
+            // back the digit counts the OUTER level was running at, not the
+            // power-on defaults. Restoring 6/34/39/51/75 unconditionally handed
+            // the outer level full precision again, so a nested ACC-limited
+            // integral came back more accurate than the accuracy it asked for.
+            const s4: i32 = ctxtReal4.digits;
+            const s34: i32 = ctxtReal34.digits;
+            const s39: i32 = ctxtReal39.digits;
+            const s51: i32 = ctxtReal51.digits;
+            const s75: i32 = ctxtReal75.digits;
             var digitsN: i32 = 0;
             WP34S_Ln(&acc, &digits, &ctxtReal39);
             _ = realDivide(&digits, const39_ln10(), &digits, &ctxtReal39);
@@ -371,11 +381,11 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
                 ctxtReal75.digits = digitsN + 13;
                 integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal4);
                 significantDigits = significantDigitsMem;
-                ctxtReal4.digits = 6;
-                ctxtReal34.digits = 34;
-                ctxtReal39.digits = 39;
-                ctxtReal51.digits = 51;
-                ctxtReal75.digits = 75;
+                ctxtReal4.digits = s4;
+                ctxtReal34.digits = s34;
+                ctxtReal39.digits = s39;
+                ctxtReal51.digits = s51;
+                ctxtReal75.digits = s75;
             } else if (digitsN <= 10) {
                 significantDigits = @intCast(digitsN + 3);
                 ctxtReal4.digits = digitsN + 3;
@@ -385,11 +395,11 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
                 ctxtReal75.digits = digitsN + 13;
                 integrate(regist, &llim, &ulim, &acc, &res, &ctxtReal39);
                 significantDigits = significantDigitsMem;
-                ctxtReal4.digits = 6;
-                ctxtReal34.digits = 34;
-                ctxtReal39.digits = 39;
-                ctxtReal51.digits = 51;
-                ctxtReal75.digits = 75;
+                ctxtReal4.digits = s4;
+                ctxtReal34.digits = s34;
+                ctxtReal39.digits = s39;
+                ctxtReal51.digits = s51;
+                ctxtReal75.digits = s75;
             } else {
                 integrate(regist, &llim, &ulim, &acc, &res, if (smallerEpsilon) &ctxtReal75 else &ctxtReal39);
             }
