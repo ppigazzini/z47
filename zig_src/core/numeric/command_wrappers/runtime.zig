@@ -297,6 +297,21 @@ pub extern fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Mat
 pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) void;
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
+
+// Heap for the working reals that upstream's REAL_T_ALLOC(name, 75) block takes
+// off the frame (wp34s.c's SinCosTanTaylor). Bound at ?*real_t rather than
+// ?*anyopaque because C's void* converts to any object pointer, which keeps the
+// call sites cast-free; REAL_SIZE_IN_BYTES(75) is @sizeOf(real_t).
+extern fn malloc(size: usize) ?*real_t;
+extern fn free(ptr: ?*real_t) void;
+
+pub inline fn mallocReal() ?*real_t {
+    return malloc(@sizeOf(real_t));
+}
+
+pub inline fn freeReal(ptr: ?*real_t) void {
+    free(ptr);
+}
 // The complex dense core (math_matrix_complex_core.zig): in-place inverse
 // and product on interleaved-complex real_t arrays.
 pub extern fn invCpxMat(matrix: [*]real_t, n: u16, real_context: *realContext_t) bool;
