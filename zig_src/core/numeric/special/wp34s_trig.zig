@@ -13,6 +13,7 @@
 // qualifiers to become the plain pub fns the wrappers call).
 
 const owner = @import("wp34s.zig");
+const runtime = @import("../command_wrappers/runtime.zig");
 const BigReal = owner.BigReal;
 const ERROR_SOLVER_ABORT = owner.ERROR_SOLVER_ABORT;
 const NIM_REGISTER_LINE = owner.NIM_REGISTER_LINE;
@@ -353,14 +354,44 @@ fn doTaylorIterations(
 pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     var doEpsilon: bool = false;
     var epsilonDigits: i32 = undefined;
-    var angle: real_t = undefined;
-    var a2: real_t = undefined;
-    var t: real_t = undefined;
-    var j: real_t = undefined;
-    var z: real_t = undefined;
-    var sin: real_t = undefined;
-    var cos: real_t = undefined;
-    var epsilonOrCompare: real_t = undefined;
+
+    // The eight working reals come from the heap, not the frame: eight
+    // decNumbers at 60 bytes is 480 of this function's 672 byte frame, and it
+    // sits on the integrand path of a plotted integral. The 1071 digit twin
+    // below is untouched. Mirrors upstream's REAL_T_ALLOC(name, 75) block --
+    // REAL_SIZE_IN_BYTES(75) is @sizeOf(real_t), the 75-digit decNumber.
+    const angle_p = runtime.mallocReal();
+    const a2_p = runtime.mallocReal();
+    const t_p = runtime.mallocReal();
+    const j_p = runtime.mallocReal();
+    const z_p = runtime.mallocReal();
+    const sin_p = runtime.mallocReal();
+    const cos_p = runtime.mallocReal();
+    const epsilonOrCompare_p = runtime.mallocReal();
+    defer {
+        runtime.freeReal(angle_p);
+        runtime.freeReal(a2_p);
+        runtime.freeReal(t_p);
+        runtime.freeReal(j_p);
+        runtime.freeReal(z_p);
+        runtime.freeReal(sin_p);
+        runtime.freeReal(cos_p);
+        runtime.freeReal(epsilonOrCompare_p);
+    }
+    if (angle_p == null or a2_p == null or t_p == null or j_p == null or
+        z_p == null or sin_p == null or cos_p == null or epsilonOrCompare_p == null)
+    {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    const angle = angle_p.?;
+    const a2 = a2_p.?;
+    const t = t_p.?;
+    const j = j_p.?;
+    const z = z_p.?;
+    const sin = sin_p.?;
+    const cos = cos_p.?;
+    const epsilonOrCompare = epsilonOrCompare_p.?;
 
     const savedContextDigits = realContext.digits;
 
@@ -374,16 +405,16 @@ pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, s
         doEpsilon = false;
     }
 
-    doTaylorIterations(a, &angle, &a2, &t, &j, &z, &sin, &cos, sinOut, cosOut, &epsilonOrCompare, doEpsilon, epsilonDigits, realContext);
+    doTaylorIterations(a, angle, a2, t, j, z, sin, cos, sinOut, cosOut, epsilonOrCompare, doEpsilon, epsilonDigits, realContext);
 
     realContext.digits = savedContextDigits;
 
     if (sinOut) |s| {
-        realPlus(&sin, s, realContext);
+        realPlus(sin, s, realContext);
     }
 
     if (cosOut) |c| {
-        realPlus(&cos, c, realContext);
+        realPlus(cos, c, realContext);
     }
 
     if (tanOut) |tn| {
@@ -391,9 +422,9 @@ pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, s
             realSetNaN(tn);
         } else {
             if (swap) {
-                realDivide(&cos, &sin, tn, realContext);
+                realDivide(cos, sin, tn, realContext);
             } else {
-                realDivide(&sin, &cos, tn, realContext);
+                realDivide(sin, cos, tn, realContext);
             }
         }
     }
