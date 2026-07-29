@@ -29,7 +29,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json --max-first-party 0
+          # Run the committed policy script, the same one the local pre-push gate
+          # calls, so CI and local cannot drift. It enforces the strict zero cap
+          # on the PRODUCT graph -- which is what "zero first-party C" means, and
+          # is currently 0 -- and baseline/no-regression on the wider config,
+          # whose entries are test-harness and oracle C (60 of them). Pointing
+          # the zero cap at that wider config, as this step used to, could never
+          # pass: it read 411 on the commit that introduced it and 60 today.
+          bash .github/project/check-c-dependency-phase-i-policy.sh .
       - name: Self-test the live-link product C isolation checker
         shell: bash
         run: |
