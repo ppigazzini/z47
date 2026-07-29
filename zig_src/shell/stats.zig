@@ -598,10 +598,12 @@ pub export fn initStatisticalSums() callconv(.c) void {
     if (statisticalSumsUpdate) {
         if (statisticalSumsPointer == null) {
             statisticalSumsPointer = @ptrCast(@alignCast(allocC47Blocks(@as(usize, @intCast(NUMBER_OF_STATISTICAL_SUMS)) * REAL_75_SIZE_IN_BLOCKS)));
+            if (statisticalSumsPointer == null) { // no room for the sums; raise the error so no caller writes through a NULL pointer
+                frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                return;
+            }
             clearStatisticalSums();
             _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
-        } else {
-            frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         }
     }
 }
@@ -656,6 +658,9 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
     clearStatisticalSums();
     if (statisticalSumsPointer == null) {
         initStatisticalSums();
+        if (statisticalSumsPointer == null) { // sums not allocated; initStatisticalSums raises the error
+            return;
+        }
     }
     const regStats: calcRegister_t = findNamedVariable(&statMx);
     var rr: u16 = 1;
@@ -703,7 +708,7 @@ fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
     }
 }
 
-fn AddtoStatsMatrix(x: *real_t, y: *real_t) void {
+fn AddtoStatsMatrix(x: *real_t, y: *real_t) bool {
     var rows: u16 = 0;
     var cols: u16 = undefined;
     _ = strcpy(&statMx, "STATS"); // any stats operation restores the stats matrix. The purpose of the changed names are just to be able to exchange the matrixes for reading and graphing
@@ -732,6 +737,7 @@ fn AddtoStatsMatrix(x: *real_t, y: *real_t) void {
             moreInfoOnError("In function AddtoStatsMatrix:", errorMessage);
         }
     }
+    return regStats != INVALID_VARIABLE;
 }
 
 fn removeLastRowFromStatsMatrix() void {
@@ -865,10 +871,13 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
                 reLoadStatisticalSums();
             }
 
+            // a failed append raises the error; sums stay in step with the matrix and SAVED_SIGMA_lastAddRem stays SIGMA_NONE so the error undo does not replay a Sigma-
+            if (!AddtoStatsMatrix(&x, &y)) {
+                return;
+            }
             if (statisticalSumsUpdate) {
                 addSigma(&x, &y);
             }
-            AddtoStatsMatrix(&x, &y);
             realCopy(&x, &SAVED_SIGMA_LASTX);
             realCopy(&y, &SAVED_SIGMA_LASTY);
             SAVED_SIGMA_lastAddRem = @intCast(SIGMA_PLUS);
@@ -901,10 +910,12 @@ pub export fn fnSigmaAddRem(plusMinusSelection: u16) callconv(.c) void {
                 while (i < @as(u16, matrix.header.matrixRows)) : (i += 1) {
                     real34ToReal(&matrix.matrixElements.?[@as(usize, i) * 2], &x);
                     real34ToReal(&matrix.matrixElements.?[@as(usize, i) * 2 + 1], &y);
+                    if (!AddtoStatsMatrix(&x, &y)) { // stops at the first row that does not fit; the error is already raised
+                        return;
+                    }
                     if (statisticalSumsUpdate) {
                         addSigma(&x, &y);
                     }
-                    AddtoStatsMatrix(&x, &y);
                 }
 
                 liftStack();
