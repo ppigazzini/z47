@@ -111,6 +111,7 @@ pub export fn fnLj(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getShiftInput(&word, &base)) return;
 
+    word &= runtime.shortIntegerMask; // cleanse over-wide bits, else the left shift below is undefined
     const r = shortint_core.leftJustify(word, runtime.shortIntegerWordSize);
     justifyResultToRegisters(r.count, base, r.word);
 }

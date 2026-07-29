@@ -1318,7 +1318,8 @@ fn _tamProcessInput(item: u16) void {
                 if (!tam.indirect and !tam.colon) {
                     var i: i32 = 0;
                     while (i < LAST_ITEM) : (i += 1) {
-                        if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_FNCT and frontier_sort.compareString(buffer, &indexOfItems[@intCast(i)].itemCatalogName, CMP_NAME) == 0) {
+                        // Match strictness: CMP_NAME strict (exact spelling & space), CMP_COMMAND relax (exact spelling, any space), CMP_CLEANED_STRING_ONLY loose (rank1 equiv.)
+                        if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_FNCT and frontier_sort.compareString(buffer, &indexOfItems[@intCast(i)].itemCatalogName, CMP_COMMAND) == 0) {
                             leaveTamModeIfEnabled();
                             if (calcMode == CM_PEM) {
                                 aimBuffer[0] = 0;
@@ -1450,6 +1451,7 @@ inline fn fnGetSystemFlag_ptr() FnPtr {
 
 extern var itemToBeAssigned: i16;
 const CMP_NAME: i32 = 3;
+const CMP_COMMAND: i32 = 4;
 
 // ===========================================================================
 // tamEnterMode
