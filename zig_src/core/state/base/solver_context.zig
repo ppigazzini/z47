@@ -19,3 +19,10 @@ pub export var currentFormula: u16 = 0;
 pub export var numberOfFormulae: u16 = 0;
 pub export var graphVariabl1: calcRegister_t = 0; // the plot/graph variable the RPN grapher samples
 pub export var currentMvarLabel: u16 = INVALID_VARIABLE; // the active MVAR (solver-menu) label
+
+// PLOT, INT and SOLVE combined, capped at MAX_ENGINE_NESTING_DEPTH; PLOT only at level 1.
+pub export var engineNestingDepth: u16 = 0;
+// Non-zero while a plot sweep runs, so PLOT_NESTING_ALLOWED can refuse an engine inside it.
+pub export var plotEngineActive: u16 = 0;
+// Why the run stopped, durable across the unwind where lastErrorCode is not: FLAG_IGN1ER wipes that.
+pub export var engineNestingWasRefused: bool = false;

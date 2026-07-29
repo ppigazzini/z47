@@ -165,6 +165,7 @@ const ITM_RAD: i16 = 1557;
 const SOLVER_STATUS_READY_TO_EXECUTE: u16 = 0x0001;
 const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
 const ERROR_SOLVER_ABORT: u8 = 60;
+const ERROR_NESTING_TOO_DEEP: u8 = 66;
 const SOLVER_RESULT_NORMAL: f64 = 0;
 const SOLVER_RESULT_OTHER_FAILURE: f64 = 5;
 const SOLVER_RESULT_CONJUGATES: f64 = 200;
@@ -244,6 +245,10 @@ extern var lastErrorCode: u8;
 extern var temporaryInformation: u8;
 extern var calcMode: u8;
 extern var programRunStop: u8;
+extern var engineNestingDepth: u16;
+extern var plotEngineActive: u16;
+extern var engineNestingWasRefused: bool;
+extern fn engineNestingRefused(isPlot: bool) callconv(.c) bool;
 extern var screenUpdatingMode: u8;
 extern var currentKeyCode: u8;
 extern var significantDigits: u8;
@@ -1320,7 +1325,7 @@ fn graph_eqn(mode: u16) void {
 
         // R/S/EXIT or a nested-engine abort stops the plot
         if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
-            lastErrorCode = ERROR_SOLVER_ABORT;
+            lastErrorCode = if (engineNestingWasRefused) ERROR_NESTING_TOO_DEEP else ERROR_SOLVER_ABORT; // a refusal names itself
             if (programRunStop == PGM_RUNNING) {
                 programRunStop = PGM_WAITING;
             }
@@ -1337,7 +1342,7 @@ fn graph_eqn(mode: u16) void {
         execute_rpn_function_graphAcc();
 
         if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
-            lastErrorCode = ERROR_SOLVER_ABORT;
+            lastErrorCode = if (engineNestingWasRefused) ERROR_NESTING_TOO_DEEP else ERROR_SOLVER_ABORT; // a refusal names itself
             if (programRunStop == PGM_RUNNING) {
                 programRunStop = PGM_WAITING;
             }
@@ -2283,6 +2288,12 @@ pub export fn fnComplexSolver() callconv(.c) void {
 // ===========================================================================
 pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
     // OPTION_GRAPHICS is always on for z47 builds.
+    // Ahead of the switch below, which reallocates the reserved UX/LX registers and reassigns
+    // graphVariabl1. fnMvarPlot refuses a programmed PLTf earlier; this covers the menu entries.
+    if ((func == EQ_PLOT or func == EQ_PLOT_LU) and engineNestingRefused(true)) {
+        return;
+    }
+
     // No equation defined: error out before any stack or reserved-variable writes;
     // running these items without a formula crashed in parseEquation (NULL allFormulae).
     // A program plot has no formula by design (execute_rpn_function runs its program), so exempt it from the guard when the func is a plot func, RPN_GRAPHER is set,
@@ -2429,7 +2440,11 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             graphRangeGuard(x_min, x_max); // swap reversed limits; widen spans too small to plot at working precision
 
             initialize_function();
+            engineNestingDepth += 1; // one engine level for the whole sweep
+            plotEngineActive += 1;
             graph_eqn(noInitDrwMx);
+            plotEngineActive -= 1;
+            engineNestingDepth -= 1;
 
             if (!getSystemFlag(FLAG_PCROS) and !getSystemFlag(FLAG_PBOX) and !getSystemFlag(FLAG_PPLUS)) {
                 setSystemFlag(FLAG_PLINE_U);

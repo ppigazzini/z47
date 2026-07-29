@@ -78,6 +78,9 @@ fn addRuntimeObject(
     // to a no-op (hal/gui.h: #if defined(DMCP_BUILD) ...); the on-screen-keyboard
     // sim/testSuite link the real function. equation.zig mirrors this.
     build_options.addOption(bool, "is_dmcp_build", std.mem.startsWith(u8, name_prefix, "dmcp"));
+    // OLD_HW (DM42, name_prefix "dmcp") vs NEW_HW (DM42n/DMCP5, "dmcp5"): the engine-nesting depth cap
+    // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific.
+    build_options.addOption(bool, "is_old_hw", std.mem.eql(u8, name_prefix, "dmcp"));
     module.addOptions("solve_build_options", build_options);
     return b.addObject(.{
         .name = b.fmt("{s}-solver-solve", .{name_prefix}),

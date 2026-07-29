@@ -2484,11 +2484,41 @@ fn dmcpResetAutoOff_impl(unused: u16) callconv(.c) void {
 }
 const FLAG_AUTOFF_i: i32 = 32798;
 
+extern fn getUptimeMs() u32;
+const BAT_MINIMUM: c_int = 2100;
+
+// Vbat sampling schedule: entry n gates sample n as the minimum ms since the previous get_vbat() ADC
+// conversion, advancing per sample and saturating on the last entry. An expended battery has a high internal
+// impedance, so the load of a starting run pulls the terminal voltage sharply down within seconds while a
+// healthy battery barely moves, so the first samples go undelayed to catch that surge for the orderly low
+// battery stop in items.c before an uncontrolled crash, then once the battery proves not to be in extreme
+// flatness the spacing extends to a steady 2.5s cadence, keeping the per-dispatch ADC cost off healthy
+// batteries. A top-level program run start (runProgram()) and the USB->battery changeover (checkBattery())
+// restart the schedule.
+const vbatSampleDelay = [_]u16{ 0, 0, 0, 50, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 1000, 2500 };
+var vbatScheduleIdx: u8 = 0;
+var vbatSampledAt: u32 = 0; // 0 = never sampled
+var vbatSample: c_int = 3100;
+
+pub export fn resetVbatSampleSchedule() callconv(.c) void {
+    vbatScheduleIdx = 0;
+}
+
 fn updateVbatIntegrated_impl(minutePulse: bool_t) callconv(.c) c_int {
-    if (getSystemFlag(FLAG_USB_i)) {
-        return 3100;
+    // The minute pulse always converts, keeping the integrator creep cadence; every other caller follows
+    // vbatSampleDelay. Vbat is measured on USB power too, so BATT? and the integrator stay live while
+    // plugged; checkBattery() and the items.c stop both skip USB power, so USB never trips LOWBAT.
+    const now: u32 = getUptimeMs();
+    if (!minutePulse and vbatSampledAt != 0 and (now -% vbatSampledAt) < vbatSampleDelay[vbatScheduleIdx]) {
+        return vbatSample;
     }
+    if (vbatScheduleIdx < vbatSampleDelay.len - 1) {
+        vbatScheduleIdx += 1;
+    }
+    vbatSampledAt = now;
+
     const tmpVbat = romGetVbat();
+    vbatSample = tmpVbat;
     const r = vbat_integrator.integrate(vbatVIntegrated, tmpVbat, minutePulse);
     vbatVIntegrated = r.integrated;
     if (r.reset_loop) {
@@ -2508,11 +2538,12 @@ fn checkBattery_impl() callconv(.c) void {
         if (getSystemFlag(FLAG_USB_i)) {
             clearSystemFlag(FLAG_USB_c);
             showHideUsbLowBattery();
+            resetVbatSampleSchedule(); // the change over to battery is a fresh load step; resample undelayed
         }
 
         const tmpVbat = updateVbatIntegrated_impl(false);
 
-        if (tmpVbat < 2100 or vbatVIntegrated < 2100) {
+        if (tmpVbat < BAT_MINIMUM or vbatVIntegrated < BAT_MINIMUM) {
             if (!getSystemFlag(FLAG_LOWBAT_i)) {
                 setSystemFlag(FLAG_LOWBAT_c);
                 showHideUsbLowBattery();
