@@ -76,6 +76,14 @@ const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_NO_PROGRAM_SPECIFIED: u8 = 54;
 const ERROR_SOLVER_ABORT: u8 = 60;
+const PGM_WAITING: u8 = 2;
+
+const solve_build_options = @import("solve_build_options");
+const dmcp_build: bool = solve_build_options.is_dmcp_build;
+const old_hw: bool = solve_build_options.is_old_hw;
+// Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
+// engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
+const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 2 else if (dmcp_build) 3 else 4;
 
 const FLAG_ASLIFT: u32 = 0xc023;
 const FLAG_INTING: u32 = 0xc025;
@@ -117,6 +125,10 @@ extern var temporaryInformation: u8;
 extern var currentKeyCode: u8;
 extern var dynamicMenuItem: i16;
 extern var currentSolverNestingDepth: u16;
+extern var engineNestingDepth: u16;
+extern var programRunStop: u8;
+extern var thereIsSomethingToUndo: bool;
+extern fn engineNestingRefused(isPlot: bool) callconv(.c) bool;
 extern var currentSolverStatus: u16;
 extern var currentSolverProgram: u16;
 extern var currentSolverVariable: u16;
@@ -323,6 +335,9 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
         var llim: real_t = undefined;
         var res: real_t = undefined;
         var smallerEpsilon: bool_t = false;
+        if (engineNestingRefused(false)) {
+            return;
+        }
         real34ToReal(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_ACC)), &acc);
         real34ToReal(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_ULIM)), &ulim);
         real34ToReal(registerReal34Ptr(@bitCast(RESERVED_VARIABLE_LLIM)), &llim);
@@ -849,21 +864,16 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
 // integrate
 // ===========================================================================
 
-// Cap integrator re-entry before a self-integrating program overflows the C stack. Dedicated, not the shared
-// currentSolverNestingDepth (which the solver/isumprod can leave inflated). MAX_INTEGRATOR_NESTING_DEPTH is in defines.h.
-var integratorNestingDepth: u16 = 0;
-// Cap on nested integrate() re-entry; a self-referential integrand aborts past this. INT(INT(INT)) is depth 3, so real use never nears it.
-const MAX_INTEGRATOR_NESTING_DEPTH: u16 = 5;
-
 pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *align(1) const real_t, acc: *real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const was_solving: bool_t = getSystemFlag(@bitCast(FLAG_SOLVING));
     currentSolverNestingDepth += 1;
     setSystemFlag(FLAG_INTING);
     clearSystemFlag(FLAG_SOLVING);
-    integratorNestingDepth += 1;
-    if (integratorNestingDepth > MAX_INTEGRATOR_NESTING_DEPTH) { // too deep: skip the heavy frame, abort via the integrator's own ERROR_SOLVER_ABORT unwind
+    engineNestingDepth += 1;
+    if (engineNestingDepth > MAX_ENGINE_NESTING_DEPTH) { // too deep: skip the heavy frame. _fnIntegrate refuses on the same terms at entry
         realSetZero(res);
-        displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        programRunStop = PGM_WAITING;
+        thereIsSomethingToUndo = false;
     } else {
         // USE_NEW_DEI_INTEGRATION_CODE > 0
         if (realCompareLessThan(a, b)) {
@@ -872,7 +882,7 @@ pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *a
             dbl_exp_int_new(regist, b, a, acc, res, -1, realContext);
         }
     }
-    integratorNestingDepth -= 1;
+    engineNestingDepth -= 1;
     currentSolverNestingDepth -= 1;
     if (currentSolverNestingDepth == 0) {
         clearSystemFlag(FLAG_INTING);

@@ -270,6 +270,9 @@ extern var firstDisplayedLocalStepNumber: u16;
 extern var programRunStop: u8;
 extern var lastErrorCode: u8;
 extern var previousErrorCode: u8;
+extern var graphAccActive: bool;
+extern fn resetVbatSampleSchedule() callconv(.c) void;
+extern fn getUptimeMs() u32;
 extern var temporaryInformation: u8;
 extern var screenUpdatingMode: u8;
 extern var hourGlassIconEnabled: bool_t;
@@ -1212,12 +1215,23 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
 // ===========================================================================
 // runProgram
 // ===========================================================================
+// static uint32_t keyPollUptimeSlot inside runProgram (C): the ~128 ms uptime slot last probed.
+var keyPollUptimeSlot: u32 = 0;
+
 pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
     const nestedEngine: bool_t = @intFromBool(programRunStop == PGM_RUNNING);
     const startingSubLevel: u16 = if (nestedEngine != 0 and menuLabel == INVALID_VARIABLE) cur().subroutineLevel else 0;
     lastErrorCode = ERROR_NONE;
     hourGlassIconEnabled = 1;
     programRunStop = PGM_RUNNING;
+    if (comptime dmcp_build) {
+        // a top level run start is a fresh load step, so the first dispatches sample undelayed; solver and
+        // grapher evaluations re-enter per evaluation and keep the schedule
+        if (nestedEngine == 0 and singleStep == 0 and !getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING) and !graphAccActive) {
+            resetVbatSampleSchedule();
+        }
+    }
+
     if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING)) {
         frontier_status_bar.showHideHourGlass();
         screenUpdatingMode = SCRUPD_AUTO;
@@ -1264,22 +1278,31 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
             break;
         }
         if (comptime dmcp_build) {
-            if (nestedEngine == 0) {
-                const key: c_int = frontier_addons.C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) + 1;
-                if (key == 36 or key == 33) { // JM R/S or EXIT
-                    programRunStop = PGM_WAITING;
-                    screenUpdatingMode = SCRUPD_AUTO;
-                    if (getSystemFlag(FLAG_INTING) or getSystemFlag(FLAG_SOLVING)) {
-                        frontier_error.displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            // probe the key buffer when the ~128 ms uptime slot changes: the ~1500-cycle probe is skipped in
+            // fast loops for a ~94-cycle uptime read, heavy steps keep per-step R/S response, and long
+            // operations self-poll via exitKeyWaiting(); the full 32-bit slot compare costs the same as a
+            // one-bit flip test and has no alias period: a one-bit test goes blind on any step near an even
+            // multiple of 256 ms and then never probes at all
+            if (nestedEngine == 0) { // only the outermost engine polls the keyboard; nested engines skip the poll and the uptime read
+                const uptimeSlot: u32 = getUptimeMs() >> 7;
+                if (uptimeSlot != keyPollUptimeSlot) {
+                    keyPollUptimeSlot = uptimeSlot;
+                    const key: c_int = frontier_addons.C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) + 1;
+                    if (key == 36 or key == 33) { // JM R/S or EXIT
+                        programRunStop = PGM_WAITING;
+                        screenUpdatingMode = SCRUPD_AUTO;
+                        if (getSystemFlag(FLAG_INTING) or getSystemFlag(FLAG_SOLVING)) {
+                            frontier_error.displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                        }
+                        frontier_screen.refreshScreen(1);
+                        lcdRefresh();
+                        fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
+                        waitForKeyRelease(0);
+                        _ = keyPop();
+                        break;
+                    } else if (key > 0) {
+                        setLastKeyCode(key);
                     }
-                    frontier_screen.refreshScreen(1);
-                    lcdRefresh();
-                    fnTimerStart(TO_KB_ACTV, TO_KB_ACTV, PROGRAM_KB_ACTV);
-                    waitForKeyRelease(0);
-                    _ = keyPop();
-                    break;
-                } else if (key > 0) {
-                    setLastKeyCode(key);
                 }
             }
         }

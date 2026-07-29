@@ -20,6 +20,9 @@ const consts = abi.constants;
 // omitted. ctxtSolver/ctxtSolverHi == ctxtReal39; solverTvmTol=34, solverTvmZer=35.
 
 const runtime = @import("solve_runtime.zig");
+const solve_build_options = @import("solve_build_options");
+const dmcp_build: bool = solve_build_options.is_dmcp_build;
+const old_hw: bool = solve_build_options.is_old_hw;
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // shared ABI bindings
@@ -70,6 +73,13 @@ const ERROR_INITIAL_GUESS_OUT_OF_DOMAIN: u8 = 43;
 const ERROR_FUNCTION_VALUES_LOOK_CONSTANT: u8 = 44;
 const ERROR_NO_PROGRAM_SPECIFIED: u8 = 54;
 const ERROR_SOLVER_ABORT: u8 = 60;
+
+// Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
+// engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
+const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 2 else if (dmcp_build) 3 else 4;
+// Whether INT or SOLVE may run inside a plot: 0 (false) on OLD_HW, 1 (true) otherwise.
+const PLOT_NESTING_ALLOWED: bool = !(dmcp_build and old_hw);
+const PGM_WAITING: u8 = 2;
 
 const FLAG_ASLIFT: u32 = 0xc023;
 const FLAG_INTING: u32 = 0xc025;
@@ -129,6 +139,10 @@ extern var programRunStop: u8;
 extern var currentKeyCode: u8;
 extern var dynamicMenuItem: i16;
 extern var currentSolverNestingDepth: u16;
+extern var engineNestingDepth: u16;
+extern var plotEngineActive: u16;
+extern var engineNestingWasRefused: bool;
+extern var thereIsSomethingToUndo: bool;
 extern var currentSolverStatus: u16;
 extern var currentSolverProgram: u16;
 extern var currentSolverVariable: u16;
@@ -416,6 +430,9 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
         var tmp: real_t = undefined;
         var resultCode: c_int = 0;
 
+        if (engineNestingRefused(false)) {
+            return;
+        }
         if (getRegisterAsReal34Quiet(REGISTER_Y, &y) and getRegisterAsReal34Quiet(REGISTER_X, &x)) {
             fnDrop(NOPARAM);
             fnDrop(NOPARAM);
@@ -632,6 +649,29 @@ fn _showProgress(a: *align(1) const real34_t, b: *align(1) const real34_t, fa: *
 }
 
 // ===========================================================================
+// engineNestingRefused
+// ===========================================================================
+// True when a further PLOT, INT or SOLVE may not start. INT and SOLVE nest to
+// MAX_ENGINE_NESTING_DEPTH. PLOT runs only as the outermost engine, because the
+// draw matrix DrwMX, its register regStatsXY and the screen are single, and
+// where PLOT_NESTING_ALLOWED is false nothing at all runs inside a plot. Each
+// engine calls this at its entry, ahead of that engine's own saveForUndo.
+pub export fn engineNestingRefused(isPlot: bool) linksection(runtime.code_section) callconv(.c) bool {
+    if (if (isPlot)
+        engineNestingDepth == 0
+    else
+        engineNestingDepth < MAX_ENGINE_NESTING_DEPTH and (PLOT_NESTING_ALLOWED or plotEngineActive == 0))
+    {
+        engineNestingWasRefused = false;
+        return false;
+    }
+    programRunStop = PGM_WAITING;
+    thereIsSomethingToUndo = false;
+    engineNestingWasRefused = true;
+    return true;
+}
+
+// ===========================================================================
 // solver (the central Brent+Newton root finder)
 // ===========================================================================
 const SOLVER_METHOD_BRENT: u8 = 0;
@@ -704,6 +744,10 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
         realCopy(const_1e_32(), &minBracketSpacing);
     }
 
+    if (engineNestingRefused(false)) { // ahead of the flags and both depth counters
+        return SOLVER_RESULT_ABORTED;
+    }
+    engineNestingDepth += 1;
     currentSolverNestingDepth += 1;
     setSystemFlag(FLAG_SOLVING);
     clearSystemFlag(FLAG_INTING);
@@ -798,6 +842,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
     }
 
     if (realIsZero(&faa) or realIsZero(&fbb)) { // already is a root?
+        engineNestingDepth -= 1;
         currentSolverNestingDepth -= 1;
         if (currentSolverNestingDepth == 0) {
             clearSystemFlag(FLAG_SOLVING);
@@ -940,6 +985,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                             real34Copy(resX, registerReal34Ptr(REGISTER_X));
                             copySourceRegisterToDestRegister(REGISTER_X, variable);
+                            engineNestingDepth -= 1;
                             currentSolverNestingDepth -= 1;
                             if (currentSolverNestingDepth == 0) {
                                 clearSystemFlag(FLAG_SOLVING);
@@ -983,6 +1029,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                                 real34Copy(resX, registerReal34Ptr(REGISTER_X));
                                 copySourceRegisterToDestRegister(REGISTER_X, variable);
+                                engineNestingDepth -= 1;
                                 currentSolverNestingDepth -= 1;
                                 if (currentSolverNestingDepth == 0) {
                                     clearSystemFlag(FLAG_SOLVING);
@@ -995,6 +1042,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                                 real34Copy(resX, registerReal34Ptr(REGISTER_X));
                                 copySourceRegisterToDestRegister(REGISTER_X, variable);
+                                engineNestingDepth -= 1;
                                 currentSolverNestingDepth -= 1;
                                 if (currentSolverNestingDepth == 0) {
                                     clearSystemFlag(FLAG_SOLVING);
@@ -1024,6 +1072,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                             real34Copy(resX, registerReal34Ptr(REGISTER_X));
                             copySourceRegisterToDestRegister(REGISTER_X, variable);
+                            engineNestingDepth -= 1;
                             currentSolverNestingDepth -= 1;
                             if (currentSolverNestingDepth == 0) {
                                 clearSystemFlag(FLAG_SOLVING);
@@ -1051,6 +1100,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                             real34Copy(resX, registerReal34Ptr(REGISTER_X));
                             copySourceRegisterToDestRegister(REGISTER_X, variable);
+                            engineNestingDepth -= 1;
                             currentSolverNestingDepth -= 1;
                             if (currentSolverNestingDepth == 0) {
                                 clearSystemFlag(FLAG_SOLVING);
@@ -1209,6 +1259,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
         result = SOLVER_RESULT_EXTREMUM;
     }
 
+    engineNestingDepth -= 1; // after the extremum check above, which re-runs the user program
     currentSolverNestingDepth -= 1;
     if (currentSolverNestingDepth == 0) {
         clearSystemFlag(FLAG_SOLVING);

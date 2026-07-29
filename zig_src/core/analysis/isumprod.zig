@@ -241,11 +241,12 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
         if (programRunStop == PGM_WAITING) {
             programRunStop = PGM_STOPPED;
         }
+
+        currentSolverNestingDepth -= 1;
+        if (currentSolverNestingDepth == 0) {
+            clearSystemFlag(FLAG_SOLVING);
+        }
     } // MAIN IF
-    currentSolverNestingDepth -= 1;
-    if (currentSolverNestingDepth == 0) {
-        clearSystemFlag(FLAG_SOLVING);
-    }
 }
 
 // ===========================================================================

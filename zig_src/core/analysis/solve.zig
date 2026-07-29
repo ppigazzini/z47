@@ -53,6 +53,9 @@ pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
         // Execute: plot the program over labelOrVariable across [Y, X].
         var xl: runtime.real34_t = undefined;
         var xh: runtime.real34_t = undefined;
+        if (runtime.engineNestingRefused(true)) {
+            return;
+        }
         if (runtime.getRegisterAsReal34Quiet(runtime.REGISTER_Y, &xl) and runtime.getRegisterAsReal34Quiet(runtime.REGISTER_X, &xh)) {
             runtime.saveForUndo(); // repeat after dropping the input parameters
             runtime.currentSolverVariable = labelOrVariable;
