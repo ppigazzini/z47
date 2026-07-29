@@ -92,7 +92,8 @@ fn applyMode(mode: u16) void {
 }
 
 fn applyModel(model: u16) void {
-    printerState.printer_model = @as(c_int, @intCast(model));
+    // printer_model is a C enum, so its width follows the target (abi.CEnum).
+    printerState.printer_model = @intCast(model);
 }
 
 fn applyDelay(delay: u16) void {

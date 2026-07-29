@@ -170,12 +170,15 @@ const SAVE_BUFFER_SIZE = 3000;
 var buf_ptr: [*c]u8 = null;
 var buf_depth: u32 = 0;
 
-extern fn malloc(n: usize) ?*anyopaque;
-extern fn free(p: ?*anyopaque) void;
+// malloc returns void*, which is assignment-compatible with any object pointer
+// in C. Binding it at the type this owner actually wants keeps the call free of
+// a @ptrCast that would carry no information.
+extern fn malloc(n: usize) [*c]u8;
+extern fn free(p: [*c]u8) void;
 
 fn acquireBuf() bool {
     if (buf_depth == 0) {
-        buf_ptr = @ptrCast(malloc(SAVE_BUFFER_SIZE));
+        buf_ptr = malloc(SAVE_BUFFER_SIZE);
         if (buf_ptr == null) return false;
         buf_ptr[0] = 0;
     }

@@ -189,16 +189,29 @@ pub const Any34Matrix = extern union {
     complexMatrix: Complex34Matrix,
 };
 
-/// Printer state (printerState_t, typeDefinitions.h): 16 bytes, align 4. The C
-/// print_modes_t/printerModel_t are int-backed enums (c_int); the owners had
-/// forked the enum fields between c_int/u32/enum-alias and the bool fields
-/// between bool/u8 -- all byte-identical, reconciled to the C-faithful shape.
+/// Width GCC gives a small C enum on this target. The ARM EABI mandates
+/// -fshort-enums, so `enum { ... }` with few values is one byte on the DM42 and
+/// DMCP5 firmware, while the host toolchain gives it int. An extern struct with
+/// enum-typed fields therefore has a different size on the two sides, and
+/// hard-coding either one is wrong for the other: c_int makes printerState_t 16
+/// bytes on firmware where C makes it 8, and u8 would corrupt the layout the
+/// host parity oracles compare against real C.
+pub const CEnum = switch (@import("builtin").target.cpu.arch) {
+    .arm, .armeb, .thumb, .thumbeb => u8,
+    else => c_int,
+};
+
+/// Printer state (printerState_t, typeDefinitions.h). The C
+/// print_modes_t/printerModel_t are enums, so this is 16 bytes align 4 on the
+/// host and 8 bytes align 2 on ARM -- see CEnum. The owners had forked the enum
+/// fields between c_int/u32/enum-alias and the bool fields between bool/u8 --
+/// all byte-identical, reconciled to the C-faithful shape.
 pub const PrinterState = extern struct {
     print_on: bool,
     trace_done: bool,
     print_blank_line: u8,
-    print_mode: c_int,
-    printer_model: c_int,
+    print_mode: CEnum,
+    printer_model: CEnum,
     delay: u16,
 };
 
@@ -434,11 +447,23 @@ comptime {
     std.debug.assert(@alignOf(RegisterHeader) == 4);
     std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "dataType") == 16);
     std.debug.assert(@bitOffsetOf(RegisterHeaderBits, "readOnly") == 25);
-    std.debug.assert(@sizeOf(PrinterState) == 16);
-    std.debug.assert(@alignOf(PrinterState) == 4);
-    std.debug.assert(@offsetOf(PrinterState, "print_mode") == 4);
-    std.debug.assert(@offsetOf(PrinterState, "printer_model") == 8);
-    std.debug.assert(@offsetOf(PrinterState, "delay") == 12);
+    // printerState_t's two enum fields follow the target's C enum width, so the
+    // whole struct has two shapes. Assert both exactly rather than relaxing to
+    // the loosest one -- this block is the seam that catches a forked layout.
+    if (CEnum == u8) {
+        // ARM EABI (-fshort-enums): 1+1+1+1+1, pad to the uint16's alignment.
+        std.debug.assert(@sizeOf(PrinterState) == 8);
+        std.debug.assert(@alignOf(PrinterState) == 2);
+        std.debug.assert(@offsetOf(PrinterState, "print_mode") == 3);
+        std.debug.assert(@offsetOf(PrinterState, "printer_model") == 4);
+        std.debug.assert(@offsetOf(PrinterState, "delay") == 6);
+    } else {
+        std.debug.assert(@sizeOf(PrinterState) == 16);
+        std.debug.assert(@alignOf(PrinterState) == 4);
+        std.debug.assert(@offsetOf(PrinterState, "print_mode") == 4);
+        std.debug.assert(@offsetOf(PrinterState, "printer_model") == 8);
+        std.debug.assert(@offsetOf(PrinterState, "delay") == 12);
+    }
     std.debug.assert(@sizeOf(MatrixHeader) == 4);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "matrixColumns") == 12);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "mtag") == 24);

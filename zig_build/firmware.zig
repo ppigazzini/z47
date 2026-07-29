@@ -1074,21 +1074,11 @@ fn firmwareLinkFlags(board: Board) []const []const u8 {
 
 fn firmwareBoardHalSources(board: Board) []const []const u8 {
     return switch (board) {
-        // hal/console.c is the one board HAL source z47 still compiles from
-        // upstream rather than porting: it exists purely to keep newlib's
-        // buffered stdio out of the link. There is no console on DMCP hardware,
-        // so it defines printf/iprintf/puts/putchar/fputs/fputc/fprintf/
-        // fiprintf/fflush/_fflush_r as discards, which also intercepts printing
-        // from inside gmp and assert. Without it the link resolves those against
-        // libc_nano and drags in findfp.o -- 316 bytes of __sf FILE structs in
-        // SRAM2, which the DM42 cannot afford. The 4697e526a resync added an
-        // exit() override to the dmcp copy for the same reason (newlib's exit
-        // pulls __stdio_exit_handler, hence findfp). Porting these to Zig would
-        // fork a file whose whole job is to match newlib's ABI, so compile
-        // upstream's own and let future upstream changes to it land with the
-        // import.
-        .dmcp => &[_][]const u8{"src/c47-dmcp/hal/console.c"},
-        .dmcp5 => &[_][]const u8{"src/c47-dmcp5/hal/console.c"},
+        // No board HAL C: every upstream hal/*.c has a Zig owner. console.c's
+        // console sinks live in zig_build/firmware_console_runtime.zig, carried
+        // into the link by firmware_io_runtime.zig.
+        .dmcp => &[_][]const u8{},
+        .dmcp5 => &[_][]const u8{},
     };
 }
 

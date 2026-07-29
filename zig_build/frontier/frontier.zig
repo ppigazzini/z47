@@ -168,6 +168,13 @@ fn addRuntimeObject(
         .name = b.fmt("{s}-frontier-root", .{name_prefix}),
         .root_module = root_module,
     });
+    // One section per global so --gc-sections can drop what this build's feature
+    // stripping left unreferenced, and so LLVM's GlobalMerge stops padding
+    // unrelated globals into shared blobs. Worth ~570 bytes of .bss, which the
+    // DM42's 8Kb SRAM2 budget needs; the .rodata split it also causes costs
+    // flash, which only the DM42 is tight on and which stubbing newlib's stdio
+    // has since paid for.
+    runtime_obj.link_data_sections = true;
     if (options.coverage) {
         runtime_obj.use_llvm = true;
         runtime_obj.sanitize_coverage_trace_pc_guard = true;

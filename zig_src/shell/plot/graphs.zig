@@ -209,10 +209,14 @@ var _x_min_data: real_t = real_zero;
 var _x_max_data: real_t = real_zero;
 var _y_min_data: real_t = real_zero;
 var _y_max_data: real_t = real_zero;
-pub export var x_min: *real_t = &_x_min_data;
-pub export var x_max: *real_t = &_x_max_data;
-pub export var y_min: *real_t = &_y_min_data;
-pub export var y_max: *real_t = &_y_max_data;
+// graphs.h declares these `real_t *const`: the pointer never changes, only the
+// buffer it addresses. Exporting them const puts the four words in .rodata
+// (flash) instead of .data, which on the DM42 comes out of the same 8Kb of
+// SRAM2 that .bss does.
+pub export const x_min: *real_t = &_x_min_data;
+pub export const x_max: *real_t = &_x_max_data;
+pub export const y_min: *real_t = &_y_min_data;
+pub export const y_max: *real_t = &_y_max_data;
 pub export var PLOT_ZMY: i8 = 0;
 
 // function-local statics (preserve across calls)
