@@ -281,6 +281,11 @@ inline fn realToString(source: *const real_t, destination: [*c]u8) [*c]u8 {
 }
 
 extern fn realSetZero(value: *real_t) void;
+extern fn realSetOne(value: *real_t) void;
+// realIsZero macro (decNumberIsZero, DECSPECIAL = 0x70)
+inline fn realIsZero(dn: *align(1) const real_t) bool {
+    return dn.lsu[0] == 0 and dn.digits == 1 and (dn.bits & 0x70) == 0;
+}
 extern fn realSetNaN(value: *real_t) void;
 
 // real34_t macros
@@ -320,6 +325,38 @@ const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
 const ALL_LABELS: u8 = 0; // namedLabels_t: search local then global
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
+
+// deriv_pgm_variable / MVAR-aware sampling externs
+const PGM_WAITING: u8 = 2;
+const PGM_RUNNING: u8 = 1;
+const ERROR_SOLVER_ABORT: u8 = 60;
+const MAX_MVAR_DECLARATIONS: u16 = 18;
+const ITM_REM: u16 = 1554;
+const ITM_MVAR: u16 = 1524;
+const STRING_LABEL_VARIABLE: u8 = 253;
+const MAX_LABEL_NAME_LENGTH: usize = 14;
+extern var programRunStop: u8;
+extern var numberOfLabels: u16;
+extern var labelList: [*c]abi.LabelList;
+extern fn exitKeyWaiting() bool_t;
+extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
+extern fn findOrAllocateNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
+extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool;
+extern fn findNextStep(step: [*c]u8) [*c]u8;
+extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
+extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void;
+extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void;
+const mpz_struct = abi.Mpz;
+const snap_t = extern struct {
+    t: u8 = 0,
+    r: real34_t = undefined,
+    i: real34_t = undefined,
+    li: mpz_struct = undefined,
+    siVal: u64 = 0,
+    siBase: u32 = 0,
+    tag: u32 = 0,
+};
 
 // libc string helpers
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
@@ -371,6 +408,12 @@ pub export fn fn2ndDeriv(label: u16) linksection(runtime.code_section) callconv(
 }
 
 fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void {
+    // FLAG_SOLVING suppresses the per-item undo snapshot, so the one calcDeriv takes before sampling
+    // survives to be restored, and it is what lets execProgram run a body at all, which a user delta-x
+    // label needs.
+    const solving = getSystemFlag(@bitCast(FLAG_SOLVING));
+
+    setSystemFlag(FLAG_SOLVING);
     // new method to maintain solver variable
     reallyRunFunction(ITM_RCL, currentSolverVariable);
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
@@ -380,6 +423,9 @@ fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void
     reallyRunFunction(ITM_STO, currentSolverVariable);
     fnDrop(NOPARAM);
     temporaryInformation = ti;
+    if (!solving) {
+        clearSystemFlag(FLAG_SOLVING);
+    }
 }
 
 pub export fn fn1stDerivEq(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
@@ -425,10 +471,58 @@ fn deriv_default_h(h: *real_t) linksection(runtime.code_section) void {
         }
     }
     undo();
+    if (realIsZero(h)) { // the step is relative to x, so at x=0 it collapses and the weighted sum is divided by zero
+        realSetOne(h);
+    }
     h.exponent -= 16;
 }
 
-fn _differentiatorIteration(label: calcRegister_t, r0: *real_t) linksection(runtime.code_section) void {
+// A program that declares MVARs takes its argument from named storage (RCL 'x'), not from the stack, so the
+// sample point has to be stored where the program will recall it. Return the variable to perturb, or
+// INVALID_VARIABLE for a program that declares none and therefore reads the stack. Among several MVARs the
+// caller's selection wins whenever the program declares it, matching what the MVAR softmenu and the
+// equation derivative differentiate with respect to; otherwise the first declaration, which is the argument
+// by convention and the leftmost key of the MVAR menu.
+fn deriv_pgm_variable(label: calcRegister_t) linksection(runtime.code_section) calcRegister_t {
+    var first: calcRegister_t = @bitCast(INVALID_VARIABLE);
+
+    if (label < @as(calcRegister_t, @bitCast(FIRST_LABEL)) or label > @as(calcRegister_t, @bitCast(LAST_LABEL)) or
+        @as(u16, @bitCast(label)) - FIRST_LABEL >= numberOfLabels)
+    {
+        return @bitCast(INVALID_VARIABLE);
+    }
+    var step: [*c]u8 = labelList[@as(u16, @bitCast(label)) - FIRST_LABEL].instructionPointer;
+
+    var declared: u16 = 0;
+    while (declared < MAX_MVAR_DECLARATIONS) : (declared += 1) {
+        while (checkOpCodeOfStep(step, ITM_REM)) { // a REM ahead of an MVAR is transparent, as in the MVAR softmenu
+            step = findNextStep(step);
+        }
+        if (!(checkOpCodeOfStep(step, ITM_MVAR) and step[2] == STRING_LABEL_VARIABLE)) {
+            break;
+        }
+        const nameLength = boundProgramNameLength(step + 4, step[3]);
+        if (nameLength == 0 or nameLength > MAX_LABEL_NAME_LENGTH) {
+            break;
+        }
+        var name: [MAX_LABEL_NAME_LENGTH + 1]u8 = undefined;
+        _ = xcopy(&name, step + 4, nameLength);
+        name[nameLength] = 0;
+        const variable = findOrAllocateNamedVariable(@ptrCast(&name));
+        if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
+            if (@as(u16, @bitCast(variable)) == currentSolverVariable) {
+                return variable;
+            }
+            if (first == @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
+                first = variable;
+            }
+        }
+        step = findNextStep(step);
+    }
+    return first;
+}
+
+fn _differentiatorIteration(label: calcRegister_t, variable: calcRegister_t, r0: *real_t) linksection(runtime.code_section) void {
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     realToReal34(r0, registerReal34Ptr(REGISTER_X));
     fnFillStack(NOPARAM);
@@ -437,6 +531,9 @@ fn _differentiatorIteration(label: calcRegister_t, r0: *real_t) linksection(runt
         reallyRunFunction(ITM_STO, currentSolverVariable);
         equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
     } else {
+        if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // feed both channels: the stack for a program that consumes X, the variable for one that recalls its MVAR
+            reallyRunFunction(ITM_STO, @bitCast(variable));
+        }
         dynamicMenuItem = -1;
         execProgram(@bitCast(label));
         fnToReal(NOPARAM);
@@ -485,13 +582,27 @@ fn calcOneDeriv(stencil: *const FINITE_DIFF_COEFF, fxIn: [*]const real_t, h: *co
 }
 
 // Compute the function values f(x + k h), k = -MAX_ORDER .. MAX_ORDER
-fn calcFuncValues(label: calcRegister_t, x: *const real_t, fx: [*]real_t, h: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
+fn calcFuncValues(label: calcRegister_t, variable: calcRegister_t, x: *const real_t, fx: [*]real_t, h: *real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     var t: real_t = undefined;
     var i: i32 = 0;
     while (i < MAX_F_EVAL) : (i += 1) {
+        if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
+            // calcOneDeriv rejects a stencil only on the samples that stencil reads, so a narrow one would
+            // still succeed on the points already taken and hand back a value beside the abort. Poison them
+            // all to make the abort the only outcome.
+            lastErrorCode = ERROR_SOLVER_ABORT;
+            if (programRunStop == PGM_RUNNING) { // halt the outer program too, as every other abort point does
+                programRunStop = PGM_WAITING;
+            }
+            var j: i32 = 0;
+            while (j < MAX_F_EVAL) : (j += 1) {
+                realSetNaN(&fx[@intCast(j)]);
+            }
+            return;
+        }
         int32ToReal(i - MAX_ORDER, &t);
         realFMA(&t, h, x, &fx[@intCast(i)], realContext);
-        _differentiatorIteration(label, &fx[@intCast(i)]);
+        _differentiatorIteration(label, variable, &fx[@intCast(i)]);
     }
 }
 
@@ -499,20 +610,48 @@ fn calcFuncValues(label: calcRegister_t, x: *const real_t, fx: [*]real_t, h: *re
 fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF) linksection(runtime.code_section) void {
     var x: real_t = undefined;
     var h: real_t = undefined;
+    var probeValue: real_t = undefined;
     var fx: [@intCast(MAX_F_EVAL)]real_t = undefined;
+    var savedRegister: snap_t = undefined;
+    var variable: calcRegister_t = @bitCast(INVALID_VARIABLE);
 
     if (!getRegisterAsReal(REGISTER_X, &x)) {
         return;
     }
 
     if (!realIsSpecial(&x)) {
+        if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0) {
+            const probeError = lastErrorCode; // an MVAR name the variable allocator rejects raises here, before any sampling the caller asked for
+
+            lastErrorCode = ERROR_NONE;
+            variable = deriv_pgm_variable(label);
+            if (lastErrorCode != ERROR_NONE) { // no room for the MVAR: the user is told, rather than given the wrong answer a fall back to the stack would return
+                return;
+            }
+            lastErrorCode = probeError;
+            if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE)) and !getRegisterAsRealQuiet(variable, &probeValue)) {
+                variable = @bitCast(INVALID_VARIABLE); // differentiate only with respect to something numeric
+            }
+            if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
+                // Kept here rather than in a register: the user program runs between the save and the restore
+                // and every temporary register is scratch to something it can call, RCL of a stack register
+                // among them. The snapshot carries the type and the tag, so the value comes back as itself and
+                // not as the real34 the sampling stored. getRegisterAsRealQuiet above has already turned away
+                // everything the snapshot does not cover.
+                saveRegisterSnapshot(variable, &savedRegister);
+            }
+        }
+
         realCopy(&x, &h); // Pass X into the h determination code to allow relative steps
         deriv_default_h(&h);
 
         // Compute the function at the finite difference points
         saveForUndo();
-        calcFuncValues(label, &x, &fx, &h, &ctxtReal39);
+        calcFuncValues(label, variable, &x, &fx, &h, &ctxtReal39);
         undo();
+        if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // undo() rolls back the stack only, so the sampled variable is put back here
+            restoreRegisterSnapshot(variable, &savedRegister);
+        }
 
         // Try finite differences until we get a result
         var i: usize = 0;

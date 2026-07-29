@@ -1340,6 +1340,73 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
     return true;
 }
 
+// Snapshot of a register's value, type and tag, for code that has to put a register back the way it found
+// it. saveRegisterSnapshot takes the copy and restoreRegisterSnapshot writes it back and frees the long
+// integer it owns, so the pair is used once. Types outside the switch below are not captured, so screen the
+// register before taking a snapshot.
+pub const snap_t = extern struct {
+    t: u8 = 0,
+    r: real34_t = undefined,
+    i: real34_t = undefined,
+    li: mpz_struct = undefined,
+    siVal: u64 = 0,
+    siBase: u32 = 0,
+    tag: u32 = 0,
+};
+
+extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) bool;
+extern fn setRegisterDataType(regist: calcRegister_t, data_type: u32, tag: u32) void;
+
+pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
+    s.t = @intCast(getRegisterDataType(reg));
+    switch (@as(u32, s.t)) {
+        dtComplex34 => {
+            real34Copy(reg34(reg), &s.r);
+            real34Copy(regImag34(reg), &s.i);
+        },
+        dtReal34, dtTime => {
+            real34Copy(reg34(reg), &s.r);
+            real34SetZero(&s.i);
+        },
+        dtLongInteger => {
+            _ = getRegisterAsLongInt(reg, &s.li, null);
+        },
+        dtShortInteger => {
+            _ = getRegisterAsRawShortInt(reg, &s.siVal, &s.siBase);
+        },
+        else => {},
+    }
+    s.tag = getRegisterTag(reg);
+}
+
+// reg may hold a different type (hence allocation size) than the snapshot, so reallocate to s.t before writing back.
+pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
+    switch (@as(u32, s.t)) {
+        dtComplex34 => {
+            reallocateRegister(reg, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, s.tag);
+            real34Copy(&s.i, regImag34(reg));
+            real34Copy(&s.r, reg34(reg));
+        },
+        dtReal34, dtTime => {
+            reallocateRegister(reg, s.t, REAL34_SIZE_IN_BLOCKS, s.tag);
+            real34Copy(&s.r, reg34(reg));
+        },
+        dtLongInteger => {
+            convertLongIntegerToLongIntegerRegister(&s.li, reg);
+            mpz_clear(&s.li);
+        },
+        dtShortInteger => {
+            reallocateRegister(reg, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.siBase);
+            const data: [*c]u64 = @ptrCast(@alignCast(getRegisterDataPointer(reg)));
+            data[0] = s.siVal;
+            setRegisterTag(reg, s.siBase); // setRegisterShortIntegerBase(reg, base) macro
+        },
+        else => {},
+    }
+    setRegisterDataType(reg, s.t, s.tag);
+}
+
 pub export fn processRealComplexMonadicFunction(realf: Fn0, complexf: Fn0) callconv(.c) void {
     processIntRealComplexMonadicFunction(realf, complexf, null, null);
 }
