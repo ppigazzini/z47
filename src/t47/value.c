@@ -78,7 +78,13 @@ int dslParseRegisterArg(Jim_Interp *interp, int16_t op, const char *arg, uint16_
     return JIM_OK;
   }
 
-  if(arg[1] == '\0' && isalpha((unsigned char)arg[0])) {
+  // A solver/integrator variable operand names a variable, never a lettered stack register, so a single-letter name like x must resolve as the named
+  // variable below, not as register X. SOLVE and PLT f carry param TM_SOLVE; the two integrate items take the integration variable but carry TM_REGISTER,
+  // so list them by index. STO/RCL-style operands keep the bare letter as a stack register.
+  const bool_t solverVariableOperand = (op >= 0 && op < LAST_ITEM)
+                                       && (indexOfItems[op].param == TM_SOLVE || op == ITM_INTEGRAL || op == ITM_INTEGRAL_YX);
+
+  if(!solverVariableOperand && arg[1] == '\0' && isalpha((unsigned char)arg[0])) {
     calcRegister_t reg = dslRegisterFromLetter(arg[0]);
     if(reg == INVALID_VARIABLE || !regInRange(reg)) {
       Jim_SetResultFormatted(interp, "invalid register letter: '%s'", arg);
@@ -130,13 +136,18 @@ static int dslParseLabelArg(Jim_Interp *interp, const char *arg, uint16_t *outPa
 
   if(arg[1] == '\0') {
     char c = arg[0];
-    if(c >= 'A' && c <= 'L') {
-      *outParam = (uint16_t)(100 + (c - 'A'));
-      return JIM_OK;
-    }
-    if(c >= 'a' && c <= 'l') {
-      *outParam = (uint16_t)(FIRST_LC_LOCAL_LABEL + (c - 'a'));
-      return JIM_OK;
+    // A single letter A-L / a-l names a local label, but a global label with that exact name would otherwise be unreachable, so prefer an
+    // existing global label (resolved below) and map to the local-label number only when no such global label exists.
+    utf8ToString((const uint8_t *)arg, internalName);
+    if(findNamedLabel(internalName, STRING_LABEL_VARIABLE) == INVALID_VARIABLE) {
+      if(c >= 'A' && c <= 'L') {
+        *outParam = (uint16_t)(100 + (c - 'A'));
+        return JIM_OK;
+      }
+      if(c >= 'a' && c <= 'l') {
+        *outParam = (uint16_t)(FIRST_LC_LOCAL_LABEL + (c - 'a'));
+        return JIM_OK;
+      }
     }
   }
 

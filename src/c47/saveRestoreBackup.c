@@ -570,6 +570,31 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
   }
 
 
+  // A memory region count read from backup.cfg is how many entries of freeMemoryRegions or allocatedMemoryRegions freeList.c walks, so a count outside
+  // 0..ceiling cannot describe the file's own tables. Report it and let the caller refuse the file, as it already does for a wrong RAM size. This is a
+  // coherence check, not the bound on the restore: those writes are bounded by the destination.
+  static bool_t restoredRegionCountIsUsable(int32_t count, int32_t ceiling, const char *valueName) {
+    if(count < 0 || count > ceiling) {
+      printf("Cannot restore calc's memory from file %s! %s is %" PRId32 ", outside 0 to %" PRId32 "\n", backupFileName, valueName, count, ceiling);
+      return false;
+    }
+    return true;
+  }
+
+
+
+  // Release the parameter list read out of the file. Every path that gives up on a file after building the list has to come through here.
+  static void freeConfigFileParams(void) {
+    paramCurrent = paramHead;
+    while(paramHead) {
+      paramHead = paramHead->next;
+      free(paramCurrent->param);
+      free(paramCurrent);
+      paramCurrent = paramHead;
+    }
+  }
+
+
   static void restoreStateValue(const void *buffer, uint32_t size, const char *valueName, const char *valueType) {
     char value[200], *typePtr, *valuePtr;
 
@@ -679,20 +704,27 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
         numberOfBytes = size;
       }
       uint8_t hi, lo, *buf = (uint8_t *)buffer;
-      uint8_t *v;
+      const uint8_t *dumpLine = NULL;
+      size_t dumpLineLength = 0, digit = 0;
       for(uint32_t count=0; count < numberOfBytes; count++, buf++) {
         if(count % 32 == 0) {
           paramCurrent = paramCurrent->next;
           if(paramCurrent == NULL) {
             break;
           }
-          v = (uint8_t *)paramCurrent->param + 7;
+          // The two hex digits of byte b sit at offset 7 + 3*b of a dump line saveStateValue() wrote. A line in the file need not be that long, so index it
+          // against its own length. Offsets rather than pointers: a line shorter than 7 has no such position to point at, one-past-the-end or otherwise.
+          dumpLine       = (const uint8_t *)paramCurrent->param;
+          dumpLineLength = strlen(paramCurrent->param);
+          digit          = 7;
         }
 
-        hi = *v - (*v <= '9' ? '0' : 'a' - 10);
-        v++;
-        lo = *v - (*v <= '9' ? '0' : 'a' - 10);
-        v += 2;
+        if(digit + 1 >= dumpLineLength) {   // the line ends before the digit pair this byte needs: stop, as for a parameter list that runs out above
+          break;
+        }
+        hi = dumpLine[digit]     - (dumpLine[digit]     <= '9' ? '0' : 'a' - 10);
+        lo = dumpLine[digit + 1] - (dumpLine[digit + 1] <= '9' ? '0' : 'a' - 10);
+        digit += 3;
         *buf = (hi << 4) | lo;
       }
     }
@@ -717,6 +749,41 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     else {
       printf("ERROR: valueType %s unknown in function restoreStateValue!" LINEBREAK, valueType);
     }
+  }
+
+
+  // Restore one c47Ptr - a block index into ram - together with the byte offset saveCalc() stored beside it where the field has one, and build the pointer from
+  // the two integers. TO_PCMEMPTR() is ram + p and has no range of its own, so the range test here is what stops a p the file chose forming a pointer outside
+  // the pool, before scanLabelsAndPrograms() or the register walk is handed it.
+  //
+  // `current` seeds both numbers, so a field whose parameter the file omits keeps its own value. restoreStateValue() writes nothing when it finds no match, so
+  // one scratch variable shared across the fields would hand an omitted field whichever pointer was restored before it.
+  //
+  // Out of range clears *inThePool, which makes the caller refuse the file, and returns NULL rather than a pointer the caller might still use. C47_NULL is the
+  // file's own null and stays legal.
+  static void *restoredPoolPointer(void *current, const char *valueName, const char *offsetValueName, bool_t *inThePool) {
+    uint32_t blockAddress = TO_C47MEMPTR(current);
+    uint32_t byteOffset   = (current == NULL) ? 0 : (uint32_t)((uint8_t *)current - (uint8_t *)TO_PCMEMPTR(blockAddress));
+
+    restoreStateValue(&blockAddress, sizeof(blockAddress), valueName, "c47Ptr");
+    if(offsetValueName != NULL) {
+      restoreStateValue(&byteOffset, sizeof(byteOffset), offsetValueName, "uint32");
+    }
+
+    if(blockAddress == C47_NULL && byteOffset == 0) {
+      return NULL;
+    }
+    // Bound each number against what the format lets the writer produce, not against the pool as a whole. saveCalc() splits a pointer with TO_C47MEMPTR(),
+    // which divides by the block size, and stores the remainder as the offset, so an offset is never TO_BYTES(1) or more. Both tests are against a constant,
+    // so the sum below cannot overflow. The result is required to be strictly inside the pool: a block index of RAM_SIZE_IN_BLOCKS is the one-past-the-end
+    // position, and every consumer here dereferences what it is given.
+    if(blockAddress >= RAM_SIZE_IN_BLOCKS || byteOffset >= TO_BYTES(1)) {
+      printf("Cannot restore calc's memory from file %s! %s is block %" PRIu32 " + %" PRIu32 " bytes, outside the %" PRIu32 "-byte pool\n",
+             backupFileName, valueName, blockAddress, byteOffset, TO_BYTES(RAM_SIZE_IN_BLOCKS));
+      *inThePool = false;
+      return NULL;
+    }
+    return (uint8_t *)ram + TO_BYTES(blockAddress) + byteOffset;   // strictly inside: block <= RAM_SIZE_IN_BLOCKS-1 and offset <= TO_BYTES(1)-1
   }
 
 
@@ -753,7 +820,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
   void restoreCalc(void) {
     printf("RestoreCalc\n");
-    uint32_t ramSizeInBlocks = 0, ramPtr = 0, backupVersion = 0;
+    uint32_t ramSizeInBlocks = 0, backupVersion = 0;
+    bool_t   poolPointersInRange = true;
     int ret;
     //save and restore screenData is not mandatory
     //uint8_t *loadedScreen = malloc(SCREEN_WIDTH * SCREEN_HEIGHT / 8);
@@ -807,6 +875,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       printf("       Backup file      Program\n");
       printf("ramSize blocks %6u           %6d\n", ramSizeInBlocks, RAM_SIZE_IN_BLOCKS);
       printf("ramSize bytes  %6u           %6d\n", TO_BYTES(ramSizeInBlocks), TO_BYTES(RAM_SIZE_IN_BLOCKS));
+      freeConfigFileParams();
       return;
     }
     else if(backupVersion == 0 || backupVersion < 1011) {
@@ -816,6 +885,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       sprintf(ss, "Cannot restore calc's memory from file %s! File %s has a too low version number.", backupFileName, backupFileName);
       userAbortf(ss);
       userAbortf("It is proposed that you save a state file from a prior simulator version and import said state file into this version.\n");
+      freeConfigFileParams();
       return;
     }
 
@@ -823,68 +893,60 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
     // The order in which parameters are restored doesn't matter
     // When a parameter is removed, simply remove the corresponding saveStateValue(...) and restoreStateValue(...) lines.
+    // Both region counts are read into locals and checked before anything is committed, and ahead of the ram restore, so a file refused here leaves the
+    // calculator doFnReset() built at entry rather than one with half a pool in it. A parameter the file omits leaves its local at the live value, as for any
+    // other field.
+    int32_t restoredFreeRegions      = numberOfFreeMemoryRegions;
+    int32_t restoredAllocatedRegions = numberOfAllocatedMemoryRegions;
+    restoreStateValue(&restoredFreeRegions,            sizeof(restoredFreeRegions),                                 "numberOfFreeMemoryRegions",      "int32");
+    restoreStateValue(&restoredAllocatedRegions,       sizeof(restoredAllocatedRegions),                            "numberOfAllocatedMemoryRegions", "int32");
+    if(!restoredRegionCountIsUsable(restoredFreeRegions,      MAX_FREE_REGIONS,      "numberOfFreeMemoryRegions"     ) ||
+       !restoredRegionCountIsUsable(restoredAllocatedRegions, MAX_ALLOCATED_REGIONS, "numberOfAllocatedMemoryRegions")) {
+      refreshScreen(92);
+      printf("Performing RESET\n");
+      freeConfigFileParams();
+      return;
+    }
+    numberOfFreeMemoryRegions      = restoredFreeRegions;
+    numberOfAllocatedMemoryRegions = restoredAllocatedRegions;
+
     restoreStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
-    restoreStateValue(&numberOfFreeMemoryRegions,      sizeof(numberOfFreeMemoryRegions),                           "numberOfFreeMemoryRegions",      "int32");
-    restoreStateValue(freeMemoryRegions,               sizeof(freeMemoryRegion_t) * numberOfFreeMemoryRegions,      "freeMemoryRegions",              "hexDump");
-    restoreStateValue(&numberOfAllocatedMemoryRegions, sizeof(numberOfAllocatedMemoryRegions),                      "numberOfAllocatedMemoryRegions", "int32");
-    restoreStateValue(allocatedMemoryRegions,          sizeof(freeMemoryRegion_t) * numberOfAllocatedMemoryRegions, "allocatedMemoryRegions",         "hexDump");
+    // The size argument is what stops the reader writing off the end, so it is the room the destination has, the way every other call here passes a sizeof().
+    // These writes cannot leave their table whatever count the file carries.
+    restoreStateValue(freeMemoryRegions,               sizeof(*freeMemoryRegions) * MAX_FREE_REGIONS,               "freeMemoryRegions",              "hexDump"); // as config.c allocates it
+    restoreStateValue(allocatedMemoryRegions,          sizeof(allocatedMemoryRegions),                              "allocatedMemoryRegions",         "hexDump");
 
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allNamedVariables",              "c47Ptr");
-    allNamedVariables = TO_PCMEMPTR(ramPtr);
+    allNamedVariables           = restoredPoolPointer(allNamedVariables,           "allNamedVariables",           NULL,                         &poolPointersInRange);
+    invalidateNamedVariableCache();             // the whole table arrives from the backup image: nothing findNamedVariable() remembers describes it any more
+    allFormulae                 = restoredPoolPointer(allFormulae,                 "allFormulae",                 NULL,                         &poolPointersInRange);
+    userMenus                   = restoredPoolPointer(userMenus,                   "userMenus",                   NULL,                         &poolPointersInRange);
+    userKeyLabel                = restoredPoolPointer(userKeyLabel,                "userKeyLabel",                NULL,                         &poolPointersInRange);
+    statisticalSumsPointer      = restoredPoolPointer(statisticalSumsPointer,      "statisticalSumsPointer",      NULL,                         &poolPointersInRange);
+    savedStatisticalSumsPointer = restoredPoolPointer(savedStatisticalSumsPointer, "savedStatisticalSumsPointer", NULL,                         &poolPointersInRange);
+    labelList                   = restoredPoolPointer(labelList,                   "labelList",                   NULL,                         &poolPointersInRange);
+    programList                 = restoredPoolPointer(programList,                 "programList",                 NULL,                         &poolPointersInRange);
+    currentSubroutineLevelData  = restoredPoolPointer(currentSubroutineLevelData,  "currentSubroutineLevelData",  NULL,                         &poolPointersInRange);
+    currentLocalFlags           = restoredPoolPointer(currentLocalFlags,           "currentLocalFlags",           NULL,                         &poolPointersInRange);
+    currentLocalRegisters       = restoredPoolPointer(currentLocalRegisters,       "currentLocalRegisters",       NULL,                         &poolPointersInRange);
 
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "allFormulae",                    "c47Ptr");
-    allFormulae = TO_PCMEMPTR(ramPtr);
+    beginOfProgramMemory        = restoredPoolPointer(beginOfProgramMemory,        "beginOfProgramMemory",        "beginOfProgramMemoryOffset", &poolPointersInRange);
+    firstFreeProgramByte        = restoredPoolPointer(firstFreeProgramByte,        "firstFreeProgramByte",        "firstFreeProgramByteOffset", &poolPointersInRange);
+    firstDisplayedStep          = restoredPoolPointer(firstDisplayedStep,          "firstDisplayedStep",          "firstDisplayedStepOffset",   &poolPointersInRange);
+    currentStep                 = restoredPoolPointer(currentStep,                 "currentStep",                 "currentStepOffset",          &poolPointersInRange);
 
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "userMenus",                      "c47Ptr");
-    userMenus = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "userKeyLabel",                   "c47Ptr");
-    userKeyLabel = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "statisticalSumsPointer",         "c47Ptr");
-    statisticalSumsPointer = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "savedStatisticalSumsPointer",    "c47Ptr");
-    savedStatisticalSumsPointer = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "labelList",                      "c47Ptr");
-    labelList = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "programList",                    "c47Ptr");
-    programList = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentSubroutineLevelData",     "c47Ptr");
-    currentSubroutineLevelData = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalFlags",              "c47Ptr");
-    currentLocalFlags = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentLocalRegisters",          "c47Ptr");
-    currentLocalRegisters = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemory",           "c47Ptr"); // beginOfProgramMemory pointer to block
-    beginOfProgramMemory = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "beginOfProgramMemoryOffset",     "uint32"); // beginOfProgramMemory offset within block
-    beginOfProgramMemory += ramPtr;
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstFreeProgramByte",           "c47Ptr"); // firstFreeProgramByte pointer to block
-    firstFreeProgramByte = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstFreeProgramByteOffset",     "uint32"); // firstFreeProgramByte offset within block
-    firstFreeProgramByte += ramPtr;
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstDisplayedStep",             "c47Ptr"); // firstDisplayedStep pointer to block
-    firstDisplayedStep = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "firstDisplayedStepOffset",       "uint32"); // firstDisplayedStep offset within block
-    firstDisplayedStep += ramPtr;
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentStep",                    "c47Ptr"); // currentStep pointer to block
-    currentStep = TO_PCMEMPTR(ramPtr);
-
-    restoreStateValue(&ramPtr,                         sizeof(ramPtr),                                              "currentStepOffset",              "uint32"); // currentStep offset within block
-    currentStep += ramPtr;
+    // Every field above is restored before this is tested, so one file reports every pointer it got wrong rather than only the first. A file that describes
+    // pointers into some other pool is refused: nothing here can repair it, and the next thing to run is scanLabelsAndPrograms() walking program memory
+    // through exactly these pointers.
+    //
+    // Unlike the region-count check above, this one cannot simply return. By here ram holds the file's bytes, the region counts are the file's, every pointer
+    // that passed has been assigned, and the one that failed holds the NULL restoredPoolPointer() returns. So perform the reset this path prints.
+    if(!poolPointersInRange) {
+      refreshScreen(92);
+      printf("Performing RESET\n");
+      freeConfigFileParams();
+      doFnReset(CONFIRMED, loadAutoSav);
+      return;
+    }
 
     restoreStateValue(globalFlags,                     sizeof(globalFlags),                                         "globalFlags",                    "hexDump");
     restoreStateValue(errorMessage,                    ERROR_MESSAGE_LENGTH,                                        "errorMessage",                   "hexDump");
@@ -932,6 +994,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&displayFormatDigits,            sizeof(displayFormatDigits),                                 "displayFormatDigits",            "uint8");
     restoreStateValue(&timeDisplayFormatDigits,        sizeof(timeDisplayFormatDigits),                             "timeDisplayFormatDigits",        "uint8");
     restoreStateValue(&shortIntegerWordSize,           sizeof(shortIntegerWordSize),                                "shortIntegerWordSize",           "uint8");
+    shortIntegerWordSize = boundShortIntegerWordSize(shortIntegerWordSize);
     updateShortIntegerMasks();  // rederive shortIntegerMask and shortIntegerSignBit from the word size just restored; the file copies (older backups) are ignored
     restoreStateValue(&significantDigits,              sizeof(significantDigits),                                   "significantDigits",              "uint8");
     fractionDigits = 34;
@@ -1367,7 +1430,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     clearScreen(210); // implicit forceSBupdate();
 
 
-
     if(backupVersion < 1009) {                           //register header is already loaded with 32 bits
       printf("Version number of configfile < 1009: chacking all registers for matrix conversion from old 32-bit header to new 32-bit header.");
       int qq = FIRST_GLOBAL_REGISTER;
@@ -1394,13 +1456,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
 
     // Freeing the space occupied by all the configuration parameters
-    paramCurrent = paramHead;
-    while(paramHead) {
-      paramHead = paramHead->next;
-      free(paramCurrent->param);
-      free(paramCurrent);
-      paramCurrent = paramHead;
-    }
+    freeConfigFileParams();
 
     // Sanitise restored short integers: the backup restores raw register bytes, so a file written by an older build can
     // carry values wider than the word size. The mask and sign bit were restored above; clamp every short-integer

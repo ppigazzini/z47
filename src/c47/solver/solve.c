@@ -34,6 +34,25 @@
 
 
 
+// True when a further PLOT, INT or SOLVE may not start. INT and SOLVE nest to MAX_ENGINE_NESTING_DEPTH. PLOT runs only as the outermost engine, because the draw
+// matrix DrwMX, its register regStatsXY and the screen are single, and where PLOT_NESTING_ALLOWED is 0 nothing at all runs inside a plot. Each engine calls this at
+// its entry, ahead of that engine's own saveForUndo: the undo buffer is one global, and an engine refused after saving over it leaves the engine one level out
+// restoring an image that no longer matches its registers. PGM_WAITING carries the stop across the unwind and engineNestingWasRefused carries the reason, both of
+// them durable where lastErrorCode is not: FLAG_IGN1ER wipes it, so an error raised here never reaches the engine that reports the abort. The standing undo image
+// is disarmed because adjustResult replays that image on any error code.
+bool_t engineNestingRefused(bool_t isPlot) {
+  if(isPlot ? (engineNestingDepth == 0)
+            : (engineNestingDepth < MAX_ENGINE_NESTING_DEPTH && (PLOT_NESTING_ALLOWED || plotEngineActive == 0))) {
+    engineNestingWasRefused = false;
+    return false;
+  }
+  programRunStop = PGM_WAITING;
+  thereIsSomethingToUndo = false;
+  engineNestingWasRefused = true;
+  return true;
+}
+
+
 void fnPgmSlv(uint16_t label) {
   if(FIRST_LABEL <= label && label <= LAST_LABEL) {
     currentSolverProgram = label - FIRST_LABEL;
@@ -95,6 +114,9 @@ void fnSolve(uint16_t labelOrVariable) {
     real_t tmp;
     int resultCode = 0;
 
+    if(engineNestingRefused(false)) {
+      return;
+    }
     if(getRegisterAsReal34Quiet(REGISTER_Y, &y) && getRegisterAsReal34Quiet(REGISTER_X, &x)) {
       fnDrop(NOPARAM);
       fnDrop(NOPARAM);
@@ -205,6 +227,9 @@ void fnMvarPlot(uint16_t labelOrVariable) {
   else if(FIRST_NAMED_VARIABLE <= labelOrVariable && labelOrVariable <= LAST_NAMED_VARIABLE) {
     // Execute
     real34_t xl, xh;
+    if(engineNestingRefused(true)) {
+      return;
+    }
     if(getRegisterAsReal34Quiet(REGISTER_Y, &xl) && getRegisterAsReal34Quiet(REGISTER_X, &xh)) {
       saveForUndo(); //repeat after dropping the input parameters
       currentSolverVariable = labelOrVariable;
@@ -500,6 +525,10 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
       realCopy(const_1e_32, &minBracketSpacing);
     }
 
+    if(engineNestingRefused(false)) {                            // ahead of the flags and both depth counters
+      return SOLVER_RESULT_ABORTED;
+    }
+    ++engineNestingDepth;
     ++currentSolverNestingDepth;
     setSystemFlag(FLAG_SOLVING);
     clearSystemFlag(FLAG_INTING);
@@ -604,6 +633,7 @@ retryLevel:
     }
 
     if(realIsZero(&faa) || realIsZero(&fbb)) { // already is a root?
+      --engineNestingDepth;
       if((--currentSolverNestingDepth) == 0) {
         clearSystemFlag(FLAG_SOLVING);
       }
@@ -787,6 +817,7 @@ retryLevel:
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
             copySourceRegisterToDestRegister(REGISTER_X, variable);
+            --engineNestingDepth;
             if((--currentSolverNestingDepth) == 0) {
               clearSystemFlag(FLAG_SOLVING);
             }
@@ -841,6 +872,7 @@ retryLevel:
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
                 copySourceRegisterToDestRegister(REGISTER_X, variable);
+                --engineNestingDepth;
                 if((--currentSolverNestingDepth) == 0) {
                   clearSystemFlag(FLAG_SOLVING);
                 }
@@ -854,6 +886,7 @@ retryLevel:
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
                 copySourceRegisterToDestRegister(REGISTER_X, variable);
+                --engineNestingDepth;
                 if((--currentSolverNestingDepth) == 0) {
                   clearSystemFlag(FLAG_SOLVING);
                 }
@@ -887,6 +920,7 @@ retryLevel:
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
             copySourceRegisterToDestRegister(REGISTER_X, variable);
+            --engineNestingDepth;
             if((--currentSolverNestingDepth) == 0) {
               clearSystemFlag(FLAG_SOLVING);
             }
@@ -918,6 +952,7 @@ retryLevel:
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
             copySourceRegisterToDestRegister(REGISTER_X, variable);
+            --engineNestingDepth;
             if((--currentSolverNestingDepth) == 0) {
               clearSystemFlag(FLAG_SOLVING);
             }
@@ -1184,6 +1219,7 @@ solver_final_print:;
         clearSystemFlag(FLAG_SOLVING);
       }
     }
+    --engineNestingDepth;                                        // after the extremum check above, which re-runs the user program
 
     if(result == SOLVER_RESULT_NORMAL && real34IsInfinite(REGISTER_REAL34_DATA(variable)) && extendRange && real34IsZero(resZ)) {
       result = SOLVER_RESULT_CONSTANT;

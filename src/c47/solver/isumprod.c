@@ -144,10 +144,10 @@
         programRunStop = PGM_STOPPED;
       }
 
+      if((--currentSolverNestingDepth) == 0) {
+        clearSystemFlag(FLAG_SOLVING);
+      }
     } //MAIN IF
-    if((--currentSolverNestingDepth) == 0) {
-      clearSystemFlag(FLAG_SOLVING);
-    }
   }
 
 

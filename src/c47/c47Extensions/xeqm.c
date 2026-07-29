@@ -121,7 +121,10 @@ void fnXSWAP (uint16_t mode) {
       }
     }
     else if(calcMode == CM_NORMAL && getRegisterDataType(REGISTER_X) != dtString) {
-      char line1[TMP_STR_LENGTH];
+      char *line1 = malloc(TMP_STR_LENGTH);   // off the stack: this branch runs inside fnXSWAP, whose frame was 2600 bytes of the DM42's stack grant
+      if(line1 == NULL) {
+        return;
+      }
       line1[0] = 0;
       strcpy(line1, " ");
       int16_t len = stringByteLength(line1);
@@ -131,6 +134,7 @@ void fnXSWAP (uint16_t mode) {
       liftStack();
       reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(len), amNone);
       strcpy(REGISTER_STRING_DATA(REGISTER_X), line1);
+      free(line1);
       fnXSWAP(0);
     }
 

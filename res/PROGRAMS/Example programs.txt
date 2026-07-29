@@ -44,3 +44,5 @@ Demonstration programs included in C47 distro
                                    CENTRL, power ASSESS, HPLOT, HNORM); the ten SNAP captures match the testSuite results
 
 14.  HNSKEW.txt    HNSKEW.p47     Skewed-histogram HNORM test: the window follows the fitted Gauss, peak and both tails on screen
+
+15.  FFX.txt       FFX.p47         New: extreme-scaled exponential e^(x*1E50 - 1) over MVAR x; plot and solve stress test at tiny x magnitudes in the range of -10E-50 to 10E-50

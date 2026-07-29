@@ -181,3 +181,7 @@ SECTIONS {
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
+
+/* The DMCP system data block sits at a fixed 0x10002000, inside SRAM2, so .bss growing past it corrupts firmware state
+   with no diagnostic. Fail the link instead. */
+ASSERT(_ebss <= 0x10002000, "Error: .bss reaches the DMCP system data block at 0x10002000. Reduce static data.")

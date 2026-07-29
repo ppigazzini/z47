@@ -17,6 +17,14 @@
   #define REAL_SIZE_IN_BLOCKS(digits)  TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
   #define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits) / 4]; real_t *const name=(real_t *)_ ## name ## _data
 
+  // malloc/free version
+  #define REAL_T_ALLOC(name, digits)   uint32_t *_ ## name ## _data=malloc(REAL_SIZE_IN_BYTES(digits)); real_t *const name=(real_t *)_ ## name ## _data
+  #define REAL_T_FREE(name, digits)    free(name)
+
+  // allocC47Blocks/freeC47Blocks version
+  //#define REAL_T_ALLOC(name, digits)   real_t * const name=(real_t *)allocC47Blocks(REAL_SIZE_IN_BLOCKS(digits))
+  //#define REAL_T_FREE(name, digits)    freeC47Blocks(name, REAL_SIZE_IN_BLOCKS(digits));
+
   typedef struct {
     real34_t real, imag;
   } complex34_t;

@@ -1,0 +1,13 @@
+;******************************************************************************************************************************
+;** Coverage: named-variable lookup cache (findNamedVariable, registers.c). The lookup keeps the indices of its last two    **
+;** scan hits and trusts one only after re-matching its stored name against the query. fnNamedVarCacheCov checks that       **
+;** repeated, alternating and three-name rotating lookups stay correct, that deleting a variable with the cache warm makes  **
+;** its name miss while the survivors follow the list compaction (identity proven through stored values), that re-creating  **
+;** the deleted name yields a fresh zeroed variable, and that a folded spelling and the stored spelling alternate onto the  **
+;** same variable. Cleans up after itself.                                                                                  **
+;******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnNamedVarCacheCov
+In:  FARG=0
+Out: EC=0

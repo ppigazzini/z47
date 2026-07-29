@@ -25,15 +25,23 @@ void fnSHIFTfg(uint16_t unusedButMandatoryParameter) {
 
 
 //Length in ms, frequency in Hz
-void _keyClick(uint8_t lengthMs, uint32_t f) {  //Debugging on scope, a millisecond input pulse length after every key edge. !!!!! Destroys the prior volume setting
+void _keyClick(uint8_t lengthMs, uint32_t f) {  //Debugging on scope, a millisecond input pulse length after every key edge. The prior volume setting is saved and put back
   #if defined(DMCP_BUILD)
     #if (defined(DM42_KEYCLICK) || defined(CLICK_REFRESHSCR) || defined(DM42_POWERMARKS) || defined(DM42_POWERMARK_KEYPRESS))
-      while(get_beep_volume() < 11) {
-        beep_volume_up();
+      if(getSystemFlag(FLAG_QUIET)) {                              // QUIET silences every sound the calculator makes, without exception
+        return;
       }
+      #if defined(OUT_VOL_MAX)
+        uint16_t savedVolume = getBeepVolume();
+
+        fnSetVolume(11);
+      #endif // OUT_VOL_MAX
       start_buzzer_freq(f*1000); //Click 1kHz for 1 ms
       sys_delay((uint32_t)lengthMs);
       stop_buzzer();
+      #if defined(OUT_VOL_MAX)
+        fnSetVolume(savedVolume);
+      #endif // OUT_VOL_MAX
     #endif // DM42_KEYCLICK
   #endif // DMCP_BUILD
 }

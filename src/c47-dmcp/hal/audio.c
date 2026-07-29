@@ -6,6 +6,9 @@
 static uint32_t _getValueFromRegister(calcRegister_t regist);
 
 void audioTone(uint32_t frequency) {
+  if(getSystemFlag(FLAG_QUIET)) {                                   // QUIET silences every sound the calculator makes, without exception
+    return;
+  }
   start_buzzer_freq(frequency);
   sys_delay(250);
   stop_buzzer();
@@ -22,7 +25,11 @@ void dm42_squeak() {
 void fnSetVolume(uint16_t volume) {
   uint16_t i;
   uint16_t current_volume;
-  current_volume = get_beep_volume();
+  int32_t reported_volume = get_beep_volume();                      // DMCP returns int with no guaranteed range; outside 0..11 the step loops below run thousands of times. VOL takes 0..11
+  current_volume = (reported_volume < 0 || reported_volume > 11) ? 11 : (uint16_t)reported_volume;
+  if(volume > 11) {                                                 // the screen capture path writes back whatever getBeepVolume returned, so the target needs the same bound as the source
+    volume = 11;
+  }
   //volume++;
   if(volume > current_volume) {
     for(i = current_volume; i < volume; i++) {
@@ -85,6 +92,9 @@ static uint32_t _getValueFromRegister(calcRegister_t regist) {
 }
 
 void _Buzz(uint32_t frequency, uint32_t ms_delay) {
+  if(getSystemFlag(FLAG_QUIET)) {                                   // QUIET silences every sound the calculator makes, without exception
+    return;
+  }
   if(ms_delay > 0) {
     if(ms_delay > 2000) {
       ms_delay = 2000;  // max duration value : 2s
@@ -128,13 +138,15 @@ void fnPlay(uint16_t regist) {
         //errorMoreInfo("DataType %" PRIu32 " is not a Nx2 matrix", getRegisterDataType(regist));
         return;
       }
+      uint16_t savedVolume = getBeepVolume();                        // a Nx3 sets the volume per note; the user's setting is put back on both exits
+
       screenUpdatingMode = SCRUPD_AUTO;
       screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
       for(uint16_t i = 0; i < m.header.matrixRows; ++i) {
         frequency = real34ToUInt32(&m.matrixElements[i * cols]);
         ms_delay  = real34ToUInt32(&m.matrixElements[i * cols + 1]);
-        volume    = real34ToUInt32(&m.matrixElements[i * cols + 2]);
-        if(cols == 3) {
+        if(cols == 3) {                                              // column 2 exists only on a Nx3; reading it on a Nx2 runs one element past the matrix on the last row
+          volume  = real34ToUInt32(&m.matrixElements[i * cols + 2]);
           fnSetVolume(volume);
         }
         _Buzz(frequency, ms_delay);
@@ -144,10 +156,12 @@ void fnPlay(uint16_t regist) {
         while(!key_empty()) {
           if(key_pop() == KEY_EXIT) {          // exit if user press EXIT
             key_pop_all ();
+            fnSetVolume(savedVolume);
             return;
           }
         }
       }
+      fnSetVolume(savedVolume);
     }
   }
   else {

@@ -125,6 +125,21 @@
   /* returns error code or ERROR_NONE if okay */
   int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 
+  // Snapshot of a register's value, type and tag, for code that has to put a register back the way it found it. saveRegisterSnapshot takes the copy and
+  // restoreRegisterSnapshot writes it back and frees the long integer it owns, so the pair is used once. Types outside the switch are not captured, so screen the
+  // register before taking a snapshot.
+  typedef struct {
+    uint8_t t;
+    real34_t r, i;
+    longInteger_t li;
+    uint64_t siVal;
+    uint32_t siBase;
+    uint32_t tag;
+  } snap_t;
+
+  void saveRegisterSnapshot(calcRegister_t reg, snap_t *s);
+  void restoreRegisterSnapshot(calcRegister_t reg, snap_t *s);
+
   void processRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void));
   void processIntRealComplexMonadicFunction(void (*realf)(void), void (*complexf)(void), void (*shortintf)(void), void (*longintf)(void));
   void processRealComplexDyadicFunction(void (*realf)(void), void (*complexf)(void));

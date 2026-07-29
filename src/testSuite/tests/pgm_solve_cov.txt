@@ -35,6 +35,15 @@ Func: fnIntegratePgmCov
 In:  FARG=0 RY=Real:"0" RX=Real:"3"
 Out: EC=0 RX=Real:"-3"
 
+; interactive selection (Integral f d) of the no-MVAR program T opens an empty MVAR menu, of program M (leading MVAR) a one-item menu; both write the menu list
+; terminator into the byte _dynmenuConstructMVars allocates for it, which is the write that reboots the hardware when it lands outside (#500, #579)
+Func: fnIntegrateErrCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0
+Func: fnIntegrateErrCov
+In:  FARG=3 RX=Real:"0"
+Out: EC=0
+
 ; program summation Sum(n^2-4) for n=3..5 (from=3,to=5,step=1) = 5+12+21 = 38
 Func: fnSumProdCov
 In:  FARG=0 RZ=Real:"3" RY=Real:"5" RX=Real:"1"

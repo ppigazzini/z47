@@ -137,13 +137,13 @@ static void executeFunction(const char *data, int16_t item_);
           item = MNU_DYNAMIC;
         }
 
-//integral MNU_Sf
-        else if((IS_EQN_INTEGRATE) && dynamicMenuItem == 4) {
+//integral MNU_Sf: items 4 and 5 are the two action keys only in the formula menu, where parseEquation reserves them; a program's MVAR list puts its own variables there
+        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (IS_EQN_INTEGRATE) && dynamicMenuItem == 4) {
           item = -MNU_Sf_TOOL;
         }
 
 //integral y to x
-        else if((IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
+        else if((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) && (IS_EQN_INTEGRATE) && dynamicMenuItem == 5) {
           item = ITM_INTEGRAL_YX;
         }
 
@@ -3401,7 +3401,7 @@ RELEASE_END:
 void fnKeyEnter(uint16_t unusedButMandatoryParameter) {
   doRefreshSoftMenu = true;     //dr
     uint8_t effectiveCalcMode = calcMode;
-    if(calcMode == CM_GRAPH && programRunStop == PGM_RUNNING) {   // a program running under CM_GRAPH (e.g. plot(int) integrand) needs normal ENTER dup, not the empty interactive-graph case
+    if(GRAPHMODE && programRunStop == PGM_RUNNING) {   // a program running under CM_GRAPH or CM_PLOT_STAT (e.g. plot(int) integrand, programmed HPLOT) needs normal ENTER dup, not the empty interactive-graph case
       effectiveCalcMode = CM_NORMAL;
     }
     switch(effectiveCalcMode) {
@@ -3660,7 +3660,7 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
                     lastErrorCode = 0;
                 }
                 else {
-                    if(currentMenu() == -MNU_SYSFL) {                                                       //JM auto recover out of SYSFL
+                    if(tam.mode && currentMenu() == -MNU_SYSFL) {                                           //JM auto recover out of SYSFL in the CFLG TAM flow; a plain catalog SYS.FL exits via the standard path below
                       numberOfTamMenusToPop = 2;                                                   //JM
                       leaveTamModeIfEnabled();                                                     //JM
                       return;                                                                      //JM
@@ -4689,18 +4689,6 @@ void fnKeyUp(uint16_t unusedButMandatoryParameter) {
 
 void fnKeyDown(uint16_t unusedButMandatoryParameter) {
     int16_t menuId = softmenuStack[0].softmenuId; //JM
-
-//--     if(SHOWMODE && currentMenu() != -MNU_EQN && !tam.mode) { //JMSHOW vv
-//--       if(temporaryInformation == TI_SHOW_REGISTER_TINY) {
-//--         fnShow_SCROLL(12);
-//--       }
-//--       else {
-//--         fnShow_SCROLL(2);
-//-- //      refreshScreen(133);
-//--       }
-//--       return;
-//--     }                             //JMSHOW ^^
-
 
     if(tam.mode && tam.alpha && currentMenu() == -MNU_TAMALPHA) {
       fnAlphaCursorEnd(NOPARAM);

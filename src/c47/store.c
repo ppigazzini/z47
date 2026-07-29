@@ -220,7 +220,7 @@ void fnStore(uint16_t regist) {
   if(_checkReadOnlyVariable(regist) && regInRange(regist)) {
     _storeValue(regist);
     uint16_t rows = 1;
-    if(regist >= FIRST_NAMED_VARIABLE && regist == findNamedVariable("STATS")) {
+    if(namedVariableIsStats(regist)) {
       if(isStatsMatrixN(&rows, regist)) {
         calcSigma(0);
       }
@@ -289,7 +289,7 @@ static void _storeOp(uint16_t regist, void (* const op[NUMBER_OF_DATA_TYPES_FOR_
 
     adjustResult(REGISTER_X, false, true, REGISTER_X, regist, -1);
     uint16_t rows = 1;
-    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && regist == findNamedVariable("STATS")) {
+    if(regist >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, regist) && namedVariableIsStats(regist)) {
       calcSigma(0);
     }
   }
@@ -591,7 +591,7 @@ void _fnStoreElement(bool_t stepForward) {
         fnIncDecJ(INC_FLAG);
       }
       uint16_t rows = 1;
-      if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && matrixIndex == findNamedVariable("STATS")) {
+      if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && namedVariableIsStats(matrixIndex)) {
         calcSigma(0);
       }
     }
@@ -610,7 +610,7 @@ void fnStoreIJ(uint16_t unusedButMandatoryParameter) {
     else {
       callByIndexedMatrix(storeIjReal, storeIjComplex);
       uint16_t rows = 1;
-      if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && matrixIndex == findNamedVariable("STATS")) {
+      if(matrixIndex >= FIRST_NAMED_VARIABLE && isStatsMatrixN(&rows, matrixIndex) && namedVariableIsStats(matrixIndex)) {
         calcSigma(0);
       }
     }

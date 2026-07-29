@@ -1,0 +1,46 @@
+;*******************************************************************************************************************************
+;** Coverage: softkey decoding of the integrator's MVAR menu (determineFunctionKeyItem_C47, case MNU_MVAR). X carries the     **
+;** class of the decoded item: 1 selects the menu variable, 2 opens the integral TOOL menu, 3 is integral y to x, 0 is no     **
+;** operation, 9 is anything else.                                                                                            **
+;*******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; A program armed by the interactive integrator lists only its own MVARs, so all six keys of a 6-MVAR program select their variable
+Func: fnMvarKeyCov
+In:  FARG=1 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=2 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=3 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=4 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=5 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=6 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+
+; the formula A+B+C keeps its action keys: parseEquation puts the three variables in items 0 to 2, pads item 3, and reserves items 4 and 5 for TOOL and integral y to x
+Func: fnMvarKeyCov
+In:  FARG=11 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=12 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=13 RX=Real:"0"
+Out: EC=0 RX=Real:"1"
+Func: fnMvarKeyCov
+In:  FARG=14 RX=Real:"0"
+Out: EC=0 RX=Real:"0"
+Func: fnMvarKeyCov
+In:  FARG=15 RX=Real:"0"
+Out: EC=0 RX=Real:"2"
+Func: fnMvarKeyCov
+In:  FARG=16 RX=Real:"0"
+Out: EC=0 RX=Real:"3"

@@ -308,9 +308,6 @@
   extern bool_t                 lastProgramListEnd;
   extern bool_t                 programListEnd;
   extern bool_t                 pemCursorIsZerothStep;
-  extern bool_t                 secTick1;
-  extern bool_t                 halfSecTick2;
-  extern bool_t                 halfSecTick3;
   extern bool_t                 skippedStackLines;
   extern bool_t                 iterations;
   extern bool_t                 explicitTaylorIterVisibilitySelection;
@@ -542,6 +539,9 @@
   extern uint16_t               currentSolverProgram;
   extern uint16_t               currentSolverVariable;
   extern uint16_t               currentSolverNestingDepth;
+  extern uint16_t               engineNestingDepth;              // PLOT, INT and SOLVE combined, capped at MAX_ENGINE_NESTING_DEPTH; PLOT only at level 1
+  extern uint16_t               plotEngineActive;                // non-zero while a plot sweep runs, so PLOT_NESTING_ALLOWED can refuse an engine inside it
+  extern bool_t                 engineNestingWasRefused;         // why the run stopped, durable across the unwind where lastErrorCode is not: FLAG_IGN1ER wipes that
   extern uint16_t               numberOfFormulae;
   extern uint16_t               currentFormula;
   extern uint16_t               numberOfUserMenus;

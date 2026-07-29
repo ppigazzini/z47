@@ -90,7 +90,7 @@ TO_QSPI const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_O
   ENTRY(e063, "Printing Is Disabled") /*  63 */ \
   ENTRY(e064, "No string in alpha register") /*  64 */ \
   ENTRY(e065, "No equation defined") /*  65 */ \
-  ENTRY(e066, "") /*  66 */ \
+  ENTRY(e066, "Nesting too deep") /*  66 */ \
   ENTRY(e067, "") /*  67 */ \
   ENTRY(e068, "") /*  68 */ \
   ENTRY(e069, "") /*  69 */ \

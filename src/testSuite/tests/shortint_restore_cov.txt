@@ -23,3 +23,28 @@ In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=UNSIGN SS=4 WS=64
 Func: fnShortIntWSRestoreCov
 In:  FARG=0
 Out: EC=0 RX=ShoI:"44#10"
+
+; The same masks, rederived after a config register recall. STOCFG stores the
+; word size into the descriptor but neither mask, so fnRecallConfig must
+; recompute them exactly as the state loader does. MASKL builds 0xf0 in an 8-bit
+; word and ASRn propagates the sign from shortIntegerSignBit: derived for 8 bits
+; that bit is set and the shift fills with ones, while a sign bit left over from
+; a 64-bit word leaves it clear and the shift fills with zeros.
+Func: fnSetWordSize
+In:  FARG=8
+Out: EC=0
+Func: fnStoreConfig
+In:  FARG=0
+Out: EC=0
+Func: fnSetWordSize
+In:  FARG=64
+Out: EC=0
+Func: fnRecallConfig
+In:  FARG=0
+Out: EC=0
+Func: fnMaskl
+In:  FARG=4
+Out: EC=0
+Func: fnAsr
+In:  FARG=1
+Out: EC=0 RX=ShoI:"11111000#2"

@@ -201,7 +201,7 @@ In:  FL_ASLIFT=1 PGM="G6"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=6
-Out: EC=0 RX=Stri:"15FD5C5BF124AA48F6BCC1E822A0CCF1AF46150764D5E5D0B564C0E753F54777"
+Out: EC=0 RX=Stri:"CE7BF22B3FD0536D6BB65A0AE851F53800E2CF7A83568AE8E9C1F4ECF662DAD7"
 
 ; histogram with normal fit (G8: HISTOX builds the HISTO matrix, HNORM overlays
 ; the Gauss fit). The window auto-ranges to the fitted bell (x to a1 +- 3 sigma,
@@ -216,7 +216,7 @@ In:  FL_ASLIFT=1 PGM="G8"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=8
-Out: EC=0 RX=Stri:"16AFB6FB03F7353ECB5DCF58B8333DF5031C5BF96EAC5594428269CA611A2D3A"
+Out: EC=0 RX=Stri:"2B09956B925D466A747A3711F5B0BB33D710B4F8CFC5B71C882AA4F897470775"
 
 ; clear the statistical sums so they do not leak past this file
 Func: fnClSigma

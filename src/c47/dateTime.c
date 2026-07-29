@@ -457,6 +457,10 @@ void fnJulianToDateTime(uint16_t unusedButMandatoryParameter) {
       realToIntegralValue(&x, &x, DEC_ROUND_HALF_UP, &ctxtReal39);   // round (3600*24*1000*(FP))
       realDivide  (&x, const_86400, &x, &ctxtReal39);                // (round (3600*24*1000*(FP))) / (3600*24)
       x.exponent -= 3;                                               // x = x / 1000
+      if(realCompareGreaterEqual(&x, const_1)) {                     // rounding to 0.001s reaches a full day: zero the time and carry one day into the date
+        realSetZero(&x);
+        real34Add(REGISTER_REAL34_DATA(REGISTER_Y), const34_1, REGISTER_REAL34_DATA(REGISTER_Y));
+      }
 
       //Convert date to Y
       julianDayToInternalDate(REGISTER_REAL34_DATA(REGISTER_Y), &date);
