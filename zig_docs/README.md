@@ -5,7 +5,7 @@ Zig-first port workspace.
 
 These pages are code-facing maintainer docs, not end-user usage docs.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable. Update
+Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable. Update
 these stamps in [00-project-and-upstream.md](00-project-and-upstream.md) whenever
 the pin or toolchain advances.
 
@@ -37,8 +37,10 @@ flowchart TD
   F[50 Zig and C boundaries]
   G[60 CI and release workflow]
   H[70 tests and verification]
+  H2[75 debugging]
   I[80 maintainer workflow]
   J[90 official references]
+  K[95 glossary]
 
   A --> B
   B --> C
@@ -49,8 +51,10 @@ flowchart TD
   E --> G
   F --> H
   G --> H
-  H --> I
+  H --> H2
+  H2 --> I
   I --> J
+  J --> K
 ```
 
 ## Read In Order
@@ -75,10 +79,15 @@ flowchart TD
   lane split, governance guards, artifacts, and local reproduction map
 - [70-tests-and-verification.md](70-tests-and-verification.md): the one-command
   local gate, focused rerun lanes, parity oracles, and generated-artifact checks
+- [75-debugging.md](75-debugging.md): what each detector can and cannot see, the
+  C-vs-Zig differential procedure, and the false-pass catalogue
 - [80-maintainer-workflow.md](80-maintainer-workflow.md): how to keep the doc set
   and root entrypoints aligned with the live repo, plus the upstream resync flow
 - [90-official-references.md](90-official-references.md): canonical upstream, Zig,
-  dependency, and workflow references
+  dependency, and workflow references, plus the companion upstream-behaviour doc
+  set
+- [95-glossary.md](95-glossary.md): the two tiers of vocabulary -- the
+  calculator's terms, which upstream owns, and the terms this port invented
 
 ## By Task
 
@@ -103,6 +112,10 @@ flowchart TD
   [70-tests-and-verification.md](70-tests-and-verification.md)
 - maintainer-doc update workflow or page-routing change:
   [80-maintainer-workflow.md](80-maintainer-workflow.md)
+- a green lane and a wrong answer, or a divergence with no crash:
+  [75-debugging.md](75-debugging.md)
+- a term in any of these pages you do not recognise:
+  [95-glossary.md](95-glossary.md)
 
 ## Build Entry Points
 
@@ -112,7 +125,8 @@ Maintainer entrypoints (see [10](10-build-and-source-layout.md) and
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build both`: build both host simulators (C47 and R47)
 - `zig build test`: canonical grouped host regression lane (the shared upstream
-  testSuite, 10228 tests, plus the Zig-owned suites)
+  testSuite plus the Zig-owned suites; 12721 cases at the current pin -- the run
+  prints the total)
 - `zig build test:unit`: native Zig unit tests with no C oracle
 - `zig build generated`: refresh all tracked generated host artifacts
 - `zig build constants`, `zig build catalogs`, `zig build fonts`,

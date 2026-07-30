@@ -5,7 +5,7 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
-Audit basis: 2026-07-11, upstream pin `d1b643e7`, Zig `0.16.0` stable.
+Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
 
 ## Reference Map
 
@@ -48,6 +48,30 @@ flowchart TD
   build inputs.
 - [subprojects/gmp-6.2.1.wrap](../subprojects/gmp-6.2.1.wrap): imported GMP wrap
   reference.
+
+## Companion Upstream-Behaviour Doc Set
+
+[c47-r47-ci](https://github.com/ppigazzini/c47-r47-ci) is the CI and test harness
+for upstream C47/c43, and its `docs/` set is the maintained description of **the
+product z47 ports** -- the C architecture, its memory model and its detectors.
+z47 does not restate what that set owns; it links to it. Read it when the
+question is "what does the calculator do, and why is the C shaped this way",
+and read this set when the question is "how does the Zig port build, verify and
+diverge".
+
+| Their page | Owns, for z47's purposes |
+| --- | --- |
+| `docs/00-architecture.md` | the god header, the item table, the HAL, and the measured upstream dependency graph. Sections 9-11 are assessment and an unadopted proposal, not a plan of record |
+| `docs/01-codebase.md` | the upstream source tree, the register file and memory model, and control flow from a key press to a screen |
+| `docs/02-modules.md` | the subsystem inventory, each named by its literature term |
+| `docs/04-testing.md` | the corpus, the three drivers, and the rules for writing a test that actually tests. z47 shares the corpus, so its authoring rules apply here unchanged |
+| `docs/05-debugging.md` | the detectors z47 does not own: the pool canary (`POOL_GUARD`), pool and GMP leak scanning, Valgrind, coverage floors, Frama-C Eva, and the nesting-depth lane |
+| `docs/06-memory.md` | the per-platform memory limits: the arenas, the DM42 stacks, what one nested engine level costs, and why a simulator run cannot answer a DM42 question |
+| `docs/09-glossary.md` | the calculator's own vocabulary. [95-glossary.md](95-glossary.md) owns z47's |
+
+The two sets are not gated against each other. Treat a number quoted across the
+boundary as provenance, not as a live value, and re-derive it on the side that
+owns it.
 
 ## Zig Toolchain And Build System
 

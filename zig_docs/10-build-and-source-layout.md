@@ -82,25 +82,36 @@ Root-clutter guardrails:
 
 ## Repo-Owned Source Domains
 
-The ported calculator core lives under `zig_src/` as 366 `.zig` owners across
-eight domains.
+The ported calculator core lives under `zig_src/`, split into three zones. The
+zone split is the architectural one; the per-domain build objects under
+`zig_build/` are a separate carving and do not have to agree with it.
 
-| Domain | `.zig` owners | Role |
-| --- | ---: | --- |
-| `abi` | 13 | ABI mirror types and the generated C-boundary seam |
-| `constants` | 2 | constant-table owner and its generator seam |
-| `frontier` | 103 | menus, catalogs, display, keyboard/program-editor frontends |
-| `mathematics` | 154 | math command entries, real/complex math, matrices, stats |
-| `shortint` | 10 | short-integer and bit-logic owners |
-| `solver` | 10 | solver and root-finding owners |
-| `state` | 72 | calculator state, stack, flags, memory, program serialization |
-| `ui` | 2 | tone and small UI-side owners |
+| Zone | Role |
+| --- | --- |
+| `abi/` | ABI mirror types, the generated C-boundary seam, the constants blob accessors, and the core-to-shell host-hook table |
+| `core/` | the headless calculator: `numeric/`, `state/`, `persist/`, `text/`, `analysis/`, `program/`, `memory/`, `input/` |
+| `shell/` | the interactive surface: display, softmenus, plotting, printing, browsers, the matrix editor, and the keyboard/program-entry frontends |
 
-`zig_build/` holds roughly 59 `.zig` files across the host, firmware,
-distribution, generator, and test build domains, plus the Zig host, firmware, and
-testSuite HAL replacements. Its top level includes `host.zig`, `firmware.zig`,
-`dist.zig`, `common.zig`, `zig_dist.py`, the `firmware_*_runtime.zig` HAL files,
-and the `host/`, `firmware/`, `tools/`, `tests/`, and per-domain subdirectories.
+`zig_src/frontier.zig` sits beside them as a module-root carrier: it force-imports
+owners so they reach the build even when nothing names them.
+
+`core/` may not `@import` a `shell/` source file. `check-core-shell-severance.py`
+(inside the local gate) is what holds that line; see
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
+
+Counts move every week, so this page states the method rather than the number:
+
+```bash
+git ls-files 'zig_src/**/*.zig' 'zig_src/*.zig' | wc -l          # owners in total
+git ls-files 'zig_src/core/**/*.zig' | cut -d/ -f3 | sort | uniq -c   # per core domain
+git ls-files 'zig_build/**/*.zig' 'zig_build/*.zig' | wc -l      # build-side files
+```
+
+`zig_build/` holds the host, firmware, distribution, generator, and test build
+registration plus the Zig host, firmware, and testSuite HAL replacements. Its top
+level includes `host.zig`, `firmware.zig`, `dist.zig`, `common.zig`,
+`object_manifest.zig`, `zig_dist.py`, the `firmware_*_runtime.zig` HAL files, and
+the `host/`, `firmware/`, `tools/`, `tests/`, and per-domain subdirectories.
 
 `zig_bridge/` is near-retired: it holds only `c47.h` and
 `state/keyboard_statusbar_mask.h`.
@@ -133,13 +144,9 @@ repo root
 |  `- ui/
 |- zig_src/
 |  |- abi/
-|  |- constants/
-|  |- frontier/
-|  |- mathematics/
-|  |- shortint/
-|  |- solver/
-|  |- state/
-|  `- ui/
+|  |- core/
+|  |- shell/
+|  `- frontier.zig
 |- zig_bridge/
 |  |- c47.h
 |  `- state/keyboard_statusbar_mask.h
@@ -247,15 +254,15 @@ of that contract; the deeper layer-scoped casing policy is maintained in the rep
 contract, not in this layout page.
 
 - semantic owner files use the domain name directly, for example
-  `zig_src/frontier/frontier.zig`, `zig_src/kernel/calc_state.zig`, and
-  `zig_src/ui/tone.zig`
+  `zig_src/frontier.zig`, `zig_src/core/persist/calc_state.zig`, and
+  `zig_src/shell/audio/tone.zig`
 - direct legacy-boundary Zig seams use `*_runtime.zig`, for example
-  `zig_src/frontier/frontier_runtime.zig` and
-  `zig_src/kernel/calc_state_runtime.zig`
+  `zig_src/shell/display/items/items.zig` and
+  `zig_src/core/persist/calc_state_io.zig`
 - pure ABI shim forwarders use `*_export.zig`, for example
-  `zig_src/frontier/glyph_export.zig`
+  `zig_src/core/text/glyph_export.zig`
 - internal implementation helpers that exist only behind a paired export shim use
-  `*_owned.zig`, for example `zig_src/solver/solve_owned.zig`
+  `*_owned.zig`, for example `zig_src/core/analysis/solve_owned.zig`
 - `*_runtime.zig`, `*_export.zig`, `pub export`, `extern`, ABI mirror types, and
   legacy public names may keep upstream-compatible spellings where ABI stability
   or upstream tracking requires them

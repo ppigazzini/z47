@@ -45,6 +45,10 @@ any future naming reopener must start from a fresh owner-specific inventory.
   firmware, package, and DMCP-variant details
 - [zig_docs/70-tests-and-verification.md](zig_docs/70-tests-and-verification.md):
   smallest rerun lane for each change type
+- [zig_docs/75-debugging.md](zig_docs/75-debugging.md): what each detector sees,
+  the C-vs-Zig differential, and the false-pass catalogue
+- [zig_docs/95-glossary.md](zig_docs/95-glossary.md): the calculator's
+  vocabulary versus this port's
 
 ## Quick Start
 
@@ -87,3 +91,4 @@ Use `zig_docs/` for the detailed contract behind these areas:
 - distribution targets and host-specific package behavior
 - approved Zig or C boundaries and current rewrite slices
 - CI lanes, artifacts, and local reproduction commands
+- debugging a divergence the lanes do not catch, and the vocabulary the pages use

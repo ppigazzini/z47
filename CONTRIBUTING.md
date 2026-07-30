@@ -130,6 +130,10 @@ surfaces. They are not the maintained z47 control plane.
   references to local-only roadmap paths
 - rewrite or boundary changes: rerun the focused parity or regression lane for
   that slice before broader host or firmware checks
+- a lane is green and the behaviour is still wrong: stop rerunning and switch
+  tools. `zig_docs/75-debugging.md` owns the detector-to-bug-class map, the
+  C-vs-Zig differential against the pinned upstream build, and the catalogue of
+  ways a green run has hidden a defect here before
 - package, firmware, or release-proof changes: rerun the matching `dist_*` or
   firmware target on the matching host OS when possible, and rerun
   `bash .github/project/workflow-imported-root-paths.sh check-workflow` when
@@ -150,6 +154,15 @@ workflow evidence that was checked instead.
   naming strata, naming examples, or current naming-milestone status changes
 - update `zig_docs/README.md` when the maintainer-doc index, page-routing
   contract, or top-level project framing changes
+- state a fact on one page only. When another page needs it, link the owner
+  rather than repeating the value: an uncounted copy is how a stale number
+  survives. Where a number must appear, put the command that derives it beside
+  it
+- upstream's own subjects -- the C architecture, its memory model per platform,
+  its detectors, and the calculator's vocabulary -- belong to the companion
+  c47-r47-ci doc set. Link it (`zig_docs/90-official-references.md` holds the
+  page map) instead of restating it here; the two repositories are not gated
+  against each other, so a copied number cannot be kept honest
 - do not imply a pure-Zig result while legacy C libraries or vendor code
   remain explicit dependencies
 
