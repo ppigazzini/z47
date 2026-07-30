@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("../abi_host.zig");
 const build_common = @import("../common.zig");
 
 pub const RuntimeObjects = struct {
@@ -265,6 +266,7 @@ pub fn addParityExecutable(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, target, optimize, "keyboard-state-parity");
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/keyboard_state"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/keyboard_state/keyboard_state_fake_runtime.c"), .flags = &.{} });

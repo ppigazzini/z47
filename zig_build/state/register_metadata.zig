@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("../abi_host.zig");
 
 pub const RuntimeObjects = struct {
     register_metadata: *std.Build.Step.Compile,
@@ -131,6 +132,7 @@ pub fn addParityExecutable(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, target, optimize, "register-metadata-parity");
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/register_metadata"));
     exe.root_module.addIncludePath(b.path("zig_build/tests/stack_state"));

@@ -6,6 +6,13 @@
   "nprimes",
   "reportBadTypeDetail",
   "reportBugError",
+  "z47HostCheckHalfSecHook",
+  "z47HostExitKeyWaitingHook",
+  "z47HostProgressHalfSecHook",
+  "z47HostReportBadTypeDetailHook",
+  "z47HostReportBugErrorHook",
+  "z47HostRequestRefreshHook",
+  "z47HostShowBugScreenHook",
   "z47_calc_state_get_config_file_version",
   "z47_calc_state_get_loaded_version",
   "z47_calc_state_get_saved_calc_model",
@@ -137,7 +144,7 @@
   "z47_solver_fnProgrammableiProduct",
   "z47_solver_fnProgrammableiSum"
  ],
- "authored_count": 136,
- "exported_total": 2740,
+ "authored_count": 143,
+ "exported_total": 2764,
  "note": "REPORT-28 M8 / goal G6. `pub export` symbols ABSENT from the pinned C tree: z47's own ABI surface. The other ~2599 exports are the parity contract and are deliberately NOT counted here -- driving those down would mean deviating from the C that parity requires. This list may shrink (prefer @import to extern, which moves a symbol from the link graph into the module graph) and must not grow without review."
 }

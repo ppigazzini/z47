@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("../abi_host.zig");
 
 pub const RuntimeObjects = struct {
     flags_state: *std.Build.Step.Compile,
@@ -121,6 +122,7 @@ pub fn addParityExecutable(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, target, optimize, "flags-parity");
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/flags"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/flags/flags_fake_runtime.c"), .flags = &.{} });

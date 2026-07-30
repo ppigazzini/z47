@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("../abi_host.zig");
 const build_common = @import("../common.zig");
 const host_builders = @import("builders.zig");
 const host_platform = @import("platform.zig");
@@ -43,6 +44,7 @@ fn addMathLnComplexOracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-ln-complex-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -123,6 +125,7 @@ fn addMathEigenOracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-eigen-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -194,6 +197,7 @@ fn addMathRealRectangularToPolarOracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-real-rectangular-to-polar-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -260,6 +264,7 @@ fn addMathAtan2Oracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-atan2-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -326,6 +331,7 @@ fn addMathAtanOracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-atan-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -392,6 +398,7 @@ fn addMathRealTrigPrimitivesOracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-real-trig-primitives-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -458,6 +465,7 @@ fn addMathCircularTrigOracle(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, context.host_target, optimize, "math-circular-trig-oracle");
     host_platform.addHostMacros(exe.root_module, context.common);
     host_platform.addHostSystemPaths(exe.root_module, context.common);
     exe.root_module.addCMacro("TESTSUITE_BUILD", "1");
@@ -1113,6 +1121,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
             },
         }),
     });
+    abi_host.addToModule(b, distribution_parity.root_module, context.host_target, optimize, "distribution-parity");
     // Match the production decNumber compile: it includes decNumber.h directly
     // (not c47.h), so DECNUMDIGITS keeps its default of 1 and the library mallocs
     // working buffers per operation. Forcing DECNUMDIGITS=75 instead sized those
@@ -1141,6 +1150,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, keyboard_statusbar_flags_regression.root_module, context.host_target, optimize, "keyboard-statusbar-flags-regression");
     host_platform.addHostMacros(keyboard_statusbar_flags_regression.root_module, context.common);
     keyboard_statusbar_flags_regression.root_module.addIncludePath(build_common.upstreamPath(b, "src/c47"));
     keyboard_statusbar_flags_regression.root_module.addIncludePath(b.path("zig_bridge/state"));
