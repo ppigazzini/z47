@@ -158,6 +158,48 @@ pub fn addTestSuiteHalObject(
     });
 }
 
+// testSuite.c ships the upstream runner's main(). The build renames it so
+// zig_build/tests/testsuite_main.zig can own the entry point and install the
+// core->shell host hooks (abi.host) before any calculator code runs, which is
+// what the interactive entry points do and what upstream gets by linking the
+// shell functions directly.
+const testsuite_main_source = "testSuite.c";
+const testsuite_main_rename = "-Dmain=z47_testsuite_main";
+
+pub fn addTestSuiteMainObject(
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    name_prefix: []const u8,
+) *std.Build.Step.Compile {
+    const module = b.createModule(.{
+        .root_source_file = b.path("zig_build/tests/testsuite_main.zig"),
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    module.addImport("abi", b.createModule(.{
+        .root_source_file = b.path("zig_src/abi/types.zig"),
+        .target = target,
+        .optimize = optimize,
+    }));
+    return b.addObject(.{
+        .name = b.fmt("{s}-testsuite-main", .{name_prefix}),
+        .root_module = module,
+    });
+}
+
+fn withoutSource(b: *std.Build, sources: []const []const u8, drop: []const u8) ![][]const u8 {
+    var kept = try std.ArrayList([]const u8).initCapacity(b.allocator, sources.len);
+    errdefer kept.deinit(b.allocator);
+    for (sources) |source| {
+        if (!std.mem.eql(u8, source, drop)) {
+            try kept.append(b.allocator, source);
+        }
+    }
+    return try kept.toOwnedSlice(b.allocator);
+}
+
 pub fn filterTestSuiteHal(b: *std.Build, sources: []const []const u8) ![][]const u8 {
     var filtered = try std.ArrayList([]const u8).initCapacity(b.allocator, sources.len);
     errdefer filtered.deinit(b.allocator);
@@ -221,9 +263,13 @@ pub fn addTestSuite(
     exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
     std.debug.assert(core_sources.len == 0);
-    const filtered_test_sources: []const []const u8 = filterTestSuiteHal(b, test_sources) catch test_sources;
+    const hal_filtered: []const []const u8 = filterTestSuiteHal(b, test_sources) catch test_sources;
+    const filtered_test_sources: []const []const u8 = withoutSource(b, hal_filtered, testsuite_main_source) catch hal_filtered;
+    const testsuite_main_flags = std.mem.concat(b.allocator, []const u8, &.{ core_c_flags, &.{testsuite_main_rename} }) catch @panic("OOM");
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/testSuite"), .files = filtered_test_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/" ++ testsuite_main_source), .flags = testsuite_main_flags });
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
+    exe.root_module.addObject(addTestSuiteMainObject(b, host_target, optimize, name));
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
