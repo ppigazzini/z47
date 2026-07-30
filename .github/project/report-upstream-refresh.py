@@ -24,7 +24,7 @@ TEXT_EXTENSIONS = {
     ".yml",
     ".zig",
 }
-ROOT_TEXT_FILES = {"build.zig", "CONTRIBUTING.md", "ZIG-README.md"}
+ROOT_TEXT_FILES = {"build.zig", "CONTRIBUTING.md", "README.md"}
 NORMALIZED_IMPORT_PREFIXES = (
     "src/",
     "dep/",

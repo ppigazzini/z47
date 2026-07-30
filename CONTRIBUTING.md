@@ -140,17 +140,16 @@ workflow evidence that was checked instead.
 
 ## Documentation Promotion Rules
 
-- keep `README.md` short and maintainer-facing
-- keep `ZIG-README.md` as the short Zig quick start
+- keep `README.md` short: the z47 root entry point and Zig quick start
 - keep `zig_docs/` as the stable maintainer-doc surface for the live repo
-- update this file, `ZIG-README.md`, and the affected `zig_docs/` pages in the
+- update this file, `README.md`, and the affected `zig_docs/` pages in the
   same change when a public build, CI, packaging, or verification contract
   changes
 - update `zig_docs/10-build-and-source-layout.md` and
   `zig_docs/50-zig-c-boundaries-and-rewrite-policy.md` in the same change when
   naming strata, naming examples, or current naming-milestone status changes
-- update `README.md` when the maintainer-doc index, page-routing contract, or
-  top-level project framing changes
+- update `zig_docs/README.md` when the maintainer-doc index, page-routing
+  contract, or top-level project framing changes
 - do not imply a pure-Zig result while legacy C libraries or vendor code
   remain explicit dependencies
 

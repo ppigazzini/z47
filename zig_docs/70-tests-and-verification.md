@@ -89,7 +89,7 @@ The full current set is discoverable with `zig build --help`.
 
 ## Which Lane To Run First
 
-- docs-only change under `zig_docs/`, `CONTRIBUTING.md`, or `ZIG-README.md`:
+- docs-only change under `zig_docs/`, `CONTRIBUTING.md`, or `README.md`:
   verify every key claim against live files; rerun `zig build --help` if targets
   or options are described; rerun `bash .github/project/check-source-ownership.sh`
   if imported-root or ownership claims changed

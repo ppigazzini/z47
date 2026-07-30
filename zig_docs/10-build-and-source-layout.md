@@ -33,7 +33,7 @@ Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
 
 ## Canonical Build Entrypoints
 
-Lead with these. The full grouped set is in `../ZIG-README.md`,
+Lead with these. The full grouped set is in `../README.md`,
 [20-zig-build-graph.md](20-zig-build-graph.md), and live `zig build --help`.
 
 | Command | What it does |
@@ -306,7 +306,7 @@ owner paths first and never patch generated outputs by hand.
 - Run `../.github/project/report-c-dependency-status.py` when a maintainer report
   or closure claim needs live split first-party C telemetry; keep the active
   product-build, retained-bridge, and parity/oracle/test buckets separate.
-- Keep `ZIG-README.md`, `zig_docs/`, and the live `zig build --help` surface
+- Keep `../README.md`, `zig_docs/`, and the live `zig build --help` surface
   aligned when target names or options change.
 - Keep imported upstream build files readable and auditable even when they are no
   longer the maintained control plane.
