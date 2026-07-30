@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("../abi_host.zig");
 const build_common = @import("../common.zig");
 
 const replaced_core_sources_manifest = @embedFile("shortint_replaced_core_sources.txt");
@@ -137,6 +138,7 @@ pub fn addParityExecutable(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, target, optimize, "logical-shortint-parity");
 
     exe.root_module.addIncludePath(b.path("zig_build/tests"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/logical_shortint_fake_runtime.c"), .flags = &.{} });
@@ -167,6 +169,7 @@ pub fn addRotateBitsParityExecutable(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, target, optimize, "rotate-bits-parity");
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/rotate_bits"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/rotate_bits/rotate_bits_fake_runtime.c"), .flags = &.{} });

@@ -1,4 +1,5 @@
 const std = @import("std");
+const abi_host = @import("../abi_host.zig");
 
 pub const RuntimeObjects = struct {
     constants: *std.Build.Step.Compile,
@@ -130,6 +131,7 @@ pub fn addParityExecutable(
             .link_libc = true,
         }),
     });
+    abi_host.addToModule(b, exe.root_module, target, optimize, "constants-parity");
 
     exe.root_module.addIncludePath(b.path("zig_build/tests/constants"));
     exe.root_module.addCSourceFile(.{ .file = b.path("zig_build/tests/constants/constants_fake_runtime.c"), .flags = &.{} });

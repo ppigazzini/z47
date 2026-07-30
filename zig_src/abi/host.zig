@@ -13,6 +13,8 @@
 // seam, so no owner reaches across the engine/shell boundary to reach it. Later
 // capabilities (redraw, progress, text metrics) extend this table.
 
+const builtin = @import("builtin");
+
 const bool_t = u8; // the C-ABI bool the shell owners export (realType.h)
 
 // Every build object that reaches the ABI seam compiles its own copy of this
@@ -24,18 +26,12 @@ const bool_t = u8; // the C-ABI bool the shell owners export (realType.h)
 // upstream performs there, which showed up as a program's ENTER being swallowed
 // by the equation editor a dozen tests later.
 //
-// So each slot lives behind ONE C-ABI symbol. The storage is exported weakly, so
-// the linker folds the per-object copies into a single definition, and every
-// read and write goes through `@extern` to that symbol rather than the local
-// copy. Slot() keeps the pattern in one place; the hooks below are plain
-// pointers to it.
+// So the storage lives in host_state.zig, compiled into exactly one object per
+// executable, and every slot reaches it through its C-ABI symbol. Weak linkage
+// looks like it would do the same job with no build wiring; it does not,
+// portably -- see host_state.zig.
 fn Slot(comptime Hook: type, comptime symbol: [:0]const u8) type {
     return struct {
-        var storage: ?Hook = null;
-        comptime {
-            @export(&storage, .{ .name = symbol, .linkage = .weak });
-        }
-
         const shared: *?Hook = @extern(*?Hook, .{ .name = symbol });
 
         fn get() ?Hook {
@@ -52,6 +48,18 @@ fn Slot(comptime Hook: type, comptime symbol: [:0]const u8) type {
     };
 }
 
+// The firmware links the shell unconditionally -- program_main IS the shell --
+// so there each forwarder binds to it at link time and the hook table costs
+// nothing at all. That is not a micro-optimisation: the DM42's .bss ends 20
+// bytes below the DMCP system data block, and a seven-slot table does not fit.
+// The installable table is what the host lanes and the headless parity
+// harnesses use, where the shell may be absent and the bytes are free.
+const binds_shell_at_link = builtin.target.os.tag == .freestanding;
+
+fn shellFn(comptime Fn: type, comptime symbol: [:0]const u8) *const Fn {
+    return @extern(*const Fn, .{ .name = symbol });
+}
+
 // exitKeyWaiting: poll whether the user asked the running computation to abort
 // (the EXIT key). The default reports "no abort pending", which is exactly the
 // non-interactive behaviour the parity oracles rely on.
@@ -59,12 +67,14 @@ const exit_key_waiting_hook = Slot(*const fn () callconv(.c) bool_t, "z47HostExi
 
 /// Install the shell's abort-poll implementation. Called once at app startup.
 pub fn installExitKeyWaiting(hook: *const fn () callconv(.c) bool_t) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     exit_key_waiting_hook.install(hook);
 }
 
 /// True when the user has asked the running computation to stop. Reports false
 /// when the core runs headless (no hook installed).
 pub fn exitKeyWaiting() bool {
+    if (binds_shell_at_link) return shellFn(fn () callconv(.c) bool_t, "exitKeyWaiting")() != 0;
     const hook = exit_key_waiting_hook.get() orelse return false;
     return hook() != 0;
 }
@@ -77,12 +87,14 @@ const check_half_sec_hook = Slot(*const fn () callconv(.c) bool_t, "z47HostCheck
 
 /// Install the shell's half-second progress-clock implementation.
 pub fn installCheckHalfSec(hook: *const fn () callconv(.c) bool_t) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     check_half_sec_hook.install(hook);
 }
 
 /// True when the half-second progress interval has elapsed. Reports false when
 /// the core runs headless (no hook installed).
 pub fn checkHalfSec() bool {
+    if (binds_shell_at_link) return shellFn(fn () callconv(.c) bool_t, "checkHalfSec")() != 0;
     const hook = check_half_sec_hook.get() orelse return false;
     return hook() != 0;
 }
@@ -97,12 +109,17 @@ const progress_half_sec_hook = Slot(*const fn (u8, [*c]u8, i32, bool_t, bool_t, 
 
 /// Install the shell's progress-line refresh implementation.
 pub fn installProgressHalfSec(hook: *const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     progress_half_sec_hook.install(hook);
 }
 
 /// Refresh the progress line; returns true when the user interrupted. Reports
 /// false (no interrupt) when the core runs headless (no hook installed).
 pub fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool {
+    if (binds_shell_at_link) {
+        const shell = shellFn(fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "progressHalfSecUpdate_Integer");
+        return shell(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
+    }
     const hook = progress_half_sec_hook.get() orelse return false;
     return hook(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
 }
@@ -116,12 +133,14 @@ const request_refresh_hook = Slot(*const fn (u16) callconv(.c) void, "z47HostReq
 
 /// Install the shell's screen-refresh implementation.
 pub fn installRequestRefresh(hook: *const fn (u16) callconv(.c) void) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     request_refresh_hook.install(hook);
 }
 
 /// Signal the host that the display should redraw. A no-op when the core runs
 /// headless (no hook installed).
 pub fn requestRefresh(source: u16) void {
+    if (binds_shell_at_link) return shellFn(fn (u16) callconv(.c) void, "refreshScreen")(source);
     const hook = request_refresh_hook.get() orelse return;
     hook(source);
 }
@@ -135,12 +154,14 @@ const report_bug_error_hook = Slot(*const fn (u8, i16) callconv(.c) void, "z47Ho
 
 /// Install the shell's bug-screen reporter.
 pub fn installReportBugError(hook: *const fn (u8, i16) callconv(.c) void) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     report_bug_error_hook.install(hook);
 }
 
 /// Report a malformed error code / register line to the host for display. A
 /// no-op when the core runs headless (no hook installed).
 pub fn reportBugError(errorCode: u8, errMessageRegisterLine: i16) void {
+    if (binds_shell_at_link) return shellFn(fn (u8, i16) callconv(.c) void, "reportBugError")(errorCode, errMessageRegisterLine);
     const hook = report_bug_error_hook.get() orelse return;
     hook(errorCode, errMessageRegisterLine);
 }
@@ -152,12 +173,14 @@ const show_bug_screen_hook = Slot(*const fn ([*:0]const u8) callconv(.c) void, "
 
 /// Install the shell's bug-screen renderer.
 pub fn installShowBugScreen(hook: *const fn ([*:0]const u8) callconv(.c) void) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     show_bug_screen_hook.install(hook);
 }
 
 /// Paint the internal-error bug screen with the given message. A no-op when the
 /// core runs headless (no hook installed).
 pub fn showBugScreen(msg: [*c]const u8) void {
+    if (binds_shell_at_link) return shellFn(fn ([*c]const u8) callconv(.c) void, "displayBugScreen")(msg);
     const hook = show_bug_screen_hook.get() orelse return;
     hook(msg);
 }
@@ -170,12 +193,14 @@ const report_bad_type_detail_hook = Slot(*const fn (i16) callconv(.c) void, "z47
 
 /// Install the shell's bad-register-type diagnostic enrichment.
 pub fn installReportBadTypeDetail(hook: *const fn (i16) callconv(.c) void) void {
+    if (binds_shell_at_link) return; // bound at link time; there is no slot to fill
     report_bad_type_detail_hook.install(hook);
 }
 
 /// Append the register data-type name to a bad-type error report. A no-op when
 /// the core runs headless (no hook installed).
 pub fn reportBadTypeDetail(reg: i16) void {
+    if (binds_shell_at_link) return shellFn(fn (i16) callconv(.c) void, "reportBadTypeDetail")(reg);
     const hook = report_bad_type_detail_hook.get() orelse return;
     hook(reg);
 }

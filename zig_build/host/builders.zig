@@ -14,6 +14,7 @@ const host_platform = @import("platform.zig");
 const register_metadata = @import("../state/register_metadata.zig");
 const tone = @import("../ui/tone.zig");
 const host_types = @import("types.zig");
+const abi_host = @import("../abi_host.zig");
 
 const state_bridge_sources_manifest = @embedFile("builders_state_bridge_sources.txt");
 
@@ -97,6 +98,7 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
     gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags, if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46);
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
+    abi_host.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
     memory.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     program_serialization.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
@@ -271,6 +273,7 @@ pub fn addTestSuite(
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
     exe.root_module.addObject(addTestSuiteMainObject(b, host_target, optimize, name));
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
+    abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
     memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
@@ -346,6 +349,7 @@ pub fn addFullCoreHarness(
     exe.root_module.addCSourceFile(.{ .file = b.path(harness_source), .flags = core_c_flags });
     exe.root_module.addObject(addTestSuiteHalObject(b, host_target, optimize, name));
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
+    abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
     memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
