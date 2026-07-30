@@ -1279,6 +1279,7 @@ extern fn decQuadToInt32(d: *align(1) const real34_t, ctx: *realContext_t, round
 extern fn __gmpz_get_ui(op: [*c]const mpz_struct) c_ulong;
 extern fn __gmpz_get_si(op: [*c]const mpz_struct) c_long;
 extern fn __gmpz_cmp_ui(op: [*c]const mpz_struct, v: c_ulong) c_int;
+extern fn __gmpz_cmp_si(op: [*c]const mpz_struct, v: c_long) c_int;
 const DEC_ROUND_DOWN: c_int = 5;
 
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
@@ -1308,6 +1309,9 @@ inline fn longIntegerToUInt32(op: *longInteger_t, dst: *u32) void {
 }
 inline fn longIntegerCompareUInt(op: [*c]const mpz_struct, v: u32) i32 {
     return __gmpz_cmp_ui(op, v);
+}
+inline fn longIntegerCompareInt(op: [*c]const mpz_struct, v: i32) i32 {
+    return __gmpz_cmp_si(op, v);
 }
 // isR47FAM (defines.h)
 const USER_R47f_g: u8 = 61;
@@ -6163,35 +6167,43 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
 fn _getPositionFromRegister(regist: calcRegister_t, maxValuePlusOne: i16) i32 {
     var value: i32 = undefined;
 
+    // The accepted range is [-maxValuePlusOne, maxValuePlusOne): a plot addresses
+    // pixels relative to an axis, so a negative coordinate is meaningful here.
+    // (print.c's same-named helper keeps its own non-negative rule; this owner
+    // mirrors screen.c.)
     if (getRegisterDataType(regist) == dtReal34) {
         var maxValue34: real34_t = undefined;
+        var minValue34: real34_t = undefined;
         int32ToReal34(maxValuePlusOne, &maxValue34);
-        if (real34CompareLessThan(REGISTER_REAL34_DATA(regist), const34_0) != 0 or real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist)) != 0) {
+        int32ToReal34(-@as(i32, maxValuePlusOne), &minValue34);
+        if (real34CompareLessThan(REGISTER_REAL34_DATA(regist), &minValue34) != 0 or real34CompareLessEqual(&maxValue34, REGISTER_REAL34_DATA(regist)) != 0) {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 real34ToString(REGISTER_REAL34_DATA(regist), errorMessage);
                 abi.fmtBufZ(tmpString[0..2560], "x {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
-                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
+                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is too big!", null);
             }
             return -1;
         }
-        value = real34ToInt32(REGISTER_REAL34_DATA(regist));
+        if (real34IsNegative(REGISTER_REAL34_DATA(regist)) and real34IsZero(REGISTER_REAL34_DATA(regist))) { // int32 has no -0, so -0. addresses the far edge
+            value = -@as(i32, maxValuePlusOne);
+        } else {
+            value = real34ToInt32(REGISTER_REAL34_DATA(regist));
+        }
     } else if (getRegisterDataType(regist) == dtLongInteger) {
         var lgInt: longInteger_t = undefined;
         frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
-        if (longIntegerCompareUInt(&lgInt[0], 0) < 0 or longIntegerCompareUInt(&lgInt[0], @intCast(maxValuePlusOne)) >= 0) {
+        if (longIntegerCompareInt(&lgInt[0], -@as(i32, maxValuePlusOne)) < 0 or longIntegerCompareInt(&lgInt[0], maxValuePlusOne) >= 0) {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
                 frontier_display.longIntegerToAllocatedString(&lgInt[0], errorMessage, ERROR_MESSAGE_LENGTH);
                 abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
-                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
+                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is too big!", null);
             }
             longIntegerFree(&lgInt);
             return -1;
         }
-        var uv: u32 = undefined;
-        longIntegerToUInt32(&lgInt, &uv);
-        value = @bitCast(uv);
+        longIntegerToInt32(&lgInt, &value);
         longIntegerFree(&lgInt);
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);

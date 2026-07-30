@@ -3457,15 +3457,27 @@ pub export fn dynmenuGetLabel(menuitem: i16) callconv(.c) [*c]u8 {
     return dynmenuGetLabelWithDup(menuitem, null);
 }
 
+/// Top of the softmenu stack while it is a dynamic softmenu, NULL while it is a
+/// static one: softmenuStack[].softmenuId ranks in softmenu[] and in
+/// dynamicSoftmenu[], and only the first NUMBER_OF_DYNAMIC_SOFTMENUS ranks agree.
+pub export fn currentDynamicSoftmenu() callconv(.c) ?*dynamicSoftmenu_t {
+    const id = softmenuStack[0].softmenuId;
+    if (0 <= id and id < NUMBER_OF_DYNAMIC_SOFTMENUS) {
+        return &dynamicSoftmenu[@intCast(id)];
+    }
+    return null;
+}
+
 pub export fn dynmenuGetLabelWithDup(menuitem_in: i16, dupNum: ?*i16) callconv(.c) [*c]u8 {
     var menuitem = menuitem_in;
+    const dynamic = currentDynamicSoftmenu();
     if (dupNum) |dn| {
         dn.* = 0;
     }
-    if (menuitem < 0 or menuitem >= dynamicSoftmenu[@intCast(softmenuStack[0].softmenuId)].numItems) {
+    if (dynamic == null or menuitem < 0 or menuitem >= dynamic.?.numItems) {
         return @constCast("");
     }
-    var labelName: [*c]u8 = dynamicSoftmenu[@intCast(softmenuStack[0].softmenuId)].menuContent;
+    var labelName: [*c]u8 = dynamic.?.menuContent;
     var prevLabelName: [*c]u8 = labelName;
     while (menuitem > 0) {
         labelName += @intCast(stringByteLength(labelName) + 1);

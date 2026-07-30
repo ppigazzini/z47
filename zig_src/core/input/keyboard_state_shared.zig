@@ -1759,7 +1759,12 @@ pub fn implementation(comptime runtime: type) type {
         pub fn keyEnter(unused_but_mandatory_parameter: u16) void {
             _ = unused_but_mandatory_parameter;
             runtime.doRefreshSoftMenu = true;
-            switch (runtime.calcMode) {
+            // A program running under CM_GRAPH or CM_PLOT_STAT (a plot(int) integrand,
+            // a programmed HPLOT) needs the normal ENTER dup, not the empty
+            // interactive-graph case: both modes drop ENTER on the floor, so a program
+            // that reached one of them lost every stack lift its steps asked for.
+            const effective_calc_mode: u8 = if (isGraphMode() and runtime.programRunStop == runtime.PGM_RUNNING) runtime.CM_NORMAL else runtime.calcMode;
+            switch (effective_calc_mode) {
                 runtime.CM_NORMAL => {
                     if (!runtime.getSystemFlag(runtime.FLAG_ERPN) or
                         (!runtime.nimWhenButtonPressed and runtime.programRunStop != runtime.PGM_RUNNING) or
