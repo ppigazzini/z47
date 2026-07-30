@@ -1653,7 +1653,11 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
         if (getSystemFlag(FLAG_PLINE) and plotInCurves) {
             frontier_plotstat.plotline3(0, 0, 0, 0, false, true); // last line segment
         }
-    } else {
+    } else if (plotStatMx[0] == 'S') {
+        // "no statistical data" only applies to a stat plot. A draw matrix ('D')
+        // with fewer than two points is a function plot still being built (a
+        // refresh landing mid-build, say) -- not an error, draw nothing.
+        calcMode = CM_NORMAL;
         frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
