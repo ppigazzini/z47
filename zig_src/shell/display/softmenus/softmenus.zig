@@ -3460,7 +3460,7 @@ pub export fn dynmenuGetLabel(menuitem: i16) callconv(.c) [*c]u8 {
 /// Top of the softmenu stack while it is a dynamic softmenu, NULL while it is a
 /// static one: softmenuStack[].softmenuId ranks in softmenu[] and in
 /// dynamicSoftmenu[], and only the first NUMBER_OF_DYNAMIC_SOFTMENUS ranks agree.
-pub export fn currentDynamicSoftmenu() callconv(.c) ?*dynamicSoftmenu_t {
+fn currentDynamicSoftmenu() ?*dynamicSoftmenu_t {
     const id = softmenuStack[0].softmenuId;
     if (0 <= id and id < NUMBER_OF_DYNAMIC_SOFTMENUS) {
         return &dynamicSoftmenu[@intCast(id)];
