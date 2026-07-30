@@ -15,20 +15,57 @@
 
 const bool_t = u8; // the C-ABI bool the shell owners export (realType.h)
 
+// Every build object that reaches the ABI seam compiles its own copy of this
+// file, so a plain module-scope `var` gives each object a PRIVATE hook table:
+// the shell's install would reach only the object the installer itself was
+// compiled into, and every core owner would keep the headless defaults for the
+// whole run. That is not a theoretical concern -- it silently killed the
+// solver's mid-solve refreshScreen, and with it the softmenu/calcMode fixup
+// upstream performs there, which showed up as a program's ENTER being swallowed
+// by the equation editor a dozen tests later.
+//
+// So each slot lives behind ONE C-ABI symbol. The storage is exported weakly, so
+// the linker folds the per-object copies into a single definition, and every
+// read and write goes through `@extern` to that symbol rather than the local
+// copy. Slot() keeps the pattern in one place; the hooks below are plain
+// pointers to it.
+fn Slot(comptime Hook: type, comptime symbol: [:0]const u8) type {
+    return struct {
+        var storage: ?Hook = null;
+        comptime {
+            @export(&storage, .{ .name = symbol, .linkage = .weak });
+        }
+
+        const shared: *?Hook = @extern(*?Hook, .{ .name = symbol });
+
+        fn get() ?Hook {
+            return shared.*;
+        }
+
+        fn install(hook: Hook) void {
+            shared.* = hook;
+        }
+
+        fn clear() void {
+            shared.* = null;
+        }
+    };
+}
+
 // exitKeyWaiting: poll whether the user asked the running computation to abort
 // (the EXIT key). The default reports "no abort pending", which is exactly the
 // non-interactive behaviour the parity oracles rely on.
-var exit_key_waiting_hook: ?*const fn () callconv(.c) bool_t = null;
+const exit_key_waiting_hook = Slot(*const fn () callconv(.c) bool_t, "z47HostExitKeyWaitingHook");
 
 /// Install the shell's abort-poll implementation. Called once at app startup.
 pub fn installExitKeyWaiting(hook: *const fn () callconv(.c) bool_t) void {
-    exit_key_waiting_hook = hook;
+    exit_key_waiting_hook.install(hook);
 }
 
 /// True when the user has asked the running computation to stop. Reports false
 /// when the core runs headless (no hook installed).
 pub fn exitKeyWaiting() bool {
-    const hook = exit_key_waiting_hook orelse return false;
+    const hook = exit_key_waiting_hook.get() orelse return false;
     return hook() != 0;
 }
 
@@ -36,17 +73,17 @@ pub fn exitKeyWaiting() bool {
 // computations poll it to decide when to refresh their on-screen progress. The
 // default reports "not elapsed", so a headless core never takes the progress
 // branch -- exactly the non-interactive behaviour.
-var check_half_sec_hook: ?*const fn () callconv(.c) bool_t = null;
+const check_half_sec_hook = Slot(*const fn () callconv(.c) bool_t, "z47HostCheckHalfSecHook");
 
 /// Install the shell's half-second progress-clock implementation.
 pub fn installCheckHalfSec(hook: *const fn () callconv(.c) bool_t) void {
-    check_half_sec_hook = hook;
+    check_half_sec_hook.install(hook);
 }
 
 /// True when the half-second progress interval has elapsed. Reports false when
 /// the core runs headless (no hook installed).
 pub fn checkHalfSec() bool {
-    const hook = check_half_sec_hook orelse return false;
+    const hook = check_half_sec_hook.get() orelse return false;
     return hook() != 0;
 }
 
@@ -56,17 +93,17 @@ pub fn checkHalfSec() bool {
 // completion -- exactly the non-interactive behaviour. The hook keeps the shell
 // owner's C-ABI shape (char* label, byte booleans); the forwarder exposes an
 // idiomatic sentinel-string / bool signature to the callers.
-var progress_half_sec_hook: ?*const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t = null;
+const progress_half_sec_hook = Slot(*const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "z47HostProgressHalfSecHook");
 
 /// Install the shell's progress-line refresh implementation.
 pub fn installProgressHalfSec(hook: *const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t) void {
-    progress_half_sec_hook = hook;
+    progress_half_sec_hook.install(hook);
 }
 
 /// Refresh the progress line; returns true when the user interrupted. Reports
 /// false (no interrupt) when the core runs headless (no hook installed).
 pub fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, clearZ: bool, clearT: bool, disp: bool) bool {
-    const hook = progress_half_sec_hook orelse return false;
+    const hook = progress_half_sec_hook.get() orelse return false;
     return hook(mode, @constCast(txt), loop, @intFromBool(clearZ), @intFromBool(clearT), @intFromBool(disp)) != 0;
 }
 
@@ -75,17 +112,17 @@ pub fn progressHalfSecUpdate_Integer(mode: u8, txt: [*:0]const u8, loop: i32, cl
 // refresh source. The default is a no-op, which matches the no-op refreshScreen
 // fakes the parity harnesses link. The shell installs its implementation once at
 // startup, before any core code runs, so no interactive redraw is lost.
-var request_refresh_hook: ?*const fn (u16) callconv(.c) void = null;
+const request_refresh_hook = Slot(*const fn (u16) callconv(.c) void, "z47HostRequestRefreshHook");
 
 /// Install the shell's screen-refresh implementation.
 pub fn installRequestRefresh(hook: *const fn (u16) callconv(.c) void) void {
-    request_refresh_hook = hook;
+    request_refresh_hook.install(hook);
 }
 
 /// Signal the host that the display should redraw. A no-op when the core runs
 /// headless (no hook installed).
 pub fn requestRefresh(source: u16) void {
-    const hook = request_refresh_hook orelse return;
+    const hook = request_refresh_hook.get() orelse return;
     hook(source);
 }
 
@@ -94,34 +131,34 @@ pub fn requestRefresh(source: u16) void {
 // calculation error), so the core hands the two raw values to the shell, which
 // formats the diagnostic string and paints the bug screen. The default is a
 // no-op, so a headless core simply ignores the malformed report.
-var report_bug_error_hook: ?*const fn (u8, i16) callconv(.c) void = null;
+const report_bug_error_hook = Slot(*const fn (u8, i16) callconv(.c) void, "z47HostReportBugErrorHook");
 
 /// Install the shell's bug-screen reporter.
 pub fn installReportBugError(hook: *const fn (u8, i16) callconv(.c) void) void {
-    report_bug_error_hook = hook;
+    report_bug_error_hook.install(hook);
 }
 
 /// Report a malformed error code / register line to the host for display. A
 /// no-op when the core runs headless (no hook installed).
 pub fn reportBugError(errorCode: u8, errMessageRegisterLine: i16) void {
-    const hook = report_bug_error_hook orelse return;
+    const hook = report_bug_error_hook.get() orelse return;
     hook(errorCode, errMessageRegisterLine);
 }
 
 // showBugScreen: paint the full-screen internal-error report with a formatted
 // message the core already built. Genuine UI; a no-op when the core runs
 // headless, which matches the no-op displayBugScreen fakes the harnesses link.
-var show_bug_screen_hook: ?*const fn ([*:0]const u8) callconv(.c) void = null;
+const show_bug_screen_hook = Slot(*const fn ([*:0]const u8) callconv(.c) void, "z47HostShowBugScreenHook");
 
 /// Install the shell's bug-screen renderer.
 pub fn installShowBugScreen(hook: *const fn ([*:0]const u8) callconv(.c) void) void {
-    show_bug_screen_hook = hook;
+    show_bug_screen_hook.install(hook);
 }
 
 /// Paint the internal-error bug screen with the given message. A no-op when the
 /// core runs headless (no hook installed).
 pub fn showBugScreen(msg: [*c]const u8) void {
-    const hook = show_bug_screen_hook orelse return;
+    const hook = show_bug_screen_hook.get() orelse return;
     hook(msg);
 }
 
@@ -129,17 +166,17 @@ pub fn showBugScreen(msg: [*c]const u8) void {
 // error -- the human-readable register data-type name. Pure diagnostics; the
 // shell formats and appends it (it owns the type-name table and the info line).
 // A no-op when the core runs headless or the extra-info diagnostics are off.
-var report_bad_type_detail_hook: ?*const fn (i16) callconv(.c) void = null;
+const report_bad_type_detail_hook = Slot(*const fn (i16) callconv(.c) void, "z47HostReportBadTypeDetailHook");
 
 /// Install the shell's bad-register-type diagnostic enrichment.
 pub fn installReportBadTypeDetail(hook: *const fn (i16) callconv(.c) void) void {
-    report_bad_type_detail_hook = hook;
+    report_bad_type_detail_hook.install(hook);
 }
 
 /// Append the register data-type name to a bad-type error report. A no-op when
 /// the core runs headless (no hook installed).
 pub fn reportBadTypeDetail(reg: i16) void {
-    const hook = report_bad_type_detail_hook orelse return;
+    const hook = report_bad_type_detail_hook.get() orelse return;
     hook(reg);
 }
 
@@ -147,7 +184,7 @@ const std = @import("std");
 const testing = std.testing;
 
 test "exitKeyWaiting defaults to no-abort until a hook is installed" {
-    exit_key_waiting_hook = null;
+    exit_key_waiting_hook.clear();
     try testing.expect(!exitKeyWaiting());
 }
 
@@ -158,6 +195,6 @@ test "exitKeyWaiting reports the installed hook's result" {
         }
     };
     installExitKeyWaiting(&S.yes);
-    defer exit_key_waiting_hook = null;
+    defer exit_key_waiting_hook.clear();
     try testing.expect(exitKeyWaiting());
 }
