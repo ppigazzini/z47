@@ -6,7 +6,7 @@ upstream resync maintainer flow. It is about maintainer process, not build or
 verification internals -- those live in the pages this one links to.
 
 Use this page when a task changes the public maintainer contract documented in
-`zig_docs/`, `CONTRIBUTING.md`, or `ZIG-README.md`, or when advancing the
+`zig_docs/`, `CONTRIBUTING.md`, or `README.md`, or when advancing the
 imported upstream pin.
 
 Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
@@ -25,7 +25,7 @@ upstream resync, not further core porting. This page assumes that framing.
 | --- | --- | --- |
 | `zig_docs/` | stable maintainer docs for the live repo | build, rewrite, CI, package, or verification contracts changed |
 | `../CONTRIBUTING.md` | contributor workflow contract | branch policy, focused verification, or doc-promotion rules changed |
-| `../ZIG-README.md` | short Zig build quick start | the main Zig entrypoint or doc routing changed |
+| `../README.md` | root entry point and short Zig build quick start | the main Zig entrypoint or doc routing changed |
 
 ## Doc Promotion Workflow
 
@@ -39,7 +39,7 @@ Use one promotion workflow when a non-trivial change lands.
    working notes belong on the ignored `__DEV/` surface and must never be
    committed or referenced by filename from a tracked page.
 3. Promote the stable contract changes into every affected `zig_docs/` page and
-   tracked root maintainer doc (`CONTRIBUTING.md`, `ZIG-README.md`) in one pass.
+   tracked root maintainer doc (`CONTRIBUTING.md`, `README.md`) in one pass.
 4. Re-run the smallest relevant validation lane after the final doc edit (see
    [70-tests-and-verification.md](70-tests-and-verification.md)).
 
@@ -172,7 +172,8 @@ close-out review.
 
 - update `../CONTRIBUTING.md` when branch policy, verification guidance, or
   maintainer promotion rules changed
-- update `../ZIG-README.md` when the short Zig quick start changed
+- update `../README.md` when the root entry point or short Zig quick start
+  changed
 - update [README.md](README.md) when the maintainer doc index, read order, or
   page-routing contract changed
 - update [00-project-and-upstream.md](00-project-and-upstream.md) when the

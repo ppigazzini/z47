@@ -195,7 +195,7 @@ report_worktree() {
 
     changed_paths_total="$(git -C "$worktree_path" diff --name-only HEAD -- | wc -l | tr -d ' ')"
     renamed_paths_total="$(git -C "$worktree_path" diff --summary -M HEAD -- | grep -c '^ rename ' || true)"
-    overlay_paths_changed="$(git -C "$worktree_path" diff --name-only HEAD -- .github CONTRIBUTING.md ZIG-README.md build.zig zig_bridge zig_build zig_docs zig_src | wc -l | tr -d ' ')"
+    overlay_paths_changed="$(git -C "$worktree_path" diff --name-only HEAD -- .github CONTRIBUTING.md README.md build.zig zig_bridge zig_build zig_docs zig_src | wc -l | tr -d ' ')"
     imported_roots_before="$(bash "$guard_script" list-imported-roots | wc -l | tr -d ' ')"
     imported_roots_after="$(cd "$worktree_path" && bash .github/project/check-source-ownership.sh list-imported-roots | paste -sd ',' -)"
     stale_workflow_repo_root_refs="$(count_git_grep_matches "$worktree_path" 'docs/code/|src/generated/|res/PROGRAMS|res/STATE|res/testPgms|res/fonts/|res/tone|res/keymaps/|res/dmcp5/|res/combo/' '.github/workflows/*.yml')"

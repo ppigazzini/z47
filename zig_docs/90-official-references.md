@@ -30,8 +30,6 @@ flowchart TD
 - [C47 GitLab project](https://gitlab.com/rpncalculators/c43): authoritative
   upstream source repository consumed by z47. The path still uses the
   historical `c43` name even though the project identifies itself as C47.
-- [README.md](../README.md): imported upstream project overview carried at the
-  repo root.
 - [BUILD.md](../BUILD.md): imported upstream build-target summary carried at
   the repo root.
 - [Makefile](../Makefile): imported upstream human-facing command surface.
@@ -66,8 +64,8 @@ checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.en
   official `translate-c` reference and limits.
 - [Zig source repository](https://codeberg.org/ziglang/zig): canonical upstream
   Zig source tree.
-- [ZIG-README.md](../ZIG-README.md): maintained z47 command and prerequisite
-  summary.
+- [README.md](../README.md): maintained z47 root entry point, command, and
+  prerequisite summary.
 - [CONTRIBUTING.md](../CONTRIBUTING.md): maintained contributor workflow and
   verification contract.
 - [build.zig](../build.zig): live repo-root build router for this repository.
@@ -197,7 +195,6 @@ Root entry points and CI workflows:
 
 - [README.md](../README.md)
 - [BUILD.md](../BUILD.md)
-- [ZIG-README.md](../ZIG-README.md)
 - [zig_docs/README.md](README.md)
 - [build.zig](../build.zig)
 - [.github/workflows/upstream-oracle.yml](../.github/workflows/upstream-oracle.yml)

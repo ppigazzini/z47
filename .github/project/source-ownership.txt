@@ -7,7 +7,7 @@
 .github
 .gitignore
 CONTRIBUTING.md
-ZIG-README.md
+README.md
 build.zig
 build.zig.zon
 zig_bridge
@@ -24,7 +24,6 @@ BUILD.md
 COPYING
 LIBRARY
 Makefile
-README.md
 dep
 dist
 distS

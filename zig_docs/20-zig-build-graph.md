@@ -147,7 +147,7 @@ checked-in upstream pin under `../.github/project/upstream-pin.env`.
 
 - Keep `../build.zig` as a thin router. Push domain-specific logic down into the
   matching `zig_build/` domain module.
-- Add or rename public steps in one place, then update `../ZIG-README.md`, the
+- Add or rename public steps in one place, then update `../README.md`, the
   page 10 entrypoint list, `zig_docs/`, and any affected workflow or packaging
   code in the same change.
 - Keep new platform-specific behavior centralized in `../zig_build/host/` or
