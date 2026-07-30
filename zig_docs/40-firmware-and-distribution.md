@@ -9,7 +9,14 @@ while still linking retained C: the SwissMicros DMCP/DMCP5 SDKs, the vendored
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 build-domain split is already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
+
+The memory a firmware target actually has -- the arenas, which stack a running
+program uses, what one nested engine level costs, and why a simulator run cannot
+answer a DM42 question -- is upstream's subject, not the port's. The companion
+c47-r47-ci doc set owns it in `docs/06-memory.md`; this page owns the build,
+flash-budget and packaging side. See
+[90-official-references.md](90-official-references.md).
 
 ## Firmware Surface At A Glance
 

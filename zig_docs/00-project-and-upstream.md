@@ -6,7 +6,7 @@ owns, and where the Zig port boundary now sits.
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
 
 ## At A Glance
 
@@ -72,10 +72,10 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `0caee2adcde273ecb75e7e9aa7181c97e50413cd` |
+| `UPSTREAM_COMMIT` | `4697e526a3ffcbc75d5cb39ad9efe555f9c309dc` |
 | `UPSTREAM_ROOT` | `.` |
 | `UPSTREAM_IMPORT_LAYOUT` | `repo-root-import` |
-| `UPSTREAM_PIN_UPDATED` | `2026-07-09` |
+| `UPSTREAM_PIN_UPDATED` | `2026-07-29` |
 
 `UPSTREAM_ROOT=.` means the imported upstream tree is mounted at repo root. That
 imported tree includes the source, dependency, resource, packaging, and docs
@@ -83,6 +83,12 @@ inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`,
 `meson.build`, and related root files. Advancing the pin is the upstream resync
 flow; see [80-maintainer-workflow.md](80-maintainer-workflow.md) and the committed
 `.github/project/upstream-resync-runbook.md`.
+
+The imported tree answers *what the port must do*, but it is source, not prose.
+For the reasoning behind the C -- the item table, the HAL, the memory model, the
+control flow from a key press to a screen -- read the companion c47-r47-ci doc
+set, which documents upstream C47 itself. z47's pages do not restate it; see the
+page map in [90-official-references.md](90-official-references.md).
 
 ## Ownership Table
 

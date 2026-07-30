@@ -6,7 +6,7 @@ the smallest rerun lane that should move with each kind of change.
 Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
 page assumes the build entrypoints and ownership split are already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
 
 ## The One-Command Local Gate
 
@@ -30,9 +30,18 @@ one class it cannot reproduce on Linux is the Windows LLP64 integer-width trap;
 Windows lane is the final adjudicator. See
 `.github/project/upstream-resync-runbook.md`.
 
-`zig build test` runs the shared upstream testSuite (10228 tests as of this pin)
-plus the Zig-owned suites; confirm it exits 0, not just that it printed
-`0 TESTS FAILED` before any crash.
+`zig build test` runs the shared upstream testSuite (12721 cases at the current
+pin; the run prints the total) plus the Zig-owned suites. Confirm it exits 0, not
+just that it printed `0 TESTS FAILED` before any crash.
+
+A green run is not proof a path executed. When the change routes a call through
+an installable host hook, or adds a corpus file, or depends on a display-side
+side effect, read the false-pass catalogue in
+[75-debugging.md](75-debugging.md) before calling the lane evidence.
+
+The corpus itself is shared with upstream, so its authoring rules are upstream's:
+the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
+[90-official-references.md](90-official-references.md).
 
 ## Contract Inventory
 
@@ -52,7 +61,7 @@ plus the Zig-owned suites; confirm it exits 0, not just that it printed
 | Windows LLP64 int-width trap | `../.github/project/portable-int-width-allowlist.txt`, `../.github/project/check-portable-int-widths.sh` | `bash .github/project/check-portable-int-widths.sh` |
 | constant-blob offset parity | `../zig_src/abi/constants.zig`, `../.github/project/check-constant-offsets.py` | `zig build constants && python3 .github/project/check-constant-offsets.py` |
 | constant/enum mirror parity | `../.github/project/audit-constant-parity.py` | `python3 .github/project/audit-constant-parity.py` |
-| item-table parity | `../zig_src/frontier/frontier_items.zig`, `../.github/project/audit-item-table-parity.py` | `python3 .github/project/audit-item-table-parity.py` |
+| item-table parity | `../zig_src/shell/display/items/items.zig`, `../.github/project/audit-item-table-parity.py` | `python3 .github/project/audit-item-table-parity.py` |
 | abi struct-layout parity | `../zig_build/tests/abi_layout/` | `zig build abi-layout-parity --summary none` |
 | per-owner behavioral parity | `../zig_src/<domain>/`, `../zig_build/tests/<owner>/` | `zig build <owner>_parity --summary none` (see below) |
 | native Zig unit tests (no C oracle) | `../zig_build/`, `zig_src` module tests | `zig build test:unit --summary none` |
@@ -144,6 +153,9 @@ generated-artifact contract moved.
 
 ## Verification Change Rules
 
+- When a lane is green and the behaviour is still wrong, switch tools rather
+  than rerunning: [75-debugging.md](75-debugging.md) owns the differential
+  procedure and the detector-to-bug-class map.
 - Keep the smallest rerun lane explicit in docs and reviews.
 - Update this page whenever a public target name, focused lane, guard script, or
   tracked generated-output list changes.
