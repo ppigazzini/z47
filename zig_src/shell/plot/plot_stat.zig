@@ -185,6 +185,7 @@ fn updateRegressionLine(ctx: *PlotStatContext) void {
 fn finishFailure() void {
     calcMode = CM_NORMAL;
     frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    frontier_error.moreInfoOnErrorImpl("In function fnPlotStat:", "There is no statistical/plot data available!", null, null);
 }
 
 pub fn run(plot_mode: u16) void {

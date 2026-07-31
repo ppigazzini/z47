@@ -349,7 +349,7 @@ pub export fn errorMessageOf(errorCode: u8) linksection(code_section) callconv(.
 // a no-op stub is provided there. Reproduce both: a no-op on firmware, the real
 // popup on host.
 // ---------------------------------------------------------------------------
-fn moreInfoOnErrorImpl(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void {
+pub fn moreInfoOnErrorImpl(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void {
     var utf8m1: [2000]u8 = undefined;
     var utf8m2: [2000]u8 = undefined;
     var utf8m3: [2000]u8 = undefined;
