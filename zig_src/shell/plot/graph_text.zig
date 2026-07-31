@@ -106,7 +106,10 @@ extern fn fread(ptr: ?*anyopaque, size: usize, n: usize, f: *FILE) usize;
 extern fn fflush(f: ?*FILE) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn g_get_monotonic_time() i64;
-const time_t = c_long;
+// time_t is 64-bit in the UCRT on both LP64 and LLP64. c_long is not: it is
+// 32 bits on Windows, so time() wrote 8 bytes into a 4-byte slot and localtime
+// then read garbage and returned NULL.
+const time_t = i64;
 const tm = opaque {};
 extern fn time(t: ?*time_t) time_t;
 extern fn localtime(t: *const time_t) *tm;

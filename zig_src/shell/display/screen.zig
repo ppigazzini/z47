@@ -1193,7 +1193,8 @@ const gtk_main_iteration = if (!dmcp_build) @extern(*const fn () callconv(.c) c_
 
 // stdio for fnScreenDump (host only).
 const FILE = opaque {};
-const time_t = c_long;
+// See graph_text.zig: c_long is 32-bit on Windows LLP64; time_t is always 64-bit.
+const time_t = i64;
 const tm = opaque {};
 const c_time = @extern(*const fn (t: ?*time_t) callconv(.c) time_t, .{ .name = "time" });
 extern fn localtime(t: *const time_t) *tm;
