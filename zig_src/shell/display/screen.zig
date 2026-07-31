@@ -6159,8 +6159,10 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
             _ = fwrite(&uint16, 1, 2, bmp);
         }
 
+        // Upstream ends here: writing the .bmp reads the LCD buffer and changes
+        // no screen state, so it must not leave one-time skip flags behind for
+        // the next refresh to consume.
         _ = fclose(bmp);
-        screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
     }
 }
 
@@ -6369,6 +6371,15 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     resetShiftState();
+    temporaryInformation = TI_NO_INFO;
+    // Upstream captures from a fully repainted screen: it resets the update mode
+    // to AUTO so this refresh redraws every band, whatever the plot left behind.
+    // (Its `if(!snapSkipRefresh)` guard reads a --snapskiprefresh command-line
+    // flag z47 does not carry, so this is that flag's default path.) Leaving a
+    // partial mode here also leaks past the capture: the next refresh, including
+    // the one runProgram runs when the program ends, then skips bands it should
+    // repaint.
+    screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(80);
     frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();
 
@@ -6380,6 +6391,4 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
         print_all_regs.fnP_All_Regs(PRN_STK);
     }
     frontier_screen_snap.z47_frontier_snap_restore_tam(&tam_backup);
-
-    screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME | SCRUPD_SKIP_MENU_ONE_TIME;
 }
