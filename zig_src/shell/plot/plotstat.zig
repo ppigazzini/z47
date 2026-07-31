@@ -1434,6 +1434,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             index += 1;
         }
     } else {
+        calcMode = CM_NORMAL; // upstream plotstat.c:1541 -- leave graph mode, or the next refresh re-enters this same failing branch
         frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
             if (comptime !dmcp_build) {
@@ -1450,6 +1451,7 @@ inline fn yLine(off: i32) u32 {
 }
 
 fn scalePlusInfinity() void {
+    calcMode = CM_NORMAL; // upstream plotstat.c:1552
     frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
@@ -1460,6 +1462,7 @@ fn scalePlusInfinity() void {
 }
 
 fn scaleMinusInfinity() void {
+    calcMode = CM_NORMAL; // upstream plotstat.c:1561
     frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
     if (comptime extra_info) {
         if (comptime !dmcp_build) {
@@ -1827,6 +1830,7 @@ pub fn z47_frontier_plot_clear_screen_for_graph_entry() void {
 }
 
 // GRAPHMODE (calcMode == CM_PLOT_STAT || calcMode == CM_GRAPH)
+const CM_NORMAL: u8 = 0;
 const CM_PLOT_STAT: u8 = 8;
 const CM_GRAPH: u8 = 15;
 extern var calcMode: u8;
