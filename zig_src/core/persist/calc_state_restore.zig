@@ -311,7 +311,7 @@ extern var lastIntegerBase: u32;
 extern var amortP1: u16;
 extern var amortP2: u16;
 extern var lrChosen: u16;
-extern var graph_dx: f32;
+extern var graph_dx: f64;
 extern var graph_dy: f32;
 extern var roundedTicks: u8;
 extern var PLOT_AXIS: u8;
