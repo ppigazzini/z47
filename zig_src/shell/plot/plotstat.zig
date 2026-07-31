@@ -488,7 +488,8 @@ extern fn memmove(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaqu
 extern fn strtof(nptr: [*c]const u8, endptr: ?*[*c]u8) f32;
 extern fn srand(seed: c_uint) void;
 extern fn rand() c_int;
-const time_t = c_long;
+// See graph_text.zig: c_long is 32-bit on Windows LLP64; time_t is always 64-bit.
+const time_t = i64;
 extern fn time(t: ?*time_t) time_t;
 extern fn fabs(x: f64) f64;
 extern fn sqrtf(x: f32) f32;
@@ -1475,10 +1476,10 @@ pub export fn demo_plot() callconv(.c) void {
     var ix: i8 = undefined;
     var t: time_t = undefined;
 
-    srand(@intCast(@as(c_uint, @truncate(@as(c_ulong, @bitCast(time(&t)))))));
+    srand(@intCast(@as(c_uint, @truncate(@as(u64, @bitCast(time(&t)))))));
     frontier_items.runFunction(ITM_CLSIGMA);
     plotSelection = 0;
-    srand(@intCast(@as(c_uint, @truncate(@as(c_ulong, @bitCast(time(null)))))));
+    srand(@intCast(@as(c_uint, @truncate(@as(u64, @bitCast(time(null)))))));
     ix = 0;
     while (ix != 40) : (ix += 1) {
         const mv: c_int = 11000 + @rem(rand(), 110) - 55;
