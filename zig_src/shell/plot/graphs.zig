@@ -227,16 +227,16 @@ var gpm_prev_y_unclipped: i16 = 0; // graph_plotmem's static int16_t prev_y_uncl
 // Cross-owner / cross-file extern globals
 // ---------------------------------------------------------------------------
 // plotstat.h
-extern var graph_dx: f32;
-extern var graph_dy: f32;
+extern var graph_dx: f64;
+extern var graph_dy: f64;
 extern var roundedTicks: bool_t;
 extern var PLOT_AXIS: bool_t;
 extern var PLOT_ZOOM: i8;
 extern var drawHistogram: u8;
 extern var plotStatScale: u8;
 extern var plotmode: i8;
-extern var tick_int_x: f32;
-extern var tick_int_y: f32;
+extern var tick_int_x: f64;
+extern var tick_int_y: f64;
 extern var xzero: u32;
 extern var yzero: u32;
 
@@ -304,7 +304,7 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn snprintf(buf: [*c]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
-extern fn pow(base: f64, exp: f64) f64;
+pub extern fn pow(base: f64, exp: f64) f64;
 
 // host-only screen refresh (referenced under !dmcp_build).
 
@@ -881,7 +881,7 @@ fn plotrms(xn: i16, yn: i16) void {
 // ===========================================================================
 // showGraphTickText1 (static)
 // ===========================================================================
-fn showGraphTickText1(tick_int_x_: f32, tick_int_y_: f32, xoff: i32, yoff1: i32, yoff2: i32, acc: u16) void {
+fn showGraphTickText1(tick_int_x_: f64, tick_int_y_: f64, xoff: i32, yoff1: i32, yoff2: i32, acc: u16) void {
     var buff: [32]u8 = undefined;
     var outstr: [bufLen]u8 = undefined;
     var tmpBuf: [100]u8 = undefined;

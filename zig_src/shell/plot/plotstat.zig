@@ -228,8 +228,8 @@ var lr_aa2: real_t = undefined;
 var lr_sa0: real_t = undefined;
 var lr_sa1: real_t = undefined;
 
-pub export var graph_dx: f32 = 0;
-pub export var graph_dy: f32 = 0;
+pub export var graph_dx: f64 = 0;
+pub export var graph_dy: f64 = 0;
 pub export var roundedTicks: bool_t = false;
 pub export var PLOT_AXIS: bool_t = false;
 pub export var PLOT_ZOOM: i8 = 0;
@@ -237,8 +237,8 @@ pub export var drawHistogram: u8 = 0;
 pub export var plotStatScale: u8 = 0; // equal-scale axes for the fnPlotStat plots (SCATR/CENTRL) only
 
 pub export var plotmode: i8 = 0;
-pub export var tick_int_x: f32 = 0;
-pub export var tick_int_y: f32 = 0;
+pub export var tick_int_x: f64 = 0;
+pub export var tick_int_y: f64 = 0;
 pub export var xzero: u32 = 0;
 pub export var yzero: u32 = 0;
 
@@ -785,10 +785,10 @@ pub export fn pixelline(xo_in: i16, yo_in: i16, xn: i16, yn: i16, vmNormalArg: b
 // graphAxisDraw
 // ===========================================================================
 pub export fn graphAxisDraw() callconv(.c) void {
-    const fx_min = realToFloatL(x_min);
-    const fx_max = realToFloatL(x_max);
-    const fy_min = realToFloatL(y_min);
-    const fy_max = realToFloatL(y_max);
+    const fx_min = realToDoubleVal(x_min);
+    const fx_max = realToDoubleVal(x_max);
+    const fy_min = realToDoubleVal(y_min);
+    const fy_max = realToDoubleVal(y_max);
     if (fx_min <= FLoatingMin or fx_min >= FLoatingMax or fx_max <= FLoatingMin or fx_max >= FLoatingMax or fy_min <= FLoatingMin or fy_min >= FLoatingMax or fy_max <= FLoatingMin or fy_max >= FLoatingMax) {
         return;
     }
@@ -809,8 +809,10 @@ pub export fn graphAxisDraw() callconv(.c) void {
         cnt += 1;
     }
 
-    var x: f32 = undefined;
-    var y: f32 = undefined;
+    // Tick loops step in double, as upstream does: the interval underflows to 0
+    // only beyond 1e+-308, and the tick_int_* > 0 guards below then skip the ticks.
+    var x: f64 = undefined;
+    var y: f64 = undefined;
 
     if (PLOT_AXIS and !(yzero == SCREEN_HEIGHT_GRAPH - 1 or yzero == minny)) {
         // DRAW XAXIS
@@ -822,7 +824,7 @@ pub export fn graphAxisDraw() callconv(.c) void {
 
         frontier_screen.force_refresh(timed);
 
-        if (0 < fx_max and 0 > fx_min) {
+        if (tick_int_x > 0 and 0 < fx_max and 0 > fx_min) {
             x = 0;
             while (x <= fx_max) : (x += tick_int_x) {
                 cnt = @intCast(screenX(@as(f64, x)));
@@ -851,7 +853,7 @@ pub export fn graphAxisDraw() callconv(.c) void {
                 setBlackPixel(cnt, @intCast(minI(@as(i32, @intCast(yzero)) + 3, SCREEN_HEIGHT_GRAPH - 1)));
                 setBlackPixel(cnt, @intCast(maxI(@as(i32, @intCast(yzero)) - 3, @intCast(minny))));
             }
-        } else {
+        } else if (tick_int_x > 0) {
             x = fx_min;
             while (x <= fx_max) : (x += tick_int_x) {
                 cnt = @intCast(screenX(@as(f64, x)));
@@ -885,7 +887,7 @@ pub export fn graphAxisDraw() callconv(.c) void {
         lcd_fill_rect(xzero, minny, 1, @intCast(SCREEN_HEIGHT_GRAPH - @as(i32, @intCast(minny))), LCD_EMPTY_VALUE);
 
         frontier_screen.force_refresh(timed);
-        if (0 < fy_max and 0 > fy_min) {
+        if (tick_int_y > 0 and 0 < fy_max and 0 > fy_min) {
             y = 0;
             while (y <= fy_max) : (y += tick_int_y) {
                 cnt = @intCast(screenY(@as(f64, y)));
@@ -914,7 +916,7 @@ pub export fn graphAxisDraw() callconv(.c) void {
                 setBlackPixel(@intCast(maxI(@as(i32, @intCast(xzero)) - 3, 0)), cnt);
                 setBlackPixel(@intCast(minI(@as(i32, @intCast(xzero)) + 3, SCREEN_WIDTH_GRAPH - 1)), cnt);
             }
-        } else {
+        } else if (tick_int_y > 0) {
             y = fy_min;
             while (y <= fy_max) : (y += tick_int_y) {
                 cnt = @intCast(screenY(@as(f64, y)));
@@ -937,23 +939,38 @@ pub export fn graphAxisDraw() callconv(.c) void {
 // ===========================================================================
 // auto_tick
 // ===========================================================================
-pub export fn auto_tick(tick_int_f_in: f32) callconv(.c) f32 {
+pub export fn auto_tick(tick_int_f_in: f64) callconv(.c) f64 {
     var tick_int_f = tick_int_f_in;
-    var tmpString2: [100]u8 = undefined;
 
     if (!roundedTicks) {
         return tick_int_f;
     }
-    abi.fmtExpC(&tmpString2, 1, @as(f64, fabs(tick_int_f)));
-    var tx: [4]u8 = undefined;
-    tx[0] = tmpString2[0]; // expecting "6.5e+01"
-    tx[1] = tmpString2[1];
-    tx[2] = tmpString2[2];
-    tx[3] = 0;
-    tick_int_f = strtof(&tx, null); // "6.5"
-    tmpString2[0] = '1';
-    tmpString2[2] = '0'; // "1.0e+01"
-    const tick_int_f_mult: f32 = strtof(&tmpString2, null);
+
+    // Scale the ticks to about 20 intervals across the axis. Upstream replaced
+    // its old "%.1e" string surgery with this numeric mantissa/exponent split
+    // (the string form pulled in _printf_float, no longer linked on DMCP);
+    // log10/pow live in libm, which nano.specs does not strip.
+    var tick_m: f64 = fabs(tick_int_f);
+    var tick_mult: f64 = 1.0;
+    if (tick_m > 0) {
+        tick_mult = frontier_graphs.pow(10.0, @floor(@log10(tick_m))); // decade of the value
+        tick_m /= tick_mult; // mantissa, 1 <= m < 10 up to one step of log10/pow rounding, corrected below
+        if (tick_m < 1.0) {
+            tick_m *= 10.0;
+            tick_mult /= 10.0;
+        }
+        if (tick_m >= 10.0) {
+            tick_m /= 10.0;
+            tick_mult *= 10.0;
+        }
+        tick_m = @floor(tick_m * 10.0 + 0.5) / 10.0; // round the mantissa to 1 decimal as "%.1e" did
+        if (tick_m >= 10.0) {
+            tick_m /= 10.0;
+            tick_mult *= 10.0;
+        }
+    }
+    tick_int_f = tick_m;
+    const tick_int_f_mult: f64 = tick_mult;
 
     if (tick_int_f > 0) {
         if (tick_int_f <= 1.3) {
@@ -967,7 +984,8 @@ pub export fn auto_tick(tick_int_f_in: f32) callconv(.c) f32 {
         } else if (tick_int_f <= 9.9) {
             tick_int_f = 7.5;
         }
-    } else {
+        // no higher values than 9.9 possible
+    } else { // tick_int_f == 0
         tick_int_f = 1;
     }
     tick_int_f *= tick_int_f_mult;
@@ -985,14 +1003,14 @@ pub export fn graph_axis() callconv(.c) void {
     var w: real_t = undefined;
     if (graph_dx == 0) {
         realSubtract(x_max, x_min, &w, &ctxtReal39); // w = x_max - x_min
-        tick_int_x = auto_tick(@floatCast(realToDoubleVal(&w) / 20.0));
+        tick_int_x = auto_tick(realToDoubleVal(&w) / 20.0);
     } else {
         tick_int_x = graph_dx;
     }
 
     if (graph_dy == 0) {
         realSubtract(y_max, y_min, &w, &ctxtReal39); // w = y_max - y_min
-        tick_int_y = auto_tick(@floatCast(realToDoubleVal(&w) / 20.0));
+        tick_int_y = auto_tick(realToDoubleVal(&w) / 20.0);
     } else {
         tick_int_y = graph_dy;
     }
