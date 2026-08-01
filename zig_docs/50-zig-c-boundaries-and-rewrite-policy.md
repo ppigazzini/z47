@@ -269,6 +269,9 @@ rather than closed.
    and both families call it. A shared module cannot diverge from itself. Prefer
    that wherever the two families genuinely do the same thing; keep the scan for
    where they legitimately differ.
+
+   **The scan's blind spot is inside a single file**, and gap 8 is an instance:
+   "twin" is a relationship, not only a directory layout.
 7. **`strtol` / `strtoul` results are platform-width, so upstream's own behaviour
    differs between host and firmware.** `sizeof(unsigned long)` is 8 on the LP64
    host and 4 on the arm-none-eabi firmware (measured), so `strtoul` saturates at
@@ -282,6 +285,22 @@ rather than closed.
    valid state file reaches the divergence -- this is a contract to write down per
    site, not a defect to sweep. Same class as the `c_long` LLP64 trap already on
    record, on the untrusted-input path.
+8. **One upstream macro family is ported two different ways inside one file.**
+   Upstream generates `stringToUint8` / `stringToUint16` / `stringToUint32` from a
+   single `stringToUintFunc` macro -- `(type)strtoul(str, NULL, 0)`. In
+   `../zig_src/core/persist/calc_state.zig`, `stringToUint16` and its
+   `stringToInt8` relative are ported faithfully as
+   `@truncate(strtoul(str, null, 0))`, while `stringToUint8` and `stringToUint32`
+   are `std.fmt.parseInt(.., 10) catch 0`. That differs twice over: base 0
+   auto-detects `0x` hex and leading-zero octal where base 10 reads neither, and C
+   truncates on overflow where the `catch` returns 0. Measured -- for the u8,
+   `0x1F` is 31 in C and 0 here, `010` is 8 and 10, `300` is 44 and 0. Both
+   writers emit plain decimal (`%PRIu8` / `{d}`), so no file z47 or upstream
+   produces reaches it; a hand-edited one does. Neither the parity oracles (valid
+   decimal only) nor the twin scan in gap 6 -- which pairs ACROSS families, and all
+   four of these are one file -- can see it. Fix is to match the two correct
+   siblings. The general lesson: a `#define`-generated family upstream is a set
+   that must be ported identically, and nothing checks that.
 
 ### Rules For New Code
 
