@@ -49,7 +49,7 @@ fn readFileProgramByte(remaining: *u32, value: *u8) bool {
         return false;
     }
     runtime.readLine(buffer[0..]);
-    value.* = runtime.parseU8Line(buffer[0..].ptr);
+    value.* = runtime.parseU8Line(buffer[0..]);
     remaining.* -= 1;
     return true;
 }

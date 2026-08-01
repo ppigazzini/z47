@@ -1,6 +1,6 @@
 const std = @import("std");
 const io_owned = @import("calc_state_io.zig");
-const line_parse = @import("line_parse.zig"); // std-only line match / integer parse
+const line_parse = @import("abi").line_parse; // shared std-only line match / integer parse
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
@@ -54,11 +54,10 @@ pub extern fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16,
 pub extern fn ioFileRead(buffer: ?*anyopaque, size: u32) u32;
 pub extern fn ioEof() c_int;
 
-// The line helpers are a std-only pure core; see line_parse.zig for why they
-// take the caller's buffer rather than a pointer into it, and for the saturation
-// the version parse depends on. Lifted there so they are natively testable --
-// this owner reaches libc and the file-I/O globals, so it is only reachable
-// through the C oracle.
+// The line helpers are the shared std-only core in abi/line_parse.zig -- see
+// there for why they take the caller's buffer rather than a pointer into it, and
+// for the saturation the version parse depends on. Shared with the program family
+// rather than duplicated: the two copies this replaced had already drifted.
 
 pub inline fn resetLoadContext() void {
     z47_calc_state_reset_load_context();

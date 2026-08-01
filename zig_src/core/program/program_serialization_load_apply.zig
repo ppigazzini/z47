@@ -20,7 +20,7 @@ pub fn applyLoadedProgram(program_size_in_bytes: u32) void {
     var index: u32 = 0;
     while (index < program_size_in_bytes) : (index += 1) {
         runtime.readLine(value_buffer[0..]);
-        start_of_program[index] = runtime.parseU8Line(value_buffer[0..].ptr);
+        start_of_program[index] = runtime.parseU8Line(value_buffer[0..]);
     }
 
     runtime.firstFreeProgramByte[0] = 0xff;

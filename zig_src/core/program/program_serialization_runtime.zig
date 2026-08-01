@@ -1,4 +1,5 @@
 const io_owned = @import("program_serialization_io.zig");
+const line_parse = @import("abi").line_parse; // shared std-only line match / integer parse
 
 pub const use_fake_harness_surface = io_owned.use_fake_program_serialization_harness_surface;
 
@@ -36,35 +37,6 @@ pub const ioPathSaveAllPrograms: c_int = 12;
 
 const END_OPCODE_HIGH: u8 = 0x85;
 const END_OPCODE_LOW: u8 = 0xB2;
-
-fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {
-    var idx: usize = 0;
-    while (true) : (idx += 1) {
-        const a = line[idx];
-        const b = expected[idx];
-        if (a != b) return false;
-        if (a == 0) return true;
-    }
-}
-
-fn parseU32LineZ(line: [*c]const u8) u32 {
-    var value: u32 = 0;
-    var idx: usize = 0;
-
-    while (line[idx] >= '0' and line[idx] <= '9') : (idx += 1) {
-        // Saturating: a malformed oversized digit string (e.g. a corrupt program-size
-        // field) clamps to u32-max instead of panicking on checked overflow; every
-        // valid field is small so this is exact for all well-formed input. The caller
-        // range-checks the result and rejects the file.
-        value = value *| 10 +| (line[idx] - '0');
-    }
-
-    return value;
-}
-
-fn parseU8LineZ(line: [*c]const u8) u8 {
-    return @intCast(parseU32LineZ(line));
-}
 
 fn isAtEndOfProgramZ(step: [*c]const u8) bool {
     return step[0] == END_OPCODE_HIGH and step[1] == END_OPCODE_LOW;
@@ -164,14 +136,14 @@ pub inline fn toC47MemPtr(mem_ptr: [*c]const u8) u16 {
     return io_owned.toC47MemPtr(mem_ptr);
 }
 
-pub inline fn parseU32Line(line: [*c]const u8) u32 {
-    return parseU32LineZ(line);
+pub inline fn parseU32Line(line: []const u8) u32 {
+    return line_parse.parseU32(line);
 }
 
-pub inline fn parseU8Line(line: [*c]const u8) u8 {
-    return parseU8LineZ(line);
+pub inline fn parseU8Line(line: []const u8) u8 {
+    return line_parse.parseU8(line);
 }
 
-pub inline fn lineEquals(line: [*c]const u8, expected: [*c]const u8) bool {
-    return lineEqualsZ(line, expected);
+pub inline fn lineEquals(line: []const u8, expected: []const u8) bool {
+    return line_parse.equals(line, expected);
 }

@@ -1,5 +1,12 @@
-//! Header-line matching and integer parsing -- the pure core of the state-file
-//! and data-file header checks.
+//! Header-line matching and integer parsing -- the ONE implementation shared by
+//! both file families.
+//!
+//! It lives under `abi/` rather than beside either owner on purpose. These
+//! helpers previously existed twice, once per family, and the two copies drifted:
+//! the M1 fuzz made the program-side parser saturating and the state-side twin
+//! kept wrapping for three weeks, which is the version forgery M-SAFE-4 fixed.
+//! A shared module cannot drift from itself, which is a stronger guarantee than
+//! any scan that reports drift after the fact.
 //!
 //! Both take the caller's BUFFER, not a pointer into it. Every caller reads a
 //! line into a fixed local array and therefore knows its length; the previous
@@ -71,6 +78,19 @@ pub fn parseU32(line: []const u8) u32 {
     return value;
 }
 
+/// Parse a line as a program byte, narrowing exactly as upstream does.
+///
+/// `@truncate`, not `@intCast`: upstream's `stringToUint8` is
+/// `(uint8_t)strtoul(str, NULL, 0)` (the `stringToUintFunc` macro in
+/// saveRestoreCalcState.c), so C narrows by truncation and that is defined.
+/// Every byte of a loaded `.p47` program comes through here, and `parseU32`
+/// above saturates an oversized field to 0xFFFFFFFF -- which `@intCast` then made
+/// illegal behaviour, trapping on a line like "999" in a file the calculator did
+/// not write.
+pub fn parseU8(line: []const u8) u8 {
+    return @truncate(parseU32(line));
+}
+
 test "equals matches only the NUL-terminated prefix" {
     var buf: [16]u8 = @splat(0);
     @memcpy(buf[0..5], "hello");
@@ -128,5 +148,19 @@ test "parseU32 accepts every version the caller's range check admits" {
         var buf: [16]u8 = @splat(0);
         const s = std.fmt.bufPrint(buf[0..15], "{d}", .{v}) catch unreachable;
         try std.testing.expectEqual(v, parseU32(buf[0 .. s.len + 1]));
+    }
+}
+
+test "parseU8 truncates an out-of-range byte exactly as upstream does" {
+    // Verified against the C: (uint8_t)strtoul("999", NULL, 0) == 231.
+    try std.testing.expectEqual(@as(u8, 231), parseU8("999\x00"));
+    try std.testing.expectEqual(@as(u8, 0), parseU8("256\x00"));
+    // A saturated field narrows to 0xFF rather than trapping.
+    try std.testing.expectEqual(@as(u8, 0xFF), parseU8("99999999999\x00"));
+    // Every in-range byte is unchanged, so no valid program file moves.
+    for ([_]u8{ 0, 1, 127, 128, 254, 255 }) |v| {
+        var buf: [8]u8 = @splat(0);
+        const s = std.fmt.bufPrint(buf[0..7], "{d}", .{v}) catch unreachable;
+        try std.testing.expectEqual(v, parseU8(buf[0 .. s.len + 1]));
     }
 }

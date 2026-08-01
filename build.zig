@@ -102,7 +102,6 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/core/persist/data_file_bytes.zig",
         "zig_src/core/state/register_metadata/name_glyph.zig",
         "zig_src/core/persist/word_scan.zig",
-        "zig_src/core/persist/line_parse.zig",
         "zig_src/core/state/stack/real34_sign.zig",
         "zig_src/core/state/register_metadata/reserved_register.zig",
         "zig_src/core/input/solver_status.zig",
@@ -163,6 +162,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/shell/register_data_type.zig",
         "zig_src/abi/block_math.zig",
         "zig_src/abi/trap_panic.zig",
+        "zig_src/abi/line_parse.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");
