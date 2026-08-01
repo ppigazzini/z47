@@ -180,7 +180,7 @@ closing a real hazard.
 | **A refused allocation is not a NULL to write through.** | `initUserKeyArgument`, `setUserKeyArgument`, `createMenu` and the EQUATIONS section check the result; `freeListAlloc` checks the region table's bound BEFORE the store, since past it the store is itself the overrun. | `zig build test`, `memory_parity` |
 | **Port C's implicit narrowing as `@truncate` and its unsigned arithmetic as `+%`/`-%`.** This is a PARITY rule before it is a safety rule: where upstream assigns a wider value into a `uint16_t`, C truncates and that is defined; `@intCast` is illegal behaviour on the same input -- a trap in a safe build, silent UB in `ReleaseSmall`. Use `@intCast` only where the value provably fits, and saturating `+|`/`*|` where the intent is that an absurd size stays absurd. | The M1 fuzz found exactly this class: `parseU32LineZ` u32 overflow on an oversized size string and `loadProgram` `@intCast` overflow on `program_size > 0xFFFF`, both fixed parity-safe (saturating parse, explicit reject) so valid files are unchanged. | `zig build pgm_load_fuzz`; **the 5628 `@intCast` sites are otherwise unsorted -- see gap 4** |
 | **Raise `@setRuntimeSafety(true)` over an untrusted parse, and price it before placing it.** The scope is lexical -- it does not follow calls, so it goes on each function -- and it works in `ReleaseSmall`, so it reaches the device. Keep it off the per-keystroke path, and off any loop where the cost is measured and the bound is already stated by the code itself. | 22 functions across the state-file and `.p47` parse surfaces (`calc_state_restore`, `calc_state_register_codec`, `calc_state_io_flow`, `program_serialization_header` / `_load_apply`). The two load-path object ROOTS install `abi.trap_panic.namespace`, so a firmware safety failure is a bare `udf` instead of dragging in Zig's message formatter; hosted targets keep the default handler and its stack trace. Measured: +64 bytes of flash, 4 trap sites emitted. | `zig build dmcp` size, `zig build test -Doptimize=ReleaseSmall`, `test:unit` |
-| **Drive malformed input through the REAL path, not a unit stub.** | `zig_build/tests/pgm_run/malformed/` -- 27 `.p47` files (truncated at 12 offsets, corrupt magic, garbage/negative/overflowing size fields, all-zero and all-`0xFF` bodies) through the actual program-load code, UBSan-instrumented since M-SAFE-13. A finding is a crash, a hang, a Zig safety panic or a sanitizer report. Note the harness name says ASan and means UBSan -- see [75-debugging.md](75-debugging.md). | `zig build pgm_load_fuzz` |
+| **Drive malformed input through the REAL path, not a unit stub -- and assert the OUTCOME, not just survival.** | STATE files: `zig_build/tests/calc_state/malformed/` through the real `doLoad` (`zig build state_load_fuzz`), checked for crash, hang and Zig safety panic AND against a per-file expected `loadedVersion`. The second assertion is why the lane catches M-SAFE-4's version forgery, which never crashes. Both assertions are verified to fire by reverting the fix each guards. PROGRAMS: `zig_build/tests/pgm_run/malformed/` -- 27 `.p47` files (truncated at 12 offsets, corrupt magic, garbage/negative/overflowing size fields, all-zero and all-`0xFF` bodies) through the actual program-load code, UBSan-instrumented since M-SAFE-13. A finding is a crash, a hang, a Zig safety panic or a sanitizer report. Note the harness name says ASan and means UBSan -- see [75-debugging.md](75-debugging.md). | `zig build pgm_load_fuzz` |
 | **Sanitize the retained C on a lane that actually runs.** | `zig build test_asan` runs the full shared testSuite under **UBSan** -- live since M-SAFE-13, which found that `common_c_flags`' `-fno-sanitize=undefined` had been cancelling `sanitize_c` and the lanes had never instrumented anything. Two checks are excluded, each individually justified in `../zig_build/common.zig`, and a `comptime` block now fails the build if the blanket cancelling flag returns. There is still NO AddressSanitizer: Zig ships no runtime and cannot link one, so heap overflow and use-after-free remain undetected. See [75-debugging.md](75-debugging.md). | `test_asan`, `pgm_load_fuzz` |
 | **Keep `catch unreachable` to provable cases.** | All 6 sites are `bufPrint` into a fixed local buffer whose size dominates the formatted output. The other 19 are 11 `orelse unreachable` on `getRegisterDataPointer` for a register the caller has already established, and 8 exhaustive-switch `else` arms. | review |
 
@@ -206,21 +206,13 @@ rather than closed.
    out-of-range `@intCast`, which is not a small thing: it is the class of the
    three bugs the M1 fuzz found and of the matrix-capacity defect M-SAFE-1 fixed.
    The spatial class stays invisible, and the way to reach it is the slice
-   conversion described in gap 4, after which the attribute already in place starts
+   conversion described in gap 3, after which the attribute already in place starts
    checking bounds with no further work. Two readers on the untrusted surface stay
    uncovered by the attribute for a reason that is not scheduling --
    `addTestPrograms` and `import_string_from_filename` live in the frontier
-   object, where gap 3 says the attribute cannot go at all. Both now carry
+   object, where gap 2 says the attribute cannot go at all. Both now carry
    explicit bounds instead, which is the answer wherever that budget applies.
-2. **The state-file restore path has no adversarial lane.** `31fb6f755` added
-   137 lines to `calc_state_restore.zig` alone (137 in, 33 out), and the only
-   thing that exercises them is a corpus of VALID files: `saveload_parity` and
-   `saveload_golden` round-trip, and the 72 new testSuite cases came with the
-   import. A malformed `.sav` / `.d47` corpus driven through `doLoad` -- the M1
-   pattern, which found three real bugs the first afternoon it existed -- is the
-   highest-value unbuilt lane in the tree. It is also the surface upstream's own
-   worst memory bug (the 577 state-file overflow) lived on.
-3. **The OLD_HW package-3 `.bss` budget is FOUR BYTES, so runtime safety cannot
+2. **The OLD_HW package-3 `.bss` budget is FOUR BYTES, so runtime safety cannot
    be placed in the frontier object.** Baseline `_ebss` is exactly the
    `0x10002000` the linker script asserts against. Adding `@setRuntimeSafety(true)`
    to one function in `../zig_src/shell/config.zig` moved it to `0x10002004` and
@@ -233,7 +225,7 @@ rather than closed.
    Write explicit bounds instead of relying on the backstop, and note at the site
    why the attribute is absent. Note also that `dmcp_pkgs_all` is the only lane
    that catches this -- the gate, `dmcp` and `dmcp5` were all green.
-4. **There is no ASan, and if there were it could not see the C47 block allocator.**
+3. **There is no ASan, and if there were it could not see the C47 block allocator.**
    The lanes named `*_asan` run no sanitizer of any kind -- three independent
    reasons, all verified, in [75-debugging.md](75-debugging.md). Beyond that: Registers, variables, programs,
    formulae, menus and the GMP heap all live in `ram`, a single ~256 KiB
@@ -245,7 +237,7 @@ rather than closed.
    re-poison in `freeListFree` -- compiled only where `sanitize_c` is on, so the
    firmware and the parity binaries are unchanged. Reasoning is in
    [75-debugging.md](75-debugging.md).
-5. **The narrowing population is split and ratcheted on the load owners, but the
+4. **The narrowing population is split and ratcheted on the load owners, but the
    rest of the tree is still one undifferentiated number.** Each site is either
    (a) provably in range, where `@intCast` is correct and says something true;
    (b) standing where upstream narrows implicitly, where `@intCast` is a PARITY
@@ -259,7 +251,7 @@ rather than closed.
    `report-idiom-status.py`'s single total cannot tell a correct cast from a
    defect. Extending the analysis there needs the same per-site upstream reading;
    do not sweep it.
-6. **A fix lands in one owner and its sibling twin is missed.** z47 keeps a
+5. **A fix lands in one owner and its sibling twin is missed.** z47 keeps a
    state-file family and a program-file family that parse different formats with
    structurally identical helpers, and a fix applied to one has twice not been
    applied to the other: upstream's matrix-dimension clamp (absent from the Zig
@@ -282,9 +274,9 @@ rather than closed.
    that wherever the two families genuinely do the same thing; keep the scan for
    where they legitimately differ.
 
-   **The scan's blind spot is inside a single file**, and gap 8 is an instance:
+   **The scan's blind spot is inside a single file**, and gap 7 is an instance:
    "twin" is a relationship, not only a directory layout.
-7. **`strtol` / `strtoul` results are platform-width, so upstream's own behaviour
+6. **`strtol` / `strtoul` results are platform-width, so upstream's own behaviour
    differs between host and firmware.** `sizeof(unsigned long)` is 8 on the LP64
    host and 4 on the arm-none-eabi firmware (measured), so `strtoul` saturates at
    2^64 on one and 2^32 on the other. `toUint32("4304967321")` is 10000025 on the
@@ -297,7 +289,7 @@ rather than closed.
    valid state file reaches the divergence -- this is a contract to write down per
    site, not a defect to sweep. Same class as the `c_long` LLP64 trap already on
    record, on the untrusted-input path.
-8. **One upstream macro family is ported two different ways inside one file.**
+7. **One upstream macro family is ported two different ways inside one file.**
    Upstream generates `stringToUint8` / `stringToUint16` / `stringToUint32` from a
    single `stringToUintFunc` macro -- `(type)strtoul(str, NULL, 0)`. In
    `../zig_src/core/persist/calc_state.zig`, `stringToUint16` and its
@@ -309,7 +301,7 @@ rather than closed.
    `0x1F` is 31 in C and 0 here, `010` is 8 and 10, `300` is 44 and 0. Both
    writers emit plain decimal (`%PRIu8` / `{d}`), so no file z47 or upstream
    produces reaches it; a hand-edited one does. Neither the parity oracles (valid
-   decimal only) nor the twin scan in gap 6 -- which pairs ACROSS families, and all
+   decimal only) nor the twin scan in gap 5 -- which pairs ACROSS families, and all
    four of these are one file -- can see it. Fix is to match the two correct
    siblings. The general lesson: a `#define`-generated family upstream is a set
    that must be ported identically, and nothing checks that.

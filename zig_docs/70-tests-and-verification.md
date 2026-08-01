@@ -22,6 +22,15 @@ same script), then the firmware link for every DMCP package variant, then the
 tracked-generated-artifact diff. It fails fast on the first red, and takes about
 four minutes warm.
 
+Step `[10a/11]` runs both malformed-input corpora through the real load paths.
+They are the only adversarial coverage those paths have -- every other lane feeds
+them files the calculator itself just wrote -- and they cost about a second each
+once built. The state lane checks two things: that the restore path did not
+crash, hang or trip a Zig safety check, and that it produced the outcome the
+corpus states. The second is not redundant: the defect class includes SILENT
+wrong-accepts, and a crash detector cannot see one. Both assertions are verified
+to fire by reverting the fixes they guard.
+
 Step `[10b/11]` links **every DMCP package variant** (`zig build dmcp_pkgs_all`),
 and it is not redundant with `zig build dmcp` / `dmcp5`. The OLD_HW package-3
 layout asserts `_ebss <= 0x10002000` and sits exactly on it, so a few bytes of
@@ -88,6 +97,7 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | host core regression | `../zig_build/host/`, `../src/testSuite/` | `zig build test --summary none` |
 | native C-sanitizer lane | `../zig_build/host/steps.zig` | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
 | malformed-input load fuzz (untrusted `.p47`) | `../zig_build/tests/pgm_run/malformed/`, `../zig_build/tests/pgm_run/run-pgm-load-fuzz.sh` | `zig build pgm_load_fuzz --summary none` |
+| malformed-input load fuzz (untrusted `.sav` / `.d47`) | `../zig_build/tests/calc_state/malformed/`, `../zig_build/tests/calc_state/state_load_harness.c`, `run-state-load-fuzz.sh` | `zig build state_load_fuzz --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | `zig build generated --summary none` |
 | docs surface | `../docs/code/` | `zig build docs --summary none` |
 | firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |

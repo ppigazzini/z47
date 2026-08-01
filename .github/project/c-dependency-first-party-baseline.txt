@@ -10,6 +10,7 @@ zig_build/tests/calc_state/calc_state_oracle.c
 zig_build/tests/calc_state/calc_state_parity.c
 zig_build/tests/calc_state/calc_state_parity_link_stubs.c
 zig_build/tests/calc_state/save_load_parity_harness.c
+zig_build/tests/calc_state/state_load_harness.c
 zig_build/tests/charstring_diff/charstring_diff_harness.c
 zig_build/tests/charstring_diff/charstring_diff_oracle.c
 zig_build/tests/constants/constants_fake_runtime.c

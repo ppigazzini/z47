@@ -3,11 +3,14 @@
 # restore parser's dimension/length math -- the OOB class upstream guards against
 # in saveRestoreCalcState.c and z47 had never ported.
 #
-# NOTE ON STATUS: no build step consumes this directory yet. The driver is
-# M-SAFE-7 (`zig build state_load_fuzz`), which will run every file here through
-# the real doLoad under AddressSanitizer AND under a safe build, exactly as
-# `zig build pgm_load_fuzz` does for the .p47 corpus. Until then these files are
-# reproducers, kept because the M-SAFE-1 fix was verified against them by hand.
+# CONSUMED BY: `zig build state_load_fuzz` (M-SAFE-7), which drives every file
+# here through the real doLoad and checks two things -- that the restore path did
+# not crash, hang or trip a Zig safety check, and that it produced the outcome
+# `expectations.txt` states. The second matters because the defect class this
+# corpus exists for includes SILENT wrong-accepts, which no crash detector sees.
+#
+# Both the .sav files and expectations.txt are generated; the driver regenerates
+# them if the directory is empty.
 #
 # Deterministic (no RNG) so CI is reproducible. Run from the repo root:
 #   python3 zig_build/tests/calc_state/malformed/generate_corpus.py
@@ -41,9 +44,18 @@ def patch_first_matrix(rows: int, cols: int, elements: int) -> list[str]:
     return out
 
 
-def write(name: str, lines: list[str]) -> None:
+# Expected `loadedVersion` after the restore, per file. This is what turns the
+# lane from "did not crash" into "behaved correctly": a defect that makes the
+# parser SILENTLY ACCEPT something it should refuse -- the version forgery is
+# exactly that shape -- never crashes, so crash-detection alone would miss its
+# regression entirely. `None` means "no expectation, any value passes".
+expectations: dict[str, int | None] = {}
+
+
+def write(name: str, lines: list[str], expect_version: int | None = None) -> None:
     p = outdir / name
     p.write_text("\n".join(lines))
+    expectations[name] = expect_version
     print(f"{p.relative_to(root)}: {p.stat().st_size} bytes")
 
 
@@ -60,6 +72,7 @@ def write(name: str, lines: list[str]) -> None:
 write(
     "matrix_dims_overflow_u16_blocks.sav",
     patch_first_matrix(128, 128, 128 * 128),
+    expect_version=10000025,  # header is untouched; only the matrix is malformed
 )
 
 # The accepting side of the same boundary, and the only file here that is NOT
@@ -72,6 +85,7 @@ write(
 write(
     "matrix_dims_at_u16_block_limit.sav",
     patch_first_matrix(4, 4095, 4 * 4095),
+    expect_version=10000025,  # the VALID file: it must keep loading normally
 )
 
 # Dimensions whose PRODUCT overflows a u32 (65535*65535 == 0xFFFE0001, and the
@@ -80,6 +94,7 @@ write(
 write(
     "matrix_dims_product_overflows_u32.sav",
     patch_first_matrix(65535, 65535, 0),
+    expect_version=10000025,
 )
 
 # A row count that survives the product clamp yet exceeds the header's 12-bit
@@ -89,6 +104,7 @@ write(
 write(
     "matrix_rows_exceed_header_12_bits.sav",
     patch_first_matrix(16383, 1, 16383),
+    expect_version=10000025,
 )
 
 
@@ -106,4 +122,17 @@ def patch_version(line: str) -> list[str]:
     return out
 
 
-write("version_wrap_forges_valid.sav", patch_version("4304967321"))
+# 0 is the assertion that matters here: the saturating parse must pin the value
+# at u32-max so parseSaveFileRevision's range check REFUSES it. With the wrapping
+# arithmetic this file yields 10000025 and is accepted -- silently, with no crash
+# for a crash-detector to find.
+write("version_wrap_forges_valid.sav", patch_version("4304967321"), expect_version=0)
+
+# Emit the expectations the driver reads. Written last so it always matches the
+# files just generated.
+(outdir / "expectations.txt").write_text(
+    "".join(
+        f"{name} {'any' if v is None else v}\n" for name, v in sorted(expectations.items())
+    )
+)
+print(f"{(outdir / 'expectations.txt').relative_to(root)}: {len(expectations)} expectations")
