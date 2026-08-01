@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//**
- * \file sqrt.c
+ * \file squareRoot.c
  ***********************************************/
 
 #include "c47.h"

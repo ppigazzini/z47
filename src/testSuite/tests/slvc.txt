@@ -101,3 +101,69 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-1" RZ=Real:"1E1
 ;SLVC not 159: Z = 1E+10, Y = 1.000000000000000000000000000108583, X = 1.000000000000000001085832068539056E-10
 ;Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1                      RL=LonI:"-1" RZ=Real:"1E10" RY=Real:"1.000000000000000000000000000108583" RX=Real:"1.000000000000000001085832068539056E-10"
 
+
+
+;=======================================================================================================================
+; MATRIX Domain: a coefficient vector in X, highest degree first; the element count picks the solver
+;=======================================================================================================================
+
+; (x-1)(x-2)(x-3) from a row vector; roots ordered as the stack form orders X, Y, Z; the rest of the stack stays put
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"6" RZ=LonI:"7" RY=LonI:"8" RX=ReMa:"M1,4[1,-6,11,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-6,11,-6]" RT=LonI:"6" RZ=LonI:"7" RY=LonI:"8" RX=ReMa:"M1,3[1,2,3]"
+
+; the same from a column vector
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M4,1[1,-6,11,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,1[1,-6,11,-6]" RX=ReMa:"M1,3[1,2,3]"
+
+; x^3 - x^2 + x - 1 = (x-1)(x^2+1): complex roots from a real vector
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-1,1,-1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-1,1,-1]" RX=CxMa:"M1,3[1,0i1,0i-1]"
+
+; complex storage, real content: the roots are real, so the result downgrades to a real matrix
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,4[1i0,-6i0,11i0,-6i0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M1,4[1i0,-6i0,11i0,-6i0]" RX=ReMa:"M1,3[1,2,3]"
+
+; a leading 0 degrades to the quadratic and reports NaN for the third root, as the stack form does
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[0,1,2,-3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[0,1,2,-3]" RX=ReMa:"M1,3[1,-3,NaN]"
+
+; 3 elements redirect to the quadratic
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,-3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,2,-3]" RX=ReMa:"M1,2[-3,1]"
+
+; 2 elements redirect to the linear equation: 2x - 6 = 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[2,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,-6]" RX=ReMa:"M1,1[3]"
+
+; i*x + 1 = 0: the complex linear root
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M2,1[0i1,1i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M2,1[0i1,1i0]" RX=CxMa:"M1,1[0i1]"
+
+;=======================================================================================================================
+; MATRIX Domain: the register stress tests through the vector path, confirming the full digit accuracy end to end
+;=======================================================================================================================
+
+; the 159-digit stress cubic: x^3 - 10000000001.0000000001x^2 + 10000000001.0000000001x - 1 = 0, roots as the stack form orders X, Y, Z
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-10000000001.0000000001,10000000001.0000000001,-1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-10000000001.0000000001,10000000001.0000000001,-1]" RX=ReMa:"M1,3[1E-10,1,1E10]"
+
+; the 34-digit stress quadratic redirects to the quadratic path: x^2 - (1e33 + 1)x + 1 = 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,-1000000000000000000000000000000001,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,-1000000000000000000000000000000001,1]" RX=ReMa:"M1,2[1000000000000000000000000000000001,9.99999999999999999999999999999999E-34]"
+
+; Error case: 4 elements that are not a vector
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M2,2[1,2,3,4]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,2,3,4,5]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,5[1,2,3,4,5]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,1[1]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,1[1]"
+
+; Error case: only the constant term is nonzero
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[0,0,0,5]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,4[0,0,0,5]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[0,5]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,2[0,5]"

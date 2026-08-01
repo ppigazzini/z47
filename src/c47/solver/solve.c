@@ -271,7 +271,11 @@ void fnMvarPlot(uint16_t labelOrVariable) {
 
 void fnSolveVar(uint16_t unusedButMandatoryParameter) {
     printStatus(1, errorMessageOf(REAL_SOLVER), force);
-    const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
+    const dynamicSoftmenu_t *dynamic = currentDynamicSoftmenu();
+    if(dynamic == NULL || dynamicMenuItem < 0 || dynamicMenuItem >= dynamic->numItems) {
+      return;
+    }
+    const char *var = (char *)getNthString(dynamic->menuContent, dynamicMenuItem);
     const uint16_t regist = findOrAllocateNamedVariable(var);
     const uint16_t nameLength = stringByteLength(var) + 1;
     if(currentMvarLabel != INVALID_VARIABLE) {
@@ -470,75 +474,127 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     } solverMethod_t;
     solverMethod_t currentMethod = SOLVER_METHOD_BRENT;
     #if defined(OPTION_TVM_NEWTON)
-      real_t newton_x;
       bool_t newton_polish_mode = false;
       int newton_polish_count = 0;
-      real_t prev_fx, prev_x;
       bool_t first_newton_iter = true;
       int stall_count = 0;
       int newton_iter_count = 0;
       bool_t newtonDisabled = false;
-      real_t brent_best_x, brent_best_fx;
-      realSetNaN(&brent_best_x);
-      realSetNaN(&brent_best_fx);
     #endif //OPTION_TVM_NEWTON
     bool_t newtonInitialized = false;
+    int result = SOLVER_RESULT_NORMAL;
 
     real34_t antiLevel34;
-    real_t aa, bb, bb1, bb2, faa, fbb, fbb1, mm, ss, secantSlopeA, secantSlopeB, delta, deltaB, smb, tol;
-    real_t fbp1, tmp, tolAlmostZero;
-    real_t *bp1 = &mm;
+    // The working reals come from the heap, not the frame: thirty-seven decNumbers at 60 bytes, and the frame stands for the whole solve while every evaluation of the user
+    // program or formula runs below it. Measured on the DM42 build the frame falls from 1952 bytes to 552. The reals declared inside the iteration loop are taken here as
+    // well, so the loop allocates nothing; each is still written before it is read on every pass. Freed on every exit through freeWork.
+    REAL_T_ALLOC(aa,                75);
+    REAL_T_ALLOC(bb,                75);
+    REAL_T_ALLOC(bb1,               75);
+    REAL_T_ALLOC(bb2,               75);
+    REAL_T_ALLOC(faa,               75);
+    REAL_T_ALLOC(fbb,               75);
+    REAL_T_ALLOC(fbb1,              75);
+    REAL_T_ALLOC(mm,                75);
+    REAL_T_ALLOC(ss,                75);
+    REAL_T_ALLOC(secantSlopeA,      75);
+    REAL_T_ALLOC(secantSlopeB,      75);
+    REAL_T_ALLOC(delta,             75);
+    REAL_T_ALLOC(deltaB,            75);
+    REAL_T_ALLOC(smb,               75);
+    REAL_T_ALLOC(tol,               75);
+    REAL_T_ALLOC(fbp1,              75);
+    REAL_T_ALLOC(tmp,               75);
+    REAL_T_ALLOC(tolAlmostZero,     75);
+    REAL_T_ALLOC(tol1,              75);
+    REAL_T_ALLOC(minBracketSpacing, 75);
+    REAL_T_ALLOC(prevResX,          75);
+    REAL_T_ALLOC(antiLevel,         75);
+    REAL_T_ALLOC(bracketWidth,      75);
+    REAL_T_ALLOC(resXr,             75);
+    REAL_T_ALLOC(resZr,             75);
+    #if defined(OPTION_TVM_NEWTON)
+      REAL_T_ALLOC(newton_x,        75);
+      REAL_T_ALLOC(prev_fx,         75);
+      REAL_T_ALLOC(prev_x,          75);
+      REAL_T_ALLOC(brent_best_x,    75);
+      REAL_T_ALLOC(brent_best_fx,   75);
+      REAL_T_ALLOC(relativeWidth,   75);
+      REAL_T_ALLOC(fullBracket,     75);
+      REAL_T_ALLOC(newton_trial,    75);
+      REAL_T_ALLOC(newton_fx,       75);
+      REAL_T_ALLOC(newton_deriv,    75);
+      REAL_T_ALLOC(newton_step,     75);
+      REAL_T_ALLOC(tol_converged,   75);
+    #endif //OPTION_TVM_NEWTON
+
+    if(aa == NULL || bb == NULL || bb1 == NULL || bb2 == NULL || faa == NULL || fbb == NULL || fbb1 == NULL || mm == NULL || ss == NULL || secantSlopeA == NULL ||
+       secantSlopeB == NULL || delta == NULL || deltaB == NULL || smb == NULL || tol == NULL || fbp1 == NULL || tmp == NULL || tolAlmostZero == NULL || tol1 == NULL ||
+       minBracketSpacing == NULL || prevResX == NULL || antiLevel == NULL || bracketWidth == NULL || resXr == NULL || resZr == NULL
+       #if defined(OPTION_TVM_NEWTON)
+         || newton_x == NULL || prev_fx == NULL || prev_x == NULL || brent_best_x == NULL || brent_best_fx == NULL || relativeWidth == NULL || fullBracket == NULL ||
+         newton_trial == NULL || newton_fx == NULL || newton_deriv == NULL || newton_step == NULL || tol_converged == NULL
+       #endif //OPTION_TVM_NEWTON
+       ) {
+      displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+      result = SOLVER_RESULT_OTHER_FAILURE;
+      goto freeWork;
+    }
+
+    #if defined(OPTION_TVM_NEWTON)
+      realSetNaN(brent_best_x);
+      realSetNaN(brent_best_fx);
+    #endif //OPTION_TVM_NEWTON
+    real_t *bp1 = mm;
     bool_t extendRange = false;
     bool_t originallyLevel = false;
     bool_t extremum = false;
-    int result = SOLVER_RESULT_NORMAL;
     bool_t was_inting = getSystemFlag(FLAG_INTING);
     int loop = 0;
     int16_t getOutOfLevel = 17;
     bool_t fbIsAlmostZero = false;
-    real_t minBracketSpacing;
-    real_t prevResX;
-    realSetNaN(&prevResX);
+    realSetNaN(prevResX);
 
     if(currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) {
-      realSetOne(&tol);
-      tol.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
+      realSetOne(tol);
+      tol->exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
 
-      realSetOne(&tolAlmostZero);
-      tolAlmostZero.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmZer : (significantDigits + 1);
+      realSetOne(tolAlmostZero);
+      tolAlmostZero->exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmZer : (significantDigits + 1);
 
-      realSetOne(&minBracketSpacing);
-      minBracketSpacing.exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
+      realSetOne(minBracketSpacing);
+      minBracketSpacing->exponent -= (significantDigits == 0 || significantDigits == 34) ? solverTvmTol : significantDigits;
     }
     else if(graphAccActive) {
       // graphAccActive (true only inside execute_rpn_function_graphAcc) means contexts are narrowed to significantDigitsForEqnGraphs+3.
       // follow the grapher: converge to graph precision. Set/cleared with the reduction.
-      realSetOne(&tol);
-      tol.exponent -= significantDigitsForEqnGraphs;
-      realSetOne(&minBracketSpacing);
-      minBracketSpacing.exponent -= significantDigitsForEqnGraphs;
-      realCopy(const_1e_34, &tolAlmostZero);   // residual floor stays at real34 precision
+      realSetOne(tol);
+      tol->exponent -= significantDigitsForEqnGraphs;
+      realSetOne(minBracketSpacing);
+      minBracketSpacing->exponent -= significantDigitsForEqnGraphs;
+      realCopy(const_1e_34, tolAlmostZero);   // residual floor stays at real34 precision
     }
     else {
-      convergenceTolerence(&tol);
-      realCopy(const_1e_34, &tolAlmostZero);
-      realCopy(const_1e_32, &minBracketSpacing);
+      convergenceTolerence(tol);
+      realCopy(const_1e_34, tolAlmostZero);
+      realCopy(const_1e_32, minBracketSpacing);
     }
 
     if(engineNestingRefused(false)) {                            // ahead of the flags and both depth counters
-      return SOLVER_RESULT_ABORTED;
+      result = SOLVER_RESULT_ABORTED;
+      goto freeWork;
     }
     ++engineNestingDepth;
     ++currentSolverNestingDepth;
     setSystemFlag(FLAG_SOLVING);
     clearSystemFlag(FLAG_INTING);
 
-    realSetZero(&delta);
+    realSetZero(delta);
 
-    real34ToReal(y, &aa);
-    real34ToReal(y, &bb1);
-    real34ToReal(x, &bb);
-    realSetNaN(&bb2);
+    real34ToReal(y, aa);
+    real34ToReal(y, bb1);
+    real34ToReal(x, bb);
+    realSetNaN(bb2);
 
 
     //determine the tolerance (ULP) with which levelness will be detected
@@ -552,7 +608,7 @@ int solver(calcRegister_t variable, const real34_t *y, const real34_t *x, real34
     }
 
 
-    if(realCompareEqual(&bb, &aa)) {                              //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
+    if(realCompareEqual(bb, aa)) {                              //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
 retryLevel:
       if(--getOutOfLevel >= 0) {
         #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
@@ -561,58 +617,57 @@ retryLevel:
         #endif //PC_BUILD
         real34Multiply(&antiLevel34, const34_153, &antiLevel34);  //increase it for the next round so long
         real34Minus(&antiLevel34, &antiLevel34);                  //let the increment be 2 orders of magnitude larger, and flip sign so we can cover negatives equally well.
-        real_t antiLevel;
-        real34ToReal(&antiLevel34, &antiLevel);
+        real34ToReal(&antiLevel34, antiLevel);
         if(real34IsPositive(&antiLevel34)) {
-          realAdd(&bb, &antiLevel, &bb, &ctxtSolver);            //Add this value to the right hand starting value
+          realAdd(bb, antiLevel, bb, &ctxtSolver);            //Add this value to the right hand starting value
         }
         else {
-          realAdd(&aa, &antiLevel, &aa, &ctxtSolver);            //Add this value to the left hand starting value
-          realAdd(&bb1, &antiLevel, &bb1, &ctxtSolver);          //Add this value to the left hand starting value
+          realAdd(aa, antiLevel, aa, &ctxtSolver);            //Add this value to the left hand starting value
+          realAdd(bb1, antiLevel, bb1, &ctxtSolver);          //Add this value to the left hand starting value
         }
       }
     }
     #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
       printf("Start %d  ", loop);
-      printRealToConsole(&aa, "  a=", " ");
-      printRealToConsole(&bb, "b=", "\n");
+      printRealToConsole(aa, "  a=", " ");
+      printRealToConsole(bb, "b=", "\n");
     #endif
 
-    realSubtract(&bb, &aa, &ss, &ctxtSolver);
-    if(realCompareAbsLessThan(&ss, &minBracketSpacing)) {
-      realCopy(&minBracketSpacing, &ss);
-      if(realCompareLessThan(&bb, &aa)) {
-        realSetNegativeSign(&ss);
+    realSubtract(bb, aa, ss, &ctxtSolver);
+    if(realCompareAbsLessThan(ss, minBracketSpacing)) {
+      realCopy(minBracketSpacing, ss);
+      if(realCompareLessThan(bb, aa)) {
+        realSetNegativeSign(ss);
       }
-      realSubtract(&aa, &ss, &aa, &ctxtSolver);
-      realAdd(&bb, &ss, &bb, &ctxtSolver);
+      realSubtract(aa, ss, aa, &ctxtSolver);
+      realAdd(bb, ss, bb, &ctxtSolver);
     }
 
-    _executeSolverReal(variable, &bb1, &fbb1, NULL);
+    _executeSolverReal(variable, bb1, fbb1, NULL);
     if(lastErrorCode != ERROR_NONE) {
       result = SOLVER_RESULT_BAD_GUESS;
     }
-    realCopy(&fbb1, &faa);
+    realCopy(fbb1, faa);
 
     // calculation
-    _executeSolverReal(variable, &bb, &fbb, NULL);
-    //printRealToConsole(&bb1, "JJ2: f(&b1=",")  ");
-    //printRealToConsole(&fbb1, "", "\n");
-    //printRealToConsole(&bb, "JJ2: f(&b=", ")  ");
-    //printRealToConsole(&fbb, "", "\n");
+    _executeSolverReal(variable, bb, fbb, NULL);
+    //printRealToConsole(bb1, "JJ2: f(&b1=",")  ");
+    //printRealToConsole(fbb1, "", "\n");
+    //printRealToConsole(bb, "JJ2: f(&b=", ")  ");
+    //printRealToConsole(fbb, "", "\n");
 
     if(lastErrorCode != ERROR_NONE) {
       result = SOLVER_RESULT_BAD_GUESS;
     }
 
-    if(realIsSpecial(&fbb) || realIsSpecial(&fbb1)) {
+    if(realIsSpecial(fbb) || realIsSpecial(fbb1)) {
       result = SOLVER_RESULT_BAD_GUESS;
     }
-    else if(realIsNegative(&fbb) == realIsNegative(&fbb1)) {
+    else if(realIsNegative(fbb) == realIsNegative(fbb1)) {
       extendRange = true;
     }
 
-    if(realCompareEqual(&fbb, &fbb1)) {
+    if(realCompareEqual(fbb, fbb1)) {
       if(getOutOfLevel >= 0) {             //try solve the originallyLevel problem by forcing the inputs marginally not equal, causing the originallyLevel flag not to be set.
         goto retryLevel;
       }
@@ -621,18 +676,18 @@ retryLevel:
       }
     }
 
-    if(realCompareAbsLessThan(&faa, &fbb)) {
-      realCopy(&bb, &tmp);
-      realCopy(&aa, &bb);
-      realCopy(&tmp, &aa);
-      realCopy(&tmp, &bb1);
-      realCopy(&fbb, &tmp);
-      realCopy(&faa, &fbb);
-      realCopy(&tmp, &faa);
-      realCopy(&tmp, &fbb1);
+    if(realCompareAbsLessThan(faa, fbb)) {
+      realCopy(bb, tmp);
+      realCopy(aa, bb);
+      realCopy(tmp, aa);
+      realCopy(tmp, bb1);
+      realCopy(fbb, tmp);
+      realCopy(faa, fbb);
+      realCopy(tmp, faa);
+      realCopy(tmp, fbb1);
     }
 
-    if(realIsZero(&faa) || realIsZero(&fbb)) { // already is a root?
+    if(realIsZero(faa) || realIsZero(fbb)) { // already is a root?
       --engineNestingDepth;
       if((--currentSolverNestingDepth) == 0) {
         clearSystemFlag(FLAG_SOLVING);
@@ -643,13 +698,14 @@ retryLevel:
       }
       real34SetZero(resZ);
       real34SetZero(resY);
-      realToReal34(realIsZero(&faa) ? &aa : &bb, resX);
+      realToReal34(realIsZero(faa) ? aa : bb, resX);
 
       reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
       real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
       copySourceRegisterToDestRegister(REGISTER_X, variable);
 
-      return SOLVER_RESULT_NORMAL;
+      result = SOLVER_RESULT_NORMAL;
+      goto freeWork;
     }
 
 
@@ -663,7 +719,7 @@ retryLevel:
         if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
           #if defined(OPTION_TVM_NEWTON)
             char str_x[200];
-            realToString(&newton_x, str_x);
+            realToString(newton_x, str_x);
             printf("Iter %-4d (%-6s)  x=%s\n", loop, methodName[currentMethod], str_x);
           #endif //OPTION_TVM_NEWTON
         }
@@ -671,11 +727,11 @@ retryLevel:
           char str_a[200], str_b[200];
           #if defined(SOLVERDEBUG2)
             char str_fa[200], str_fb[200];
-            realToString(&faa, str_fa);
-            realToString(&fbb, str_fb);
+            realToString(faa, str_fa);
+            realToString(fbb, str_fb);
           #endif
-          realToString(&aa, str_a);
-          realToString(&bb, str_b);
+          realToString(aa, str_a);
+          realToString(bb, str_b);
 
           printf("Iter %-4d (%-6s)  a=%-50s b=%s", loop, methodName[currentMethod], str_a, str_b);
           #if defined(SOLVERDEBUG2)
@@ -692,10 +748,10 @@ retryLevel:
         ss[4] = currentMethod == SOLVER_METHOD_BRENT ? ':' : '=';
         if(progressHalfSecUpdate_Integer(timed, ss, loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) { //timed
           real34_t a34, b34, fa34, fb34;
-          realToReal34(&aa, &a34);
-          realToReal34(&bb, &b34);
-          realToReal34(&faa, &fa34);
-          realToReal34(&fbb, &fb34);
+          realToReal34(aa, &a34);
+          realToReal34(bb, &b34);
+          realToReal34(faa, &fa34);
+          realToReal34(fbb, &fb34);
           _showProgress(&a34, &b34, &fa34, &fb34);
         }
       }
@@ -708,38 +764,37 @@ retryLevel:
       }
 
       // pre-calculation
-      if(realIsSpecial(&bb2)) {
-        realSubtract(&bb, &bb1, &deltaB, &ctxtSolverHi);
+      if(realIsSpecial(bb2)) {
+        realSubtract(bb, bb1, deltaB, &ctxtSolverHi);
       }
       else {
-        realSubtract(&bb1, &bb2, &deltaB, &ctxtSolverHi);
+        realSubtract(bb1, bb2, deltaB, &ctxtSolverHi);
       }
-      realSetPositiveSign(&deltaB);
+      realSetPositiveSign(deltaB);
 
-      _linearInterpolation(&aa, &bb, &faa, &fbb, NULL, &secantSlopeA, &ctxtSolverHi);
+      _linearInterpolation(aa, bb, faa, fbb, NULL, secantSlopeA, &ctxtSolverHi);
 
       // interpolation
-      if(!(realCompareEqual(&faa, &fbb) || realCompareEqual(&faa, &fbb1) || realCompareEqual(&fbb, &fbb1))) { // inverse quadratic interpolation
-        _linearInterpolation(&bb, &bb1, &fbb, &fbb1, NULL, &secantSlopeB, &ctxtSolverHi);
-        _inverseQuadraticInterpolation(&aa, &bb, &bb1, &faa, &fbb, &fbb1, &ss, &ctxtSolverHi);
+      if(!(realCompareEqual(faa, fbb) || realCompareEqual(faa, fbb1) || realCompareEqual(fbb, fbb1))) { // inverse quadratic interpolation
+        _linearInterpolation(bb, bb1, fbb, fbb1, NULL, secantSlopeB, &ctxtSolverHi);
+        _inverseQuadraticInterpolation(aa, bb, bb1, faa, fbb, fbb1, ss, &ctxtSolverHi);
       }
       else { // linear interpolation
-        _linearInterpolation(&bb, &bb1, &fbb, &fbb1, &ss, &secantSlopeB, &ctxtSolverHi);
+        _linearInterpolation(bb, bb1, fbb, fbb1, ss, secantSlopeB, &ctxtSolverHi);
       }
 
-      realSubtract(&ss, &bb, &smb, &ctxtSolverHi);
-      realMultiply(&smb, const_2, &smb, &ctxtSolverHi);
-      realSetPositiveSign(&smb);
+      realSubtract(ss, bb, smb, &ctxtSolverHi);
+      realMultiply(smb, const_2, smb, &ctxtSolverHi);
+      realSetPositiveSign(smb);
 
 
-      real_t bracketWidth;
-      realSubtract(&bb, &bb1, &bracketWidth, &ctxtSolver);
-      realSetPositiveSign(&bracketWidth);
+      realSubtract(bb, bb1, bracketWidth, &ctxtSolver);
+      realSetPositiveSign(bracketWidth);
 
       if(currentMethod != SOLVER_METHOD_NEWTON || !newtonInitialized) {
         // bisection
-        realAdd(&aa, &bb, &mm, &ctxtSolver);
-        realMultiply(&mm, const_1on2, &mm, &ctxtSolver);
+        realAdd(aa, bb, mm, &ctxtSolver);
+        realMultiply(mm, const_1on2, mm, &ctxtSolver);
       }
 
 
@@ -754,11 +809,10 @@ retryLevel:
          currentMethod != SOLVER_METHOD_NEWTON && loop >= 5) {
 
         // Check relative bracket width: |bb - aa| / |bb| < see below %
-        real_t relativeWidth, fullBracket;
-        realSubtract(&bb, &aa, &fullBracket, &ctxtSolver);
-        realSetPositiveSign(&fullBracket);
-        realDivide(&fullBracket, &bb, &relativeWidth, &ctxtSolver);
-        realSetPositiveSign(&relativeWidth);
+        realSubtract(bb, aa, fullBracket, &ctxtSolver);
+        realSetPositiveSign(fullBracket);
+        realDivide(fullBracket, bb, relativeWidth, &ctxtSolver);
+        realSetPositiveSign(relativeWidth);
 
         // Hand off to Newton when bracket is tight enough:
         // Path 1 (bb >= -25): Normal case - use relative bracket width
@@ -767,26 +821,26 @@ retryLevel:
         // Path 2 (bb < -25): Near-zero root - use absolute bracket width
         //   - Absolute bracket must be <= 1e-35
         bool_t handoff = false;
-        if(realGetExponentComp(&bb) >= -25) {
+        if(realGetExponentComp(bb) >= -25) {
           // Normal case: use relative width
-          if(realGetExponentComp(&relativeWidth) <= -2) {
+          if(realGetExponentComp(relativeWidth) <= -2) {
             handoff = true;  // Very tight relative bracket (<= 10%)
           }
-          else if(realGetExponentComp(&relativeWidth) <= 1 && realGetExponentComp(&fbb) <= -10) {
+          else if(realGetExponentComp(relativeWidth) <= 1 && realGetExponentComp(fbb) <= -10) {
             handoff = true;  // Moderate bracket (<= 1000%) + tiny residual
           }
         }
         else {
           // Near-zero root (bb < -25): use absolute bracket
-          if(realGetExponentComp(&bracketWidth) <= -35) {
+          if(realGetExponentComp(bracketWidth) <= -35) {
             handoff = true;  // Absolute bracket tight enough for Newton
           }
         }
 
-        //printf("realGetExponent(&relativeWidth) = %d  realGetExponent(&fbb)= %d handoff = %d\n",realGetExponent(&relativeWidth), realGetExponent(&fbb), handoff);
+        //printf("realGetExponent(relativeWidth) = %d  realGetExponent(fbb)= %d handoff = %d\n",realGetExponent(relativeWidth), realGetExponent(fbb), handoff);
         if(handoff && !newtonDisabled) {
           currentMethod = SOLVER_METHOD_NEWTON;
-          realCopy(&bb, &newton_x);  // Use best point (smallest residual), not midpoint
+          realCopy(bb, newton_x);  // Use best point (smallest residual), not midpoint
           newtonInitialized = true;
         }
       }
@@ -795,25 +849,24 @@ retryLevel:
       // next point - select based on current method
       if(currentMethod == SOLVER_METHOD_NEWTON && newtonInitialized) {
         // Newton step: x_new = x - f(x)/f'(x)
-        real_t newton_trial, newton_fx, newton_deriv, newton_step;
-        realCopy(&newton_x, &newton_trial);
-        _executeSolverReal(variable, &newton_trial, &newton_fx, &newton_deriv);
+        realCopy(newton_x, newton_trial);
+        _executeSolverReal(variable, newton_trial, newton_fx, newton_deriv);
 
         // Check for Newton failure conditions
-        if(realIsZero(&newton_deriv) || realIsSpecial(&newton_fx)) {
+        if(realIsZero(newton_deriv) || realIsSpecial(newton_fx)) {
           currentMethod = SOLVER_METHOD_BRENT;
           newtonInitialized = false;
-          bp1 = &mm;  // Fall back to bisection
+          bp1 = mm;  // Fall back to bisection
         }
         else {
-          realDivide(&newton_fx, &newton_deriv, &newton_step, &ctxtSolver);
-          realSubtract(&newton_x, &newton_step, &newton_x, &ctxtSolver);
+          realDivide(newton_fx, newton_deriv, newton_step, &ctxtSolver);
+          realSubtract(newton_x, newton_step, newton_x, &ctxtSolver);
           newton_iter_count++;
           if(newton_iter_count > 12) {
             // Newton oscillating at precision limit - accept current best and exit
-            realToReal34(&newton_fx, resZ);
-            realToReal34(&newton_x, resY);
-            realToReal34(&newton_x, resX);
+            realToReal34(newton_fx, resZ);
+            realToReal34(newton_x, resY);
+            realToReal34(newton_x, resX);
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
             copySourceRegisterToDestRegister(REGISTER_X, variable);
@@ -822,13 +875,14 @@ retryLevel:
               clearSystemFlag(FLAG_SOLVING);
             }
             first_newton_iter = true;
-            return SOLVER_RESULT_NORMAL;
+            result = SOLVER_RESULT_NORMAL;
+            goto freeWork;
           }
 
           // Evaluate f at new point for convergence check
-          realCopy(&newton_x, &newton_trial);
-          _executeSolverReal(variable, &newton_trial, &newton_fx, NULL);
-          bp1 = &newton_x;
+          realCopy(newton_x, newton_trial);
+          _executeSolverReal(variable, newton_trial, newton_fx, NULL);
+          bp1 = newton_x;
         }
       }
       else
@@ -836,25 +890,25 @@ retryLevel:
 
       {
         if(extendRange) {
-          realSubtract(&bb, &aa, &tmp, &ctxtSolver);
-          realMultiply(&tmp, const_2, &tmp, &ctxtSolver);
-          realAdd(&bb, &tmp, &ss, &ctxtSolver);  // Use ss instead of b
-          bp1 = &ss;
+          realSubtract(bb, aa, tmp, &ctxtSolver);
+          realMultiply(tmp, const_2, tmp, &ctxtSolver);
+          realAdd(bb, tmp, ss, &ctxtSolver);  // Use ss instead of b
+          bp1 = ss;
         }
-        else if(realCompareEqual(&bb, &ss)) {
-          bp1 = &mm;
+        else if(realCompareEqual(bb, ss)) {
+          bp1 = mm;
         }
-        else if(realCompareLessThan(&delta, &deltaB) && realCompareLessThan(&smb, &deltaB)) {
-          bp1 = &ss;
+        else if(realCompareLessThan(delta, deltaB) && realCompareLessThan(smb, deltaB)) {
+          bp1 = ss;
         }
         else {
-          bp1 = &mm;
+          bp1 = mm;
         }
       }
 
 
       // calculation
-      _executeSolverReal(variable, bp1, &fbp1, NULL);
+      _executeSolverReal(variable, bp1, fbp1, NULL);
 
       #if defined(OPTION_TVM_NEWTON)
       // Newton convergence check and divergence detection
@@ -864,11 +918,11 @@ retryLevel:
             if(newton_polish_count > 2) {
               // Polish complete: one Newton step was taken, now compare against saved Brent result and keep better
               newton_polish_mode = false;
-              if(realCompareAbsLessThan(&fbp1, &fbb)) {
+              if(realCompareAbsLessThan(fbp1, fbb)) {
                 // Newton improved - use Newton's result
-                realToReal34(&fbp1, resZ);
-                realToReal34(&newton_x, resY);
-                realToReal34(&newton_x, resX);
+                realToReal34(fbp1, resZ);
+                realToReal34(newton_x, resY);
+                realToReal34(newton_x, resX);
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
                 copySourceRegisterToDestRegister(REGISTER_X, variable);
@@ -876,13 +930,14 @@ retryLevel:
                 if((--currentSolverNestingDepth) == 0) {
                   clearSystemFlag(FLAG_SOLVING);
                 }
-                return SOLVER_RESULT_NORMAL;
+                result = SOLVER_RESULT_NORMAL;
+                goto freeWork;
               }
               else {
                 // Newton made it worse - revert to Brent's saved result
-                realToReal34(&brent_best_fx, resZ);
-                realToReal34(&brent_best_x, resY);
-                realToReal34(&brent_best_x, resX);
+                realToReal34(brent_best_fx, resZ);
+                realToReal34(brent_best_x, resY);
+                realToReal34(brent_best_x, resX);
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
                 copySourceRegisterToDestRegister(REGISTER_X, variable);
@@ -890,14 +945,15 @@ retryLevel:
                 if((--currentSolverNestingDepth) == 0) {
                   clearSystemFlag(FLAG_SOLVING);
                 }
-                return SOLVER_RESULT_NORMAL;
+                result = SOLVER_RESULT_NORMAL;
+                goto freeWork;
               }
             }
           }
 
 
         // Is Newton diverging
-        if(!first_newton_iter && realCompareAbsLessThan(&prev_fx, &fbp1)) {
+        if(!first_newton_iter && realCompareAbsLessThan(prev_fx, fbp1)) {
           // got worse - fall back to Brent permanently
           currentMethod = SOLVER_METHOD_BRENT;
           newtonInitialized = false;
@@ -906,17 +962,16 @@ retryLevel:
           first_newton_iter = true;
           stall_count = 0;
         }
-        else if(!first_newton_iter && realCompareEqual(&newton_x, &prev_x)) {
+        else if(!first_newton_iter && realCompareEqual(newton_x, prev_x)) {
           // x stopped changing - is it converged or stalled?
-          real_t tol_converged;
-          realSetOne(&tol_converged);
-          tol_converged.exponent = -37;
+          realSetOne(tol_converged);
+          tol_converged->exponent = -37;
 
-          if(realCompareAbsLessThan(&fbp1, &tol_converged)) {
+          if(realCompareAbsLessThan(fbp1, tol_converged)) {
             // Converged - exit now
-            realToReal34(&fbp1, resZ);
-            realToReal34(&newton_x, resY);
-            realToReal34(&newton_x, resX);
+            realToReal34(fbp1, resZ);
+            realToReal34(newton_x, resY);
+            realToReal34(newton_x, resX);
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
             copySourceRegisterToDestRegister(REGISTER_X, variable);
@@ -926,7 +981,8 @@ retryLevel:
             }
             first_newton_iter = true;
             stall_count = 0;
-            return SOLVER_RESULT_NORMAL;
+            result = SOLVER_RESULT_NORMAL;
+            goto freeWork;
           }
           else {
             // Real stall - residual still large
@@ -941,14 +997,14 @@ retryLevel:
         }
         else {
           // Save current residual for next iteration
-          realCopy(&fbp1, &prev_fx);
-          realCopy(&newton_x, &prev_x);
+          realCopy(fbp1, prev_fx);
+          realCopy(newton_x, prev_x);
           stall_count = 0;
           // Check convergence only if Newton has actually run
-          if(!first_newton_iter && realCompareAbsLessThan(&fbp1, &tolAlmostZero)) {
-            realToReal34(&fbp1, resZ);
-            realToReal34(&newton_x, resY);
-            realToReal34(&newton_x, resX);
+          if(!first_newton_iter && realCompareAbsLessThan(fbp1, tolAlmostZero)) {
+            realToReal34(fbp1, resZ);
+            realToReal34(newton_x, resY);
+            realToReal34(newton_x, resX);
             reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
             real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
             copySourceRegisterToDestRegister(REGISTER_X, variable);
@@ -959,9 +1015,10 @@ retryLevel:
             first_newton_iter = true;  // Reset for next solve
             #if (defined PC_BUILD) && (defined SOLVERDEBUG2)
               printf("  Newton end Iter %d (%s)  ", loop, methodName[currentMethod]);
-              printRealToConsole(&newton_x, "x=", "\n");
+              printRealToConsole(newton_x, "x=", "\n");
             #endif
-            return SOLVER_RESULT_NORMAL;
+            result = SOLVER_RESULT_NORMAL;
+            goto freeWork;
           }
           first_newton_iter = false;  // Mark that Newton has now run
         }
@@ -970,68 +1027,68 @@ retryLevel:
 
 
       // Calculate convergence flags (needed for exit conditions)
-      bool_t bb_bb1_converged = WP34S_RelativeError(&bb, &bb1, &tol, &ctxtSolver);
-      bool_t b1_b2_Equal = realCompareEqual(&bb1, &bb2);
-      bool_t b_b1_Equal  = realCompareEqual(&bb,  &bb1);
+      bool_t bb_bb1_converged = WP34S_RelativeError(bb, bb1, tol, &ctxtSolver);
+      bool_t b1_b2_Equal = realCompareEqual(bb1, bb2);
+      bool_t b_b1_Equal  = realCompareEqual(bb,  bb1);
 
       // Bracket update - only for Brent method
       if(currentMethod != SOLVER_METHOD_NEWTON || !newtonInitialized) {
         // Continue Brent
-        if(extendRange && (realIsNegative(&secantSlopeA) != realIsNegative(&secantSlopeB)) && !realIsZero(&secantSlopeA) && !realIsZero(&secantSlopeB)) {
+        if(extendRange && (realIsNegative(secantSlopeA) != realIsNegative(secantSlopeB)) && !realIsZero(secantSlopeA) && !realIsZero(secantSlopeB)) {
           extendRange = false;
-          extremum = (realIsNegative(&fbb) == realIsNegative(&fbp1));
+          extremum = (realIsNegative(fbb) == realIsNegative(fbp1));
         }
 
-        if(!realIsSpecial(bp1) && !realIsSpecial(&fbp1)) {
+        if(!realIsSpecial(bp1) && !realIsSpecial(fbp1)) {
           if(extendRange) {
-            if((realIsNegative(&fbb) != realIsNegative(&fbp1)) || (realIsNegative(&fbb) != realIsNegative(&faa))) {
+            if((realIsNegative(fbb) != realIsNegative(fbp1)) || (realIsNegative(fbb) != realIsNegative(faa))) {
               extendRange = false;
               originallyLevel = false;
             }
-            if((realIsNegative(&faa) == realIsNegative(&fbp1)) && realCompareAbsLessThan(&fbb, &fbp1)) {
+            if((realIsNegative(faa) == realIsNegative(fbp1)) && realCompareAbsLessThan(fbb, fbp1)) {
               extendRange = false;
               originallyLevel = false;
               extremum = true;
             }
           }
-          else if(realIsNegative(&faa) == realIsNegative(&fbp1)) {
-            realCopy(&bb, &aa);
-            realCopy(&fbb, &faa);
+          else if(realIsNegative(faa) == realIsNegative(fbp1)) {
+            realCopy(bb, aa);
+            realCopy(fbb, faa);
           }
           else {
             extendRange = false;
             extremum = false;
-            if(!realCompareEqual(&fbb, &faa)) {
+            if(!realCompareEqual(fbb, faa)) {
               originallyLevel = false;
             }
           }
 
-          if(realCompareAbsLessThan(&faa, &fbp1)) {
-            realCopy(bp1, &tmp);
-            realCopy(&aa, bp1);
-            realCopy(&tmp, &aa);
-            realCopy(&fbp1, &tmp);
-            realCopy(&faa, &fbp1);
-            realCopy(&tmp, &faa);
-            realCopy(&aa, &bb);
-            realCopy(&faa, &fbb);
+          if(realCompareAbsLessThan(faa, fbp1)) {
+            realCopy(bp1, tmp);
+            realCopy(aa, bp1);
+            realCopy(tmp, aa);
+            realCopy(fbp1, tmp);
+            realCopy(faa, fbp1);
+            realCopy(tmp, faa);
+            realCopy(aa, bb);
+            realCopy(faa, fbb);
           }
 
-          if(bp1 == &ss) {
-            realSetNaN(&bb2);
+          if(bp1 == ss) {
+            realSetNaN(bb2);
           }
           else {
-            realCopy(&bb1, &bb2);
+            realCopy(bb1, bb2);
           }
-          realCopy(&bb, &bb1);
-          realCopy(&fbb, &fbb1);
-          realCopy(bp1, &bb);
-          realCopy(&fbp1, &fbb);
-          //printRealToConsole(&bb1, "PP: &b1=", "  ");
-          //printRealToConsole(&bb, "&b=", "\n");
+          realCopy(bb, bb1);
+          realCopy(fbb, fbb1);
+          realCopy(bp1, bb);
+          realCopy(fbp1, fbb);
+          //printRealToConsole(bb1, "PP: &b1=", "  ");
+          //printRealToConsole(bb, "&b=", "\n");
         }
 
-        else if(originallyLevel && (realIsInfinite(&bb) || realIsInfinite(&aa))) {
+        else if(originallyLevel && (realIsInfinite(bb) || realIsInfinite(aa))) {
           result = SOLVER_RESULT_CONSTANT;
         }
         else if(extendRange) {
@@ -1039,7 +1096,7 @@ retryLevel:
           originallyLevel = false;
           extremum = true;
         }
-        else if(realIsNegative(&faa) != realIsNegative(&fbb)) {
+        else if(realIsNegative(faa) != realIsNegative(fbb)) {
           result = SOLVER_RESULT_SIGN_REVERSAL;
         }
         else {
@@ -1048,20 +1105,19 @@ retryLevel:
 
 
         // Stricter residual tolerance near zero
-        if(realCompareAbsLessThan(&bb, const_1e_16)) {
-          real_t tol1;
-          stringToReal("1e-120", &tol1, &ctxtSolver);
-          fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tol1);
+        if(realCompareAbsLessThan(bb, const_1e_16)) {
+          stringToReal("1e-120", tol1, &ctxtSolver);
+          fbIsAlmostZero = realCompareAbsLessThan(fbb, tol1);
         }
         else {
-          fbIsAlmostZero = realCompareAbsLessThan(&fbb, &tolAlmostZero);
+          fbIsAlmostZero = realCompareAbsLessThan(fbb, tolAlmostZero);
         }
 
         //printf("\nSOLVER_RESULT_NORMAL:%i\n",result == SOLVER_RESULT_NORMAL);
         //printf("   bb_bb1_converged:%i b1_b2_Equal:%i b_b1_Equal:%i originallyLevel:%i, extremum=%d\n", bb_bb1_converged, b1_b2_Equal, b_b1_Equal, originallyLevel, extremum);
-        //printRealToConsole(&bb, "  bb=", " ");
-        //printRealToConsole(&fbb, "fbb=", " ");
-        //printRealToConsole(&tolAlmostZero, "tolAlmostZero=", "\n");
+        //printRealToConsole(bb, "  bb=", " ");
+        //printRealToConsole(fbb, "fbb=", " ");
+        //printRealToConsole(tolAlmostZero, "tolAlmostZero=", "\n");
 
         if(result != SOLVER_RESULT_NORMAL) {
           break;
@@ -1071,7 +1127,7 @@ retryLevel:
 
       // End conditions
 
-      if( (!realIsSpecial(&bb2) && b1_b2_Equal ) &&
+      if( (!realIsSpecial(bb2) && b1_b2_Equal ) &&
         ( (extendRange || bb_bb1_converged) || extremum )  ) {
         #if (defined OPTION_TVM_NEWTON) && (defined PC_BUILD) && (defined SOLVERDEBUG2)
           printf("  Exit via first end-condition, newton_polish_mode=%d\n", newton_polish_mode);
@@ -1089,13 +1145,13 @@ retryLevel:
               variable == RESERVED_VARIABLE_PMT ||
               variable == RESERVED_VARIABLE_FV)) {
             currentMethod = SOLVER_METHOD_NEWTON;
-            realCopy(&bb, &newton_x);
+            realCopy(bb, newton_x);
             newtonInitialized = true;
             newton_polish_mode = true;
             newton_polish_count = 0;
             // Save Brent's best result before polish in case Newton makes it worse
-            realCopy(&bb, &brent_best_x);
-            realCopy(&fbb, &brent_best_fx);
+            realCopy(bb, brent_best_x);
+            realCopy(fbb, brent_best_fx);
             // Don't break - do Newton polish
 
             }
@@ -1103,17 +1159,17 @@ retryLevel:
             // Polish done - compare Newton result against saved Brent result
             newton_polish_mode = false;
             newton_polish_count = 0;
-            if(realCompareAbsLessThan(&fbp1, &brent_best_fx)) {
+            if(realCompareAbsLessThan(fbp1, brent_best_fx)) {
               // Newton improved - use Newton's result
-              realToReal34(&fbp1, resZ);
-              realToReal34(&newton_x, resY);
-              realToReal34(&newton_x, resX);
+              realToReal34(fbp1, resZ);
+              realToReal34(newton_x, resY);
+              realToReal34(newton_x, resX);
             }
             else {
               // Newton made it worse - revert to saved Brent result
-              realToReal34(&brent_best_fx, resZ);
-              realToReal34(&brent_best_x, resY);
-              realToReal34(&brent_best_x, resX);
+              realToReal34(brent_best_fx, resZ);
+              realToReal34(brent_best_x, resY);
+              realToReal34(brent_best_x, resX);
             }
             goto solver_polish_exit;
 
@@ -1138,14 +1194,14 @@ retryLevel:
 
     #if (defined PC_BUILD) && (defined SOLVERDEBUG)
       printf("Ended iter %d  ", loop);
-      printRealToConsole(&aa, "a=", " ");
-      printRealToConsole(&bb, "b=", "\n");
+      printRealToConsole(aa, "a=", " ");
+      printRealToConsole(bb, "b=", "\n");
     #endif
 
-    _executeSolverReal(variable, &bb, &tmp, NULL);
-    realToReal34(&tmp, resZ);
-    realToReal34(&bb1, resY);
-    realToReal34(&bb, resX);
+    _executeSolverReal(variable, bb, tmp, NULL);
+    realToReal34(tmp, resZ);
+    realToReal34(bb1, resY);
+    realToReal34(bb, resX);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     real34Copy(resX, REGISTER_REAL34_DATA(REGISTER_X));
     copySourceRegisterToDestRegister(REGISTER_X, variable);
@@ -1185,29 +1241,28 @@ solver_final_print:;
     if(result == SOLVER_RESULT_EXTREMUM) { // Check if the result is really an extremum
       bool_t retainSolvingFlag = getSystemFlag(FLAG_SOLVING);
       setSystemFlag(FLAG_SOLVING);
-      realCopy(&minBracketSpacing, &tmp);
+      realCopy(minBracketSpacing, tmp);
       while(true) {
-        real_t resXr, resZr;
-        real34ToReal(resX, &resXr);
-        real34ToReal(resZ, &resZr);
-        realAdd(&resXr, &tmp, &aa, &ctxtSolver);
-        realSubtract(&resXr, &tmp, &bb, &ctxtSolver);
-        _executeSolverReal(variable, &aa, &faa, NULL);
-        _executeSolverReal(variable, &bb, &fbb, NULL);
-        realSubtract(&faa, &resZr, &faa, &ctxtSolver);
-        realSubtract(&fbb, &resZr, &fbb, &ctxtSolver);
-        if(realIsSpecial(&faa) || realIsSpecial(&fbb)) {
+        real34ToReal(resX, resXr);
+        real34ToReal(resZ, resZr);
+        realAdd(resXr, tmp, aa, &ctxtSolver);
+        realSubtract(resXr, tmp, bb, &ctxtSolver);
+        _executeSolverReal(variable, aa, faa, NULL);
+        _executeSolverReal(variable, bb, fbb, NULL);
+        realSubtract(faa, resZr, faa, &ctxtSolver);
+        realSubtract(fbb, resZr, fbb, &ctxtSolver);
+        if(realIsSpecial(faa) || realIsSpecial(fbb)) {
           result = SOLVER_RESULT_OTHER_FAILURE;
           break;
         }
-        else if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && (realIsSpecial(&aa) || realIsSpecial(&bb))) { // terminate the TVM solver to avoid possible infinite loop
+        else if((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) && (realIsSpecial(aa) || realIsSpecial(bb))) { // terminate the TVM solver to avoid possible infinite loop
           result = SOLVER_RESULT_CONSTANT;
           break;
         }
-        else if(realIsZero(&faa) || realIsZero(&fbb)) {
-          realMultiply(&tmp, const_100, &tmp, &ctxtSolver);
+        else if(realIsZero(faa) || realIsZero(fbb)) {
+          realMultiply(tmp, const_100, tmp, &ctxtSolver);
         }
-        else if(realIsNegative(&faa) == realIsNegative(&fbb)) { // true extremum
+        else if(realIsNegative(faa) == realIsNegative(fbb)) { // true extremum
           break;
         }
         else { // not an extremum
@@ -1229,5 +1284,45 @@ solver_final_print:;
       result = SOLVER_RESULT_ABORTED;
     }
 
+freeWork:
+    REAL_T_FREE(aa,                75);
+    REAL_T_FREE(bb,                75);
+    REAL_T_FREE(bb1,               75);
+    REAL_T_FREE(bb2,               75);
+    REAL_T_FREE(faa,               75);
+    REAL_T_FREE(fbb,               75);
+    REAL_T_FREE(fbb1,              75);
+    REAL_T_FREE(mm,                75);
+    REAL_T_FREE(ss,                75);
+    REAL_T_FREE(secantSlopeA,      75);
+    REAL_T_FREE(secantSlopeB,      75);
+    REAL_T_FREE(delta,             75);
+    REAL_T_FREE(deltaB,            75);
+    REAL_T_FREE(smb,               75);
+    REAL_T_FREE(tol,               75);
+    REAL_T_FREE(fbp1,              75);
+    REAL_T_FREE(tmp,               75);
+    REAL_T_FREE(tolAlmostZero,     75);
+    REAL_T_FREE(tol1,              75);
+    REAL_T_FREE(minBracketSpacing, 75);
+    REAL_T_FREE(prevResX,          75);
+    REAL_T_FREE(antiLevel,         75);
+    REAL_T_FREE(bracketWidth,      75);
+    REAL_T_FREE(resXr,             75);
+    REAL_T_FREE(resZr,             75);
+    #if defined(OPTION_TVM_NEWTON)
+      REAL_T_FREE(newton_x,        75);
+      REAL_T_FREE(prev_fx,         75);
+      REAL_T_FREE(prev_x,          75);
+      REAL_T_FREE(brent_best_x,    75);
+      REAL_T_FREE(brent_best_fx,   75);
+      REAL_T_FREE(relativeWidth,   75);
+      REAL_T_FREE(fullBracket,     75);
+      REAL_T_FREE(newton_trial,    75);
+      REAL_T_FREE(newton_fx,       75);
+      REAL_T_FREE(newton_deriv,    75);
+      REAL_T_FREE(newton_step,     75);
+      REAL_T_FREE(tol_converged,   75);
+    #endif //OPTION_TVM_NEWTON
     return result;
 }

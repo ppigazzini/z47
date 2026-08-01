@@ -505,17 +505,15 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           int16_t jj = 0;
           addChar[0] = 0;
           if(addChar0[0] == 0) {
-            if(item != ITM_EQUAL) {       //block the entry of "="
-              stringCopy(addChar, indexOfItems[item].itemSoftmenuName);
-              if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-                if(isDyadicFunction(item)) {
-                  stringCopy(addChar + stringByteLength(addChar), "(:)");
-                  jj = 2;
-                }
-                else {
-                  stringCopy(addChar + stringByteLength(addChar), "()");
-                  jj = 1;
-                }
+            stringCopy(addChar, indexOfItems[item].itemSoftmenuName);
+            if((indexOfItems[item].itemSoftmenuName[0]!=0) && (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
+              if(isDyadicFunction(item)) {
+                stringCopy(addChar + stringByteLength(addChar), "(:)");
+                jj = 2;
+              }
+              else {
+                stringCopy(addChar + stringByteLength(addChar), "()");
+                jj = 1;
               }
             }
           }

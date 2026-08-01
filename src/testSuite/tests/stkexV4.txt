@@ -1,0 +1,97 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                 tzyx <> v4 conversions                  **
+;**                                                         **
+;** Item: runs the real dispatch chain, so each item's own  **
+;** param (VECT_CR_tzyx) and stack lift flags apply. The    **
+;** V3/V2 sections pin the shared fnConvertStkToMx and      **
+;** fnConvertMxToStk path the v4 items now run through.     **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Item: ITM_STKtoV4
+
+;=======================================================================================================================
+; tzyx->v4: T Z Y X pack into a 1x4 row vector, T first (the SLVC/SLVP coefficient order)
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"1" RZ=LonI:"-6" RY=LonI:"11" RX=LonI:"-6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-6" RT=LonI:"1" RZ=LonI:"1" RY=LonI:"1" RX=ReMa:"M1,4[1,-6,11,-6]"
+
+; a complex coefficient anywhere turns the vector complex
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=Cplx:"0 i 1" RZ=LonI:"-6" RY=Real:"11.0" RX=LonI:"-6"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"-6" RX=CxMa:"M1,4[0i1,-6i0,11i0,-6i0]"
+
+; a string refuses before anything moves
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"1" RZ=Stri:"This is a string" RY=LonI:"11" RX=LonI:"-6"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RT=LonI:"1" RZ=Stri:"This is a string" RY=LonI:"11" RX=LonI:"-6"
+
+Item: ITM_V4toSTK
+
+;=======================================================================================================================
+; v4->tzyx: a 4-element vector in X, row or column, unpacks to T Z Y X
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-6,11,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-6,11,-6]" RT=Real:"1" RZ=Real:"-6" RY=Real:"11" RX=Real:"-6"
+
+; the same from a column vector
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M4,1[1,-6,11,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M4,1[1,-6,11,-6]" RT=Real:"1" RZ=Real:"-6" RY=Real:"11" RX=Real:"-6"
+
+; a complex vector unpacks to complex scalars
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,4[0i1,-6i0,11i0,-6i2]"
+Out: EC=0 FL_ASLIFT=1 RL=CxMa:"M1,4[0i1,-6i0,11i0,-6i2]" RT=Cplx:"0 i 1" RZ=Cplx:"-6 i 0" RY=Cplx:"11 i 0" RX=Cplx:"-6 i 2"
+
+; a matrix that is not a 4-element vector refuses
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"4" RZ=LonI:"3" RY=LonI:"2" RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RT=LonI:"4" RZ=LonI:"3" RY=LonI:"2" RX=ReMa:"M2,2[1,2,3,4]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
+
+; a scalar in X refuses with the type error
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=LonI:"5"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=LonI:"5"
+
+Item: ITM_stkexV4
+
+;=======================================================================================================================
+; tzyx<>v4: a matrix in X unpacks, scalars pack
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"1" RZ=LonI:"-6" RY=LonI:"11" RX=LonI:"-6"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"-6" RX=ReMa:"M1,4[1,-6,11,-6]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-6,11,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-6,11,-6]" RT=Real:"1" RZ=Real:"-6" RY=Real:"11" RX=Real:"-6"
+
+; the wrong size matrix refuses instead of packing
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
+
+Item: ITM_STKtoV3
+
+;=======================================================================================================================
+; zyx->v3 and yx->v2 run the same shared path
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"4" RZ=LonI:"3" RY=LonI:"2" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RT=LonI:"4" RZ=LonI:"4" RY=LonI:"4" RX=ReMa:"M1,3[3,2,1]"
+
+Item: ITM_V3toSTK
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"7" RZ=LonI:"8" RY=LonI:"9" RX=ReMa:"M1,3[3,2,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[3,2,1]" RT=LonI:"9" RZ=Real:"3" RY=Real:"2" RX=Real:"1"
+
+Item: ITM_STKtoV2
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"4" RZ=LonI:"3" RY=LonI:"2" RX=LonI:"1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=LonI:"1" RT=LonI:"4" RZ=LonI:"4" RY=LonI:"3" RX=ReMa:"M1,2[2,1]"
+
+Item: ITM_V2toSTK
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"7" RZ=LonI:"8" RY=LonI:"9" RX=ReMa:"M1,2[2,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RT=LonI:"8" RZ=LonI:"9" RY=Real:"2" RX=Real:"1"
+
+; the wrong size refuses
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"

@@ -1006,6 +1006,7 @@ stopProgram:
     entryStatus &= 0xfe;
   }
   if(!nestedEngine) {
+    stackWatermarkAfterDispatch();                               // the run's own end, ahead of the statusbar repaint so that repaint's frames are not counted
     // Force a full statusbar repaint on every halt path and clear the one-time skip bit so the bar is current despite the cadence throttling in reallyRunFunction().
     // A program-set manual statusbar mode is left as is.
     forceSBupdate();

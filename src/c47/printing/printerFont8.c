@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************************
- * \file printerFonts.c C structures of the printer fonts
+ * \file printerFont8.c C structures of the printer fonts
  ********************************************************/
 
 #include "c47.h"

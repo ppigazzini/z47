@@ -16,10 +16,16 @@
   #define REAL_SIZE_IN_BYTES(digits)   (10 + sizeof(decNumberUnit) * (REAL_MAX_DIGITS(digits) / DECDPUN)) // This is always a multiple of 4
   #define REAL_SIZE_IN_BLOCKS(digits)  TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
   #define REAL_T_PTR(name, digits)     uint32_t _ ## name ## _data[REAL_SIZE_IN_BYTES(digits) / 4]; real_t *const name=(real_t *)_ ## name ## _data
+  // cplx_t is two full reals and takes no digits: it cannot be shortened the way a real_t can. Its type comes from typeDefinitions.h, reached where the macro is used.
+  // The frame form pairs with CPLX_T_ALLOC below: a function written against the pointer swaps storage by changing one word per declaration, with no change to its body.
+  // CPLX_T_ALLOC(X0) becomes CPLX_T_PTR(X0), the matching CPLX_T_FREE(X0) goes, and every X0->Real and CPLX(*X0) in the body stands as written.
+  #define CPLX_T_PTR(name)             cplx_t _ ## name ## _data; cplx_t *const name=&_ ## name ## _data
 
   // malloc/free version
   #define REAL_T_ALLOC(name, digits)   uint32_t *_ ## name ## _data=malloc(REAL_SIZE_IN_BYTES(digits)); real_t *const name=(real_t *)_ ## name ## _data
   #define REAL_T_FREE(name, digits)    free(name)
+  #define CPLX_T_ALLOC(name)           cplx_t *const name=(cplx_t *)malloc(sizeof(cplx_t))
+  #define CPLX_T_FREE(name)            free(name)
 
   // allocC47Blocks/freeC47Blocks version
   //#define REAL_T_ALLOC(name, digits)   real_t * const name=(real_t *)allocC47Blocks(REAL_SIZE_IN_BLOCKS(digits))

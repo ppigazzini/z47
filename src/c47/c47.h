@@ -231,6 +231,7 @@
 
   extern bool_t                headlessMode;
   extern bool_t                snapSkipRefresh;
+  extern bool_t                screenHoldsDrawnPixels;   // CLLCD, PIXEL, POINT or AGRAPH painted the screen and no refresh has repainted over it since
   extern bool_t                loadTestPrograms;
   extern bool_t                loadTestData;
 
@@ -318,6 +319,7 @@
   extern bool_t                 solverEstimatesUsed;
   extern bool_t                 graphAccActive;
   extern bool_t                 updateOldConstants;
+  extern bool_t                 eqnDrawLhsOnly;
 
 
   extern realContext_t          ctxtReal4;    //   Limited digits: used for high speed internal calcs
@@ -495,7 +497,6 @@
   extern int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
   extern int16_t                JM_auto_longpress_enabled;    //JM TIMER CLRDROP //clstk
   extern uint8_t                JM_SHIFT_HOME_TIMER1;         //Local to keyboard.c, but defined here
-  extern bool_t                 ULFL, ULGL;                   //JM Underline
   extern int16_t                FN_key_pressed, FN_key_pressed_last; //JM LONGPRESS FN
   extern bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
   extern bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
@@ -573,8 +574,6 @@
   extern uint32_t               timerValue;
   extern uint32_t               timerStartTime;
   extern uint32_t               timerTotalTime;
-  extern uint32_t               pointerOfFlashPgmLibrary;
-  extern uint32_t               sizeOfFlashPgmLibrary;
 
   extern uint64_t               shortIntegerMask;
   extern uint64_t               shortIntegerSignBit;

@@ -24,6 +24,10 @@ char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
 bool_t noFailForNow = true; // abortTest counts a failure only while set; starts true so the run's first test can fail
+// Set by every rejection path in functionToCall() and itemToCall(); the Out: handler fails the case, and the next setup line or the end of the file clears it.
+bool_t caseSetupFailed;
+// Set when an Out: line has already failed the case, so countUnreportedSetupFailure() does not count that same rejection again when the file or the block ends.
+bool_t caseSetupReported;
 
 uint16_t label, functionParameter;
 
@@ -45,6 +49,8 @@ void covShortIntWordSizeRestore(uint16_t unusedButMandatoryParameter);
 void covEqCalc(uint16_t unusedButMandatoryParameter);
 void covDerivEq(uint16_t order);
 void covSolveRoot(uint16_t which);
+void covCpxSolveRoot(uint16_t which);
+void covEqSolveDispatch(uint16_t which);
 void covDerivErr(uint16_t which);
 void covSolveErr(uint16_t which);
 void covLoadPgm(uint16_t unusedButMandatoryParameter);
@@ -56,6 +62,7 @@ void covStatsRegister(uint16_t unusedButMandatoryParameter);
 void covDerivPgm(uint16_t order);
 void covDerivMvarPgm(uint16_t which);
 void covSolvePgm(uint16_t unusedButMandatoryParameter);
+void covMvarPageNoProgram(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
 void covIntegrateErr(uint16_t which);
 void covMvarKey(uint16_t which);
@@ -232,9 +239,12 @@ const funcTest_t funcTestNoParam[] = {
   {"fnEqCalcCov",            covEqCalc, 1 },
   {"fnDerivEqCov",           covDerivEq, 1 },
   {"fnSolveRootCov",         covSolveRoot, 1 },
+  {"fnCpxSolveRootCov",      covCpxSolveRoot, 1 },
+  {"fnEqSolveDispatchCov",   covEqSolveDispatch, 1 },
   {"fnDerivErrCov",          covDerivErr, 1 },
   {"fnSolveErrCov",          covSolveErr, 1 },
   {"fnLoadPgmCov",           covLoadPgm, 1 },
+  {"fnMvarPageNoPgmCov",     covMvarPageNoProgram, 1 },
   {"fnLoadPgmLongLabelCov",  covLoadPgmLongLabel, 1 },
   {"fnLoadStateLongLabelCov", covLoadStateLongLabel, 1 },
   {"fnIterationTiCov",       covIterationTi, 1 },
@@ -367,8 +377,11 @@ const funcTest_t funcTestNoParam[] = {
   {"fnDot",                  fnDot                 },
   {"fnDrop",                 fnDrop                },
   {"fnDropY",                fnDropY               },
+  {"fnConvertMxToStk",       fnConvertMxToStk      },
+  {"fnConvertStkToMx",       fnConvertStkToMx      },
   {"fnEigenvalues",          fnEigenvalues         },
   {"fnEigenvectors",         fnEigenvectors        },
+  {"fnExchangeStkToMx",      fnExchangeStkToMx     },
   {"fnEllipticE",            fnEllipticE           },
   {"fnEllipticEphi",         fnEllipticEphi        },
   {"fnEllipticFphi",         fnEllipticFphi        },
@@ -952,6 +965,69 @@ void covSolveRoot(uint16_t which) {
   // solver's convergence, so assign rather than OR.
   currentSolverStatus = SOLVER_STATUS_USES_FORMULA;
   fnSolve(var);
+}
+
+void covCpxSolveRoot(uint16_t which) {
+  // Find a root of the current formula with the complex solver, fnEqSolvGraph(EQ_CPXSOLVE) -> complexSolver() in solver/graph.c. The guesses come from Y and X, the
+  // root lands in X. which selects the formula, and every root is exact:
+  //   0  X^2+4  roots +/-2i
+  //   1  X^2-4  roots +/-2, reached through the complex solver
+  //   2  X^3-1  roots 1, -1/2+/-(sqrt3/2)i
+  //   3  X^2+1  roots +/-i
+  //   4  X^4+4  roots +/-1+/-i, the only roots with a non-zero real part
+  //   5  5      no root, ERROR_NO_ROOT_FOUND
+  static const char * const cpxFormulae[] = {"X^2+4", "X^2-4", "X^3-1", "X^2+1", "X^4+4", "5"};
+  if(which >= sizeof(cpxFormulae) / sizeof(cpxFormulae[0])) {
+    return;
+  }
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  setEquation(currentFormula, cpxFormulae[which]);
+  const uint16_t var = findOrAllocateNamedVariable("X");
+  currentSolverVariable = var;
+  currentSolverStatus = SOLVER_STATUS_USES_FORMULA;
+  // Restore the angular mode: complexSolver runs ITM_RAD and never puts it back, so the solve returns in RAD whatever mode it was called in. FLAG_CPXRES is set there
+  // too, but undo restores the system flags, so it is clear on return and needs no restore.
+  const angularMode_t savedAngularMode = currentAngularMode;
+  fnEqSolvGraph(EQ_CPXSOLVE);
+  currentAngularMode = savedAngularMode;
+}
+
+void covEqSolveDispatch(uint16_t which) {
+  // Drive the solve arms of fnEqSolvGraph (solver/graph.c) that EQ_CPXSOLVE does not reach. which selects the arm and the formula, and every root is exact:
+  //   0  EQ_REALSOLVE     X^2-4, roots +/-2       guesses off the stack
+  //   1  EQ_CPXSOLVE_LU   X^4+4, roots +/-1+/-i   guesses from LEST/UEST
+  //   2  EQ_REALSOLVE_LU  X^2-4, roots +/-2       guesses from LEST/UEST
+  //   3  EQ_REALSOLVE     5, no root              ERROR_NO_ROOT_FOUND
+  // The _LU arms read RESERVED_VARIABLE_LEST/UEST and ignore the stack, so the stack pair and the estimate pair reach different roots: -5 and -1 on the stack reach
+  // -2 and -1-i, 1 and 5 in the estimates reach +2 and 1+i. A build reading the stack returns the wrong root.
+  const bool_t isLu = (which == 1 || which == 2);
+  if(which > 3) {
+    return;
+  }
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  setEquation(currentFormula, which == 1 ? "X^4+4" : (which == 3 ? "5" : "X^2-4"));
+  const uint16_t var = findOrAllocateNamedVariable("X");
+  currentSolverVariable = var;
+  currentSolverStatus = SOLVER_STATUS_USES_FORMULA;
+
+  if(isLu) {
+    // Seed the estimates as the non-LU arm does at solver/graph.c:2802.
+    real_t lower, upper;
+    int32ToReal(1, &lower);
+    int32ToReal(5, &upper);
+    reallocateRegister(RESERVED_VARIABLE_LEST, dtReal34, 0, amNone);
+    reallocateRegister(RESERVED_VARIABLE_UEST, dtReal34, 0, amNone);
+    realToReal34(&lower, REGISTER_REAL34_DATA(RESERVED_VARIABLE_LEST));
+    realToReal34(&upper, REGISTER_REAL34_DATA(RESERVED_VARIABLE_UEST));
+  }
+
+  const angularMode_t savedAngularMode = currentAngularMode;
+  fnEqSolvGraph(which == 1 ? EQ_CPXSOLVE_LU : (which == 2 ? EQ_REALSOLVE_LU : EQ_REALSOLVE));
+  currentAngularMode = savedAngularMode;
 }
 
 void covDerivErr(uint16_t which) {
@@ -1671,6 +1747,24 @@ void covSolvePgm(uint16_t unusedButMandatoryParameter) {
   currentSolverStatus = 0;
   fnPgmSlv(label);
   fnSolve(findOrAllocateNamedVariable("X"));
+}
+
+void covMvarPageNoProgram(uint16_t unusedButMandatoryParameter) {
+  // Build the MVAR page with no model selected: no VARMNU label, no formula, and currentSolverProgram at the 0xffff doFnReset leaves. _dynmenuConstructMVarsFromPgm
+  // (softmenus.c) bounds the label index against numberOfLabels, so the page holds no variables, which is the count this puts in X. Program S is loaded by this
+  // point in the corpus, so the label block has program material after it and an unbounded index reads a page rather than zeros.
+  int16_t m;
+
+  currentMvarLabel     = INVALID_VARIABLE;
+  currentSolverStatus  = 0;         // not a formula model: the program branch is the one taken
+  currentSolverProgram = 0xffffu;   // the value doFnReset leaves when no PGMSLV has named a label
+
+  fnOpenMenu(MNU_MVAR);
+
+  for(m = 0; m < NUMBER_OF_DYNAMIC_SOFTMENUS && softmenu[m].menuItem != -MNU_MVAR; m++) {}
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(m < NUMBER_OF_DYNAMIC_SOFTMENUS ? (int32_t)dynamicSoftmenu[m].numItems : -1, REGISTER_REAL34_DATA(REGISTER_X));   // -1: MVAR outside the dynamic block
+  popSoftmenu();
 }
 
 void covIntegrate(uint16_t which) {
@@ -2755,6 +2849,7 @@ void setParameter(char *p) {
   if(p[i] == 0) {
     printf("\nMalformed parameter setting. Missing equal sign, remember that no space is allowed around the equal sign.\n");
     abortTest();
+    return;
   }
 
   p[i] = 0;
@@ -4016,6 +4111,7 @@ void checkExpectedOutParameter(char *p) {
   if(p[i] == 0) {
     printf("\nMalformed out parameter. Missing equal sign, remember that no space is allowed around the equal sign.\n");
     abortTest();
+    return;
   }
 
   p[i] = 0;
@@ -5263,15 +5359,36 @@ void callFunction(void) {
 
 
 
+// Count a rejection that no Out: line consumed, before the next setup line overwrites it or the file ends; both flags clear here, so the next block starts clean.
+static void countUnreportedSetupFailure(void) {
+  if(caseSetupFailed && !caseSetupReported) {
+    numTestsTotal++;
+    successfulTests++;
+    noFailForNow = true;
+    abortTest();
+  }
+  caseSetupFailed   = false;
+  caseSetupReported = false;
+}
+
+
+
 void functionToCall(char *functionName) {
   int32_t function;
 
+  countUnreportedSetupFailure();
   functionParameter = NOPARAM;
+  // Default to NOP so a failed Func: does not rerun the previous block's function.
+  functionIndex = ITM_NOP;
+  funcToTest    = fnNop;
+  funcType      = FUNC_TO_TEST;
+
   char *openParenthesis = strchr(functionName, '(');
   char *closeParenthesis = strchr(functionName, ')');
   if((openParenthesis && !closeParenthesis) || (!openParenthesis && closeParenthesis)) {
     printf("\nParameter parenthesis do not match!\n");
-    abortTest();
+    caseSetupFailed = true;
+    return;
   }
   else if(openParenthesis && closeParenthesis) {
     *closeParenthesis = 0;
@@ -5304,15 +5421,17 @@ void functionToCall(char *functionName) {
 
     if(functionIndex >= LAST_ITEM) {
       printf("\nThe function %s must be somewhere in the indexOfItems array!\n", functionName);
-      abortTest();
+      caseSetupFailed = true;
+      return;
     }
 
     //printf("%s=%d\n", functionName, functionIndex);
+    caseSetupFailed = false;
     return;
   }
 
   printf("\nCannot find the function to test: check spelling of the function name and remember the name is case sensitive\n");
-  abortTest();
+  caseSetupFailed = true;
 }
 
 
@@ -5376,6 +5495,7 @@ static int32_t lookupItemName(const char *name) {
 void itemToCall(char *itemSpec) {
   int32_t itemNr;
 
+  countUnreportedSetupFailure();
   // Default to a NOP so a following Out: after a failed Item: does not rerun the previous function
   functionIndex = ITM_NOP;
   funcToTest    = fnNop;
@@ -5385,7 +5505,7 @@ void itemToCall(char *itemSpec) {
     itemNr = lookupItemName(itemSpec);
     if(itemNr < 0) {
       printf("\nCannot find %s in items.h: check spelling of the item name and remember the name is case sensitive\n", itemSpec);
-      abortTest();
+      caseSetupFailed = true;
       return;
     }
   }
@@ -5394,30 +5514,38 @@ void itemToCall(char *itemSpec) {
     itemNr = (int32_t)strtol(itemSpec, &end, 10);
     if(*end != 0) {
       printf("\nItem number has trailing characters: %s\n", itemSpec);
-      abortTest();
+      caseSetupFailed = true;
       return;
     }
   }
   else {
     printf("\nItem must be an ITM_ name or an item number: %s\n", itemSpec);
-    abortTest();
+    caseSetupFailed = true;
     return;
   }
 
   if(itemNr <= 0 || itemNr >= LAST_ITEM) {
     printf("\nItem number %d is out of range (1..%d)\n", itemNr, LAST_ITEM - 1);
-    abortTest();
+    caseSetupFailed = true;
     return;
   }
 
   if(indexOfItems[itemNr].func == itemToBeCoded) {
     printf("\nItem %d (%s) is not an implemented function\n", itemNr, itemSpec);
-    abortTest();
+    caseSetupFailed = true;
     return;
   }
 
-  functionIndex = itemNr;
-  funcType      = FUNC_ITEM;
+  // A TAM item's param is a TM_* marker, not a value; passed through it reaches the function as a register index and reads out of range. Reject as the DSL does.
+  if(TM_VALUE <= indexOfItems[itemNr].param && indexOfItems[itemNr].param <= TM_CMP) {
+    printf("\nItem %d (%s) takes a TAM parameter, which Item: cannot supply: drive it with Func: and In: FARG=n\n", itemNr, itemSpec);
+    caseSetupFailed = true;
+    return;
+  }
+
+  functionIndex   = itemNr;
+  funcType        = FUNC_ITEM;
+  caseSetupFailed = false;
 }
 
 
@@ -5602,7 +5730,14 @@ void processLine(void) {
     numTestsTotal++;
     successfulTests++;
     noFailForNow = true;
-    outParameters(line + 5);
+    if(caseSetupFailed) {
+      // The setup line failed, so fnNop ran and the case fails here. The flag latches across this block's Out: lines, and the next setup line or the file end clears it.
+      abortTest();
+      caseSetupReported = true;
+    }
+    else {
+      outParameters(line + 5);
+    }
   }
 
   else if(line[0] != 0) {
@@ -5652,6 +5787,8 @@ void processOneFile(void) {
     ignoreReturnedValue(fgets(line, 9999, testSuite));
     lineNumber++;
   }
+
+  countUnreportedSetupFailure();
 
   fclose(testSuite);
 

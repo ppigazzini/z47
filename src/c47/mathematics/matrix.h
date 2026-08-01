@@ -62,12 +62,6 @@
   void       fnInvertMatrix                 (uint16_t unusedParamButMandatory);
   void       fnMatrixSquareRoot             (uint16_t unusedParamButMandatory);
 
-  /**
-   * Euclidean norm of matrix X.
-   *
-   * \param[in] unusedParamButMandatory
-   */
-
   void       fnPNorm                        (uint16_t unusedParamButMandatory);
   void       fnVectorDist                   (uint16_t unusedParamButMandatory);
   void       convert3DtoSPH                 (const real34Matrix_t *matrix, real_t *r, real_t *th1, real_t *th2, uint8_t am, decContext *ctxtRealDisplay);
