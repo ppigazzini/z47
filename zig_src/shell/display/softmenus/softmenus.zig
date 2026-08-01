@@ -857,7 +857,7 @@ const menu_EE linksection(code_section) = [_]i16{ 1830, 1795, (if (dmcp_build) @
 const menu_EIMCATALOG linksection(code_section) = [_]i16{ -2228, -1322, -1319, 0, 0, 1958 };
 const menu_EQN linksection(code_section) = [_]i16{ 1465, 1464, -1336, -1335, -1380, -1361, 1463, 0, 0, 0, 0, -1388 };
 const menu_EXP linksection(code_section) = [_]i16{ 59, 60, 1794, 68, 1614, 72, 62, 63, 61, 64, 1575, 65, 78, 75, 80, 84, 82, 86 };
-const menu_Eim linksection(code_section) = [_]i16{ 999, 2383, 832, 1000, 995, 996, 1858, 2029, 2191, 822, 814, 815, 0, 0, 0, 0, 0, 0, 76, 74, 79, 644, 995, 996, 83, 81, 85, 2165, 998, 1706, 0, 0, 0, 0, 0, 0, 807, 2166, 2420, 2419, 995, 996, 0, 0, 0, 0, 0, 0 };
+const menu_Eim linksection(code_section) = [_]i16{ 999, 2383, 832, 1000, 995, 996, 1858, 2029, 2191, 822, 814, 815, 0, 0, 0, 0, 0, 0, 76, 74, 79, 644, 995, 996, 83, 81, 85, 2165, 998, 1706, 0, 0, 0, 0, 0, 0, 807, 2166, 2420, 2419, 995, 996, 825, 0, 0, 0, 0, 0 };
 const menu_Ellipt linksection(code_section) = [_]i16{ 1682, 1683, 1684, 1726, 1727, 1728, 2104, 2105, 1584, 1763, 1764, 1765, 2599, 2598, 2395, 115, 116, 119 };
 const menu_Expon linksection(code_section) = [_]i16{ 1218, 0, 1219, 1220, 0, 1221, 0, 0, 0, 0, 0, 0, 2321, 0, 0, 0, 0, 0 };
 const menu_F linksection(code_section) = [_]i16{ 1223, 0, 1224, 1225, 0, 1226, 0, 0, 0, 0, 0, 0, 2322, 2323, 0, 0, 0, 0 };
@@ -883,7 +883,7 @@ const menu_Inl_Tst linksection(code_section) = [_]i16{ 1884, 0, 0, 1882, 1885, 1
 const menu_KEYS linksection(code_section) = [_]i16{ -1920, -2235, -2234, 1411, 1729, 1958, (if (dmcp_build) @as(i16, 2391) else 1959), (if (dmcp_build) @as(i16, 2393) else 1916), (if (dmcp_build) @as(i16, 2394) else 0), (if (dmcp_build) @as(i16, 2392) else 0), 0, 0 };
 const menu_LOOP linksection(code_section) = [_]i16{ 8, 10, 9, 5, 7, 6, 91, 0, 0, 0, 0, 92 };
 const menu_Logis linksection(code_section) = [_]i16{ 1243, 0, 1244, 1245, 0, 1246, 0, 0, 0, 0, 0, 0, 2326, 2328, 0, 0, 0, 0 };
-const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, (if (option_vector) @as(i16, -2106) else 0), 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 0, 0, 1705, 2727, 1578, 2710, 1702, (if (option_vector) @as(i16, -2106) else 1428), 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, 1457, 1456, 1535, 1646, 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
+const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, -2106, 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 0, 0, 1705, 2727, 1578, 2710, 1702, -2106, 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, 1457, 1456, 1535, 1646, 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
 const menu_MODE linksection(code_section) = [_]i16{ 1445, 1557, 1480, 2197, 1949, 1946, 2043, 2044, 0, 1853, 1917, 1941, 0, 0, 0, 0, 0, 0, 1938, 1939, 1856, 1940, 1949, 1946, 1890, 1887, 1889, 1891, 121, 1941, 0, 0, 0, 0, 0, 0, 2038, 1797, 1855, 1897, 2058, 2059, 2064, 2060, 2062, 1924, 1796, 1859, 2063, 2065, 2061, 2039, 1861, 1854 };
 const menu_MODEL linksection(code_section) = [_]i16{ 1299, 1298, 1300, 1302, 1516, 1759, 1307, 1306, 1305, 1304, 1303, 0, 1309, 1308, 1310, 1435, 0, 1301 };
 const menu_MULTSTK linksection(code_section) = [_]i16{ 2588, 2589, 2587, 2585, 2586, 2595, 2593, 2594, 2622, 2620, 2621, 0 };
@@ -952,7 +952,10 @@ const menu_Timer linksection(code_section) = [_]i16{ 1782, 1783, 1784, 1785, 178
 const menu_Uniform linksection(code_section) = [_]i16{ 2601, 0, 2602, 2603, 0, 2604, 0, 0, 0, 0, 0, 0, 2333, 2334, 0, 0, 0, 0 };
 const menu_UnitConv linksection(code_section) = [_]i16{ -1329, -1351, -2047, -1373, -1316, -1371, -1358, -2222, -2046, -2045, -1337, -1901, -1860, 0, 0, 0, 0, -1359 };
 const menu_VARS linksection(code_section) = [_]i16{ -2230, -1324, -1360, -1314, -1338, -2232, -2231, -1343, -1325, -1366, -1332, -1364 };
-const menu_VECCONV linksection(code_section) = [_]i16{ 2475, 2477, 2498, 2497, 2702, 2703, 0, 0, 0, 0, 0, 0, 2493, 2494, 0, 0, 2700, 2701 };
+// Re-arranged upstream when the 1x4 form arrived: the three STK<->V pairs across
+// the top row, their exchange commands under them, and VECtoREG/REGtoVEC moved
+// down to make room.
+const menu_VECCONV linksection(code_section) = [_]i16{ 2475, 2477, 2702, 2703, 1966, 1967, 2495, 0, 2496, 0, 1968, 0, 2493, 2494, 2498, 2497, 2700, 2701 };
 const menu_VECT linksection(code_section) = [_]i16{ 1850, 2471, 2470, 2496, (if (option_vector) @as(i16, -2499) else 0), (if (dmcp_build) @as(i16, 1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 2479, 2480, 2481, 1850, 1849, 2492, 2495, (if (option_vector) @as(i16, -2499) else 0), (if (dmcp_build) @as(i16, 1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 0, 2490, 2491 };
 const menu_Weibl linksection(code_section) = [_]i16{ 1268, 0, 1269, 1270, 0, 1271, 0, 0, 0, 0, 0, 0, 2331, 2332, 0, 0, 0, 0 };
 const menu_XFN linksection(code_section) = [_]i16{ 107, 33, 1477, 1472, 1408, 2083, 1670, 1703, 2385, 1816, 1679, 108, 1478, 1479, -2414, (if ((!(dmcp_build and old_hw))) @as(i16, -2596) else 0), 1416, 1417, 1662, 1663, 1488, 1489, 1664, 1508, 1635, 1636, 1637, 1487, 1661, 1507, -1397, -1352, 1492, 1665, 1466, 1467, 104, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -1624,6 +1627,12 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
 const MAX_MVAR_DECLARATIONS: u16 = 18; // Solver variables a program may declare, which is the MVAR softmenu's own limit.
 
 fn _dynmenuConstructMVarsFromPgm(label: u16, numberOfBytes: *u16, numberOfVars: *u16) void {
+    // No PGMSLV parks currentSolverProgram at 0xffff, and a deleted program leaves
+    // currentMvarLabel stale; either way the label block has program material after
+    // it, so an unbounded index reads a page rather than zeros.
+    if (label >= numberOfLabels) {
+        return;
+    }
     var step: [*c]u8 = labelList[label].instructionPointer;
     while (numberOfVars.* < MAX_MVAR_DECLARATIONS) {
         // Skip any user REM so a REM before an MVAR is transparent to the MVAR
@@ -2466,9 +2475,15 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
             else => {},
         }
     }
+    // Upstream re-cut this cluster when the coefficient vectors arrived: the
+    // stk<->v exchanges (stkexV2/V3/V4, STKtoV*/V*toSTK) now strike out only when
+    // BOTH OPTION_VECTOR and OPTION_SLV_ZETA_BETA are off, and the latter is on for
+    // every z47 build, so they never strike out here. CPXtoV/VtoCPX joined the
+    // OPTION_VECTOR-only set in their place. VECtoREG/REGtoVEC stay listed nowhere:
+    // the matrix ops still need them.
     if (comptime (!option_vector)) {
         switch (itemNr) {
-            2492, 2495, 2490, 2491, 2471, 2470, 2496, 2479, 2480, 2481 => return 1,
+            2493, 2494, 2492, 2490, 2491, 2471, 2470, 2479, 2480, 2481 => return 1,
             else => {},
         }
     }
@@ -3460,7 +3475,10 @@ pub export fn dynmenuGetLabel(menuitem: i16) callconv(.c) [*c]u8 {
 /// Top of the softmenu stack while it is a dynamic softmenu, NULL while it is a
 /// static one: softmenuStack[].softmenuId ranks in softmenu[] and in
 /// dynamicSoftmenu[], and only the first NUMBER_OF_DYNAMIC_SOFTMENUS ranks agree.
-fn currentDynamicSoftmenu() ?*dynamicSoftmenu_t {
+///
+/// Exported since the 6559a9c59 pin, where upstream declared it in softmenus.h so
+/// the core solver/integrator owners could take the same test.
+pub export fn currentDynamicSoftmenu() callconv(.c) ?*dynamicSoftmenu_t {
     const id = softmenuStack[0].softmenuId;
     if (0 <= id and id < NUMBER_OF_DYNAMIC_SOFTMENUS) {
         return &dynamicSoftmenu[@intCast(id)];

@@ -49,6 +49,29 @@ const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN = runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOM
 const amNone = runtime.amNone;
 const TI_ROOTS3: u8 = 103;
 
+// Coefficient-vector surface (solveCoefficientVector): the matrix register plumbing
+// and the two refusals it can raise.
+const real34Matrix_t = runtime.real34Matrix_t;
+const complex34Matrix_t = runtime.complex34Matrix_t;
+const realElems = abi.matrixRealElems;
+const complexElems = abi.matrixComplexElems;
+const getRegisterDataType = runtime.getRegisterDataType;
+const dtReal34Matrix = runtime.dtReal34Matrix;
+const dtComplex34Matrix = runtime.dtComplex34Matrix;
+const linkToRealMatrixRegister = runtime.linkToRealMatrixRegister;
+const linkToComplexMatrixRegister = runtime.linkToComplexMatrixRegister;
+const realMatrixInit = runtime.realMatrixInit;
+const complexMatrixInit = runtime.complexMatrixInit;
+const realMatrixFree = runtime.realMatrixFree;
+const complexMatrixFree = runtime.complexMatrixFree;
+const convertReal34MatrixToReal34MatrixRegister = runtime.convertReal34MatrixToReal34MatrixRegister;
+const convertComplex34MatrixToComplex34MatrixRegister = runtime.convertComplex34MatrixToComplex34MatrixRegister;
+const ERROR_MATRIX_MISMATCH = runtime.ERROR_MATRIX_MISMATCH;
+const ERROR_RAM_FULL = runtime.ERROR_RAM_FULL;
+const NIM_REGISTER_LINE = runtime.REGISTER_X; // ERR_REGISTER_LINE's companion, as in the matrix owners
+const ERROR_MESSAGE_LENGTH = 512; // defines.h
+extern var errorMessage: [*c]u8;
+
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 const saveLastX = runtime.saveLastX;
@@ -270,6 +293,12 @@ fn fnSlvcCore() linksection(runtime.code_section) SlvcError!void {
     var rImag: real_t = undefined;
     var x: [3]cmplxPair = undefined;
 
+    // A coefficient vector takes the matrix path: the element count picks the solver.
+    if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+        solveCoefficientVector();
+        return;
+    }
+
     if (!(getRegisterAsComplexOrReal(REGISTER_X, &dReal, &dImag, &complexCoefs) and
         getRegisterAsComplexOrReal(REGISTER_Y, &cReal, &cImag, &complexCoefs) and
         getRegisterAsComplexOrReal(REGISTER_Z, &bReal, &bImag, &complexCoefs) and
@@ -289,73 +318,8 @@ fn fnSlvcCore() linksection(runtime.code_section) SlvcError!void {
         return;
     }
 
-    if (realIsZero(&aReal) and realIsZero(&aImag)) {
-        math_slvq.solveQuadraticEquation(&bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &ctxtReal75);
-        realSetNaN(&x[2].r);
-        realSetNaN(&x[2].i);
-    } else {
-        math_division_cells.divComplexComplex(&bReal, &bImag, &aReal, &aImag, &bReal, &bImag, &ctxtReal75);
-        math_division_cells.divComplexComplex(&cReal, &cImag, &aReal, &aImag, &cReal, &cImag, &ctxtReal75);
-        math_division_cells.divComplexComplex(&dReal, &dImag, &aReal, &aImag, &dReal, &dImag, &ctxtReal75);
+    solveGeneralCubic(&aReal, &aImag, &bReal, &bImag, &cReal, &cImag, &dReal, &dImag, &rReal, &rImag, &x);
 
-        // OPTION_CUBIC_159 is defined on every z47 build -> 159-digit solver.
-        var c159 = ctxtReal75;
-        c159.digits = 159;
-        var x1r_b = BigReal(159){};
-        var x1i_b = BigReal(159){};
-        var x2r_b = BigReal(159){};
-        var x2i_b = BigReal(159){};
-        var x3r_b = BigReal(159){};
-        var x3i_b = BigReal(159){};
-        var r0r_b = BigReal(159){};
-        var r0i_b = BigReal(159){};
-        var bRealH_b = BigReal(159){};
-        var bImagH_b = BigReal(159){};
-        var cRealH_b = BigReal(159){};
-        var cImagH_b = BigReal(159){};
-        var dRealH_b = BigReal(159){};
-        var dImagH_b = BigReal(159){};
-        const x1r = x1r_b.ptr();
-        const x1i = x1i_b.ptr();
-        const x2r = x2r_b.ptr();
-        const x2i = x2i_b.ptr();
-        const x3r = x3r_b.ptr();
-        const x3i = x3i_b.ptr();
-        const r0r = r0r_b.ptr();
-        const r0i = r0i_b.ptr();
-        const bRealH = bRealH_b.ptr();
-        const bImagH = bImagH_b.ptr();
-        const cRealH = cRealH_b.ptr();
-        const cImagH = cImagH_b.ptr();
-        const dRealH = dRealH_b.ptr();
-        const dImagH = dImagH_b.ptr();
-
-        realPlus(&bReal, bRealH, &c159);
-        realPlus(&bImag, bImagH, &c159);
-        realPlus(&cReal, cRealH, &c159);
-        realPlus(&cImag, cImagH, &c159);
-        realPlus(&dReal, dRealH, &c159);
-        realPlus(&dImag, dImagH, &c159);
-        realSetZero(r0r);
-        realSetZero(r0i);
-        realSetZero(x1r);
-        realSetZero(x1i);
-        realSetZero(x2r);
-        realSetZero(x2i);
-        realSetZero(x3r);
-        realSetZero(x3i);
-        solveCubicEquation159(bRealH, bImagH, cRealH, cImagH, dRealH, dImagH, r0r, r0i, x1r, x1i, x2r, x2i, x3r, x3i, &c159);
-        realPlus(r0r, &rReal, &ctxtReal39);
-        realPlus(r0i, &rImag, &ctxtReal39);
-        realPlus(x1r, &x[0].r, &ctxtReal39);
-        realPlus(x1i, &x[0].i, &ctxtReal39);
-        realPlus(x2r, &x[1].r, &ctxtReal39);
-        realPlus(x2i, &x[1].i, &ctxtReal39);
-        realPlus(x3r, &x[2].r, &ctxtReal39);
-        realPlus(x3i, &x[2].i, &ctxtReal39);
-    }
-
-    qsort(@ptrCast(&x), 3, @sizeOf(cmplxPair), &cmplxSortCompare);
     var i: usize = 0;
     while (i < 3) : (i += 1) {
         if (realIsZeroA(&x[i].i) or (realIsNaNA(&x[i].r) and realIsNaNA(&x[i].i))) {
@@ -377,7 +341,251 @@ inline fn realPlus(operand: *align(1) const real_t, res: *align(1) real_t, ctxt:
     _ = decNumberPlus(res, operand, ctxt);
 }
 
-// solveQuadraticEquation lives in the slvq owner.
+// ===========================================================================
+// solveCubic
+//
+// Monic x^3 + b x^2 + c x + d = 0 at the precision the build selects. Upstream
+// lifted this out of fnSlvc so solveCoefficientVector could reach the same
+// solver; OPTION_CUBIC_159 is defined on every z47 build, so this is always the
+// 159-digit path, results rounded back to 39 digits.
+// ===========================================================================
+pub export fn solveCubic(
+    bReal: *align(1) const real_t,
+    bImag: *align(1) const real_t,
+    cReal: *align(1) const real_t,
+    cImag: *align(1) const real_t,
+    dReal: *align(1) const real_t,
+    dImag: *align(1) const real_t,
+    rReal: *align(1) real_t,
+    rImag: *align(1) real_t,
+    x1Real: *align(1) real_t,
+    x1Imag: *align(1) real_t,
+    x2Real: *align(1) real_t,
+    x2Imag: *align(1) real_t,
+    x3Real: *align(1) real_t,
+    x3Imag: *align(1) real_t,
+) linksection(runtime.code_section) callconv(.c) void {
+    var c159 = ctxtReal75;
+    c159.digits = 159;
+    var x1r_b = BigReal(159){};
+    var x1i_b = BigReal(159){};
+    var x2r_b = BigReal(159){};
+    var x2i_b = BigReal(159){};
+    var x3r_b = BigReal(159){};
+    var x3i_b = BigReal(159){};
+    var r0r_b = BigReal(159){};
+    var r0i_b = BigReal(159){};
+    var bRealH_b = BigReal(159){};
+    var bImagH_b = BigReal(159){};
+    var cRealH_b = BigReal(159){};
+    var cImagH_b = BigReal(159){};
+    var dRealH_b = BigReal(159){};
+    var dImagH_b = BigReal(159){};
+    const x1r = x1r_b.ptr();
+    const x1i = x1i_b.ptr();
+    const x2r = x2r_b.ptr();
+    const x2i = x2i_b.ptr();
+    const x3r = x3r_b.ptr();
+    const x3i = x3i_b.ptr();
+    const r0r = r0r_b.ptr();
+    const r0i = r0i_b.ptr();
+    const bRealH = bRealH_b.ptr();
+    const bImagH = bImagH_b.ptr();
+    const cRealH = cRealH_b.ptr();
+    const cImagH = cImagH_b.ptr();
+    const dRealH = dRealH_b.ptr();
+    const dImagH = dImagH_b.ptr();
+
+    realPlus(bReal, bRealH, &c159);
+    realPlus(bImag, bImagH, &c159);
+    realPlus(cReal, cRealH, &c159);
+    realPlus(cImag, cImagH, &c159);
+    realPlus(dReal, dRealH, &c159);
+    realPlus(dImag, dImagH, &c159);
+    realSetZero(r0r);
+    realSetZero(r0i);
+    realSetZero(x1r);
+    realSetZero(x1i);
+    realSetZero(x2r);
+    realSetZero(x2i);
+    realSetZero(x3r);
+    realSetZero(x3i);
+    solveCubicEquation159(bRealH, bImagH, cRealH, cImagH, dRealH, dImagH, r0r, r0i, x1r, x1i, x2r, x2i, x3r, x3i, &c159);
+    realPlus(r0r, rReal, &ctxtReal39);
+    realPlus(r0i, rImag, &ctxtReal39);
+    realPlus(x1r, x1Real, &ctxtReal39);
+    realPlus(x1i, x1Imag, &ctxtReal39);
+    realPlus(x2r, x2Real, &ctxtReal39);
+    realPlus(x2i, x2Imag, &ctxtReal39);
+    realPlus(x3r, x3Real, &ctxtReal39);
+    realPlus(x3i, x3Imag, &ctxtReal39);
+}
+
+// ===========================================================================
+// solveGeneralCubic
+//
+// a x^3 + b x^2 + c x + d = 0: a leading zero degrades to the quadratic at 75
+// digits with a NaN third root; b, c, d are consumed and the roots come back
+// sorted.
+// ===========================================================================
+// Naturally-aligned pointers, as both call sites hold their coefficients in
+// plain locals and divComplexComplex takes them that way.
+fn solveGeneralCubic(
+    aReal: *const real_t,
+    aImag: *const real_t,
+    bReal: *real_t,
+    bImag: *real_t,
+    cReal: *real_t,
+    cImag: *real_t,
+    dReal: *real_t,
+    dImag: *real_t,
+    rReal: *real_t,
+    rImag: *real_t,
+    x: *[3]cmplxPair,
+) linksection(runtime.code_section) void {
+    if (realIsZeroA(aReal) and realIsZeroA(aImag)) {
+        math_slvq.solveQuadraticEquation(bReal, bImag, cReal, cImag, dReal, dImag, rReal, rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &ctxtReal75);
+        realSetNaN(&x[2].r);
+        realSetNaN(&x[2].i);
+    } else {
+        math_division_cells.divComplexComplex(bReal, bImag, aReal, aImag, bReal, bImag, &ctxtReal75);
+        math_division_cells.divComplexComplex(cReal, cImag, aReal, aImag, cReal, cImag, &ctxtReal75);
+        math_division_cells.divComplexComplex(dReal, dImag, aReal, aImag, dReal, dImag, &ctxtReal75);
+
+        solveCubic(bReal, bImag, cReal, cImag, dReal, dImag, rReal, rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i, &x[2].r, &x[2].i);
+    }
+    qsort(@ptrCast(x), 3, @sizeOf(cmplxPair), &cmplxSortCompare);
+}
+
+// ===========================================================================
+// solveCoefficientVector
+//
+// X = a 1 x m or m x 1 coefficient vector, highest degree first: the element
+// count picks the solver, 2 the linear, 3 the quadratic and 4 the cubic, from
+// either SLVQ or SLVC. All roots come back as a row vector replacing X, real
+// when every root is real; the rest of the stack is not consumed.
+// ===========================================================================
+pub export fn solveCoefficientVector() linksection(runtime.code_section) callconv(.c) void {
+    var xr: real34Matrix_t = undefined;
+    var xc: complex34Matrix_t = undefined;
+    var rReal: real_t = undefined;
+    var rImag: real_t = undefined;
+    var x: [3]cmplxPair = undefined;
+    var co: [4][2]real_t = undefined; // [j][0] real, [j][1] imaginary, co[0] the leading coefficient
+
+    const complexInput = getRegisterDataType(REGISTER_X) == dtComplex34Matrix;
+    var rows: u16 = undefined;
+    var cols: u16 = undefined;
+    if (complexInput) {
+        linkToComplexMatrixRegister(REGISTER_X, &xc);
+        rows = xc.header.matrixRows;
+        cols = xc.header.matrixColumns;
+    } else {
+        linkToRealMatrixRegister(REGISTER_X, &xr);
+        rows = xr.header.matrixRows;
+        cols = xr.header.matrixColumns;
+    }
+
+    const m: u32 = @as(u32, rows) * @as(u32, cols);
+    if ((rows != 1 and cols != 1) or m < 2 or m > 4) {
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "a coefficient vector holds 2 to 4 elements, not ({d}\xc3\x97{d})", .{ rows, cols });
+            moreInfoOnError("In function solveCoefficientVector:", @ptrCast(errorMessage), null, null);
+        }
+        return;
+    }
+
+    var j: u32 = 0;
+    while (j < m) : (j += 1) {
+        if (complexInput) {
+            const el = &complexElems(&xc)[j];
+            runtime.real34ToReal(&el.real, &co[j][0]);
+            runtime.real34ToReal(&el.imag, &co[j][1]);
+        } else {
+            runtime.real34ToReal(&realElems(&xr)[j], &co[j][0]);
+            realSetZero(&co[j][1]);
+        }
+    }
+
+    // The stack forms' refusal: the constant term alone is no equation.
+    var allZero = true;
+    j = 0;
+    while (j + 1 < m) : (j += 1) {
+        allZero = allZero and realIsZeroA(&co[j][0]) and realIsZeroA(&co[j][1]);
+    }
+    if (allZero) {
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnError("In function solveCoefficientVector:", "every coefficient above the constant term is 0", null, null);
+        return;
+    }
+
+    var nRoots: u16 = undefined;
+    if (m == 2) {
+        // The trivial linear case keeps the family symmetrical: the single root is -b/a, as SLVP delivers it.
+        math_division_cells.divComplexComplex(&co[1][0], &co[1][1], &co[0][0], &co[0][1], &x[0].r, &x[0].i, &ctxtReal75);
+        chsComplex(&x[0].r, &x[0].i);
+        nRoots = 1;
+    } else if (m == 3) {
+        math_slvq.solveQuadratic(&co[0][0], &co[0][1], &co[1][0], &co[1][1], &co[2][0], &co[2][1], &rReal, &rImag, &x[0].r, &x[0].i, &x[1].r, &x[1].i);
+        nRoots = 2;
+    } else {
+        solveGeneralCubic(&co[0][0], &co[0][1], &co[1][0], &co[1][1], &co[2][0], &co[2][1], &co[3][0], &co[3][1], &rReal, &rImag, &x);
+        nRoots = 3;
+    }
+
+    // A NaN pair is the stack forms' real NaN root, not a complex value.
+    var resultIsComplex = false;
+    j = 0;
+    while (j < nRoots) : (j += 1) {
+        if (!realIsZeroA(&x[j].i) and !(realIsNaNA(&x[j].r) and realIsNaNA(&x[j].i))) {
+            resultIsComplex = true;
+            break;
+        }
+    }
+
+    // The result matrix is allocated, then L, then X is overwritten: every
+    // failure leaves X and L untouched.
+    if (resultIsComplex) {
+        var res: complex34Matrix_t = undefined;
+        if (!complexMatrixInit(&res, 1, nRoots)) {
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            moreInfoOnError("In function solveCoefficientVector:", "Ram full", null, null);
+            return;
+        }
+        if (!saveLastX()) {
+            complexMatrixFree(&res);
+            return;
+        }
+        j = 0;
+        while (j < nRoots) : (j += 1) {
+            const el = &complexElems(&res)[j];
+            runtime.realToReal34(&x[j].r, &el.real);
+            runtime.realToReal34(&x[j].i, &el.imag);
+        }
+        convertComplex34MatrixToComplex34MatrixRegister(&res, REGISTER_X);
+        complexMatrixFree(&res);
+    } else {
+        var res: real34Matrix_t = undefined;
+        if (!realMatrixInit(&res, 1, nRoots)) {
+            displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            moreInfoOnError("In function solveCoefficientVector:", "Ram full", null, null);
+            return;
+        }
+        if (!saveLastX()) {
+            realMatrixFree(&res);
+            return;
+        }
+        j = 0;
+        while (j < nRoots) : (j += 1) {
+            runtime.realToReal34(&x[j].r, &realElems(&res)[j]);
+        }
+        convertReal34MatrixToReal34MatrixRegister(&res, REGISTER_X);
+        realMatrixFree(&res);
+    }
+
+    adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
+}
 
 // ===========================================================================
 // _checkConditionNumberOfAddSub

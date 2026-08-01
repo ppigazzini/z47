@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the euclidean-norm commands of src/c47/mathematics/matrix.c:
-// fnEuclideanNorm and fnVectorDist, with their shared static worker
-// _fnEuclideanNorm (kept private here). The numeric p-norm is the already
+// fnVectorDist, with its worker _fnEuclideanNorm (kept private here). The
+// sibling fnEuclideanNorm went with upstream's "remove two functions the tree
+// no longer calls": no item row and no caller ever reached it. The numeric p-norm is the already
 // Zig-owned euclideanNormRealMatrix / euclideanNormComplexMatrix; these are the
 // command-level wrappers that link register X, drive the norm and store the
 // scalar result. fnVectorDist is the distance |Y - X| = subtract then 2-norm.
@@ -55,13 +56,6 @@ pub export fn _fnEuclideanNorm(p_param: u16) callconv(.c) void {
     }
 
     runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, -1, -1);
-}
-
-pub export fn fnEuclideanNorm(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    _ = unused_but_mandatory_parameter;
-    if (runtime.saveLastX()) {
-        _fnEuclideanNorm(runtime.NOPARAM);
-    }
 }
 
 pub export fn fnVectorDist(unused_but_mandatory_parameter: u16) callconv(.c) void {

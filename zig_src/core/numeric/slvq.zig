@@ -27,6 +27,9 @@ const runtime = @import("command_wrappers/runtime.zig");
 const math_addition_cells = @import("arithmetic/addition_cells.zig");
 const math_division_cells = @import("arithmetic/division_cells.zig");
 const math_multiplication_cells = @import("arithmetic/multiplication_cells.zig");
+// slvc owns solveCoefficientVector, which both SLVQ and SLVC dispatch to; slvc
+// imports this file back for solveQuadraticEquation.
+const math_slvc = @import("slvc.zig");
 const math_subtraction_cells = @import("arithmetic/subtraction_cells.zig");
 const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig");
 const real_t = runtime.real_t;
@@ -40,6 +43,9 @@ const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN = runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN;
 const dtReal34 = runtime.dtReal34;
 const dtComplex34 = runtime.dtComplex34;
+const dtReal34Matrix = runtime.dtReal34Matrix;
+const dtComplex34Matrix = runtime.dtComplex34Matrix;
+const getRegisterDataType = runtime.getRegisterDataType;
 const amNone = runtime.amNone;
 const TI_ROOTS2: u8 = 102;
 const NOPARAM: u16 = 9876;
@@ -159,6 +165,12 @@ pub export fn fnSlvq(unused_but_mandatory_parameter: u16) linksection(runtime.co
     var x1Imag: real_t = undefined;
     var x2Imag: real_t = undefined;
 
+    // A coefficient vector takes the matrix path: the element count picks the solver.
+    if (getRegisterDataType(REGISTER_X) == dtReal34Matrix or getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+        math_slvc.solveCoefficientVector();
+        return;
+    }
+
     if (!(getRegisterAsComplexOrReal(REGISTER_X, &cReal, &cImag, &complexCoefs) and
         getRegisterAsComplexOrReal(REGISTER_Y, &bReal, &bImag, &complexCoefs) and
         getRegisterAsComplexOrReal(REGISTER_Z, &aReal, &aImag, &complexCoefs)))
@@ -181,8 +193,7 @@ pub export fn fnSlvq(unused_but_mandatory_parameter: u16) linksection(runtime.co
         realRoots = false;
     }
 
-    // OPTION_SQUARE_159 is undef on every z47 build -> standard 75-digit solver.
-    solveQuadraticEquation(&aReal, &aImag, &bReal, &bImag, &cReal, &cImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag, &runtime.ctxtReal75);
+    solveQuadratic(&aReal, &aImag, &bReal, &bImag, &cReal, &cImag, &rReal, &rImag, &x1Real, &x1Imag, &x2Real, &x2Imag);
 
     realRoots = realRoots and realIsZero(&x1Imag) and realIsZero(&x2Imag);
 
@@ -213,6 +224,31 @@ pub export fn fnSlvq(unused_but_mandatory_parameter: u16) linksection(runtime.co
     adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
     adjustResult(REGISTER_Y, false, true, REGISTER_Y, -1, -1);
     fnDropZ(0);
+}
+
+// ===========================================================================
+// solveQuadratic
+//
+// a x^2 + b x + c = 0 at the precision the build selects. Upstream lifted this
+// out of fnSlvq so solveCoefficientVector could reach the same solver;
+// OPTION_SQUARE_159 is undef on every z47 build, so this is always the standard
+// 75-digit path.
+// ===========================================================================
+pub export fn solveQuadratic(
+    aReal: *align(1) const real_t,
+    aImag: *align(1) const real_t,
+    bReal: *align(1) const real_t,
+    bImag: *align(1) const real_t,
+    cReal: *align(1) const real_t,
+    cImag: *align(1) const real_t,
+    rReal: *align(1) real_t,
+    rImag: *align(1) real_t,
+    x1Real: *align(1) real_t,
+    x1Imag: *align(1) real_t,
+    x2Real: *align(1) real_t,
+    x2Imag: *align(1) real_t,
+) linksection(runtime.code_section) callconv(.c) void {
+    solveQuadraticEquation(aReal, aImag, bReal, bImag, cReal, cImag, rReal, rImag, x1Real, x1Imag, x2Real, x2Imag, &runtime.ctxtReal75);
 }
 
 // ===========================================================================
