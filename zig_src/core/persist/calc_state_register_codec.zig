@@ -476,10 +476,53 @@ fn hexVal(c: u8) u32 {
     return data_file_bytes.hexVal(c);
 }
 
-fn setMatrixDims(regist: i16, rows: u16, cols: u16) void {
+// TO_BLOCKS(sizeof(matrixHeader_t)): the one block every matrix register carries
+// before its elements. One conversion, so no call site has to repeat it.
+const MATRIX_HEADER_BLOCKS: u32 = abi.block_math.toBlocks(u32, MATRIX_HEADER_SIZE);
+
+/// Refuse matrix dimensions a register cannot hold, as upstream
+/// `saveRestoreCalcState.c` does. `rows`/`cols` arrive from the state or data
+/// file, `reallocateRegister` takes a u16 block count, and an unrefused pair
+/// truncates that count, under-allocates, and lets `restoreMatrixData` write
+/// past the register. Every site that turns file dimensions into a register --
+/// the two `restoreRegister` branches and `skipMatrixData` -- must go through
+/// this, or the restore and skip sides disagree on the element count and the
+/// file position desynchronises.
+fn clampMatrixDims(rows: u16, cols: u16, element_blocks: u32) vector_shape.Dims {
+    return vector_shape.clampToRegisterCapacity(
+        .{ .rows = rows, .cols = cols },
+        element_blocks,
+        MATRIX_HEADER_BLOCKS,
+    );
+}
+
+/// The element block count `reallocateRegister` is called with. Upstream passes
+/// the elements only -- the header block appears in the capacity test, not in the
+/// request. `@intCast` is in range by construction and not merely by inspection:
+/// `dims` has been through `clampMatrixDims`, which rejects anything whose block
+/// count including the header exceeds a u16, so the elements alone are at most
+/// 65534.
+fn matrixDataBlocks(dims: vector_shape.Dims, element_blocks: u32) u16 {
+    return @intCast(vector_shape.registerBlocks(dims, element_blocks, 0));
+}
+
+// `@truncate`, not `@intCast`: upstream's fields are `unsigned matrixRows : 12`
+// bitfields (typeDefinitions.h) and it assigns a uint16_t straight into them, so
+// C narrows by truncation and that is defined. The capacity clamp bounds the
+// PRODUCT at 16383 elements, not either dimension on its own -- 16383x1 passes it
+// and still exceeds 12 bits -- so a value wider than the field is reachable, and
+// `@intCast` would make it illegal behaviour here where upstream is defined: a
+// panic on the host, silent UB in the ReleaseSmall firmware.
+//
+// The residual is upstream's and is deliberately NOT diverged from: for such a
+// shape the header ends up describing fewer elements than the allocation and the
+// file supplies, so the element restore and the file position disagree. Report it
+// upstream rather than fixing it here, where a local clamp would change behaviour
+// on a file upstream accepts.
+fn setMatrixDims(regist: i16, dims: vector_shape.Dims) void {
     const hdr: *matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
-    hdr.matrixRows = @intCast(rows);
-    hdr.matrixColumns = @intCast(cols);
+    hdr.matrixRows = @truncate(dims.rows);
+    hdr.matrixColumns = @truncate(dims.cols);
 }
 
 // Defaults appended when loading a pre-10000008 (896-byte) config descriptor.
@@ -622,16 +665,18 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         numOfCols += 1;
         const rows = text.toUint16(value);
         const cols = text.toUint16(numOfCols);
-        reallocateRegister(regist, dtReal34Matrix, @intCast(REAL34_SIZE_IN_BLOCKS * @as(u32, rows) * @as(u32, cols)), tag);
-        setMatrixDims(regist, rows, cols);
+        const dims = clampMatrixDims(rows, cols, REAL34_SIZE_IN_BLOCKS);
+        reallocateRegister(regist, dtReal34Matrix, matrixDataBlocks(dims, REAL34_SIZE_IN_BLOCKS), tag);
+        setMatrixDims(regist, dims);
     } else if (strcmpEq(type_str, "Cxma")) {
         var numOfCols = text.skipWord(value);
         numOfCols[0] = 0;
         numOfCols += 1;
         const rows = text.toUint16(value);
         const cols = text.toUint16(numOfCols);
-        reallocateRegister(regist, dtComplex34Matrix, @intCast(COMPLEX34_SIZE_IN_BLOCKS * @as(u32, rows) * @as(u32, cols)), tag);
-        setMatrixDims(regist, rows, cols);
+        const dims = clampMatrixDims(rows, cols, COMPLEX34_SIZE_IN_BLOCKS);
+        reallocateRegister(regist, dtComplex34Matrix, matrixDataBlocks(dims, COMPLEX34_SIZE_IN_BLOCKS), tag);
+        setMatrixDims(regist, dims);
     } else if (strcmpEq(type_str, "Conf")) {
         reallocateRegister(regist, dtConfig, 0, amNone);
         var cfg: [*c]u8 = getRegisterDataPointer(regist);
@@ -700,17 +745,27 @@ pub fn restoreMatrixData(regist: i16) void {
 
 pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
     if (strcmpEq(type_str, "Rema") or strcmpEq(type_str, "Cxma")) {
+        const is_complex = strcmpEq(type_str, "Cxma");
         var numOfCols = text.skipWord(value_in);
         numOfCols[0] = 0;
         numOfCols += 1;
+        // Apply the SAME clamp restoreRegister applies. A shape it refuses stores
+        // no elements, so this must skip none either or the file position moves
+        // by a different amount than the restore side consumed and every later
+        // section is parsed from the wrong offset.
         const rows = text.toUint16(value_in);
         const cols = text.toUint16(numOfCols);
-        const count = @as(u32, rows) * @as(u32, cols);
+        const dims = clampMatrixDims(
+            rows,
+            cols,
+            if (is_complex) COMPLEX34_SIZE_IN_BLOCKS else REAL34_SIZE_IN_BLOCKS,
+        );
+        const count = @as(u32, dims.rows) * @as(u32, dims.cols);
         var i: u32 = 0;
         while (i < count) : (i += 1) {
             if (dataFileMode) {
                 // skip exactly as restoreMatrixData reads, or the file position desyncs
-                if (strcmpEq(type_str, "Cxma")) {
+                if (is_complex) {
                     readComplexToken(tmpString, @intCast(TMP_STR_LENGTH));
                 } else {
                     readToken(tmpString, @intCast(TMP_STR_LENGTH));

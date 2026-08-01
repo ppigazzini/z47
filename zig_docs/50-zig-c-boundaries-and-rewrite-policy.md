@@ -8,7 +8,9 @@ Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 assumes the ownership split and the "core fully in Zig, C retained for parity"
 framing are already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
+Memory-Safety Posture section below was re-audited against the live tree on that
+date; the supporting findings are in the maintainer working notes.
 
 ## Implementation Modes
 
@@ -115,41 +117,148 @@ churn-driven notes in [80-maintainer-workflow.md](80-maintainer-workflow.md).
 
 ## Memory-Safety Posture
 
+Safety here is a property you **place**, and every placement needs a reason and a
+gate. This project cannot adopt a blanket posture in either direction: it must
+stay byte-compatible with an upstream C tree that is resynced continuously, and
+it ships to a device that compiles every runtime check away. So the useful
+question is never "is z47 memory safe" but "which surface, defended by what,
+proved by which lane".
+
+### What Is Settled
+
 The low idiomatic-Zig metrics (many `[*c]` pointers, `callconv(.c)`, `extern`
 sites) are a property of the transliteration contract, not latent memory-safety
 debt. A blanket `[*c]`-to-slice sweep of the transliterated spine is explicitly
 NOT on the roadmap: it would break the line-for-line upstream re-sync map without
-closing a real hazard. The honest posture is scoped, not aspirational:
+closing a real hazard.
 
 - The concern is CORRECTNESS, not security. z47 is offline and single-user, with
   no network, crypto, auth, or secrets surface, so it is out of scope for the
   CISA/NSA memory-safe-roadmap framing. The failure that matters is a corrupted
   read making the calculator show a wrong number, which needs no attacker.
-- The real hazard surface is UNTRUSTED FILE IMPORT -- the state-load and
-  program-load paths that parse a `.p47` / state file whose bytes the code did
-  not produce. Upstream's own bug history concentrates memory fixes there
-  (state-file overflow, restore/decode out-of-bounds). The arithmetic and display
-  core takes no untrusted input.
-- z47 already defends that surface three ways: the load owner LOGIC
-  (`zig_src/core/persist/calc_state_load.zig`, `program_serialization.zig` and its
-  `_header` / `_load_apply` / `_save` parts) is `[*c]`-free idiomatic Zig, with
-  `[*c]` confined to the paired `*_io.zig` / `*_runtime.zig` C-ABI file-I/O
-  seams; the full shared testSuite runs under AddressSanitizer in CI
-  (`zig build test_asan` / `both_asan`); and a malformed-input corpus is driven
-  through the real load path under ASAN (`zig build pgm_load_fuzz`, see
-  [70-tests-and-verification.md](70-tests-and-verification.md)). That fuzz lane
-  surfaced three real load-path bugs when it was added: two integer overflows in
-  the parse surface were fixed parity-safe, and a third (an overflow reached only
-  by executing a truncated program) was scoped out of the parse lane.
-- Firmware ships `.ReleaseSmall`, which compiles out all runtime safety checks,
-  so the safe-build panics these lanes rely on are a DEV/TEST-time guard, not a
-  device-runtime one. Making the device trap on the same conditions would mean
-  building ReleaseSafe and paying the flash and speed cost; that is a separate
-  priced decision, not assumed here.
+- The real hazard surface is UNTRUSTED FILE IMPORT -- the state-load, program-load
+  and text-import paths that parse a `.sav` / `.d47` / `.p47` / imported text file
+  whose bytes the code did not produce. Upstream's own bug history concentrates
+  memory fixes there (state-file overflow, restore/decode out-of-bounds). The
+  arithmetic and display core takes no untrusted input.
+- Firmware ships `.ReleaseSmall`, which compiles out all runtime safety checks by
+  default. That is a statement about the DEFAULT, not a ceiling:
+  `@setRuntimeSafety(true)` is a lexical per-function opt-in that works inside
+  `ReleaseSmall`, so the device can be made to trap on exactly the untrusted-file
+  path without building the whole binary `ReleaseSafe`. Measured on
+  `thumb-freestanding-eabi` / `cortex_m4` / `-OReleaseSmall`: **~12 bytes of flash
+  per covered function**, plus a one-time ~710 bytes for the default panic handler
+  -- which formats its message through `std.Io.Writer` before trapping and pulls in
+  `__aeabi_memcpy`/`__aeabi_memset`. A trap-only panic namespace removes that fixed
+  cost and those link dependencies entirely, leaving ~500 bytes for the whole load
+  surface. Whole-binary `ReleaseSafe` remains rejected on flash and speed; scoped
+  safety on the load path is a different, much cheaper decision and is not blocked
+  by it.
 
-New owner or ported code should still prefer `[]T` / `[N]T` over `[*c]` at
-z47-owned leaves and on the load owners where a length is known, but never on the
-transliterated spine, where matching upstream shape keeps re-sync cheap.
+### The Rules, And What Holds Each One
+
+| Rule | How this tree holds it | Gate |
+| --- | --- | --- |
+| **Confine `[*c]` to the C-ABI declaration surface on the load owners.** A many-item pointer carries no length, so neither producer nor consumer can check one. | The four state-file owners (`calc_state_restore` / `_register_codec` / `_save` / `_backup`) carry 162 `[*c]` tokens; 96 are `extern` declarations of the C globals and libc functions they reach, 66 are body uses. `calc_state_load.zig`, `calc_state_header.zig`, `calc_state_policy.zig` and the `program_serialization` logic parts are `[*c]`-free. | `check-idiom-ratchet.sh`; review |
+| **Bound every count the file names, at the write and not at the loop.** A parser must keep reading one line per claimed entry to stay aligned with the stream; what must be checked is the index before it reaches the array. | `31fb6f755` -- `kbd_usr[37]`, `userMenuItems[18]`, `userAlphaItems[18]`, `userMenus[].menuItem[18]` and the 28 statistical sums; plus an empty `readLine()` treated as end of file, so a lying count cannot make one section parse the next section's header as its data. | `zig build test` (12835 cases) -- **and nothing adversarial; see the gap below** |
+| **Bound what a file's dimensions IMPLY, in a width that cannot wrap.** A count the file states is not the hazard; the size it multiplies out to is. Do the capacity arithmetic wider than the field it will be stored in, or the product wraps before the test and the comparison is against a number the file never claimed. | `vector_shape.clampToRegisterCapacity` computes `rows * cols * element_blocks + header` in u64 and refuses anything past a u16 block count, which is what `reallocateRegister` takes. All three sites that turn file dimensions into a register go through it -- the `Rema` and `Cxma` branches of `restoreRegister` and `skipMatrixData` -- so the restore and skip sides cannot disagree on the element count. | `zig build test:unit` (the boundary is swept exhaustively for both element widths), `saveload_parity` |
+| **A refused allocation is not a NULL to write through.** | `initUserKeyArgument`, `setUserKeyArgument`, `createMenu` and the EQUATIONS section check the result; `freeListAlloc` checks the region table's bound BEFORE the store, since past it the store is itself the overrun. | `zig build test`, `memory_parity` |
+| **Port C's implicit narrowing as `@truncate` and its unsigned arithmetic as `+%`/`-%`.** This is a PARITY rule before it is a safety rule: where upstream assigns a wider value into a `uint16_t`, C truncates and that is defined; `@intCast` is illegal behaviour on the same input -- a trap in a safe build, silent UB in `ReleaseSmall`. Use `@intCast` only where the value provably fits, and saturating `+|`/`*|` where the intent is that an absurd size stays absurd. | The M1 fuzz found exactly this class: `parseU32LineZ` u32 overflow on an oversized size string and `loadProgram` `@intCast` overflow on `program_size > 0xFFFF`, both fixed parity-safe (saturating parse, explicit reject) so valid files are unchanged. | `zig build pgm_load_fuzz`; **the 5628 `@intCast` sites are otherwise unsorted -- see gap 4** |
+| **Raise `@setRuntimeSafety(true)` over an untrusted parse, and price it before placing it.** The scope is lexical -- it does not follow calls, so it goes on each function -- and it works in `ReleaseSmall`, so it reaches the device. Keep it off the per-keystroke path, and off any loop where the cost is measured and the bound is already stated by the code itself. | **Nothing yet: the tree has zero `@setRuntimeSafety` of either polarity.** See gap 2. | -- |
+| **Drive malformed input through the REAL path, not a unit stub.** | `zig_build/tests/pgm_run/malformed/` -- 27 `.p47` files (truncated at 12 offsets, corrupt magic, garbage/negative/overflowing size fields, all-zero and all-`0xFF` bodies) through the actual program-load code under ASan. | `zig build pgm_load_fuzz` |
+| **Sanitize the retained C on a lane that actually runs.** | `zig build test_asan` runs the full shared testSuite with `sanitize_c` on; `both_asan` only BUILDS the two simulators, so it proves compilation, not execution. | `test_asan` |
+| **Keep `catch unreachable` to provable cases.** | All 6 sites are `bufPrint` into a fixed local buffer whose size dominates the formatted output. The other 19 are 11 `orelse unreachable` on `getRegisterDataPointer` for a register the caller has already established, and 8 exhaustive-switch `else` arms. | review |
+
+### The Open Gaps
+
+These are lanes or language affordances that do not exist yet, not open defects.
+Each entry states what would close it, and the sequenced plan behind them
+(M-SAFE-1 through M-SAFE-8, ordered language-first and detectors-last) is in the
+maintainer working notes. M-SAFE-1 is done: it ported upstream's matrix-dimension
+capacity guard, which z47 had never carried, and its rule is the dimensions row in
+the table above.
+
+1. **The device runs the untrusted parse with every check off, and it need not.**
+   There are zero `@setRuntimeSafety` calls of either polarity in the tree, so
+   `ReleaseSmall`'s defaults stand everywhere -- no bound, no cast, no overflow
+   checked on the one path that reads bytes z47 did not write. The measurement in
+   *What Is Settled* prices covering the whole load surface at roughly 500 bytes of
+   flash, given a trap-only panic namespace. Placement follows the rule table: the
+   `calc_state_restore` section handlers, `calc_state_register_codec`'s
+   `restoreRegister` / `skipMatrixData`, the `program_serialization` load parts, and
+   the two split readers in gap 3 -- and nothing on the per-keystroke path. The
+   panic decl has to live in a compilation root, and `calc_state.zig` and
+   `program_serialization.zig` are already object roots, so the handler scopes to
+   the load-path objects without touching the rest of the tree.
+2. **The state-file restore path has no adversarial lane.** `31fb6f755` added
+   137 lines to `calc_state_restore.zig` alone (137 in, 33 out), and the only
+   thing that exercises them is a corpus of VALID files: `saveload_parity` and
+   `saveload_golden` round-trip, and the 72 new testSuite cases came with the
+   import. A malformed `.sav` / `.d47` corpus driven through `doLoad` -- the M1
+   pattern, which found three real bugs the first afternoon it existed -- is the
+   highest-value unbuilt lane in the tree. It is also the surface upstream's own
+   worst memory bug (the 577 state-file overflow) lived on.
+3. **The same read is bounded on one lane and not the other.** A reader with
+   separate host and firmware bodies can bound a file-derived length on one build
+   and not on the other, and the gate then runs the checked lane and reports
+   green. Two known instances, both faithful transliterations of upstream:
+   `addTestPrograms` (`../zig_src/shell/config.zig`) checks
+   `numberOfBytesUsed > numberOfBytesForTheTestPrograms` on the host and does not
+   on the firmware, where the length comes off the SD card and the write lands in
+   a 24000-byte program-memory region; `import_string_from_filename`
+   (`../zig_src/shell/plot/graph_text.zig`) bounds its read with
+   `f_getsline(line1, TMP_STR_LENGTH, ...)` on the firmware while the host body
+   appends the whole file and length-checks afterwards -- currently latent, since
+   nothing in the pinned tree calls it. This is a *class*, not two incidents: any
+   build-split reader is a candidate. Because both are upstream's, closing them is
+   an upstream hardening contribution shaped like `31fb6f755`, not a local
+   divergence.
+4. **ASan cannot see the C47 block allocator.** Registers, variables, programs,
+   formulae, menus and the GMP heap all live in `ram`, a single ~256 KiB
+   allocation carved by `../zig_src/shell/free_list.zig`. One block overrunning
+   its neighbour is, to ASan, a write inside a live allocation; Zig's checks
+   never see it either, because blocks are reached by `[*c]` arithmetic. The
+   remedy is ASan's manual-poisoning API for custom allocators -- poison the pool
+   at startup, unpoison exactly the handed-out extent in `freeListAlloc`,
+   re-poison in `freeListFree` -- compiled only where `sanitize_c` is on, so the
+   firmware and the parity binaries are unchanged. Reasoning is in
+   [75-debugging.md](75-debugging.md).
+5. **The 5628 `@intCast` sites are three populations counted as one.** By the
+   narrowing rule above, each site is either (a) provably in range, where
+   `@intCast` is correct and the check is free documentation; (b) standing where
+   upstream narrows implicitly, where `@intCast` is a PARITY DEFECT because C
+   truncates and Zig traps; or (c) standing where upstream's unsigned arithmetic
+   wraps, where the spelling must be `+%` / `-%` / `*%` or a saturating `+|` / `*|`.
+   Gap 0's `setMatrixDims` is a (b); the two `numberOfBytesUsed` subtractions in
+   gap 3 are (c). `report-idiom-status.py` reports one total, which cannot tell a
+   correct cast from a defect, so the ratchet should count (b) and (c) on the load
+   owners and drive those to zero while leaving (a) alone. Until then the
+   firmware's exposure to a bad narrowing is unmeasured -- and, unlike a host
+   panic, it presents as a wrong number.
+
+### Rules For New Code
+
+- Prefer `[]T` / `[N]T` over `[*c]` at z47-owned leaves and on the load owners
+  where a length is known, but never on the transliterated spine, where matching
+  upstream shape keeps re-sync cheap. On a file-backed region this is not cosmetic:
+  a many-item pointer carries no length, so converting it to a slice is what makes
+  a bound EXPRESSIBLE at all -- neither the producer nor any consumer can check one
+  otherwise.
+- Narrow with `@truncate` where upstream narrows implicitly, wrap with `+%`/`-%`
+  where upstream's unsigned arithmetic wraps, and saturate with `+|`/`*|` where the
+  intent is that an absurd size stays absurd. Reserve `@intCast` for values that
+  provably fit. Getting this wrong is a parity bug before it is a safety bug.
+- Raise `@setRuntimeSafety(true)` on a function that walks bytes z47 did not write.
+  It works in `ReleaseSmall`, so it reaches the device; it is lexical, so it does
+  not follow calls and must go on each function; and it is a backstop under the
+  explicit rejections, never a substitute for writing them.
+- On any path that reads bytes the code did not produce, bound the write before
+  it happens, not after. A length check that runs after the copy is not a check.
+- When a ported reader has separate host and firmware bodies, bound both or
+  neither, and say in the commit which upstream behaviour the bound preserves.
+- A guard added to an unguarded upstream read must be behaviour-identical on
+  valid input. That is what makes it portable back upstream and what keeps the
+  parity oracles green -- see `31fb6f755` and the M1 fixes for the pattern.
 
 ## `translate-c` Policy
 
