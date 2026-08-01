@@ -28,6 +28,9 @@ uint16_t currentLocalStepNumber = 0;
 uint16_t currentProgramNumber = 0;
 uint16_t numberOfPrograms = 0;
 uint8_t temporaryInformation = 0;
+// fnLoadProgram clears this before goToGlobalStep since the 6559a9c59 pin, so the step it
+// lands on is the loaded program's own and not a dynamic-menu label.
+int16_t dynamicMenuItem = -1;
 
 static uint8_t fakeRam[RAM_SIZE_IN_BLOCKS * BYTES_PER_BLOCK];
 static char loadFile[MAX_PROGRAM_PARITY_FILE_BYTES];

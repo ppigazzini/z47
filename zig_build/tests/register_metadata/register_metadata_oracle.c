@@ -642,10 +642,9 @@ void oracle_setRegisterDataType(calcRegister_t regist, uint16_t dataType, const 
   }
 
   if(regist <= LAST_RESERVED_VARIABLE) {
-    regist -= FIRST_RESERVED_VARIABLE;
-    if(z47DescriptorPointer(allReservedVariables[regist].header.descriptor) != C47_NULL && z47DescriptorReadOnly(allReservedVariables[regist].header.descriptor) == 0) {
-      allNamedVariables[regist].header.descriptor = z47DescriptorSetDataTypeTag(allNamedVariables[regist].header.descriptor, dataType, tag);
-    }
+    // Nothing to do, as in setRegisterDataPointer(): allReservedVariables[] is const, so a reserved
+    // variable's type and tag are fixed. The write this replaces indexed allNamedVariables[] with a
+    // RESERVED index, retyping an unrelated named variable (upstream registers.c, 6559a9c59 pin).
     return;
   }
 
@@ -903,6 +902,13 @@ void oracle_reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_
        oracle_getRegisterDataType(regist) == dtReal34Matrix ||
        oracle_getRegisterDataType(regist) == dtComplex34Matrix) &&
       oracle_getRegisterMaxDataLengthInBlocks(regist) != dataSizeWithoutDataLenBlocks)) {
+    if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
+      // A reserved variable owns a fixed block named by a const header: there is nothing here to
+      // free, allocate or retype (upstream registers.c, 6559a9c59 pin).
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      return;
+    }
+
     if(!isMemoryBlockAvailable(dataSizeWithDataLenBlocks, 2, 0.1f)) {
       displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
       return;
