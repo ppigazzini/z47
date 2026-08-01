@@ -1,8 +1,15 @@
+const abi = @import("abi");
 const header_owned = @import("program_serialization_header.zig");
 const load_apply_owned = @import("program_serialization_load_apply.zig");
 const save_owned = @import("program_serialization_save.zig");
 const screen_owned = @import("program_serialization_screen.zig");
 const runtime = @import("program_serialization_runtime.zig");
+
+// This object parses a `.p47` whose bytes z47 did not write, so its load
+// functions raise `@setRuntimeSafety(true)`. Trap rather than format on the
+// firmware; hosted targets keep the default handler and its stack trace. Must be
+// declared in this ROOT file -- see calc_state.zig for the same note.
+pub const panic = abi.trap_panic.namespace;
 
 pub fn saveProgram(label: u16) void {
     save_owned.saveProgram(label);

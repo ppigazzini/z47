@@ -3,6 +3,7 @@ const runtime = @import("program_serialization_runtime.zig");
 const space_owned = @import("program_serialization_space.zig");
 
 pub fn applyLoadedProgram(program_size_in_bytes: u32) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var value_buffer: [256]u8 = undefined;
 
     if (space_owned.addEndNeeded()) {

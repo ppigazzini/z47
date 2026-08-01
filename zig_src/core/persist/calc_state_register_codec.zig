@@ -76,6 +76,7 @@ extern fn ioEof() c_int;
 // newlines/CRs separates elements, so a data-file matrix row may hold several
 // elements. `tok` must point at a buffer large enough for the token.
 fn readToken(tok: [*c]u8, maxLen: usize) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var p = tok;
     const end = if (maxLen == 0) tok else tok + maxLen - 1; // last writable slot; reserve one byte for the terminator
     if (maxLen != 0 and ioEof() == 0) {
@@ -104,6 +105,7 @@ fn readToken(tok: [*c]u8, maxLen: usize) void {
 // including the closing ')', may span newlines) or a bare whitespace-free 'i'
 // form token. Faithful port of saveRestoreCalcState.c readComplexToken.
 fn readComplexToken(tok: [*c]u8, maxLen: usize) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var p = tok;
     const end = if (maxLen == 0) tok else tok + maxLen - 1; // last writable slot; reserve one byte for the terminator
     if (maxLen != 0 and ioEof() == 0) {
@@ -557,6 +559,7 @@ fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
 // (the 4-char type tag, possibly with a ":TAG[p]" suffix) and `value` are
 // mutated in place exactly as the C does.
 pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_version: u32) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var tag: u32 = amNone;
     var value = value_in;
 
@@ -697,6 +700,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
 }
 
 pub fn restoreMatrixData(regist: i16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const dt = getRegisterDataType(regist);
     if (dt == dtReal34Matrix) {
         const hdr: *const matrixHeader_t = abi.registerMatrixHeaderAligned(regist);
@@ -744,6 +748,7 @@ pub fn restoreMatrixData(regist: i16) void {
 }
 
 pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     if (strcmpEq(type_str, "Rema") or strcmpEq(type_str, "Cxma")) {
         const is_complex = strcmpEq(type_str, "Cxma");
         var numOfCols = text.skipWord(value_in);
@@ -787,6 +792,7 @@ pub fn statSumToString(i: u16) void {
 }
 
 pub fn loadStatSum(str: [*c]const u8, i: u16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const base: [*c]u8 = @ptrCast(statisticalSumsPointer);
     _ = decNumberFromString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, str, &ctxtReal75);
 }

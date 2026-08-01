@@ -145,15 +145,19 @@ closing a real hazard.
   default. That is a statement about the DEFAULT, not a ceiling:
   `@setRuntimeSafety(true)` is a lexical per-function opt-in that works inside
   `ReleaseSmall`, so the device can be made to trap on exactly the untrusted-file
-  path without building the whole binary `ReleaseSafe`. Measured on
-  `thumb-freestanding-eabi` / `cortex_m4` / `-OReleaseSmall`: **~12 bytes of flash
-  per covered function**, plus a one-time ~710 bytes for the default panic handler
-  -- which formats its message through `std.Io.Writer` before trapping and pulls in
-  `__aeabi_memcpy`/`__aeabi_memset`. A trap-only panic namespace removes that fixed
-  cost and those link dependencies entirely, leaving ~500 bytes for the whole load
-  surface. Whole-binary `ReleaseSafe` remains rejected on flash and speed; scoped
-  safety on the load path is a different, much cheaper decision and is not blocked
-  by it.
+  path without building the whole binary `ReleaseSafe`. That was done: covering the
+  22-function parse surface cost **64 bytes** of DMCP flash in total, and the
+  synthetic estimate it replaced (~12 bytes per function, from a benchmark of
+  array-indexing functions) was an order of magnitude too high -- because the real
+  path indexes through many-item C pointers, which carry no length and so admit no
+  bounds check at all. What it does buy is the integer class; see gap 1.
+  The one-time cost that WOULD have dominated is the default panic handler's
+  message formatting, ~710 bytes plus `__aeabi_memcpy`/`__aeabi_memset` as new link
+  dependencies. `abi.trap_panic.namespace`, installed at the two load-path object
+  roots, removes it: freestanding traps directly, hosted targets keep Zig's default
+  handler and its stack trace. Whole-binary `ReleaseSafe` remains rejected on flash
+  and speed; scoped safety on the load path is a different, much cheaper decision
+  and was never blocked by it.
 
 ### The Rules, And What Holds Each One
 
@@ -164,7 +168,7 @@ closing a real hazard.
 | **Bound what a file's dimensions IMPLY, in a width that cannot wrap.** A count the file states is not the hazard; the size it multiplies out to is. Do the capacity arithmetic wider than the field it will be stored in, or the product wraps before the test and the comparison is against a number the file never claimed. | `vector_shape.clampToRegisterCapacity` computes `rows * cols * element_blocks + header` in u64 and refuses anything past a u16 block count, which is what `reallocateRegister` takes. All three sites that turn file dimensions into a register go through it -- the `Rema` and `Cxma` branches of `restoreRegister` and `skipMatrixData` -- so the restore and skip sides cannot disagree on the element count. | `zig build test:unit` (the boundary is swept exhaustively for both element widths), `saveload_parity` |
 | **A refused allocation is not a NULL to write through.** | `initUserKeyArgument`, `setUserKeyArgument`, `createMenu` and the EQUATIONS section check the result; `freeListAlloc` checks the region table's bound BEFORE the store, since past it the store is itself the overrun. | `zig build test`, `memory_parity` |
 | **Port C's implicit narrowing as `@truncate` and its unsigned arithmetic as `+%`/`-%`.** This is a PARITY rule before it is a safety rule: where upstream assigns a wider value into a `uint16_t`, C truncates and that is defined; `@intCast` is illegal behaviour on the same input -- a trap in a safe build, silent UB in `ReleaseSmall`. Use `@intCast` only where the value provably fits, and saturating `+|`/`*|` where the intent is that an absurd size stays absurd. | The M1 fuzz found exactly this class: `parseU32LineZ` u32 overflow on an oversized size string and `loadProgram` `@intCast` overflow on `program_size > 0xFFFF`, both fixed parity-safe (saturating parse, explicit reject) so valid files are unchanged. | `zig build pgm_load_fuzz`; **the 5628 `@intCast` sites are otherwise unsorted -- see gap 4** |
-| **Raise `@setRuntimeSafety(true)` over an untrusted parse, and price it before placing it.** The scope is lexical -- it does not follow calls, so it goes on each function -- and it works in `ReleaseSmall`, so it reaches the device. Keep it off the per-keystroke path, and off any loop where the cost is measured and the bound is already stated by the code itself. | **Nothing yet: the tree has zero `@setRuntimeSafety` of either polarity.** See gap 2. | -- |
+| **Raise `@setRuntimeSafety(true)` over an untrusted parse, and price it before placing it.** The scope is lexical -- it does not follow calls, so it goes on each function -- and it works in `ReleaseSmall`, so it reaches the device. Keep it off the per-keystroke path, and off any loop where the cost is measured and the bound is already stated by the code itself. | 22 functions across the state-file and `.p47` parse surfaces (`calc_state_restore`, `calc_state_register_codec`, `calc_state_io_flow`, `program_serialization_header` / `_load_apply`). The two load-path object ROOTS install `abi.trap_panic.namespace`, so a firmware safety failure is a bare `udf` instead of dragging in Zig's message formatter; hosted targets keep the default handler and its stack trace. Measured: +64 bytes of flash, 4 trap sites emitted. | `zig build dmcp` size, `zig build test -Doptimize=ReleaseSmall`, `test:unit` |
 | **Drive malformed input through the REAL path, not a unit stub.** | `zig_build/tests/pgm_run/malformed/` -- 27 `.p47` files (truncated at 12 offsets, corrupt magic, garbage/negative/overflowing size fields, all-zero and all-`0xFF` bodies) through the actual program-load code under ASan. | `zig build pgm_load_fuzz` |
 | **Sanitize the retained C on a lane that actually runs.** | `zig build test_asan` runs the full shared testSuite with `sanitize_c` on; `both_asan` only BUILDS the two simulators, so it proves compilation, not execution. | `test_asan` |
 | **Keep `catch unreachable` to provable cases.** | All 6 sites are `bufPrint` into a fixed local buffer whose size dominates the formatted output. The other 19 are 11 `orelse unreachable` on `getRegisterDataPointer` for a register the caller has already established, and 8 exhaustive-switch `else` arms. | review |
@@ -178,18 +182,19 @@ maintainer working notes. M-SAFE-1 is done: it ported upstream's matrix-dimensio
 capacity guard, which z47 had never carried, and its rule is the dimensions row in
 the table above.
 
-1. **The device runs the untrusted parse with every check off, and it need not.**
-   There are zero `@setRuntimeSafety` calls of either polarity in the tree, so
-   `ReleaseSmall`'s defaults stand everywhere -- no bound, no cast, no overflow
-   checked on the one path that reads bytes z47 did not write. The measurement in
-   *What Is Settled* prices covering the whole load surface at roughly 500 bytes of
-   flash, given a trap-only panic namespace. Placement follows the rule table: the
-   `calc_state_restore` section handlers, `calc_state_register_codec`'s
-   `restoreRegister` / `skipMatrixData`, the `program_serialization` load parts, and
-   the two split readers in gap 3 -- and nothing on the per-keystroke path. The
-   panic decl has to live in a compilation root, and `calc_state.zig` and
-   `program_serialization.zig` are already object roots, so the handler scopes to
-   the load-path objects without touching the rest of the tree.
+1. **Safety on the load path catches the integer class only, and cannot catch
+   more until the regions become slices.** The 22 covered functions emitted just
+   **4 trap sites**, because almost every access on that path is through a
+   many-item C pointer, which carries no length -- there is no bound for a check
+   to test. What the device now traps on is overflowing arithmetic and
+   out-of-range `@intCast`, which is not a small thing: it is the class of the
+   three bugs the M1 fuzz found and of the matrix-capacity defect M-SAFE-1 fixed.
+   The spatial class stays invisible, and the way to reach it is the slice
+   conversion described in gap 4, after which the attribute already in place starts
+   checking bounds with no further work. Two readers on the untrusted surface are also still
+   uncovered -- `addTestPrograms` and `import_string_from_filename`, both in the
+   frontier object rather than the two load-path roots -- and they are covered
+   when gap 3 fixes them.
 2. **The state-file restore path has no adversarial lane.** `31fb6f755` added
    137 lines to `calc_state_restore.zig` alone (137 in, 33 out), and the only
    thing that exercises them is a corpus of VALID files: `saveload_parity` and

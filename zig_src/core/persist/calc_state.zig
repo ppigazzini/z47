@@ -1,11 +1,20 @@
 const std = @import("std");
 const builtin = @import("builtin");
+const abi = @import("abi");
 const load_owned = @import("calc_state_load.zig");
 const runtime = @import("calc_state_runtime.zig");
 const save_owned = @import("calc_state_save.zig");
 const restore_owned = @import("calc_state_restore.zig");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
+
+// This object parses the state file, so its restore functions raise
+// `@setRuntimeSafety(true)` -- see calc_state_restore.zig. On the firmware that
+// would otherwise drag in Zig's message-formatting panic handler; here a safety
+// failure traps directly instead. Hosted targets keep the default handler, so the
+// testSuite still reports the message and the stack trace. Must be declared in
+// this ROOT file: `std.builtin` reads `root.panic` and nowhere else.
+pub const panic = abi.trap_panic.namespace;
 
 var compat_saved_calc_model: u16 = 0;
 var compat_loaded_version: u32 = 0;
