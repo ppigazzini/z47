@@ -5,7 +5,8 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
-Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
+Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
+Zig memory-safety reference set was reviewed against upstream Zig on that date.
 
 ## Reference Map
 
@@ -14,12 +15,14 @@ flowchart TD
   A[Need a source of truth]
   B[Upstream C47 project]
   C[Zig toolchain and build system]
+  G[Zig memory safety]
   D[Retained dependencies]
   E[CI and packaging]
   F[Repo-local audited files]
 
   A --> B
   A --> C
+  C --> G
   A --> D
   A --> E
   A --> F
@@ -93,6 +96,69 @@ checksum are recorded in [.github/zig-toolchain.env](../.github/zig-toolchain.en
 - [CONTRIBUTING.md](../CONTRIBUTING.md): maintained contributor workflow and
   verification contract.
 - [build.zig](../build.zig): live repo-root build router for this repository.
+
+## Zig Memory-Safety References (primary)
+
+Reviewed 2026-08-01. These are the sources the memory-safety posture in
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md)
+is argued from. Read them as *what the toolchain does and does not give you* --
+each entry ends with why it does or does not apply to a `ReleaseSmall`
+freestanding calculator whose data lives in one static pool.
+
+Language and toolchain:
+
+- [Zig language reference -- Undefined Behavior](https://ziglang.org/documentation/master/#Undefined-Behavior):
+  the canonical list of what is checked illegal behaviour (a panic in the safe
+  modes) versus unchecked (silent in every mode). This is the authority for
+  which of z47's 5628 `@intCast` sites are a trap on the host and a silent
+  truncation on the device.
+- [Zig 0.16.0 release notes](https://ziglang.org/download/0.16.0/release-notes.html):
+  the pinned baseline. Safety-relevant changes: *forbid trivial local addresses
+  returned from functions* (now a compile error, "returning address of expired
+  local variable"), *forbid runtime vector indexes*, *forbid pointers in packed
+  structs and unions*, *forbid unused bits in packed unions*, safe stack
+  unwinding by default, and `heap.ThreadSafeAllocator` removed in favour of
+  allocators that are lock-free themselves.
+- [zig.guide -- Runtime Safety](https://zig.guide/language-basics/runtime-safety/):
+  the per-build-mode table of which checks are live. The practical statement of
+  why `ReleaseSmall` firmware is unchecked.
+
+Allocator-level safety:
+
+- [ziglang/zig#31186](https://codeberg.org/ziglang/zig/issues/31186): makes
+  `DebugAllocator` and `ArenaAllocator` lock-free and thread-safe and deletes
+  `ThreadSafeAllocator`; also the tracking issue for the planned
+  `DebugAllocator` -> `SafeAllocator` rename with a ReleaseSafe-suitable
+  configuration. `SafeAllocator` does not exist in 0.16 -- do not write it into
+  a plan.
+- [ziglang/zig#25978](https://github.com/ziglang/zig/issues/25978):
+  `std.heap.DebugAllocator` with `.safety = true` is broken on **freestanding**
+  targets. This rules out the otherwise-obvious "put a checking allocator on the
+  device" move, independently of the flash cost.
+- [AddressSanitizer manual poisoning](https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning):
+  `__asan_poison_memory_region` / `__asan_unpoison_memory_region`, the API that
+  makes a custom arena visible to ASan. Chunks must be 8-aligned; C47 blocks are
+  4 bytes, so a poisoning implementation must work in 8-byte shadow granules and
+  accept that a 4-byte overrun into the next block's first word is not
+  detectable. This is the only route to a detector for gap 2 in the posture.
+
+What Zig does not give you:
+
+- [How (memory) safe is Zig? (Jamie Brandon)](https://www.scattered-thoughts.net/writing/how-safe-is-zig/):
+  the reference statement of the boundary. Zig catches bounds, null, tag
+  confusion, overflow and alignment; it does **not** catch use-after-free,
+  iterator invalidation, or interior-pointer invalidation. All three of those are
+  live in a design that hands out indices into a relocatable pool, which is
+  exactly what `freeListRealloc` does.
+- [ziglang/zig#36237](https://codeberg.org/ziglang/zig/issues/36237): the
+  accepted proposal (opened 2026-07-20) for a Fil-C-inspired memory-safe
+  compilation mode -- a new "fil" ABI with pointer capabilities, no escape
+  hatches, and no source changes required. **Not applicable to z47 and unlikely
+  to become so**: it is defined for x86_64-linux only, the device is ARM
+  freestanding, every linked object must use the same ABI (z47 links GMP,
+  decNumber, GTK and the DMCP SDK), and the estimated 1-6x overhead is priced for
+  a server, not a calculator. Track it for the host test lane only, and do not
+  let a roadmap depend on it.
 
 ## Zig Idiom And Style Guidance (secondary)
 
