@@ -388,6 +388,9 @@ extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
 // graphAccActive: nested SOLVE reads this to pick the graph convergence
 // tolerance; execute_rpn_function_graphAcc sets it around each sample eval.
 extern var graphAccActive: bool;
+// c47.c global: set for the sweep so parseEquation returns an equation's left
+// hand side instead of evaluating both sides.
+extern var eqnDrawLhsOnly: bool;
 
 // DMCP firmware: lcd_refresh is a ROM jump-table call (matches the lblGtoXeq
 // owner trampoline; offset 48 in both lft_ifc.h files).
@@ -2442,7 +2445,9 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
             initialize_function();
             engineNestingDepth += 1; // one engine level for the whole sweep
             plotEngineActive += 1;
+            eqnDrawLhsOnly = true; // Draw on an equation plots its left hand side; an expression has no = and plots unchanged
             graph_eqn(noInitDrwMx);
+            eqnDrawLhsOnly = false;
             plotEngineActive -= 1;
             engineNestingDepth -= 1;
 

@@ -209,7 +209,13 @@ const TI_2ND_DERIVATIVE: u8 = 58;
 const ITM_RCL: i16 = 51;
 const ITM_STO: i16 = 44;
 const AIM_BUFFER_LENGTH: usize = 1024;
+const TMP_STR_LENGTH: usize = 2560;
 const EQUATION_PARSER_XEQ: u16 = 1;
+const EQUATION_PARSER_MVAR: u16 = 0;
+const FIRST_NAMED_VARIABLE: u16 = 256;
+const LAST_NAMED_VARIABLE: u16 = 1999;
+const ERROR_VARIABLE_NOT_SELECTED: u8 = 57;
+const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
 
 // STD_delta / STD_DELTA + "x"/"X" labels (fonts.h)
 const STD_delta_x: [*:0]const u8 = "\x83\xb4x";
@@ -341,6 +347,8 @@ extern var labelList: [*c]abi.LabelList;
 extern fn exitKeyWaiting() bool_t;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
 extern fn findOrAllocateNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
+extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool;
 extern fn findNextStep(step: [*c]u8) [*c]u8;
 extern fn boundProgramNameLength(nameStart: [*c]const u8, claimedLength: u8) u8;
@@ -414,6 +422,24 @@ fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void
     const solving = getSystemFlag(@bitCast(FLAG_SOLVING));
 
     setSystemFlag(FLAG_SOLVING);
+    if (!(currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable <= LAST_NAMED_VARIABLE)) {
+        // No variable assigned, as after a programmed X.EDIT: auto-assign like
+        // fnEqSolvGraph does when the formula holds exactly one variable. The MVAR
+        // scratch area is the tail of tmpString, as in softmenus.c, to leave
+        // aimBuffer be.
+        equation.parseEquation(currentFormula, EQUATION_PARSER_MVAR, tmpString + TMP_STR_LENGTH - AIM_BUFFER_LENGTH, tmpString);
+        if (tmpString[0] != 0 and getNthString(tmpString, 1)[0] == 0) {
+            currentSolverVariable = @intCast(findOrAllocateNamedVariable(tmpString));
+        }
+        if (!(currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable <= LAST_NAMED_VARIABLE)) {
+            if (!solving) {
+                clearSystemFlag(FLAG_SOLVING);
+            }
+            displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            moreInfoOnError("In function derivativeEquation:", "no variable selected for the derivative", null, null);
+            return;
+        }
+    }
     // new method to maintain solver variable
     reallyRunFunction(ITM_RCL, currentSolverVariable);
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
