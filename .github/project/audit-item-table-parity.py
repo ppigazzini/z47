@@ -120,19 +120,28 @@ def expected_zig_func(c_func):
     return "&itemToBeCoded" if c_func == "itemToBeCoded" else "ext_" + c_func
 
 
-def extract_block(src_lines, start_pat, end_pat):
+def extract_block(src_lines, start_pat, end_pat, inclusive=True):
+    """Lines from the first start_pat match to the first end_pat match at or after it.
+
+    inclusive=False stops one line short, so the end pattern can be the line that
+    FOLLOWS the block rather than its last line. That keeps a block open-ended:
+    upstream can append to it without the probe losing the new lines.
+    """
     lines = src_lines
     start = next(i for i, l in enumerate(lines) if re.search(start_pat, l))
     end = next(i for i in range(start, len(lines)) if re.search(end_pat, lines[i]))
-    return "\n".join(lines[start : end + 1])
+    return "\n".join(lines[start : end + 1] if inclusive else lines[start:end])
 
 
 def build_probe_and_dump(zig, tmp):
     src = ITEMS_C.read_text(errors="ignore")
     src_lines = src.splitlines()
     rows, cfuncs = parse_c_rows(src)
-    # items.c-local string macros (SEP/S3EM/...) and the OPTION_XFN_1000 S18_* block.
-    localm = extract_block(src_lines, r"#define PER_\b", r"#define S3EM\b")
+    # items.c-local string macros (SEP/S3EM/S_RAR_S/...) and the OPTION_XFN_1000 S18_* block.
+    # The block ends at the last #define before the USECURVES guard, so a macro upstream
+    # appends to it (S4EM/S6EM/V_2/V_3/V_4/S_RAR_S arrived with the 6559a9c59 pin) is picked
+    # up instead of leaving the probe with an undeclared identifier.
+    localm = extract_block(src_lines, r"#define PER_\b", r"#if defined\(USECURVES\)", inclusive=False)
     s18 = extract_block(src_lines, r"#if defined\(OPTION_XFN_1000\)", r"#endif //OPTION_XFN_1000")
     probe = [
         "#include <stdio.h>",
