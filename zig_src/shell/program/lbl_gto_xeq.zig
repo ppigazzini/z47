@@ -25,7 +25,7 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // Types
 // ---------------------------------------------------------------------------
 const calcRegister_t = i16;
-const bool_t = u32;
+const bool_t = u8; // C bool_t is one byte (typeDefinitions.h: typedef bool bool_t); u32 here made every store through it write 3 bytes past the global
 const angularMode_t = c_int;
 const localFlags_t = u32;
 

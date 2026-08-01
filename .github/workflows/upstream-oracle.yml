@@ -373,6 +373,11 @@ jobs:
         run: |
           set -euo pipefail
           bash .github/project/check-portable-int-widths.sh
+      - name: Enforce agreeing C type alias widths across owners
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/check-c-type-alias-widths.sh .
 
   workflow-imported-root-guard:
     name: Verify workflow imported-root vocabulary
