@@ -85,6 +85,12 @@ step "[9/11] portable integer widths (Windows LLP64 trap)"
 bash .github/project/check-portable-int-widths.sh
 step "[10/11] host-parity build/test/oracle battery"
 bash .github/project/run-host-parity-battery.sh
+step "[10a/11] malformed-input corpora through the real load paths"
+# ~1 s each once built, and they are the ONLY adversarial coverage the load paths
+# have: every other lane feeds them files the calculator itself just wrote.
+zig build pgm_load_fuzz --summary none
+zig build state_load_fuzz --summary none
+
 step "[10b/11] firmware link for every DMCP package variant"
 # NOT redundant with `zig build dmcp` / `dmcp5`, and not optional. The OLD_HW
 # package-3 layout asserts `_ebss <= 0x10002000` and sits EXACTLY on it, so a few

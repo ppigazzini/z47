@@ -928,6 +928,37 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "M1: run malformed .p47 files through the load path under ASAN");
     pgm_load_fuzz_step.dependOn(&pgm_load_fuzz_cmd.step);
 
+    // M-SAFE-7 (REPORT-30): the same treatment for STATE files. saveload_parity
+    // and saveload_golden only round-trip files the calculator just wrote, so the
+    // 137 lines of bounds 31fb6f755 added to calc_state_restore.zig, and the
+    // matrix-dimension guard M-SAFE-1 ported, had no adversarial coverage at all.
+    // Built at the default optimize level on purpose: Zig's safety checks are the
+    // detector here, since an out-of-range @intCast on the load path traps in a
+    // safe build and wraps silently in the ReleaseSmall firmware.
+    const state_load_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "stateLoadFuzz",
+        "zig_build/tests/calc_state/state_load_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        .full,
+        false,
+    );
+    const state_load_fuzz_cmd = b.addSystemCommand(&.{ "bash", "zig_build/tests/calc_state/run-state-load-fuzz.sh" });
+    state_load_fuzz_cmd.addArtifactArg(state_load_harness);
+    state_load_fuzz_cmd.addArg("zig_build/tests/calc_state/malformed");
+    state_load_fuzz_cmd.setCwd(b.path("."));
+    const state_load_fuzz_step = b.step("state_load_fuzz", "M-SAFE-7: run malformed state files through the real restore path");
+    state_load_fuzz_step.dependOn(&state_load_fuzz_cmd.step);
+
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
     // save/load logic (RAM_SIZE_IN_BLOCKS + the cross-hardware relocation) for
     // BOTH the NEW_HW (host/DMCP5/DM42n) and OLD_HW (DMCP/original DM42) lanes.

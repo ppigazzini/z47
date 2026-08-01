@@ -533,10 +533,13 @@ jobs:
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           zig build both_asan
           xvfb-run --auto-servernum zig build test_asan
-          # M1 (REPORT-27 ANNEX B): malformed state/program-file corpus through the
-          # real load path under ASAN -- the untrusted-input surface upstream keeps
-          # fixing (577 statefile overflow, decode-literal-base-oob).
-          zig build pgm_load_fuzz
+          # Malformed-input corpora through the real load paths -- the untrusted-input
+          # surface upstream keeps fixing (577 statefile overflow,
+          # decode-literal-base-oob). NOT under AddressSanitizer despite the harness
+          # names: there is none in this tree (see zig_docs/75-debugging.md). The
+          # detectors are UBSan over the retained C and Zig's own safety checks.
+          zig build pgm_load_fuzz      # M1: .p47 programs
+          zig build state_load_fuzz    # M-SAFE-7: .sav / .d47 state files
       - name: Enforce the owner-coverage floor (Annex A0)
         shell: bash
         run: |
