@@ -16,22 +16,36 @@ Before pushing anything non-trivial, run:
 bash .github/project/run-local-gate.sh
 ```
 
-It reproduces the full Linux CI verdict: the governance guards, then the
-host-parity build/test/oracle battery (`run-host-parity-battery.sh`, byte-
-identical to the CI step, which now calls the same script), then the tracked-
-generated-artifact diff. It fails fast on the first red.
+It runs the governance guards, then the host-parity build/test/oracle battery
+(`run-host-parity-battery.sh`, byte-identical to the CI step, which now calls the
+same script), then the tracked-generated-artifact diff. It fails fast on the
+first red.
+
+**It does NOT build the firmware, and its closing banner overstates this.** The
+gate prints "mirrors the Linux CI verdict" and notes only Windows and macOS as
+exceptions; CI's `linux-firmware-artifacts` job also builds `dmcp`, `dmcpr47`,
+`dmcp5`, `dmcp5r47` and `dist_dmcp_pkg1/2/3`, and none of that is in the eleven
+steps. For any change reaching an object the firmware links, a green gate is not
+the CI verdict. This is not hypothetical: one `@setRuntimeSafety(true)` added to
+`shell/config.zig` pushed OLD_HW package 3's `.bss` four bytes past the limit its
+linker script asserts, and the gate, `zig build test`, `test_asan`,
+`pgm_load_fuzz`, `simulator_smoke` **and `zig build dmcp` and `dmcp5`** were all
+green -- only `zig build dmcp_pkgs_all` failed, because the overrun is in a
+package variant. Run it by hand alongside the gate whenever the change touches a
+firmware-linked owner; it costs about 16 s.
 
 `zig build sim` and `zig build test:unit` are NOT the full gate. The first
 all-Zig upstream resync shipped three CI-only failures that were green under
 sim+test:unit -- a parity oracle that stopped compiling, a stale generated
 artifact, and a source-ownership violation. The local gate catches all three. The
-one class it cannot reproduce on Linux is the Windows LLP64 integer-width trap;
+classes it cannot reproduce on Linux are the firmware link above and the Windows
+LLP64 integer-width trap;
 `check-portable-int-widths.sh` (inside the gate) approximates it, and the CI
 Windows lane is the final adjudicator. See
 `.github/project/upstream-resync-runbook.md`.
 
-`zig build test` runs the shared upstream testSuite (12721 cases at the current
-pin; the run prints the total) plus the Zig-owned suites. Confirm it exits 0, not
+`zig build test` runs the shared upstream testSuite (12835 cases at the current
+pin; the run prints the total, so read it there rather than trusting this number) plus the Zig-owned suites. Confirm it exits 0, not
 just that it printed `0 TESTS FAILED` before any crash.
 
 A green run is not proof a path executed. When the change routes a call through
