@@ -108,9 +108,56 @@ Out: EC=0
 Func: fnExecute
 In:  FL_ASLIFT=1 PGM="G4"
 Out: EC=0
+;   The source-data guard behind the plot's "There is no statistical data available!" error, pinned term by term. graphPlotstat and fnPlotStat both gate on
+;   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) || (plotStatMx[0]=='D' && drawMxN()>=2) || (plotStatMx[0]=='H' && statMxN()>=3), and until now a
+;   failure of that guard was only observable as the error string, leaving the failing term to be inferred. FARG 0 = plotStatMx[0] ('S'=83, 'H'=72, cleared=0),
+;   1 = statisticalSumsPointer != NULL, 2 = SIGMA_N (checkMinimumDataPoints' count), 3 = statMxN(), 6 = calcMode (CM_PLOT_STAT=8, so the plot is still the
+;   on-screen mode when runProgram's closing refresh re-enters graphPlotstat), 7 = drawHistogram. Read after the XEQ, which is after both graphPlotstat entries.
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"83"
+Func: fnPlotGuardCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnPlotGuardCov
+In:  FARG=2
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=6
+Out: EC=0 RX=Real:"8"
+Func: fnPlotGuardCov
+In:  FARG=7
+Out: EC=0 RX=Real:"0"
+;   Shape of the damage when FARG=0 does not read 'S': FARG 5 = statMx[0], 8 = plotStatMx[1], 9 = plotStatMx[7]. A plotStatMx[1] still holding 'T' (84) is a single
+;   stray NUL, i.e. an off-by-one terminator from whatever the linker placed before plotStatMx; a statMx[0] cleared too is a wide store covering both char[8] names.
+Func: fnPlotGuardCov
+In:  FARG=5
+Out: EC=0 RX=Real:"83"
+Func: fnPlotGuardCov
+In:  FARG=8
+Out: EC=0 RX=Real:"84"
+Func: fnPlotGuardCov
+In:  FARG=9
+Out: EC=0 RX=Real:"0"
 Func: fnHashBmpCov
 In:  FARG=4
 Out: EC=0 RX=Stri:"2A237EFC7B341273E460CB641130471FEE9358BAE1128F9CB8653793F2FEFF1A"
+
+; The same SCATR plot with no SNAP (G4b). graphPlotstat is entered twice per plot program - once from refreshScreen<-fnSNAP, once from
+; refreshScreen<-runProgram - so dropping SNAP removes the first entry and the screen capture with it: plotStatMx surviving here but not
+; after G4 places whatever clears it inside the capture, and losing it here too places it in the plot itself.
+Func: fnExecute
+In:  FL_ASLIFT=1 PGM="G4b"
+Out: EC=0
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"83"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"5"
 
 ; assessment plot (G5: BestF 1 then ASSESS = PLOT_LR) - draws the linear-regression
 ; assessment (fit y=a0+a1x, r^2, and the fit line) from the seeded STATS sums.
@@ -123,6 +170,29 @@ Out: EC=0
 Func: fnExecute
 In:  FL_ASLIFT=1 PGM="G5"
 Out: EC=0
+;   The source-data guard behind the plot's "There is no statistical data available!" error, pinned term by term. graphPlotstat and fnPlotStat both gate on
+;   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) || (plotStatMx[0]=='D' && drawMxN()>=2) || (plotStatMx[0]=='H' && statMxN()>=3), and until now a
+;   failure of that guard was only observable as the error string, leaving the failing term to be inferred. FARG 0 = plotStatMx[0] ('S'=83, 'H'=72, cleared=0),
+;   1 = statisticalSumsPointer != NULL, 2 = SIGMA_N (checkMinimumDataPoints' count), 3 = statMxN(), 6 = calcMode (CM_PLOT_STAT=8, so the plot is still the
+;   on-screen mode when runProgram's closing refresh re-enters graphPlotstat), 7 = drawHistogram. Read after the XEQ, which is after both graphPlotstat entries.
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"83"
+Func: fnPlotGuardCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnPlotGuardCov
+In:  FARG=2
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=6
+Out: EC=0 RX=Real:"8"
+Func: fnPlotGuardCov
+In:  FARG=7
+Out: EC=0 RX=Real:"0"
 Func: fnHashBmpCov
 In:  FARG=5
 Out: EC=0 RX=Stri:"4E21C2E4531F626867CAB399CD586F8CEB3703C532AAB9A389F1EDFBFFB38918"
@@ -137,6 +207,29 @@ Out: EC=0
 Func: fnExecute
 In:  FL_ASLIFT=1 PGM="G7"
 Out: EC=0
+;   The source-data guard behind the plot's "There is no statistical data available!" error, pinned term by term. graphPlotstat and fnPlotStat both gate on
+;   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) || (plotStatMx[0]=='D' && drawMxN()>=2) || (plotStatMx[0]=='H' && statMxN()>=3), and until now a
+;   failure of that guard was only observable as the error string, leaving the failing term to be inferred. FARG 0 = plotStatMx[0] ('S'=83, 'H'=72, cleared=0),
+;   1 = statisticalSumsPointer != NULL, 2 = SIGMA_N (checkMinimumDataPoints' count), 3 = statMxN(), 6 = calcMode (CM_PLOT_STAT=8, so the plot is still the
+;   on-screen mode when runProgram's closing refresh re-enters graphPlotstat), 7 = drawHistogram. Read after the XEQ, which is after both graphPlotstat entries.
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"83"
+Func: fnPlotGuardCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnPlotGuardCov
+In:  FARG=2
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=6
+Out: EC=0 RX=Real:"8"
+Func: fnPlotGuardCov
+In:  FARG=7
+Out: EC=0 RX=Real:"0"
 Func: fnHashBmpCov
 In:  FARG=7
 Out: EC=0 RX=Stri:"F37EED64A93C6CB35C0BD76526CB561F4B19A4E8B3E28A19E5BCFA39156DE8FC"
@@ -151,6 +244,29 @@ Out: EC=0
 Func: fnExecute
 In:  FL_ASLIFT=1 PGM="G9"
 Out: EC=0
+;   The source-data guard behind the plot's "There is no statistical data available!" error, pinned term by term. graphPlotstat and fnPlotStat both gate on
+;   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) || (plotStatMx[0]=='D' && drawMxN()>=2) || (plotStatMx[0]=='H' && statMxN()>=3), and until now a
+;   failure of that guard was only observable as the error string, leaving the failing term to be inferred. FARG 0 = plotStatMx[0] ('S'=83, 'H'=72, cleared=0),
+;   1 = statisticalSumsPointer != NULL, 2 = SIGMA_N (checkMinimumDataPoints' count), 3 = statMxN(), 6 = calcMode (CM_PLOT_STAT=8, so the plot is still the
+;   on-screen mode when runProgram's closing refresh re-enters graphPlotstat), 7 = drawHistogram. Read after the XEQ, which is after both graphPlotstat entries.
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"83"
+Func: fnPlotGuardCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnPlotGuardCov
+In:  FARG=2
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"5"
+Func: fnPlotGuardCov
+In:  FARG=6
+Out: EC=0 RX=Real:"8"
+Func: fnPlotGuardCov
+In:  FARG=7
+Out: EC=0 RX=Real:"0"
 Func: fnHashBmpCov
 In:  FARG=9
 Out: EC=0 RX=Stri:"B31C4FC3A3EA1DA8A187709A2BA56EB9EBF796015AF25BB3709EAB2890916AB1"
@@ -199,6 +315,29 @@ Out: EC=0
 Func: fnExecute
 In:  FL_ASLIFT=1 PGM="G6"
 Out: EC=0
+;   The source-data guard behind the plot's "There is no statistical data available!" error, pinned term by term. graphPlotstat and fnPlotStat both gate on
+;   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) || (plotStatMx[0]=='D' && drawMxN()>=2) || (plotStatMx[0]=='H' && statMxN()>=3), and until now a
+;   failure of that guard was only observable as the error string, leaving the failing term to be inferred. FARG 0 = plotStatMx[0] ('S'=83, 'H'=72, cleared=0),
+;   1 = statisticalSumsPointer != NULL, 2 = SIGMA_N (checkMinimumDataPoints' count), 3 = statMxN(), 6 = calcMode (CM_PLOT_STAT=8, so the plot is still the
+;   on-screen mode when runProgram's closing refresh re-enters graphPlotstat), 7 = drawHistogram. Read after the XEQ, which is after both graphPlotstat entries.
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"72"
+Func: fnPlotGuardCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnPlotGuardCov
+In:  FARG=2
+Out: EC=0 RX=Real:"9"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"3"
+Func: fnPlotGuardCov
+In:  FARG=6
+Out: EC=0 RX=Real:"8"
+Func: fnPlotGuardCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
 Func: fnHashBmpCov
 In:  FARG=6
 Out: EC=0 RX=Stri:"CE7BF22B3FD0536D6BB65A0AE851F53800E2CF7A83568AE8E9C1F4ECF662DAD7"
@@ -214,6 +353,29 @@ Out: EC=0
 Func: fnExecute
 In:  FL_ASLIFT=1 PGM="G8"
 Out: EC=0
+;   The source-data guard behind the plot's "There is no statistical data available!" error, pinned term by term. graphPlotstat and fnPlotStat both gate on
+;   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) || (plotStatMx[0]=='D' && drawMxN()>=2) || (plotStatMx[0]=='H' && statMxN()>=3), and until now a
+;   failure of that guard was only observable as the error string, leaving the failing term to be inferred. FARG 0 = plotStatMx[0] ('S'=83, 'H'=72, cleared=0),
+;   1 = statisticalSumsPointer != NULL, 2 = SIGMA_N (checkMinimumDataPoints' count), 3 = statMxN(), 6 = calcMode (CM_PLOT_STAT=8, so the plot is still the
+;   on-screen mode when runProgram's closing refresh re-enters graphPlotstat), 7 = drawHistogram. Read after the XEQ, which is after both graphPlotstat entries.
+Func: fnPlotGuardCov
+In:  FARG=0
+Out: EC=0 RX=Real:"72"
+Func: fnPlotGuardCov
+In:  FARG=1
+Out: EC=0 RX=Real:"1"
+Func: fnPlotGuardCov
+In:  FARG=2
+Out: EC=0 RX=Real:"3"
+Func: fnPlotGuardCov
+In:  FARG=3
+Out: EC=0 RX=Real:"3"
+Func: fnPlotGuardCov
+In:  FARG=6
+Out: EC=0 RX=Real:"8"
+Func: fnPlotGuardCov
+In:  FARG=7
+Out: EC=0 RX=Real:"1"
 Func: fnHashBmpCov
 In:  FARG=8
 Out: EC=0 RX=Stri:"2B09956B925D466A747A3711F5B0BB33D710B4F8CFC5B71C882AA4F897470775"
