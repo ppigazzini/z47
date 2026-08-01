@@ -31,6 +31,17 @@ corpus states. The second is not redundant: the defect class includes SILENT
 wrong-accepts, and a crash detector cannot see one. Both assertions are verified
 to fire by reverting the fixes they guard.
 
+**Know what the state corpus is before citing it.** It holds five files, and
+every one is a reproducer of a bug that was already found and fixed -- four from
+the matrix-dimension guard, one from the version forgery. It is a REGRESSION
+suite: it will prove those fixes have not come undone, and it will not find a
+sixth bug, because nothing in it explores input nobody has looked at. The
+truncation sweep, section-count mutations and structural mutations that would
+make it a real corpus are specified and unbuilt; the sibling `.p47` corpus has 27
+files by comparison, and found three real bugs the afternoon it was written. Do
+not read a green `state_load_fuzz` as "the restore path handles malformed input";
+read it as "these five known cases still behave".
+
 Step `[10b/11]` links **every DMCP package variant** (`zig build dmcp_pkgs_all`),
 and it is not redundant with `zig build dmcp` / `dmcp5`. The OLD_HW package-3
 layout asserts `_ebss <= 0x10002000` and sits exactly on it, so a few bytes of
