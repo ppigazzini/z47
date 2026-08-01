@@ -175,12 +175,17 @@ closing a real hazard.
 
 ### The Open Gaps
 
-These are lanes or language affordances that do not exist yet, not open defects.
-Each entry states what would close it, and the sequenced plan behind them
-(M-SAFE-1 through M-SAFE-8, ordered language-first and detectors-last) is in the
-maintainer working notes. M-SAFE-1 is done: it ported upstream's matrix-dimension
-capacity guard, which z47 had never carried, and its rule is the dimensions row in
-the table above.
+These are lanes, language affordances and unanswered contracts -- not open
+defects. Each entry states what would close it, and the sequenced plan behind them
+(M-SAFE-1 through M-SAFE-10, ordered language-first and detectors-last) is in the
+maintainer working notes.
+
+Four of those milestones have landed, and the rules table above is where their
+results live: the matrix-dimension capacity guard, runtime safety on the load
+path, the narrowing split and its ratchet, and the line-boundary slices. Gaps 6
+and 7 were found BY that work rather than planned -- every milestone so far has
+surfaced something the one before it could not see -- so treat this list as live
+rather than closed.
 
 1. **Safety on the load path catches the integer class only, and cannot catch
    more until the regions become slices.** The 22 covered functions emitted just
@@ -242,6 +247,32 @@ the table above.
    `report-idiom-status.py`'s single total cannot tell a correct cast from a
    defect. Extending the analysis there needs the same per-site upstream reading;
    do not sweep it.
+6. **A fix lands in one owner and its sibling twin is missed.** z47 keeps a
+   state-file family and a program-file family that parse different formats with
+   structurally identical helpers, and a fix applied to one has twice not been
+   applied to the other: upstream's matrix-dimension clamp (absent from the Zig
+   for four resyncs) and the M1 fuzz's saturating `parseU32LineZ`, which was
+   fixed in `program_serialization_runtime.zig` while the byte-identical twin in
+   `calc_state_runtime.zig` kept wrapping for three weeks. Nothing can see this
+   today: the parity oracles compare each owner against upstream C, so two owners
+   that differ from each other look fine, and the ratchets count shapes rather
+   than semantics. A twin-divergence report -- pair same-named functions across
+   the two families, normalise, diff, and rank by how SMALL the difference is,
+   since a one-operator drift between twins is the suspicious case -- is the
+   cheapest thing that would have caught both.
+7. **`strtol` / `strtoul` results are platform-width, so upstream's own behaviour
+   differs between host and firmware.** `sizeof(unsigned long)` is 8 on the LP64
+   host and 4 on the arm-none-eabi firmware (measured), so `strtoul` saturates at
+   2^64 on one and 2^32 on the other. `toUint32("4304967321")` is 10000025 on the
+   host and 4294967295 on the device, from upstream's own code. z47 inherits this
+   at seven load-path sites (`calc_state_text.zig`'s `toInt16`/`toUint8`/
+   `toUint16`/`toUint32`, `calc_state.zig`'s `stringToInt8`/`stringToUint16`, and
+   `calc_state_backup.zig`); `strtoll`/`strtoull` are clean, since `long long` is
+   64-bit on both. "Be faithful to upstream" does not decide these, and the parity
+   oracles only ever run the host side, so the device's answer is unverified. No
+   valid state file reaches the divergence -- this is a contract to write down per
+   site, not a defect to sweep. Same class as the `c_long` LLP64 trap already on
+   record, on the untrusted-input path.
 
 ### Rules For New Code
 
