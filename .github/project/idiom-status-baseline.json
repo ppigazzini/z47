@@ -1,7 +1,7 @@
 {
   "totals": {
     "extern_struct_files": 16,
-    "cptr_files": 94,
+    "cptr_files": 93,
     "ptrcast_sites": 1342,
     "callconv_c_sites": 2924,
     "extern_fn_sites": 3568,
@@ -11,7 +11,7 @@
     "constants_blob_sites": 1,
     "qspi_section_files": 24
   },
-  "owner_count": 411,
+  "owner_count": 413,
   "seam_totals": {
     "extern_struct_files": 2,
     "cptr_files": 0,

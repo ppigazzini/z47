@@ -13,19 +13,19 @@ pub fn parseSaveFileRevision() HeaderInfo {
     var info = HeaderInfo{};
 
     runtime.readLine(header_key[0..]);
-    if (runtime.lineEquals(header_key[0..].ptr, "SAVE_FILE_REVISION")) {
+    if (runtime.lineEquals(header_key[0..], "SAVE_FILE_REVISION")) {
         runtime.readLine(ignored_revision[0..]);
         runtime.readLine(calculator_id[0..]);
         runtime.readLine(version_line[0..]);
 
-        if (runtime.lineEquals(calculator_id[0..].ptr, "C47_save_file_00")) {
+        if (runtime.lineEquals(calculator_id[0..], "C47_save_file_00")) {
             info.saved_calc_model = runtime.USER_C47;
-        } else if (runtime.lineEquals(calculator_id[0..].ptr, "R47_save_file_00")) {
+        } else if (runtime.lineEquals(calculator_id[0..], "R47_save_file_00")) {
             info.saved_calc_model = runtime.USER_R47;
         }
 
         if (info.saved_calc_model == runtime.USER_C47 or info.saved_calc_model == runtime.USER_R47) {
-            info.loaded_version = runtime.parseU32Line(version_line[0..].ptr);
+            info.loaded_version = runtime.parseU32Line(version_line[0..]);
             if (info.loaded_version < 10_000_000 or info.loaded_version > 20_000_000) {
                 info.loaded_version = 0;
             }

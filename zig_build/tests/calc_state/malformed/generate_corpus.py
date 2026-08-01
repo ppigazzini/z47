@@ -90,3 +90,20 @@ write(
     "matrix_rows_exceed_header_12_bits.sav",
     patch_first_matrix(16383, 1, 16383),
 )
+
+
+# M-SAFE-4: the header version line, forged. Under the wrapping u32 arithmetic the
+# state-side parser used before M-SAFE-4, these digits evaluate to exactly
+# 10000025 -- inside the [10000000, 20000000] window parseSaveFileRevision accepts
+# -- so a file could claim any version and thereby select the parse layout used
+# for everything after it. With the saturating parse the value pins to
+# 0xFFFFFFFF, the range check rejects it, and loadedVersion stays 0. Verified both
+# ways through the real doLoad in a ReleaseSmall build.
+def patch_version(line: str) -> list[str]:
+    out = list(base)
+    assert out[0] == "SAVE_FILE_REVISION", out[0]
+    out[3] = line          # SAVE_FILE_REVISION / revision / calculator id / version
+    return out
+
+
+write("version_wrap_forges_valid.sav", patch_version("4304967321"))
