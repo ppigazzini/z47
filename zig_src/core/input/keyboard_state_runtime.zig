@@ -953,6 +953,9 @@ pub extern fn displayShiftAndTamBuffer() void;
 
 // btnFnPressed dependencies (keyboard.c 579-742).
 pub export var releaseOverride: bool_t = false;
+/// This press closed a SHOW or WHO screen, which clears temporaryInformation
+/// before EXIT is handled on the release.
+pub export var showScreenDismissed: bool_t = false;
 pub extern var FN_key_pressed: i16;
 pub extern fn updateAssignTamBuffer() void;
 pub extern fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) void;

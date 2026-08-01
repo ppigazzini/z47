@@ -83,7 +83,10 @@ const dmcp_build: bool = solve_build_options.is_dmcp_build;
 const old_hw: bool = solve_build_options.is_old_hw;
 // Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
 // engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
-const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 2 else if (dmcp_build) 3 else 4;
+// OLD_HW dropped 2 -> 1 at the 6559a9c59 pin: the DM42's measured stack use
+// leaves it the least room, and the same pin moved the solvers' working reals
+// off the frame for the same reason.
+const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 1 else if (dmcp_build) 3 else 4;
 
 const FLAG_ASLIFT: u32 = 0xc023;
 const FLAG_INTING: u32 = 0xc025;

@@ -2633,7 +2633,11 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
     setScreenUpdateFromMenu(softmenu[@intCast(m)].menuItem, openMenu);
 
     if ((!IS_BASEBLANK_(m) or BASE_OVERRIDEONCE != 0) and calcMode != CM_FLAG_BROWSER and calcMode != CM_ASN_BROWSER and calcMode != CM_FONT_BROWSER and calcMode != CM_REGISTER_BROWSER and calcMode != CM_BUG_ON_SCREEN) {
-        frontier_screen.clearScreenOld(0, 0, 1);
+        if (currentMenu() != -%@as(i16, MNU_SHOW)) {
+            // The blank menu carries no softkeys or underlines, and the screen owner
+            // has already painted over the menu area.
+            frontier_screen.clearScreenOld(0, 0, 1);
+        }
         BASE_OVERRIDEONCE = 0;
         if (tam.mode == TM_KEY and !tam.keyInputFinished) {
             y = 0;

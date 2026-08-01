@@ -820,6 +820,20 @@ const whoStr1: [*:0]const u8 = "C47 & R47 Development since 2019" ++ spc ++ "by"
     "RJvM" ++ spc ++ "NL," ++ spc1 ++
     "Walter" ++ spc ++ "DE.";
 
+const STD_o_DIARESIS = "\x80\xf6";
+const STD_e_ACUTE = "\x80\xe9";
+// The contributor roll under whoStr1, in the tiny font. Commit counts as of the
+// 30Jul2026 upstream snapshot this pin carries.
+const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3928)," ++ spc1 ++ "Martin Lorang" ++ spc ++ "(1382)," ++ spc1 ++ "Robbert Jan van Meenen" ++ spc ++ "(doc)," ++ spc1 ++
+    "MihailJP" ++ spc ++ "(1093)," ++ spc1 ++ "Ralf Ahlbrink" ++ spc ++ "(459)," ++ spc1 ++ "Paul Dale" ++ spc ++ "(449)," ++ spc1 ++ "Didier Lachieze" ++ spc ++ "(277)," ++ spc1 ++
+    "Walter Bonin" ++ spc ++ "(270)," ++ spc1 ++ "Benjamin Titmus" ++ spc ++ "(215)," ++ spc1 ++ "Hartmut Bromkamp" ++ spc ++ "(187)," ++ spc1 ++
+    "Pasquale Pigazzini" ++ spc ++ "(135)," ++ spc1 ++ "Mike Leffel" ++ spc ++ "(107)," ++ spc1 ++ "Warren Young" ++ spc ++ "(68)," ++ spc1 ++ "David Emerson" ++ spc ++ "(50)," ++ spc1 ++
+    "Bj" ++ STD_o_DIARESIS ++ "rn Jadelius" ++ spc ++ "(47)," ++ spc1 ++ "Philippe Martens" ++ spc ++ "(46)," ++ spc1 ++ "Marcel Dan" ++ spc ++ "(37)," ++ spc1 ++
+    "H" ++ STD_a_RING ++ "kon Hansen" ++ spc ++ "(36)," ++ spc1 ++ "Gert Menke" ++ spc ++ "(31)," ++ spc1 ++ "John Boydon" ++ spc ++ "(29)," ++ spc1 ++ "Michael Peter" ++ spc ++ "(28)," ++ spc1 ++
+    "Ian Abbott" ++ spc ++ "(21)," ++ spc1 ++ "R" ++ STD_e_ACUTE ++ "my Trotin" ++ spc ++ "(19)," ++ spc1 ++ "fridlmue" ++ spc ++ "(17)," ++ spc1 ++ "A. Vosough" ++ spc ++ "(16)," ++ spc1 ++
+    "Dani Rau" ++ spc ++ "(9)," ++ spc1 ++ "Harald Overbeek" ++ spc ++ "(9)," ++ spc1 ++ "Will Rutherdale" ++ spc ++ "(6)," ++ spc1 ++ "Nigel Dowrick" ++ spc ++ "(4)" ++
+    spc1 ++ "\n(commits 30Jul2026)";
+
 // MODELTEXT: CALCMODEL==USER_R47 ? "R47" : "C47". All z47 targets are C47 builds.
 const MODELTEXT = "C47";
 const disclaimerStr: [*:0]const u8 = "  " ++ MODELTEXT ++ " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
@@ -3814,8 +3828,19 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             const id = frontier_config.getConfirmationTiId();
             _ = showString(&confirmationTI[id].string, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_WHO) {
-            if (regist == REGISTER_Z or regist == REGISTER_Y or regist == REGISTER_X) {
-                _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * 2 + 6), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+            // WHO owns the whole screen since the 6559a9c59 pin: it clears, puts the
+            // blank MNU_SHOW menu up so nothing repaints softkeys over it, then draws
+            // both rolls once from the X pass. The other register passes return without
+            // drawing rather than repainting the same text three times.
+            if (regist == REGISTER_X) {
+                clearScreenOld(0, 1, 1); // clear before the blank menu goes up: the MNU_SHOW guards in _selectiveClearScreen skip the graph rects
+                _ = frontier_softmenus.showSoftmenu(-MNU_SHOW);
+                _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 30 - 3), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                _ = showStringEnhanced(whoStr2, &tinyFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 50 - 27), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                screenUpdatingMode |= SCRUPD_MANUAL_MENU;
+            }
+            if (regist == REGISTER_T or regist == REGISTER_Z or regist == REGISTER_Y or regist == REGISTER_X) {
+                return;
             }
         } else if (temporaryInformation == TI_VERSION and regist == REGISTER_X) {
             clearRegisterLine(REGISTER_T, true, true);
@@ -5620,10 +5645,13 @@ fn _selectiveClearScreen() void {
 
         if ((screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
             lcd_fill_rect(LeftGraphInfoX, topLeftMenuInclBorderY, widthGraphInfoBox, menuHeightInclBorder, LCD_SET_VALUE);
-            if (!GRAPHMODE() or frontier_softmenus.menu(0) == -MNU_PLOT_FUNC) {
+            // The MNU_SHOW guards keep this clear off the area a SHOW/WHO screen owns:
+            // that screen paints the whole display and the blank menu under it must not
+            // erase part of it.
+            if ((!GRAPHMODE() or frontier_softmenus.menu(0) == -MNU_PLOT_FUNC) and frontier_softmenus.currentMenu() != -MNU_SHOW) {
                 lcd_fill_rect(LeftGraphInfoX, topLeftMenuInclBorderY - 3, 20, 6, LCD_SET_VALUE);
             }
-            if (!GRAPHMODE()) {
+            if (!GRAPHMODE() and frontier_softmenus.currentMenu() != -MNU_SHOW) {
                 lcd_fill_rect(widthGraphInfoBox, topLeftMenuInclBorderY, widthGraphInclBorder, menuHeightInclBorder, LCD_SET_VALUE);
             }
         }

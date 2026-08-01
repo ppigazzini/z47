@@ -433,12 +433,17 @@ pub fn C47_WP34S_SinCosTanTaylor_temp75(a: *align(1) const real_t, swap: bool, s
 // ===========================================================================
 // C47_WP34S_Cvt2RadSinCosTan_1071temp (static)
 // ===========================================================================
-fn C47_WP34S_Cvt2RadSinCosTan_1071temp(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+fn C47_WP34S_Cvt2RadSinCosTan_1071_helper(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     var sinNeg: bool = false;
     var cosNeg: bool = false;
     var swap: bool = false;
-    var angle_buf: BigReal(1071) = .{};
-    const angle = angle_buf.ptr();
+    // One 1071-digit decNumber at 724 bytes, of this function's 752-byte frame.
+    const angle_p = owner.mallocBigReal(1071);
+    defer owner.freeBigReal(angle_p);
+    const angle = angle_p orelse {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    };
 
     if (realIsNaN(an)) {
         if (sinOut) |s| realSetNaN(s);
@@ -459,7 +464,7 @@ fn C47_WP34S_Cvt2RadSinCosTan_1071temp(an: *align(1) const real_t, angularMode: 
 // ===========================================================================
 pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     if (realContext.digits >= 1071) {
-        C47_WP34S_Cvt2RadSinCosTan_1071temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
+        C47_WP34S_Cvt2RadSinCosTan_1071_helper(an, angularMode, sinOut, cosOut, tanOut, realContext);
     } else {
         C47_WP34S_Cvt2RadSinCosTan_75temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
     }
@@ -474,23 +479,43 @@ pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angul
 // `#if defined(OPTION_XFN_1000)` around this function achieves.
 fn C47_WP34S_SinCosTanTaylor_temp1071(a: *align(1) const real_t, swap: bool, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     if (comptime !runtime.option_xfn_1000) return;
-    var angle_buf: BigReal(1071) = .{};
-    var a2_buf: BigReal(1071) = .{};
-    var t_buf: BigReal(1071) = .{};
-    var j_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    var sin_buf: BigReal(1071) = .{};
-    var cos_buf: BigReal(1071) = .{};
-    var epsilon_buf: BigReal(1071) = .{};
+    // The eight working reals come from the heap, not the frame: eight 1071-digit
+    // decNumbers at 724 bytes is 5792 of this function's 5832-byte frame on an arm
+    // build with OPTION_XFN_1000 forced on. That frame is the stack reason XFN 1000
+    // is kept off the DM42.
+    const angle_p = owner.mallocBigReal(1071);
+    const a2_p = owner.mallocBigReal(1071);
+    const t_p = owner.mallocBigReal(1071);
+    const j_p = owner.mallocBigReal(1071);
+    const z_p = owner.mallocBigReal(1071);
+    const sin_p = owner.mallocBigReal(1071);
+    const cos_p = owner.mallocBigReal(1071);
+    const epsilon_p = owner.mallocBigReal(1071);
+    defer {
+        owner.freeBigReal(angle_p);
+        owner.freeBigReal(a2_p);
+        owner.freeBigReal(t_p);
+        owner.freeBigReal(j_p);
+        owner.freeBigReal(z_p);
+        owner.freeBigReal(sin_p);
+        owner.freeBigReal(cos_p);
+        owner.freeBigReal(epsilon_p);
+    }
+    if (angle_p == null or a2_p == null or t_p == null or j_p == null or
+        z_p == null or sin_p == null or cos_p == null or epsilon_p == null)
+    {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
 
-    const angle = angle_buf.ptr();
-    const a2 = a2_buf.ptr();
-    const t = t_buf.ptr();
-    const j = j_buf.ptr();
-    const z = z_buf.ptr();
-    const sin = sin_buf.ptr();
-    const cos = cos_buf.ptr();
-    const epsilonOrCompare = epsilon_buf.ptr();
+    const angle = angle_p.?;
+    const a2 = a2_p.?;
+    const t = t_p.?;
+    const j = j_p.?;
+    const z = z_p.?;
+    const sin = sin_p.?;
+    const cos = cos_p.?;
+    const epsilonOrCompare = epsilon_p.?;
 
     doTaylorIterations(a, angle, a2, t, j, z, sin, cos, sinOut, cosOut, epsilonOrCompare, true, 1040, realContext);
 
