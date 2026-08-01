@@ -25,7 +25,7 @@ const consts = abi.constants;
 //       (a) the 4 NON-renamed publics of matrixEditor.c:
 //           showRealMatrix, showComplexMatrix, getRealMatrixColumnWidths,
 //           getComplexMatrixColumnWidths;
-//       (b) the file-scope globals: openMatrixMIMPointer, matEditMode, scrollRow,
+//       (b) the file-scope globals: openMatrixMIMPointer, scrollRow,
 //           scrollColumn, tmpRow, matrixIndex (the sibling owners declare these
 //           `extern` — calc_mode_owned, goto_grow_owned, etc. — but the
 //           DEFINITION lives here);
@@ -243,8 +243,8 @@ const FLAG_CPXj: c_int = 0x8005;
 
 // ===========================================================================
 // Globals — DEFINED HERE (the siblings declare these `extern`).
-// matEditMode is file-local in matrixEditor.c and referenced nowhere else; we
-// still export it to mirror matrixEditor.c's symbol set exactly.
+// matEditMode went with upstream's "remove two globals that are never read or
+// written" at the 6559a9c59 pin.
 // ===========================================================================
 // These are mutable RAM globals (matrixEditor.c file-scope, normal .data/.bss);
 // they must NOT go into .qspi (read-only XIP flash). Default section.
@@ -255,7 +255,6 @@ const FLAG_CPXj: c_int = 0x8005;
 // toC47MemPtr @intCast panic in Debug / heap corruption in ReleaseFast). Match
 // C's zero-init.
 pub export var openMatrixMIMPointer: AnyMatrix = std.mem.zeroes(AnyMatrix);
-pub export var matEditMode: bool_t = false;
 pub export var scrollRow: u16 = 0;
 pub export var scrollColumn: u16 = 0;
 pub export var tmpRow: u16 = 0;
@@ -2133,9 +2132,8 @@ fn wrapIJImpl(rows: u16, cols: u16) bool_t {
 }
 
 comptime {
-    // Force-reference the lifecycle/dead globals so they are not stripped and so
+    // Force-reference the lifecycle/dead global so it is not stripped and so
     // matrixEditor.c's symbol set is preserved exactly.
-    _ = &matEditMode;
     _ = &tmpRow;
 }
 

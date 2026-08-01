@@ -158,11 +158,10 @@ pub fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32
     }
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        if (runtime.reservedAllowsDataTypeWrite(reg)) {
-            const index: u16 = @intCast(reg - runtime.FIRST_RESERVED_VARIABLE);
-            descriptor = runtime.namedDescriptorUnchecked(index);
-            runtime.setNamedDescriptorUnchecked(index, withDataTypeTag(descriptor, data_type, tag));
-        }
+        // Nothing to do, as in setRegisterDataPointer(): allReservedVariables[] is
+        // const, so a reserved variable's type and tag are fixed. The write this
+        // replaces indexed allNamedVariables[] with a RESERVED index, so it retyped
+        // an unrelated named variable.
         return;
     }
 

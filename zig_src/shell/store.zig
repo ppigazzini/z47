@@ -699,6 +699,14 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_float1: f32 = 0.1;
     const compatibility_float2: f32 = 0.2;
     reallocateRegister(@intCast(regist), dtConfig, 0, amNone);
+    if (getRegisterDataType(@intCast(regist)) != dtConfig) {
+        // Store only into a register that holds a configuration, the test
+        // fnRecallConfig() already makes. A reserved variable reaches here through
+        // STOCFG's TAM destination and reallocateRegister refuses to retype it, so
+        // without this the 840-byte descriptor would be written over a one-real34
+        // block and the registers around it.
+        return;
+    }
     const configToStore = regConfig(@intCast(regist));
 
     configToStore.shortIntegerMode = shortIntegerMode;

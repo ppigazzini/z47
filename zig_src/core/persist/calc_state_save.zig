@@ -92,6 +92,8 @@ extern var statisticalSumsPointer: ?*anyopaque;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var userKeyLabel: [*c]u8;
+// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var userMenuItems: [18]userMenuItem_t;
 extern var userAlphaItems: [18]userMenuItem_t;
 extern var numberOfUserMenus: u16;
@@ -223,6 +225,16 @@ fn toPcmemptr(p: u16) [*c]u8 {
     return @ptrFromInt(progmem.toPcmemptr(geometry(), p));
 }
 
+/// True when equation `id` has text a state file can carry. A formula with none
+/// is either fresh from fnEqNew(), whose pointerToFormulaData is C47_NULL, or the
+/// empty string a restore leaves when its count outran the file.
+fn formulaHasText(id: u16) bool {
+    if (allFormulae[id].pointerToFormulaData == C47_NULL) {
+        return false;
+    }
+    return toPcmemptr(allFormulae[id].pointerToFormulaData)[0] != 0;
+}
+
 pub fn writeSaveSections() void {
     if (!acquireBuf()) return;
     defer releaseBuf();
@@ -327,7 +339,7 @@ pub fn writeSaveSections() void {
         var num: u32 = 0;
         var i: u32 = 0;
         while (i < 37 * 6) : (i += 1) {
-            if (getNthString(userKeyLabel, @intCast(i))[0] != 0) {
+            if (getUserKeyLabelString(@intCast(i))[0] != 0) {
                 num += 1;
             }
         }
@@ -336,9 +348,9 @@ pub fn writeSaveSections() void {
 
         i = 0;
         while (i < 37 * 6) : (i += 1) {
-            if (getNthString(userKeyLabel, @intCast(i))[0] != 0) {
+            if (getUserKeyLabelString(@intCast(i))[0] != 0) {
                 abi.fmtCStr(b(), "{d} ", .{cu(i)});
-                stringToUtf8(getNthString(userKeyLabel, @intCast(i)), b() + strlen(b()));
+                stringToUtf8(getUserKeyLabelString(@intCast(i)), b() + strlen(b()));
                 _ = strcat(b(), "\n");
                 save(b());
             }
@@ -387,11 +399,31 @@ pub fn writeSaveSections() void {
     }
 
     // Equations
-    abi.fmtCStr(b(), "EQUATIONS\n{d}\n", .{cu(numberOfFormulae)});
-    save(b());
+    // A formula can hold no text in two ways, and this section can represent
+    // neither. fnEqNew() leaves pointerToFormulaData at C47_NULL until something is
+    // typed in, and TO_PCMEMPTR() turns that into the NULL stringToUtf8()
+    // dereferences; a restore whose count outran the file leaves empty strings
+    // instead, and writing those as blank lines is no better, because readLine()
+    // skips blank lines and the reader would take the next section header for the
+    // formula's text. Both are the same thing to a reader -- a formula with nothing
+    // in it -- so the section holds the ones that have text and the count says how
+    // many that is.
     {
+        var formulaeWithText: u16 = 0;
         var i: u32 = 0;
         while (i < numberOfFormulae) : (i += 1) {
+            if (formulaHasText(@intCast(i))) {
+                formulaeWithText += 1;
+            }
+        }
+        abi.fmtCStr(b(), "EQUATIONS\n{d}\n", .{cu(formulaeWithText)});
+        save(b());
+
+        i = 0;
+        while (i < numberOfFormulae) : (i += 1) {
+            if (!formulaHasText(@intCast(i))) {
+                continue;
+            }
             stringToUtf8(toPcmemptr(allFormulae[i].pointerToFormulaData), b());
             _ = strcat(b(), "\n");
             save(b());

@@ -65,14 +65,21 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
 
 pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
     // The upstream reallocateRegister applies the same allocation path to every
-    // register, reserved or not. Reserved registers must reallocate here too:
-    // skipping them leaves stale type and size metadata, which corrupts values
-    // stored into reserved variables. The earlier retained dispatch recursed
-    // back through the exported reallocateRegister; this local path does not.
+    // register except a reserved variable, which since the 6559a9c59 pin is refused
+    // outright rather than retyped. The earlier retained dispatch recursed back
+    // through the exported reallocateRegister; this local path does not.
     const normalized_payload_size = payload_owned.normalizePayloadSizeInBlocks(data_type, data_size_without_data_len_blocks);
     const allocated_size = payload_owned.allocationSizeInBlocks(data_type, normalized_payload_size);
 
     if (needsReallocate(reg, data_type, normalized_payload_size)) {
+        // A reserved variable keeps the data type it was declared with: its block is
+        // fixed and named by a const header, so there is nothing here to free,
+        // allocate or retype.
+        if (runtime.FIRST_RESERVED_VARIABLE <= reg and reg <= runtime.LAST_RESERVED_VARIABLE) {
+            runtime.reportReservedVariableRetype();
+            return;
+        }
+
         if (!runtime.memoryBlockAvailable(allocated_size)) {
             runtime.reportRamFull();
             return;

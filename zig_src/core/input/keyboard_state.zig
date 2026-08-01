@@ -237,7 +237,7 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     var funcParam: [*c]const u8 = "";
     runtime.keyStateCode = @intCast((if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) @as(c_int, 3) else 0) + (if (g) @as(c_int, 2) else if (f) @as(c_int, 1) else 0));
     if (runtime.getSystemFlag(runtime.FLAG_USER)) {
-        funcParam = runtime.getNthString(runtime.userKeyLabel, @intCast(keyCode * 6 + runtime.keyStateCode));
+        funcParam = runtime.getUserKeyLabelString(@intCast(keyCode * 6 + runtime.keyStateCode));
         _ = runtime.xcopy(runtime.tmpString, funcParam, @intCast(runtime.stringByteLength(funcParam) + 1));
     } else if ((@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and (runtime.keyStateCode == 0) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX))) {
         funcParam = &runtime.Norm_Key_00.funcParam;
@@ -547,7 +547,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
 
             const Norm_Key_00_released = !runtime.getSystemFlag(runtime.FLAG_USER) and (runtime.keyStateCode == 0) and (@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX));
 
-            var funcParam: [*c]u8 = if (Norm_Key_00_released) &runtime.Norm_Key_00.funcParam else runtime.getNthString(runtime.userKeyLabel, @intCast(keyCode * 6 + runtime.keyStateCode));
+            var funcParam: [*c]u8 = if (Norm_Key_00_released) &runtime.Norm_Key_00.funcParam else runtime.getUserKeyLabelString(@intCast(keyCode * 6 + runtime.keyStateCode));
             if (runtime.showFunctionNameArg != null) {
                 funcParam = runtime.showFunctionNameArg;
             }
@@ -955,7 +955,7 @@ pub export fn openHOMEorMyM(situation: runtime.bool_t) callconv(.c) void {
                 } else {
                     if (item < 0) {
                         if (item == -runtime.MNU_DYNAMIC) {
-                            const funcParam = runtime.getNthString(runtime.userKeyLabel, @intCast(keyCode * 6 + 1));
+                            const funcParam = runtime.getUserKeyLabelString(@intCast(keyCode * 6 + 1));
                             _ = runtime.setCurrentUserMenu(item, funcParam);
                         }
                         target_HOME = if (item == -runtime.MNU_HOME and runtime.getSystemFlag(runtime.FLAG_MYM_TRIPLE)) -runtime.MNU_MyMenu else item;
@@ -1366,7 +1366,7 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
         }
     }
 
-    const funcParam = runtime.getNthString(runtime.userKeyLabel, key_no);
+    const funcParam = runtime.getUserKeyLabelString(key_no);
 
     if (runtime.calcMode == runtime.CM_NORMAL and result.* == runtime.ITM_RS) {
         lp1 = runtime.ITM_NOP;

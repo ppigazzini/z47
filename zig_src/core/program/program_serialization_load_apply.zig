@@ -25,5 +25,8 @@ pub fn applyLoadedProgram(program_size_in_bytes: u32) void {
     runtime.firstFreeProgramByte[0] = 0xff;
     (runtime.firstFreeProgramByte + 1)[0] = 0xff;
     runtime.scanLabelsAndPrograms();
+    // goToGlobalStep diverts to a dynamic-menu label whenever dynamicMenuItem >= 0,
+    // and a program loaded while a static menu is on top has no such label to reach.
+    runtime.setDynamicMenuItemNone();
     runtime.goToLastProgram();
 }

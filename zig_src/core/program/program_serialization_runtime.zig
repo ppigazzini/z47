@@ -142,6 +142,12 @@ pub inline fn scanLabelsAndPrograms() void {
     io_owned.scanLabelsAndPrograms();
 }
 
+/// goToGlobalStep reads a dynamic-menu label whenever this is >= 0; a load
+/// clears it so the step it lands on is the program's own.
+pub inline fn setDynamicMenuItemNone() void {
+    io_owned.dynamicMenuItem = -1;
+}
+
 pub inline fn goToLastProgram() void {
     io_owned.goToLastProgram();
 }

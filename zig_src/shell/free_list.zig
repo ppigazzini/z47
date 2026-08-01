@@ -73,14 +73,19 @@ inline fn regionBytes(count: i32) u32 {
 }
 
 fn trackAllocation(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
+    // The check has to come before the write: past MAX_ALLOCATED_REGIONS the store
+    // is itself the out-of-bounds access, and reporting after it names a bound
+    // already passed. A state file claiming 32767 equations reaches this, one per
+    // setEquation().
+    if (allocated.numberOfAllocatedMemoryRegions >= MAX_ALLOCATED_REGIONS) {
+        std.debug.print("error: numberOfAllocatedMemoryRegions is >= MAX_ALLOCATED_REGIONS, increase MAX_ALLOCATED_REGIONS in defines.h (this affects only the PC simulator not the HW firmware)\n", .{});
+        return;
+    }
     const ar = allocated.regions();
     const n: usize = @intCast(allocated.numberOfAllocatedMemoryRegions);
     ar[n].blockAddress = toC47MemPtr(pcMemPtr);
     ar[n].sizeInBlocks = @intCast(sizeInBlocks);
     allocated.numberOfAllocatedMemoryRegions += 1;
-    if (allocated.numberOfAllocatedMemoryRegions >= MAX_ALLOCATED_REGIONS) {
-        std.debug.print("error: numberOfAllocatedMemoryRegions is >= MAX_ALLOCATED_REGIONS, increase MAX_ALLOCATED_REGIONS in defines.h (this affects only the PC simulator not the HW firmware)\n", .{});
-    }
 }
 
 // Drop the tracking entry for an allocation being freed/reduced. Returns the

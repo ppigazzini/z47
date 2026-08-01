@@ -10,7 +10,12 @@ fn toBytesU32(block_count: u16) u32 {
     return @as(u32, block_count) << runtime.BPB;
 }
 
-pub fn resizeProgramMemory(newSizeInBlocks: u16) void {
+pub fn resizeProgramMemory(newSizeInBlocks_in: u16) void {
+    // The program area always holds at least the block that carries the empty
+    // .END. -- config.c reserves exactly that when it forms the pool. At zero blocks
+    // beginOfProgramMemory sits one past the pool, and every reader that starts
+    // there, isAtEndOfPrograms() first, reads out of bounds.
+    const newSizeInBlocks: u16 = if (newSizeInBlocks_in == 0) 1 else newSizeInBlocks_in;
     const current_size_in_blocks: u16 = runtime.getRamSizeInBlocks() - runtime.toC47MemPtr(runtime.beginOfProgramMemory);
     var delta_blocks: u16 = 0;
     var blocks_to_move: u16 = 0;

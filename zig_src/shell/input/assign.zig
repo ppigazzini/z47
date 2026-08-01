@@ -144,6 +144,7 @@ const CAT_FNCT: u16 = 16;
 
 const ERROR_CANNOT_DELETE_PREDEF_ITEM: u8 = 27;
 const ERROR_ENTER_NEW_NAME: u8 = 26;
+const ERROR_RAM_FULL: u8 = 11;
 const ERROR_INVALID_NAME: u8 = 48;
 const ERROR_CANNOT_ASSIGN_HERE: u8 = 47;
 const ERR_REGISTER_LINE: i16 = 102;
@@ -764,7 +765,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
             kc[1] = @intCast((i % 10) + '0');
             kc[2] = 0;
             if (key.*.primary == userItem) {
-                frontier_char_string.stringToUtf8(frontier_softmenus.getNthString(userKeyLabel, @intCast(i * 6)), &lbl);
+                frontier_char_string.stringToUtf8(getUserKeyLabelString(@intCast(i * 6)), &lbl);
                 if ((lbl[0] != 0) and (deleteAllItems or (frontier_sort.compareString(&lbl, userItemName, CMP_NAME) == 0))) {
                     shiftF = false;
                     shiftG = false;
@@ -772,7 +773,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
                 }
             }
             if (key.*.fShifted == userItem) {
-                frontier_char_string.stringToUtf8(frontier_softmenus.getNthString(userKeyLabel, @intCast(i * 6 + 1)), &lbl);
+                frontier_char_string.stringToUtf8(getUserKeyLabelString(@intCast(i * 6 + 1)), &lbl);
                 if ((lbl[0] != 0) and (deleteAllItems or (frontier_sort.compareString(&lbl, userItemName, CMP_NAME) == 0))) {
                     shiftF = true;
                     shiftG = false;
@@ -780,7 +781,7 @@ pub export fn removeUserItemAssignments(userItem: i16, userItemName: [*c]u8) cal
                 }
             }
             if (key.*.gShifted == userItem) {
-                frontier_char_string.stringToUtf8(frontier_softmenus.getNthString(userKeyLabel, @intCast(i * 6 + 2)), &lbl);
+                frontier_char_string.stringToUtf8(getUserKeyLabelString(@intCast(i * 6 + 2)), &lbl);
                 if ((lbl[0] != 0) and (deleteAllItems or (frontier_sort.compareString(&lbl, userItemName, CMP_NAME) == 0))) {
                     shiftF = false;
                     shiftG = true;
@@ -1275,7 +1276,28 @@ extern var calcModel: u8;
 pub export fn initUserKeyArgument() callconv(.c) void {
     userKeyLabelSize = 37 * 6 * 1 + 1;
     userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
+    if (userKeyLabel == null) { // the memset below writes through this pointer
+        userKeyLabelSize = 0;
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnErr2("In function initUserKeyArgument:", "there is no memory for the key argument table");
+        return;
+    }
     _ = memset(userKeyLabel, 0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+}
+
+// ===========================================================================
+// getUserKeyLabelString
+//
+// Read the n-th user key label, tolerating a refused initUserKeyArgument() /
+// setUserKeyArgument() allocation: every slot then reads back as if it were an
+// unassigned key, which is what an empty label always meant.
+// ===========================================================================
+const emptyUserKeyLabel: [1]u8 = .{0};
+pub export fn getUserKeyLabelString(n: i16) callconv(.c) [*c]u8 {
+    if (userKeyLabel == null) {
+        return @constCast(&emptyUserKeyLabel);
+    }
+    return frontier_softmenus.getNthString(userKeyLabel, n);
 }
 inline fn TO_BYTES(n: usize) usize {
     return n << BPB;
@@ -1285,12 +1307,24 @@ inline fn TO_BYTES(n: usize) usize {
 // setUserKeyArgument
 // ===========================================================================
 pub export fn setUserKeyArgument(position: u16, name: [*c]const u8) callconv(.c) void {
+    if (userKeyLabel == null) { // an earlier allocation was refused, so there is no table to walk or to rewrite
+        return;
+    }
     const userKeyLabelPtr1: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, @intCast(position));
     const userKeyLabelPtr2: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, @intCast(position + 1));
     const userKeyLabelPtr3: [*c]u8 = frontier_softmenus.getNthString(userKeyLabel, 37 * 6);
     const newUserKeyLabelSize: u16 = userKeyLabelSize -% @as(u16, @intCast(stringByteLength(userKeyLabelPtr1))) +% @as(u16, @intCast(stringByteLength(name)));
     const newUserKeyLabel: [*c]u8 = @ptrCast(allocC47Blocks(TO_BLOCKS(newUserKeyLabelSize)));
     var newUserKeyLabelPtr: [*c]u8 = newUserKeyLabel;
+
+    // The pool can be empty when a state file restores a key argument, and the
+    // copies below write through this pointer. Nothing is freed yet, so the labels
+    // already held stay as they are and only this one name is lost.
+    if (newUserKeyLabel == null) {
+        frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnErr3("In function setUserKeyArgument:", "there is no memory for the key argument", name);
+        return;
+    }
 
     _ = frontier_char_string.xcopy(newUserKeyLabelPtr, userKeyLabel, @intCast(@as(c_int, @intCast(@intFromPtr(userKeyLabelPtr1) - @intFromPtr(userKeyLabel)))));
     newUserKeyLabelPtr += @intFromPtr(userKeyLabelPtr1) - @intFromPtr(userKeyLabel);
@@ -1314,10 +1348,21 @@ pub export fn setUserKeyArgument(position: u16, name: [*c]const u8) callconv(.c)
 pub export fn createMenu(name: [*c]const u8) callconv(.c) void {
     if (validateName(name)) {
         if (isUniqueMenuName(name)) {
+            // This protects the loss of existing menus, including the standard P.FN
+            // and HOME; MyMenu and MyAlpha are separate arrays and are not touched
+            // here. reallocC47Blocks() leaves the old block alone when it refuses,
+            // but the assignment below throws the pointer away, so keep a copy.
+            const oldUserMenus = userMenus;
             if (numberOfUserMenus == 0) {
                 userMenus = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(SIZEOF_USERMENU))));
             } else {
                 userMenus = @ptrCast(@alignCast(reallocC47Blocks(userMenus, TO_BLOCKS(SIZEOF_USERMENU) * numberOfUserMenus, TO_BLOCKS(SIZEOF_USERMENU) * (numberOfUserMenus + 1))));
+            }
+            if (userMenus == null) { // the memset below writes through this pointer
+                userMenus = oldUserMenus; // the menus already held survive, and the old block is not orphaned
+                frontier_error.displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+                moreInfoOnErr3("In function createMenu:", "there is no memory for the menu", name);
+                return;
             }
             _ = memset(userMenus + numberOfUserMenus, 0, SIZEOF_USERMENU);
             if (comptime !dmcp_build) {
@@ -1467,7 +1512,7 @@ fn _assignToKey(keyFunc: i16) bool_t {
                 0 => kf = key.primary,
                 else => {},
             }
-            if (keyFunc == kf and (!getSystemFlag(FLAG_USER) or frontier_softmenus.getNthString(userKeyLabel, @intCast(j * 6 + @as(i32, keyStateCode) + i))[0] == 0)) {
+            if (keyFunc == kf and (!getSystemFlag(FLAG_USER) or getUserKeyLabelString(@intCast(j * 6 + @as(i32, keyStateCode) + i))[0] == 0)) {
                 var kc: [4]u8 = std.mem.zeroes([4]u8);
                 kc[0] = @intCast(@divTrunc(j, 10) + '0');
                 kc[1] = @intCast(@rem(j, 10) + '0');

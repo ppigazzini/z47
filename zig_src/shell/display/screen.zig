@@ -873,6 +873,8 @@ pub export var refreshScreenCounter: i16 = 0;
 // ---------------------------------------------------------------------------
 extern var lastIntegerBase: u32;
 extern var screenUpdatingMode: u8;
+// c47.c: a program drew this screen and no refresh has repainted over it since.
+extern var screenHoldsDrawnPixels: bool;
 extern var refreshNIMdone: bool_t;
 extern var calcMode: u8;
 extern var temporaryInformation: u8;
@@ -962,6 +964,8 @@ extern var aimBuffer: [*c]u8;
 extern var tamBuffer: [*c]u8;
 extern var nimBufferDisplay: [*c]u8;
 extern var userKeyLabel: [*c]u8;
+// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var current_cursor_x: u16;
 extern var current_cursor_y: u16;
 extern var alphaCursor: i16;
@@ -1724,7 +1728,7 @@ pub export fn _executeItem(item: i16, keyCode: c_int) callconv(.c) void {
     var funcParam: [*c]const u8 = "";
 
     keyStateCode = @intCast((if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + 2);
-    funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(keyCode * 6 + @as(c_int, keyStateCode)));
+    funcParam = getUserKeyLabelString(@intCast(keyCode * 6 + @as(c_int, keyStateCode)));
     if (item == ITM_RCL and getSystemFlag(FLAG_USER) != 0 and funcParam[0] != 0) {
         const variable = findNamedVariable(funcParam);
         if (variable != INVALID_VARIABLE) {
@@ -1808,7 +1812,7 @@ pub export fn Shft_handler() callconv(.c) void {
                             clearShiftTemporaryIndications(@intFromBool(shiftG != 0 or shiftF != 0));
                             var funcParam: [*c]const u8 = "";
                             keyStateCode = @intCast((if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + 2);
-                            funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(keyCode * 6 + @as(c_int, keyStateCode)));
+                            funcParam = getUserKeyLabelString(@intCast(keyCode * 6 + @as(c_int, keyStateCode)));
                             _ = frontier_softmenus.setCurrentUserMenu(item, @constCast(funcParam));
                             if (shiftF != 0) {
                                 if (getSystemFlag(FLAG_ALPHA) != 0 and ((frontier_softmenus.currentMenu() == -MNU_MyAlpha) or (frontier_softmenus.currentMenu() == -MNU_AIMCATALOG) or frontier_softmenus.isAlphabeticSoftmenu() != 0)) {
@@ -1898,7 +1902,7 @@ pub export fn LongpressKey_handler() callconv(.c) void {
         if (JM_auto_longpress_enabled != 0) {
             var funcParam: [*c]const u8 = undefined;
             const keyStateCodeLocal: c_int = (if (getSystemFlag(FLAG_ALPHA) != 0) @as(c_int, 3) else 0) + (if (LongPressM == RBX_M124) @as(c_int, 1) else if (longpressDelayedkey3 != 0) @as(c_int, 1) else 2);
-            funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(@as(c_int, currentKeyCode) * 6 + keyStateCodeLocal));
+            funcParam = getUserKeyLabelString(@intCast(@as(c_int, currentKeyCode) * 6 + keyStateCodeLocal));
 
             if (calcMode == CM_NORMAL and programRunStop == PGM_STOPPED and (isArrowUp(currentKeyCode) != 0)) {
                 aimBuffer[0] = 0;
@@ -5876,6 +5880,7 @@ fn _refreshNormalScreen() void {
 
 pub export fn refreshScreen(source: u16) callconv(.c) void {
     _ = source;
+    screenHoldsDrawnPixels = false; // this repaint is what destroys anything CLLCD, PIXEL, POINT or AGRAPH drew
     if (calcMode != CM_AIM and calcMode != CM_NIM and calcMode != CM_PLOT_STAT and calcMode != CM_GRAPH and calcMode != CM_LISTXY and last_CM != 240) {
         last_CM = 254;
     } else {
@@ -6232,6 +6237,7 @@ pub export fn fnClLcd(unusedButMandatoryParameter: u16) callconv(.c) void {
     getPixelPos(&x, &y);
     if (lastErrorCode == ERROR_NONE) {
         screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
+        screenHoldsDrawnPixels = true;
         lcd_fill_rect(@intCast(x), 0, @intCast(@as(i32, SCREEN_WIDTH) - x), @intCast(@as(i32, SCREEN_HEIGHT) - y), LCD_SET_VALUE);
     }
 }
@@ -6243,6 +6249,7 @@ pub export fn fnPixel(unusedButMandatoryParameter: u16) callconv(.c) void {
     getPixelPos(&x, &y);
     if (lastErrorCode == ERROR_NONE) {
         screenUpdatingMode |= SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
+        screenHoldsDrawnPixels = true;
         if ((@as(i32, SCREEN_HEIGHT) - y - 1) <= Y_POSITION_OF_REGISTER_T_LINE) {
             screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
         }
@@ -6257,6 +6264,7 @@ pub export fn fnPoint(unusedButMandatoryParameter: u16) callconv(.c) void {
     getPixelPos(&x, &y);
     if (lastErrorCode == ERROR_NONE) {
         screenUpdatingMode |= SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
+        screenHoldsDrawnPixels = true;
         if ((@as(i32, SCREEN_HEIGHT) - y - 2) <= Y_POSITION_OF_REGISTER_T_LINE) {
             screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
         }
@@ -6280,6 +6288,7 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
             const savedShortIntegerMode: u8 = shortIntegerMode;
 
             screenUpdatingMode |= SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
+            screenHoldsDrawnPixels = true;
             if ((@as(i32, SCREEN_HEIGHT) - y - 1 - @as(i32, shortIntegerWordSize)) <= Y_POSITION_OF_REGISTER_T_LINE) {
                 screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
             }
@@ -6380,8 +6389,14 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     // partial mode here also leaks past the capture: the next refresh, including
     // the one runProgram runs when the program ends, then skips bands it should
     // repaint.
-    screenUpdatingMode = SCRUPD_AUTO;
-    refreshScreen(80);
+    //
+    // Unless a program drew the screen itself: since the 6559a9c59 pin a screen
+    // CLLCD/PIXEL/POINT/AGRAPH painted is captured raw, because repainting it is
+    // exactly what destroys what the program drew.
+    if (!screenHoldsDrawnPixels) {
+        screenUpdatingMode = SCRUPD_AUTO;
+        refreshScreen(80);
+    }
     frontier_screen_snap.z47_frontier_snap_screenshot_with_message_backup();
 
     var tam_backup: [TAM_BUFFER_LENGTH]u8 = undefined;

@@ -22,6 +22,12 @@ pub fn reportRamFull() void {
     reportError(stack_runtime.ERROR_RAM_FULL);
 }
 
+/// A reserved variable owns a fixed block named by a const header, so there is
+/// nothing to free, allocate or retype; reallocateRegister refuses instead.
+pub fn reportReservedVariableRetype() void {
+    reportError(stack_runtime.ERROR_INVALID_DATA_TYPE_FOR_OP);
+}
+
 pub fn reportInvalidName(error_invalid_name: u8) void {
     reportError(error_invalid_name);
 }
