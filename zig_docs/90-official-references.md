@@ -217,6 +217,12 @@ Runbooks and gate scripts:
 
 Root entry points and CI workflows:
 
+- [.github/project/check-extern-var-widths.py](../.github/project/check-extern-var-widths.py):
+  every `extern var` declaration must be as wide as the `export var` defining it;
+  a wider declaration makes each store through it write past the end of the real
+  object, and only the linker decides what that hits
+- [.github/project/check-c-type-alias-widths.sh](../.github/project/check-c-type-alias-widths.sh):
+  a C type aliased in two owners must have the same width in both
 - [README.md](../README.md)
 - [BUILD.md](../BUILD.md)
 - [zig_docs/README.md](README.md)

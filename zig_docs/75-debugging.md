@@ -33,6 +33,7 @@ Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
 | malformed untrusted input (`.p47`, state files) | `zig build pgm_load_fuzz` | the corpus, which only round-trips valid files |
 | ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
 | the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
+| the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` | every runtime lane on ELF, where the overrun lands in padding |
 | **behavioural divergence from upstream with no crash** | **the C-vs-Zig differential (below)** | everything else, by construction |
 | **a code path that never runs** | reading the C, and asking what calls it | every green lane -- see the false-pass catalogue |
 
@@ -48,6 +49,15 @@ behaviour matches what the C's garbage read happened to produce.
 **A green lane is not evidence a path ran.** The whole callback boundary between
 core and shell was inert for months while the suite was green; see the
 catalogue.
+
+**A defect can be real on every target and observable on only one.** A store
+that runs past the end of a global writes into whatever the linker put next, and
+the linkers disagree about what that is. ELF lays z47's globals out in
+definition order with alignment padding between them, so the stray bytes land in
+padding and no lane anywhere can see them. COFF gives every export its own
+`.bss$name` COMDAT and reorders them, so the same store lands on a live object.
+When one target fails alone, the question is not what that target does
+differently -- it is which latent write the other targets are absorbing.
 
 ## The C-vs-Zig Differential
 
@@ -96,6 +106,58 @@ a spin cannot be diagnosed by attaching. Print a counter from the suspect on
 both sides and diff the sequences instead -- that is what located a solver that
 never converged, in one pass.
 
+## Finding A Stray Write On A Lane You Cannot Run
+
+The differential above needs both sides in front of you. When a target fails and
+you have no machine of that kind -- a CI lane, and nothing else -- the corpus and
+a self-resolving data breakpoint replace it. Both are cheap; the ordering is what
+matters, because each step must cost one CI round and no more.
+
+**1. Turn the symptom into values before theorising.** An error string names a
+branch, not the term that took it. `graphPlotstat` gates every plot on three
+terms and reported only "There is no statistical data available!", which is
+equally consistent with lost statistics and with a lost matrix name. A coverage
+helper that reads each term back into `REGISTER_X` -- `fnPlotGuardCov` in
+`src/testSuite/testSuite.c`, pinned by `graphs_cov.txt` -- answered it in one
+round: `plotStatMx[0]` was `0`, the sums pointer was live, `SIGMA_N` was `5`. The
+data had never been lost. **Prefer a corpus assertion to a print**: it survives as
+regression coverage, it costs the same round, and it cannot be left behind.
+
+**2. Bisect in time with a program, not with prints.** Staging a second program
+that stops short of a suspect step says which side of it the damage falls on. A
+`SCATR` with the `SNAP` dropped failed identically, which placed the corruption
+in the plot rather than the screen capture and retired half the search space.
+
+**3. Watch the byte, not the address.** A page-protection data breakpoint that
+reports only when the faulting address *equals* the watched byte will miss every
+store that begins below it and runs over it -- and will then report, with total
+confidence, that nothing wrote the byte. That single wrong conclusion cost
+several rounds here. Snapshot the byte on the fault, single-step the faulting
+instruction, and report only if the byte **changed**. That catches the writer
+whatever the store's width or start offset.
+
+**4. Resolve symbols in-process, never from a hand-picked list.** Printing the
+addresses of the functions you suspect only works if the answer is one of them;
+twice it was not, and the reported address fell in a gap. Generate the whole
+table instead -- every `pub export fn` and `pub export var` in `zig_src` as
+link-time address constants -- and have the probe search it for the nearest
+symbol at or below the faulting address. The report then names itself:
+
+```
+store is in  fnReturn+0x1c0
+victim  is   pemCursorIsZerothStep+0x0
+code: c7 05 f9 4f 08 01 01 00 00 00
+```
+
+**5. Dump the instruction bytes.** Sixteen bytes at the faulting `RIP` are
+disassembled locally without the failing target's binary. Above, `c7 05 <disp32>
+01 00 00 00` is `MOV DWORD PTR [rip+disp], 1` -- a four-byte store of `1`, which
+is the whole diagnosis: the flag is one byte.
+
+**6. Turn the finding into a gate before deleting the probe.** The probe is
+throwaway; the class is not. Write the check, prove it fails against the real
+defect by restoring it, then remove the probe in the same commit.
+
 ## False-Pass Hazards
 
 Every one of these has passed a broken thing at least once.
@@ -132,6 +194,18 @@ Every one of these has passed a broken thing at least once.
    line.
 8. **A suite that got faster deserves suspicion.** A run that ends early produces
    fewer findings, and fewer findings can pass a baseline diff.
+9. **A width agreed within one owner can still be wrong.** `extern var` states a
+   width; nothing checks it against the `export var` that defines the symbol. A
+   declaration wider than the definition makes every store through it write past
+   the end of the real object. Four owners aliased `bool_t` to `u32` where C
+   defines it as one byte, so `pemCursorIsZerothStep = 1` compiled to
+   `MOV DWORD PTR [rip+disp], 1` and put three zero bytes past a one-byte flag;
+   on Windows the third landed on `plotStatMx[0]` and every stat plot lost its
+   matrix name while its statistics stayed perfectly intact. Each owner was
+   self-consistent and the corpus was green for eight days. **Only the
+   combination is wrong, so only a cross-owner check finds it** --
+   `check-extern-var-widths.py` resolves each file's type aliases and compares
+   every declaration against its definition.
 
 ## Reading The Upstream C
 
