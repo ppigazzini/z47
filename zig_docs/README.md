@@ -114,6 +114,8 @@ flowchart TD
   [80-maintainer-workflow.md](80-maintainer-workflow.md)
 - a green lane and a wrong answer, or a divergence with no crash:
   [75-debugging.md](75-debugging.md)
+- one target red and every other target green, or a stray write on a lane you
+  cannot run locally: [75-debugging.md](75-debugging.md)
 - a term in any of these pages you do not recognise:
   [95-glossary.md](95-glossary.md)
 

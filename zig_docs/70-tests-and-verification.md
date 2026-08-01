@@ -59,6 +59,8 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | checked-in Zig/C boundaries | `../.github/project/zig-c-boundaries.txt`, `../.github/project/check-zig-c-boundaries.sh` | `bash .github/project/check-zig-c-boundaries.sh` |
 | idiomatic-Zig ratchet | `../.github/project/idiom-status-baseline.json`, `../.github/project/check-idiom-ratchet.sh` | `bash .github/project/check-idiom-ratchet.sh` |
 | Windows LLP64 int-width trap | `../.github/project/portable-int-width-allowlist.txt`, `../.github/project/check-portable-int-widths.sh` | `bash .github/project/check-portable-int-widths.sh` |
+| cross-owner global widths | `../.github/project/check-extern-var-widths.py` | `python3 .github/project/check-extern-var-widths.py .` |
+| cross-owner C type alias widths | `../.github/project/check-c-type-alias-widths.sh` | `bash .github/project/check-c-type-alias-widths.sh .` |
 | constant-blob offset parity | `../zig_src/abi/constants.zig`, `../.github/project/check-constant-offsets.py` | `zig build constants && python3 .github/project/check-constant-offsets.py` |
 | constant/enum mirror parity | `../.github/project/audit-constant-parity.py` | `python3 .github/project/audit-constant-parity.py` |
 | item-table parity | `../zig_src/shell/display/items/items.zig`, `../.github/project/audit-item-table-parity.py` | `python3 .github/project/audit-item-table-parity.py` |

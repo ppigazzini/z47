@@ -378,6 +378,11 @@ jobs:
         run: |
           set -euo pipefail
           bash .github/project/check-c-type-alias-widths.sh .
+      - name: Enforce extern var widths match their definitions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-extern-var-widths.py .
 
   workflow-imported-root-guard:
     name: Verify workflow imported-root vocabulary
