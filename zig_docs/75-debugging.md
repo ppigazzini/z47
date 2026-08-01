@@ -28,10 +28,10 @@ Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable.
 | --- | --- | --- |
 | wrong value, right shape | the corpus (`zig build test`), with a value assertion | every sanitizer |
 | wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
-| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- the tree currently has none** |
-| heap overflow / use-after-free in retained C | `zig build both_asan` then `zig build test_asan` | the corpus, the parity lanes |
+| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- 19 load-path functions do, nothing else does** |
+| heap overflow / use-after-free in retained C | **nothing.** The lanes named `*_asan` run NO sanitizer -- see *The Sanitizer Lanes Do Not Sanitize* below | every lane in this tree |
 | **one C47 block overrunning its neighbour inside `ram`** | **nothing in this tree today** -- see *Why ASan Cannot See The Calculator's Memory* below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner, not by any lane | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic |
-| malformed `.p47` program file | `zig build pgm_load_fuzz` | the corpus, which only round-trips valid files |
+| malformed `.p47` program file | `zig build pgm_load_fuzz` -- but as a plain crash/hang run, NOT under a sanitizer | the corpus, which only round-trips valid files |
 | malformed `.sav` / `.d47` state file | **nothing in this tree today** -- `saveload_parity` and `saveload_golden` round-trip valid files only | every lane; the bounds `31fb6f755` added to the restore path are unproven |
 | ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
 | the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
@@ -61,12 +61,49 @@ padding and no lane anywhere can see them. COFF gives every export its own
 When one target fails alone, the question is not what that target does
 differently -- it is which latent write the other targets are absorbing.
 
+## The Sanitizer Lanes Do Not Sanitize
+
+`zig build test_asan`, `both_asan` and `pgm_load_fuzz` run **no sanitizer of any
+kind**. Not AddressSanitizer, not UndefinedBehaviorSanitizer, nothing. Verify it
+in one command:
+
+```sh
+nm "$(find .zig-cache -name testSuite-asan -type f | head -1)" | grep -c __ubsan   # 0
+```
+
+Beware the obvious check: `grep -c asan` on that binary returns 5, and all five
+are `getRegisterAs`**`AsAn`**`yReal`-style false hits.
+
+Three separate reasons, each independently sufficient:
+
+- **`sanitize_c` is not AddressSanitizer.** It is Zig's UBSan knob. Built the same
+  C with `.off`, `.trap` and `.full`: 0, 0 and 34 UBSan symbols respectively, and
+  **zero** ASan symbols in all three.
+- **The project cancels the sanitizer it asks for.** `common_c_flags` in
+  `../zig_build/common.zig` passes `-fno-sanitize=undefined` to every C source in
+  these lanes, which overrides `sanitize_c`. With both set, the linked binary has
+  0 UBSan symbols -- which is what z47's own "asan" binary shows.
+- **Zig cannot supply ASan even on request.** `-fsanitize=address` compiles and
+  then fails to link (`undefined symbol: __asan_report_store1`); Zig 0.16 ships no
+  ASan runtime. Reaching real ASan means linking the host's `libclang_rt.asan` or
+  `libasan.so`, a new host-toolchain dependency.
+
+**Do not cite these lanes as evidence of anything.** They build and run the
+testSuite, which is worth something; they detect no memory error.
+
+Removing `-fno-sanitize=undefined` from those lanes links UBSan for real and the
+testSuite then reports genuine defects immediately -- a misaligned `decQuad`
+access traced to `abi.Real34` being declared alignment 1 against a C type of
+alignment 4, and a signed left-shift overflow in the TVM path. Both were found in
+the first two runs of a lane that had never run. The work of turning it on and
+clearing the tail is scoped in the maintainer working notes.
+
 ## Why ASan Cannot See The Calculator's Memory
 
-`zig build test_asan` is the tree's strongest detector and it is blind to almost
-every object the calculator owns. This is a property of the memory model, not a
-gap in the lane, and it is the first thing to know before trusting a green ASan
-run as evidence of memory correctness.
+Even if the lanes above are ever made to run a real AddressSanitizer, it would be
+blind to almost every object the calculator owns. That is a property of the memory
+model, not a gap in any lane, and it is worth knowing before anyone invests in
+getting a runtime linked.
 
 Registers, named variables, programs, formulae, menus and the GMP heap do not
 come from `malloc`. They come from `ram` -- one pointer (`src/c47/c47.c`) to a
@@ -91,9 +128,10 @@ build mode.
 
 Two consequences for debugging:
 
-- A green `test_asan` proves the retained C's use of the **libc** heap is clean.
-  It proves nothing about the register store. Do not cite it as evidence that a
-  block-allocator change is safe.
+- A green `test_asan` proves the testSuite ran. It is not a sanitizer run at all
+  (see the section above), and even if it were, it would prove nothing about the
+  register store. Do not cite it as evidence that a block-allocator change is
+  safe.
 - The available detector for this class is the differential: run the same input
   through upstream C and through z47 and compare the resulting state, which is
   what `saveload_parity` and the owner parity lanes do. A corrupted neighbour
