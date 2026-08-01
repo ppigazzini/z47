@@ -215,10 +215,23 @@ jobs:
           set -euo pipefail
           mapfile -t imported_roots < <(bash .github/project/check-source-ownership.sh list-imported-roots)
           git ls-files -s -- "${imported_roots[@]}" > upstream-source.index
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - id: upload_source_index
+        # A CreateArtifact timeout is a transient artifact-service failure, not a
+        # verdict on this job: it happens before any bytes are sent and after every
+        # build, test and parity step has already passed. Tolerate the first attempt
+        # and retry once; if the retry fails too, the job fails as it always did.
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: upstream-source-index
           path: upstream-source.index
+      - name: Retry the source index upload once
+        if: steps.upload_source_index.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: upstream-source-index
+          path: upstream-source.index
+          overwrite: true
 
   source-ownership-guard:
     name: Verify tracked source ownership
@@ -661,16 +674,44 @@ jobs:
             mkdir -p "$proof_dir/$(dirname -- "$generated_artifact")"
             cp "$generated_artifact" "$proof_dir/$generated_artifact"
           done < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - id: upload_linux_release
+        # A CreateArtifact timeout is a transient artifact-service failure, not a
+        # verdict on this job: it happens before any bytes are sent and after every
+        # build, test and parity step has already passed. Tolerate the first attempt
+        # and retry once; if the retry fails too, the job fails as it always did.
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.linux_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
           retention-days: 14
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Retry the linux release upload once
+        if: steps.upload_linux_release.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.linux_package_meta.outputs.artifact_name }}
+          path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
+      - id: upload_linux_generated
+        # A CreateArtifact timeout is a transient artifact-service failure, not a
+        # verdict on this job: it happens before any bytes are sent and after every
+        # build, test and parity step has already passed. Tolerate the first attempt
+        # and retry once; if the retry fails too, the job fails as it always did.
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: linux-host-parity-artifacts
           path: ci-artifacts/generated/
+      - name: Retry the linux generated upload once
+        if: steps.upload_linux_generated.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: linux-host-parity-artifacts
+          path: ci-artifacts/generated/
+          overwrite: true
 
   linux-docs:
     name: Linux docs surface
@@ -886,12 +927,27 @@ jobs:
           firmware_archives=c47-dmcp.zip,c47-dmcp-pkg1.zip,c47-dmcp-pkg2.zip,c47-dmcp-pkg3.zip,c47-dmcp5.zip
           artifact_name=${{ steps.linux_firmware_meta.outputs.artifact_name }}
           EOF
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - id: upload_linux_firmware
+        # A CreateArtifact timeout is a transient artifact-service failure, not a
+        # verdict on this job: it happens before any bytes are sent and after every
+        # build, test and parity step has already passed. Tolerate the first attempt
+        # and retry once; if the retry fails too, the job fails as it always did.
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
           path: ci-artifacts/firmware/
           if-no-files-found: error
           retention-days: 14
+      - name: Retry the linux firmware upload once
+        if: steps.upload_linux_firmware.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
+          path: ci-artifacts/firmware/
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
 
   macos-host-build:
     name: macOS dedicated runner build, test, generated outputs, app smoke run
@@ -1118,12 +1174,27 @@ jobs:
           package_dir=$(basename "$package_dir")
           artifact_name=${{ steps.macos_package_meta.outputs.artifact_name }}
           EOF
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - id: upload_macos_release
+        # A CreateArtifact timeout is a transient artifact-service failure, not a
+        # verdict on this job: it happens before any bytes are sent and after every
+        # build, test and parity step has already passed. Tolerate the first attempt
+        # and retry once; if the retry fails too, the job fails as it always did.
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.macos_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
           retention-days: 14
+      - name: Retry the macos release upload once
+        if: steps.upload_macos_release.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.macos_package_meta.outputs.artifact_name }}
+          path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
 
   windows-host-build:
     name: Windows dedicated runner build, test, generated outputs, app smoke run
@@ -1587,9 +1658,24 @@ jobs:
             smoke_launcher c47.cmd
             smoke_launcher r47.cmd
           )
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - id: upload_windows_release
+        # A CreateArtifact timeout is a transient artifact-service failure, not a
+        # verdict on this job: it happens before any bytes are sent and after every
+        # build, test and parity step has already passed. Tolerate the first attempt
+        # and retry once; if the retry fails too, the job fails as it always did.
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.windows_package_meta.outputs.artifact_name }}
           path: ci-artifacts/release/
           if-no-files-found: error
           retention-days: 14
+      - name: Retry the windows release upload once
+        if: steps.upload_windows_release.outcome == 'failure'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.windows_package_meta.outputs.artifact_name }}
+          path: ci-artifacts/release/
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
