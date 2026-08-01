@@ -1,12 +1,12 @@
 {
   "totals": {
     "extern_struct_files": 16,
-    "cptr_files": 93,
-    "ptrcast_sites": 1339,
-    "callconv_c_sites": 2921,
-    "extern_fn_sites": 3552,
+    "cptr_files": 94,
+    "ptrcast_sites": 1342,
+    "callconv_c_sites": 2924,
+    "extern_fn_sites": 3564,
     "printf_family_files": 46,
-    "anyopaque_files": 88,
+    "anyopaque_files": 89,
     "off_offset_sites": 77,
     "constants_blob_sites": 1,
     "qspi_section_files": 24
