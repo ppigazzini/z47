@@ -21,7 +21,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 // Types
 // ---------------------------------------------------------------------------
 const calcRegister_t = i16;
-const bool_t = u32;
+const bool_t = u8; // C bool_t is one byte (typeDefinitions.h: typedef bool bool_t); u32 here made every store through it write 3 bytes past the global
 const angularMode_t = c_int;
 
 const abi = @import("abi"); // shared ABI bindings
