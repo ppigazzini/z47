@@ -67,7 +67,10 @@ pub fn addSimulator(
         exe.root_module.sanitize_c = level;
     }
     if (host_target.result.os.tag == .windows) {
-        exe.subsystem = .Windows;
+        // `.windows`, not the `.Windows` alias: 0.16 kept the capitalised spellings
+        // as deprecated aliases and Zig master has removed them, so only the
+        // lower-case form compiles on both.
+        exe.subsystem = .windows;
     }
     host_platform.addHostMacros(exe.root_module, common);
     host_platform.addHostSystemPaths(exe.root_module, common);

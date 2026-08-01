@@ -20,7 +20,7 @@ jobs:
     name: Verify curated Zig/C boundaries
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce approved Zig/C boundary files
         shell: bash
         run: |
@@ -31,7 +31,7 @@ jobs:
     name: Coverage ratchet (differential + harness floors)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce monotonic coverage floors (Annex A6)
         shell: bash
         run: |
@@ -43,7 +43,7 @@ jobs:
     needs:
       - zig-c-boundary-guard
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Report pinned upstream drift
         shell: bash
         run: |

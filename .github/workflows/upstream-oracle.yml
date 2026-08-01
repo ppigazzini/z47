@@ -29,7 +29,7 @@ jobs:
     name: Validate pinned Zig toolchain
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -59,7 +59,7 @@ jobs:
     name: Enforce zig fmt on z47-owned Zig
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -93,7 +93,7 @@ jobs:
     name: Native Zig unit tests (no C oracle)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -116,7 +116,7 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: master_toolchain
         name: Load monitored Zig master metadata
         shell: bash
@@ -141,7 +141,7 @@ jobs:
           echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Linux xlsxio helper cache for monitored Zig master
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
           key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
@@ -198,7 +198,7 @@ jobs:
     name: Verify imported upstream pin and source manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           submodules: recursive
@@ -237,7 +237,7 @@ jobs:
     name: Verify tracked source ownership
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Fetch pinned upstream history for ownership diff base
@@ -256,7 +256,7 @@ jobs:
     name: Verify tracked upstream port ledger
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - id: diff_base
@@ -286,7 +286,7 @@ jobs:
     name: Verify upstream<->owner correspondence manifest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce the symbol-join correspondence is current
         shell: bash
         run: |
@@ -301,7 +301,7 @@ jobs:
     name: Verify curated Zig/C boundaries
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce approved Zig/C boundary files
         shell: bash
         run: |
@@ -312,7 +312,7 @@ jobs:
     name: Enforce idiomatic-Zig ratchet (no transliteration-debt regressions)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce monotonic idiom ratchet
         shell: bash
         run: |
@@ -328,7 +328,7 @@ jobs:
     name: Enforce headless-core severance (core must not reach into shell)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce engine->shell import invariant + extern ratchet
         shell: bash
         run: |
@@ -369,7 +369,7 @@ jobs:
     name: Verify Phase I C dependency policy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce Phase I dependency policy
         shell: bash
         run: |
@@ -380,7 +380,7 @@ jobs:
     name: Guard against the Windows LLP64 integer-width trap
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce portable integer widths (no value-carrying c_long/c_ulong)
         shell: bash
         run: |
@@ -401,7 +401,7 @@ jobs:
     name: Verify workflow imported-root vocabulary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce shared workflow imported-root paths
         shell: bash
         run: |
@@ -412,7 +412,7 @@ jobs:
     name: Verify workflow script locality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Enforce no __DEV script references in CI workflows
         shell: bash
         run: |
@@ -432,7 +432,7 @@ jobs:
       - workflow-locality-guard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
       - id: toolchain
@@ -453,7 +453,7 @@ jobs:
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
       - id: zig-build-cache
         name: Restore Linux host Zig build caches
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             .zig-cache
@@ -469,7 +469,7 @@ jobs:
           echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Linux xlsxio helper cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
           key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
@@ -722,7 +722,7 @@ jobs:
       - workflow-locality-guard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: toolchain
         name: Load pinned Zig metadata
         shell: bash
@@ -741,7 +741,7 @@ jobs:
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
       - id: zig-build-cache
         name: Restore Linux docs Zig build caches
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             .zig-cache
@@ -758,7 +758,7 @@ jobs:
           echo "sha=$(sha256sum "$requirements_file" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
       - id: pip-cache
         name: Restore Linux docs Python package cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pip
           key: pip-${{ runner.os }}-${{ steps.docs-requirements-hash.outputs.sha }}
@@ -798,7 +798,7 @@ jobs:
       - workflow-locality-guard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
       - id: toolchain
@@ -819,7 +819,7 @@ jobs:
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
       - id: zig-build-cache
         name: Restore Linux firmware Zig build caches
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             .zig-cache
@@ -835,7 +835,7 @@ jobs:
           echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Linux xlsxio helper cache for firmware lane
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
           key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
@@ -961,7 +961,7 @@ jobs:
       - workflow-imported-root-guard
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
       - id: toolchain
@@ -982,7 +982,7 @@ jobs:
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
       - id: zig-build-cache
         name: Restore macOS host Zig build caches
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             .zig-cache
@@ -998,7 +998,7 @@ jobs:
           echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore macOS xlsxio helper cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
           key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
@@ -1213,10 +1213,10 @@ jobs:
         run: |
           set -euo pipefail
           git config --global core.autocrlf input
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: recursive
-      - uses: msys2/setup-msys2@e9898307ac31d1a803454791be09ab9973336e1c # v2.31.1
+      - uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         with:
           msystem: UCRT64
           cache: true
@@ -1254,7 +1254,7 @@ jobs:
           test "$(zig version)" = "${{ steps.toolchain.outputs.version }}"
       - id: zig-build-cache
         name: Restore Windows host Zig build caches
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             .zig-cache
@@ -1270,7 +1270,7 @@ jobs:
           echo "sha=$(git ls-remote https://github.com/brechtsanders/xlsxio.git HEAD | cut -f1)" >> "$GITHUB_OUTPUT"
       - id: xlsxio-cache
         name: Restore Windows xlsxio helper cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/xlsxio-prefix
           key: xlsxio-${{ runner.os }}-${{ runner.arch }}-${{ steps.xlsxio-ref.outputs.sha }}-${{ env.XLSXIO_HELPER_CACHE_VERSION }}
