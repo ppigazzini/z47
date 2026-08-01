@@ -108,6 +108,17 @@ Enforcement split:
   `// SEAM-GENERATED` marker. The reporter fails closed if a file has one but not
   the other, so a hand-written owner cannot smuggle `extern struct` / `[*c]` debt
   out of the ceiling.
+- The reporter matches its patterns against the file with `//` comments removed,
+  so prose that merely DISCUSSES a token is not counted as carrying it. Before
+  that, a doc comment containing the many-item-C-pointer spelling breached the
+  `cptr_files` ceiling and failed the gate on writing.
+- **Do not extend that to string literals.** Two of the patterns deliberately
+  target a string that appears in code -- `qspi_section_files` matches the
+  `".qspi_data"` argument of `linksection`, and `constants_blob_sites` matches an
+  extern symbol name -- so stripping strings would zero them. The patterns are
+  not all the same kind of thing: some describe code shape and some describe a
+  literal, and nothing in the table says which. Check what a pattern is looking
+  at before normalising anything else away.
 
 The ratchet now sits at its C-ABI ceiling: the remaining `callconv(.c)`,
 `extern`, `extern struct`, and offset metrics are mandated by the upstream
