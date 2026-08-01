@@ -711,7 +711,18 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
 
     // The following 2 lines added to address the FFFFFFFF issue in old state files
     firstFreeProgramByte = step;
-    freeProgramBytes = @intCast((@intFromPtr(ramEnd()) - @intFromPtr(firstFreeProgramByte)) - 2);
+    // @truncate, not @intCast, and wrapping subtraction. Upstream manage.c:210 is
+    //   freeProgramBytes = (((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS)) - firstFreeProgramByte) - 2;
+    // which assigns a ptrdiff_t to `uint16_t freeProgramBytes`, so C narrows
+    // implicitly and that is defined. The scan above walks `step` from a
+    // restored program count, so a state file carrying a forged count walks it
+    // to an arbitrary point in (or past) the pool: the difference then exceeds
+    // u16, or goes negative in C's ptrdiff_t. Two's complement makes `-%` plus a
+    // u16 @truncate bit-exact with the C for both, where the checked cast and
+    // checked subtraction instead trapped -- reached by state_load_fuzz's
+    // count_programs_32767.sav. Bounding the count is restoreProgramsSection's
+    // job, not this line's; here parity with upstream is the contract.
+    freeProgramBytes = @truncate((@intFromPtr(ramEnd()) -% @intFromPtr(firstFreeProgramByte)) -% 2);
 
     defineCurrentProgramFromCurrentStep();
     frontier_next_step.defineFirstDisplayedStep();

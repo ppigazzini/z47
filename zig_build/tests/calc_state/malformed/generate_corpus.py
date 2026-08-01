@@ -136,3 +136,187 @@ write("version_wrap_forges_valid.sav", patch_version("4304967321"), expect_versi
     )
 )
 print(f"{(outdir / 'expectations.txt').relative_to(root)}: {len(expectations)} expectations")
+
+
+# =====================================================================
+# M-SAFE-14: the corpus M-SAFE-7 specified and did not build.
+#
+# Everything above is a REPRODUCER of a bug already found and fixed -- useful as
+# a regression guard, incapable of finding anything new. Everything below is the
+# opposite: mutations chosen to reach parser states nobody has looked at. The
+# sibling .p47 corpus was built this way and found three real bugs the afternoon
+# it existed.
+#
+# No expectation is recorded for these (they pass `None` -> "any"). Stating one
+# would mean asserting an answer nobody has established; the assertion for an
+# exploratory case is "the parser did not crash, hang or trip a safety check",
+# which the driver applies to every file regardless. Pin an expectation only once
+# a case's correct outcome has actually been decided.
+# =====================================================================
+
+SECTION_COUNTS = {
+    # section header -> the guard its count feeds (31fb6f755), for the record
+    "GLOBAL_REGISTERS": "register loop",
+    "NAMED_VARIABLES": "named-variable loop",
+    "STATISTICAL_SUMS": "the 28 statistical sums",
+    "KEYBOARD_ASSIGNMENTS": "kbd_usr[37]",
+    "MYMENU": "userMenuItems[18]",
+    "MYALPHA": "userAlphaItems[18]",
+    "USER_MENUS": "userMenus[].menuItem[18]",
+    "EQUATIONS": "the formula allocation",
+    "PROGRAMS": "resizeProgramMemory",
+}
+
+# 0 and 1 probe the "section is not really there" and "one entry" edges; 0x7FFF
+# is the i16 boundary the EQUATIONS loop cared about; 0xFFFF and 0xFFFFFFFF are
+# the u16 and u32 ceilings a count field can express.
+COUNT_MUTATIONS = (0, 1, 0x7FFF, 0xFFFF, 0xFFFFFFFF)
+
+
+def set_section_count(section: str, value: int) -> list[str]:
+    """Replace the count line that follows `section`'s header."""
+    out = list(base)
+    for i, line in enumerate(out):
+        if line == section and i + 1 < len(out):
+            out[i + 1] = str(value)
+            return out
+    raise AssertionError(f"section {section} not found")
+
+
+def _duplicate_header(section: str) -> list[str]:
+    """Emit `section`'s header twice, so the second lands where data is expected."""
+    out = list(base)
+    i = out.index(section)
+    return out[: i + 1] + [section] + out[i + 1 :]
+
+
+def _inject_blank_lines() -> list[str]:
+    """Blank lines inside a section body. readLine() skips them, so this probes
+    whether a section that runs out of data stops or walks into the next one."""
+    out, i = list(base), base.index("NAMED_VARIABLES")
+    return out[: i + 2] + ["", "", ""] + out[i + 2 :]
+
+
+def _oversize_first_variable_name() -> list[str]:
+    """A named-variable name far longer than the field that receives it."""
+    out, i = list(base), base.index("NAMED_VARIABLES")
+    out[i + 2] = "N" * 4000  # the name line of the first entry
+    return out
+
+
+for section in SECTION_COUNTS:
+    for value in COUNT_MUTATIONS:
+        write(f"count_{section.lower()}_{value}.sav", set_section_count(section, value))
+
+# Truncation sweep. The cheapest generator of unexamined parser states, and the
+# one class most likely to reach the end-of-section handling 31fb6f755 rewrote --
+# every section must treat an empty read as end of file rather than parsing the
+# next section's header as its own data.
+TRUNCATION_POINTS = 12
+for k in range(1, TRUNCATION_POINTS + 1):
+    cut = len(base) * k // (TRUNCATION_POINTS + 1)
+    write(f"truncated_at_{cut:05d}.sav", base[:cut])
+
+# Structural mutations: the file's shape rather than its numbers.
+write("no_terminator.sav", [ln for ln in base if ln != "END_OTHER_PARAM"])
+write("duplicate_section_header.sav", _duplicate_header("NAMED_VARIABLES"))
+write("blank_lines_injected.sav", _inject_blank_lines())
+write("oversized_variable_name.sav", _oversize_first_variable_name())
+write("empty_file.sav", [""])
+write("header_only.sav", base[:4])
+
+# Over-capacity sweep. Raising a count ALONE does not reach the guards that bound
+# a section against its fixed-size array: the loop hits end of file first and
+# takes the "the count was a lie" break instead. Reaching a capacity guard needs a
+# count above the array's size WITH the entries to match, so the loop keeps
+# feeding it real data all the way past the end. Measuring branch coverage of the
+# 31fb6f755 guard commit is what showed this up: no count mutation above ever
+# evaluated a capacity bound, because every one of them ran out of data first.
+CAPACITY_SECTIONS = {
+    "MYMENU": "userMenuItems[18]",
+    "MYALPHA": "userAlphaItems[18]",
+    "KEYBOARD_ASSIGNMENTS": "kbd_usr[37]",
+}
+
+
+def _overfill(section: str, extra: int) -> list[str]:
+    """Raise `section`'s count by `extra` and append that many more entry lines.
+
+    Every section here stores one line per entry, so the last entry serves as the
+    filler: the content does not matter, only that the loop never runs dry."""
+    out = list(base)
+    i = out.index(section)
+    count = int(out[i + 1])
+    end = i + 2 + count
+    out[i + 1] = str(count + extra)
+    return out[:end] + [out[end - 1]] * extra + out[end:]
+
+
+def _overfill_user_menu_items(extra: int) -> list[str]:
+    """The same, for the per-menu item count nested inside USER_MENUS: each menu
+    is a name line, then its own item count, then that many item lines."""
+    out = list(base)
+    name = out.index("USER_MENUS") + 2  # first menu's name line
+    count = int(out[name + 1])
+    end = name + 2 + count
+    out[name + 1] = str(count + extra)
+    return out[:end] + [out[end - 1]] * extra + out[end:]
+
+
+for section in CAPACITY_SECTIONS:
+    # +1 steps exactly one past the array; +64 walks well beyond it, so a guard
+    # that is merely off by one and a guard that is missing look different.
+    for extra in (1, 64):
+        write(f"overfill_{section.lower()}_plus{extra}.sav", _overfill(section, extra))
+for extra in (1, 64):
+    write(f"overfill_user_menu_items_plus{extra}.sav", _overfill_user_menu_items(extra))
+
+
+def _keyboard_arguments(n: int, key_of) -> list[str]:
+    """Populate KEYBOARD_ARGUMENTS, which the base file leaves EMPTY (count 0).
+
+    Its two bounds -- `i < userMenuItems.len` and `key < 37 * 6` -- guard indices
+    the section itself supplies, and an empty section evaluates neither: they were
+    the last of 31fb6f755's arms no corpus file reached. The entry format the
+    parser wants is `<key> <argument name>`, the key read with toUint16 and the
+    name taken after the space."""
+    out = list(base)
+    i = out.index("KEYBOARD_ARGUMENTS")
+    out[i + 1] = str(n)
+    return out[: i + 2] + [f"{key_of(k)} ARG{k}" for k in range(n)] + out[i + 2 :]
+
+
+# 40 entries walks past userMenuItems[18] with keys still inside the userKeyLabel
+# ceiling; the out-of-range variant holds every key ABOVE 37*6 so the refusing
+# side of that bound is exercised too; 400 runs both far past their limits.
+write("keyboard_arguments_40.sav", _keyboard_arguments(40, lambda k: k))
+write("keyboard_arguments_40_key_over_ceiling.sav", _keyboard_arguments(40, lambda k: 37 * 6 + k))
+write("keyboard_arguments_400.sav", _keyboard_arguments(400, lambda k: k))
+
+
+def _set_value_after(key: str, value: str) -> list[str]:
+    """Replace the value line that follows a `key`/value config pair."""
+    out = list(base)
+    out[out.index(key) + 1] = value
+    return out
+
+
+# Norm_Key_00.funcParam is `char funcParam[16]`, and the value a real calculator
+# saves for an unassigned key is the 17-character sentinel "NoNormKeyParamDef" --
+# one too long for the field, so the length guard that copies it is never TAKEN by
+# any file derived from a genuine save. A value that fits exercises the copy; a
+# far longer one exercises the refusal at a width the sentinel does not reach.
+write("norm_key_funcparam_fits.sav", _set_value_after("Norm_Key_00.funcParam", "AB"))
+write("norm_key_funcparam_overlong.sav", _set_value_after("Norm_Key_00.funcParam", "P" * 400))
+
+def _unparseable_equation(text: str) -> list[str]:
+    """Replace the single stored formula's text. The restore re-parses each
+    formula, and only a formula that FAILS to parse takes the arm that clears
+    lastErrorCode; every valid file takes the other one."""
+    out = list(base)
+    out[out.index("EQUATIONS") + 2] = text  # header, count, then the formula
+    return out
+
+
+write("equation_unparseable.sav", _unparseable_equation("((((+*/"))
+write("equation_empty.sav", _unparseable_equation(""))
