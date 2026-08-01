@@ -1,4 +1,6 @@
+const std = @import("std");
 const io_owned = @import("calc_state_io.zig");
+const line_parse = @import("line_parse.zig"); // std-only line match / integer parse
 
 pub const FILE_OK: c_int = 1;
 pub const FILE_CANCEL: c_int = 2;
@@ -52,26 +54,11 @@ pub extern fn z47_calc_state_restore_one_section(load_mode: u16, s: u16, n: u16,
 pub extern fn ioFileRead(buffer: ?*anyopaque, size: u32) u32;
 pub extern fn ioEof() c_int;
 
-fn lineEqualsZ(line: [*c]const u8, expected: [*c]const u8) bool {
-    var idx: usize = 0;
-    while (true) : (idx += 1) {
-        const a = line[idx];
-        const b = expected[idx];
-        if (a != b) return false;
-        if (a == 0) return true;
-    }
-}
-
-fn parseU32LineZ(line: [*c]const u8) u32 {
-    var value: u32 = 0;
-    var idx: usize = 0;
-    while (true) : (idx += 1) {
-        const c = line[idx];
-        if (c < '0' or c > '9') break;
-        value = (value * 10) + @as(u32, c - '0');
-    }
-    return value;
-}
+// The line helpers are a std-only pure core; see line_parse.zig for why they
+// take the caller's buffer rather than a pointer into it, and for the saturation
+// the version parse depends on. Lifted there so they are natively testable --
+// this owner reaches libc and the file-I/O globals, so it is only reachable
+// through the C oracle.
 
 pub inline fn resetLoadContext() void {
     z47_calc_state_reset_load_context();
@@ -137,12 +124,12 @@ pub inline fn readLine(buffer: []u8) void {
     io_owned.readLineInto(buffer.ptr, buffer.len);
 }
 
-pub inline fn lineEquals(line: [*c]const u8, expected: [*c]const u8) bool {
-    return lineEqualsZ(line, expected);
+pub inline fn lineEquals(line: []const u8, expected: []const u8) bool {
+    return line_parse.equals(line, expected);
 }
 
-pub inline fn parseU32Line(line: [*c]const u8) u32 {
-    return parseU32LineZ(line);
+pub inline fn parseU32Line(line: []const u8) u32 {
+    return line_parse.parseU32(line);
 }
 
 pub inline fn allowUserKeys(saved_calc_model: u16) bool {

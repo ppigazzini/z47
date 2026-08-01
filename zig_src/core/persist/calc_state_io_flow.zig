@@ -134,7 +134,7 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
 
     var line: [4000]u8 = undefined;
     runtime.readLine(line[0..]); // line 1 must be "DATA_FILE_REVISION"
-    if (!runtime.lineEquals(&line[0], "DATA_FILE_REVISION")) {
+    if (!runtime.lineEquals(line[0..], "DATA_FILE_REVISION")) {
         abi.fmtBufZ(line[0..4000], " \nThis is not a C47/R47 data file\n \nIt will not be loaded.", .{});
         show_warning(&line[0]);
         codec.dataFileMode = false;
@@ -142,7 +142,7 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
         return;
     }
     runtime.readLine(line[0..]); // line 2 must be exactly "0"
-    if (!runtime.lineEquals(&line[0], "0")) {
+    if (!runtime.lineEquals(line[0..], "0")) {
         abi.fmtBufZ(line[0..4000], " \n   !!! Data file revision not supported !!!\nNot compatible with current version\n \nIt will not be loaded.", .{});
         show_warning(&line[0]);
         codec.dataFileMode = false;

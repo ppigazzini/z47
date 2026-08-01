@@ -102,6 +102,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/core/persist/data_file_bytes.zig",
         "zig_src/core/state/register_metadata/name_glyph.zig",
         "zig_src/core/persist/word_scan.zig",
+        "zig_src/core/persist/line_parse.zig",
         "zig_src/core/state/stack/real34_sign.zig",
         "zig_src/core/state/register_metadata/reserved_register.zig",
         "zig_src/core/input/solver_status.zig",
