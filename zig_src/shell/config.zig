@@ -1887,7 +1887,39 @@ const msg2 = [_]nstr2{
 // ===========================================================================
 // addTestPrograms (file-local). SAVE_SPACE_DM42_14 never defined here.
 // ===========================================================================
+// The "no test programs" state: an empty program area holding just the .END.
+// marker. Upstream writes this inline on the file-open failure of each branch;
+// it is factored out here because the size checks below need it as their
+// refusal, and three hand-copied versions of the same four lines is how one of
+// them ends up differing from the others.
+fn markNoTestPrograms(capacity_in_bytes: u32) void {
+    beginOfProgramMemory[0] = 255; // .END.
+    beginOfProgramMemory[1] = 255; // .END.
+    firstFreeProgramByte = beginOfProgramMemory;
+    freeProgramBytes = @intCast(capacity_in_bytes - 2);
+}
+
+// Whether a size field read out of testPgms.bin can be honoured.
+//
+// Upstream checks this on the host branch only -- `numberOfBytesUsed >
+// numberOfBytesForTheTestPrograms` there, and nothing at all on the DMCP branch,
+// where the file comes off the user-writable SD card and the read goes straight
+// into a region resizeProgramMemory just sized to `capacity`. The lower bound is
+// upstream's omission on BOTH branches: a program area always carries the
+// two-byte .END., and `numberOfBytesUsed - 2` underflows a u32 below it, putting
+// firstFreeProgramByte ~4 GiB out of range.
+fn testProgramsSizeIsUsable(size_in_bytes: u32, capacity_in_bytes: u32) bool {
+    return size_in_bytes >= 2 and size_in_bytes <= capacity_in_bytes;
+}
+
 fn addTestPrograms() void {
+    // NOTE: deliberately NO `@setRuntimeSafety(true)` here, though this reads a
+    // file the calculator did not write and would otherwise qualify. The OLD_HW
+    // package-3 layout has FOUR BYTES of .bss headroom -- baseline `_ebss` is
+    // exactly the 0x10002000 limit -- and enabling safety anywhere in this object
+    // pushes it over and fails the link outright. Installing the trap-panic
+    // namespace on frontier.zig does not help; the growth survives it. The bounds
+    // below are explicit tests rather than a backstop, so they hold without it.
     const numberOfBytesForTheTestPrograms: u32 = toBytes(toBlocks(24000)); // upstream 90b263136: 22000 -> 24000
     var numberOfBytesUsed: u32 = 0;
 
@@ -1900,42 +1932,65 @@ fn addTestPrograms() void {
     if (comptime dmcp_build) {
         const sdb_ppgm_fp: *?*anyopaque = @ptrFromInt(SDB_BASE + SDB_PPGM_FP_OFF);
         if (romFOpen(sdb_ppgm_fp.*, "testPgms.bin", FA_READ) != FR_OK) {
-            beginOfProgramMemory[0] = 255;
-            beginOfProgramMemory[1] = 255;
-            firstFreeProgramByte = beginOfProgramMemory;
-            freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - 2);
+            markNoTestPrograms(numberOfBytesForTheTestPrograms);
         } else {
             var bytesRead: c_uint = 0;
             _ = romFRead(sdb_ppgm_fp.*, &numberOfBytesUsed, @sizeOf(@TypeOf(numberOfBytesUsed)), &bytesRead);
-            _ = romFRead(sdb_ppgm_fp.*, beginOfProgramMemory, numberOfBytesUsed, &bytesRead);
-            _ = romFClose(sdb_ppgm_fp.*);
+            const header_read = bytesRead == @sizeOf(@TypeOf(numberOfBytesUsed));
+            if (!header_read or !testProgramsSizeIsUsable(numberOfBytesUsed, numberOfBytesForTheTestPrograms)) {
+                // The size the file claims does not fit the region, or the file is
+                // too short to even state one. Take the same path a missing file
+                // takes rather than reading a length the region cannot hold.
+                _ = romFClose(sdb_ppgm_fp.*);
+                markNoTestPrograms(numberOfBytesForTheTestPrograms);
+            } else {
+                _ = romFRead(sdb_ppgm_fp.*, beginOfProgramMemory, numberOfBytesUsed, &bytesRead);
+                _ = romFClose(sdb_ppgm_fp.*);
 
-            firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);
-            freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - numberOfBytesUsed);
+                if (bytesRead != numberOfBytesUsed) {
+                    // A short read leaves the tail of the program area holding
+                    // whatever was there before, and scanLabelsAndPrograms() walks
+                    // it. Upstream discards this out-parameter; honouring it costs
+                    // nothing and cannot change a complete read.
+                    markNoTestPrograms(numberOfBytesForTheTestPrograms);
+                } else {
+                    firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);
+                    freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - numberOfBytesUsed);
+                }
+            }
         }
         frontier_manage.scanLabelsAndPrograms();
     } else {
         const testPgmsOpt = fopen("res/testPgms/testPgms.bin", "rb");
         if (testPgmsOpt == null) {
             _ = printf("Cannot open file res/testPgms/testPgms.bin\n");
-            beginOfProgramMemory[0] = 255;
-            beginOfProgramMemory[1] = 255;
-            firstFreeProgramByte = beginOfProgramMemory;
-            freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - 2);
+            markNoTestPrograms(numberOfBytesForTheTestPrograms);
         } else {
             const testPgms = testPgmsOpt.?;
             _ = fread(&numberOfBytesUsed, 1, @sizeOf(@TypeOf(numberOfBytesUsed)), testPgms);
             _ = printf("%u bytes\n", numberOfBytesUsed);
             if (numberOfBytesUsed > numberOfBytesForTheTestPrograms) {
+                // Upstream's own check, kept verbatim including the exit: this is
+                // the developer build reading a file from the source tree, and a
+                // testPgms.bin that outgrew the region is a build mistake to fix
+                // rather than an untrusted input to survive.
                 _ = printf("Increase allocated memory for programs! File config.c 1st line of function addTestPrograms\n");
                 _ = fclose(testPgms);
                 exit(0);
             }
-            _ = fread(beginOfProgramMemory, 1, numberOfBytesUsed, testPgms);
-            _ = fclose(testPgms);
+            if (!testProgramsSizeIsUsable(numberOfBytesUsed, numberOfBytesForTheTestPrograms)) {
+                // Reachable where upstream's check is not: a file too short to
+                // state a size leaves numberOfBytesUsed below 2, and the `- 2`
+                // below underflows. Refuse as a missing file does.
+                _ = fclose(testPgms);
+                markNoTestPrograms(numberOfBytesForTheTestPrograms);
+            } else {
+                _ = fread(beginOfProgramMemory, 1, numberOfBytesUsed, testPgms);
+                _ = fclose(testPgms);
 
-            firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);
-            freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - numberOfBytesUsed);
+                firstFreeProgramByte = beginOfProgramMemory + (numberOfBytesUsed - 2);
+                freeProgramBytes = @intCast(numberOfBytesForTheTestPrograms - numberOfBytesUsed);
+            }
         }
 
         _ = printf("freeProgramBytes = %u\n", @as(c_uint, freeProgramBytes));
