@@ -7,6 +7,7 @@ pub const LoadHeader = struct {
 };
 
 pub fn parseLoadHeader() LoadHeader {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var key_buffer: [256]u8 = undefined;
     var value_buffer: [256]u8 = undefined;
     var loaded_version: u32 = 0;

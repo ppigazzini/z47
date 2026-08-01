@@ -61,6 +61,7 @@ const registerLetters = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 // else (e.g. "R000") is read as the decimal number, so existing "Rnnn" files
 // stay fully compatible. Faithful port of master stringToRegisterNumber.
 fn stringToRegisterNumber(name: [*c]const u8) i16 {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     if (name[0] == 'R' and name[1] != 0 and (name[1] < '0' or name[1] > '9')) {
         var k: usize = 0;
         while (registerLetters[k] != 0) : (k += 1) {
@@ -344,6 +345,7 @@ fn cmpName(line: [*c]const u8, name: [*c]const u8) bool {
 // next (real id/name, or another Cmnt). Lets a hand-edited register data-file
 // carry comments between entries without throwing off the per-register count.
 fn readLineSkippingComments(line: [*c]u8, max_len: usize) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     calc_state.readLine(line, max_len);
     while (cmpName(line, "Cmnt")) {
         calc_state.readLine(line, max_len); // drop the comment text line
@@ -358,13 +360,16 @@ fn b2i(x: bool) c_int {
 // Program-memory pointer arithmetic, delegated to the geometry-parameterized,
 // separately-tested progmem module (`zig build state-progmem-test`).
 fn toPcmemptr(p: u32) [*c]u8 {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(p)));
 }
 fn toC47memptr(p: [*c]const u8) u16 {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     return progmem.toC47memptr(geometry(), @intFromPtr(p));
 }
 
 pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys: bool) bool {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const loaded_version = runtime.getLoadedVersion();
     const saved_calc_model = runtime.getSavedCalcModel();
 
@@ -737,6 +742,7 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
 // MYMENU / MYALPHA / per-user-menu item: `item` then an optional space + utf8
 // argument name.
 fn parseMenuItem(item: [*c]userMenuItem_t) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     var str: [*c]u8 = tmpString;
     item[0].item = text.toInt16(str);
     item[0].argumentName[0] = 0;
@@ -750,6 +756,7 @@ fn parseMenuItem(item: [*c]userMenuItem_t) void {
 }
 
 fn restoreProgramsSection(load_mode: u16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const oldSizeInBlocks: u16 = progmem.programSizeInBlocks(geometry(), @intFromPtr(beginOfProgramMemory));
     var oldFirstFreeProgramByte: [*c]u8 = firstFreeProgramByte;
     const oldFreeProgramBytes: u16 = freeProgramBytes;
@@ -861,6 +868,7 @@ fn restoreProgramsSection(load_mode: u16) void {
 }
 
 fn restoreOtherConfiguration(load_mode: u16, allow_user_keys: bool, loaded_version: u32, saved_calc_model: u16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // count (unused)
 
     calc_state.readLine(aimBuffer, AIM_BUFFER_LENGTH); // duplicated param / END marker
@@ -893,6 +901,7 @@ fn matchU8(name: [*c]const u8, ptr: anytype) bool {
 }
 
 fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model: u16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const ab = aimBuffer;
     if (cmpName(ab, "firstGregorianDay")) {
         firstGregorianDay = text.toUint32(tmpString);

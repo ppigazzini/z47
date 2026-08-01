@@ -56,6 +56,7 @@ pub fn doSave(save_type: u16) void {
 }
 
 pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     runtime.resetLoadContext();
 
     const ret = runtime.openLoad(load_type);
@@ -113,6 +114,7 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
 // restoreOneSection only returns false after SYSTEM_STATE (absent from data
 // files), so the loop is driven by ioEof() instead.
 pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const ret = ioFileOpen(ioPathRegImport, ioModeRead);
     if (ret != runtime.FILE_OK) {
         if (ret == runtime.FILE_CANCEL) {

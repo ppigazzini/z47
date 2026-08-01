@@ -574,6 +574,12 @@ pub const int_math = @import("int_math.zig");
 // owners and frontier PC-memory owners delegate here.
 pub const block_math = @import("block_math.zig");
 
+// The panic namespace the load-path object ROOTS install, so that raising
+// runtime safety over an untrusted parse is affordable on the firmware. Install
+// as `pub const panic = abi.trap_panic.namespace;` and only in a root source
+// file -- `std.builtin` reads `root.panic` and ignores it anywhere else.
+pub const trap_panic = @import("trap_panic.zig");
+
 // Shared std-only WP34S short-integer *mode* arithmetic (value/overflow decisions
 // under unsigned / 1's- / 2's-complement / sign-magnitude). Reachable as
 // `abi.shortint_arith.*`; frontier_integers delegates its WP34S_int* cores here.
