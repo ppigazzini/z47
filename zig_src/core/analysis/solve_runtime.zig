@@ -130,3 +130,19 @@ pub inline fn tvmBeginMode() void {
 pub inline fn tvmEndMode() void {
     setSystemFlag(FLAG_ENDPMT);
 }
+
+// Heap for the working reals that upstream's REAL_T_ALLOC(name, 75) block takes
+// off the solver frames (solve.c's solver, graph.c's complexSolver). Bound at
+// ?*abi.Real rather than an untyped C pointer because a C void* converts to any
+// object pointer, which keeps the call sites cast-free; REAL_SIZE_IN_BYTES(75) is
+// @sizeOf(abi.Real). Same allocator as REAL_T_ALLOC/REAL_T_FREE.
+extern fn malloc(size: usize) ?*abi.Real;
+extern fn free(ptr: ?*abi.Real) void;
+
+pub inline fn mallocReal() ?*abi.Real {
+    return malloc(@sizeOf(abi.Real));
+}
+
+pub inline fn freeReal(ptr: ?*abi.Real) void {
+    free(ptr);
+}

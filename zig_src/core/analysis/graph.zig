@@ -116,6 +116,7 @@ const RESERVED_VARIABLE_LEST: calcRegister_t = 2045;
 const ERROR_NONE: u8 = 0;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_NO_ROOT_FOUND: u8 = 20;
+const ERROR_RAM_FULL: u8 = 11;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
 const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 
@@ -1886,6 +1887,21 @@ fn printComplexToConsole(re: *const real_t, im: *const real_t, before: [*:0]cons
     }
 }
 
+// Heap twin of runtime.mallocReal for the cplx_t working values: upstream's
+// CPLX_T_ALLOC/CPLX_T_FREE (realType.h), which is plain malloc/free. A cplx_t is
+// two full reals and takes no digits, so it cannot be shortened the way a real_t
+// can.
+extern fn malloc(size: usize) ?*cplx_t;
+extern fn free(ptr: ?*cplx_t) void;
+
+inline fn mallocCplx() ?*cplx_t {
+    return malloc(@sizeOf(cplx_t));
+}
+
+inline fn freeCplx(ptr: ?*cplx_t) void {
+    free(ptr);
+}
+
 inline fn copyComplex(from: *const cplx_t, to: *cplx_t) void {
     realCopy(&from.Real, &to.Real);
     realCopy(&from.Imag, &to.Imag);
@@ -1950,35 +1966,87 @@ fn complexSolver() void {
     var kicker: i16 = 1;
     var yPower: u8 = 1;
 
-    var f: real_t = undefined;
-    var tol: real_t = undefined;
-    var tolClose: real_t = undefined;
-    var oldMagnitudeY: real_t = undefined;
-    var magnitudeY: real_t = undefined;
-
-    var X0: cplx_t = undefined;
-    var X1: cplx_t = undefined;
-    var X2: cplx_t = undefined;
-    var X2N: cplx_t = undefined;
-    var dX: cplx_t = undefined;
-    var dXold: cplx_t = undefined;
-
-    var Y0: cplx_t = undefined;
-    var Y1: cplx_t = undefined;
-    var Y2: cplx_t = undefined;
-    var Y2N: cplx_t = undefined;
-    var dY: cplx_t = undefined;
-    var dYold: cplx_t = undefined;
-
-    var temp0: cplx_t = undefined;
-    var temp1: cplx_t = undefined;
-    var temp2: cplx_t = undefined;
-    var temp3: cplx_t = undefined;
+    // The working values come from the heap, not the frame: five reals at 60 bytes
+    // and sixteen complex at 120 is 2220 bytes, and the frame stands for the whole
+    // solve while every evaluation of the user formula runs below it. Upstream
+    // measured the DM42 frame falling from 2320 bytes to 208. `defer` frees them on
+    // every exit, which is what upstream's `goto freeWork` does for each of its
+    // returns.
+    const f_p = runtime.mallocReal();
+    const tol_p = runtime.mallocReal();
+    const tolClose_p = runtime.mallocReal();
+    const oldMagnitudeY_p = runtime.mallocReal();
+    const magnitudeY_p = runtime.mallocReal();
+    const X0_p = mallocCplx();
+    const X1_p = mallocCplx();
+    const X2_p = mallocCplx();
+    const X2N_p = mallocCplx();
+    const dX_p = mallocCplx();
+    const dXold_p = mallocCplx();
+    const Y0_p = mallocCplx();
+    const Y1_p = mallocCplx();
+    const Y2_p = mallocCplx();
+    const Y2N_p = mallocCplx();
+    const dY_p = mallocCplx();
+    const dYold_p = mallocCplx();
+    const temp0_p = mallocCplx();
+    const temp1_p = mallocCplx();
+    const temp2_p = mallocCplx();
+    const temp3_p = mallocCplx();
+    defer {
+        runtime.freeReal(f_p);
+        runtime.freeReal(tol_p);
+        runtime.freeReal(tolClose_p);
+        runtime.freeReal(oldMagnitudeY_p);
+        runtime.freeReal(magnitudeY_p);
+        freeCplx(X0_p);
+        freeCplx(X1_p);
+        freeCplx(X2_p);
+        freeCplx(X2N_p);
+        freeCplx(dX_p);
+        freeCplx(dXold_p);
+        freeCplx(Y0_p);
+        freeCplx(Y1_p);
+        freeCplx(Y2_p);
+        freeCplx(Y2N_p);
+        freeCplx(dY_p);
+        freeCplx(dYold_p);
+        freeCplx(temp0_p);
+        freeCplx(temp1_p);
+        freeCplx(temp2_p);
+        freeCplx(temp3_p);
+    }
+    if (f_p == null or tol_p == null or tolClose_p == null or oldMagnitudeY_p == null or magnitudeY_p == null or X0_p == null or X1_p == null or X2_p == null or X2N_p == null or dX_p == null or dXold_p == null or Y0_p == null or Y1_p == null or Y2_p == null or Y2N_p == null or dY_p == null or dYold_p == null or temp0_p == null or temp1_p == null or temp2_p == null or temp3_p == null) {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        calcMode = CM_NORMAL;
+        return;
+    }
+    const f = f_p.?;
+    const tol = tol_p.?;
+    const tolClose = tolClose_p.?;
+    const oldMagnitudeY = oldMagnitudeY_p.?;
+    const magnitudeY = magnitudeY_p.?;
+    const X0 = X0_p.?;
+    const X1 = X1_p.?;
+    const X2 = X2_p.?;
+    const X2N = X2N_p.?;
+    const dX = dX_p.?;
+    const dXold = dXold_p.?;
+    const Y0 = Y0_p.?;
+    const Y1 = Y1_p.?;
+    const Y2 = Y2_p.?;
+    const Y2N = Y2N_p.?;
+    const dY = dY_p.?;
+    const dYold = dYold_p.?;
+    const temp0 = temp0_p.?;
+    const temp1 = temp1_p.?;
+    const temp2 = temp2_p.?;
+    const temp3 = temp3_p.?;
 
     // Initialize
     _ = getRegisterAsComplex(REGISTER_X, &X1.Real, &X1.Imag);
     _ = getRegisterAsComplex(REGISTER_Y, &X0.Real, &X0.Imag);
-    copyComplex(&X0, &cpxSlvBestX);
+    copyComplex(X0, &cpxSlvBestX);
 
     realCopy(consts.c5568(), &cpxSlvBestMagnitudeY);
 
@@ -1992,36 +2060,36 @@ fn complexSolver() void {
 
     realSetZero(&dXold.Real);
     realSetZero(&dXold.Imag);
-    copyComplex(&dXold, &dYold);
-    copyComplex(&dXold, &X2N);
-    copyComplex(&dXold, &dX);
+    copyComplex(dXold, dYold);
+    copyComplex(dXold, X2N);
+    copyComplex(dXold, dX);
     // initial value for difference comparison must be larger than tolerance
     realCopy(consts.c4520(), &dX.Real);
-    copyComplex(&dX, &dY);
+    copyComplex(dX, dY);
 
-    realCopy(consts.c4580(), &f); // factor ()
+    realCopy(consts.c4580(), f); // factor ()
 
     // set tolerance from significantDigits and use higher precision in execute_rpn_function();
     const signDig: u16 = if (significantDigits != 0) significantDigits else 34;
 
-    realSetOne(&tol);
+    realSetOne(tol);
     tol.exponent -= if (signDig <= 4) 4 else (if (signDig > 32) 32 else @as(i32, signDig));
-    realSetOne(&tolClose);
+    realSetOne(tolClose);
     tolClose.exponent -= if (signDig <= 4) 3 else (if (signDig > 27) 27 else @as(i32, signDig) - 1);
     fnSetSignificantDigits(34);
 
-    _ = execute_rpn_function_reals(&X0, &Y0, &magnitudeY);
-    _ = execute_rpn_function_reals(&X1, &Y1, &oldMagnitudeY);
+    _ = execute_rpn_function_reals(X0, Y0, magnitudeY);
+    _ = execute_rpn_function_reals(X1, Y1, oldMagnitudeY);
 
     // check if an initial value is a solution
-    if (checkRealZeroTol(&cpxSlvBestMagnitudeY, &tol)) {
+    if (checkRealZeroTol(&cpxSlvBestMagnitudeY, tol)) {
         Y2IsZero = true;
     } else {
         subComplex(&Y1.Real, &Y1.Imag, &Y0.Real, &Y0.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2); // dy=y1-y0
         // avoid equal Y as it causes double iterations
-        if (check2RealZeroTol(&temp1.Real, &temp1.Imag, &tol)) {
+        if (check2RealZeroTol(&temp1.Real, &temp1.Imag, tol)) {
             addComplex(&X0.Real, &X0.Imag, consts.c4508(), consts.c1708(), &X0.Real, &X0.Imag, ctxtSolver2);
-            _ = execute_rpn_function_reals(&X0, &Y0, &magnitudeY);
+            _ = execute_rpn_function_reals(X0, Y0, magnitudeY);
             subComplex(&Y1.Real, &Y1.Imag, &Y0.Real, &Y0.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2); // dy=y1-y0
         }
         subComplex(&X1.Real, &X1.Imag, &X0.Real, &X0.Imag, &temp0.Real, &temp0.Imag, ctxtSolver2); // dx=x1-x0
@@ -2050,14 +2118,14 @@ fn complexSolver() void {
         osc = (osc << 1) + @as(i16, @intFromBool(check_osc(&dX.Imag, &dXold.Imag, &DXI)));
 
         // If osc flag is active, that is any delta polarity change, then increment oscillation count
-        if (osc != 0 and (realGetExponent(&magnitudeY) - realGetExponent(&oldMagnitudeY) >= -2)) { // only increment if convergence is less than ca. 1 %, otherwise assume it is a damped oscillation
+        if (osc != 0 and (realGetExponent(magnitudeY) - realGetExponent(oldMagnitudeY) >= -2)) { // only increment if convergence is less than ca. 1 %, otherwise assume it is a damped oscillation
             oscillations += 1;
         } else {
             oscillations = @max(0, oscillations - 1);
         }
 
         // If converging, increment convergence counter
-        if (realCompareLessThan(&magnitudeY, &oldMagnitudeY)) {
+        if (realCompareLessThan(magnitudeY, oldMagnitudeY)) {
             convergent += 1;
         } else {
             if (Y2IsCloseToZero) {
@@ -2066,7 +2134,7 @@ fn complexSolver() void {
                 convergent = @max(-3, convergent - 2);
             }
         }
-        realCopy(&magnitudeY, &oldMagnitudeY);
+        realCopy(magnitudeY, oldMagnitudeY);
 
         if (!Y2IsZero) { // only do the convergence and oscillation checks if Y is not zero
             if (convergent > 6 and oscillations > 3) {
@@ -2080,17 +2148,17 @@ fn complexSolver() void {
                 oscillations = 0;
                 kicker = 3;
                 if (yPower > 1) {
-                    _ = execute_rpn_function_reals(&X0, &Y0, &oldMagnitudeY);
-                    _ = execute_rpn_function_reals(&X1, &Y1, &magnitudeY);
+                    _ = execute_rpn_function_reals(X0, Y0, oldMagnitudeY);
+                    _ = execute_rpn_function_reals(X1, Y1, magnitudeY);
                 }
                 yPower += 2;
-                powCplxNat(&Y0, &yPower, &Y0);
-                powCplxNat(&Y1, &yPower, &Y1);
+                powCplxNat(Y0, &yPower, Y0);
+                powCplxNat(Y1, &yPower, Y1);
                 if (comptime !is_dmcp_build) {
                     _ = printf("-------- yPower: %u, iter: %u\n", @as(c_uint, yPower), @as(c_uint, @intCast(iterationCounter)));
                 }
             }
-            copyComplex(&X2, &temp0);
+            copyComplex(X2, temp0);
             // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
             if (iterationCounter == 0 or ((oscillations >= 2) and (oscillationIterationCounter > 10) // prime - 1 to not sync with oscillation
             and (convergent <= 2))) {
@@ -2115,24 +2183,24 @@ fn complexSolver() void {
         complexMagnitude(&temp1.Real, &temp1.Imag, &temp1.Real, ctxtSolver2);
         Y2IsCloseToZero = Y2IsCloseToZero or (realCompareLessThan(&cpxSlvBestMagnitudeY, consts.c4508()) and realIsZero(&temp1.Real) and realIsZero(&temp1.Imag));
 
-        iterAfterBest = if (execute_rpn_function_reals(&X2, &Y2N, &magnitudeY)) 0 else iterAfterBest + 1;
-        powCplxNat(&Y2N, &yPower, &Y2);
+        iterAfterBest = if (execute_rpn_function_reals(X2, Y2N, magnitudeY)) 0 else iterAfterBest + 1;
+        powCplxNat(Y2N, &yPower, Y2);
         if (realIsInfinite(&Y2.Real) or realIsInfinite(&Y2.Imag)) {
             // Revert kick
             if (comptime !is_dmcp_build) {
                 _ = printf("----- Inf.Y iter:%u  revert kick", @as(c_uint, @intCast(iterationCounter)));
             }
-            copyComplex(&temp0, &X2);
-            _ = execute_rpn_function_reals(&X2, &Y2N, &magnitudeY);
-            powCplxNat(&Y2N, &yPower, &Y2);
+            copyComplex(temp0, X2);
+            _ = execute_rpn_function_reals(X2, Y2N, magnitudeY);
+            powCplxNat(Y2N, &yPower, Y2);
             kicker -= 2;
         }
 
         // check if an acceptable solution is found
-        Y2IsZero = Y2IsZero or checkRealZeroTol(&magnitudeY, &tol);
+        Y2IsZero = Y2IsZero or checkRealZeroTol(magnitudeY, tol);
         checkNaN = checkNaN or realIsNaN(&X2.Real) or realIsNaN(&X2.Imag) or
             realIsNaN(&Y2N.Real) or realIsNaN(&Y2N.Imag);
-        Y2IsCloseToZero = Y2IsCloseToZero or checkRealZeroTol(&magnitudeY, &tolClose);
+        Y2IsCloseToZero = Y2IsCloseToZero or checkRealZeroTol(magnitudeY, tolClose);
 
         // VERBOSE_SOLVER_ITERDATA (active on PC_BUILD): one line per iteration.
         if (comptime !is_dmcp_build) {
@@ -2151,8 +2219,8 @@ fn complexSolver() void {
         }
 
         //*************** DETERMINE DX and DY, to calculate the slope (or the inverse of the slope in this case) *******************
-        copyComplex(&dX, &dXold); // store old DELTA values, for oscillation check
-        copyComplex(&dY, &dYold); // store old DELTA values, for oscillation check
+        copyComplex(dX, dXold); // store old DELTA values, for oscillation check
+        copyComplex(dY, dYold); // store old DELTA values, for oscillation check
 
         // ---------- Modified 3 point Secant ------------
         if ((iterationCounter == 0) or (!Y2IsZero and !dXdYIsZero and !checkNaN)) {
@@ -2178,8 +2246,8 @@ fn complexSolver() void {
             mulComplexComplex(&X2N.Real, &X2N.Imag, &Y1.Real, &Y1.Imag, &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
             // if converges slow without oscillating then accelerate.
             if (convergent > 10) {
-                convertDoubleToReal(1.0 + @as(f64, @floatFromInt(convergent)) * 0.1, &f, ctxtSolver2); // factor ()
-                mulComplexComplex(&X2N.Real, &X2N.Imag, &f, consts.c1708(), &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
+                convertDoubleToReal(1.0 + @as(f64, @floatFromInt(convergent)) * 0.1, f, ctxtSolver2); // factor ()
+                mulComplexComplex(&X2N.Real, &X2N.Imag, f, consts.c1708(), &X2N.Real, &X2N.Imag, ctxtSolver2); // increment to x is: y1 . DX/DY
             }
 
             subComplex(&X1.Real, &X1.Imag, &X2N.Real, &X2N.Imag, &X2N.Real, &X2N.Imag, ctxtSolver2); // subtract as per Newton, x1 - f/f' store temporarily to new x2n
@@ -2187,11 +2255,11 @@ fn complexSolver() void {
 
         //#############################################
 
-        copyComplex(&Y1, &Y0); // old y1 copied to y0
-        copyComplex(&X1, &X0); // old x1 copied to x0
-        copyComplex(&Y2, &Y1); // old y2 copied to y1
-        copyComplex(&X2, &X1); // old x2 copied to x1
-        copyComplex(&X2N, &X2); // new x2
+        copyComplex(Y1, Y0); // old y1 copied to y0
+        copyComplex(X1, X0); // old x1 copied to x0
+        copyComplex(Y2, Y1); // old y2 copied to y1
+        copyComplex(X2, X1); // old x2 copied to x1
+        copyComplex(X2N, X2); // new x2
 
         iterationCounter += 1;
         oscillationIterationCounter += 1;
@@ -2222,19 +2290,19 @@ fn complexSolver() void {
 
     var conjugates: bool = false;
     // Test if zeroed complex parts is better
-    copyComplex(&cpxSlvBestX, &temp0);
-    if (checkRealZeroTol(&temp0.Real, &tolClose)) {
+    copyComplex(&cpxSlvBestX, temp0);
+    if (checkRealZeroTol(&temp0.Real, tolClose)) {
         realSetZero(&temp0.Real);
-        _ = execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
+        _ = execute_rpn_function_reals(temp0, temp1, magnitudeY);
     }
-    copyComplex(&cpxSlvBestX, &temp0);
-    if (checkRealZeroTol(&temp0.Imag, &tolClose)) {
+    copyComplex(&cpxSlvBestX, temp0);
+    if (checkRealZeroTol(&temp0.Imag, tolClose)) {
         realSetZero(&temp0.Imag);
-        _ = execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
+        _ = execute_rpn_function_reals(temp0, temp1, magnitudeY);
     } else { // consider conjugates if X not close to Real
         realChangeSign(&temp0.Imag);
-        _ = execute_rpn_function_reals(&temp0, &temp1, &magnitudeY);
-        conjugates = checkRealZeroTol(&magnitudeY, &tolClose);
+        _ = execute_rpn_function_reals(temp0, temp1, magnitudeY);
+        conjugates = checkRealZeroTol(magnitudeY, tolClose);
     }
 
     const FLAG_FRACTN: bool = getSystemFlag(FLAG_FRACT);
