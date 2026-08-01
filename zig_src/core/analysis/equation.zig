@@ -221,6 +221,7 @@ const STD_op_j = "\xa1\x49";
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
+extern var eqnDrawLhsOnly: bool; // set by fnEqSolvGraph's Draw sweep, c47.c
 extern var lastErrorCode: u8;
 extern var temporaryInformation: u8;
 extern var currentSolverStatus: u16;
@@ -1174,7 +1175,9 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 },
                 PARSER_OPERATOR_ITM_EQUAL => {
-                    fnToReal(NOPARAM);
+                    if (getRegisterDataType(REGISTER_X) != dtComplex34) { // a complex left hand side cannot convert: the complex solver leaves one in X
+                        fnToReal(NOPARAM);
+                    }
                     _popNumericStack(mvarBuffer, PARSER_LEFT_VALUE_REAL(mvarBuffer), PARSER_LEFT_VALUE_IMAG(mvarBuffer));
                 },
                 else => {
@@ -1655,6 +1658,14 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
                     strPtr += 1;
                 }
                 _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer, pointerInFormula);
+                // Draw takes its value from the left hand side: return it as the
+                // result and skip the right hand side.
+                if (buffer[0] == '=' and eqnDrawLhsOnly and parseMode == EQUATION_PARSER_XEQ) {
+                    _pushNumericStack(mvarBuffer, PARSER_LEFT_VALUE_REAL(mvarBuffer), PARSER_LEFT_VALUE_IMAG(mvarBuffer));
+                    real34SetZero(PARSER_LEFT_VALUE_REAL(mvarBuffer));
+                    real34SetZero(PARSER_LEFT_VALUE_IMAG(mvarBuffer));
+                    strPtr += @intCast(stringByteLength(strPtr));
+                }
                 bufPtr = buffer;
                 buffer[0] = 0;
                 pointerInFormula = strPtr;

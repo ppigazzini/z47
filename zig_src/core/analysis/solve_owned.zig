@@ -181,6 +181,9 @@ const softmenuStack_t = abi.SoftmenuStack;
 // and crashed in fnSolveVar (the grapher/solver variable path). Bind the array
 // address like the frontier owners.
 const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
+// softmenus.c owns the "is the top of the stack a dynamic softmenu" test; taking
+// it here rather than re-deriving it keeps one owner for the rule.
+extern fn currentDynamicSoftmenu() ?*dynamicSoftmenu_t;
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 
 // ---------------------------------------------------------------------------
@@ -506,7 +509,14 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
 pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     printStatus(1, errorMessageOf(REAL_SOLVER), force);
-    const variable_str: [*c]u8 = getNthString(dynamicSoftmenu[@intCast(softmenuStack[0].softmenuId)].menuContent, dynamicMenuItem);
+    // The menu content is only there to read while the top of the softmenu stack
+    // IS a dynamic softmenu; on a static one the id ranks in softmenu[] instead and
+    // addresses past dynamicSoftmenu[].
+    const dynamic = currentDynamicSoftmenu() orelse return;
+    if (dynamicMenuItem < 0 or dynamicMenuItem >= dynamic.numItems) {
+        return;
+    }
+    const variable_str: [*c]u8 = getNthString(dynamic.menuContent, dynamicMenuItem);
     const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(@ptrCast(variable_str)))));
     const nameLength: u16 = @intCast(stringByteLength(variable_str) + 1);
     if (currentMvarLabel != INVALID_VARIABLE) {

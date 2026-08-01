@@ -149,6 +149,9 @@ const softmenuStack_t = abi.SoftmenuStack;
 // C arrays: bind the address, not the data-as-pointer. The pointer
 // form crashed fnIntegrateVar's dynamicSoftmenu[...] access like fnSolveVar.
 const dynamicSoftmenu = @extern([*c]dynamicSoftmenu_t, .{ .name = "dynamicSoftmenu" });
+// softmenus.c owns the "is the top of the stack a dynamic softmenu" test; taking
+// it here rather than re-deriving it keeps one owner for the rule.
+extern fn currentDynamicSoftmenu() ?*dynamicSoftmenu_t;
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 
 // ---------------------------------------------------------------------------
@@ -449,7 +452,12 @@ pub export fn z47_solver_fnIntegrateYX(labelOrVariable: u16) linksection(runtime
 
 pub export fn fnIntVar(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    const variable_str: [*c]u8 = getNthString(dynamicSoftmenu[@intCast(softmenuStack[0].softmenuId)].menuContent, dynamicMenuItem);
+    // Same bound as fnSolveVar: a static top-of-stack menu has no dynamic content.
+    const dynamic = currentDynamicSoftmenu() orelse return;
+    if (dynamicMenuItem < 0 or dynamicMenuItem >= dynamic.numItems) {
+        return;
+    }
+    const variable_str: [*c]u8 = getNthString(dynamic.menuContent, dynamicMenuItem);
     const regist: u16 = @bitCast(@as(i16, @truncate(findOrAllocateNamedVariable(@ptrCast(variable_str)))));
     const doubleVarPress: bool_t = regist == currentSolverVariable;
     currentSolverVariable = regist;

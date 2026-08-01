@@ -167,6 +167,9 @@ pub export var refreshNIMdone: bool_t = false;
 pub export var cleanupAfterShift: bool_t = false;
 pub export var solverEstimatesUsed: bool_t = false;
 pub export var updateOldConstants: bool_t = false;
+// Draw on an equation plots its left hand side; parseEquation reads this to
+// return the lhs and skip the rest of the formula.
+pub export var eqnDrawLhsOnly: bool_t = false;
 
 // ctxtReal4/34/39/51/75 (the shared decNumber contexts) now live in the base
 // kernel at engine/kernel/decimal_context.zig; consumers extern them unchanged.
@@ -278,6 +281,9 @@ pub export var numLinesTinyFont: u8 = 0;
 // New upstream (real master) globals: headless/--dumpMenus + test-load flags,
 // bold numeric-font metrics, the alpha register and the 42S var-menu flag.
 pub export var headlessMode: bool_t = false;
+// CLLCD, PIXEL, POINT or AGRAPH painted the screen and no refresh has repainted
+// over it since; SNAP keeps such a screen raw instead of redrawing the stack.
+pub export var screenHoldsDrawnPixels: bool_t = false;
 pub export var loadTestPrograms: bool_t = false;
 pub export var loadTestData: bool_t = false;
 pub export var numScreensNumericFontBold: u8 = 0;
@@ -348,8 +354,7 @@ pub export var ListXYposition: i16 = 0;
 pub export var JM_auto_doublepress_autodrop_enabled: i16 = 0;
 pub export var JM_auto_longpress_enabled: i16 = 0;
 pub export var JM_SHIFT_HOME_TIMER1: u8 = 0;
-pub export var ULFL: bool_t = false;
-pub export var ULGL: bool_t = false;
+// ULFL/ULGL went with upstream's "remove two globals that are never read or written".
 // FN_key_pressed moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var FN_key_pressed_last: i16 = 0;
 pub export var FN_timeouts_in_progress: bool_t = false;
@@ -416,8 +421,8 @@ pub export var tamOverPemYPos: u32 = 0;
 pub export var timerValue: u32 = 0;
 pub export var timerStartTime: u32 = TIMER_APP_STOPPED;
 pub export var timerTotalTime: u32 = 0;
-pub export var pointerOfFlashPgmLibrary: u32 = 0;
-pub export var sizeOfFlashPgmLibrary: u32 = 0;
+// pointerOfFlashPgmLibrary/sizeOfFlashPgmLibrary went with upstream's
+// "remove four more globals that nothing reads".
 
 // shortIntegerMask moved to the base kernel (engine/kernel/calc_globals.zig).
 // shortIntegerSignBit moved to the base kernel (engine/kernel/calc_globals.zig).

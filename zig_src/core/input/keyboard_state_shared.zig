@@ -826,7 +826,12 @@ pub fn implementation(comptime runtime: type) type {
                         item = runtime.ITM_CALC;
                     } else if (usesFormulaInteractive and eqnMode == runtime.SOLVER_STATUS_EQUATION_SOLVER and runtime.dynamicMenuItem == 4) {
                         item = -runtime.MNU_Solver_TOOL;
-                    } else if (usesFormulaInteractive and runtime.getNthString(runtime.dynamicSoftmenu[@intCast(runtime.softmenuStack[0].softmenuId)].menuContent, runtime.dynamicMenuItem)[0] == 0) {
+                        // The item index has to be inside the page before its label can
+                        // be read: a menu shorter than the key that was pressed leaves
+                        // getNthString walking past the content block.
+                    } else if (usesFormulaInteractive and (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(runtime.softmenuStack[0].softmenuId)].numItems or
+                        runtime.getNthString(runtime.dynamicSoftmenu[@intCast(runtime.softmenuStack[0].softmenuId)].menuContent, runtime.dynamicMenuItem)[0] == 0))
+                    {
                         item = runtime.ITM_NOP;
                     } else if (runtime.isEqn1stDer() and runtime.dynamicMenuItem == 5) {
                         item = runtime.ITM_FPHERE;
