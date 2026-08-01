@@ -196,10 +196,11 @@ rather than closed.
    three bugs the M1 fuzz found and of the matrix-capacity defect M-SAFE-1 fixed.
    The spatial class stays invisible, and the way to reach it is the slice
    conversion described in gap 4, after which the attribute already in place starts
-   checking bounds with no further work. Two readers on the untrusted surface are also still
-   uncovered -- `addTestPrograms` and `import_string_from_filename`, both in the
-   frontier object rather than the two load-path roots -- and they are covered
-   when gap 3 fixes them.
+   checking bounds with no further work. Two readers on the untrusted surface stay
+   uncovered by the attribute for a reason that is not scheduling --
+   `addTestPrograms` and `import_string_from_filename` live in the frontier
+   object, where gap 3 says the attribute cannot go at all. Both now carry
+   explicit bounds instead, which is the answer wherever that budget applies.
 2. **The state-file restore path has no adversarial lane.** `31fb6f755` added
    137 lines to `calc_state_restore.zig` alone (137 in, 33 out), and the only
    thing that exercises them is a corpus of VALID files: `saveload_parity` and
@@ -208,21 +209,19 @@ rather than closed.
    pattern, which found three real bugs the first afternoon it existed -- is the
    highest-value unbuilt lane in the tree. It is also the surface upstream's own
    worst memory bug (the 577 state-file overflow) lived on.
-3. **The same read is bounded on one lane and not the other.** A reader with
-   separate host and firmware bodies can bound a file-derived length on one build
-   and not on the other, and the gate then runs the checked lane and reports
-   green. Two known instances, both faithful transliterations of upstream:
-   `addTestPrograms` (`../zig_src/shell/config.zig`) checks
-   `numberOfBytesUsed > numberOfBytesForTheTestPrograms` on the host and does not
-   on the firmware, where the length comes off the SD card and the write lands in
-   a 24000-byte program-memory region; `import_string_from_filename`
-   (`../zig_src/shell/plot/graph_text.zig`) bounds its read with
-   `f_getsline(line1, TMP_STR_LENGTH, ...)` on the firmware while the host body
-   appends the whole file and length-checks afterwards -- currently latent, since
-   nothing in the pinned tree calls it. This is a *class*, not two incidents: any
-   build-split reader is a candidate. Because both are upstream's, closing them is
-   an upstream hardening contribution shaped like `31fb6f755`, not a local
-   divergence.
+3. **The OLD_HW package-3 `.bss` budget is FOUR BYTES, so runtime safety cannot
+   be placed in the frontier object.** Baseline `_ebss` is exactly the
+   `0x10002000` the linker script asserts against. Adding `@setRuntimeSafety(true)`
+   to one function in `../zig_src/shell/config.zig` moved it to `0x10002004` and
+   failed the pkg3 link; the pkg3 frontier object's `.bss` is byte-identical
+   either way, so the growth is a `--gc-sections` effect -- the attribute keeps
+   something alive that was otherwise collected. Installing
+   `abi.trap_panic.namespace` on `frontier.zig` does NOT recover it. So the
+   per-function flash price quoted for the load-path objects does not transfer
+   here: in the frontier object on OLD_HW the currency is RAM and there is none.
+   Write explicit bounds instead of relying on the backstop, and note at the site
+   why the attribute is absent. Note also that `dmcp_pkgs_all` is the only lane
+   that catches this -- the gate, `dmcp` and `dmcp5` were all green.
 4. **ASan cannot see the C47 block allocator.** Registers, variables, programs,
    formulae, menus and the GMP heap all live in `ram`, a single ~256 KiB
    allocation carved by `../zig_src/shell/free_list.zig`. One block overrunning

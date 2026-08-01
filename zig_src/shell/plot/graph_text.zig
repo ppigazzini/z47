@@ -399,7 +399,7 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
         var dirfile: [200]u8 = undefined;
         dirfile[0] = 0;
         var infile: ?*FILE = undefined;
-        var onechar: [2]u8 = undefined;
+        var onechar: [1]u8 = undefined; // one byte; upstream's second slot held the strcat terminator
 
         _ = strcpy(&dirfile, dirname);
         _ = strcat(&dirfile, "/");
@@ -423,14 +423,30 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
             }
         }
 
-        line1[0] = 0;
-        onechar[1] = 0;
+        // Read into `line1` under its own bound. Upstream appends one byte at a
+        // time with strcat and only measures the result AFTER the loop, so a file
+        // of TMP_STR_LENGTH bytes or more has already run off the end of the
+        // caller's buffer by the time the check runs -- the DMCP branch above
+        // bounds the same read with f_getsline(line1, TMP_STR_LENGTH, ...), which
+        // is what says the buffer is TMP_STR_LENGTH bytes. Track the length while
+        // reading instead: the overlong case still takes the fallback, with the
+        // same message and the same return, but now before the write rather than
+        // after it. Dropping the per-byte strcat also drops its O(n^2) rescan.
+        var used: usize = 0;
+        const limit: usize = @intCast(TMP_STR_LENGTH - 1);
+        var overlong = false;
         while (fread(&onechar, 1, 1, infile.?) != 0) {
-            _ = strcat(line1, &onechar);
+            if (used >= limit) {
+                overlong = true;
+                break;
+            }
+            line1[used] = onechar[0];
+            used += 1;
         }
+        line1[used] = 0;
         _ = fclose(infile.?);
 
-        if (stringByteLength(line1) >= TMP_STR_LENGTH - 1) {
+        if (overlong or used >= limit) {
             _ = strcpy(line1, fallback);
             _ = printf("ERROR too long file using fallback\n");
             _ = fflush(null);
