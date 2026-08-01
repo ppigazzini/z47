@@ -228,18 +228,20 @@ the table above.
    re-poison in `freeListFree` -- compiled only where `sanitize_c` is on, so the
    firmware and the parity binaries are unchanged. Reasoning is in
    [75-debugging.md](75-debugging.md).
-5. **The 5628 `@intCast` sites are three populations counted as one.** By the
-   narrowing rule above, each site is either (a) provably in range, where
-   `@intCast` is correct and the check is free documentation; (b) standing where
-   upstream narrows implicitly, where `@intCast` is a PARITY DEFECT because C
-   truncates and Zig traps; or (c) standing where upstream's unsigned arithmetic
-   wraps, where the spelling must be `+%` / `-%` / `*%` or a saturating `+|` / `*|`.
-   Gap 0's `setMatrixDims` is a (b); the two `numberOfBytesUsed` subtractions in
-   gap 3 are (c). `report-idiom-status.py` reports one total, which cannot tell a
-   correct cast from a defect, so the ratchet should count (b) and (c) on the load
-   owners and drive those to zero while leaving (a) alone. Until then the
-   firmware's exposure to a bad narrowing is unmeasured -- and, unlike a host
-   panic, it presents as a wrong number.
+5. **The narrowing population is split and ratcheted on the load owners, but the
+   rest of the tree is still one undifferentiated number.** Each site is either
+   (a) provably in range, where `@intCast` is correct and says something true;
+   (b) standing where upstream narrows implicitly, where `@intCast` is a PARITY
+   DEFECT because C truncates and Zig traps; or (c) standing where upstream's
+   unsigned arithmetic wraps, where the spelling must be `+%` / `-%` / `*%` or a
+   saturating `+|` / `*|`. On `persist/` and `program/` this is now measured:
+   `report-narrowing-status.py` ranks the sites inside safety-raised functions
+   and `check-idiom-ratchet.sh` holds the count, with a FLOOR on the number of
+   safety-raised functions so the ceiling cannot be met by deleting a check. The
+   remaining ~5600 sites outside those owners are unclassified, and
+   `report-idiom-status.py`'s single total cannot tell a correct cast from a
+   defect. Extending the analysis there needs the same per-site upstream reading;
+   do not sweep it.
 
 ### Rules For New Code
 
