@@ -76,7 +76,10 @@ const ERROR_SOLVER_ABORT: u8 = 60;
 
 // Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
 // engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
-const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 2 else if (dmcp_build) 3 else 4;
+// OLD_HW dropped 2 -> 1 at the 6559a9c59 pin: the DM42's measured stack use
+// leaves it the least room, and the same pin moved the solvers' working reals
+// off the frame for the same reason.
+const MAX_ENGINE_NESTING_DEPTH: u16 = if (dmcp_build and old_hw) 1 else if (dmcp_build) 3 else 4;
 // Whether INT or SOLVE may run inside a plot: 0 (false) on OLD_HW, 1 (true) otherwise.
 const PLOT_NESTING_ALLOWED: bool = !(dmcp_build and old_hw);
 const PGM_WAITING: u8 = 2;

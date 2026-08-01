@@ -1168,7 +1168,9 @@ pub fn implementation(comptime runtime: type) type {
                                 runtime.keyActionProcessed = true;
                             }
                         }
-                        if ((runtime.temporaryInformation != runtime.TI_NO_INFO) and (runtime.calcMode != runtime.CM_CONFIRMATION)) {
+                        // EXIT off a SHOW or WHO screen only dismisses it, the menu
+                        // underneath stays.
+                        if ((runtime.temporaryInformation != runtime.TI_NO_INFO or runtime.showScreenDismissed) and (runtime.calcMode != runtime.CM_CONFIRMATION)) {
                             runtime.temporaryInformation = runtime.TI_NO_INFO;
                             runtime.keyActionProcessed = true;
                             runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STACK | runtime.SCRUPD_MANUAL_STATUSBAR);

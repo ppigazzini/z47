@@ -372,6 +372,21 @@ pub fn BigReal(comptime digits: u32) type {
     };
 }
 
+// The heap twin of BigReal, for the 1071-digit working reals upstream moved off
+// the frame at the 6559a9c59 pin: eight of them at 724 bytes is 5792 bytes of a
+// 5832-byte frame on an arm build, and that frame is the stack reason XFN 1000 is
+// kept off the DM42 (defines.h). Same allocator as REAL_T_ALLOC/REAL_T_FREE.
+extern fn malloc(size: usize) ?*anyopaque;
+extern fn free(ptr: ?*anyopaque) void;
+
+pub inline fn mallocBigReal(comptime digits: u32) ?*align(1) real_t {
+    return @ptrCast(malloc(realSizeInBytes(digits)));
+}
+
+pub inline fn freeBigReal(ptr: ?*align(1) real_t) void {
+    free(@ptrCast(ptr));
+}
+
 // ===========================================================================
 // Forward-circular family (reduceAngleToRange + sin/cos/tan) -> math_wp34s_trig.zig.
 // These wrappers keep the exact C-ABI export symbols and delegate.

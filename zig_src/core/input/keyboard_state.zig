@@ -165,6 +165,14 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     if (comptime is_dmcp_build) _ = &event;
     const dat: [*c]u8 = @ptrCast(data);
 
+    // This press closes a SHOW or WHO screen, which clears temporaryInformation
+    // before the release handles EXIT; the release needs to know it happened so
+    // EXIT only dismisses the screen and leaves the menu underneath.
+    runtime.showScreenDismissed = runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW;
+    if (runtime.showScreenDismissed) {
+        runtime.closeShowMenu();
+    }
+
     runtime.reDraw = false;
     runtime.nimWhenButtonPressed = (runtime.calcMode == runtime.CM_NIM);
     runtime.lastT_cursorPos = runtime.T_cursorPos;
@@ -302,6 +310,8 @@ fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
     const dat: [*c]u8 = @ptrCast(data);
     if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
         runtime.closeShowMenu();
+        runtime.releaseOverride = true; // the key that dismissed the screen is swallowed: neither press nor release acts
+        return;
     }
 
     runtime.FN_timed_out_to_NOP_or_Executed = false;
