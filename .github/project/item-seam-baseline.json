@@ -4151,7 +4151,7 @@
   ],
   "1931": [
    "ext_fnConvertStkToMx",
-   "9"
+   "10"
   ],
   "1932": [
    "&itemToBeCoded",
@@ -4302,16 +4302,16 @@
    "9876"
   ],
   "1966": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnConvertStkToMx",
+   "9"
   ],
   "1967": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnConvertMxToStk",
+   "9"
   ],
   "1968": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnExchangeStkToMx",
+   "1968"
   ],
   "1969": [
    "&itemToBeCoded",
@@ -4643,7 +4643,7 @@
   ],
   "2041": [
    "ext_fnConvertMxToStk",
-   "9"
+   "10"
   ],
   "2042": [
    "ext_fnPlotReset",

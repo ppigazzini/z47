@@ -83,6 +83,7 @@ src/testSuite/tests/config_cov.txt
 src/testSuite/tests/constants.txt
 src/testSuite/tests/conversions.txt
 src/testSuite/tests/conversionsSI.txt
+src/testSuite/tests/cpxslv_cov.txt
 src/testSuite/tests/curvefit_cov.txt
 src/testSuite/tests/deriv_cov.txt
 src/testSuite/tests/deriv_mvar_cov.txt
@@ -90,6 +91,7 @@ src/testSuite/tests/dist_cov.txt
 src/testSuite/tests/disterr_cov.txt
 src/testSuite/tests/elec.txt
 src/testSuite/tests/eq_cov.txt
+src/testSuite/tests/eqslv_cov.txt
 src/testSuite/tests/error_cov.txt
 src/testSuite/tests/flags_cov.txt
 src/testSuite/tests/graphs_cov.txt
@@ -123,6 +125,7 @@ src/testSuite/tests/solve_cov.txt
 src/testSuite/tests/stats_cov.txt
 src/testSuite/tests/stats_register_cov.txt
 src/testSuite/tests/statsx_cov.txt
+src/testSuite/tests/stkexV4.txt
 src/testSuite/tests/storercl_cov.txt
 src/testSuite/tests/string_cov.txt
 src/testSuite/tests/tempConv.txt
