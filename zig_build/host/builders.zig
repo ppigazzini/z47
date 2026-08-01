@@ -49,10 +49,7 @@ pub fn addSimulator(
     calc_model: []const u8,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
-    const core_c_flags = if (host_target.result.os.tag == .windows)
-        build_common.common_c_flags_windows
-    else
-        build_common.common_c_flags;
+    const core_c_flags = build_common.sanitizerCFlags(host_target, sanitize_c);
 
     const exe = b.addExecutable(.{
         .name = artifact_name,
@@ -96,7 +93,7 @@ pub fn addSimulator(
             },
         });
     }
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = build_common.sanitizerVendorCFlags(host_target, sanitize_c) });
     std.debug.assert(core_sources.len == 0);
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
     gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags, if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46);
@@ -240,10 +237,7 @@ pub fn addTestSuite(
     stack_state_objects: host_types.StackStateObjects,
     sanitize_c: ?std.zig.SanitizeC,
 ) *std.Build.Step.Compile {
-    const core_c_flags = if (host_target.result.os.tag == .windows)
-        build_common.common_c_flags_windows
-    else
-        build_common.common_c_flags;
+    const core_c_flags = build_common.sanitizerCFlags(host_target, sanitize_c);
 
     const exe = b.addExecutable(.{
         .name = name,
@@ -266,7 +260,7 @@ pub fn addTestSuite(
     exe.root_module.addIncludePath(version_headers_dir);
     exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = build_common.sanitizerVendorCFlags(host_target, sanitize_c) });
     std.debug.assert(core_sources.len == 0);
     const hal_filtered: []const []const u8 = filterTestSuiteHal(b, test_sources) catch test_sources;
     const filtered_test_sources: []const []const u8 = withoutSource(b, hal_filtered, testsuite_main_source) catch hal_filtered;
@@ -320,10 +314,7 @@ pub fn addFullCoreHarness(
     sanitize_c: ?std.zig.SanitizeC,
     coverage: bool,
 ) *std.Build.Step.Compile {
-    const core_c_flags = if (host_target.result.os.tag == .windows)
-        build_common.common_c_flags_windows
-    else
-        build_common.common_c_flags;
+    const core_c_flags = build_common.sanitizerCFlags(host_target, sanitize_c);
 
     const exe = b.addExecutable(.{
         .name = name,
@@ -346,7 +337,7 @@ pub fn addFullCoreHarness(
     exe.root_module.addIncludePath(version_headers_dir);
     exe.root_module.addIncludePath(generated.softmenu_catalogs.dirname());
     exe.root_module.addIncludePath(generated.constant_pointers_h.dirname());
-    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = core_c_flags });
+    exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = build_common.sanitizerVendorCFlags(host_target, sanitize_c) });
     std.debug.assert(core_sources.len == 0);
     _ = test_sources;
     exe.root_module.addCSourceFile(.{ .file = b.path(harness_source), .flags = core_c_flags });

@@ -134,9 +134,8 @@ The full current set is discoverable with `zig build --help`.
   let the CI Windows lane adjudicate the runtime width behavior
 - state-load or program-load parse change (untrusted-file surface): the owner
   parity lane, then `zig build pgm_load_fuzz` to drive the malformed-input corpus
-  through the real load path. NOT under AddressSanitizer, despite the harness
-  name -- no lane in this tree runs a sanitizer, see [75-debugging.md](75-debugging.md);
-  a finding here is a crash, a hang or a Zig safety panic. The per-owner cov tests only
+  through the real load path under UBSan -- not AddressSanitizer, despite the
+  harness name; see [75-debugging.md](75-debugging.md). The per-owner cov tests only
   round-trip VALID files, so this lane is what covers truncated, oversized, and
   garbage input. See the memory-safety posture in
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).

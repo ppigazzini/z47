@@ -150,7 +150,7 @@ runs, in order:
 
 The job then runs the `*_asan` surface (`both_asan`, `test_asan`, and
 `pgm_load_fuzz` -- the malformed `.p47` load corpus driven through the real load
-path -- the name is historical: these lanes run NO sanitizer, see
+path -- the name is historical: these lanes run UBSan, not AddressSanitizer, see
 [75-debugging.md](75-debugging.md)), builds the
 published Linux archive with `zig build -Doptimize=ReleaseFast dist_linux`,
 launches a smoke test from the unpacked archive, diffs and hashes the tracked
