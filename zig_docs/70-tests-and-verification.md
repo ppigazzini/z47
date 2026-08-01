@@ -18,28 +18,30 @@ bash .github/project/run-local-gate.sh
 
 It runs the governance guards, then the host-parity build/test/oracle battery
 (`run-host-parity-battery.sh`, byte-identical to the CI step, which now calls the
-same script), then the tracked-generated-artifact diff. It fails fast on the
-first red.
+same script), then the firmware link for every DMCP package variant, then the
+tracked-generated-artifact diff. It fails fast on the first red, and takes about
+four minutes warm.
 
-**It does NOT build the firmware, and its closing banner overstates this.** The
-gate prints "mirrors the Linux CI verdict" and notes only Windows and macOS as
-exceptions; CI's `linux-firmware-artifacts` job also builds `dmcp`, `dmcpr47`,
-`dmcp5`, `dmcp5r47` and `dist_dmcp_pkg1/2/3`, and none of that is in the eleven
-steps. For any change reaching an object the firmware links, a green gate is not
-the CI verdict. This is not hypothetical: one `@setRuntimeSafety(true)` added to
-`shell/config.zig` pushed OLD_HW package 3's `.bss` four bytes past the limit its
-linker script asserts, and the gate, `zig build test`, `test_asan`,
-`pgm_load_fuzz`, `simulator_smoke` **and `zig build dmcp` and `dmcp5`** were all
-green -- only `zig build dmcp_pkgs_all` failed, because the overrun is in a
-package variant. Run it by hand alongside the gate whenever the change touches a
-firmware-linked owner; it costs about 16 s.
+Step `[10b/11]` links **every DMCP package variant** (`zig build dmcp_pkgs_all`),
+and it is not redundant with `zig build dmcp` / `dmcp5`. The OLD_HW package-3
+layout asserts `_ebss <= 0x10002000` and sits exactly on it, so a few bytes of
+static data in any firmware-linked owner fails the link -- in a package variant
+only. That happened: one `@setRuntimeSafety(true)` added to `shell/config.zig`
+pushed `_ebss` four bytes over, while this gate, `zig build test`, `test_asan`,
+`pgm_load_fuzz`, `simulator_smoke` **and `dmcp` and `dmcp5`** were all green. The
+step was added because of it, and reinstating that attribute is the check that
+the step still works.
+
+What the gate still does NOT cover, which its closing banner now states rather
+than papering over: the Windows (LLP64) and macOS host lanes, and CI's firmware
+PACKAGING and artifact publication. A green run is those Linux lanes, not the
+whole CI verdict.
 
 `zig build sim` and `zig build test:unit` are NOT the full gate. The first
 all-Zig upstream resync shipped three CI-only failures that were green under
 sim+test:unit -- a parity oracle that stopped compiling, a stale generated
 artifact, and a source-ownership violation. The local gate catches all three. The
-classes it cannot reproduce on Linux are the firmware link above and the Windows
-LLP64 integer-width trap;
+one class it cannot reproduce on Linux is the Windows LLP64 integer-width trap;
 `check-portable-int-widths.sh` (inside the gate) approximates it, and the CI
 Windows lane is the final adjudicator. See
 `.github/project/upstream-resync-runbook.md`.
