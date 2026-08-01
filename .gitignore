@@ -192,6 +192,13 @@ compile_commands.json
 
 # End of https://www.toptal.com/developers/gitignore/api/meson
 
+# LaTeX byproducts from building an application note in docs/appnotes/sources
+docs/appnotes/sources/**/*.aux
+docs/appnotes/sources/**/*.log
+docs/appnotes/sources/**/*.out
+docs/appnotes/sources/**/*.toc
+docs/appnotes/sources/**/*.pdf
+
 
 ### z47 Zig port ###
 # Zig build cache and output

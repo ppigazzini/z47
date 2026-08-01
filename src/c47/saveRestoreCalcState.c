@@ -53,7 +53,6 @@ Current version defaults all non-loaded settings from previous version files cor
 #undef LOADDEBUG
 
 
-uint16_t flushBufferCnt = 0;
 #define START_REGISTER_VALUE 860  // 2025/09/06 [DL] reduced fromm 1000 to provide enougth room in tmpRegisterString for config data (840 bytes):
                                   //                 tmpRegisterString is a part of the global tmpString which is 2560 bytes (aux_buf_ptr buffer provided by DMCP)
                                   //                 config string length is 1680 bytes (840 x 2) so tmpRegisterString should start at max at 880 (2560 - 1680)
@@ -618,6 +617,19 @@ void fnSave(uint16_t saveMode) {
   }
 }
 
+// True when equation 'id' has text a state file can carry. A formula with none is either fresh from fnEqNew(), whose pointerToFormulaData is C47_NULL, or
+// the empty string a restore leaves when its count outran the file. See the EQUATIONS section of doSave() for why neither can be written.
+static bool_t formulaHasText(uint16_t id) {
+  const char *text;
+
+  if(allFormulae[id].pointerToFormulaData == C47_NULL) {
+    return false;
+  }
+  text = (const char *)TO_PCMEMPTR(allFormulae[id].pointerToFormulaData);
+  return text[0] != 0;
+}
+
+
 void doSave(uint16_t saveType) {
   printStatus(0, errorMessageOf(SAVING_STATE_FILE), force);
   ioFilePath_t path;
@@ -779,7 +791,7 @@ void doSave(uint16_t saveType) {
 
   uint32_t num = 0;
   for(i = 0; i < 37 * 6; ++i) {
-    if(*(getNthString((uint8_t *)userKeyLabel, i)) != 0) {
+    if(*(getUserKeyLabelString(i)) != 0) {
       ++num;
     }
   }
@@ -787,9 +799,9 @@ void doSave(uint16_t saveType) {
   save(tmpString, strlen(tmpString));
 
   for(i = 0; i < 37 * 6; ++i) {
-    if(*(getNthString((uint8_t *)userKeyLabel, i)) != 0) {
+    if(*(getUserKeyLabelString(i)) != 0) {
       sprintf(tmpString, "%" PRIu32 " ", i);
-      stringToUtf8((char *)getNthString((uint8_t *)userKeyLabel, i), (uint8_t *)tmpString + strlen(tmpString));
+      stringToUtf8((char *)getUserKeyLabelString(i), (uint8_t *)tmpString + strlen(tmpString));
       strcat(tmpString, "\n");
       save(tmpString, strlen(tmpString));
     }
@@ -860,11 +872,24 @@ void doSave(uint16_t saveType) {
     save(tmpString, strlen(tmpString));
   }
 
-  // Equations
-  sprintf(tmpString, "EQUATIONS\n%" PRIu16 "\n", numberOfFormulae);
+  // Equations. A formula can hold no text in two ways, and this section can represent neither. fnEqNew() leaves pointerToFormulaData at C47_NULL until
+  // something is typed in, and TO_PCMEMPTR() turns that into the NULL stringToUtf8() dereferences; a restore whose count outran the file leaves empty
+  // strings instead, and writing those as blank lines is no better, because readLine() skips blank lines and the reader would take the next section
+  // header for the formula's text. Both are the same thing to a reader - a formula with nothing in it - so the section holds the ones that have text and
+  // the count says how many that is.
+  uint16_t formulaeWithText = 0;
+  for(i=0; i<numberOfFormulae; i++) {
+    if(formulaHasText(i)) {
+      formulaeWithText++;
+    }
+  }
+  sprintf(tmpString, "EQUATIONS\n%" PRIu16 "\n", formulaeWithText);
   save(tmpString, strlen(tmpString));
 
   for(i=0; i<numberOfFormulae; i++) {
+    if(!formulaHasText(i)) {
+      continue;
+    }
     stringToUtf8(TO_PCMEMPTR(allFormulae[i].pointerToFormulaData), (uint8_t *)tmpString);
     strcat(tmpString, "\n");
     save(tmpString, strlen(tmpString));
@@ -1065,16 +1090,29 @@ int64_t stringToInt64(const char *str) {
   }
 
 
+  #define STANDARDISED_COMPLEX_LENGTH 200  // one size for standardiseComplex()'s buffers and for every caller's output buffer
+
   // Function to standardize new input to the old state file format, any new complex, into the old "re im" form.
   // Accepts (3-i4) | 3-i4 | +3+i4 | -3-i4 | (+3+i4) | (-3-i4) | 3 -4 | 3 4 | -2.5 1e3 | -2.5e-3+i4 | (-2.5e-3-i4) | i4 | (i4) |
   //         ( 3 - i4 ) | (1.5e2-i2.5e-3) | 0+i0 | -7+i0 | (3 -i4) | 3 -i4 | +3 +i4 | -3 -i4 | ( 3 - i 4 ) | +3 + i4 | 3 - i 4 | (-2.5e-3 - i 4)
   //         (parentheses optional, leading sign optional)
   // as well as the state file form  "3 -4"  (backward compatibility). Form and free white space is enabled by 'i' (which can never occur in a real number string).
+  // 'dest' must be STANDARDISED_COMPLEX_LENGTH bytes: the caller's buffer and the work buffer below are one size, and the length check
+  // at the head of the function is what keeps every write inside both of them.
   static void standardiseComplex(const char *src, char *dest) {
-    char work[200];
+    char work[STANDARDISED_COMPLEX_LENGTH];
     char *w = work;
     char *iPos;
     bool_t isIform = (strchr(src, 'i') != NULL);
+
+    // A data file line is up to TMP_STR_LENGTH bytes and lands here unmeasured, while a complex this calculator can hold is far shorter: a real34 carries
+    // 34 significant digits, so the widest legal element - both parts signed, with a radix mark and a four digit exponent - is well under 100 bytes. An
+    // element that does not fit is not a number that could be restored, and truncating it would silently change its value, so it is read as zero instead.
+    // The 4 covers the "0 +" that the leading 'i' form prepends and the terminator, the widest expansion any branch below performs.
+    if(stringByteLength(src) + 4 > (int32_t)sizeof(work)) {
+      strcpy(dest, "0 0");
+      return;
+    }
 
     // Copy src into a writable buffer, dropping parentheses. For the 'i' form drop all whitespace too; for the stock
     // space form keep internal whitespace (it is the real/imaginary separator) and only trim the ends below.
@@ -1114,7 +1152,7 @@ int64_t stringToInt64(const char *str) {
       char imSign = *(iPos - 1);                                                 // the character right before 'i' is the imaginary sign
       char *imMag = iPos + 1;                                                    // the imaginary magnitude follows the 'i'
       size_t realLen = (size_t)(iPos - 1 - work);                                // the real part is everything before that sign
-      char realStr[200];
+      char realStr[STANDARDISED_COMPLEX_LENGTH];
 
       if(imSign != '+' && imSign != '-') {                                       // malformed: treat the char before 'i' as part of the real and assume '+'
         imSign = '+';
@@ -1130,16 +1168,22 @@ int64_t stringToInt64(const char *str) {
   // Read the next whitespace-delimited token from the open file, skipping any leading whitespace (spaces, tabs, CR,
   // LF). Used by the data-file matrix reader so that matrix element layout (one per line, all on one line, or any
   // mix) is irrelevant. NotE: readLine()'s use of restore()/ioEof().
-  static char *readToken(char *tok) {
+  static char *readToken(char *tok, size_t maxLen) {
     char *p = tok;
+    char *const end = (maxLen == 0) ? tok : tok + maxLen - 1;                    // last writable slot; reserve one byte for '\0'
 
-    if(!ioEof()) {
+    if(maxLen != 0 && !ioEof()) {
       restore(p, 1);
       while((*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') && !ioEof()) {
         restore(p, 1);
       }
-      while(*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' && !ioEof()) {
+      while(p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' && !ioEof()) {
         restore(++p, 1);
+      }
+      while(*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' && !ioEof()) {    // token longer than the buffer: drain to the separator so the next read resyncs, as readLine() does
+        if(restore(p, 1) == 0) {                                                 // a read that returns nothing cannot make progress, and ioEof() stays false on an I/O error
+          break;
+        }
       }
     }
     *p = 0;
@@ -1150,25 +1194,36 @@ int64_t stringToInt64(const char *str) {
   // Read the next complex matrix element token, skipping leading whitespace. A complex element is either a
   // parenthesised group "( ... )" (read up to and including the closing parenthesis, may span newlines) or a bare
   // whitespace-free 'i' form token.
-  static char *readComplexToken(char *tok) {
+  static char *readComplexToken(char *tok, size_t maxLen) {
     char *p = tok;
+    char *const end = (maxLen == 0) ? tok : tok + maxLen - 1;                    // last writable slot; reserve one byte for '\0'
 
-    if(!ioEof()) {
+    if(maxLen != 0 && !ioEof()) {
       restore(p, 1);
       while((*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') && !ioEof()) {
         restore(p, 1);
       }
       if(*p == '(') {
-        while(*p != ')' && !ioEof()) {
+        while(p < end && *p != ')' && !ioEof()) {
           restore(++p, 1);
         }
-        if(*p == ')') {
+        while(*p != ')' && !ioEof()) {                                           // group longer than the buffer: drain to the closing parenthesis so the next read resyncs
+          if(restore(p, 1) == 0) {                                               // see readToken(): no progress, and ioEof() stays false on an I/O error
+            break;
+          }
+        }
+        if(*p == ')' && p < end) {
           p++;
         }
       }
       else {
-        while(*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' && !ioEof()) {
+        while(p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' && !ioEof()) {
           restore(++p, 1);
+        }
+        while(*p != ' ' && *p != '\t' && *p != '\n' && *p != '\r' && !ioEof()) {  // token longer than the buffer: drain to the separator
+          if(restore(p, 1) == 0) {                                               // see readToken()
+            break;
+          }
         }
       }
     }
@@ -1336,7 +1391,7 @@ int64_t stringToInt64(const char *str) {
 
     else if(strcmp(type, "Cplx") == 0) {
       char *imaginaryPart;
-      char stdTmp[200];
+      char stdTmp[STANDARDISED_COMPLEX_LENGTH];
 
       reallocateRegister(regist, dtComplex34, 0, tag);
       if(dataFileMode) {
@@ -1423,7 +1478,7 @@ int64_t stringToInt64(const char *str) {
 
       for(i = 0; i < rows * cols; ++i) {
         if(dataFileMode) {
-          readToken(tmpString);                                                  // any whitespace (spaces and/or newlines) separates elements
+          readToken(tmpString, TMP_STR_LENGTH);                                // any whitespace (spaces and/or newlines) separates elements
           dataFileCommaToPeriod(tmpString);
         }
         else {
@@ -1441,9 +1496,9 @@ int64_t stringToInt64(const char *str) {
         char *imaginaryPart;
 
         if(dataFileMode) {
-          char stdTmp[200];
+          char stdTmp[STANDARDISED_COMPLEX_LENGTH];
 
-          readComplexToken(tmpString);                                           // one parenthesised "(re-iIM)" group (or bare i form) per element, free-form whitespace between elements
+          readComplexToken(tmpString, TMP_STR_LENGTH);                         // one parenthesised "(re-iIM)" group (or bare i form) per element, free-form whitespace between elements
           standardiseComplex(tmpString, stdTmp);
           dataFileCommaToPeriod(stdTmp);
           strcpy(tmpString, stdTmp);
@@ -1484,10 +1539,10 @@ int64_t stringToInt64(const char *str) {
       for(i = 0; i < rows * cols; ++i) {
         if(dataFileMode) {
           if(strcmp(type, "Cxma") == 0) {                                        // skip exactly as restoreMatrixData() reads, or the file position desyncs
-            readComplexToken(tmpString);
+            readComplexToken(tmpString, TMP_STR_LENGTH);
           }
           else {
-            readToken(tmpString);
+            readToken(tmpString, TMP_STR_LENGTH);
           }
         }
         else {
@@ -1565,6 +1620,9 @@ int64_t stringToInt64(const char *str) {
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLineSkippingComments(tmpString, TMP_STR_LENGTH); // Register number, skipping any comments
+        if(tmpString[0] == 0) {                                                  // the section ran out: readLine() skips blank lines, so an empty read is end of file and the count was a lie
+          break;
+        }
         regist = stringToRegisterNumber(tmpString);
         read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Register data type & Register value
 
@@ -1625,6 +1683,9 @@ int64_t stringToInt64(const char *str) {
         #endif //LOADDEBUG
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString, TMP_STR_LENGTH); // Register number
+          if(tmpString[0] == 0) {                                                // end of file: the count was a lie, see GLOBAL_REGISTERS
+            break;
+          }
           regist = toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
           read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Register data type & Register value
 
@@ -1668,6 +1729,9 @@ int64_t stringToInt64(const char *str) {
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(errorMessage, ERROR_MESSAGE_LENGTH); // Variable name
+        if(errorMessage[0] == 0) {                                               // end of file: the count was a lie, see GLOBAL_REGISTERS
+          break;
+        }
         read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH); // Variable data type & Variable value
 
         if(( loadMode == LM_ALL ||
@@ -1717,7 +1781,12 @@ int64_t stringToInt64(const char *str) {
 
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString, TMP_STR_LENGTH); // statistical sum
-          if(statisticalSumsPointer) { // likely
+          if(tmpString[0] == 0) {                                                // end of file: the count was a lie, see GLOBAL_REGISTERS
+            break;
+          }
+          // statisticalSumsPointer is one pool block of NUMBER_OF_STATISTICAL_SUMS reals and the save side always writes exactly that many; the count is the
+          // file's. Bound the write, not the loop, which must still read a line per claimed entry to stay aligned with the stream.
+          if(statisticalSumsPointer && i < (int16_t)NUMBER_OF_STATISTICAL_SUMS) { // likely
             if(loadMode == LM_ALL || loadMode == LM_SUMS) {
               #if defined(LOADDEBUG)
                 sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
@@ -1788,7 +1857,12 @@ int64_t stringToInt64(const char *str) {
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString, TMP_STR_LENGTH); // key
-        if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) { // Restore Keyboard Assignments only if they were save on the same calc model (C47->C47 or R47->R47)
+        if(tmpString[0] == 0) {                                                  // end of file: the count was a lie, see GLOBAL_REGISTERS
+          break;
+        }
+        // Restore Keyboard Assignments only if they were save on the same calc model (C47->C47 or R47->R47). The count is the file's, so the index is bounded here and
+        // not on the loop, which must still read a line per claimed entry to stay aligned with the stream.
+        if(allowUserKeys && i < (int16_t)nbrOfElements(kbd_usr) && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
             debugPrintf(8, "-", tmpString);
@@ -1817,11 +1891,20 @@ int64_t stringToInt64(const char *str) {
         freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
         userKeyLabelSize = 37/*keys*/ * 6/*states*/ * 1/*byte terminator*/ + 1/*byte sentinel*/;
         userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
-        memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+        if(userKeyLabel == NULL) {                                              // the memset below writes through this pointer, and this section's entries then walk it
+          userKeyLabelSize = 0;
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        }
+        else {
+          memset(userKeyLabel,   0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+        }
       }
 
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString, TMP_STR_LENGTH); // key
+        if(tmpString[0] == 0) {                                                  // end of file: the count was a lie, see GLOBAL_REGISTERS
+          break;
+        }
         // Restore Keyboard Arguments only if they were save on the same calc model (C47->C47 or R47->R47)
         if(allowUserKeys && (loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE)) {
           #if defined(LOADDEBUG)
@@ -1830,13 +1913,17 @@ int64_t stringToInt64(const char *str) {
           #endif //LOADDEBUG
           str = tmpString;
           uint16_t key = toUint16(str);
-          userMenuItems[i].argumentName[0] = 0;
+          // The count is key/state slots, of which the save side writes up to 37*6, so it runs far past userMenuItems; MYMENU restores that array in its own section.
+          if(i < (int16_t)nbrOfElements(userMenuItems)) {
+            userMenuItems[i].argumentName[0] = 0;
+          }
 
           str = skip_to_space_newline(str);
           if(*str == ' ') {
             str = skip_space(str);
-            if((*str != '\n') && (*str != 0)) {
-              utf8ToStringWithLength((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
+            // 37*6 is the ceiling userKeyLabel is allocated to above, and the one setUserKeyArgument walks to; the key comes from the file.
+            if((*str != '\n') && (*str != 0) && key < 37/*keys*/ * 6/*states*/) {
+              utf8ToStringWithLength((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2, sizeof(userMenuItems[0].argumentName));
               setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
             }
           }
@@ -1849,7 +1936,12 @@ int64_t stringToInt64(const char *str) {
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString, TMP_STR_LENGTH); // key
-        if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+        if(tmpString[0] == 0) {                                                  // end of file: the count was a lie, see GLOBAL_REGISTERS
+          break;
+        }
+        // 18 is what MYMENU can hold and what the save side writes; the count is the file's. Bound the writes and not the loop, which must still
+        // read a line per claimed entry to stay aligned with the stream.
+        if((loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) && i < (int16_t)nbrOfElements(userMenuItems)) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
             debugPrintf(10, "-", tmpString);
@@ -1874,7 +1966,11 @@ int64_t stringToInt64(const char *str) {
       numberOfRegs = toInt16(tmpString);
       for(i=0; i<numberOfRegs; i++) {
         readLine(tmpString, TMP_STR_LENGTH); // key
-        if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+        if(tmpString[0] == 0) {                                                  // end of file: the count was a lie, see GLOBAL_REGISTERS
+          break;
+        }
+        // Same bound as MYMENU above, on the array MYALPHA owns.
+        if((loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) && i < (int16_t)nbrOfElements(userAlphaItems)) {
           #if defined(LOADDEBUG)
             sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
             debugPrintf(11, "-", tmpString);
@@ -1899,6 +1995,9 @@ int64_t stringToInt64(const char *str) {
       int16_t numberOfMenus = toInt16(tmpString);
       for(int32_t j=0; j<numberOfMenus; j++) {
         readLine(tmpString, TMP_STR_LENGTH);
+        if(tmpString[0] == 0) {                                                  // end of file: the count was a lie, see GLOBAL_REGISTERS
+          break;
+        }
         int16_t target = -1;
         if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
           #if defined(LOADDEBUG)
@@ -1912,8 +2011,14 @@ int64_t stringToInt64(const char *str) {
             }
           }
           if(target == -1) {
-            createMenu(tmpString + TMP_STR_LENGTH / 2);
-            target = numberOfUserMenus - 1;
+            uint16_t menusBefore = numberOfUserMenus;                            // createMenu() refuses a name the file made invalid, and then numberOfUserMenus - 1 is
+            createMenu(tmpString + TMP_STR_LENGTH / 2);                          //   either -1, with userMenus still NULL, or an unrelated menu that would silently take
+            if(numberOfUserMenus <= menusBefore) {                               //   this one's items. Leave target at -1 and drop the menu instead.
+              target = -1;
+            }
+            else {
+              target = numberOfUserMenus - 1;
+            }
           }
         }
 
@@ -1921,7 +2026,12 @@ int64_t stringToInt64(const char *str) {
         numberOfRegs = toInt16(tmpString);
         for(i=0; i<numberOfRegs; i++) {
           readLine(tmpString, TMP_STR_LENGTH); // key
-          if(loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) {
+          if(tmpString[0] == 0) {                                                // end of file: the count was a lie, see GLOBAL_REGISTERS
+            break;
+          }
+          // A user menu holds 18 items, as MYMENU and MYALPHA do; the count and the menu name are the file's. userMenus is ONE pool block holding every menu,
+          // so an unbounded index writes over the menus that follow this one and, past the last of them, out of the block.
+          if((loadMode == LM_ALL || loadMode == LM_SYSTEM_STATE) && target >= 0 && i < (int16_t)nbrOfElements(userMenus[target].menuItem)) {
             #if defined(LOADDEBUG)
               sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
               debugPrintf(13, "-", tmpString);
@@ -1956,23 +2066,30 @@ int64_t stringToInt64(const char *str) {
 
       readLine(tmpString, TMP_STR_LENGTH); // Number of blocks
       numberOfBlocks = toUint16(tmpString);
-      if(loadMode == LM_ALL) {
+      // Program memory always holds at least the one block that carries the empty .END.: that is the block config.c reserves when it forms the pool
+      // (":- 1: one block for an empty program"), and the save side writes that 1 for an empty program area. A count of zero therefore means the section
+      // is not really there - and a section that ran out reads as zero too, because an empty read converts to zero. Resizing to zero blocks moves
+      // beginOfProgramMemory one past the pool, and scanLabelsAndPrograms() reads it there through isAtEndOfPrograms() (programming/manage.c:67).
+      // Everything this branch does is keyed on the load mode, so such a section is neutralised by giving the branch a mode that matches neither LM_ALL
+      // nor LM_PROGRAMS. The readLine() calls still run, so the parser stays aligned with the stream, and program memory keeps what it already had.
+      const uint16_t programsLoadMode = (numberOfBlocks == 0) ? LM_SYSTEM_STATE : loadMode;
+      if(programsLoadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
       }
-      else if(loadMode == LM_PROGRAMS) {
+      else if(programsLoadMode == LM_PROGRAMS) {
         resizeProgramMemory(oldSizeInBlocks + numberOfBlocks);
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
       }
 
       readLine(tmpString, TMP_STR_LENGTH); // currentStep (pointer to block)
-      if(loadMode == LM_ALL) {
+      if(programsLoadMode == LM_ALL) {
         currentStep = TO_PCMEMPTR(toUint32(tmpString));
       }
       readLine(tmpString, TMP_STR_LENGTH); // currentStep (offset in bytes within block)
-      if(loadMode == LM_ALL) {
+      if(programsLoadMode == LM_ALL) {
         currentStep += toUint32(tmpString);
       }
-      else if(loadMode == LM_PROGRAMS) {
+      else if(programsLoadMode == LM_PROGRAMS) {
         if(programList[currentProgramNumber - 1].step > 0) {
           currentStep           -= TO_BYTES(numberOfBlocks);
           firstDisplayedStep    -= TO_BYTES(numberOfBlocks);
@@ -1982,16 +2099,16 @@ int64_t stringToInt64(const char *str) {
       }
 
       readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte (pointer to block)
-      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+      if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
         firstFreeProgramByte = TO_PCMEMPTR(toUint32(tmpString));
       }
       readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte (offset in bytes within block)
-      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+      if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
         firstFreeProgramByte += toUint32(tmpString);
       }
 
       readLine(tmpString, TMP_STR_LENGTH); // freeProgramBytes
-      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+      if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
         freeProgramBytes = toUint16(tmpString);
       }
 
@@ -2011,7 +2128,7 @@ int64_t stringToInt64(const char *str) {
         #endif
       }
 
-      if(loadMode == LM_PROGRAMS) { // .END. to END
+      if(programsLoadMode == LM_PROGRAMS) { // .END. to END
         freeProgramBytes += oldFreeProgramBytes;
         if((oldFirstFreeProgramByte >= (beginOfProgramMemory + 2)) && isAtEndOfProgram(oldFirstFreeProgramByte - 2)) {
         }
@@ -2036,7 +2153,7 @@ int64_t stringToInt64(const char *str) {
       }
 
       #if defined(LOADDEBUG)
-        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+        if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
           printf("Before loading programs:\n");
           printf("  beginOfProgramMemory    = *8b %4u %16p\n", *beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
           printf("  firstFreeProgramByte    = *8b %4u %16p\n", *firstFreeProgramByte,    (void*)(((uint32_t *)(firstFreeProgramByte)) ));
@@ -2053,17 +2170,19 @@ int64_t stringToInt64(const char *str) {
         #endif // LOADDEBUG
 
         readLine(tmpString, TMP_STR_LENGTH); // One block
-        if(loadMode == LM_ALL) {
+        // No end-of-file break here, on purpose: this loop writes into memory resizeProgramMemory() sized from the same count, and stopping short would leave
+        // the tail of program memory holding whatever the resize left. The empty reads past end of file zero it instead, which is the safer of the two.
+        if(programsLoadMode == LM_ALL) {
           *(((uint32_t *)(beginOfProgramMemory)) + i) = toUint32(tmpString);
         }
-        else if(loadMode == LM_PROGRAMS) {
+        else if(programsLoadMode == LM_PROGRAMS) {
           uint32_t tmpBlock = toUint32(tmpString);
           xcopy(oldFirstFreeProgramByte + TO_BYTES(i), (uint8_t *)(&tmpBlock), 4);
         }
       }
 
       #if defined(LOADDEBUG)
-        if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+        if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
           printf("\n");
           printf("After loading programs:\n");
           printf("  beginOfProgramMemory    = *8b %4u %16p\n", *beginOfProgramMemory,    (void*)(((uint32_t *)(beginOfProgramMemory)) ));
@@ -2072,7 +2191,7 @@ int64_t stringToInt64(const char *str) {
         }
       #endif // LOADDEBUG
 
-      if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+      if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
         scanLabelsAndPrograms();
       }
     }
@@ -2102,23 +2221,39 @@ int64_t stringToInt64(const char *str) {
           sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
           debugPrintf(15, "B", tmpString);
         #endif //LOADDEBUG
+        // The count is the file's, so the size of this allocation is too, and allocC47Blocks() answers NULL when the pool cannot hold it - a state file
+        // claiming 65535 formulae asks for 256 KiB of a 256 KiB pool. The loop below writes through that pointer, so take no equations rather than write
+        // through NULL; the rest of the section still reads its lines and discards them, which keeps the parser aligned with the stream.
         allFormulae = allocC47Blocks(TO_BLOCKS(sizeof(formulaHeader_t)) * formulae);
-        numberOfFormulae = formulae;
-        currentFormula = 0;
-        for(i = 0; i < formulae; i++) {
-          allFormulae[i].pointerToFormulaData = C47_NULL;
-          allFormulae[i].sizeInBlocks = 0;
+        if(allFormulae == NULL) {
+          numberOfFormulae = 0;
+          currentFormula = 0;
+          displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        }
+        else {
+          numberOfFormulae = formulae;
+          currentFormula = 0;
+          // The index is wider than the count on purpose: formulae is a uint16_t and the section's own i is an int16_t, so a file claiming more than
+          // 32767 formulae would run i past INT16_MAX and the loop would never end.
+          for(uint32_t f = 0; f < formulae; f++) {
+            allFormulae[f].pointerToFormulaData = C47_NULL;
+            allFormulae[f].sizeInBlocks = 0;
+          }
         }
 
-        for(i = 0; i < formulae; i++) {
+        for(uint32_t f = 0; f < formulae; f++) {                                  // uint32_t, as above: an int16_t index never reaches a count above 32767
           readLine(tmpString, TMP_STR_LENGTH); // One formula
-          if(loadMode == LM_ALL || loadMode == LM_PROGRAMS) {
+          // No end-of-file break here, on purpose: see the PROGRAMS block loop. The empty reads give every remaining formula an empty string, which every
+          // reader of the text handles; breaking would leave them at the C47_NULL the loop above sets, and not every reader of that pointer tests it.
+          // allFormulae is NULL when the allocation above was refused, and setEquation() indexes it. The line is still read, so a refused section costs
+          // the equations and nothing else.
+          if(allFormulae != NULL && (loadMode == LM_ALL || loadMode == LM_PROGRAMS)) {
             #if defined(LOADDEBUG)
               sprintf(line, ", loadMode:%d, %s\n", loadMode, tmpString);
               debugPrintf(15, "C", tmpString);
             #endif //LOADDEBUG
             utf8ToStringWithLength((uint8_t *)tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
-            setEquation(i, tmpString + TMP_STR_LENGTH / 2);
+            setEquation((uint16_t)f, tmpString + TMP_STR_LENGTH / 2);
           }
         }
         if(loadedVersion < 10000021) {  // Old constant format, need to update constants in equation with # prefix
@@ -2283,7 +2418,10 @@ int64_t stringToInt64(const char *str) {
               Norm_Key_00.funcParam[0]=0;                                           //  - if the code word for a blank string, blank the string.
             }
             else if(allowUserKeys) {                                                //  - New state files will have 'NoNormKeyParamDef' if no NRM+ XEQ paramater is present.
-              strcpy(Norm_Key_00.funcParam, tmpString);                             //Otherwise proceed and use the data as normal
+              Norm_Key_00.funcParam[0] = 0;                                         //  - a name the field cannot hold comes only from a corrupt file, so leave it empty
+              if(stringByteLength(tmpString) < (int32_t)sizeof(Norm_Key_00.funcParam)) {
+                strcpy(Norm_Key_00.funcParam, tmpString);                           //Otherwise proceed and use the data as normal
+              }
             }
           }
           else if(allowUserKeys && strcmp(aimBuffer, "Norm_Key_00.used") == 0) {
@@ -2625,7 +2763,9 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     #elif CALCMODEL == USER_R47
       allowUserKeys = (savedCalcModel == USER_R47);
     #endif  // CALCMODEL
-    while(restoreOneSection(loadMode, s, n, d, allowUserKeys)) {
+    // restoreOneSection() only returns false at END_CONFIG, which a file that stops short - truncated, or with a count that swallowed its last section - never
+    // reaches: every further call then reads an empty section name, matches nothing and returns true. Loop on ioEof() as well, as doLoadDataFile() does.
+    while(!ioEof() && restoreOneSection(loadMode, s, n, d, allowUserKeys)) {
     }
 
     // Set the user primary functions for the R47 yellow and blue shift keys to their standard default value

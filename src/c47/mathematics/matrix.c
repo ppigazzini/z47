@@ -1144,13 +1144,6 @@ static void _fnEuclideanNorm(uint16_t pParam) {
 }
 
 
-void fnEuclideanNorm(uint16_t unusedParamButMandatory) {
-  if(saveLastX()) {
-    _fnEuclideanNorm(NOPARAM);
-  }
-}
-
-
 void fnVectorDist(uint16_t unusedParamButMandatory) {
   fnSubtract(NOPARAM);
   _fnEuclideanNorm(2);

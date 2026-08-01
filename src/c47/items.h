@@ -2016,9 +2016,9 @@
 #define ITM_USER_E47                1963
 #define ITM_USER_R47                1964
 #define ITM_1965                    1965
-#define ITM_1966                    1966
-#define ITM_1967                    1967
-#define ITM_1968                    1968
+#define ITM_STKtoV4                 1966
+#define ITM_V4toSTK                 1967
+#define ITM_stkexV4                 1968
 #define ITM_1969                    1969
 #define ITM_1970                    1970
 #define ITM_1971                    1971

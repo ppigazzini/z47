@@ -2174,9 +2174,9 @@ void fnKeysManagement(uint16_t choice) {
         Norm_Key_00.func = kbd_usr[Norm_Key_00_key].primary;
         Norm_Key_00.funcParam[0] = 0;
         Norm_Key_00.used = Norm_Key_00.func != kbd_std[Norm_Key_00_key].primary;
-        char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6);
+        char *funcParam = (char *)getUserKeyLabelString(Norm_Key_00_key * 6);
         if((funcParam[0] != 0) && ((Norm_Key_00.func == -MNU_DYNAMIC)|| (Norm_Key_00.func == ITM_XEQ) || (Norm_Key_00.func == ITM_RCL)))  {
-          strcpy(Norm_Key_00.funcParam, (char *)getNthString((uint8_t *)userKeyLabel, Norm_Key_00_key * 6));       // name of a user menu, program or variable assigned to the Norm key
+          strcpy(Norm_Key_00.funcParam, (char *)getUserKeyLabelString(Norm_Key_00_key * 6));       // name of a user menu, program or variable assigned to the Norm key
         }
         fnRefreshState();
         fnClearFlag(FLAG_USER);

@@ -1,0 +1,62 @@
+;*************************************************************
+;**    Coverage: complex root solver, cpxSlv.               **
+;**    fnEqSolvGraph(EQ_CPXSOLVE) -> complexSolver()        **
+;**    in solver/graph.c. Guesses in Y and X, root in X.    **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; X^2+4, roots +/-2i
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=0 RY=Real:"1" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"0 i -2"
+
+; X^2-4, real roots +/-2 reached through the complex solver
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=1 RY=Real:"1" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Real:"2"
+
+; equal guesses: the only case reaching the "add 1 to second input" branch
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=0 RY=Real:"3" RX=Real:"3"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"0 i -2"
+
+; far guesses: five oscillation increments and a second kick
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=0 RY=Real:"99999" RX=Real:"0.35"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"0 i -2"
+
+; X^3-1, converging on the real root 1
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=2 RY=Real:"-2" RX=Real:"0.35"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Real:"1"
+
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=2 RY=Real:"0.35" RX=Real:"99999"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Real:"1"
+
+; X^2+1, roots +/-i
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=3 RY=Real:"1" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"0 i -1"
+
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=3 RY=Real:"-1" RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"0 i -1"
+
+; X^4+4, roots +/-1+/-i: the only cases whose root has a non-zero real part
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=4 RY=Real:"1" RX=Real:"5"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"1 i 1"
+
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=4 RY=Real:"0" RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"-1 i -1"
+
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=4 RY=Real:"-1" RX=Real:"1"
+Out: EC=0 FL_ASLIFT=1 RZ=Real:"0" RX=Cplx:"1 i -1"
+
+; f(X)=5, no root: ERROR_NO_ROOT_FOUND, and the only case reaching yPower
+Func: fnCpxSolveRootCov
+In:  FL_ASLIFT=0 FARG=5 RY=Real:"1" RX=Real:"5"
+Out: EC=20 RT=Real:"5"

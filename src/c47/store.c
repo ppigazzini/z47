@@ -401,6 +401,10 @@ void fnStoreConfig(uint16_t regist) {
   float  compatibility_float1 = 0.1;             //defaults to use when settings are removed
   float  compatibility_float2 = 0.2;             //defaults to use when settings are removed
   reallocateRegister(regist, dtConfig, 0, amNone);
+  if(getRegisterDataType(regist) != dtConfig) {
+    // Store only into a register that holds a configuration, the test fnRecallConfig() already makes (recall.c:243).
+    return;
+  }
   dtConfigDescriptor_t *configToStore = REGISTER_CONFIG_DATA(regist);
 
   storeToDtConfigDescriptor(shortIntegerMode);

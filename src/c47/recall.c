@@ -282,6 +282,17 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(compatibility_float2);   //spare
     recallFromDtConfigDescriptor(Norm_Key_00.func);
     xcopy(Norm_Key_00.funcParam, configToRecall->Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
+    {                                                                         // The descriptor is a raw byte image, so a crafted register can arrive unterminated. Terminating at
+      size_t cut = 0;                                                         //   a fixed offset would leave the lead byte of a two byte glyph as the last byte, which every
+      while(cut < sizeof(Norm_Key_00.funcParam) && Norm_Key_00.funcParam[cut] != 0) {   // consumer of the name would then read as a glyph one byte past the string. Walk the
+        size_t next = cut + ((Norm_Key_00.funcParam[cut] & 0x80) ? 2 : 1);    //   glyphs instead and cut at the last boundary the field can hold, terminator included.
+        if(next >= sizeof(Norm_Key_00.funcParam) || Norm_Key_00.funcParam[next - 1] == 0) {   // the second byte of a two byte glyph can itself be the terminator, and
+          break;                                                              //   stepping over it would leave that glyph's lead byte as the last byte of the string
+        }
+        cut = next;
+      }
+      Norm_Key_00.funcParam[cut] = 0;                                         // a descriptor that carries its own terminator inside the field is unchanged
+    }
     recallFromDtConfigDescriptor(Norm_Key_00.used);
     recallFromDtConfigDescriptor(    compatibility_byte2);
     recallFromDtConfigDescriptor(    compatibility_byte3);

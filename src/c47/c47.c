@@ -21,6 +21,7 @@ char                  lastTemp[16];
 
 bool_t                headlessMode = false;
 bool_t                snapSkipRefresh = false;
+bool_t                screenHoldsDrawnPixels = false;
 bool_t                loadTestPrograms = false;
 bool_t                loadTestData = false;
 const font_t          *fontForShortInteger;
@@ -62,6 +63,7 @@ bool_t                 cleanupAfterShift = false;
 bool_t                 solverEstimatesUsed = false;
 bool_t                 graphAccActive = false;
 bool_t                 updateOldConstants;
+bool_t                 eqnDrawLhsOnly = false;
 
 
 realContext_t          ctxtReal4;    //   limited digits: used for higher speed internal real calcs
@@ -228,7 +230,6 @@ int16_t                ListXYposition;               //JMSHOW
 int16_t                JM_auto_doublepress_autodrop_enabled;  //JM TIMER CLRDROP //drop
 int16_t                JM_auto_longpress_enabled;    //JM TIMER CLRDROP //clstk
 uint8_t                JM_SHIFT_HOME_TIMER1;         //Local to keyboard.c, but defined here
-bool_t                 ULFL, ULGL;                   //JM Underline
 int16_t                FN_key_pressed, FN_key_pressed_last; //JM LONGPRESS FN
 bool_t                 FN_timeouts_in_progress;      //JM LONGPRESS FN
 bool_t                 Shft_timeouts;                //JM SHIFT NEW FN
@@ -313,8 +314,6 @@ uint32_t               tamOverPemYPos;
 uint32_t               timerValue;
 uint32_t               timerStartTime = TIMER_APP_STOPPED;
 uint32_t               timerTotalTime;
-uint32_t               pointerOfFlashPgmLibrary;
-uint32_t               sizeOfFlashPgmLibrary;
 
 uint64_t               shortIntegerMask;
 uint64_t               shortIntegerSignBit;
@@ -604,6 +603,7 @@ int convertKeyCode(int key) {
 
                                                   //uint32_t now, previousRefresh, nextAutoRepeat = 0;      // removed autorepeat stuff
 
+    stackWatermarkAnchor();                                    // the shallowest frame of the run: everything the watermark reports is measured below this
     c47MemInBlocks = 0;
     gmpMemInBytes = 0;
     mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);

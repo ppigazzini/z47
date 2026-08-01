@@ -94,6 +94,24 @@ static void derivativeEquation(uint16_t order, uint8_t ti) {
   bool_t solving = getSystemFlag(FLAG_SOLVING);
 
   setSystemFlag(FLAG_SOLVING);
+  if(!(currentSolverVariable >= FIRST_NAMED_VARIABLE && currentSolverVariable <= LAST_NAMED_VARIABLE)) {
+    // No variable assigned, as after a programmed X.EDIT: auto-assign like fnEqSolvGraph does when the formula holds exactly one variable. The MVAR scratch area is
+    // the tail of tmpString, as in softmenus.c, to leave aimBuffer be.
+    parseEquation(currentFormula, EQUATION_PARSER_MVAR, tmpString + TMP_STR_LENGTH - AIM_BUFFER_LENGTH, tmpString);
+    if(tmpString[0] != 0 && (getNthString((uint8_t *)tmpString, 1))[0] == 0) {
+      currentSolverVariable = findOrAllocateNamedVariable(tmpString);
+    }
+    if(!(currentSolverVariable >= FIRST_NAMED_VARIABLE && currentSolverVariable <= LAST_NAMED_VARIABLE)) {
+      if(!solving) {
+        clearSystemFlag(FLAG_SOLVING);
+      }
+      displayCalcErrorMessage(ERROR_VARIABLE_NOT_SELECTED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function derivativeEquation:", "no variable selected for the derivative", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
   //new method to maintain solver variable
   reallyRunFunction(ITM_RCL, currentSolverVariable);
   copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);

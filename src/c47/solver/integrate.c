@@ -277,7 +277,11 @@ void fnIntegrateYX(uint16_t labelOrVariable) {
 
 
 void fnIntVar(uint16_t unusedButMandatoryParameter) {
-  const char *var = (char *)getNthString(dynamicSoftmenu[softmenuStack[0].softmenuId].menuContent, dynamicMenuItem);
+  const dynamicSoftmenu_t *dynamic = currentDynamicSoftmenu();
+  if(dynamic == NULL || dynamicMenuItem < 0 || dynamicMenuItem >= dynamic->numItems) {
+    return;
+  }
+  const char *var = (char *)getNthString(dynamic->menuContent, dynamicMenuItem);
   const uint16_t regist = findOrAllocateNamedVariable(var);
   bool_t doubleVarPress = regist == currentSolverVariable;
   currentSolverVariable = regist;

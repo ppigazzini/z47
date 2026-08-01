@@ -715,6 +715,7 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     *(firstFreeProgramByte + 1) = 0xffu;
     scanLabelsAndPrograms();
 
+    dynamicMenuItem = -1;
     goToGlobalStep(programList[numberOfPrograms - 1].step);   // Set active program to the loaded program and display the first step
 
     ioFileClose();

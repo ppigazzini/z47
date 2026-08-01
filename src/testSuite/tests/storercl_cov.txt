@@ -69,3 +69,12 @@ Out: EC=0 RX=Real:"11" RY=Real:"12" RZ=Real:"13" RT=Real:"14"
 Func: fnLastX
 In:  FARG=0 RL=Real:"77" RX=Real:"5"
 Out: EC=0 RX=Real:"77"
+
+; STOCFG names its destination through TAM, so a reserved variable reaches it.
+; A reserved variable's data type is fixed and its block holds one real34, while
+; the config descriptor is 840 bytes, so the store is refused and the registers
+; around the destination keep their values. 2031 is ACC; the accepted path is
+; gated by shortint_restore_cov.
+Func: fnStoreConfig
+In:  FARG=2031 R00=Real:"0.35" R01=Real:"99999"
+Out: EC=24 R00=Real:"0.35" R01=Real:"99999"

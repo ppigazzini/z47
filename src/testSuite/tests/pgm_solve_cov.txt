@@ -62,3 +62,9 @@ Out: EC=0 RX=LonI:"35"
 Func: fnISumProdCov
 In:  FARG=1 RZ=LonI:"1" RY=LonI:"5" RX=LonI:"2"
 Out: EC=0 RX=LonI:"225"
+
+; the MVAR page with no model selected: no VARMNU label, no formula, and currentSolverProgram at the 0xffff doFnReset leaves. The label index is bounded against
+; numberOfLabels, so the page holds no variables. Program S is loaded by this point in the corpus, so the label block has program material after it
+Func: fnMvarPageNoPgmCov
+In:  FARG=0
+Out: EC=0 RX=Real:"0"

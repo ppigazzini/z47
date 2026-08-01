@@ -219,7 +219,7 @@ void resetKeytimers(void) {
             else {;
               if(item < 0) {
                 if(item == -MNU_DYNAMIC) {
-                  char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, keyCode * 6 + 1);
+                  char *funcParam = (char *)getUserKeyLabelString(keyCode * 6 + 1);
                   setCurrentUserMenu(item, funcParam);
                 }
                 target_HOME = ((item == -MNU_HOME) && getSystemFlag(FLAG_MYM_TRIPLE) ? -MNU_MyMenu : item);
@@ -427,7 +427,7 @@ void resetKeytimers(void) {
       }
     }
 
-    char *funcParam = (char *)getNthString((uint8_t *)userKeyLabel, key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
+    char *funcParam = (char *)getUserKeyLabelString(key_no); //keyCode * 6 + g ? 2 : f ? 1 : 0);
     //printf("\n\n >>>> ## result=%i key_no=%i *funcParam=%s  [0]=%u\n", *result, key_no, (char*)funcParam, ((char*)funcParam)[0]);
 
     if(calcMode == CM_NORMAL && *result == ITM_RS) {

@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: Copyright The WP43 and C47 Authors
 
 /********************************************//** //JM
- * \file graph.c Graphing module
+ * \file graphs.h Graphing module
  ***********************************************/
 
 /* ADDITIONAL C47 functions and routines */

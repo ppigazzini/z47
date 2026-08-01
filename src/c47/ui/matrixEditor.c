@@ -10,7 +10,6 @@
 #define addFlag true
 
   any34Matrix_t         openMatrixMIMPointer;
-  bool_t                matEditMode;
   uint16_t              scrollRow;
   uint16_t              scrollColumn;
   uint16_t              tmpRow;

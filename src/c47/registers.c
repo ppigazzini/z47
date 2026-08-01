@@ -359,11 +359,7 @@ void setRegisterDataType(calcRegister_t regist, uint16_t dataType, const uint32_
   }
 
   else if(regist <= LAST_RESERVED_VARIABLE) { // System named variable
-    regist -= FIRST_RESERVED_VARIABLE;
-    if(allReservedVariables[regist].header.pointerToRegisterData != C47_NULL && allReservedVariables[regist].header.readOnly == 0) {
-      allNamedVariables[regist].header.dataType = dataType;
-      allNamedVariables[regist].header.tag = tag;
-    }
+    // Nothing to do, as in setRegisterDataPointer(): allReservedVariables[] is const, so a reserved variable's type and tag are fixed.
   }
 
   else if(regist <= LAST_LOCAL_REGISTER) { // Local register
@@ -2086,6 +2082,16 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
   }
 
   if(getRegisterDataType(regist) != dataType || ((getRegisterDataType(regist) == dtString || getRegisterDataType(regist) == dtLongInteger || getRegisterDataType(regist) == dtReal34Matrix || getRegisterDataType(regist) == dtComplex34Matrix) && getRegisterMaxDataLengthInBlocks(regist) != dataSizeWithoutDataLenBlocks)) {
+    if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE) {
+      // A reserved variable owns a fixed block named by a const header: there is nothing here to free, allocate or retype.
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "reserved variable %s", allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
+        moreInfoOnError("In function reallocateRegister:", errorMessage, "keeps the data type it was declared with!", NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+
     if(!isMemoryBlockAvailable(dataSizeWithDataLenBlocks, 2, 0.1f)) {
       #if defined(PC_BUILD)
         printf("In function reallocateRegister: required %" PRIu16 " blocks for register #%" PRId16 " but no data blocks with enough size are available!\n", dataSizeWithoutDataLenBlocks, regist);

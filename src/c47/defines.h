@@ -560,7 +560,7 @@
 // ERROR_NESTING_TOO_DEEP instead of overflowing the C stack. One level each way: the DM42's measured stack use leaves it the least room, the DM42n has more, and the
 // simulator runs on a host stack. This gates on OLD_HW and NEW_HW, not on DMCP_BUILD, which both calculators define.
 #if defined(OLD_HW)
-  #define MAX_ENGINE_NESTING_DEPTH       2
+  #define MAX_ENGINE_NESTING_DEPTH       1
 #elif defined(NEW_HW)
   #define MAX_ENGINE_NESTING_DEPTH       3
 #else // !OLD_HW && !NEW_HW
@@ -574,6 +574,8 @@
 #else // !OLD_HW
   #define PLOT_NESTING_ALLOWED           1
 #endif // OLD_HW
+#define STACK_WATERMARK                    // stack high-water mark into the named variables STCKGO, STCKSPN, STCKHI, STCKST, STCKHWM and STCKSPU; see memory.c
+#undef  STACK_WATERMARK
 #define ENABLE_COMPLEXSOLVER_FILE_OUTPUT 0 // 1 for PRINTXY to be done for the complex solver for every iteration; 2 to print the RPN function; Corrupts Reg_K
 #define INTEGRATION_TWO_STAGE_EXIT         // If set allows a level to complete before exiting the integrator
 #undef  INTEGRATION_TWO_STAGE_EXIT
@@ -615,6 +617,7 @@
   #undef FULLUPDATE
   #undef BUFFER_CLICK_DETECTION
   #undef JMSHOWCODES_KB3
+  #undef STACK_WATERMARK
 
   #undef  VERBOSE_LEVEL
   #define VERBOSE_LEVEL -1
@@ -2405,7 +2408,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define VECT_CR_yx  6
 #define VECT_CR_10  7
 #define VECT_CR_01  8
-#define M_CR_zyx    9
+#define VECT_CR_tzyx 9
+#define M_CR_zyx    10
 //#define VECT_yx_zyx 0x62
 
 #define V_D0        0
