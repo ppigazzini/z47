@@ -531,6 +531,27 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_float2; // spare
         Norm_Key_00.func = configToRecall.Norm_Key_00.func;
         _ = frontier_char_string.xcopy(@ptrCast(&Norm_Key_00.funcParam), @ptrCast(&configToRecall.Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
+        {
+            // The descriptor is a raw byte image, so a crafted register can arrive
+            // unterminated. Terminating at a fixed offset would leave the lead byte of
+            // a two-byte glyph as the last byte, which every consumer of the name would
+            // then read as a glyph one byte past the string. Walk the glyphs instead
+            // and cut at the last boundary the field can hold, terminator included; a
+            // descriptor that carries its own terminator inside the field is unchanged.
+            const field = &Norm_Key_00.funcParam;
+            const size = @sizeOf(@TypeOf(Norm_Key_00.funcParam));
+            var cut: usize = 0;
+            while (cut < size and field[cut] != 0) {
+                const next = cut + @as(usize, if ((field[cut] & 0x80) != 0) 2 else 1);
+                // The second byte of a two-byte glyph can itself be the terminator, and
+                // stepping over it would leave that glyph's lead byte last in the string.
+                if (next >= size or field[next - 1] == 0) {
+                    break;
+                }
+                cut = next;
+            }
+            field[cut] = 0;
+        }
         Norm_Key_00.used = configToRecall.Norm_Key_00.used;
         _ = configToRecall.compatibility_byte2;
         _ = configToRecall.compatibility_byte3;

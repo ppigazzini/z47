@@ -29,9 +29,28 @@ fn putCStr(dest: []u8, comptime fmt: []const u8, args: anytype) void {
 }
 
 /// Normalize `src` (NUL-terminated) into `dest` as the stock "re im" complex form.
+pub const STANDARDISED_COMPLEX_LENGTH = 200; // one size for the work buffer and for every caller's output buffer
+
 pub fn standardiseComplex(src: [*]const u8, dest: []u8) void {
-    var work: [200]u8 = undefined;
+    var work: [STANDARDISED_COMPLEX_LENGTH]u8 = undefined;
     var w: usize = 0;
+
+    // A data file line is up to TMP_STR_LENGTH bytes and lands here unmeasured,
+    // while a complex this calculator can hold is far shorter: a real34 carries 34
+    // significant digits, so the widest legal element -- both parts signed, with a
+    // radix mark and a four digit exponent -- is well under 100 bytes. An element
+    // that does not fit is not a number that could be restored, and truncating it
+    // would silently change its value, so it is read as zero instead. The 4 covers
+    // the "0 +" that the leading 'i' form prepends and the terminator, the widest
+    // expansion any branch below performs.
+    {
+        var n: usize = 0;
+        while (src[n] != 0) : (n += 1) {}
+        if (n + 4 > work.len) {
+            putCStr(dest, "0 0", .{});
+            return;
+        }
+    }
 
     // isIform: an 'i' anywhere in src marks the "re +iIM" family.
     var isIform = false;
@@ -78,7 +97,7 @@ pub fn standardiseComplex(src: [*]const u8, dest: []u8) void {
         imSign = '+';
         realLen = ip;
     }
-    var realStr: [200]u8 = undefined;
+    var realStr: [STANDARDISED_COMPLEX_LENGTH]u8 = undefined;
     @memcpy(realStr[0..realLen], work[0..realLen]);
     realStr[realLen] = 0;
     putCStr(dest, "{s} {c}{s}", .{

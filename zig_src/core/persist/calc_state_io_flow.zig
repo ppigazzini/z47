@@ -76,7 +76,11 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
     const enable_load = policy_owned.canEnableLoad(load_mode, load_type, header.loaded_version);
     if (enable_load) {
         const allow_user_keys = runtime.allowUserKeys(header.saved_calc_model);
-        while (runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
+        // restoreOneSection() only returns false at END_CONFIG, which a file that
+        // stops short -- truncated, or with a count that swallowed its last section --
+        // never reaches: every further call then reads an empty section name, matches
+        // nothing and returns true. Loop on ioEof() as well, as doLoadDataFile() does.
+        while (runtime.ioEof() == 0 and runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
         runtime.fixupR47ShiftKeys();
 
         // The register section precedes shortIntegerWordSize in the file and the

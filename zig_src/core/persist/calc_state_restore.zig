@@ -47,6 +47,10 @@ inline fn currentNumberOfLocalRegisters() u8 {
 }
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const REGISTER_X: i16 = 100; // == FIRST_LETTERED_REGISTER
+const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
+const ERROR_RAM_FULL: u8 = 11;
+const NUMBER_OF_STATISTICAL_SUMS: i16 = 28;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
 const INVALID_VARIABLE: i16 = 2199;
 
 // Lettered-register names for registers 100..125, in register-number order.
@@ -388,6 +392,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             readLineSkippingComments(tmpString, TMP_STR_LENGTH); // Register number, skipping any comments
+            if (tmpString[0] == 0) { // the section ran out: readLine() skips blank lines, so an empty read is end of file and the count was a lie
+                break;
+            }
             regist = stringToRegisterNumber(tmpString); // "RX".."RW" or "Rnnn"
             calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
             if ((regist >= 0 and regist <= LAST_GLOBAL_REGISTER) and // reject an out-of-range register number from a malformed state file
@@ -423,6 +430,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
                 calc_state.readLine(tmpString, TMP_STR_LENGTH);
+                if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                    break;
+                }
                 regist = text.toInt16(tmpString + 2) + FIRST_LOCAL_REGISTER;
                 calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
                 if ((regist >= FIRST_LOCAL_REGISTER and regist < FIRST_LOCAL_REGISTER + @as(i16, @intCast(currentNumberOfLocalRegisters()))) and // reject an out-of-range register number from a malformed state file
@@ -446,6 +456,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             calc_state.readLine(errorMessage, ERROR_MESSAGE_LENGTH);
+            if (errorMessage[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                break;
+            }
             calc_state.read2Lines(aimBuffer, AIM_BUFFER_LENGTH, tmpString, TMP_STR_LENGTH);
             const is_stats_or_histo = cmpName(errorMessage, "STATS") or cmpName(errorMessage, "HISTO");
             if ((load_mode == LM_ALL or
@@ -478,7 +491,14 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
                 calc_state.readLine(tmpString, TMP_STR_LENGTH);
-                if (statisticalSumsPointer != null) {
+                if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                    break;
+                }
+                // statisticalSumsPointer is one pool block of NUMBER_OF_STATISTICAL_SUMS
+                // reals and the save side always writes exactly that many; the count is
+                // the file's. Bound the write, not the loop, which must still read a line
+                // per claimed entry to stay aligned with the stream.
+                if (statisticalSumsPointer != null and i < NUMBER_OF_STATISTICAL_SUMS) {
                     if (load_mode == LM_ALL or load_mode == LM_SUMS) {
                         codec.loadStatSum(tmpString, @intCast(i));
                     }
@@ -518,7 +538,12 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
-            if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
+            if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                break;
+            }
+            // The count is the file's, so the index is bounded here and not on the
+            // loop, which must still read a line per claimed entry to stay aligned.
+            if (allow_user_keys and i < @as(i16, kbd_usr.len) and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
                 const k = &kbd_usr[@intCast(i)];
                 str = text.toInt16NextWord(tmpString, &k.keyId);
                 str = text.toInt16NextWord(str, &k.primary);
@@ -538,20 +563,35 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
             userKeyLabelSize = 37 * 6 * 1 + 1;
             userKeyLabel = @ptrCast(allocC47Blocks(TO_BLOCKS(userKeyLabelSize)));
-            _ = memset(userKeyLabel, 0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+            if (userKeyLabel == null) { // the memset below writes through this pointer, and this section's entries then walk it
+                userKeyLabelSize = 0;
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+            } else {
+                _ = memset(userKeyLabel, 0, TO_BYTES(TO_BLOCKS(userKeyLabelSize)));
+            }
         }
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
+            if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                break;
+            }
             if (allow_user_keys and (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE)) {
                 str = tmpString;
                 const key = text.toUint16(str);
-                userMenuItems[@intCast(i)].argumentName[0] = 0;
+                // The count is key/state slots, of which the save side writes up to
+                // 37*6, so it runs far past userMenuItems; MYMENU restores that array
+                // in its own section.
+                if (i < @as(i16, userMenuItems.len)) {
+                    userMenuItems[@intCast(i)].argumentName[0] = 0;
+                }
                 str = text.skipToSpaceNewline(str);
                 if (str[0] == ' ') {
                     str = text.skipSpace(str);
-                    if (str[0] != '\n' and str[0] != 0) {
-                        utf8ToStringWithLength(str, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
+                    // 37*6 is the ceiling userKeyLabel is allocated to above, and the one
+                    // setUserKeyArgument walks to; the key comes from the file.
+                    if (str[0] != '\n' and str[0] != 0 and key < 37 * 6) {
+                        utf8ToStringWithLength(str, tmpString + TMP_STR_LENGTH / 2, @sizeOf(@TypeOf(userMenuItems[0].argumentName)));
                         setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
                     }
                 }
@@ -563,7 +603,12 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
-            if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+            if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                break;
+            }
+            // 18 is what MYMENU can hold and what the save side writes; the count is
+            // the file's. Bound the write and not the loop.
+            if ((load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) and i < @as(i16, userMenuItems.len)) {
                 parseMenuItem(&userMenuItems[@intCast(i)]);
             }
         }
@@ -573,7 +618,11 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         i = 0;
         while (i < numberOfRegs) : (i += 1) {
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
-            if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+            if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                break;
+            }
+            // Same bound as MYMENU above, on the array MYALPHA owns.
+            if ((load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) and i < @as(i16, userAlphaItems.len)) {
                 parseMenuItem(&userAlphaItems[@intCast(i)]);
             }
         }
@@ -583,6 +632,9 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         var j: i32 = 0;
         while (j < numberOfMenus) : (j += 1) {
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
+            if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                break;
+            }
             var target: i16 = -1;
             if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
                 utf8ToStringWithLength(tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
@@ -593,8 +645,13 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                     }
                 }
                 if (target == -1) {
+                    // createMenu() refuses a name the file made invalid, and then
+                    // numberOfUserMenus - 1 is either -1, with userMenus still NULL, or an
+                    // unrelated menu that would silently take this one's items. Leave
+                    // target at -1 and drop the menu instead.
+                    const menusBefore = numberOfUserMenus;
                     createMenu(tmpString + TMP_STR_LENGTH / 2);
-                    target = @intCast(@as(i32, numberOfUserMenus) - 1);
+                    target = if (numberOfUserMenus <= menusBefore) -1 else @intCast(@as(i32, numberOfUserMenus) - 1);
                 }
             }
             calc_state.readLine(tmpString, TMP_STR_LENGTH);
@@ -602,7 +659,16 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             i = 0;
             while (i < numberOfRegs) : (i += 1) {
                 calc_state.readLine(tmpString, TMP_STR_LENGTH);
-                if (load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) {
+                if (tmpString[0] == 0) { // end of file: the count was a lie, see GLOBAL_REGISTERS
+                    break;
+                }
+                // A user menu holds 18 items, as MYMENU and MYALPHA do; the count and
+                // the menu name are the file's. userMenus is ONE pool block holding
+                // every menu, so an unbounded index writes over the menus that follow
+                // this one and, past the last of them, out of the block.
+                if ((load_mode == LM_ALL or load_mode == LM_SYSTEM_STATE) and target >= 0 and
+                    i < @as(i16, @sizeOf(@TypeOf(userMenus[0].menuItem)) / @sizeOf(userMenuItem_t)))
+                {
                     parseMenuItem(&userMenus[@intCast(target)].menuItem[@intCast(i)]);
                 }
             }
@@ -617,20 +683,41 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             while (i > 0) : (i -= 1) {
                 deleteEquation(@intCast(i - 1));
             }
+            // The count is the file's, so the size of this allocation is too, and
+            // allocC47Blocks() answers NULL when the pool cannot hold it -- a state
+            // file claiming 65535 formulae asks for 256 KiB of a 256 KiB pool. The
+            // loop below writes through that pointer, so take no equations rather
+            // than write through NULL; the rest of the section still reads its lines
+            // and discards them, which keeps the parser aligned with the stream.
             allFormulae = @ptrCast(@alignCast(allocC47Blocks(TO_BLOCKS(@sizeOf(formulaHeader_t)) * formulae)));
-            numberOfFormulae = formulae;
-            currentFormula = 0;
-            i = 0;
-            while (i < formulae) : (i += 1) {
-                allFormulae[@intCast(i)].pointerToFormulaData = C47_NULL;
-                allFormulae[@intCast(i)].sizeInBlocks = 0;
+            if (allFormulae == null) {
+                numberOfFormulae = 0;
+                currentFormula = 0;
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+            } else {
+                numberOfFormulae = formulae;
+                currentFormula = 0;
+                // The index is wider than the count on purpose: `formulae` is a u16 and
+                // this section's own `i` is an i16, so a file claiming more than 32767
+                // formulae would run i past its max and the loop would never end.
+                var f: u32 = 0;
+                while (f < formulae) : (f += 1) {
+                    allFormulae[f].pointerToFormulaData = C47_NULL;
+                    allFormulae[f].sizeInBlocks = 0;
+                }
             }
-            i = 0;
-            while (i < formulae) : (i += 1) {
+            var f: u32 = 0;
+            while (f < formulae) : (f += 1) { // u32, as above
                 calc_state.readLine(tmpString, TMP_STR_LENGTH);
-                if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+                // No end-of-file break here, on purpose: the empty reads give every
+                // remaining formula an empty string, which every reader of the text
+                // handles; breaking would leave them at the C47_NULL set above, and not
+                // every reader of that pointer tests it. allFormulae is NULL when the
+                // allocation was refused, and setEquation() indexes it, so a refused
+                // section costs the equations and nothing else.
+                if (allFormulae != null and (load_mode == LM_ALL or load_mode == LM_PROGRAMS)) {
                     utf8ToStringWithLength(tmpString, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
-                    setEquation(@intCast(i), tmpString + TMP_STR_LENGTH / 2);
+                    setEquation(@intCast(f), tmpString + TMP_STR_LENGTH / 2);
                 }
             }
             if (loaded_version < 10000021) {
@@ -669,21 +756,33 @@ fn restoreProgramsSection(load_mode: u16) void {
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH);
     const numberOfBlocks = text.toUint16(tmpString);
-    if (load_mode == LM_ALL) {
+    // Program memory always holds at least the one block that carries the empty
+    // .END.: that is the block config.c reserves when it forms the pool, and the
+    // save side writes that 1 for an empty program area. A count of zero therefore
+    // means the section is not really there -- and a section that ran out reads as
+    // zero too, because an empty read converts to zero. Resizing to zero blocks
+    // moves beginOfProgramMemory one past the pool, and scanLabelsAndPrograms()
+    // reads it there through isAtEndOfPrograms(). Everything this branch does is
+    // keyed on the load mode, so such a section is neutralised by giving the branch
+    // a mode that matches neither LM_ALL nor LM_PROGRAMS. The readLine() calls still
+    // run, so the parser stays aligned with the stream, and program memory keeps
+    // what it already had.
+    const programsLoadMode: u16 = if (numberOfBlocks == 0) LM_SYSTEM_STATE else load_mode;
+    if (programsLoadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
-    } else if (load_mode == LM_PROGRAMS) {
+    } else if (programsLoadMode == LM_PROGRAMS) {
         resizeProgramMemory(@intCast(@as(u32, oldSizeInBlocks) + numberOfBlocks));
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
     }
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // currentStep block pointer
-    if (load_mode == LM_ALL) {
+    if (programsLoadMode == LM_ALL) {
         currentStep = toPcmemptr(text.toUint32(tmpString));
     }
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // currentStep offset within block
-    if (load_mode == LM_ALL) {
+    if (programsLoadMode == LM_ALL) {
         currentStep += text.toUint32(tmpString);
-    } else if (load_mode == LM_PROGRAMS) {
+    } else if (programsLoadMode == LM_PROGRAMS) {
         if (programList[@intCast(@as(i32, currentProgramNumber) - 1)].step > 0) {
             currentStep -= TO_BYTES(numberOfBlocks);
             firstDisplayedStep -= TO_BYTES(numberOfBlocks);
@@ -693,16 +792,16 @@ fn restoreProgramsSection(load_mode: u16) void {
     }
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte block pointer
-    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+    if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
         firstFreeProgramByte = toPcmemptr(text.toUint32(tmpString));
     }
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte offset within block
-    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+    if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
         firstFreeProgramByte += text.toUint32(tmpString);
     }
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // freeProgramBytes
-    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+    if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
         freeProgramBytes = text.toUint16(tmpString);
     }
 
@@ -721,7 +820,7 @@ fn restoreProgramsSection(load_mode: u16) void {
         firstFreeProgramByte = @ptrFromInt(reloc.first_free_program_byte);
     }
 
-    if (load_mode == LM_PROGRAMS) {
+    if (programsLoadMode == LM_PROGRAMS) {
         freeProgramBytes += oldFreeProgramBytes;
         const at_end = (@intFromPtr(oldFirstFreeProgramByte) >= @intFromPtr(beginOfProgramMemory + 2)) and isAtEndOfProgram(oldFirstFreeProgramByte - 2);
         if (!at_end) {
@@ -748,15 +847,15 @@ fn restoreProgramsSection(load_mode: u16) void {
     var i: i16 = 0;
     while (i < numberOfBlocks) : (i += 1) {
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
-        if (load_mode == LM_ALL) {
+        if (programsLoadMode == LM_ALL) {
             progWords[@intCast(i)] = text.toUint32(tmpString);
-        } else if (load_mode == LM_PROGRAMS) {
+        } else if (programsLoadMode == LM_PROGRAMS) {
             var tmpBlock: u32 = text.toUint32(tmpString);
             _ = xcopy(oldFirstFreeProgramByte + TO_BYTES(i), &tmpBlock, 4);
         }
     }
 
-    if (load_mode == LM_ALL or load_mode == LM_PROGRAMS) {
+    if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
         scanLabelsAndPrograms();
     }
 }
@@ -888,7 +987,12 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         } else if (allow_user_keys and cmpName(tmpString, "NoNormKeyParamDef")) {
             Norm_Key_00.funcParam[0] = 0;
         } else if (allow_user_keys) {
-            _ = strcpy(&Norm_Key_00.funcParam[0], tmpString);
+            // A name the field cannot hold comes only from a corrupt file, so leave it
+            // empty rather than let strcpy run past the field.
+            Norm_Key_00.funcParam[0] = 0;
+            if (strlen(tmpString) < @sizeOf(@TypeOf(Norm_Key_00.funcParam))) {
+                _ = strcpy(&Norm_Key_00.funcParam[0], tmpString);
+            }
         }
     } else if (allow_user_keys and cmpName(ab, "Norm_Key_00.used")) {
         Norm_Key_00.used = text.toUint8(tmpString) != 0;

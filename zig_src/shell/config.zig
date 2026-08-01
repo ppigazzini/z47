@@ -597,6 +597,8 @@ extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
 extern var currentLocalFlags: [*c]abi.LocalFlags;
 extern var currentLocalRegisters: [*c]abi.RegisterHeader;
 extern var userKeyLabel: [*c]u8;
+// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var savedStatisticalSumsPointer: ?*anyopaque;
 extern var statisticalSumsPointer: [*c]abi.Real;
 extern var userMenus: [*c]abi.UserMenu;
@@ -1037,9 +1039,9 @@ pub fn z47_frontier_keys_from_user_case() void {
         Norm_Key_00.func = kbd_usr[k].primary;
         Norm_Key_00.funcParam[0] = 0;
         Norm_Key_00.used = Norm_Key_00.func != kbdStd()[k].primary;
-        const funcParam = frontier_softmenus.getNthString(userKeyLabel, @intCast(@as(i32, @intCast(k)) * 6));
+        const funcParam = getUserKeyLabelString(@intCast(@as(i32, @intCast(k)) * 6));
         if ((funcParam[0] != 0) and ((Norm_Key_00.func == -MNU_DYNAMIC) or (Norm_Key_00.func == ITM_XEQ) or (Norm_Key_00.func == ITM_RCL))) {
-            _ = strcpy(&Norm_Key_00.funcParam, frontier_softmenus.getNthString(userKeyLabel, @intCast(@as(i32, @intCast(k)) * 6)));
+            _ = strcpy(&Norm_Key_00.funcParam, getUserKeyLabelString(@intCast(@as(i32, @intCast(k)) * 6)));
         }
         frontier_radio_button_catalog.fnRefreshState();
         fnClearFlag(FLAG_USER_u16);

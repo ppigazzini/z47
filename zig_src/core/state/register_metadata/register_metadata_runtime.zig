@@ -198,6 +198,10 @@ pub fn reportRamFull() void {
     error_owned.reportRamFull();
 }
 
+pub fn reportReservedVariableRetype() void {
+    error_owned.reportReservedVariableRetype();
+}
+
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
     return tables_owned.toPcMemPtr(mem_ptr);
 }

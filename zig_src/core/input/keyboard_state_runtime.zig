@@ -776,6 +776,8 @@ pub fn indexOfItemsSoftmenuName(item: i16) [*c]const u8 {
 }
 pub extern var delayCloseNim: bool_t;
 pub extern var userKeyLabel: [*c]u8;
+// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+pub extern fn getUserKeyLabelString(n: i16) [*c]u8;
 pub extern fn isAlphabeticSoftmenu() bool_t;
 pub extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 pub extern fn setCurrentUserMenu(item: i16, func_param: [*c]u8) bool_t;

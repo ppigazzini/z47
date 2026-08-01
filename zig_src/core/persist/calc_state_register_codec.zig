@@ -75,16 +75,25 @@ extern fn ioEof() c_int;
 // Faithful port of saveRestoreCalcState.c readToken: any run of spaces/tabs/
 // newlines/CRs separates elements, so a data-file matrix row may hold several
 // elements. `tok` must point at a buffer large enough for the token.
-fn readToken(tok: [*c]u8) void {
+fn readToken(tok: [*c]u8, maxLen: usize) void {
     var p = tok;
-    if (ioEof() == 0) {
+    const end = if (maxLen == 0) tok else tok + maxLen - 1; // last writable slot; reserve one byte for the terminator
+    if (maxLen != 0 and ioEof() == 0) {
         _ = ioFileRead(p, 1);
         while ((p[0] == ' ' or p[0] == '\t' or p[0] == '\n' or p[0] == '\r') and ioEof() == 0) {
             _ = ioFileRead(p, 1);
         }
-        while (p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r' and ioEof() == 0) {
+        while (@intFromPtr(p) < @intFromPtr(end) and p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r' and ioEof() == 0) {
             p += 1;
             _ = ioFileRead(p, 1);
+        }
+        // Token longer than the buffer: drain to the separator so the next read
+        // resyncs, as readLine() does. A read that returns nothing cannot make
+        // progress, and ioEof() stays false on an I/O error.
+        while (p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r') {
+            if (ioFileRead(p, 1) == 0) {
+                break;
+            }
         }
     }
     p[0] = 0;
@@ -94,25 +103,39 @@ fn readToken(tok: [*c]u8) void {
 // complex element is either a parenthesised group "( ... )" (read up to and
 // including the closing ')', may span newlines) or a bare whitespace-free 'i'
 // form token. Faithful port of saveRestoreCalcState.c readComplexToken.
-fn readComplexToken(tok: [*c]u8) void {
+fn readComplexToken(tok: [*c]u8, maxLen: usize) void {
     var p = tok;
-    if (ioEof() == 0) {
+    const end = if (maxLen == 0) tok else tok + maxLen - 1; // last writable slot; reserve one byte for the terminator
+    if (maxLen != 0 and ioEof() == 0) {
         _ = ioFileRead(p, 1);
         while ((p[0] == ' ' or p[0] == '\t' or p[0] == '\n' or p[0] == '\r') and ioEof() == 0) {
             _ = ioFileRead(p, 1);
         }
         if (p[0] == '(') {
-            while (p[0] != ')' and ioEof() == 0) {
+            while (@intFromPtr(p) < @intFromPtr(end) and p[0] != ')' and ioEof() == 0) {
                 p += 1;
                 _ = ioFileRead(p, 1);
             }
-            if (p[0] == ')') {
+            // Group longer than the buffer: drain to the closing parenthesis so the
+            // next read resyncs. See readToken().
+            while (p[0] != ')') {
+                if (ioFileRead(p, 1) == 0) {
+                    break;
+                }
+            }
+            if (p[0] == ')' and @intFromPtr(p) < @intFromPtr(end)) {
                 p += 1;
             }
         } else {
-            while (p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r' and ioEof() == 0) {
+            while (@intFromPtr(p) < @intFromPtr(end) and p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r' and ioEof() == 0) {
                 p += 1;
                 _ = ioFileRead(p, 1);
+            }
+            // Token longer than the buffer: drain to the separator. See readToken().
+            while (p[0] != ' ' and p[0] != '\t' and p[0] != '\n' and p[0] != '\r') {
+                if (ioFileRead(p, 1) == 0) {
+                    break;
+                }
             }
         }
     }
@@ -484,7 +507,7 @@ fn dataFileCommaToPeriod(str: [*c]u8) void {
 // into the stock "re im" form the parser below expects. The pure text transform
 // lives in the shared std-only abi.complex_text module (dest is a 200-byte scratch).
 fn standardiseComplex(src_in: [*c]const u8, dest: [*c]u8) void {
-    abi.complex_text.standardiseComplex(src_in, dest[0..200]);
+    abi.complex_text.standardiseComplex(src_in, dest[0..abi.complex_text.STANDARDISED_COMPLEX_LENGTH]);
 }
 
 // Parse one register value (the inverse of registerToSaveString). `type_str`
@@ -577,7 +600,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         convertUInt64ToShortIntegerRegister(sign, val, base, regist);
     } else if (strcmpEq(type_str, "Cplx")) {
         reallocateRegister(regist, dtComplex34, 0, tag);
-        var stdTmp: [200]u8 = undefined;
+        var stdTmp: [abi.complex_text.STANDARDISED_COMPLEX_LENGTH]u8 = undefined;
         if (dataFileMode) {
             // accept (3-i4) / 3-i4 / +3+i4 / stock "re im"; emit the stock form
             standardiseComplex(value, &stdTmp[0]);
@@ -637,7 +660,7 @@ pub fn restoreMatrixData(regist: i16) void {
         var i: u32 = 0;
         while (i < count) : (i += 1) {
             if (dataFileMode) {
-                readToken(tmpString); // any whitespace (spaces/newlines) separates elements
+                readToken(tmpString, @intCast(TMP_STR_LENGTH)); // any whitespace (spaces/newlines) separates elements
                 dataFileCommaToPeriod(tmpString);
             } else {
                 calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));
@@ -651,10 +674,10 @@ pub fn restoreMatrixData(regist: i16) void {
         var i: u32 = 0;
         while (i < count) : (i += 1) {
             if (dataFileMode) {
-                var stdTmp: [200]u8 = undefined;
+                var stdTmp: [abi.complex_text.STANDARDISED_COMPLEX_LENGTH]u8 = undefined;
                 // one parenthesised "(re-iIM)" group (or bare i form) per
                 // element, free-form whitespace between elements
-                readComplexToken(tmpString);
+                readComplexToken(tmpString, @intCast(TMP_STR_LENGTH));
                 standardiseComplex(tmpString, &stdTmp[0]);
                 dataFileCommaToPeriod(&stdTmp[0]);
                 _ = strcpy(tmpString, &stdTmp[0]);
@@ -688,9 +711,9 @@ pub fn skipMatrixData(type_str: [*c]u8, value_in: [*c]u8) void {
             if (dataFileMode) {
                 // skip exactly as restoreMatrixData reads, or the file position desyncs
                 if (strcmpEq(type_str, "Cxma")) {
-                    readComplexToken(tmpString);
+                    readComplexToken(tmpString, @intCast(TMP_STR_LENGTH));
                 } else {
-                    readToken(tmpString);
+                    readToken(tmpString, @intCast(TMP_STR_LENGTH));
                 }
             } else {
                 calc_state.readLine(tmpString, @intCast(TMP_STR_LENGTH));

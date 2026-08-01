@@ -51,7 +51,7 @@ comptime {
 extern var labelList: ?[*]labelList_t;
 extern var programList: ?[*]programList_t;
 extern var tam: tamState_t;
-extern var dynamicMenuItem: i16;
+pub extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;
 extern var numberOfPrograms: u16;
 extern var currentProgramNumber: u16;

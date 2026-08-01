@@ -293,7 +293,6 @@ const ITM_EEXCHR = 2032;
 const ITM_EE_EXP_TH = 1816;
 const ITM_ENG = 1460;
 const ITM_ENTER = 35;
-const ITM_EQUAL = 825;
 const ITM_ERF = 1466;
 const ITM_ERFC = 1467;
 const ITM_EX1 = 1575;
@@ -2716,16 +2715,17 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 var jj: i16 = 0;
                 addChar[0] = 0;
                 if (addChar0[0] == 0) {
-                    if (item != ITM_EQUAL) { // block the entry of "="
-                        _ = stringCopy(&addChar, &indexOfItems[item].itemSoftmenuName);
-                        if ((indexOfItems[item].itemSoftmenuName[0] != 0) and (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
-                            if (isDyadicFunction(item)) {
-                                _ = stringCopy(@as([*c]u8, &addChar) + @as(usize, @intCast(stringByteLength(&addChar))), "(:)");
-                                jj = 2;
-                            } else {
-                                _ = stringCopy(@as([*c]u8, &addChar) + @as(usize, @intCast(stringByteLength(&addChar))), "()");
-                                jj = 1;
-                            }
+                    // "=" is no longer blocked here: upstream undid the 2024 block
+                    // (91b248e03) when equals came back into the EQN UI, so an equation
+                    // can be typed with both sides and Draw plots the left one.
+                    _ = stringCopy(&addChar, &indexOfItems[item].itemSoftmenuName);
+                    if ((indexOfItems[item].itemSoftmenuName[0] != 0) and (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
+                        if (isDyadicFunction(item)) {
+                            _ = stringCopy(@as([*c]u8, &addChar) + @as(usize, @intCast(stringByteLength(&addChar))), "(:)");
+                            jj = 2;
+                        } else {
+                            _ = stringCopy(@as([*c]u8, &addChar) + @as(usize, @intCast(stringByteLength(&addChar))), "()");
+                            jj = 1;
                         }
                     }
                 } else {
