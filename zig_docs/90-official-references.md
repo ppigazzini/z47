@@ -136,6 +136,10 @@ Allocator-level safety:
   targets. This rules out the otherwise-obvious "put a checking allocator on the
   device" move, independently of the flash cost.
 - [AddressSanitizer manual poisoning](https://github.com/google/sanitizers/wiki/AddressSanitizerManualPoisoning):
+  **Read the caveat first: z47 has no AddressSanitizer.** Zig 0.16 ships no ASan
+  runtime and `-fsanitize=address` fails to link, so this API has nothing to talk
+  to today; it is kept as the reference for what linking a system runtime would
+  buy. See [75-debugging.md](75-debugging.md).
   `__asan_poison_memory_region` / `__asan_unpoison_memory_region`, the API that
   makes a custom arena visible to ASan. Chunks must be 8-aligned; C47 blocks are
   4 bytes, so a poisoning implementation must work in 8-byte shadow granules and

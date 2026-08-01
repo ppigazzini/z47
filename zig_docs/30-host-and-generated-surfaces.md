@@ -68,7 +68,7 @@ parity reference; they are not compiled.
 | `sim` (or bare `zig build`) | the C47 simulator |
 | `simr47` | the R47 simulator |
 | `both` | both host simulators |
-| `both_asan` | both host simulators with native Zig C sanitizing |
+| `both_asan` | both host simulators, built with `sanitize_c` set -- which `common_c_flags` then cancels, so nothing is sanitized; see [75-debugging.md](75-debugging.md) |
 | `simulator_smoke` | both simulators plus the Xvfb-backed LCD, keyboard, and pointer smoke probe |
 
 ## Host Regression And Parity Lanes

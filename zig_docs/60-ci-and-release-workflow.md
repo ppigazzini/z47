@@ -129,7 +129,7 @@ maps to a committed script or generator so the same check runs locally.
 
 ## Platform Jobs
 
-### `linux-host-parity` (Linux host parity, ASAN, generated outputs, and host package)
+### `linux-host-parity` (Linux host parity, the `*_asan` lanes, generated outputs, and host package)
 
 This is the blocking full-parity lane. Its core build/test step runs the
 committed `../.github/project/run-host-parity-battery.sh` script directly, so CI
@@ -148,9 +148,10 @@ runs, in order:
 - `both` (both host simulators), then the non-blocking `simulator_smoke`, then
   `testPgms`, `${XVFB} test` (the 10228-test shared testSuite), and `generated`
 
-The job then runs the ASAN surface (`both_asan`, `test_asan`, and
+The job then runs the `*_asan` surface (`both_asan`, `test_asan`, and
 `pgm_load_fuzz` -- the malformed `.p47` load corpus driven through the real load
-path under AddressSanitizer), builds the
+path -- the name is historical: these lanes run NO sanitizer, see
+[75-debugging.md](75-debugging.md)), builds the
 published Linux archive with `zig build -Doptimize=ReleaseFast dist_linux`,
 launches a smoke test from the unpacked archive, diffs and hashes the tracked
 generated artifacts, and uploads the Linux package artifact plus a golden
