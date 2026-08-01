@@ -10,7 +10,7 @@ runnable**. Upstream C47 at the pinned commit answers any question about
 intended behaviour exactly, so the first move on a behavioural divergence is
 never to reason about the Zig -- it is to make the C say what it does.
 
-Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
+Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable.
 
 ## What This Page Does Not Cover
 
@@ -28,9 +28,11 @@ Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
 | --- | --- | --- |
 | wrong value, right shape | the corpus (`zig build test`), with a value assertion | every sanitizer |
 | wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
-| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access |
+| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- the tree currently has none** |
 | heap overflow / use-after-free in retained C | `zig build both_asan` then `zig build test_asan` | the corpus, the parity lanes |
-| malformed untrusted input (`.p47`, state files) | `zig build pgm_load_fuzz` | the corpus, which only round-trips valid files |
+| **one C47 block overrunning its neighbour inside `ram`** | **nothing in this tree today** -- see *Why ASan Cannot See The Calculator's Memory* below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner, not by any lane | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic |
+| malformed `.p47` program file | `zig build pgm_load_fuzz` | the corpus, which only round-trips valid files |
+| malformed `.sav` / `.d47` state file | **nothing in this tree today** -- `saveload_parity` and `saveload_golden` round-trip valid files only | every lane; the bounds `31fb6f755` added to the restore path are unproven |
 | ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
 | the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
 | the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` | every runtime lane on ELF, where the overrun lands in padding |
@@ -58,6 +60,52 @@ padding and no lane anywhere can see them. COFF gives every export its own
 `.bss$name` COMDAT and reorders them, so the same store lands on a live object.
 When one target fails alone, the question is not what that target does
 differently -- it is which latent write the other targets are absorbing.
+
+## Why ASan Cannot See The Calculator's Memory
+
+`zig build test_asan` is the tree's strongest detector and it is blind to almost
+every object the calculator owns. This is a property of the memory model, not a
+gap in the lane, and it is the first thing to know before trusting a green ASan
+run as evidence of memory correctness.
+
+Registers, named variables, programs, formulae, menus and the GMP heap do not
+come from `malloc`. They come from `ram` -- one pointer (`src/c47/c47.c`) to a
+single block of `RAM_SIZE_IN_BLOCKS` 4-byte blocks, 65534 of them on new
+hardware and the host, carved up by the C47 block allocator in
+`../zig_src/shell/free_list.zig` (`freeListAlloc` / `freeListRealloc` /
+`freeListFree`) and addressed by 16-bit block index, with 65535 reserved as the
+`C47_NULL` pointer.
+
+ASan instruments allocator calls and shadows the redzones around them. It sees
+`ram` as **one** ~256 KiB allocation. A register block that writes past its own
+size into the next block's bytes is, to ASan, a write well inside a live
+allocation -- exactly the picture a correct program presents. The detector only
+fires when a write leaves the whole pool, which is the rarest form of the bug and
+the one a wrong block index is least likely to produce.
+
+Zig's own safety checks do not cover it either. Blocks are reached through
+`[*c]` pointer arithmetic off `ram`, and a many-item pointer carries no length,
+so there is no bound for a checked access to test. Between the two detectors the
+calculator's principal data structure has no spatial checking at all, in any
+build mode.
+
+Two consequences for debugging:
+
+- A green `test_asan` proves the retained C's use of the **libc** heap is clean.
+  It proves nothing about the register store. Do not cite it as evidence that a
+  block-allocator change is safe.
+- The available detector for this class is the differential: run the same input
+  through upstream C and through z47 and compare the resulting state, which is
+  what `saveload_parity` and the owner parity lanes do. A corrupted neighbour
+  block shows up as a wrong value, not as a crash -- so it is a *wrong value,
+  right shape* bug, and belongs to the first row of the table above.
+
+The standard remedy is ASan's manual-poisoning API for custom allocators
+(`__asan_poison_memory_region` on the pool at startup, unpoison exactly the
+handed-out extent in `freeListAlloc`, re-poison in `freeListFree`), which turns
+the single allocation into per-block redzones on the sanitized lane only. It is
+not implemented; it is scoped in
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 
 ## The C-vs-Zig Differential
 
