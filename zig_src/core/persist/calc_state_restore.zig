@@ -795,20 +795,39 @@ fn restoreProgramsSection(load_mode: u16) void {
     // a mode that matches neither LM_ALL nor LM_PROGRAMS. The readLine() calls still
     // run, so the parser stays aligned with the stream, and program memory keeps
     // what it already had.
-    const programsLoadMode: u16 = if (numberOfBlocks == 0) LM_SYSTEM_STATE else load_mode;
+    // A LM_PROGRAMS load APPENDS, so upstream saveRestoreCalcState.c:2080 resizes
+    // to `oldSizeInBlocks + numberOfBlocks` through a uint16_t parameter
+    // (memory.c:158): C promotes to int and truncates on the way back in. Both
+    // operands can be large -- numberOfBlocks is toUint16 of a line the file
+    // supplies, and oldSizeInBlocks reaches RAM_SIZE_IN_BLOCKS (65534) -- so a
+    // crafted count pushes the sum past 65535 and program memory ends up sized by
+    // the truncated total while the block loop below still writes numberOfBlocks
+    // blocks, straight past the end of the pool. That is an out-of-bounds WRITE,
+    // and state_load_fuzz reaches it: count_programs_65535.sav under LM_PROGRAMS
+    // segfaulted before this guard.
+    //
+    // Upstream's own comment on that loop states the invariant it relies on --
+    // "this loop writes into memory resizeProgramMemory() sized from the same
+    // count" -- so refusing a section whose sum cannot hold restores that
+    // invariant rather than inventing a new rule, in the spirit of 31fb6f755.
+    // Neutralise it exactly as a zero count is neutralised above: a mode matching
+    // neither LM_ALL nor LM_PROGRAMS leaves program memory untouched while the
+    // readLine() calls keep the parser aligned with the stream.
+    const appendedBlocks: u32 = @as(u32, oldSizeInBlocks) + numberOfBlocks;
+    const programsLoadMode: u16 = if (numberOfBlocks == 0 or
+        (load_mode == LM_PROGRAMS and appendedBlocks > std.math.maxInt(u16)))
+        LM_SYSTEM_STATE
+    else
+        load_mode;
     if (programsLoadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
     } else if (programsLoadMode == LM_PROGRAMS) {
-        // @truncate, not @intCast. Upstream saveRestoreCalcState.c:2080 is
-        // `resizeProgramMemory(oldSizeInBlocks + numberOfBlocks)` with both
-        // operands uint16_t and the parameter uint16_t (memory.c:158), so C
-        // promotes to int and the implicit conversion back to the parameter
-        // TRUNCATES -- defined behaviour. numberOfBlocks is toUint16 of a line the
-        // state file supplies and oldSizeInBlocks reaches RAM_SIZE_IN_BLOCKS, so
-        // the sum passes 65535 on a crafted file: @intCast made that illegal
-        // behaviour where upstream is defined, trapping on a safe build and, since
-        // the load path raises runtime safety, on the device too.
-        resizeProgramMemory(@truncate(@as(u32, oldSizeInBlocks) + numberOfBlocks));
+        // No cast at all, where upstream needs one and the port used to @truncate:
+        // the guard above refused every sum that does not fit, so this u16 addition
+        // provably cannot overflow. Zig's checked add stays as the backstop if that
+        // guard is ever weakened, and the narrowing simply stops existing rather
+        // than being argued about.
+        resizeProgramMemory(oldSizeInBlocks + numberOfBlocks);
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
     }
 
@@ -883,7 +902,17 @@ fn restoreProgramsSection(load_mode: u16) void {
     }
 
     const progWords: [*c]u32 = @ptrCast(@alignCast(beginOfProgramMemory));
-    var i: i16 = 0;
+    // i32, where upstream's loop counter is the enclosing function's `int16_t i`
+    // (saveRestoreCalcState.c:1602). numberOfBlocks is a uint16_t and program
+    // memory legitimately reaches RAM_SIZE_IN_BLOCKS (65534), so an int16_t
+    // counter cannot express the loop's own bound: past 32767 upstream's `i++`
+    // overflows and the comparison against a uint16_t never comes true, leaving a
+    // state file with a large program area spinning forever. This is not
+    // malformed-input hardening -- a file a real calculator SAVED can carry such
+    // a count. Widening terminates the loop after exactly numberOfBlocks
+    // iterations, which is what every line of the body already assumes; for the
+    // counts upstream can actually finish, the two are identical.
+    var i: i32 = 0;
     while (i < numberOfBlocks) : (i += 1) {
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
         if (programsLoadMode == LM_ALL) {

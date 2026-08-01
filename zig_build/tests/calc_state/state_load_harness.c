@@ -11,7 +11,15 @@
 // to calc_state_restore.zig -- 137 lines of them -- had no adversarial coverage
 // at all, and the matrix-dimension guard that M-SAFE-1 ported had none either.
 //
-// Usage:  state_load <file.sav>
+// Usage:  state_load <file.sav> [loadMode]
+//
+// loadMode defaults to LM_ALL. It is a parameter because the restore path
+// BRANCHES on it: restoreProgramsSection has a whole LM_PROGRAMS arm, and
+// restoreOneSection's local-register guard reads
+// `load_mode == LM_ALL or load_mode == LM_REGISTERS`, so its skip-the-matrix-data
+// else-arm is unreachable while only LM_ALL is ever driven. Measuring branch
+// coverage of the 31fb6f755 guard commit showed 19 of 30 arms reached with
+// LM_ALL alone; the modes the runner sweeps cover the mode-dependent rest.
 // Exit:   0 = the restore path returned. A malformed file that is REFUSED exits
 //             0 as well, and that is the point: refusing is correct behaviour,
 //             so the pass condition is "returned without dying", exactly as the
@@ -53,6 +61,19 @@ extern uint32_t z47_calc_state_get_loaded_version(void);
 #define LM_ALL 0
 #define STATE_FILE "c47.sav"
 
+// defines.h is not visible here, so mirror the load modes the runner sweeps.
+// A mode outside the known set is passed through unchanged: feeding the restore
+// path a mode it does not recognise is itself worth not crashing on.
+static uint16_t parseLoadMode(const char *s) {
+  char *end = NULL;
+  unsigned long v = strtoul(s, &end, 10);
+  if(end == s || *end != 0 || v > 0xFFFF) {
+    fprintf(stderr, "FAIL: bad load mode '%s'\n", s);
+    exit(1);
+  }
+  return (uint16_t)v;
+}
+
 static int copyFile(const char *from, const char *to) {
   FILE *in = fopen(from, "rb");
   if(in == NULL) {
@@ -84,10 +105,11 @@ int main(int argc, char **argv) {
   setvbuf(stdout, NULL, _IONBF, 0); // flush progress before any crash
 
   if(argc < 2) {
-    fprintf(stderr, "usage: state_load <file.sav>\n");
+    fprintf(stderr, "usage: state_load <file.sav> [loadMode]\n");
     return 1;
   }
   const char *state_path = argv[1];
+  const uint16_t loadMode = (argc >= 3) ? parseLoadMode(argv[2]) : LM_ALL;
 
   // Startup init, matching the sim/testSuite and the sibling pgm_run harness:
   // install the GMP allocators, reset, load the configuration defaults fnReset
@@ -103,8 +125,8 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  printf("LOAD %s\n", state_path);
-  fnLoad(LM_ALL);
+  printf("LOAD %s (mode %u)\n", state_path, (unsigned)loadMode);
+  fnLoad(loadMode);
 
   // Reaching here means the restore path returned. Whether it accepted or
   // refused the file is not the assertion -- refusing a malformed file is the

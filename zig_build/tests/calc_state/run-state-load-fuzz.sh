@@ -40,50 +40,88 @@ export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1"
 
 total=0
 fail=0
+# The restore path branches on the load mode, so sweeping only LM_ALL leaves a
+# third of the 31fb6f755 guard commit's arms unreachable no matter how broad the
+# corpus gets -- restoreProgramsSection's LM_PROGRAMS arm and restoreOneSection's
+# skip-the-matrix-data else-arm are both mode-gated. Measured: LM_ALL alone
+# reached 19 of 30 added arms.
+#   0 = LM_ALL   1 = LM_PROGRAMS   2 = LM_REGISTERS   5 = LM_SYSTEM_STATE
+LOAD_MODES="0 1 2 5"
+
 for f in "$corpus"/*.sav; do
+ for mode in $LOAD_MODES; do
   total=$((total + 1))
-  out="$(timeout 60 "$harness" "$f" 2>&1)"
+  label="$f (mode $mode)"
+  out="$(timeout 60 "$harness" "$f" "$mode" 2>&1)"
   rc=$?
+
+  # Read the expectation up front: it decides whether a REFUSAL is acceptable for
+  # this file, so the exit-code dispatch below needs it too, not just the
+  # accepted-with-the-wrong-version check at the end. "any" (or no entry) means
+  # the corpus asserts nothing about the outcome, only that it stayed safe.
+  # ...but only in LM_ALL. expectations.txt records the version a file resolves
+  # to on a FULL restore; a partial mode legitimately leaves loadedVersion
+  # elsewhere, so asserting the same value across modes would encode noise.
+  want=""
+  if [ "$mode" = "0" ] && [ -f "$corpus/expectations.txt" ]; then
+    want="$(awk -v n="$(basename "$f")" '$1 == n { print $2 }' "$corpus/expectations.txt")"
+  fi
+
   if printf '%s' "$out" | grep -qE "ERROR: AddressSanitizer|SUMMARY: AddressSanitizer|runtime error:"; then
-    echo "FAIL (the sanitizer caught a bug): $f"
+    echo "FAIL (the sanitizer caught a bug): $label"
     printf '%s\n' "$out" | grep -E "AddressSanitizer|runtime error:|#[0-9]+ 0x" | head -6
     fail=$((fail + 1))
   elif printf '%s' "$out" | grep -qE "^thread [0-9]+ panic:"; then
-    echo "FAIL (Zig safety check tripped on malformed input): $f"
+    echo "FAIL (Zig safety check tripped on malformed input): $label"
     printf '%s\n' "$out" | grep -E "panic:|\.zig:[0-9]+" | head -6
     fail=$((fail + 1))
   elif [ "$rc" -eq 86 ]; then
-    echo "FAIL (sanitizer exitcode): $f"
+    echo "FAIL (sanitizer exitcode): $label"
     fail=$((fail + 1))
   elif [ "$rc" -eq 124 ]; then
-    echo "FAIL (hang / infinite loop on malformed input): $f"
+    echo "FAIL (hang / infinite loop on malformed input): $label"
     fail=$((fail + 1))
-  elif [ "$rc" -gt 128 ]; then
-    echo "FAIL (killed by signal $((rc - 128))): $f"
+  elif [ "$rc" -eq 253 ] && printf '%s' "$out" | grep -q "OUT OF MEMORY"; then
+    # exit(-3) -> 253, from resizeProgramMemory's out-of-memory path. That exit
+    # is upstream's own (memory.c: `exit(-3)` on the !DMCP_BUILD side, where the
+    # device instead does backToSystem), mirrored faithfully in
+    # memory_runtime.zig, so it is a CONTROLLED refusal of an impossible
+    # allocation and not memory unsafety. A forged program count is precisely
+    # the input that reaches it. The banner is required as well as the code so a
+    # different exit(-3) cannot pass as this one.
+    #
+    # But a file the corpus expects to LOAD must not reach it: refusing is only
+    # correct for input that deserves refusal.
+    if [ -n "$want" ] && [ "$want" != "any" ]; then
+      echo "FAIL (refused with OUT OF MEMORY, but expected it to load): $label"
+      fail=$((fail + 1))
+    fi
+  elif [ "$rc" -ge 129 ] && [ "$rc" -le 192 ]; then
+    # Only this range is a signal death (128+signum). Codes above it are ordinary
+    # exit statuses -- reporting 253 as "signal 125" sent an earlier run of this
+    # lane chasing a crash that was a plain exit().
+    echo "FAIL (killed by signal $((rc - 128))): $label"
     fail=$((fail + 1))
   elif [ "$rc" -ne 0 ]; then
-    echo "FAIL (harness error, exit $rc): $f"
+    echo "FAIL (harness error, exit $rc): $label"
     printf '%s\n' "$out" | tail -3
     fail=$((fail + 1))
-  elif [ -f "$corpus/expectations.txt" ]; then
+  elif [ -n "$want" ] && [ "$want" != "any" ]; then
     # The restore path returned. Now check it returned the RIGHT thing, where the
     # corpus states one. Crash-detection alone cannot see a defect that makes the
     # parser silently ACCEPT what it should refuse -- the version forgery is
     # exactly that, and it never crashes.
-    base="$(basename "$f")"
-    want="$(awk -v n="$base" '$1 == n { print $2 }' "$corpus/expectations.txt")"
-    if [ -n "$want" ] && [ "$want" != "any" ]; then
-      got="$(printf '%s' "$out" | sed -n 's/.*loadedVersion=\([0-9]*\).*/\1/p' | tail -1)"
-      if [ -z "$got" ]; then
-        echo "FAIL (no loadedVersion in harness output): $f"
-        fail=$((fail + 1))
-      elif [ "$got" != "$want" ]; then
-        echo "FAIL (wrong outcome): $f -- loadedVersion=$got, expected $want"
-        fail=$((fail + 1))
-      fi
+    got="$(printf '%s' "$out" | sed -n 's/.*loadedVersion=\([0-9]*\).*/\1/p' | tail -1)"
+    if [ -z "$got" ]; then
+      echo "FAIL (no loadedVersion in harness output): $label"
+      fail=$((fail + 1))
+    elif [ "$got" != "$want" ]; then
+      echo "FAIL (wrong outcome): $label -- loadedVersion=$got, expected $want"
+      fail=$((fail + 1))
     fi
   fi
   # rc 0 with a matching (or absent) expectation => PASS, no output.
+ done
 done
 
 # The harness copies each corpus file over c47.sav to reach the restore path, so
@@ -97,8 +135,8 @@ if [ "$total" -eq 0 ]; then
 fi
 
 if [ "$fail" -ne 0 ]; then
-  echo "M-SAFE-7 state_load_fuzz: $fail of $total malformed state files FAILED."
+  echo "M-SAFE-7 state_load_fuzz: $fail of $total malformed state file x load-mode runs FAILED."
   exit 1
 fi
 
-echo "M-SAFE-7 state_load_fuzz: $total malformed state files handled with no crash / hang / safety panic."
+echo "M-SAFE-7 state_load_fuzz: $total malformed state file x load-mode runs handled with no crash / hang / safety panic."
