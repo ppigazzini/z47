@@ -256,10 +256,19 @@ rather than closed.
    `calc_state_runtime.zig` kept wrapping for three weeks. Nothing can see this
    today: the parity oracles compare each owner against upstream C, so two owners
    that differ from each other look fine, and the ratchets count shapes rather
-   than semantics. A twin-divergence report -- pair same-named functions across
-   the two families, normalise, diff, and rank by how SMALL the difference is,
-   since a one-operator drift between twins is the suspicious case -- is the
-   cheapest thing that would have caught both.
+   than semantics. `report-twin-divergence.py` now ranks the drifted pairs: it
+   pairs same-named functions across the two families, canonicalises each
+   family's own name (without that the seam pairs score ~0.86 and crowd out the
+   real defect -- measured, the parseU32LineZ bug ranked seventh of eight), and
+   sorts by similarity descending, since a one-operator drift is the suspicious
+   case and a wholesale rewrite is just two functions sharing a name. Report
+   only, not a gate, until the false-positive rate is known.
+
+   **Detecting drift is second-best. The better move is to leave nothing to
+   drift:** the line-parse helpers now exist ONCE, in `../zig_src/abi/line_parse.zig`,
+   and both families call it. A shared module cannot diverge from itself. Prefer
+   that wherever the two families genuinely do the same thing; keep the scan for
+   where they legitimately differ.
 7. **`strtol` / `strtoul` results are platform-width, so upstream's own behaviour
    differs between host and firmware.** `sizeof(unsigned long)` is 8 on the LP64
    host and 4 on the arm-none-eabi firmware (measured), so `strtoul` saturates at

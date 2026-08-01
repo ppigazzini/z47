@@ -580,6 +580,11 @@ pub const block_math = @import("block_math.zig");
 // file -- `std.builtin` reads `root.panic` and ignores it anywhere else.
 pub const trap_panic = @import("trap_panic.zig");
 
+// Shared std-only header-line match / integer parse, used by BOTH file families
+// (`core/persist` and `core/program`). Reachable as `abi.line_parse.*`. One
+// implementation on purpose: the per-family copies it replaced drifted apart.
+pub const line_parse = @import("line_parse.zig");
+
 // Shared std-only WP34S short-integer *mode* arithmetic (value/overflow decisions
 // under unsigned / 1's- / 2's-complement / sign-magnitude). Reachable as
 // `abi.shortint_arith.*`; frontier_integers delegates its WP34S_int* cores here.
