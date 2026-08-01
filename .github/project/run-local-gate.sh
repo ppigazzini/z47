@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 #
-# One-command local reproduction of the full Linux CI verdict, for use BEFORE
-# pushing a change (especially an upstream resync). Runs the same governance-check
-# scripts CI runs as separate jobs, then the host-parity build/test/oracle battery
-# (run-host-parity-battery.sh, identical to the CI step), then the tracked
+# One-command local reproduction of the Linux CI lanes that can run on Linux, for
+# use BEFORE pushing a change (especially an upstream resync). Runs the same
+# governance-check scripts CI runs as separate jobs, then the host-parity
+# build/test/oracle battery (run-host-parity-battery.sh, identical to the CI
+# step), then the firmware link for every DMCP package variant, then the tracked
 # generated-artifact diff. Fails fast on the first red.
+#
+# It is NOT the whole CI verdict, and the closing banner says so: the Windows and
+# macOS host lanes cannot run here, and CI additionally packages and publishes the
+# firmware artifacts. Do not read a green run as more than it claims.
 #
 # This is the gate the first all-Zig resync (0caee2adc) needed: three of its four
 # host-parity failures — an oracle that stopped compiling, a stale generated
@@ -80,9 +85,18 @@ step "[9/11] portable integer widths (Windows LLP64 trap)"
 bash .github/project/check-portable-int-widths.sh
 step "[10/11] host-parity build/test/oracle battery"
 bash .github/project/run-host-parity-battery.sh
+step "[10b/11] firmware link for every DMCP package variant"
+# NOT redundant with `zig build dmcp` / `dmcp5`, and not optional. The OLD_HW
+# package-3 layout asserts `_ebss <= 0x10002000` and sits EXACTLY on it, so a few
+# bytes of static data anywhere in a firmware-linked owner fails the link -- and
+# only in a package variant. When that happened (one @setRuntimeSafety(true) in
+# shell/config.zig), every other lane here was green, as were dmcp and dmcp5.
+# ~16 s cached, against a gate that already runs a 12835-case testSuite.
+zig build dmcp_pkgs_all --summary none
+
 step "[11/11] tracked generated artifacts unchanged"
 mapfile -t generated_artifacts < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
 git diff --exit-code -- "${generated_artifacts[@]}"
 
-printf '\n\033[1;32mLOCAL GATE PASSED\033[0m — mirrors the Linux CI verdict.\n'
-printf 'Note: the Windows (LLP64) and macOS lanes still only run in CI.\n'
+printf '\n\033[1;32mLOCAL GATE PASSED\033[0m — the Linux governance, host-parity and firmware-link lanes.\n'
+printf 'Still CI-only: the Windows (LLP64) and macOS host lanes, and firmware PACKAGING/artifact publication.\n'

@@ -52,8 +52,46 @@ def classify_layer(rel: str, text: str) -> tuple[str, str | None]:
         return "core", f"{rel}: has '{SEAM_MARKER}' marker but is not under a generated/ path"
     return "core", None
 
+def strip_comments(text: str) -> str:
+    """Blank out `//` line comments, preserving line structure.
+
+    The patterns below are bare regexes over file text, so before this a file
+    that merely DISCUSSED a transliteration token was counted as carrying it: a
+    doc comment containing the literal many-item-C-pointer spelling pushed
+    `cptr_files` over its ceiling and failed the gate on prose. A comment is not
+    debt.
+
+    Only the comment body is removed, and only where `//` is really a comment --
+    both string and character literals are tracked, since Zig code legitimately
+    contains "http://" and '/'. Everything else is left byte-for-byte, so a
+    token in real code still counts exactly as it did.
+    """
+    out = []
+    for line in text.split("\n"):
+        in_str = in_chr = esc = False
+        cut = len(line)
+        i = 0
+        while i < len(line):
+            c = line[i]
+            if esc:
+                esc = False
+            elif c == "\\" and (in_str or in_chr):
+                esc = True
+            elif c == '"' and not in_chr:
+                in_str = not in_str
+            elif c == "'" and not in_str:
+                in_chr = not in_chr
+            elif c == "/" and not in_str and not in_chr and line[i : i + 2] == "//":
+                cut = i
+                break
+            i += 1
+        out.append(line[:cut])
+    return "\n".join(out)
+
+
 # (label, compiled regex, count_mode) -- count_mode "file" counts matching files,
-# "site" counts total matches.
+# "site" counts total matches. Applied to the COMMENT-STRIPPED text; see
+# strip_comments above for why.
 PATTERNS = [
     ("extern_struct_files", re.compile(r"extern struct"), "file"),
     ("cptr_files", re.compile(r"\[\*c\]"), "file"),
@@ -90,13 +128,16 @@ def scan(repo_root: Path) -> dict:
     for path in files:
         rel = path.relative_to(repo_root).as_posix()
         text = path.read_text(encoding="utf-8", errors="ignore")
+        # classify_layer looks for the SEAM marker, which IS a comment, so it must
+        # see the original text; only the debt patterns run on the stripped copy.
         layer, violation = classify_layer(rel, text)
+        code = strip_comments(text)
         if violation:
             violations.append(violation)
         bucket = seam_totals if layer == "seam" else totals
         row = {}
         for label, rx, mode in PATTERNS:
-            matches = rx.findall(text)
+            matches = rx.findall(code)
             n = (1 if matches else 0) if mode == "file" else len(matches)
             row[label] = n
             bucket[label] += n
