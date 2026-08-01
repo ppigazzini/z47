@@ -20,7 +20,17 @@ cd "$repo_root"
 
 if [[ "${1:-}" == "--bump" ]]; then
     python3 .github/project/report-idiom-status.py --repo-root . --write-baseline
+    python3 .github/project/report-narrowing-status.py --write-baseline
     exit 0
 fi
 
 python3 .github/project/report-idiom-status.py --repo-root . --check
+
+# M-SAFE-3: the integer-narrowing ceiling on the untrusted-file load path. Kept a
+# separate analysis rather than a metric of the reporter above, because it is
+# function-scoped -- it counts only casts inside functions that raise runtime
+# safety, i.e. the ones whose operand can come from a file z47 did not write --
+# where the idiom reporter is a per-file regex sweep. Ridden on this step so the
+# existing gate and the idiom-ratchet-guard CI job both cover it without adding a
+# numbered step.
+python3 .github/project/report-narrowing-status.py --check

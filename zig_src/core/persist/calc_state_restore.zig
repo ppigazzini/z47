@@ -407,6 +407,19 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                     (load_mode == LM_REGISTERS and regist < REGISTER_X) or
                     (load_mode == LM_REGISTERS_PARTIAL and regist >= @as(i32, s) and regist < @as(i32, s) + @as(i32, n))))
             {
+                // @intCast is correct here and must NOT become @truncate, even
+                // though upstream saveRestoreCalcState.c:1635 narrows implicitly
+                // into restoreRegister's int16_t parameter. The value provably
+                // fits: the guard above bounds `regist` to [0, LAST_GLOBAL_REGISTER],
+                // and `s`/`n`/`d` reach here only from fnRegCopy via getRegParam
+                // (registers.c), which refuses anything with |x| >= 1000 and range-
+                // checks the start against REGISTER_X / FIRST_LOCAL_REGISTER. So
+                // the sum stays inside a few thousand and the cast cannot trap.
+                //
+                // Keeping the cast checked also pays for itself: writing @truncate
+                // here discards the range LLVM was using downstream and cost 320
+                // bytes of DMCP flash, measured. A narrowing that is provably in
+                // range says something true about the code -- spell it @intCast.
                 const target: i16 = if (load_mode == LM_REGISTERS_PARTIAL) @intCast(@as(i32, regist) - @as(i32, s) + @as(i32, d)) else regist;
                 codec.restoreRegister(target, aimBuffer, tmpString, loaded_version);
                 codec.restoreMatrixData(target);
@@ -684,7 +697,15 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
         const formulae = text.toUint16(tmpString);
         if (formulae > 0 and (load_mode == LM_ALL or load_mode == LM_PROGRAMS)) {
-            i = @intCast(numberOfFormulae);
+            // @bitCast, not @intCast: upstream saveRestoreCalcState.c:2216 is
+            // `for(i = numberOfFormulae; i > 0; --i)` with `int16_t i` (:1602) and
+            // `uint16_t numberOfFormulae`, so C narrows implicitly and the two
+            // 16-bit types reinterpret rather than trap. Upstream is aware of the
+            // width -- its comment at :2236 uses a wider `uint32_t f` for the
+            // FORWARD loop for exactly this reason -- but left this one narrow, so
+            // matching it is the parity-correct port. Latent rather than
+            // reachable: a count above 32767 needs an allocation the pool refuses.
+            i = @bitCast(numberOfFormulae);
             while (i > 0) : (i -= 1) {
                 deleteEquation(@intCast(i - 1));
             }
@@ -778,7 +799,16 @@ fn restoreProgramsSection(load_mode: u16) void {
     if (programsLoadMode == LM_ALL) {
         resizeProgramMemory(numberOfBlocks);
     } else if (programsLoadMode == LM_PROGRAMS) {
-        resizeProgramMemory(@intCast(@as(u32, oldSizeInBlocks) + numberOfBlocks));
+        // @truncate, not @intCast. Upstream saveRestoreCalcState.c:2080 is
+        // `resizeProgramMemory(oldSizeInBlocks + numberOfBlocks)` with both
+        // operands uint16_t and the parameter uint16_t (memory.c:158), so C
+        // promotes to int and the implicit conversion back to the parameter
+        // TRUNCATES -- defined behaviour. numberOfBlocks is toUint16 of a line the
+        // state file supplies and oldSizeInBlocks reaches RAM_SIZE_IN_BLOCKS, so
+        // the sum passes 65535 on a crafted file: @intCast made that illegal
+        // behaviour where upstream is defined, trapping on a safe build and, since
+        // the load path raises runtime safety, on the device too.
+        resizeProgramMemory(@truncate(@as(u32, oldSizeInBlocks) + numberOfBlocks));
         oldFirstFreeProgramByte = beginOfProgramMemory + TO_BYTES(oldSizeInBlocks) - oldFreeProgramBytes - 2;
     }
 
@@ -833,7 +863,9 @@ fn restoreProgramsSection(load_mode: u16) void {
         if (!at_end) {
             if (oldFreeProgramBytes + freeProgramBytes < 2) {
                 const tmpFreeProgramBytes = freeProgramBytes;
-                resizeProgramMemory(@intCast(@as(u32, oldSizeInBlocks) + numberOfBlocks + 1));
+                // Same narrowing as the LM_PROGRAMS resize above; upstream
+                // saveRestoreCalcState.c:2138.
+                resizeProgramMemory(@truncate(@as(u32, oldSizeInBlocks) + numberOfBlocks + 1));
                 oldFirstFreeProgramByte -= 4;
                 freeProgramBytes = tmpFreeProgramBytes + 4;
                 if (programList[@intCast(@as(i32, currentProgramNumber) - 1)].step > 0) {
