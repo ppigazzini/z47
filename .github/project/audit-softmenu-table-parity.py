@@ -17,6 +17,15 @@ GUI headers are never needed. The six catalogs that come from the generated
 softmenuCatalogs.h (menu_FCNS and friends) need that header; if no build output
 is present they are reported as SKIPPED, never silently dropped.
 
+WHICH generated header is not a detail. It is read from src/generated/ of the
+imported tree, where `zig build generated` -- the last step of the host-parity
+battery -- puts the one the current build produced. The .zig-cache fallback exists
+for a tree that built without running `generated`, and it refuses when the cached
+copies disagree rather than taking whichever one `glob` yields first: CI restores a
+build cache across runs, and picking arbitrarily once compared the Zig owner
+against a header generated before the menu_FCNS ITM_SLVP fix and reported a
+360-entry drift that did not exist.
+
 SKIPPED is not enough on its own. It prints, but the verdict line still says OK,
 and that is how menu_FCNS carried a 364-entry drift -- a missing ITM_SLVP -- right
 through the commit that re-ported the other 17 tables: the only CI lane running
@@ -197,12 +206,41 @@ def digest(c_values: list[int], zig_values: list[int]) -> str:
 
 
 def find_catalogs_dir(repo: Path) -> Path | None:
+    """Where to read the generated softmenuCatalogs.h -- and version.h and
+    constantPointers.h -- from.
+
+    `zig build generated` is the last step of run-host-parity-battery.sh, which CI
+    runs immediately before this audit, and it copies the header the CURRENT build
+    produced into src/generated/ of the imported tree. Read that, and nothing else,
+    when it is there: it is one coherent set, written by one build.
+
+    The .zig-cache fallback is for a tree that has built something but not run
+    `generated`. It must not pick arbitrarily. CI restores a build cache ACROSS
+    RUNS, so `o/*/softmenuCatalogs.h` can hold copies from several commits, and
+    `glob` order is whatever the filesystem hands back -- which is how this audit
+    compared the Zig owner against a header generated BEFORE the menu_FCNS ITM_SLVP
+    fix and reported a 360-entry drift that did not exist, on a tree where the same
+    command passed locally. Copies that disagree mean the audit cannot know which
+    build it is judging, so it refuses instead of guessing.
+    """
+    generated = upstream_path(repo, "src/generated")
+    if (generated / "softmenuCatalogs.h").is_file():
+        return generated
+
     cache = repo / ".zig-cache"
     if not cache.is_dir():
         return None
-    for header in cache.glob("o/*/softmenuCatalogs.h"):
-        return header.parent
-    return None
+    candidates = sorted(cache.glob("o/*/softmenuCatalogs.h"))
+    if not candidates:
+        return None
+    distinct = {hashlib.sha256(path.read_bytes()).hexdigest() for path in candidates}
+    if len(distinct) > 1:
+        raise SystemExit2(
+            f"{len(candidates)} cached softmenuCatalogs.h copies with {len(distinct)} "
+            f"distinct contents, and no {generated.name}/softmenuCatalogs.h to say which "
+            f"build is current -- run `zig build generated` first"
+        )
+    return candidates[0].parent
 
 
 def main() -> int:
