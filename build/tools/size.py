@@ -1,15 +1,17 @@
 import sys
 
+
 def usage():
-    print("Usage: %s [dmcp5] elf-symbol-filename" % sys.argv[0])
+    print(f"Usage: {sys.argv[0]} [dmcp5] elf-symbol-filename")
     sys.exit(1)
+
 
 # Check command line
 n = len(sys.argv)
 if n == 2:
     dmcp5 = False
 elif n == 3:
-    if sys.argv[1] != 'dmcp5':
+    if sys.argv[1] != "dmcp5":
         usage()
     dmcp5 = True
 else:
@@ -18,16 +20,17 @@ infile = sys.argv[-1]
 
 # Initialise
 mem = {
-    "flash" : 1024 * (1408 if dmcp5 else 704),
-    "ram"   : 1024 * (16 if dmcp5 else 16),
-    "qspi"  : 1024 * (2048 if dmcp5 else 2048 - 12)
+    "flash": 1024 * (1408 if dmcp5 else 704),
+    # Both boards carry 16 KiB; upstream still writes it as a conditional.
+    "ram": 1024 * 16,
+    "qspi": 1024 * (2048 if dmcp5 else 2048 - 12),
 }
 mode = 0
-sects = [ 0, 0, 0, 0, 0 ]
+sects = []
 sizes = []
 
 # Read elf sections file
-f = open(infile, "r")
+f = open(infile)  # noqa: SIM115 -- parser reads to EOF then the process exits
 for line in f:
     if line == "\n":
         mode = 0
@@ -39,23 +42,28 @@ for line in f:
         mode = 2
         continue
     f = line.split()
+    if not f:
+        continue
     if mode == 1:
         # Line is formatted as: "Type Offset VirtAddr PhysAddr FileSiz MemSiz Flg Align"
         # and we want the MemSiz.
-        if f[0] != 'Type':
+        if f[0] != "Type" and len(f) > 5:
             sizes.append(int(f[5], 0))
-    elif mode == 2:
-        # Line is formatted as: "Segment# Sections" and we want the first section.
-        sects[int(f[0])] = f[1]
+    # Line is formatted as: "Segment# Sections" and we want the first section. The
+    # field guards are z47's: upstream indexes f[0]/f[1] unconditionally and dies on
+    # the section tables this toolchain emits.
+    elif mode == 2 and len(f) > 1 and f[0].isdigit():
+        segment = int(f[0])
+        while len(sects) <= segment:
+            sects.append(0)
+        sects[segment] = f[1]
 
 # Compute section totals
-used = {
-    "flash" : 0,
-    "ram"   : 0,
-    "qspi"  : 0
-}
+used = {"flash": 0, "ram": 0, "qspi": 0}
 for i in range(len(sizes)):
-    if sects[i] == ".rodata" or sects[i] == ".text":
+    if i >= len(sects) or not sects[i]:
+        continue
+    elif sects[i] == ".rodata" or sects[i] == ".text":
         used["flash"] += sizes[i]
     elif sects[i] == ".data":
         # The initialisation for the data is in flash
@@ -70,11 +78,13 @@ for i in range(len(sizes)):
         print("Warning: Unknown section:", sects[i], "- ignoring.")
         continue
 
+
 # Display totals and free space
 def output(sect):
-    print("%-5s  %8d  %8d  %8d" % (sect, used[sect], mem[sect], mem[sect] - used[sect]))
+    print(f"{sect:<5}  {used[sect]:8d}  {mem[sect]:8d}  {mem[sect] - used[sect]:8d}")
 
-print("\n%-7s%8s  %8s  %8s" % ("section", "used", "total", "left"))
+
+print(f"\n{'section':<7}{'used':>8}  {'total':>8}  {'left':>8}")
 output("flash")
 output("ram")
 output("qspi")

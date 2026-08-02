@@ -1002,7 +1002,11 @@ fn addReadelfSectionSizesStep(b: *std.Build, input: std.Build.LazyPath, basename
 }
 
 fn addFirmwareSizeReportStep(b: *std.Build, board: Board, section_sizes: std.Build.LazyPath) *std.Build.Step.Run {
-    const cmd = b.addSystemCommand(&.{ "python3", build_common.upstreamPathString(b, "tools/size.py") });
+    // z47 owns this reporter. Upstream's copy indexes readelf fields without
+    // bounds checks and dies on the section tables this toolchain emits, and it is
+    // 88 lines of size printing -- not worth carrying a patch inside the vendored
+    // tree for, which is what it used to be.
+    const cmd = b.addSystemCommand(&.{ "python3", "build/tools/size.py" });
     cmd.setCwd(b.path("."));
     if (board == .dmcp5) cmd.addArg("dmcp5");
     cmd.addFileArg(section_sizes);
