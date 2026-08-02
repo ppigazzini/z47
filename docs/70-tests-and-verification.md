@@ -121,6 +121,40 @@ C as an oracle and asserts the Zig output matches it. These are the verification
 surface that lets the C be retired from the product while proving behavior. Run
 the lane for the owner you touched, for example:
 
+### The rule: an oracle must be compiled from c43 source
+
+**Every parity oracle must be, or be compiled from, unmodified c43 source.** The
+only question that matters about a parity reference is *when c43 changes, does this
+reference change with it?* — and a hand-transliterated oracle answers no. It does
+not merely fail to detect a divergence: it manufactures positive evidence that
+parity holds, because the lane whose purpose is catching the change is the reason
+nobody sees it. A missing test is visible in a coverage discussion; a passing one
+is not.
+
+Concretely, when writing or touching an oracle:
+
+- `#include` the c43 `.c` under `oracle_*` renames. Where the file sits next to
+  `src/c47/c47.h`, the harness header must claim upstream's own `C47_H` guard — a
+  quoted `#include "c47.h"` searches the including file's directory first and no
+  `-I` outranks that.
+- Do not hand-copy c43 constants into the harness header either; that is the same
+  defect one level down. Include c43's own `defines.h` / `items.h` /
+  `typeDefinitions.h`, or upstream's `c47.h` outright — it compiles against the
+  vendored `dep/decNumberICU` headers, the generated `src/generated`, and a handful
+  of placeholder GTK/glib typedefs.
+- Stubs in the harness are fine and expected. They are the *environment*, shared by
+  both implementations; what may not be hand-written is the *reference*.
+- A conversion is not verified until the lane has been **seen to fail**: patch a
+  behavioural change into the c43 file, confirm red, revert. A conversion that
+  cannot be shown to fail has been assumed, not verified.
+
+Any oracle that is still hand-written is listed in
+`.github/project/frozen-oracle-manifest.json` with the reason and the milestone
+that converts it, and `check-frozen-oracle-drift.py` (local gate and CI) fails when
+the c43 file it mirrors changes. That list is meant to reach zero, not to be
+maintained. `__DEV/reports/REPORT-31-C-ORACLE.md` has the full argument and the
+per-oracle state.
+
 - `zig build logical_shortint_parity`, `zig build rotate_bits_parity`,
   `zig build logical_boolean_ops_suite` (short-integer owners)
 - `zig build stack_state_parity`, `zig build register_metadata_parity`,

@@ -5,7 +5,7 @@
     {
       "oracle": "build/tests/register_metadata/register_metadata_oracle.c",
       "milestone": "REPORT-31 M31-4",
-      "why": "1060 lines, 43 oracle_* functions -- the largest frozen reference. Reimplements setRegisterDataType, so a widened register tag field changes registers.c, changes nothing here, and the lane agrees with an unported Zig owner.",
+      "why": "1060 lines, 43 oracle_* functions -- the largest frozen reference. Reimplements setRegisterDataType, so a widened register tag field changes registers.c, changes nothing here, and the lane agrees with an unported Zig owner. BLOCKED, not infeasible: registers.c compiles clean against upstream's own c47.h (4 placeholder GTK/glib typedefs + the generated constantPointers.h) and needs only ~85 one-line stubs -- but a compiled-from-c43 oracle uses c43's reserved-variable block, and z47 still uses the pre-SPARE model (FIRST_NAMED_RESERVED_VARIABLE 2026 vs c43's 2031). audit-constant-parity.py already reports and allowlists that deferral. Resolve it first, then convert; converting first yields either a permanently red lane or a doctored oracle.",
       "mirrors": {
         "src/c47/registers.c": "9b9ab3796e81c5ca99e5e0f9d84ee91c3daefb7ac504d6050ade19d3de739d6b"
       },
@@ -14,7 +14,7 @@
     {
       "oracle": "build/tests/calc_state/calc_state_oracle.c",
       "milestone": "REPORT-31 M31-5",
-      "why": "194 lines against saveRestoreCalcState.c's 2959 -- it mirrors save-file revision parsing and nothing else, while the lane is named for the whole subsystem.",
+      "why": "194 lines against saveRestoreCalcState.c's 2959 -- it mirrors save-file revision parsing and nothing else, while the lane is named for the whole subsystem. NEXT TO CONVERT (option A, unblocked): saveRestoreCalcState.c compiles clean against upstream's c47.h with 194 undefined symbols, all one-line stubs. It is also the only lane that could hold z47's .sav FORMAT to c43's -- M31-1 established that saveload_roundtrip's golden is a z47 self-portrait, so nothing detects c43 changing the save format today.",
       "mirrors": {
         "src/c47/saveRestoreCalcState.c": "4c0a0914f1c1ff1756449471c80a82171fd6768f7efea0d902dc1cabf46a3ad5"
       },
@@ -23,7 +23,7 @@
     {
       "oracle": "build/tests/keyboard_state/keyboard_state_oracle.c",
       "milestone": "REPORT-31 M31-6",
-      "why": "238 lines against keyboard.c's 4982 -- ~4% coverage under a subsystem-wide lane name. Hardest to convert and thinnest coverage, so deliberately last.",
+      "why": "238 lines against keyboard.c's 4982 -- ~4% coverage under a subsystem-wide lane name. NOT to be converted this way: keyboard.c is the one file the compile-from-c43 recipe fails on, because it reads GdkEvent fields and declares GdkEventButton by value, so it needs real gtk+-3.0 headers plus 305 stubs. M31-6 chose option C instead -- a differential through keyboard_entry_harness.c, which already drives btnClicked through a full core that links GTK. Delete this oracle as part of landing that differential, not before.",
       "mirrors": {
         "src/c47/keyboard.c": "44aff16b2408bd710ee03f44c90dfd4ac320822b971687075bdd4be737c4bd2b"
       },
