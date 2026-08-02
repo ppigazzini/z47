@@ -50,6 +50,12 @@ step "[4/11] upstream pin + port ledger"
 python3 .github/project/check-upstream-port-ledger.py --repo-root .
 step "[4b/11] upstream correspondence (symbol join owner coverage)"
 python3 .github/project/check-upstream-correspondence.py
+step "[4c/11] clamp correspondence (upstream guards inside owned functions)"
+# The symbol join above answers "which owner absorbs this .c" and is blind to
+# upstream adding a GUARD inside a function the Zig already has -- how the matrix
+# capacity clamp survived four resyncs (M-SAFE-1) and how the config-descriptor
+# version gate was missing until M-SAFE-8. Ratchets the load-path queue.
+python3 .github/project/report-clamp-correspondence.py --check
 step "[5/11] curated Zig/C boundaries"
 bash .github/project/check-zig-c-boundaries.sh
 step "[6/11] idiomatic-Zig ratchet"
