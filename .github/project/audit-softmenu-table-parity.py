@@ -274,14 +274,20 @@ def main() -> int:
     for name in missing:
         print(f"  ABSENT  {name}: in softmenus.c, no Zig literal")
 
+    clean_note = (
+        "Every menu_* table in softmenus.zig matches the pinned softmenus.c, and "
+        "softmenu[] carries the same descriptors in the same ranks. Keep it that "
+        "way: a resync that changes a menu must re-port the Zig table in the same "
+        "commit, or this fails."
+    )
+    drifted_note = (
+        "Known softmenu-table drift, frozen per menu by a digest of the (C, Zig) "
+        "value pairs. New drift, or a change to a listed one, fails; a menu that "
+        "becomes clean also fails, so the baseline is re-pinned rather than left "
+        "claiming a fixed menu is broken."
+    )
     current = {
-        "note": (
-            "Known softmenu-table drift, frozen per menu by a digest of the (C, Zig) "
-            "value pairs. These tables were dumped from the C at the M3.3 port and "
-            "never re-compared, so the drift predates the audit. New drift, or a "
-            "change to a listed one, fails; a menu that becomes clean also fails, so "
-            "the baseline is re-pinned rather than left claiming a fixed menu is broken."
-        ),
+        "note": clean_note if not drifted and not missing else drifted_note,
         "drifted": drifted,
         "absent": sorted(missing),
     }

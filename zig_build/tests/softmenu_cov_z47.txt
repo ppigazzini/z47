@@ -1,0 +1,74 @@
+;*******************************************************************************************************************************
+;** z47 overlay: every softmenu the STRUCT family reaches must resolve through the production fnOpenMenu path.                **
+;**                                                                                                                          **
+;** These six tables, and the softmenu[] descriptor for MNU_STRUCT, were absent from the Zig owner from the M3.3 port until   **
+;** they were re-ported: the descriptor at that rank still carried the MNU_2233 spare upstream had replaced, so the STRUCT    **
+;** softkey in menu_UnitConv opened nothing and its five submenus were unreachable. audit-softmenu-table-parity.py holds the  **
+;** table CONTENTS against upstream softmenus.c; this holds the thing a static audit cannot see, that the runtime resolves    **
+;** the id at all. X takes the item count fnOpenMenu resolved, or -1 when it refused the id.                                  **
+;**                                                                                                                          **
+;** Item counts, not item numbers: the numbers move as items are added, the shape of a softmenu page does not.                **
+;*******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; MNU_STRUCT (2849): the structural-conversion root, reached from the menu_UnitConv softkey that used to be blank
+Func: fnSoftmenuCov
+In:  FARG=2849 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
+
+; MNU_CONV_SECTION (2844)
+Func: fnSoftmenuCov
+In:  FARG=2844 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
+
+; MNU_CONV_MATERL (2845)
+Func: fnSoftmenuCov
+In:  FARG=2845 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
+
+; MNU_CONV_F_LOAD (2846)
+Func: fnSoftmenuCov
+In:  FARG=2846 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
+
+; MNU_CONV_M_LOAD (2847)
+Func: fnSoftmenuCov
+In:  FARG=2847 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
+
+; MNU_CONV_P_LOAD (2848)
+Func: fnSoftmenuCov
+In:  FARG=2848 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
+
+; The re-ported tables whose LENGTH changed, which is the half of the drift a same-length diff would have hidden.
+; MNU_42 (2738), 6 entries in the stale mirror, 24 upstream
+Func: fnSoftmenuCov
+In:  FARG=2738 RX=Real:"0"
+Out: EC=0 RX=Real:"24"
+
+; MNU_IO (1341), 18 in the stale mirror, 24 upstream
+Func: fnSoftmenuCov
+In:  FARG=1341 RX=Real:"0"
+Out: EC=0 RX=Real:"24"
+
+; MNU_2233 is the spare the stale descriptor still pointed at; it must refuse, or the old row is back
+Func: fnSoftmenuCov
+In:  FARG=2233 RX=Real:"0"
+Out: EC=0 RX=Real:"-1"
+
+; A menu id that has never existed refuses the same way, so the -1 above is the refusal path and not an artefact
+Func: fnSoftmenuCov
+In:  FARG=9998 RX=Real:"0"
+Out: EC=0 RX=Real:"-1"
+
+; Untouched neighbours, to show the descriptor ranks that shifted by five still resolve
+; MNU_TamLocalLabel (2859) is the last real row, immediately before the sentinel
+Func: fnSoftmenuCov
+In:  FARG=2859 RX=Real:"0"
+Out: EC=0 RX=Real:"6"
+
+; MNU_UnitConv (1369) carries the STRUCT softkey itself
+Func: fnSoftmenuCov
+In:  FARG=1369 RX=Real:"0"
+Out: EC=0 RX=Real:"18"
