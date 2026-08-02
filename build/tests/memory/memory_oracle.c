@@ -21,4 +21,4 @@ void oracle_freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks);
 #define free z47_memory_runtime_free_gmp_bytes
 #define xcopy z47_memory_runtime_copy_bytes
 
-#include "../../../src/c47/memory.c"
+#include "../../../upstream/src/c47/memory.c"

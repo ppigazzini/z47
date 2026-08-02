@@ -40,9 +40,28 @@ cur_zig_src_covered_lines=""
 # cov_bin empty instead so the skip path runs.
 cov_bin="$(find .zig-cache -name keyboardEntryCov -type f -executable \
   -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2 || true)"
+# The imported tree is mounted under UPSTREAM_ROOT, so `/src/` alone is ambiguous:
+# it matches z47's own owners AND upstream's C at `<root>/upstream/src/c47/...`,
+# which would count imported C as z47 owner coverage and inflate this ratchet.
+# Upstream's C is currently not compiled at all, so the number is unchanged today
+# -- but a gate that is only accidentally right is a gate that will be wrong later,
+# and an inflated floor is what hides a real coverage regression. Drop anything
+# under the imported root FIRST, by literal prefix (a path is not a safe regex),
+# then measure exactly as before so the committed floor stays comparable.
+upstream_root="$(awk -F= '/^UPSTREAM_ROOT=/{print $2}' .github/project/upstream-pin.env)"
+if [[ -z "$upstream_root" ]]; then
+  echo "missing UPSTREAM_ROOT in .github/project/upstream-pin.env" >&2
+  exit 1
+fi
 if [[ -f cov_pcs.txt && -n "$cov_bin" ]] && command -v llvm-symbolizer >/dev/null 2>&1; then
-  cur_zig_src_covered_lines="$(llvm-symbolizer --obj="$cov_bin" < cov_pcs.txt 2>/dev/null \
-    | grep -oE '/src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
+  if [[ "$upstream_root" == "." ]]; then
+    cur_zig_src_covered_lines="$(llvm-symbolizer --obj="$cov_bin" < cov_pcs.txt 2>/dev/null \
+      | grep -oE '/src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
+  else
+    cur_zig_src_covered_lines="$(llvm-symbolizer --obj="$cov_bin" < cov_pcs.txt 2>/dev/null \
+      | awk -v drop="$repo_root/$upstream_root/" 'index($0, drop) == 0' \
+      | grep -oE '/src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
+  fi
 fi
 
 if [[ "${1:-}" == "--bump" ]]; then

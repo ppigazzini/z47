@@ -7,7 +7,7 @@
 // test never call them; they only need to resolve at link time. Providing them
 // here (a z47-owned test surface) keeps the upstream tree untouched.
 
-#include "../../../src/c47/c47.h"
+#include "../../../upstream/src/c47/c47.h"
 
 void processResultantLongReal(uint16_t registerNo, int function, int functionType, real_t *paramX, real_t *paramY, real_t *paramTemp, angularMode_t *angleMode, angularMode_t *tmpAngle) {
   (void)registerNo; (void)function; (void)functionType; (void)paramX; (void)paramY; (void)paramTemp; (void)angleMode; (void)tmpAngle;

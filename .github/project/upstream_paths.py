@@ -52,16 +52,3 @@ def upstream_root(repo_root: Path | str) -> Path:
 def upstream_path(repo_root: Path | str, relative: str) -> Path:
     """Absolute path of an upstream-relative path such as ``src/c47/items.c``."""
     return upstream_root(repo_root) / relative
-
-
-def upstream_prefix(repo_root: Path | str) -> str:
-    """Repo-relative prefix of the upstream tree, ``""`` when mounted at the root.
-
-    For the handful of gates that compare against repo-relative strings (git
-    porcelain output, build-wiring scans) rather than opening files.
-    """
-    root = Path(repo_root)
-    value = _read_pin_value(root / PIN_FILE_RELATIVE, _KEY)
-    if value in {"", "."}:
-        return ""
-    return f"{value}/"

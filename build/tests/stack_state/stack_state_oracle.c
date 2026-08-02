@@ -35,7 +35,7 @@ void oracle_undo(void);
 void oracle_clearRegister(calcRegister_t regist);
 void z47_stack_parity_raw_clearRegister(calcRegister_t reg);
 
-#include "../../../src/c47/stack.c"
+#include "../../../upstream/src/c47/stack.c"
 
 void oracle_clearRegister(calcRegister_t regist) {
 	if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {

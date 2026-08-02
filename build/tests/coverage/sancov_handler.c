@@ -52,7 +52,16 @@ void __sanitizer_cov_trace_pc_guard_init(uint32_t *start, uint32_t *stop) {
 }
 
 static void cov_dump(void) {
-  FILE *f = fopen("cov_pcs.txt", "w");
+  // The harness runs with the imported root as its CWD, because the ported
+  // config.zig opens res/testPgms/testPgms.bin CWD-relative just as upstream's
+  // config.c does. Writing cov_pcs.txt relative to that CWD would strand the
+  // artefact inside the imported tree, where neither report-zig-coverage.sh nor
+  // check-coverage-ratchet.sh looks for it. The build passes an absolute path;
+  // the bare name is kept as the default so running the binary by hand still
+  // drops the file beside the invocation.
+  const char *out = getenv("Z47_COV_PCS_PATH");
+  if (out == NULL || *out == '\0') out = "cov_pcs.txt";
+  FILE *f = fopen(out, "w");
   if (!f) return;
   for (size_t i = 0; i < cov_n; ++i) {
     fprintf(f, "0x%lx\n", (unsigned long)cov_pcs[i]);

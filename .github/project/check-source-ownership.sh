@@ -76,6 +76,27 @@ list_index_top_level_roots() {
     git ls-files | awk -F/ '{print $1}' | sort -u
 }
 
+# A z47-owned root must not be gitignored. This is not hypothetical: upstream's
+# .gitignore ignores a root `/build`, `.gitignore` is hand-reconciled on every
+# resync, and z47 owns `build/`, `src/`, `docs/` and `bridge/`. The z47 section
+# carries `!/build/`-style negations, but gitignore resolves by LAST MATCH, so that
+# protection holds only while the imported block stays above the z47 section. An
+# import that lands the other way round would not untrack anything -- ignore rules
+# do not untrack -- it would silently stop NEW owner files from being added, which
+# is the kind of failure that shows up as a mystery missing file weeks later.
+# --no-index is required: check-ignore hides tracked files by default, which would
+# make this pass for exactly the roots it is meant to protect.
+require_unignored_root() {
+    local root="$1"
+
+    if git check-ignore --no-index -q -- "$root"; then
+        printf 'z47-owned root is gitignored: %s\n' "$root" >&2
+        printf 'A re-imported upstream .gitignore rule is shadowing it. The z47 negations\n' >&2
+        printf '(!/build/, !/src/, !/docs/, !/bridge/) must stay BELOW the imported block.\n' >&2
+        exit 1
+    fi
+}
+
 validate_manifest_coverage() {
     local mode="${1:-head}"
     declare -A classified=()
@@ -100,6 +121,10 @@ validate_manifest_coverage() {
             exit 1
             ;;
     esac
+
+    for root in "${z47_roots[@]}"; do
+        require_unignored_root "$root"
+    done
 
     for root in "${z47_roots[@]}" "${imported_roots[@]}"; do
         if [[ -n "${classified[$root]+x}" ]]; then
@@ -182,11 +207,31 @@ check_added_imported_paths() {
     # Diffing tree-to-tree lines the two spellings up and yields upstream-relative
     # paths -- which is also what the approved-additions list records, for the same
     # reason every other ledger does (see upstream_paths.py).
-    local added_paths=()
+    # The diff is CAPTURED, not piped straight into mapfile. `mapfile < <(cmd)`
+    # runs cmd in a subshell whose failure `set -e` never sees, so a diff that
+    # cannot run at all -- a mistyped UPSTREAM_ROOT makes `HEAD:<root>` fatal --
+    # would hand back an empty list and this gate would report a clean tree. A
+    # guard that passes because it measured NOTHING is worse than no guard, so an
+    # unreadable input is fatal here.
+    local diff_output=""
+    local diff_status=0
     if [[ "$UPSTREAM_ROOT" == "." ]]; then
-        mapfile -t added_paths < <(git diff --name-only --diff-filter=A "$diff_base"..HEAD -- "${imported_roots[@]}")
+        diff_output="$(git diff --name-only --diff-filter=A "$diff_base"..HEAD -- "${imported_roots[@]}")" || diff_status=$?
     else
-        mapfile -t added_paths < <(git diff --name-only --diff-filter=A "$diff_base" "HEAD:$UPSTREAM_ROOT")
+        diff_output="$(git diff --name-only --diff-filter=A "$diff_base" "HEAD:$UPSTREAM_ROOT")" || diff_status=$?
+    fi
+
+    if [[ "$diff_status" -ne 0 ]]; then
+        printf 'Unable to diff the imported tree (UPSTREAM_ROOT=%s) against pinned %s.\n' \
+            "$UPSTREAM_ROOT" \
+            "$UPSTREAM_COMMIT" >&2
+        printf 'Refusing to report a clean tree from a diff that did not run.\n' >&2
+        exit 1
+    fi
+
+    local added_paths=()
+    if [[ -n "$diff_output" ]]; then
+        mapfile -t added_paths <<< "$diff_output"
     fi
 
     local violations=0

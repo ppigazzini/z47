@@ -11,7 +11,7 @@
 // exported Zig workers on fixed input matrices and compares the real_t outputs
 // against hand-verified reference eigenvalues.
 
-#include "../../../src/c47/c47.h"
+#include "../../../upstream/src/c47/c47.h"
 
 // Exported Zig workers under test (math_matrix_eigen_owned.zig). The matrices
 // are interleaved-complex, row-major: element (i,j) real at [(i*size+j)*2],

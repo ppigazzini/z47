@@ -8,14 +8,14 @@ static void oracle_fnToRect_impl(int8_t angleInY);
 
 #define real34RectangularToPolar oracle_real34RectangularToPolar
 #define fnToPolar2 oracle_fnToPolar2
-#include "../../../src/c47/mathematics/toPolar.c"
+#include "../../../upstream/src/c47/mathematics/toPolar.c"
 #undef fnToPolar2
 #undef real34RectangularToPolar
 
 #define realPolarToRectangular oracle_realPolarToRectangular
 #define fnToRect2 oracle_fnToRect2
 #define fnToRect oracle_fnToRect_impl
-#include "../../../src/c47/mathematics/toRect.c"
+#include "../../../upstream/src/c47/mathematics/toRect.c"
 #undef fnToRect
 #undef fnToRect2
 #undef realPolarToRectangular
@@ -25,14 +25,14 @@ void oracle_fnToRect(uint16_t angleInY) {
 }
 
 #define fnParallel oracle_fnParallel
-#include "../../../src/c47/mathematics/parallel.c"
+#include "../../../upstream/src/c47/mathematics/parallel.c"
 #undef fnParallel
 
 #define unitVectorCplx oracle_unitVectorCplx
 #define unitVectorRema oracle_unitVectorRema
 #define unitVectorCxma oracle_unitVectorCxma
 #define fnUnitVector oracle_fnUnitVector
-#include "../../../src/c47/mathematics/unitVector.c"
+#include "../../../upstream/src/c47/mathematics/unitVector.c"
 #undef fnUnitVector
 #undef unitVectorCxma
 #undef unitVectorRema
@@ -40,7 +40,7 @@ void oracle_fnToRect(uint16_t angleInY) {
 
 #define fnSdl oracle_fnSdl
 #define fnSdr oracle_fnSdr
-#include "../../../src/c47/mathematics/shiftDigits.c"
+#include "../../../upstream/src/c47/mathematics/shiftDigits.c"
 #undef fnSdr
 #undef fnSdl
 
@@ -49,7 +49,7 @@ void oracle_fnToRect(uint16_t angleInY) {
 #define sqrtComplex159 oracle_sqrtComplex159
 #define sqrtComplex oracle_sqrtComplex
 #define fnSquareRoot oracle_fnSquareRoot
-#include "../../../src/c47/mathematics/squareRoot.c"
+#include "../../../upstream/src/c47/mathematics/squareRoot.c"
 #undef fnSquareRoot
 #undef sqrtComplex
 #undef sqrtComplex159
@@ -62,7 +62,7 @@ void oracle_fnToRect(uint16_t angleInY) {
 #define curtComplex159 oracle_curtComplex159
 #define curtComplex oracle_curtComplex
 #define fnCubeRoot oracle_fnCubeRoot
-#include "../../../src/c47/mathematics/cubeRoot.c"
+#include "../../../upstream/src/c47/mathematics/cubeRoot.c"
 #undef fnCubeRoot
 #undef curtComplex
 #undef curtComplex159
