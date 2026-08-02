@@ -22,7 +22,15 @@ set -euo pipefail
 FUNCS=(stringGlyphLength stringNextGlyphNoEndCheck_JM stringNextGlyph stringPrevGlyph stringLastGlyph stringToFileNameChars)
 
 repo_root="$(cd "$(dirname "$0")/../../.." && pwd)"
-src="$repo_root/src/c47/charString.c"
+
+# charString.c is UPSTREAM's file -- the whole point of this oracle is to lift it
+# unmodified -- so it resolves through UPSTREAM_ROOT, not through z47's own src/.
+# A "." root interpolates to $repo_root/./src/..., which resolves the same way.
+# shellcheck disable=SC1091
+. "$repo_root/.github/project/upstream-pin.env"
+: "${UPSTREAM_ROOT:?missing UPSTREAM_ROOT in .github/project/upstream-pin.env}"
+src="$repo_root/$UPSTREAM_ROOT/src/c47/charString.c"
+[ -f "$src" ] || { printf 'missing upstream oracle source: %s\n' "$src" >&2; exit 1; }
 out="$(dirname "$0")/charstring_diff_oracle.c"
 
 # Brace-match one function out of the pinned source (K&R: close brace in col 0).
@@ -53,12 +61,14 @@ done
   for f in "${FUNCS[@]}"; do
     extract "$f" | head -1 | sed "${sed_prog}s/ {.*\$/;/"
   done
-  echo
+  # Separator goes BEFORE each body, not after: a trailing one leaves a blank line
+  # at EOF that pre-commit's end-of-file-fixer strips, so every re-extraction would
+  # dirty the tree by one byte and read as oracle drift. Interior spacing is the same.
   for f in "${FUNCS[@]}"; do
     body="$(extract "$f")"
     [[ -n "$body" ]] || { echo "extract_oracle: $f not found in $src" >&2; exit 1; }
-    echo "$body" | sed "${sed_prog}"
     echo
+    echo "$body" | sed "${sed_prog}"
   done
 } > "$out"
 echo "extract_oracle: wrote $out (${#FUNCS[@]} functions)"
