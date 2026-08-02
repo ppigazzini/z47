@@ -85,6 +85,10 @@ bash .github/project/check-module-carriers.sh
 python3 .github/project/check-dead-force-imports.py --repo-root .
 step "[6h/11] authored ABI surface (REPORT-28 M8 / G6)"
 python3 .github/project/check-authored-abi.py --repo-root .
+step "[6g1/11] destructive steps do not target z47-owned roots"
+# `zig build clean` mirrors upstream's `make clean`, so its target list is in
+# upstream's vocabulary -- and `rm -rf build` now names z47's build system.
+python3 .github/project/check-clean-step-targets.py --repo-root .
 step "[6g2/11] harness include paths resolve"
 # A quoted #include in a parity oracle reaches the imported tree by relative
 # path, so a layout change breaks it at COMPILE time in a lane that neither

@@ -363,6 +363,13 @@ jobs:
           # stubbed); with no build output present the six generated catalogs
           # report as SKIPPED rather than as silently clean.
           python3 .github/project/audit-softmenu-table-parity.py --repo-root .
+      - name: Enforce destructive steps do not target z47-owned roots
+        shell: bash
+        run: |
+          set -euo pipefail
+          # `zig build clean` inherits upstream's target list, where a bare `build`
+          # means upstream's meson dir and now also z47's build system.
+          python3 .github/project/check-clean-step-targets.py --repo-root .
       - name: Enforce harness include paths resolve
         shell: bash
         run: |
