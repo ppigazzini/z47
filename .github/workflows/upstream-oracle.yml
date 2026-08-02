@@ -354,6 +354,15 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/project/check-item-seam-drift.py --repo-root .
+      - name: Enforce softmenu tables match upstream softmenus.c
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Preprocesses softmenus.c for the host build and diffs every menu_*
+          # table against the Zig mirror. No GUI headers needed (gtk/gdk are
+          # stubbed); with no build output present the six generated catalogs
+          # report as SKIPPED rather than as silently clean.
+          python3 .github/project/audit-softmenu-table-parity.py --repo-root .
       - name: Enforce module-graph cycles do not grow
         shell: bash
         run: |

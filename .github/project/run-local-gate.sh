@@ -96,6 +96,8 @@ python3 .github/project/check-object-graph.py --repo-root .
 bash .github/project/test-check-object-graph.sh
 step "[6f/11] item seam vs owner drift (REPORT-28 M1.1)"
 python3 .github/project/check-item-seam-drift.py --repo-root .
+step "[6j/11] softmenu tables vs upstream softmenus.c"
+python3 .github/project/audit-softmenu-table-parity.py --repo-root .
 step "[6e/11] transliteration contract (hot 1:1 ports intact)"
 python3 .github/project/check-transliteration-contract.py --repo-root .
 step "[7/11] Phase I C dependency policy"
