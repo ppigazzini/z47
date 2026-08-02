@@ -43,6 +43,26 @@ fn upstreamCwd(b: *std.Build) std.Build.LazyPath {
     return b.path(build_common.upstreamRootString(b));
 }
 
+/// The relative path from `upstreamCwd(b)` back to the build root: one `..` per
+/// component of UPSTREAM_ROOT, or "." when the import is mounted at the root.
+///
+/// Steps that run from the imported root but must read or write something in z47's
+/// tree need this. Deliberately plain string arithmetic: every std.Build helper that
+/// would name the build root directly (`pathFromRoot`, `build_root`) exists on the
+/// 0.16 baseline and NOT on the monitored Zig master, and each one broke that lane.
+fn buildRootFromUpstreamCwd(b: *std.Build) []const u8 {
+    const root = build_common.upstreamRootString(b);
+    if (root.len == 0 or std.mem.eql(u8, root, ".")) return ".";
+
+    var components: usize = 1;
+    for (root) |byte| {
+        if (byte == '/') components += 1;
+    }
+    var parts = std.ArrayList([]const u8).initCapacity(b.allocator, components) catch @panic("OOM");
+    for (0..components) |_| parts.appendAssumeCapacity("..");
+    return b.pathJoin(parts.items);
+}
+
 fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path: []const u8) *std.Build.Step.Run {
     const run_test_suite = b.addRunArtifact(test_suite);
     run_test_suite.setCwd(upstreamCwd(b));
@@ -739,7 +759,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // Regenerate the golden save file from the current implementation.
     const gen_saveload_golden = b.addRunArtifact(saveload_parity_harness);
     gen_saveload_golden.setCwd(upstreamCwd(b));
-    gen_saveload_golden.addArg(b.pathFromRoot("build/tests/calc_state/save_load_golden.sav"));
+    // Resolved file argument, not a string: the step runs from the imported root, so
+    // the path must be CWD-independent, and `addFileArg` is the only way to get one
+    // that exists on BOTH the 0.16 baseline and the monitored Zig master. It does
+    // declare the golden as an input to a step that overwrites it, which is harmless
+    // for a manual regeneration step and is what run_saveload_parity above already
+    // does for the read. (`b.pathFromRoot` and `b.build_root` were each tried and each
+    // broke the master lane -- neither exists there.)
+    gen_saveload_golden.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
     gen_saveload_golden.addArg("--write-golden");
     const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load parity golden file");
     saveload_golden_step.dependOn(&gen_saveload_golden.step);
@@ -838,7 +865,15 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     });
     const run_coverage = b.addRunArtifact(coverage_harness);
     run_coverage.setCwd(upstreamCwd(b));
-    run_coverage.setEnvironmentVariable("Z47_COV_PCS_PATH", b.pathFromRoot("cov_pcs.txt"));
+    // cov_pcs.txt does not exist until the harness writes it, so no LazyPath helper
+    // applies and setEnvironmentVariable takes a plain string. Express it relative to
+    // the CWD instead: climb out of the imported root back to the build root. Pure
+    // string work, so it is portable by construction -- no std.Build path API, which
+    // is what broke this lane twice (`pathFromRoot`, then `build_root`).
+    run_coverage.setEnvironmentVariable(
+        "Z47_COV_PCS_PATH",
+        b.pathJoin(&.{ buildRootFromUpstreamCwd(b), "cov_pcs.txt" }),
+    );
     const coverage_step = b.step("coverage", "Build+run the sancov-instrumented keyboard harness, emitting cov_pcs.txt for report-zig-coverage.sh (Annex A0)");
     coverage_step.dependOn(&run_coverage.step);
 
