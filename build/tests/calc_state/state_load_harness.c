@@ -6,7 +6,7 @@
 // M-SAFE-7 (REPORT-30). The state path is the surface upstream's worst memory
 // bug lived on (the 577 statefile overflow), and until this existed nothing in
 // the tree fed it anything but files the calculator itself had just written:
-// `saveload_parity` and `saveload_golden` round-trip valid state, and
+// `saveload_roundtrip` and `saveload_golden` round-trip valid state, and
 // `pgm_load_fuzz` covers `.p47` programs only. The bounds commit 31fb6f755 added
 // to calc_state_restore.zig -- 137 lines of them -- had no adversarial coverage
 // at all, and the matrix-dimension guard that M-SAFE-1 ported had none either.

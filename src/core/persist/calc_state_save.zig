@@ -9,8 +9,11 @@
 // in C, reached as direct externs to the canonical core symbols; this owner
 // frames every section and selects the fields.
 //
-// Verified byte-for-byte against the current C output by the save/load parity
-// harness (`zig build saveload_parity`): the golden file is the C doSave bytes.
+// Byte-compared against `save_load_golden.sav` by `zig build saveload_roundtrip`.
+// That golden WAS the C doSave bytes when this port landed; it has been regenerated
+// from this Zig writer several times since, so today it is a snapshot of z47's own
+// output -- a change detector, not a parity reference (REPORT-31 M31-1). What still
+// holds z47 to c43 here is the round-trip check and the testSuite, not the golden.
 
 const std = @import("std");
 const text = @import("calc_state_text.zig");

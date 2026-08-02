@@ -20,7 +20,7 @@ saveRestoreCalcState.c and classifies each by where it is assigned:
                     in exactly this bucket yet held garbage (-6145) in the bare
                     harness (found 2026-06-24). Fields ONLY here deserve runtime
                     confirmation too.
-  - SET-BY-HARNESS: assigned in the save_load_parity_harness buildState().
+  - SET-BY-HARNESS: assigned in the save_load_roundtrip_harness buildState().
   - UNCOVERED     : no assignment found on any of those paths -> a strong
                     candidate for an uninitialised, non-deterministic golden
                     field. REVIEW before M10.
@@ -49,7 +49,7 @@ from upstream_paths import upstream_path
 
 SAVE_FILE = "src/c47/saveRestoreCalcState.c"
 RESET_FILE = "src/c47/config.c"
-HARNESS = "build/tests/calc_state/save_load_parity_harness.c"
+HARNESS = "build/tests/calc_state/save_load_roundtrip_harness.c"
 
 # Functions whose direct assignments count as deterministic reset-path init.
 RESET_FUNCS = ("doFnReset", "resetOtherConfigurationStuff", "fnReset")
