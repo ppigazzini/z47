@@ -568,6 +568,15 @@ jobs:
           # pre-push gate (run-local-gate.sh) run IDENTICAL steps and cannot drift.
           export XVFB="xvfb-run --auto-servernum"
           bash .github/project/run-host-parity-battery.sh
+      - name: Enforce every softmenu table was actually judged
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The governance job runs this audit with no build output, so all six
+          # GENERATED catalogs skip there and the verdict still reads OK. That is
+          # how menu_FCNS kept a 364-entry drift. Re-run it here, where the battery
+          # above has populated the build cache, and refuse any unjudged menu.
+          python3 .github/project/audit-softmenu-table-parity.py --repo-root . --require-generated
       - name: Run Linux ASAN wrapper surface
         shell: bash
         run: |
