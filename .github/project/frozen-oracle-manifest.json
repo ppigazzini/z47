@@ -1,0 +1,60 @@
+{
+  "_why": "REPORT-31 M31-0. Each entry binds a parity oracle to the c43 file whose behaviour it reproduces. `frozen` oracles are hand-transliterated and CANNOT see c43 move, so they are gated on a content hash of what they mirror; the endpoint is an empty list, not a maintained one. `generated` oracles are extracted from c43 source and are sound in shape -- they are gated on reproducing byte-identically, because nothing else re-runs the extractor.",
+  "frozen": [
+    {
+      "oracle": "build/tests/flags/flags_oracle.c",
+      "milestone": "REPORT-31 M31-2",
+      "why": "705 lines reproducing 81% of flags.c by hand, including its own copy of refreshStateFlags/clearStatusBarFlags/clearSetPairs/flipFlags and its own flagAction_t. flags.c is smaller and less entangled than division.c, which math_wrappers already links live, so there is no technical reason this is hand-written.",
+      "mirrors": {
+        "src/c47/flags.c": "670063e914a336ff9afc7f8653a46485621d583384666d369fba31d6eeee2f6a"
+      },
+      "oracle_sha256": "3b39b9725ffdaad814f3a7766d87341f2fc50471739784f640a9d15efbcc76ee"
+    },
+    {
+      "oracle": "build/tests/program_serialization/program_serialization_oracle.c",
+      "milestone": "REPORT-31 M31-3",
+      "why": "183 lines reproducing the save/restore program framing of saveRestorePrograms.c, including its own PROGRAM_VERSION / OLDEST_COMPATIBLE_PROGRAM_VERSION constants -- so a version bump upstream leaves this lane green.",
+      "mirrors": {
+        "src/c47/saveRestorePrograms.c": "1e5949fc50ce208a6962527f3c1e5216eae2d6a02f8ed2e9c8b947e2ae3d45b9"
+      },
+      "oracle_sha256": "f2bcb3434b78790258d7113597d4fe909cceb7a50d1ba0e9a99712d77664fb43"
+    },
+    {
+      "oracle": "build/tests/register_metadata/register_metadata_oracle.c",
+      "milestone": "REPORT-31 M31-4",
+      "why": "1060 lines, 43 oracle_* functions -- the largest frozen reference. Reimplements setRegisterDataType, so a widened register tag field changes registers.c, changes nothing here, and the lane agrees with an unported Zig owner.",
+      "mirrors": {
+        "src/c47/registers.c": "9b9ab3796e81c5ca99e5e0f9d84ee91c3daefb7ac504d6050ade19d3de739d6b"
+      },
+      "oracle_sha256": "d53105962aa104cb1ac3566b415e574a4439ccf4a3e641599e0cf6cfc4baf32f"
+    },
+    {
+      "oracle": "build/tests/calc_state/calc_state_oracle.c",
+      "milestone": "REPORT-31 M31-5",
+      "why": "194 lines against saveRestoreCalcState.c's 2959 -- it mirrors save-file revision parsing and nothing else, while the lane is named for the whole subsystem.",
+      "mirrors": {
+        "src/c47/saveRestoreCalcState.c": "4c0a0914f1c1ff1756449471c80a82171fd6768f7efea0d902dc1cabf46a3ad5"
+      },
+      "oracle_sha256": "105ab13233db0f302a23a0b36af80548aab3d01bf5294b2fa703466941f27f5c"
+    },
+    {
+      "oracle": "build/tests/keyboard_state/keyboard_state_oracle.c",
+      "milestone": "REPORT-31 M31-6",
+      "why": "238 lines against keyboard.c's 4982 -- ~4% coverage under a subsystem-wide lane name. Hardest to convert and thinnest coverage, so deliberately last.",
+      "mirrors": {
+        "src/c47/keyboard.c": "44aff16b2408bd710ee03f44c90dfd4ac320822b971687075bdd4be737c4bd2b"
+      },
+      "oracle_sha256": "96f5055153fcaa122a12bbf064aadb7b81e3418d4a23d3c7060889732e429748"
+    }
+  ],
+  "generated": [
+    {
+      "oracle": "build/tests/charstring_diff/charstring_diff_oracle.c",
+      "why": "Extracted from src/c47/charString.c by its own script, so the reference moves with c43 -- but the script's header comment claimed 'the harness fails if the committed oracle is stale' and nothing in the tree re-ran it. Sound shape, ungated until now.",
+      "regenerate": "build/tests/charstring_diff/extract_oracle.sh",
+      "mirrors": [
+        "src/c47/charString.c"
+      ]
+    }
+  ]
+}

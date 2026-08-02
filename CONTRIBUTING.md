@@ -110,6 +110,7 @@ surfaces. They are not the maintained z47 control plane.
   `bash .github/project/check-source-ownership.sh`, then
   `python3 .github/project/check-harness-includes.py --repo-root .`, then
   `python3 .github/project/check-clean-step-targets.py --repo-root .`, then
+  `python3 .github/project/check-frozen-oracle-drift.py --repo-root .`, then
   `bash .github/project/workflow-imported-root-paths.sh check-workflow`.
   Run `check-source-ownership.sh` in BOTH modes: bare `check` audits the committed
   tree's added paths, `check-worktree` only validates manifest coverage, and a
