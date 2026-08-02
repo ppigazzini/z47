@@ -34,6 +34,7 @@ upstream
 BUILD.md
 dist
 distS
+res/DATA/TestData.d47
 res/PACKAGES.md
 res/PROGRAMS
 res/combo
@@ -63,6 +64,7 @@ src/c47/reservedRegisterLookup.h
 src/c47/reservedRegisterLookupGenerator.c
 src/c47/saveRestoreBackup.c
 src/c47/saveRestoreBackup.h
+src/generated/constantsVerification.txt
 src/t47
 src/testSuite/hal/print_ir.c
 src/testSuite/tests/angleConv.txt
