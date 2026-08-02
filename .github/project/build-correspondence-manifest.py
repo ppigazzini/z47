@@ -164,11 +164,28 @@ def main() -> int:
     c_sym_file: dict[str, list[str]] = {}
     c_files: list[str] = []
     c_abs = upstream_path(root, C_ROOT)
+    # `rglob` on a directory that is not there yields nothing rather than raising,
+    # so a wrong UPSTREAM_ROOT used to make this script rewrite the committed
+    # manifest with 0 symbol rows and exit 0 -- and --check then reported a
+    # perfectly clean 0/0 coverage. The pinned C tree IS the definition of the
+    # correspondence; measuring none of it is never a result worth writing.
+    if not c_abs.is_dir():
+        print(f"build-correspondence-manifest: BROKEN -- {c_abs} is not a directory.")
+        print("Check UPSTREAM_ROOT in .github/project/upstream-pin.env.")
+        print("Refusing to rewrite the manifest from an unreadable C tree.")
+        return 1
     for p in sorted(c_abs.rglob("*.c")):
         rel = str(p.relative_to(c_abs).with_suffix(""))
         c_files.append(rel)
         for s in c_symbols(p.read_text(errors="ignore")):
             c_sym_file.setdefault(s, []).append(rel)
+
+    # A directory that exists but holds no .c is the same vacuous result by another
+    # route -- an aborted import, a wrong C_ROOT -- so refuse that too.
+    if not c_files:
+        print(f"build-correspondence-manifest: BROKEN -- no .c files under {c_abs}.")
+        print("Refusing to rewrite the manifest from an empty C scan.")
+        return 1
 
     # Zig side: symbol -> owning owner(s), forwarders resolved to their impl
     z_sym_owner: dict[str, list[str]] = {}
