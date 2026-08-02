@@ -80,6 +80,27 @@ Then re-derive the changed C behavior into those owners (never edit `src/`). Pre
 **idiomatic fixed-width Zig** over transliterated C — see the Windows trap in §4 and
 `c-abi-width-types-are-transliteration-debt`.
 
+### 2b. Re-port the FROZEN ORACLES too — the worklist above cannot see them
+
+`report-resync-worklist.py` names the Zig owner of a changed C file. It does not name
+the **parity oracle** that reproduces that file by hand, and five of them do
+(REPORT-31): `flags`, `program_serialization`, `register_metadata`, `calc_state`,
+`keyboard_state`. Those oracles are the reference their lane compares against, so a
+c43 change that is ported into the Zig owner but not into the oracle turns the lane
+**red on a correct port**, and a change ported into neither leaves it **green on a
+divergence** — which is the worse half and the reason the report exists.
+
+`check-frozen-oracle-drift.py` (in the local gate and CI) fails when a mirrored c43
+file's hash moves. When it does:
+
+1. Diff that c43 file between the old and new pin.
+2. Port the behavioural change into **both** the Zig owner and the oracle.
+3. `python3 .github/project/check-frozen-oracle-drift.py --bump` to re-record.
+
+Better than step 3: convert the lane to `#include` the c43 source (REPORT-31 §4
+option A, the `flags`/`program_serialization` pattern) and delete the entry. Then the
+work above stops being a resync chore forever.
+
 ## 3. THE GATE — run the full local gate before every push
 
 **`bash .github/project/run-local-gate.sh`**

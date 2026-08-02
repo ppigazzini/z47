@@ -389,6 +389,16 @@ jobs:
           # -I flag can rescue. A layout change breaks every oracle lane at once;
           # this fails here instead, naming each file.
           python3 .github/project/check-harness-includes.py --repo-root .
+      - name: Enforce frozen parity oracles still mirror their c43 counterparts
+        shell: bash
+        run: |
+          set -euo pipefail
+          # REPORT-31. A hand-transliterated oracle cannot detect c43 moving: it IS
+          # the reference and it stayed put, so the lane goes green on a divergence.
+          # Binding each one to a hash of the c43 file it mirrors makes a pin bump
+          # that touches that file a blocking question instead of silence.
+          python3 .github/project/check-frozen-oracle-drift.py --self-test
+          python3 .github/project/check-frozen-oracle-drift.py --repo-root .
       - name: Enforce imported-tree paths are not anchored to the repo root
         shell: bash
         run: |
