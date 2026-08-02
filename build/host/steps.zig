@@ -1268,7 +1268,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const keyboard_statusbar_flags_regression_step = b.step("keyboard_statusbar_flags_regression", "Run the keyboard statusbar flag-clearing regression");
     keyboard_statusbar_flags_regression_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
 
-    const program_serialization_parity = program_serialization.addParityExecutable(b, context.host_target, optimize);
+    const program_serialization_parity = program_serialization.addParityExecutable(b, context.host_target, optimize, context.common);
     const run_program_serialization_parity = b.addRunArtifact(program_serialization_parity);
     run_program_serialization_parity.setCwd(b.path("."));
     const program_serialization_parity_step = b.step("program_serialization_parity", "Run the program-serialization parity suite");

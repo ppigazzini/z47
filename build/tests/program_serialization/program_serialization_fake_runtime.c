@@ -1,330 +1,402 @@
 // SPDX-License-Identifier: GPL-3.0-only
-
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+//
+// The environment both sides of the program save/load parity lane run in.
+//
+// One copy of program memory, one file emulation, one step grammar, shared by
+// c43's saveRestorePrograms.c (compiled as the oracle) and by the Zig owner. A
+// snapshot difference can then only come from the serialization logic itself.
+//
+// Program memory is REAL here, not modelled: `ram` is a backing array and the
+// program pointers point into it, because `_addSpaceAfterPrograms` does live
+// pointer arithmetic against `ram` through TO_C47MEMPTR and both implementations
+// have to land on the same addresses.
 
 #include "program_serialization_test_runtime.h"
 
-typedef struct {
-  uint16_t label;
-  uint16_t program_number;
-} fake_label_t;
+#define PROGRAM_AREA_BYTES 2048u
 
-typedef struct {
-  uint8_t *start;
-  uint8_t *end;
-} fake_program_t;
+// Not the product's RAM_SIZE_IN_BLOCKS (65534, a quarter-megabyte): the lane only
+// needs a program area, and TO_C47MEMPTR is relative to `ram` either way. The
+// SIZE that matters for parity is the one both sides compute from, which is why
+// getRamSizeInBlocks below is the single source for it.
+#define HARNESS_RAM_BLOCKS 1024u
 
+static uint32_t ramStorage[HARNESS_RAM_BLOCKS];
+uint32_t *ram = ramStorage;
+
+uint8_t *beginOfProgramMemory = NULL;
+uint8_t *firstFreeProgramByte = NULL;
 uint8_t *beginOfCurrentProgram = NULL;
 uint8_t *endOfCurrentProgram = NULL;
 uint8_t *firstDisplayedStep = NULL;
 uint8_t *currentStep = NULL;
-uint8_t *beginOfProgramMemory = NULL;
-uint8_t *firstFreeProgramByte = NULL;
 uint16_t freeProgramBytes = 0;
+uint16_t firstDisplayedLocalStepNumber = 0;
 uint16_t currentLocalStepNumber = 0;
 uint16_t currentProgramNumber = 0;
 uint16_t numberOfPrograms = 0;
+uint16_t numberOfLabels = 0;
+bool_t programListEnd = false;
+bool_t lastProgramListEnd = false;
+tamState_t tam;
+int16_t dynamicMenuItem = 0;
 uint8_t temporaryInformation = 0;
-// fnLoadProgram clears this before goToGlobalStep since the 6559a9c59 pin, so the step it
-// lands on is the loaded program's own and not a dynamic-menu label.
-int16_t dynamicMenuItem = -1;
 
-static uint8_t fakeRam[RAM_SIZE_IN_BLOCKS * BYTES_PER_BLOCK];
-static char loadFile[MAX_PROGRAM_PARITY_FILE_BYTES];
-static size_t loadFileSize = 0;
-static size_t loadFileOffset = 0;
-static char savedFile[MAX_PROGRAM_PARITY_FILE_BYTES];
-static size_t savedFileSize = 0;
-static char lastWarning[256];
-static uint8_t warningCount = 0;
-static uint8_t lastErrorKind = 0;
-static uint32_t scanLabelsCalls = 0;
-static uint32_t goToLastProgramCalls = 0;
+// Indexed by `label - FIRST_LABEL` on both sides, so it has to span the whole
+// global-label range rather than the handful a case sets.
+static labelList_t labelListStorage[LAST_LABEL - FIRST_LABEL + 1];
+static programList_t programListStorage[8];
+labelList_t *labelList = labelListStorage;
+programList_t *programList = programListStorage;
+
+static char tmpStringStorage[TMP_STR_LENGTH];
+static char tmpStringLabelStorage[256];
+static char aimBufferStorage[AIM_BUFFER_LENGTH];
+static char errorMessageStorage[256];
+char *tmpString = tmpStringStorage;
+char *tmpStringLabelOrVariableName = tmpStringLabelStorage;
+char *aimBuffer = aimBufferStorage;
+char *errorMessage = errorMessageStorage;
+
+// Zero-initialised, then set per case. Both implementations index this same
+// table, so it is shared input rather than a second reference (see c47.h).
+item_t indexOfItems[LAST_ITEM + 1];
+
+// --- file emulation --------------------------------------------------------
+
+static char saveBuffer[MAX_PROGRAM_PARITY_FILE_BYTES];
+static size_t saveBufferSize = 0;
+static char loadBuffer[MAX_PROGRAM_PARITY_FILE_BYTES];
+static size_t loadBufferSize = 0;
+static size_t loadCursor = 0;
 static int saveOpenResult = FILE_OK;
 static int loadOpenResult = FILE_OK;
-static bool_t powerBlocked = false;
-static enum {
-  activeFileNone = 0,
-  activeFileSave,
-  activeFileLoad,
-} activeFile = activeFileNone;
-static fake_program_t programs[16];
-static fake_label_t labels[16];
-static uint16_t labelCount = 0;
+static bool_t fileOpen = false;
+static bool_t fileForWriting = false;
 
-static bool_t isEndInstruction(const uint8_t *step) {
-  return step[0] == (uint8_t)((ITM_END >> 8) | 0x80) && step[1] == (uint8_t)(ITM_END & 0xff);
+static uint8_t lastErrorKind = 0;
+static uint8_t warningCount = 0;
+static char lastWarning[256];
+static uint32_t scanLabelsCalls = 0;
+static uint32_t goToLastProgramCalls = 0;
+static uint32_t freeRamMemoryBytes = 0;
+static uint16_t namedLabelProgramNumber = 0;
+
+int ioFileOpen(ioFilePath_t path, ioFileMode_t mode) {
+  int result;
+  (void)path;
+  if(mode == ioModeWrite) {
+    result = saveOpenResult;
+    if(result == FILE_OK) {
+      saveBufferSize = 0;
+      saveBuffer[0] = 0;
+      fileOpen = true;
+      fileForWriting = true;
+    }
+    return result;
+  }
+
+  result = loadOpenResult;
+  if(result == FILE_OK) {
+    loadCursor = 0;
+    fileOpen = true;
+    fileForWriting = false;
+  }
+  return result;
 }
 
-static void updateCurrentProgramPointers(void) {
-  if(currentProgramNumber == 0 || currentProgramNumber > numberOfPrograms) {
-    beginOfCurrentProgram = beginOfProgramMemory;
-    endOfCurrentProgram = firstFreeProgramByte + 2;
-  }
-  else {
-    beginOfCurrentProgram = programs[currentProgramNumber - 1].start;
-    endOfCurrentProgram = programs[currentProgramNumber - 1].end;
-  }
-  currentStep = beginOfCurrentProgram;
-  firstDisplayedStep = beginOfCurrentProgram;
-}
-
-static void rebuildPrograms(void) {
-  uint8_t *cursor;
-  uint8_t *limit = fakeRam + sizeof(fakeRam);
-
-  numberOfPrograms = 0;
-  memset(programs, 0, sizeof(programs));
-
-  if(beginOfProgramMemory == NULL) {
+void ioFileWrite(const void *buffer, uint32_t size) {
+  if(!fileOpen || !fileForWriting || saveBufferSize + size >= sizeof(saveBuffer)) {
     return;
   }
-
-  cursor = beginOfProgramMemory;
-  while(cursor + 1 < limit) {
-    if(cursor[0] == 0xffu && cursor[1] == 0xffu) {
-      break;
-    }
-
-    programs[numberOfPrograms].start = cursor;
-    while(cursor + 1 < limit) {
-      if(cursor[0] == 0xffu && cursor[1] == 0xffu) {
-        programs[numberOfPrograms].end = cursor + 2;
-        numberOfPrograms++;
-        updateCurrentProgramPointers();
-        return;
-      }
-      if(isEndInstruction(cursor)) {
-        programs[numberOfPrograms].end = cursor + 2;
-        numberOfPrograms++;
-        cursor += 2;
-        break;
-      }
-      cursor++;
-    }
-  }
-
-  updateCurrentProgramPointers();
+  memcpy(saveBuffer + saveBufferSize, buffer, size);
+  saveBufferSize += size;
+  saveBuffer[saveBufferSize] = 0;
 }
 
-static void appendSaved(const char *text) {
-  size_t len = strlen(text);
-
-  if(savedFileSize + len >= sizeof(savedFile)) {
-    len = sizeof(savedFile) - savedFileSize - 1;
-  }
-  memcpy(savedFile + savedFileSize, text, len);
-  savedFileSize += len;
-  savedFile[savedFileSize] = 0;
+void ioFileClose(void) {
+  fileOpen = false;
 }
 
+void ioFileSeek(uint32_t position) {
+  loadCursor = position;
+}
+
+void readLine(char *line, size_t maxLen) {
+  size_t length = 0;
+
+  while(loadCursor < loadBufferSize && loadBuffer[loadCursor] != '\n') {
+    if(length + 1 < maxLen) {
+      line[length++] = loadBuffer[loadCursor];
+    }
+    loadCursor++;
+  }
+  if(loadCursor < loadBufferSize) {
+    loadCursor++; // consume the newline
+  }
+  line[length] = 0;
+}
+
+// --- parsing ---------------------------------------------------------------
+
+uint32_t stringToUint32(const char *str) {
+  uint32_t value = 0;
+  while(*str >= '0' && *str <= '9') {
+    value = value * 10u + (uint32_t)(*str++ - '0');
+  }
+  return value;
+}
+
+uint8_t stringToUint8(const char *str) {
+  return (uint8_t)stringToUint32(str);
+}
+
+int32_t stringByteLength(const char *str) {
+  return (int32_t)strlen(str);
+}
+
+void stringCopy(char *dest, const char *source) {
+  strcpy(dest, source);
+}
+
+void *xcopy(void *dest, const void *source, uint32_t n) {
+  return memcpy(dest, source, n);
+}
+
+// --- the step grammar ------------------------------------------------------
+//
+// A faithful reimplementation would be a second copy of nextStep.c, which is the
+// defect this report is about. These are deliberately SIMPLE and SHARED: the
+// lane asks whether the two screening passes agree given the same grammar, not
+// what c43's grammar is -- the item-table seam gates own that question.
+
+int16_t literalTailBytes(uint8_t literalType) {
+  switch(literalType) {
+    case 0: return 0;
+    case 1: return 1;
+    case 2: return PARAM_TAIL_LENGTH_PREFIXED;
+    case 3: return PARAM_TAIL_BASE_LENGTH_PREFIXED;
+    default: return PARAM_TAIL_INVALID;
+  }
+}
+
+int16_t paramTailBytes(uint16_t paramMode, uint16_t op, uint8_t opParam) {
+  (void)op;
+  (void)opParam;
+  if(paramMode == PARAM_DECLARE_LABEL) {
+    return PARAM_TAIL_LENGTH_PREFIXED;
+  }
+  return 0;
+}
+
+// --- program area ----------------------------------------------------------
+
+bool_t isAtEndOfProgram(const uint8_t *step) {
+  return step[0] == ((ITM_END >> 8) | 0x80) && step[1] == (ITM_END & 0xff);
+}
+
+uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimed) {
+  if(nameStart >= firstFreeProgramByte) {
+    return 0;
+  }
+  if(claimed > (uint8_t)(firstFreeProgramByte - nameStart)) {
+    return (uint8_t)(firstFreeProgramByte - nameStart);
+  }
+  return claimed;
+}
+
+// The program area is a fixed slab inside `ram`, so growing it cannot move it.
+// Both implementations therefore see the same pointers before and after -- a
+// real relocation would have to be modelled identically on both sides to mean
+// anything, and modelling it here would put the allocator's behaviour back into
+// hand-written harness code.
 void resizeProgramMemory(uint16_t newSizeInBlocks) {
-  uint16_t currentSizeInBlocks = RAM_SIZE_IN_BLOCKS - z47_program_serialization_runtime_to_c47_mem_ptr(beginOfProgramMemory);
-  size_t bytesToMove = TO_BYTES(currentSizeInBlocks < newSizeInBlocks ? currentSizeInBlocks : newSizeInBlocks);
-  uint8_t *newBeginOfProgramMemory = fakeRam + TO_BYTES(RAM_SIZE_IN_BLOCKS - newSizeInBlocks);
-  ptrdiff_t delta = newBeginOfProgramMemory - beginOfProgramMemory;
-
-  if(newBeginOfProgramMemory == beginOfProgramMemory) {
-    return;
-  }
-
-  memmove(newBeginOfProgramMemory, beginOfProgramMemory, bytesToMove);
-  beginOfProgramMemory = newBeginOfProgramMemory;
-  firstFreeProgramByte += delta;
+  (void)newSizeInBlocks;
 }
 
-bool_t z47_program_serialization_runtime_check_power(void) {
-  return powerBlocked;
+uint32_t getFreeRamMemory(void) {
+  return freeRamMemoryBytes;
 }
 
-bool_t z47_program_serialization_runtime_select_program(uint16_t label) {
-  uint16_t index;
+// --- calculator surface ----------------------------------------------------
 
-  if(label == 0) {
-    updateCurrentProgramPointers();
-    return true;
-  }
-
-  for(index = 0; index < labelCount; index++) {
-    if(labels[index].label == label) {
-      currentProgramNumber = labels[index].program_number;
-      updateCurrentProgramPointers();
-      return true;
-    }
-  }
-
-  return false;
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved) {
+  (void)errMessageRegisterLine;
+  (void)disUsedCanBeRemoved;
+  lastErrorKind = errorCode;
 }
 
-int z47_program_serialization_runtime_open_save_program(void) {
-  activeFile = activeFileNone;
-  if(saveOpenResult != FILE_OK) {
-    return saveOpenResult;
-  }
-  savedFileSize = 0;
-  savedFile[0] = 0;
-  activeFile = activeFileSave;
-  return FILE_OK;
+void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4) {
+  (void)m1;
+  (void)m2;
+  (void)m3;
+  (void)m4;
 }
 
-int z47_program_serialization_runtime_open_load_program(void) {
-  activeFile = activeFileNone;
-  if(loadOpenResult != FILE_OK) {
-    return loadOpenResult;
-  }
-  loadFileOffset = 0;
-  activeFile = activeFileLoad;
-  return FILE_OK;
-}
-
-void z47_program_serialization_runtime_write_literal(const char *text) {
-  if(activeFile == activeFileSave) {
-    appendSaved(text);
-  }
-}
-
-void z47_program_serialization_runtime_write_u32_line(uint32_t value) {
-  char line[64];
-
-  sprintf(line, "%u\n", (unsigned)value);
-  z47_program_serialization_runtime_write_literal(line);
-}
-
-void z47_program_serialization_runtime_write_u8_line(uint8_t value) {
-  char line[32];
-
-  sprintf(line, "%u\n", (unsigned)value);
-  z47_program_serialization_runtime_write_literal(line);
-}
-
-void z47_program_serialization_runtime_read_line(char *buffer) {
-  size_t index = 0;
-
-  if(activeFile != activeFileLoad) {
-    buffer[0] = 0;
-    return;
-  }
-
-  while(loadFileOffset < loadFileSize && loadFile[loadFileOffset] != '\n') {
-    buffer[index++] = loadFile[loadFileOffset++];
-  }
-  if(loadFileOffset < loadFileSize && loadFile[loadFileOffset] == '\n') {
-    loadFileOffset++;
-  }
-  buffer[index] = 0;
-}
-
-void z47_program_serialization_runtime_close_file(void) {
-  activeFile = activeFileNone;
-}
-
-void z47_program_serialization_runtime_display_write_error(void) {
-  lastErrorKind = 1;
-}
-
-void z47_program_serialization_runtime_display_read_error(void) {
-  lastErrorKind = 2;
-}
-
-void z47_program_serialization_runtime_show_warning(const char *message) {
+void show_warning(char *string) {
   warningCount++;
-  strncpy(lastWarning, message, sizeof(lastWarning) - 1);
+  strncpy(lastWarning, string, sizeof(lastWarning) - 1);
   lastWarning[sizeof(lastWarning) - 1] = 0;
 }
 
-void z47_program_serialization_runtime_scan_labels_and_programs(void) {
+void scanLabelsAndPrograms(void) {
   scanLabelsCalls++;
-  rebuildPrograms();
 }
 
-void z47_program_serialization_runtime_go_to_last_program(void) {
+void goToGlobalStep(int32_t step) {
+  (void)step;
   goToLastProgramCalls++;
-  if(numberOfPrograms > 0) {
-    currentProgramNumber = numberOfPrograms;
-    currentLocalStepNumber = 1;
-    updateCurrentProgramPointers();
-  }
 }
 
-bool_t z47_program_serialization_runtime_is_at_end_of_program(const uint8_t *step) {
-  return isEndInstruction(step);
+void fnGoto(uint16_t label) {
+  (void)label;
+  currentProgramNumber = namedLabelProgramNumber;
 }
 
-uint16_t z47_program_serialization_runtime_get_ram_size_in_blocks(void) {
-  return RAM_SIZE_IN_BLOCKS;
+uint16_t findNamedLabel(const char *labelName, uint8_t labelType) {
+  (void)labelName;
+  (void)labelType;
+  return 0;
 }
 
-uint16_t z47_program_serialization_runtime_to_c47_mem_ptr(const uint8_t *memPtr) {
-  return (uint16_t)((memPtr - fakeRam) >> BPB);
+// --- RTF/text export surface (compiled, never driven by this lane) ----------
+
+uint16_t getNumberOfSteps(void) {
+  return 0;
 }
 
-uint32_t z47_program_serialization_runtime_parse_u32_line(const char *line) {
-  return (uint32_t)strtoul(line, NULL, 10);
+void defineFirstDisplayedStep(void) {
 }
 
-uint8_t z47_program_serialization_runtime_parse_u8_line(const char *line) {
-  return (uint8_t)strtoul(line, NULL, 10);
+uint8_t *findNextStep(uint8_t *step) {
+  return step;
 }
 
-bool_t z47_program_serialization_runtime_line_equals(const char *line, const char *expected) {
-  return strcmp(line, expected) == 0;
+void decodeOneStep_XPORT(const uint8_t *step) {
+  (void)step;
+  tmpString[0] = 0;
 }
+
+void stringToASCII(const char *str, char *ascii) {
+  strcpy(ascii, str);
+}
+
+void stringToRTF(const char *str, char *rtf) {
+  strcpy(rtf, str);
+}
+
+// The IR-printer arm of fnPExport. Compiled, never driven here.
+int16_t lastFunc = 0;
+
+uint32_t _getProgramSize(void) {
+  return 0;
+}
+
+bool_t getSystemFlag(int32_t sf) {
+  (void)sf;
+  return false;
+}
+
+void printProgram(uint16_t mode, uint16_t unused) {
+  (void)mode;
+  (void)unused;
+}
+
+// --- seeding and capture ---------------------------------------------------
 
 void programSerializationParityReset(void) {
-  memset(fakeRam, 0, sizeof(fakeRam));
-  memset(loadFile, 0, sizeof(loadFile));
-  memset(savedFile, 0, sizeof(savedFile));
-  memset(lastWarning, 0, sizeof(lastWarning));
-  memset(labels, 0, sizeof(labels));
-  loadFileSize = 0;
-  loadFileOffset = 0;
-  savedFileSize = 0;
-  warningCount = 0;
-  lastErrorKind = 0;
-  scanLabelsCalls = 0;
-  goToLastProgramCalls = 0;
+  memset(ramStorage, 0, sizeof(ramStorage));
+  memset(indexOfItems, 0, sizeof(indexOfItems));
+  memset(&tam, 0, sizeof(tam));
+  memset(labelListStorage, 0, sizeof(labelListStorage));
+  memset(programListStorage, 0, sizeof(programListStorage));
+  saveBufferSize = 0;
+  saveBuffer[0] = 0;
+  loadBufferSize = 0;
+  loadBuffer[0] = 0;
+  loadCursor = 0;
   saveOpenResult = FILE_OK;
   loadOpenResult = FILE_OK;
-  powerBlocked = false;
-  activeFile = activeFileNone;
-  labelCount = 0;
-  beginOfProgramMemory = fakeRam + TO_BYTES(RAM_SIZE_IN_BLOCKS - 1);
-  firstFreeProgramByte = beginOfProgramMemory;
-  beginOfProgramMemory[0] = 0xffu;
-  beginOfProgramMemory[1] = 0xffu;
-  freeProgramBytes = BYTES_PER_BLOCK - 2;
-  currentLocalStepNumber = 1;
-  currentProgramNumber = 1;
+  fileOpen = false;
+  fileForWriting = false;
+  lastErrorKind = 0;
+  warningCount = 0;
+  lastWarning[0] = 0;
+  scanLabelsCalls = 0;
+  goToLastProgramCalls = 0;
+  freeRamMemoryBytes = PROGRAM_AREA_BYTES;
+  namedLabelProgramNumber = 0;
   temporaryInformation = 0;
-  rebuildPrograms();
+  dynamicMenuItem = 0;
+  numberOfLabels = 0;
+  numberOfPrograms = 0;
+  currentProgramNumber = 0;
+  currentLocalStepNumber = 0;
+  firstDisplayedLocalStepNumber = 0;
+  programListEnd = false;
+  lastProgramListEnd = false;
+  tmpString[0] = 0;
+  tmpStringLabelOrVariableName[0] = 0;
+  aimBuffer[0] = 0;
+  errorMessage[0] = 0;
+  beginOfProgramMemory = (uint8_t *)ramStorage;
+  firstFreeProgramByte = beginOfProgramMemory;
+  beginOfCurrentProgram = beginOfProgramMemory;
+  endOfCurrentProgram = beginOfProgramMemory;
+  currentStep = beginOfProgramMemory;
+  firstDisplayedStep = beginOfProgramMemory;
+  freeProgramBytes = 0;
 }
 
-void programSerializationParitySeedPrograms(const uint8_t *image, uint32_t imageSize, uint16_t beginBlock, uint16_t currentProgram, uint16_t currentLocalStep) {
-  memset(fakeRam, 0, sizeof(fakeRam));
-  beginOfProgramMemory = fakeRam + TO_BYTES(beginBlock);
+void programSerializationParitySeedPrograms(const uint8_t *image,
+                                            uint32_t imageSize,
+                                            uint16_t beginBlock,
+                                            uint16_t currentProgram,
+                                            uint16_t currentLocalStep) {
+  beginOfProgramMemory = (uint8_t *)(ramStorage + beginBlock);
   memcpy(beginOfProgramMemory, image, imageSize);
   firstFreeProgramByte = beginOfProgramMemory + imageSize - 2;
-  freeProgramBytes = (uint16_t)(TO_BYTES(RAM_SIZE_IN_BLOCKS - beginBlock) - imageSize);
+  freeProgramBytes = (uint16_t)(PROGRAM_AREA_BYTES - imageSize);
+  beginOfCurrentProgram = beginOfProgramMemory;
+  endOfCurrentProgram = beginOfProgramMemory + imageSize;
+  currentStep = beginOfProgramMemory;
+  firstDisplayedStep = beginOfProgramMemory;
   currentProgramNumber = currentProgram;
   currentLocalStepNumber = currentLocalStep;
-  rebuildPrograms();
+  numberOfPrograms = 1;
+  programList[0].step = 1;
 }
 
 void programSerializationParitySetLabel(uint16_t label, uint16_t programNumber) {
-  if(labelCount < (uint16_t)(sizeof(labels) / sizeof(labels[0]))) {
-    labels[labelCount].label = label;
-    labels[labelCount].program_number = programNumber;
-    labelCount++;
+  // The name is a 1-byte-length string, and it lives BELOW the program area so
+  // boundProgramNameLength's `nameStart < firstFreeProgramByte` test resolves the
+  // same way for both implementations.
+  uint8_t *name = (uint8_t *)ramStorage;
+  name[0] = 3;
+  name[1] = 'A';
+  name[2] = 'B';
+  name[3] = 'C';
+
+  namedLabelProgramNumber = programNumber;
+  numberOfLabels = 1;
+  if(label >= FIRST_LABEL && label <= LAST_LABEL) {
+    labelList[label - FIRST_LABEL].program = programNumber;
+    labelList[label - FIRST_LABEL].step = 1;
+    labelList[label - FIRST_LABEL].labelPointer = name;
   }
+  labelList[0].program = programNumber;
+  labelList[0].step = 1;
+  labelList[0].labelPointer = name;
 }
 
 void programSerializationParitySetLoadFile(const char *contents) {
-  loadFileSize = strlen(contents);
-  memcpy(loadFile, contents, loadFileSize + 1);
-  loadFileOffset = 0;
+  loadBufferSize = strlen(contents);
+  if(loadBufferSize >= sizeof(loadBuffer)) {
+    loadBufferSize = sizeof(loadBuffer) - 1;
+  }
+  memcpy(loadBuffer, contents, loadBufferSize);
+  loadBuffer[loadBufferSize] = 0;
+  loadCursor = 0;
 }
 
 void programSerializationParitySetFileOpenResults(int saveResult, int loadResult) {
@@ -332,36 +404,37 @@ void programSerializationParitySetFileOpenResults(int saveResult, int loadResult
   loadOpenResult = loadResult;
 }
 
-void programSerializationParitySetPowerBlocked(bool_t blocked) {
-  powerBlocked = blocked;
+void programSerializationParitySetFreeRamMemory(uint32_t bytes) {
+  freeRamMemoryBytes = bytes;
+}
+
+void programSerializationParitySetItemStatus(uint16_t op, uint16_t status) {
+  if(op <= LAST_ITEM) {
+    indexOfItems[op].status = status;
+  }
 }
 
 void programSerializationParityCapture(program_serialization_snapshot_t *snapshot) {
-  uint32_t imageSize = 0;
-
   memset(snapshot, 0, sizeof(*snapshot));
   snapshot->current_local_step_number = currentLocalStepNumber;
   snapshot->current_program_number = currentProgramNumber;
   snapshot->number_of_programs = numberOfPrograms;
   snapshot->free_program_bytes = freeProgramBytes;
-  snapshot->begin_of_program_block = z47_program_serialization_runtime_to_c47_mem_ptr(beginOfProgramMemory);
+  snapshot->begin_of_program_block = (uint16_t)((uint32_t *)beginOfProgramMemory - ramStorage);
   snapshot->first_free_program_offset = (uint32_t)(firstFreeProgramByte - beginOfProgramMemory);
   snapshot->begin_of_current_program_offset = (uint32_t)(beginOfCurrentProgram - beginOfProgramMemory);
   snapshot->end_of_current_program_offset = (uint32_t)(endOfCurrentProgram - beginOfProgramMemory);
   snapshot->current_step_offset = (uint32_t)(currentStep - beginOfProgramMemory);
   snapshot->first_displayed_step_offset = (uint32_t)(firstDisplayedStep - beginOfProgramMemory);
   snapshot->temporary_information = temporaryInformation;
+  snapshot->dynamic_menu_item = dynamicMenuItem;
   snapshot->warning_count = warningCount;
   snapshot->last_error_kind = lastErrorKind;
   snapshot->scan_labels_calls = scanLabelsCalls;
   snapshot->go_to_last_program_calls = goToLastProgramCalls;
-  snapshot->saved_file_size = savedFileSize;
-  memcpy(snapshot->saved_file, savedFile, savedFileSize + 1);
+  snapshot->saved_file_size = saveBufferSize;
+  memcpy(snapshot->saved_file, saveBuffer, saveBufferSize);
   strncpy(snapshot->last_warning, lastWarning, sizeof(snapshot->last_warning) - 1);
-  imageSize = (uint32_t)((firstFreeProgramByte + 2) - beginOfProgramMemory);
-  if(imageSize > MAX_PROGRAM_PARITY_PROGRAM_IMAGE_BYTES) {
-    imageSize = MAX_PROGRAM_PARITY_PROGRAM_IMAGE_BYTES;
-  }
-  snapshot->program_image_size = imageSize;
-  memcpy(snapshot->program_image, beginOfProgramMemory, imageSize);
+  snapshot->program_image_size = MAX_PROGRAM_PARITY_PROGRAM_IMAGE_BYTES;
+  memcpy(snapshot->program_image, beginOfProgramMemory, MAX_PROGRAM_PARITY_PROGRAM_IMAGE_BYTES);
 }

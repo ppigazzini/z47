@@ -1,11 +1,14 @@
 const std = @import("std");
 const abi = @import("abi");
 const builtin = @import("builtin");
-const build_options = @import("program_serialization_build_options");
-
-pub const use_fake_program_serialization_harness_surface =
-    @hasDecl(build_options, "use_fake_program_serialization_harness_surface") and
-    build_options.use_fake_program_serialization_harness_surface;
+// No harness fork here. The parity lane used to build this owner with
+// `use_fake_program_serialization_harness_surface`, which replaced twenty of the
+// helpers below with counting stubs -- so the lane compared c43 against a build
+// of the owner that never ran selectProgram, the label walk, or the pre-load
+// screening pass at all. Now that the oracle IS c43's saveRestorePrograms.c
+// (REPORT-31 M31-3), the harness supplies ioFileOpen / readLine /
+// scanLabelsAndPrograms / show_warning and the rest under their real c43 names,
+// and both sides run their production path through the same environment.
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
@@ -85,23 +88,6 @@ extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn ioFileSeek(position: u32) void;
 extern fn getFreeRamMemory() u32;
 
-extern fn z47_program_serialization_runtime_check_power() bool;
-extern fn z47_program_serialization_runtime_select_program(label: u16) bool;
-extern fn z47_program_serialization_runtime_open_save_program() c_int;
-extern fn z47_program_serialization_runtime_open_load_program() c_int;
-extern fn z47_program_serialization_runtime_write_literal(text: [*c]const u8) void;
-extern fn z47_program_serialization_runtime_write_u32_line(value: u32) void;
-extern fn z47_program_serialization_runtime_write_u8_line(value: u8) void;
-extern fn z47_program_serialization_runtime_read_line(buffer: [*c]u8) void;
-extern fn z47_program_serialization_runtime_close_file() void;
-extern fn z47_program_serialization_runtime_display_write_error() void;
-extern fn z47_program_serialization_runtime_display_read_error() void;
-extern fn z47_program_serialization_runtime_show_warning(message: [*c]const u8) void;
-extern fn z47_program_serialization_runtime_scan_labels_and_programs() void;
-extern fn z47_program_serialization_runtime_go_to_last_program() void;
-extern fn z47_program_serialization_runtime_get_ram_size_in_blocks() u16;
-extern fn z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr: [*c]const u8) u16;
-
 // power_check_screen is a DMCP function-table macro, not a link symbol; the Zig
 // ROM-HAL trampoline (no-op on host) supplies it.
 const rom = @import("dmcp_rom");
@@ -120,17 +106,10 @@ fn copyLabelName(label_ptr: ?[*]u8) void {
 }
 
 pub fn checkPower() bool {
-    if (use_fake_program_serialization_harness_surface) {
-        return z47_program_serialization_runtime_check_power();
-    }
     return rom.power_check_screen();
 }
 
-pub fn selectProgram(label: u16) bool {
-    if (use_fake_program_serialization_harness_surface) {
-        return z47_program_serialization_runtime_select_program(label);
-    }
-
+pub fn selectProgram(label: u16) void {
     dynamicMenuItem = -1;
 
     if (label == 0 and !tam.alpha and tam.digitsSoFar == 0) {
@@ -138,7 +117,7 @@ pub fn selectProgram(label: u16) bool {
         @memcpy(tmpStringLabelOrVariableName[0..untitled.len], untitled);
         tmpStringLabelOrVariableName[untitled.len] = 0;
 
-        const labels = labelList orelse return true;
+        const labels = labelList orelse return;
         var current_label: u16 = 0;
         while (current_label < numberOfLabels) : (current_label += 1) {
             if (labels[current_label].program == currentProgramNumber) {
@@ -151,24 +130,20 @@ pub fn selectProgram(label: u16) bool {
                 break;
             }
         }
-        return true;
+        return;
     }
 
     if (label >= FIRST_LABEL and label <= LAST_LABEL) {
         fnGoto(label);
-        const labels = labelList orelse return true;
+        const labels = labelList orelse return;
         copyLabelName(labels[label - FIRST_LABEL].labelPointer);
-        return true;
+        return;
     }
 
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    return false;
 }
 
 pub fn openSaveProgram(path: c_int) c_int {
-    if (use_fake_program_serialization_harness_surface) {
-        return z47_program_serialization_runtime_open_save_program();
-    }
     return ioFileOpen(path, ioModeWrite);
 }
 
@@ -177,9 +152,6 @@ pub fn openSaveProgram(path: c_int) c_int {
 pub fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
     // Product-only: the parity/fake harness does not provide labelList/xcopy, so
     // keep their references behind the comptime gate (as the other helpers do).
-    if (use_fake_program_serialization_harness_surface) {
-        return false;
-    }
     const labels = labelList orelse return false;
     if (labels[i].step <= 0) return false;
     const lp = labels[i].labelPointer;
@@ -191,74 +163,41 @@ pub fn globalLabelNameAt(i: u16, buf: *[256]u8) bool {
 }
 
 pub fn openLoadProgram() c_int {
-    if (use_fake_program_serialization_harness_surface) {
-        return z47_program_serialization_runtime_open_load_program();
-    }
     return ioFileOpen(ioPathLoadProgram, ioModeRead);
 }
 
 pub fn writeLiteral(text: [*c]const u8) void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_write_literal(text);
-        return;
-    }
     ioFileWrite(text, @intCast(cStringLength(text)));
 }
 
 pub fn writeU32Line(value: u32) void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_write_u32_line(value);
-        return;
-    }
     var buffer: [64]u8 = undefined;
     const line = std.fmt.bufPrint(&buffer, "{d}\n", .{value}) catch return;
     ioFileWrite(line.ptr, @intCast(line.len));
 }
 
 pub fn writeU8Line(value: u8) void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_write_u8_line(value);
-        return;
-    }
     var buffer: [32]u8 = undefined;
     const line = std.fmt.bufPrint(&buffer, "{d}\n", .{value}) catch return;
     ioFileWrite(line.ptr, @intCast(line.len));
 }
 
 pub fn readLineInto(buffer: [*c]u8, maxLen: usize) void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_read_line(buffer);
-        return;
-    }
     readLine(buffer, maxLen);
 }
 
 pub fn closeFile() void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_close_file();
-        return;
-    }
     ioFileClose();
 }
 
 pub fn displayWriteError() void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_display_write_error();
-        return;
-    }
     displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub fn displayReadError() void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_display_read_error();
-        return;
-    }
     displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
-// Real-surface only (the fake parity surface models the pre-screen load flow;
-// its callers gate on use_fake_harness_surface).
 pub fn displayRamFullError() void {
     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
 }
@@ -276,10 +215,6 @@ pub fn seekLoadFileStart() void {
 }
 
 pub fn showWarning(message: [*c]const u8) void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_show_warning(message);
-        return;
-    }
     var warning: [256]u8 = undefined;
     var idx: usize = 0;
     while (idx < warning.len - 1 and message[idx] != 0) : (idx += 1) {
@@ -290,18 +225,10 @@ pub fn showWarning(message: [*c]const u8) void {
 }
 
 pub fn scanLabelsAndPrograms() void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_scan_labels_and_programs();
-        return;
-    }
     scanLabelsAndProgramsC();
 }
 
 pub fn goToLastProgram() void {
-    if (use_fake_program_serialization_harness_surface) {
-        z47_program_serialization_runtime_go_to_last_program();
-        return;
-    }
     if (numberOfPrograms > 0) {
         const programs = programList orelse return;
         goToGlobalStep(programs[numberOfPrograms - 1].step);
@@ -309,16 +236,10 @@ pub fn goToLastProgram() void {
 }
 
 pub fn getRamSizeInBlocks() u16 {
-    if (use_fake_program_serialization_harness_surface) {
-        return z47_program_serialization_runtime_get_ram_size_in_blocks();
-    }
     return RAM_SIZE_IN_BLOCKS;
 }
 
 pub fn toC47MemPtr(mem_ptr: [*c]const u8) u16 {
-    if (use_fake_program_serialization_harness_surface) {
-        return z47_program_serialization_runtime_to_c47_mem_ptr(mem_ptr);
-    }
     if (mem_ptr == null) {
         return @intCast(C47_NULL);
     }

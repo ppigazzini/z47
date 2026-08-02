@@ -9,10 +9,6 @@
 // behind one. A step the walker cannot otherwise decode ends the screening,
 // without refusing, because scanLabelsAndPrograms() truncates the program area
 // there anyway.
-//
-// Real-surface only: the program_serialization parity harness's fake surface
-// models the pre-screen load flow and has no item table; its callers gate on
-// use_fake_harness_surface, so nothing here is analyzed in that build.
 
 const abi = @import("abi");
 const runtime = @import("program_serialization_runtime.zig");
