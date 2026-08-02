@@ -2581,6 +2581,9 @@ pub export fn closeNim() callconv(.c) void {
                         var strValue: [22]u8 = undefined;
                         frontier_display.longIntegerToAllocatedString(&value[0], &strValue, @intCast(strValue.len));
 
+                        // WIDTH-CONTRACT: no-width-question -- `long long` is
+                        // 64-bit on every target z47 builds for, and the string is
+                        // one this function just formatted rather than file input.
                         var val: u64 = strtoull(@as([*c]const u8, &strValue) + @as(usize, if (longIntegerIsNegative(&value)) 1 else 0), null, 10);
 
                         if (shortIntegerMode == SIM_UNSIGN) {} else if (shortIntegerMode == SIM_2COMPL) {

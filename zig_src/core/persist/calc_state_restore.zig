@@ -363,6 +363,41 @@ fn toPcmemptr(p: u32) [*c]u8 {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     return @ptrFromInt(progmem.toPcmemptr(geometry(), @intCast(p)));
 }
+/// The pool pointer a saved (block, offset) pair names, or null if the pair is not
+/// one the save format can have produced.
+///
+/// Upstream applies exactly this rule in its BACKUP owner (saveRestoreBackup.c:780)
+/// and states the reason there: `saveCalc()` splits a pointer with TO_C47MEMPTR(),
+/// which divides by the block size and stores the remainder as the offset, so an
+/// offset is never a whole block or more, and a block index of RAM_SIZE_IN_BLOCKS
+/// is the one-past-the-end position -- "every consumer here dereferences what it is
+/// given". Its STATE owner reads the same two numbers, for the same globals, and
+/// checks neither: `currentStep = TO_PCMEMPTR(toUint32(...))` followed by an
+/// unbounded `currentStep += toUint32(...)` (saveRestoreCalcState.c:2086, 2103).
+/// One operation, two owners, one of them checked -- finding 8's shape, inherited
+/// from upstream rather than introduced here.
+///
+/// Reached by state_load_fuzz's programs_*_block_ffffffff.sav, where the port
+/// trapped in the narrowing inside toPcmemptr. Trapping beats upstream's wild
+/// pointer, but refusing beats both, and refusing is the rule upstream already
+/// wrote down one file away. A valid save cannot be affected: its block indices are
+/// inside the pool and its offsets are remainders below one block.
+fn restoredPoolPointer(block: u32, offset: u32) ?[*c]u8 {
+    @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
+    const geo = geometry();
+    // `std.math.cast`, not `@intCast`: a block index too large to be one at all is
+    // the same refusal as one outside the pool, and saying so with a checked cast
+    // that RETURNS NULL keeps the whole function's answer in one shape. @intCast
+    // would trap instead -- which is what this guard exists to stop -- and would
+    // add a narrowing to the untrusted-file ratchet for a value the next line
+    // already bounds.
+    const blk = std.math.cast(u16, block) orelse return null;
+    if (blk >= geo.ram_size_in_blocks or offset >= 4) {
+        return null;
+    }
+    return @as([*c]u8, @ptrFromInt(progmem.toPcmemptr(geo, blk))) + offset;
+}
+
 fn toC47memptr(p: [*c]const u8) u16 {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     return progmem.toC47memptr(geometry(), @intFromPtr(p));
@@ -832,12 +867,13 @@ fn restoreProgramsSection(load_mode: u16) void {
     }
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // currentStep block pointer
-    if (programsLoadMode == LM_ALL) {
-        currentStep = toPcmemptr(text.toUint32(tmpString));
-    }
+    const currentStepBlock = text.toUint32(tmpString);
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // currentStep offset within block
+    const currentStepOffset = text.toUint32(tmpString);
     if (programsLoadMode == LM_ALL) {
-        currentStep += text.toUint32(tmpString);
+        if (restoredPoolPointer(currentStepBlock, currentStepOffset)) |p| {
+            currentStep = p;
+        }
     } else if (programsLoadMode == LM_PROGRAMS) {
         if (programList[@intCast(@as(i32, currentProgramNumber) - 1)].step > 0) {
             currentStep -= TO_BYTES(numberOfBlocks);
@@ -848,12 +884,13 @@ fn restoreProgramsSection(load_mode: u16) void {
     }
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte block pointer
-    if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
-        firstFreeProgramByte = toPcmemptr(text.toUint32(tmpString));
-    }
+    const firstFreeBlock = text.toUint32(tmpString);
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // firstFreeProgramByte offset within block
+    const firstFreeOffset = text.toUint32(tmpString);
     if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
-        firstFreeProgramByte += text.toUint32(tmpString);
+        if (restoredPoolPointer(firstFreeBlock, firstFreeOffset)) |p| {
+            firstFreeProgramByte = p;
+        }
     }
 
     calc_state.readLine(tmpString, TMP_STR_LENGTH); // freeProgramBytes

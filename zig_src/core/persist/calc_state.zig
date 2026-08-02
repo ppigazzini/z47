@@ -119,18 +119,32 @@ pub export fn z47_calc_state_save_sections() void {
 // toInt16, which are a DIFFERENT upstream family: file-static helpers that pass
 // base 10 explicitly. The section parsers use those, which is why zero-padded
 // register names like "R.08" are unaffected by the base here.
+// WIDTH-CONTRACT: accepted -- the result is truncated to u8, so both targets
+// return an in-range byte and only WHICH byte differs. Reached from the .p47
+// loader's program bytes, where a window value is a corrupt file either way.
 pub export fn stringToUint8(str: [*:0]const u8) u8 {
     return @truncate(strtoul(str, null, 0));
 }
 
+// WIDTH-CONTRACT: accepted -- the widest of the family and the one that matters.
+// A window value gives the host the true low bits and the firmware 0xFFFFFFFF, so
+// `pgmSizeInByte` differs: the host may see a small size and load a degenerate
+// program, the firmware sees a huge one and its `+2 > UINT16_MAX` guard refuses.
+// Both are safe outcomes; upstream has the same split and z47 reproduces it.
 pub export fn stringToUint32(str: [*:0]const u8) u32 {
     return @truncate(strtoul(str, null, 0));
 }
 
+// WIDTH-CONTRACT: accepted -- signed, so the divergence opens at 2**31 and never
+// closes. Reached from bufferize's exponent, which the entry path bounds long
+// before that magnitude; truncation to i16 keeps the result in range regardless.
 pub export fn stringToInt16(str: [*:0]const u8) i16 {
     return @truncate(strtol(str, null, 0));
 }
 
+// WIDTH-CONTRACT: accepted -- as stringToInt16, and full-width, so a window value
+// is the host's low bits against the firmware's 2**31-1. Consumers are the AIM
+// base/exponent and backup fields; none indexes memory with the result.
 pub export fn stringToInt32(str: [*:0]const u8) i32 {
     return @truncate(strtol(str, null, 0));
 }
@@ -229,15 +243,20 @@ extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn strtol(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;
 extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong;
 extern fn strtof(s: [*c]const u8, endptr: ?*[*c]u8) f32;
+// WIDTH-CONTRACT: no-width-question -- `long long` is 64-bit on every target.
 pub export fn stringToInt64(str: [*:0]const u8) i64 {
     return @intCast(strtoll(str, null, 0));
 }
+// WIDTH-CONTRACT: no-width-question -- `long long` is 64-bit on every target.
 pub export fn stringToUint64(str: [*:0]const u8) u64 {
     return @intCast(strtoull(str, null, 0));
 }
+// WIDTH-CONTRACT: accepted -- truncated to i8; only the backup path reads it, and
+// that path is a reduced port with no consumer that indexes memory.
 pub export fn stringToInt8(str: [*:0]const u8) i8 {
     return @truncate(strtol(str, null, 0));
 }
+// WIDTH-CONTRACT: accepted -- truncated to u16; backup path only, as stringToInt8.
 pub export fn stringToUint16(str: [*:0]const u8) u16 {
     return @truncate(strtoul(str, null, 0));
 }
