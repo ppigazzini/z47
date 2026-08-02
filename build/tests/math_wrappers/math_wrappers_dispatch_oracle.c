@@ -15,7 +15,7 @@
 #define fnXNotEqual oracle_fnXNotEqual
 #define fnXAlmostEqual oracle_fnXAlmostEqual
 #define fnIsConverged oracle_fnIsConverged
-#include "../../../src/c47/mathematics/compare.c"
+#include "../../../upstream/src/c47/mathematics/compare.c"
 
 #define fnCheckType oracle_fnCheckType
 #define fnCheckReal oracle_fnCheckReal
@@ -32,10 +32,10 @@
 #define fnCheckPlusZero oracle_fnCheckPlusZero
 #define fnCheckMinusZero oracle_fnCheckMinusZero
 #define fnGetType oracle_fnGetType
-#include "../../../src/c47/mathematics/checkValue.c"
+#include "../../../upstream/src/c47/mathematics/checkValue.c"
 
 #define fnCheckInteger oracle_fnCheckInteger
-#include "../../../src/c47/mathematics/int.c"
+#include "../../../upstream/src/c47/mathematics/int.c"
 
 #undef fnCheckInteger
 #undef fnGetType
@@ -68,51 +68,51 @@
 #undef compareTypeError
 
 #define fnAdd oracle_fnAdd
-#include "../../../src/c47/mathematics/addition.c"
+#include "../../../upstream/src/c47/mathematics/addition.c"
 #undef fnAdd
 
 #define fnSubtract oracle_fnSubtract
-#include "../../../src/c47/mathematics/subtraction.c"
+#include "../../../upstream/src/c47/mathematics/subtraction.c"
 #undef fnSubtract
 
 #define fnMultiply oracle_fnMultiply
-#include "../../../src/c47/mathematics/multiplication.c"
+#include "../../../upstream/src/c47/mathematics/multiplication.c"
 #undef fnMultiply
 
 #define fnDivide oracle_fnDivide
-#include "../../../src/c47/mathematics/division.c"
+#include "../../../upstream/src/c47/mathematics/division.c"
 #undef fnDivide
 
 #define fnIDiv oracle_fnIDiv
-#include "../../../src/c47/mathematics/idiv.c"
+#include "../../../upstream/src/c47/mathematics/idiv.c"
 #undef fnIDiv
 
 #define fnIDivR oracle_fnIDivR
-#include "../../../src/c47/mathematics/idivr.c"
+#include "../../../upstream/src/c47/mathematics/idivr.c"
 #undef fnIDivR
 
 #define fnDblMultiply oracle_fnDblMultiply
-#include "../../../src/c47/mathematics/dblMultiplication.c"
+#include "../../../upstream/src/c47/mathematics/dblMultiplication.c"
 #undef fnDblMultiply
 
 #define dblDivide oracle_dblDivide
 #define fnDblDivide oracle_fnDblDivide
 #define fnDblDivideRemainder oracle_fnDblDivideRemainder
-#include "../../../src/c47/mathematics/dblDivision.c"
+#include "../../../upstream/src/c47/mathematics/dblDivision.c"
 #undef fnDblDivideRemainder
 #undef fnDblDivide
 #undef dblDivide
 
 #define fnRound oracle_fnRound
-#include "../../../src/c47/mathematics/round.c"
+#include "../../../upstream/src/c47/mathematics/round.c"
 #undef fnRound
 
 #define fnDecomp oracle_fnDecomp
-#include "../../../src/c47/mathematics/decomp.c"
+#include "../../../upstream/src/c47/mathematics/decomp.c"
 #undef fnDecomp
 
 #define fnDec oracle_fnDec
 #define fnInc oracle_fnInc
-#include "../../../src/c47/mathematics/incDec.c"
+#include "../../../upstream/src/c47/mathematics/incDec.c"
 #undef fnInc
 #undef fnDec

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "../../../src/c47/c47.h"
+#include "../../../upstream/src/c47/c47.h"
 
 static void z47_math_ln_complex_init_constant(real_t *value, int32_t exponent, uint8_t bits, uint16_t lsu0) {
   memset(value, 0, sizeof(*value));

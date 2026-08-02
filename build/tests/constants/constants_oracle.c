@@ -4,6 +4,6 @@
 
 #define fnConstant oracle_fnConstant
 #define fnPi oracle_fnPi
-#include "../../../src/c47/constants.c"
+#include "../../../upstream/src/c47/constants.c"
 #undef fnPi
 #undef fnConstant

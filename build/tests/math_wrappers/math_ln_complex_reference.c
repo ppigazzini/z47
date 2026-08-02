@@ -17,7 +17,7 @@
 #define lnReal z47_ln_complex_reference_lnReal
 #define lnCplx z47_ln_complex_reference_lnCplx
 
-#include "../../../src/c47/mathematics/ln.c"
+#include "../../../upstream/src/c47/mathematics/ln.c"
 
 #undef fnLn
 #undef lnReal

@@ -4,6 +4,6 @@
 
 #define fnTone oracle_fnTone
 #define fnBeep oracle_fnBeep
-#include "../../../src/c47/ui/tone.c"
+#include "../../../upstream/src/c47/ui/tone.c"
 #undef fnTone
 #undef fnBeep

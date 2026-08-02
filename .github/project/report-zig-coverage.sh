@@ -46,11 +46,23 @@ else
   areas=(src build "$upstream_root/src" "$upstream_root/dep")
 fi
 
-# Only `.` needs escaping for the ERE below; `\/` is undefined in POSIX ERE even
-# though GNU grep tolerates it.
-area_re="$(printf '%s\n' "${areas[@]}" | sed 's#\.#\\.#g' | paste -sd '|' -)"
+# Matching is LITERAL, never regex. $repo_root is a filesystem path and a path is
+# not a safe regex: a `.` would match any character and a `+` or `*` would turn the
+# preceding character into a quantifier, so a repo checked out at e.g.
+# ~/proj.v2+beta stops matching its own files. The failure mode is "0 lines", which
+# reads as "no coverage" rather than as an error -- so awk does prefix arithmetic
+# with index() and the areas are compared as plain strings.
 lines="$(llvm-symbolizer --obj="$bin" < cov_pcs.txt 2>/dev/null \
-         | grep -oE "$repo_root/($area_re)/[^:]+:[0-9]+" | sort -u)"
+         | awk -v prefix="$repo_root/" -v areas="$(printf '%s\n' "${areas[@]}" | paste -sd '|' -)" '
+             BEGIN { n = split(areas, a, "|") }
+             {
+               # Keep only "<file>:<line>" under the repo root.
+               if (index($0, prefix) != 1) next
+               if (match($0, /:[0-9]+/) == 0) next
+               rel = substr($0, length(prefix) + 1)
+               for (i = 1; i <= n; i++)
+                 if (index(rel, a[i] "/") == 1) { print prefix rel; next }
+             }' | sort -u)"
 total="$(printf '%s\n' "$lines" | grep -c . || true)"
 
 echo "host-harness coverage (executed edges: $(grep -c . cov_pcs.txt); distinct source lines: $total)"
@@ -69,5 +81,12 @@ if [[ "$zig_n" == 0 ]]; then
   echo "coverage below confirms the mechanism + symbolization work end to end."
 fi
 echo "top covered files:"
+# Literal prefix strip again, for the same reason: sed would read $repo_root as a
+# regex, and a `#` anywhere in the path would also close the s### delimiter.
 printf '%s\n' "$lines" | cut -d: -f1 | sort | uniq -c | sort -rn | head -12 \
-  | sed -E "s#^( *[0-9]+) $repo_root/#\1  #"
+  | awk -v prefix="$repo_root/" '{
+      rest = $0
+      sub(/^ *[0-9]+ /, "", rest)
+      if (index(rest, prefix) == 1) rest = substr(rest, length(prefix) + 1)
+      printf "%7d  %s\n", $1, rest
+    }'

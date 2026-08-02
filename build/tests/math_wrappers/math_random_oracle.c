@@ -9,7 +9,7 @@ uint32_t oracle_pcg32_random_r(pcg32_random_t *rng);
 #define pcg32_srandom_r oracle_pcg32_srandom_r
 #define pcg32_srandom oracle_pcg32_srandom
 #define pcg32_random_r oracle_pcg32_random_r
-#include "../../../src/c47/mathematics/pcg_basic.c"
+#include "../../../upstream/src/c47/mathematics/pcg_basic.c"
 #undef pcg32_random_r
 #undef pcg32_srandom
 #undef pcg32_srandom_r
@@ -20,7 +20,7 @@ uint32_t oracle_pcg32_random_r(pcg32_random_t *rng);
 #define fnRandomI oracle_fnRandomI
 #define fnRandom oracle_fnRandom
 #define fnSeed oracle_fnSeed
-#include "../../../src/c47/mathematics/random.c"
+#include "../../../upstream/src/c47/mathematics/random.c"
 #undef fnSeed
 #undef fnRandom
 #undef fnRandomI

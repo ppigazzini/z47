@@ -18,16 +18,25 @@ const host_types = @import("types.zig");
 
 const z47_test_list = "build/tests/testSuiteList_z47.txt";
 
+/// The CWD for a harness that reaches one of upstream's CWD-relative resource
+/// opens -- in practice `res/testPgms/testPgms.bin`, which stages the test
+/// programs, opened by the ported `config.zig` exactly as upstream's `config.c`
+/// opens it. The literal cannot move without breaking 1:1 parity, so the CWD is
+/// what has to be right, and the right CWD is the imported root: that is the
+/// directory upstream's own code is written to run in.
+///
+/// This matters more than it looks. A missing testPgms.bin does NOT fail the run
+/// -- it prints one line and continues with no program memory, which surfaced as
+/// an integer-overflow panic in `calc_state_progmem.offsetWithinBlock` 12872 tests
+/// later. Only three harnesses plus the testSuite reach it; the rest deliberately
+/// stay at the repo root, because several pass repo-root-relative arguments.
+fn upstreamCwd(b: *std.Build) std.Build.LazyPath {
+    return b.path(build_common.upstreamRootString(b));
+}
+
 fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path: []const u8) *std.Build.Step.Run {
     const run_test_suite = b.addRunArtifact(test_suite);
-    // testSuite.c opens some inputs CWD-relative, not relative to the list file:
-    // `res/testPgms/testPgms.bin` is the one that matters, because it stages the
-    // test programs. res/ is an imported-upstream path, so the run has to happen
-    // from the upstream root -- which is exactly the directory upstream's own
-    // suite is written to run in. Running from the repo root instead makes that
-    // fopen fail silently, and the missing program memory then surfaces far away
-    // as an integer-overflow panic in the calc-state save path.
-    run_test_suite.setCwd(b.path(build_common.upstreamRootString(b)));
+    run_test_suite.setCwd(upstreamCwd(b));
     // The list is passed as a resolved file argument rather than a CWD-relative
     // string: the lists live on both sides of the boundary (upstream's under
     // src/testSuite/tests/, z47's under build/tests/), so no single CWD can
@@ -713,15 +722,15 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         false,
     );
     const run_saveload_parity = b.addRunArtifact(saveload_parity_harness);
-    run_saveload_parity.setCwd(b.path("."));
-    run_saveload_parity.addArg("build/tests/calc_state/save_load_golden.sav");
+    run_saveload_parity.setCwd(upstreamCwd(b));
+    run_saveload_parity.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
     const saveload_parity_step = b.step("saveload_parity", "Run the save/load round-trip + golden parity harness");
     saveload_parity_step.dependOn(&run_saveload_parity.step);
 
     // Regenerate the golden save file from the current implementation.
     const gen_saveload_golden = b.addRunArtifact(saveload_parity_harness);
-    gen_saveload_golden.setCwd(b.path("."));
-    gen_saveload_golden.addArg("build/tests/calc_state/save_load_golden.sav");
+    gen_saveload_golden.setCwd(upstreamCwd(b));
+    gen_saveload_golden.addArg(b.pathFromRoot("build/tests/calc_state/save_load_golden.sav"));
     gen_saveload_golden.addArg("--write-golden");
     const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load parity golden file");
     saveload_golden_step.dependOn(&gen_saveload_golden.step);
@@ -747,7 +756,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         false,
     );
     const run_keyboard_entry = b.addRunArtifact(keyboard_entry_harness);
-    run_keyboard_entry.setCwd(b.path("."));
+    run_keyboard_entry.setCwd(upstreamCwd(b));
     const keyboard_entry_step = b.step("keyboard_entry_parity", "Run the keyboard entry-layer (btnClicked) parity harness");
     keyboard_entry_step.dependOn(&run_keyboard_entry.step);
 
@@ -819,7 +828,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         .flags = &.{},
     });
     const run_coverage = b.addRunArtifact(coverage_harness);
-    run_coverage.setCwd(b.path("."));
+    run_coverage.setCwd(upstreamCwd(b));
+    run_coverage.setEnvironmentVariable("Z47_COV_PCS_PATH", b.pathFromRoot("cov_pcs.txt"));
     const coverage_step = b.step("coverage", "Build+run the sancov-instrumented keyboard harness, emitting cov_pcs.txt for report-zig-coverage.sh (Annex A0)");
     coverage_step.dependOn(&run_coverage.step);
 
@@ -884,7 +894,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // Headless .p47 program runner: load a user program file through the real
     // load path and XEQ it from the top on the full calc core (no GTK). Catches
     // crashes and (wrapped in `timeout`) infinite loops in the actual programs.
-    //   zig build pgm_run -- res/PROGRAMS/BinetV3.p47
+    // The example path carries the UPSTREAM_ROOT hop because res/ is imported:
+    //   zig build pgm_run -Dpgm=upstream/res/PROGRAMS/BinetV3.p47
     const pgm_run_harness = host_builders.addFullCoreHarness(
         b,
         context.host_target,

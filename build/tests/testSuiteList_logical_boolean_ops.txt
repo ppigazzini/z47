@@ -1,11 +1,19 @@
 ; Focused logical boolean operator regression suite.
+;
+; Entries are resolved by testSuite.c relative to dirname(argv[1]) -- this
+; file's own directory -- so the hops below are build/tests/ -> repo root ->
+; the imported tree. That couples this list to UPSTREAM_ROOT, which is why it
+; needed the upstream/ hop when the import moved off the repo root. A wrong hop
+; is a hard failure (testSuite.c exits 255 on a list entry it cannot open), but
+; note that `zig build test` does NOT run this list -- only the
+; logical_boolean_ops_suite step and the host parity battery do.
 
-../../src/testSuite/tests/initialSettings
+../../upstream/src/testSuite/tests/initialSettings
 
-../../src/testSuite/tests/and
-../../src/testSuite/tests/nand
-../../src/testSuite/tests/nor
-../../src/testSuite/tests/not
-../../src/testSuite/tests/or
-../../src/testSuite/tests/xnor
-../../src/testSuite/tests/xor
+../../upstream/src/testSuite/tests/and
+../../upstream/src/testSuite/tests/nand
+../../upstream/src/testSuite/tests/nor
+../../upstream/src/testSuite/tests/not
+../../upstream/src/testSuite/tests/or
+../../upstream/src/testSuite/tests/xnor
+../../upstream/src/testSuite/tests/xor

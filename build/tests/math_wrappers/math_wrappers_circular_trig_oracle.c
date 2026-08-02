@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "../../../src/c47/c47.h"
+#include "../../../upstream/src/c47/c47.h"
 
 typedef enum {
   CTX_39,

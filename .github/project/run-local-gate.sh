@@ -85,6 +85,12 @@ bash .github/project/check-module-carriers.sh
 python3 .github/project/check-dead-force-imports.py --repo-root .
 step "[6h/11] authored ABI surface (REPORT-28 M8 / G6)"
 python3 .github/project/check-authored-abi.py --repo-root .
+step "[6g2/11] harness include paths resolve"
+# A quoted #include in a parity oracle reaches the imported tree by relative
+# path, so a layout change breaks it at COMPILE time in a lane that neither
+# `zig build sim` nor `zig build test` runs. Costs milliseconds; catches all of
+# them at once.
+python3 .github/project/check-harness-includes.py --repo-root .
 step "[6g/11] module graph cycles (REPORT-28 M1.3)"
 python3 .github/project/check-module-graph.py --repo-root .
 step "[6i/11] object graph cycles per target (REPORT-28 M1.2)"

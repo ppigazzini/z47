@@ -46,6 +46,15 @@ c47regdumpTest.txt
 backupTest*.cfg
 c47.regs
 *.s47
+# *.zip is upstream's own rule and stays unqualified ON PURPOSE. Every .zip
+# upstream tracks is a DERIVED archive its Makefile builds (`zip -r ... ALLPGMS`
+# for res/testPgms/testPgms.zip), and z47's own dist pipeline regenerates that one
+# from source (build/dist.zig). So there is nothing here worth carrying, and a
+# blanket `!/upstream/**/*.zip` exception is actively harmful: a stale local
+# regeneration then becomes stageable and `git add -A` commits a build output that
+# does not even match upstream's copy. The appnote source bundles were the only
+# real exception and left with that directory. If a resync ever brings a .zip that
+# is genuine SOURCE, add that path specifically -- not the glob.
 *.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
@@ -204,8 +213,14 @@ zig-out/
 
 # z47-owned roots that a re-imported upstream .gitignore would swallow. Upstream
 # ignores a root `/build` (its meson/make output dir) and z47 owns a `build/`
-# directory of Zig build logic; a whole-file .gitignore import would silently
-# untrack it. Last matching rule wins, so these negations survive that import.
+# directory of Zig build logic; without these negations an import of that rule
+# would silently stop new owner files from being added.
+#
+# gitignore resolves by LAST MATCH, so this only works while the imported block
+# stays ABOVE this section -- which is how the file is laid out and how a
+# hand-reconciled import must keep it. That ordering is not left to trust:
+# check-source-ownership.sh asserts every z47-owned root is unignored, so an
+# import that outranks these negations fails the gate instead of going unnoticed.
 # Delete them only together with the directories they protect.
 !/build/
 !/src/
