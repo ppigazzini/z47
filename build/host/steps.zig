@@ -1304,7 +1304,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     generated_step.dependOn(&update_fonts.step);
     generated_step.dependOn(&update_constants.step);
     generated_step.dependOn(&update_catalogs.step);
-    generated_step.dependOn(&update_testpgms.step);
+    // NOT update_testpgms, for the same reason the test lanes dropped it. The other
+    // three refresh into upstream/src/generated/, which is gitignored, so they leave
+    // the tree clean; testPgms.bin is the only TRACKED file any of them writes, and
+    // it lives inside the vendored tree. Keeping it here made `generated` -- which
+    // run-host-parity-battery.sh invokes, so both CI and the local gate run it --
+    // dirty the imported tree on every pass, and a SECOND run of run-local-gate.sh
+    // then failed check-imported-tree-pin at step 6g0 on damage the FIRST run did.
+    // `zig build testpgms` still refreshes it deliberately.
 
     const outputs: host_types.SimulatorOutputs = .{
         .c47_exe = sim,
