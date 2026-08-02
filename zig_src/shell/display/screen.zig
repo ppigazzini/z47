@@ -823,16 +823,19 @@ const whoStr1: [*:0]const u8 = "C47 & R47 Development since 2019" ++ spc ++ "by"
 const STD_o_DIARESIS = "\x80\xf6";
 const STD_e_ACUTE = "\x80\xe9";
 // The contributor roll under whoStr1, in the tiny font. Commit counts as of the
-// 30Jul2026 upstream snapshot this pin carries.
-const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3928)," ++ spc1 ++ "Martin Lorang" ++ spc ++ "(1382)," ++ spc1 ++ "Robbert Jan van Meenen" ++ spc ++ "(doc)," ++ spc1 ++
+// 02Aug2026 upstream snapshot this pin carries. Upstream states the recount
+// rule with the string: non-merge commits only, author aliases merged per
+// person, Robbert Jan is doc-only and carries no count; each total is code
+// commits plus the manual c47-wiki repo plus c47-wiki page edits.
+const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3990)," ++ spc1 ++ "Martin Lorang" ++ spc ++ "(1382)," ++ spc1 ++ "Robbert Jan van Meenen" ++ spc ++ "(doc)," ++ spc1 ++
     "MihailJP" ++ spc ++ "(1093)," ++ spc1 ++ "Ralf Ahlbrink" ++ spc ++ "(459)," ++ spc1 ++ "Paul Dale" ++ spc ++ "(449)," ++ spc1 ++ "Didier Lachieze" ++ spc ++ "(277)," ++ spc1 ++
     "Walter Bonin" ++ spc ++ "(270)," ++ spc1 ++ "Benjamin Titmus" ++ spc ++ "(215)," ++ spc1 ++ "Hartmut Bromkamp" ++ spc ++ "(187)," ++ spc1 ++
-    "Pasquale Pigazzini" ++ spc ++ "(135)," ++ spc1 ++ "Mike Leffel" ++ spc ++ "(107)," ++ spc1 ++ "Warren Young" ++ spc ++ "(68)," ++ spc1 ++ "David Emerson" ++ spc ++ "(50)," ++ spc1 ++
+    "Pasquale Pigazzini" ++ spc ++ "(161)," ++ spc1 ++ "Mike Leffel" ++ spc ++ "(107)," ++ spc1 ++ "Warren Young" ++ spc ++ "(68)," ++ spc1 ++ "David Emerson" ++ spc ++ "(64)," ++ spc1 ++
     "Bj" ++ STD_o_DIARESIS ++ "rn Jadelius" ++ spc ++ "(47)," ++ spc1 ++ "Philippe Martens" ++ spc ++ "(46)," ++ spc1 ++ "Marcel Dan" ++ spc ++ "(37)," ++ spc1 ++
     "H" ++ STD_a_RING ++ "kon Hansen" ++ spc ++ "(36)," ++ spc1 ++ "Gert Menke" ++ spc ++ "(31)," ++ spc1 ++ "John Boydon" ++ spc ++ "(29)," ++ spc1 ++ "Michael Peter" ++ spc ++ "(28)," ++ spc1 ++
     "Ian Abbott" ++ spc ++ "(21)," ++ spc1 ++ "R" ++ STD_e_ACUTE ++ "my Trotin" ++ spc ++ "(19)," ++ spc1 ++ "fridlmue" ++ spc ++ "(17)," ++ spc1 ++ "A. Vosough" ++ spc ++ "(16)," ++ spc1 ++
     "Dani Rau" ++ spc ++ "(9)," ++ spc1 ++ "Harald Overbeek" ++ spc ++ "(9)," ++ spc1 ++ "Will Rutherdale" ++ spc ++ "(6)," ++ spc1 ++ "Nigel Dowrick" ++ spc ++ "(4)" ++
-    spc1 ++ "\n(commits 30Jul2026)";
+    spc1 ++ "\n(commits 02Aug2026)";
 
 // MODELTEXT: CALCMODEL==USER_R47 ? "R47" : "C47". All z47 targets are C47 builds.
 const MODELTEXT = "C47";

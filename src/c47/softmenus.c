@@ -168,6 +168,12 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
   #define EIG_VAL  ITM_NULL
   #define EIG_QR   ITM_NULL
 #endif // OPTION_EIGEN
+
+#if defined(OPTION_SLVP)
+  #define ADV_SLVP ITM_SLVP
+#else // OPTION_SLVP: blank SLVP (SLVQ SLVC stay)
+  #define ADV_SLVP ITM_NULL
+#endif // OPTION_SLVP
 TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  -MNU_VECT,
                                              ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMNQ,           ITM_M_CONCATB,               ITM_M_CONCATR,
@@ -714,7 +720,7 @@ TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                    ITM_
 
 TO_QSPI const int16_t menu_ADV[]         = { ITM_PIn,                       ITM_SIGMAn,                   ITM_FQX,                      ITM_PLTf,                    -MNU_Sfdx,                     ITM_SOLVE,
                                              ITM_iPIn,                      ITM_iSIGMAn,                  ITM_FDQX,                     ITM_PGMPLT,                   ITM_PGMINT,                   ITM_PGMSLV,
-                                             ITM_SLVQ,                      ITM_SLVC,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL                  };
+                                             ITM_SLVQ,                      ITM_SLVC,                     ADV_SLVP,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL                  };
 
 TO_QSPI const int16_t menu_1stDeriv[]    = { ITM_NULL,                      ITM_NULL,                     ITM_NULL,                     ITM_NULL,                    -MNU_GRAPHS,                   ITM_FPHERE                };
 //note: the items in here are dynamically assigned, including the static ones
@@ -2776,6 +2782,10 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
       case ITM_M_QR  :
       case ITM_M_SQRT:
     #endif // !OPTION_EIGEN
+
+    #if !defined(OPTION_SLVP)
+      case ITM_SLVP:
+    #endif // !OPTION_SLVP
 
     #if !defined(OPTION_ELLIPTIC)
       case -MNU_ELLIPT:

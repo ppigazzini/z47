@@ -64,15 +64,21 @@ bool_t blockMonitoring = false;
                                        "RJvM" spc "NL," spc1
                                        "Walter" spc "DE.";
 
-  TO_QSPI static const char whoStr2[] = "Jaco Mostert" spc "(3928)," spc1 "Martin Lorang" spc "(1382)," spc1 "Robbert Jan van Meenen" spc "(doc)," spc1
+  //Recount: non-merge commits only, author aliases merged per person, Robbert Jan is doc-only and carries no count.
+  //  code   git rev-list --no-merges <base>, plus Over_score alone from live origin branches not in <base>, less any whose git patch-id is already in <base>.
+  //  manual GitLab h2x/c47-wiki repo, every branch, unique by commit id.
+  //  pages  GitLab h2x/c47-wiki project events, target_type WikiPage::Meta, by author.
+  //  Each total is the sum of the three.
+  //non-merge commits: c43 00.109.04.00b0.RC2 13b2e4a plus Martin's unmerged branches, c47-wiki manual repo, c47-wiki page edits
+  TO_QSPI static const char whoStr2[] = "Jaco Mostert" spc "(3990)," spc1 "Martin Lorang" spc "(1382)," spc1 "Robbert Jan van Meenen" spc "(doc)," spc1
                                        "MihailJP" spc "(1093)," spc1 "Ralf Ahlbrink" spc "(459)," spc1 "Paul Dale" spc "(449)," spc1 "Didier Lachieze" spc "(277)," spc1
                                        "Walter Bonin" spc "(270)," spc1 "Benjamin Titmus" spc "(215)," spc1 "Hartmut Bromkamp" spc "(187)," spc1
-                                       "Pasquale Pigazzini" spc "(135)," spc1 "Mike Leffel" spc "(107)," spc1 "Warren Young" spc "(68)," spc1 "David Emerson" spc "(50)," spc1
+                                       "Pasquale Pigazzini" spc "(161)," spc1 "Mike Leffel" spc "(107)," spc1 "Warren Young" spc "(68)," spc1 "David Emerson" spc "(64)," spc1
                                        "Bj" STD_o_DIARESIS "rn Jadelius" spc "(47)," spc1 "Philippe Martens" spc "(46)," spc1 "Marcel Dan" spc "(37)," spc1
                                        "H" STD_a_RING "kon Hansen" spc "(36)," spc1 "Gert Menke" spc "(31)," spc1 "John Boydon" spc "(29)," spc1 "Michael Peter" spc "(28)," spc1
                                        "Ian Abbott" spc "(21)," spc1 "R" STD_e_ACUTE "my Trotin" spc "(19)," spc1 "fridlmue" spc "(17)," spc1 "A. Vosough" spc "(16)," spc1
                                        "Dani Rau" spc "(9)," spc1 "Harald Overbeek" spc "(9)," spc1 "Will Rutherdale" spc "(6)," spc1 "Nigel Dowrick" spc "(4)"
-                                       spc1 "\n(commits 30Jul2026)";
+                                       spc1 "\n(commits 02Aug2026)";
 
 
 

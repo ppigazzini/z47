@@ -120,6 +120,7 @@ mathematics/rdp.c
 mathematics/reToCx.c
 mathematics/rsd.c
 mathematics/slvc.c
+mathematics/slvp.c
 mathematics/slvq.c
 mathematics/variance.c
 mathematics/wp34s.c

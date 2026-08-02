@@ -25,6 +25,13 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
+        # Same scoping rule as the whitespace hooks below, and for the same
+        # reason: docs/appnotes/ is upstream's, and it already carries PDFs,
+        # .docx and .zip well past this hook's 500 KB default (one is 8 MB).
+        # Unscoped, this hook does not find a z47 mistake -- it refuses an
+        # upstream resync, which is the one thing this file must never do.
+        # Z47_OWNED
+        files: '^(\.github/|zig_bridge/|zig_build/|zig_docs/|zig_src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
       - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer

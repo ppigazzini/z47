@@ -76,6 +76,7 @@ zig_src/core/numeric/powerlog/xthroot.zig
 zig_src/core/numeric/powerlog/power.zig
 zig_src/core/numeric/special/xfn.zig
 zig_src/core/numeric/slvc.zig
+zig_src/core/numeric/slvp.zig
 zig_src/core/numeric/slvq.zig
 zig_src/core/numeric/rounding/rsd.zig
 zig_src/core/numeric/rounding/rdp.zig

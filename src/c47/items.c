@@ -932,6 +932,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnSign                      (uint16_t unusedButMandatoryParameter) {}
   void fnSlvq                      (uint16_t unusedButMandatoryParameter) {}
   void fnSlvc                      (uint16_t unusedButMandatoryParameter) {}
+  void fnSlvp                      (uint16_t unusedButMandatoryParameter) {}
   void fnGetIntegerSignMode        (uint16_t unusedButMandatoryParameter) {}
   void fnLog2                      (uint16_t unusedButMandatoryParameter) {}
   void fnLog10                     (uint16_t unusedButMandatoryParameter) {}
@@ -3801,7 +3802,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 1962 */  { fnKeysManagement,                USER_N47,                    "N47",                                         "N47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1963 */  { fnKeysManagement,                USER_E47,                    "E47",                                         "E47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 1964 */  { fnKeysManagement,                USER_R47f_g,                 "R47",                                         "R47",                                         (0 << TAM_MAX_BITS) |     0, CAT_NONE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 1965 */  { itemToBeCoded,                   NOPARAM,                     "1965",                                        "1965",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 1965 */  { fnSlvp,                          NOPARAM,                     "SLVP",                                        "SLVP",                                        (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 1966 */  { fnConvertStkToMx,                VECT_CR_tzyx,                "tzyx" S_RAR_S V_4,                            "tzyx" S_RAR_S V_4,                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1967 */  { fnConvertMxToStk,                VECT_CR_tzyx,                V_4 S_RAR_S "tzyx",                            V_4 S_RAR_S "tzyx",                            (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 1968 */  { fnExchangeStkToMx,               ITM_stkexV4,                 "tzyx" STD_LEFT_RIGHT_ARROWS S6EM V_4,         "tzyx" STD_LEFT_RIGHT_ARROWS S6EM V_4,         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },

@@ -61,13 +61,13 @@ src/c47-dmcp/hal/print_ir.c
 src/c47-dmcp5/hal/console.c
 src/c47-dmcp5/hal/print_ir.c
 src/c47-gtk/hal/print_ir.c
-src/testSuite/tests/angleConv.txt
-src/testSuite/tests/stack_cov.txt
 src/c47/distributions/uniform.c
 src/c47/distributions/uniform.h
 src/c47/hal/print_ir.h
 src/c47/mathematics/elec.c
 src/c47/mathematics/elec.h
+src/c47/mathematics/slvp.c
+src/c47/mathematics/slvp.h
 src/c47/printing
 src/c47/reservedRegisterLookup.h
 src/c47/reservedRegisterLookupGenerator.c
@@ -75,6 +75,7 @@ src/c47/saveRestoreBackup.c
 src/c47/saveRestoreBackup.h
 src/t47
 src/testSuite/hal/print_ir.c
+src/testSuite/tests/angleConv.txt
 src/testSuite/tests/bits_cov.txt
 src/testSuite/tests/checkval_cov.txt
 src/testSuite/tests/clcvar_cov.txt
@@ -123,7 +124,9 @@ src/testSuite/tests/saverestore_cov.txt
 src/testSuite/tests/serialize_cov.txt
 src/testSuite/tests/serialize_state_cov.txt
 src/testSuite/tests/shortint_restore_cov.txt
+src/testSuite/tests/slvp.txt
 src/testSuite/tests/solve_cov.txt
+src/testSuite/tests/stack_cov.txt
 src/testSuite/tests/stats_cov.txt
 src/testSuite/tests/stats_register_cov.txt
 src/testSuite/tests/statsx_cov.txt

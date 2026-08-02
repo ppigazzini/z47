@@ -234,6 +234,7 @@ comptime {
         _ = @import("special/elliptic.zig");
         _ = @import("special/xfn.zig");
         _ = @import("slvc.zig");
+        _ = @import("slvp.zig");
         _ = @import("slvq.zig");
         _ = @import("rounding/rsd.zig");
         _ = @import("rounding/rdp.zig");

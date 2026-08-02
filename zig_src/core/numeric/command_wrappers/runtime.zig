@@ -18,6 +18,14 @@ const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.d
 /// constraint", ~5Kb of flash). Absent from a harness's options => on, matching
 /// the host default.
 pub const option_xfn_1000 = !@hasDecl(build_options, "option_xfn_1000") or build_options.option_xfn_1000;
+
+/// defines.h's OPTION_SLVP: the SLVP polynomial-root command. Enabled by
+/// default and #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000
+/// (2024 bytes of flash), so it is off for exactly the same builds. Its
+/// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP` dependency adds nothing:
+/// every target that drops OPTION_EIGEN is already one of those. Absent from a
+/// harness's options => on, matching the host default.
+pub const option_slvp = !@hasDecl(build_options, "option_slvp") or build_options.option_slvp;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)

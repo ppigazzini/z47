@@ -145,6 +145,14 @@
 
   void       fnEigenvectors                 (uint16_t unusedParamButMandatory);
 
+  #if defined(OPTION_SLVP)
+  /**
+   * Eigenvalues of a size x size matrix held as caller-allocated interleaved re/im real_t arrays; results land on the diagonal of eig.
+   * SLVP feeds its companion matrix through here; on builds without SLVP the engine stays file-local.
+   */
+  void       calculateEigenvalues           (real_t *a, real_t *q, real_t *r, real_t *eig, real_t *previousDiagonal, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext);
+  #endif // OPTION_SLVP
+
   /**
    * Saves the STATS matrix if STATS is available.
    *
