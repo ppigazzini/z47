@@ -75,8 +75,11 @@ def read_divergences(repo: Path) -> tuple[list[str], list[str]]:
     return not_carried, patched
 
 
-def covered(path: str, allowed: list[str]) -> bool:
-    return any(path == a or path.startswith(a + "/") for a in allowed)
+def covered(path: str, allowed: list[str], matched: set[str] | None = None) -> bool:
+    hit = [a for a in allowed if path == a or path.startswith(a + "/")]
+    if matched is not None:
+        matched.update(hit)
+    return bool(hit)
 
 
 def main() -> int:
@@ -122,6 +125,7 @@ def main() -> int:
         return 1
 
     undeclared: list[str] = []
+    matched: set[str] = set()
     for line in proc.stdout.splitlines():
         parts = line.split("\t")
         status = parts[0]
@@ -130,21 +134,39 @@ def main() -> int:
             # because a rename here means z47 carries a DIFFERENT file, which is how
             # the stale DMCP5 flash image and the BinetV3/V4 drift stayed invisible.
             up, ours = parts[1], parts[2]
-            if not (covered(up, not_carried + patched) and covered(ours, not_carried + patched)):
+            if not (
+                covered(up, not_carried + patched, matched)
+                and covered(ours, not_carried + patched, matched)
+            ):
                 undeclared.append(f"{status}  {up} -> {ours}")
             continue
         path = parts[-1]
         if status == "D":
             # In the pin, absent from z47: a path z47 does not carry.
-            if not covered(path, not_carried):
+            if not covered(path, not_carried, matched):
                 undeclared.append(f"missing   {path}")
         elif status == "A":
             # In z47, absent from the pin: an addition needing an exception.
-            if not covered(path, not_carried + patched):
+            if not covered(path, not_carried + patched, matched):
                 undeclared.append(f"extra     {path}")
         else:
-            if not covered(path, patched):
+            if not covered(path, patched, matched):
                 undeclared.append(f"modified  {path}")
+
+    # A declared exception that no longer corresponds to a real divergence is rot:
+    # it silently over-permits, and the list becomes a graveyard nobody prunes. This
+    # is not hypothetical -- deleting a probe from upstream's corpus left its entry
+    # behind within minutes of the entry being written.
+    stale = [d for d in not_carried + patched if d not in matched]
+    if stale:
+        print("DECLARED DIVERGENCES THAT NO LONGER DIVERGE:")
+        for s in sorted(stale):
+            print(f"  {s}")
+        print()
+        print(f"These entries in {DIVERGENCES} match nothing in the diff against the")
+        print("pin. Either the divergence was resolved -- delete the entry -- or the path")
+        print("was renamed and the entry needs updating.")
+        return 1
 
     if undeclared:
         print(f"IMPORTED TREE DOES NOT MATCH ITS PIN ({sha[:12]}):")

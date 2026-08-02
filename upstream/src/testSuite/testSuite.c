@@ -84,7 +84,6 @@ void covLoadGraphPgms(uint16_t unusedButMandatoryParameter);
 void covLoadNestedPgms(uint16_t unusedButMandatoryParameter);
 void covBmpName(uint16_t which);
 void covHashBmp(uint16_t which);
-void covPlotGuard(uint16_t which);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
@@ -234,7 +233,6 @@ const funcTest_t funcTestNoParam[] = {
   {"fnLoadNestedPgmsCov",    covLoadNestedPgms, 1 },
   {"fnBmpNameCov",           covBmpName, 1 },
   {"fnHashBmpCov",           covHashBmp, 1 },
-  {"fnPlotGuardCov",         covPlotGuard, 1 },
   {"fnStateRoundtrip",       covStateRoundtrip, 1 },
   {"fnShortIntWSRestoreCov", covShortIntWordSizeRestore, 1 },
   {"fnEqCalcCov",            covEqCalc, 1 },
@@ -2265,15 +2263,6 @@ void covLoadGraphPgms(uint16_t unusedButMandatoryParameter) {
   // the pinned render is immune to a fit model chosen by an earlier plot (CENTRL
   // sets the orthogonal model) - and doubles as the programmed-model-selection
   // demonstration: BestF <mask> then ASSESS assesses that model.
-  // G4b (SCATR, no SNAP): the G4 plot without the screen capture. graphPlotstat is
-  // entered twice per plot program -- once from refreshScreen<-fnSNAP, once from
-  // refreshScreen<-runProgram -- so dropping SNAP bisects the two: if plotStatMx
-  // survives here but not in G4, whatever clears it runs inside the capture.
-  static const uint8_t pgmG4b[] = {
-    ITM_LBL, STRING_LABEL_VARIABLE, 3, 'G', '4', 'b', // LBL "G4b"
-    OP2(ITM_PLOT_SCATR),                              // SCATR
-    OP2(ITM_END),                                     // END
-  };
   static const uint8_t pgmG5[] = {
     ITM_LBL, STRING_LABEL_VARIABLE, 2, 'G', '5',    // LBL "G5"
     OP2(ITM_BESTF), 0, CF_LINEAR_FITTING,           // BestF 1 (linear model; big-endian 16-bit value)
@@ -2324,7 +2313,6 @@ void covLoadGraphPgms(uint16_t unusedButMandatoryParameter) {
   covWriteAndLoadPgm(pgmG2, sizeof(pgmG2));
   covWriteAndLoadPgm(pgmG3, sizeof(pgmG3));
   covWriteAndLoadPgm(pgmG4, sizeof(pgmG4));
-  covWriteAndLoadPgm(pgmG4b, sizeof(pgmG4b));
   covWriteAndLoadPgm(pgmG5, sizeof(pgmG5));
   covWriteAndLoadPgm(pgmG6, sizeof(pgmG6));
   covWriteAndLoadPgm(pgmG7, sizeof(pgmG7));
@@ -2367,46 +2355,6 @@ void covHashBmp(uint16_t which) {
   reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(hex) + 1), amNone);
   strcpy(REGISTER_STRING_DATA(REGISTER_X), hex);
   calcMode = CM_NORMAL; // leave the graph view so a reordered corpus is unaffected
-}
-
-// The three terms of the graphPlotstat / fnPlotStat source-data guard
-//
-//   (plotStatMx[0]=='S' && checkMinimumDataPoints(const_2)) ||
-//   (plotStatMx[0]=='D' && drawMxN() >= 2)                  ||
-//   (plotStatMx[0]=='H' && statMxN() >= 3)
-//
-// read back as plain values, so the corpus can pin them instead of inferring
-// them from an error string. graphPlotstat is entered twice per plot program
-// (refreshScreen<-fnSNAP, then refreshScreen<-runProgram) and nothing between
-// the second entry and the next test case touches these, so reading them right
-// after the XEQ gives the state the failing evaluation saw.
-//
-// Deliberately side-effect free: checkMinimumDataPoints() is NOT called, since
-// it raises a calculator error on failure and would overwrite the very error
-// code the corpus is asserting. Its two inputs are reported separately instead
-// (statisticalSumsPointer and SIGMA_N), which is what it actually tests.
-void covPlotGuard(uint16_t which) {
-  int32_t value = -1;
-  switch(which) {
-    case 0: value = (int32_t)(uint8_t)plotStatMx[0];                  break; // 'S'=83 'D'=68 'H'=72, 0 = cleared
-    case 1: value = statisticalSumsPointer != NULL;                   break; // checkMinimumDataPoints' first guard
-    case 2: value = statisticalSumsPointer != NULL                           // checkMinimumDataPoints' second guard, as a count
-                      ? realToInt32C47(SIGMA_N, NULL) : -1;           break;
-    case 3: value = statMxN();                                        break; // rows of the plotStatMx-named matrix ('S'/'H')
-    case 4: value = drawMxN();                                        break; // rows of DrwMX ('D' only, 0 otherwise)
-    case 5: value = (int32_t)(uint8_t)statMx[0];                      break; // restoreStats' skip condition in fnPlotStat
-    case 6: value = calcMode;                                         break; // CM_PLOT_STAT=8 while a stat plot is on screen
-    case 7: value = drawHistogram;                                    break;
-    // Shape of the damage, when plotStatMx[0] does not read 'S'/'H': byte 1 still
-    // holding its letter means a single stray NUL (an off-by-one terminator from a
-    // neighbour), while a zeroed statMx[0] as well means a wide store covering both
-    // of the adjacent char[8] name buffers.
-    case 8: value = (int32_t)(uint8_t)plotStatMx[1];                  break;
-    case 9: value = (int32_t)(uint8_t)plotStatMx[7];                  break;
-    default: break;
-  }
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  int32ToReal34(value, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 // Nested SOLVE/INT/PLOT drivers (nested_cov.txt). The programs are the AN0022 nested examples (docs/appnotes/sources/AN0022/func.txt) without the
