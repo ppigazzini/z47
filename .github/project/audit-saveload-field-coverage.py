@@ -77,11 +77,10 @@ def fn_assigned(text: str, funcs: tuple[str, ...]) -> set[str]:
     literals like '}' that defeat a naive depth counter)."""
     names: set[str] = set()
     for fn in funcs:
-        m = re.search(r"^[A-Za-z].*\b" + re.escape(fn) + r"\s*\([^;{]*\)\s*\{",
-                      text, re.M)
+        m = re.search(r"^[A-Za-z].*\b" + re.escape(fn) + r"\s*\([^;{]*\)\s*\{", text, re.M)
         if not m:
             continue
-        rest = text[m.end():]
+        rest = text[m.end() :]
         end = re.search(r"^\}", rest, re.M)
         names |= assigned_names(rest[: end.start() if end else len(rest)])
     return names
@@ -115,10 +114,16 @@ def main() -> int:
     for k in order:
         print(f"  {k}: {len(buckets[k])}")
     for k, note in (
-        ("CONFIG-DRIVEN", "set only by configCommon's data-driven switch -- NOT a "
-         "runtime guarantee; confirm via the runtime poison-diff before M10"),
-        ("UNCOVERED", "no assignment on the reset path or in buildState -- set "
-         "deterministically in buildState if a real save field"),
+        (
+            "CONFIG-DRIVEN",
+            "set only by configCommon's data-driven switch -- NOT a "
+            "runtime guarantee; confirm via the runtime poison-diff before M10",
+        ),
+        (
+            "UNCOVERED",
+            "no assignment on the reset path or in buildState -- set "
+            "deterministically in buildState if a real save field",
+        ),
     ):
         if buckets[k]:
             print(f"\n{k} ({note}):")

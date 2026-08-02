@@ -103,7 +103,9 @@ def measure(root: str):
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=REPO_DEFAULT)
-    ap.add_argument("--update", action="store_true", help="re-pin the baseline (only if not increased)")
+    ap.add_argument(
+        "--update", action="store_true", help="re-pin the baseline (only if not increased)"
+    )
     ap.add_argument("--list", action="store_true", help="print every current edge")
     args = ap.parse_args()
 
@@ -123,7 +125,9 @@ def main() -> int:
 
     if args.update:
         if n_extern > base_extern:
-            print(f"refusing --update: extern edges rose {base_extern} -> {n_extern}", file=sys.stderr)
+            print(
+                f"refusing --update: extern edges rose {base_extern} -> {n_extern}", file=sys.stderr
+            )
             return 1
         base["extern_edges"] = n_extern
         with open(BASELINE, "w", encoding="utf-8") as fh:
@@ -140,12 +144,19 @@ def main() -> int:
             print(f"  {f} @imports {s}", file=sys.stderr)
     if n_extern > base_extern:
         ok = False
-        print(f"FAIL: core->shell extern edges rose {base_extern} -> {n_extern} (frozen guard):", file=sys.stderr)
+        print(
+            f"FAIL: core->shell extern edges rose {base_extern} -> {n_extern} (frozen guard):",
+            file=sys.stderr,
+        )
 
     status = "below" if n_extern < base_extern else "at"
-    print(f"core->shell severance: import={n_import} (cap 0), extern={n_extern} ({status} ceiling {base_extern})")
+    print(
+        f"core->shell severance: import={n_import} (cap 0), extern={n_extern} ({status} ceiling {base_extern})"
+    )
     if n_extern < base_extern:
-        print(f"note: extern edges dropped {base_extern} -> {n_extern}; run --update to re-pin the guard.")
+        print(
+            f"note: extern edges dropped {base_extern} -> {n_extern}; run --update to re-pin the guard."
+        )
     return 0 if ok else 1
 
 

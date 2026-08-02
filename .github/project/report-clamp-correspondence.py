@@ -371,7 +371,9 @@ def zig_bound_index(root: pathlib.Path) -> dict[str, list[str]]:
     index: dict[str, list[str]] = {}
     for path in sorted(root.glob("zig_src/**/*.zig")):
         rel = path.relative_to(root)
-        for n, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+        for n, line in enumerate(
+            path.read_text(encoding="utf-8", errors="replace").splitlines(), 1
+        ):
             for bound in zig_bounds(line):
                 index.setdefault(bound, []).append(f"{rel}:{n}")
     return index
@@ -444,7 +446,13 @@ def scan(root: pathlib.Path, all_files: bool) -> list[dict]:
     # Strongest evidence first: upstream said in words that the check matters, and
     # nothing anywhere in the tree compares against its bound.
     findings.sort(
-        key=lambda f: (not f["commented"], bool(f["elsewhere"]), f["stub_owner"], f["c_file"], f["c_line"])
+        key=lambda f: (
+            not f["commented"],
+            bool(f["elsewhere"]),
+            f["stub_owner"],
+            f["c_file"],
+            f["c_line"],
+        )
     )
     return findings
 
@@ -540,7 +548,11 @@ def main() -> int:
     if args.self_test:
         return self_test()
 
-    root = pathlib.Path(args.repo_root) if args.repo_root else pathlib.Path(__file__).resolve().parents[2]
+    root = (
+        pathlib.Path(args.repo_root)
+        if args.repo_root
+        else pathlib.Path(__file__).resolve().parents[2]
+    )
 
     if args.check:
         # Tool rot first: a scan whose extractor has broken reports a clean queue,
@@ -565,7 +577,9 @@ def main() -> int:
     findings = scan(root, args.all_files)
 
     if args.write_baseline:
-        BASELINE.write_text(json.dumps({"load_path_queue": len(scan(root, all_files=False))}, indent=2) + "\n")
+        BASELINE.write_text(
+            json.dumps({"load_path_queue": len(scan(root, all_files=False))}, indent=2) + "\n"
+        )
         print(f"wrote baseline: load_path_queue = {len(scan(root, all_files=False))}")
         return 0
 
@@ -573,16 +587,20 @@ def main() -> int:
         print(json.dumps(findings, indent=2))
     else:
         scope = "every src/c47 .c" if args.all_files else ", ".join(LOAD_PATH_FILES)
-        print(f"CLAMP CORRESPONDENCE -- upstream guards with no threshold match in the Zig owner")
+        print("CLAMP CORRESPONDENCE -- upstream guards with no threshold match in the Zig owner")
         print(f"  scope: {scope}")
         print(f"  queue: {len(findings)}\n")
         for f in findings:
             flag = "COMMENTED " if f["commented"] else ""
             print(f"{flag}{f['c_file']}:{f['c_line']} {f['c_function']}()")
             print(f"    if ({f['condition']})")
-            print(f"    thresholds not found in Zig {f['c_function']}(): {', '.join(f['thresholds'])}")
+            print(
+                f"    thresholds not found in Zig {f['c_function']}(): {', '.join(f['thresholds'])}"
+            )
             if f["stub_owner"]:
-                print("    NOTE: the Zig owner branches on nothing -- a reduced port, not a dropped guard.")
+                print(
+                    "    NOTE: the Zig owner branches on nothing -- a reduced port, not a dropped guard."
+                )
             elif f["elsewhere"]:
                 print(f"    but compared against at: {', '.join(f['elsewhere'])}")
             else:

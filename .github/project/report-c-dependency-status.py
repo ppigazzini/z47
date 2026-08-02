@@ -7,11 +7,8 @@ import argparse
 import os
 from pathlib import Path
 
-from c_dependency_audit import load_json
-from c_dependency_audit import nonblank_line_count
-from c_dependency_audit import scan_classified_entries
-from retained_bridge_review import load_rows
-from retained_bridge_review import status_counts
+from c_dependency_audit import load_json, nonblank_line_count, scan_classified_entries
+from retained_bridge_review import load_rows, status_counts
 
 
 def parse_args() -> argparse.Namespace:

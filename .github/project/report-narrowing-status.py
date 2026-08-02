@@ -172,16 +172,12 @@ def summarise(sites: list[dict], safe_fns: set[tuple[str, str]]) -> dict:
         "intcast_sites": count(lambda s: s["builtin"] == "@intCast"),
         "truncate_sites": count(lambda s: s["builtin"] == "@truncate"),
         "bitcast_sites": count(lambda s: s["builtin"] == "@bitCast"),
-        "intcast_on_untrusted_fns": count(
-            lambda s: s["builtin"] == "@intCast" and s["untrusted"]
-        ),
+        "intcast_on_untrusted_fns": count(lambda s: s["builtin"] == "@intCast" and s["untrusted"]),
         # The number that matters: an @intCast on an untrusted-parse function
         # whose operand is NOT comptime-known, so it can trap at runtime on a
         # value a file supplied.
         "intcast_untrusted_runtime": count(
-            lambda s: s["builtin"] == "@intCast"
-            and s["untrusted"]
-            and not s["comptime_operand"]
+            lambda s: s["builtin"] == "@intCast" and s["untrusted"] and not s["comptime_operand"]
         ),
         "truncate_on_untrusted_fns": count(
             lambda s: s["builtin"] == "@truncate" and s["untrusted"]
@@ -280,11 +276,7 @@ def main() -> int:
     print("Zig must be @truncate, and a provable fit means @intCast is correct.")
     print()
 
-    shown = [
-        s
-        for s in sites
-        if args.all or (s["untrusted"] and not s["comptime_operand"])
-    ]
+    shown = [s for s in sites if args.all or (s["untrusted"] and not s["comptime_operand"])]
     shown.sort(key=lambda s: (not s["untrusted"], s["file"], s["line"]))
     for s in shown:
         flag = "UNTRUSTED" if s["untrusted"] else "         "

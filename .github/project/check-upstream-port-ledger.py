@@ -8,7 +8,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 PIN_PATH = ".github/project/upstream-pin.env"
 LEDGER_PATH = ".github/project/upstream-port-ledger.tsv"
 TRACKED_PATHS = (PIN_PATH, LEDGER_PATH)
@@ -105,7 +104,7 @@ def load_ledger_rows(ledger_path: Path) -> list[dict[str, str]]:
                     f"tab-separated columns, found {len(fields)}"
                 )
 
-            row = dict(zip(EXPECTED_HEADER, fields))
+            row = dict(zip(EXPECTED_HEADER, fields, strict=True))
             if not COMMIT_RE.fullmatch(row["upstream_commit"]):
                 raise ValueError(
                     f"{LEDGER_PATH}:{line_number} has an invalid upstream_commit "
@@ -114,9 +113,7 @@ def load_ledger_rows(ledger_path: Path) -> list[dict[str, str]]:
 
             for column in EXPECTED_HEADER[:-1]:
                 if not row[column]:
-                    raise ValueError(
-                        f"{LEDGER_PATH}:{line_number} has an empty {column} field"
-                    )
+                    raise ValueError(f"{LEDGER_PATH}:{line_number} has an empty {column} field")
 
             if row["status"] not in ALLOWED_STATUSES:
                 allowed = ", ".join(sorted(ALLOWED_STATUSES))
@@ -179,9 +176,7 @@ def validate_branch_diff(repo_root: Path, diff_base: str) -> set[str]:
     }
 
     if PIN_PATH in changed_paths and LEDGER_PATH not in changed_paths:
-        raise ValueError(
-            f"{PIN_PATH} changed since {diff_base} but {LEDGER_PATH} did not"
-        )
+        raise ValueError(f"{PIN_PATH} changed since {diff_base} but {LEDGER_PATH} did not")
 
     return changed_paths
 

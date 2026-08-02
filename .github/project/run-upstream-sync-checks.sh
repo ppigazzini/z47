@@ -33,4 +33,3 @@ else
   echo "FAIL: strict product first-party C cap is not yet satisfied." >&2
   exit 1
 fi
-

@@ -32,9 +32,7 @@ from pathlib import Path
 # headers/assets (catalogs, constants, raster fonts). They are not linked into
 # any shipped product binary. Adding a name here is an explicit, reviewable
 # decision -- never widen it to silence a real product-lane regression.
-GENERATOR_TOOLS = frozenset(
-    {"generateCatalogs", "generateConstants", "ttf2RasterFonts"}
-)
+GENERATOR_TOOLS = frozenset({"generateCatalogs", "generateConstants", "ttf2RasterFonts"})
 
 # First-party C surfaces that must never reach a product binary.
 FIRST_PARTY_C = re.compile(r"\b(src/c47[a-z0-9-]*/[A-Za-z0-9_./-]+\.c|zig_bridge/[^\s]+\.c)\b")
@@ -116,8 +114,10 @@ def main() -> int:
             if first_party_c_in(cmd):
                 v += 1
         if v == 1:
-            print("self-test PASS: planted product-lane first-party C was caught; "
-                  "generator-tool C was correctly ignored")
+            print(
+                "self-test PASS: planted product-lane first-party C was caught; "
+                "generator-tool C was correctly ignored"
+            )
             return 0
         print(f"self-test FAIL: expected 1 caught violation, got {v}")
         return 1
@@ -132,8 +132,7 @@ def main() -> int:
     if total:
         print(f"\nFAIL: {total} product compile/link command(s) link first-party C.")
         return 1
-    print("\nPASS: no product binary links first-party C (verified against the "
-          "live build graph).")
+    print("\nPASS: no product binary links first-party C (verified against the live build graph).")
     return 0
 
 

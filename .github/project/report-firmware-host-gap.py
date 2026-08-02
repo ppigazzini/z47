@@ -38,8 +38,9 @@ def enclosing_fn(lines: list[str], idx: int) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--repo-root", default=".")
-    ap.add_argument("--owner-summary", action="store_true",
-                    help="print only per-owner gated-region counts")
+    ap.add_argument(
+        "--owner-summary", action="store_true", help="print only per-owner gated-region counts"
+    )
     args = ap.parse_args()
     root = Path(args.repo_root)
     zig_src = root / "zig_src"
@@ -56,10 +57,13 @@ def main() -> int:
             per_owner[str(path.relative_to(root))] = hits
             total += len(hits)
 
-    print(f"DMCP-only (dmcp_build-gated) regions in zig_src: {total} "
-          f"across {len(per_owner)} owners")
-    print("Each MUST be host-executed by a test OR covered by the M9 hardware "
-          "checklist -- none silently uncovered.\n")
+    print(
+        f"DMCP-only (dmcp_build-gated) regions in zig_src: {total} across {len(per_owner)} owners"
+    )
+    print(
+        "Each MUST be host-executed by a test OR covered by the M9 hardware "
+        "checklist -- none silently uncovered.\n"
+    )
 
     for owner, hits in per_owner.items():
         if args.owner_summary:

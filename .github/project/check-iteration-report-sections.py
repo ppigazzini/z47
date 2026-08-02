@@ -8,7 +8,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-
 MILESTONE_HEADING_RE = re.compile(r"^##\s+Milestone\s+M\d+\s+Closure:\s+.+$")
 SUBHEADING_RE = re.compile(r"^###\s+(.+?)\s*$")
 TOP_HEADING_RE = re.compile(r"^##\s+")
@@ -61,10 +60,7 @@ def find_milestone_windows(lines: list[str]) -> list[SectionWindow]:
 
     windows: list[SectionWindow] = []
     for i, (start_idx, title) in enumerate(starts):
-        if i + 1 < len(starts):
-            end_idx = starts[i + 1][0]
-        else:
-            end_idx = len(lines)
+        end_idx = starts[i + 1][0] if i + 1 < len(starts) else len(lines)
         windows.append(SectionWindow(title=title, start=start_idx, end=end_idx))
 
     return windows
@@ -81,10 +77,7 @@ def extract_subsections(lines: list[str], window: SectionWindow) -> dict[str, tu
 
     ranges: dict[str, tuple[int, int]] = {}
     for i, (title, start_idx) in enumerate(subsection_indices):
-        if i + 1 < len(subsection_indices):
-            end_idx = subsection_indices[i + 1][1]
-        else:
-            end_idx = window.end
+        end_idx = subsection_indices[i + 1][1] if i + 1 < len(subsection_indices) else window.end
         ranges[title] = (start_idx, end_idx)
 
     return ranges
@@ -152,7 +145,9 @@ def main() -> int:
             print(f"ERROR: {message}", file=sys.stderr)
         return 1
 
-    print(f"PASS: validated mandatory report governance sections across {len(args.report)} report file(s).")
+    print(
+        f"PASS: validated mandatory report governance sections across {len(args.report)} report file(s)."
+    )
     return 0
 
 

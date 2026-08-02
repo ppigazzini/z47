@@ -21,6 +21,7 @@ un-listed divergence exits 1.
 Run standalone or via `zig build constant-parity-audit`. Requires zig + the
 upstream headers under src/c47 and dep/decNumberICU.
 """
+
 import pathlib
 import re
 import shutil
@@ -94,9 +95,7 @@ STRING_ALIASES = {
 
 
 def _alias_re(name):
-    return re.compile(
-        r"\bconst " + re.escape(name) + r'\s*(?::[^=;]+)?=\s*("(?:\\.|[^"\\])*")\s*;'
-    )
+    return re.compile(r"\bconst " + re.escape(name) + r'\s*(?::[^=;]+)?=\s*("(?:\\.|[^"\\])*")\s*;')
 
 
 def collect_string_mirrors():
@@ -126,7 +125,7 @@ def check_string_mirrors(zig, tmp):
         f.write(PRELUDE)
         f.write('#include "fonts.h"\n#include <string.h>\n#include <stdio.h>\n')
         f.write("int main(void){int fails=0;\n")
-        for i, (name, literal, owner) in enumerate(checks):
+        for i, (name, literal, _owner) in enumerate(checks):
             # STD_* are #define string macros, so #ifdef filters Zig-local names.
             f.write(f"#ifdef {name}\n")
             f.write(f'  if(strcmp({literal}, {name})){{printf("%d\\n",{i});fails++;}}\n')
@@ -134,10 +133,22 @@ def check_string_mirrors(zig, tmp):
         f.write("return fails;}\n")
     exe = tmp / "string_parity"
     comp = subprocess.run(
-        [zig, "cc", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1",
-         "-I", str(ROOT / "dep/decNumberICU"), "-I", str(ROOT / "src/c47"),
-         str(src), "-o", str(exe)],
-        capture_output=True, text=True,
+        [
+            zig,
+            "cc",
+            "-DPC_BUILD=1",
+            "-DLINUX=1",
+            "-DOS64BIT=1",
+            "-I",
+            str(ROOT / "dep/decNumberICU"),
+            "-I",
+            str(ROOT / "src/c47"),
+            str(src),
+            "-o",
+            str(exe),
+        ],
+        capture_output=True,
+        text=True,
     )
     if comp.returncode != 0:
         print("string check: compile failed\n" + comp.stderr[:2000], file=sys.stderr)
@@ -181,10 +192,24 @@ def main():
         # Zig-local "undeclared identifier" diagnostics, which silently TRUNCATED
         # the audit -- real divergences alphabetically after them (e.g. LAST_ITEM)
         # were never reported. Report every assertion.
-        [zig, "cc", "-c", "-ferror-limit=0", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1",
-         "-I", str(ROOT / "dep/decNumberICU"), "-I", str(ROOT / "src/c47"),
-         str(src), "-o", str(tmp / "constant_parity.o")],
-        capture_output=True, text=True,
+        [
+            zig,
+            "cc",
+            "-c",
+            "-ferror-limit=0",
+            "-DPC_BUILD=1",
+            "-DLINUX=1",
+            "-DOS64BIT=1",
+            "-I",
+            str(ROOT / "dep/decNumberICU"),
+            "-I",
+            str(ROOT / "src/c47"),
+            str(src),
+            "-o",
+            str(tmp / "constant_parity.o"),
+        ],
+        capture_output=True,
+        text=True,
     )
     err = proc.stderr
 
@@ -192,7 +217,9 @@ def main():
     # ("...requirement '(2870) == (2860)': LAST_ITEM"); parse that so the report
     # names the constant even when the preprocessor already substituted its value
     # into the requirement (a #define shows as the value, not the name).
-    diverged = sorted(set(re.findall(r"static assertion failed due to requirement '.*': ([A-Za-z_0-9]+)", err)))
+    diverged = sorted(
+        set(re.findall(r"static assertion failed due to requirement '.*': ([A-Za-z_0-9]+)", err))
+    )
     undeclared = sorted(set(re.findall(r"use of undeclared identifier '([A-Za-z_0-9]+)'", err)))
 
     print(f"constant-parity audit: {len(mirrors)} C-convention mirrors extracted")
@@ -216,11 +243,15 @@ def main():
         print(f"  STRING DIVERGES {name} = {literal} in {owner}")
 
     if unexpected or conflicts or str_bad:
-        print(f"\nFAIL: {len(unexpected)} unexpected value divergence(s), "
-              f"{len(conflicts)} conflict(s), {len(str_bad)} string divergence(s)")
+        print(
+            f"\nFAIL: {len(unexpected)} unexpected value divergence(s), "
+            f"{len(conflicts)} conflict(s), {len(str_bad)} string divergence(s)"
+        )
         return 1
-    print("\nPASS: every C-mirrored constant and glyph string matches upstream C "
-          "(known-deferred exceptions allowlisted)")
+    print(
+        "\nPASS: every C-mirrored constant and glyph string matches upstream C "
+        "(known-deferred exceptions allowlisted)"
+    )
     return 0
 
 

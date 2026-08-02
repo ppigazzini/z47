@@ -29,10 +29,23 @@ import sys
 from collections import defaultdict
 
 SCALARS = {
-    "bool": 1, "u8": 1, "i8": 1,
-    "u16": 2, "i16": 2, "c_short": 2, "c_ushort": 2,
-    "u32": 4, "i32": 4, "f32": 4, "c_int": 4, "c_uint": 4,
-    "u64": 8, "i64": 8, "f64": 8, "usize": 8, "isize": 8,
+    "bool": 1,
+    "u8": 1,
+    "i8": 1,
+    "u16": 2,
+    "i16": 2,
+    "c_short": 2,
+    "c_ushort": 2,
+    "u32": 4,
+    "i32": 4,
+    "f32": 4,
+    "c_int": 4,
+    "c_uint": 4,
+    "u64": 8,
+    "i64": 8,
+    "f64": 8,
+    "usize": 8,
+    "isize": 8,
 }
 
 ALIAS_RE = re.compile(r"^const ([A-Za-z_][A-Za-z0-9_]*) = ([A-Za-z_][A-Za-z0-9_]*);")
@@ -75,7 +88,12 @@ def scan(root):
                 if definition:
                     size = width(definition.group(2), aliases)
                     if size is not None:
-                        definitions[definition.group(1)] = (size, path, number, definition.group(2).strip())
+                        definitions[definition.group(1)] = (
+                            size,
+                            path,
+                            number,
+                            definition.group(2).strip(),
+                        )
                     continue
                 declaration = DECL_RE.match(line)
                 if declaration:

@@ -13,18 +13,24 @@ import os
 import sys
 from pathlib import Path
 
-from c_dependency_audit import load_baseline
-from c_dependency_audit import load_json
-from c_dependency_audit import scan_classified_entries
-from c_dependency_audit import write_baseline
+from c_dependency_audit import load_baseline, load_json, scan_classified_entries, write_baseline
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Audit C dependency allowlist and first-party baseline")
+    parser = argparse.ArgumentParser(
+        description="Audit C dependency allowlist and first-party baseline"
+    )
     parser.add_argument("--repo-root", default=".", help="Repository root path")
     parser.add_argument("--config", required=True, help="Path to JSON allowlist config")
-    parser.add_argument("--update-baseline", action="store_true", help="Rewrite baseline from current scan")
-    parser.add_argument("--max-first-party", type=int, default=None, help="Fail if detected first-party entries exceed this value")
+    parser.add_argument(
+        "--update-baseline", action="store_true", help="Rewrite baseline from current scan"
+    )
+    parser.add_argument(
+        "--max-first-party",
+        type=int,
+        default=None,
+        help="Fail if detected first-party entries exceed this value",
+    )
     parser.add_argument(
         "--print-first-party-count",
         action="store_true",
@@ -33,7 +39,9 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
-    config_path = (repo_root / args.config).resolve() if not os.path.isabs(args.config) else Path(args.config)
+    config_path = (
+        (repo_root / args.config).resolve() if not os.path.isabs(args.config) else Path(args.config)
+    )
     cfg = load_json(config_path)
 
     scan_files, classified = scan_classified_entries(repo_root, cfg)
@@ -70,7 +78,9 @@ def main() -> int:
         for e in new_first_party:
             print(f"  {e}")
         print("\nIf intentional, update baseline with:")
-        print("  python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json --update-baseline")
+        print(
+            "  python3 .github/project/check-c-dependency-allowlist.py --repo-root . --config .github/project/c-dependency-allowlist.json --update-baseline"
+        )
         return 1
 
     if args.max_first_party is not None and len(classified["first-party"]) > args.max_first_party:

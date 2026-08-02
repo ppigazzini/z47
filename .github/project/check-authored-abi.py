@@ -49,9 +49,12 @@ IDENT = re.compile(r"\b[A-Za-z_]\w*\b")
 
 
 def measure(root):
-    files = [os.path.join(d, f)
-             for d, _, fs in os.walk(os.path.join(root, "zig_src"))
-             for f in fs if f.endswith(".zig")]
+    files = [
+        os.path.join(d, f)
+        for d, _, fs in os.walk(os.path.join(root, "zig_src"))
+        for f in fs
+        if f.endswith(".zig")
+    ]
     owners = collections.defaultdict(set)
     for f in files:
         with open(f, encoding="utf-8") as fh:
@@ -61,9 +64,11 @@ def measure(root):
     exported = {n for n, fs in owners.items() if len(fs) == 1}
 
     blob = subprocess.run(
-        ["bash", "-c",
-         "cat src/c47/*.c src/c47/*/*.c src/c47/*.h src/c47/*/*.h 2>/dev/null"],
-        cwd=root, capture_output=True, text=True).stdout
+        ["bash", "-c", "cat src/c47/*.c src/c47/*/*.c src/c47/*.h src/c47/*/*.h 2>/dev/null"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+    ).stdout
     csyms = set(IDENT.findall(blob))
     if not csyms:
         return None, None, None  # the pinned C tree is unreadable
@@ -115,8 +120,10 @@ def main():
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(doc, fh, indent=1, sort_keys=True)
             fh.write("\n")
-        print(f"check-authored-abi: re-pinned {len(authored)} authored symbols "
-              f"of {len(exported)} exported")
+        print(
+            f"check-authored-abi: re-pinned {len(authored)} authored symbols "
+            f"of {len(exported)} exported"
+        )
         return 0
 
     if not os.path.isfile(path):
@@ -143,14 +150,18 @@ def main():
         return 1
 
     if removed:
-        print(f"check-authored-abi: OK -- authored surface SHRANK {len(old)} -> "
-              f"{len(new)} (re-pin with --bump)")
+        print(
+            f"check-authored-abi: OK -- authored surface SHRANK {len(old)} -> "
+            f"{len(new)} (re-pin with --bump)"
+        )
         for n in removed[:10]:
             print(f"  - {n}")
         return 0
 
-    print(f"check-authored-abi: OK ({len(new)} authored of {len(exported)} exported; "
-          f"{len(exported) - len(new)} parity-mandated and frozen)")
+    print(
+        f"check-authored-abi: OK ({len(new)} authored of {len(exported)} exported; "
+        f"{len(exported) - len(new)} parity-mandated and frozen)"
+    )
     return 0
 
 

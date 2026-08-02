@@ -7,11 +7,8 @@ import os
 import sys
 from pathlib import Path
 
-from c_dependency_audit import load_json
-from c_dependency_audit import scan_classified_entries
-from retained_bridge_review import load_rows
-from retained_bridge_review import status_counts
-
+from c_dependency_audit import load_json, scan_classified_entries
+from retained_bridge_review import load_rows, status_counts
 
 LEDGER_PATH = ".github/project/retained-bridge-review.tsv"
 PRODUCT_CONFIG_PATH = ".github/project/c-dependency-product-allowlist.json"
@@ -50,7 +47,9 @@ def main() -> int:
     ledger_path = resolve_path(repo_root, args.ledger)
 
     _, classified = scan_classified_entries(repo_root, cfg)
-    active_bridge = sorted(entry for entry in classified["first-party"] if entry.startswith("zig_bridge/"))
+    active_bridge = sorted(
+        entry for entry in classified["first-party"] if entry.startswith("zig_bridge/")
+    )
 
     try:
         rows = load_rows(ledger_path)

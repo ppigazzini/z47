@@ -165,4 +165,3 @@ void oracle_stringToFileNameChars(const char *str, char *ascii, uint8_t distinct
     *ascii = 0;
   }
 }
-

@@ -48,8 +48,10 @@ def symbol_owner_index(repo: pathlib.Path) -> dict[str, list[str]]:
     manifest is built on. This is what lets a change to one function in a 42-owner
     aggregate (matrix.c) point at the single owner that implements it, instead of
     the whole cluster."""
-    spec = importlib.util.spec_from_file_location(
-        "corr_builder", HERE / "build-correspondence-manifest.py")
+    path = HERE / "build-correspondence-manifest.py"
+    spec = importlib.util.spec_from_file_location("corr_builder", path)
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"cannot load the correspondence builder from {path}")
     b = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(b)
     idx: dict[str, list[str]] = {}
@@ -94,8 +96,12 @@ def main() -> int:
     if not os.path.isdir(os.path.join(sibling, ".git")):
         sys.exit(f"need the upstream checkout at {sibling} to diff the pins.")
     for pin in (args.oldpin, args.newpin):
-        if subprocess.run(["git", "-C", sibling, "cat-file", "-e", pin + "^{commit}"],
-                          capture_output=True).returncode != 0:
+        if (
+            subprocess.run(
+                ["git", "-C", sibling, "cat-file", "-e", pin + "^{commit}"], capture_output=True
+            ).returncode
+            != 0
+        ):
             sys.exit(f"pin {pin} not found in {sibling}.")
 
     owners = load_owners(repo)
@@ -112,36 +118,38 @@ def main() -> int:
 
     # name-status for A/M/D/R, numstat for churn
     status: dict[str, str] = {}
-    for line in git(sibling, "diff", "--name-status", args.oldpin, args.newpin,
-                     "--", C_PREFIX).splitlines():
+    for line in git(
+        sibling, "diff", "--name-status", args.oldpin, args.newpin, "--", C_PREFIX
+    ).splitlines():
         f = line.split("\t")
         st = f[0][0]
         path = f[-1]  # for R the new path is last
         if path.endswith(".c"):
             status[path] = st
     churn: dict[str, int] = {}
-    for line in git(sibling, "diff", "--numstat", args.oldpin, args.newpin,
-                    "--", C_PREFIX).splitlines():
-        a, d, path = (line.split("\t") + ["", "", ""])[:3]
+    for line in git(
+        sibling, "diff", "--numstat", args.oldpin, args.newpin, "--", C_PREFIX
+    ).splitlines():
+        a, d, path = ([*line.split("\t"), "", "", ""])[:3]
         if path.endswith(".c") and a.isdigit() and d.isdigit():
             churn[path] = int(a) + int(d)
 
     def owner_of(path: str) -> list[str]:
-        return owners.get(path[len(C_PREFIX):-2], [])
+        return owners.get(path[len(C_PREFIX) : -2], [])
 
-    changed = sorted(((p, churn.get(p, 0)) for p, s in status.items() if s == "M"),
-                     key=lambda x: -x[1])
+    changed = sorted(
+        ((p, churn.get(p, 0)) for p, s in status.items() if s == "M"), key=lambda x: -x[1]
+    )
     added = sorted(p for p, s in status.items() if s == "A")
     deleted = sorted(p for p, s in status.items() if s == "D")
 
     print(f"RESYNC WORKLIST  {args.oldpin[:9]} -> {args.newpin[:9]}")
-    print(f"  {len(changed)} changed, {len(added)} added, {len(deleted)} deleted "
-          f"(src/c47 only)\n")
+    print(f"  {len(changed)} changed, {len(added)} added, {len(deleted)} deleted (src/c47 only)\n")
 
     print("CHANGE -- re-port these owners (ranked by churn):")
     unowned = []
     for p, ch in changed:
-        rel = p[len(C_PREFIX):]
+        rel = p[len(C_PREFIX) :]
         # Attribute to the owner(s) of the FUNCTIONS the diff actually touched;
         # fall back to the file-level manifest when the hunk has no function
         # context (data tables) or the symbol is not owned by name.
@@ -164,18 +172,20 @@ def main() -> int:
     if unowned:
         print("\n  changed but UNOWNED (font/generator seam, or a coverage gap):")
         for p, ch in unowned:
-            print(f"  {ch:>5}  {p[len(C_PREFIX):]}")
+            print(f"  {ch:>5}  {p[len(C_PREFIX) :]}")
 
     if added:
         print("\nABSENCE -- new upstream surface, no owner yet (port from scratch):")
         for p in added:
-            print(f"    {p[len(C_PREFIX):]}")
+            print(f"    {p[len(C_PREFIX) :]}")
     if deleted:
         print("\nDIVERGENCE -- upstream deleted; retire the orphaned owner:")
         for p in deleted:
             ow = owner_of(p)
-            print(f"    {p[len(C_PREFIX):]}"
-                  + ("  -> " + ", ".join(sorted(set(ow))) if ow else "  (no owner)"))
+            print(
+                f"    {p[len(C_PREFIX) :]}"
+                + ("  -> " + ", ".join(sorted(set(ow))) if ow else "  (no owner)")
+            )
 
     return 0
 

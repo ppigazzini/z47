@@ -23,7 +23,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sys
 from pathlib import Path
 
 BASELINE_PATH = ".github/project/idiom-status-baseline.json"
@@ -51,6 +50,7 @@ def classify_layer(rel: str, text: str) -> tuple[str, str | None]:
     if has_marker and not under_generated:
         return "core", f"{rel}: has '{SEAM_MARKER}' marker but is not under a generated/ path"
     return "core", None
+
 
 def strip_comments(text: str) -> str:
     """Blank out `//` line comments, preserving line structure.
@@ -106,7 +106,11 @@ PATTERNS = [
     ("printf_family_files", re.compile(r"\bs?n?printf\("), "file"),
     ("anyopaque_files", re.compile(r"anyopaque"), "file"),
     ("off_offset_sites", re.compile(r"\bOFF_[A-Za-z0-9_]+"), "site"),
-    ("constants_blob_sites", re.compile(r'@extern\(\[\*\]const u8, \.\{ \.name = "constants"'), "site"),
+    (
+        "constants_blob_sites",
+        re.compile(r'@extern\(\[\*\]const u8, \.\{ \.name = "constants"'),
+        "site",
+    ),
     ("qspi_section_files", re.compile(r'"\.qspi_data"'), "file"),
 ]
 
@@ -164,8 +168,10 @@ def scan(repo_root: Path) -> dict:
 
 
 def print_report(result: dict) -> None:
-    print(f"zig_src files: {result['file_count']}  owners: {result['owner_count']}"
-          f"  seam files: {result['seam_file_count']}")
+    print(
+        f"zig_src files: {result['file_count']}  owners: {result['owner_count']}"
+        f"  seam files: {result['seam_file_count']}"
+    )
     print("\nCore (hand-written) anti-pattern totals -- ratchet ceiling (REPORT-23 §2):")
     for label, _, mode in PATTERNS:
         print(f"  {label:26s} {result['totals'][label]:6d}  ({mode})")
@@ -187,8 +193,12 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--json", action="store_true", help="emit the full census as JSON")
-    ap.add_argument("--write-baseline", action="store_true", help="record totals to the baseline file")
-    ap.add_argument("--check", action="store_true", help="compare to baseline; exit 1 if any metric rose")
+    ap.add_argument(
+        "--write-baseline", action="store_true", help="record totals to the baseline file"
+    )
+    ap.add_argument(
+        "--check", action="store_true", help="compare to baseline; exit 1 if any metric rose"
+    )
     args = ap.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -199,8 +209,10 @@ def main() -> int:
     if result["violations"] and (args.check or args.write_baseline):
         for v in result["violations"]:
             print(f"SEAM SCOPE VIOLATION: {v}")
-        print("A seam file must live under a generated/ path AND carry the "
-              f"'{SEAM_MARKER}' marker. Fix the file or its location.")
+        print(
+            "A seam file must live under a generated/ path AND carry the "
+            f"'{SEAM_MARKER}' marker. Fix the file or its location."
+        )
         return 1
 
     if args.check:
@@ -210,12 +222,16 @@ def main() -> int:
         for key, ceiling in baseline.items():
             have = cur.get(key, 0)
             if have > ceiling:
-                print(f"IDIOM RATCHET REGRESSION: {key} = {have}, baseline ceiling {ceiling} -- "
-                      "a transliteration anti-pattern grew. Reduce it, or raise the ceiling with "
-                      "an explicit justification (--write-baseline).")
+                print(
+                    f"IDIOM RATCHET REGRESSION: {key} = {have}, baseline ceiling {ceiling} -- "
+                    "a transliteration anti-pattern grew. Reduce it, or raise the ceiling with "
+                    "an explicit justification (--write-baseline)."
+                )
                 rc = 1
             elif have < ceiling:
-                print(f"{key} = {have} (below ceiling {ceiling}) -- run --write-baseline to lock the gain")
+                print(
+                    f"{key} = {have} (below ceiling {ceiling}) -- run --write-baseline to lock the gain"
+                )
             else:
                 print(f"{key} = {have} (at ceiling)")
         return rc
@@ -227,7 +243,9 @@ def main() -> int:
             "seam_totals": result["seam_totals"],
             "seam_file_count": result["seam_file_count"],
         }
-        (repo_root / BASELINE_PATH).write_text(json.dumps(baseline, indent=2) + "\n", encoding="utf-8")
+        (repo_root / BASELINE_PATH).write_text(
+            json.dumps(baseline, indent=2) + "\n", encoding="utf-8"
+        )
         print(f"wrote {BASELINE_PATH}")
         return 0
 

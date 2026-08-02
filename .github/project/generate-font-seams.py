@@ -84,8 +84,7 @@ def parse_c(text: str, spec: dict) -> tuple[int, list[tuple[int, list[int]]]]:
 
     if len(glyphs) != declared:
         raise ValueError(
-            f"{spec['c_source']}: numberOfGlyphs={declared} but parsed "
-            f"{len(glyphs)} glyph literals"
+            f"{spec['c_source']}: numberOfGlyphs={declared} but parsed {len(glyphs)} glyph literals"
         )
     return declared, glyphs
 
@@ -123,7 +122,9 @@ def render_zig(count: int, glyphs: list[tuple[int, list[int]]], spec: dict) -> s
     lines.append("")
     lines.append("// Upstream marks the table TO_QSPI: .qspi on old_hw DMCP, platform read-only")
     lines.append("// data section otherwise (mach-o needs SEG,sect form; ELF uses .rodata).")
-    lines.append(f"const {spec['section_const']} = if (build_options.dmcp_build and build_options.old_hw)")
+    lines.append(
+        f"const {spec['section_const']} = if (build_options.dmcp_build and build_options.old_hw)"
+    )
     lines.append('    ".qspi_data"')
     lines.append("else if (builtin.target.os.tag == .macos)")
     lines.append('    "__TEXT,__const"')
@@ -135,8 +136,10 @@ def render_zig(count: int, glyphs: list[tuple[int, list[int]]], spec: dict) -> s
     lines.append(f"    glyphs: [{count}]abi.{spec['abi_type']},")
     lines.append("};")
     lines.append("")
-    lines.append(f"pub export const {spec['table']}: {spec['struct_name']} "
-                 f"linksection({spec['section_const']}) = .{{")
+    lines.append(
+        f"pub export const {spec['table']}: {spec['struct_name']} "
+        f"linksection({spec['section_const']}) = .{{"
+    )
     lines.append(f"    .numberOfGlyphs = {count},")
     lines.append("    .glyphs = .{")
     for char_code, data in glyphs:
@@ -163,13 +166,15 @@ def main() -> int:
     rc = 0
     for spec in FONTS:
         rendered = generate(repo_root, spec)
-        seam_file = repo_root / spec["seam_path"]
+        seam_file = repo_root / str(spec["seam_path"])
 
         if args.check:
             current = seam_file.read_text(encoding="utf-8") if seam_file.exists() else ""
             if current != rendered:
-                print(f"SEAM DRIFT: {spec['seam_path']} is stale -- regenerate with "
-                      "generate-font-seams.py")
+                print(
+                    f"SEAM DRIFT: {spec['seam_path']} is stale -- regenerate with "
+                    "generate-font-seams.py"
+                )
                 rc = 1
             else:
                 print(f"{spec['seam_path']} is in sync with {spec['c_source']}")

@@ -215,3 +215,14 @@ cov_pcs.txt
 # never commit this tree; ignore it so it cannot be staged
 # by accident.
 __DEV/
+
+# Python tooling (pyproject.toml / .pre-commit-config.yaml). Everything here is
+# a local cache or a local environment: reproducibility comes from the pinned
+# `rev:`s in .pre-commit-config.yaml and the version floors in pyproject.toml,
+# so there is nothing to commit. uv.lock is ignored rather than tracked, which
+# is what the sibling ports do -- there is no Python package to install and no
+# deployment to reproduce, only three dev tools.
+.venv/
+uv.lock
+.ruff_cache/
+.ty_cache/

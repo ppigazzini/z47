@@ -118,7 +118,7 @@ write(
 def patch_version(line: str) -> list[str]:
     out = list(base)
     assert out[0] == "SAVE_FILE_REVISION", out[0]
-    out[3] = line          # SAVE_FILE_REVISION / revision / calculator id / version
+    out[3] = line  # SAVE_FILE_REVISION / revision / calculator id / version
     return out
 
 
@@ -131,9 +131,7 @@ write("version_wrap_forges_valid.sav", patch_version("4304967321"), expect_versi
 # Emit the expectations the driver reads. Written last so it always matches the
 # files just generated.
 (outdir / "expectations.txt").write_text(
-    "".join(
-        f"{name} {'any' if v is None else v}\n" for name, v in sorted(expectations.items())
-    )
+    "".join(f"{name} {'any' if v is None else v}\n" for name, v in sorted(expectations.items()))
 )
 print(f"{(outdir / 'expectations.txt').relative_to(root)}: {len(expectations)} expectations")
 
@@ -201,14 +199,14 @@ def _duplicate_header(section: str) -> list[str]:
     """Emit `section`'s header twice, so the second lands where data is expected."""
     out = list(base)
     i = out.index(section)
-    return out[: i + 1] + [section] + out[i + 1 :]
+    return [*out[: i + 1], section, *out[i + 1 :]]
 
 
 def _inject_blank_lines() -> list[str]:
     """Blank lines inside a section body. readLine() skips them, so this probes
     whether a section that runs out of data stops or walks into the next one."""
     out, i = list(base), base.index("NAMED_VARIABLES")
-    return out[: i + 2] + ["", "", ""] + out[i + 2 :]
+    return [*out[: i + 2], "", "", "", *out[i + 2 :]]
 
 
 def _oversize_first_variable_name() -> list[str]:
@@ -322,6 +320,7 @@ def _set_value_after(key: str, value: str) -> list[str]:
 # far longer one exercises the refusal at a width the sentinel does not reach.
 write("norm_key_funcparam_fits.sav", _set_value_after("Norm_Key_00.funcParam", "AB"))
 write("norm_key_funcparam_overlong.sav", _set_value_after("Norm_Key_00.funcParam", "P" * 400))
+
 
 def _unparseable_equation(text: str) -> list[str]:
     """Replace the single stored formula's text. The restore re-parses each

@@ -8,7 +8,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-
 EXPECTED_COLUMNS = ("ID", "Name", "Target state", "Current status")
 HEADER_LINE = "| " + " | ".join(EXPECTED_COLUMNS) + " |"
 SEPARATOR_RE = re.compile(r"^\|\s*-+\s*\|\s*-+\s*\|\s*-+\s*\|\s*-+\s*\|\s*$")
@@ -47,7 +46,7 @@ def parse_table_row(path: Path, line_number: int, raw_line: str) -> dict[str, st
             f"found {len(parts)}"
         )
 
-    row = dict(zip(EXPECTED_COLUMNS, parts))
+    row = dict(zip(EXPECTED_COLUMNS, parts, strict=True))
     milestone_id = row["ID"]
     if not MILESTONE_ID_RE.fullmatch(milestone_id):
         raise ValueError(

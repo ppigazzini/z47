@@ -3,12 +3,11 @@
 import argparse
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
-
+from pathlib import Path
 
 XLSXIO_MIT_LICENSE = """Copyright (C) 2016 Brecht Sanders All Rights Reserved
 
@@ -37,9 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate simulator notice bundles and SPDX inventories."
     )
-    parser.add_argument(
-        "--platform", choices=("linux", "macos", "windows"), required=True
-    )
+    parser.add_argument("--platform", choices=("linux", "macos", "windows"), required=True)
     parser.add_argument("--package-dir", required=True)
     parser.add_argument("--upstream-source-repository-url", required=True)
     parser.add_argument("--upstream-source-commit", required=True)
@@ -48,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def fail(message: str) -> "None":
+def fail(message: str) -> None:
     raise RuntimeError(message)
 
 
@@ -56,8 +53,7 @@ def run_command(command: list[str], *, check: bool = True) -> subprocess.Complet
     completed = subprocess.run(
         command,
         check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
         text=True,
     )
     if check and completed.returncode != 0:
@@ -314,8 +310,7 @@ def collect_linux_runtime_notices(
                 f"Homepage: {package_urls.get(package_name, 'unknown') or 'unknown'}",
                 "Libraries: "
                 + (", ".join(sorted(package_libraries.get(package_name, []))) or "none"),
-                "License files: "
-                + (package_license_files.get(package_name, "") or "missing"),
+                "License files: " + (package_license_files.get(package_name, "") or "missing"),
                 "",
             ]
         )
@@ -348,7 +343,9 @@ def collect_linux_runtime_notices(
     )
 
 
-def resolve_windows_source_path(package_dir: Path, packaged_path: Path, mingw_prefix: Path) -> Path | None:
+def resolve_windows_source_path(
+    package_dir: Path, packaged_path: Path, mingw_prefix: Path
+) -> Path | None:
     relative_path = packaged_path.relative_to(package_dir)
     direct_candidate = mingw_prefix / relative_path
     if direct_candidate.exists():
@@ -453,7 +450,9 @@ def collect_windows_runtime_notices(
         owner = "unknown"
         owner_version = ""
         if source_path is not None:
-            owner_lines = command_stdout(["pacman", "-Qqo", str(source_path)], check=False).splitlines()
+            owner_lines = command_stdout(
+                ["pacman", "-Qqo", str(source_path)], check=False
+            ).splitlines()
             if owner_lines:
                 owner = owner_lines[0].strip()
                 owner_version = pacman_version(owner)
@@ -491,9 +490,10 @@ def collect_windows_runtime_notices(
                 f"URL: {package_urls.get(package_name, 'unknown') or 'unknown'}",
                 f"Description: {package_descriptions.get(package_name, 'unknown') or 'unknown'}",
                 "Packaged runtime files: "
-                + (", ".join(sorted(package_dlls.get(package_name, []))) or "non-DLL runtime files"),
-                "License files: "
-                + (package_license_dirs.get(package_name, "") or "missing"),
+                + (
+                    ", ".join(sorted(package_dlls.get(package_name, []))) or "non-DLL runtime files"
+                ),
+                "License files: " + (package_license_dirs.get(package_name, "") or "missing"),
                 "",
             ]
         )
@@ -594,7 +594,7 @@ def collect_macos_runtime_notices(
     def brew_version(formula_name: str) -> str:
         info = brew_info(formula_name)
         installed = info.get("installed")
-        if isinstance(installed, list) and installed:
+        if isinstance(installed, list) and installed and isinstance(installed[0], dict):
             installed_version = installed[0].get("version")
             if isinstance(installed_version, str):
                 return installed_version
@@ -684,7 +684,9 @@ def collect_macos_runtime_notices(
                     ]
                 )
                 write_text(metadata_path, metadata_text)
-                formula_metadata_files[formula_name] = metadata_path.relative_to(package_dir).as_posix()
+                formula_metadata_files[formula_name] = metadata_path.relative_to(
+                    package_dir
+                ).as_posix()
                 formula_libraries[formula_name] = []
 
             library_name = Path(library_path).name
@@ -728,8 +730,7 @@ def collect_macos_runtime_notices(
                 f"Homepage: {formula_urls.get(formula_name, 'unknown') or 'unknown'}",
                 "Libraries: "
                 + (", ".join(sorted(formula_libraries.get(formula_name, []))) or "none"),
-                "Metadata file: "
-                + (formula_metadata_files.get(formula_name, "") or "missing"),
+                "Metadata file: " + (formula_metadata_files.get(formula_name, "") or "missing"),
                 "",
             ]
         )
@@ -867,25 +868,31 @@ def main() -> int:
     )
 
     if args.platform == "linux":
-        runtime_inventory_file, runtime_summary_file, runtime_license_dir = collect_linux_runtime_notices(
-            package_dir=package_dir,
-            notice_root=notice_root,
-            packages=packages,
-            described=described,
+        runtime_inventory_file, runtime_summary_file, runtime_license_dir = (
+            collect_linux_runtime_notices(
+                package_dir=package_dir,
+                notice_root=notice_root,
+                packages=packages,
+                described=described,
+            )
         )
     elif args.platform == "macos":
-        runtime_inventory_file, runtime_summary_file, runtime_license_dir = collect_macos_runtime_notices(
-            package_dir=package_dir,
-            notice_root=notice_root,
-            packages=packages,
-            described=described,
+        runtime_inventory_file, runtime_summary_file, runtime_license_dir = (
+            collect_macos_runtime_notices(
+                package_dir=package_dir,
+                notice_root=notice_root,
+                packages=packages,
+                described=described,
+            )
         )
     else:
-        runtime_inventory_file, runtime_summary_file, runtime_license_dir = collect_windows_runtime_notices(
-            package_dir=package_dir,
-            notice_root=notice_root,
-            packages=packages,
-            described=described,
+        runtime_inventory_file, runtime_summary_file, runtime_license_dir = (
+            collect_windows_runtime_notices(
+                package_dir=package_dir,
+                notice_root=notice_root,
+                packages=packages,
+                described=described,
+            )
         )
 
     write_notice_summary(
@@ -923,4 +930,4 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except RuntimeError as error:
         print(f"ERROR: {error}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from error
