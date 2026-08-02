@@ -1286,9 +1286,19 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const testPgms_step = b.step("testPgms", "Refresh the generated test program image");
     testPgms_step.dependOn(&update_testpgms.step);
 
-    test_step.dependOn(&update_testpgms.step);
-    test_asan_step.dependOn(&update_testpgms.step);
-    repeattest_step.dependOn(&update_testpgms.step);
+    // The test lanes deliberately do NOT depend on update_testpgms. They used to,
+    // which meant every `zig build test` rewrote res/testPgms/testPgms.bin inside the
+    // vendored tree -- so the imported tree could never stay at its pin, a
+    // developer's `git status` was dirty after running tests, and nobody had to
+    // CHOOSE to fork that file: the test run did it and someone committed the result.
+    // That is the whole provenance of the 22179-vs-22205 divergence.
+    //
+    // The suite does not need the regenerated image. Measured, not assumed: the full
+    // corpus passes 12830/12830 plus 14/14 on upstream's pristine copy, and passed
+    // 12872/12872 on it before the plot-probe deletion. `zig build testpgms` remains
+    // for the rare case where upstream's own image is genuinely stale for z47 -- and
+    // running it will fail check-imported-tree-pin until the divergence is declared,
+    // which is the correct outcome rather than a silent fork.
 
     const generated_step = b.step("generated", "Refresh all tracked generated host artifacts");
     generated_step.dependOn(&update_fonts.step);
