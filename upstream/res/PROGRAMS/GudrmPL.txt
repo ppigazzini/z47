@@ -1,0 +1,50 @@
+LBL ‘GudrmPL’
+  # Plot Gudermannian Inverse Func
+  # JM
+  # 2025-04-16 Rev2
+  LocR 15
+  STOS R.00
+  RAD
+  CF ‘FRACT’
+  CF ‘IRFRAC’
+  CLΣ
+  TICKS
+  STO N
+  101
+  STO M
+  STO O
+
+  LBL 01
+    VIEW M
+    RCL O
+    RCL- M
+
+    # CALCULATION START
+    RCL O
+    DECR X
+    2
+    IDIV
+    ÷
+    1
+    -
+    0.49
+    ×
+    𝜋
+    ×
+    ENTER
+    g_d⁻¹
+    𝑥⇄𝑦
+
+    # ENDCALC
+    Σ+
+    DSZ M
+      GTO 01
+    TICKS
+    RCL- N
+    10
+    ÷
+    ‘ sec’
+    +
+    PLSTAT
+    PLTFCNS
+  END

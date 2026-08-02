@@ -1,0 +1,122 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 C47__StandardFont;}}{\pard\sl240\slmult1\f0\fs24\lang9\f0\loch
+C47 Program file export: Export format version 3, C47 program version 1.
+ \par
+0000: { Prgm #2/2: 472 bytes / 109 steps } \par
+\par
+0001:  LBL \u8216?OpAmp\u8217?\par
+\par
+0002:  LBL \u8216?_INIT\u8217?\par
+0003:    298.\par
+0004:    STO \u8216?T\sub K\nosupersub \u8217?\par
+0005:    2.\u215?\u9341?\super 4\nosupersub \par
+0006:    STO \u8216?B\sub 1\nosupersub \u8217?\par
+0007:    20.\par
+0008:    STO \u8216?B\sub 0\nosupersub \u8217?\par
+0009:    UNIT 03\par
+0010:    SF 01\par
+0011:    \u8216?Initialized!\u8217?\par
+0012:  RTN\par
+\par
+0013:  LBL \u8216?RJ\sub n\nosupersub \sub o\nosupersub \sub i\nosupersub \sub s\nosupersub \sub e\nosupersub \u8217?\par
+0014:    INPUT \u8216?R\sub i\nosupersub \u8217?\par
+0015:    INPUT \u8216?T\sub K\nosupersub \u8217?\par
+0016:    INPUT \u8216?B\sub 1\nosupersub \u8217?\par
+0017:    INPUT \u8216?B\sub 0\nosupersub \u8217?\par
+0018:    4\par
+0019:    # 21 k\sub B\nosupersub  c.boltzmn\par
+0020:    \u215?\par
+0021:    RCL \u8216?T\sub K\nosupersub \u8217?\par
+0022:    \u215?\par
+0023:    RCL \u8216?B\sub 1\nosupersub \u8217?\par
+0024:    RCL \u8216?B\sub 0\nosupersub \u8217?\par
+0025:    -\par
+0026:    \u215?\par
+0027:    RCL \u8216?R\sub i\nosupersub \u8217?\par
+0028:    \u215?\par
+0029:    \u8730?\u895?\par
+0030:    STO \u8216?Rj\u8217?\par
+0031:    VIEW \u8216?Rj\u8217?\par
+0032:  RTN\par
+\par
+0033:  LBL \u8216?||R\u8217?\par
+0034:    LocR 02\par
+0035:    STO .00\par
+0036:    x\u8644?y\par
+0037:    STO .01\par
+0038:    \u215?\par
+0039:    RCL .00\par
+0040:    RCL .01\par
+0041:    +\par
+0042:    \u247?\par
+0043:  RTN\par
+\par
+0044:  LBL \u8216?Gain\u8217?\par
+0045:    INPUT \u8216?R\sub f\nosupersub \u8217?\par
+0046:    INPUT \u8216?R\sub g\nosupersub \u8217?\par
+0047:    RCL \u8216?R\sub f\nosupersub \u8217?\par
+0048:    RCL \u8216?R\sub g\nosupersub \u8217?\par
+0049:    \u247?\par
+0050:    FS? 01\par
+0051:    INCR X\par
+0052:    STO \u8216?gain\u8217?\par
+0053:    VIEW \u8216?gain\u8217?\par
+0054:  RTN\par
+\par
+0055:  LBL \u8216?G\sub N\nosupersub \sub I\nosupersub \u8217?\par
+0056:    SF 01\par
+0057:  GTO \u8216?Gain\u8217?\par
+\par
+0058:  LBL \u8216?G\sub I\nosupersub \sub N\nosupersub \sub V\nosupersub \u8217?\par
+0059:    CF 01\par
+0060:  GTO \u8216?Gain\u8217?\par
+\par
+0061:  LBL \u8216?V\sub O\nosupersub \sub S\nosupersub \u8217?\par
+0062:    INPUT \u8216?I\sub I\nosupersub \sub B\nosupersub \u8217?\par
+0063:    INPUT \u8216?I\sub I\nosupersub \sub O\nosupersub \u8217?\par
+0064:    INPUT \u8216?V\sub I\nosupersub \sub O\nosupersub \u8217?\par
+0065:    INPUT \u8216?R\sub i\nosupersub \u8217?\par
+0066:    INPUT \u8216?R\sub f\nosupersub \u8217?\par
+0067:    INPUT \u8216?R\sub g\nosupersub \u8217?\par
+0068:    RCL \u8216?R\sub f\nosupersub \u8217?\par
+0069:    RCL \u8216?R\sub g\nosupersub \u8217?\par
+0070:  XEQ \u8216?||R\u8217?\par
+0071:    LocR 01\par
+0072:    STO .00\par
+0073:    RCL \u8216?R\sub f\nosupersub \u8217?\par
+0074:    RCL \u8216?R\sub g\nosupersub \u8217?\par
+0075:    \u247?\par
+0076:    INCR X\par
+0077:    RCL \u8216?I\sub I\nosupersub \sub B\nosupersub \u8217?\par
+0078:    RCL .00\par
+0079:    RCL \u8216?R\sub i\nosupersub \u8217?\par
+0080:    -\par
+0081:    \u215?\par
+0082:    RCL \u8216?I\sub I\nosupersub \sub O\nosupersub \u8217?\par
+0083:    2\par
+0084:    \u247?\par
+0085:    RCL .00\par
+0086:    RCL \u8216?R\sub i\nosupersub \u8217?\par
+0087:    +\par
+0088:    \u215?\par
+0089:    -\par
+0090:    |x|\par
+0091:    RCL \u8216?V\sub I\nosupersub \sub O\nosupersub \u8217?\par
+0092:    +\par
+0093:    \u215?\par
+0094:    STO \u8216?V\sub O\nosupersub \sub S\nosupersub \u8217?\par
+0095:    VIEW \u8216?V\sub O\nosupersub \sub S\nosupersub \u8217?\par
+0096:  RTN\par
+\par
+0097:  LBL \u8216?Rdiv\u8217?\par
+0098:    INPUT \u8216?R\sub i\nosupersub \u8217?\par
+0099:    INPUT \u8216?R\sub g\nosupersub \u8217?\par
+0100:    INPUT V\par
+0101:    RCL V\par
+0102:    RCL \u8216?R\sub g\nosupersub \u8217?\par
+0103:    ENTER\par
+0104:    RCL \u8216?R\sub i\nosupersub \u8217?\par
+0105:    +\par
+0106:    \u247?\par
+0107:    \u215?\par
+0108:  END\par
+}}
