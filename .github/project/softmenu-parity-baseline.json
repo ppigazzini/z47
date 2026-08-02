@@ -1,0 +1,79 @@
+{
+ "absent": [
+  "menu_CONV_FLoad",
+  "menu_CONV_MLoad",
+  "menu_CONV_PLoad",
+  "menu_ConvMaterial",
+  "menu_ConvSection",
+  "menu_ConvStruct"
+ ],
+ "drifted": {
+  "menu_42": {
+   "c_len": 24,
+   "differing": 24,
+   "digest": "9d253b1aa77d6c53",
+   "zig_len": 6
+  },
+  "menu_CLR": {
+   "c_len": 18,
+   "differing": 8,
+   "digest": "8d8966797c34d4ff",
+   "zig_len": 18
+  },
+  "menu_ConvAng": {
+   "c_len": 18,
+   "differing": 6,
+   "digest": "5c61a3a831a7e852",
+   "zig_len": 18
+  },
+  "menu_ConvM": {
+   "c_len": 36,
+   "differing": 20,
+   "digest": "b1f04a2471caf9bb",
+   "zig_len": 36
+  },
+  "menu_ConvS": {
+   "c_len": 18,
+   "differing": 18,
+   "digest": "b71398547f7e8149",
+   "zig_len": 18
+  },
+  "menu_DISP": {
+   "c_len": 54,
+   "differing": 1,
+   "digest": "d81e7ddfdc160458",
+   "zig_len": 54
+  },
+  "menu_FCNS": {
+   "c_len": 1045,
+   "differing": 1021,
+   "digest": "91bd52a849423dd5",
+   "zig_len": 1004
+  },
+  "menu_IO": {
+   "c_len": 24,
+   "differing": 6,
+   "digest": "03807ff83d5d76a6",
+   "zig_len": 18
+  },
+  "menu_PLOTFUNC": {
+   "c_len": 72,
+   "differing": 2,
+   "digest": "6ab1bb59ff63dcaf",
+   "zig_len": 72
+  },
+  "menu_UnitConv": {
+   "c_len": 18,
+   "differing": 1,
+   "digest": "ffd38891c13f3596",
+   "zig_len": 18
+  },
+  "menu_alphaFN": {
+   "c_len": 18,
+   "differing": 3,
+   "digest": "2f3a0687f4939578",
+   "zig_len": 18
+  }
+ },
+ "note": "Known softmenu-table drift, frozen per menu by a digest of the (C, Zig) value pairs. These tables were dumped from the C at the M3.3 port and never re-compared, so the drift predates the audit. New drift, or a change to a listed one, fails; a menu that becomes clean also fails, so the baseline is re-pinned rather than left claiming a fixed menu is broken."
+}
