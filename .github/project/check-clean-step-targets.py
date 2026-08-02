@@ -33,10 +33,19 @@ import re
 import sys
 from pathlib import Path
 
-# The build files that contain destructive shell.
-SCANNED = ("build/host/steps.zig",)
+# Every z47-owned file that can carry destructive shell, not just the one that had
+# the bug. The survey behind this list: `rm` appears in build/*.zig,
+# build/host/*.sh, build/tests/**/*.sh and the workflows, and in every one of those
+# except addCleanStep the target is a VARIABLE, which cannot be resolved statically
+# and is skipped below. Scanning them anyway costs nothing and means a future
+# literal lands in the gate rather than in someone's working tree.
+SCANNED_GLOBS = ("build/**/*.zig", "build/**/*.sh", ".github/workflows/*.yml")
 
-RM_RE = re.compile(r"\brm\s+-[a-zA-Z]*f[a-zA-Z]*\s+(?P<targets>[^\n\\]*)")
+# ANY rm, with or without flags. The first version of this gate required an `f` in
+# the flags, which let `rm -r build` and a bare `rm build` through -- both delete
+# just as thoroughly. Flags are consumed as leading `-...` words in the loop below
+# rather than matched here, so no flag spelling can slip past.
+RM_RE = re.compile(r"\brm\s+(?P<targets>[^\n\\;&|]*)")
 
 # Paths z47 owns AND deliberately deletes. Everything else owned is off limits.
 OWNED_DELETABLE = {".zig-cache", "zig-out", "cov_pcs.txt"}
@@ -70,31 +79,45 @@ def main() -> int:
         print("Refusing to report a clean result without the ownership manifest.")
         return 1
 
+    files = sorted({p for glob in SCANNED_GLOBS for p in repo.glob(glob) if p.is_file()})
+    if not files:
+        print("check-clean-step-targets: BROKEN -- matched no build or workflow files.")
+        print("Refusing to report a clean result from an empty scan.")
+        return 1
+
     violations: list[str] = []
     scanned_targets = 0
-    for rel in SCANNED:
-        path = repo / rel
-        if not path.is_file():
-            print(f"check-clean-step-targets: BROKEN -- {rel} is missing.")
-            return 1
-        # Only the shell itself, which in Zig is the `\\` multiline-string lines. A
-        # `//` comment explaining the hazard necessarily quotes the dangerous form,
-        # and scanning it would make this gate fail on its own documentation.
-        shell = "\n".join(
-            line.strip()[2:]
-            for line in path.read_text(encoding="utf-8").splitlines()
-            if line.strip().startswith("\\\\")
-        )
-        for m in RM_RE.finditer(shell):
+    for path in files:
+        rel = path.relative_to(repo)
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if path.suffix == ".zig":
+            # Only the shell itself, which in Zig is the `\\` multiline-string lines.
+            # A `//` comment explaining the hazard necessarily quotes the dangerous
+            # form, and scanning it would fail this gate on its own documentation.
+            body = "\n".join(
+                line.strip()[2:] for line in text.splitlines() if line.strip().startswith("\\\\")
+            )
+        else:
+            # Shell and YAML: drop whole-line comments for the same reason.
+            body = "\n".join(
+                line for line in text.splitlines() if not line.lstrip().startswith("#")
+            )
+        for m in RM_RE.finditer(body):
             for raw_target in m.group("targets").split():
                 target = raw_target.strip("'\"")
+                # Leading `-...` words are flags, whatever their spelling.
                 if not target or target.startswith("-"):
                     continue
                 scanned_targets += 1
-                # Prefixed with the upstream root -> aimed at the imported tree.
-                if target.startswith('"$u"/') or target.startswith("$u/"):
+                # A shell variable cannot be resolved statically. Skipping these is
+                # what keeps the gate honest rather than noisy: every rm outside
+                # addCleanStep targets a computed staging path.
+                if "$" in target:
                     continue
-                head = target.split("/", 1)[0].strip("'\"")
+                # An absolute path is not a repo-relative root.
+                if target.startswith("/"):
+                    continue
+                head = target.split("/", 1)[0]
                 if head in OWNED_DELETABLE:
                     continue
                 if head in owned:
@@ -112,8 +135,8 @@ def main() -> int:
         return 1
 
     print(
-        f"check-clean-step-targets: OK ({scanned_targets} rm targets across "
-        f"{len(SCANNED)} build file(s), none hit a z47-owned root)"
+        f"check-clean-step-targets: OK ({scanned_targets} literal rm targets across "
+        f"{len(files)} build/workflow file(s), none hit a z47-owned root)"
     )
     return 0
 

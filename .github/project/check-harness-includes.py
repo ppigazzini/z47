@@ -43,6 +43,16 @@ from pathlib import Path
 # a sibling header (resolved the same way, and checked too) or an -I lookup.
 INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"]+)"', re.MULTILINE)
 
+# Block comments are stripped so a commented-out include is not reported. Only
+# `/* ... */` and WHOLE-LINE `//` comments: a trailing `//` strip would cut a line
+# at the first `//` inside a string literal ("http://...") for no benefit here.
+BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+# KNOWN LIMITATION, deliberate: an include inside `#if 0` is still reported. Doing
+# better means emulating the preprocessor, and the trade is lopsided -- a miss cost
+# 13 dead oracle lanes that every other gate called green, while a false positive
+# costs one confused reader who can see the `#if 0` on the same screen. The gate
+# stays conservative. There are no `#if 0` blocks in this tree today.
 TRACKED_GLOBS = ("build/**/*.c", "build/**/*.h", "bridge/**/*.c", "bridge/**/*.h")
 
 
@@ -74,10 +84,12 @@ def main() -> int:
     failures: list[str] = []
     for src in sources:
         try:
-            text = src.read_text(encoding="utf-8", errors="replace")
+            raw = src.read_text(encoding="utf-8", errors="replace")
         except OSError as exc:
             failures.append(f"{src.relative_to(repo)}: unreadable ({exc})")
             continue
+        text = BLOCK_COMMENT_RE.sub("", raw)
+        text = "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("//"))
         for target in INCLUDE_RE.findall(text):
             checked += 1
             if not target.startswith(".."):
