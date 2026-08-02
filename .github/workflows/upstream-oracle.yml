@@ -389,6 +389,14 @@ jobs:
           # -I flag can rescue. A layout change breaks every oracle lane at once;
           # this fails here instead, naming each file.
           python3 .github/project/check-harness-includes.py --repo-root .
+      - name: Enforce imported-tree paths are not anchored to the repo root
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The other half of the same class: a governance script reaching an
+          # upstream file as `repo_root / "COPYING"`. That one only surfaced when a
+          # package-staging lane ran, so gate it where it costs milliseconds.
+          python3 .github/project/check-imported-root-references.py --repo-root .
       - name: Enforce module-graph cycles do not grow
         shell: bash
         run: |

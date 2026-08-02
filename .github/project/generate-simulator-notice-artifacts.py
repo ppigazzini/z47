@@ -9,6 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from upstream_paths import upstream_path
+
 XLSXIO_MIT_LICENSE = """Copyright (C) 2016 Brecht Sanders All Rights Reserved
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -171,8 +173,10 @@ def write_common_notice_files(
     xlsxio_source_repository_url: str,
     xlsxio_source_commit: str,
 ) -> None:
-    copying_source = repo_root / "COPYING"
-    decnumbericu_source = repo_root / "dep" / "decNumberICU" / "ICU-license.html"
+    # Both licence texts are upstream's and live in the imported tree, so they
+    # resolve through UPSTREAM_ROOT rather than sitting at the repo root.
+    copying_source = upstream_path(repo_root, "COPYING")
+    decnumbericu_source = upstream_path(repo_root, "dep/decNumberICU/ICU-license.html")
     if not copying_source.is_file():
         fail(f"Required notice source file not found: {copying_source}")
     if not decnumbericu_source.is_file():

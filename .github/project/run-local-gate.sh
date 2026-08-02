@@ -99,6 +99,11 @@ step "[6g2/11] harness include paths resolve"
 # `zig build sim` nor `zig build test` runs. Costs milliseconds; catches all of
 # them at once.
 python3 .github/project/check-harness-includes.py --repo-root .
+step "[6g3/11] imported-tree paths not anchored to the repo root"
+# Same class as 6g2, other language: a governance script reaching an upstream file
+# as `repo_root / "COPYING"`. Found the dead notice-staging path and a dead
+# charstring-oracle extractor, neither of which any local `zig build` step runs.
+python3 .github/project/check-imported-root-references.py --repo-root .
 step "[6g/11] module graph cycles (REPORT-28 M1.3)"
 python3 .github/project/check-module-graph.py --repo-root .
 step "[6i/11] object graph cycles per target (REPORT-28 M1.2)"
