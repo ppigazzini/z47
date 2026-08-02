@@ -320,3 +320,24 @@ def _unparseable_equation(text: str) -> list[str]:
 
 write("equation_unparseable.sav", _unparseable_equation("((((+*/"))
 write("equation_empty.sav", _unparseable_equation(""))
+
+
+def _version(v: int) -> list[str]:
+    """Rewrite the header's version line (line 3, after `C47_save_file_00`)."""
+    out = list(base)
+    out[3] = str(v)
+    return out
+
+
+# Version boundaries. The restore path BRANCHES on loadedVersion all over --
+# `restoreRegister` alone gates the config-descriptor decode on it -- and every
+# file derived from a real save carries the current version, so those older arms
+# were reached by nothing. M-SAFE-8's scan found a live out-of-bounds write behind
+# one of them, which is what put this class in the corpus.
+#
+# Inside [10000000, 20000000] the header accepts the value, so the expectation is
+# the version itself; outside it the header forces 0 (M-SAFE-4's range check).
+for v in (10000000, 10000007, 10000008, 10000019, 10000020, 20000000):
+    write(f"version_{v}.sav", _version(v), expect_version=v)
+for v in (9999999, 20000001):
+    write(f"version_{v}_out_of_range.sav", _version(v), expect_version=0)

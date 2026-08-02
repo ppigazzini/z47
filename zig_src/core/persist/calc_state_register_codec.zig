@@ -203,7 +203,6 @@ extern fn convertLongIntegerToLongIntegerRegister(li: *const MpzStruct, regist: 
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
 extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
-extern fn memcpy(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
 const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn __gmpz_init(li: *MpzStruct) void;
 extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
@@ -527,14 +526,6 @@ fn setMatrixDims(regist: i16, dims: vector_shape.Dims) void {
     hdr.matrixColumns = @truncate(dims.cols);
 }
 
-// Defaults appended when loading a pre-10000008 (896-byte) config descriptor.
-const config_pre_10000008_defaults = [_]u8{
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0xF7, 0x77, 0xDC, 0x2C, 0x2B, 0x84, 0x2A, 0x1C,
-    0x33, 0x20, 0x30, 0x33, 0x46, 0x0C, 0x2A, 0x33,
-    0x01, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-
 // Data-file restore helpers (inverse of the dataFileMode save forms).
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 extern fn hmmssInRegisterToSeconds(regist: i16) void;
@@ -681,17 +672,35 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         reallocateRegister(regist, dtComplex34Matrix, matrixDataBlocks(dims, COMPLEX34_SIZE_IN_BLOCKS), tag);
         setMatrixDims(regist, dims);
     } else if (strcmpEq(type_str, "Conf")) {
-        reallocateRegister(regist, dtConfig, 0, amNone);
-        var cfg: [*c]u8 = getRegisterDataPointer(regist);
-        const limit: usize = if (loaded_version < 10000008) 896 else CONFIG_DESCRIPTOR_SIZE;
-        var t: usize = 0;
-        while (t < limit) : (t += 1) {
-            cfg[0] = @intCast((hexVal(value[0]) << 4) | hexVal(value[1]));
-            value += 2;
-            cfg += 1;
-        }
-        if (loaded_version < 10000008) {
-            _ = memcpy(cfg, &config_pre_10000008_defaults[0], config_pre_10000008_defaults.len);
+        // The config register is a raw byte image of dtConfigDescriptor_t, whose
+        // field layout is only guaranteed from version 10000020. Upstream gates
+        // this whole branch on that and bounds the decode to
+        // sizeof(dtConfigDescriptor_t), with the reason written beside it: older
+        // files hold earlier layouts (896, 928, 832, 856 or reordered 840 bytes)
+        // whose bytes would recall into the wrong settings, and C43-era files parse
+        // as version 0, so skipping the entry beats decoding a descriptor RCLCFG
+        // cannot apply.
+        //
+        // The port had NEITHER the gate nor the bound. For a file claiming a
+        // version below 10000008 it decoded 896 bytes and then copied 32 more,
+        // into a register `reallocateRegister` sizes at exactly
+        // CONFIG_DESCRIPTOR_SIZE -- 840 bytes. That is an 88-byte WRITE past the
+        // end of the register, into the following pool block, driven entirely by a
+        // version number the file supplies. Upstream's guard was already in the
+        // pinned C when this owner was written; the resync never picked it up.
+        //
+        // Found by report-clamp-correspondence.py, which M-SAFE-8 built for exactly
+        // this class: an upstream guard living inside a function the Zig already
+        // has, where symbol-level correspondence sees nothing missing.
+        if (loaded_version >= 10000020) {
+            reallocateRegister(regist, dtConfig, 0, amNone);
+            var cfg: [*c]u8 = getRegisterDataPointer(regist);
+            var t: usize = 0;
+            while (t < CONFIG_DESCRIPTOR_SIZE) : (t += 1) {
+                cfg[0] = @intCast((hexVal(value[0]) << 4) | hexVal(value[1]));
+                value += 2;
+                cfg += 1;
+            }
         }
     } else {
         abi.fmtBufZ(errorMessage[0..512], "In function restoreRegister: Data: Reg {d}, type {s}, value {s} to be coded!", .{ @as(c_int, regist), @as([*:0]const u8, type_str), @as([*:0]const u8, value) });
