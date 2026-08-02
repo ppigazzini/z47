@@ -56,6 +56,14 @@ step "[4c/11] clamp correspondence (upstream guards inside owned functions)"
 # capacity clamp survived four resyncs (M-SAFE-1) and how the config-descriptor
 # version gate was missing until M-SAFE-8. Ratchets the load-path queue.
 python3 .github/project/report-clamp-correspondence.py --check
+step "[4d/11] macro-family correspondence (one #define, one behaviour)"
+# Upstream generates function families from a single #define, so their ports must
+# agree with each other. Four of the six stringTo* parsers had drifted to a
+# different base and a different overflow answer (finding 10, M-SAFE-11), which
+# neither the twin scan (all six live in one file) nor the parity oracles (decimal
+# only) could see. Gated at zero, not ratcheted: the queue really is empty.
+python3 .github/project/report-twin-divergence.py --self-test >/dev/null
+python3 .github/project/report-twin-divergence.py --check
 step "[5/11] curated Zig/C boundaries"
 bash .github/project/check-zig-c-boundaries.sh
 step "[6/11] idiomatic-Zig ratchet"

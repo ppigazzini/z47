@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "calc_state_test_runtime.h"
@@ -193,9 +194,85 @@ static int runFnSaveAutoHostNoopCase(void) {
   return reportMismatch("fnSaveAuto host noop", &expected, &actual);
 }
 
+// M-SAFE-11: pin the stringTo* macro family's BEHAVIOUR, not just its shape.
+//
+// Upstream generates six of these from two macros (saveRestoreCalcState.c:1056),
+// both passing base 0 to strtol/strtoul, both narrowing an out-of-range result.
+// Four of the six had drifted to `parseInt(.., 10) catch 0`: a different base and
+// a different answer on overflow (finding 10). The macro-family scan keeps the six
+// bodies identical to each other; this keeps them identical to UPSTREAM, which the
+// scan cannot know -- changing all six to base 10 at once would leave it green.
+//
+// Every probe here is width-independent on purpose. `(uint32_t)strtoul("4294967296")`
+// is 0 where `unsigned long` is 64-bit and 4294967295 where it is 32-bit, so it
+// differs between Linux/macOS and Windows and between host and firmware. That
+// divergence is real and is M-SAFE-10's subject; pinning it here would just encode
+// one platform's answer as if it were the contract.
+extern uint8_t  stringToUint8(const char *str);
+extern uint16_t stringToUint16(const char *str);
+extern uint32_t stringToUint32(const char *str);
+extern int8_t   stringToInt8(const char *str);
+extern int16_t  stringToInt16(const char *str);
+extern int32_t  stringToInt32(const char *str);
+
+static int expectU(const char *fn, const char *input, uint32_t got, uint32_t want) {
+  if(got == want) {
+    return 0;
+  }
+  fprintf(stderr, "%s(\"%s\") = %u, expected %u\n", fn, input, got, want);
+  return 1;
+}
+
+static int expectI(const char *fn, const char *input, int32_t got, int32_t want) {
+  if(got == want) {
+    return 0;
+  }
+  fprintf(stderr, "%s(\"%s\") = %d, expected %d\n", fn, input, got, want);
+  return 1;
+}
+
+static int runStringToNumberFamilyCase(void) {
+  int failures = 0;
+
+  // Base 0: "0x" is hexadecimal and a leading "0" is octal. `parseInt(.., 10)`
+  // read neither, so all six of these were wrong before M-SAFE-11.
+  failures += expectU("stringToUint8", "0x1F", stringToUint8("0x1F"), 31);
+  failures += expectU("stringToUint16", "0x1F", stringToUint16("0x1F"), 31);
+  failures += expectU("stringToUint32", "0x1F", stringToUint32("0x1F"), 31);
+  failures += expectI("stringToInt8", "0x1F", stringToInt8("0x1F"), 31);
+  failures += expectI("stringToInt16", "0x1F", stringToInt16("0x1F"), 31);
+  failures += expectI("stringToInt32", "0x1F", stringToInt32("0x1F"), 31);
+
+  failures += expectU("stringToUint8", "010", stringToUint8("010"), 8);
+  failures += expectU("stringToUint16", "010", stringToUint16("010"), 8);
+  failures += expectU("stringToUint32", "010", stringToUint32("010"), 8);
+  failures += expectI("stringToInt8", "010", stringToInt8("010"), 8);
+  failures += expectI("stringToInt16", "010", stringToInt16("010"), 8);
+  failures += expectI("stringToInt32", "010", stringToInt32("010"), 8);
+
+  // Out of range NARROWS to the low bits; it does not become 0. The `catch 0` the
+  // drifted members carried turned 300 into 0 for u8 rather than 44.
+  failures += expectU("stringToUint8", "300", stringToUint8("300"), 44);
+  failures += expectI("stringToInt8", "300", stringToInt8("300"), 44);
+  failures += expectU("stringToUint16", "70000", stringToUint16("70000"), 4464);
+
+  // In range, and negatives for the signed half.
+  failures += expectU("stringToUint32", "300", stringToUint32("300"), 300);
+  failures += expectI("stringToInt16", "-300", stringToInt16("-300"), -300);
+  failures += expectI("stringToInt32", "-300", stringToInt32("-300"), -300);
+  failures += expectI("stringToInt8", "-1", stringToInt8("-1"), -1);
+
+  // Not a number at all: strtoul converts nothing and returns 0.
+  failures += expectU("stringToUint32", "", stringToUint32(""), 0);
+  failures += expectU("stringToUint8", "zz", stringToUint8("zz"), 0);
+
+  return failures;
+}
+
 int main(void) {
   int failures = 0;
 
+  failures += runStringToNumberFamilyCase();
   failures += runSaveCalcEntryPointCase();
   failures += runRestoreCalcEntryPointCase();
   failures += runFnSaveStateWrapperCase();

@@ -19,10 +19,6 @@ pub const panic = abi.trap_panic.namespace;
 var compat_saved_calc_model: u16 = 0;
 var compat_loaded_version: u32 = 0;
 
-fn parseIntCompat(comptime T: type, str: [*:0]const u8) T {
-    return std.fmt.parseInt(T, std.mem.span(str), 10) catch 0;
-}
-
 fn saveCalcBackupHost() callconv(.c) void {
     runtime.saveCalcBackup();
 }
@@ -104,20 +100,39 @@ pub export fn z47_calc_state_save_sections() void {
     save_owned.writeSaveSections();
 }
 
+// Upstream generates six of these from two macros (saveRestoreCalcState.c:1056):
+//   #define stringToIntFunc(name, type)  type name(const char *s) { return (type)strtol (s, NULL, 0); }
+//   #define stringToUintFunc(name, type) type name(const char *s) { return (type)strtoul(s, NULL, 0); }
+// One macro, so one behaviour: base 0 (so `0x` is hex and a leading `0` octal),
+// and an out-of-range result NARROWS rather than being replaced.
+//
+// Porting the six one at a time is how four of them drifted to
+// `std.fmt.parseInt(.., 10) catch 0` -- a different base AND a different answer on
+// overflow -- while stringToInt8 and stringToUint16 below kept the macro's shape.
+// Nothing could see it: the twin scan pairs functions ACROSS the two load
+// families and all six live here, and the parity oracles only ever feed them
+// plain decimal. report-twin-divergence.py --macro-families is the detector built
+// for this class (M-SAFE-11); it reports zero for this family only while all six
+// bodies agree, so keep them identical to their siblings below.
+//
+// Do NOT confuse these with calc_state_text.zig's toUint8/toUint16/toUint32/
+// toInt16, which are a DIFFERENT upstream family: file-static helpers that pass
+// base 10 explicitly. The section parsers use those, which is why zero-padded
+// register names like "R.08" are unaffected by the base here.
 pub export fn stringToUint8(str: [*:0]const u8) u8 {
-    return parseIntCompat(u8, str);
+    return @truncate(strtoul(str, null, 0));
 }
 
 pub export fn stringToUint32(str: [*:0]const u8) u32 {
-    return parseIntCompat(u32, str);
+    return @truncate(strtoul(str, null, 0));
 }
 
 pub export fn stringToInt16(str: [*:0]const u8) i16 {
-    return parseIntCompat(i16, str);
+    return @truncate(strtol(str, null, 0));
 }
 
 pub export fn stringToInt32(str: [*:0]const u8) i32 {
-    return parseIntCompat(i32, str);
+    return @truncate(strtol(str, null, 0));
 }
 
 pub export fn toInt32(str: [*:0]const u8) i32 {
@@ -206,8 +221,9 @@ pub export fn read2Lines(line1: [*c]u8, maxLen1: usize, line2: [*c]u8, maxLen2: 
 }
 
 // Canonical string→number leaf helpers (saveRestoreCalcState.c), base 0 like the
-// C strtol/strtoul/strtoll/strtoull/strtof originals (the int16/int32/uint8/
-// uint32 variants are exported above).
+// C strtol/strtoul/strtoll/strtoull/strtof originals. The int16/int32/uint8/
+// uint32 members of the same two macro families are exported above; until
+// M-SAFE-11 this comment claimed base 0 for them while they parsed base 10.
 extern fn strtoll(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_longlong;
 extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn strtol(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;

@@ -23,14 +23,21 @@ versus `*|` is the M-SAFE-4 bug exactly, while a wholesale rewrite is two
 functions that merely share a name. So pairs are ranked by similarity DESCENDING
 and the near-misses come first.
 
-This is a REPORT, not a gate. Some divergence is legitimate and the false-positive
-rate is not yet known; per the REPORT-24 M2 lesson, a heuristic that judges before
-it is calibrated gets ignored. Gate it only once the queue is empty.
+TWO MODES, two kinds of twin. The default mode ranks same-named functions across
+the two directories above. `--macro-families` (M-SAFE-11) compares the members of
+one upstream `#define`-generated family against EACH OTHER -- see the section
+below. The cross-directory mode stays a REPORT: some divergence there is
+legitimate and the false-positive rate is not yet known, so per the REPORT-24 M2
+lesson it is not gated. The macro-family mode IS gated, at zero, because a macro
+guarantees its members are identical and there is nothing to calibrate away.
 
 Run from the repo root:
   python3 .github/project/report-twin-divergence.py
   python3 .github/project/report-twin-divergence.py --min-similarity 0.5 --show-diff
   python3 .github/project/report-twin-divergence.py --json
+  python3 .github/project/report-twin-divergence.py --macro-families
+  python3 .github/project/report-twin-divergence.py --check
+  python3 .github/project/report-twin-divergence.py --self-test
 """
 
 from __future__ import annotations
@@ -164,6 +171,129 @@ def compare(root: pathlib.Path) -> list[dict]:
     return rows
 
 
+# ---------------------------------------------------------------------------
+# Macro families (M-SAFE-11, from finding 10)
+#
+# A "twin" is not only a cross-directory relationship. Upstream generates whole
+# sets of functions from ONE `#define`, which makes them a family that must be
+# ported identically -- and the pairing above cannot see it, because every member
+# lives in the same file, in the same family. That is exactly how four of the six
+# `stringTo*` parsers drifted to a different base and a different overflow answer
+# while two kept the macro's shape, with nothing to notice.
+#
+# The comparison is between MEMBERS of one family rather than against the C: the
+# macro guarantees the members are identical to each other, and that is a property
+# the ports can be checked against without modelling C semantics. It does not
+# check the ports match UPSTREAM -- changing every member the same wrong way keeps
+# this green, which is why the behaviour probes in calc_state_parity.c exist too.
+# ---------------------------------------------------------------------------
+
+# A two-parameter `#define` continued over further lines. MULTILINE is
+# load-bearing: without it `^` anchors to the start of the whole file, NO macro is
+# ever found, and the scan reports a clean tree unconditionally. It shipped that
+# way for one run, and the calibration below is what caught it.
+#
+# The parameter NAMES are not required to be `(name, type)`. Upstream happens to
+# use that spelling for both of the families it has today -- verified by scanning
+# every function-shaped macro in src/c47 -- but pinning the scan to the spelling
+# means a resync introducing `somethingFunc(fn, kind)` is silently not scanned,
+# and a silent miss is indistinguishable from a clean tree. What identifies a
+# function generator is that its body defines one, so that is what is required.
+C_MACRO_DEF_RE = re.compile(
+    r"^[ \t]*#define[ \t]+(\w+)\(\s*\w+\s*,\s*\w+\s*\)[ \t]*\\\s*\n((?:[^\n]*\\[ \t]*\n)*[^\n]*)",
+    re.MULTILINE,
+)
+TYPE_TOKEN = "TYPE"
+
+# The C type each member is instantiated with, mapped to the Zig type a port uses.
+C_TO_ZIG_TYPE = {
+    "uint8_t": "u8",
+    "uint16_t": "u16",
+    "uint32_t": "u32",
+    "uint64_t": "u64",
+    "int8_t": "i8",
+    "int16_t": "i16",
+    "int32_t": "i32",
+    "int64_t": "i64",
+}
+
+
+def c_macro_families(root: pathlib.Path) -> dict[str, list[tuple[str, str]]]:
+    """macro name -> [(generated function name, C type)] across src/c47.
+
+    A macro qualifies when its body DEFINES a function -- it carries a brace --
+    which keeps the scan away from the value macros (`MIN(a,b)` and friends), that
+    are not families of anything. A family needs more than one invocation: a macro
+    used once generates nothing to be inconsistent with.
+    """
+    families: dict[str, list[tuple[str, str]]] = {}
+    for path in sorted((root / "src" / "c47").glob("**/*.c")):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        defined = {m.group(1) for m in C_MACRO_DEF_RE.finditer(text) if "{" in m.group(2)}
+        for macro in defined:
+            invocation = re.compile(rf"^\s*{re.escape(macro)}\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)", re.MULTILINE)
+            members = [(m.group(1), m.group(2)) for m in invocation.finditer(text)]
+            if len(members) > 1:
+                families.setdefault(macro, []).extend(members)
+    return families
+
+
+def zig_bodies_everywhere(root: pathlib.Path) -> dict[str, tuple[str, str]]:
+    """function name -> (relative path, normalised body) across all of zig_src."""
+    out: dict[str, tuple[str, str]] = {}
+    for path in sorted(root.glob("zig_src/**/*.zig")):
+        for name, body in function_bodies(path).items():
+            out.setdefault(name, (str(path.relative_to(root)), body))
+    return out
+
+
+def member_shape(body: str, name: str, zig_type: str) -> str:
+    """A member's BODY with its target width neutralised.
+
+    The signature is dropped rather than normalised. It is generated by the macro
+    and differs between siblings only by name and type, so it carries no signal --
+    and normalising it actively misleads: `[*:0]const u8` is the parameter type of
+    EVERY member, so blanking the type token turned the `u8` member's signature
+    into `[*:0]const TYPE` and reported the whole family as divergent on a tree
+    where all six bodies were identical.
+
+    What is kept is everything the macro fixes: which libc function is called,
+    which base is passed, whether an out-of-range result is truncated or replaced.
+    The base is a bare literal, and keeping literals is exactly what makes
+    `base 10` and `base 0` compare unequal.
+    """
+    inner = body.split("{", 1)[1] if "{" in body else body
+    shape = inner.replace(name, "MEMBER")
+    return re.sub(rf"\b{re.escape(zig_type)}\b", TYPE_TOKEN, shape).strip()
+
+
+def compare_macro_families(root: pathlib.Path) -> list[dict]:
+    findings: list[dict] = []
+    zig = zig_bodies_everywhere(root)
+    for macro, members in sorted(c_macro_families(root).items()):
+        shapes: dict[str, list[str]] = {}
+        missing: list[str] = []
+        for fn_name, c_type in members:
+            zig_type = C_TO_ZIG_TYPE.get(c_type)
+            entry = zig.get(fn_name)
+            if entry is None or zig_type is None:
+                missing.append(fn_name)
+                continue
+            path, body = entry
+            shapes.setdefault(member_shape(body, fn_name, zig_type), []).append(f"{fn_name} ({path})")
+        if len(shapes) > 1:
+            findings.append(
+                {
+                    "macro": macro,
+                    "members": len(members),
+                    "distinct_shapes": len(shapes),
+                    "groups": [{"shape": s, "members": sorted(m)} for s, m in shapes.items()],
+                    "unported": sorted(missing),
+                }
+            )
+    return findings
+
+
 def token_diff(a: str, b: str) -> list[str]:
     """The differing runs between two normalised bodies, as compact markers."""
     sm = difflib.SequenceMatcher(None, a.split(), b.split())
@@ -218,6 +348,52 @@ def self_test() -> int:
         == canonicalise_family("z47_program_serialization_runtime_x();", ("program_serialization",)),
     ))
 
+    # --- macro families (M-SAFE-11) ---
+    # The first two exist because the scan shipped a run reporting a clean tree
+    # for both of these reasons, and a clean report is not distinguishable from a
+    # correct one by looking at it.
+    macro_c = (
+        "#define stringToUintFunc(name, type)              \\\n"
+        "  type name(const char *str) {                    \\\n"
+        "    return (type)strtoul(str, NULL, 0);           \\\n"
+        "  }\n"
+        "\n"
+        "stringToUintFunc(stringToUint8,  uint8_t)\n"
+        "stringToUintFunc(stringToUint16, uint16_t)\n"
+    )
+    checks.append((
+        "macro definition found other than at file start (MULTILINE)",
+        [m.group(1) for m in C_MACRO_DEF_RE.finditer(macro_c)] == ["stringToUintFunc"],
+    ))
+    # A value macro is not a family of anything; requiring a brace keeps it out.
+    value_macro = "#define MIN(a, b)  \\\n  ((a) < (b) ? (a) : (b))\n"
+    checks.append((
+        "a value macro is not treated as a function family",
+        [m.group(1) for m in C_MACRO_DEF_RE.finditer(value_macro) if "{" in m.group(2)] == [],
+    ))
+    checks.append((
+        "macro invocations and their C types extracted",
+        re.compile(
+            r"^\s*stringToUintFunc\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)", re.MULTILINE
+        ).findall(macro_c)
+        == [("stringToUint8", "uint8_t"), ("stringToUint16", "uint16_t")],
+    ))
+    # Two members of one macro differ ONLY by name and width: same shape. The u8
+    # member's parameter type is `[*:0]const u8`, which is why the signature is
+    # dropped rather than normalised -- keeping it reported this pair as divergent.
+    u8_body = "pub export fn stringToUint8(str: [*:0]const u8) u8 { return @truncate(strtoul(str, null, 0)); }"
+    u16_body = "pub export fn stringToUint16(str: [*:0]const u8) u16 { return @truncate(strtoul(str, null, 0)); }"
+    checks.append((
+        "siblings differing only by name and width share a shape",
+        member_shape(u8_body, "stringToUint8", "u8") == member_shape(u16_body, "stringToUint16", "u16"),
+    ))
+    # ...and a different base is a different shape, which is finding 10 exactly.
+    drifted = "pub export fn stringToUint8(str: [*:0]const u8) u8 { return parseIntCompat(u8, str); }"
+    checks.append((
+        "a drifted member does NOT share the family shape",
+        member_shape(drifted, "stringToUint8", "u8") != member_shape(u16_body, "stringToUint16", "u16"),
+    ))
+
     failed = 0
     for label, ok in checks:
         print(f"  {'ok  ' if ok else 'FAIL'}  {label}")
@@ -237,6 +413,16 @@ def main() -> int:
         help="only report drifted pairs at least this similar (0.0-1.0)",
     )
     ap.add_argument("--repo-root", default=None, help="scan this tree instead of the default")
+    ap.add_argument(
+        "--macro-families",
+        action="store_true",
+        help="report upstream #define-generated families whose z47 ports disagree in shape",
+    )
+    ap.add_argument(
+        "--check",
+        action="store_true",
+        help="--macro-families, but exit nonzero if any family has disagreeing ports",
+    )
     ap.add_argument("--self-test", action="store_true", help="check the extractor and exit")
     args = ap.parse_args()
 
@@ -248,6 +434,32 @@ def main() -> int:
         if args.repo_root
         else pathlib.Path(__file__).resolve().parents[2]
     )
+    if args.macro_families or args.check:
+        families = compare_macro_families(root)
+        if args.json:
+            print(json.dumps(families, indent=2))
+        else:
+            print("MACRO FAMILY DIVERGENCE -- upstream #define families whose z47 ports disagree")
+            print(f"  families with disagreeing ports: {len(families)}\n")
+            for f in families:
+                print(f"{f['macro']}  ({f['members']} members, {f['distinct_shapes']} distinct shapes)")
+                for g in f["groups"]:
+                    print(f"    shape: {g['shape'][:150]}")
+                    print(f"      members: {', '.join(g['members'])}")
+                if f["unported"]:
+                    print(f"    no Zig port found for: {', '.join(f['unported'])}")
+                print()
+            if not families:
+                print("  every macro-generated family is ported consistently.")
+        if args.check and families:
+            print(
+                f"MACRO FAMILY DIVERGENCE: {len(families)} upstream #define famil(y/ies) ported "
+                "inconsistently. One macro means one behaviour; make the members' bodies agree.",
+                file=sys.stderr,
+            )
+            return 1
+        return 0
+
     rows = compare(root)
     drifted = [r for r in rows if not r["identical"] and r["similarity"] >= args.min_similarity]
 
