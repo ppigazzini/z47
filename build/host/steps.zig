@@ -1286,32 +1286,24 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const testPgms_step = b.step("testPgms", "Refresh the generated test program image");
     testPgms_step.dependOn(&update_testpgms.step);
 
-    // The test lanes deliberately do NOT depend on update_testpgms. They used to,
-    // which meant every `zig build test` rewrote res/testPgms/testPgms.bin inside the
-    // vendored tree -- so the imported tree could never stay at its pin, a
-    // developer's `git status` was dirty after running tests, and nobody had to
-    // CHOOSE to fork that file: the test run did it and someone committed the result.
-    // That is the whole provenance of the 22179-vs-22205 divergence.
-    //
-    // The suite does not need the regenerated image. Measured, not assumed: the full
-    // corpus passes 12830/12830 plus 14/14 on upstream's pristine copy, and passed
-    // 12872/12872 on it before the plot-probe deletion. `zig build testpgms` remains
-    // for the rare case where upstream's own image is genuinely stale for z47 -- and
-    // running it will fail check-imported-tree-pin until the divergence is declared,
-    // which is the correct outcome rather than a silent fork.
+    // These DO write res/testPgms/testPgms.bin into the imported tree, and that is
+    // deliberate, not an accident -- do not "fix" it. The image is a GENERATED
+    // ARTEFACT under a freshness contract: run-host-parity-battery.sh regenerates it
+    // and the CI step "Compare tracked generated artifacts" then runs
+    // `git diff --exit-code` over the list in workflow-imported-root-paths.sh, which
+    // includes this file. So the committed copy must equal what z47's generator
+    // emits (22179 bytes, against upstream's committed 22205), and the divergence
+    // from the pin is declared in imported-tree-divergences.txt for that reason.
+    // Reverting it to upstream's copy makes CI fail, which is how this was learned.
+    test_step.dependOn(&update_testpgms.step);
+    test_asan_step.dependOn(&update_testpgms.step);
+    repeattest_step.dependOn(&update_testpgms.step);
 
     const generated_step = b.step("generated", "Refresh all tracked generated host artifacts");
     generated_step.dependOn(&update_fonts.step);
     generated_step.dependOn(&update_constants.step);
     generated_step.dependOn(&update_catalogs.step);
-    // NOT update_testpgms, for the same reason the test lanes dropped it. The other
-    // three refresh into upstream/src/generated/, which is gitignored, so they leave
-    // the tree clean; testPgms.bin is the only TRACKED file any of them writes, and
-    // it lives inside the vendored tree. Keeping it here made `generated` -- which
-    // run-host-parity-battery.sh invokes, so both CI and the local gate run it --
-    // dirty the imported tree on every pass, and a SECOND run of run-local-gate.sh
-    // then failed check-imported-tree-pin at step 6g0 on damage the FIRST run did.
-    // `zig build testpgms` still refreshes it deliberately.
+    generated_step.dependOn(&update_testpgms.step);
 
     const outputs: host_types.SimulatorOutputs = .{
         .c47_exe = sim,

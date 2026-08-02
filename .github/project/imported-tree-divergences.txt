@@ -41,6 +41,13 @@ subprojects/packagefiles/gmp-6.2.1/.gitkeep
 dep/jimtcl
 
 [patched]
+# A GENERATED ARTEFACT under a freshness contract, not a stray fork. The battery
+# regenerates it (`zig build testPgms`) and the CI step "Compare tracked generated
+# artifacts" then runs `git diff --exit-code` over the generated-artifacts list in
+# workflow-imported-root-paths.sh, which includes this path. So the committed copy
+# must equal what z47's generator emits -- 22179 bytes, against upstream's committed
+# 22205 -- and reverting it to upstream's copy makes CI fail. Learned the hard way.
+res/testPgms/testPgms.bin
 # The cov probes live in upstream's funcTestNoParam table, so they cannot be
 # overlaid from a separate file. 3-way merged every resync.
 src/testSuite/testSuite.c
