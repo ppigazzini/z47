@@ -28,9 +28,18 @@ upstream
 
 [approved-z47-additions-under-imported]
 # Reviewed exceptions required by imported-root ownership check. Entries are
-# UPSTREAM-relative (the path upstream uses), not repo-relative: the check
-# compares the pin's root tree against the imported subtree, so the paths it
-# reports carry no UPSTREAM_ROOT prefix.
+# UPSTREAM-relative (the path upstream uses), not repo-relative.
+#
+# DESPITE THE SECTION NAME, most of these are not z47's additions. The check diffs
+# against merge-base(UPSTREAM_COMMIT, HEAD) -- an OLD ancestor, 2025-12-04 -- so any
+# file UPSTREAM added after that base also reads as an addition and needs listing
+# here. That is what src/testSuite/tests/*.txt and res/PROGRAMS are.
+#
+# So an entry here answers "is this path new since the diff base?", NOT "does z47
+# modify it?". z47 modifications are imported-tree-divergences.txt [patched], a
+# different question against a different base. Removing an entry here because z47
+# stopped patching the file breaks the source-ownership-guard lane; that happened
+# with graphs_cov.txt on 2026-08-02.
 BUILD.md
 dist
 distS
@@ -88,6 +97,7 @@ src/testSuite/tests/eq_cov.txt
 src/testSuite/tests/eqslv_cov.txt
 src/testSuite/tests/error_cov.txt
 src/testSuite/tests/flags_cov.txt
+src/testSuite/tests/graphs_cov.txt
 src/testSuite/tests/histo_cov.txt
 src/testSuite/tests/integrate_cov.txt
 src/testSuite/tests/iteration_cov.txt
