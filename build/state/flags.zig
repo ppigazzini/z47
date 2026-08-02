@@ -1,5 +1,7 @@
 const std = @import("std");
 const abi_host = @import("../abi_host.zig");
+const host_platform = @import("../host/platform.zig");
+const host_types = @import("../host/types.zig");
 
 pub const RuntimeObjects = struct {
     flags_state: *std.Build.Step.Compile,
@@ -47,9 +49,6 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
-    const build_options = b.addOptions();
-    build_options.addOption(bool, "use_fake_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
-    module.addOptions("flags_build_options", build_options);
 
     return b.addObject(.{
         .name = b.fmt("{s}-flags-state", .{name_prefix}),
@@ -111,6 +110,7 @@ pub fn addParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    common: host_types.CommonConfig,
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
     const exe = b.addExecutable(.{
@@ -123,6 +123,14 @@ pub fn addParityExecutable(
         }),
     });
     abi_host.addToModule(b, exe.root_module, target, optimize, "flags-parity");
+
+    // The oracle compiles c43's own flags.c, which reaches c43's defines.h /
+    // items.h / typeDefinitions.h for every constant and struct it uses. Those
+    // headers refuse to compile without knowing which build they are in, so the
+    // lane takes the SAME PC_BUILD/platform/word-size macros the product host
+    // build uses -- picking different ones here would make the oracle a
+    // different configuration of c43, not c43.
+    host_platform.addHostMacros(exe.root_module, common);
 
     exe.root_module.addIncludePath(b.path("build/tests/flags"));
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/flags/flags_fake_runtime.c"), .flags = &.{} });

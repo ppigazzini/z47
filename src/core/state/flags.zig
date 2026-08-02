@@ -50,6 +50,7 @@ const flip_flags = [_]u16{
     runtime.FLAG_FRCYC,
     runtime.FLAG_CPXMULT,
     runtime.FLAG_CPXPLOT,
+    runtime.FLAG_IMPLOT,
     runtime.FLAG_SHOWX,
     runtime.FLAG_SHOWY,
     runtime.FLAG_PBOX,
