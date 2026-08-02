@@ -46,6 +46,107 @@ inline fn freeRegions() [*c]freeMemoryRegion_t {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Free-pool poison detector (REPORT-30 finding 5, M-SAFE-15). PC-only, and gated
+// on the same `track_allocations` flag as the double-free diagnostics so the
+// firmware is byte-identical: `if (comptime ...)` around every call site means
+// none of this reaches a DMCP build.
+//
+// See pool_poison.zig for why the audit intersects against a SNAPSHOT rather than
+// checking the free regions as they stand, and for what this cannot see.
+// ---------------------------------------------------------------------------
+const pool_poison = @import("pool_poison.zig");
+
+const poison_state = if (track_allocations) struct {
+    var snapshot: [@intCast(MAX_FREE_REGIONS)]pool_poison.Extent = undefined;
+    var snapshot_len: usize = 0;
+    var armed: bool = false;
+} else struct {};
+
+/// Re-poison an extent as it returns to the free list.
+///
+/// Without this the detector is useless: alloc -> write -> free happens constantly
+/// during a load (GMP alone does it thousands of times), and every such extent
+/// comes back to the free list holding the caller's old data. The audit then
+/// intersects it with the poison snapshot, finds bytes that are not the pattern,
+/// and reports correct behaviour as an overrun. Measured before this existed: the
+/// lane failed on a third of the corpus, none of it real.
+fn poisonReleased(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
+    if (comptime !track_allocations) return;
+    // ARMED ONLY. Poisoning on every free in every host build turned
+    // `saveload_parity` into a SEGV: something in that lane READS pool memory
+    // after it is freed and happened to survive on the stale contents. That is
+    // worth chasing (finding 23) and is not this detector's business to force on
+    // every other lane, so the pattern is written only inside a window a harness
+    // has explicitly opened. Nothing that does not call
+    // z47_free_list_poison_free_space() changes behaviour at all.
+    if (!poison_state.armed) return;
+    const p = pcMemPtr orelse return;
+    const start = toC47MemPtr(p);
+    if (start == C47_NULL or sizeInBlocks == 0) return;
+    @memset(poolBytes(.{ .start = start, .blocks = @intCast(sizeInBlocks) }), pool_poison.POISON);
+}
+
+fn poolBytes(e: pool_poison.Extent) []u8 {
+    const base: [*]u8 = @ptrCast(ram);
+    return base[toBytes(e.start) .. toBytes(e.start) + toBytes(e.blocks)];
+}
+
+/// Fill every free region with the poison pattern and record what was filled.
+/// Everything between this and the next audit that writes into free space is a
+/// defect the audit will name.
+pub export fn z47_free_list_poison_free_space() callconv(.c) void {
+    if (comptime !track_allocations) return;
+    const fr = freeRegions();
+    poison_state.snapshot_len = 0;
+    var i: i32 = 0;
+    while (i < numberOfFreeMemoryRegions and poison_state.snapshot_len < poison_state.snapshot.len) : (i += 1) {
+        const idx: usize = @intCast(i);
+        const e = pool_poison.Extent{
+            .start = fr[idx].blockAddress,
+            .blocks = fr[idx].sizeInBlocks,
+        };
+        if (e.isEmpty()) continue;
+        @memset(poolBytes(e), pool_poison.POISON);
+        poison_state.snapshot[poison_state.snapshot_len] = e;
+        poison_state.snapshot_len += 1;
+    }
+    poison_state.armed = true;
+}
+
+/// Check the poisoned bytes that are STILL free. Returns the number of disturbed
+/// extents; 0 means no write reached free space since the poison. Returns 0 when
+/// no poison is armed, so a caller that forgets to arm gets a quiet pass rather
+/// than a false alarm -- the harness arms it explicitly.
+pub export fn z47_free_list_audit_free_space() callconv(.c) c_int {
+    if (comptime !track_allocations) return 0;
+    if (!poison_state.armed) return 0;
+    const fr = freeRegions();
+    var disturbed: c_int = 0;
+    var i: i32 = 0;
+    while (i < numberOfFreeMemoryRegions) : (i += 1) {
+        const idx: usize = @intCast(i);
+        const now = pool_poison.Extent{
+            .start = fr[idx].blockAddress,
+            .blocks = fr[idx].sizeInBlocks,
+        };
+        if (now.isEmpty()) continue;
+        for (poison_state.snapshot[0..poison_state.snapshot_len]) |was| {
+            const both = pool_poison.intersect(now, was) orelse continue;
+            const bytes = poolBytes(both);
+            if (pool_poison.firstDisturbed(bytes)) |off| {
+                std.debug.print(
+                    "POOL POISON DISTURBED: block {d} (+{d} bytes) inside free extent [{d}, {d}) -- something wrote past its allocation into free pool space\n",
+                    .{ both.start + @as(u32, @intCast(off >> BPB)), off, both.start, both.end() },
+                );
+                disturbed += 1;
+                break;
+            }
+        }
+    }
+    return disturbed;
+}
+
 // PC-only allocation tracking.
 const allocated = if (track_allocations) struct {
     extern var numberOfAllocatedMemoryRegions: i32;
@@ -178,6 +279,17 @@ pub export fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, n
     var c47RamPtr = toC47MemPtr(pcMemPtr);
     const fr = freeRegions();
 
+    // The tail this call releases goes straight back to the free list without
+    // passing through freeListFree, so it needs its own re-poison.
+    if (comptime track_allocations) {
+        if (oldSizeInBlocks > newSizeInBlocks and c47RamPtr != C47_NULL) {
+            poisonReleased(
+                toPcMemPtr(c47RamPtr + @as(u16, @intCast(newSizeInBlocks))),
+                oldSizeInBlocks - newSizeInBlocks,
+            );
+        }
+    }
+
     if (comptime track_allocations) {
         const ar = allocated.regions();
         var region: i32 = 0;
@@ -226,6 +338,8 @@ pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) callco
 
     var sizeInBlocks = sizeInBlocksArg;
     if (sizeInBlocks == 0) sizeInBlocks = 1;
+
+    if (comptime track_allocations) poisonReleased(pcMemPtr, sizeInBlocks);
 
     const c47RamPtr = toC47MemPtr(pcMemPtr);
     const fr = freeRegions();
