@@ -1,0 +1,188 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         slvp                            **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnSlvp
+
+;=======================================================================================================================
+; Error case: invalid type (a coefficient vector must be a real or complex matrix)
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=Real:"2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=Stri:"This is a string"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=Stri:"This is a string"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=LonI:"7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=LonI:"7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ShoI:"5#10"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ShoI:"5#10"
+
+;=======================================================================================================================
+; Error case: not a vector
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M2,3[1i1,2i0,3i0,4i0,5i0,6i0]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=CxMa:"M2,3[1i1,2i0,3i0,4i0,5i0,6i0]"
+
+;=======================================================================================================================
+; Error case: no degree left after leading zeros are dropped
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,1[5]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,1[5]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[0,0,0]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,3[0,0,0]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[0,0,5]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,3[0,0,5]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[0,5]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,2[0,5]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,1[5i5]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=CxMa:"M1,1[5i5]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,3[0i0,0i0,0i0]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=CxMa:"M1,3[0i0,0i0,0i0]"
+
+;=======================================================================================================================
+; Degree 1, real and complex: a1 x + a0 = 0
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=ReMa:"M1,2[2,-4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,-4]" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=ReMa:"M1,1[2]"
+
+; (1+i) x - 2 = 0  ==>  x = 2/(1+i) = 1 - i
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,2[1i1,-2i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,2[1i1,-2i0]" RX=CxMa:"M1,1[1i-1]"
+
+;=======================================================================================================================
+; Same quadratic through both element types and both vector orientations: x^2 - 3x + 2, roots 2 and 1
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=ReMa:"M1,3[1,-3,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,-3,2]" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=ReMa:"M1,2[2,1]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M3,1[1,-3,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[1,-3,2]" RX=ReMa:"M1,2[2,1]"
+
+; complex storage, real content: the roots are real, so the result downgrades to a real matrix
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,3[1i0,-3i0,2i0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M1,3[1i0,-3i0,2i0]" RX=ReMa:"M1,2[2,1]"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M3,1[1i0,-3i0,2i0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M3,1[1i0,-3i0,2i0]" RX=ReMa:"M1,2[2,1]"
+
+;=======================================================================================================================
+; x^n with n > 0: every root is 0 (trailing-zero deflation all the way down)
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,0]" RX=ReMa:"M1,2[0,0]"
+
+;=======================================================================================================================
+; x^d = w in closed form (the QR engine refuses circulant companion matrices)
+;=======================================================================================================================
+; x^2 + 1: roots +i, -i
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,1]" RX=CxMa:"M1,2[0i1,0i-1]"
+
+; x^2 - 4: roots 2, -2, real output
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,-4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,-4]" RX=ReMa:"M1,2[2,-2]"
+
+; x^5 = 32: 2 times the fifth roots of unity, in angle order
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,6[1,0,0,0,0,-32]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,6[1,0,0,0,0,-32]" RX=CxMa:"M1,5[2i0,0.6180339887498948482045868343656381i1.902113032590307144232878666758764,-1.618033988749894848204586834365638i1.175570504584946258337411909278145,-1.618033988749894848204586834365638i-1.175570504584946258337411909278145,0.6180339887498948482045868343656381i-1.902113032590307144232878666758764]"
+
+; x^2 = i through the closed form with genuinely complex w: roots are +-(sqrt(2)/2)(1+i); complex input gets no noise cleanup, the values are clean by computation
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,3[1i0,0i0,0i-1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,3[1i0,0i0,0i-1]" RX=CxMa:"M1,2[0.7071067811865475244008443621048490i0.7071067811865475244008443621048490,-0.7071067811865475244008443621048490i-0.7071067811865475244008443621048490]"
+
+;=======================================================================================================================
+; General quadratics and cubics through the companion path (the engine's own closed forms)
+;=======================================================================================================================
+; x^2 - 2x + 5: roots 1 +/- 2i
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,-2,5]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,3[1,-2,5]" RX=CxMa:"M1,2[1i2,1i-2]"
+
+; (x-1)(x-2)(x-3) = x^3 - 6x^2 + 11x - 6
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-6,11,-6]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-6,11,-6]" RX=ReMa:"M1,3[3,2,1]"
+
+; (x-1)^3 = x^3 - 3x^2 + 3x - 1
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[1,-3,3,-1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[1,-3,3,-1]" RX=ReMa:"M1,3[1,1,1]"
+
+; x^2 - 3i x - 2: roots 2i and i (complex coefficients through the companion path)
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,3[1i0,0i-3,-2i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,3[1i0,0i-3,-2i0]" RX=CxMa:"M1,2[0i2,0i1]"
+
+; (1+i)(x^2 - 3x + 2): a complex leading coefficient whose monic division is exact; the roots are real, so the result downgrades to a real matrix
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,3[1i1,-3i-3,2i2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=CxMa:"M1,3[1i1,-3i-3,2i2]" RX=ReMa:"M1,2[2,1]"
+
+;=======================================================================================================================
+; Degree 5 through the QR engine: the coefficient-vector mirrors of the proven EIGVAL companion tests
+;=======================================================================================================================
+TIMER: 001 degree 5, roots 5 4 3 2 1
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,6[1,-15,85,-225,274,-120]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,6[1,-15,85,-225,274,-120]" RX=ReMa:"M1,5[5,4,3,2,1]"
+
+TIMER: 002 degree 5, one complex pair
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,6[1,-17.8,99.41,-261.218,352.611,-134.106]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,6[1,-17.8,99.41,-261.218,352.611,-134.106]" RX=CxMa:"M1,5[10.30000000000000000000000000000000i0,3.619868415357066363166874420603965i0,1.650000000000000000000000000000000i+1.864805619897151639855477863375268,1.650000000000000000000000000000000i-1.864805619897151639855477863375268,0.5801315846429336368331255793960355i0]"
+
+;=======================================================================================================================
+; Deflation and leading-zero stripping
+;=======================================================================================================================
+; x^4 - 3x^3 + 2x^2 = x^2 (x-1)(x-2): roots 2, 1, 0, 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,-3,2,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,5[1,-3,2,0,0]" RX=ReMa:"M1,4[2,1,0,0]"
+
+; leading zeros drop silently: the vector [0,0,1,-3,2] is the quadratic x^2 - 3x + 2
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[0,0,1,-3,2]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,5[0,0,1,-3,2]" RX=ReMa:"M1,2[2,1]"
+
+; both at once: [0,1,-1,0] is x^2 - x, roots 1 and 0
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,4[0,1,-1,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,4[0,1,-1,0]" RX=ReMa:"M1,2[1,0]"
+
+;=======================================================================================================================
+; Repeated roots: (x-1)^4 - a multiplicity-4 cluster is conditioning-limited to about 75/4 digits; these are the engine's
+; deterministic values, a conjugate-symmetric cluster of spread ~3E-18 around the true quadruple root, delivered honestly
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,5[1,-4,6,-4,1]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=ReMa:"M1,5[1,-4,6,-4,1]" RX=CxMa:"M1,4[1.000000000000000002847193433484273i0,0.9999999999999999992695695413283999i7.305814482782950167230506999567649E-19,0.9999999999999999992695695413283999i-7.305814482782950167230506999567649E-19,0.9999999999999999986136674838589269i0]"
+
+;=======================================================================================================================
+; Wilkinson degree 10: roots 1..10, coefficients exact in real34
+;=======================================================================================================================
+TIMER: 003 Wilkinson degree 10
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,11[1,-55,1320,-18150,157773,-902055,3416930,-8409500,12753576,-10628640,3628800]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,11[1,-55,1320,-18150,157773,-902055,3416930,-8409500,12753576,-10628640,3628800]" RX=ReMa:"M1,10[10,9,8,7,6,5,4,3,2,1]"
+
+;=======================================================================================================================
+; Degree 20 exceeds the working RAM the QR engine needs: refused whole, X and L untouched.
+; This case is an arena-size proxy: it documents the ceiling of RAM_SIZE_IN_BLOCKS_NEW_HW, and a change to that
+; constant legitimately moves the refusal point, in which case re-derive the degree that no longer fits
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,21[1,-210,20615,-1256850,53327946,-1672280820,40171771630,-756111184500,11310276995381,-135585182899530,1307535010540395,-10142299865511450,63030812099294896,-311333643161390640,1206647803780373360,-3599979517947607200,8037811822645051776,-12870931245150988800,13803759753640704000,-8752948036761600000,2432902008176640000]"
+Out: EC=11 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,21[1,-210,20615,-1256850,53327946,-1672280820,40171771630,-756111184500,11310276995381,-135585182899530,1307535010540395,-10142299865511450,63030812099294896,-311333643161390640,1206647803780373360,-3599979517947607200,8037811822645051776,-12870931245150988800,13803759753640704000,-8752948036761600000,2432902008176640000]"
+
+;=======================================================================================================================
+; The engine's circulant screen reads only real parts, so a complex polynomial whose middle coefficients are all purely
+; imaginary while the constant has a real part looks circulant to it although it is not x^d = w: SLVP dodges the screen
+; with a diagonal similarity (superdiagonal 1/2), and the QR solver then delivers these roots, verified independently
+; to 34 digits by 60-digit Horner residuals. Complex input gets no residue cleanup (independent component exponents can
+; encode arbitrarily small genuine features), so the sub-representable real parts on the two purely imaginary roots are
+; the engine's raw convergence residue, delivered honestly
+;=======================================================================================================================
+; x^4 + i x^3 - 2, exact roots include i
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=CxMa:"M1,5[1i0,0i1,0i0,0i0,-2i0]" RX=CxMa:"M1,4[-6.777262814425583794579544187249176E-40i-1.543689012692076361570855971801748,-1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,1.115142508039937359745764636315014i-0.2281554936539618192145720140991260,-4.067804215061577727803136725462773E-40i1]"

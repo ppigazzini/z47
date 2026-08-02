@@ -60,6 +60,12 @@ const strip_ortho_bessel_ellip: bool = frontier_build_options.strip_ortho_bessel
 // TWO_FILE packages (dmcp_build and old_hw); host and DMCP5 keep them.
 const option_xfn_1000: bool = !(dmcp_build and old_hw);
 const option_tvm_amort: bool = !(dmcp_build and old_hw);
+// OPTION_SLVP (SLVP polynomial roots) sits in the same TWO_FILE #undef block as
+// OPTION_XFN_1000, so it follows the same gate. Its defines.h dependency
+// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP` adds nothing here: z47 models
+// OPTION_EIGEN as on for every target (menu_MATX carries EIG_VAL/EIG_QR
+// unconditionally), and every target that #undefs it is already dmcp+old_hw.
+const option_slvp: bool = !(dmcp_build and old_hw);
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -812,7 +818,11 @@ const menu_MyPFN linksection(code_section) = [_]i16{ 1, 2, 3, 4, 1458, -1356, 0,
 const menu_1stDeriv linksection(code_section) = [_]i16{ 0, 0, 0, 0, -2374, 2377 };
 const menu_2ndDeriv linksection(code_section) = [_]i16{ 0, 0, 0, 0, -2374, 2378 };
 const menu_42 linksection(code_section) = [_]i16{ 1527, 0, 0, 0, 0, 0 };
-const menu_ADV linksection(code_section) = [_]i16{ 1671, 1672, 1476, 1475, -1381, 1608, 1754, 1755, 1555, 1604, 1546, 1547, 0, 0, 0, 0, 0, 0 };
+// Rows: {PIn SIGMAn FQX PLTf -Sfdx SOLVE} {iPIn iSIGMAn FDQX PGMPLT PGMINT
+// PGMSLV} {SLVQ SLVC ADV_SLVP NULL NULL NULL}. The plot pair (PLTf 2734 /
+// PGMPLT 2732) and the SLVQ/SLVC order came in upstream after the M3.3 probe
+// dump and were re-ported with SLVP; ADV_SLVP is ITM_SLVP or ITM_NULL.
+const menu_ADV linksection(code_section) = [_]i16{ 1671, 1672, 1475, 2734, -1381, 1608, 1754, 1755, 1476, 2732, 1546, 1547, 1604, 1555, (if (option_slvp) @as(i16, 1965) else 0), 0, 0, 0 };
 const menu_AIMCATALOG linksection(code_section) = [_]i16{ -1350, -1377, -1375, -1378, -1374, 1958 };
 const menu_ALPHA linksection(code_section) = [_]i16{ -1377, -1375, -1378, -1374, 1952, 1953, -1350, 2420, 2419, 1411, 1954, 1955, 1858, 2029, 2191, 1729, 1926, 1928 };
 const menu_ALPHA_OMEGA linksection(code_section) = [_]i16{ 602, 603, 604, 605, 606, 1810, 607, 608, 609, 610, 612, 613, 614, 615, 616, 617, 618, 1809, 619, 620, 620, 621, 622, 624, 625, 626, 627, 1811, 0, 0, 0, 0, 0, 0, 0, 0, 611, 0, 0, 623, 0, 0 };
@@ -2520,6 +2530,13 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
     if (comptime strip_17) {
         switch (itemNr) {
             -1222, -1207, -1232, -1257, -1227, 1223, 1224, 1225, 1226, 1208, 1209, 1210, 1211, 1248, 1249, 1250, 1251, 1233, 1234, 1235, 1236, 1258, 1259, 1260, 1261, 1228, 1229, 1230, 1231 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_SLVP: strike out ITM_SLVP on the packages that drop it.
+    if (comptime !option_slvp) {
+        switch (itemNr) {
+            1965 => return 1,
             else => {},
         }
     }

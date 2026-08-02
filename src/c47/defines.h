@@ -55,6 +55,7 @@
 #define OPTION_FONTBROWSER             //                   // Font Browsers
 #define OPTION_SHOW                    //                   // SHOW (alternative to VIEW)
 #define OPTION_SLV_ZETA_BETA           //                   // SLVC, SLVQ, ZETA, BETA
+#define OPTION_SLVP                    //                   // SLVP general polynomial roots (companion matrix through the EIGEN QR solver; requires OPTION_EIGEN)
 #define OPTION_ELLIPTIC                //                   // Elliptic functions
 #define OPTION_BESSEL                  //                   // Bessel functions
 #define OPTION_ORTHO                   //                   // Orthogonal-polynomials menu (ORTHO)
@@ -274,6 +275,7 @@
             #undef  OPTION_EIGEN_159     // ✓  2568 bytes // C47 EINEN function is 159 digits internally; note both OPTION_SQUARE_159 & OPTION_CUBIC_159 used by OPTION_EIGEN_159
             #undef  OPTION_XFN_1000      // ✓  5224 bytes // XFN extended 1000 digit math Functionality
             #undef  OPTION_VECTOR        // ✓ 13672 bytes // Vector 12952 saving if ELEC is not in; 9568 saving if ELEC is in
+            #undef  OPTION_SLVP          // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
     #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_DATAFILE              // ✓  2112 bytes // Without register/variable .d47 export & import
 
@@ -284,6 +286,11 @@
 // OPTION_FACTOR (factorisation) requires OPTION_PRIME (it prime-tests its candidate factors): never leave FACTOR on without PRIME
 #if !defined(OPTION_PRIME)
   #undef OPTION_FACTOR
+#endif
+
+// OPTION_SLVP (polynomial roots) requires OPTION_EIGEN (it feeds the companion matrix to the QR eigensolver): never leave SLVP on without EIGEN
+#if !defined(OPTION_EIGEN)
+  #undef OPTION_SLVP
 #endif
 
 

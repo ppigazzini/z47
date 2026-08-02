@@ -95,6 +95,12 @@ fn addRuntimeObject(
     // stack constraint" and costs ~4850-5224 bytes of flash there. Host and
     // DMCP5 keep it, so this is off for exactly the "dmcp" prefix.
     build_options.addOption(bool, "option_xfn_1000", !std.mem.eql(u8, name_prefix, "dmcp"));
+    // OPTION_SLVP (SLVP, every root of a polynomial from its coefficient
+    // vector) sits in the same TWO_FILE #undef block as OPTION_XFN_1000 and
+    // costs 2024 bytes of flash, so it is off for exactly the "dmcp" prefix.
+    // softmenus.zig gates the ADV softkey and the savedspace strike-out on the
+    // same condition.
+    build_options.addOption(bool, "option_slvp", !std.mem.eql(u8, name_prefix, "dmcp"));
     module.addOptions("math_command_wrappers_build_options", build_options);
 
     return b.addObject(.{

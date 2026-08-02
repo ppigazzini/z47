@@ -255,6 +255,7 @@ argument
 unitVector
 
 slvc
+slvp
 slvq
 stkexV4
 agm

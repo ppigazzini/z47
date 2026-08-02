@@ -1,0 +1,372 @@
+% SPDX-License-Identifier: GFDL-1.3-or-later
+% Copyright The WP43 and C47 Authors
+%
+% AN0033 -- SLVP: roots of a polynomial of any degree, from its coefficient vector.
+% Compiled with lualatex. Build from this directory with:
+%
+%   TEXINPUTS=../style: lualatex AN-0033-C47-R47-Application-Note-2026-07-30-DE-Polynomial-roots.ltx
+%
+% Run it twice so the table of contents, the page count and the cross references settle.
+
+\documentclass[canadian]{article}
+\usepackage{c47appnote}
+
+\notenumber{033}
+\noteshorttitle{Polynomial Roots}
+\notedate{2026-07-30}
+\notetitle{SLVP: Every Root of a Polynomial}
+
+\begin{document}
+
+\notehead
+
+    \cmd{SLVP} takes the coefficients of a polynomial of any degree from a vector in \reg{X} and returns
+    every root, real and complex, in one keystroke.  It completes a family: \cmd{SLVQ} solves the quadratic
+    and \cmd{SLVC} the cubic, from stack registers or from the same highest-degree-first coefficient
+    vector this note uses, and until now degree four was where the calculator stopped.  HP\,50g owners
+    will recognise the shape of the function as \cmd{PROOT}, which has been the workhorse of control
+    engineers and filter designers on that machine for twenty years.
+
+    The first half of this note is about using the function: what it takes, what it returns, and six worked
+    examples ending with an internal rate of return.  The second half is about what happens behind the
+    keystroke: the companion matrix, the QR eigensolver that C47 already carries, what accuracy to expect
+    and where the limits are.
+
+    Numerical results in this document are of three kinds.  Results computed by hand are given with their
+    working, so the reader can check them.  Results the C47 test suite asserts are identified by the file
+    that asserts them, \file{src/testSuite/tests/slvp.txt}, which holds thirty-three cases covering every
+    path through the function.  Independent confirmations were computed with 60-digit decimal arithmetic
+    outside the calculator and are marked as such.  Nothing in this note has to be read off real hardware.
+
+    \begin{warning}
+    \cmd{SLVP} ships on the DM42n and the R47, and in the simulator.  It is not in any DM42 package: the
+    DM42 flash images are full to within a kilobyte, and \cmd{SLVP} needs the eigensolver
+    (\cmd{OPTION\_EIGEN}) beneath it.  On a DM42 the catalog shows \cmd{SLVP} struck through, which is the
+    calculator's way of saying a function exists in the family but not in this build.
+    \end{warning}
+
+\tableofcontents
+
+\vspace{2em}
+
+\begin{revisions}
+    \revision{0.1}{2026-07-30}{First draft, written alongside the implementation.}
+    \revision{0.2}{2026-07-30}{\cmd{SLVQ}/\cmd{SLVC} gained the coefficient-vector form (!1678); the
+        family description follows.}
+\end{revisions}
+
+% ===================================================================================================
+\section{The Coefficient Vector}
+\label{vector}
+
+    A polynomial is handed to \cmd{SLVP} as a vector of its coefficients, highest degree first, the same
+    order in which the polynomial is written on paper.  Every power must have its slot, so a polynomial
+    with no $x^2$ term carries an explicit 0 in the $x^2$ position:
+
+    \[ 2x^3 - 3x + 5 \;=\; 2x^3 \,+\, 0x^2 \,-\, 3x \,+\, 5 \quad\Longrightarrow\quad [\,2,\ 0,\ -3,\ 5\,] \]
+
+    The vector may be a row or a column, and its elements may be real or complex.  A vector of $m$
+    elements describes a polynomial of degree $m-1$, and \cmd{SLVP} returns exactly $m-1$ roots, always.
+
+    Two zero patterns are handled the way algebra handles them.  Leading zeros carry no degree, so
+    $[\,0,\ 0,\ 1,\ -3,\ 2\,]$ is simply the quadratic $x^2-3x+2$: they are dropped silently, which is the
+    same convention \cmd{SLVC} uses when its leading coefficient is zero.  Trailing zeros each contribute
+    one exact root at 0, so $x^4-3x^3+2x^2$ returns $[\,2,\ 1,\ 0,\ 0\,]$ without the solver ever running
+    on the deflated part.
+
+% ===================================================================================================
+\section{Entering the Vector and Running SLVP}
+\label{running}
+
+    All keystrokes in this note are for the C47 keyboard; the maps in the appendix locate every key on both
+    machines.  Enter the dimensions, create the matrix, and fill it.  For $x^2 - 3x + 2$:
+
+    \seq{\key{1}\quad\key{ENTER}\quad\key{3}\quad\fkey{MATX}\quad\mkey{NEW}\quad\mkey{EDIT}}{1;1=\ 0}
+
+    The matrix editor is now open on a $1\times3$ vector of zeros.  Type each coefficient and step right
+    with the \mkey{$\rightarrow$} soft key:
+
+    \keys{\key{1}\quad\mkey{$\rightarrow$}\quad\key{3}\ \key{+/-}\quad\mkey{$\rightarrow$}\quad\key{2}}
+
+    \shot{01-entry}{The editor with two coefficients stored and the third, 2, being typed into element
+    1;3.  The editor's own menu carries the arrows; \lsc{wrap} and \lsc{grow} govern what the cursor does
+    at the last element.  The tiny \reg{S} over \reg{L} at the top right is the simulator's stack-lift
+    indicator; real hardware carries the battery gauge there.}
+
+    Close the editor and run the solver.  \cmd{SLVP} sits beside its family on the g row of the
+    \menu{ADV} menu:
+
+    \seq{\key{EXIT}\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,2.\ \ 1.\,]}
+
+    \shotpair{02-adv}{03-roots}{Left, the \menu{ADV} menu with the coefficient vector in \reg{X}: the
+    solver family \cmd{SLVQ}, \cmd{SLVC}, \cmd{SLVP} sits on the g row.  Right, the answer: both roots of
+    $x^2-3x+2$, largest magnitude first.}
+
+    That is the whole of it.  The result replaces \reg{X}, the coefficient vector goes to \reg{L} as
+    \cmd{LASTx} always has it, and the rest of the stack is untouched.
+
+    \begin{note}
+    \cmd{SLVP} is also in the catalog under its own name, is assignable to any key, and is a plain
+    program step: a program that puts a coefficient vector in \reg{X} and executes \cmd{SLVP} gets the
+    root vector back in \reg{X}.  Section \ref{progentry} gives the three-step program this note used to
+    prove it.
+    \end{note}
+
+    \subsection{Reading the result}
+
+    The roots come back as a $1\times n$ vector, sorted by descending magnitude.  If every root is real,
+    the result is a real vector.  If any root is complex, the whole vector is complex, the complex-result
+    flag \cmd{CPXRES} is set the same way \cmd{SLVQ} sets it, and conjugate pairs sit next to each other
+    in the ordering.  Equal-magnitude roots keep the order the solver found them in; the fifth roots of
+    32 in Section \ref{examples} arrive in angle order for exactly that reason.
+
+% ===================================================================================================
+\section{Worked Examples}
+\label{examples}
+
+    \subsection{Degree five, integer roots}
+
+    The polynomial $(x-1)(x-2)(x-3)(x-4)(x-5) = x^5-15x^4+85x^3-225x^2+274x-120$:
+
+    \seq{[\,1,\ -15,\ 85,\ -225,\ 274,\ -120\,]\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,5.\ 4.\ 3.\ 2.\ 1.\,]}
+
+    All five roots to 34 digits.  The test suite asserts this case, and it is deliberately the same
+    polynomial the \cmd{EIGVAL} tests have solved as a hand-built companion matrix since the eigensolver
+    landed: \cmd{SLVP} is that construction with the bookkeeping done for you.
+
+    \subsection{A complex pair from real coefficients}
+
+    $x^2 - 2x + 5$ has no real roots.  \cmd{SLVP} does not need to be told:
+
+    \seq{[\,1,\ -2,\ 5\,]\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,1.+i2.\ \ 1.-i2.\,]}
+
+    \shot{04-cpx}{The conjugate pair $1\pm2i$.  The result vector is complex, and \cmd{CPXRES} has been
+    set on the way out, so later real operations that stray into the complex plane will follow.}
+
+    \subsection{All the roots of $x^5 = 32$}
+
+    Ask for the five fifth roots of 32 by solving $x^5 - 32 = 0$:
+
+    \seq{[\,1,\ 0,\ 0,\ 0,\ 0,\ -32\,]\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,2.\ \ 0.618\ldots+i1.902\ldots\ \ \ldots\,]}
+
+    All five sit on the circle of radius 2, in angle order starting from the real root.  The suite asserts
+    every one to 34 digits against the closed forms $2\cos(2\pi k/5) + 2i\sin(2\pi k/5)$, whose real parts
+    are $(\sqrt{5}-1)/2$ and $-(\sqrt{5}+1)/2$.  This example takes a different path through the function
+    than the others, and Section \ref{circulant} explains why.
+
+    \subsection{Complex coefficients}
+
+    Coefficients may be complex.  $x^2 - 3ix - 2$ factors as $(x-i)(x-2i)$:
+
+    \seq{[\,1,\ -3i,\ -2\,]\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,0.+i2.\ \ 0.+i1.\,]}
+
+    Complex elements are typed in the editor the same way they are typed into the stack, with
+    \key{$i$} between the parts.  The suite also asserts $x^4+ix^3-2$, a quartic with complex
+    coefficients whose four roots were confirmed outside the calculator by 60-digit residual evaluation.
+    One of them is exactly $i$, and it comes back carrying a real part of $-4\times10^{-40}$: for
+    complex coefficients \cmd{SLVP} delivers the solver's raw values, and Section \ref{accuracy} says
+    why it must.
+
+    \subsection{Deflation}
+
+    $x^4-3x^3+2x^2$ is $x^2(x-1)(x-2)$:
+
+    \seq{[\,1,\ -3,\ 2,\ 0,\ 0\,]\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,2.\ 1.\ 0.\ 0.\,]}
+
+    The two zero roots are exact and cost nothing: the solver runs on the deflated quadratic only.
+
+    \subsection{Internal rate of return}
+    \label{irr}
+
+    A polynomial root finder is a rate solver.  An investment of 100 returns 30, 40, 50 and 60 over the
+    following four periods.  Writing $v = 1/(1+r)$ for the discount factor per period, the net present
+    value is zero when
+    \[ 60v^4 + 50v^3 + 40v^2 + 30v - 100 = 0 , \]
+    which is a coefficient vector, latest cash flow first:
+
+    \seq{[\,60,\ 50,\ 40,\ 30,\ -100\,]\quad\fkey{ADV}\quad\gmkey{SLVP}}{X:\ \ [\,\ldots\ \ 0.8007\ldots\ \ \ldots\,]}
+
+    The one positive real root is $v = 0.80071529\ldots$; the other three roots are the complex artefacts
+    every cash-flow polynomial carries, and they are ignored.  Then $r = 1/v - 1 = 0.248883\ldots$, an
+    internal rate of return of 24.888\,\%.  Checked by hand: at $r = 24.888\,\%$ the four discounted
+    inflows sum to $100.000$.
+
+    \begin{tip}
+    Sign-change counting says how many positive real roots to expect: one sign change in the cash flow,
+    one positive root, and the IRR is unambiguous.  A flow with more sign changes can have several
+    positive roots, and \cmd{SLVP} shows all of them, which is precisely what the single-answer IRR
+    button on a financial calculator cannot do.
+    \end{tip}
+
+% ===================================================================================================
+\section{What SLVP Refuses}
+\label{errors}
+
+    Everything \cmd{SLVP} refuses is refused whole: \reg{X}, \reg{L} and the rest of the stack are exactly
+    as they were, so a program can test and retry.  The suite asserts each row of Table \ref{tab:errors},
+    including that the input survives.
+
+    \begin{ntable}{@{}l l >{\raggedright\arraybackslash}p{0.47\textwidth}@{}}{Every refusal, its error, and
+             what triggers it.}{tab:errors}
+        \hd{Input} & \hd{Error} & \hd{Why} \\ \midrule
+        Not a matrix          & Invalid data type   & A scalar, string or integer in \reg{X}: the
+                                                      coefficients must be a vector \\
+        A matrix, not a vector & Matrix mismatch    & Both dimensions exceed 1 \\
+        Degree 0              & Function domain     & A lone constant, an all-zero vector, or leading
+                                                      zeros down to a constant: no degree, no roots \\
+        Degree beyond memory  & RAM full            & The QR workspace grows as the square of the degree;
+                                                      see Section \ref{limits} \\
+    \end{ntable}
+
+    \shot{05-error}{The degree-0 refusal: a $1\times1$ vector is a constant, and a constant has no roots.
+    The vector is still in \reg{X}, untouched.}
+
+% ===================================================================================================
+\section{Behind the Keystroke}
+\label{behind}
+
+    \subsection{The companion matrix}
+
+    \cmd{SLVP} contains no root-finding iteration of its own.  It normalises the polynomial to monic form
+    at 75-digit precision, builds the companion matrix, and hands it to the shifted Householder-QR
+    eigensolver that \cmd{EIGVAL} has used since it landed, working at the same 75 digits.  For the monic
+    polynomial $x^d + b_{d-1}x^{d-1} + \cdots + b_0$ the companion matrix is
+
+    \[
+    C \;=\;
+    \begin{pmatrix}
+        0      & 1      &        &        \\
+               & \ddots & \ddots &        \\
+               &        & 0      & 1      \\
+        -b_0   & -b_1   & \cdots & -b_{d-1}
+    \end{pmatrix},
+    \]
+
+    and its eigenvalues are exactly the roots.  The eigensolver sorts them by descending magnitude and
+    strips conjugate-pair noise, and \cmd{SLVP} rounds the 75-digit results to the 34 digits a register
+    holds.  Degrees 1 and 2 inside the engine take closed forms rather than iterating, so small
+    polynomials do not pay for machinery they do not need.
+
+    The pipeline in order: validate, drop leading zeros, deflate trailing zeros, normalise to monic,
+    special-case $x^d = w$, otherwise build the companion and iterate, then assemble, sort and type the
+    result.  Only after all of that succeeds does anything touch the stack, which is what makes the
+    refusals of Section \ref{errors} clean.
+
+    \subsection{Why $x^d = w$ takes a different path}
+    \label{circulant}
+
+    The companion matrix of $x^d - w$ has ones on the superdiagonal and a single entry in the bottom row,
+    and its eigenvalues all share one magnitude.  A shifted QR iteration lives on magnitude gaps to peel
+    eigenvalues off, so this shape is the one polynomial the engine is poor at, and the engine screens it
+    out rather than delivering slow garbage.  \cmd{SLVP} therefore solves two-term polynomials in closed
+    form: magnitude $|w|^{1/d}$, angles $(\theta + 2\pi k)/d$, computed at 75 digits.  That is why the
+    fifth roots of 32 arrive in angle order rather than sorted: all five magnitudes are equal by
+    construction.
+
+    The screen in the engine reads only the real parts of the bottom row.  A complex polynomial whose
+    middle coefficients are all purely imaginary while its constant is real, like $x^2-3ix-2$ above,
+    looks circulant to that screen although it is not a two-term polynomial at all.  \cmd{SLVP} sidesteps
+    the false positive with a diagonal similarity transform: the companion is scaled so its superdiagonal
+    is $\tfrac12$ instead of 1, which leaves every eigenvalue exactly where it was and makes the matrix
+    invisible to the screen.  The suite asserts both quartic and quadratic cases through this path.
+
+    \subsection{Accuracy}
+    \label{accuracy}
+
+    For well-separated roots the answer is simply correct to the display: the engine carries 75 digits and
+    the register keeps 34.  The Wilkinson polynomial of degree 10, whose roots $1,\ldots,10$ are the
+    classical stress test for coefficient sensitivity, comes back as the exact integers to all 34 digits;
+    the suite asserts it.
+
+    Repeated roots are different, and no algorithm escapes it: a root of multiplicity $m$ is determined by
+    the coefficients only to about $75/m$ digits.  $(x-1)^4$ returns a tight cluster of four values within
+    $3\times10^{-18}$ of 1, two of them carrying imaginary parts of about $7\times10^{-19}$, and the result
+    is typed complex because that is what the numbers are.  The suite bakes these exact cluster values in,
+    with a comment saying why, so any change to this behaviour will show.  Read a tight cluster with tiny
+    imaginary parts as a repeated real root; the cluster diameter tells you the multiplicity's worth of
+    digits you still have.
+
+    One cleanup is applied on the way out, and only when every coefficient is real.  For a real
+    polynomial a component more than 36 orders of magnitude below its root's dominant component is QR
+    convergence residue, not data: a near-real conjugate pair $a\pm bi$ enters the real coefficients
+    through $b^2$, which caps how small a genuine $b$ can be at roughly 17 orders below $a$.  Stripping
+    the residue is what lets $x^2+1$ return $\pm i$ with the real parts exactly zero.  Complex
+    coefficients carry independent exponents for the two parts, so a genuinely tiny component
+    \emph{is} encodable there, no threshold is safe, and \cmd{SLVP} delivers the solver's raw values:
+    the exact root $i$ of $x^4+ix^3-2$ arrives with a harmless $-4\times10^{-40}$ real part, which is
+    the honest answer.
+
+    \subsection{Degree limits}
+    \label{limits}
+
+    The QR workspace grows as the square of the degree, in 75-digit reals, taken from calculator memory
+    and returned when done.  On the 256-KiB pool of the DM42n and R47 the practical ceiling is around
+    degree 14; beyond it \cmd{SLVP} refuses with \lsc{ram full} before touching the stack, and the suite
+    asserts a degree-20 refusal to pin the behaviour.  The two-term closed form of Section
+    \ref{circulant} needs no matrix, so $x^{100}=1$ is fine.  The Wilkinson polynomial of degree 10
+    solves in about nine hundred QR iterations; a repeated-root cluster drives the iteration to its cap
+    and takes visibly longer, which is the hourglass you may see on a hard polynomial.
+
+    \subsection{Command reference}
+
+    \begin{ntable}{@{}l >{\raggedright\arraybackslash}p{0.62\textwidth}@{}}{\cmd{SLVP} at a glance.}{tab:ref}
+        \hd{Takes}   & \reg{X}: real or complex vector, $1\times m$ or $m\times1$, $m\ge2$, highest-degree
+                       coefficient first \\
+        \hd{Leaves}  & \reg{X}: all $n$ roots as a $1\times n$ vector, descending magnitude, real if every
+                       root is real, else complex \\
+        \hd{Reads}   & nothing else \\
+        \hd{Writes}  & \reg{L} (the coefficient vector); \cmd{CPXRES} set when the result is complex \\
+        \hd{Refuses} & non-matrix, non-vector, degree 0, degree beyond memory; always with the stack
+                       untouched (Table \ref{tab:errors}) \\
+    \end{ntable}
+
+% ===================================================================================================
+\section{SLVP in a Program}
+\label{progentry}
+
+    \cmd{SLVP} is an ordinary step.  The program this note used to prove the claim is three steps long:
+
+    \prog{0001: LBL 'PSLV'\\0002: \ \ SLVP\\0003: END}
+
+    Open a new program with \key{XEQ}\,\key{.}\,\key{.} and switch to program-entry mode with
+    \fkey{PRGM}.  Start the label with \gkey{LBL}, then \fkey{$\alpha$}, type
+    \key{P}\,\key{S}\,\key{L}\,\key{V}, and \key{ENTER}.  \cmd{SLVP} itself goes in from the catalog or
+    from \fkey{ADV} exactly as it is run interactively.  Leave program-entry mode with \fkey{PRGM}.  With
+    the coefficient vector in \reg{X}, \key{XEQ} \cmd{PSLV} returns the roots, and a wrong input mid-program
+    halts with the same errors as Table \ref{tab:errors}.
+
+% ===================================================================================================
+\section{Availability and Cost}
+\label{cost}
+
+    \cmd{SLVP} is gated by \cmd{OPTION\_SLVP}, which requires \cmd{OPTION\_EIGEN} beneath it and is
+    enabled for the DM42n, the R47 and the simulator.  All four DM42 packages exclude it; the measured
+    cost of the option on the DM42n build, with the arm-gnu 13.2.Rel1 toolchain, is 2\,024 bytes of flash
+    and no static RAM at all: every working byte is borrowed from calculator memory for the duration of
+    the keystroke.  Two kilobytes for every root of every polynomial is the companion-matrix dividend:
+    the expensive machinery was already on board, tested, and waiting.
+
+% ===================================================================================================
+\keyboardappendix
+
+% ===================================================================================================
+\clearpage
+\begingroup
+\small
+\begin{thebibliography}{99}
+\bibitem{AN0020} C47/R47 Application Note 020, \emph{Matrix and Vector}.
+\bibitem{AN0022} C47/R47 Application Note 022, \emph{RPN, Solve, Integration, Plot}.
+\bibitem{AN0029} C47/R47 Application Note 029, \emph{First Steps}.
+\bibitem{AN0030} C47/R47 Application Note 030, \emph{Measurement Uncertainty}.
+\bibitem{EM95} A.~Edelman and H.~Murakami, \emph{Polynomial roots from companion matrix eigenvalues},
+    Mathematics of Computation 64 (1995) 763--776.
+\bibitem{Ref47} C47/R47 function reference. \url{https://47calc.com/documentation}
+\bibitem{Wiki1} C47 developer wiki. \url{https://gitlab.com/rpncalculators/c43/-/wikis/home}
+\end{thebibliography}
+\endgroup
+
+\colophon{0.109.04.00.RC1}
+
+\authorblock{David Emerson}{https://davidemerson.com}{d@nnix.com}
+
+\end{document}

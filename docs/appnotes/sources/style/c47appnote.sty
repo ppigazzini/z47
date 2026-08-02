@@ -1,0 +1,784 @@
+% SPDX-License-Identifier: GFDL-1.3-or-later
+% Copyright The WP43 and C47 Authors
+%
+% c47appnote -- the shared design language for C47/R47 application notes.
+%
+% Compiled with lualatex. Consolidates the keypress and screen notation that AN0029, AN0030 and AN0031
+% each carried inline, the palette they share, the page geometry, the running heads, the callout
+% blocks, the listing and table styles and the two keyboard maps. A note that loads this package needs
+% a four-line preamble.
+%
+% Package options
+%   nofonts     do not touch the fonts; the note sets its own
+%   serifmath   leave mathematics in the default face instead of matching the sans body
+%
+% Fonts. Body and headings are TeX Gyre Heros, the metric-compatible Helvetica that ships with TeX Live,
+% so every contributor gets the same page. Mathematics is New Computer Modern Sans Math, also from
+% TeX Live, so a variable matches the prose around it rather than falling back to a serif. The display
+% face is JuliaMono, which is not in TeX Live: install it and the screen and program boxes reproduce the
+% calculator glyph for glyph, and without it the package falls back to DejaVu Sans Mono and warns.
+%
+% THREE RULES HOLD THE DESIGN TOGETHER. Break any of them and the notes stop looking like one another.
+%
+%   1. fcol and gcol mean "reached through the f shift" and "reached through the g shift". Nothing
+%      else may use them: not a heading, not a rule, not a running head, not a callout.
+%
+%   2. A filled panel is the calculator's own screen. \screen and \prog carry the lcdbg wash because
+%      they reproduce the display. Everything else -- tables, listings, callouts -- is unfilled and
+%      bounded by hairlines, so a fill on the page always means the same thing.
+%
+%   3. Rules carry weight in one direction only: 1pt closes the masthead, 0.7pt opens and closes a
+%      table, 0.4pt is every other hairline. No double rules and no vertical rules anywhere.
+%
+%   4. A chart tells its series apart by dash pattern and marker, not by hue. Rule 1 leaves almost no
+%      hue space: orange and blue are the shifts and red is the warning accent, and exactly one further
+%      hue clears all three under protanopia, deuteranopia, tritanopia and normal vision. It is
+%      chartink, and a chart gets at most that one. See the Charts section below for the arithmetic.
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{c47appnote}[2026/07/29 v1.1 C47/R47 application note design language]
+
+\newif\ifcan@fonts    \can@fontstrue
+\newif\ifcan@sansmath \can@sansmathtrue
+\DeclareOption{nofonts}{\can@fontsfalse}
+\DeclareOption{serifmath}{\can@sansmathfalse}
+\DeclareOption*{\PackageWarning{c47appnote}{Unknown option '\CurrentOption'}}
+\ProcessOptions\relax
+
+\RequirePackage{iftex}
+\RequireLuaTeX
+
+% A 1.25 in margin puts the measure near 75 characters, which is the usual readability target, and
+% leaves the keyboard maps room to sit at close to their natural width.
+\RequirePackage[letterpaper, margin=1.25in]{geometry}
+
+% ---------------------------------------------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------------------------------------------
+% babel picks up the language given as a class option, which the collection sets to canadian
+\RequirePackage{babel}
+\RequirePackage{amsmath}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\usetikzlibrary{calc}
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+\RequirePackage{parskip}
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{xcolor}
+\RequirePackage{needspace}
+\RequirePackage{array}
+\RequirePackage{booktabs}
+\RequirePackage{microtype}
+\RequirePackage{titlesec}
+\RequirePackage{caption}
+\RequirePackage{tocloft}
+\RequirePackage{listings}
+\RequirePackage{url}
+\urlstyle{tt}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{fontspec}
+
+% ---------------------------------------------------------------------------------------------------
+% Fonts
+% ---------------------------------------------------------------------------------------------------
+\ifcan@fonts
+  \setmainfont{TeX Gyre Heros}[Scale=0.94]
+  \setsansfont{TeX Gyre Heros}[Scale=0.94]
+  \IfFontExistsTF{JuliaMono}
+    {\setmonofont{JuliaMono}[Scale=0.80]}
+    {\setmonofont{DejaVu Sans Mono}[Scale=0.80]%
+     \PackageWarning{c47appnote}{JuliaMono not found; falling back to DejaVu Sans Mono.\MessageBreak
+       Calculator glyphs in screen and program boxes may not render.\MessageBreak
+       Install JuliaMono from https://juliamono.netlify.app}}
+\fi
+
+% Sans mathematics needs unicode-math, which supplies its own symbols; without it the keyboard maps
+% still need \measuredangle and \rightleftarrows, so amssymb has to stand in. Every combination of
+% the two options has to leave one of the two loaded.
+\newif\ifcan@umath \can@umathfalse
+\ifcan@fonts \ifcan@sansmath \can@umathtrue \fi \fi
+\ifcan@umath
+  \RequirePackage{unicode-math}
+  % New Computer Modern Sans Math: correct minus and radical, a nu distinguishable from v, and
+  % complete coverage of the glyphs the keyboard maps need. Swap for LeteSansMath.otf if you want a
+  % heavier match to Heros; avoid FiraMath, whose minus sign is undersized.
+  \setmathfont{NewCMSansMath-Regular.otf}
+\else
+  \RequirePackage{amssymb}
+\fi
+
+% \lsc{...}   a letterspaced uppercase label. The one typographic accent the design uses: it marks
+%             structural furniture -- the masthead, a table head, a caption label, a callout title --
+%             so those never need a colour or a rule to be read as furniture.
+\newcommand{\lsc}[1]{\textls[110]{\MakeUppercase{#1}}}
+
+% ---------------------------------------------------------------------------------------------------
+% Palette
+%
+% keyink   the ink everything is printed in: body, headings, rules, keyboard
+% soft     furniture and captions, and anything deliberately quiet
+% fcol     the f shift, orange, and everything reached through it
+% gcol     the g shift, blue, and everything reached through it
+% menufill the fill of a soft-key label
+% lcdbg    the paper colour of the display
+% warnink  the one accent, spent only on a warning and on the red draft markers
+%
+% Seven colours, and two of them are spoken for by rule 1 above. There is deliberately no hue for a
+% note or a tip: their titles tell them apart, which is cheaper than teaching the reader two more
+% colours. Tints of keyink do the rest of the work.
+% ---------------------------------------------------------------------------------------------------
+\definecolor{keyink}{HTML}{1B1B1B}
+\definecolor{soft}{HTML}{6B6A65}
+\definecolor{fcol}{HTML}{DE6E10}
+\definecolor{gcol}{HTML}{2C6DB5}
+\definecolor{menufill}{HTML}{E9E7E2}
+\definecolor{lcdbg}{HTML}{F2F3EA}
+\definecolor{warnink}{HTML}{B3341F}
+
+% ---- chart inks -----------------------------------------------------------------------------------
+% chartink        the one hue a chart may spend, for the single series that has to be picked out
+% seq1 .. seq5    the magnitude ramp: one hue, monotone lightness, seq1 = keyink and seq3 = soft
+%
+% Every value here was validated, not chosen. See the Charts section for what was tested and why the
+% set is this small.
+\definecolor{chartink}{HTML}{00A099}
+\definecolor{seq1}{HTML}{1B1B1B}
+\definecolor{seq2}{HTML}{454540}
+\definecolor{seq3}{HTML}{6B6A65}
+\definecolor{seq4}{HTML}{918F89}
+\definecolor{seq5}{HTML}{B4B2AB}
+
+% \swatch{colour}   a palette chip, outlined so a near-white fill still reads
+\newcommand{\swatch}[1]{\tikz[baseline=-0.6ex]{\filldraw[fill=#1, draw=keyink!45,
+  line width=0.3pt] (0,0) rectangle (7mm,2.6mm);}}
+
+% ---------------------------------------------------------------------------------------------------
+% Sectioning
+%
+% Numbers hang into the left margin so every heading and every paragraph starts on one vertical spine.
+% A hairline opens each section; subsections get space instead, which is cheaper and quieter. No size
+% inflation: a section is \large and a subsection is body size, and the weight carries the hierarchy.
+% ---------------------------------------------------------------------------------------------------
+\titleformat{\section}[block]
+  {\titlerule\vspace{8pt}\normalfont\large\bfseries\color{keyink}}
+  {\llap{\textcolor{soft}{\thesection\hspace{0.9em}}}}{0pt}{}
+\titlespacing*{\section}{0pt}{2\baselineskip}{0.7\baselineskip}
+
+\titleformat{\subsection}[hang]
+  {\normalfont\normalsize\bfseries\color{keyink}}
+  {\llap{\textcolor{soft}{\thesubsection\hspace{0.9em}}}}{0pt}{}
+\titlespacing*{\subsection}{0pt}{1.3\baselineskip}{0.4\baselineskip}
+
+\titleformat{\subsubsection}[hang]
+  {\normalfont\normalsize\itshape\color{keyink}}
+  {\llap{\textcolor{soft}{\thesubsubsection\hspace{0.9em}}}}{0pt}{}
+\titlespacing*{\subsubsection}{0pt}{1.1\baselineskip}{0.3\baselineskip}
+
+% Unnumbered sections, used by the keyboard appendix, take the same rule and spine
+\titleformat{name=\section,numberless}[block]
+  {\titlerule\vspace{8pt}\normalfont\large\bfseries\color{keyink}}{}{0pt}{}
+
+% ---------------------------------------------------------------------------------------------------
+% Contents
+%
+% No dot leaders. The page number sits flush right and the space between carries the eye, which is
+% what the leaders were for.
+% ---------------------------------------------------------------------------------------------------
+\renewcommand{\cftsecleader}{\hfill}
+\renewcommand{\cftsubsecleader}{\hfill}
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\renewcommand{\cftsubsecfont}{\normalfont}
+\renewcommand{\cftsubsecpagefont}{\normalfont\color{soft}}
+\setlength{\cftbeforesecskip}{5pt}
+\setlength{\cftbeforesubsecskip}{1pt}
+\renewcommand{\cfttoctitlefont}{\large\bfseries}
+\setlength{\cftaftertoctitleskip}{10pt}
+
+% ---------------------------------------------------------------------------------------------------
+% Captions
+%
+% TABLE 1 and FIG. 1 in a letterspaced label, then the sentence in soft. Captions go above tables and
+% below pictures, both flush left, both ragged right.
+% ---------------------------------------------------------------------------------------------------
+\DeclareCaptionFont{canlabel}{\bfseries\fontsize{8}{9.5}\selectfont\color{keyink}}
+\DeclareCaptionFont{cantext}{\fontsize{8.6}{11}\selectfont\color{soft}}
+\captionsetup{labelfont=canlabel, textfont=cantext, labelsep=quad,
+  justification=raggedright, singlelinecheck=false, skip=5pt}
+\renewcommand{\tablename}{\lsc{Table}}
+\renewcommand{\figurename}{\lsc{Fig.}}
+
+% ---------------------------------------------------------------------------------------------------
+% Tables
+%
+% booktabs throughout: \toprule, one \midrule under the head, \bottomrule. Never a vertical rule,
+% never a double rule. Head cells go in \hd, which letterspaces them so the head reads as furniture
+% without needing a rule of its own.
+%
+%   \begin{ntable}{@{}l l@{}}{The caption sentence.}{tab:label}
+%       \hd{Source} & \hd{Means} \\ \midrule
+%       \lit|\key{7}| & Press that key \\
+%   \end{ntable}
+%
+% @{} on the outer columns is what makes the rules line up with the text block. Use \addlinespace to
+% group rows, never a rule.
+% ---------------------------------------------------------------------------------------------------
+\setlength{\heavyrulewidth}{0.7pt}
+\setlength{\lightrulewidth}{0.4pt}
+\setlength{\cmidrulewidth}{0.4pt}
+\setlength{\aboverulesep}{0.5ex}
+\setlength{\belowrulesep}{0.6ex}
+\newcommand{\hd}[1]{\lsc{#1}}
+\newenvironment{ntable}[3]{%
+  \begin{table}[ht]\centering\small
+  \caption{#2}\label{#3}%
+  \begin{tabular}{#1}\toprule
+}{%
+  \bottomrule\end{tabular}\end{table}}
+
+% ---------------------------------------------------------------------------------------------------
+% Inline keyboxes, HP-manual style in C47 colours. Every element shares one fixed height so a keystroke
+% line sits on the baseline whatever it is made of. The corners are nearly square and the shift badge
+% is square: these reproduce a moulded key, not a user-interface button.
+% ---------------------------------------------------------------------------------------------------
+\tikzset{keybase/.style={rounded corners=1pt, minimum height=3.6mm, inner ysep=0pt,
+  inner xsep=2.6pt, font=\sffamily\footnotesize}}
+\newcommand{\kbx}[3]{\tikz[baseline=(n.base)]{\node[keybase, draw=#1, line width=0.55pt,
+  fill=white, text=#2] (n) {\strut #3};}}
+\newcommand{\shsq}[2]{\tikz[baseline=(s.base)]{\node[keybase, sharp corners, inner xsep=2.2pt,
+  draw=#1, line width=0.55pt, fill=#1, text=white,
+  font=\sffamily\footnotesize\bfseries] (s) {\strut #2};}}
+
+% \key{7}          press that key
+% \fkey{MODE}      f shift, then the key whose orange label is MODE
+% \gkey{CLK}       g shift, then the key whose blue label is CLK
+% \mkey{DEG}       a soft key, named by the label the screen prints above it
+% \fmkey{U.P}      f shift, then the soft key carrying U.P on its orange row
+% \gmkey{REGR}     g shift, then the soft key carrying REGR on its blue row
+% \lkey{f}         a long press
+\newcommand{\key}[1]{\kbx{keyink}{keyink}{#1}}
+\newcommand{\fkey}[1]{\shsq{fcol}{f}\hspace{1.3pt}\kbx{fcol}{fcol}{#1}}
+\newcommand{\gkey}[1]{\shsq{gcol}{g}\hspace{1.3pt}\kbx{gcol}{gcol}{#1}}
+\newcommand{\mkey}[1]{\tikz[baseline=(n.base)]{\node[keybase, draw=keyink, line width=0.5pt,
+  fill=menufill, text=keyink] (n) {\strut #1};}}
+\newcommand{\fmkey}[1]{\shsq{fcol}{f}\hspace{1.3pt}\mkey{#1}}
+\newcommand{\gmkey}[1]{\shsq{gcol}{g}\hspace{1.3pt}\mkey{#1}}
+\newcommand{\lkey}[1]{\kbx{keyink}{keyink}{#1}\kern1.2pt%
+  \raisebox{0.15ex}{\color{soft}\fontsize{6.4}{7}\selectfont\sffamily\lsc{long}}}
+
+% ---------------------------------------------------------------------------------------------------
+% The display
+%
+% These two are the only filled panels in the design, because they are the only ones reproducing a
+% real object. See rule 2 at the top of this file.
+% ---------------------------------------------------------------------------------------------------
+% \screen{X: 7}    one line of display, inline
+\newcommand{\screen}[1]{\tikz[baseline=(n.base)]{\node[draw=keyink!55, line width=0.5pt,
+  rounded corners=1pt, fill=lcdbg, inner xsep=6pt, inner ysep=3pt,
+  font=\ttfamily\small] (n) {\strut #1};}}
+
+% \seq{keystrokes}{result}   a keystroke line and what it leaves on the display
+% \keys{keystrokes}          a keystroke line with nothing to show for it yet
+% Both wrap at the gaps between keys when the sequence runs long.
+\newcommand{\seq}[2]{\par\smallskip\noindent\hspace*{1.2em}%
+  \begin{minipage}{\dimexpr\linewidth-1.2em\relax}\raggedright
+  #1\quad\raisebox{0.15ex}{$\rightarrow$}\quad\screen{#2}%
+  \end{minipage}\par\smallskip}
+\newcommand{\keys}[1]{\par\smallskip\noindent\hspace*{1.2em}%
+  \begin{minipage}{\dimexpr\linewidth-1.2em\relax}\raggedright #1%
+  \end{minipage}\par\smallskip}
+
+% \prog{line\\line\\line}   a multi-line listing in the display face: a program, a matrix, a screenful
+\newcommand{\prog}[1]{\par\smallskip\noindent\hspace*{1.2em}%
+  \tikz{\node[draw=keyink!55, line width=0.5pt, rounded corners=1pt, fill=lcdbg,
+  inner xsep=7pt, inner ysep=5pt, font=\ttfamily\footnotesize, align=left] {#1};}\par\smallskip}
+
+% \begin{keying} \step{keys}{what they accomplish} ... \end{keying}
+% A keystroke sequence too long to read as prose: one action per row, the keys on the left, what
+% they accomplish on the right. \keys stays right for a few keystrokes inside a sentence; this
+% block is for keying in a whole program or a long setup, where inline keycaps clutter the
+% paragraph. The right column is set small and soft so the keys stay the thing being read.
+\newenvironment{keying}{%
+  \par\medskip\needspace{3\baselineskip}\noindent\hspace*{1.2em}%
+  \begin{minipage}{\dimexpr\linewidth-1.2em\relax}
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.46\linewidth}@{\hspace{1em}}>{\raggedright\arraybackslash}p{0.48\linewidth}@{}}
+}{%
+  \end{tabular}\end{minipage}\par\medskip}
+\newcommand{\step}[2]{#1 & {\color{soft}\small #2} \\[3pt]}
+
+% ---------------------------------------------------------------------------------------------------
+% Screen captures
+%
+% Every capture in a note is a real capture from the simulator, driven by the same keystrokes the note
+% prints, started with --reset so it reproduces on any machine. Record the recipe in screens/scripts.
+%
+% The frame is a hairline, the same weight as everything else that is not a table rule, and the
+% picture and its caption travel in one minipage so a page break cannot separate them.
+% ---------------------------------------------------------------------------------------------------
+\newlength{\shotwidth}\setlength{\shotwidth}{0.58\textwidth}
+% \shot[width]{file}{caption}   a capture with a caption, centred, not floating
+\newcommand{\shot}[3][\shotwidth]{\par\medskip
+  \begin{center}%
+  \begin{minipage}{\dimexpr#1+0.8pt\relax}\centering
+  \setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.4pt}%
+  {\color{keyink!45}\fbox{\includegraphics[width=#1]{screens/#2}}}\\[5pt]%
+  {\fontsize{8.6}{11}\selectfont\color{soft}\raggedright #3\par}%
+  \end{minipage}%
+  \end{center}\par\medskip}
+% \shotpair{left}{right}{caption}   two captures side by side, for a before and after.
+% Each lands at half the measure, so a pair compares the shape of two screens rather than their labels.
+\newcommand{\shotpair}[3]{\par\medskip
+  \begin{center}%
+  \begin{minipage}{\textwidth}\centering
+  \setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.4pt}%
+  {\color{keyink!45}\fbox{\includegraphics[width=0.48\textwidth]{screens/#1}}}\hspace{1.5mm}%
+  {\color{keyink!45}\fbox{\includegraphics[width=0.48\textwidth]{screens/#2}}}\\[5pt]%
+  {\fontsize{8.6}{11}\selectfont\color{soft}\raggedright #3\par}%
+  \end{minipage}%
+  \end{center}\par\medskip}
+% \shotfig[width]{file}{caption}{label}   the same picture as a numbered float, for one you cross-refer to
+\newcommand{\shotfig}[4][0.62\textwidth]{%
+  \begin{figure}[ht]\centering
+  \setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.4pt}%
+  {\color{keyink!45}\fbox{\includegraphics[width=#1]{screens/#2}}}
+  \caption{#3}\label{#4}
+  \end{figure}}
+
+% ---------------------------------------------------------------------------------------------------
+% Callout blocks
+%
+% note      an aside a reader can skip without losing the thread
+% tip       a shorter route to the same place
+% warning   a trap that will cost the reader an hour
+%
+% Three is the whole set on purpose. A page with six kinds of coloured box has none. Behaviour that
+% differs between the simulator, the DM42, the DM42n and the R47 is a trap like any other, so it goes
+% in a warning; say which build in the first sentence.
+%
+% Unfilled, per rule 2, and bounded on the left only: a rule and a letterspaced title are enough to
+% set a paragraph apart, and they leave the page quieter than a shaded panel does. Only the warning
+% spends the accent, because only the warning is a safety signal.
+% ---------------------------------------------------------------------------------------------------
+% frame hidden, then one borderline: tcolorbox will not draw a top, right or bottom rule at all, which
+% a boxrule=0pt with an explicit leftrule still leaves a trace of.
+\tcbset{c47callout/.style={
+  enhanced, breakable, sharp corners, frame hidden, colback=white, colbacktitle=white,
+  borderline west={1.6pt}{0pt}{keyink},
+  boxsep=0pt, left=9pt, right=0pt, top=2pt, bottom=3pt,
+  before skip=11pt, after skip=11pt,
+  fonttitle=\sffamily\bfseries\fontsize{7.6}{9}\selectfont, coltitle=keyink,
+  attach title to upper=\par\nobreak\vspace{1.5pt}}}
+
+\newtcolorbox{note}[1][]{c47callout, title={\lsc{Note}}, #1}
+\newtcolorbox{tip}[1][]{c47callout, title={\lsc{Tip}}, #1}
+\newtcolorbox{warning}[1][]{c47callout, coltitle=warnink,
+  borderline west={1.6pt}{0pt}{warnink}, title={\lsc{Warning}}, #1}
+
+% ---------------------------------------------------------------------------------------------------
+% Listing styles
+%
+% c47text   a plain-text excerpt: a state file, a t47 script, a menu dump
+% c47code   C source from the firmware
+%
+% Unfilled and closed top and bottom by the same hairline a table uses, so a listing reads as a
+% tabulated block rather than as a shaded panel. Per rule 2 the fill is reserved for \screen and
+% \prog, which is what keeps a quotation of the calculator distinguishable from a quotation of a file.
+% ---------------------------------------------------------------------------------------------------
+\lstdefinestyle{c47text}{
+  basicstyle=\ttfamily\small, mathescape, breaklines=true, breakindent=0pt,
+  breakautoindent=false, columns=fullflexible, keepspaces=true,
+  backgroundcolor=\color{white}, frame=lines, framerule=0.4pt,
+  rulecolor=\color{keyink!35}, xleftmargin=1.2em, framexleftmargin=1.2em,
+  framexrightmargin=0pt, aboveskip=11pt, belowskip=11pt}
+\lstdefinestyle{c47code}{
+  style=c47text, language=C, showstringspaces=false,
+  keywordstyle=\bfseries, commentstyle=\color{soft}\itshape,
+  stringstyle=\color{soft}, numbers=left, numberstyle=\tiny\color{soft},
+  numbersep=9pt}
+\lstdefinestyle{c47inline}{basicstyle=\ttfamily\small, columns=fullflexible, keepspaces=true,
+  breaklines=false, backgroundcolor=\color{white}, frame=none}
+\lstset{style=c47text}
+
+% \lit|literal text|   an inline literal, for a macro name or a fragment of a file format
+\newcommand{\lit}{\lstinline[style=c47inline]}
+
+% ---------------------------------------------------------------------------------------------------
+% Charts
+%
+% WHY THERE IS ALMOST NO COLOUR HERE. A categorical palette has to clear four checks at once: a chroma
+% floor, a lightness band, a contrast floor against the paper, and a separation floor of dE >= 15 in
+% normal vision and >= 8 under simulated protanopia and deuteranopia, measured pairwise. Rule 1 has
+% already spent orange on the f shift and blue on the g shift, and warnink has spent red. Testing the
+% remaining hue space against those three reserved inks:
+%
+%   violet #8A5CC7  collapses against gcol   dE 3.4 (protan)   -- unusable
+%   ochre  #8A6B00  collapses against warnink dE 2.5 (deutan)  -- unusable
+%   teal   #00918A  fails the chroma floor at C 0.089          -- reads as grey
+%   teal   #00A099  clears warnink, fcol and gcol on all pairs -- THE ONE THAT PASSES
+%
+% So a chart gets one hue, and identity for a second or third series comes from dash pattern and
+% marker instead. That is the right answer for a note that will be printed and photocopied anyway,
+% and it is why the line styles below run A, B, C rather than by colour.
+%
+% Magnitude is the grey ramp seq1..seq5, which passes the ordinal checks: monotone lightness, adjacent
+% dL >= 0.06, and a light end still clearing 2:1 against white.
+%
+% NEVER a second y axis. Two measures of different scale are two charts, or one indexed to a base.
+% ---------------------------------------------------------------------------------------------------
+\pgfplotsset{canaxis/.style={
+  width=0.80\textwidth, height=0.40\textwidth,
+  font=\fontsize{8}{10}\selectfont,
+  axis lines=left,
+  axis line style={draw=keyink!45, line width=0.4pt, -},
+  tick align=outside,
+  xtick style={draw=keyink!45, line width=0.4pt},
+  ytick style={draw=keyink!45, line width=0.4pt},
+  every tick label/.append style={color=soft},
+  label style={color=soft, font=\fontsize{8}{10}\selectfont},
+  title style={color=keyink, font=\bfseries\fontsize{8}{10}\selectfont},
+  ymajorgrids=true, xmajorgrids=false,
+  grid style={draw=keyink!15, line width=0.4pt},
+  legend style={draw=none, fill=none, font=\fontsize{7.6}{9.5}\selectfont,
+                text=keyink, cells={anchor=west}, at={(0.5,-0.26)}, anchor=north,
+                legend columns=-1, column sep=1.2em},
+  legend cell align=left,
+  clip mode=individual}}
+
+% Series identity: A solid, B dashed, C dotted, in that fixed order, never cycled. A fourth series is
+% not a fourth dash pattern; it is a second chart or a small multiple.
+\pgfplotsset{canA/.style={line width=0.9pt, color=keyink, mark=none}}
+\pgfplotsset{canB/.style={line width=0.9pt, color=keyink, mark=none,
+  dash pattern=on 3.2pt off 2.2pt}}
+\pgfplotsset{canC/.style={line width=0.9pt, color=keyink, mark=none,
+  dash pattern=on 0.6pt off 1.8pt}}
+% The one hue, for the single series that is the point of the chart
+\pgfplotsset{canaccent/.style={line width=1.1pt, color=chartink, mark=none}}
+% Measured points, as against a fitted line
+\pgfplotsset{canpoints/.style={only marks, mark=*, mark size=1.7pt, color=keyink}}
+\pgfplotsset{canpointsB/.style={only marks, mark=square*, mark size=1.5pt, color=keyink}}
+% Magnitude bars. canemph is the one bar under discussion; canrest is its context.
+\pgfplotsset{canbars/.style={xbar, bar width=7pt, draw=none,
+  y axis line style={draw=none}, ytick style={draw=none},
+  xmajorgrids=true, ymajorgrids=false,
+  nodes near coords, every node near coord/.append style={
+    color=soft, font=\fontsize{7.2}{8}\selectfont, anchor=west, /pgf/number format/fixed}}}
+\pgfplotsset{canemph/.style={fill=keyink}}
+\pgfplotsset{canrest/.style={fill=seq4}}
+
+% \begin{nchart}{caption}{label} ... \end{nchart}   a chart as a numbered float, caption below
+\newenvironment{nchart}[2]{%
+  \gdef\can@chartcap{#1}\gdef\can@chartlab{#2}%
+  \begin{figure}[ht]\centering}
+  {\caption{\can@chartcap}\label{\can@chartlab}\end{figure}}
+
+% ---------------------------------------------------------------------------------------------------
+% Semantic markup
+%
+% \cmd    a command as it appears in the catalog                U.CALC
+% \vr     a named variable                                      U.TAB
+% \reg    a stack register or a labelled display field          X
+% \file   a path in the source tree                             src/testSuite/tests
+% \menu   a menu, named as the catalog names it                 UNCT
+% \HW     a figure that still has to be read off real hardware
+% \TODO   a hole in the draft; both of these print in the accent on purpose
+% ---------------------------------------------------------------------------------------------------
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\vr}[1]{\texttt{#1}}
+\newcommand{\reg}[1]{\textbf{#1}}
+% A path breaks after its slashes instead of running past the margin, and never inside a filename, and
+% unlike \path it survives a moving argument, so it can go in a caption. The argument is taken as a
+% string, so no escaping is needed for the underscores in a source filename.
+\ExplSyntaxOn
+\tl_new:N \l__can_path_tl
+\cs_new_protected:Npn \__can_path:n #1
+  {
+    \tl_set:Nn \l__can_path_tl {#1}
+    \tl_replace_all:Nnn \l__can_path_tl { / } { / \allowbreak }
+    \tl_use:N \l__can_path_tl
+  }
+\cs_generate_variant:Nn \__can_path:n { e }
+\NewDocumentCommand \file { m } { \texttt { \__can_path:e { \tl_to_str:n {#1} } } }
+\ExplSyntaxOff
+\newcommand{\menu}[1]{\texttt{#1}}
+\newcommand{\HW}[1]{\textcolor{warnink}{\textbf{[\lsc{hardware}: #1]}}}
+\newcommand{\TODO}[1]{\textcolor{warnink}{\textbf{[\lsc{todo}: #1]}}}
+
+% ---------------------------------------------------------------------------------------------------
+% Front matter
+%
+% Set these four in the preamble. \notehead prints the masthead and the running heads follow from them.
+% ---------------------------------------------------------------------------------------------------
+\newcommand{\can@number}{000}
+\newcommand{\can@short}{Untitled}
+\newcommand{\can@date}{}
+\newcommand{\can@title}{Untitled}
+\newcommand{\notenumber}[1]{\renewcommand{\can@number}{#1}}
+\newcommand{\noteshorttitle}[1]{\renewcommand{\can@short}{#1}}
+\newcommand{\notedate}[1]{\renewcommand{\can@date}{#1}}
+\newcommand{\notetitle}[1]{\renewcommand{\can@title}{#1}}
+% There is deliberately no byline here. The author is named once, in \authorblock at the back, beside
+% the colophon; a name under the title would only repeat it.
+
+% Running heads. Quiet, letterspaced, one hairline under the header and none under the footer. The
+% page number is the only thing on the furniture printed in full ink, because it is the only thing a
+% reader ever looks for there.
+% Prose furniture is set in the grotesque and letterspaced; anything machine-readable -- a note
+% number, a date, a page count -- is set in the display face, so a value never looks like a word.
+\fancyhf{}
+\newcommand{\can@furniture}{\fontsize{7.4}{9}\selectfont\color{soft}}
+\newcommand{\can@meta}{\ttfamily\fontsize{7.8}{9}\selectfont\color{soft}}
+\fancyhead[L]{{\can@meta C47/R47~\can@number}}
+\fancyhead[C]{{\can@furniture\lsc{\can@short}}}
+\fancyhead[R]{{\can@meta \can@date}}
+\fancyfoot[R]{{\can@meta\textcolor{keyink}{\textbf{\thepage}}/\pageref{LastPage}}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\let\can@headrule\headrule
+\renewcommand{\headrule}{{\color{keyink!25}\can@headrule}}
+\pagestyle{fancy}
+
+% The masthead page carries no running head, because the masthead is one. The footer stays put so the
+% page numbering reads the same on every page.
+\fancypagestyle{canfirst}{%
+  \fancyhf{}%
+  \fancyfoot[R]{{\can@meta\textcolor{keyink}{\textbf{\thepage}}/\pageref{LastPage}}}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}}
+
+% \notehead   the masthead: a datasheet header, flush left, closed by the one 1pt rule in the design
+\newcommand{\notehead}{%
+  \thispagestyle{canfirst}%
+  \noindent\begin{minipage}{\textwidth}
+    {\can@furniture\lsc{C47/R47 Application Note}}\enspace{\can@meta\can@number}\hfill
+    {\can@meta\can@date}\par
+    \vspace{2pt}
+    {\color{keyink!25}\rule{\textwidth}{0.4pt}}\par
+    \vspace{9pt}
+    {\fontsize{21}{24}\selectfont\bfseries\color{keyink}\can@title}\par
+    \vspace{9pt}
+    {\color{keyink}\rule{\textwidth}{1pt}}\par
+    \vspace{2.5pt}
+    {\can@meta GFDL-1.3-or-later}\par
+  \end{minipage}\par
+  \vspace{1.6em}}
+
+% Revision history. One \revision per line, newest last.
+\newenvironment{revisions}{%
+  \par\medskip\needspace{4\baselineskip}%
+  \begin{center}\small
+  \begin{tabular}{@{}l l >{\raggedright\arraybackslash}p{0.60\textwidth}@{}}
+  \toprule
+  \hd{Rev} & \hd{Date} & \hd{Description} \\
+  \midrule
+}{%
+  \bottomrule
+  \end{tabular}\end{center}\par\medskip}
+\newcommand{\revision}[3]{#1 & #2 & #3 \\}
+
+% ---------------------------------------------------------------------------------------------------
+% Back matter
+% ---------------------------------------------------------------------------------------------------
+% \colophon{firmware version}   what built the document, on its own page
+%
+% A note that promises its captures reproduce has to say what they reproduce against. This is where
+% that promise is recorded, along with the faces and the toolchain.
+\newcommand{\colophon}[1]{%
+  \clearpage
+  \section*{Colophon}\phantomsection\label{colophon}
+  \begin{center}\small
+  \begin{tabular}{@{}l >{\raggedright\arraybackslash}p{0.60\textwidth}@{}}
+  \toprule
+  Body and headings & TeX Gyre Heros, the metric-compatible Helvetica from TeX Live \\
+  Mathematics       & New Computer Modern Sans Math, from TeX Live \\
+  Display face      & JuliaMono, from \href{https://juliamono.netlify.app}{juliamono.netlify.app} \\
+  \addlinespace
+  Typeset with      & \texttt{lualatex}, TeX Live 2025 \\
+  Design language   & \texttt{c47appnote} v1.1, \file{docs/appnotes/sources/style} \\
+  Charts            & \texttt{pgfplots}, one hue and the grey magnitude ramp \\
+  \addlinespace
+  Screen captures   & the GTK simulator at \texttt{-{}-reset}, upscaled 3$\times$ with a point filter \\
+  Written against   & firmware \texttt{#1} \\
+  \bottomrule
+  \end{tabular}\end{center}}
+
+% \authorblock{name}{site}{email}                                        one author
+% \authors{\contributor{name}{site}{email}{what they wrote} ...}         two or more
+%
+% Site and email are each optional in both forms. Leave one or both empty and the block prints what it
+% was given: an author who has published neither is named and nothing more, which is how AN0023
+% credits its author. Never fill either field in on an author's behalf.
+%
+% A note with more than one contributor uses \authors, and every contributor gets a line saying which
+% part is theirs. Attribution that does not say who wrote what is not attribution. A published PDF
+% that bundles an annex has more than one author even when the .ltx has one, so the credit here and
+% the initials in the filename have to agree; AN0032 gives the filename rule.
+\ExplSyntaxOn
+\NewDocumentCommand \canauthorline { m m m }
+  {
+    \tl_if_blank:nTF {#2} { #1 } { \href {#2} {#1} }
+    \tl_if_blank:nF {#3} { ,~\href { mailto:#3 } {#3} }
+  }
+\ExplSyntaxOff
+
+% The 1pt rule that opens the block, and the licence that closes it. Both forms share them, so the
+% two never drift apart.
+\newcommand{\can@authoropen}{%
+  \par\bigskip
+  \noindent{\color{keyink}\rule{\textwidth}{1pt}}\par
+  \vspace{5pt}}
+\newcommand{\can@authorclose}{%
+  \vspace{6pt}
+  \noindent{\color{soft}\fontsize{8}{10.5}\selectfont
+  Copyright (C) 2026 The C47 Development Team. Permission is granted to copy, distribute and/or modify
+  this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version
+  published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no
+  Back-Cover Texts. A copy of the license can be downloaded from gnu.org.\par}}
+\newcommand{\can@authorlabel}[1]{%
+  \noindent{\fontsize{7.4}{9}\selectfont\color{soft}\lsc{#1}}}
+
+\newcommand{\authorblock}[3]{%
+  \can@authoropen
+  \can@authorlabel{Author}\quad
+  \canauthorline{#1}{#2}{#3}\par
+  \can@authorclose}
+
+% \contributor belongs inside \authors, one per line, in the order the work appears in the document.
+% Two boxes rather than a tabular: \makebox sits on the running baseline and \parbox[t] puts its first
+% line on the same one, so the name and what it is credited with start level however long either runs.
+\newlength{\can@namewidth}\setlength{\can@namewidth}{0.44\textwidth}
+\newcommand{\contributor}[4]{%
+  \par\noindent
+  \makebox[\can@namewidth][l]{\canauthorline{#1}{#2}{#3}}%
+  {\color{soft}\parbox[t]{\dimexpr\textwidth-\can@namewidth\relax}{\raggedright #4}}%
+  \par\smallskip}
+\newcommand{\authors}[1]{%
+  \can@authoropen
+  \can@authorlabel{Authors}\par
+  \vspace{5pt}
+  #1
+  \can@authorclose}
+
+% ---------------------------------------------------------------------------------------------------
+% Keyboard maps
+%
+% \kc{x}{y}{w}{f}{primary}{g}   one key, positioned in millimetres
+% \shiftcell{x}{y}{w}{label}    a key with no shifted functions of its own
+% \ckeyboard  \rkeyboard        the whole map, ready to drop on a page
+% \keyboardappendix             both maps, each on its own page, labelled fig:ckbd and fig:rkbd
+% ---------------------------------------------------------------------------------------------------
+\tikzset{kbcell/.style={draw=keyink, line width=0.6pt, rounded corners=1pt, fill=white,
+  minimum height=8mm, inner sep=1pt, font=\sffamily\small\bfseries, text=keyink}}
+\newcommand{\kc}[6]{%
+  \node[kbcell, minimum width=#3 mm] at (#1 mm,#2 mm) {#5};%
+  \node[font=\sffamily\fontsize{6.3}{7}\selectfont, text=fcol, anchor=south] at (#1 mm,#2 mm+5.1mm) {#4};%
+  \node[font=\sffamily\fontsize{6.3}{7}\selectfont, text=gcol, anchor=north] at (#1 mm,#2 mm-5.1mm) {#6};}
+\newcommand{\shiftcell}[4]{\node[kbcell, minimum width=#3 mm] at (#1 mm,#2 mm) {#4};}
+
+\newcommand{\ckeyboard}{%
+\begin{center}\resizebox{\textwidth}{!}{\begin{tikzpicture}[x=1mm,y=1mm]
+\kc{12}{0}{22}{$\rightarrow$I}{$\Sigma$+}{a b/c}
+\kc{36}{0}{22}{$y^{x}$}{$1/x$}{\#}
+\kc{60}{0}{22}{$x^{2}$}{$\sqrt{x}$}{.ms}
+\kc{84}{0}{22}{$10^{x}$}{LOG}{.d}
+\kc{108}{0}{22}{$e^{x}$}{LN}{LBL}
+\kc{132}{0}{22}{$\alpha$}{XEQ}{GTO}
+\kc{12}{-21}{22}{$|x|$}{STO}{$\measuredangle$}
+\kc{36}{-21}{22}{\%}{RCL}{$\Delta$\%}
+\kc{60}{-21}{22}{$\pi$}{R$\downarrow$}{$\sqrt[x]{y}$}
+\kc{84}{-21}{22}{ASIN}{SIN}{\textit{i}}
+\kc{108}{-21}{22}{ACOS}{COS}{$\rightarrow$R}
+\kc{132}{-21}{22}{ATAN}{TAN}{$\rightarrow$P}
+\kc{24}{-42}{46}{COMPLEX}{ENTER}{CPX}
+\kc{60}{-42}{22}{LASTx}{x$\rightleftarrows$y}{STK}
+\kc{84}{-42}{22}{MODE}{+/$-$}{TRG}
+\kc{108}{-42}{22}{DISP}{EEX}{EXP}
+\kc{132}{-42}{22}{UNDO}{$\leftarrow$}{CLR}
+\kc{14.4}{-63}{27}{BST}{$\uparrow$}{REGS}
+\kc{43.2}{-63}{27}{EQN}{7}{HOME}
+\kc{72}{-63}{27}{ADV}{8}{FIN}
+\kc{100.8}{-63}{27}{MATX}{9}{X.FN}
+\kc{129.6}{-63}{27}{STAT}{$\div$}{PLOT}
+\kc{14.4}{-84}{27}{SST}{$\downarrow$}{FLGS}
+\kc{43.2}{-84}{27}{BASE}{4}{BITS}
+\kc{72}{-84}{27}{CONV}{5}{CLK}
+\kc{100.8}{-84}{27}{FLAG}{6}{REAL}
+\kc{129.6}{-84}{27}{PROB}{$\times$}{INTS}
+\shiftcell{14.4}{-105}{27}{\textcolor{fcol}{f}\,/\,\textcolor{gcol}{g}}
+\kc{43.2}{-105}{27}{ASN}{1}{KEYS}
+\kc{72}{-105}{27}{USER}{2}{$\alpha$.FN}
+\kc{100.8}{-105}{27}{P.FN}{3}{LOOP}
+\kc{129.6}{-105}{27}{PRINT}{$-$}{I/O}
+\kc{14.4}{-126}{27}{OFF}{EXIT}{SNAP}
+\kc{43.2}{-126}{27}{VIEW}{0}{STOPW}
+\kc{72}{-126}{27}{SHOW}{.}{INFO}
+\kc{100.8}{-126}{27}{PRGM}{R/S}{TEST}
+\kc{129.6}{-126}{27}{CAT}{+}{CNST}
+\end{tikzpicture}}\end{center}}
+
+\newcommand{\rkeyboard}{%
+\begin{center}\resizebox{\textwidth}{!}{\begin{tikzpicture}[x=1mm,y=1mm]
+\kc{12}{0}{22}{\textit{i}}{$x^{2}$}{$\rightarrow$R}
+\kc{36}{0}{22}{\textit{i}$_{\odot}$}{$\sqrt{x}$}{$\rightarrow$P}
+\kc{60}{0}{22}{$x!$}{$1/x$}{.ms}
+\kc{84}{0}{22}{$\sqrt[x]{y}$}{$y^{x}$}{.d}
+\kc{108}{0}{22}{$10^{x}$}{LOG}{$\rightarrow$I}
+\kc{132}{0}{22}{$e^{x}$}{LN}{\#}
+\kc{12}{-21}{22}{$|x|$}{STO}{$\measuredangle$}
+\kc{36}{-21}{22}{\%}{RCL}{$\Delta$\%}
+\kc{60}{-21}{22}{$\pi$}{R$\downarrow$}{R$\uparrow$}
+\kc{84}{-21}{22}{USER}{DRG}{ASN}
+\shiftcell{108}{-21}{22}{\textcolor{fcol}{f}}
+\shiftcell{132}{-21}{22}{\textcolor{gcol}{g}}
+\kc{24}{-42}{46}{COMPLEX}{ENTER}{CPX}
+\kc{60}{-42}{22}{LASTx}{x$\rightleftarrows$y}{STK}
+\kc{84}{-42}{22}{DISP}{+/$-$}{TRG}
+\kc{108}{-42}{22}{PFX}{EEX}{EXP}
+\kc{132}{-42}{22}{UNDO}{$\leftarrow$}{CLR}
+\kc{14.4}{-63}{27}{$\alpha$}{XEQ}{GTO}
+\kc{43.2}{-63}{27}{SIN}{7}{ASIN}
+\kc{72}{-63}{27}{COS}{8}{ACOS}
+\kc{100.8}{-63}{27}{TAN}{9}{ATAN}
+\kc{129.6}{-63}{27}{STAT}{$\div$}{PLOT}
+\kc{14.4}{-84}{27}{BST}{$\uparrow$}{REGS}
+\kc{43.2}{-84}{27}{BASE}{4}{BITS}
+\kc{72}{-84}{27}{INTS}{5}{REAL}
+\kc{100.8}{-84}{27}{MATX}{6}{X.FN}
+\kc{129.6}{-84}{27}{EQN}{$\times$}{ADV}
+\kc{14.4}{-105}{27}{SST}{$\downarrow$}{FLGS}
+\kc{43.2}{-105}{27}{PREF}{1}{KEYS}
+\kc{72}{-105}{27}{CONV}{2}{CLK}
+\kc{100.8}{-105}{27}{FLAG}{3}{$\alpha$.FN}
+\kc{129.6}{-105}{27}{PROB}{$-$}{FIN}
+\kc{14.4}{-126}{27}{OFF}{EXIT}{INFO}
+\kc{43.2}{-126}{27}{VIEW}{0}{I/O}
+\kc{72}{-126}{27}{SHOW}{.}{a b/c}
+\kc{100.8}{-126}{27}{PRGM}{R/S}{P.FN}
+\kc{129.6}{-126}{27}{CAT}{+}{CNST}
+\end{tikzpicture}}\end{center}}
+
+\newcommand{\keyboardappendix}{%
+  \clearpage
+  \section*{The C47 keyboard}\phantomsection\label{fig:ckbd}
+  {\color{soft}\small Primary function on the key; \textcolor{fcol}{orange = f} (shift once) above;
+  \textcolor{gcol}{blue = g} (shift twice) below.}
+  \vspace{4mm}
+  \ckeyboard
+  \clearpage
+  \section*{The R47 keyboard}\phantomsection\label{fig:rkbd}
+  {\color{soft}\small The R47 has two physical shift keys: a yellow \textcolor{fcol}{f} and a blue
+  \textcolor{gcol}{g}. Primary on the key; f above, g below.}
+  \vspace{4mm}
+  \rkeyboard}
+
+% ---------------------------------------------------------------------------------------------------
+% House defaults
+% ---------------------------------------------------------------------------------------------------
+\hyphenpenalty=1200
+\setcounter{tocdepth}{2}
+
+\RequirePackage[hidelinks]{hyperref}
+
+\endinput

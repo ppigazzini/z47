@@ -1,0 +1,975 @@
+% SPDX-License-Identifier: GFDL-1.3-or-later
+% Copyright The WP43 and C47 Authors
+%
+% AN0032 -- The application note template. Every construct the collection uses, demonstrated once.
+% Compiled with lualatex. Build from this directory with:
+%
+%   TEXINPUTS=../style: lualatex AN-0032-C47-R47-Application-Note-2026-07-29-DE-Template.ltx
+%
+% Run it twice so the table of contents, the page count and the cross references settle.
+
+\documentclass[canadian]{article}
+\usepackage{c47appnote}
+
+\notenumber{032}
+\noteshorttitle{Template}
+\notedate{2026-07-29}
+\notetitle{The Application Note Template}
+
+\begin{document}
+
+\notehead
+
+    This note is the template for the others.  It is a working document: everything the collection uses is
+    demonstrated here once, in place, so a writer starting a new note can copy this file, delete the prose,
+    and keep the furniture.  It is also the reference for the design language.  When two notes disagree about
+    how to draw a keystroke or where to put a caption, this one settles it.
+
+    The material divides in two.  Sections \ref{using} to \ref{palette} are about the mechanics: what to copy,
+    what to rename, how to build, and what the page is made of.  Sections \ref{keys} to \ref{backmatter} walk
+    the constructs themselves, each shown as the source you write and the result you get.
+
+    Read Section \ref{using} first and then skim for the construct you need.  Nothing here has to be read end
+    to end.
+
+    Numerical results in this document are of three kinds, and this paragraph is itself part of the template.
+    Results quoted from a reference are marked as such.  Results computed by hand are given with their working,
+    so the reader can check them.  Results the C47 test suite asserts are identified by the case that asserts
+    them.  Anything that has to be read off real hardware carries a marker in red.  Keep this paragraph, edited
+    to fit, in any note that quotes numbers.  It tells the reader what a figure is worth.
+
+\tableofcontents
+
+\vspace{2em}
+
+\begin{revisions}
+    \revision{0.1}{2026-07-29}{DE.  First draft.  Consolidates the keypress and screen notation of AN0029,
+                               AN0030 and AN0031 into \file{style/c47appnote.sty}, moves the body to
+                               Helvetica, and adds callout blocks, listing styles and the shared
+                               keyboard maps.}
+    \revision{0.2}{2026-08-01}{DE.  The \cmd{keying} block: a keystroke sequence too long for prose, set
+                               one action per row (issue \#632).  Program entry re-set in it as the
+                               demonstration.  Revision rows now open with the reviser's initials, as
+                               this table does.}
+\end{revisions}
+
+% ===================================================================================================
+\section{Using This Template}
+\label{using}
+
+    \subsection{Copy, rename, gut}
+
+    Three steps.
+
+    \begin{enumerate}
+        \item Copy this directory to \file{docs/appnotes/sources/AN00NN/} and rename the \file{.ltx} to match
+              the convention in Section \ref{filename}.
+        \item Edit the four front-matter lines in the preamble.  They are the only place the note's number,
+              title and date appear, and everything else follows from them.
+        \item Delete every section below and write the note.  Keep the revision table, the bibliography, the
+              keyboard appendix if the note needs it, and the author block.
+    \end{enumerate}
+
+    The preamble you are keeping is four lines long:
+
+\begin{lstlisting}
+\documentclass[canadian]{article}
+\usepackage{c47appnote}
+
+\notenumber{032}
+\noteshorttitle{Template}
+\notedate{2026-07-29}
+\notetitle{The Application Note Template}
+\end{lstlisting}
+
+    All four feed the masthead and the running heads, so keep the short title short: it has to sit in the
+    middle of a 7.4 pt header between the number and the date.
+
+    There is no byline in the masthead and no field for one.  The author is named once, in
+    \cmd{authorblock} at the back beside the colophon, which is where a reader looks for attribution and
+    licensing together.  A name under the title would only repeat it.
+
+    \begin{note}
+    Everything the design language provides comes from one file, \file{sources/style/c47appnote.sty}, and
+    that file is the single copy.  Before AN0032 the same 50 lines of palette and keybox definitions were
+    pasted into AN0029, AN0030 and AN0031, with a comment in each saying to consolidate them once all three
+    had landed.  This is that consolidation.  Fix a macro once and every note gets the fix.
+    \end{note}
+
+    \subsection{The filename convention}
+    \label{filename}
+
+    Two names, and they do not match each other.  The source keeps the long hyphenated form, and the published
+    PDF keeps the older spaced form the collection has always used.
+
+\begin{lstlisting}
+source   docs/appnotes/sources/AN00NN/
+           AN-00NN-C47-R47-Application-Note-YYYY-MM-DD-XX-short-slug.ltx
+PDF      docs/appnotes/
+           AN00NN YYYY-MM-DD C47 R47 XX Short Title.pdf
+\end{lstlisting}
+
+    \cmd{XX} is the author's initials, and getting them wrong credits the work to somebody else.  The map:
+
+    \begin{table}[ht]
+        \caption{Author initials as they appear in the collection}
+        \label{tab:initials}
+        \centering
+        \small
+        \begin{tabular}{@{}l l p{0.46\textwidth}@{}}
+            \toprule
+            \hd{Initials} & \hd{Author} & \hd{Notes} \\
+            \midrule
+            JM  & Jaco Mostert    & The bulk of the collection \\
+            DL  & Didier Lachieze & AN0021 Printing, AN0026 42S Compatibility \\
+            DA  & David Abram     & AN0027 Structural conversions \\
+            WGR & William Gordon Rutherdale & AN0023 Elliptic integrals \\
+            NUK & Nigel UK        & AN0000 Installation \\
+            DE  & David Emerson   & AN0029 First Steps, AN0030 Uncertainty, AN0031 Algebraic Numbers \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \begin{warning}
+    There are two Davids.  \cmd{DA} is David Abram and \cmd{DE} is David Emerson.  AN0030 and AN0031 were
+    both filed as \cmd{DA} and had to be corrected.  Never copy the initials from a neighbouring note's
+    filename; check who wrote that one first.
+    \end{warning}
+
+    A publication with more than one contributor carries every contributor's initials, in the order their
+    work appears in it.  AN0023 is published as \file{AN0023 2026-04-17 C47 R47 WGR JM Elliptic Incl
+    Anx1.pdf} because Annex 1 is Jaco Mostert's and the note it is bound behind is
+    William Gordon Rutherdale's.  The source file keeps only the initials of the author of that source,
+    so \file{AN-0023-...-WGR-elliptic.ltx} is right even though the PDF built from it says \cmd{WGR JM}.
+    The two names disagreeing is not a mistake; the PDF is a bundle and the source is one part of it.
+    Credit the same people, saying who wrote what, in \cmd{authors} at the back: Section
+    \ref{backmatter}.
+
+    The date in both names is the date of the revision being published, not the date the note was started.
+    Bump it when you publish, and add a row to the revision table at the same time.
+
+    \begin{warning}
+    Never let the date come from \cmd{today}.  A note whose masthead is built from the build clock says
+    something different every time anyone compiles it, and the published PDF then disagrees with its own
+    filename.  AN0023 was published this way and its source carried a date four days off the PDF's until
+    the note was moved onto this template.  \cmd{notedate} is the one place the date belongs.
+    \end{warning}
+
+    \subsection{Building}
+
+    The style file lives one level up from the note, so \cmd{TEXINPUTS} has to point at it.  From the note's
+    own directory:
+
+\begin{lstlisting}
+TEXINPUTS=../style: lualatex AN-00NN-...-slug.ltx
+TEXINPUTS=../style: lualatex AN-00NN-...-slug.ltx
+\end{lstlisting}
+
+    Twice, so the table of contents, the \cmd{lastpage} count and the cross references settle.  The trailing
+    colon on \cmd{TEXINPUTS} matters: it is what keeps the default search path.
+
+    \cmd{lualatex} is required, not optional.  The package calls \cmd{RequireLuaTeX} and will stop under
+    \cmd{pdflatex} or \cmd{xelatex}.
+
+% ===================================================================================================
+\section{The Page}
+\label{page}
+
+    \subsection{Typography}
+
+    Body and headings are TeX Gyre Heros, which is the metric-compatible Helvetica that ships with TeX Live.
+    Using the clone rather than the system Helvetica is deliberate: every contributor gets the same page,
+    including the ones on Linux and the CI runner, and nothing depends on what happens to be installed.
+
+    The page is letter with a 1.25 in margin, which puts the measure near 75 characters.  That is the usual
+    readability target, and it also leaves the keyboard maps room to sit at close to their natural width
+    instead of being shrunk to fit.
+
+    Mathematics is New Computer Modern Sans Math, also from TeX Live, so a variable in a derivation matches
+    the prose around it instead of falling back to a serif face.  Compare the sum in Equation \ref{eq:lpu}
+    with the sentence carrying it.  Fira Math was tried first and rejected: its minus sign is undersized, so
+    $n - 1$ reads as an en dash, and its $\nu$ is indistinguishable from a $v$, which matters in any note
+    that uses $\nu$ for degrees of freedom.
+
+    One typographic accent does all the labelling: \cmd{lsc}, a letterspaced uppercase run.  It marks the
+    masthead, a table head, a caption label and a callout title, so structural furniture never needs a colour
+    or a rule of its own to be read as furniture.
+
+    The display face is JuliaMono, and it is the one font the package cannot supply.  The screen and program
+    boxes reproduce the calculator display and need its glyphs literally: \texttt{x⇄y}, \texttt{x²},
+    \texttt{Σ+}, \texttt{√}, \texttt{≠}.  Install it from \url{https://juliamono.netlify.app}.  Without it the
+    package falls back to DejaVu Sans Mono and warns during the build, and the boxes will be missing glyphs.
+
+    \begin{table}[ht]
+        \caption{The three faces and what each is for}
+        \label{tab:faces}
+        \centering
+        \small
+        \begin{tabular}{@{}l l p{0.44\textwidth}@{}}
+            \toprule
+            \hd{Role} & \hd{Face} & \hd{Used for} \\
+            \midrule
+            Body    & TeX Gyre Heros & Prose, headings, tables, captions, keybox labels \\
+            Math    & NewCM Sans Math & Everything between dollar signs \\
+            Display & JuliaMono      & \cmd{screen}, \cmd{prog}, \cmd{cmd}, listings: anything quoting
+                                       the calculator or the source tree \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \subsection{The palette}
+    \label{palette}
+
+    Seven colours, and two of them are spoken for.
+
+    \begin{table}[ht]
+        \caption{The palette.  \cmd{fcol} and \cmd{gcol} carry a fixed meaning and are never available for
+                 anything else.}
+        \label{tab:palette}
+        \centering
+        \small
+        \setlength{\tabcolsep}{4pt}
+        \begin{tabular}{@{}l c l >{\raggedright\arraybackslash}p{0.44\textwidth}@{}}
+            \toprule
+            \hd{Name} & & \hd{Hex} & \hd{Meaning} \\
+            \midrule
+            \cmd{keyink}   & \swatch{keyink} & 1B1B1B & Body, headings, rules, keyboard: nearly everything \\
+            \cmd{soft}     & \swatch{soft} & 6B6A65 & Furniture and captions, and anything deliberately quiet \\
+            \addlinespace
+            \cmd{fcol}     & \swatch{fcol} & DE6E10 & The f shift, and everything reached through it \\
+            \cmd{gcol}     & \swatch{gcol} & 2C6DB5 & The g shift, and everything reached through it \\
+            \addlinespace
+            \cmd{menufill} & \swatch{menufill} & E9E7E2 & The fill of a soft-key label \\
+            \cmd{lcdbg}    & \swatch{lcdbg} & F2F3EA & The paper colour of the display \\
+            \addlinespace
+            \cmd{warnink}  & \swatch{warnink} & B3341F & The one accent: a warning, and the draft markers \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    Three rules hold the design together, and they are worth stating plainly because breaking any of them is
+    what makes two notes stop looking like each other.
+
+    \emph{One.}  \cmd{fcol} orange means "reached through the f shift" and \cmd{gcol} blue means "reached
+    through the g shift", everywhere, without exception.  Nothing else may use them: not a heading, not a
+    rule, not a running head, not a callout.  A reader who has learned that on page 2 must not meet an orange
+    mark on page 9 that means something else.  This is why the running heads are \cmd{soft} grey rather than
+    the blue AN0029 through AN0031 first used.
+
+    \emph{Two.}  A filled panel is the calculator's own screen.  \cmd{screen} and \cmd{prog} carry the
+    \cmd{lcdbg} wash because they reproduce the display; tables, listings and callouts are unfilled and
+    bounded by hairlines instead.  So a fill on the page always means the same thing, and a quotation of the
+    calculator never looks like a quotation of a file.
+
+    \emph{Three.}  Rules carry weight in one direction only.  1 pt closes the masthead and opens the author
+    block, 0.7 pt opens and closes a table, and 0.4 pt is every other hairline: the section rules, the header
+    rule, a capture frame, a listing.  No double rules and no vertical rules anywhere.
+
+    Note what is missing.  There is no hue for a note or a tip, because their titles tell them apart and that
+    is cheaper than teaching the reader two more colours.  \cmd{warnink} is the only accent, spent on the one
+    callout that is a safety signal and on the draft markers of Section \ref{semantic}.  Everything else is
+    keyink, \cmd{soft}, or a tint of keyink.
+
+% ===================================================================================================
+\section{Keypress Notation}
+\label{keys}
+
+    This is the part of the design language worth most, because it is the part a reader learns once and then
+    reads without effort.
+
+    \subsection{The kinds of key}
+
+    Six macros, one per way of reaching a function.
+
+    \begin{table}[ht]
+        \caption{Keypress macros}
+        \label{tab:keymacros}
+        \centering
+        \small
+        \begin{tabular}{@{}l l p{0.44\textwidth}@{}}
+            \toprule
+            \hd{Source} & \hd{Result} & \hd{Means} \\
+            \midrule
+            \lit|\key{7}|      & \key{7}      & Press that key \\
+            \lit|\fkey{MODE}|  & \fkey{MODE}  & f shift, then the key whose orange label is MODE \\
+            \lit|\gkey{CLK}|   & \gkey{CLK}   & g shift, then the key whose blue label is CLK \\
+            \lit|\mkey{DEG}|   & \mkey{DEG}   & A soft key, named by the label the screen prints above it \\
+            \lit|\fmkey{U.P}|  & \fmkey{U.P}  & f shift, then the soft key carrying U.P on its orange row \\
+            \lit|\gmkey{REGR}| & \gmkey{REGR} & g shift, then the soft key carrying REGR on its blue row \\
+            \lit|\lkey{f}|     & \lkey{f}     & A long press \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    On the C47 there is one physical shift key, pressed once for f and twice for g.  On the R47 there are two,
+    a yellow f and a blue g.  The notation is the same on both, and a note giving C47 keystrokes need not
+    caveat every line; say once which machine the keystrokes are for and point at the keyboard maps.
+
+    \begin{warning}
+    A softmenu page is eighteen items: six unshifted, then six f-shifted, then six g-shifted.  Before drawing
+    a soft key, check the menu array in \file{src/c47/softmenus.c} and use \cmd{mkey}, \cmd{fmkey} or
+    \cmd{gmkey} to match.  Prose like "\menu{ADV} \cmd{PGMSLV}" reads as unshifted and is wrong:
+    \cmd{PGMSLV} is on the f row.  Drawing the badges on AN0030 and AN0031 caught two errors that bare
+    command names had hidden.
+    \end{warning}
+
+    \subsection{Keystroke lines}
+
+    A keystroke line is set on its own, indented, and wraps at the gaps between keys when it runs long.  Two
+    forms.  \cmd{seq} carries the result the display leaves; \cmd{keys} is for a step with nothing to show
+    for it yet.
+
+\begin{lstlisting}
+\seq{\key{3}\quad\key{ENTER}\quad\key{4}\quad\key{+}}{X:\ \ 7}
+\keys{\fkey{DISP}\quad\mkey{FIX}\quad\key{4}}
+\end{lstlisting}
+
+    \seq{\key{3}\quad\key{ENTER}\quad\key{4}\quad\key{+}}{X:\ \ 7}
+
+    \keys{\fkey{DISP}\quad\mkey{FIX}\quad\key{4}}
+
+    Separate keys with \lit|\quad| where the reader should pause and with \lit|\ | where the keys form one
+    token, as the digits of a number do.  \lit|\key{1}\key{1}| is two presses of one number;
+    \lit|\key{1}\quad\key{1}| reads as two separate steps.
+
+    Use \cmd{screen} for a display line quoted inside a sentence, like \screen{X:\ \ 7}, and keep it to one
+    line.  Anything taller belongs in a \cmd{prog} block.
+
+    \subsection{When prose stops working: the keying block}
+    \label{keying}
+
+    The inline forms above are the HP-42S manual's own style, and up to a handful of keys inside a sentence
+    they are the most readable notation there is.  They stop working when the sequence is a whole program or
+    a long setup: a paragraph with thirty keycaps in it reads as clutter, however carefully it is written.
+    Past that length, set the sequence one action per row in a \cmd{keying} block, the keys on the left and
+    what they accomplish on the right:
+
+\begin{lstlisting}
+\begin{keying}
+    \step{\key{XEQ}\,\key{.}\,\key{.}}{open a new program}
+    \step{\fkey{PRGM}}{enter program-entry mode}
+\end{keying}
+\end{lstlisting}
+
+    \begin{keying}
+        \step{\key{XEQ}\,\key{.}\,\key{.}}{open a new program}
+        \step{\fkey{PRGM}}{enter program-entry mode}
+    \end{keying}
+
+    An empty right cell is fine where a step needs no comment.  Keep the comments to a phrase: the keys are
+    the thing being read, which is why the column is set small and soft.  Section \ref{progentry} shows a
+    complete program keyed in this way.
+
+% ===================================================================================================
+\section{A Worked Tutorial}
+\label{tutorial}
+
+    This section is the shape a tutorial should take: state the goal, give the keystrokes, show the screen,
+    say what happened and why.  The content is deliberately trivial so the pattern is visible through it.
+
+    Add three and four, then set the display to four decimals.
+
+    The C47 and R47 use RPN, so there is no equals key.  Type the first number, press \key{ENTER} to separate
+    it from the second, type the second, then press the operation.
+
+    \seq{\key{3}\quad\key{ENTER}\quad\key{4}\quad\key{+}}{X:\ \ 7}
+
+    \shot{02-result}{Three plus four.  The answer lands in \reg{X}, the bottom line.  The tiny \reg{S} over
+    \reg{L} at the top right is the simulator's stack-lift indicator; real hardware carries the battery
+    gauge there instead.}
+
+    The sum appeared without your saying where to put it.  That is the whole of RPN: intermediate results
+    wait on the stack and are consumed by the next operation.
+
+    Now the display.  Open the display menu with \fkey{DISP}.  The first row offers the six formats, and
+    \mkey{FIX} takes a digit count.
+
+    \seq{\fkey{DISP}\quad\mkey{FIX}\quad\key{4}}{X:\ \ 7.0000}
+
+    \shotpair{03-disp}{04-mode}{Left, the first page of \fkey{DISP}: the formats on the unshifted row, the
+    fraction settings on the f row above, and \mkey{IPART}, \mkey{RADIX} and \mkey{FPART} on the g row.
+    Right, the first page of \fkey{MODE} for comparison.  A label with a line struck through it, like
+    \mkey{DMCP} and \mkey{ActUSB} here, is a function the build you are running does not offer.}
+
+    \begin{tip}
+    Menu paging wraps.  A single press of \key{$\downarrow$} from page 1 lands on the last page, which is
+    usually quicker than pressing \key{$\uparrow$} twice.
+    \end{tip}
+
+    Three things make a tutorial section work.  Every keystroke line is complete, so a reader can follow it
+    without inferring a missing \key{ENTER}.  Every screen shown is a real capture of exactly those
+    keystrokes.  And each step says what happened, not just what to press.
+
+% ===================================================================================================
+\section{Program Entry}
+\label{progentry}
+
+    A program is given twice: once as a listing, so the reader can check what they have, and once as the
+    keystrokes that produce it.  Both, always.  A listing alone leaves the reader guessing where \cmd{MVAR}
+    lives; keystrokes alone give them no way to find the step they mistyped.
+
+    The listing goes in a \cmd{prog} block, in the display face, with the four-digit step numbers the
+    calculator itself shows:
+
+    \prog{0001: LBL 'HYP'\\0002: \ \ MVAR 'a'\\0003: \ \ MVAR 'b'\\0004: \ \ RCL 'a'\\0005: \ \ x²\\0006: \ \ RCL 'b'\\0007: \ \ x²\\0008: \ \ +\\0009: \ \ √x\\0010: END}
+
+    Then the keystrokes, in a \cmd{keying} block (Section \ref{keying}), since a program keyed in is
+    exactly the sequence prose cannot carry:
+
+    \begin{keying}
+        \step{\key{XEQ}\,\key{.}\,\key{.}}{open a new program}
+        \step{\fkey{PRGM}}{enter program-entry mode}
+        \step{\gkey{LBL}\,\fkey{$\alpha$}\,\key{H}\,\key{Y}\,\key{P}\,\key{ENTER}}{the label}
+        \step{\mkey{P.FN1}\ \mkey{P.FN2}\ \mkey{MVAR}\,\fkey{$\alpha$}\,\key{a}\,\key{ENTER}}{declare the
+            first variable; the menu stays on \menu{P.FN2}}
+        \step{\mkey{MVAR}\,\fkey{$\alpha$}\,\key{b}\,\key{ENTER}}{and the second}
+        \step{\ldots}{the body, straight from the listing}
+        \step{\fkey{PRGM}}{leave program-entry mode}
+    \end{keying}
+
+    \begin{note}
+    \cmd{MVAR} is not on \fkey{ADV}, which is where readers look for it.  In program-entry mode press
+    \mkey{P.FN1} on soft key 6, then \mkey{P.FN2} on soft key 6 again, then \mkey{MVAR} on soft key 4.  Say
+    this in full every time; it is the single step readers most often fail to find.
+    \end{note}
+
+    \cmd{prog} also takes anything else that wants the display face over several lines: a matrix as the editor
+    shows it, a menu dump, a two-line result.  Rows are separated with \lit|\\| and columns lined up with
+    \lit|\ |, since the box has no tabbing.
+
+    \prog{y\ \ \ \ =\ \ 2.1298079\\u(y) =\ \ 0.0077526}
+
+% ===================================================================================================
+\section{Screen Captures}
+\label{shots}
+
+    \subsection{The rule}
+
+    Every capture in a note is a real capture from the simulator, driven by the same keystrokes the note
+    prints, started with \cmd{--reset} so it reproduces on any machine.  Nothing is mocked up and nothing is
+    retouched.  The only processing is a threefold point upscale, which keeps the pixels square in print.
+
+    This is not a style preference.  A note whose pictures were drawn by hand will drift away from the
+    firmware silently, and the reader has no way to tell.  A note whose pictures are captures can be
+    regenerated and diffed.
+
+    \subsection{Placing one}
+
+    Three macros, by how the picture is used.
+
+    \begin{table}[ht]
+        \caption{Capture macros}
+        \label{tab:shotmacros}
+        \centering
+        \footnotesize
+        \begin{tabular}{@{}l >{\raggedright\arraybackslash}p{0.50\textwidth}@{}}
+            \toprule
+            \hd{Source} & \hd{Use} \\
+            \midrule
+            \lit|\shot[w]{file}{caption}|      & One capture in the flow of the text, centred, not floating,
+                                                 so it stays where the prose put it.  Width defaults to 0.58
+                                                 of the text block. \\
+            \lit|\shotpair{l}{r}{caption}|     & Two side by side.  Each lands at half the measure, so a
+                                                 pair is for comparing the shape of two screens, not for
+                                                 reading labels off them. \\
+            \lit|\shotfig[w]{f}{cap}{label}|   & A numbered float, for a capture the note cross-refers to
+                                                 from elsewhere. \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    All three prepend \file{screens/} to the filename and supply the extension, so the argument is bare:
+    \lit|02-result|, not the path and not the \lit|.png|.
+
+    Prefer \cmd{shot}.  A capture belongs beside the keystrokes that produced it, and a float will wander.
+    Reach for \cmd{shotfig} only when the note genuinely cross-refers to the picture, as Figure
+    \ref{fig:home} is referred to from Section \ref{xref}.
+
+    \shotfig{01-home}{A new calculator, straight out of a reset: an empty stack and MyMenu along the bottom.
+    This is what every capture recipe in \file{screens/scripts} starts from.}{fig:home}
+
+    Captions are sentences, in \cmd{soft} grey, and they say what to look at.  "The DISP menu" is not a
+    caption.  "The formats on the unshifted row, the fraction settings on the f row above" is.
+
+    \subsection{Reproducing them}
+
+    Record the recipe.  Every note that carries captures carries a \file{screens/scripts/README.md} giving
+    the build used, the exact command per picture, and the upscale step.  The pattern:
+
+\begin{lstlisting}
+./c47 --reset --exec 'press "@k 30"; press "@k 12"; press "@k 23";
+                      press "@k 36"; snap s2add'
+magick s2add.bmp -filter point -resize 300% screens/02-result.png
+\end{lstlisting}
+
+    \cmd{press "@k NN"} presses physical key NN, numbered row-major from the C47 table in
+    \file{src/c47/assign.c}.  \cmd{press @f} and \cmd{press @g} set a pending shift, and \cmd{press F1} to
+    \cmd{press F6} press the soft keys.  A longer sequence goes in a \file{.t47} script beside the README
+    rather than on the command line.
+
+    \begin{warning}
+    A plot needs \cmd{--snapskiprefresh}, or \cmd{snap} redraws the screen and wipes the drawn pixels.  The
+    simulator also shows a stack-lift indicator at the top right where hardware shows the battery gauge, so
+    say so in the caption the first time a capture appears in a note.
+    \end{warning}
+
+    To check a capture set still reproduces after the firmware has moved, rerun the recipe and diff:
+
+\begin{lstlisting}
+compare -metric AE /tmp/regenerated.png screens/02-result.png null:
+\end{lstlisting}
+
+    Zero differing pixels is the answer you want.
+
+% ===================================================================================================
+\section{Callout Blocks}
+\label{callouts}
+
+    Three kinds, and three is the whole set.  A page carrying six kinds of coloured box carries none, because
+    the reader has stopped distinguishing them.
+
+    \begin{note}
+    An aside the reader can skip without losing the thread.  Background, a cross reference, a reason
+    something is the way it is.
+    \end{note}
+
+    \begin{tip}
+    A shorter route to the same place.  A shortcut, a default worth changing, a keystroke that saves three.
+    \end{tip}
+
+    \begin{warning}
+    A trap that will cost the reader an hour.  Something that looks right and is not, a step that silently
+    does nothing, or behaviour that differs between the simulator, the DM42, the DM42n and the R47.  Spend
+    these sparingly; a note with nine warnings has none.
+    \end{warning}
+
+    They are unfilled, bounded on the left only, and titled in a letterspaced label.  A rule and a label are
+    enough to set a paragraph apart, and they leave the page quieter than a shaded panel does.  A note and a
+    tip carry the same black rule and are told apart by the title alone; only the warning spends the accent,
+    because only the warning is a safety signal.
+
+    They break across pages, so a long one is safe.  Keep them to a paragraph or two even so: a callout the
+    size of a section should be a section.
+
+    The rule for choosing is what the reader loses by skipping it.  Nothing, and it is a note.  Time, and it
+    is a tip.  An hour, and it is a warning.
+
+    There is no separate block for hardware differences, and that is deliberate.  A feature the reader's build
+    does not carry, a memory ceiling, a capture that will not reproduce: each of those costs an hour, which is
+    the definition of a warning.  Name the build in the first sentence and the reader knows whether the box is
+    about them.
+
+% ===================================================================================================
+\section{Code and Text Listings}
+\label{listings}
+
+    Two listing styles, both unfilled and closed top and bottom by the same 0.4 pt hairline a capture frame
+    uses.  A listing reads as a tabulated block rather than as a shaded panel, which is what keeps it distinct
+    from the \cmd{prog} and \cmd{screen} boxes: those are washed with \cmd{lcdbg} because they reproduce the
+    display, and nothing else on the page is.
+
+    \cmd{c47text} is the default and takes anything plain: a state-file excerpt, a \file{.t47} script, a
+    shell command, a menu dump.
+
+\begin{lstlisting}
+EQUATIONS
+1
+p$\times$V=n$\times$R$\times$T
+OTHER_CONFIGURATION_STUFF
+\end{lstlisting}
+
+    \cmd{mathescape} is on, so \lit|$\times$| inside a listing renders as the multiplication sign the
+    calculator uses.  That is how to quote a formula containing a glyph the keyboard has but ASCII does not.
+
+    \cmd{c47code} adds C syntax highlighting and line numbers, for firmware source:
+
+\begin{lstlisting}[style=c47code]
+/* The relative step assumes the model varies on the scale of x. */
+static real_t centralDifference(real_t (*f)(real_t), real_t x) {
+  const real_t h = fmax(fabs(x), 1.0) * CBRT_EPSILON;
+  return (f(x + h) - f(x - h)) / (2.0 * h);
+}
+\end{lstlisting}
+
+    Quote source sparingly and quote it exactly.  A note is not the place to paraphrase the firmware, and a
+    listing that has drifted from the tree is worse than no listing.  Give the path with \cmd{file}, as in
+    \file{src/mathematics/uncertainty.c}, so a reader can go and look.
+
+    For one inline fragment use \cmd{lit}, which is \lit|\lit| followed by the text between two matching
+    delimiters.  It is the right tool for a macro name, a flag, or a line of a file format.
+
+% ===================================================================================================
+\section{Tables}
+\label{tables}
+
+    Tables are booktabs throughout: \lit|\toprule| at the top, one \lit|\midrule| under the head,
+    \lit|\bottomrule| at the bottom.  Never a vertical rule and never a double rule, because both of them
+    draw the eye to the grid instead of to the numbers.  \lit|@{}| on the outer columns is what makes the
+    rules line up with the text block.  Small or footnote size, since a table in body size beside Helvetica
+    prose looks loud.  Caption above, labelled \lsc{table} and numbered.
+
+    Head cells go in \lit|\hd|, which letterspaces them, so the head reads as furniture without needing a
+    rule or a weight change of its own.  To group rows, use \lit|\addlinespace|, never another rule: the
+    palette in Table \ref{tab:palette} is grouped that way.
+
+    \cmd{ntable} wraps the whole pattern up, and it is the shortest way to a correct table:
+
+\begin{lstlisting}
+\begin{ntable}{@{}l l@{}}{The caption sentence.}{tab:label}
+    \hd{Source} & \hd{Means} \\ \midrule
+    \lit|\key{7}| & Press that key \\
+\end{ntable}
+\end{lstlisting}
+
+    \begin{ntable}{@{}l l >{\raggedright\arraybackslash}p{0.42\textwidth}@{}}{The shape of a house table.
+             Three rules, no verticals, head letterspaced.}{tab:shape}
+        \hd{Column} & \hd{Type} & \hd{Notes} \\ \midrule
+        First   & \lit|l|                 & Left, natural width \\
+        Second  & \lit|l|                 & Left, natural width \\
+        Third   & \lit|p{0.42\textwidth}| & Fixed width, so prose wraps rather than pushing the table past
+                                             the margin \\
+    \end{ntable}
+
+    Give every table a caption and a label and refer to it in the prose.  A table nobody points at is
+    decoration.  When a table runs wide, cut \cmd{tabcolsep} to 3 pt and drop to \cmd{footnotesize} before
+    you consider landscape.
+
+    Command reference tables are their own case, and AN0030 is the model: one small table per command, with
+    rows for what it takes from the stack, what it leaves, what it reads, what it writes, and what it refuses.
+    A reader looking up a command wants the same five rows every time, in the same order.
+
+
+% ===================================================================================================
+\section{Charts}
+\label{charts}
+
+    Charts are \cmd{pgfplots}, wrapped in \cmd{nchart} so they float and caption like any other figure.
+    The chrome is recessive by default: axis lines on the left and bottom only, no box, horizontal grid
+    only, ticks outside, labels in \cmd{soft}.  What is left is the data.
+
+    \subsection{Why a chart here has almost no colour}
+
+    This is worth the space, because the conclusion is not a preference.  A palette that encodes identity
+    has to clear four things at once: a chroma floor, so a hue does not read as grey; a lightness band; a
+    contrast floor against the paper; and a separation floor, measured pairwise, of $\Delta E \ge 15$ in
+    normal vision and $\ge 8$ under simulated protanopia and deuteranopia.
+
+    Rule 1 of Section \ref{palette} has already spent orange on the f shift and blue on the g shift, and
+    \cmd{warnink} has spent red.  Testing what is left against those three reserved inks:
+
+    \begin{ntable}{@{}l l >{\raggedright\arraybackslash}p{0.40\textwidth}@{}}{Every hue that could have
+             been a second series, and what stopped it.  Measured pairwise against \cmd{warnink},
+             \cmd{fcol} and \cmd{gcol}.}{tab:charthue}
+        \hd{Candidate} & \hd{Verdict} & \hd{Why} \\ \midrule
+        violet \cmd{8A5CC7} & unusable & Collapses against \cmd{gcol}, $\Delta E$ 3.4 under protanopia \\
+        ochre \cmd{8A6B00}  & unusable & Collapses against \cmd{warnink}, $\Delta E$ 2.5 under
+                                        deuteranopia \\
+        teal \cmd{00918A}   & unusable & Chroma 0.089, below the 0.10 floor: reads as grey \\
+        teal \cmd{00A099}   & passes   & Clears \cmd{warnink}, \cmd{fcol} and \cmd{gcol} on every pair,
+                                        in normal vision and under all three simulated deficiencies \\
+    \end{ntable}
+
+    Exactly one hue survives.  It is \cmd{chartink}, and a chart gets at most that one, for the single
+    series that is the whole point of the chart.  Everything else is \cmd{keyink} and the grey ramp.
+
+    \begin{note}
+    That is not a hardship.  A note that will be printed, photocopied and read on a grey electronic-paper
+    screen wants its series told apart by dash pattern and marker anyway, which is also the only encoding
+    that survives a reader with full colour blindness.  The constraint and the right answer coincide.
+    \end{note}
+
+    Magnitude uses the grey ramp \cmd{seq1} to \cmd{seq5}, which passes the ordinal checks: monotone
+    lightness, an adjacent step of at least $\Delta L = 0.06$, and a light end still clearing 2:1 against
+    white.  \cmd{seq1} is \cmd{keyink} and \cmd{seq3} is \cmd{soft}, so the ramp is built out of the
+    palette rather than beside it.
+
+    \begin{center}
+    \small\swatch{seq1}\,\swatch{seq2}\,\swatch{seq3}\,\swatch{seq4}\,\swatch{seq5}\qquad
+    {\color{soft}the magnitude ramp}\qquad\swatch{chartink}\qquad{\color{soft}\cmd{chartink}}
+    \end{center}
+
+    \subsection{Emphasis: one bar is the point}
+
+    The commonest chart in this collection ranks contributions and says which one to attack.  That is not
+    a categorical chart; it is an \emph{emphasis} chart.  One mark in full \cmd{keyink}, the rest in
+    \cmd{seq4}, and the reader's eye goes to the right place without a legend, a hue or a callout.
+
+    \begin{nchart}{The GUM Annex H.1 uncertainty budget, ranked.  $l_S$ carries 62 \% of the variance, so
+             it is the only term worth attacking; everything below 10 \% is noise.  Emphasis, not colour,
+             is what says so.}{fig:budget}
+    \begin{tikzpicture}
+    \begin{axis}[canaxis, canbars, height=0.30\textwidth,
+        xlabel={index $h_i$, \% of the combined variance},
+        xmin=0, xmax=72, symbolic y coords={$\delta_\alpha$,$d$,$\delta\theta$,$l_S$},
+        ytick={$\delta_\alpha$,$d$,$\delta\theta$,$l_S$}, y=15pt, enlarge y limits=0.28,
+        nodes near coords align={horizontal}]
+      \addplot[canrest] coordinates {(0.8,$\delta_\alpha$) (9.4,$d$) (27.7,$\delta\theta$)};
+      \addplot[canemph] coordinates {(62.2,$l_S$)};
+    \end{axis}
+    \end{tikzpicture}
+    \end{nchart}
+
+    Sort by magnitude, always, unless the category order carries meaning of its own.  An unsorted ranking
+    makes the reader do the sorting.
+
+    \subsection{One series: the plain case}
+
+    Most appnote charts have one series, and a single series needs no legend, because the caption names
+    it.  Label the axes, give the units, and stop.
+
+    \begin{nchart}{The wave packet $f(x) = \sin(5x)\,e^{-x^{2}/8}$ of Application Note 29
+             \cite{AN0029}, over $-5 \le x \le 5$.  One series, so no legend: the caption names
+             it.}{fig:wave}
+    \begin{tikzpicture}
+    \begin{axis}[canaxis, height=0.32\textwidth, xlabel={$x$}, ylabel={$f(x)$},
+        xmin=-5, xmax=5, ymin=-1.15, ymax=1.15, ytick={-1,-0.5,0,0.5,1}]
+      \addplot[canA, samples=300, domain=-5:5] {sin(deg(5*x))*exp(-x^2/8)};
+    \end{axis}
+    \end{tikzpicture}
+    \end{nchart}
+
+    \subsection{Two or three series: dash, then marker}
+
+    Identity runs A, B, C in a fixed order and never cycles: \cmd{canA} solid, \cmd{canB} dashed,
+    \cmd{canC} dotted, all in \cmd{keyink}.  A legend appears as soon as there is more than one series.
+    A fourth series is not a fourth dash pattern; it is a second chart, or a small multiple.
+
+    \begin{nchart}{The same packet against the envelope that bounds it, $\pm e^{-x^{2}/8}$.  Solid, dashed
+             and dotted in that fixed order, one ink, and a legend because there is more than one
+             series.}{fig:envelope}
+    \begin{tikzpicture}
+    \begin{axis}[canaxis, height=0.32\textwidth, xlabel={$x$}, ylabel={$f(x)$},
+        xmin=-5, xmax=5, ymin=-1.15, ymax=1.15, ytick={-1,-0.5,0,0.5,1}]
+      \addplot[canA, samples=300, domain=-5:5] {sin(deg(5*x))*exp(-x^2/8)};
+      \addlegendentry{$\sin(5x)\,e^{-x^{2}/8}$}
+      \addplot[canB, samples=120, domain=-5:5] {exp(-x^2/8)};
+      \addlegendentry{$+e^{-x^{2}/8}$}
+      \addplot[canC, samples=120, domain=-5:5] {-exp(-x^2/8)};
+      \addlegendentry{$-e^{-x^{2}/8}$}
+    \end{axis}
+    \end{tikzpicture}
+    \end{nchart}
+
+    Measured data and a fitted curve are a special case of two series that needs no dash ladder, because
+    points and a line are already distinct: use \cmd{canpoints} for the data and \cmd{canA} for the fit.
+
+    \begin{nchart}{The five pairs of Application Note 29 \cite{AN0029} and the line the regression menu
+             fits to them, $y = 2x + 1$, with $r = 1$.  Points against a line need no dash
+             ladder.}{fig:fit}
+    \begin{tikzpicture}
+    \begin{axis}[canaxis, height=0.30\textwidth, xlabel={$x$}, ylabel={$y$},
+        xmin=0, xmax=6.6, ymin=0, ymax=14.5]
+      \addplot[canA, domain=0.6:6.4] {2*x+1};
+      \addlegendentry{$\hat{y} = 2x + 1$}
+      \addplot[canpoints] coordinates {(1,3) (2,5) (3,7) (4,9) (5,11)};
+      \addlegendentry{measured}
+    \end{axis}
+    \end{tikzpicture}
+    \end{nchart}
+
+    \subsection{The rules, in short}
+
+    \begin{itemize}
+        \item \textbf{Never a second $y$ axis.}  Two measures of different scale are two charts, or one
+              chart with both series indexed to a common base.  This is the single commonest way to
+              mislead a reader with a chart that is technically accurate.
+        \item \textbf{Identity by dash and marker, in the fixed order A, B, C.}  At most one hue,
+              \cmd{chartink}, and only for the series that is the point.
+        \item \textbf{Magnitude by the grey ramp}, light to dark, more is darker.  Never a rainbow.
+        \item \textbf{Emphasis before category.}  If the story is "this one dominates", that is one dark
+              mark among grey ones, not five hues.
+        \item \textbf{Sort by magnitude} unless the category order means something.
+        \item \textbf{Label the axes and give the units.}  A number without a unit is not a result.
+        \item \textbf{No legend for one series}; a legend for two or more, and direct labels where they
+              fit.  Never a value on every point.
+        \item \textbf{Recessive chrome.}  Horizontal grid only, no box, no fill under a line unless the
+              area is the quantity.
+    \end{itemize}
+
+% ===================================================================================================
+\section{Mathematics}
+\label{math}
+
+    Inline mathematics sits in the sentence: the standard uncertainty of an input estimate $x_i$ is written
+    $u(x_i)$, with $\nu_i = n - 1$ degrees of freedom.  Display mathematics that is not referred to again
+    goes unnumbered,
+
+    \[ u(\bar{q}) = \frac{s(q)}{\sqrt{n}} \]
+
+    and anything the prose comes back to gets a number and a label:
+
+    \begin{equation}
+        u_c^2(y) = \sum_{i=1}^{N} c_i^2\, u^2(x_i)
+                 + 2\sum_{i=1}^{N-1}\sum_{j=i+1}^{N} c_i\, c_j\, u(x_i, x_j)
+        \label{eq:lpu}
+    \end{equation}
+
+    Equation \ref{eq:lpu} is the law of propagation of uncertainty, and the reference is how the reader gets
+    back to it twelve pages later.  Number what you cite and nothing else.
+
+    Where a derivation matters, give it.  Where only the result matters, give the result and cite the source.
+    A note that reproduces four pages of a standard the reader can download has spent four pages badly.
+
+    \begin{align}
+        s(q)   &= \sqrt{\frac{1}{n-1}\sum_{k=1}^{n}\left(q_k - \bar{q}\right)^2} \\
+        u_c(y) &= \sqrt{\sum_i c_i^2 u^2(x_i)}
+    \end{align}
+
+    Units are set upright and separated from the number: 31.71 nm, 50.000838 mm, 0.029 $^\circ$C.  Percent
+    takes a thin space, 95 \%, which is the convention the GUM uses and the collection follows.
+
+% ===================================================================================================
+\section{Semantic Markup}
+\label{semantic}
+
+    Mark up what a thing \emph{is}, not how it should look.  Then a later decision about how commands should
+    be set is one edit in the style file instead of a hundred in the notes.
+
+    \begin{table}[ht]
+        \caption{Semantic macros}
+        \label{tab:semantic}
+        \centering
+        \small
+        \begin{tabular}{@{}l l p{0.40\textwidth}@{}}
+            \toprule
+            \hd{Source} & \hd{Result} & \hd{For} \\
+            \midrule
+            \lit|\cmd{U.CALC}| & \cmd{U.CALC} & A command as the catalog names it \\
+            \lit|\vr{U.TAB}|   & \vr{U.TAB}   & A named variable \\
+            \lit|\reg{X}|      & \reg{X}      & A stack register or a labelled display field \\
+            \lit|\menu{UNCT}|  & \menu{UNCT}  & A menu \\
+            \lit|\file{src/c47}| & \file{src/c47} & A path in the source tree \\
+            \lit|\swatch{fcol}| & \swatch{fcol} & A palette chip, outlined so a pale fill still reads \\
+            \lit|\lsc{note}|    & \lsc{note}    & A letterspaced label: the one typographic accent \\
+            \lit|\HW{timing}|  & \HW{timing}  & A figure still to be read off real hardware \\
+            \lit|\TODO{H.2}|   & \TODO{H.2}   & A hole in the draft \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    \cmd{HW} and \cmd{TODO} print red on purpose.  A draft circulated for comment should make its holes
+    impossible to miss, and a note must not reach master with either still in it.  Grep for both before you
+    open the merge request.
+
+% ===================================================================================================
+\section{Cross References and Citations}
+\label{xref}
+
+    Label anything you point at and point at it by number, never by position.  "Section \ref{callouts}" and
+    "Figure \ref{fig:home}" survive an edit; "the section above" and "the figure on page 4" do not.
+
+    The label prefixes the collection uses: bare words for sections, as in \lit|\label{callouts}|, and
+    \lit|fig:|, \lit|tab:| and \lit|eq:| for the three numbered kinds.
+
+    Cite the other notes.  A note that stands alone duplicates one that already exists, and the collection is
+    worth more as a set of cross references than as thirty separate documents.  Cite by number in the prose,
+    as in Application Note 29 \cite{AN0029}, and give the full title in the bibliography.  External standards
+    get a full entry with a URL where one exists \cite{GUM}.
+
+    \begin{tip}
+    Before writing a new note, read the ones next to it.  AN0029 was nearly filed as redundant with AN0028
+    until the question was settled: AN0028 tours the settings for a reader who already has opinions about
+    them, and carries no keystrokes or captures at all, while AN0029 starts at the first switch-on.  They
+    cite each other now.  That conversation belongs in the note's opening paragraphs.
+    \end{tip}
+
+% ===================================================================================================
+\section{Back Matter}
+\label{backmatter}
+
+    In order: any appendices, the keyboard maps if the note gives keystrokes for both machines, the
+    bibliography, then the author block.
+
+    \cmd{keyboardappendix} emits both maps, each on its own page, labelled \lit|fig:ckbd| and
+    \lit|fig:rkbd| so the body can refer to them.  Ninety lines of TikZ used to be pasted into each note that
+    wanted them; now it is one command.  Include it in a note that gives keystrokes, and leave it out of one
+    that is purely about the firmware.  \cmd{ckeyboard} and \cmd{rkeyboard} place a single map if you want
+    to lay out the page yourself.
+
+    \cmd{colophon} takes the firmware version the note was written against and emits a closing page
+    recording what built the document: the three faces and where they come from, the toolchain, the
+    style-file version, and how the captures were made.  A note that promises its captures reproduce has
+    to say what they reproduce against, and this is where that promise is recorded.
+
+    The author block is \lit|\authorblock{name}{site}{email}| and carries the GFDL notice with it.  Every note
+    in the collection is under the GNU Free Documentation License, and both the SPDX line at the top of the
+    source and this block at the bottom are required.
+
+    The site and the email are each optional.  Leave one or both empty and the block prints what it was
+    given, so an author who has published neither is named and nothing more, which is how AN0023 credits
+    its author.  Never fill either field in on somebody's behalf: a contact detail in a published document
+    is theirs to offer.
+
+    A note with more than one contributor uses \cmd{authors} instead, one \cmd{contributor} per line, in
+    the order the work appears in the document.  The fourth argument is the part that is theirs, and it is
+    not optional: attribution that does not say who wrote what leaves every reader guessing, and it is the
+    one thing a reader cannot work out for themselves.
+
+\begin{lstlisting}
+\authors{
+    \contributor{William Gordon Rutherdale}{}{}{This note}
+    \contributor{Jaco Mostert}{}{}{Annex 1, the worked tutorial}
+}
+\end{lstlisting}
+
+    Reach for it whenever the published PDF has more than one hand in it, including the case where the
+    \file{.ltx} is one author's and an annex bound behind it is another's.  The initials in the PDF
+    filename and the lines in this block have to name the same people: Section \ref{filename}.
+
+    \begin{note}
+    The first two lines of every source file are the SPDX identifier and the copyright line, then a comment
+    saying what the note is and how to build it.  Copy them from this file; they are what the licence audit
+    reads.
+    \end{note}
+
+% ===================================================================================================
+\section{Summary}
+
+    \begin{itemize}
+        \item Copy this directory, rename the \file{.ltx} per Section \ref{filename}, edit the four
+              front-matter lines, delete the prose.
+        \item Check the author initials against Table \ref{tab:initials}.  There are two Davids.
+        \item Build twice with \lit|TEXINPUTS=../style: lualatex|, under lualatex, with JuliaMono installed.
+        \item \cmd{fcol} orange means the f shift and \cmd{gcol} blue means the g shift.  Nothing else may
+              use them.
+        \item Check \file{src/c47/softmenus.c} before drawing a soft key, and use \cmd{mkey}, \cmd{fmkey} or
+              \cmd{gmkey} to match the row.  Eighteen items to a page, six per row.
+        \item Every capture is a real \cmd{--reset} capture of the keystrokes printed beside it, with the
+              recipe recorded in \file{screens/scripts/README.md}.
+        \item Give a program as a listing and as keystrokes.  Both.
+        \item Three callout kinds, chosen by what the reader loses in skipping the box.  A build difference
+              is a warning, named by build in the first sentence.
+        \item Charts tell series apart by dash and marker, in the fixed order A, B, C.  One hue is
+              available, \cmd{chartink}, and exactly one: Table \ref{tab:charthue} shows what stopped
+              the others.  Never a second $y$ axis.
+        \item Label and cite everything you point at, including the other notes.
+        \item Grep for \cmd{TODO} and \cmd{HW} before opening the merge request.
+    \end{itemize}
+
+% ===================================================================================================
+\keyboardappendix
+
+% ===================================================================================================
+\clearpage
+\begingroup
+\small
+\begin{thebibliography}{99}
+\bibitem{AN0018} C47/R47 Application Note 018, \emph{Keyboard}.
+\bibitem{AN0028} C47/R47 Application Note 028, \emph{Configurability Tour}.
+\bibitem{AN0029} C47/R47 Application Note 029, \emph{First Steps}.
+\bibitem{AN0030} C47/R47 Application Note 030, \emph{Measurement Uncertainty}.
+\bibitem{AN0031} C47/R47 Application Note 031, \emph{Algebraic Number Identification}.
+\bibitem{GUM} JCGM 100:2008, \emph{Evaluation of measurement data -- Guide to the expression of uncertainty
+    in measurement}, Joint Committee for Guides in Metrology, 2008.
+    \url{https://www.bipm.org/en/committees/jc/jcgm/publications}
+\bibitem{Ref47} C47/R47 function reference. \url{https://47calc.com/documentation}
+\bibitem{Wiki1} C47 developer wiki. \url{https://gitlab.com/rpncalculators/c43/-/wikis/home}
+\bibitem{Wiki2} C47 community wiki. \url{https://gitlab.com/h2x/c47-wiki}
+\end{thebibliography}
+\endgroup
+
+\colophon{0.109.03.04}
+
+\authorblock{David Emerson}{https://davidemerson.com}{d@nnix.com}
+
+\end{document}

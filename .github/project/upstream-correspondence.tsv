@@ -170,6 +170,7 @@ mathematics/sinc	core/numeric/command_wrappers;core/numeric/special/sinc_command
 mathematics/sincpi	core/numeric/command_wrappers;core/numeric/special/sinc_command	port	symbol
 mathematics/sinh	core/numeric/trig/circular_trig_command;core/numeric/trig/real_trig;core/numeric/trig/trig_complex_primitives	port	symbol
 mathematics/slvc	core/numeric/slvc	port	symbol
+mathematics/slvp	core/numeric/slvp	port	symbol
 mathematics/slvq	core/numeric/slvq	port	symbol
 mathematics/sqrt1Px2	core/numeric/special/special_algebraic_command	port	symbol
 mathematics/square	core/numeric/transform/transform_power_command	port	symbol

@@ -1,0 +1,53 @@
+# AN0023 shots 04-elle and 05-solve: key in EllE exactly as the note tells the reader to, then solve.
+# Run from the simulator's own directory:  ./c47 --reset --script elle.t47
+
+# f DISP  FIX  5, then f MODE  RAD, the two settings the note asks for up front
+press @f; press "@k 15"; press F1; press "@k 24"
+press @f; press "@k 14"; press F2
+
+# XEQ . .   f PRGM
+press "@k 05"; press "@k 34"; press "@k 34"
+press @f; press "@k 35"
+
+# g LBL  f alpha  E l l E  ENTER
+press @g; press "@k 04"
+press @f; press "@k 05"
+press e; press L; press L; press e
+press ENTER
+
+# P.FN1  P.FN2  MVAR  f alpha  x  ENTER
+press F6; press F6; press F4
+press @f; press "@k 05"; press "@k 28"; press ENTER
+# the menu stays on P.FN2, so MVAR is soft key 4 again for m and again for u
+press F4
+press @f; press "@k 05"; press "@k 13"; press ENTER
+press F4
+press @f; press "@k 05"; press "@k 24"; press ENTER
+
+# RCL m   RCL x
+press "@k 07"; press @f; press "@k 05"; press "@k 13"; press ENTER
+press "@k 07"; press @f; press "@k 05"; press "@k 28"; press ENTER
+
+# g X.FN  up  g Ellipt  f E(phi,m)
+press @g; press "@k 20"; press "@k 17"; press @g; press F1; press @f; press F5
+
+# RCL - u
+press "@k 07"; press "@k 31"; press @f; press "@k 05"; press "@k 24"; press ENTER
+
+# shot 04: the listing, still in program-entry mode, walked back to the top
+press "@k 17"; press "@k 17"; press "@k 17"; press "@k 17"
+press "@k 17"; press "@k 17"; press "@k 17"; press "@k 17"
+snap s04elle
+
+# leave program entry, then f ADV  SOLVE  f alpha E l l E ENTER
+press @f; press "@k 35"
+press @f; press "@k 19"
+press F6
+press @f; press "@k 05"; press e; press L; press L; press e; press ENTER
+
+# .96 into m, .19872 into u, then press x to solve
+press "@k 34"; press "@k 20"; press "@k 25"; press F2
+press "@k 34"; press "@k 28"; press "@k 20"; press "@k 19"; press "@k 18"; press "@k 29"; press F3
+press F1
+# shot 05
+snap s05solve
