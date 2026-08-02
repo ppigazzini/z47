@@ -47,8 +47,6 @@ backupTest*.cfg
 c47.regs
 *.s47
 *.zip
-!upstream/docs/appnotes/sources/
-!upstream/docs/appnotes/sources/*.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
 20*.REGS.TSV
@@ -197,13 +195,6 @@ compile_commands.json
 
 # End of https://www.toptal.com/developers/gitignore/api/meson
 
-# LaTeX byproducts from building an application note in
-# upstream/docs/appnotes/sources
-upstream/docs/appnotes/sources/**/*.aux
-upstream/docs/appnotes/sources/**/*.log
-upstream/docs/appnotes/sources/**/*.out
-upstream/docs/appnotes/sources/**/*.toc
-upstream/docs/appnotes/sources/**/*.pdf
 
 
 ### z47 Zig port ###

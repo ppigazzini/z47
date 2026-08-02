@@ -23,6 +23,15 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
   copy into `"$(bash .github/project/check-source-ownership.sh list-imported-roots)/"`.
   Ledgers, baselines, and correspondence TSVs stay upstream-relative — do NOT
   rewrite them to add the prefix (see `.github/project/upstream_paths.py`).
+- **`docs/appnotes/` is deliberately NOT carried.** It was 101 MiB — two thirds of
+  the whole tracked tree — of published application notes and their .odt/.docx/.zip
+  sources, and nothing in the build, the test corpus, or CI reads any of it. The
+  copy here was also a drifted partial mirror: 79 of upstream's 109 files already
+  pruned, several documents present twice under different spellings, and four
+  blobs that were older revisions of notes upstream now ships newer. Read them in
+  the upstream repo. **Do not re-add the directory on a resync**; the ownership
+  gate enforces this, because `docs/appnotes` is no longer an approved addition,
+  so any re-imported appnote fails `check-source-ownership.sh`.
 
 ## 1. Import + seam re-sync (mostly "free")
 

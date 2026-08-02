@@ -34,7 +34,6 @@ upstream
 BUILD.md
 dist
 distS
-docs/appnotes
 res/PACKAGES.md
 res/PROGRAMS
 res/combo
