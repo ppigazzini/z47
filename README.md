@@ -1,95 +1,80 @@
-# Zig Build Entry Point
+# z47 — the C47 calculator, ported to Zig
 
-`build.zig` is the canonical z47 build entrypoint.
+C47 and R47 are RPN calculator firmware for SwissMicros hardware — two keyboard
+models of the same application, each built for the DM42 (DMCP) and the DM32 (DMCP5),
+plus a GTK desktop simulator of each. It is maintained upstream in C at
+[gitlab.com/rpncalculators/c43](https://gitlab.com/rpncalculators/c43) — the GitLab
+path keeps the historical `c43` name — with user-facing information at
+[47calc.com](https://47calc.com).
 
-This file is intentionally short. Use it as the top-level Zig quick start, then
-use [docs/README.md](docs/README.md) for the detailed maintainer
-documentation.
+**z47 ports that calculator to Zig while keeping its behaviour bit-for-bit.** The
+core is fully ported: all 230 `.c` files of the upstream calculator have Zig owners,
+and the build asserts that none of the original C is compiled into the product. What
+the imported tree still supplies is the C headers the Zig owners consume, the
+calculator's resources, and — most importantly — the reference the port is measured
+against.
 
-The imported `Makefile` and Meson files remain audit and parity-reference
-surfaces. They are not the maintained z47 control plane.
+## The correctness claim
 
-Build orchestration lives under `build/`. Live runtime Zig now lives under
-`src/`, and legacy runtime bridge C lives under `bridge/`.
+z47 is a *port*, so its claim is **function parity with upstream**, not "the tests
+pass". Two things enforce that, and both take upstream's source as the reference:
 
-A Zig-owned build layer is not treated as value by itself in this repo. If a
-new Zig surface does not replace buggy or retired C owners, fix a real build or
-platform defect, or delete more legacy workflow debt than it adds, it is extra
-maintenance overhead.
+- **Upstream's own test suite, run unmodified** — 12830 cases. z47 never adds cases
+  to it: the suite is the measuring instrument, so the pass count is only meaningful
+  while it is upstream's count.
+- **Per-owner parity oracles** that compile upstream's C beside the Zig owner and
+  diff the two, so the reference moves whenever upstream does.
 
-Current live runtime Zig owners are intentionally narrow: short-integer logical
-leaf code plus the stack, register-metadata, flags, memory,
-program-serialization, calc-state, and keyboard-state slices under `src/`.
+Everything else — the governance guards under `.github/project/`, the pinned import,
+the ratchets — exists to keep that claim honest as upstream advances.
 
-Imported upstream paths route through `UPSTREAM_ROOT` in
-`.github/project/upstream-pin.env`; the current value `upstream` means the
-imported baseline is mounted under `upstream/`, which is what leaves the
-canonical `src/` and `docs/` names free for z47's own owners.
+## Layout
 
-The May 2026 structural naming milestone is complete under the current
-layer-scoped naming contract. For live owner, runtime, export, and legacy
-naming rules, use
-[docs/10-build-and-source-layout.md](docs/10-build-and-source-layout.md)
-and
-[docs/50-zig-c-boundaries-and-rewrite-policy.md](docs/50-zig-c-boundaries-and-rewrite-policy.md);
-any future naming reopener must start from a fresh owner-specific inventory.
+| path | contents |
+| --- | --- |
+| `src/` | the ported calculator — Zig owners |
+| `build/` | the Zig build control plane, harnesses, generators, packaging |
+| `bridge/` | near-retired C header shims |
+| `docs/` | developer documentation |
+| `upstream/` | the imported C47 tree, pinned and byte-identical to its commit |
+| `build.zig` | the only supported build entrypoint |
 
-## Start Here
+`upstream/` is a vendored snapshot pinned in `.github/project/upstream-pin.env` and
+mounted under `UPSTREAM_ROOT`, which is what leaves the canonical `src/` and `docs/`
+names to z47. It carries no z47 content and a gate enforces that.
 
-- [docs/README.md](docs/README.md): maintainer doc index and reading
-  order
-- [docs/10-build-and-source-layout.md](docs/10-build-and-source-layout.md):
-  canonical build entrypoints, build layout, and local flow
-- [docs/20-zig-build-graph.md](docs/20-zig-build-graph.md): live
-  `build.zig` target map and domain split
-- [docs/40-firmware-and-distribution.md](docs/40-firmware-and-distribution.md):
-  firmware, package, and DMCP-variant details
-- [docs/70-tests-and-verification.md](docs/70-tests-and-verification.md):
-  smallest rerun lane for each change type
-- [docs/75-debugging.md](docs/75-debugging.md): what each detector sees,
-  the C-vs-Zig differential, and the false-pass catalogue
-- [docs/95-glossary.md](docs/95-glossary.md): the calculator's
-  vocabulary versus this port's
+## Documentation
 
-## Quick Start
+**Start at [docs/README.md](docs/README.md)** — it is the maintained index and gives
+a reading order. Direct entry points if you already know what you want:
 
-Current pinned Zig baseline:
+| you want to | read |
+| --- | --- |
+| understand the project and its upstream relationship | [00-project-and-upstream.md](docs/00-project-and-upstream.md) |
+| find your way around the tree and the build | [10-build-and-source-layout.md](docs/10-build-and-source-layout.md) |
+| know what a build target does | [20-zig-build-graph.md](docs/20-zig-build-graph.md) |
+| build firmware or a distribution package | [40-firmware-and-distribution.md](docs/40-firmware-and-distribution.md) |
+| know where the Zig/C boundary is allowed to sit | [50-zig-c-boundaries-and-rewrite-policy.md](docs/50-zig-c-boundaries-and-rewrite-policy.md) |
+| know the smallest lane to re-run for a change | [70-tests-and-verification.md](docs/70-tests-and-verification.md) |
+| chase a divergence the lanes did not catch | [75-debugging.md](docs/75-debugging.md) |
+| work on a resync or a milestone | [80-maintainer-workflow.md](docs/80-maintainer-workflow.md) |
+| decode the calculator's vocabulary | [95-glossary.md](docs/95-glossary.md) |
 
-- Zig `0.16.0`
-- pinned in `.github/zig-toolchain.env`
+Contributor workflow, branch policy and the verification rules for each kind of
+change are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Common entrypoints:
+## Building
+
+Zig `0.16.0`, pinned in `.github/zig-toolchain.env`. No Make, no Meson — the
+imported `Makefile` and Meson files are upstream's and are kept only as parity
+references.
 
 ```sh
-zig build --help
-zig build sim
-zig build logical_shortint_parity
-zig build rotate_bits_parity
-zig build stack_state_parity
-zig build register_metadata_parity
-zig build flags_parity
-zig build memory_parity
-zig build program_serialization_parity
-zig build calc_state_parity
-zig build keyboard_state_parity
-zig build keyboard_statusbar_flags_regression
-zig build test
-zig build generated
-zig build docs
-zig build dmcp
-bash .github/project/check-zig-c-boundaries.sh
-zig build dist_linux
-bash .github/project/check-source-ownership.sh
-bash .github/project/workflow-imported-root-paths.sh check-workflow
+zig build --help    # every target, with descriptions
+zig build sim       # the C47 desktop simulator
+zig build test      # upstream's test suite
 ```
 
-## Detailed Topics
-
-Use `docs/` for the detailed contract behind these areas:
-
-- host simulator, generated artifacts, and docs build
-- firmware prerequisites and legacy SDK or GMP dependencies
-- distribution targets and host-specific package behavior
-- approved Zig or C boundaries and current rewrite slices
-- CI lanes, artifacts, and local reproduction commands
-- debugging a divergence the lanes do not catch, and the vocabulary the pages use
+[20-zig-build-graph.md](docs/20-zig-build-graph.md) explains the target map;
+[70-tests-and-verification.md](docs/70-tests-and-verification.md) says which lane to
+run for which change.
