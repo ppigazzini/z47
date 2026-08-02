@@ -32,13 +32,19 @@ line-length = 100
 # -- and every resync diffs this tree against upstream's. Reformatting them
 # would turn a clean import into a permanent conflict on files z47 has no
 # opinion about, for no benefit: they are not z47's code and z47 does not
-# maintain them. `src`/`res`/`docs`/`tools` hold nothing else Python, so
-# excluding the directories is both simpler and more durable than listing files
-# that upstream may rename.
+# maintain them.
+#
+# One entry, not a list of directory names: the imported tree is mounted at a
+# single root (`UPSTREAM_ROOT`, currently `upstream/`), so excluding that root
+# excludes every imported script and nothing else. Naming the directories
+# instead -- `src`, `res`, `docs`, `tools` -- would be actively wrong here,
+# because ruff matches a slash-less pattern against the basename at ANY depth:
+# `src` would also exclude z47's own `src/`, silently dropping owned code out of
+# the lint scope the moment it takes that canonical name.
 #
 # extend-exclude, not `exclude`: ruff's default excludes (.git, caches, and so
 # on) are worth keeping, and `exclude` would replace them.
-extend-exclude = ["src", "res", "docs", "tools", "tag2ver.py"]
+extend-exclude = ["upstream"]
 
 [tool.ruff.lint]
 # Curated GATING set, deliberately not ALL: these are operator tools, so print
@@ -56,6 +62,13 @@ ignore = ["E501"]
 
 [tool.ty.environment]
 python-version = "3.14"
+# `.github/project/` is a module search path in practice, not just a directory of
+# scripts: the gates there import each other as siblings (that is how
+# `c_dependency_audit` and `upstream_paths` are shared), which works because
+# sys.path[0] is the script's own directory. A script outside that tree reaching
+# the same modules puts the directory on sys.path explicitly. Declaring it here
+# lets ty resolve both cases instead of only the sibling one.
+extra-paths = [".github/project"]
 
 [tool.ty.src]
 # Same scope as ruff, for the same reason: the imported upstream scripts are not

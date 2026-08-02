@@ -20,8 +20,20 @@ const z47_test_list = "zig_build/tests/testSuiteList_z47.txt";
 
 fn addTestSuiteRun(b: *std.Build, test_suite: *std.Build.Step.Compile, list_path: []const u8) *std.Build.Step.Run {
     const run_test_suite = b.addRunArtifact(test_suite);
-    run_test_suite.setCwd(b.path("."));
-    run_test_suite.addArg(list_path);
+    // testSuite.c opens some inputs CWD-relative, not relative to the list file:
+    // `res/testPgms/testPgms.bin` is the one that matters, because it stages the
+    // test programs. res/ is an imported-upstream path, so the run has to happen
+    // from the upstream root -- which is exactly the directory upstream's own
+    // suite is written to run in. Running from the repo root instead makes that
+    // fopen fail silently, and the missing program memory then surfaces far away
+    // as an integer-overflow panic in the calc-state save path.
+    run_test_suite.setCwd(b.path(build_common.upstreamRootString(b)));
+    // The list is passed as a resolved file argument rather than a CWD-relative
+    // string: the lists live on both sides of the boundary (upstream's under
+    // src/testSuite/tests/, z47's under zig_build/tests/), so no single CWD can
+    // spell both. testSuite.c derives the per-test directory and items.h from
+    // dirname(argv[1]), which keeps working with an absolute path.
+    run_test_suite.addFileArg(b.path(list_path));
     return run_test_suite;
 }
 

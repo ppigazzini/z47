@@ -35,6 +35,8 @@ import pathlib
 import re
 import sys
 
+from upstream_paths import upstream_path
+
 C_ROOT = "src/c47"
 Z_ROOT = "zig_src"
 MANIFEST = ".github/project/upstream-correspondence.tsv"
@@ -161,8 +163,9 @@ def main() -> int:
     # C side: symbol -> defining C file (relpath under C_ROOT, no suffix)
     c_sym_file: dict[str, list[str]] = {}
     c_files: list[str] = []
-    for p in sorted((root / C_ROOT).rglob("*.c")):
-        rel = str(p.relative_to(root / C_ROOT).with_suffix(""))
+    c_abs = upstream_path(root, C_ROOT)
+    for p in sorted(c_abs.rglob("*.c")):
+        rel = str(p.relative_to(c_abs).with_suffix(""))
         c_files.append(rel)
         for s in c_symbols(p.read_text(errors="ignore")):
             c_sym_file.setdefault(s, []).append(rel)

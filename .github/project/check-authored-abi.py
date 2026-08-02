@@ -43,6 +43,8 @@ import re
 import subprocess
 import sys
 
+from upstream_paths import upstream_root
+
 BASELINE = ".github/project/authored-abi-baseline.json"
 EXPORT = re.compile(r"(?m)^\s*pub export (?:fn|var|const)\s+(\w+)")
 IDENT = re.compile(r"\b[A-Za-z_]\w*\b")
@@ -65,7 +67,7 @@ def measure(root):
 
     blob = subprocess.run(
         ["bash", "-c", "cat src/c47/*.c src/c47/*/*.c src/c47/*.h src/c47/*/*.h 2>/dev/null"],
-        cwd=root,
+        cwd=upstream_root(root),
         capture_output=True,
         text=True,
     ).stdout

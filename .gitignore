@@ -1,20 +1,25 @@
 # C47 project specific files
-/build
-/build.sim
-/dep/gmp-6.2.1
-/wp43
-/c47
-/r47
-/t47
-/testSuite
-/generate*
-/ttf2RasterFonts
-/wp43.exe
-/c47.exe
-/r47.exe
-/testSuite.exe
-/generate*.exe
-/ttf2RasterFonts.exe
+#
+# The imported upstream tree lives under upstream/ (UPSTREAM_ROOT in
+# .github/project/upstream-pin.env), so upstream's own build-system artefacts
+# are anchored there. Simulator runtime outputs stay anchored at the repo root
+# below, because the host simulator runs with the repo root as its CWD.
+/upstream/build
+/upstream/build.sim
+/upstream/dep/gmp-6.2.1
+/upstream/wp43
+/upstream/c47
+/upstream/r47
+/upstream/t47
+/upstream/testSuite
+/upstream/generate*
+/upstream/ttf2RasterFonts
+/upstream/wp43.exe
+/upstream/c47.exe
+/upstream/r47.exe
+/upstream/testSuite.exe
+/upstream/generate*.exe
+/upstream/ttf2RasterFonts.exe
 backup.bin
 backup.cfg
 backupR47.cfg
@@ -42,8 +47,8 @@ backupTest*.cfg
 c47.regs
 *.s47
 *.zip
-!docs/appnotes/sources/
-!docs/appnotes/sources/*.zip
+!upstream/docs/appnotes/sources/
+!upstream/docs/appnotes/sources/*.zip
 !xfnToC47user.s47
 !xfnToR47user.s47
 20*.REGS.TSV
@@ -52,7 +57,7 @@ c47plotTest*.bmp
 tags
 /PROGRAMS
 /SAVFILES
-/src/generated
+/upstream/src/generated
 AGENTS.md
 
 # Over_score testing agent coding
@@ -169,8 +174,8 @@ $RECYCLE.BIN/
 
 ### Meson ###
 # subproject directories
-/subprojects/*
-!/subprojects/*.wrap
+/upstream/subprojects/*
+!/upstream/subprojects/*.wrap
 
 # Meson Directories
 meson-logs
@@ -192,18 +197,29 @@ compile_commands.json
 
 # End of https://www.toptal.com/developers/gitignore/api/meson
 
-# LaTeX byproducts from building an application note in docs/appnotes/sources
-docs/appnotes/sources/**/*.aux
-docs/appnotes/sources/**/*.log
-docs/appnotes/sources/**/*.out
-docs/appnotes/sources/**/*.toc
-docs/appnotes/sources/**/*.pdf
+# LaTeX byproducts from building an application note in
+# upstream/docs/appnotes/sources
+upstream/docs/appnotes/sources/**/*.aux
+upstream/docs/appnotes/sources/**/*.log
+upstream/docs/appnotes/sources/**/*.out
+upstream/docs/appnotes/sources/**/*.toc
+upstream/docs/appnotes/sources/**/*.pdf
 
 
 ### z47 Zig port ###
 # Zig build cache and output
 .zig-cache/
 zig-out/
+
+# z47-owned roots that a re-imported upstream .gitignore would swallow. Upstream
+# ignores a root `/build` (its meson/make output dir) and z47 owns a `build/`
+# directory of Zig build logic; a whole-file .gitignore import would silently
+# untrack it. Last matching rule wins, so these negations survive that import.
+# Delete them only together with the directories they protect.
+!/build/
+!/src/
+!/docs/
+!/bridge/
 
 # Python bytecode cache (governance scripts under .github/project/)
 __pycache__/

@@ -21,8 +21,10 @@ import pathlib
 import re
 import sys
 
+from upstream_paths import upstream_path
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-CPTR = ROOT / "src/generated/constantPointers.h"
+CPTR = upstream_path(ROOT, "src/generated/constantPointers.h")
 ABI = ROOT / "zig_src/abi/constants.zig"
 
 # C: #define const_1 ((real_t *)(constants + 4856))  /  real34_t variant too

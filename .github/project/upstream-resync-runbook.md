@@ -13,8 +13,16 @@ below as guardrails so the next resync is a checklist, not a rediscovery.
   `git diff --name-only <oldpin>..<newpin>` intersected with the tracked tree.
   A whole-tree diff vs the new pin clobbers z47's own divergences (removed files,
   patched `tools/size.py`, etc.). See `upstream-sync-import-only-changed-paths`.
-- z47's `src/` is a SNAPSHOT, not a git descendant of the pin — `merge-base(pin,
-  HEAD)` is an old ancestor, so ownership/ledger diffs use the pin as the base.
+- z47's imported tree is a SNAPSHOT, not a git descendant of the pin —
+  `merge-base(pin, HEAD)` is an old ancestor, so ownership/ledger diffs use the
+  pin as the base.
+- **Paths need the `upstream/` hop.** The imported tree is mounted at
+  `UPSTREAM_ROOT` (`upstream/`), but a diff taken against an upstream ref emits
+  upstream-relative paths. `src/c47/foo.c` in the diff is
+  `upstream/src/c47/foo.c` here; apply with `git apply --directory=upstream`, or
+  copy into `"$(bash .github/project/check-source-ownership.sh list-imported-roots)/"`.
+  Ledgers, baselines, and correspondence TSVs stay upstream-relative — do NOT
+  rewrite them to add the prefix (see `.github/project/upstream_paths.py`).
 
 ## 1. Import + seam re-sync (mostly "free")
 

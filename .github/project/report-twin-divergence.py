@@ -49,6 +49,8 @@ import pathlib
 import re
 import sys
 
+from upstream_paths import upstream_path
+
 # The two families to compare, each with the identifier stems that NAME it. Same-
 # named functions across these directories are treated as twins. Adding a pair
 # here is a statement that the two directories hold structurally parallel helpers.
@@ -227,7 +229,7 @@ def c_macro_families(root: pathlib.Path) -> dict[str, list[tuple[str, str]]]:
     used once generates nothing to be inconsistent with.
     """
     families: dict[str, list[tuple[str, str]]] = {}
-    for path in sorted((root / "src" / "c47").glob("**/*.c")):
+    for path in sorted(upstream_path(root, "src/c47").glob("**/*.c")):
         text = path.read_text(encoding="utf-8", errors="replace")
         defined = {m.group(1) for m in C_MACRO_DEF_RE.finditer(text) if "{" in m.group(2)}
         for macro in defined:

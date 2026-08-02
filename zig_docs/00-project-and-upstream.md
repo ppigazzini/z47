@@ -22,8 +22,8 @@ Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
 - The authoritative upstream source repository is
   `https://gitlab.com/rpncalculators/c43.git`. The GitLab path still uses the
   historical `c43` name even though the project identifies itself as C47.
-- The repo root carries the imported upstream working tree pinned at commit
-  `0caee2adcde273ecb75e7e9aa7181c97e50413cd` (verified fact from
+- The imported upstream working tree is mounted under `upstream/`, pinned at
+  commit `b9e1cc0c18717423a5f7b9e9a78fe866f1c14d01` (verified fact from
   `.github/project/upstream-pin.env`).
 - `build.zig` is the canonical maintained build entrypoint.
 
@@ -72,15 +72,18 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `4697e526a3ffcbc75d5cb39ad9efe555f9c309dc` |
-| `UPSTREAM_ROOT` | `.` |
-| `UPSTREAM_IMPORT_LAYOUT` | `repo-root-import` |
-| `UPSTREAM_PIN_UPDATED` | `2026-07-29` |
+| `UPSTREAM_COMMIT` | `b9e1cc0c18717423a5f7b9e9a78fe866f1c14d01` |
+| `UPSTREAM_ROOT` | `upstream` |
+| `UPSTREAM_IMPORT_LAYOUT` | `nested-upstream` |
+| `UPSTREAM_PIN_UPDATED` | `2026-08-02` |
 
-`UPSTREAM_ROOT=.` means the imported upstream tree is mounted at repo root. That
-imported tree includes the source, dependency, resource, packaging, and docs
-inputs under `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`,
-`meson.build`, and related root files. Advancing the pin is the upstream resync
+`UPSTREAM_ROOT=upstream` means the imported upstream tree is mounted under
+`upstream/`, so z47's own owners can hold the canonical `src/` and `docs/` names.
+That imported tree includes the source, dependency, resource, packaging, and docs
+inputs under `upstream/src/`, `upstream/dep/`, `upstream/res/`,
+`upstream/LIBRARY/`, `upstream/docs/`, `upstream/Makefile`,
+`upstream/meson.build`, and related files. `.gitmodules` and `.gitattributes` are
+deliberate root exceptions: git honours them only at the repo root. Advancing the pin is the upstream resync
 flow; see [80-maintainer-workflow.md](80-maintainer-workflow.md) and the committed
 `.github/project/upstream-resync-runbook.md`.
 

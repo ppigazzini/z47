@@ -29,6 +29,8 @@ import subprocess
 import sys
 import tempfile
 
+from upstream_paths import upstream_path
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ZIG_SRC = ROOT / "zig_src"
 
@@ -140,9 +142,9 @@ def check_string_mirrors(zig, tmp):
             "-DLINUX=1",
             "-DOS64BIT=1",
             "-I",
-            str(ROOT / "dep/decNumberICU"),
+            str(upstream_path(ROOT, "dep/decNumberICU")),
             "-I",
-            str(ROOT / "src/c47"),
+            str(upstream_path(ROOT, "src/c47")),
             str(src),
             "-o",
             str(exe),
@@ -201,9 +203,9 @@ def main():
             "-DLINUX=1",
             "-DOS64BIT=1",
             "-I",
-            str(ROOT / "dep/decNumberICU"),
+            str(upstream_path(ROOT, "dep/decNumberICU")),
             "-I",
-            str(ROOT / "src/c47"),
+            str(upstream_path(ROOT, "src/c47")),
             str(src),
             "-o",
             str(tmp / "constant_parity.o"),

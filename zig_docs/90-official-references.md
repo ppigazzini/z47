@@ -33,23 +33,23 @@ flowchart TD
 - [C47 GitLab project](https://gitlab.com/rpncalculators/c43): authoritative
   upstream source repository consumed by z47. The path still uses the
   historical `c43` name even though the project identifies itself as C47.
-- [BUILD.md](../BUILD.md): imported upstream build-target summary carried at
+- [BUILD.md](../upstream/BUILD.md): imported upstream build-target summary carried at
   the repo root.
-- [Makefile](../Makefile): imported upstream human-facing command surface.
-- [meson.build](../meson.build): imported upstream root build graph.
-- [dep/meson.build](../dep/meson.build): imported upstream dependency build
+- [Makefile](../upstream/Makefile): imported upstream human-facing command surface.
+- [meson.build](../upstream/meson.build): imported upstream root build graph.
+- [dep/meson.build](../upstream/dep/meson.build): imported upstream dependency build
   wiring.
-- [src/c47/meson.build](../src/c47/meson.build): imported upstream main core
+- [src/c47/meson.build](../upstream/src/c47/meson.build): imported upstream main core
   build inputs.
-- [src/c47-gtk/meson.build](../src/c47-gtk/meson.build): imported upstream GTK
+- [src/c47-gtk/meson.build](../upstream/src/c47-gtk/meson.build): imported upstream GTK
   simulator build inputs.
-- [src/c47-dmcp/meson.build](../src/c47-dmcp/meson.build): imported upstream
+- [src/c47-dmcp/meson.build](../upstream/src/c47-dmcp/meson.build): imported upstream
   DMCP build inputs.
-- [src/c47-dmcp5/meson.build](../src/c47-dmcp5/meson.build): imported upstream
+- [src/c47-dmcp5/meson.build](../upstream/src/c47-dmcp5/meson.build): imported upstream
   DMCP5 build inputs.
-- [docs/code/meson.build](../docs/code/meson.build): imported upstream code-doc
+- [docs/code/meson.build](../upstream/docs/code/meson.build): imported upstream code-doc
   build inputs.
-- [subprojects/gmp-6.2.1.wrap](../subprojects/gmp-6.2.1.wrap): imported GMP wrap
+- [subprojects/gmp-6.2.1.wrap](../upstream/subprojects/gmp-6.2.1.wrap): imported GMP wrap
   reference.
 
 ## Companion Upstream-Behaviour Doc Set
@@ -294,7 +294,7 @@ Root entry points and CI workflows:
 - [.github/project/check-c-type-alias-widths.sh](../.github/project/check-c-type-alias-widths.sh):
   a C type aliased in two owners must have the same width in both
 - [README.md](../README.md)
-- [BUILD.md](../BUILD.md)
+- [BUILD.md](../upstream/BUILD.md)
 - [zig_docs/README.md](README.md)
 - [build.zig](../build.zig)
 - [.github/workflows/upstream-oracle.yml](../.github/workflows/upstream-oracle.yml)

@@ -7,10 +7,17 @@
 # Deterministic (no RNG) so CI is reproducible. Run from repo root:
 #   python3 zig_build/tests/pgm_run/malformed/generate_corpus.py
 import pathlib
+import sys
 
 root = pathlib.Path(__file__).resolve().parents[4]
 outdir = pathlib.Path(__file__).resolve().parent
-real = (root / "res/PROGRAMS/BinetV3.p47").read_bytes()
+
+# res/ is an imported-upstream path, so it hangs off UPSTREAM_ROOT rather than the
+# repo root. Reuse the gates' resolver instead of re-deriving the layout here.
+sys.path.insert(0, str(root / ".github/project"))
+from upstream_paths import upstream_path  # noqa: E402
+
+real = upstream_path(root, "res/PROGRAMS/BinetV3.p47").read_bytes()
 
 
 def w(name, data):

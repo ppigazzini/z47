@@ -46,6 +46,8 @@ import os
 import subprocess
 import sys
 
+from upstream_paths import upstream_root
+
 BASELINE = ".github/project/transliteration-contract-baseline.json"
 
 # A port may drift this far from its pinned ratio before we call it a split.
@@ -116,7 +118,7 @@ def bump(repo_root):
     for c_path, commits in sorted(churn.items(), key=lambda kv: -kv[1]):
         if commits < HOT_MIN_CHURN:
             continue
-        abs_c = os.path.join(repo_root, c_path)
+        abs_c = os.path.join(upstream_root(repo_root), c_path)
         if not os.path.isfile(abs_c):
             continue
         candidates = owners.get(os.path.basename(c_path)[:-2], [])
@@ -171,7 +173,7 @@ def enforce(repo_root):
     failures = []
     for entry in pairs:
         abs_zig = os.path.join(repo_root, entry["zig"])
-        abs_c = os.path.join(repo_root, entry["c"])
+        abs_c = os.path.join(upstream_root(repo_root), entry["c"])
         if not os.path.isfile(abs_zig):
             failures.append(
                 f"{entry['zig']} is GONE -- it is the 1:1 port of {entry['c']} "

@@ -39,9 +39,11 @@ import subprocess
 import sys
 import tempfile
 
+from upstream_paths import upstream_path, upstream_root
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-ITEMS_C = ROOT / "src/c47/items.c"
-ITEMS_H = ROOT / "src/c47/items.h"
+ITEMS_C = upstream_path(ROOT, "src/c47/items.c")
+ITEMS_H = upstream_path(ROOT, "src/c47/items.h")
 ZIG_ITEMS = ROOT / "zig_src/shell/display/items/items.zig"
 
 
@@ -174,14 +176,19 @@ def build_probe_and_dump(zig, tmp):
     gen_dirs = set()
     for name in ("softmenuCatalogs.h", "constantPointers.h"):
         hit = next(ROOT.glob(f".zig-cache/**/{name}"), None) or next(
-            ROOT.glob(f"src/generated/{name}"), None
+            upstream_root(ROOT).glob(f"src/generated/{name}"), None
         )
         if hit:
             gen_dirs.add(str(hit.parent))
     gtk = subprocess.run(["pkg-config", "--cflags", "gtk+-3.0"], capture_output=True, text=True)
     gtk_flags = gtk.stdout.split() if gtk.returncode == 0 else []
 
-    inc = ["-I", str(ROOT / "dep/decNumberICU"), "-I", str(ROOT / "src/c47")]
+    inc = [
+        "-I",
+        str(upstream_path(ROOT, "dep/decNumberICU")),
+        "-I",
+        str(upstream_path(ROOT, "src/c47")),
+    ]
     for d in gen_dirs:
         inc += ["-I", d]
     cc = [zig, "cc", "-DPC_BUILD=1", "-DLINUX=1", "-DOS64BIT=1", *gtk_flags, *inc]
