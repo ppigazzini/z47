@@ -66,6 +66,7 @@ void covMvarPageNoProgram(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
 void covIntegrateErr(uint16_t which);
 void covMvarKey(uint16_t which);
+void covSoftmenu(uint16_t menuId);
 void covIntegratePgm(uint16_t unusedButMandatoryParameter);
 void covNamedVariableCache(uint16_t unusedButMandatoryParameter);
 void covSumProd(uint16_t which);
@@ -256,6 +257,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnIntegrateCov",         covIntegrate, 1 },
   {"fnIntegrateErrCov",      covIntegrateErr, 1 },
   {"fnMvarKeyCov",           covMvarKey, 1 },
+  {"fnSoftmenuCov",          covSoftmenu, 1 },
   {"fnIntegratePgmCov",      covIntegratePgm, 1 },
   {"fnNamedVarCacheCov",     covNamedVariableCache, 1 },
   {"fnSumProdCov",           covSumProd, 1 },
@@ -1888,6 +1890,27 @@ void covMvarKey(uint16_t which) {
   currentSolverStatus = 0;
   reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
   int32ToReal34(keyClass, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+void covSoftmenu(uint16_t menuId) {
+  // Open one softmenu through the production fnOpenMenu path and put the item count it resolved into X, or -1 if it refused the id. The softmenu[] mirror is the
+  // only thing that can answer, so this is a direct check that a menu is reachable and bound to the right table. It is deliberately NOT a name or item assertion:
+  // the audit .github/project/audit-softmenu-table-parity.py already holds every table byte-for-byte against upstream softmenus.c, and duplicating that here would
+  // put the item numbers -- which move as items are added -- into the corpus.
+  int16_t items;
+
+  lastErrorCode = ERROR_NONE;
+  fnOpenMenu(menuId);
+  if(lastErrorCode == ERROR_NONE) {
+    items = softmenu[softmenuStack[0].softmenuId].numItems;
+    popSoftmenu();
+  }
+  else {
+    items = -1;
+    lastErrorCode = ERROR_NONE;
+  }
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(items, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
 void covIntegratePgm(uint16_t unusedButMandatoryParameter) {
