@@ -173,8 +173,21 @@ check_added_imported_paths() {
         exit 1
     fi
 
+    # Compare the pin's ROOT tree against the imported SUBTREE, not HEAD limited by
+    # a pathspec. The imported tree is mounted under UPSTREAM_ROOT, so every
+    # imported file has a repo path that differs from its path in the pin. A
+    # pathspec-limited `git diff base..HEAD -- upstream` cannot pair them: the
+    # rename sources (src/..., dep/..., docs/...) fall outside the pathspec, so
+    # rename detection is starved and all ~1200 imported files read as ADDED.
+    # Diffing tree-to-tree lines the two spellings up and yields upstream-relative
+    # paths -- which is also what the approved-additions list records, for the same
+    # reason every other ledger does (see upstream_paths.py).
     local added_paths=()
-    mapfile -t added_paths < <(git diff --name-only --diff-filter=A "$diff_base"..HEAD -- "${imported_roots[@]}")
+    if [[ "$UPSTREAM_ROOT" == "." ]]; then
+        mapfile -t added_paths < <(git diff --name-only --diff-filter=A "$diff_base"..HEAD -- "${imported_roots[@]}")
+    else
+        mapfile -t added_paths < <(git diff --name-only --diff-filter=A "$diff_base" "HEAD:$UPSTREAM_ROOT")
+    fi
 
     local violations=0
     local path
