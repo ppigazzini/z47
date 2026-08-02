@@ -1320,13 +1320,13 @@ fn addDocsStep(b: *std.Build) void {
         \\  }}
         \\done
         \\python3 -c 'import sphinx, breathe, furo' >/dev/null 2>&1 || {{
-        \\  echo "missing required Python docs packages; install docs/code/requirements.txt" >&2
+        \\  echo "missing required Python docs packages; install {s}/requirements.txt" >&2
         \\  exit 1
         \\}}
         \\rm -rf '{s}'
         \\mkdir -p '{s}'
         \\python3 -m sphinx -M html '{s}' '{s}'
-    , .{ docs_build_root, docs_build_root, docs_source_root, docs_build_root });
+    , .{ docs_source_root, docs_build_root, docs_build_root, docs_source_root, docs_build_root });
 
     const step = b.step("docs", "Build documentation with Zig-owned Sphinx orchestration");
     step.dependOn(&cmd.step);
