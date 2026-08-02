@@ -23,7 +23,7 @@ mem = {
     "qspi"  : 1024 * (2048 if dmcp5 else 2048 - 12)
 }
 mode = 0
-sects = []
+sects = [ 0, 0, 0, 0, 0 ]
 sizes = []
 
 # Read elf sections file
@@ -39,20 +39,14 @@ for line in f:
         mode = 2
         continue
     f = line.split()
-    if not f:
-        continue
     if mode == 1:
         # Line is formatted as: "Type Offset VirtAddr PhysAddr FileSiz MemSiz Flg Align"
         # and we want the MemSiz.
-        if f[0] != 'Type' and len(f) > 5:
+        if f[0] != 'Type':
             sizes.append(int(f[5], 0))
     elif mode == 2:
         # Line is formatted as: "Segment# Sections" and we want the first section.
-        if len(f) > 1 and f[0].isdigit():
-            segment = int(f[0])
-            while len(sects) <= segment:
-                sects.append(0)
-            sects[segment] = f[1]
+        sects[int(f[0])] = f[1]
 
 # Compute section totals
 used = {
@@ -61,9 +55,7 @@ used = {
     "qspi"  : 0
 }
 for i in range(len(sizes)):
-    if i >= len(sects) or not sects[i]:
-        continue
-    elif sects[i] == ".rodata" or sects[i] == ".text":
+    if sects[i] == ".rodata" or sects[i] == ".text":
         used["flash"] += sizes[i]
     elif sects[i] == ".data":
         # The initialisation for the data is in flash

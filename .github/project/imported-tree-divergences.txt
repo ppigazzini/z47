@@ -46,12 +46,6 @@ dep/jimtcl
 src/testSuite/testSuite.c
 # z47's plot-regression coverage cases, added to upstream's corpus file.
 src/testSuite/tests/graphs_cov.txt
-# z47 hardening: upstream's readelf parser indexes fields without bounds checks
-# and crashes on section tables this toolchain emits.
-tools/size.py
-# Regenerated from source by z47's build (the update_testpgms step), so it is a
-# build product that happens to be tracked inside the imported tree.
-res/testPgms/testPgms.bin
 # FontCreator project sources for the two z47-maintained fonts, added here rather
 # than upstream. Already a reviewed exception in source-ownership.txt.
 res/fonts/FontCreator15 Home details
