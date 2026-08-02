@@ -71,7 +71,18 @@ tags
 # its files unaddable.
 /upstream/PROGRAMS
 /upstream/SAVFILES
-/upstream/src/generated
+# src/generated holds BOTH build artefacts and tracked sources, so name the
+# artefacts rather than the directory. Upstream ignores the whole directory and
+# gets away with it because git lets an ALREADY-tracked file override an ignore --
+# but that only protects files already in the index. Importing a file the pin
+# tracks but z47 does not yet have (constantsVerification.txt) hit the directory
+# rule and was silently skipped by `git add -A`, which is how the imported tree
+# ended up not matching its own pin.
+/upstream/src/generated/constantPointers.c
+/upstream/src/generated/constantPointers.h
+/upstream/src/generated/constantPointers2.c
+/upstream/src/generated/rasterFontsData.c
+/upstream/src/generated/softmenuCatalogs.h
 AGENTS.md
 
 # Over_score testing agent coding

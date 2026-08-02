@@ -363,6 +363,17 @@ jobs:
           # stubbed); with no build output present the six generated catalogs
           # report as SKIPPED rather than as silently clean.
           python3 .github/project/audit-softmenu-table-parity.py --repo-root .
+      - name: Enforce the imported tree matches its pinned SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/project/upstream-pin.env
+          # The gate compares against the pinned commit and will not guess, so the
+          # object has to be local first. Prefer fetching the SHA directly; fall
+          # back to the branch for servers that refuse by-SHA fetches.
+          git fetch --no-tags --depth=1 "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_COMMIT" || \
+            git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH"
+          python3 .github/project/check-imported-tree-pin.py --repo-root .
       - name: Enforce destructive steps do not target z47-owned roots
         shell: bash
         run: |
