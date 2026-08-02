@@ -21,6 +21,9 @@ typedef struct {
   uint8_t alpha_case;
   uint8_t scr_lock;
   uint8_t next_char;
+  uint8_t calc_mode;
+  uint16_t current_formula;
+  uint16_t formula_data_pointer;
   uint32_t refresh_state_calls;
   uint32_t clear_status_bar_calls;
   uint32_t change_base_calls;
@@ -30,10 +33,14 @@ typedef struct {
   uint32_t leave_tam_calls;
   uint32_t clf_all_confirmation_calls;
   uint32_t show_alpha_mode_calls;
+  uint32_t pop_softmenu_calls;
+  uint32_t delete_equation_calls;
   uint8_t last_clear_status_bar_info;
   uint16_t last_change_base_arg;
 } flags_parity_snapshot_t;
 
+// The Zig owner's `systemFlags*Changed` exports, and the oracle's -- which are
+// c43's own definitions from flags.c, renamed by flags_oracle.c.
 extern uint64_t systemFlags0Changed;
 extern uint64_t systemFlags1Changed;
 extern uint64_t systemFlags2Changed;
@@ -41,11 +48,6 @@ extern uint64_t systemFlags2Changed;
 extern uint64_t oracle_systemFlags0Changed;
 extern uint64_t oracle_systemFlags1Changed;
 extern uint64_t oracle_systemFlags2Changed;
-extern uint32_t writeProtectedErrorCalls;
-extern uint32_t enterAlphaCalls;
-extern uint32_t leaveAlphaCalls;
-extern uint32_t leaveTamCalls;
-extern uint32_t clFAllConfirmationCalls;
 
 bool_t oracle_getFlag(uint16_t flag);
 bool_t oracle_getSystemFlag(int32_t sf);
@@ -78,6 +80,11 @@ void flagsParitySeedCommandState(const uint16_t global_flags[8],
 void flagsParitySeedTextState(uint8_t alpha_case,
                               uint8_t scr_lock,
                               uint8_t next_char);
+// Puts the harness in the equation editor with `formula_data_pointer` as the
+// current formula's data block, so the CM_EIM arm of the alpha-mode exit runs.
+void flagsParitySeedEquationState(uint8_t calc_mode,
+                                  int16_t top_softmenu_id,
+                                  uint16_t formula_data_pointer);
 void flagsParityCaptureLive(flags_parity_snapshot_t *snapshot);
 void flagsParityCaptureOracle(flags_parity_snapshot_t *snapshot);
 

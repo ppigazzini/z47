@@ -1,4 +1,3 @@
-const build_options = @import("flags_build_options");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 pub const FLAG_BCD: u16 = 0x8059;
@@ -119,8 +118,6 @@ pub const PGM_WAITING: u8 = 2;
 pub const SCRUPD_AUTO: u8 = 0x00;
 pub const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
 
-const use_fake_harness_surface = @hasDecl(build_options, "use_fake_harness_surface") and build_options.use_fake_harness_surface;
-
 const calcRegister_t = stack_runtime.calcRegister_t;
 
 const CM_EIM: u8 = 13;
@@ -173,17 +170,15 @@ pub extern fn popSoftmenu() void;
 pub extern fn setConfirmationMode(handler: ConfirmationHandler) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 
-extern fn z47_flags_runtime_handle_write_protected_flag() void;
-extern fn z47_flags_runtime_enter_alpha_mode() void;
-extern fn z47_flags_runtime_leave_alpha_mode() void;
-extern fn z47_flags_runtime_request_clf_all_confirmation() void;
+// No harness fork here. The parity lane used to build this owner with
+// `use_fake_harness_surface`, which swapped these four bodies for counting stubs
+// -- so the lane compared an oracle against a build of the owner that skipped
+// the very branches the oracle was taking. Now that the oracle IS c43's flags.c
+// (REPORT-31 M31-2), the harness supplies calcModeAim / calcModeNormal /
+// popSoftmenu / setConfirmationMode / displayCalcErrorMessage under their real
+// names and both sides run their production path through the same environment.
 
 pub fn handleWriteProtectedFlag() void {
-    if (use_fake_harness_surface) {
-        z47_flags_runtime_handle_write_protected_flag();
-        return;
-    }
-
     temporaryInformation = TI_NO_INFO;
     if (programRunStop == PGM_WAITING) {
         programRunStop = PGM_STOPPED;
@@ -192,22 +187,12 @@ pub fn handleWriteProtectedFlag() void {
 }
 
 pub fn enterAlphaMode() void {
-    if (use_fake_harness_surface) {
-        z47_flags_runtime_enter_alpha_mode();
-        return;
-    }
-
     if (calcMode != CM_EIM) {
         calcModeAim(NOPARAM);
     }
 }
 
 pub fn leaveAlphaMode() void {
-    if (use_fake_harness_surface) {
-        z47_flags_runtime_leave_alpha_mode();
-        return;
-    }
-
     if (calcMode == CM_EIM) {
         const top_softmenu_id = softmenuStack[0].softmenuId;
         if (top_softmenu_id >= 0 and softmenu[@intCast(top_softmenu_id)].menuItem == -MNU_EQ_EDIT) {
@@ -223,10 +208,5 @@ pub fn leaveAlphaMode() void {
 }
 
 pub fn requestClFAllConfirmation() void {
-    if (use_fake_harness_surface) {
-        z47_flags_runtime_request_clf_all_confirmation();
-        return;
-    }
-
     setConfirmationMode(&flags.fnClFAll);
 }

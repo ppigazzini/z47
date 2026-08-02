@@ -40,6 +40,7 @@ pub fn needsRefreshState(system_flag: u16) bool {
         0x803d,
         0x8011,
         0x804b,
+        0x8012,
         0x804c,
         0x804d,
         0x804e,

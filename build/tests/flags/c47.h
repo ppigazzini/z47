@@ -1,160 +1,118 @@
 // SPDX-License-Identifier: GPL-3.0-only
+//
+// The calculator, as far as c43's flags.c is concerned.
+//
+// WHY THIS CLAIMS UPSTREAM'S GUARD (REPORT-31 M31-2). `flags.c` sits next to the
+// real `c47.h`, and a quoted `#include "c47.h"` searches the including file's own
+// directory first -- no `-I` can outrank that. Defining `C47_H` here before
+// pulling `flags.c` in makes the real header a no-op and this file the
+// environment the oracle compiles against. The sibling oracles that include
+// upstream `.c` files from `mathematics/` do not need the trick, because there is
+// no `c47.h` in that directory.
+//
+// WHY IT INCLUDES UPSTREAM HEADERS RATHER THAN COPYING VALUES. This file used to
+// carry ~110 hand-written `#define`s -- every FLAG_*, TI_*, JC_*, the write-protect
+// test. That is the SAME defect one level down from the one REPORT-31 is about: a
+// c43 constant change would leave the harness's copy behind and the lane green.
+// `defines.h`, `items.h` and `typeDefinitions.h` are pure headers with no includes
+// of their own, so they cost five opaque placeholder typedefs and buy every
+// constant and struct straight from the pin.
 
 #ifndef C47_H
 #define C47_H
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 typedef bool bool_t;
+typedef int16_t calcRegister_t;
 
-#define FLAG_BCD 0x8059
-#define FLAG_SBfrac 0x8031
-#define FLAG_SBtime 0x802d
-#define FLAG_SBwoy 0x8057
-#define FLAG_SBdate 0x802c
-#define FLAG_SBang 0x8030
-#define FLAG_SBadm 0x806f
-#define FLAG_IMPLOT 0x8012
-#define FLAG_PRMS 0x806b
-#define FLAG_PINTG 0x806c
-#define FLAG_PDIFF 0x806d
-#define FLAG_PSHADE 0x806e
-#define FLAG_TDM24 0x8000
-#define FLAG_CPXj 0x8005
-#define FLAG_POLAR 0x8006
-#define FLAG_FRACT 0x8007
-#define FLAG_PROPFR 0x8008
-#define FLAG_DENANY 0x8009
-#define FLAG_DENFIX 0x800a
-#define FLAG_CARRY 0x800b
-#define FLAG_OVERFLOW 0x800c
-#define FLAG_LEAD0 0x800d
-#define FLAG_IRFRAC 0x8047
-#define FLAG_IRFRQ 0xc048
-#define FLAG_CPXRES 0x8004
-#define FLAG_SPCRES 0x8017
-#define FLAG_SSIZE8 0x8018
-#define FLAG_MULTx 0x801b
-#define FLAG_ENGOVR 0x801c
-#define FLAG_PRTACT 0xc020
-#define FLAG_HPRP 0x802b
-#define FLAG_HPBASE 0x803c
-#define FLAG_2TO10 0x803d
-#define FLAG_FRCYC 0x8041
-#define FLAG_NUMLOCK 0x8043
-#define FLAG_CPXMULT 0x8044
-#define FLAG_ERPN 0x8045
-#define FLAG_LARGELI 0x8046
-#define FLAG_DREAL 0x804a
-#define FLAG_CPXPLOT 0x804b
-#define FLAG_SHOWX 0x804c
-#define FLAG_SHOWY 0x804d
-#define FLAG_PBOX 0x804e
-#define FLAG_PCROS 0x804f
-#define FLAG_PPLUS 0x8050
-#define FLAG_PLINE 0x8051
-#define FLAG_SCALE 0x8052
-#define FLAG_VECT 0x8053
-#define FLAG_NVECT 0x8054
-#define FLAG_MNUp1 0x8056
-#define FLAG_TOPHEX 0x8058
-#define FLAG_PCURVE 0x805a
-#define FLAG_BASE_MYM 0x805c
-#define FLAG_G_DOUBLETAP 0x805d
-#define FLAG_BASE_HOME 0x805e
-#define FLAG_MYM_TRIPLE 0x805f
-#define FLAG_HOME_TRIPLE 0x8060
-#define FLAG_SHFT_4s 0x8061
-#define FLAG_FGLNLIM 0x8062
-#define FLAG_FGLNFUL 0x8063
-#define FLAG_FGGR 0x8064
-#define FLAG_NORM 0x8068
-#define FLAG_ALPHA 0x800e
-#define FLAG_AMORT_HP12C 0x8011
-#define FLAG_TRACE 0x8013
-#define FLAG_K 111
-#define FLAG_M 211
-#define FLAG_W 224
+// Placeholders for the numeric/GUI types `typeDefinitions.h` mentions in structs
+// the flag cluster never touches. Only the NAMES have to exist; nothing in this
+// lane reads or lays out a real34_t, and no harness struct crosses an ABI boundary
+// with the Zig owner.
+typedef struct {
+  uint8_t opaque[64];
+} real_t;
+typedef struct {
+  uint8_t opaque[16];
+} real34_t;
+typedef struct {
+  real34_t real;
+  real34_t imag;
+} complex34_t;
+typedef struct {
+  uint64_t state;
+  uint64_t inc;
+} pcg32_random_t;
+typedef struct Z47FlagsHarnessGtkWidget GtkWidget;
 
-#define NUMBER_OF_GLOBAL_FLAGS 112
-#define NUMBER_OF_LOCAL_FLAGS 32
-#define LAST_LOCAL_FLAG 143
+#include "../../../upstream/src/c47/defines.h"
+#include "../../../upstream/src/c47/items.h"
+#include "../../../upstream/src/c47/typeDefinitions.h"
+// The jmConfig values SetSetting switches on (TF_*, CU_*, PS_*, SS_*, CM_*, DO_*,
+// JC_*) live here, not in defines.h.
+#include "../../../upstream/src/c47/c47Extensions/radioButtonCatalog.h"
 
-#define TI_NO_INFO 0
-#define TI_FALSE 12
-#define TI_TRUE 13
-#define TI_CLEAR_ALL_FLAGS 96
-
-#define NOT_CONFIRMED 9878
-
-#define AC_UPPER 0
-#define AC_LOWER 1
-
-#define NC_NORMAL 0
-#define NC_SUBSCRIPT 1
-#define NC_SUPERSCRIPT 2
-
-#define JC_NL 197
-#define JC_UC 198
-#define JC_SS 214
-
-#define TF_H24 230
-#define TF_H12 231
-#define CU_I 232
-#define CU_J 233
-#define PS_DOT 234
-#define PS_CROSS 235
-#define SS_4 236
-#define SS_8 237
-#define CM_RECTANGULAR 238
-#define CM_POLAR 239
-#define DO_SCI 240
-#define DO_ENG 241
-
-#define ITM_DREAL 1899
-
-#define PGM_STOPPED 0
-#define PGM_RUNNING 1
-#define PGM_WAITING 2
-
-#define SCRUPD_AUTO 0x00
-#define SCRUPD_MANUAL_STATUSBAR 0x01
-
-#define nbrOfElements(array) (sizeof(array) / sizeof((array)[0]))
-
+// ---------------------------------------------------------------------------
+// The state both implementations share. Defined by flags_fake_runtime.c; each
+// parity case seeds it, runs one side, snapshots, re-seeds and runs the other.
+// ---------------------------------------------------------------------------
 extern uint64_t systemFlags0;
 extern uint64_t systemFlags1;
 extern uint32_t lastIntegerBase;
 extern uint8_t screenUpdatingMode;
 extern uint16_t globalFlags[8];
-extern uint32_t *currentLocalFlags;
+extern localFlags_t *currentLocalFlags;
 extern uint8_t temporaryInformation;
 extern uint8_t programRunStop;
 extern uint8_t alphaCase;
 extern uint8_t scrLock;
 extern uint8_t nextChar;
+extern uint8_t calcMode;
 
+// The equation-editor fixture `_clearAlpha` walks when calcMode == CM_EIM. Real
+// arrays, not stubs: the branch that reads them is now compiled from c43 source
+// on the oracle side and taken by the Zig owner's production path on the other,
+// so both have to find the same equation there.
+extern const softmenu_t softmenu[];
+extern softmenuStack_t softmenuStack[SOFTMENU_STACK_SIZE];
+extern formulaHeader_t *allFormulae;
+extern uint16_t currentFormula;
+
+// Error-reporting surface. `EXTRA_INFO_ON_CALC_ERROR` is upstream's own value
+// (1 on a PC build), so those branches COMPILE here rather than being configured
+// away -- an upstream edit inside one of them is then at least a build failure
+// instead of silence.
+extern char *tmpString;
+extern char *errorMessage;
+extern const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE];
+
+// ---------------------------------------------------------------------------
+// Everything flags.c calls out to. The counting bodies live in
+// flags_fake_runtime.c and are shared by BOTH implementations, which is the
+// point: the two sides are indistinguishable to their environment.
+// ---------------------------------------------------------------------------
 void fnRefreshState(void);
 void reallyClearStatusBar(uint8_t info);
 void fnChangeBaseJM(uint16_t base);
 void showAlphaModeonGui(void);
+void leaveTamModeIfEnabled(void);
+void calcModeAim(uint16_t unusedButMandatoryParameter);
+void calcModeNormal(void);
+void popSoftmenu(void);
+void deleteEquation(uint16_t equation);
+void setConfirmationMode(void (*func)(uint16_t));
+void displayCalcErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegisterLine, calcRegister_t disUsedCanBeRemoved);
+void displayBugScreen(const char *msg);
+void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 
-bool_t getFlag(uint16_t flag);
-bool_t getSystemFlag(int32_t sf);
-void fnGetSystemFlag(uint16_t systemFlag);
-void fnSetFlag(uint16_t flag);
-void fnClearFlag(uint16_t flag);
-void fnFlipFlag(uint16_t flag);
-void fnClFAll(uint16_t confirmation);
-void SetSetting(uint16_t jmConfig);
-void setSystemFlag(unsigned int sf);
-void clearSystemFlag(unsigned int sf);
-void flipSystemFlag(unsigned int sf);
-bool_t didSystemFlagChange(int32_t sf);
-void setSystemFlagChanged(int32_t sf);
-void setAllSystemFlagChanged(void);
-void forceSystemFlag(unsigned int sf, int set);
+// The Zig owner's exports, under their c43 names -- this is the side under test.
+#include "../../../upstream/src/c47/flags.h"
 
 #endif

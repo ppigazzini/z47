@@ -715,7 +715,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const register_metadata_parity_step = b.step("register_metadata_parity", "Run the register-metadata parity suite");
     register_metadata_parity_step.dependOn(&run_register_metadata_parity.step);
 
-    const flags_parity = flags.addParityExecutable(b, context.host_target, optimize);
+    const flags_parity = flags.addParityExecutable(b, context.host_target, optimize, context.common);
     const run_flags_parity = b.addRunArtifact(flags_parity);
     run_flags_parity.setCwd(b.path("."));
     const flags_parity_step = b.step("flags_parity", "Run the system-flags parity suite");

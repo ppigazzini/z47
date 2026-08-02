@@ -1,15 +1,7 @@
 {
   "_why": "REPORT-31 M31-0. Each entry binds a parity oracle to the c43 file whose behaviour it reproduces. `frozen` oracles are hand-transliterated and CANNOT see c43 move, so they are gated on a content hash of what they mirror; the endpoint is an empty list, not a maintained one. `generated` oracles are extracted from c43 source and are sound in shape -- they are gated on reproducing byte-identically, because nothing else re-runs the extractor.",
+  "_converted": "build/tests/flags/flags_oracle.c left this list in M31-2: it now #includes src/c47/flags.c under oracle_* names, so the reference moves with c43 by construction and there is nothing left to hash. Entries leave here by being converted, never by being excused.",
   "frozen": [
-    {
-      "oracle": "build/tests/flags/flags_oracle.c",
-      "milestone": "REPORT-31 M31-2",
-      "why": "705 lines reproducing 81% of flags.c by hand, including its own copy of refreshStateFlags/clearStatusBarFlags/clearSetPairs/flipFlags and its own flagAction_t. flags.c is smaller and less entangled than division.c, which math_wrappers already links live, so there is no technical reason this is hand-written.",
-      "mirrors": {
-        "src/c47/flags.c": "670063e914a336ff9afc7f8653a46485621d583384666d369fba31d6eeee2f6a"
-      },
-      "oracle_sha256": "3b39b9725ffdaad814f3a7766d87341f2fc50471739784f640a9d15efbcc76ee"
-    },
     {
       "oracle": "build/tests/program_serialization/program_serialization_oracle.c",
       "milestone": "REPORT-31 M31-3",
