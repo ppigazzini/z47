@@ -23,8 +23,14 @@ set -uo pipefail
 harness="${1:?usage: run-state-load-fuzz.sh <harness> <corpus-dir>}"
 corpus="${2:?usage: run-state-load-fuzz.sh <harness> <corpus-dir>}"
 
-# The corpus is generated, not tracked: ~360 KB of derived .sav files that the
-# generator rebuilds deterministically from the tracked c47Test.sav.
+# The corpus is generated, not tracked: derived .sav files the generator rebuilds
+# deterministically from zig_build/tests/calc_state/save_load_golden.sav.
+#
+# That base has to be TRACKED. This comment used to name c47Test.sav and call it
+# tracked; it is the name the testSuite HAL maps ioPathManualSave to, .gitignore
+# ignores it, and it exists only where the testSuite has already run and saved. So
+# the lane passed on a developer machine and died in CI on a clean checkout with a
+# FileNotFoundError. If this base ever changes, check `git ls-files` on it first.
 if [ ! -d "$corpus" ] || [ -z "$(ls -A "$corpus"/*.sav 2>/dev/null)" ]; then
   echo "generating the malformed state corpus..."
   python3 "$corpus/generate_corpus.py" >/dev/null || {

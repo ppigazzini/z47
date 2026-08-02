@@ -18,13 +18,33 @@ import pathlib
 
 outdir = pathlib.Path(__file__).resolve().parent
 root = outdir.parents[3]
-base = (root / "c47Test.sav").read_text().split("\n")
+
+# The base save every mutation below is derived from. It MUST be a tracked file.
+#
+# This read used to be `root / "c47Test.sav"`, which is the name the testSuite HAL
+# maps ioPathManualSave to -- and which .gitignore ignores. It therefore exists
+# only on a machine where the testSuite has already run and saved, so the lane
+# passed locally and died in CI with a FileNotFoundError the moment the corpus was
+# regenerated from a clean checkout. The driver's own comment called it "the
+# tracked c47Test.sav"; it never was.
+#
+# save_load_golden.sav is tracked, is the same shape (every section these
+# mutations index into is present), and is already the saveload_parity oracle's
+# input, so it is maintained rather than incidental.
+BASE_PATH = root / "zig_build/tests/calc_state/save_load_golden.sav"
+base = BASE_PATH.read_text().split("\n")
+assert base[0] == "SAVE_FILE_REVISION", f"{BASE_PATH}: unexpected header {base[0]!r}"
+
+# Derived, not hardcoded: a file that loads unchanged reports the BASE's version,
+# so pinning the literal here would silently mis-assert the day the golden is
+# regenerated at a new version -- which is exactly what a resync does.
+BASE_VERSION = int(base[3])
 
 
 def patch_first_matrix(rows: int, cols: int, elements: int) -> list[str]:
     """Rewrite the first `Rema / 1 1` entry to `rows x cols` with `elements` values.
 
-    c47Test.sav's NAMED_VARIABLES section holds `Mat_A / Rema / "1 1" / <value>`.
+    The base's NAMED_VARIABLES section holds `Mat_A / Rema / "1 1" / <value>`.
     Restoring a matrix register reads the dimension line, sizes the register from
     it, then reads rows*cols element lines.
     """
@@ -40,7 +60,7 @@ def patch_first_matrix(rows: int, cols: int, elements: int) -> list[str]:
             continue
         out.append(line)
         i += 1
-    assert patched, "no 'Rema / 1 1' entry in c47Test.sav to patch"
+    assert patched, f"no 'Rema / 1 1' entry in {BASE_PATH} to patch"
     return out
 
 
@@ -72,7 +92,7 @@ def write(name: str, lines: list[str], expect_version: int | None = None) -> Non
 write(
     "matrix_dims_overflow_u16_blocks.sav",
     patch_first_matrix(128, 128, 128 * 128),
-    expect_version=10000025,  # header is untouched; only the matrix is malformed
+    expect_version=BASE_VERSION,  # header is untouched; only the matrix is malformed
 )
 
 # The accepting side of the same boundary, and the only file here that is NOT
@@ -85,7 +105,7 @@ write(
 write(
     "matrix_dims_at_u16_block_limit.sav",
     patch_first_matrix(4, 4095, 4 * 4095),
-    expect_version=10000025,  # the VALID file: it must keep loading normally
+    expect_version=BASE_VERSION,  # the VALID file: it must keep loading normally
 )
 
 # Dimensions whose PRODUCT overflows a u32 (65535*65535 == 0xFFFE0001, and the
@@ -94,7 +114,7 @@ write(
 write(
     "matrix_dims_product_overflows_u32.sav",
     patch_first_matrix(65535, 65535, 0),
-    expect_version=10000025,
+    expect_version=BASE_VERSION,
 )
 
 # A row count that survives the product clamp yet exceeds the header's 12-bit
@@ -104,7 +124,7 @@ write(
 write(
     "matrix_rows_exceed_header_12_bits.sav",
     patch_first_matrix(16383, 1, 16383),
-    expect_version=10000025,
+    expect_version=BASE_VERSION,
 )
 
 
@@ -323,12 +343,21 @@ write("norm_key_funcparam_overlong.sav", _set_value_after("Norm_Key_00.funcParam
 
 
 def _unparseable_equation(text: str) -> list[str]:
-    """Replace the single stored formula's text. The restore re-parses each
-    formula, and only a formula that FAILS to parse takes the arm that clears
-    lastErrorCode; every valid file takes the other one."""
+    """Give the file exactly one stored formula, with `text` as its body.
+
+    The restore re-parses each formula, and only one that FAILS to parse takes the
+    arm that clears lastErrorCode; every valid file takes the other one.
+
+    It INSERTS rather than overwrites, because the base's EQUATIONS count is not
+    guaranteed to be non-zero: save_load_golden.sav stores none, so writing at
+    `+2` would land on the next section's header and produce a structurally
+    corrupt file instead of the malformed-formula case this is for."""
     out = list(base)
-    out[out.index("EQUATIONS") + 2] = text  # header, count, then the formula
-    return out
+    i = out.index("EQUATIONS")
+    stored = int(out[i + 1])
+    out[i + 1] = "1"
+    # Drop whatever formulae the base had, then supply exactly one.
+    return [*out[: i + 2], text, *out[i + 2 + stored :]]
 
 
 write("equation_unparseable.sav", _unparseable_equation("((((+*/"))

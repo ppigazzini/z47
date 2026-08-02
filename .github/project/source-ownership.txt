@@ -6,10 +6,12 @@
 [z47-owned]
 .github
 .gitignore
+.pre-commit-config.yaml
 CONTRIBUTING.md
 README.md
 build.zig
 build.zig.zon
+pyproject.toml
 zig_bridge
 zig_build
 zig_docs
