@@ -127,6 +127,11 @@ step "[9/11] portable integer widths (Windows LLP64 trap)"
 bash .github/project/check-portable-int-widths.sh
 step "[10/11] host-parity build/test/oracle battery"
 bash .github/project/run-host-parity-battery.sh
+step "[10c/11] every softmenu table was actually judged"
+# 6j above runs before anything is built, so on a clean tree the six GENERATED
+# catalogs skip and the verdict still reads OK -- how menu_FCNS held a 364-entry
+# drift. The battery has now populated the cache, so demand a verdict per menu.
+python3 .github/project/audit-softmenu-table-parity.py --repo-root . --require-generated
 step "[10a/11] malformed-input corpora through the real load paths"
 # ~1 s each once built, and they are the ONLY adversarial coverage the load paths
 # have: every other lane feeds them files the calculator itself just wrote.

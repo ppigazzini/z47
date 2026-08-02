@@ -17,6 +17,12 @@ GUI headers are never needed. The six catalogs that come from the generated
 softmenuCatalogs.h (menu_FCNS and friends) need that header; if no build output
 is present they are reported as SKIPPED, never silently dropped.
 
+SKIPPED is not enough on its own. It prints, but the verdict line still says OK,
+and that is how menu_FCNS carried a 364-entry drift -- a missing ITM_SLVP -- right
+through the commit that re-ported the other 17 tables: the only CI lane running
+this audit does no `zig build`, so all six catalogs skipped on every run. Pass
+--require-generated in a lane that HAS build output to turn a skip into a failure.
+
 Exit codes: 0 clean or drift exactly at baseline, 1 new drift or drift that
 changed, 2 the audit could not run.
 """
@@ -204,6 +210,16 @@ def main() -> int:
     parser.add_argument("--repo-root", default=".")
     parser.add_argument("--baseline", default=None)
     parser.add_argument("--write-baseline", action="store_true")
+    parser.add_argument(
+        "--require-generated",
+        action="store_true",
+        help=(
+            "fail if any menu could not be judged, instead of reporting it as SKIPPED. "
+            "Run this in a lane that has build output: without it the six generated "
+            "catalogs are unreadable and skip, which reads as clean -- that is how "
+            "menu_FCNS held a 364-entry drift through a re-port of the other 17 tables."
+        ),
+    )
     args = parser.parse_args()
 
     repo = Path(args.repo_root).resolve()
@@ -328,6 +344,12 @@ def main() -> int:
         failures.append(f"NEW menu absent from the Zig owner: {name}")
     for name in sorted(known_absent - set(missing) - unjudged):
         failures.append(f"{name} is now present -- re-pin with --write-baseline")
+    if args.require_generated and skipped:
+        # The whole point of this mode: a skip is an unjudged menu, and an unjudged
+        # menu is indistinguishable from a clean one in the summary line.
+        failures.extend(
+            f"unjudged menu in a lane that must judge all of them: {s}" for s in skipped
+        )
 
     if failures:
         print("\nSOFTMENU TABLE PARITY FAILED:")
