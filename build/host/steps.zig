@@ -1302,16 +1302,29 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
 }
 
 fn addCleanStep(b: *std.Build) void {
-    const cmd = build_common.addBashCommand(b,
-        \\rm -f wp43 wp43.exe c47 c47.exe r47 r47.exe
-        \\rm -rf wp43-windows* wp43-macos* wp43-linux* wp43-dm42*
-        \\rm -rf c47-windows* c47-macos* c47-linux* c47-dmcp* r47-dmcp*
-        \\rm -rf build build.sim build.dmcp build.dmcp.* build.dmcp5 build.rel build.rel.debug
+    // EVERY line here except .zig-cache/zig-out mirrors upstream's own `make clean`
+    // (upstream/Makefile, the `rm -rf build build.sim ...` recipe), so every one of
+    // those targets is UPSTREAM-relative and has to be prefixed with UPSTREAM_ROOT.
+    //
+    // This is not a tidiness point. `rm -rf build` meant upstream's meson output
+    // directory when the import sat at the repo root. z47 now owns `build/` -- the
+    // entire Zig build system -- so an unprefixed `rm -rf build` makes
+    // `zig build clean` delete 205 tracked files, including the build description
+    // that defines this very step. Anything added here must be checked against the
+    // z47-owned roots first; check-clean-step-targets.py does that mechanically.
+    const upstream_root = build_common.upstreamRootString(b);
+    const cmd = build_common.addBashCommandFmt(b,
+        \\set -u
+        \\u='{s}'
+        \\rm -f "$u"/wp43 "$u"/wp43.exe "$u"/c47 "$u"/c47.exe "$u"/r47 "$u"/r47.exe
+        \\rm -rf "$u"/wp43-windows* "$u"/wp43-macos* "$u"/wp43-linux* "$u"/wp43-dm42*
+        \\rm -rf "$u"/c47-windows* "$u"/c47-macos* "$u"/c47-linux* "$u"/c47-dmcp* "$u"/r47-dmcp*
+        \\rm -rf "$u"/build "$u"/build.sim "$u"/build.dmcp "$u"/build.dmcp.* "$u"/build.dmcp5 "$u"/build.rel "$u"/build.rel.debug
+        \\rm -f "$u"/src/generated/*.c "$u"/src/generated/constantPointers.h "$u"/src/generated/softmenuCatalogs.h
+        \\rm -rf "$u"/PROGRAMS/ALLPGMS
+        \\rm -f "$u"/src_files_stamp "$u"/testPgms_stamp
         \\rm -rf .zig-cache zig-out
-        \\rm -f src/generated/*.c src/generated/constantPointers.h src/generated/softmenuCatalogs.h
-        \\rm -rf PROGRAMS/ALLPGMS
-        \\rm -f src_files_stamp testPgms_stamp
-    );
+    , .{upstream_root});
 
     const step = b.step("clean", "Remove build artifacts and generated files without Make or Meson");
     step.dependOn(&cmd.step);

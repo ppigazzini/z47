@@ -64,6 +64,13 @@ c47plotTest*.bmp
 tags
 /PROGRAMS
 /SAVFILES
+# The same two runtime output dirs, at the imported root: the host simulator and
+# the testSuite now run with UPSTREAM_ROOT as their CWD (res/ is opened
+# CWD-relative), so this is where they get created. Anchored, not bare -- a bare
+# `PROGRAMS` would also match the TRACKED upstream/res/PROGRAMS and quietly make
+# its files unaddable.
+/upstream/PROGRAMS
+/upstream/SAVFILES
 /upstream/src/generated
 AGENTS.md
 
