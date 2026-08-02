@@ -830,6 +830,13 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
     } else if (streq(type_str, "bool")) {
         @as(*u8, @ptrCast(buffer)).* = if (calc_state.stringToInt8(vp) != 0) 1 else 0;
     } else if (streq(type_str, "c47Ptr")) {
+        // WIDTH-CONTRACT: accepted -- a backup field holding a pool block index.
+        // A window value gives the host the true low bits and the firmware
+        // 0xFFFFFFFF, but neither is dereferenced from here: restoredPoolPointer()
+        // in this same owner re-reads the pair and refuses any block index the pool
+        // cannot hold, on both targets. That check is the reason this one can be
+        // accepted -- and it is the check the STATE owner was missing until
+        // M-SAFE-10 ported it across.
         @as(*u32, @ptrCast(@alignCast(buffer))).* = @truncate(strtoul(vp, null, 0));
     } else if (streq(type_str, "hexDump")) {
         const numberOfBytes = calc_state.stringToUint32(vp);

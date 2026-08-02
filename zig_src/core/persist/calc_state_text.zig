@@ -19,15 +19,33 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 
 // (int16_t)strtol(str, NULL, 10) etc. — base-10, truncating to the target width.
+//
+// WIDTH-CONTRACT for all four (M-SAFE-10): accepted. These parse the state file's
+// section bodies, so a hand-edited or crafted file can put a value in the
+// divergence window on any numeric line, and the host and the firmware then read
+// different numbers. The divergence is upstream's own -- these are 1:1 ports of
+// its file-static helpers -- and z47 reproduces rather than corrects it, because
+// the parity oracles compare each owner against the HOST C and pinning a fixed
+// width here would break that comparison to fix a case no valid file contains.
+//
+// What makes accepting it safe is downstream, not here: toInt16/toUint8/toUint16
+// truncate to a narrow type, so every possible result is in range and only the
+// value differs. toUint32 is the one that feeds pointers -- currentStep and
+// firstFreeProgramByte -- and those now go through restoredPoolPointer(), which
+// refuses a block index the pool cannot hold on either target.
+// WIDTH-CONTRACT: accepted -- see the family note above.
 pub fn toInt16(s: [*c]const u8) i16 {
     return @truncate(strtol(s, null, 10));
 }
+// WIDTH-CONTRACT: accepted -- see the family note above.
 pub fn toUint8(s: [*c]const u8) u8 {
     return @truncate(strtoul(s, null, 10));
 }
+// WIDTH-CONTRACT: accepted -- see the family note above.
 pub fn toUint16(s: [*c]const u8) u16 {
     return @truncate(strtoul(s, null, 10));
 }
+// WIDTH-CONTRACT: accepted -- see the family note above.
 pub fn toUint32(s: [*c]const u8) u32 {
     return @truncate(strtoul(s, null, 10));
 }

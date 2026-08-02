@@ -170,7 +170,21 @@ SECTION_COUNTS = {
 # 0 and 1 probe the "section is not really there" and "one entry" edges; 0x7FFF
 # is the i16 boundary the EQUATIONS loop cared about; 0xFFFF and 0xFFFFFFFF are
 # the u16 and u32 ceilings a count field can express.
-COUNT_MUTATIONS = (0, 1, 0x7FFF, 0xFFFF, 0xFFFFFFFF)
+# 0x100000000 and above are the M-SAFE-10 width probes, and the corpus stopped one
+# short of them for two milestones: 0xFFFFFFFF is the LARGEST value at which a
+# 64-bit and a 32-bit `unsigned long` still agree. The divergence window opens at
+# 2**32 -- there a host reads the true low bits and the firmware reads 0xFFFFFFFF --
+# and closes again at 2**64, where both saturate to all-ones. A corpus that stops at
+# 0xFFFFFFFF tests the boundary and never crosses it.
+COUNT_MUTATIONS = (
+    0,
+    1,
+    0x7FFF,
+    0xFFFF,
+    0xFFFFFFFF,
+    0x100000000,
+    0x10000000000000000,
+)
 
 
 def set_section_count(section: str, value: int) -> list[str]:
@@ -320,6 +334,33 @@ def _unparseable_equation(text: str) -> list[str]:
 
 write("equation_unparseable.sav", _unparseable_equation("((((+*/"))
 write("equation_empty.sav", _unparseable_equation(""))
+
+
+def _programs_field(offset: int, value: int) -> list[str]:
+    """Rewrite one of the PROGRAMS section's pointer/offset lines.
+
+    After the block count come, in order: currentStep's block pointer and its
+    offset within that block, then firstFreeProgramByte's pointer and offset. The
+    POINTERS go through toPcmemptr, which narrows under `@setRuntimeSafety(true)`
+    and so traps on a value the pool cannot hold. The OFFSETS do not: upstream adds
+    them to the pointer with no bound at all (`currentStep += toUint32(...)`), and
+    the port reproduces that. These files are what tests whether that is reachable
+    rather than merely alarming.
+    """
+    out = list(base)
+    out[out.index("PROGRAMS") + offset] = str(value)
+    return out
+
+
+PROGRAMS_FIELDS = {
+    2: "currentStep_block",
+    3: "currentStep_offset",
+    4: "firstFreeProgramByte_block",
+    5: "firstFreeProgramByte_offset",
+}
+for _off, _name in PROGRAMS_FIELDS.items():
+    for _v in (0xFFFF, 0xFFFFFFFF, 0x100000000):
+        write(f"programs_{_name}_{_v:x}.sav", _programs_field(_off, _v))
 
 
 def _version(v: int) -> list[str]:

@@ -64,6 +64,13 @@ step "[4d/11] macro-family correspondence (one #define, one behaviour)"
 # only) could see. Gated at zero, not ratcheted: the queue really is empty.
 python3 .github/project/report-twin-divergence.py --self-test >/dev/null
 python3 .github/project/report-twin-divergence.py --check
+step "[4e/11] strtoul width contract (every parse site has a decided verdict)"
+# `unsigned long` is 64-bit on the Linux/macOS hosts and 32-bit on the firmware and
+# on Windows, so upstream's own answer differs by target and the oracles only check
+# the host (finding 9, M-SAFE-10). This does not judge a verdict, it insists one
+# exists: a resync that adds a parse site fails until somebody decides its answer.
+python3 .github/project/check-strtoul-width-contract.py --self-test >/dev/null
+python3 .github/project/check-strtoul-width-contract.py
 step "[5/11] curated Zig/C boundaries"
 bash .github/project/check-zig-c-boundaries.sh
 step "[6/11] idiomatic-Zig ratchet"
