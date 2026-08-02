@@ -54,6 +54,13 @@ bool_t          screenChange;
 
 // fnLoad is a Zig export (calc_state.zig); no C header declares it.
 extern void fnLoad(uint16_t loadMode);
+// M-SAFE-15 / finding 5: the pool poison detector (free_list.zig). ASan sees `ram`
+// as one allocation, so a block overrunning its neighbour is invisible to every
+// other lane here. Poisoning free space before the load and auditing it after
+// catches an overrun that lands in free pool space -- not one that lands in
+// another LIVE allocation, which nothing in this tree can see.
+extern void z47_free_list_poison_free_space(void);
+extern int  z47_free_list_audit_free_space(void);
 // Reported after the load so a corpus file that FORGES a version is visible in
 // the log rather than only in a crash (M-SAFE-4's wrap-to-10000025 case).
 extern uint32_t z47_calc_state_get_loaded_version(void);
@@ -126,7 +133,13 @@ int main(int argc, char **argv) {
   }
 
   printf("LOAD %s (mode %u)\n", state_path, (unsigned)loadMode);
+  z47_free_list_poison_free_space();
   fnLoad(loadMode);
+  const int disturbed = z47_free_list_audit_free_space();
+  if(disturbed != 0) {
+    printf("POOL POISON: %d disturbed extent(s) after the load\n", disturbed);
+    return 87;
+  }
 
   // Reaching here means the restore path returned. Whether it accepted or
   // refused the file is not the assertion -- refusing a malformed file is the

@@ -163,6 +163,7 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "zig_src/abi/block_math.zig",
         "zig_src/abi/trap_panic.zig",
         "zig_src/abi/line_parse.zig",
+        "zig_src/shell/pool_poison.zig",
     };
     const target = b.resolveTargetQuery(.{});
     // Some pure owners reference the std-only L1 ABI types via @import("abi");

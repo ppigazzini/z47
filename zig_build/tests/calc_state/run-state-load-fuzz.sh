@@ -48,6 +48,16 @@ fail=0
 #   0 = LM_ALL   1 = LM_PROGRAMS   2 = LM_REGISTERS   5 = LM_SYSTEM_STATE
 LOAD_MODES="0 1 2 5"
 
+# M-SAFE-15's pool poison detector is NEW, and on its first run it reported two
+# files whose writer is not yet identified (finding 22). Per the rule this tree
+# applies to every new heuristic -- calibrate before you judge -- it lands as a
+# REPORT with a known-list rather than a gate. A poison report from any OTHER file
+# FAILS, so the detector protects from today onward while these two are chased.
+#
+# Do NOT add a file here to quieten a report. Each entry is an open finding, and
+# the list shrinking is the measure of progress on finding 22.
+POISON_KNOWN="matrix_dims_at_u16_block_limit.sav matrix_rows_exceed_header_12_bits.sav"
+
 for f in "$corpus"/*.sav; do
  for mode in $LOAD_MODES; do
   total=$((total + 1))
@@ -78,6 +88,20 @@ for f in "$corpus"/*.sav; do
   elif [ "$rc" -eq 86 ]; then
     echo "FAIL (sanitizer exitcode): $label"
     fail=$((fail + 1))
+  elif [ "$rc" -eq 87 ]; then
+    # The pool poison detector (M-SAFE-15). Something wrote past its allocation
+    # into free pool space -- the class ASan cannot see here, because `ram` is one
+    # allocation to it. This is finding 5's only detector.
+    # ' %s ' on BOTH sides: '%s ' alone leaves the first entry without a leading
+    # space, so it never matches and the list silently covers all but its head.
+    if printf ' %s ' $POISON_KNOWN | grep -qF " $(basename "$f") "; then
+      echo "KNOWN pool-poison report (finding 22, open): $label"
+      printf '%s\n' "$out" | grep -E "POOL POISON DISTURBED" | head -1
+    else
+      echo "FAIL (pool poison disturbed -- in-pool overrun): $label"
+      printf '%s\n' "$out" | grep -E "POOL POISON" | head -3
+      fail=$((fail + 1))
+    fi
   elif [ "$rc" -eq 124 ]; then
     echo "FAIL (hang / infinite loop on malformed input): $label"
     fail=$((fail + 1))
