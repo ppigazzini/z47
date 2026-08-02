@@ -51,6 +51,11 @@ pub fn addToModule(
     gtk_options.addOption(u8, "calcmodel", calcmodel);
     gtk_options.addOption([]const u8, "vcs_commit_id", vcs);
     gtk_options.addOption([]const u8, "version1", "0.109.03.02b0"); // mirrors defines.h VERSION1
+    // res/ is an imported-upstream path, so in the dev layout it sits under
+    // UPSTREAM_ROOT rather than beside build.zig. relocateToResourceDir() probes
+    // this subdirectory as well when walking up from the executable; a packaged
+    // layout still finds res/ directly and ignores it.
+    gtk_options.addOption([]const u8, "upstream_root", build_common.upstreamRootString(b));
 
     const gui_runtime = b.addObject(.{
         .name = b.fmt("{s}-gtk-gui-runtime", .{name_prefix}),

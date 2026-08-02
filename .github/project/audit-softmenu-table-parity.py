@@ -34,6 +34,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+from upstream_paths import upstream_path
+
 # Host build values for the frontier options softmenus.zig gates its tables on
 # (zig_build/frontier/frontier.zig defaults; only the dmcp* variants override).
 HOST_OPTIONS = {
@@ -92,7 +94,12 @@ def preprocess(repo: Path, catalogs_dir: Path | None) -> str:
         includes = ["-I", str(stub)]
         if catalogs_dir is not None:
             includes += ["-I", str(catalogs_dir)]
-        includes += ["-I", str(repo / "src/c47"), "-I", str(repo / "dep/decNumberICU")]
+        includes += [
+            "-I",
+            str(upstream_path(repo, "src/c47")),
+            "-I",
+            str(upstream_path(repo, "dep/decNumberICU")),
+        ]
         cmd = [
             cc,
             "-E",
@@ -101,7 +108,7 @@ def preprocess(repo: Path, catalogs_dir: Path | None) -> str:
             "-DLINUX=1",
             "-DOS64BIT=1",
             *includes,
-            str(repo / "src/c47/softmenus.c"),
+            str(upstream_path(repo, "src/c47/softmenus.c")),
         ]
         done = subprocess.run(cmd, capture_output=True, text=True, errors="replace")
         if done.returncode != 0:

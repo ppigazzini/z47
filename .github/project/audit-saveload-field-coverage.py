@@ -45,6 +45,8 @@ import re
 import sys
 from pathlib import Path
 
+from upstream_paths import upstream_path
+
 SAVE_FILE = "src/c47/saveRestoreCalcState.c"
 RESET_FILE = "src/c47/config.c"
 HARNESS = "zig_build/tests/calc_state/save_load_parity_harness.c"
@@ -92,8 +94,8 @@ def main() -> int:
     args = ap.parse_args()
     root = Path(args.repo_root)
 
-    config_text = (root / RESET_FILE).read_text()
-    fields = save_fields((root / SAVE_FILE).read_text())
+    config_text = upstream_path(root, RESET_FILE).read_text()
+    fields = save_fields(upstream_path(root, SAVE_FILE).read_text())
     reset_set = fn_assigned(config_text, RESET_FUNCS)
     config_set = fn_assigned(config_text, CONFIG_FUNCS)
     harness_set = assigned_names((root / HARNESS).read_text())

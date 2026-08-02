@@ -21,9 +21,10 @@ Current live runtime Zig owners are intentionally narrow: short-integer logical
 leaf code plus the stack, register-metadata, flags, memory,
 program-serialization, calc-state, and keyboard-state slices under `zig_src/`.
 
-Imported upstream paths now route through `UPSTREAM_ROOT` in
-`.github/project/upstream-pin.env`; the current value `.` means the imported
-baseline still lives at repo root.
+Imported upstream paths route through `UPSTREAM_ROOT` in
+`.github/project/upstream-pin.env`; the current value `upstream` means the
+imported baseline is mounted under `upstream/`, which is what leaves the
+canonical `src/` and `docs/` names free for z47's own owners.
 
 The May 2026 structural naming milestone is complete under the current
 layer-scoped naming contract. For live owner, runtime, export, and legacy

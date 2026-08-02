@@ -187,10 +187,13 @@ fn printHelp() void {
 // installed binary directly (e.g. `./zig-out/bin/c47` from zig-out/bin), where
 // the CSS/background fail to load and the LCD area shows uninitialised memory.
 // Relocate the cwd to the directory that actually holds res/: start at the real
-// executable directory and walk up (covers both the dev layout — exe in
-// zig-out/bin, res/ at the repo root — and a packaged layout with res/ next to
-// the exe). No-op if res/ isn't found near the exe, leaving cwd untouched so an
-// explicit run-from-a-res-dir still works. Subsumes the old macOS-bundle chdir.
+// executable directory and walk up. Two layouts have to work, and res/ sits at a
+// different depth in each: a packaged layout has res/ directly beside the exe,
+// while the dev layout has it under the imported-upstream root (res/ is an
+// upstream path, so it lives at UPSTREAM_ROOT/res, not beside build.zig). Each
+// level therefore probes both spellings. No-op if neither is found near the exe,
+// leaving cwd untouched so an explicit run-from-a-res-dir still works. Subsumes
+// the old macOS-bundle chdir.
 fn relocateToResourceDir(argv0: [*:0]const u8) void {
     var exe_buf: [4096]u8 = undefined;
     var dir: []const u8 = undefined;
@@ -204,13 +207,28 @@ fn relocateToResourceDir(argv0: [*:0]const u8) void {
     } else {
         dir = std.fs.path.dirname(std.mem.span(argv0)) orelse return;
     }
+    // "" when upstream is mounted at the repo root, in which case the second
+    // probe is identical to the first and simply never adds a match.
+    const upstream_prefix = if (opts.upstream_root.len == 0 or
+        std.mem.eql(u8, opts.upstream_root, "."))
+        ""
+    else
+        opts.upstream_root;
+
     var level: u8 = 0;
     while (level < 8) : (level += 1) {
-        var probe_buf: [4096]u8 = undefined;
-        const probe = std.fmt.bufPrintZ(&probe_buf, "{s}/res/c47_pre.css", .{dir}) catch return;
-        if (access(probe.ptr, 0) == 0) { // F_OK
+        for ([_][]const u8{ "", upstream_prefix }) |prefix| {
+            var probe_buf: [4096]u8 = undefined;
+            const probe = if (prefix.len == 0)
+                std.fmt.bufPrintZ(&probe_buf, "{s}/res/c47_pre.css", .{dir}) catch return
+            else
+                std.fmt.bufPrintZ(&probe_buf, "{s}/{s}/res/c47_pre.css", .{ dir, prefix }) catch return;
+            if (access(probe.ptr, 0) != 0) continue; // F_OK
             var cd_buf: [4096]u8 = undefined;
-            const cd = std.fmt.bufPrintZ(&cd_buf, "{s}", .{dir}) catch return;
+            const cd = if (prefix.len == 0)
+                std.fmt.bufPrintZ(&cd_buf, "{s}", .{dir}) catch return
+            else
+                std.fmt.bufPrintZ(&cd_buf, "{s}/{s}", .{ dir, prefix }) catch return;
             _ = chdir(cd.ptr);
             return;
         }

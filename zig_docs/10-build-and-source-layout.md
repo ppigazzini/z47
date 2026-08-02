@@ -25,9 +25,10 @@ Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
   the SwissMicros DMCP/DMCP5 SDKs (firmware). The remaining first-party C in the
   tree is parity/oracle/testSuite verification only, not in the product.
 - Imported upstream paths route through `UPSTREAM_ROOT` in
-  `../.github/project/upstream-pin.env`; the current value `.` keeps the imported
-  baseline at repo root. The imported `Makefile` and Meson files stay audit and
-  parity references, not the maintained control plane.
+  `../.github/project/upstream-pin.env`; the current value `upstream` mounts the
+  imported baseline under `upstream/`, which leaves the canonical `src/` and
+  `docs/` names free for z47's own owners. The imported `Makefile` and Meson
+  files stay audit and parity references, not the maintained control plane.
 - Host, docs, firmware, packaging, and generator work all route through
   `zig build`. Build output goes to `zig-out/`, which is gitignored.
 
@@ -166,25 +167,28 @@ repo root
 |     |- run-host-parity-battery.sh
 |     `- upstream-resync-runbook.md
 |- zig_docs/
-|- docs/code/
-|  |- conf.py
-|  |- Doxyfile
-|  `- requirements.txt
-|- src/
-|  |- c47/
-|  |- c47-gtk/
-|  |- c47-dmcp/
-|  `- c47-dmcp5/
-|- dep/
-|  |- decNumberICU/
-|  |- DMCP_SDK/
-|  `- DMCP5_SDK/
-|- res/
-|- LIBRARY/
-|- Makefile
-|- meson.build
-|- meson_options.txt
-`- tag2ver.py
+|- .gitmodules            (root exception: git reads it only here)
+|- .gitattributes         (root exception: repo-wide line-ending policy)
+`- upstream/              (the imported tree; UPSTREAM_ROOT)
+   |- docs/code/
+   |  |- conf.py
+   |  |- Doxyfile
+   |  `- requirements.txt
+   |- src/
+   |  |- c47/
+   |  |- c47-gtk/
+   |  |- c47-dmcp/
+   |  `- c47-dmcp5/
+   |- dep/
+   |  |- decNumberICU/
+   |  |- DMCP_SDK/
+   |  `- DMCP5_SDK/
+   |- res/
+   |- LIBRARY/
+   |- Makefile
+   |- meson.build
+   |- meson_options.txt
+   `- tag2ver.py
 ```
 
 The `.github/project/` list above is a triage subset; that directory also carries
@@ -200,7 +204,8 @@ Checked-in build defaults come from these tracked files:
   snapshot used by the non-blocking compatibility lane and the setup-zig action
   ref)
 - `../.github/project/upstream-pin.env`: pins the imported upstream commit,
-  repository URL, branch, and the imported upstream root (`UPSTREAM_ROOT=.`)
+  repository URL, branch, and the imported upstream root
+  (`UPSTREAM_ROOT=upstream`)
 - `../.github/project/upstream-port-ledger.tsv`: the maintainer triage ledger for
   the current pin and later audited upstream commits
 - `../.github/project/check-upstream-port-ledger.py`: validates ledger shape,
@@ -228,7 +233,7 @@ Checked-in build defaults come from these tracked files:
 - `../.github/project/zig-c-boundaries.txt` and
   `../.github/project/check-zig-c-boundaries.sh`: the approved checked-in
   `@cImport` and direct `extern` boundary files and their guard
-- `../docs/code/requirements.txt`: pins the Python package set needed for
+- `../upstream/docs/code/requirements.txt`: pins the Python package set needed for
   `zig build docs`
 
 The live project-specific Zig options are:
@@ -303,10 +308,8 @@ owner paths first and never patch generated outputs by hand.
 - Keep retained C dependencies explicit. Do not imply a pure-Zig state while the
   build still compiles decNumberICU or links GTK, GMP, FreeType, or the hardware
   SDKs.
-- Use a linked worktree (and `../.github/project/nested-upstream-pilot.sh` when
-  re-measuring a nested `upstream/` layout) to rehearse an `upstream/master`
-  refresh instead of repurposing the active coding tree; do not change
-  `UPSTREAM_ROOT` in the maintained tree unless that pilot is promoted.
+- Use a linked worktree to rehearse an `upstream/master` refresh instead of
+  repurposing the active coding tree.
 - Run `../.github/project/report-upstream-refresh.py` after fetching
   `upstream/master` so the refresh review records new commits, changed imported
   paths, and likely z47-owned follow-up surfaces before the pin moves.

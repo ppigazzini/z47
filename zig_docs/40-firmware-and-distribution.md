@@ -35,10 +35,10 @@ Facts, verified from `../zig_build/firmware.zig`:
   `../zig_build/firmware_io_runtime.zig`, and
   `../zig_build/firmware_print_ir_runtime.zig`.
 - Retained C still compiled into the firmware: the vendored
-  `../dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
+  `../upstream/dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
   `startup_pgm.s`, the generated constant-pointer and raster-font C, and a
   cross-built GMP archive (see below).
-- The `-Izig_bridge` overlay is prepended ahead of the imported `../src/c47`
+- The `-Izig_bridge` overlay is prepended ahead of the imported `../upstream/src/c47`
   include path so z47-specific header shims win over imported `defines.h`
   without editing the imported tree.
 - Per-package flash trims are computed in the Zig frontier build
@@ -101,16 +101,16 @@ build commands):
 
 Retained C dependency inputs:
 
-- `../dep/DMCP_SDK` and `../dep/DMCP5_SDK`: the SwissMicros hardware SDKs
+- `../upstream/dep/DMCP_SDK` and `../upstream/dep/DMCP5_SDK`: the SwissMicros hardware SDKs
   (SDK include dirs, `pgm_syscalls.c`, `startup_pgm.s`). These are git
   submodules; a fresh checkout needs `git submodule update --init` before
   `zig build dmcp` or `dmcp5` can link.
-- `../dep/decNumberICU`: vendored decimal C, compiled by Zig into the firmware.
-- `../src/c47-dmcp` and `../src/c47-dmcp5`: used as board include dirs and for
+- `../upstream/dep/decNumberICU`: vendored decimal C, compiled by Zig into the firmware.
+- `../upstream/src/c47-dmcp` and `../upstream/src/c47-dmcp5`: used as board include dirs and for
   the checked-in `stm32_program.ld` linker scripts. The upstream board HAL `.c`
   files are no longer compiled (`firmwareBoardHalSources` is empty for both
   boards); the HAL is the Zig runtime objects above.
-- `../subprojects/gmp-6.2.1`: GMP source for the ARM cross-build.
+- `../upstream/subprojects/gmp-6.2.1`: GMP source for the ARM cross-build.
 
 ## Cross-GMP Bootstrap Contract
 
@@ -120,7 +120,7 @@ GMP rewrite.
 
 Current behavior (`addArmGmpBuild`):
 
-- prefer the checked-in source tree under `../subprojects/gmp-6.2.1`
+- prefer the checked-in source tree under `../upstream/subprojects/gmp-6.2.1`
 - fall back to downloading `gmp-6.2.1.tar.bz2` from a mirror list when the source
   tree is absent
 - verify the tarball SHA-256 before use

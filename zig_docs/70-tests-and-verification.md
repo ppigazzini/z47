@@ -105,12 +105,12 @@ the companion c47-r47-ci doc set, `docs/04-testing.md`, owns them. See
 | native Zig unit tests (no C oracle) | `../zig_build/`, `zig_src` module tests | `zig build test:unit --summary none` |
 | host simulator build | `../zig_build/host/` | `zig build sim --summary none` |
 | host live-behavior smoke | `../zig_build/host/simulator_smoke.sh` | `zig build simulator_smoke --summary none` (non-blocking; known Xvfb pixman over-read) |
-| host core regression | `../zig_build/host/`, `../src/testSuite/` | `zig build test --summary none` |
+| host core regression | `../zig_build/host/`, `../upstream/src/testSuite/` | `zig build test --summary none` |
 | native C-sanitizer lane | `../zig_build/host/steps.zig` | `zig build both_asan --summary none` then `zig build test_asan --summary none` |
 | malformed-input load fuzz (untrusted `.p47`) | `../zig_build/tests/pgm_run/malformed/`, `../zig_build/tests/pgm_run/run-pgm-load-fuzz.sh` | `zig build pgm_load_fuzz --summary none` |
 | malformed-input load fuzz (untrusted `.sav` / `.d47`) | `../zig_build/tests/calc_state/malformed/`, `../zig_build/tests/calc_state/state_load_harness.c`, `run-state-load-fuzz.sh` | `zig build state_load_fuzz --summary none` |
 | deterministic generated outputs | `../zig_build/tools/`, tracked generated files | `zig build generated --summary none` |
-| docs surface | `../docs/code/` | `zig build docs --summary none` |
+| docs surface | `../upstream/docs/code/` | `zig build docs --summary none` |
 | firmware outputs | `../zig_build/firmware.zig`, imported SDKs, linker scripts | `zig build dmcp --summary none` or `zig build dmcp5 --summary none` |
 | host or firmware packages | `../zig_build/dist.zig` | `zig build -Doptimize=ReleaseFast dist_linux --summary none`, or the matching package target |
 

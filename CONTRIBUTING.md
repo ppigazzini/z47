@@ -15,13 +15,15 @@ repo surfaces.
   staged rewrite overlay for the upstream C47 calculator application.
 - The authoritative upstream source repository is
   `https://gitlab.com/rpncalculators/c43.git`.
-- The repo root carries a pinned imported upstream working tree plus z47-owned
-  overlay files such as `build.zig`, `zig_build/`, `zig_src/`,
-  `zig_bridge/`, `.github/`, `zig_docs/`, this contributor note, and the root
-  entrypoint docs.
-- `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=.` for the current
-  repo-root imported baseline, and `.github/project/source-ownership.txt`
-  records the tracked top-level ownership split used by CI.
+- The pinned imported upstream working tree is mounted under `upstream/`. The
+  repo root carries only z47-owned files: `build.zig`, `zig_build/`,
+  `zig_src/`, `zig_bridge/`, `.github/`, `zig_docs/`, this contributor note,
+  and the root entrypoint docs.
+- `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=upstream`, and
+  `.github/project/source-ownership.txt` records the tracked top-level
+  ownership split used by CI. Two upstream dotfiles are deliberate root
+  exceptions, hand-reconciled on resync because git only honours them there:
+  `.gitmodules` (submodule paths) and `.gitattributes` (line-ending policy).
 - `.github/project/upstream-port-ledger.tsv` records the maintainer triage
   ledger that must move with any tracked upstream pin change.
 - `.github/project/report-upstream-refresh.py` summarizes new upstream commits,
@@ -31,9 +33,11 @@ repo surfaces.
 - `.github/project/workflow-imported-root-paths.sh` records the workflow-owned
   imported-root vocabulary used by docs install, generated-artifact proof, and
   host package staging in GitHub Actions.
-- `.github/project/nested-upstream-pilot.sh` is the tracked M13 helper for
-  measuring a nested `upstream/` candidate in a linked worktree while the
-  maintained baseline stays at `UPSTREAM_ROOT=.`.
+- `.github/project/upstream_paths.py` resolves upstream-relative paths for the
+  governance gates. Paths recorded *as data* -- correspondence TSVs, the port
+  ledger, dependency baselines, generated seam comments -- stay upstream-relative
+  (`src/c47/foo.c`), as do git pathspecs aimed at a sibling upstream clone. Only
+  filesystem access resolves through `UPSTREAM_ROOT`.
 - `build.zig` is the sole supported build entrypoint for maintained z47 work.
 
 ## Branch And CI Policy
@@ -64,20 +68,6 @@ instead of repurposing the active coding tree.
 
 Keep tracked-doc updates focused on the main repository tree. Do not document
 ignored local worktrees as if they were tracked repo surfaces.
-
-## Nested-Upstream Pilot Flow
-
-The current M13 recommendation is no-go: keep the repo-root import as the
-maintained baseline. When you need to re-measure that decision, use the tracked
-pilot helper instead of editing the maintained tree in place.
-
-1. `bash .github/project/nested-upstream-pilot.sh prepare ../z47-m13-pilot <repo-relative-path ...>`
-2. Run `bash .github/project/check-source-ownership.sh check-worktree` inside
-  `../z47-m13-pilot`.
-3. Run the smallest representative build or guard lane inside the pilot
-  worktree.
-4. `bash .github/project/nested-upstream-pilot.sh cleanup ../z47-m13-pilot`
-  when the comparison is complete.
 
 ## Supported Build Entry Points
 

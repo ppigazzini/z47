@@ -85,7 +85,7 @@ The workflow keeps its shared checked-in control data in these files:
 - `../.github/project/zig-c-boundaries.txt`
 - `../.github/project/idiom-status-baseline.json`
 - `../.github/project/portable-int-width-allowlist.txt`
-- `../docs/code/requirements.txt`
+- `../upstream/docs/code/requirements.txt`
 
 The Linux docs lane caches the Python package download directory keyed by the
 helper-resolved docs requirements file. The host platform jobs and the Linux
@@ -166,7 +166,7 @@ Both steps emit a warning and continue instead of failing.
 
 ### `linux-docs` (Linux docs surface)
 
-Installs Doxygen and the Python docs packages from `../docs/code/requirements.txt`
+Installs Doxygen and the Python docs packages from `../upstream/docs/code/requirements.txt`
 (caching the pip download directory), runs `zig build docs`, and keeps
 docs-only dependencies out of the host and firmware lanes.
 

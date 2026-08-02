@@ -21,6 +21,8 @@ import re
 import sys
 from pathlib import Path
 
+from upstream_paths import upstream_path
+
 # One glyph literal: `.charCode=0xHHHH, .data={ b, b, ... }`. Comments are
 # stripped first so the incidental `// A0` banners never reach the parser.
 GLYPH_RE = re.compile(
@@ -150,7 +152,7 @@ def render_zig(count: int, glyphs: list[tuple[int, list[int]]], spec: dict) -> s
 
 
 def generate(repo_root: Path, spec: dict) -> str:
-    c_text = (repo_root / spec["c_source"]).read_text(encoding="utf-8")
+    c_text = upstream_path(repo_root, spec["c_source"]).read_text(encoding="utf-8")
     count, glyphs = parse_c(c_text, spec)
     return render_zig(count, glyphs, spec)
 

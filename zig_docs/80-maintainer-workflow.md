@@ -180,19 +180,6 @@ current first-party C telemetry.
    `python3 ../.github/project/report-upstream-refresh.py --repo-root .. --fetch`
    when the report also makes an upstream-sync freshness claim.
 
-## Nested-Upstream Pilot Flow
-
-Use the tracked pilot helper to re-measure a nested `upstream/` candidate. The
-current stable recommendation is still no-go, so treat this as a pilot, not the
-default maintainer layout.
-
-1. `bash ../.github/project/nested-upstream-pilot.sh prepare ../z47-pilot <repo-relative-path ...>`
-2. Run `bash .github/project/check-source-ownership.sh check-worktree` inside
-   `../z47-pilot`.
-3. Run the smallest relevant build or guard lane inside the pilot worktree.
-4. `bash ../.github/project/nested-upstream-pilot.sh cleanup ../z47-pilot` when
-   the comparison is complete.
-
 ## Local Roadmap Sync Flow
 
 Use the tracked roadmap guard when a local roadmap file is part of a milestone

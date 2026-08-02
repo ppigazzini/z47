@@ -154,6 +154,6 @@ checked-in upstream pin under `../.github/project/upstream-pin.env`.
   `../zig_build/firmware.zig`, not scattered through the tree.
 - Add new parity oracles, fake runtimes, or harnesses under
   `../zig_build/tests/` and register their steps in `../zig_build/host/steps.zig`.
-- Do not move imported upstream compatibility helpers such as `../tag2ver.py`
+- Do not move imported upstream compatibility helpers such as `../upstream/tag2ver.py`
   just to make the Zig layout look cleaner. The imported legacy build graph still
   references them.

@@ -35,7 +35,7 @@ libraries and compiles one vendored C library. Be honest about the split:
 | --- | --- |
 | GTK simulator application layer | ported to Zig (`../zig_build/host/gtk_*.zig`) |
 | calculator core | ported to Zig (the `../zig_src/` owners) |
-| `../src/c47-gtk/*.c` (the C the Zig host replaces) | filtered out of the build |
+| `../upstream/src/c47-gtk/*.c` (the C the Zig host replaces) | filtered out of the build |
 | `dep/decNumberICU` | retained vendored C, compiled by Zig |
 | GTK 3 | retained external C library, linked from Zig |
 | GMP | retained external C library, linked from Zig |
@@ -48,7 +48,7 @@ it still compiles the vendored `dep/decNumberICU`.
 
 ## The GTK Filter Boundary
 
-`../zig_build/host/context.zig` collects the upstream `../src/c47-gtk` C files,
+`../zig_build/host/context.zig` collects the upstream `../upstream/src/c47-gtk` C files,
 then `../zig_build/host/gtk_gui.zig` `filterGtkSources` drops every path listed in
 `../zig_build/host/gtk_gui_legacy_gtk_sources.txt`. That manifest currently lists
 all seven upstream GTK C files (`c47-gtk.c`, `gtkGui.c`, and the `hal/` set), so
@@ -58,7 +58,7 @@ LCD surfaces run entirely from the Zig objects added by
 `gtk_gui.addToModule` (`gtk_gui_runtime.zig`, `gtk_hal_runtime.zig`,
 `gtk_io_runtime.zig`, `gtk_lcd_runtime.zig`, and the wider `gtk_gui_*.zig` set).
 
-The imported `../src/c47-gtk/*.c` files stay in the tree as read-only audit and
+The imported `../upstream/src/c47-gtk/*.c` files stay in the tree as read-only audit and
 parity reference; they are not compiled.
 
 ## Host Simulator Steps
@@ -76,7 +76,7 @@ parity reference; they are not compiled.
 The host build graph also registers the grouped regression lanes (`test`,
 `test_asan`, `repeattest`), the native Zig unit lane (`test:unit`), and the
 per-owner parity and oracle lanes. `test`, `test_asan`, and `repeattest` run both
-the upstream corpus at `../src/testSuite/tests/testSuiteList.txt` and the z47
+the upstream corpus at `../upstream/src/testSuite/tests/testSuiteList.txt` and the z47
 overlay list at `../zig_build/tests/testSuiteList_z47.txt`, so z47 adds focused
 coverage without editing the imported upstream corpus. These lanes depend on the
 `testPgms` refresh, so the tracked test-program image is regenerated before they
@@ -138,21 +138,21 @@ build-managed C boundaries rather than ad hoc `@cImport` blocks:
 - the fonts generator links FreeType 2 (via its `translate-c` root and
   `linkRasterFontsFreetype`)
 - `generate_catalogs` and `generate_testpgms` additionally compile a subset of
-  upstream `../src/c47` sources and link GTK 3 and GMP
+  upstream `../upstream/src/c47` sources and link GTK 3 and GMP
 
 These boundaries are governed by the allowlist and guard described in
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
 
 ## Docs Surface
 
-`zig build docs` is the canonical docs lane for the imported `../docs/code` tree.
+`zig build docs` is the canonical docs lane for the imported `../upstream/docs/code` tree.
 
 Current requirements:
 
 - `python3`
 - `doxygen`
 - the Python docs packages (`sphinx`, `breathe`, `furo`) from
-  `../docs/code/requirements.txt`
+  `../upstream/docs/code/requirements.txt`
 
 After verifying those tools and packages are present, the step runs
 `python3 -m sphinx -M html docs/code <install-prefix>/docs/code`.
