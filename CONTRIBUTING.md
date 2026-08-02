@@ -108,9 +108,15 @@ surfaces. They are not the maintained z47 control plane.
   `python3 .github/project/report-upstream-refresh.py --repo-root . --fetch`, then
   `python3 .github/project/check-upstream-port-ledger.py --repo-root .`, then
   `bash .github/project/check-source-ownership.sh`, then
-  `bash .github/project/workflow-imported-root-paths.sh check-workflow`; use
-  `bash .github/project/check-source-ownership.sh check-worktree` inside a
-  linked-worktree layout pilot before treating the candidate as valid
+  `python3 .github/project/check-harness-includes.py --repo-root .`, then
+  `python3 .github/project/check-clean-step-targets.py --repo-root .`, then
+  `bash .github/project/workflow-imported-root-paths.sh check-workflow`.
+  Run `check-source-ownership.sh` in BOTH modes: bare `check` audits the committed
+  tree's added paths, `check-worktree` only validates manifest coverage, and a
+  layout move has already landed with the first mode red while the second was green.
+  Then run the host parity battery: a layout change breaks the parity ORACLE lanes,
+  which include upstream `.c` by relative path, and no product build or governance
+  gate can see that -- 13 of 14 once died silently this way
 - build-graph or target-surface changes: rerun `zig build --help --summary
   none`, then the smallest affected target
 - local roadmap or milestone-summary changes in reviewer-only docs: rerun
