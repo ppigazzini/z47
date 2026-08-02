@@ -16,7 +16,16 @@ const stack = @import("../state/stack.zig");
 const tone = @import("../ui/tone.zig");
 const host_types = @import("types.zig");
 
-const z47_test_list = "build/tests/testSuiteList_z47.txt";
+// No z47 test list. z47 is a PORT of c43 and the c43 testSuite is the parity
+// ORACLE: z47 runs it unmodified so the pass count is directly comparable to c43's.
+// Cases z47 writes itself, run through c43's driver, are z47 checking itself against
+// its own expectations -- and they made the total incomparable (12872 here against
+// c43's 12830) while requiring a probe patched into c43's testSuite.c.
+//
+// z47's own verification belongs in z47's own harnesses -- the *_parity steps below,
+// which link a Zig owner against a C oracle and diff. testSuiteList_logical_boolean_ops.txt
+// stays: it names only c43's corpus files, so it is a focused SUBSET of the oracle,
+// not an extension of it.
 
 /// The CWD for a harness that reaches one of upstream's CWD-relative resource
 /// opens -- in practice `res/testPgms/testPgms.bin`, which stages the test
@@ -1224,11 +1233,9 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     program_serialization_parity_step.dependOn(&run_program_serialization_parity.step);
 
     const run_test_suite = addTestSuiteRun(b, test_suite, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));
-    const run_test_suite_z47 = addTestSuiteRun(b, test_suite, z47_test_list);
     const test_step = b.step("test", "Run the host test suite");
     test_step.dependOn(&run_keyboard_statusbar_flags_regression.step);
     test_step.dependOn(&run_test_suite.step);
-    test_step.dependOn(&run_test_suite_z47.step);
 
     const test_suite_asan = host_builders.addTestSuite(
         b,
@@ -1246,14 +1253,11 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         .full,
     );
     const run_test_suite_asan = addTestSuiteRun(b, test_suite_asan, build_common.upstreamPathString(b, "src/testSuite/tests/testSuiteList.txt"));
-    const run_test_suite_asan_z47 = addTestSuiteRun(b, test_suite_asan, z47_test_list);
     const test_asan_step = b.step("test_asan", "Run the host test suite with native Zig C sanitizing");
     test_asan_step.dependOn(&run_test_suite_asan.step);
-    test_asan_step.dependOn(&run_test_suite_asan_z47.step);
 
     const repeattest_step = b.step("repeattest", "Run the host test suite incrementally");
     repeattest_step.dependOn(&run_test_suite.step);
-    repeattest_step.dependOn(&run_test_suite_z47.step);
 
     const update_fonts = b.addUpdateSourceFiles();
     update_fonts.addCopyFileToSource(context.generated.raster_fonts_data, build_common.upstreamPathString(b, "src/generated/" ++ "rasterFontsData.c"));
