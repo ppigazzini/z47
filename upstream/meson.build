@@ -93,8 +93,14 @@ subdir('src/ttf2RasterFonts')
 subdir('src/generateConstants')
 subdir('src/generateCatalogs')
 subdir('src/generateTestPgms')
+subdir('src/generateTests')
 subdir('src/testSuite')
-subdir('src/c47-gtk')
+subdir('src/t47')
+
+# Jim Tcl DSL module (only for PC_BUILD)
+if not meson.is_cross_build()
+  subdir('src/c47-gtk')
+endif
 
 # Only attempt to include the DMCP target if we have set-up the cross compiler
 if meson.is_cross_build()

@@ -1,0 +1,58 @@
+LBL ‘Binet’
+  # Plot the Binet function, V04.
+  LocR 11
+  STOCFG R.02
+  STOS R.03
+  CLΣ
+  101
+  STO R.00
+  STO R.01
+
+  LBL B
+    RCL R.01
+    RCL R.00
+    -
+    RCL R.01
+    XEQ A
+    AVIEW R.00
+    Σ+
+    DSZ R.00
+      GTO B
+    RCLS R.03
+    RCLCFG R.02
+    ‘PRESS R/S TO PLOT’
+    STO R00
+    DROP𝑥
+    PROMPT R00
+    PLSTAT
+    PLTFCNS
+    RTN
+
+  LBL A
+    # CALC P1
+    DECR X
+    ÷
+    7
+    ×
+    2
+    -
+    ENTER
+    φ
+    𝑥⇄𝑦
+    𝑦ˣ
+    𝑥⇄𝑦
+    φ
+    CHS
+    𝑥⇄𝑦
+    CHS
+    𝑦ˣ
+    -
+    5
+    √𝑥
+    ÷
+    ENTER
+    Im
+    𝑥⇄𝑦
+    Re
+    RTN
+.END.

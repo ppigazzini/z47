@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -156,6 +157,20 @@ def ensure_clean_dir(path: Path) -> None:
 def copy_file(src: Path, dst: Path) -> None:
     dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, dst)
+
+
+def read_combo_flash_stem(combo_script: Path) -> str:
+    """The DMCP5 flash image basename R47_combo.py expects, read from the script.
+
+    Upstream declares it as `dmcp = "DMCP5_flash_3.57"` and builds `dmcp + ".bin"`.
+    Failing loudly here beats staging a file the combo script will not find, which
+    would surface as an opaque error from inside R47_combo.py.
+    """
+    for line in combo_script.read_text(encoding="utf-8").splitlines():
+        m = re.match(r'\s*dmcp\s*=\s*"([^"]+)"', line)
+        if m:
+            return m.group(1)
+    fail(f'no `dmcp = "..."` assignment in {combo_script}; cannot derive the flash image name')
 
 
 def copy_tree(src: Path, dst: Path) -> None:
@@ -441,13 +456,20 @@ def package_dmcp5r47(
         stage_dir / "resources/install_R47_on_DM32.txt",
     )
     copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/update_R47.txt", stage_dir / "update_R47.txt")
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/combo/R47_combo.py", stage_dir / "R47_combo.py")
-    copy_file(
-        UPSTREAM_SOURCE_ROOT / "res/combo/DMCP5_flash_3.56.bin", stage_dir / "DMCP5_flash_3.56.bin"
-    )
+    combo_script = UPSTREAM_SOURCE_ROOT / "res/combo/R47_combo.py"
+    copy_file(combo_script, stage_dir / "R47_combo.py")
+    # The flash image name is DERIVED from the combo script, never hardcoded here.
+    # It used to be spelled out twice in this function, and when upstream bumped
+    # DMCP5_flash_3.56 -> 3.57 the resync missed res/combo entirely: the imported
+    # tree kept 3.56.bin, these two literals kept matching it, and the R47 combo
+    # package shipped an outdated DMCP5 firmware with nothing failing. Reading the
+    # name from the script that consumes it makes the next bump automatic.
+    flash_stem = read_combo_flash_stem(combo_script)
+    flash_name = f"{flash_stem}.bin"
+    copy_file(UPSTREAM_SOURCE_ROOT / "res/combo" / flash_name, stage_dir / flash_name)
     run_command([sys.executable, "R47_combo.py", version], cwd=stage_dir)
     (stage_dir / "R47_combo.py").unlink(missing_ok=True)
-    (stage_dir / "DMCP5_flash_3.56.bin").unlink(missing_ok=True)
+    (stage_dir / flash_name).unlink(missing_ok=True)
     zip_tree(zip_out, stage_dir, stage_name)
     shutil.rmtree(stage_dir)
 

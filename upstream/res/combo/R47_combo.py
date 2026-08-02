@@ -7,7 +7,7 @@ if(len(sys.argv) >= 1):
 else:
   Version = "TEST"
   
-dmcp   = "DMCP5_flash_3.56"   # DMCP version - to be updated for a new MDPC version
+dmcp   = "DMCP5_flash_3.57"   # DMCP version - to be updated for a new DMPC version
 
 path1  = dmcp + ".bin"
 path2  = "R47.pg5"

@@ -1,0 +1,219 @@
+LBL ‘INTDEMO’
+  RAD
+  SF ‘SSIZE8’
+
+  
+  11        # Prep: loop from 11 to 1
+  STO R00
+  LBL 00
+
+# == LOOP START ==
+    ‘BND_P’   # Prep: indirect bounds
+    RCL R00
+    +
+    STO R02
+
+
+    ‘INT_P’   # Prep: indirect integr.
+    RCL R00
+    +
+    STO R01
+
+# == SET AND DRAW GRAPH ==
+    XEQ →R02  # Set graph bounds
+    PLTRST    # Reset graph settings
+    PGMPLT →01  # Set graph RPN eq.
+    PLTf 'x'    # Do RPN graph plot(x)
+    SNAP
+    PAUSE 10 
+# USE BYPASS TO SKIP INTEGRATION
+# GTO 'BYPASS'
+
+
+# == SET AND INTEGRATE ==
+    XEQ →R02  # Set integral bounds 
+    PGMINT →R01 # Set integration eq. 
+    ∫^𝑥_𝑦 ‘x’ # Do integration
+    LASTT?    # Push integration time
+
+    RCL Y   # Get result
+    RCL R01   # Get function number
+    🖨xy   # Output #No. & Result
+
+    R↓ R↓   # Roll down time & acc.
+    10 ÷ ‘ s’ + # Get seconds
+    RCL Z   # Get declared accuracy
+    🖨xy   # Output accuracy & time
+
+    RCL Z   # Get declared accuracy
+    ÷ |𝑥| log₁₀(𝑥) CHS
+    ‘Relative Accuracy:’
+    🖨xy   # Output accuracy
+
+
+  LBL 'BYPASS'
+# == END LOOP ==
+    DSZ R00
+      GTO 00
+    RTN  
+
+
+  LBL ‘BND_P1’
+    1
+    2
+    RTN
+
+  LBL ‘INT_P1’
+    # f(x) = 1/√x, 
+    #   bounds [1, 2]
+    MVAR ‘x’
+    RCL ‘x’
+    √𝑥 1/𝑥
+    RTN
+
+  LBL ‘BND_P2’
+    -1
+    3
+    RTN
+
+  LBL ‘INT_P2’
+    # f(x) = e^(-x²), 
+    #   bounds [-1, 3]
+    MVAR ‘x’
+    RCL ‘x’
+    𝑥² CHS 𝑒ˣ
+    RTN
+
+
+  LBL ‘BND_P3’
+    -15
+    15
+    RTN
+
+  LBL ‘INT_P3’
+    # f(x) = |x² - 3x|, 
+    #   bounds [-15, 15]
+    MVAR ‘x’
+    RCL ‘x’ ENTER
+    𝑥² 𝑥⇄𝑦 3 × - |𝑥|
+    RTN
+
+
+  LBL ‘BND_P4’
+    0
+    1.57079
+    RTN
+
+  LBL ‘INT_P4’
+    # f(x) = tan(x), 
+    #   bounds [0, 1.57079]
+    MVAR ‘x’
+    RCL ‘x’ tan(𝑥)
+    RTN
+
+
+  LBL ‘BND_P5’
+    0
+    1
+    RTN
+
+  LBL ‘INT_P5’
+    # f(x) = x^(x^(x^x)), 
+    #   bounds [0, 1]
+    MVAR ‘x’
+    RCL ‘x’
+    ENTER  ENTER  ENTER
+    𝑦ˣ 𝑦ˣ 𝑦ˣ
+    RTN
+
+
+  LBL ‘BND_P6’
+    0
+    1
+    RTN
+
+  LBL ‘INT_P6’
+    # f(x) = cos(x)·ln(x), 
+    #   bounds [0, 1]
+    MVAR ‘x’
+    RCL ‘x’
+    cos(𝑥)
+    RCL ‘x’
+    ln(𝑥)
+    ×
+    RTN
+
+
+  LBL ‘BND_P7’
+    0
+    1
+    RTN
+
+  LBL ‘INT_P7’
+    # f(x) = 1/√x, 
+    #   bounds [0, 1]
+    MVAR ‘x’
+    RCL ‘x’ √𝑥 1/𝑥
+    RTN
+
+
+
+  LBL ‘BND_P8’
+    0
+    1
+    RTN
+
+  LBL ‘INT_P8’
+    # f(x) = 1/√(-ln(x)), 
+    #   bounds [0, 1]
+    MVAR ‘x’
+    RCL ‘x’ ln(𝑥) CHS √𝑥 1/𝑥
+    RTN
+
+
+
+  LBL ‘BND_P9’
+    0
+    1
+    RTN
+
+  LBL ‘INT_P9’
+    # f(x) = ln(Γ(x)) 
+    #   bounds [0, 1]
+    MVAR ‘x’
+    RCL ‘x’ Γ(𝑥) ln(𝑥)
+    RTN
+
+
+  LBL ‘BND_P10’
+    -1
+    1
+    RTN
+
+  LBL 'INT_P10'
+    # f(x)=e^(x+sin(e^e^e^(x+1/3)))
+    #   bounds [-1, 1]
+    MVAR 'x'
+    RCL 'x' 1 3 / +
+    e^x e^x e^x SIN
+    RCL 'x' +
+    e^x
+    RTN
+
+  LBL ‘BND_P11’
+    0
+    1
+    RTN
+
+  LBL ‘INT_P11’
+    # f(x) = sin²(tan(tan(πx)))
+    #   bounds[0,1]
+    MVAR ‘x’
+    RCL ‘x’ 𝜋 × tan(𝑥) tan(𝑥) sin(𝑥) 𝑥²
+    RTN
+
+
+
+
+
+.END.

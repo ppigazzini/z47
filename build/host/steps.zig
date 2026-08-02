@@ -895,7 +895,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // load path and XEQ it from the top on the full calc core (no GTK). Catches
     // crashes and (wrapped in `timeout`) infinite loops in the actual programs.
     // The example path carries the UPSTREAM_ROOT hop because res/ is imported:
-    //   zig build pgm_run -Dpgm=upstream/res/PROGRAMS/BinetV3.p47
+    //   zig build pgm_run -Dpgm=upstream/res/PROGRAMS/BinetV4.p47
     const pgm_run_harness = host_builders.addFullCoreHarness(
         b,
         context.host_target,

@@ -17,7 +17,7 @@ outdir = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(root / ".github/project"))
 from upstream_paths import upstream_path  # noqa: E402
 
-real = upstream_path(root, "res/PROGRAMS/BinetV3.p47").read_bytes()
+real = upstream_path(root, "res/PROGRAMS/BinetV4.p47").read_bytes()
 
 
 def w(name, data):
