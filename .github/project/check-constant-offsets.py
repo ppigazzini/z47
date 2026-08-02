@@ -179,6 +179,16 @@ def main() -> int:
             return rc
         # fall through to re-validate the freshly-fixed file against the new header
     if not cptr.exists():
+        # "Not generated yet" is a legitimate skip -- the header is a build product.
+        # "The imported tree is not where UPSTREAM_ROOT says" is not, and produces an
+        # identical missing file, so the skip used to swallow a misconfigured root and
+        # report a clean gate over 185 unchecked constant offsets. Separate the two by
+        # asking whether the directory that should CONTAIN the header exists at all.
+        if not cptr.parent.parent.is_dir():
+            print(f"check-constant-offsets: BROKEN -- {cptr.parent.parent} is not a directory.")
+            print("Check UPSTREAM_ROOT in .github/project/upstream-pin.env.")
+            print("Refusing to skip: an unreadable imported tree is not 'not built yet'.")
+            return 1
         print(
             f"check-constant-offsets: {cptr} not generated yet "
             "(run `zig build constants`); skipping"

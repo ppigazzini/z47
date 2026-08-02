@@ -229,7 +229,17 @@ def c_macro_families(root: pathlib.Path) -> dict[str, list[tuple[str, str]]]:
     used once generates nothing to be inconsistent with.
     """
     families: dict[str, list[tuple[str, str]]] = {}
-    for path in sorted(upstream_path(root, "src/c47").glob("**/*.c")):
+    c_root = upstream_path(root, "src/c47")
+    # `glob` on a missing directory yields nothing, so a wrong UPSTREAM_ROOT made this
+    # print "every macro-generated family is ported consistently" -- a positive claim
+    # about work it never did, worded identically to the real all-clear.
+    if not c_root.is_dir():
+        raise SystemExit(
+            f"report-twin-divergence: BROKEN -- {c_root} is not a directory.\n"
+            "Check UPSTREAM_ROOT in .github/project/upstream-pin.env.\n"
+            "Refusing to report macro-family consistency without the C tree."
+        )
+    for path in sorted(c_root.glob("**/*.c")):
         text = path.read_text(encoding="utf-8", errors="replace")
         defined = {m.group(1) for m in C_MACRO_DEF_RE.finditer(text) if "{" in m.group(2)}
         for macro in defined:
