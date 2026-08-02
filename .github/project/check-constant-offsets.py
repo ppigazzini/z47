@@ -120,7 +120,14 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
     # only): the same by-name remap, keyed on each file's offset-literal pattern.
     OWNERS = {
         "src/shell/display/display.zig": [r"constR3?4?\((\d+)\)"],
-        "src/shell/frontier_addons.zig": [r"constR3?4?\((\d+)\)"],
+        # Was src/shell/frontier_addons.zig and src/core/numeric/math_wp34s.zig.
+        # Neither has existed since an owner reshuffle well before the layout work
+        # (both are absent at d17ef5a9f under their old zig_src/ spelling too), and
+        # because the loop below read_text()s unconditionally, --fix would rewrite
+        # the earlier owners and THEN die on FileNotFoundError, leaving the tree
+        # half-remapped. Nothing noticed because --fix is a maintenance escape hatch
+        # nobody runs on a green tree.
+        "src/shell/extensions/addons.zig": [r"constR3?4?\((\d+)\)"],
         "src/shell/display/screen.zig": [r"constR3?4?\((\d+)\)"],
         "src/shell/convert/conversion_units.zig": [
             r"constR3?4?\((\d+)\)",
@@ -128,8 +135,15 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
             r"^\s*(\d+), // \d+ constFactor",
         ],
         "src/core/numeric/command_wrappers/helpers.zig": [r"offset_const\w* = (\d+)"],
-        "src/core/numeric/math_wp34s.zig": [r"OFF_const51_gammaC01: u32 = (\d+)"],
+        "src/core/numeric/special/wp34s.zig": [r"OFF_const51_gammaC01: u32 = (\d+)"],
     }
+    missing_owners = [rel for rel in OWNERS if not (ROOT / rel).is_file()]
+    if missing_owners:
+        print("check-constant-offsets: BROKEN -- owner table names files that do not exist:")
+        for rel in missing_owners:
+            print(f"  {rel}")
+        print("Refusing to remap: a partial rewrite is worse than no rewrite.")
+        return 1
     for rel, pats in OWNERS.items():
         p = ROOT / rel
         text = p.read_text()
