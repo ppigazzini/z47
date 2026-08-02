@@ -1284,21 +1284,20 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // suite passes identically on upstream's pristine copy, which was measured
     // before reverting it. Regenerate only when upstream's own copy is genuinely
     // stale for z47, and say so in imported-tree-divergences.txt when you do.
-    update_testpgms.addCopyFileToSource(context.generated.test_pgms_bin, build_common.upstreamPathString(b, "res/testPgms/testPgms.bin"));
+    update_testpgms.addCopyFileToSource(context.generated.test_pgms_bin, "build/generated/testPgms.bin");
     const testpgms_step = b.step("testpgms", "Refresh the generated test program image");
     testpgms_step.dependOn(&update_testpgms.step);
     const testPgms_step = b.step("testPgms", "Refresh the generated test program image");
     testPgms_step.dependOn(&update_testpgms.step);
 
-    // These DO write res/testPgms/testPgms.bin into the imported tree, and that is
-    // deliberate, not an accident -- do not "fix" it. The image is a GENERATED
-    // ARTEFACT under a freshness contract: run-host-parity-battery.sh regenerates it
-    // and the CI step "Compare tracked generated artifacts" then runs
-    // `git diff --exit-code` over the list in workflow-imported-root-paths.sh, which
-    // includes this file. So the committed copy must equal what z47's generator
-    // emits (22179 bytes, against upstream's committed 22205), and the divergence
-    // from the pin is declared in imported-tree-divergences.txt for that reason.
-    // Reverting it to upstream's copy makes CI fail, which is how this was learned.
+    // These regenerate build/generated/testPgms.bin -- z47's OWN baseline, outside the
+    // vendored tree. It is a GENERATED ARTEFACT under a freshness contract:
+    // run-host-parity-battery.sh regenerates it and CI's "Compare tracked generated
+    // artifacts" step `git diff --exit-code`s it, so a change in the ported
+    // generator's output fails the build. It is a self-regression check, not a parity
+    // claim. It used to be written into upstream/res/testPgms/testPgms.bin, which put
+    // a z47 build product inside the imported tree and kept that tree from ever
+    // matching its pin.
     test_step.dependOn(&update_testpgms.step);
     test_asan_step.dependOn(&update_testpgms.step);
     repeattest_step.dependOn(&update_testpgms.step);

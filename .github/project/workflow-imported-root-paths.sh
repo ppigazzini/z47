@@ -11,7 +11,6 @@ generated_artifact_paths=(
     "src/generated/constantPointers.h"
     "src/generated/constantPointers2.c"
     "src/generated/rasterFontsData.c"
-    "res/testPgms/testPgms.bin"
 )
 
 host_package_common_paths=(
@@ -125,11 +124,21 @@ list_docs_requirements() {
     resolve_repo_relative "docs/code/requirements.txt"
 }
 
+# z47-owned generated artefacts. These are NOT resolved through UPSTREAM_ROOT: they
+# live in z47's tree by design. testPgms.bin moved here from the imported tree, where
+# it was the only TRACKED generated artefact and kept that tree off its pin.
+z47_generated_artifact_paths=(
+    "build/generated/testPgms.bin"
+)
+
 list_generated_artifacts() {
     local relative_path
 
     for relative_path in "${generated_artifact_paths[@]}"; do
         resolve_repo_relative "$relative_path"
+    done
+    for relative_path in "${z47_generated_artifact_paths[@]}"; do
+        printf '%s\n' "$relative_path"
     done
 }
 

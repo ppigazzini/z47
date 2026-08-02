@@ -40,7 +40,6 @@ res/PROGRAMS
 res/combo
 res/dmcp5/update_R47.txt
 res/fonts/C47__NumericFontBold.ttf
-res/fonts/FontCreator15 Home details
 res/fonts/Font_snap
 res/fonts/MacOS_Info_Strip
 res/offimg/General
@@ -89,7 +88,6 @@ src/testSuite/tests/eq_cov.txt
 src/testSuite/tests/eqslv_cov.txt
 src/testSuite/tests/error_cov.txt
 src/testSuite/tests/flags_cov.txt
-src/testSuite/tests/graphs_cov.txt
 src/testSuite/tests/histo_cov.txt
 src/testSuite/tests/integrate_cov.txt
 src/testSuite/tests/iteration_cov.txt
