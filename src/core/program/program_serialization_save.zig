@@ -8,12 +8,6 @@ pub fn saveProgram(label: u16) void {
 // (whose first global label it is) to ioPathSaveAllPrograms, which writes
 // directly to PROGRAMS/ALLPGMS without the interactive file-picker dialog.
 pub fn saveAllPrograms() void {
-    // Host-only export-all path; the parity/fake harness neither exercises nor
-    // provides the labelList/findNamedLabel surface it walks, so gate it out.
-    if (runtime.use_fake_harness_surface) {
-        return;
-    }
-
     const saved_current_local_step_number = runtime.currentLocalStepNumber;
     const saved_current_program_number = runtime.currentProgramNumber;
     defer {
@@ -29,7 +23,7 @@ pub fn saveAllPrograms() void {
         }
         const label = runtime.findNamedLabel(&label_name, runtime.GLOBAL_LABELS);
         const old_program_number = runtime.currentProgramNumber;
-        _ = runtime.selectProgram(label);
+        runtime.selectProgram(label);
         if (runtime.currentProgramNumber != old_program_number) {
             saveProgramToPath(label, runtime.ioPathSaveAllPrograms);
         }
@@ -43,20 +37,21 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
 
     const saved_current_local_step_number = runtime.currentLocalStepNumber;
     const saved_current_program_number = runtime.currentProgramNumber;
-    defer {
-        runtime.currentLocalStepNumber = saved_current_local_step_number;
-        runtime.currentProgramNumber = saved_current_program_number;
-    }
 
-    if (!runtime.selectProgram(label)) {
-        return;
-    }
+    // c43's `_selectProgram` is void: an out-of-range label raises the error and
+    // the save CONTINUES with whatever program is current. Gating the save on it
+    // was a z47 divergence the frozen oracle could not see (REPORT-31 M31-3).
+    runtime.selectProgram(label);
 
     const ret = runtime.openSaveProgram(path);
     if (ret != runtime.FILE_OK) {
         if (ret != runtime.FILE_CANCEL) {
             runtime.displayWriteError();
         }
+        // No restore here, and none on the cancel path: c43 leaves the selected
+        // program current when the file cannot be opened, and only puts the
+        // saved numbers back after a completed write. A `defer` restoring on
+        // every path was the second divergence this lane could not see.
         return;
     }
     defer runtime.closeFile();
@@ -84,5 +79,7 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
         runtime.writeU8Line(255);
     }
 
+    runtime.currentLocalStepNumber = saved_current_local_step_number;
+    runtime.currentProgramNumber = saved_current_program_number;
     runtime.temporaryInformation = runtime.TI_SAVED;
 }

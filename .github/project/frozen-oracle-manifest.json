@@ -1,16 +1,7 @@
 {
   "_why": "REPORT-31 M31-0. Each entry binds a parity oracle to the c43 file whose behaviour it reproduces. `frozen` oracles are hand-transliterated and CANNOT see c43 move, so they are gated on a content hash of what they mirror; the endpoint is an empty list, not a maintained one. `generated` oracles are extracted from c43 source and are sound in shape -- they are gated on reproducing byte-identically, because nothing else re-runs the extractor.",
-  "_converted": "build/tests/flags/flags_oracle.c left this list in M31-2: it now #includes src/c47/flags.c under oracle_* names, so the reference moves with c43 by construction and there is nothing left to hash. Entries leave here by being converted, never by being excused.",
+  "_converted": "flags_oracle.c left this list in M31-2 and program_serialization_oracle.c in M31-3: each now #includes its c43 counterpart under oracle_* names, so the reference moves with c43 by construction and there is nothing left to hash. Entries leave here by being converted, never by being excused.",
   "frozen": [
-    {
-      "oracle": "build/tests/program_serialization/program_serialization_oracle.c",
-      "milestone": "REPORT-31 M31-3",
-      "why": "183 lines reproducing the save/restore program framing of saveRestorePrograms.c, including its own PROGRAM_VERSION / OLDEST_COMPATIBLE_PROGRAM_VERSION constants -- so a version bump upstream leaves this lane green.",
-      "mirrors": {
-        "src/c47/saveRestorePrograms.c": "1e5949fc50ce208a6962527f3c1e5216eae2d6a02f8ed2e9c8b947e2ae3d45b9"
-      },
-      "oracle_sha256": "f2bcb3434b78790258d7113597d4fe909cceb7a50d1ba0e9a99712d77664fb43"
-    },
     {
       "oracle": "build/tests/register_metadata/register_metadata_oracle.c",
       "milestone": "REPORT-31 M31-4",

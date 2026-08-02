@@ -1,5 +1,7 @@
 const std = @import("std");
 const abi_host = @import("../abi_host.zig");
+const host_platform = @import("../host/platform.zig");
+const host_types = @import("../host/types.zig");
 
 pub const RuntimeObjects = struct {
     program_serialization: *std.Build.Step.Compile,
@@ -56,9 +58,6 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("dmcp_rom", dmcp_rom_module);
-    const build_options = b.addOptions();
-    build_options.addOption(bool, "use_fake_program_serialization_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
-    module.addOptions("program_serialization_build_options", build_options);
 
     return b.addObject(.{
         .name = b.fmt("{s}-program-serialization", .{name_prefix}),
@@ -121,6 +120,7 @@ pub fn addParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    common: host_types.CommonConfig,
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
     const exe = b.addExecutable(.{
@@ -133,6 +133,12 @@ pub fn addParityExecutable(
         }),
     });
     abi_host.addToModule(b, exe.root_module, target, optimize, "program-serialization-parity");
+
+    // The oracle compiles c43's own saveRestorePrograms.c, which reaches c43's
+    // defines.h / items.h / typeDefinitions.h / hal/io.h. Those refuse to compile
+    // without knowing which build they are in, so the lane takes the SAME
+    // PC_BUILD/platform/word-size macros the product host build uses.
+    host_platform.addHostMacros(exe.root_module, common);
 
     exe.root_module.addIncludePath(b.path("build/tests/program_serialization"));
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/program_serialization/program_serialization_fake_runtime.c"), .flags = &.{} });
