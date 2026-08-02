@@ -31,7 +31,7 @@ Requires zig + the upstream headers under src/c47, dep/decNumberICU, the generat
 softmenu/constant headers (produced by any prior `zig build`), and GTK3 cflags
 (pkg-config); it SKIPs cleanly on hosts lacking those C build deps.
 """
-import os
+
 import pathlib
 import re
 import shutil
@@ -79,6 +79,8 @@ def _split_top_level(text, sep=","):
 def parse_c_rows(src):
     """Return (initializers-with-func-0, func-name-per-row) from items.c."""
     m = re.search(r"const item_t indexOfItems\[\] = \{(.*?)\n\};", src, re.S)
+    if m is None:
+        raise SystemExit("items.c: no `const item_t indexOfItems[] = {...}` block found")
     body = "\n".join(re.sub(r"//.*$", "", ln) for ln in m.group(1).splitlines())
     rows = [re.sub(r"/\*.*?\*/", "", r, flags=re.S).strip() for r in _split_top_level(body)]
     rows = [r for r in rows if r]
@@ -128,7 +130,7 @@ def extract_block(src_lines, start_pat, end_pat, inclusive=True):
     upstream can append to it without the probe losing the new lines.
     """
     lines = src_lines
-    start = next(i for i, l in enumerate(lines) if re.search(start_pat, l))
+    start = next(i for i, line in enumerate(lines) if re.search(start_pat, line))
     end = next(i for i in range(start, len(lines)) if re.search(end_pat, lines[i]))
     return "\n".join(lines[start : end + 1] if inclusive else lines[start:end])
 
@@ -141,7 +143,9 @@ def build_probe_and_dump(zig, tmp):
     # The block ends at the last #define before the USECURVES guard, so a macro upstream
     # appends to it (S4EM/S6EM/V_2/V_3/V_4/S_RAR_S arrived with the 6559a9c59 pin) is picked
     # up instead of leaving the probe with an undeclared identifier.
-    localm = extract_block(src_lines, r"#define PER_\b", r"#if defined\(USECURVES\)", inclusive=False)
+    localm = extract_block(
+        src_lines, r"#define PER_\b", r"#if defined\(USECURVES\)", inclusive=False
+    )
     s18 = extract_block(src_lines, r"#if defined\(OPTION_XFN_1000\)", r"#endif //OPTION_XFN_1000")
     probe = [
         "#include <stdio.h>",
@@ -169,7 +173,9 @@ def build_probe_and_dump(zig, tmp):
     # Locate the generated softmenu/constant headers produced by a prior zig build.
     gen_dirs = set()
     for name in ("softmenuCatalogs.h", "constantPointers.h"):
-        hit = next(ROOT.glob(f".zig-cache/**/{name}"), None) or next(ROOT.glob(f"src/generated/{name}"), None)
+        hit = next(ROOT.glob(f".zig-cache/**/{name}"), None) or next(
+            ROOT.glob(f"src/generated/{name}"), None
+        )
         if hit:
             gen_dirs.add(str(hit.parent))
     gtk = subprocess.run(["pkg-config", "--cflags", "gtk+-3.0"], capture_output=True, text=True)
@@ -187,13 +193,20 @@ def build_probe_and_dump(zig, tmp):
     # The audit still gates on the Linux host-parity lane where the deps exist, and
     # the table is platform-independent data so one lane is sufficient.
     (tmp / "preflight.c").write_text('#include "c47.h"\nint main(void){return 0;}\n')
-    pf = subprocess.run(cc + [str(tmp / "preflight.c"), "-o", str(tmp / "pf")], capture_output=True, text=True)
+    pf = subprocess.run(
+        [*cc, str(tmp / "preflight.c"), "-o", str(tmp / "pf")], capture_output=True, text=True
+    )
     if pf.returncode != 0:
         miss = re.search(r"'([^']+\.h)' file not found", pf.stderr)
-        print(f"SKIP: c47.h build deps unavailable on this host ({miss.group(1) if miss else 'header not found'})", file=sys.stderr)
+        print(
+            f"SKIP: c47.h build deps unavailable on this host ({miss.group(1) if miss else 'header not found'})",
+            file=sys.stderr,
+        )
         return "SKIP", len(rows), cfuncs
 
-    comp = subprocess.run(cc + [str(tmp / "probe.c"), "-o", str(tmp / "probe")], capture_output=True, text=True)
+    comp = subprocess.run(
+        [*cc, str(tmp / "probe.c"), "-o", str(tmp / "probe")], capture_output=True, text=True
+    )
     if comp.returncode != 0:
         print("item-table probe: compile failed\n" + comp.stderr[:2500], file=sys.stderr)
         return None, len(rows), cfuncs
@@ -209,8 +222,11 @@ def build_probe_and_dump(zig, tmp):
 
 def parse_zig_rows():
     lines = ZIG_ITEMS.read_text().splitlines()
-    hdr = next(i for i, l in enumerate(lines) if "pub export const indexOfItems" in l)
-    size = int(re.search(r"\[(\d+)\]item_t", lines[hdr]).group(1))
+    hdr = next(i for i, line in enumerate(lines) if "pub export const indexOfItems" in line)
+    size_m = re.search(r"\[(\d+)\]item_t", lines[hdr])
+    if size_m is None:
+        raise SystemExit(f"no `[N]item_t` array size on the indexOfItems line: {lines[hdr]!r}")
+    size = int(size_m.group(1))
     rows, zfuncs, comptime, comptime_idx = {}, {}, 0, set()
     idx = 0
     for i in range(hdr + 1, len(lines)):
@@ -226,8 +242,17 @@ def parse_zig_rows():
         msm = re.search(r"\.itemSoftmenuName\s*=\s*\[16\]u8\{([^}]*)\}", s)
         mf = re.search(r"\.func\s*=\s*(ext_[A-Za-z0-9_]+|&itemToBeCoded)", s)
         if mp and mt and ms and mc and msm and mf:
-            hx = lambda g: "".join(x.lower() for x in re.findall(r"0x([0-9a-fA-F]{2})", g))
-            rows[idx] = (int(mp.group(1)), int(mt.group(1)), int(ms.group(1)), hx(mc.group(1)), hx(msm.group(1)))
+
+            def hx(g):
+                return "".join(x.lower() for x in re.findall(r"0x([0-9a-fA-F]{2})", g))
+
+            rows[idx] = (
+                int(mp.group(1)),
+                int(mt.group(1)),
+                int(ms.group(1)),
+                hx(mc.group(1)),
+                hx(msm.group(1)),
+            )
             zfuncs[idx] = mf.group(1)
         else:
             comptime += 1
@@ -258,7 +283,10 @@ def main():
         print("SKIP: zig not on PATH", file=sys.stderr)
         return 0
 
-    last_item = int(re.search(r"#define\s+LAST_ITEM\s+(\d+)", ITEMS_H.read_text()).group(1))
+    last_m = re.search(r"#define\s+LAST_ITEM\s+(\d+)", ITEMS_H.read_text())
+    if last_m is None:
+        raise SystemExit(f"no `#define LAST_ITEM <n>` in {ITEMS_H}")
+    last_item = int(last_m.group(1))
     zsize, zcount, zrows, comptime, zfuncs, comptime_idx = parse_zig_rows()
 
     print(f"item-table parity: LAST_ITEM={last_item}, Zig table size={zsize}, rows={zcount}")
@@ -287,7 +315,9 @@ def main():
         want = expected_zig_func(cfuncs[idx])
         if zfuncs[idx] != want:
             func_bad.append((idx, cfuncs[idx], want, zfuncs[idx]))
-    print(f"  compared {len(zrows)} literal rows (data + func), skipped {comptime} build-varying rows")
+    print(
+        f"  compared {len(zrows)} literal rows (data + func), skipped {comptime} build-varying rows"
+    )
     fields = ["param", "tamMinMax", "status", "catName", "smName"]
     for idx, c, z in data_bad[:12]:
         diff = [(fields[k], c[k], z[k]) for k in range(5) if c[k] != z[k]]
@@ -301,8 +331,10 @@ def main():
         # flagged for manual attention rather than emitted (they carry no literal).
         drifted = sorted({i for i, *_ in data_bad} | {i for i, *_ in func_bad})
         new_rows = [i for i in range(zcount, ccount)]
-        print(f"\n--- EMIT: {len(drifted)} changed + {len(new_rows)} new row(s) "
-              f"(resize array to [{ccount}]) ---")
+        print(
+            f"\n--- EMIT: {len(drifted)} changed + {len(new_rows)} new row(s) "
+            f"(resize array to [{ccount}]) ---"
+        )
         for i in drifted + new_rows:
             if i in comptime_idx:
                 print(f"/* {i} */ // MANUAL: build-varying (comptime) row -- re-derive by hand")
@@ -312,10 +344,14 @@ def main():
     if size_bad:
         print(f"\nNOTE: resize the Zig indexOfItems to [{last_item + 1}] (LAST_ITEM+1)")
     if data_bad or func_bad or size_bad or count_bad:
-        print(f"\nFAIL: {len(data_bad)} data + {len(func_bad)} func divergence(s)"
-              f"{' + size' if size_bad else ''}{' + count' if count_bad else ''} vs items.c")
+        print(
+            f"\nFAIL: {len(data_bad)} data + {len(func_bad)} func divergence(s)"
+            f"{' + size' if size_bad else ''}{' + count' if count_bad else ''} vs items.c"
+        )
         return 1
-    print("\nPASS: every literal indexOfItems row matches upstream items.c byte-for-byte (data + func)")
+    print(
+        "\nPASS: every literal indexOfItems row matches upstream items.c byte-for-byte (data + func)"
+    )
     return 0
 
 

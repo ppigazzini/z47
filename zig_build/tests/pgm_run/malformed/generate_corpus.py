@@ -12,8 +12,10 @@ root = pathlib.Path(__file__).resolve().parents[4]
 outdir = pathlib.Path(__file__).resolve().parent
 real = (root / "res/PROGRAMS/BinetV3.p47").read_bytes()
 
+
 def w(name, data):
     (outdir / name).write_bytes(data)
+
 
 MAGIC = b"PROGRAM_FILE_FORMAT\n0\nC47_program_file_version\n1\n"
 
@@ -37,7 +39,7 @@ w("size_nan.p47", MAGIC + b"PROGRAM\nNOTANUMBER\n")
 half = len(real) // 2
 w("body_truncated.p47", real[:half])
 # 9. every prefix truncation at 8-byte steps (classic "read past end" fuzz)
-for cut in range(8, len(real), max(8, len(real)//12)):
+for cut in range(8, len(real), max(8, len(real) // 12)):
     w(f"trunc_{cut:04d}.p47", real[:cut])
 # 10. valid header + high bytes / control bytes in the body (bad opcode/length bytes)
 w("body_ff.p47", MAGIC + b"PROGRAM\n32\n" + b"\xff" * 32)
@@ -46,8 +48,9 @@ w("body_zeros.p47", MAGIC + b"PROGRAM\n32\n" + b"\x00" * 32)
 w("all_ff.p47", b"\xff" * 256)
 w("all_00.p47", b"\x00" * 256)
 # 12. real file with a single byte flipped in the size field region
-mut = bytearray(real); 
-if len(mut) > 40: mut[38] = 0x39  # nudge a digit
+mut = bytearray(real)
+if len(mut) > 40:
+    mut[38] = 0x39  # nudge a digit
 w("size_digit_flip.p47", bytes(mut))
 
 count = len(list(outdir.glob("*.p47")))

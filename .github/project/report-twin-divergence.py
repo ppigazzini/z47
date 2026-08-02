@@ -231,7 +231,9 @@ def c_macro_families(root: pathlib.Path) -> dict[str, list[tuple[str, str]]]:
         text = path.read_text(encoding="utf-8", errors="replace")
         defined = {m.group(1) for m in C_MACRO_DEF_RE.finditer(text) if "{" in m.group(2)}
         for macro in defined:
-            invocation = re.compile(rf"^\s*{re.escape(macro)}\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)", re.MULTILINE)
+            invocation = re.compile(
+                rf"^\s*{re.escape(macro)}\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)", re.MULTILINE
+            )
             members = [(m.group(1), m.group(2)) for m in invocation.finditer(text)]
             if len(members) > 1:
                 families.setdefault(macro, []).extend(members)
@@ -280,7 +282,9 @@ def compare_macro_families(root: pathlib.Path) -> list[dict]:
                 missing.append(fn_name)
                 continue
             path, body = entry
-            shapes.setdefault(member_shape(body, fn_name, zig_type), []).append(f"{fn_name} ({path})")
+            shapes.setdefault(member_shape(body, fn_name, zig_type), []).append(
+                f"{fn_name} ({path})"
+            )
         if len(shapes) > 1:
             findings.append(
                 {
@@ -317,14 +321,18 @@ def self_test() -> int:
     checks: list[tuple[str, bool]] = []
 
     # A `//` inside a string or char literal is not a comment.
-    checks.append((
-        "string literal with //",
-        strip_noise('const s = "http://x"; // trailing') == 'const s = "http://x";',
-    ))
-    checks.append((
-        "char literal with /",
-        strip_noise("if (c == '/') return; // note") == "if (c == '/') return;",
-    ))
+    checks.append(
+        (
+            "string literal with //",
+            strip_noise('const s = "http://x"; // trailing') == 'const s = "http://x";',
+        )
+    )
+    checks.append(
+        (
+            "char literal with /",
+            strip_noise("if (c == '/') return; // note") == "if (c == '/') return;",
+        )
+    )
 
     # Brace matching must span a multi-line signature and stop at the right place.
     import tempfile
@@ -342,11 +350,15 @@ def self_test() -> int:
     checks.append(("body stops at its own brace", "fn b()" not in bodies.get("a", "")))
 
     # Family canonicalisation makes a seam pair compare equal.
-    checks.append((
-        "family stem canonicalised",
-        canonicalise_family("z47_calc_state_runtime_x();", ("calc_state",))
-        == canonicalise_family("z47_program_serialization_runtime_x();", ("program_serialization",)),
-    ))
+    checks.append(
+        (
+            "family stem canonicalised",
+            canonicalise_family("z47_calc_state_runtime_x();", ("calc_state",))
+            == canonicalise_family(
+                "z47_program_serialization_runtime_x();", ("program_serialization",)
+            ),
+        )
+    )
 
     # --- macro families (M-SAFE-11) ---
     # The first two exist because the scan shipped a run reporting a clean tree
@@ -361,38 +373,52 @@ def self_test() -> int:
         "stringToUintFunc(stringToUint8,  uint8_t)\n"
         "stringToUintFunc(stringToUint16, uint16_t)\n"
     )
-    checks.append((
-        "macro definition found other than at file start (MULTILINE)",
-        [m.group(1) for m in C_MACRO_DEF_RE.finditer(macro_c)] == ["stringToUintFunc"],
-    ))
+    checks.append(
+        (
+            "macro definition found other than at file start (MULTILINE)",
+            [m.group(1) for m in C_MACRO_DEF_RE.finditer(macro_c)] == ["stringToUintFunc"],
+        )
+    )
     # A value macro is not a family of anything; requiring a brace keeps it out.
     value_macro = "#define MIN(a, b)  \\\n  ((a) < (b) ? (a) : (b))\n"
-    checks.append((
-        "a value macro is not treated as a function family",
-        [m.group(1) for m in C_MACRO_DEF_RE.finditer(value_macro) if "{" in m.group(2)] == [],
-    ))
-    checks.append((
-        "macro invocations and their C types extracted",
-        re.compile(
-            r"^\s*stringToUintFunc\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)", re.MULTILINE
-        ).findall(macro_c)
-        == [("stringToUint8", "uint8_t"), ("stringToUint16", "uint16_t")],
-    ))
+    checks.append(
+        (
+            "a value macro is not treated as a function family",
+            [m.group(1) for m in C_MACRO_DEF_RE.finditer(value_macro) if "{" in m.group(2)] == [],
+        )
+    )
+    checks.append(
+        (
+            "macro invocations and their C types extracted",
+            re.compile(r"^\s*stringToUintFunc\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)", re.MULTILINE).findall(
+                macro_c
+            )
+            == [("stringToUint8", "uint8_t"), ("stringToUint16", "uint16_t")],
+        )
+    )
     # Two members of one macro differ ONLY by name and width: same shape. The u8
     # member's parameter type is `[*:0]const u8`, which is why the signature is
     # dropped rather than normalised -- keeping it reported this pair as divergent.
     u8_body = "pub export fn stringToUint8(str: [*:0]const u8) u8 { return @truncate(strtoul(str, null, 0)); }"
     u16_body = "pub export fn stringToUint16(str: [*:0]const u8) u16 { return @truncate(strtoul(str, null, 0)); }"
-    checks.append((
-        "siblings differing only by name and width share a shape",
-        member_shape(u8_body, "stringToUint8", "u8") == member_shape(u16_body, "stringToUint16", "u16"),
-    ))
+    checks.append(
+        (
+            "siblings differing only by name and width share a shape",
+            member_shape(u8_body, "stringToUint8", "u8")
+            == member_shape(u16_body, "stringToUint16", "u16"),
+        )
+    )
     # ...and a different base is a different shape, which is finding 10 exactly.
-    drifted = "pub export fn stringToUint8(str: [*:0]const u8) u8 { return parseIntCompat(u8, str); }"
-    checks.append((
-        "a drifted member does NOT share the family shape",
-        member_shape(drifted, "stringToUint8", "u8") != member_shape(u16_body, "stringToUint16", "u16"),
-    ))
+    drifted = (
+        "pub export fn stringToUint8(str: [*:0]const u8) u8 { return parseIntCompat(u8, str); }"
+    )
+    checks.append(
+        (
+            "a drifted member does NOT share the family shape",
+            member_shape(drifted, "stringToUint8", "u8")
+            != member_shape(u16_body, "stringToUint16", "u16"),
+        )
+    )
 
     failed = 0
     for label, ok in checks:
@@ -442,7 +468,9 @@ def main() -> int:
             print("MACRO FAMILY DIVERGENCE -- upstream #define families whose z47 ports disagree")
             print(f"  families with disagreeing ports: {len(families)}\n")
             for f in families:
-                print(f"{f['macro']}  ({f['members']} members, {f['distinct_shapes']} distinct shapes)")
+                print(
+                    f"{f['macro']}  ({f['members']} members, {f['distinct_shapes']} distinct shapes)"
+                )
                 for g in f["groups"]:
                     print(f"    shape: {g['shape'][:150]}")
                     print(f"      members: {', '.join(g['members'])}")

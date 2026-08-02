@@ -39,8 +39,7 @@ IMPORT = re.compile(r'@import\("([^"]+\.zig)"\)')
 
 def build_graph(root):
     src = os.path.join(root, "zig_src")
-    files = [os.path.join(d, f) for d, _, fs in os.walk(src)
-             for f in fs if f.endswith(".zig")]
+    files = [os.path.join(d, f) for d, _, fs in os.walk(src) for f in fs if f.endswith(".zig")]
     rel = {f: os.path.relpath(f, root) for f in files}
     known = set(files)
     g = collections.defaultdict(set)
@@ -60,16 +59,21 @@ def sccs(nodes, g):
         if root in index:
             continue
         work = [(root, iter(g.get(root, ())))]
-        index[root] = low[root] = c[0]; c[0] += 1
-        stack.append(root); on[root] = True
+        index[root] = low[root] = c[0]
+        c[0] += 1
+        stack.append(root)
+        on[root] = True
         while work:
             v, it = work[-1]
             pushed = False
             for w in it:
                 if w not in index:
-                    index[w] = low[w] = c[0]; c[0] += 1
-                    stack.append(w); on[w] = True
-                    work.append((w, iter(g.get(w, ())))); pushed = True
+                    index[w] = low[w] = c[0]
+                    c[0] += 1
+                    stack.append(w)
+                    on[w] = True
+                    work.append((w, iter(g.get(w, ()))))
+                    pushed = True
                     break
                 if on.get(w):
                     low[v] = min(low[v], index[w])
@@ -81,7 +85,9 @@ def sccs(nodes, g):
             if low[v] == index[v]:
                 comp = []
                 while True:
-                    w = stack.pop(); on[w] = False; comp.append(w)
+                    w = stack.pop()
+                    on[w] = False
+                    comp.append(w)
                     if w == v:
                         break
                 out.append(comp)
@@ -95,12 +101,12 @@ def zone_of(relpath):
     and if every member reported a distinct "zone" the dominant one would be
     chosen by dict order and the fingerprint would not survive a re-run.
     """
-    parts = relpath.split(os.sep)          # zig_src / abi / types.zig
+    parts = relpath.split(os.sep)  # zig_src / abi / types.zig
     if len(parts) <= 2:
         return parts[0]
     if len(parts) == 3:
-        return parts[1]                    # zig_src/abi/types.zig      -> abi
-    return os.sep.join(parts[1:3])         # zig_src/core/numeric/x.zig -> core/numeric
+        return parts[1]  # zig_src/abi/types.zig      -> abi
+    return os.sep.join(parts[1:3])  # zig_src/core/numeric/x.zig -> core/numeric
 
 
 def measure(root):
@@ -113,7 +119,8 @@ def measure(root):
             x = st.pop()
             for w in g.get(x, ()):
                 if w not in seen:
-                    seen.add(w); st.append(w)
+                    seen.add(w)
+                    st.append(w)
         return len(seen)
 
     n = len(files)
@@ -124,8 +131,9 @@ def measure(root):
     for comp in comps:
         zones = collections.Counter(zone_of(rel[f]) for f in comp)
         fingerprints.append({"size": len(comp), "zone": zones.most_common(1)[0][0]})
-    abi_cycles = sum(1 for comp in comps
-                     if all(rel[f].startswith("zig_src" + os.sep + "abi") for f in comp))
+    abi_cycles = sum(
+        1 for comp in comps if all(rel[f].startswith("zig_src" + os.sep + "abi") for f in comp)
+    )
     return {
         "files": n,
         "edges": sum(len(v) for v in g.values()),
@@ -161,10 +169,13 @@ def main():
             "cost neither compile time, flash nor test isolation."
         )
         with open(path, "w", encoding="utf-8") as fh:
-            json.dump(m, fh, indent=1, sort_keys=True); fh.write("\n")
-        print(f"check-module-graph: re-pinned {len(m['cycles'])} cycles, "
-              f"{m['files_in_cycles']} files, abi_cycles={m['abi_cycles']}, "
-              f"NCCD {m['nccd']}")
+            json.dump(m, fh, indent=1, sort_keys=True)
+            fh.write("\n")
+        print(
+            f"check-module-graph: re-pinned {len(m['cycles'])} cycles, "
+            f"{m['files_in_cycles']} files, abi_cycles={m['abi_cycles']}, "
+            f"NCCD {m['nccd']}"
+        )
         return 0
 
     if not os.path.isfile(path):
@@ -174,24 +185,29 @@ def main():
 
     fails = []
     if m["abi_cycles"] > base["abi_cycles"]:
-        fails.append(f"abi/ cycles rose {base['abi_cycles']} -> {m['abi_cycles']}. "
-                     "The contract layer is imported by 41% of the tree; it must be "
-                     "the acyclic bottom.")
+        fails.append(
+            f"abi/ cycles rose {base['abi_cycles']} -> {m['abi_cycles']}. "
+            "The contract layer is imported by 41% of the tree; it must be "
+            "the acyclic bottom."
+        )
 
     def key(c):
         return (c["size"], c["zone"])
+
     old = collections.Counter(key(c) for c in base["cycles"])
     new = collections.Counter(key(c) for c in m["cycles"])
     for k, cnt in new.items():
         if cnt > old.get(k, 0):
-            fails.append(f"new @import cycle: {k[0]} files in {k[1]} "
-                         f"({old.get(k, 0)} -> {cnt})")
+            fails.append(f"new @import cycle: {k[0]} files in {k[1]} ({old.get(k, 0)} -> {cnt})")
     if m["files_in_cycles"] > base["files_in_cycles"]:
-        fails.append(f"files trapped in cycles rose "
-                     f"{base['files_in_cycles']} -> {m['files_in_cycles']}")
+        fails.append(
+            f"files trapped in cycles rose {base['files_in_cycles']} -> {m['files_in_cycles']}"
+        )
 
-    print(f"  files {m['files']}  edges {m['edges']}  cycles {len(m['cycles'])}  "
-          f"trapped {m['files_in_cycles']}  abi_cycles {m['abi_cycles']}")
+    print(
+        f"  files {m['files']}  edges {m['edges']}  cycles {len(m['cycles'])}  "
+        f"trapped {m['files_in_cycles']}  abi_cycles {m['abi_cycles']}"
+    )
     print(f"  CCD {m['ccd']}  ACD {m['acd']}  NCCD {m['nccd']}   (reported, not gated)")
 
     if fails:
@@ -203,10 +219,10 @@ def main():
         print("with --bump. A cycle must never be added.")
         return 1
 
-    improved = (m["files_in_cycles"] < base["files_in_cycles"]
-                or m["abi_cycles"] < base["abi_cycles"])
-    print("check-module-graph: OK" + (
-        "  (IMPROVED -- re-pin with --bump)" if improved else ""))
+    improved = (
+        m["files_in_cycles"] < base["files_in_cycles"] or m["abi_cycles"] < base["abi_cycles"]
+    )
+    print("check-module-graph: OK" + ("  (IMPROVED -- re-pin with --bump)" if improved else ""))
     return 0
 
 

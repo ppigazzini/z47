@@ -49,9 +49,10 @@ NON_OWNER_ALLOW = {
 
 
 def load_builder():
-    spec = importlib.util.spec_from_file_location(
-        "corr_builder", HERE / "build-correspondence-manifest.py"
-    )
+    path = HERE / "build-correspondence-manifest.py"
+    spec = importlib.util.spec_from_file_location("corr_builder", path)
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"cannot load the correspondence builder from {path}")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -123,11 +124,15 @@ def main() -> int:
     committed = committed_symbol_rows(MANIFEST)
     live = {cf: ow for cf, ow in file_owners.items()}
     if committed != live:
-        stale = sorted((set(committed) ^ set(live))
-                       | {cf for cf in set(committed) & set(live)
-                          if committed[cf] != live[cf]})
-        fail.append(f"manifest stale in {len(stale)} file(s): "
-                    + ", ".join(stale[:5]) + (" ..." if len(stale) > 5 else ""))
+        stale = sorted(
+            (set(committed) ^ set(live))
+            | {cf for cf in set(committed) & set(live) if committed[cf] != live[cf]}
+        )
+        fail.append(
+            f"manifest stale in {len(stale)} file(s): "
+            + ", ".join(stale[:5])
+            + (" ..." if len(stale) > 5 else "")
+        )
         fail.append("  -> re-run build-correspondence-manifest.py and commit")
 
     # absence ratchet
@@ -136,8 +141,9 @@ def main() -> int:
         return 1
     base = json.loads(BASELINE.read_text())
     if current["uncovered"] > base["uncovered"]:
-        fail.append(f"uncovered rose {base['uncovered']} -> {current['uncovered']}: "
-                    + ", ".join(uncovered))
+        fail.append(
+            f"uncovered rose {base['uncovered']} -> {current['uncovered']}: " + ", ".join(uncovered)
+        )
 
     if fail:
         print("\nFAIL: correspondence gate --")
@@ -147,8 +153,10 @@ def main() -> int:
 
     ahead = base["uncovered"] - current["uncovered"]
     note = f" ({ahead} ahead of baseline)" if ahead else ""
-    print(f"\ncheck-upstream-correspondence: OK -- uncovered "
-          f"{current['uncovered']} <= {base['uncovered']}{note}, manifest converged")
+    print(
+        f"\ncheck-upstream-correspondence: OK -- uncovered "
+        f"{current['uncovered']} <= {base['uncovered']}{note}, manifest converged"
+    )
     return 0
 
 

@@ -217,7 +217,7 @@ static int runSetLastKeyCodeCase(void) {
   keyboardStateReset();
   oracle_setLastKeyCode(43);
   expected = lastKeyCode;
- 
+
   keyboardStateReset();
   setLastKeyCode(43);
   actual = lastKeyCode;

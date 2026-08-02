@@ -69,6 +69,42 @@ Use one promotion workflow when a non-trivial change lands.
 - Update the affected docs in the same change that updates the underlying build,
   workflow, or packaging contract.
 
+## Python Tooling Flow
+
+The repo-owned Python (the governance scripts under `.github/project/` and the
+build/corpus helpers under `zig_build/`) is linted, formatted and type-checked by
+`ruff` and `ty`, configured once in `pyproject.toml` and run by
+`.pre-commit-config.yaml`. Python 3.14 throughout.
+
+```sh
+uv sync                          # install pre-commit, ruff and ty into .venv
+pre-commit install               # run the hooks on every commit
+pre-commit run --all-files       # run them over the whole tree now
+ruff check . && ruff format .    # or drive the tools directly
+ty check
+```
+
+**The rule that matters, and the reason this config is not a copy of the sibling
+repos': the hooks are scoped to what z47 authors.** Most of this tree is imported
+verbatim from upstream C47 — `src/`, `res/`, `docs/`, `tools/`, `dep/`, the
+`Makefile`, `tag2ver.py`, even `.gitignore` — and every resync diffs it against
+upstream's. A hook that strips a trailing space from an imported file turns a
+clean import into a permanent conflict on a file z47 has no opinion about. So:
+
+- `pyproject.toml` carries `extend-exclude` for the imported directories, which
+  covers the eight imported `.py` files.
+- `.pre-commit-config.yaml` gives the whitespace hooks an explicit allowlist of
+  z47-owned paths, and excludes byte-exact data (`.p47`, `.sav`, `.tsv`, …)
+  even inside them — those are test inputs compared verbatim.
+
+Adding a z47-owned top-level path means adding it to both. Anything not listed is
+upstream's and is left exactly as imported.
+
+The hooks deliberately do **not** run the governance gates in `.github/project/`;
+those read the whole tree or build firmware and stay in
+`.github/project/run-local-gate.sh`. Pre-commit owns the cheap per-file classes,
+the gate owns the expensive whole-tree ones.
+
 ## Upstream Resync Flow
 
 The ordered procedure for advancing the imported upstream pin and re-deriving

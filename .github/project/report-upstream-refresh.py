@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import re
 import subprocess
 import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
-import re
-
 
 PIN_PATH = ".github/project/upstream-pin.env"
 TEXT_EXTENSIONS = {
@@ -133,9 +132,7 @@ def load_pin_env(pin_path: Path) -> dict[str, str]:
     )
     missing = [key for key in required if not values.get(key)]
     if missing:
-        raise ValueError(
-            f"{PIN_PATH} is missing required key(s): {', '.join(missing)}"
-        )
+        raise ValueError(f"{PIN_PATH} is missing required key(s): {', '.join(missing)}")
     return values
 
 
@@ -151,7 +148,7 @@ def fetch_upstream(repo_root: Path, pin_values: dict[str, str]) -> None:
 
 
 def resolve_revision(repo_root: Path, rev: str) -> str:
-    return git_output(repo_root, "rev-parse", f"{rev}^{{commit}}") .strip()
+    return git_output(repo_root, "rev-parse", f"{rev}^{{commit}}").strip()
 
 
 def resolve_default_head(repo_root: Path, pin_values: dict[str, str], fetched: bool) -> str:
@@ -243,7 +240,7 @@ def exact_search_terms(changed_path: str) -> list[str]:
     if changed_path.startswith("src/c47/") and changed_path.endswith(".h"):
         basename = changed_path.rsplit("/", 1)[1]
         terms.append(f'"{basename}"')
-        terms.append(f'<{basename}>')
+        terms.append(f"<{basename}>")
     return terms
 
 
@@ -280,7 +277,9 @@ def collect_touchpoints(
                 for reason in reasons:
                     add_touchpoint(combined, changed_path, touchpoint_path, reason)
 
-    return {changed_path: touchpoints for changed_path, touchpoints in combined.items() if touchpoints}
+    return {
+        changed_path: touchpoints for changed_path, touchpoints in combined.items() if touchpoints
+    }
 
 
 def classify_touchpoint(touchpoint_path: str, reasons: set[str]) -> str:
@@ -329,7 +328,9 @@ def main() -> int:
         base_commit = resolve_revision(repo_root, base_rev)
         head_commit = resolve_revision(repo_root, head_rev)
 
-        counts = git_output(repo_root, "rev-list", "--left-right", "--count", f"{base_rev}...{head_rev}")
+        counts = git_output(
+            repo_root, "rev-list", "--left-right", "--count", f"{base_rev}...{head_rev}"
+        )
         base_only_str, head_only_str = counts.split()
         base_only = int(base_only_str)
         head_only = int(head_only_str)
@@ -353,10 +354,14 @@ def main() -> int:
 
         all_changed_paths = [
             line.strip()
-            for line in git_output(repo_root, "diff", "--name-only", f"{base_rev}..{head_rev}").splitlines()
+            for line in git_output(
+                repo_root, "diff", "--name-only", f"{base_rev}..{head_rev}"
+            ).splitlines()
             if line.strip()
         ]
-        changed_paths = all_changed_paths if args.max_paths == 0 else all_changed_paths[: args.max_paths]
+        changed_paths = (
+            all_changed_paths if args.max_paths == 0 else all_changed_paths[: args.max_paths]
+        )
         top_level_counts = Counter(path.split("/", 1)[0] for path in all_changed_paths)
         touchpoints = collect_touchpoints(repo_root, all_changed_paths)
         covered_paths = sorted(touchpoints)

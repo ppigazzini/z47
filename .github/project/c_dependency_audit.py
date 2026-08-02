@@ -179,7 +179,5 @@ def nonblank_line_count(repo_root: Path, entry: str) -> int:
     if not path.exists() or not path.is_file():
         return 0
     return sum(
-        1
-        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines()
-        if line.strip()
+        1 for line in path.read_text(encoding="utf-8", errors="ignore").splitlines() if line.strip()
     )

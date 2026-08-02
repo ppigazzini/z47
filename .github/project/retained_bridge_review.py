@@ -44,7 +44,7 @@ def load_rows(path: Path) -> list[dict[str, str]]:
                     f"{path}:{line_number} expected {len(EXPECTED_HEADER)} tab-separated columns, found {len(fields)}"
                 )
 
-            row = dict(zip(EXPECTED_HEADER, fields))
+            row = dict(zip(EXPECTED_HEADER, fields, strict=True))
             for column in EXPECTED_HEADER:
                 if not row[column]:
                     raise ValueError(f"{path}:{line_number} has an empty {column} field")

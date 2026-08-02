@@ -8,7 +8,7 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
-
+from typing import NoReturn
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM_PIN_PATH = REPO_ROOT / ".github/project/upstream-pin.env"
@@ -47,14 +47,14 @@ DIST_DOCS_DIR = UPSTREAM_SOURCE_ROOT / "res/dist-docs"
 # Distribution archives need stable install notes even when CI has no checked-in
 # dist-doc overrides and no live wiki checkout.
 EMBEDDED_DIST_DOCS = {
-     "Installation-on-Windows.md": """\
+    "Installation-on-Windows.md": """\
 This generated copy is packaged by the Zig-owned distribution helper so CI does not depend on a checked-in wiki export.
 
 [Original Wiki](https://gitlab.com/h2x/c47-wiki/-/wikis/Installation-on-Windows-%28old%29)
 
 [New Wiki](https://gitlab.com/h2x/c47-wiki/-/wikis/Installation-On-Windows)
 """,
-     "Installation-on-a-DM42.md": """\
+    "Installation-on-a-DM42.md": """\
 To change the firmware on a DM42, use the following instructions. _Warning:_ use the C47 program for DM42 at your own risk.
 
 This generated copy is packaged by the Zig-owned distribution helper so CI does not depend on a checked-in wiki export.
@@ -143,7 +143,7 @@ OFFIMG_DIRS = [
 ]
 
 
-def fail(message: str) -> "NoReturn":
+def fail(message: str) -> NoReturn:
     raise SystemExit(message)
 
 
@@ -234,10 +234,15 @@ def stage_host_resources(stage_dir: Path, c47_bin: Path, r47_bin: Path | None = 
     copy_file(UPSTREAM_SOURCE_ROOT / "res/C47short.png", stage_dir / "res/C47short.png")
     copy_file(UPSTREAM_SOURCE_ROOT / "res/R47.png", stage_dir / "res/R47.png")
     copy_file(UPSTREAM_SOURCE_ROOT / "res/R47short.png", stage_dir / "res/R47short.png")
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/fonts/C47__StandardFont.ttf", stage_dir / "C47__StandardFont.ttf")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/fonts/C47__StandardFont.ttf",
+        stage_dir / "C47__StandardFont.ttf",
+    )
 
 
-def copy_testpgms_bundle(stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, subdir: str) -> None:
+def copy_testpgms_bundle(
+    stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, subdir: str
+) -> None:
     target = stage_dir / subdir
     target.mkdir(parents=True, exist_ok=True)
     copy_file(testpgms_bin, target / "testPgms.bin")
@@ -247,7 +252,9 @@ def copy_testpgms_bundle(stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path
 
 def run_exportall(c47_bin: Path, cwd: Path) -> None:
     command = [str(c47_bin), "--writeexportall"]
-    if sys.platform.startswith("linux") and not ("DISPLAY" in os.environ or "WAYLAND_DISPLAY" in os.environ):
+    if sys.platform.startswith("linux") and not (
+        "DISPLAY" in os.environ or "WAYLAND_DISPLAY" in os.environ
+    ):
         xvfb = shutil.which("xvfb-run")
         if xvfb is not None:
             command = [xvfb, "-a", *command]
@@ -270,7 +277,17 @@ def make_testpgms_zip(zip_out: Path, c47_bin: Path, testpgms_bin: Path, testpgms
     shutil.rmtree(stage_dir)
 
 
-def package_host(flavor: str, zip_out: Path, stage_name: str, c47_bin: Path, r47_bin: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, wiki_dir: Path | None) -> None:
+def package_host(
+    flavor: str,
+    zip_out: Path,
+    stage_name: str,
+    c47_bin: Path,
+    r47_bin: Path,
+    testpgms_bin: Path,
+    testpgms_txt: Path,
+    testpgms_zip: Path,
+    wiki_dir: Path | None,
+) -> None:
     stage_dir = zip_out.parent / stage_name
     ensure_clean_dir(stage_dir)
     stage_host_resources(stage_dir, c47_bin, r47_bin)
@@ -302,7 +319,9 @@ def package_host(flavor: str, zip_out: Path, stage_name: str, c47_bin: Path, r47
     shutil.rmtree(stage_dir)
 
 
-def prepare_dm_base(stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path) -> None:
+def prepare_dm_base(
+    stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path
+) -> None:
     resources_dir = stage_dir / "resources"
     resources_dir.mkdir(parents=True, exist_ok=True)
     offimg_dir = stage_dir / "offimg"
@@ -310,25 +329,50 @@ def prepare_dm_base(stage_dir: Path, testpgms_bin: Path, testpgms_txt: Path, tes
         copy_tree_contents(offimg_source, offimg_dir)
     copy_tree(UPSTREAM_SOURCE_ROOT / "res/PROGRAMS", stage_dir / "PROGRAMS")
     copy_tree(UPSTREAM_SOURCE_ROOT / "res/STATE", stage_dir / "STATE")
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_DM42.bin", resources_dir / "keymap_DM42.bin")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_DM42.bin", resources_dir / "keymap_DM42.bin"
+    )
     copy_testpgms_bundle(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip, "resources")
 
 
-def package_dmcp(zip_out: Path, stage_name: str, program: Path, qspi: Path, map_file: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, wiki_dir: Path | None, include_packages: bool) -> None:
+def package_dmcp(
+    zip_out: Path,
+    stage_name: str,
+    program: Path,
+    qspi: Path,
+    map_file: Path,
+    testpgms_bin: Path,
+    testpgms_txt: Path,
+    testpgms_zip: Path,
+    wiki_dir: Path | None,
+    include_packages: bool,
+) -> None:
     stage_dir = zip_out.parent / stage_name
     ensure_clean_dir(stage_dir)
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
     copy_file(program, stage_dir / program.name)
     copy_file(qspi, stage_dir / qspi.name)
     zip_file(stage_dir / "resources/C47.map.zip", map_file, map_file.name)
-    write_dist_doc("Installation-on-a-DM42.md", stage_dir / "install_C47_on_DM42_readme_on_wiki.txt", wiki_dir)
+    write_dist_doc(
+        "Installation-on-a-DM42.md", stage_dir / "install_C47_on_DM42_readme_on_wiki.txt", wiki_dir
+    )
     if include_packages:
         copy_file(UPSTREAM_SOURCE_ROOT / "res/PACKAGES.md", stage_dir / "PACKAGES.txt")
     zip_tree(zip_out, stage_dir, stage_name)
     shutil.rmtree(stage_dir)
 
 
-def package_dmcpr47(zip_out: Path, stage_name: str, program: Path, qspi: Path, map_file: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, wiki_dir: Path | None) -> None:
+def package_dmcpr47(
+    zip_out: Path,
+    stage_name: str,
+    program: Path,
+    qspi: Path,
+    map_file: Path,
+    testpgms_bin: Path,
+    testpgms_txt: Path,
+    testpgms_zip: Path,
+    wiki_dir: Path | None,
+) -> None:
     stage_dir = zip_out.parent / stage_name
     ensure_clean_dir(stage_dir)
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
@@ -336,36 +380,71 @@ def package_dmcpr47(zip_out: Path, stage_name: str, program: Path, qspi: Path, m
     copy_file(qspi, stage_dir / qspi.name)
     copy_file(UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "keymap_R47.bin")
     zip_file(stage_dir / "resources/R47.map.zip", map_file, map_file.name)
-    write_dist_doc("Installation-on-a-DM42.md", stage_dir / "install_C47_on_DM42_readme_on_wiki.txt", wiki_dir)
+    write_dist_doc(
+        "Installation-on-a-DM42.md", stage_dir / "install_C47_on_DM42_readme_on_wiki.txt", wiki_dir
+    )
     zip_tree(zip_out, stage_dir, stage_name)
     shutil.rmtree(stage_dir)
 
 
-def package_dmcp5(zip_out: Path, stage_name: str, program: Path, map_file: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path) -> None:
+def package_dmcp5(
+    zip_out: Path,
+    stage_name: str,
+    program: Path,
+    map_file: Path,
+    testpgms_bin: Path,
+    testpgms_txt: Path,
+    testpgms_zip: Path,
+) -> None:
     stage_dir = zip_out.parent / stage_name
     ensure_clean_dir(stage_dir)
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
     copy_file(program, stage_dir / program.name)
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin", stage_dir / "resources/DM42_qspi_3.x.bin")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin",
+        stage_dir / "resources/DM42_qspi_3.x.bin",
+    )
     zip_file(stage_dir / "resources/C47.map.zip", map_file, map_file.name)
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/install_C47_on_DM42n.txt", stage_dir / "install_C47_on_DM42n.txt")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/dmcp5/install_C47_on_DM42n.txt",
+        stage_dir / "install_C47_on_DM42n.txt",
+    )
     copy_file(UPSTREAM_SOURCE_ROOT / "res/PACKAGES.md", stage_dir / "PACKAGES.txt")
     zip_tree(zip_out, stage_dir, stage_name)
     shutil.rmtree(stage_dir)
 
 
-def package_dmcp5r47(zip_out: Path, stage_name: str, program: Path, map_file: Path, testpgms_bin: Path, testpgms_txt: Path, testpgms_zip: Path, version: str) -> None:
+def package_dmcp5r47(
+    zip_out: Path,
+    stage_name: str,
+    program: Path,
+    map_file: Path,
+    testpgms_bin: Path,
+    testpgms_txt: Path,
+    testpgms_zip: Path,
+    version: str,
+) -> None:
     stage_dir = zip_out.parent / stage_name
     ensure_clean_dir(stage_dir)
     prepare_dm_base(stage_dir, testpgms_bin, testpgms_txt, testpgms_zip)
     copy_file(program, stage_dir / program.name)
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "resources/keymap_R47.bin")
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin", stage_dir / "resources/DM42_qspi_3.x.bin")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/keymaps/keymap_R47.bin", stage_dir / "resources/keymap_R47.bin"
+    )
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/dmcp5/SwissMicros/DM42_qspi_3.x.bin",
+        stage_dir / "resources/DM42_qspi_3.x.bin",
+    )
     zip_file(stage_dir / "resources/R47.map.zip", map_file, map_file.name)
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/install_R47_on_DM32.txt", stage_dir / "resources/install_R47_on_DM32.txt")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/dmcp5/install_R47_on_DM32.txt",
+        stage_dir / "resources/install_R47_on_DM32.txt",
+    )
     copy_file(UPSTREAM_SOURCE_ROOT / "res/dmcp5/update_R47.txt", stage_dir / "update_R47.txt")
     copy_file(UPSTREAM_SOURCE_ROOT / "res/combo/R47_combo.py", stage_dir / "R47_combo.py")
-    copy_file(UPSTREAM_SOURCE_ROOT / "res/combo/DMCP5_flash_3.56.bin", stage_dir / "DMCP5_flash_3.56.bin")
+    copy_file(
+        UPSTREAM_SOURCE_ROOT / "res/combo/DMCP5_flash_3.56.bin", stage_dir / "DMCP5_flash_3.56.bin"
+    )
     run_command([sys.executable, "R47_combo.py", version], cwd=stage_dir)
     (stage_dir / "R47_combo.py").unlink(missing_ok=True)
     (stage_dir / "DMCP5_flash_3.56.bin").unlink(missing_ok=True)
@@ -390,26 +469,76 @@ def main(argv: list[str]) -> int:
     if command == "package-host":
         flavor = argv[2]
         wiki_dir = Path(argv[10]) if len(argv) > 10 else None
-        package_host(flavor, Path(argv[3]), argv[4], Path(argv[5]), Path(argv[6]), Path(argv[7]), Path(argv[8]), Path(argv[9]), wiki_dir)
+        package_host(
+            flavor,
+            Path(argv[3]),
+            argv[4],
+            Path(argv[5]),
+            Path(argv[6]),
+            Path(argv[7]),
+            Path(argv[8]),
+            Path(argv[9]),
+            wiki_dir,
+        )
         return 0
 
     if command == "package-dmcp":
         wiki_dir = Path(argv[10]) if len(argv) > 11 else None
-        include_packages = argv[11] == "with-packages" if wiki_dir is not None else argv[10] == "with-packages"
-        package_dmcp(Path(argv[2]), argv[3], Path(argv[4]), Path(argv[5]), Path(argv[6]), Path(argv[7]), Path(argv[8]), Path(argv[9]), wiki_dir, include_packages)
+        include_packages = (
+            argv[11] == "with-packages" if wiki_dir is not None else argv[10] == "with-packages"
+        )
+        package_dmcp(
+            Path(argv[2]),
+            argv[3],
+            Path(argv[4]),
+            Path(argv[5]),
+            Path(argv[6]),
+            Path(argv[7]),
+            Path(argv[8]),
+            Path(argv[9]),
+            wiki_dir,
+            include_packages,
+        )
         return 0
 
     if command == "package-dmcpr47":
         wiki_dir = Path(argv[10]) if len(argv) > 10 else None
-        package_dmcpr47(Path(argv[2]), argv[3], Path(argv[4]), Path(argv[5]), Path(argv[6]), Path(argv[7]), Path(argv[8]), Path(argv[9]), wiki_dir)
+        package_dmcpr47(
+            Path(argv[2]),
+            argv[3],
+            Path(argv[4]),
+            Path(argv[5]),
+            Path(argv[6]),
+            Path(argv[7]),
+            Path(argv[8]),
+            Path(argv[9]),
+            wiki_dir,
+        )
         return 0
 
     if command == "package-dmcp5":
-        package_dmcp5(Path(argv[2]), argv[3], Path(argv[4]), Path(argv[5]), Path(argv[6]), Path(argv[7]), Path(argv[8]))
+        package_dmcp5(
+            Path(argv[2]),
+            argv[3],
+            Path(argv[4]),
+            Path(argv[5]),
+            Path(argv[6]),
+            Path(argv[7]),
+            Path(argv[8]),
+        )
         return 0
 
     if command == "package-dmcp5r47":
-        package_dmcp5r47(Path(argv[2]), argv[3], Path(argv[4]), Path(argv[5]), Path(argv[6]), Path(argv[7]), Path(argv[8]), argv[9])
+        package_dmcp5r47(
+            Path(argv[2]),
+            argv[3],
+            Path(argv[4]),
+            Path(argv[5]),
+            Path(argv[6]),
+            Path(argv[7]),
+            Path(argv[8]),
+            argv[9],
+        )
         return 0
 
     fail(f"unknown command: {command}")

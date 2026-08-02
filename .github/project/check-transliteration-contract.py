@@ -77,9 +77,20 @@ def measure_churn(repo_root, since="2024-07-01"):
             "It is only required to re-pin; enforcement does not use it."
         )
     out = subprocess.run(
-        ["git", "-C", sibling, "log", f"--since={since}",
-         "--name-only", "--pretty=format:", "--", "src/"],
-        capture_output=True, text=True, check=True,
+        [
+            "git",
+            "-C",
+            sibling,
+            "log",
+            f"--since={since}",
+            "--name-only",
+            "--pretty=format:",
+            "--",
+            "src/",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout
     churn = {}
     for line in out.split():
@@ -117,23 +128,25 @@ def bump(repo_root):
         ratio = zig_lines / c_lines if c_lines else 0.0
         if ratio < ONE_TO_ONE_MIN_RATIO:
             continue  # deliberately decomposed; not a 1:1 contract
-        entries.append({
-            "c": c_path,
-            "zig": zig_rel,
-            "upstream_commits_2yr": commits,
-            "c_lines": c_lines,
-            "zig_lines": zig_lines,
-            "ratio": round(ratio, 3),
-        })
+        entries.append(
+            {
+                "c": c_path,
+                "zig": zig_rel,
+                "upstream_commits_2yr": commits,
+                "c_lines": c_lines,
+                "zig_lines": zig_lines,
+                "ratio": round(ratio, 3),
+            }
+        )
     doc = {
         "note": (
-            "REPORT-28 s41. Hot upstream C files (>=%d commits/2yr) ported 1:1 to a "
+            f"REPORT-28 s41. Hot upstream C files (>={HOT_MIN_CHURN} commits/2yr) ported 1:1 to a "
             "same-named z47 owner. The 1:1 shape is what lets a maintainer apply an "
             "upstream diff textually, and these are the files upstream actually "
             "changes -- so their size is a SYNC CONTRACT, not a code smell to split. "
             "Enforcement checks the owner still exists and still tracks the C size "
-            "within %.2f; churn is pinned here because CI has no upstream checkout. "
-            "Re-pin after a resync with --bump." % (HOT_MIN_CHURN, TOLERANCE)
+            f"within {TOLERANCE:.2f}; churn is pinned here because CI has no upstream checkout. "
+            "Re-pin after a resync with --bump."
         ),
         "tolerance": TOLERANCE,
         "pairs": entries,

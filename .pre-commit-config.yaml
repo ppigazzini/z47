@@ -1,0 +1,81 @@
+# Pre-commit hooks: file hygiene, Python lint/format/type-check, zig fmt.
+# Install once with `pre-commit install`; run everything with
+# `pre-commit run --all-files`. CI does not run these -- run-local-gate.sh and
+# the parity workflows stay the authority; this catches the same classes before
+# the commit exists.
+#
+# THE ONE RULE THAT SHAPES THIS FILE. Most of this tree is imported verbatim from
+# upstream C47 -- src/, res/, docs/, tools/, dep/, the Makefile, even .gitignore
+# -- and every resync diffs it against upstream's. A hook that strips a trailing
+# space from src/c47/display.c turns a clean import into a permanent conflict on
+# a file z47 has no opinion about. So every hook here is scoped to what z47
+# actually authors:
+#
+#     .github/  zig_bridge/  zig_build/  zig_docs/  zig_src/
+#     build.zig  build.zig.zon  CONTRIBUTING.md  pyproject.toml
+#     .pre-commit-config.yaml
+#
+# Adding a z47-owned top-level path means adding it to Z47_OWNED below. Anything
+# not listed is upstream's and is left exactly as imported.
+default_language_version:
+  python: python3.14
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+        # Z47_OWNED
+        files: '^(\.github/|zig_bridge/|zig_build/|zig_docs/|zig_src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
+        # Byte-exact comparison inputs, even inside the owned tree: .p47 and .sav
+        # are fed to the loaders and compared against golden output, and the
+        # correspondence manifest is a tab-separated table a gate parses. A
+        # "harmless" newline at the end of one of those is a changed test input.
+        exclude: '\.(p47|sav|dat|bin|bmp|tsv)$'
+      - id: trailing-whitespace
+        files: '^(\.github/|zig_bridge/|zig_build/|zig_docs/|zig_src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
+        exclude: '\.(p47|sav|dat|bin|bmp|tsv)$'
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
+    hooks:
+      # No --force-exclude here: the upstream hook definitions already pass it,
+      # and ruff rejects it twice. It is what makes pyproject.toml's
+      # extend-exclude apply to filenames pre-commit passes EXPLICITLY, which is
+      # the only case that matters here -- pre-commit always passes explicit
+      # filenames, so without it the imported upstream scripts would be
+      # reformatted. Verified by staging a change to an upstream .py and
+      # confirming neither hook touches it.
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    rev: v0.0.65
+    hooks:
+      # The hook's own entry checks the whole project (ty's cross-file
+      # diagnostics make per-filename invocation wrong); [tool.ty.src] in
+      # pyproject.toml pins the scope to the two z47-owned script trees.
+      - id: ty
+
+  - repo: local
+    hooks:
+      # zig fmt is the local gate's first step and blocks everything after it, so
+      # a staged .zig that is not fmt-clean fails the gate before any test runs.
+      # Local hook, not a wrapper repo: the entry is one pinned-toolchain command,
+      # and a third-party mirror would add a supply-chain edge for it.
+      - id: zig-fmt
+        name: zig fmt --check
+        entry: zig fmt --check
+        language: system
+        types: [zig]
+
+# Deliberately NOT here: the governance gates in .github/project/ (correspondence,
+# the idiom and narrowing ratchets, the clamp/macro-family/width-contract scans,
+# the fuzz lanes). They read the whole tree or build firmware, so they belong in
+# run-local-gate.sh where they run once, not on every commit. Pre-commit's job is
+# the cheap per-file classes; the gate's job is the expensive whole-tree ones, and
+# blurring that makes committing slow enough that people stop.

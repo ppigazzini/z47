@@ -75,8 +75,7 @@ def nm_tool():
 
 def symbols(tool, path):
     defined, undefined = set(), set()
-    out = subprocess.run([tool, "--print-file-name", path],
-                         capture_output=True, text=True)
+    out = subprocess.run([tool, "--print-file-name", path], capture_output=True, text=True)
     if out.returncode != 0:
         sys.exit(f"check-object-graph: {tool} failed on {path}:\n{out.stderr}")
     for line in out.stdout.splitlines():
@@ -91,15 +90,18 @@ def symbols(tool, path):
 def build_graph(root, target, tool):
     manifest = os.path.join(root, MANIFEST_DIR, f"{target}-objects.txt")
     if not os.path.isfile(manifest):
-        sys.exit(f"check-object-graph: no manifest for {target}. "
-                 f"Run `zig build object-manifest` first.")
+        sys.exit(
+            f"check-object-graph: no manifest for {target}. Run `zig build object-manifest` first."
+        )
     with open(manifest, encoding="utf-8") as fh:
         paths = [ln.strip() for ln in fh if ln.strip()]
 
     # A gate must never report a clean tree from an empty measurement.
     if not paths:
-        sys.exit(f"check-object-graph: BROKEN -- the {target} manifest is empty. "
-                 "A product with no objects is a broken measurement, not a clean graph.")
+        sys.exit(
+            f"check-object-graph: BROKEN -- the {target} manifest is empty. "
+            "A product with no objects is a broken measurement, not a clean graph."
+        )
 
     names, defined, undefined = [], {}, {}
     for path in paths:
@@ -208,8 +210,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--bump", action="store_true")
-    ap.add_argument("--edges", metavar="TARGET",
-                    help="list the one-symbol cycle edges of a target and exit")
+    ap.add_argument(
+        "--edges", metavar="TARGET", help="list the one-symbol cycle edges of a target and exit"
+    )
     args = ap.parse_args()
     root = os.path.abspath(args.repo_root)
     tool = nm_tool()
@@ -235,16 +238,20 @@ def main():
                 "time, flash (--gc-sections) nor test isolation (owners already link "
                 "standalone)."
             ),
-            "targets": {t: {k: v for k, v in m.items() if k != "one_symbol_edge_list"}
-                        for t, m in measured.items()},
+            "targets": {
+                t: {k: v for k, v in m.items() if k != "one_symbol_edge_list"}
+                for t, m in measured.items()
+            },
         }
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(doc, fh, indent=1, sort_keys=True)
             fh.write("\n")
         for t, m in measured.items():
-            print(f"check-object-graph: re-pinned {t}: {m['objects']} objects, "
-                  f"cycles {m['cycles']}, {m['one_symbol_cycle_edges']} one-symbol "
-                  f"cycle edges, NCCD {m['nccd']}")
+            print(
+                f"check-object-graph: re-pinned {t}: {m['objects']} objects, "
+                f"cycles {m['cycles']}, {m['one_symbol_cycle_edges']} one-symbol "
+                f"cycle edges, NCCD {m['nccd']}"
+            )
         return 0
 
     if not os.path.isfile(path):
@@ -258,24 +265,29 @@ def main():
         if b is None:
             fails.append(f"{target}: no baseline entry (re-pin with --bump)")
             continue
-        print(f"  {target:<6} objects {m['objects']:>3}  edges {m['edges']:>4}  "
-              f"cycles {m['cycles']}  trapped {m['objects_in_cycles']:>3}  "
-              f"1-sym cycle edges {m['one_symbol_cycle_edges']:>3}  "
-              f"NCCD {m['nccd']}")
+        print(
+            f"  {target:<6} objects {m['objects']:>3}  edges {m['edges']:>4}  "
+            f"cycles {m['cycles']}  trapped {m['objects_in_cycles']:>3}  "
+            f"1-sym cycle edges {m['one_symbol_cycle_edges']:>3}  "
+            f"NCCD {m['nccd']}"
+        )
         if len(m["cycles"]) > len(b["cycles"]):
-            fails.append(f"{target}: cyclic components rose "
-                         f"{len(b['cycles'])} -> {len(m['cycles'])}")
+            fails.append(
+                f"{target}: cyclic components rose {len(b['cycles'])} -> {len(m['cycles'])}"
+            )
         if m["cycles"] and b["cycles"] and max(m["cycles"]) > max(b["cycles"]):
-            fails.append(f"{target}: largest object cycle grew "
-                         f"{max(b['cycles'])} -> {max(m['cycles'])}")
+            fails.append(
+                f"{target}: largest object cycle grew {max(b['cycles'])} -> {max(m['cycles'])}"
+            )
         if m["objects_in_cycles"] > b["objects_in_cycles"]:
-            fails.append(f"{target}: objects trapped in a cycle rose "
-                         f"{b['objects_in_cycles']} -> {m['objects_in_cycles']}")
-        if (m["objects_in_cycles"] < b["objects_in_cycles"]
-                or len(m["cycles"]) < len(b["cycles"])):
+            fails.append(
+                f"{target}: objects trapped in a cycle rose "
+                f"{b['objects_in_cycles']} -> {m['objects_in_cycles']}"
+            )
+        if m["objects_in_cycles"] < b["objects_in_cycles"] or len(m["cycles"]) < len(b["cycles"]):
             improved = True
 
-    print(f"  (CCD/ACD/NCCD and one-symbol edges are reported, not gated)")
+    print("  (CCD/ACD/NCCD and one-symbol edges are reported, not gated)")
 
     if fails:
         print("\nOBJECT GRAPH REGRESSED:")
@@ -287,8 +299,7 @@ def main():
         print("cycle legitimately shrank, re-pin with --bump.")
         return 1
 
-    print("check-object-graph: OK" + ("  (IMPROVED -- re-pin with --bump)"
-                                      if improved else ""))
+    print("check-object-graph: OK" + ("  (IMPROVED -- re-pin with --bump)" if improved else ""))
     return 0
 
 

@@ -61,8 +61,7 @@ def extract(repo_root):
         text = fh.read()
     start = text.index("indexOfItems")
     table = text[start:]
-    rows = {str(i): [re.sub(r"\s+", " ", f), p]
-            for i, (f, p) in enumerate(ROW.findall(table))}
+    rows = {str(i): [re.sub(r"\s+", " ", f), p] for i, (f, p) in enumerate(ROW.findall(table))}
     total = len(ANY_ROW.findall(table))
     return rows, total
 
@@ -103,8 +102,7 @@ def main():
         with open(bpath, "w", encoding="utf-8") as fh:
             json.dump(doc, fh, indent=1, sort_keys=True)
             fh.write("\n")
-        print(f"check-item-seam-drift: re-pinned {len(rows)} item rows "
-              f"({varying} unparsed)")
+        print(f"check-item-seam-drift: re-pinned {len(rows)} item rows ({varying} unparsed)")
         return 0
 
     if not os.path.isfile(bpath):

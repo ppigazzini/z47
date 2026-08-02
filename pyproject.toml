@@ -1,0 +1,64 @@
+# Python tooling config for the repo-owned scripts under .github/project/ and
+# zig_build/. There is no Python package to build -- this file exists so
+# ruff/ty/pre-commit share one config, the same shape the sibling ports use.
+
+[project]
+name = "z47-internal-python-tools"
+version = "0.0.0"
+requires-python = ">=3.14"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.1",
+    "ruff>=0.16.1",
+    "ty>=0.0.65",
+]
+
+[tool.ruff]
+target-version = "py314"
+# First-party import roots, so `I` sorts z47's own modules apart from stdlib.
+src = [".github/project", "zig_build"]
+# House style wraps prose-heavy tool comments at ~100, not ruff's default 88.
+line-length = 100
+
+# THE Z47-SPECIFIC RULE, and the one place this config must differ from the
+# sibling repos: eight Python files in this tree are imported VERBATIM from
+# upstream C47 --
+#     docs/code/conf.py                  res/combo/R47_combo.py
+#     res/fonts/Font_snap/autosnap.py    src/c47/solver/finite_differences.py
+#     src/testSuite/tests/validate_tvm.py
+#     tools/size.py                      tools/create items spreadsheet.py
+#     tag2ver.py
+# -- and every resync diffs this tree against upstream's. Reformatting them
+# would turn a clean import into a permanent conflict on files z47 has no
+# opinion about, for no benefit: they are not z47's code and z47 does not
+# maintain them. `src`/`res`/`docs`/`tools` hold nothing else Python, so
+# excluding the directories is both simpler and more durable than listing files
+# that upstream may rename.
+#
+# extend-exclude, not `exclude`: ruff's default excludes (.git, caches, and so
+# on) are worth keeping, and `exclude` would replace them.
+extend-exclude = ["src", "res", "docs", "tools", "tag2ver.py"]
+
+[tool.ruff.lint]
+# Curated GATING set, deliberately not ALL: these are operator tools, so print
+# IS their output (T201), subprocess IS their job (S603/S607), and annotation/
+# docstring ceremony (ANN/D) buys nothing an operator reads. A rule family the
+# tools violate by design would force --exit-zero, and an advisory hook is a
+# laundered gate.
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF"]
+# E501 (line too long) is the one exclusion inside a selected family. The
+# formatter already holds CODE to line-length; what is left over is comment and
+# docstring prose, and these scripts carry a lot of it deliberately -- every
+# gate script here explains why it exists and what it measured. 100 is a target
+# for that prose, not a bound, and a forced break lands mid-sentence.
+ignore = ["E501"]
+
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.src]
+# Same scope as ruff, for the same reason: the imported upstream scripts are not
+# z47's to fix, and a whole-project walk would also descend into the untracked
+# __DEV/ notes tree and any agent worktree under .claude/.
+include = [".github/project", "zig_build"]

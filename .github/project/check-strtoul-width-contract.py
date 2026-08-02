@@ -71,7 +71,8 @@ def call_sites(root: pathlib.Path) -> list[dict]:
     for path in sorted(root.glob("zig_src/**/*.zig")):
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         for n, line in enumerate(lines):
-            if not CALL_RE.search(line) or DECL_RE.match(line) or COMMENT_RE.match(line):
+            call = CALL_RE.search(line)
+            if call is None or DECL_RE.match(line) or COMMENT_RE.match(line):
                 continue
             verdict = None
             for back in range(1, VERDICT_LOOKBACK + 1):
@@ -83,7 +84,11 @@ def call_sites(root: pathlib.Path) -> list[dict]:
                 # annotated one is silently reported as decided -- caught by
                 # mutation-testing this gate, and only because the site COUNT also
                 # changed. One verdict covers one call.
-                if CALL_RE.search(above) and not DECL_RE.match(above) and not COMMENT_RE.match(above):
+                if (
+                    CALL_RE.search(above)
+                    and not DECL_RE.match(above)
+                    and not COMMENT_RE.match(above)
+                ):
                     break
                 m = VERDICT_RE.search(above)
                 if m:
@@ -93,7 +98,7 @@ def call_sites(root: pathlib.Path) -> list[dict]:
                 {
                     "file": str(path.relative_to(root)),
                     "line": n + 1,
-                    "fn": CALL_RE.search(line).group(1),
+                    "fn": call.group(1),
                     "code": line.strip()[:100],
                     "verdict": verdict,
                 }
@@ -147,7 +152,9 @@ def main() -> int:
     ap.add_argument("--list", action="store_true", help="print every site and its verdict")
     ap.add_argument("--json", action="store_true", help="machine-readable output")
     ap.add_argument("--repo-root", default=None, help="scan this tree instead of the default")
-    ap.add_argument("--write-baseline", action="store_true", help="rewrite the committed site count")
+    ap.add_argument(
+        "--write-baseline", action="store_true", help="rewrite the committed site count"
+    )
     ap.add_argument("--self-test", action="store_true", help="check the classifier and exit")
     args = ap.parse_args()
 
@@ -170,7 +177,9 @@ def main() -> int:
     if args.list:
         by_verdict: dict[str, int] = {}
         for s in sites:
-            by_verdict[s["verdict"] or "UNDECIDED"] = by_verdict.get(s["verdict"] or "UNDECIDED", 0) + 1
+            by_verdict[s["verdict"] or "UNDECIDED"] = (
+                by_verdict.get(s["verdict"] or "UNDECIDED", 0) + 1
+            )
             print(f"{s['file']}:{s['line']:<5} {s['verdict'] or 'UNDECIDED':<18} {s['code']}")
         print("\n  " + ", ".join(f"{k}={v}" for k, v in sorted(by_verdict.items())))
 
@@ -199,7 +208,9 @@ def main() -> int:
         )
         return 1
 
-    print(f"strtoul_width_contract: {len(sites)} call sites, every one decided (baseline {expected})")
+    print(
+        f"strtoul_width_contract: {len(sites)} call sites, every one decided (baseline {expected})"
+    )
     return 0
 
 

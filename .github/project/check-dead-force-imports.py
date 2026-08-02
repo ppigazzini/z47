@@ -44,7 +44,8 @@ FORCE = re.compile(r'(?m)^\s*_\s*=\s*@import\("([^"]+\.zig)"\)\s*;')
 # form exclusively -- seven times -- and a `pub export`-only regex called it dead.
 EXPORT = re.compile(
     r"(?m)^\s*(?:pub\s+)?export\s+(?:fn|var|const)\s+\w+"
-    r"|@export\s*\(")
+    r"|@export\s*\("
+)
 
 
 def main():
@@ -63,9 +64,13 @@ def main():
                 text = fh.read()
             for imp in FORCE.findall(text):
                 target = os.path.normpath(os.path.join(os.path.dirname(carrier), imp))
-                forced.append((os.path.relpath(carrier, root),
-                               os.path.relpath(target, root) if os.path.isfile(target)
-                               else None, target))
+                forced.append(
+                    (
+                        os.path.relpath(carrier, root),
+                        os.path.relpath(target, root) if os.path.isfile(target) else None,
+                        target,
+                    )
+                )
 
     # A detector that finds nothing must never report a clean tree.
     if not forced:
@@ -103,8 +108,10 @@ def main():
         print("runtime.zig declared 18 externs defined nowhere at all.")
         return 1
 
-    print(f"check-dead-force-imports: OK ({len(forced)} force-imports, "
-          "every target exports at least one symbol)")
+    print(
+        f"check-dead-force-imports: OK ({len(forced)} force-imports, "
+        "every target exports at least one symbol)"
+    )
     return 0
 
 
