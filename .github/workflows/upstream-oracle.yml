@@ -545,7 +545,7 @@ jobs:
           # Malformed-input corpora through the real load paths -- the untrusted-input
           # surface upstream keeps fixing (577 statefile overflow,
           # decode-literal-base-oob). NOT under AddressSanitizer despite the harness
-          # names: there is none in this tree (see zig_docs/75-debugging.md). The
+          # names: there is none in this tree (see docs/75-debugging.md). The
           # detectors are UBSan over the retained C and Zig's own safety checks.
           zig build pgm_load_fuzz      # M1: .p47 programs
           zig build state_load_fuzz    # M-SAFE-7: .sav / .d47 state files
@@ -556,7 +556,7 @@ jobs:
           export PATH="$RUNNER_TEMP/xlsxio-prefix/bin:$PATH"
           export LD_LIBRARY_PATH="$RUNNER_TEMP/xlsxio-prefix/lib:$RUNNER_TEMP/xlsxio-prefix/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           # Build the sancov-instrumented keyboard harness, then enforce the
-          # monotonic coverage ratchet -- including the zig_src owner-coverage
+          # monotonic coverage ratchet -- including the src owner-coverage
           # collapse floor, which only measures when this coverage build is
           # present. Makes a push that de-instruments an owner object fail CI
           # (M-IDIOM-9 coverage gate).

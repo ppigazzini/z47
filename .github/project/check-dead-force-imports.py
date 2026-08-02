@@ -55,7 +55,7 @@ def main():
     root = os.path.abspath(args.repo_root)
 
     forced = []  # (carrier, target)
-    for dirpath, _dirs, names in os.walk(os.path.join(root, "zig_src")):
+    for dirpath, _dirs, names in os.walk(os.path.join(root, "src")):
         for name in names:
             if not name.endswith(".zig"):
                 continue
@@ -75,7 +75,7 @@ def main():
     # A detector that finds nothing must never report a clean tree.
     if not forced:
         print("check-dead-force-imports: BROKEN -- found no force-imports at all.")
-        print("zig_src's module roots are known to use them. A zero count means the")
+        print("src's module roots are known to use them. A zero count means the")
         print("pattern stopped matching, not that the tree is clean.")
         return 1
 

@@ -22,7 +22,7 @@
 #
 # WHY AN ALLOWLIST AND NOT A PARSER. Roots reach build.zig by several routes --
 # a literal `root_source_file = b.path(..)`, a LazyPath threaded through a helper
-# parameter (zig_build/state/keyboard_state.zig:203), a b.createModule for a
+# parameter (build/state/keyboard_state.zig:203), a b.createModule for a
 # registered module. A regex that recognises only the literal form reports true
 # roots as violations (it flagged keyboard_state.zig during this gate's own
 # development). Rather than ship a fragile parser, pin the sanctioned carriers by
@@ -37,18 +37,18 @@ repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$repo_root"
 baseline_file=".github/project/module-carriers-baseline.txt"
 
-# Every zig_src file holding a force-import statement. Match the STATEMENT, not
+# Every src file holding a force-import statement. Match the STATEMENT, not
 # the enclosing `comptime { .. }` block: a block-spanning regex has to express
 # "no brace in between", and the real blocks carry explanatory comments that
 # contain braces, so it silently misses them (it dropped command_wrappers.zig
 # and its 82 force-imports while reporting a pass). The statement form is the
 # idiom itself and needs no brace matching.
 force_re='^[[:space:]]*_[[:space:]]*=[[:space:]]*@import\("[^"]+\.zig"\)[[:space:]]*;'
-mapfile -t carriers < <(git ls-files 'zig_src/*.zig' | xargs -r grep -lE "$force_re" | sort)
+mapfile -t carriers < <(git ls-files 'src/*.zig' | xargs -r grep -lE "$force_re" | sort)
 
 if [ "${#carriers[@]}" -eq 0 ]; then
     echo "check-module-carriers: BROKEN -- detected zero force-import carriers."
-    echo "zig_src is known to contain several (module roots legitimately use them),"
+    echo "src is known to contain several (module roots legitimately use them),"
     echo "so a zero count means the detector stopped working, not that the tree is"
     echo "clean. Refusing to report a false pass."
     exit 1
@@ -56,7 +56,7 @@ fi
 
 if [ "${#carriers[@]}" -eq 0 ]; then
     echo "check-module-carriers: BROKEN -- detected zero force-import carriers."
-    echo "zig_src is known to contain several (module roots legitimately use them),"
+    echo "src is known to contain several (module roots legitimately use them),"
     echo "so a zero count means the detector stopped working, not that the tree is"
     echo "clean. Refusing to report a false pass."
     exit 1
@@ -87,7 +87,7 @@ if [ -n "$unexpected" ]; then
     echo "imports: both it and the carried owners are then pinned to this directory."
     echo "If this file IS a module root, re-pin with --bump. If it is an owner that"
     echo "merely needed other code compiled, give that code its own root (see"
-    echo "zig_src/core/state/state.zig) and import it by name instead."
+    echo "src/core/state/state.zig) and import it by name instead."
     exit 1
 fi
 

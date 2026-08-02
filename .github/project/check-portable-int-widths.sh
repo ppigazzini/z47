@@ -26,7 +26,7 @@ allowlist=".github/project/portable-int-width-allowlist.txt"
 # minus the inline-truncated (provably <=32-bit) ones.
 mapfile -t candidates < <(
   grep -rnE "@as\(c_(u?long), *@(int|bit)Cast|@as\(c_(u?long), *[a-zA-Z_]|: *c_(u?long) *=.*@(int|bit)Cast" \
-    zig_src/ zig_build/ --include='*.zig' 2>/dev/null \
+    src/ build/ --include='*.zig' 2>/dev/null \
     | grep -vE "@truncate|>> *32" || true
 )
 

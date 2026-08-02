@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Rank same-named functions that have DRIFTED between z47's two load families.
 
-WHY THIS EXISTS. z47 keeps a state-file family (`zig_src/core/persist/`) and a
-program-file family (`zig_src/core/program/`) that parse different formats with
+WHY THIS EXISTS. z47 keeps a state-file family (`src/core/persist/`) and a
+program-file family (`src/core/program/`) that parse different formats with
 structurally identical helpers. Twice a fix has been applied to one and not the
 other, and neither time did any lane notice:
 
@@ -66,8 +66,8 @@ from upstream_paths import upstream_path
 # five such pairs. Canonicalising the stem drops them to identical and lets the
 # ranking mean what it claims.
 FAMILIES = (
-    ("zig_src/core/persist", ("calc_state",)),
-    ("zig_src/core/program", ("program_serialization",)),
+    ("src/core/persist", ("calc_state",)),
+    ("src/core/program", ("program_serialization",)),
 )
 FAMILY_TOKEN = "FAMILY"
 
@@ -243,9 +243,9 @@ def c_macro_families(root: pathlib.Path) -> dict[str, list[tuple[str, str]]]:
 
 
 def zig_bodies_everywhere(root: pathlib.Path) -> dict[str, tuple[str, str]]:
-    """function name -> (relative path, normalised body) across all of zig_src."""
+    """function name -> (relative path, normalised body) across all of src."""
     out: dict[str, tuple[str, str]] = {}
-    for path in sorted(root.glob("zig_src/**/*.zig")):
+    for path in sorted(root.glob("src/**/*.zig")):
         for name, body in function_bodies(path).items():
             out.setdefault(name, (str(path.relative_to(root)), body))
     return out

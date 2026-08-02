@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every `strtol`/`strtoul` call in zig_src must carry a decided width verdict.
+"""Every `strtol`/`strtoul` call in src must carry a decided width verdict.
 
 WHY THIS EXISTS. `strtoul` returns `unsigned long`, which is 64-bit on the Linux
 and macOS hosts and 32-bit on the arm-none-eabi firmware AND on Windows (LLP64).
@@ -61,14 +61,14 @@ VERDICT_LOOKBACK = 12
 
 
 def call_sites(root: pathlib.Path) -> list[dict]:
-    """Every strto* CALL in zig_src, with the verdict covering it if there is one.
+    """Every strto* CALL in src, with the verdict covering it if there is one.
 
     `extern fn` declarations are not calls, and a call written inside a comment is
     prose about a call rather than one; both would otherwise inflate the count and
     demand verdicts that mean nothing.
     """
     out: list[dict] = []
-    for path in sorted(root.glob("zig_src/**/*.zig")):
+    for path in sorted(root.glob("src/**/*.zig")):
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         for n, line in enumerate(lines):
             call = CALL_RE.search(line)
@@ -127,8 +127,8 @@ def self_test() -> int:
 
     with tempfile.TemporaryDirectory() as td:
         root = pathlib.Path(td)
-        (root / "zig_src").mkdir()
-        (root / "zig_src" / "t.zig").write_text(
+        (root / "src").mkdir()
+        (root / "src" / "t.zig").write_text(
             "// WIDTH-CONTRACT: accepted -- the first one\n"
             "fn a() u32 { return @truncate(strtoul(s, null, 10)); }\n"
             "fn b() u32 { return @truncate(strtoul(s, null, 10)); }\n"

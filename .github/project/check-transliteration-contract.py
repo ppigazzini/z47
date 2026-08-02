@@ -103,7 +103,7 @@ def measure_churn(repo_root, since="2024-07-01"):
 
 def zig_owners_by_stem(repo_root):
     owners = {}
-    for dirpath, _, names in os.walk(os.path.join(repo_root, "zig_src")):
+    for dirpath, _, names in os.walk(os.path.join(repo_root, "src")):
         for name in names:
             if name.endswith(".zig"):
                 rel = os.path.relpath(os.path.join(dirpath, name), repo_root)

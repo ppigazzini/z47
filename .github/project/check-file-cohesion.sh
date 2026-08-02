@@ -8,7 +8,7 @@
 #
 # Two checks:
 #   1. DEAD FILE (absolute): a .zig file with zero top-level declarations is dead.
-#   2. MICRO-FILE RATCHET: the count of <15-line .zig files under zig_src must not
+#   2. MICRO-FILE RATCHET: the count of <15-line .zig files under src must not
 #      exceed the baseline in file-cohesion-baseline.json. It may only shrink, so
 #      the barnacle count is driven down and can never grow.
 #
@@ -35,12 +35,12 @@ while IFS= read -r f; do
         echo "DEAD FILE: '$f' has zero top-level declarations -- delete it or fold its purpose into a real owner."
         dead=$((dead + 1))
     fi
-done < <(git ls-files 'zig_src/*.zig')
+done < <(git ls-files 'src/*.zig')
 
 baseline=$(grep -oE '"micro_files"[[:space:]]*:[[:space:]]*[0-9]+' "$baseline_file" | grep -oE '[0-9]+')
 
 if [ "${1:-}" = "--bump" ]; then
-    printf '{\n  "micro_files": %d,\n  "note": "REPORT-28 NM11: count of <15-line zig_src files; monotonic downward -- barnacles only shrink."\n}\n' "$micro" > "$baseline_file"
+    printf '{\n  "micro_files": %d,\n  "note": "REPORT-28 NM11: count of <15-line src files; monotonic downward -- barnacles only shrink."\n}\n' "$micro" > "$baseline_file"
     echo "check-file-cohesion: re-pinned micro_files baseline to $micro"
     exit 0
 fi
@@ -48,7 +48,7 @@ fi
 fail=0
 if [ "$dead" -ne 0 ]; then fail=1; fi
 if [ "$micro" -gt "$baseline" ]; then
-    echo "MICRO-FILE REGRESSION: $micro files under zig_src are <15 lines (ceiling $baseline)."
+    echo "MICRO-FILE REGRESSION: $micro files under src are <15 lines (ceiling $baseline)."
     echo "  A <15-line file holding a single fn/var that shares a subsystem with a sibling is a"
     echo "  barnacle -- fold it into the cohesive owner. Reduce it, do not raise the ceiling."
     fail=1

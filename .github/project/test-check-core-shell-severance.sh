@@ -3,9 +3,9 @@
 #
 # WHY THIS EXISTS. The gate's headline invariant -- "a core file that @imports a
 # shell source file: it must stay at ZERO" -- could not fire. It compared
-# `commonpath(...)` against an unnormalized `os.path.join(root, "zig_src", "shell")`,
-# which is "./zig_src/shell" when root is "." (how the local gate and CI both call
-# it) while commonpath returns "zig_src/shell". The two were never equal, so the cap
+# `commonpath(...)` against an unnormalized `os.path.join(root, "src", "shell")`,
+# which is "./src/shell" when root is "." (how the local gate and CI both call
+# it) while commonpath returns "src/shell". The two were never equal, so the cap
 # read zero on every tree, clean or not. The docstring's "It is zero today" was an
 # artifact of the bug rather than a measurement.
 #
@@ -18,7 +18,7 @@ set -uo pipefail
 
 cd "$(dirname "$0")/../.."
 GATE=".github/project/check-core-shell-severance.py"
-VICTIM="zig_src/core/text/word_break.zig"
+VICTIM="src/core/text/word_break.zig"
 failures=0
 
 restore() { [ -f "$VICTIM.bak" ] && mv "$VICTIM.bak" "$VICTIM"; }

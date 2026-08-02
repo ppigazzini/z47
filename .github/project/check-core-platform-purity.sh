@@ -36,7 +36,7 @@ baseline_file=".github/project/core-platform-purity-baseline.json"
 # Flagged: platform reach with NO hal contract behind it.
 leak_re='\b(LIBRARY_FN_BASE|power_check_screen|sys_timer_disable|sys_timer_start|key_pop)\b'
 
-mapfile -t offenders < <(git ls-files 'zig_src/core/*.zig' | xargs -r grep -lE "$leak_re" 2>/dev/null | sort)
+mapfile -t offenders < <(git ls-files 'src/core/*.zig' | xargs -r grep -lE "$leak_re" 2>/dev/null | sort)
 count=${#offenders[@]}
 baseline=$(grep -oE '"platform_leak_files"[[:space:]]*:[[:space:]]*[0-9]+' "$baseline_file" | grep -oE '[0-9]+')
 

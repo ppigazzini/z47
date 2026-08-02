@@ -71,7 +71,7 @@ def width(type_text, aliases):
 def scan(root):
     definitions = {}
     declarations = defaultdict(list)
-    for directory, _, files in os.walk(os.path.join(root, "zig_src")):
+    for directory, _, files in os.walk(os.path.join(root, "src")):
         for name in files:
             if not name.endswith(".zig"):
                 continue

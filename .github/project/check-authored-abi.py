@@ -53,7 +53,7 @@ IDENT = re.compile(r"\b[A-Za-z_]\w*\b")
 def measure(root):
     files = [
         os.path.join(d, f)
-        for d, _, fs in os.walk(os.path.join(root, "zig_src"))
+        for d, _, fs in os.walk(os.path.join(root, "src"))
         for f in fs
         if f.endswith(".zig")
     ]
@@ -95,7 +95,7 @@ def main():
         print("it every z47 export would read as authored. Refusing to measure.")
         return 1
     if not exported:
-        print("check-authored-abi: BROKEN -- found no `pub export` symbols in zig_src.")
+        print("check-authored-abi: BROKEN -- found no `pub export` symbols in src.")
         print("z47 is known to export thousands. Refusing to report a clean tree.")
         return 1
 

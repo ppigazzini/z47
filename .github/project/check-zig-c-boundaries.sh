@@ -98,7 +98,7 @@ check_tree() {
 
     mapfile -t translate_c_files < <(
         cd "$repo_root"
-        git ls-files --cached --modified --others --exclude-standard --deduplicate -- 'zig_build/tools/translate_c/*.h' |
+        git ls-files --cached --modified --others --exclude-standard --deduplicate -- 'build/tools/translate_c/*.h' |
             while IFS= read -r path; do
                 [[ -f "$path" ]] && printf '%s\n' "$path"
             done

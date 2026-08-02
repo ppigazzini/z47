@@ -63,7 +63,7 @@ def load_builder():
 def recompute(root: pathlib.Path, b) -> tuple[dict[str, set[str]], list[str]]:
     """Return (file->owners via symbol, uncovered C files)."""
     c_root = upstream_path(root, "src/c47")
-    z_root = root / "zig_src"
+    z_root = root / "src"
     c_sym_file: dict[str, list[str]] = {}
     c_files: list[str] = []
     for p in sorted(c_root.rglob("*.c")):

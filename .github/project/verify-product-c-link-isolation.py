@@ -10,7 +10,7 @@ laundered "0" was historically possible (see REPORT-15).
 This check closes that gap by parsing the *actual* ``zig build <target>
 --verbose`` compiler invocations and asserting that every product compile/link
 command -- everything except the explicitly allowlisted build-time generator
-tools -- contains no first-party ``src/c47*`` or ``zig_bridge`` C source.
+tools -- contains no first-party ``src/c47*`` or ``bridge`` C source.
 
 It complements, and does not replace, the literal-scan audit and the
 ``std.debug.assert(core_sources.len == 0)`` build-time guard.
@@ -35,7 +35,7 @@ from pathlib import Path
 GENERATOR_TOOLS = frozenset({"generateCatalogs", "generateConstants", "ttf2RasterFonts"})
 
 # First-party C surfaces that must never reach a product binary.
-FIRST_PARTY_C = re.compile(r"\b(src/c47[a-z0-9-]*/[A-Za-z0-9_./-]+\.c|zig_bridge/[^\s]+\.c)\b")
+FIRST_PARTY_C = re.compile(r"\b(src/c47[a-z0-9-]*/[A-Za-z0-9_./-]+\.c|bridge/[^\s]+\.c)\b")
 
 # A parity/oracle/test executable is not a product binary; its name ends with a
 # test/parity marker. Such targets are out of scope for THIS product check.

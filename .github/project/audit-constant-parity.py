@@ -9,7 +9,7 @@ behavioral fnConstant/fnPi oracle -- NOT a value gate -- so before this tool
 these mirrors had no continuous protection, and several have a documented history
 of silently going stale on an edit (TM_CMP was 10021, dtReal34 was 0, ...).
 
-This audit extracts every C-convention-named constant from zig_src, emits one
+This audit extracts every C-convention-named constant from src, emits one
 `_Static_assert(NAME == VALUE)` per mirror, and compiles it against the pinned
 upstream headers with `zig cc`. A mismatch is a real Zig-vs-C divergence; a name
 C does not declare is a Zig-local alias (reported, not failed).
@@ -32,7 +32,7 @@ import tempfile
 from upstream_paths import upstream_path
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-ZIG_SRC = ROOT / "zig_src"
+ZIG_SRC = ROOT / "src"
 
 # C-symbol naming conventions owners mirror. Anchored so we only pick up genuine
 # C #define/enum mirrors, not arbitrary Zig locals.

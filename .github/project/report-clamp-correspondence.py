@@ -277,7 +277,7 @@ def zig_functions(root: pathlib.Path) -> dict[str, list[str]]:
     """name -> bodies. A name can be defined in more than one owner."""
     out: dict[str, list[str]] = {}
     sig = re.compile(r"^(?:pub\s+)?(?:export\s+|inline\s+)*fn\s+(\w+)\s*\(", re.MULTILINE)
-    for path in sorted(root.glob("zig_src/**/*.zig")):
+    for path in sorted(root.glob("src/**/*.zig")):
         text = path.read_text(encoding="utf-8", errors="replace")
         marks = [(m.group(1), m.start()) for m in sig.finditer(text)]
         for i, (name, pos) in enumerate(marks):
@@ -358,7 +358,7 @@ def zig_bounds(text: str) -> set[str]:
 
 
 def zig_bound_index(root: pathlib.Path) -> dict[str, list[str]]:
-    """threshold -> where in zig_src something COMPARES against it.
+    """threshold -> where in src something COMPARES against it.
 
     Triage aid, not a filter. z47 sometimes moves a guard to a different owner than
     the C function that holds it -- the state-file version range lives in
@@ -369,7 +369,7 @@ def zig_bound_index(root: pathlib.Path) -> dict[str, list[str]]:
     So the queue still reports it, and just says where else to look.
     """
     index: dict[str, list[str]] = {}
-    for path in sorted(root.glob("zig_src/**/*.zig")):
+    for path in sorted(root.glob("src/**/*.zig")):
         rel = path.relative_to(root)
         for n, line in enumerate(
             path.read_text(encoding="utf-8", errors="replace").splitlines(), 1
@@ -604,7 +604,7 @@ def main() -> int:
             elif f["elsewhere"]:
                 print(f"    but compared against at: {', '.join(f['elsewhere'])}")
             else:
-                print("    and compared against NOWHERE in zig_src -- strongest signal.")
+                print("    and compared against NOWHERE in src -- strongest signal.")
             print()
 
     if args.calibrate:

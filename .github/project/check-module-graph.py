@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Module-graph gate: the @import graph's cycles, frozen and named.
 
-WHAT THIS MEASURES. The `@import` graph over `zig_src/**.zig` -- the structure a
+WHAT THIS MEASURES. The `@import` graph over `src/**.zig` -- the structure a
 reader navigates. This is NOT the structure the linker builds (that is the object
-graph, whose objects are defined by `zig_build/`'s build roots). The two are
+graph, whose objects are defined by `build/`'s build roots). The two are
 orthogonal: moving a file between directories changes this graph and cannot change
 the object graph. Know which one owns a number before acting on it.
 
@@ -38,7 +38,7 @@ IMPORT = re.compile(r'@import\("([^"]+\.zig)"\)')
 
 
 def build_graph(root):
-    src = os.path.join(root, "zig_src")
+    src = os.path.join(root, "src")
     files = [os.path.join(d, f) for d, _, fs in os.walk(src) for f in fs if f.endswith(".zig")]
     rel = {f: os.path.relpath(f, root) for f in files}
     known = set(files)
@@ -95,18 +95,18 @@ def sccs(nodes, g):
 
 
 def zone_of(relpath):
-    """The DIRECTORY a file lives in, at most two levels below zig_src/.
+    """The DIRECTORY a file lives in, at most two levels below src/.
 
     Must never return a filename: a cycle's fingerprint is (size, dominant zone),
     and if every member reported a distinct "zone" the dominant one would be
     chosen by dict order and the fingerprint would not survive a re-run.
     """
-    parts = relpath.split(os.sep)  # zig_src / abi / types.zig
+    parts = relpath.split(os.sep)  # src / abi / types.zig
     if len(parts) <= 2:
         return parts[0]
     if len(parts) == 3:
-        return parts[1]  # zig_src/abi/types.zig      -> abi
-    return os.sep.join(parts[1:3])  # zig_src/core/numeric/x.zig -> core/numeric
+        return parts[1]  # src/abi/types.zig      -> abi
+    return os.sep.join(parts[1:3])  # src/core/numeric/x.zig -> core/numeric
 
 
 def measure(root):
@@ -132,7 +132,7 @@ def measure(root):
         zones = collections.Counter(zone_of(rel[f]) for f in comp)
         fingerprints.append({"size": len(comp), "zone": zones.most_common(1)[0][0]})
     abi_cycles = sum(
-        1 for comp in comps if all(rel[f].startswith("zig_src" + os.sep + "abi") for f in comp)
+        1 for comp in comps if all(rel[f].startswith("src" + os.sep + "abi") for f in comp)
     )
     return {
         "files": n,
@@ -155,7 +155,7 @@ def main():
     m = measure(root)
 
     if m["files"] == 0:
-        print("check-module-graph: BROKEN -- found no .zig files under zig_src/.")
+        print("check-module-graph: BROKEN -- found no .zig files under src/.")
         print("Refusing to report a clean tree from an empty measurement.")
         return 1
 

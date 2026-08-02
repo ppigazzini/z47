@@ -25,7 +25,7 @@ from upstream_paths import upstream_path
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CPTR = upstream_path(ROOT, "src/generated/constantPointers.h")
-ABI = ROOT / "zig_src/abi/constants.zig"
+ABI = ROOT / "src/abi/constants.zig"
 
 # C: #define const_1 ((real_t *)(constants + 4856))  /  real34_t variant too
 C_DEF = re.compile(r"#define\s+(const\w+)\s+\(\(real(?:34)?_t \*\)\(constants \+ (\d+)\)\)")
@@ -119,16 +119,16 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
     # Owner-local offset tables (NOT covered by the abi oracle, testSuite-gated
     # only): the same by-name remap, keyed on each file's offset-literal pattern.
     OWNERS = {
-        "zig_src/shell/display/display.zig": [r"constR3?4?\((\d+)\)"],
-        "zig_src/shell/frontier_addons.zig": [r"constR3?4?\((\d+)\)"],
-        "zig_src/shell/display/screen.zig": [r"constR3?4?\((\d+)\)"],
-        "zig_src/shell/convert/conversion_units.zig": [
+        "src/shell/display/display.zig": [r"constR3?4?\((\d+)\)"],
+        "src/shell/frontier_addons.zig": [r"constR3?4?\((\d+)\)"],
+        "src/shell/display/screen.zig": [r"constR3?4?\((\d+)\)"],
+        "src/shell/convert/conversion_units.zig": [
             r"constR3?4?\((\d+)\)",
             r"OFF_const\w* = (\d+)",
             r"^\s*(\d+), // \d+ constFactor",
         ],
-        "zig_src/core/numeric/command_wrappers/helpers.zig": [r"offset_const\w* = (\d+)"],
-        "zig_src/core/numeric/math_wp34s.zig": [r"OFF_const51_gammaC01: u32 = (\d+)"],
+        "src/core/numeric/command_wrappers/helpers.zig": [r"offset_const\w* = (\d+)"],
+        "src/core/numeric/math_wp34s.zig": [r"OFF_const51_gammaC01: u32 = (\d+)"],
     }
     for rel, pats in OWNERS.items():
         p = ROOT / rel

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Filename hygiene gate (REPORT-28 §32 NM10-0). A source filename must name its
-# RESPONSIBILITY, never how it was produced. This fails the build on any zig_src
+# RESPONSIBILITY, never how it was produced. This fails the build on any src
 # filename that carries a migration-artifact / dumping-ground token, so the
 # "*_bulk"-class regression that the NM9 severance push introduced cannot come
 # back. See [[severance-destinations-must-be-designed-owners]].
@@ -9,7 +9,7 @@
 # Banned tokens (as a whole word inside the snake_case basename): bulk, misc,
 # extracted, moved, stuff, junk, tmp, temp, misc, various, part1/part2, etc.
 #
-# Exit 0 if every zig_src filename is clean; 1 on any violation.
+# Exit 0 if every src filename is clean; 1 on any violation.
 set -euo pipefail
 
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -28,7 +28,7 @@ while IFS= read -r f; do
         echo "  -> rename it after WHAT it owns (the cohesive responsibility), not how it was created."
         violations=$((violations + 1))
     fi
-done < <(git ls-files 'zig_src/*.zig')
+done < <(git ls-files 'src/*.zig')
 
 if [ "$violations" -ne 0 ]; then
     echo ""
@@ -37,4 +37,4 @@ if [ "$violations" -ne 0 ]; then
     exit 1
 fi
 
-echo "check-filename-hygiene: OK (no migration-artifact filenames under zig_src)"
+echo "check-filename-hygiene: OK (no migration-artifact filenames under src)"

@@ -5,10 +5,10 @@ WHAT THIS MEASURES, AND WHY IT IS NOT check-module-graph.py.
 
 z47 has two dependency graphs and they are orthogonal.
 
-  MODULE graph  `@import` over zig_src/       what a reader navigates
+  MODULE graph  `@import` over src/       what a reader navigates
                 lever: the file tree          gated by check-module-graph.py
   OBJECT graph  build roots + link edges      what the LINKER builds
-                lever: zig_build/             gated here
+                lever: build/             gated here
 
 Moving a file between directories changes the module graph and CANNOT change the
 object graph -- the build names root files, never zones. A folder refactor that
@@ -19,7 +19,7 @@ The object graph is the one that decides what a firmware package must carry and
 what a parity suite can link standalone. Nothing pinned it until this gate.
 
 WHERE THE OBJECT SET COMES FROM. `zig build object-manifest`, which is the build
-DECLARING what it links (zig_build/object_manifest.zig). It is not scraped. Every
+DECLARING what it links (build/object_manifest.zig). It is not scraped. Every
 wrong object-set number produced against this codebase came from asking something
 other than the build:
   - a .zig-cache glob            -> included a test artefact

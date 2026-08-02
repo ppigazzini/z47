@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Idiom-status census for the REPORT-23 idiomatic-Zig refactor (Phase infinity).
 
-Counts the transliteration anti-patterns REPORT-23 §2 tracks, across zig_src/,
+Counts the transliteration anti-patterns REPORT-23 §2 tracks, across src/,
 per-owner. The census is split into two layers (churn-driven roadmap): CORE
 (hand-written owner code) is the ratchet ceiling metric and is meant to fall as
 owners move to idiomatic Zig; SEAM (generated ABI shims -- files under a
@@ -31,7 +31,7 @@ BASELINE_PATH = ".github/project/idiom-status-baseline.json"
 # shim: it holds the contract-mandated C-ABI shapes (extern struct / callconv(.c)
 # / offsets) derived from upstream C, so it is graded separately from
 # hand-written owner ("core") code. A seam file MUST both live under a
-# `generated/` path in zig_src AND carry the marker below; a file with exactly
+# `generated/` path in src AND carry the marker below; a file with exactly
 # one of those signals is a fail-closed guard violation, so a hand-written owner
 # cannot smuggle debt out of the core ceiling by faking the marker.
 SEAM_MARKER = "// SEAM-GENERATED"
@@ -116,7 +116,7 @@ PATTERNS = [
 
 
 def scan(repo_root: Path) -> dict:
-    zig_root = repo_root / "zig_src"
+    zig_root = repo_root / "src"
     files = sorted(p for p in zig_root.rglob("*.zig"))
 
     # `totals` is the CORE (hand-written) census -- the ratchet ceiling metric.
@@ -149,7 +149,7 @@ def scan(repo_root: Path) -> dict:
             seam_file_count += 1
             continue
         # "Owner" = an idiomatic core file. The historical `_owned` role suffix was
-        # dropped in M25 (project structure), so count every zig_src file that is
+        # dropped in M25 (project structure), so count every src file that is
         # not an L3 C-ABI runtime/shared shim.
         if not path.name.endswith(("_runtime.zig", "_shared.zig")):
             owner_count += 1
@@ -169,7 +169,7 @@ def scan(repo_root: Path) -> dict:
 
 def print_report(result: dict) -> None:
     print(
-        f"zig_src files: {result['file_count']}  owners: {result['owner_count']}"
+        f"src files: {result['file_count']}  owners: {result['owner_count']}"
         f"  seam files: {result['seam_file_count']}"
     )
     print("\nCore (hand-written) anti-pattern totals -- ratchet ceiling (REPORT-23 §2):")

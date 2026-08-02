@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Softmenu-table parity audit: the Zig menu_* mirrors must match upstream softmenus.c.
 
-`zig_src/shell/display/softmenus/softmenus.zig` owns `softmenu[]` and every
+`src/shell/display/softmenus/softmenus.zig` owns `softmenu[]` and every
 `menu_*[]` table it points at. Those tables were dumped from the C once, at the
 M3.3 port, and nothing has compared them against upstream since -- so a resync
 that changes a menu leaves the Zig copy silently stale. The testSuite cannot see
@@ -37,7 +37,7 @@ from pathlib import Path
 from upstream_paths import upstream_path
 
 # Host build values for the frontier options softmenus.zig gates its tables on
-# (zig_build/frontier/frontier.zig defaults; only the dmcp* variants override).
+# (build/frontier/frontier.zig defaults; only the dmcp* variants override).
 HOST_OPTIONS = {
     "dmcp_build": False,
     "old_hw": False,
@@ -212,7 +212,7 @@ def main() -> int:
         if args.baseline
         else repo / ".github/project/softmenu-parity-baseline.json"
     )
-    owner = repo / "zig_src/shell/display/softmenus/softmenus.zig"
+    owner = repo / "src/shell/display/softmenus/softmenus.zig"
 
     try:
         preprocessed = preprocess(repo, find_catalogs_dir(repo))

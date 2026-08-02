@@ -16,8 +16,8 @@ repo surfaces.
 - The authoritative upstream source repository is
   `https://gitlab.com/rpncalculators/c43.git`.
 - The pinned imported upstream working tree is mounted under `upstream/`. The
-  repo root carries only z47-owned files: `build.zig`, `zig_build/`,
-  `zig_src/`, `zig_bridge/`, `.github/`, `zig_docs/`, this contributor note,
+  repo root carries only z47-owned files: `build.zig`, `build/`,
+  `src/`, `bridge/`, `.github/`, `docs/`, this contributor note,
   and the root entrypoint docs.
 - `.github/project/upstream-pin.env` records `UPSTREAM_ROOT=upstream`, and
   `.github/project/source-ownership.txt` records the tracked top-level
@@ -121,7 +121,7 @@ surfaces. They are not the maintained z47 control plane.
 - rewrite or boundary changes: rerun the focused parity or regression lane for
   that slice before broader host or firmware checks
 - a lane is green and the behaviour is still wrong: stop rerunning and switch
-  tools. `zig_docs/75-debugging.md` owns the detector-to-bug-class map, the
+  tools. `docs/75-debugging.md` owns the detector-to-bug-class map, the
   C-vs-Zig differential against the pinned upstream build, and the catalogue of
   ways a green run has hidden a defect here before
 - package, firmware, or release-proof changes: rerun the matching `dist_*` or
@@ -135,14 +135,14 @@ workflow evidence that was checked instead.
 ## Documentation Promotion Rules
 
 - keep `README.md` short: the z47 root entry point and Zig quick start
-- keep `zig_docs/` as the stable maintainer-doc surface for the live repo
-- update this file, `README.md`, and the affected `zig_docs/` pages in the
+- keep `docs/` as the stable maintainer-doc surface for the live repo
+- update this file, `README.md`, and the affected `docs/` pages in the
   same change when a public build, CI, packaging, or verification contract
   changes
-- update `zig_docs/10-build-and-source-layout.md` and
-  `zig_docs/50-zig-c-boundaries-and-rewrite-policy.md` in the same change when
+- update `docs/10-build-and-source-layout.md` and
+  `docs/50-zig-c-boundaries-and-rewrite-policy.md` in the same change when
   naming strata, naming examples, or current naming-milestone status changes
-- update `zig_docs/README.md` when the maintainer-doc index, page-routing
+- update `docs/README.md` when the maintainer-doc index, page-routing
   contract, or top-level project framing changes
 - state a fact on one page only. When another page needs it, link the owner
   rather than repeating the value: an uncounted copy is how a stale number
@@ -150,7 +150,7 @@ workflow evidence that was checked instead.
   it
 - upstream's own subjects -- the C architecture, its memory model per platform,
   its detectors, and the calculator's vocabulary -- belong to the companion
-  c47-r47-ci doc set. Link it (`zig_docs/90-official-references.md` holds the
+  c47-r47-ci doc set. Link it (`docs/90-official-references.md` holds the
   page map) instead of restating it here; the two repositories are not gated
   against each other, so a copied number cannot be kept honest
 - do not imply a pure-Zig result while legacy C libraries or vendor code

@@ -17,7 +17,7 @@ upstream-relative: it is resolved by *that* repository, not by this one.
 So the rule is: resolve at the point of filesystem access, and only there. This
 keeps every baseline stable across a layout change and confines the layout itself
 to one place -- the pin file, which the Zig build already reads via
-``zig_build/common.zig:upstreamRootString``.
+``build/common.zig:upstreamRootString``.
 """
 
 from __future__ import annotations

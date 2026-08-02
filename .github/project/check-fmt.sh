@@ -4,7 +4,7 @@
 # canonically formatted by `zig fmt`. Idiomatic Zig is `zig fmt`-clean by
 # definition; this gate keeps the tree that way so unformatted code cannot land.
 #
-# Scope: z47-owned Zig only (zig_src/, zig_build/, build.zig). The imported
+# Scope: z47-owned Zig only (src/, build/, build.zig). The imported
 # upstream tree (src/, dep/, ...) is never formatted or checked here -- it is a
 # read-only audit input.
 #
@@ -16,7 +16,7 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$repo_root"
 
-targets=(zig_src zig_build build.zig)
+targets=(src build build.zig)
 
 if [[ "${1:-}" == "--fix" ]]; then
   zig fmt "${targets[@]}"

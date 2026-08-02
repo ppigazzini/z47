@@ -55,8 +55,8 @@ def symbol_owner_index(repo: pathlib.Path) -> dict[str, list[str]]:
     b = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(b)
     idx: dict[str, list[str]] = {}
-    for p in sorted((repo / "zig_src").rglob("*.zig")):
-        rel = str(p.relative_to(repo / "zig_src").with_suffix(""))
+    for p in sorted((repo / "src").rglob("*.zig")):
+        rel = str(p.relative_to(repo / "src").with_suffix(""))
         for sym, owner in b.zig_owned_symbols(rel, p.read_text(errors="ignore")).items():
             idx.setdefault(sym, []).append(owner)
     return idx

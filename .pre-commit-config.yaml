@@ -11,7 +11,7 @@
 # a file z47 has no opinion about. So every hook here is scoped to what z47
 # actually authors:
 #
-#     .github/  zig_bridge/  zig_build/  zig_docs/  zig_src/
+#     .github/  bridge/  build/  docs/  src/
 #     build.zig  build.zig.zon  CONTRIBUTING.md  pyproject.toml
 #     .pre-commit-config.yaml
 #
@@ -31,19 +31,19 @@ repos:
         # Unscoped, this hook does not find a z47 mistake -- it refuses an
         # upstream resync, which is the one thing this file must never do.
         # Z47_OWNED
-        files: '^(\.github/|zig_bridge/|zig_build/|zig_docs/|zig_src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
+        files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
       - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
         # Z47_OWNED
-        files: '^(\.github/|zig_bridge/|zig_build/|zig_docs/|zig_src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
+        files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
         # Byte-exact comparison inputs, even inside the owned tree: .p47 and .sav
         # are fed to the loaders and compared against golden output, and the
         # correspondence manifest is a tab-separated table a gate parses. A
         # "harmless" newline at the end of one of those is a changed test input.
         exclude: '\.(p47|sav|dat|bin|bmp|tsv)$'
       - id: trailing-whitespace
-        files: '^(\.github/|zig_bridge/|zig_build/|zig_docs/|zig_src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
+        files: '^(\.github/|bridge/|build/|docs/|src/|build\.zig|build\.zig\.zon|CONTRIBUTING\.md|pyproject\.toml|\.pre-commit-config\.yaml)'
         exclude: '\.(p47|sav|dat|bin|bmp|tsv)$'
 
   - repo: https://github.com/astral-sh/ruff-pre-commit

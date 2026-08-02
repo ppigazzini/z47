@@ -3,7 +3,7 @@
 
 WHAT THIS CATCHES, AND WHY NOTHING ELSE DOES.
 
-`zig_src/shell/display/items/items.zig` holds indexOfItems[], whose rows are
+`src/shell/display/items/items.zig` holds indexOfItems[], whose rows are
 byte-dumped from the C-compiled table. It therefore ADVANCES BY ITSELF on every
 upstream pin advance, while the hand-written owners that implement those items do
 not. A row can start binding a different function, and nothing fails.
@@ -43,7 +43,7 @@ import os
 import re
 import sys
 
-ITEMS = "zig_src/shell/display/items/items.zig"
+ITEMS = "src/shell/display/items/items.zig"
 BASELINE = ".github/project/item-seam-baseline.json"
 
 # Every row, in table order, so the parse index IS the item number.
