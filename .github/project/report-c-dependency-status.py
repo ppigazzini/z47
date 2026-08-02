@@ -76,7 +76,7 @@ def main() -> int:
 
     repo_first_party = full_classified["first-party"]
     product_first_party = product_classified["first-party"]
-    retained_bridge = {entry for entry in product_first_party if entry.startswith("zig_bridge/")}
+    retained_bridge = {entry for entry in product_first_party if entry.startswith("bridge/")}
     product_source = {entry for entry in product_first_party if entry.startswith("src/")}
     other_product = product_first_party - retained_bridge - product_source
     parity_oracle = repo_first_party - product_first_party

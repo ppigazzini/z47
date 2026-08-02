@@ -1,5 +1,5 @@
 # Python tooling config for the repo-owned scripts under .github/project/ and
-# zig_build/. There is no Python package to build -- this file exists so
+# build/. There is no Python package to build -- this file exists so
 # ruff/ty/pre-commit share one config, the same shape the sibling ports use.
 
 [project]
@@ -17,7 +17,7 @@ dev = [
 [tool.ruff]
 target-version = "py314"
 # First-party import roots, so `I` sorts z47's own modules apart from stdlib.
-src = [".github/project", "zig_build"]
+src = [".github/project", "build"]
 # House style wraps prose-heavy tool comments at ~100, not ruff's default 88.
 line-length = 100
 
@@ -74,4 +74,4 @@ extra-paths = [".github/project"]
 # Same scope as ruff, for the same reason: the imported upstream scripts are not
 # z47's to fix, and a whole-project walk would also descend into the untracked
 # __DEV/ notes tree and any agent worktree under .claude/.
-include = [".github/project", "zig_build"]
+include = [".github/project", "build"]

@@ -185,16 +185,16 @@ def normalize_imported_path(raw_value: str) -> str | None:
 
 def collect_manifest_touchpoints(repo_root: Path) -> dict[str, dict[str, set[str]]]:
     mapping: dict[str, dict[str, set[str]]] = {}
-    zig_build_root = repo_root / "zig_build"
+    build_root = repo_root / "build"
 
-    for manifest_path in zig_build_root.rglob("*replaced_core_sources.txt"):
+    for manifest_path in build_root.rglob("*replaced_core_sources.txt"):
         rel_path = manifest_path.relative_to(repo_root).as_posix()
         for raw_line in manifest_path.read_text(encoding="utf-8").splitlines():
             source = normalize_imported_path(raw_line)
             if source is not None:
                 add_touchpoint(mapping, source, rel_path, "manifest")
 
-    for zig_path in zig_build_root.rglob("*.zig"):
+    for zig_path in build_root.rglob("*.zig"):
         rel_path = zig_path.relative_to(repo_root).as_posix()
         in_replaced_sources = False
         for raw_line in zig_path.read_text(encoding="utf-8").splitlines():
@@ -217,7 +217,7 @@ def collect_manifest_touchpoints(repo_root: Path) -> dict[str, dict[str, set[str
 def iter_owned_text_paths(repo_root: Path) -> list[Path]:
     paths: list[Path] = []
 
-    for root_name in (".github", "zig_build", "zig_src", "zig_bridge"):
+    for root_name in (".github", "build", "src", "bridge"):
         root = repo_root / root_name
         if not root.exists():
             continue
@@ -285,13 +285,13 @@ def collect_touchpoints(
 def classify_touchpoint(touchpoint_path: str, reasons: set[str]) -> str:
     if "manifest" in reasons:
         return BUILD_MANIFEST_CLASS
-    if touchpoint_path.startswith("zig_src/"):
+    if touchpoint_path.startswith("src/"):
         return RUNTIME_ZIG_CLASS
-    if touchpoint_path.startswith("zig_build/tools/"):
+    if touchpoint_path.startswith("build/tools/"):
         return BUILD_TOOL_ZIG_CLASS
-    if touchpoint_path.startswith("zig_build/"):
+    if touchpoint_path.startswith("build/"):
         return BUILD_LOGIC_CLASS
-    if touchpoint_path.startswith("zig_bridge/"):
+    if touchpoint_path.startswith("bridge/"):
         return RETAINED_C_CLASS
     return WORKFLOW_DOC_CLASS
 

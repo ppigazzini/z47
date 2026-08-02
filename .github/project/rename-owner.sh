@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # rename-owner.sh — batch prefix-strip / move a z47 owner .zig file and sweep
 # EVERY reference to it: repo-wide @import bare names, the per-dir aggregator,
-# AND the build-system path literals (build.zig pure_modules + zig_build module
+# AND the build-system path literals (build.zig pure_modules + build module
 # roots) that a naive @import-only sweep misses. Runs a collision pre-check and
 # preserves the semantic suffix strata the idiom ratchet keys on.
 #
@@ -29,7 +29,7 @@ cd "$ROOT"
 PROTECTED_SUFFIXES=(_runtime.zig _shared.zig _export.zig _owned.zig)
 
 # Files whose reference literals must be swept.
-ref_files() { git ls-files 'zig_src/**/*.zig' 'zig_build/**/*.zig' build.zig \
+ref_files() { git ls-files 'src/**/*.zig' 'build/**/*.zig' build.zig \
                           '.github/project/upstream-port-ledger.tsv'; }
 
 # Would stripping <prefix> from <basename> drop a protected suffix classification?
@@ -45,7 +45,7 @@ cmd="${1:?check|map|apply|verify}"; shift || true
 
 case "$cmd" in
 check)
-  dir="zig_src/${1:?dir}"; pre="${2:?prefix}"
+  dir="src/${1:?dir}"; pre="${2:?prefix}"
   echo "# collision + protection pre-check for $dir (strip '$pre')"
   skipped=0
   for f in "$dir/$pre"*.zig; do
@@ -67,7 +67,7 @@ check)
   [ "$n1" -eq 0 ] && [ "$n2" -eq 0 ] && echo "OK: safe to strip (skipping $skipped protected)"
   ;;
 map)
-  dir="zig_src/${1:?dir}"; pre="${2:?prefix}"
+  dir="src/${1:?dir}"; pre="${2:?prefix}"
   for f in "$dir/$pre"*.zig; do
     [ -e "$f" ] || continue
     b=$(basename "$f"); s="${b#"$pre"}"
@@ -87,15 +87,15 @@ apply)
     # guard the pipeline so set -e/pipefail does not abort the batch.
     { grep -rlZ "@import(\"$oldb\")" $(ref_files) 2>/dev/null || true; } \
       | { xargs -0 -r sed -i "s#@import(\"$oldb\")#@import(\"$newb\")#g" || true; }
-    # (2) build-system path literals (b.path("zig_src/..") + bare string literals)
+    # (2) build-system path literals (b.path("src/..") + bare string literals)
     { grep -rlZ -- "$old" $(ref_files) 2>/dev/null || true; } \
       | { xargs -0 -r sed -i "s#$old#$new#g" || true; }
   done < "$mapfile"
   ;;
 verify)
   bad=0
-  for tgt in $(grep -rho '@import("[a-z_0-9]*\.zig")' zig_src | sed -E 's/@import\("(.*)"\)/\1/' | sort -u); do
-    git ls-files "zig_src/**/$tgt" | grep -q . || { echo "DANGLING @import: $tgt"; bad=1; }
+  for tgt in $(grep -rho '@import("[a-z_0-9]*\.zig")' src | sed -E 's/@import\("(.*)"\)/\1/' | sort -u); do
+    git ls-files "src/**/$tgt" | grep -q . || { echo "DANGLING @import: $tgt"; bad=1; }
   done
   [ $bad -eq 0 ] && echo "verify OK: no dangling owner @imports"
   ;;

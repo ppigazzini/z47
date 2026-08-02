@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Idiom ratchet (REPORT-23 §11): fail if any transliteration anti-pattern in
-# zig_src grew above its committed ceiling in idiom-status-baseline.json. The
+# src grew above its committed ceiling in idiom-status-baseline.json. The
 # ceilings are monotonic downward -- they protect the idiomatic-refactor progress
 # so a later change cannot quietly re-add [*c]/@ptrCast/extern-struct debt. Lower
 # a ceiling in the same commit that removes the debt (with --bump).

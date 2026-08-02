@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Validate that the retained bridge review ledger covers the current "
-            "active product-lane zig_bridge references exactly once."
+            "active product-lane bridge references exactly once."
         )
     )
     parser.add_argument("--repo-root", default=".", help="Repository root path")
@@ -48,7 +48,7 @@ def main() -> int:
 
     _, classified = scan_classified_entries(repo_root, cfg)
     active_bridge = sorted(
-        entry for entry in classified["first-party"] if entry.startswith("zig_bridge/")
+        entry for entry in classified["first-party"] if entry.startswith("bridge/")
     )
 
     try:
@@ -79,7 +79,7 @@ def main() -> int:
         return 1
 
     counts = status_counts(rows)
-    print(f"PASS: retained bridge ledger covers {len(active_bridge)} active zig_bridge references.")
+    print(f"PASS: retained bridge ledger covers {len(active_bridge)} active bridge references.")
     for status, count in counts.items():
         print(f"- {status}: {count}")
     return 0

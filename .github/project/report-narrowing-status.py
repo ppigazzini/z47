@@ -39,8 +39,8 @@ import sys
 # globbed: the point of the list is that adding an owner here is a deliberate
 # statement that it reads untrusted bytes.
 LOAD_OWNER_DIRS = (
-    "zig_src/core/persist",
-    "zig_src/core/program",
+    "src/core/persist",
+    "src/core/program",
 )
 
 FN_RE = re.compile(r"^(?:pub )?(?:inline )?fn\s+(\w+)")

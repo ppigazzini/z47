@@ -18,10 +18,10 @@ README.md
 build.zig
 build.zig.zon
 pyproject.toml
-zig_bridge
-zig_build
-zig_docs
-zig_src
+bridge
+build
+docs
+src
 
 [imported-upstream]
 upstream

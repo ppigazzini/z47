@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """core/shell coupling guard (REPORT-28 s42).
 
-Measures two directed couplings from `zig_src/core/` to `zig_src/shell/`:
+Measures two directed couplings from `src/core/` to `src/shell/`:
 
   * import edges -- a core file that `@import`s a shell SOURCE file. This is a
                     real Zig-level dependency and a genuine invariant: it must
@@ -54,7 +54,7 @@ IMPORT_RE = re.compile(r"""@import\(\s*"([^"]+)"\s*\)""")
 
 
 def zig_files(root: str, zone: str):
-    base = os.path.join(root, "zig_src", zone)
+    base = os.path.join(root, "src", zone)
     for dirpath, _dirs, names in os.walk(base):
         for n in names:
             if n.endswith(".zig"):
@@ -86,15 +86,15 @@ def measure(root: str):
             if sym in shell_owned:
                 extern_edges.append((rel, sym))
         for imp in IMPORT_RE.findall(text):
-            # relative @import that resolves into zig_src/shell/
+            # relative @import that resolves into src/shell/
             if "/" in imp or imp.endswith(".zig"):
                 target = os.path.normpath(os.path.join(os.path.dirname(path), imp))
-                # Both sides MUST be normalized. os.path.join('.', 'zig_src', 'shell')
-                # is './zig_src/shell', while commonpath() returns 'zig_src/shell', so
+                # Both sides MUST be normalized. os.path.join('.', 'src', 'shell')
+                # is './src/shell', while commonpath() returns 'src/shell', so
                 # the unnormalized comparison was NEVER true: this cap could not fire,
                 # and every caller passes --repo-root '.'. The invariant read zero
                 # because it was vacuous, not because the tree was clean.
-                shell_root = os.path.normpath(os.path.join(root, "zig_src", "shell"))
+                shell_root = os.path.normpath(os.path.join(root, "src", "shell"))
                 if os.path.commonpath([target, shell_root]) == shell_root:
                     import_edges.append((rel, imp))
     return extern_edges, import_edges

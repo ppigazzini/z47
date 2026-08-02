@@ -4,7 +4,7 @@
   "pairs": [
     {
       "c": "src/c47/items.c",
-      "zig": "zig_src/shell/display/items/items.zig",
+      "zig": "src/shell/display/items/items.zig",
       "upstream_commits_2yr": 551,
       "c_lines": 4734,
       "zig_lines": 4699,
@@ -12,7 +12,7 @@
     },
     {
       "c": "src/c47/softmenus.c",
-      "zig": "zig_src/shell/display/softmenus/softmenus.zig",
+      "zig": "src/shell/display/softmenus/softmenus.zig",
       "upstream_commits_2yr": 424,
       "c_lines": 4388,
       "zig_lines": 3668,
@@ -20,7 +20,7 @@
     },
     {
       "c": "src/c47/screen.c",
-      "zig": "zig_src/shell/display/screen.zig",
+      "zig": "src/shell/display/screen.zig",
       "upstream_commits_2yr": 345,
       "c_lines": 6623,
       "zig_lines": 6334,
@@ -28,7 +28,7 @@
     },
     {
       "c": "src/c47/c47Extensions/addons.c",
-      "zig": "zig_src/shell/extensions/addons.zig",
+      "zig": "src/shell/extensions/addons.zig",
       "upstream_commits_2yr": 198,
       "c_lines": 3717,
       "zig_lines": 4154,
@@ -36,7 +36,7 @@
     },
     {
       "c": "src/c47/config.c",
-      "zig": "zig_src/shell/config.zig",
+      "zig": "src/shell/config.zig",
       "upstream_commits_2yr": 170,
       "c_lines": 2228,
       "zig_lines": 2580,
@@ -44,7 +44,7 @@
     },
     {
       "c": "src/c47/display.c",
-      "zig": "zig_src/shell/display/display.zig",
+      "zig": "src/shell/display/display.zig",
       "upstream_commits_2yr": 154,
       "c_lines": 3986,
       "zig_lines": 4514,
@@ -52,7 +52,7 @@
     },
     {
       "c": "src/c47/solver/graph.c",
-      "zig": "zig_src/core/analysis/graph.zig",
+      "zig": "src/core/analysis/graph.zig",
       "upstream_commits_2yr": 104,
       "c_lines": 2842,
       "zig_lines": 2447,
@@ -60,7 +60,7 @@
     },
     {
       "c": "src/c47/c47.c",
-      "zig": "zig_src/shell/c47.zig",
+      "zig": "src/shell/c47.zig",
       "upstream_commits_2yr": 102,
       "c_lines": 1258,
       "zig_lines": 879,
@@ -68,7 +68,7 @@
     },
     {
       "c": "src/c47/bufferize.c",
-      "zig": "zig_src/shell/display/bufferize.zig",
+      "zig": "src/shell/display/bufferize.zig",
       "upstream_commits_2yr": 98,
       "c_lines": 2789,
       "zig_lines": 3799,
@@ -76,7 +76,7 @@
     },
     {
       "c": "src/c47/ui/tam.c",
-      "zig": "zig_src/shell/input/tam.zig",
+      "zig": "src/shell/input/tam.zig",
       "upstream_commits_2yr": 91,
       "c_lines": 1389,
       "zig_lines": 1671,
@@ -84,7 +84,7 @@
     },
     {
       "c": "src/c47/mathematics/prime.c",
-      "zig": "zig_src/core/numeric/number_theory/prime.zig",
+      "zig": "src/core/numeric/number_theory/prime.zig",
       "upstream_commits_2yr": 86,
       "c_lines": 2378,
       "zig_lines": 2103,
@@ -92,7 +92,7 @@
     },
     {
       "c": "src/c47/programming/manage.c",
-      "zig": "zig_src/shell/program/manage.zig",
+      "zig": "src/shell/program/manage.zig",
       "upstream_commits_2yr": 76,
       "c_lines": 1937,
       "zig_lines": 2345,
@@ -100,7 +100,7 @@
     },
     {
       "c": "src/c47/flags.c",
-      "zig": "zig_src/core/state/flags.zig",
+      "zig": "src/core/state/flags.zig",
       "upstream_commits_2yr": 74,
       "c_lines": 856,
       "zig_lines": 570,
@@ -108,7 +108,7 @@
     },
     {
       "c": "src/c47/solver/tvm.c",
-      "zig": "zig_src/core/analysis/tvm.zig",
+      "zig": "src/core/analysis/tvm.zig",
       "upstream_commits_2yr": 61,
       "c_lines": 1570,
       "zig_lines": 1625,
@@ -116,7 +116,7 @@
     },
     {
       "c": "src/c47/c47Extensions/graphs.c",
-      "zig": "zig_src/shell/plot/graphs.zig",
+      "zig": "src/shell/plot/graphs.zig",
       "upstream_commits_2yr": 59,
       "c_lines": 1589,
       "zig_lines": 1777,
@@ -124,7 +124,7 @@
     },
     {
       "c": "src/c47/plotstat.c",
-      "zig": "zig_src/shell/plot/plotstat.zig",
+      "zig": "src/shell/plot/plotstat.zig",
       "upstream_commits_2yr": 56,
       "c_lines": 2109,
       "zig_lines": 1794,
@@ -132,7 +132,7 @@
     },
     {
       "c": "src/c47/mathematics/wp34s.c",
-      "zig": "zig_src/core/numeric/special/wp34s.zig",
+      "zig": "src/core/numeric/special/wp34s.zig",
       "upstream_commits_2yr": 51,
       "c_lines": 2344,
       "zig_lines": 1850,

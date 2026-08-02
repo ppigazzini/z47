@@ -5,7 +5,7 @@ each importer's new location, plus the build-system path literals.
 
 Cross-*module* moves are rejected: Zig forbids @import of a file outside the
 module root dir (verified), so a file may only move within its module's root
-subtree (e.g. within zig_src/shell/). This tool enforces that.
+subtree (e.g. within src/shell/). This tool enforces that.
 
 Usage:
   move-owners.py <mapfile>            # dry-run: print every rewrite, touch nothing
@@ -24,11 +24,11 @@ import sys
 ROOT = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
 os.chdir(ROOT)
 IMP = re.compile(r'@import\("([^"]+\.zig)"\)')
-REFDIRS = ["zig_src", "zig_build"]
+REFDIRS = ["src", "build"]
 
 
 # Path-reference surfaces beyond the build graph: the ledger, the extern/@cImport
-# boundary allowlist, the zig_build *.txt source-lists, and the .github/project
+# boundary allowlist, the build *.txt source-lists, and the .github/project
 # audit scripts (*.py / *.tsv) that hardcode owner paths. The gate enumerated
 # these one slice at a time; sweep them all.
 def extra_reffiles():
@@ -37,7 +37,7 @@ def extra_reffiles():
         ".github/project/*.txt",
         ".github/project/*.tsv",
         ".github/project/*.py",
-        "zig_build/**/*.txt",
+        "build/**/*.txt",
     ):
         out += subprocess.check_output(["git", "ls-files", pat], text=True).split()
     return out
@@ -48,13 +48,13 @@ REFFILES = None  # resolved at apply time via extra_reffiles()
 
 def tracked_zig():
     return subprocess.check_output(
-        ["git", "ls-files", "zig_src/**/*.zig", "zig_build/**/*.zig"], text=True
+        ["git", "ls-files", "src/**/*.zig", "build/**/*.zig"], text=True
     ).split()
 
 
-def module_of(p):  # top-level dir under zig_src = the module bucket (frontier, mathematics, ...)
+def module_of(p):  # top-level dir under src = the module bucket (frontier, mathematics, ...)
     parts = p.split("/")
-    return parts[1] if len(parts) > 2 and parts[0] == "zig_src" else parts[0]
+    return parts[1] if len(parts) > 2 and parts[0] == "src" else parts[0]
 
 
 def load_map(mf):

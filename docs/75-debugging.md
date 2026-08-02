@@ -1,0 +1,321 @@
+# Debugging z47
+
+This page is about finding a defect the gate did not catch. Read
+[70-tests-and-verification.md](70-tests-and-verification.md) first: it owns the
+lanes and what each one locks. This page owns what to reach for when a lane is
+green and the calculator is still wrong, and what each detector is blind to.
+
+The port's defining advantage is that **the reference implementation is
+runnable**. Upstream C47 at the pinned commit answers any question about
+intended behaviour exactly, so the first move on a behavioural divergence is
+never to reason about the Zig -- it is to make the C say what it does.
+
+Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable.
+
+## What This Page Does Not Cover
+
+| subject | owner |
+| --- | --- |
+| the lanes, the gate, and which to rerun | [70-tests-and-verification.md](70-tests-and-verification.md) |
+| the memory-safety posture and boundary rules | [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md) |
+| upstream's own detectors (pool canary, leak scans, Valgrind, Frama-C, coverage floors) | the companion c47-r47-ci doc set, `docs/05-debugging.md` |
+| upstream memory limits per platform | the companion set, `docs/06-memory.md` |
+| a term you do not recognise | [95-glossary.md](95-glossary.md) |
+
+## Detector To Bug Class
+
+| Bug class | Detector that CAN see it | Blind to it |
+| --- | --- | --- |
+| wrong value, right shape | the corpus (`zig build test`), with a value assertion | every sanitizer |
+| wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
+| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- 19 load-path functions do, nothing else does** |
+| C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan**, live since M-SAFE-13 | the corpus, the parity lanes |
+| heap overflow / use-after-free in retained C | **nothing.** There is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every lane in this tree |
+| **one C47 block overrunning its neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic |
+| malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
+| malformed `.sav` / `.d47` state file | `zig build state_load_fuzz` -- the corpus through the real `doLoad`, checked for crash/hang/safety-panic AND against a per-file expected outcome. **But read the corpus caveat in [70](70-tests-and-verification.md): five files, all reproducers of already-fixed bugs, so it catches regressions and finds nothing new** | `saveload_parity` and `saveload_golden`, which round-trip valid files only |
+| ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
+| the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
+| the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` | every runtime lane on ELF, where the overrun lands in padding |
+| **behavioural divergence from upstream with no crash** | **the C-vs-Zig differential (below)** | everything else, by construction |
+| **a code path that never runs** | reading the C, and asking what calls it | every green lane -- see the false-pass catalogue |
+
+Two rows deserve emphasis.
+
+**Zig's safety checks are a detector the C never had.** An index that upstream
+reads out of bounds silently becomes a panic here. That is a feature, but it
+means a faithful port of an unguarded C read is a crash waiting for the input
+that reaches it. When one fires, first establish what upstream does with the
+same input -- if the C also reads out of bounds, the fix is a guard whose
+behaviour matches what the C's garbage read happened to produce.
+
+**A green lane is not evidence a path ran.** The whole callback boundary between
+core and shell was inert for months while the suite was green; see the
+catalogue.
+
+**A defect can be real on every target and observable on only one.** A store
+that runs past the end of a global writes into whatever the linker put next, and
+the linkers disagree about what that is. ELF lays z47's globals out in
+definition order with alignment padding between them, so the stray bytes land in
+padding and no lane anywhere can see them. COFF gives every export its own
+`.bss$name` COMDAT and reorders them, so the same store lands on a live object.
+When one target fails alone, the question is not what that target does
+differently -- it is which latent write the other targets are absorbing.
+
+## What The Sanitizer Lanes Actually Run
+
+`zig build test_asan`, `both_asan` and `pgm_load_fuzz` run **UndefinedBehaviorSanitizer**,
+not AddressSanitizer. The `*_asan` names are historical and wrong; the lanes were
+also, until M-SAFE-13, running no sanitizer at all.
+
+**There is no AddressSanitizer in this tree and there cannot be one today.** Zig's
+`sanitize_c` is the UBSan knob -- built the same C with `.off`, `.trap` and
+`.full` gives 0, 0 and 34 UBSan symbols, and zero ASan symbols in every case --
+and Zig 0.16 ships no ASan runtime, so `-fsanitize=address` compiles and then
+fails to link (`undefined symbol: __asan_report_store1`). Reaching real ASan means
+linking the host's `libclang_rt.asan`, a new host-toolchain dependency for a
+deliberately Zig-only project. Until someone takes that decision, **no lane here
+detects a heap overflow or a use-after-free.**
+
+What UBSan does catch is live now and was not before: signed overflow, bad shifts,
+out-of-range casts, invalid enum values, null-pointer arithmetic and the rest of
+the C undefined-behaviour set, across the whole retained C on every one of those
+lanes.
+
+**Two checks are excluded, each individually and for a filed reason** -- never a
+blanket quietening. They live in `sanitizer_exclusions` and
+`vendor_sanitizer_exclusions` in `../build/common.zig`:
+
+| exclusion | scope | why |
+| --- | --- | --- |
+| `-fno-sanitize=alignment` | all C | `abi.Real34` is `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C `decQuad` whose `_Alignof` is 4. Real defect; the fix means raising the type's alignment and propagating it through accessors that hand out `*align(1)` pointers, and 1051 sites reference that spelling |
+| `-fno-sanitize=shift` | vendored `dep/` only | decNumber's own `n = n<<1` signed-shift overflow in `decExpOp`. Third-party code z47 must not diverge from; the fix is an upstream report |
+
+Removing either should turn a lane red with a genuine finding. If it does not,
+the exclusion has outlived its reason and should go.
+
+**How this went unnoticed, and what stops it recurring.** `common_c_flags` passes
+`-fno-sanitize=undefined` to every C source, which silently overrides
+`Module.sanitize_c`; a lane could ask for a sanitizer, be given one, and link
+zero instrumentation, with no symptom but an absent symbol nobody looked for. A
+`comptime` block in `../build/common.zig` now fails the build if any
+sanitizing flag list carries that blanket flag, and asserts the product lists
+still do.
+
+Verifying by hand is possible but has a trap worth knowing: `grep -c asan` on the
+testSuite binary returns 5, and all five are `getRegisterAs`**`AsAn`**`yReal`-style
+false hits. Count `__ubsan` instead, and take the binary from `ls -t` on the
+build's own output rather than `find | head`, which cheerfully returns a stale
+cached copy -- or, if the name does not exist, nothing at all, leaving `ls` to
+list your working directory.
+
+## Why ASan Cannot See The Calculator's Memory
+
+Even if the lanes above are ever made to run a real AddressSanitizer, it would be
+blind to almost every object the calculator owns. That is a property of the memory
+model, not a gap in any lane, and it is worth knowing before anyone invests in
+getting a runtime linked.
+
+Registers, named variables, programs, formulae, menus and the GMP heap do not
+come from `malloc`. They come from `ram` -- one pointer (`src/c47/c47.c`) to a
+single block of `RAM_SIZE_IN_BLOCKS` 4-byte blocks, 65534 of them on new
+hardware and the host, carved up by the C47 block allocator in
+`../src/shell/free_list.zig` (`freeListAlloc` / `freeListRealloc` /
+`freeListFree`) and addressed by 16-bit block index, with 65535 reserved as the
+`C47_NULL` pointer.
+
+ASan instruments allocator calls and shadows the redzones around them. It sees
+`ram` as **one** ~256 KiB allocation. A register block that writes past its own
+size into the next block's bytes is, to ASan, a write well inside a live
+allocation -- exactly the picture a correct program presents. The detector only
+fires when a write leaves the whole pool, which is the rarest form of the bug and
+the one a wrong block index is least likely to produce.
+
+Zig's own safety checks do not cover it either. Blocks are reached through
+`[*c]` pointer arithmetic off `ram`, and a many-item pointer carries no length,
+so there is no bound for a checked access to test. Between the two detectors the
+calculator's principal data structure has no spatial checking at all, in any
+build mode.
+
+Two consequences for debugging:
+
+- A green `test_asan` proves the testSuite ran under UBSan. UBSan checks
+  operations, not addresses, so it says nothing about the register store either
+  way. Do not cite it as evidence that a block-allocator change is safe.
+- The available detector for this class is the differential: run the same input
+  through upstream C and through z47 and compare the resulting state, which is
+  what `saveload_parity` and the owner parity lanes do. A corrupted neighbour
+  block shows up as a wrong value, not as a crash -- so it is a *wrong value,
+  right shape* bug, and belongs to the first row of the table above.
+
+The standard remedy is ASan's manual-poisoning API for custom allocators
+(`__asan_poison_memory_region` on the pool at startup, unpoison exactly the
+handed-out extent in `freeListAlloc`, re-poison in `freeListFree`), which turns
+the single allocation into per-block redzones on the sanitized lane only. It is
+not implemented; it is scoped in
+[50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
+
+## The C-vs-Zig Differential
+
+The procedure that finds a behavioural divergence with no crash, no assertion
+and no clue. It is the highest-value technique in this repo.
+
+**1. Build the reference at the pin.** Never at upstream `master` -- a
+divergence against an unpinned reference may be a port gap or may be an upstream
+change you have not imported yet, and you cannot tell which.
+
+```bash
+git -C ../c43 worktree add --detach ../c43-pin "$(grep UPSTREAM_COMMIT .github/project/upstream-pin.env | cut -d= -f2)"
+cd ../c43-pin
+meson setup build.sim --buildtype=custom -DRASPBERRY="$(tools/onARaspberry)" -DDECNUMBER_FASTMUL=true
+ninja -C build.sim src/c47/vcs.h            # first, or the build dies on a missing header
+ninja -C build.sim src/testSuite/testSuite
+```
+
+Work in worktrees on both sides. The reference gets instrumented and thrown
+away; the z47 side gets instrumented too, and nothing should be committed from
+either.
+
+**2. Reproduce with the smallest list that still diverges.** Both binaries take
+a list file of corpus test names. Write it **inside `src/testSuite/tests/`** --
+the runner resolves the corpus and `../../c47/items.h` from the list's own
+directory, so a list in a scratch directory finds nothing and exits successfully
+having run almost nothing.
+
+Shrink by bisecting the list, not by truncating it: a truncated prefix can drop
+the test that resets the state the failure depends on, so the C fails too and
+the differential goes quiet. A state-dependent failure that survives down to two
+files is worth the minutes it takes to find -- it turns a six-minute suite into
+a two-second loop.
+
+**3. Print the same line from the same place on both sides.** Add the probe to
+the C in the throwaway worktree and to the Zig owner, with an identical format
+string, then diff the two streams. The first differing line is the bug. Work
+outward from it: state at entry, then per-iteration values, then per-step values.
+
+**4. Instrument in z47-owned surfaces only.** Never edit the imported `src/`
+tree in this repo to add a trace. The throwaway `../c43-pin` worktree is the
+place for C probes.
+
+`gdb` cannot attach to a running process here (`ptrace_scope` is restricted), so
+a spin cannot be diagnosed by attaching. Print a counter from the suspect on
+both sides and diff the sequences instead -- that is what located a solver that
+never converged, in one pass.
+
+## Finding A Stray Write On A Lane You Cannot Run
+
+The differential above needs both sides in front of you. When a target fails and
+you have no machine of that kind -- a CI lane, and nothing else -- the corpus and
+a self-resolving data breakpoint replace it. Both are cheap; the ordering is what
+matters, because each step must cost one CI round and no more.
+
+**1. Turn the symptom into values before theorising.** An error string names a
+branch, not the term that took it. `graphPlotstat` gates every plot on three
+terms and reported only "There is no statistical data available!", which is
+equally consistent with lost statistics and with a lost matrix name. A coverage
+helper that reads each term back into `REGISTER_X` -- `fnPlotGuardCov` in
+`src/testSuite/testSuite.c`, pinned by `graphs_cov.txt` -- answered it in one
+round: `plotStatMx[0]` was `0`, the sums pointer was live, `SIGMA_N` was `5`. The
+data had never been lost. **Prefer a corpus assertion to a print**: it survives as
+regression coverage, it costs the same round, and it cannot be left behind.
+
+**2. Bisect in time with a program, not with prints.** Staging a second program
+that stops short of a suspect step says which side of it the damage falls on. A
+`SCATR` with the `SNAP` dropped failed identically, which placed the corruption
+in the plot rather than the screen capture and retired half the search space.
+
+**3. Watch the byte, not the address.** A page-protection data breakpoint that
+reports only when the faulting address *equals* the watched byte will miss every
+store that begins below it and runs over it -- and will then report, with total
+confidence, that nothing wrote the byte. That single wrong conclusion cost
+several rounds here. Snapshot the byte on the fault, single-step the faulting
+instruction, and report only if the byte **changed**. That catches the writer
+whatever the store's width or start offset.
+
+**4. Resolve symbols in-process, never from a hand-picked list.** Printing the
+addresses of the functions you suspect only works if the answer is one of them;
+twice it was not, and the reported address fell in a gap. Generate the whole
+table instead -- every `pub export fn` and `pub export var` in `src` as
+link-time address constants -- and have the probe search it for the nearest
+symbol at or below the faulting address. The report then names itself:
+
+```
+store is in  fnReturn+0x1c0
+victim  is   pemCursorIsZerothStep+0x0
+code: c7 05 f9 4f 08 01 01 00 00 00
+```
+
+**5. Dump the instruction bytes.** Sixteen bytes at the faulting `RIP` are
+disassembled locally without the failing target's binary. Above, `c7 05 <disp32>
+01 00 00 00` is `MOV DWORD PTR [rip+disp], 1` -- a four-byte store of `1`, which
+is the whole diagnosis: the flag is one byte.
+
+**6. Turn the finding into a gate before deleting the probe.** The probe is
+throwaway; the class is not. Write the check, prove it fails against the real
+defect by restoring it, then remove the probe in the same commit.
+
+## False-Pass Hazards
+
+Every one of these has passed a broken thing at least once.
+
+1. **A green suite says nothing about code that never runs.** The core-to-shell
+   host-hook table was compiled once per build object, so the shell's install
+   reached only its own object and every core-side `refreshScreen` was a silent
+   no-op -- with the suite green. Making it live exposed three separate ported
+   divergences in one afternoon, each invisible until then. **When a call is
+   routed through an installable hook, prove the hook is installed in the lane
+   you are trusting.** `nm <binary> | grep <hook>` returning more than one
+   symbol is the tell.
+2. **An error raised in a display path is not cosmetic.** The redraw runs inside
+   the solver and the integrator, so an error code left behind by a paint
+   routine aborts the next step of the program the engine is evaluating. A stray
+   `lastErrorCode` is a wrong answer, not a stray message.
+3. **`0 TESTS FAILED` printed before a crash is not a pass.** Capture the exit
+   code; the suite prints its summary and can still abort afterwards.
+4. **An orphaned `*_cov.txt` never runs.** A corpus file that is registered in
+   `funcTestNoParam[]` but not added to the list file silently never executes,
+   and the commit falsely claims coverage. After adding one, confirm the total
+   case count rose by the number of new `Out:` lines.
+5. **A stale plot bitmap fakes a graph pass.** The bitmap hash tests read
+   `c47plotTest<N>.bmp` from disk and nothing unlinks it, so a graph program
+   that errors before its snapshot is compared against the leftover from an
+   earlier passing run. `rm -f c47plotTest*.bmp` before bisecting a plot test.
+6. **A parity harness lags the owners it links.** The oracles link a hand-curated
+   fake `c47.h` plus stub runtimes. A newly ported cross-owner call breaks them
+   at link time, and the break is in the harness, not the port. Expect this class
+   on every pin advance and fix it in the z47-owned test surface, never in the
+   imported tree.
+7. **A stale build is not evidence.** Confirm the binary you ran is the one your
+   edit produced, especially when a build step and a run step share a command
+   line.
+8. **A suite that got faster deserves suspicion.** A run that ends early produces
+   fewer findings, and fewer findings can pass a baseline diff.
+9. **A width agreed within one owner can still be wrong.** `extern var` states a
+   width; nothing checks it against the `export var` that defines the symbol. A
+   declaration wider than the definition makes every store through it write past
+   the end of the real object. Four owners aliased `bool_t` to `u32` where C
+   defines it as one byte, so `pemCursorIsZerothStep = 1` compiled to
+   `MOV DWORD PTR [rip+disp], 1` and put three zero bytes past a one-byte flag;
+   on Windows the third landed on `plotStatMx[0]` and every stat plot lost its
+   matrix name while its statistics stayed perfectly intact. Each owner was
+   self-consistent and the corpus was green for eight days. **Only the
+   combination is wrong, so only a cross-owner check finds it** --
+   `check-extern-var-widths.py` resolves each file's type aliases and compares
+   every declaration against its definition.
+
+## Reading The Upstream C
+
+The imported tree is the specification. Two habits pay for themselves:
+
+- **Read the pinned C, not your memory of it.** `git -C ../c43 log -S<symbol>`
+  finds the commit that introduced a behaviour, and its message usually explains
+  the bug it fixed -- which is the fastest way to learn whether a z47 gap is a
+  missed port or a deliberate divergence.
+- **Check whether the hunk you are porting had siblings.** Upstream commits
+  routinely fix one symptom in three files. `git show --stat <sha>` before
+  porting, and confirm each hunk landed or was consciously skipped.
+
+When the answer is "upstream changed this and z47 did not follow", the fix
+belongs in the port and the finding belongs in the ledger. When it is "upstream
+does this and it is wrong", the port matches upstream anyway: behavioural parity
+is the contract, and a divergence -- however correct -- is a divergence.

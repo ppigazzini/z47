@@ -16,7 +16,7 @@ differential_functions=6
 # charstring_diff, distribution_parity, ...) that link the real core.
 fullcore_harness_steps=5
 
-# Annex A0: distinct zig_src/ owner source lines executed by the instrumented
+# Annex A0: distinct src/ owner source lines executed by the instrumented
 # keyboardEntryCov harness (frontier + keyboard_state + stack_state owner objects
 # built with coverage=true). Measured ~1790 on the pinned toolchain. This is a
 # COLLAPSE floor, not an exact tracker: llvm-symbolizer resolves a few lines

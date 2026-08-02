@@ -30,7 +30,7 @@ cd "$repo_root"
 pin="$(grep -E '^UPSTREAM_COMMIT=' .github/project/upstream-pin.env | cut -d= -f2)"
 branch="$(grep -E '^UPSTREAM_REMOTE_NAME=' .github/project/upstream-pin.env | cut -d= -f2)/$(grep -E '^UPSTREAM_BRANCH=' .github/project/upstream-pin.env | cut -d= -f2)"
 # All replaced-source manifests: a file in ANY of them is compiled-out.
-mapfile -t manifests < <(find zig_build -name '*replaced_core_sources.txt')
+mapfile -t manifests < <(find build -name '*replaced_core_sources.txt')
 
 mapfile -t changed < <(git diff --name-only "$pin" "$branch" -- src/c47 2>/dev/null)
 echo "pin $pin .. $branch : ${#changed[@]} changed src/c47 path(s)"

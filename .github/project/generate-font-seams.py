@@ -3,7 +3,7 @@
 
 Each pure-data glyph table in the upstream printing path is a generated ABI seam
 (see the seam-and-core rule in
-zig_docs/50-zig-c-boundaries-and-rewrite-policy.md): the contract-mandated
+docs/50-zig-c-boundaries-and-rewrite-policy.md): the contract-mandated
 `extern struct` layout and `.qspi_data` linksection are derived from upstream C,
 so an upstream pin advance is a regenerate, not a hand edit. This one generator
 covers every such table; add a spec to FONTS to onboard another.
@@ -37,7 +37,7 @@ COMMENT_RE = re.compile(r"//[^\n]*|/\*.*?\*/", re.DOTALL)
 FONTS = [
     {
         "c_source": "src/c47/printing/martelFonts.c",
-        "seam_path": "zig_src/shell/generated/frontier_martel_fonts.zig",
+        "seam_path": "src/shell/generated/frontier_martel_fonts.zig",
         "table": "martelFont24",
         "struct_name": "MartelFont24",
         "section_const": "martel_section",
@@ -49,7 +49,7 @@ FONTS = [
     },
     {
         "c_source": "src/c47/printing/printerFont8.c",
-        "seam_path": "zig_src/shell/generated/frontier_printer_font8.zig",
+        "seam_path": "src/shell/generated/frontier_printer_font8.zig",
         "table": "printerFont8",
         "struct_name": "PrinterFont8",
         "section_const": "pf8_section",

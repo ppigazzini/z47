@@ -17,13 +17,13 @@ baseline=".github/project/coverage-ratchet-baseline.txt"
 
 # --- measure current values ---
 cur_differential_functions="$(grep -E '^FUNCS=' \
-  zig_build/tests/charstring_diff/extract_oracle.sh \
+  build/tests/charstring_diff/extract_oracle.sh \
   | grep -oE 'string[A-Za-z_]+' | grep -c . )"
-cur_fullcore_harness_steps="$(grep -c 'addFullCoreHarness(' zig_build/host/steps.zig)"
+cur_fullcore_harness_steps="$(grep -c 'addFullCoreHarness(' build/host/steps.zig)"
 
 metrics=(differential_functions fullcore_harness_steps)
 
-# Annex A0 owner-coverage floor: distinct zig_src/ owner source lines executed by
+# Annex A0 owner-coverage floor: distinct src/ owner source lines executed by
 # the instrumented keyboardEntryCov harness (frontier + keyboard_state + stack_state
 # owner objects built with coverage=true). Measured only when a `zig build coverage`
 # build is present, so this script stays usable in the nightly grep-only run.
@@ -42,7 +42,7 @@ cov_bin="$(find .zig-cache -name keyboardEntryCov -type f -executable \
   -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2 || true)"
 if [[ -f cov_pcs.txt && -n "$cov_bin" ]] && command -v llvm-symbolizer >/dev/null 2>&1; then
   cur_zig_src_covered_lines="$(llvm-symbolizer --obj="$cov_bin" < cov_pcs.txt 2>/dev/null \
-    | grep -oE '/zig_src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
+    | grep -oE '/src/[^:]+:[0-9]+' | sort -u | grep -c . || true)"
 fi
 
 if [[ "${1:-}" == "--bump" ]]; then

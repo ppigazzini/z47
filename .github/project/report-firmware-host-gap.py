@@ -7,7 +7,7 @@ regression there. For M10 readiness every such region must be ACCOUNTED FOR --
 either host-executed by a test (e.g. the M4 ring-buffer drain) or listed in the
 M9 hardware-smoke checklist -- so nothing firmware-only is silently uncovered.
 
-This report lists every `dmcp_build`-gated region in zig_src/, with its file,
+This report lists every `dmcp_build`-gated region in src/, with its file,
 line, and enclosing `pub fn`, grouped by owner. It is the inventory the M9
 checklist (.github/project/M9-hardware-smoke-checklist.md) must cover.
 
@@ -43,11 +43,11 @@ def main() -> int:
     )
     args = ap.parse_args()
     root = Path(args.repo_root)
-    zig_src = root / "zig_src"
+    src = root / "src"
 
     total = 0
     per_owner: dict[str, list[tuple[int, str]]] = {}
-    for path in sorted(zig_src.rglob("*.zig")):
+    for path in sorted(src.rglob("*.zig")):
         lines = path.read_text(errors="replace").splitlines()
         hits = []
         for i, line in enumerate(lines):
@@ -57,9 +57,7 @@ def main() -> int:
             per_owner[str(path.relative_to(root))] = hits
             total += len(hits)
 
-    print(
-        f"DMCP-only (dmcp_build-gated) regions in zig_src: {total} across {len(per_owner)} owners"
-    )
+    print(f"DMCP-only (dmcp_build-gated) regions in src: {total} across {len(per_owner)} owners")
     print(
         "Each MUST be host-executed by a test OR covered by the M9 hardware "
         "checklist -- none silently uncovered.\n"

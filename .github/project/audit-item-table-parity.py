@@ -44,7 +44,7 @@ from upstream_paths import upstream_path, upstream_root
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 ITEMS_C = upstream_path(ROOT, "src/c47/items.c")
 ITEMS_H = upstream_path(ROOT, "src/c47/items.h")
-ZIG_ITEMS = ROOT / "zig_src/shell/display/items/items.zig"
+ZIG_ITEMS = ROOT / "src/shell/display/items/items.zig"
 
 
 def _split_top_level(text, sep=","):

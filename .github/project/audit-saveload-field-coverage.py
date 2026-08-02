@@ -49,7 +49,7 @@ from upstream_paths import upstream_path
 
 SAVE_FILE = "src/c47/saveRestoreCalcState.c"
 RESET_FILE = "src/c47/config.c"
-HARNESS = "zig_build/tests/calc_state/save_load_parity_harness.c"
+HARNESS = "build/tests/calc_state/save_load_parity_harness.c"
 
 # Functions whose direct assignments count as deterministic reset-path init.
 RESET_FUNCS = ("doFnReset", "resetOtherConfigurationStuff", "fnReset")

@@ -3,8 +3,8 @@
 # A force-import block in a non-root conscripts that owner as a carrier and
 # pins it to the code it carries -- give the carried code its own root instead.
 # Re-pin with: .github/project/check-module-carriers.sh --bump
-zig_src/core/analysis/solve.zig
-zig_src/core/input/keyboard_state.zig
-zig_src/core/numeric/command_wrappers.zig
-zig_src/core/state/state.zig
-zig_src/frontier.zig
+src/core/analysis/solve.zig
+src/core/input/keyboard_state.zig
+src/core/numeric/command_wrappers.zig
+src/core/state/state.zig
+src/frontier.zig

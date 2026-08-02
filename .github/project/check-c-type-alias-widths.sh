@@ -18,7 +18,7 @@ fail=0
 
 mapfile -t rows < <(
   grep -rhoP '^const \K[A-Za-z_][A-Za-z0-9_]*_t = [A-Za-z_][A-Za-z0-9_]*(?=;)' \
-    "$root/zig_src" --include='*.zig' 2>/dev/null | sort -u
+    "$root/src" --include='*.zig' 2>/dev/null | sort -u
 )
 
 declare -A width_of=(
@@ -36,7 +36,7 @@ for row in "${rows[@]}"; do
   if [[ -n "${seen_width[$name]:-}" && "${seen_width[$name]}" != "$w" ]]; then
     echo "C TYPE ALIAS WIDTH CONFLICT: ${name} is ${seen_width[$name]} byte(s) as ${seen_where[$name]} and ${w} byte(s) as ${type}"
     echo "  A store through the wider alias writes past the end of the real object."
-    grep -rn "^const ${name} = " "$root/zig_src" --include='*.zig' | sed 's/^/    /'
+    grep -rn "^const ${name} = " "$root/src" --include='*.zig' | sed 's/^/    /'
     fail=1
   fi
   seen_width[$name]="$w"
