@@ -36,7 +36,7 @@ zig build program_serialization_parity
 zig build calc_state_parity
 # Save/load golden + round-trip harness. It existed but was wired into no
 # battery, so its golden silently rotted out of date; run it here.
-zig build saveload_parity
+zig build saveload_roundtrip
 zig build math_command_wrappers_parity
 zig build math_random_parity
 # Format-equivalence oracle (M24): every migrated sprintf->std.fmt translation

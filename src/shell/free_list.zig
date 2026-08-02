@@ -74,7 +74,7 @@ const poison_state = if (track_allocations) struct {
 fn poisonReleased(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void {
     if (comptime !track_allocations) return;
     // ARMED ONLY. Poisoning on every free in every host build turned
-    // `saveload_parity` into a SEGV: something in that lane READS pool memory
+    // `saveload_roundtrip` into a SEGV: something in that lane READS pool memory
     // after it is freed and happened to survive on the stale contents. That is
     // worth chasing (finding 23) and is not this detector's business to force on
     // every other lane, so the pattern is written only inside a window a harness

@@ -733,11 +733,17 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state parity suite");
     calc_state_parity_step.dependOn(&run_calc_state_parity.step);
 
-    const saveload_parity_harness = host_builders.addFullCoreHarness(
+    // NOT a parity lane, despite what it was called until REPORT-31 M31-1. Its
+    // golden was the C `doSave` bytes once; it has since been regenerated from
+    // z47's OWN save path a dozen times (stats call-order, FLAG_SIGZEROS, the G4b
+    // deletion), so the reference is a z47 self-portrait that does not move when
+    // c43 moves. Checks B/C/D are honest round-trip idempotence. Check A is a
+    // re-pinnable snapshot: real value as a change detector, none as parity.
+    const saveload_roundtrip_harness = host_builders.addFullCoreHarness(
         b,
         context.host_target,
-        "saveLoadParity",
-        "build/tests/calc_state/save_load_parity_harness.c",
+        "saveLoadRoundtrip",
+        "build/tests/calc_state/save_load_roundtrip_harness.c",
         optimize,
         context.core_sources,
         context.test_sources,
@@ -750,25 +756,26 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         null,
         false,
     );
-    const run_saveload_parity = b.addRunArtifact(saveload_parity_harness);
-    run_saveload_parity.setCwd(upstreamCwd(b));
-    run_saveload_parity.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
-    const saveload_parity_step = b.step("saveload_parity", "Run the save/load round-trip + golden parity harness");
-    saveload_parity_step.dependOn(&run_saveload_parity.step);
+    const run_saveload_roundtrip = b.addRunArtifact(saveload_roundtrip_harness);
+    run_saveload_roundtrip.setCwd(upstreamCwd(b));
+    run_saveload_roundtrip.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
+    const saveload_roundtrip_step = b.step("saveload_roundtrip", "Run the save/load round-trip + golden-snapshot harness");
+    saveload_roundtrip_step.dependOn(&run_saveload_roundtrip.step);
 
-    // Regenerate the golden save file from the current implementation.
-    const gen_saveload_golden = b.addRunArtifact(saveload_parity_harness);
+    // Regenerate the golden save file from the current implementation -- which is
+    // exactly why the golden is a snapshot and not a parity reference.
+    const gen_saveload_golden = b.addRunArtifact(saveload_roundtrip_harness);
     gen_saveload_golden.setCwd(upstreamCwd(b));
     // Resolved file argument, not a string: the step runs from the imported root, so
     // the path must be CWD-independent, and `addFileArg` is the only way to get one
     // that exists on BOTH the 0.16 baseline and the monitored Zig master. It does
     // declare the golden as an input to a step that overwrites it, which is harmless
-    // for a manual regeneration step and is what run_saveload_parity above already
+    // for a manual regeneration step and is what run_saveload_roundtrip above already
     // does for the read. (`b.pathFromRoot` and `b.build_root` were each tried and each
     // broke the master lane -- neither exists there.)
     gen_saveload_golden.addFileArg(b.path("build/tests/calc_state/save_load_golden.sav"));
     gen_saveload_golden.addArg("--write-golden");
-    const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load parity golden file");
+    const saveload_golden_step = b.step("saveload_golden", "Regenerate the save/load golden snapshot");
     saveload_golden_step.dependOn(&gen_saveload_golden.step);
 
     // Keyboard ENTRY-layer harness: drives the host btnClicked entry path
@@ -995,7 +1002,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "M1: run malformed .p47 files through the load path under ASAN");
     pgm_load_fuzz_step.dependOn(&pgm_load_fuzz_cmd.step);
 
-    // M-SAFE-7 (REPORT-30): the same treatment for STATE files. saveload_parity
+    // M-SAFE-7 (REPORT-30): the same treatment for STATE files. saveload_roundtrip
     // and saveload_golden only round-trip files the calculator just wrote, so the
     // 137 lines of bounds 31fb6f755 added to calc_state_restore.zig, and the
     // matrix-dimension guard M-SAFE-1 ported, had no adversarial coverage at all.

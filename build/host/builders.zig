@@ -295,7 +295,7 @@ pub fn addTestSuite(
 
 // Save/load round-trip parity harness. Mirrors addTestSuite's full object graph
 // (the real calculator core + calc_state) but swaps testSuite.c's main for the
-// save_load_parity_harness.c driver, so it exercises the ACTUAL save/restore
+// save_load_roundtrip_harness.c driver, so it exercises the ACTUAL save/restore
 // serialization. Used to verify a Zig port of the save/restore bodies.
 pub fn addFullCoreHarness(
     b: *std.Build,

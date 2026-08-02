@@ -10,7 +10,7 @@
 #
 # Demonstrated 2026-06-24 (pin bb439ccd -> upstream/master 52ab333b, 9 ported
 # files changed): advancing all 14 changed src/c47 files to master left sim,
-# keyboard_entry_parity, saveload_parity and the testSuite ALL GREEN. The
+# keyboard_entry_parity, saveload_roundtrip and the testSuite ALL GREEN. The
 # upstream changes to the replaced owners (screen/softmenus/print/bufferize/items
 # .c) are invisible on host. Any such file that is compiled-out AND green after
 # refresh is a SILENT COVERAGE HOLE: a wrong or forgotten re-port of its Zig
@@ -63,7 +63,7 @@ trap 'git worktree remove --force "$wt" 2>/dev/null; git worktree prune' EXIT
   git checkout "$branch" -- "${changed[@]}"
   echo "refreshed ${#changed[@]} files to $branch; building + running suites..."
   rc=0
-  for step in sim keyboard_entry_parity saveload_parity test; do
+  for step in sim keyboard_entry_parity saveload_roundtrip test; do
     if zig build "$step" >/dev/null 2>&1; then
       echo "  GREEN: $step"
     else

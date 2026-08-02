@@ -29,7 +29,7 @@ root = outdir.parents[3]
 # tracked c47Test.sav"; it never was.
 #
 # save_load_golden.sav is tracked, is the same shape (every section these
-# mutations index into is present), and is already the saveload_parity oracle's
+# mutations index into is present), and is already the saveload_roundtrip oracle's
 # input, so it is maintained rather than incidental.
 BASE_PATH = root / "build/tests/calc_state/save_load_golden.sav"
 base = BASE_PATH.read_text().split("\n")

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Save/load round-trip parity harness for the calc-state serialization
+// Save/load ROUND-TRIP harness for the calc-state serialization
 // (saveRestoreCalcState.c). It links the full real calculator core (the same
 // object graph as the testSuite) so it exercises the ACTUAL save/restore code
 // — not the mocked oracle. Its purpose is to make a Zig port of the heavy
@@ -9,8 +9,8 @@
 //   1. Build a deterministic calculator state (fnReset + a few mutations).
 //   2. doSave(manualSave)  -> writes c47.sav (deterministic text sections).
 //   3. Read those bytes  -> "save1".
-//   4. Golden byte-compare: save1 must equal the committed reference produced
-//      by the current C implementation (catches any change to SAVE output).
+//   4. Golden byte-compare: save1 must equal the committed snapshot (catches any
+//      unintended change to SAVE output).
 //   5. fnReset (wipe) then doLoad(manualLoad) -> restore from save1.
 //   6. fnSave again -> "save2".
 //   7. Round-trip: save1 must equal save2 (catches RESTORE bugs — a faithful
@@ -19,9 +19,17 @@
 // Because (4) pins the save bytes and (6) pins restore against a correct save,
 // porting save and restore in SEPARATE commits is each independently caught.
 //
+// WHAT (4) IS NOT (REPORT-31 M31-1). The golden was the C `doSave` output when
+// this harness was written and SAVE was still C. SAVE is Zig now, and the golden
+// has been regenerated from THIS harness (`zig build saveload_golden`) after every
+// deliberate output change since. So it is a snapshot of z47's own bytes, re-pinned
+// by z47 — it cannot detect c43 changing the save format, and calling this lane
+// "parity" claimed coverage nobody had. Checks B, C and D are honest: they assert
+// z47 round-trip idempotence, which needs no external reference to be meaningful.
+//
 // Usage:
-//   save_load_parity_harness <golden_path>                 -> compare + round-trip
-//   save_load_parity_harness <golden_path> --write-golden  -> (re)generate golden
+//   save_load_roundtrip_harness <golden_path>                 -> compare + round-trip
+//   save_load_roundtrip_harness <golden_path> --write-golden  -> (re)generate golden
 
 // Angle-bracket include resolves to the real src/c47/c47.h via -I; a quoted
 // include would pick up the mock c47.h that sits next to this file (used by the
@@ -53,8 +61,9 @@ bool_t          screenChange;
 // below at the production entry and the golden confirms byte-identity.
 // SAVE now runs the Zig production path: the canonical fnSave is the Zig export
 // (calc_state.zig) -> save() -> io_flow doSave -> z47_calc_state_save_sections
-// (the Zig section writer). The golden byte-compare therefore verifies the Zig
-// SAVE port against the original C output.
+// (the Zig section writer). The golden byte-compare verified the Zig SAVE port
+// against the original C output ONCE, at the commit that landed it; every
+// regeneration since has re-pinned it to Zig's output (see the M31-1 note above).
 //
 // LOAD/RESTORE now also runs the Zig production path: the canonical fnLoad is
 // the Zig export -> load() -> io_flow doLoad -> header parse -> policy ->
@@ -456,9 +465,9 @@ int main(int argc, char *argv[]) {
   }
 
   if(failed) {
-    printf("SAVE/LOAD PARITY: FAILED\n");
+    printf("SAVE/LOAD ROUND-TRIP: FAILED\n");
     return 1;
   }
-  printf("SAVE/LOAD PARITY: OK\n");
+  printf("SAVE/LOAD ROUND-TRIP: OK\n");
   return 0;
 }

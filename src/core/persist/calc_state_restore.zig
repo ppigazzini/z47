@@ -16,7 +16,7 @@
 // kept in sync so the trampolined restorers see the same value.
 //
 // Verified by the save/load round-trip parity harness
-// (`zig build saveload_parity`): restore reconstructs state such that re-saving
+// (`zig build saveload_roundtrip`): restore reconstructs state such that re-saving
 // is byte-identical to the original save.
 
 const std = @import("std");

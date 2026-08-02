@@ -9,7 +9,7 @@ build/tests/calc_state/calc_state_fake_runtime.c
 build/tests/calc_state/calc_state_oracle.c
 build/tests/calc_state/calc_state_parity.c
 build/tests/calc_state/calc_state_parity_link_stubs.c
-build/tests/calc_state/save_load_parity_harness.c
+build/tests/calc_state/save_load_roundtrip_harness.c
 build/tests/calc_state/state_load_harness.c
 build/tests/charstring_diff/charstring_diff_harness.c
 build/tests/charstring_diff/charstring_diff_oracle.c
