@@ -1,0 +1,848 @@
+** AUDIT CERTIFICATE of the C47/R47 conversion constants comprising INDEPENDENT sources and calculations.             **
+** Generated:   2026-07-20 (UTC date; the input hashes below pin the exact audited state)                             **
+** Commit:      bdf20c9f30c51e0ce041010b8666d27633029893 (working tree had uncommitted changes)                       **
+** Note:        Regenerated at every testSuite run; re-written only when the parts between the ruled lines change.    **
+**              For a clean Commit line above: make test, commit, then make test again and re-commit the certificate. **
+========================================================================================================================
+** Project:     C47/R47, community firmware for DM42-class scientific calculators (this repository)                   **
+** Repository:  git@gitlab.com:rpncalculators/c43.git                                                                 **
+**              (note: the committed copy of this file is at least one commit ahead of the recorded hash; more        **
+**              when the certified content has been stable across multiple commits)                                   **
+** Input:       src/generateConstants/generateConstants.c                                                             **
+**              SHA-256 aa7cdcdc994e4b8c3fde58ecab126e77b0df3ace87e82a600f30164740802634                              **
+** Input:       src/c47/defines.h - only the defines consulted for #if branch selection (form "#if (NAME == n)"):     **
+**              MMHG_PA_133_3224 = 1                                                                                  **
+**              SHA-256 of the list above: b6120bb810c1e19b4cd94046ec907e1f38eef9ad01cbd689f759ff469396126d           **
+** Input:       src/c47/conversionUnits.h                                                                             **
+**              SHA-256 4984c628eadce66edd914ddb8212b4144c48d8748ad74fa350e7a10d372c6ec8                              **
+** Input:       src/c47/conversionUnits.c                                                                             **
+**              SHA-256 fd6b93050231ce2337471aeb2d44b141b2676fdc277c9931eae3895c5a247c67                              **
+** Input:       src/c47/items.c - only the 46 item rows naming the conversion items:                                  **
+**              SHA-256 of those lines: 3d3dfb057fa4b1a700b30b8e47d0ae8cf284c4285dcba43fc78c8e31503bcf92              **
+** Generator:   src/generateTests/constantsCheck.py; regenerate with python3 src/generateTests/constantsCheck.py      **
+**              (exit 1 while any decision is open). Environment: Python 3, stdlib decimal only.                      **
+** Encoding:    UTF-8; non-ASCII occurs only inside quoted C source comments. Lines to 255 characters are             **
+**              intentional (verbatim quotes and full-precision reference lines); text in 120-character format,       **
+**              do not re-wrap; the END OF RECORD line exceeds 120 by design.                                         **
+**                                                                                                                    **
+** THIS DOCUMENT IS AN AUDIT. Every conversion constant DECLARED in the C source file                                 **
+** src/generateConstants/generateConstants.c (the #if branch actually compiled, per src/c47/defines.h) is checked     **
+** against a reference value computed INDEPENDENTLY from the defining documents of each unit. The C47 lines below     **
+** are the audited declarations, quoted for comparison only; they contribute nothing to the reference values.         **
+** No calculator output is used anywhere.                                                                             **
+**                                                                                                                    **
+** METHOD                                                                                                             **
+** Reference values are computed with 90-digit decimal arithmetic, rounding half even, and displayed to at most 60    **
+** significant digits. A verdict "Correct to N verified digits" means: N is the number of significant digits stored   **
+** in the C47 literal (trailing zeros counted, so +100 stores 3 digits while +1e+03 stores 1), and rounding the       **
+** reference to N significant digits (half even) reproduces the stored value exactly - a correctly rounded final      **
+** stored digit therefore counts as verified.                                                                         **
+** SCOPE: although high precision is stated throughout (90-digit references, declarations of up to 55 digits),        **
+** the calculator rounds every constant to, and computes with, 34 significant digits (real34) at runtime.             **
+** That is immaterial to this document, which audits the raw source declarations, not their runtime use.              **
+**                                                                                                                    **
+** VERDICTS - the complete vocabulary this generator can emit:                                                        **
+**   "Correct to N verified digit(s)"                 every stored digit verified                                     **
+**   "... as the RECIPROCAL (assumption A2)"          verified against 1/reference                                    **
+**   "Correct by convention: ..."                     the C47 value IS the definition (assumption A4)                 **
+**   "DIFFERS from digit n of m - decision needed"    mismatch; also listed under DECISIONS NEEDED                    **
+** An "open decision" is any DIFFERS verdict, any convention awaiting review, any constant used by the conversion     **
+** tables without a REF entry (UNREFERENCED), or any REF entry without a matching declaration. A "note" line may      **
+** add evidence or context to a verdict without changing it.                                                          **
+**                                                                                                                    **
+** RECORD FORMAT - one block per constant, sorted case-insensitively by constant name (the part after the             **
+** const_/const39_ prefix); the block anchor is the full C identifier:                                                **
+**   reference  <value or DEFINED-BY-C47> <derivation with [n] and An citations>                                      **
+**   C47        <declared literal>        <the C source comment, quoted VERBATIM,                                     **
+**                                         errors included; it played no part in                                      **
+**                                         the verification>                                                          **
+**   C47 #else  <the literal of the branch NOT compiled, where one exists>                                            **
+**   verdict    <one phrase from VERDICTS above>                                                                      **
+**   note       <optional evidence or cross-reference>                                                                **
+** Assumption A1 applies to every entry; A2 wherever RECIPROCAL appears.                                              **
+**                                                                                                                    **
+** ASSUMPTIONS                                                                                                        **
+** A1  The C47/R47 constants are copied from src/generateConstants/generateConstants.c, taking the #if branch         **
+**     actually compiled per the defines in src/c47/defines.h. Where a constant is defined in both branches,          **
+**     both are shown.                                                                                                **
+** A2  Direction: a constant may be stored as X-to-Y or Y-to-X; a value matching the RECIPROCAL of the reference is   **
+**     counted as correct and marked so.                                                                              **
+** A3  mmHg/inHg: C47 KEEPS the BS 350:2004 abbreviated convention (133.3224 Pa) as its standard (decision            **
+**     2026-07-10), selected via MMHG_PA_133_3224 = 1 [16]; the #else branch holds the conventional                   **
+**     (non-abbreviated) values                                                                                       **
+**     133.322387415 / 3386.388640341 Pa [17].                                                                        **
+** A4  banana: no external standard exists. The C47 value bananamm = 178 mm is taken as the DEFINING convention       **
+**     and is therefore correct by definition; bananaInch is verified against it (178/25.4).                          **
+** A5  beard-second: 10 nm (the Google Calculator convention) is assumed; a 5 nm variant is also documented [12].     **
+** A6  UK kitchen measures: imperial tablespoon = 5/8 imp floz, teaspoon = tbsp/3, cup = 10 imp floz (pre-metric      **
+**     convention) [13]; the modern metric 15/5 ml spoons differ.                                                     **
+** A7  US cup: the customary cup = 8 US floz = 236.5882365 ml [3]; the US legal cup of 240 ml differs.                **
+** A8  firkin (FFF system): 90 lb exactly, the mass of a firkin (9 imperial gallons) of water at 10 lb/gal [11].      **
+** A9  Gasoline gallon equivalent: 33.7 kWh per US gallon, the US EPA window-sticker MPGe factor [10].                **
+**                                                                                                                    **
+** REFERENCES                                                                                                         **
+** [1]  BIPM, The International System of Units (SI Brochure), 9th edition 2019: defining constants Table 1 p130;     **
+**      non-SI accepted units (min/h/d, au, ha, L, t, mmHg) Table 8 pp145-146 -                                       **
+**      https://www.bipm.org/en/publications/si-brochure (accessed 2026-07-10)                                        **
+** [2]  NIST Special Publication 811 (2008 ed.), Guide for the Use of the SI: conversion factors Appendix B,          **
+**      alphabetical list B.8 pp49-67 - https://physics.nist.gov/cuu/pdf/sp811.pdf (accessed 2026-07-10)              **
+** [3]  NIST Handbook 44, Appendix C "General Tables of Units of Measurement", pp C1-C17 (customary                   **
+**      length/mass/volume, cup/tbsp/tsp, hp electric) -                                                              **
+**      https://www.nist.gov/pml/owm/nist-handbook-44-current-edition (accessed 2026-07-10)                           **
+** [4]  International Yard and Pound Agreement 1959: 1 yd = 0.9144 m, 1 lb = 0.45359237 kg exactly; US Federal        **
+**      Register Doc. 59-5442, 24 FR 5348 (1959-07-01); tabulated in [2] B.8 and [3] App. C p C2/C8                   **
+** [5]  UK Weights and Measures Act 1985 (c.72), Schedule 1 "Definitions of units of measurement": gallon = 4.54609   **
+**      cubic decimetres exactly - https://www.legislation.gov.uk/ukpga/1985/72/schedule/1 (accessed 2026-07-10)      **
+** [6]  CGPM resolutions: 3rd CGPM 1901 p70 (g0 = 9.80665 m/s^2), 10th CGPM 1954 Resolution 4 (atm = 101325 Pa),      **
+**      4th CGPM 1907 p105 (metric carat = 0.2 g) - https://www.bipm.org/en/committees/cg/cgpm/resolutions            **
+**      (accessed 2026-07-10)                                                                                         **
+** [7]  SI 2019 defining constants (26th CGPM 2018, Resolution 1): kB = 1.380649e-23 J/K and e = 1.602176634e-19 C,   **
+**      both exact; NIST SP 330 (2019 ed.) Table 1 p4; also [1] Table 1 p130                                          **
+** [8]  IAU Resolution 2012 B2 (au = 149597870700 m exactly); IAU Resolution 2015 B2 Table 1 (pc = 648000/pi au       **
+**      exactly); light-year = c x Julian year (365.25 d), c = 299792458 m/s [1] -                                    **
+**      https://www.iau.org/administration/resolutions/general_assemblies/ (accessed 2026-07-10)                      **
+** [9]  ISO 31-4:1992 Annex B (superseded by ISO 80000-5): Btu(IT) = 1055.05585262 J exactly; calorie(IT) =           **
+**      4.1868 J exactly (5th Int. Conference on the Properties of Steam, London 1956); also [2] B.8 p52              **
+**      (Btu(IT)), p53 (cal(IT))                                                                                      **
+** [10] US EPA fuel economy labeling (MPGe), 40 CFR Part 600: 33.7 kWh per gallon of gasoline (window-sticker         **
+**      convention) - https://www.epa.gov/fueleconomy (accessed 2026-07-10)                                           **
+** [11] Wikipedia: FFF system, section "Units" (firkin = 90 lb) - permanent link                                      **
+**      https://en.wikipedia.org/w/index.php?title=FFF_system&oldid=1343014422 (accessed 2026-07-10)                  **
+** [12] Wikipedia: List of humorous units of measurement, section "Beard-second" (5 nm physicist variant, 10 nm       **
+**      Google Calculator variant) - permanent link                                                                   **
+**      https://en.wikipedia.org/w/index.php?title=List_of_humorous_units_of_measurement&oldid=1356149592             **
+**      (accessed 2026-07-10)                                                                                         **
+** [13] Wikipedia: Cooking weights and measures, table "British (imperial) measures" - permanent link                 **
+**      https://en.wikipedia.org/w/index.php?title=Cooking_weights_and_measures&oldid=1355681534                      **
+**      (accessed 2026-07-10)                                                                                         **
+** [14] Chinese market units (shizhi), State Council 1959: chi = 1/3 m, jin = 0.5 kg; Wikipedia: Chinese units of     **
+**      measurement, section "People's Republic of China" - permanent link                                            **
+**      https://en.wikipedia.org/w/index.php?title=Chinese_units_of_measurement&oldid=1357247228                      **
+**      (accessed 2026-07-10)                                                                                         **
+** [15] pi, OEIS A000796 - https://oeis.org/A000796 (accessed 2026-07-10)                                             **
+** [16] BS 350:2004 Conversion factors for units, p51: mmHg = 133.3224 Pa (abbreviated convention; also cited by the  **
+**      C source comment and NPL 1998 p13 footnote)                                                                   **
+** [17] Conventional mercury column: rho_Hg = 13.5951 g/cm^3 at 0 degC x g0 = 9.80665 m/s^2, product exactly          **
+**      133.322387415 Pa; [2] B.8 p58 lists the rounded 1.333224e2                                                    **
+** [18] International Extraordinary Hydrographic Conference, Monaco 1929: 1 nmi = 1852 m; also [1] Table 8 p145 and   **
+**      [2] B.8 p59                                                                                                   **
+** [19] DTP/PostScript point = 1/72 in; Wikipedia: Point (typography), section "Desktop publishing point" - permanent **
+**      link https://en.wikipedia.org/w/index.php?title=Point_(typography)&oldid=1361729836 (accessed 2026-07-10)     **
+** [20] Gregorian calendar mean year = 365.2425 d: leap rule 97/400, papal bull Inter gravissimas (1582)              **
+** [21] US survey foot = 1200/3937 m exactly (retained by the 1959 agreement [4] for surveys) -                       **
+**      https://www.nist.gov/pml/us-surveyfoot (accessed 2026-07-10)                                                  **
+** [22] Wikipedia: Foe (unit) (1 foe = 1e51 erg = 1e44 J) - permanent link                                            **
+**      https://en.wikipedia.org/w/index.php?title=Foe_(unit)&oldid=1360897827 (accessed 2026-07-10)                  **
+** [23] ISO 80000-3 (Quantities and units - Space and time) / IEC 80000-13: level of a power quantity in dB uses the  **
+**      decade factor 10, level of a field (root-power) quantity the factor 20                                        **
+**                                                                                                                    **
+** 140 conversion constants checked; 0 open decision(s).                                                              **
+**                                                                                                                    **
+------------------------------------------------------------------------------------------------------------------------
+
+const_0
+  reference  0                                                       additive identity, exact by definition
+  C47        0
+  verdict    Correct to 1 verified digit
+
+const_1
+  reference  1                                                       multiplicative identity, exact by definition
+  C47        +1
+  verdict    Correct to 1 verified digit
+
+const_10
+  reference  1E+1                                                    dB power-quantity decade factor [23]
+  C47        +10
+  verdict    Correct to 2 verified digits
+
+const_100
+  reference  1E+2                                                    definitional integer of the per-100 fuel economy unit family (no external source applicable)
+  C47        +100
+  verdict    Correct to 3 verified digits
+
+const_1000
+  reference  1E+3                                                    tonne = 1000 kg [1]
+  C47        +1e+03
+  verdict    Correct to 1 verified digit
+
+const_10000
+  reference  1E+4                                                    hectare = 10^4 m^2 [1]
+  C47        +1e+04
+  verdict    Correct to 1 verified digit
+
+const39_180onPi
+  reference  57.2957795130823208767981548141051703324054724665643215491602 degrees per radian = 180/pi [15]
+  C47        +57.29577951308232087679815481410517033240547246656432155
+  verdict    Correct to 55 verified digits
+
+const_1e_12
+  reference  1E-12                                                   metric prefix scale [1]
+  C47        +1e-12
+  verdict    Correct to 1 verified digit
+
+const_2
+  reference  2                                                       jin = 0.5 kg, so 2 jin/kg [14]
+  C47        +2
+  verdict    Correct to 1 verified digit
+
+const_20
+  reference  2E+1                                                    dB field-quantity decade factor [23]
+  C47        +20
+  verdict    Correct to 2 verified digits
+
+const39_200onPi
+  reference  63.6619772367581343075535053490057448137838582961825794990669 gradians per radian = 200/pi [15]
+  C47        +63.6619772367581343075535053490057448137838582961825795
+  verdict    Correct to 54 verified digits
+
+const_273p15
+  reference  273.15                                                  0 degC = 273.15 K; kelvin definition [1]
+  C47        +273.15                                                 // defined Temperature : 273.15                                // SI exact
+  verdict    Correct to 5 verified digits
+
+const_3
+  reference  3                                                       chi = 1/3 m, so 3 chi/m [14]
+  C47        +3
+  verdict    Correct to 1 verified digit
+
+const_32
+  reference  32                                                      0 degC = 32 degF; Fahrenheit scale definition [2]
+  C47        +32
+  verdict    Correct to 2 verified digits
+
+const_459p67
+  reference  459.67                                                  0 degF = 459.67 degR; Rankine scale [2]
+  C47        +459.67                                                 // defined Temperature : 459.67                                // 273.15 × 9/5 − 32 = 459.67 exactly
+  verdict    Correct to 5 verified digits
+
+const_9on10
+  reference  0.9                                                     gradian per degree = 9/10; deg and grad definitions [1]
+  C47        +0.9
+  verdict    Correct to 1 verified digit
+
+const_9on5
+  reference  1.8                                                     Fahrenheit per Celsius degree = 9/5 [2]
+  C47        +1.8
+  verdict    Correct to 2 verified digits
+
+const_AccreToHa
+  reference  0.40468564224                                           acre = 4840 yd^2 [3]
+  C47        +4.0468564224e-01                                       // ha     = acre × 0.0254² × 12² × 43560 / 10000
+  verdict    Correct to 11 verified digits
+
+const39_AccreusToHa
+  reference  0.404687260987425200656852926609079024609662122550051551716007 US survey acre = 43560 survey ft^2 [21][3]
+  C47        +4.046872609874252006568529266090790246096621225500515517e-01 // ha     = acreus × (1200 / 3937)² × 43560 / 10000
+  verdict    Correct to 55 verified digits
+
+const_AtmToPa
+  reference  101325                                                  atm = 101325 Pa exactly [6]
+  C47        +101325                                                 // pascal = atm × 101325
+  verdict    Correct to 6 verified digits
+
+const_AuToM
+  reference  1.495978707E+11                                         au, exact [8]
+  C47        +1.495978707e+11                                        // m      = au × 149597870700
+  verdict    Correct to 10 verified digits
+
+const39_bananaInch
+  reference  7.0078740157480314960629921259842519685039370078740157480315 banana (178 mm, assumption A4) / inch [4]
+  C47        +7.007874015748031496062992125984251968503937007874015748
+  verdict    Correct to 55 verified digits
+
+const_bananamm
+  reference  DEFINED-BY-C47                                          the banana length; C47 defines the convention (assumption A4)
+  C47        +178
+  verdict    Correct by convention: this value IS the definition (assumption A4)
+
+const_BarrelToM3
+  reference  0.158987294928                                          oil barrel = 42 US gal [3]
+  C47        +1.58987294928e-01                                      // m³     = barrel × 42 × 231 × 0.0254³
+  verdict    Correct to 12 verified digits
+
+const_BarToPa
+  reference  1E+5                                                    bar = 100000 Pa exactly [1]
+  C47        +1e+05                                                  // pascal = bar  × 100000
+  verdict    Correct to 1 verified digit
+
+const39_BlobInLbs
+  reference  386.088582677165354330708661417322834645669291338582677165354 blob mass in lb = g0/in, dimensionless [2][6][4]
+  C47        +386.08858267716535433070866141732283464566929133858267716535 // lbs per blob = 12 × g0 / ft (= SlinchToKg / LbToKg)         // uses g0, FtToM logic
+  verdict    Correct to 59 verified digits
+
+const_brdsToIn
+  reference  3.93700787401574803149606299212598425196850393700787401574803E-7 beard-second / inch, assumption A5 [12][4]
+  C47        +3.93700787401575e-07                                   // fff menu: Convert beardsecond to inch
+  verdict    Correct to 15 verified digits
+
+const_brdsTom
+  reference  1E-8                                                    beard-second = 10 nm, assumption A5 [12]
+  C47        +1e-08                                                  // fff menu: Convert beardsecond to meter
+  verdict    Correct to 1 verified digit
+
+const_BtuToJ
+  reference  1055.05585262                                           IT Btu = 1055.05585262 J exactly [9]
+  C47        +1055.05585262                                          // joule  = Btu × 1055.05585262
+  verdict    Correct to 12 verified digits
+
+const_CalToJ
+  reference  4.1868                                                  IT calorie = 4.1868 J exactly [9]
+  C47        +4.1868                                                 // joule  = calorie × 4.1868
+  verdict    Correct to 5 verified digits
+
+const_CaratToG
+  reference  0.2                                                     metric carat = 0.2 g exactly [6]
+  C47        +2e-01                                                  // g      = carat × 0.0002 × 1000
+  verdict    Correct to 1 verified digit
+
+const_CunToM
+  reference  0.0333333333333333333333333333333333333333333333333333333333333 cun = chi/10 [14]
+  C47        +3e+01                                                  // m      = cùn / 30
+  verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
+
+const_CupcFzus
+  reference  8                                                       US cup = 8 US floz, assumption A7 [3]
+  C47        +8                                                      // ratio us c       : 8     x
+  verdict    Correct to 1 verified digit
+
+const_CupcMl
+  reference  236.5882365                                             US customary cup = 8 floz = 236.5882365 ml, assumption A7 [3]
+  C47        +236.5882365                                            // defined us c     : GallonUS / 768 x 48
+  verdict    Correct to 10 verified digits
+
+const_CupukFzuk
+  reference  1E+1                                                    imperial cup = 10 imp floz, assumption A6 [13]
+  C47        +10                                                     // ratio uk         : 10    x
+  verdict    Correct to 2 verified digits
+
+const_CupukMl
+  reference  284.130625                                              imperial cup = 10 imp floz = 284.130625 ml, assumption A6 [13]
+  C47        +284.130625                                             // defined uk       : GallonUK / 768 x 48
+  verdict    Correct to 9 verified digits
+
+const_CwtToKg
+  reference  50.80234544                                             long (UK) hundredweight = 112 lb [3]
+  C47        +50.80234544                                            // kg     = cwt × 112 × 0.45359237       (cwt = long hundredweight)
+  verdict    Correct to 10 verified digits
+
+const_e
+  reference  1.602176634E-19                                         elementary charge = eV in J, exact [7]
+  C47        +1.602176634e-19                                        // e = 1.602176634E−19 C, exact per definition, CODATA 2017, SI 2019 (NIST.SP.330-2019)
+  verdict    Correct to 10 verified digits
+
+const_ErgToJ
+  reference  1E-7                                                    erg = 1e-7 J exactly; CGS [2]
+  C47        +1e+07                                                  // joule  = 10^-7
+  verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
+
+const_FathomToM
+  reference  1.8288                                                  fathom = 6 ft [3]
+  C47        +1.8288                                                 // m      = fathom × 6 × 12 × 0.0254
+  verdict    Correct to 5 verified digits
+
+const_FenToM
+  reference  0.00333333333333333333333333333333333333333333333333333333333333 fen = chi/100 [14]
+  C47        +3e+02                                                  // m      = fēn / 300
+  verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
+
+const_firToKg
+  reference  40.8233133                                              FFF firkin = 90 lb, assumption A8 [11][4]
+  C47        +40.8233133                                             // fff menu: Convert firkin to kilogram
+  verdict    Correct to 9 verified digits
+
+const_firToLb
+  reference  9E+1                                                    FFF firkin = 90 lb exactly, assumption A8 [11]
+  C47        +90                                                     // fff menu: Convert firkin to pound; firkin = 90 lb exactly
+  verdict    Correct to 2 verified digits
+
+const_FlozukToIn3
+  reference  1.73387145494763430471742833249446026451108020326276873026187 imperial floz in in^3 [5][4]
+  C47        +1.73387145494763430471742833249446                     // in³    = flozuk × 4.54609e-3 / 160 × 1000000     / 2.54³
+  verdict    Correct to 33 verified digits
+
+const_FlozukToMl
+  reference  28.4130625                                              imperial floz = gal/160 = 28.4130625 ml [5]
+  C47        +28.4130625                                             // ml     = flozuk × 4.54609e-3 / 160 × 1000000
+  verdict    Correct to 9 verified digits
+
+const_FlozusToIn3
+  reference  1.8046875                                               US floz = 231/128 in^3 exactly [3][4]
+  C47        +1.8046875                                              // in³    = flozus × 231 × 0.0254³ / 128 × 1000000  / 2.54³
+  verdict    Correct to 8 verified digits
+
+const_FlozusToMl
+  reference  29.5735295625                                           US floz = gal/128 = 29.5735295625 ml [3]
+  C47        +29.5735295625                                          // ml     = flozus × 231 × 0.0254³ / 128 × 1000000
+  verdict    Correct to 12 verified digits
+
+const_FoeToJ
+  reference  1E+44                                                   foe (bethe) = 1e51 erg = 1e44 J [22]
+  C47        +1e-44                                                  // joule  = 10^44
+  verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
+
+const_fpfToKph
+  reference  0.000598714285714285714285714285714285714285714285714285714285714 furlong/fortnight in km/h [3][4][1]
+  C47        +5.98714285714286e-04                                   // fff menu: Convert furlong per fortnight to kilometer per hour
+  verdict    Correct to 15 verified digits
+
+const39_fpfToMph
+  reference  0.000372023809523809523809523809523809523809523809523809523809524 furlong/fortnight in mph = (201.168/1209600)/0.44704 [3][4][1]
+  C47        +3.72023809523809523809523809523809523810e-04           // fff menu: Convert furlong per fortnight to mile per hour = (201.168/1209600)/0.44704
+  verdict    Correct to 39 verified digits
+
+const_fpfToMps
+  reference  0.00016630952380952380952380952380952380952380952380952380952381 furlong/fortnight = 201.168/1209600 m/s [3][4][1]
+  C47        +1.66309523809524e-04                                   // fff menu: Convert furlong per fortnight to meter per second
+  verdict    Correct to 15 verified digits
+
+const_fpsToKph
+  reference  1.09728                                                 ft/s = 1.09728 km/h exactly [4]
+  C47        +1.09728                                                // foot per second to kilometer per hour
+  verdict    Correct to 6 verified digits
+
+const_fpsToMps
+  reference  0.3048                                                  ft/s = 0.3048 m/s exactly [4]
+  C47        +3.048e-01                                              // foot per second to meter per second
+  verdict    Correct to 4 verified digits
+
+const_Ft2ToHa
+  reference  0.000009290304                                          ft^2 in hectare [4][1]
+  C47        +9.290304e-06                                           // Ha     = ft2 × (12 × 0.0254)^2 / 10000
+  verdict    Correct to 7 verified digits
+
+const_Ft2ToM2
+  reference  0.09290304                                              ft^2 = 0.09290304 m^2 exactly [4]
+  C47        +9.290304e-02                                           // m2     = ft2 × (12 × 0.0254)^2
+  verdict    Correct to 7 verified digits
+
+const_Ft3Gluk
+  reference  6.22883545904282581295134940135369075403258624444302686484429 ft^3 per imperial gallon [4][5]
+  C47        +6.228835459042825812951349401353691                    // defined uk       : ((ft × 12 × 2.54)^3 / 1000) / (4.54609e-3 × 1000, definition UK) x
+  verdict    Correct to 34 verified digits
+
+const_Ft3L
+  reference  28.316846592                                            ft^3 = 28.316846592 L exactly [4]
+  C47        +28.316846592                                           // defined          :  (ft × 12 × 2.54)^3 / 1000
+  verdict    Correct to 11 verified digits
+
+const_Ft3ToGalUS
+  reference  7.48051948051948051948051948051948051948051948051948051948052 ft^3 per US gallon = 1728/231 [4][3]
+  C47        +7.48051948051948051948051948051948                     // galus  = feet3 * (1/(231 × 0.0254³ × 1000)) * (12*0.254)³
+  verdict    Correct to 33 verified digits
+
+const_ftnToS
+  reference  1.2096E+6                                               fortnight = 14 d = 1209600 s [1]
+  C47        +1.2096e+06                                             // fff menu: Convert fortnight to second
+  verdict    Correct to 5 verified digits
+
+const_FtToM
+  reference  0.3048                                                  ft = 0.3048 m exactly [4]
+  C47        +3.048e-01                                              // m      = ft × 12 × 0.0254
+  verdict    Correct to 4 verified digits
+
+const_furToM
+  reference  201.168                                                 furlong = 220 yd = 201.168 m [3]
+  C47        +201.168                                                // fff menu: Convert furlong to meter
+  verdict    Correct to 6 verified digits
+
+const_FzukTbspuk
+  reference  1.6                                                     imp floz = 1.6 imperial tbsp, assumption A6 [13]
+  C47        +1.6                                                    // ratio uk         : 4.8/3 x
+  verdict    Correct to 2 verified digits
+
+const_FzukTspuk
+  reference  4.8                                                     imp floz = 4.8 imperial tsp, assumption A6 [13]
+  C47        +4.8                                                    // ratio uk         : 4.8   x
+  verdict    Correct to 2 verified digits
+
+const_FzusTbspc
+  reference  2                                                       US floz = 2 tbsp [3]
+  C47        +2                                                      // ratio us         : 6 / 3 x
+  verdict    Correct to 1 verified digit
+
+const_FzusTspc
+  reference  6                                                       US floz = 6 tsp [3]
+  C47        +6                                                      // ratio us         : 6     x
+  verdict    Correct to 1 verified digit
+
+const_GalukToL
+  reference  4.54609                                                 imperial gal = 4.54609 L exactly [5]
+  C47        +4.54609                                                // l      = galuk × 4.54609e-3 × 1000
+  verdict    Correct to 6 verified digits
+
+const_GaluseqE
+  reference  33.7                                                    gasoline gallon equivalent = 33.7 kWh, assumption A9 [10]
+  C47        +33.7
+  verdict    Correct to 3 verified digits
+
+const_GalusToL
+  reference  3.785411784                                             US gal = 231 in^3 = 3.785411784 L exactly [3][4]
+  C47        +3.785411784                                            // l      = galus × 231 × 0.0254³ × 1000
+  verdict    Correct to 10 verified digits
+
+const_gEarth
+  reference  9.80665                                                 standard gravity 9.80665 m/s^2 [6]
+  C47        +9.80665                                                // per definition
+  verdict    Correct to 6 verified digits
+
+const_GlukFzuk
+  reference  1.6E+2                                                  imperial gallon = 160 imp floz [5]
+  C47        +160                                                    // defined uk       : 1600 x
+  verdict    Correct to 3 verified digits
+
+const_GlusFzus
+  reference  128                                                     US gallon = 128 US floz [3]
+  C47        +128                                                    // defined uz       : 1200 x
+  verdict    Correct to 3 verified digits
+
+const_HpeToW
+  reference  746                                                     electrical hp = 746 W exactly [3]
+  C47        +746                                                    // watt   = HPE × 746
+  verdict    Correct to 3 verified digits
+
+const_HpmToW
+  reference  735.49875                                               metric hp = 75 kgf m/s = 735.49875 W exactly [2][6]
+  C47        +735.49875                                              // watt   = HPM × 75 × 9.80665
+  verdict    Correct to 8 verified digits
+
+const_HpukToW
+  reference  745.69987158227022                                      mechanical hp = 550 ft lbf/s W [2][4][6]
+  C47        +745.69987158227022                                     // watt   = HPUK × 550 × 0.3048 × 9.80665 × 0.45359237
+  verdict    Correct to 17 verified digits
+
+const_In2ToMm2
+  reference  645.16                                                  in^2 = 645.16 mm^2 exactly [4]
+  C47        +645.16                                                 // mm^2   = InchToMm^2                                         // uses InchToMm; terminates
+  verdict    Correct to 5 verified digits
+
+const_In3Ml
+  reference  16.387064                                               in^3 = 16.387064 ml exactly [4]
+  C47        +16.387064                                              // defined          :  (     in x 2.54)^3   x
+  verdict    Correct to 8 verified digits
+
+const_In3ToMm3
+  reference  16387.064                                               in^3 = 16387.064 mm^3 exactly [4]
+  C47        +16387.064                                              // mm^3   = InchToMm^3                                         // uses InchToMm; terminates
+  verdict    Correct to 8 verified digits
+
+const_In4ToMm4
+  reference  416231.4256                                             in^4 (second moment) = 25.4^4 mm^4 [4]
+  C47        +416231.4256                                            // mm^4   = InchToMm^4                                         // uses InchToMm; terminates
+  verdict    Correct to 10 verified digits
+
+const_In6ToMm6
+  reference  268535866.540096                                        in^6 = 25.4^6 mm^6 [4]
+  C47        +268535866.540096                                       // mm^6   = InchToMm^6                                         // uses InchToMm; terminates
+  verdict    Correct to 15 verified digits
+
+const_InchToCm
+  reference  2.54                                                    in = 2.54 cm exactly [4]
+  C47        +2.54                                                   // cm     = inch × 0.0254 × 1000 / 10
+  verdict    Correct to 3 verified digits
+
+const_InchToM
+  reference  0.0254                                                  in = 0.0254 m exactly [4]
+  C47        +2.54e-02                                               // m = inch × 0.0254
+  verdict    Correct to 3 verified digits
+
+const_InchToMm
+  reference  25.4                                                    in = 25.4 mm exactly [4]
+  C47        +25.4                                                   // mm     = inch × 0.0254 × 1000
+  verdict    Correct to 3 verified digits
+
+const_InhgToPa
+  reference  3386.38896                                              inHg = 133.3224 x 25.4 = 3386.38896 Pa, BS 350:2004 convention KEPT as the C47 standard [16], assumption A3; conventional [17] is the #else option
+  C47        +3386.38896                                             // pascal = in.Hg × 133.3224 × 25.4            // BS 350:2004 p51, 13.595 1 × 9.806 65 x 25.4, approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
+  C47 #else  +3.386388640341e+03                                     // pascal = in.Hg × 13.5951 × 9.80665 × 2.54   // non-abbreviated
+  verdict    Correct to 9 verified digits
+  note       see assumption A3; the #else option holds the conventional value [17] = 13.5951 x 9.80665 x 25.4 exactly.
+
+const_InlbsToNm
+  reference  0.1129848290276167                                      lbf in in N m [2][4]
+  C47        +0.11298482902761670                                    // N*m    = LbfToN × InchToMm / 1000                           // uses LbfToN, InchToMm; terminates
+  verdict    Correct to 17 verified digits
+
+const39_kBeVK
+  reference  0.0000861733326214517743366365933408063920123303957758255510796571 kB/e, both exact [7]
+  C47        +8.617333262145177433663659334080639201233039577582555108e-05 // defined Temperature : exact: 1380649/16021766340            // both kB (J/K) = 1.380649×10⁻²³ and 1 eV = 1.602176634×10⁻¹⁹ J are SI-defined exact values
+  verdict    Correct to 55 verified digits
+
+const39_Kgm3ToBlobin3
+  reference  10686895.1782013164745530929464735735225081957386929219887332 blob/in^3 = lbf s^2 in^-4 in kg/m^3 [2][4][6]
+  C47        +9.357254687402177724891014159299230600834745152076364992e-08 // blob/in^3 = 0.0254^3 / SlinchToKg                           // uses SlinchToKg
+  verdict    Correct to 55 verified digits as the RECIPROCAL (assumption A2)
+
+const39_Kmphmps
+  reference  0.277777777777777777777777777777777777777777777777777777777778 km/h = 1/3.6 m/s exactly [1]
+  C47        +2.777777777777777777777777777777777777777777777777777778e-01 // mps      =  Kmph  * 0.277...   // 2.5/9, last digit rounded half even
+  verdict    Correct to 55 verified digits
+
+const39_KnotToMps
+  reference  0.514444444444444444444444444444444444444444444444444444444444 knot = 1852/3600 m/s exactly [18]
+  C47        +0.5144444444444444444444444444444444444444444444444444444 // m/s    = knot × 1852 / 3600
+  verdict    Correct to 55 verified digits
+
+const39_KsiToMpa
+  reference  6.8947572931683613367226734453468906937813875627751255502511 ksi = 1000 psi, in MPa [2]
+  C47        +6.894757293168361336722673445346890693781387562775125550 // MPa    = PsiToPa / 1000                                     // uses PsiToPa
+  verdict    Correct to 55 verified digits
+
+const_LbfftToNm
+  reference  1.3558179483314004                                      lbf ft in N m [2][4]
+  C47        +1.3558179483314004                                     // Nm = lbf×ft × 9.80665 × 0.45359237 × 12 × 0.0254
+  verdict    Correct to 17 verified digits
+
+const_LbfToN
+  reference  4.4482216152605                                         lbf = 4.4482216152605 N exactly [2][4][6]
+  C47        +4.4482216152605                                        // newton = lbf × 9.80665 × 0.45359237
+  verdict    Correct to 14 verified digits
+
+const39_Lbsft2ToPa
+  reference  47.8802589803358426161296767037978520401485247414939274322993 lbf/ft^2 in Pa [2][4]
+  C47        +47.88025898033584261612967670379785204014852474149392743 // Pa     = LbfToN / Ft2ToM2                                   // uses LbfToN, Ft2ToM2
+  verdict    Correct to 55 verified digits
+
+const39_LbsftToKgm
+  reference  1.48816394356955380577427821522309711286089238845144356955381 lb/ft in kg/m [4]
+  C47        +1.488163943569553805774278215223097112860892388451443570 // kg/m   = LbToKg / FtToM                                     // uses LbToKg, FtToM
+  verdict    Correct to 55 verified digits
+
+const39_Lbsin3ToKgm3
+  reference  27679.9047102031211936439620910737884467894920041808587554183 lb/in^3 in kg/m^3 [4]
+  C47        +27679.90471020312119364396209107378844678949200418085876 // kg/m^3 = LbToKg / 0.0254^3                                  // uses LbToKg
+  verdict    Correct to 55 verified digits
+
+const39_Lbsin3ToTmm3
+  reference  2.76799047102031211936439620910737884467894920041808587554183E-8 lb/in^3 in t/mm^3 [4][1]
+  C47        +2.767990471020312119364396209107378844678949200418085876e-08 // t/mm^3 = LbToKg / 0.0254^3 × 1e-12                          // uses LbToKg
+  verdict    Correct to 55 verified digits
+
+const_LbToKg
+  reference  0.45359237                                              lb = 0.45359237 kg exactly [4]
+  C47        +4.5359237e-01                                          // kg     = lb × 0.45359237     (1 lb (pound) = 16 oz)
+  verdict    Correct to 8 verified digits
+
+const_LiToM
+  reference  5E+2                                                    li = 1500 chi = 500 m [14]
+  C47        +5e+02                                                  // m      = lǐ × 500
+  verdict    Correct to 1 verified digit
+
+const_LongtonToKg
+  reference  1016.0469088                                            long ton = 2240 lb [3]
+  C47        +1016.0469088                                           // kg     =2240 × 0.4535923 39, EXACT,7
+  verdict    Correct to 11 verified digits
+
+const_LQtus
+  reference  0.946352946                                             US liquid quart in L [3]
+  C47        +1.05668820943259                                       // defined us       : 1000 / (GallonUK / 768 x 192) x
+  verdict    Correct to 15 verified digits as the RECIPROCAL (assumption A2)
+
+const_LyToM
+  reference  9.4607304725808E+15                                     ly = c x Julian year [8]
+  C47        +9.4607304725808e+15                                    // m      = ly × 299792458 × 3600 × 24 × 365.25
+  verdict    Correct to 14 verified digits
+
+const_MiSqToKmSq
+  reference  2.589988110336                                          mi^2 in km^2 [4]
+  C47        +2.589988110336                                         // km     = mile^2 × (63360 × 0.0254 / 1000)^2
+  verdict    Correct to 13 verified digits
+
+const_MiToKm
+  reference  1.609344                                                mi = 1.609344 km exactly [4]
+  C47        +1.609344                                               // km     = mile × 63360 × 0.0254 / 1000
+  verdict    Correct to 7 verified digits
+
+const_MiToM
+  reference  1609.344                                                mi = 1609.344 m exactly [4]
+  C47        +1.609344e+03                                           // m      = mile × 63360 × 0.0254
+  verdict    Correct to 7 verified digits
+
+const_MmhgToPa
+  reference  133.3224                                                mmHg = 133.3224 Pa, the BS 350:2004 convention KEPT as the C47 standard [16], assumption A3; conventional 133.322387415 [17] is the #else option
+  C47        +133.3224                                               // pascal = mm.Hg × 133.3224                   // BS 350:2004 p51, 13.595 1 × 9.806 65       , approx used as per BS. This is NOT 'superceded' by american NIST; NPL:1998, p13 footnote
+  C47 #else  +1.333223874150e+02                                     // pascal = mm.Hg × 13.5951 × 9.80665          // non-abbreviated
+  verdict    Correct to 7 verified digits
+  note       see assumption A3; the #else option holds the conventional value [17] = 13.5951 x 9.80665 exactly.
+
+const_Mphmps
+  reference  0.44704                                                 mph = 0.44704 m/s exactly [4]
+  C47        +4.4704e-01                                             // mps      =  Mph  * 0.44704     //11.176/25
+  verdict    Correct to 5 verified digits
+
+const39_MphToFps
+  reference  1.46666666666666666666666666666666666666666666666666666666667 mph in ft/s = 22/15 exactly [4]
+  C47        +1.4666666666666666666666666666666666666666666667       // ft/s   = mph × 5280 / 3600 = 22 / 15
+  verdict    Correct to 47 verified digits
+
+const39_MphToKnot
+  reference  0.868976241900647948164146868250539956803455723542116630669546 mph/knot = 1609.344/1852 [4][18]
+  C47        +0.8689762419006479481641468682505399568034557235       // knot   = mph × 1609.344 / 1852
+  verdict    Correct to 46 verified digits
+
+const_MuToM2
+  reference  666.666666666666666666666666666666666666666666666666666666667 mu = 6000 chi^2 = 2000/3 m^2 [14]
+  C47        +1.5e-03                                                // m²     = mǔ / 0.0015
+  verdict    Correct to 2 verified digits as the RECIPROCAL (assumption A2)
+
+const_NmiSqToKmSq
+  reference  3.429904                                                nmi^2 in km^2 [18]
+  C47        +3.429904                                               // km     = nmi^2 × (1852 / 1000)^2
+  verdict    Correct to 7 verified digits
+
+const_NmiToKm
+  reference  1.852                                                   nmi = 1.852 km exactly [18]
+  C47        +1.852                                                  // km     = nmi × 1852 / 1000
+  verdict    Correct to 4 verified digits
+
+const_NmiToM
+  reference  1852                                                    nmi = 1852 m exactly [18]
+  C47        +1.852e+03                                              // m      = nmi × 1852
+  verdict    Correct to 4 verified digits
+
+const39_NmiToMi
+  reference  1.15077944802354251173148810944086534637715740077944802354251 nmi/mi = 1852/1609.344 [18][4]
+  C47        +1.150779448023542511731488109440865346377157400779448024 // km     = nmi × 1852 / 1609.344
+  verdict    Correct to 55 verified digits
+
+const_OzToG
+  reference  28.349523125                                            oz = lb/16 = 28.349523125 g exactly [4]
+  C47        +28.349523125                                           // g      = oz × (0.45359237 / 16) × 1000
+  verdict    Correct to 11 verified digits
+
+const39_PcToM
+  reference  30856775814913672.7891393795779647161073192116040917980140402 pc = 648000/pi au exactly [8]
+  C47        +30856775814913672.78913937957796471610731921160409179801 // m      = pc × 149597870700 × 648000 / pi
+  verdict    Correct to 55 verified digits
+
+const_PintlqMl
+  reference  473.176473                                              US liquid pint = 473.176473 ml [3]
+  C47        +473.176473                                             // defined us c     : GallonUS / 768 x 96   x
+  verdict    Correct to 9 verified digits
+
+const_PintukMl
+  reference  568.26125                                               imperial pint = 568.26125 ml [5]
+  C47        +568.26125                                              // defined uk       : GallonUK / 768 x 96   x
+  verdict    Correct to 8 verified digits
+
+const39_PointToMm
+  reference  0.352777777777777777777777777777777777777777777777777777777778 DTP point = 1/72 in [19]
+  C47        +3.527777777777777777777777777777777777777777777777777778e-01 // mm     = pt × 0.0254 / 72 × 1000
+  verdict    Correct to 55 verified digits
+
+const39_PsiToPa
+  reference  6894.7572931683613367226734453468906937813875627751255502511 psi = lbf/in^2 [2][4][6]
+  C47        +6894.757293168361336722673445346890693781387562775125550 // pascal = psi × 0.45359237 × 9.80665 / 0.0254²
+  verdict    Correct to 55 verified digits
+
+const_QtMl
+  reference  1136.5225                                               imperial quart in ml [5]
+  C47        +1136.5225                                              // defined uk       : GallonUK / 768 x 192  x
+  verdict    Correct to 8 verified digits
+
+const_QtusMl
+  reference  946.352946                                              US liquid quart = 946.352946 ml [3]
+  C47        +946.352946                                             // defined us       : GallonUS / 768 x 192  x
+  verdict    Correct to 9 verified digits
+
+const_QuartToL
+  reference  1.1365225                                               imperial quart = gal/4 = 1.1365225 L [5]
+  C47        +1.1365225                                              // l      = quart × 4.54609e-3 / 4 × 1000
+  verdict    Correct to 8 verified digits
+
+const_RpmDegps
+  reference  6                                                       rpm = 360/60 = 6 deg/s exactly [1]
+  C47        +6                                                      // Degps    =  Rpm * 6
+  verdict    Correct to 1 verified digit
+
+const39_RpmRadps
+  reference  0.104719755119659774615421446109316762806572313312503527365831 rpm = 2 pi/60 = pi/30 rad/s [15]
+  C47        +0.1047197551196597746154214461093167628065723133125035274 // Radps    =  Rpm  * 0.1047   // pi/30
+  verdict    Correct to 55 verified digits
+
+const39_SfeetToM
+  reference  0.304800609601219202438404876809753619507239014478028956057912 US survey foot = 1200/3937 m exactly [21]
+  C47        +3.048006096012192024384048768097536195072390144780289561e-01 // m      = sfeetus × (1200 / 3937)
+  verdict    Correct to 55 verified digits
+
+const_ShortcwtToKg
+  reference  45.359237                                               short (US) hundredweight = 100 lb [3]
+  C47        +45.359237                                              // kg     = short cwt × 100 × 0.45359237 (short cwt = short hundredweight)
+  verdict    Correct to 8 verified digits
+
+const_ShorttonToKg
+  reference  907.18474                                               short ton = 2000 lb [3]
+  C47        +907.18474                                              // kg     = short ton × 2000 × 0.45359237
+  verdict    Correct to 8 verified digits
+
+const39_SlinchToKg
+  reference  175.126835246476377952755905511811023622047244094488188976378 slinch (blob) = lbf s^2/in = 12 slug [2]
+  C47        +1.751268352464763779527559055118110236220472440944881890e+02 // kg     = slinch × 12 × SlugToKg
+  verdict    Correct to 55 verified digits
+
+const39_SlugToKg
+  reference  14.5939029372063648293963254593175853018372703412073490813648 slug = lbf s^2/ft [2]
+  C47        +1.459390293720636482939632545931758530183727034120734908e+01 // kg     = slug × 0.45359237 × 9.80665 / 0.3048
+  verdict    Correct to 55 verified digits
+
+const_StoneToKg
+  reference  6.35029318                                              stone = 14 lb [3]
+  C47        +6.35029318                                             // kg     = stone × 14 × 0.45359237
+  verdict    Correct to 9 verified digits
+
+const_TbspcMl
+  reference  14.78676478125                                          US tbsp = cup/16 = 14.78676478125 ml [3]
+  C47        +14.78676478125                                         // defined us       : GallonUS / 768 x 3    x
+  verdict    Correct to 13 verified digits
+
+const_TbspukMl
+  reference  17.7581640625                                           imperial tbsp = 5/8 imp floz = 17.7581640625 ml, assumption A6 [13]
+  C47        +17.7581640625                                          // defined uk       : GallonUK / 768 x 3    x
+  verdict    Correct to 12 verified digits
+
+const39_TorrToPa
+  reference  133.322368421052631578947368421052631578947368421052631578947 torr = 101325/760 Pa exactly [2][6]
+  C47        +133.3223684210526315789473684210526315789473684210526316 // pascal = torr × 101325 / 760
+  verdict    Correct to 55 verified digits
+
+const_TrozToG
+  reference  31.1034768                                              troy oz = 480 grains = 31.1034768 g exactly [3][4]
+  C47        +31.1034768                                             // g      = tr.oz × 0.45359237 × 175 / 12 × 1000
+  verdict    Correct to 9 verified digits
+
+const_TspcMl
+  reference  4.92892159375                                           US tsp = tbsp/3 = 4.92892159375 ml [3]
+  C47        +4.92892159375                                          // defined us       : GallonUS / 768        x
+  verdict    Correct to 12 verified digits
+
+const39_TspukMl
+  reference  5.91938802083333333333333333333333333333333333333333333333333 imperial tsp = tbsp/3 ml, assumption A6 [13]
+  C47        +5.919388020833333333333333333333333333333333333333333333 // defined uk       : GallonUK / 768        x
+  verdict    Correct to 55 verified digits
+
+const_WhToJ
+  reference  3.6E+3                                                  Wh = 3600 J exactly [1]
+  C47        +3.6e+03                                                // joule  = Wh × 3600
+  verdict    Correct to 2 verified digits
+
+const_YardToM
+  reference  0.9144                                                  yd = 0.9144 m exactly [4]
+  C47        +9.144e-01                                              // m      = yard × 3 × 12 × 0.0254
+  verdict    Correct to 4 verified digits
+
+const_YearToS
+  reference  31556952                                                Gregorian mean year = 365.2425 d = 31556952 s [20]
+  C47        +31556952                                               // second = year  × (365.2425 × 24 × 3600)
+  verdict    Correct to 8 verified digits
+
+const_YinToM
+  reference  33.3333333333333333333333333333333333333333333333333333333333 yin = 10 zhang [14]
+  C47        +3e-02                                                  // m      = yǐn / 0.03
+  verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
+
+const_ZhangToM
+  reference  3.33333333333333333333333333333333333333333333333333333333333 zhang = 10 chi [14]
+  C47        +3e-01                                                  // m      = zhàng / 0.3
+  verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
+
+========================================================================================================================
+END OF RECORD - 140 entries; SHA-256 of the lines between the ruled lines (both excluded, LF-joined, no trailing newline): 1b7ff57476c4a63ef0d85cbd8412dea9cf3636da65763151b07b1bed76f02d23
