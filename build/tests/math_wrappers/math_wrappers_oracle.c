@@ -392,7 +392,13 @@ void oracle_decompReal(void);
 #undef fnRandom
 #undef realRandomU01
 
-static void oracle_compareTypeErrorX(void) {
+// NOT a parity reference, despite the shape of the bodies around it. Nothing
+// compares this against c43; it is the error-path helper the mirrors in this file
+// call when a type is unsupported, and it exists because compare.c is not
+// compiled here. Named without the `oracle_` prefix so it stops claiming a
+// provenance it does not have -- the whole point of that prefix is that the body
+// behind it came from c43.
+static void harnessCompareTypeErrorX(void) {
 	temporaryInformation = 12;
 	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, (calcRegister_t)103);
 }
@@ -747,56 +753,34 @@ static void oracle_conjCxma(void) {
 	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
 }
 
-// WHY THESE FOUR STILL HAVE A HAND-WRITTEN BODY, measured.
+// NO HAND-WRITTEN REFERENCE BODIES REMAIN IN THIS FILE, and the way the last ones
+// went is worth knowing before adding another.
 //
-// fnAdd / fnSubtract / fnMultiply / fnDivide used to have one too, and it was pure
-// duplication: repointing their 91 driver call sites at the compiled
-// `oracle_full_*` bodies -- c43's own, already linked in this binary -- produced
-// ZERO mismatches, and 428 lines went with them.
-//
-// The same experiment on these four produces exactly SIX mismatches, all MATRIX
-// cases, and compiling toPolar.c / toRect.c in place of their mirrors produces
-// TWELVE. The cause is the same in both, and it is the environment rather than the
-// reference: this lane's `real_t` is a hand-declared 25-limb struct, its arithmetic
-// is math_wrappers_fake_runtime.c, and its `const39_*` values are placeholder
-// decimals -- there is no decNumber and no matrix subsystem here. c43's real files
-// dispatch into leaves the fake core answers differently, so swapping a mirror for
-// the real file changes the observable counters without either side being wrong.
-//
-// So this lane compares CONTROL FLOW over a fake numeric core, and these mirrors
-// were written to match what that core can express. They cannot be removed by
-// compiling more c43 into the mock; the lane needs the full-core treatment
-// calc_state and register_metadata got. Do not repeat either
-// experiment -- both are recorded here so nobody has to.
-//
-// THE ROUTE OUT is build/tests/math_wrappers_full_core/, which compiles c43's own
+// Every reference here is now c43's own code: either an `#include` of the c43 file
+// under `oracle_` renames, or a compiled `oracle_full_*` body. The wrappers that
+// once had a hand-written mirror -- the check predicates, the comparisons, the
+// integer-division and rounding families, and the vector/complex families --
+// moved to build/tests/math_wrappers_full_core/, which compiles c43's own
 // mathematics/*.c beside the Zig owners on real decNumber and compares the state
-// each leaves behind. The fifteen predicate mirrors that used to sit here --
-// fnCheckAngle, fnCheckForZero, fnCheckInfinite, fnCheckInteger, fnCheckIsVect2d,
-// fnCheckIsVect3d, fnCheckMatrix, fnCheckMatrixSquare, fnCheckMinusZero,
-// fnCheckNaN, fnCheckNumber, fnCheckPlusZero, fnCheckSpecial, fnCheckType and
-// fnGetType -- moved there and are gone from this file. Every remaining mirror
-// below goes the same way; none of them go by being reasoned about here.
-
-void oracle_fnConjugate(uint16_t unusedButMandatoryParameter) {
-	const uint32_t typex = getRegisterDataType(REGISTER_X);
-
-	(void)unusedButMandatoryParameter;
-
-	if(!saveLastX()) {
-		return;
-	}
-
-	if(typex == dtComplex34Matrix) {
-		oracle_conjCxma();
-	}
-	else if(typex == dtReal34Matrix) {
-		oracle_conjRema();
-	}
-	else {
-		oracle_conjCplx();
-	}
-}
+// each leaves behind.
+//
+// THEY COULD NOT BE FIXED HERE, and that was measured twice rather than argued.
+// This lane's `real_t` is a hand-declared 25-limb struct, its arithmetic is
+// math_wrappers_fake_runtime.c, and its `const39_*` values are placeholder
+// decimals -- there is no decNumber and no matrix subsystem. Swapping a mirror for
+// c43's real file produced six mismatches for the arithmetic four and twelve for
+// toPolar/toRect, in both cases because c43's real files dispatch into leaves the
+// fake core answers differently, with neither side wrong. Do not repeat either
+// experiment.
+//
+// WHAT THIS LANE IS FOR NOW, and why it is not deleted. It still drives 436 cases
+// over 88 wrappers the full-core differential does not cover -- fnAdd, the
+// trigonometric and hyperbolic families, the logarithms, the Bernoulli numbers and
+// the rest -- against references that ARE c43's own bodies. What it compares is
+// control flow over a fake numeric core, which is real coverage of dispatch and
+// error paths and is not a substitute for comparing results. A wrapper wants both
+// lanes: this one for the paths it takes, the full-core one for the answers it
+// produces.
 
 #define fnSwapRealImaginary oracle_fnSwapRealImaginary_legacy
 #include "../../../upstream/src/c47/mathematics/swapRealImaginary.c"
@@ -829,30 +813,6 @@ static void oracle_swapReImCxma(void) {
 		real34Copy(&tmp, VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
 	}
 	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
-}
-
-void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter) {
-	real_t a, b;
-	const uint32_t type = getRegisterDataType(REGISTER_X);
-
-	(void)unusedButMandatoryParameter;
-
-	if(!saveLastX()) {
-		return;
-	}
-
-	if(type == dtReal34Matrix) {
-		oracle_swapReImRema();
-	}
-	else if(type == dtComplex34Matrix) {
-		oracle_swapReImCxma();
-	}
-	else {
-		if(!getRegisterAsComplex(REGISTER_X, &a, &b)) {
-			return;
-		}
-		convertComplexToResultRegister(&b, &a, REGISTER_X);
-	}
 }
 
 #define arctan2 oracle_arctan2
@@ -931,34 +891,6 @@ static void oracle_atan2RemaRemaFixed(void) {
 	}
 }
 
-void oracle_fnAtan2(uint16_t unusedButMandatoryParameter) {
-	const uint32_t typex = getRegisterDataType(REGISTER_X);
-	const uint32_t typey = getRegisterDataType(REGISTER_Y);
-
-	(void)unusedButMandatoryParameter;
-
-	if(!saveLastX()) {
-		return;
-	}
-
-	if((typex == dtLongInteger || typex == dtReal34) && (typey == dtLongInteger || typey == dtReal34)) {
-		oracle_atan2RealReal();
-	}
-	else if(typex == dtReal34Matrix && typey == dtReal34Matrix) {
-		oracle_atan2RemaRemaFixed();
-	}
-	else if(typex == dtReal34Matrix && (typey == dtReal34 || typey == dtLongInteger || typey == dtShortInteger)) {
-		oracle_atan2RealRemaFixed();
-	}
-	else if(typey == dtReal34Matrix && (typex == dtReal34 || typex == dtLongInteger || typex == dtShortInteger)) {
-		oracle_atan2RemaReal();
-	}
-	else {
-		oracle_atan2Error();
-	}
-
-	adjustResult(REGISTER_X, true, true, REGISTER_X, REGISTER_Y, -1);
-}
 #undef atan2RealReal
 #undef atan2Error
 #undef arctan2
@@ -982,201 +914,6 @@ void oracle_fnAtan2(uint16_t unusedButMandatoryParameter) {
 #define fnCube oracle_fnCube
 #include "../../../upstream/src/c47/mathematics/cube.c"
 #undef fnCube
-
-void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter) {
-	uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
-	calcRegister_t REG_X, REG_Y;
-	real_t x, y;
-
-	(void)unusedButMandatoryParameter;
-
-	if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-		setComplexRegisterPolarMode(REGISTER_X, amPolar);
-		if(getComplexRegisterAngularMode(REGISTER_X) == amNone) {
-			setComplexRegisterAngularMode(REGISTER_X, currentAngularMode);
-		}
-		return;
-	}
-	else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-		if(isRegisterMatrix3dVector(REGISTER_X)) {
-			setVectorRegisterPolarMode(REGISTER_X,
-				((getVectorRegisterPolarMode(REGISTER_X) == 0) ? amPolarSPH : (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH) ? amPolarCYL : (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL) ? amPolarSPH : 0));
-			setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
-			return;
-		}
-		else if(isRegisterMatrix2dVector(REGISTER_X)) {
-			setVectorRegisterPolarMode(REGISTER_X, amPolar);
-			setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
-			return;
-		}
-	}
-
-	dataTypeX = getRegisterDataType(REGISTER_X);
-	dataAtagX = getRegisterAngularMode(REGISTER_X);
-	dataTypeY = getRegisterDataType(REGISTER_Y);
-	dataAtagY = getRegisterAngularMode(REGISTER_Y);
-
-	if(!((dataTypeX == dtLongInteger || (dataTypeX == dtReal34 && dataAtagX == amNone)) &&
-	     (dataTypeY == dtLongInteger || (dataTypeY == dtReal34 && dataAtagY == amNone)))) {
-		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-		return;
-	}
-
-	if(getSystemFlag(FLAG_HPRP)) {
-		REG_X = REGISTER_X;
-		REG_Y = REGISTER_Y;
-	}
-	else {
-		REG_X = REGISTER_Y;
-		REG_Y = REGISTER_X;
-	}
-
-	if(!saveLastX()) {
-		return;
-	}
-
-	if(dataTypeX == dtLongInteger) {
-		convertLongIntegerRegisterToReal(REG_X, &x, &ctxtReal39);
-	}
-	else {
-		real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
-	}
-
-	if(dataTypeY == dtLongInteger) {
-		convertLongIntegerRegisterToReal(REG_Y, &y, &ctxtReal39);
-	}
-	else {
-		real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
-	}
-
-	realRectangularToPolar(&x, &y, &x, &y, &ctxtReal39);
-	convertAngleFromTo(&y, amRadian, currentAngularMode, &ctxtReal39);
-
-	reallocateRegister(REG_X, dtReal34, 0, amNone);
-	reallocateRegister(REG_Y, dtReal34, 0, currentAngularMode);
-	convertRealToReal34ResultRegister(&x, REG_X);
-	convertRealToReal34ResultRegister(&y, REG_Y);
-
-	if(getSystemFlag(FLAG_HPRP)) {
-		temporaryInformation = TI_RADIUS_THETA;
-	}
-	else {
-		temporaryInformation = TI_RADIUS_THETA_SWAPPED;
-	}
-}
-
-void oracle_fnToRect2(uint16_t unusedButMandatoryParameter) {
-	uint32_t dataTypeX, dataTypeY, dataAtagX, dataAtagY;
-	calcRegister_t REG_X, REG_Y;
-	angularMode_t yAngularMode;
-	int8_t angleInY = 1;
-	real_t x, y;
-
-	(void)unusedButMandatoryParameter;
-
-	if(getRegisterDataType(REGISTER_X) == dtComplex34 || getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
-		setComplexRegisterPolarMode(REGISTER_X, ~amPolar);
-		setComplexRegisterAngularMode(REGISTER_X, amNone);
-		return;
-	}
-	else if(getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
-		if(isRegisterMatrixVector(REGISTER_X)) {
-			setVectorRegisterPolarMode(REGISTER_X, 0);
-			setVectorRegisterAngularMode(REGISTER_X, amNone);
-			temporaryInformation = TI_VECTOR;
-			return;
-		}
-	}
-
-	dataTypeX = getRegisterDataType(REGISTER_X);
-	dataAtagX = getRegisterAngularMode(REGISTER_X);
-	dataTypeY = getRegisterDataType(REGISTER_Y);
-	dataAtagY = getRegisterAngularMode(REGISTER_Y);
-
-	if(!getSystemFlag(FLAG_HPRP)) {
-		angleInY = -angleInY;
-		if(dataTypeX == dtReal34 && dataAtagX != amNone && dataTypeY == dtReal34 && dataAtagY == amNone) {
-		}
-		else if(dataTypeY == dtReal34 && dataAtagY != amNone && dataTypeX == dtReal34 && dataAtagX == amNone) {
-			angleInY = -angleInY;
-		}
-	}
-	else {
-		if(dataTypeX == dtReal34 && dataAtagX != amNone && dataTypeY == dtReal34 && dataAtagY == amNone) {
-			angleInY = -angleInY;
-		}
-		else if(dataTypeY == dtReal34 && dataAtagY != amNone && dataTypeX == dtReal34 && dataAtagX == amNone) {
-		}
-	}
-
-	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
-	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
-		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-		return;
-	}
-
-	if(angleInY == 1) {
-		REG_X = REGISTER_X;
-		REG_Y = REGISTER_Y;
-	}
-	else {
-		REG_X = REGISTER_Y;
-		REG_Y = REGISTER_X;
-	}
-
-	dataTypeX = getRegisterDataType(REG_X);
-	dataTypeY = getRegisterDataType(REG_Y);
-	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
-	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
-		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REG_X);
-		return;
-	}
-
-	yAngularMode = getRegisterAngularMode(REG_Y);
-	if(!saveLastX()) {
-		return;
-	}
-
-	if(dataTypeX == dtLongInteger) {
-		convertLongIntegerRegisterToReal(REG_X, &x, &ctxtReal39);
-	}
-	else {
-		real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
-	}
-
-	if(dataTypeY == dtReal34 && yAngularMode == amNone) {
-		yAngularMode = currentAngularMode;
-	}
-	if(dataTypeY == dtLongInteger) {
-		convertLongIntegerRegisterToReal(REG_Y, &y, &ctxtReal39);
-	}
-	else {
-		real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
-	}
-	convertAngleFromTo(&y, yAngularMode, amRadian, &ctxtReal39);
-	realPolarToRectangular(&x, &y, &x, &y, &ctxtReal39);
-
-	if(getSystemFlag(FLAG_HPRP)) {
-		REG_X = REGISTER_X;
-		REG_Y = REGISTER_Y;
-	}
-	else {
-		REG_X = REGISTER_Y;
-		REG_Y = REGISTER_X;
-	}
-
-	reallocateRegister(REG_X, dtReal34, 0, amNone);
-	reallocateRegister(REG_Y, dtReal34, 0, amNone);
-	convertRealToReal34ResultRegister(&x, REG_X);
-	convertRealToReal34ResultRegister(&y, REG_Y);
-
-	if(getSystemFlag(FLAG_HPRP)) {
-		temporaryInformation = TI_X_Y;
-	}
-	else {
-		temporaryInformation = TI_X_Y_SWAPPED;
-	}
-}
 
 void oracle_fnToRect(uint16_t angleInY) {
 	uint32_t dataTypeX, dataTypeY;
@@ -1278,11 +1015,11 @@ void oracle_fnToRect(uint16_t angleInY) {
 #define STD_x_UNDER_ROOT ""
 #endif
 
-void oracle_curtReal(void);
+void harnessCurtRealLinkStub(void);
 void oracle_sqrtComplex75(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 void oracle_sqrtComplex159(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
 void oracle_sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal, real_t *resImag, realContext_t *realContext);
-#define curtReal oracle_curtReal
+#define curtReal harnessCurtRealLinkStub
 #define rootLonI oracle_rootLonI
 #define sqrtComplex75 oracle_sqrtComplex75
 #define sqrtComplex159 oracle_sqrtComplex159
@@ -1296,7 +1033,10 @@ void oracle_sqrtComplex(const real_t *real, const real_t *imag, real_t *resReal,
 #undef rootLonI
 #undef curtReal
 
-void oracle_curtReal(void) {
+// An EMPTY link stub, not a reference: squareRoot.c calls curtReal, and c43's
+// real body arrives later from cubeRoot.c under oracle_curtReal_impl. Named
+// without the `oracle_` prefix because there is no c43 body behind it.
+void harnessCurtRealLinkStub(void) {
 }
 
 void oracle_curtReal_impl(void);
@@ -1447,29 +1187,4 @@ static void oracle_unitVectorCxmaFixed(void) {
 		realToReal34(&imag, &matrix.matrixElements[i].imag);
 	}
 	convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
-}
-
-void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter) {
-	(void)unusedButMandatoryParameter;
-
-	if(!saveLastX()) {
-		return;
-	}
-
-	switch(getRegisterDataType(REGISTER_X)) {
-		case dtComplex34:
-			oracle_unitVectorCplx();
-			break;
-		case dtReal34Matrix:
-			oracle_unitVectorRemaFixed();
-			break;
-		case dtComplex34Matrix:
-			oracle_unitVectorCxmaFixed();
-			break;
-		default:
-			oracle_unitVectorErrorFixed();
-			break;
-	}
-
-	adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }

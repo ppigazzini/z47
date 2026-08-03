@@ -73,3 +73,11 @@ void *decQuadFromUInt32(void *res, uint32_t value) {
     (void)value;
     return res;
 }
+
+// swapRealImaginary's real-matrix path zeroes a decQuad through real34SetZero,
+// which is decNumber's decQuadZero. Same story: this lane links no decNumber, and
+// the matrix families are compared in the full-core differential where the real
+// one is present.
+void *decQuadZero(void *res) {
+    return res;
+}
