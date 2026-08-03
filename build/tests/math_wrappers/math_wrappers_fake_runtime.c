@@ -431,17 +431,6 @@ static void realPairToComplex34(const real_t *real, const real_t *imag, complex3
   realToReal34(imag, &destination->imag);
 }
 
-static void addComplexValues(const real_t *lhs_real,
-                             const real_t *lhs_imag,
-                             const real_t *rhs_real,
-                             const real_t *rhs_imag,
-                             real_t *sum_real,
-                             real_t *sum_imag,
-                             realContext_t *realContext) {
-  realAdd(lhs_real, rhs_real, sum_real, realContext);
-  realAdd(lhs_imag, rhs_imag, sum_imag, realContext);
-}
-
 static void subtractComplexValues(const real_t *lhs_real,
                                   const real_t *lhs_imag,
                                   const real_t *rhs_real,
@@ -3153,10 +3142,6 @@ bool_t realCompareAbsGreaterThan(const real_t *number1, const real_t *number2) {
   snapshot.real_compare_abs_greater_than_lhs_value = lhs_value;
   snapshot.real_compare_abs_greater_than_rhs_value = rhs_value;
   return (lhs_value < 0 ? -lhs_value : lhs_value) > (rhs_value < 0 ? -rhs_value : rhs_value);
-}
-
-static int32_t fakeAbsInt32(int32_t value) {
-  return value < 0 ? -value : value;
 }
 
 void convergenceTolerence(real_t *tol) {
