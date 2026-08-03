@@ -598,6 +598,101 @@ static const fixture_t FIXTURES[] = {
   { "realMinusOne",          seedRealMinusOne          },
 };
 
+// ---------------------------------------------------------------------------
+// THE PARTITION PROPERTY LIST.
+//
+// The table above is an equivalence-class partition of the register state, and
+// for most of this lane's life it was drawn over exactly one property: the data
+// type. That partition was exhaustive, because somebody enumerated the types. The
+// SIGN partition was empty, because nobody enumerated the properties -- and 265
+// owner sites branch on sign.
+//
+// So the list itself is the artefact worth having, and this is it. Every property
+// the fixtures are meant to discriminate, every class of that property, and the
+// fixture standing for it. check-fixture-partition.py fails when a class has no
+// fixture and when a fixture belongs to no class, so neither a new shape nor a new
+// property can arrive unclassified.
+//
+// A property whose classes cannot all be reached belongs here anyway, with the
+// unreachable class named. An absent row is indistinguishable from a decision
+// nobody made, which is how the sign column stayed empty.
+// ---------------------------------------------------------------------------
+
+typedef struct {
+  const char *property;
+  const char *class_name;
+  const char *fixture;
+} partitionClass_t;
+
+static const partitionClass_t PARTITION_PROPERTIES[] = {
+  // The data type of register X. c43 dispatches on this in every wrapper.
+  { "dataType", "real34",          "realPositive"          },
+  { "dataType", "complex34",       "complex"               },
+  { "dataType", "longInteger",     "longInteger"           },
+  { "dataType", "shortInteger",    "shortInteger"          },
+  { "dataType", "string",          "string"                },
+  { "dataType", "real34Matrix",    "matrix2x3"             },
+  { "dataType", "complex34Matrix", "complexMatrix"         },
+  { "dataType", "time",            "time"                  },
+
+  // The sign of X. Signed zeros are their own classes: decQuad distinguishes them
+  // and so does the calculator.
+  { "sign", "negative",  "realNegative"  },
+  { "sign", "minusZero", "realMinusZero" },
+  { "sign", "plusZero",  "realPlusZero"  },
+  { "sign", "positive",  "realPositive"  },
+
+  // Sign again, per integer class -- a signed integer register is a different
+  // representation from a signed decimal one, and the owners convert between them.
+  { "integerSign", "shortIntegerNegative", "shortIntegerNegative" },
+  { "integerSign", "shortIntegerPositive", "shortInteger"         },
+  { "integerSign", "longIntegerNegative",  "longIntegerNegative"  },
+  { "integerSign", "longIntegerPositive",  "longInteger"          },
+
+  // Magnitude class. The three specials are what realIsNaN / realIsInfinite /
+  // realIsZero test, and `one` is the boundary arcsin, arccos, arctanh and
+  // arccosh all compare against.
+  { "magnitude", "zero",         "realPlusZero"         },
+  { "magnitude", "one",          "realOne"              },
+  { "magnitude", "minusOne",     "realMinusOne"         },
+  { "magnitude", "finite",       "realPositive"         },
+  { "magnitude", "fraction",         "realFraction"         },
+  { "magnitude", "negativeFraction", "realNegativeFraction" },
+  { "magnitude", "infinite",     "realInfinity"         },
+  { "magnitude", "minusInfinite", "realNegativeInfinity" },
+  { "magnitude", "nan",          "realNaN"              },
+
+  // Integer parity, which fnCheckInteger dispatches on.
+  { "parity", "even", "realEven" },
+  { "parity", "odd",  "realOdd"  },
+
+  // The angular mode carried by the register, which the trigonometric wrappers
+  // convert from and to.
+  { "angularMode", "none",           "realPositive"          },
+  { "angularMode", "degree",         "realWithAngle"         },
+  { "angularMode", "degreeNegative", "realNegativeWithAngle" },
+
+  // Which component of a complex value is zero -- separate classes because the
+  // owners branch on each.
+  { "complexZero", "neither", "complex"         },
+  { "complexZero", "real",    "complexRealZero" },
+  { "complexZero", "imag",    "complexImagZero" },
+
+  // Matrix shape. The vector wrappers check 2d/3d explicitly and the square check
+  // has its own predicate.
+  { "matrixShape", "rectangular", "matrix2x3"    },
+  { "matrixShape", "square",      "matrixSquare" },
+  { "matrixShape", "vector2d",    "vector2d"     },
+  { "matrixShape", "vector3d",    "vector3d"     },
+
+  // FLAG_SPCRES gates the special-result branches, and the harness leaves it at
+  // its reset value of SET -- so the clear side needs a fixture that clears it, or
+  // every `!getSystemFlag(FLAG_SPCRES)` branch is unreachable. One mutant survived
+  // on exactly that before this fixture existed.
+  { "spcres", "set",   "realPositive"          },
+  { "spcres", "clear", "complexMatrixImagZero" },
+};
+
 typedef struct {
   const char *name;
   void      (*owner)(uint16_t);
@@ -822,6 +917,24 @@ int main(void) {
 
 
 
+
+  // The partition property list must describe the fixtures that exist. A row
+  // naming a fixture that was renamed or deleted is a claim about coverage that
+  // stopped being true, and it would read exactly like a claim that still is.
+  for(size_t r = 0; r < sizeof(PARTITION_PROPERTIES) / sizeof(PARTITION_PROPERTIES[0]); r++) {
+    bool_t found = false;
+    for(size_t f = 0; f < sizeof(FIXTURES) / sizeof(FIXTURES[0]); f++) {
+      if(strcmp(PARTITION_PROPERTIES[r].fixture, FIXTURES[f].name) == 0) {
+        found = true;
+        break;
+      }
+    }
+    if(!found) {
+      printf("math-wrappers full-core: partition property %s/%s names fixture %s, which does not exist\n",
+             PARTITION_PROPERTIES[r].property, PARTITION_PROPERTIES[r].class_name, PARTITION_PROPERTIES[r].fixture);
+      return 1;
+    }
+  }
 
   // The reference and the owner must be DIFFERENT code. A rename that did not
   // take still LINKS, and would make every case below compare a thing against
