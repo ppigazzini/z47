@@ -116,6 +116,12 @@
 #define fnToRect_CX oracle_fnToRect_CX
 #define fnToRect_HP oracle_fnToRect_HP
 #define realPolarToRectangular oracle_realPolarToRectangular
+// c43's fnToRect is static and takes an int8_t, so renaming it is not enough to
+// reach it: it needs a definition with external linkage in this translation unit.
+// oracleFnToRectEntry below is that, and it is deliberately NOT called
+// oracle_fnToRect -- the oracle_ prefix means "c43's own body", and this is an
+// adapter over one.
+#define fnToRect oracle_fnToRect_impl
 
 // --- squareRoot.c (5 functions) ---
 // Compiled for rootLonI, which cubeRoot.c calls and the Zig owner keeps internal.
@@ -172,3 +178,10 @@
 #include "../../../upstream/src/c47/mathematics/conjugate.c"
 #include "../../../upstream/src/c47/mathematics/swapRealImaginary.c"
 #include "../../../upstream/src/c47/mathematics/unitVector.c"
+
+// The one function in this file that is not c43's own body. c43's fnToRect is
+// static, so the harness cannot call it across a translation unit; this hands it
+// its int8_t through the same truncation the Zig owner performs on the way in.
+void oracleFnToRectEntry(uint16_t angleInY) {
+  oracle_fnToRect_impl((int8_t)angleInY);
+}
