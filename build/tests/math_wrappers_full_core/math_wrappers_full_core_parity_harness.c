@@ -75,6 +75,18 @@ void oracle_fnArctan(uint16_t unusedButMandatoryParameter);
 void oracle_fnArcsinh(uint16_t unusedButMandatoryParameter);
 void oracle_fnArccosh(uint16_t unusedButMandatoryParameter);
 void oracle_fnArctanh(uint16_t unusedButMandatoryParameter);
+void oracle_fnSin(uint16_t unusedButMandatoryParameter);
+void oracle_fnCos(uint16_t unusedButMandatoryParameter);
+void oracle_fnTan(uint16_t unusedButMandatoryParameter);
+void oracle_fnSinh(uint16_t unusedButMandatoryParameter);
+void oracle_fnCosh(uint16_t unusedButMandatoryParameter);
+void oracle_fnTanh(uint16_t unusedButMandatoryParameter);
+void oracle_fnLn(uint16_t unusedButMandatoryParameter);
+void oracle_fnLnP1(uint16_t unusedButMandatoryParameter);
+void oracle_fnLog10(uint16_t unusedButMandatoryParameter);
+void oracle_fnLog2(uint16_t unusedButMandatoryParameter);
+void oracle_fnExp(uint16_t unusedButMandatoryParameter);
+void oracle_fnExpM1(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDiv(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDivR(uint16_t unusedButMandatoryParameter);
 void oracle_fnXAlmostEqual(uint16_t regist);
@@ -587,6 +599,22 @@ static const predicate_t PREDICATES[] = {
   { "fnArcsinh",               fnArcsinh,           oracle_fnArcsinh,           0                  },
   { "fnArccosh",               fnArccosh,           oracle_fnArccosh,           0                  },
   { "fnArctanh",               fnArctanh,           oracle_fnArctanh,           0                  },
+
+  // The circular and hyperbolic families, same reason.
+  { "fnSin",                   fnSin,               oracle_fnSin,               0                  },
+  { "fnCos",                   fnCos,               oracle_fnCos,               0                  },
+  { "fnTan",                   fnTan,               oracle_fnTan,               0                  },
+  { "fnSinh",                  fnSinh,              oracle_fnSinh,              0                  },
+  { "fnCosh",                  fnCosh,              oracle_fnCosh,              0                  },
+  { "fnTanh",                  fnTanh,              oracle_fnTanh,              0                  },
+
+  // The logarithmic and exponential families, same reason.
+  { "fnLn",                    fnLn,                oracle_fnLn,                0                  },
+  { "fnLnP1",                  fnLnP1,              oracle_fnLnP1,              0                  },
+  { "fnLog10",                 fnLog10,             oracle_fnLog10,             0                  },
+  { "fnLog2",                  fnLog2,              oracle_fnLog2,              0                  },
+  { "fnExp",                   fnExp,               oracle_fnExp,               0                  },
+  { "fnExpM1",                 fnExpM1,             oracle_fnExpM1,             0                  },
 
   // Vector and complex families. These are the ones the unit lane could never
   // host: they dispatch into the matrix and complex leaves, which that lane's
