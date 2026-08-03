@@ -40,6 +40,15 @@
       "why": "Guards the complex-matrix branch, which no fixture in any lane reached until seedComplexMatrix existed. It needs BOTH halves of the condition arranged -- a zero imaginary part and SPCRES clear -- and this mutant survived until seedComplexMatrixImagZero cleared the flag, because the harness leaves it at its reset value of SET."
     },
     {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "arctan of a negative infinity loses its sign",
+      "file": "src/core/numeric/trig/inverse_trig_real_command.zig",
+      "find": "            copyReal(&x, runtime.z47_math_wrappers_const_90());\n            if (was_negative) {\n                runtime.realChangeSign(&x);\n            }",
+      "replace": "            copyReal(&x, runtime.z47_math_wrappers_const_90());",
+      "why": "Guards the SIGN partition of the fixture table. This exact mutant SURVIVED for as long as the lane existed, because every shape it drove was non-negative -- 265 owner sites branch on sign and none of them was reachable. It dies only because seedRealNegativeInfinity exists, so it is the thing that fails if that partition is ever dropped."
+    },
+    {
       "lane": "register_metadata",
       "step": "register_metadata_parity",
       "what": "the lettered reserved variables stop owning a null payload pointer",
