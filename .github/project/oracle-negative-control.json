@@ -49,6 +49,24 @@
       "why": "Guards the SIGN partition of the fixture table. This exact mutant SURVIVED for as long as the lane existed, because every shape it drove was non-negative -- 265 owner sites branch on sign and none of them was reachable. It dies only because seedRealNegativeInfinity exists, so it is the thing that fails if that partition is ever dropped."
     },
     {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "an out-of-domain arccos always answers complex, whatever CPXRES says",
+      "file": "src/core/numeric/trig/inverse_trig_real_command.zig",
+      "find": "        if (runtime.getFlag(@intCast(runtime.FLAG_CPXRES))) {\n            inverse_trig_complex_command_owned.arccosCplx();\n            return;\n        }",
+      "replace": "        if (true) {\n            inverse_trig_complex_command_owned.arccosCplx();\n            return;\n        }",
+      "why": "Guards the CPXRES partition. FLAG_CPXRES is read at 32 sites in src/core/numeric/ and decides whether an out-of-domain real answers with a complex result or a domain error. This exact mutant SURVIVED until seedRealOutOfDomainNoComplex existed, because every fixture left the flag set."
+    },
+    {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "toRect2 reads a long integer's sign tag as an angular mode",
+      "file": "src/core/numeric/transform/transform_polar_rect_command.zig",
+      "find": "    // mode. tryToRectReal34Pair below already does this; this one did not.\n    if (angle_type == runtime.dtLongInteger) {\n        angle_mode = runtime.currentAngularMode;\n    } else if (angle_mode == runtime.amNone) {\n        angle_mode = runtime.currentAngularMode;\n    }",
+      "replace": "    // mode. tryToRectReal34Pair below already does this; this one did not.\n    if (angle_type == runtime.dtReal34 and angle_mode == runtime.amNone) {\n        angle_mode = runtime.currentAngularMode;\n    }",
+      "why": "Restores the live defect this pass fixed. LI_NEGATIVE is 1 and LI_POSITIVE is 2, colliding with amGrad and amDegree, so a long-integer angle was converted from whatever mode its sign spelled. It hid because LI_POSITIVE equals amDegree by coincidence -- only a NEGATIVE long integer diverges, and the pair table had none in either operand. The anchor includes the comment above the block because the fix made this function textually identical to its sibling -- which is the point of the fix, and means the code alone cannot disambiguate them."
+    },
+    {
       "lane": "register_metadata",
       "step": "register_metadata_parity",
       "what": "the lettered reserved variables stop owning a null payload pointer",
