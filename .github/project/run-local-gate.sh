@@ -53,13 +53,13 @@ python3 .github/project/check-upstream-correspondence.py
 step "[4c/11] clamp correspondence (upstream guards inside owned functions)"
 # The symbol join above answers "which owner absorbs this .c" and is blind to
 # upstream adding a GUARD inside a function the Zig already has -- how the matrix
-# capacity clamp survived four resyncs (M-SAFE-1) and how the config-descriptor
-# version gate was missing until M-SAFE-8. Ratchets the load-path queue.
+# capacity clamp survived four resyncs and how the config-descriptor
+# Ratchets the load-path queue; the version gate itself was once missing.
 python3 .github/project/report-clamp-correspondence.py --check
 step "[4d/11] macro-family correspondence (one #define, one behaviour)"
 # Upstream generates function families from a single #define, so their ports must
 # agree with each other. Four of the six stringTo* parsers had drifted to a
-# different base and a different overflow answer (finding 10, M-SAFE-11), which
+# different base and a different overflow answer, which
 # neither the twin scan (all six live in one file) nor the parity oracles (decimal
 # only) could see. Gated at zero, not ratcheted: the queue really is empty.
 python3 .github/project/report-twin-divergence.py --self-test >/dev/null
@@ -67,7 +67,7 @@ python3 .github/project/report-twin-divergence.py --check
 step "[4e/11] strtoul width contract (every parse site has a decided verdict)"
 # `unsigned long` is 64-bit on the Linux/macOS hosts and 32-bit on the firmware and
 # on Windows, so upstream's own answer differs by target and the oracles only check
-# the host (finding 9, M-SAFE-10). This does not judge a verdict, it insists one
+# the host. This does not judge a verdict, it insists one
 # exists: a resync that adds a parse site fails until somebody decides its answer.
 python3 .github/project/check-strtoul-width-contract.py --self-test >/dev/null
 python3 .github/project/check-strtoul-width-contract.py
@@ -78,12 +78,12 @@ bash .github/project/check-idiom-ratchet.sh
 step "[6b/11] headless-engine severance (engine->shell)"
 python3 .github/project/check-core-shell-severance.py --repo-root .
 bash .github/project/test-check-core-shell-severance.sh
-step "[6c/11] core platform leak vs upstream (REPORT-28 §38 L8)"
+step "[6c/11] core platform leak vs upstream"
 bash .github/project/check-core-platform-purity.sh
-step "[6d/11] compilation carriers are module roots (REPORT-28 §39 L9)"
+step "[6d/11] compilation carriers are module roots"
 bash .github/project/check-module-carriers.sh
 python3 .github/project/check-dead-force-imports.py --repo-root .
-step "[6h/11] authored ABI surface (REPORT-28 M8 / G6)"
+step "[6h/11] authored ABI surface"
 python3 .github/project/check-authored-abi.py --repo-root .
 step "[6g0/11] imported tree matches its pinned SHA"
 # The pin was an unverified claim until this gate existed: the tree had drifted
@@ -100,11 +100,11 @@ step "[6g2/11] harness include paths resolve"
 # them at once.
 python3 .github/project/check-harness-includes.py --repo-root .
 step "[6g2b/11] oracle provenance (no hand-written references, extractors fresh)"
-# REPORT-31: five oracles were hand-written C reproducing c43's behaviour, so the
+# Five oracles were once hand-written C reproducing c43's behaviour, so the
 # lane whose purpose is catching a c43 change was the reason nobody saw it. All
 # five FILES now compile from c43 source and the frozen list is EMPTY.
 #
-# It also checks FUNCTIONS, which is where the remaining ones are (M31-15). A file
+# It also checks FUNCTIONS, which is where the remaining ones are. A file
 # that #includes c43 source can still carry a hand-written oracle_<c43 name> body
 # beside it, and such a file was never eligible for the frozen list -- which is how
 # 1960 lines survived the first close-out. Ratcheted per file; the endpoint is zero.
@@ -112,7 +112,7 @@ step "[6g2b/11] oracle provenance (no hand-written references, extractors fresh)
 python3 .github/project/check-oracle-provenance.py --self-test >/dev/null
 python3 .github/project/check-oracle-provenance.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"
-# REPORT-31 M31-9: the same defect one level down. A frozen oracle is caught by
+# The same defect one level down. A frozen oracle is caught by
 # 6g2b; a frozen CONSTANT inside a harness c47.h is not, and it fails the same way
 # -- c43 renumbers, the copy stays, the lane keeps agreeing with an unported owner.
 # Compiles one _Static_assert per hand-declared constant against c43's own headers,
@@ -125,16 +125,16 @@ step "[6g3/11] imported-tree paths not anchored to the repo root"
 # as `repo_root / "COPYING"`. Found the dead notice-staging path and a dead
 # charstring-oracle extractor, neither of which any local `zig build` step runs.
 python3 .github/project/check-imported-root-references.py --repo-root .
-step "[6g/11] module graph cycles (REPORT-28 M1.3)"
+step "[6g/11] module graph cycles"
 python3 .github/project/check-module-graph.py --repo-root .
-step "[6i/11] object graph cycles per target (REPORT-28 M1.2)"
+step "[6i/11] object graph cycles per target"
 # The build declares the object set it links; the gate consumes the declaration.
 # Scraping it instead would observe the truth in CI and NOTHING on a cached local
 # build, since --verbose-link only emits when a link actually runs.
 zig build object-manifest
 python3 .github/project/check-object-graph.py --repo-root .
 bash .github/project/test-check-object-graph.sh
-step "[6f/11] item seam vs owner drift (REPORT-28 M1.1)"
+step "[6f/11] item seam vs owner drift"
 python3 .github/project/check-item-seam-drift.py --repo-root .
 step "[6j/11] softmenu tables vs upstream softmenus.c"
 python3 .github/project/audit-softmenu-table-parity.py --repo-root .

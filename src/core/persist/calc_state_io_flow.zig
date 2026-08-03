@@ -93,7 +93,7 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         // (config.c updateShortIntegerMasks) before any later short-integer op,
         // then clamp every short-integer register to it so no out-of-range bits
         // survive the load. c43 calls the PAIR here; the clamp was missing until
-        // REPORT-31 M31-10's oracle conversion left its symbol undefined.
+        // The oracle conversion left its symbol undefined.
         runtime.updateShortIntegerMasks();
         clampShortIntegerRegistersToWordSize();
     }

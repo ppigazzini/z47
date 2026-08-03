@@ -42,7 +42,7 @@ fn addRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    // L1 shared ABI bindings (REPORT-23 §5).
+    // L1 shared ABI bindings.
     const abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = target,

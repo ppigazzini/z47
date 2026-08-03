@@ -1321,7 +1321,7 @@ static void oracle_conjCxma(void) {
 	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
 }
 
-// WHY THESE FOUR STILL HAVE A HAND-WRITTEN BODY, measured (REPORT-31 M31-16/17).
+// WHY THESE FOUR STILL HAVE A HAND-WRITTEN BODY, measured.
 //
 // fnAdd / fnSubtract / fnMultiply / fnDivide used to have one too, and it was pure
 // duplication: repointing their 91 driver call sites at the compiled
@@ -1339,8 +1339,8 @@ static void oracle_conjCxma(void) {
 //
 // So this lane compares CONTROL FLOW over a fake numeric core, and these mirrors
 // were written to match what that core can express. They cannot be removed by
-// compiling more c43 into the mock; the lane needs the full-core treatment M31-10
-// and M31-12 gave calc_state and register_metadata. Do not repeat either
+// compiling more c43 into the mock; the lane needs the full-core treatment
+// calc_state and register_metadata got. Do not repeat either
 // experiment -- both are recorded here so nobody has to.
 
 void oracle_fnConjugate(uint16_t unusedButMandatoryParameter) {

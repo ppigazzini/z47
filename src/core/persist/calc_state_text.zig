@@ -20,7 +20,7 @@ extern fn sprintf(str: [*c]u8, format: [*c]const u8, ...) c_int;
 
 // (int16_t)strtol(str, NULL, 10) etc. — base-10, truncating to the target width.
 //
-// WIDTH-CONTRACT for all four (M-SAFE-10): accepted. These parse the state file's
+// WIDTH-CONTRACT for all four: accepted. These parse the state file's
 // section bodies, so a hand-edited or crafted file can put a value in the
 // divergence window on any numeric line, and the host and the firmware then read
 // different numbers. The divergence is upstream's own -- these are 1:1 ports of

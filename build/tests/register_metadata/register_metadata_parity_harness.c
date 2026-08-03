@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // register-metadata parity: the Zig owner against c43's own registers.c, in one
-// binary (REPORT-31 M31-12).
+// binary.
 //
 // register_metadata_oracle.c compiles c43's registers.c a second time under
 // `oracle_` names beside the Zig owner that replaced it. Both implementations
@@ -66,11 +66,11 @@ extern void     oracle_clampShortIntegerRegistersToWordSize(void);
 extern void     oracle_fnDeleteVariable(uint16_t regist);
 
 // The ten registers.c functions the stack-state lane used to compare against a
-// hand-written body (REPORT-31 M31-20). Every one of them is already renamed by
+// hand-written body. Every one of them is already renamed by
 // register_metadata_oracle.c, so c43's real implementation is in THIS binary and
 // was simply not being called; the stack lane could not reach it because its own
 // world is a mock that registers.c cannot compile against (424 errors, the same
-// wall M31-12 measured). The cases move here, where the reference is real.
+// wall). The cases move here, where the reference is real.
 extern void     oracle_fnClearRegisters(uint16_t confirmation);
 extern void     oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
 extern void     oracle_fnRegClr(uint16_t unusedButMandatoryParameter);
@@ -250,7 +250,7 @@ static int diffCase(const char *caseName, void (*zigSide)(void), void (*c43Side)
 }
 
 // Same, minus the RAM-slab byte compare -- and the reason is specific, measured,
-// and must not be reused casually (REPORT-31 M31-20).
+// and must not be reused casually.
 //
 // c43's `sortReg` is a MERGE sort: it `allocC47Blocks` a scratch array per level
 // and frees it again. z47's `sortRegisterRange` is a swap-on-compare loop that
@@ -326,7 +326,7 @@ static const calcRegister_t sweepRegisters[] = {
   FIRST_NAMED_VARIABLE, FIRST_NAMED_VARIABLE + 1,
   FIRST_RESERVED_VARIABLE,                            // lettered reserved (aliases X)
   FIRST_RESERVED_VARIABLE + 25,                       // last lettered reserved
-  FIRST_RESERVED_VARIABLE + 26,                       // SPARE1 -- the M31-11 boundary
+  FIRST_RESERVED_VARIABLE + 26,                       // SPARE1 -- the named-block boundary
   FIRST_RESERVED_VARIABLE + 30,                       // SPARE5
   FIRST_NAMED_RESERVED_VARIABLE,                      // ACC
   LAST_RESERVED_VARIABLE,
@@ -451,10 +451,10 @@ static const struct {
   // reallocateRegister(LAST_LOCAL_REGISTER + 1, ...) is undefined behaviour in the
   // reference -- it writes past currentLocalRegisters and then segfaults. z47's
   // isValidRegisterId guard raises ERROR_UNDEF_SOURCE_VAR instead. That is a
-  // DELIBERATE divergence from REPORT-30's memory-safety programme, not a parity
+  // DELIBERATE divergence for memory safety, not a parity
   // defect, and a differential must not ask its reference to do something
   // undefined: the answer would be whatever that build's stack happened to hold.
-  // Recorded as REPORT-30 finding 26, CLOSED -- the guard is the right divergence.
+  // The guard is the right divergence.
 };
 
 static const struct {
@@ -597,7 +597,7 @@ static int runFunctionPredicateDifferential(void) {
 //
 // They were compared against 259 lines of hand-written body in
 // stack_state_oracle.c; one of them, `clearRegister`, is a function whose Zig twin
-// M31-12 had to fix, and the hand-written copy agreed with the broken one by
+// had to be fixed, and the hand-written copy agreed with the broken one by
 // construction and could not say so. Here the reference is c43's own registers.c,
 // compiled into this binary.
 //

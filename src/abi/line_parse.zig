@@ -3,8 +3,8 @@
 //!
 //! It lives under `abi/` rather than beside either owner on purpose. These
 //! helpers previously existed twice, once per family, and the two copies drifted:
-//! the M1 fuzz made the program-side parser saturating and the state-side twin
-//! kept wrapping for three weeks, which is the version forgery M-SAFE-4 fixed.
+//! a fuzz lane made the program-side parser saturating and the state-side twin
+//! kept wrapping for three weeks, which is the version forgery this fixes.
 //! A shared module cannot drift from itself, which is a stronger guarantee than
 //! any scan that reports drift after the fact.
 //!
@@ -28,7 +28,7 @@ const std = @import("std");
 ///
 /// COST, measured rather than assumed: the `sliceTo` + `eql` pair is 192 bytes of
 /// DMCP flash more than an equivalent hand-rolled index walk, and the whole rest
-/// of M-SAFE-4 -- the slice signatures and the saturating parse that fixes the
+/// -- the slice signatures and the saturating parse that fix the
 /// version forgery -- is free. So this 192 bytes buys nothing but the clarity of
 /// the std spelling, and it is kept anyway: the hand-rolled version written to
 /// take the measurement got the unterminated-buffer case wrong on the first
@@ -50,7 +50,7 @@ pub fn equals(line: []const u8, expected: []const u8) bool {
 /// version: the digits 4304967321 wrap to exactly 10000025. Saturating keeps an
 /// absurd version absurd, so the range check rejects it. The sibling parser in
 /// program_serialization_runtime.zig was fixed this way by the M1 malformed-input
-/// fuzz; this twin was missed and kept wrapping until M-SAFE-4.
+/// fuzz; this twin was missed and kept wrapping for longer.
 ///
 /// ON PARITY, because there is no single upstream behaviour to match here.
 /// Upstream's `toUint32` is `strtoul(str, NULL, 10)` assigned into a `uint32_t`,

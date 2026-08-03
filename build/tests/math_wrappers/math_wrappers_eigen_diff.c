@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// REPORT-23 test-oracle-upgrade: a worker-level golden harness for the eigen
+// A worker-level golden harness for the eigen
 // engine in src/mathematics/math_matrix_eigen_owned.zig. testSuite
 // matrix.txt only exercises the composed fnEigenvalues through registers; this
 // pins the individual numeric workers against math-truth reference values so a
@@ -98,7 +98,7 @@ static void runEigenvalues22(void) {
   real_t mat[8];
   real_t t1r, t1i, t2r, t2i;
 
-  // PROVENANCE of every expected value in this file (REPORT-31 M31-22): each is
+  // PROVENANCE of every expected value in this file: each is
   // DERIVED, not read off c43. That makes this a *specified* oracle in Barr et
   // al.'s taxonomy -- the strongest kind, and legitimately not a c43 differential,
   // which is why it does not appear in the provenance gate's ratchets. Each case

@@ -5,7 +5,7 @@ WHY THIS EXISTS. `strtoul` returns `unsigned long`, which is 64-bit on the Linux
 and macOS hosts and 32-bit on the arm-none-eabi firmware AND on Windows (LLP64).
 So upstream's own behaviour differs between the targets z47 ships and tests on,
 "parity" is undefined at those sites, and the parity oracles only ever exercise the
-host. That is finding 9, and it was open for the whole of REPORT-30 because nobody
+host. That divergence stayed open for a long time because nobody
 had written down which target's answer is authoritative at which site.
 
 THE DIVERGENCE, measured rather than reasoned (see the report's appendix):
@@ -188,7 +188,7 @@ def main() -> int:
             f"WIDTH CONTRACT: {len(undecided)} strto* call site(s) carry no verdict.\n"
             "  Every site must state which target's answer is authoritative, as a\n"
             "  `// WIDTH-CONTRACT: <no-width-question|unreachable|accepted|bounded>` line\n"
-            "  above it. See REPORT-30 finding 9 for the measured divergence windows.",
+            "  above it.",
             file=sys.stderr,
         )
         for s in undecided:

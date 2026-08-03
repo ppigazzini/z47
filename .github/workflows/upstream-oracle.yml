@@ -393,18 +393,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # REPORT-31. A hand-transliterated oracle cannot detect c43 moving: it IS
+          # A hand-transliterated oracle cannot detect c43 moving: it IS
           # the reference and it stays put, so the lane goes green on a divergence.
           # All five FILES are converted and the frozen list is empty; this keeps it
           # that way, ratchets the hand-written reference BODIES that survive inside
-          # compiled oracles (M31-15), and re-runs the generated oracle's extractor.
+          # compiled oracles, and re-runs the generated oracle's extractor.
           python3 .github/project/check-oracle-provenance.py --self-test
           python3 .github/project/check-oracle-provenance.py --repo-root .
       - name: Enforce harness headers do not hand-copy c43 constants
         shell: bash
         run: |
           set -euo pipefail
-          # REPORT-31 M31-9, the same defect one level down. A frozen oracle is
+          # The same defect one level down. A frozen oracle is
           # caught by the step above; a frozen CONSTANT inside a harness c47.h is
           # not, and it fails identically -- c43 renumbers, the copy stays put, and
           # the lane goes on agreeing with an unported owner. Compiled, not
@@ -613,7 +613,7 @@ jobs:
           # names: there is none in this tree (see docs/75-debugging.md). The
           # detectors are UBSan over the retained C and Zig's own safety checks.
           zig build pgm_load_fuzz      # M1: .p47 programs
-          zig build state_load_fuzz    # M-SAFE-7: .sav / .d47 state files
+          zig build state_load_fuzz    # .sav / .d47 state files
       - name: Enforce the owner-coverage floor (Annex A0)
         shell: bash
         run: |
@@ -624,7 +624,7 @@ jobs:
           # monotonic coverage ratchet -- including the src owner-coverage
           # collapse floor, which only measures when this coverage build is
           # present. Makes a push that de-instruments an owner object fail CI
-          # (M-IDIOM-9 coverage gate).
+          # (coverage gate).
           zig build coverage
           bash .github/project/check-coverage-ratchet.sh
       - name: Run Linux distribution surface

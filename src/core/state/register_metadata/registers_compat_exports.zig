@@ -62,7 +62,7 @@ const C47_NULL: u16 = 65535; // defines.h: the null register-data pointer
 
 /// Port of registers.c `clampShortIntegerRegistersToWordSize`.
 ///
-/// FOUND MISSING by REPORT-31 M31-10: compiling c43's saveRestoreCalcState.c as
+/// FOUND MISSING by the differential: compiling c43's saveRestoreCalcState.c as
 /// the calc-state oracle left this symbol undefined, because the registers.c port
 /// never carried it and z47's `doLoad` / `doLoadDataFile` called only its
 /// companion `updateShortIntegerMasks()`. c43 calls the pair. Without the clamp,
@@ -256,7 +256,7 @@ pub export const varDescr: [reserved_variable_count]reserved_variable_desc_t = .
 // 0-25 are the LETTERED reserved variables. Their pointerToRegisterData is
 // C47_NULL, not 0: registers.c reads it as "this entry owns no payload", and
 // reservedAllowsDataTypeWrite refuses a data-type write on exactly that test. z47
-// wrote 0 here until REPORT-31 M31-12's differential against c43's own table --
+// wrote 0 here until the differential against c43's own table --
 // which made every lettered reserved variable look writable, and made block 0 of
 // the RAM slab look like its payload.
 pub const allReservedVariables: [reserved_variable_count]reserved_variable_header_t = .{
@@ -290,7 +290,7 @@ pub const allReservedVariables: [reserved_variable_count]reserved_variable_heade
     // placeholders so the named block below never moves. `notUsed = 1` and an
     // empty name are what make them unreachable by name lookup and unwritable.
     // z47 carried live ADM / D.MAX / ISM / REALDF / #DEC entries here until
-    // REPORT-31 M31-11; those five names left the reserved-variable block for the
+    // Those five names left the reserved-variable block for the
     // config block upstream, so keeping them made "ADM" resolve to a reserved
     // register in z47 and to nothing in c43.
     makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),

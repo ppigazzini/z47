@@ -10,7 +10,7 @@
 // temporaryInformation at load entry, it lacked the RAM-full bound and the whole
 // pre-load screening pass that refuses an overlong label or a non-item opcode,
 // and it restored the saved program number on a save-error path where c43 does
-// not. The lane reported all of that as parity (REPORT-31 M31-3).
+// not. The lane reported all of that as parity.
 //
 // Nothing here may be edited to make the lane pass.
 

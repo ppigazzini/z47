@@ -30,8 +30,7 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
     // No early return for 2026-2030 here: c43's copySourceRegisterToDestRegister
     // has none. Those five slots were z47's stale ADM/DENMAX/ISM/REALDF/NDEC and
     // are c43's RESERVED_VARIABLE_SPARE placeholders, which normalizeLettered-
-    // Reserved now maps onto the global block exactly as c43 does (REPORT-31
-    // M31-11).
+    // Reserved now maps onto the global block exactly as c43 does.
     const normalized_source = normalizeLetteredReservedRegister(source_register);
     const normalized_dest = normalizeLetteredReservedRegister(dest_register);
     const source_type = descriptor_owned.getRegisterDataType(normalized_source);

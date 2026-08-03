@@ -114,7 +114,7 @@ fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
 /// `TO_BLOCKS(rows * columns * <element>_SIZE_IN_BYTES)` -- it does NOT go through
 /// `getRegisterMaxDataLengthInBlocks`.
 ///
-/// The distinction is not cosmetic (REPORT-31 M31-12). Upstream's
+/// The distinction is not cosmetic. Upstream's
 /// `getRegisterMaxDataLengthInBlocks` decrements `regist` into an index for the
 /// NAMED-VARIABLE lookup and then re-reads the data type with that decremented
 /// value -- so for a named variable it asks a GLOBAL register what type it is, and

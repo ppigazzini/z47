@@ -2,7 +2,7 @@
 //
 // The calculator, as far as c43's saveRestorePrograms.c is concerned.
 //
-// Same shape as the flags lane (REPORT-31 M31-2), for the same reasons: this
+// Same shape as the flags lane, for the same reasons: this
 // claims upstream's `C47_H` guard because saveRestorePrograms.c sits next to the
 // real c47.h and its quoted `#include "c47.h"` would find that one first; and it
 // includes c43's own pure headers rather than copying constants, so a c43 value
@@ -13,7 +13,7 @@
 // load entry, and it restored the saved program number on an error path where
 // c43 does not.
 //
-// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (REPORT-31 M31-9, decided
+// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (decided
 // 2026-08-03). Later conversions skip the mock header entirely and compile
 // against upstream's OWN `src/c47/c47.h` with the six placeholder typedefs from
 // `build/tests/common/c43_harness_prelude.h` -- cheaper, and strictly more

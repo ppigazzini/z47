@@ -8,7 +8,7 @@
 // fifths of flags.c -- its own flagAction_t, its own copies of
 // refreshStateFlags / clearStatusBarFlags / clearSetPairs / flipFlags. It could
 // not detect c43 moving, because it WAS the reference and it stayed put; and it
-// had already drifted (REPORT-31 M31-2 found FLAG_IMPLOT missing from two of
+// had already drifted (FLAG_IMPLOT was missing from two of
 // those four tables, which the lane reported as parity).
 //
 // Nothing here may be edited to make the lane pass. If the oracle and the Zig

@@ -6,7 +6,7 @@
 # from src/c47/charString.c, renamed with an `oracle_` prefix (definitions AND
 # cross-calls), so the differential harness can compile the upstream C and the
 # Zig port into one binary and byte-compare them over enumerated inputs. Keeping
-# the oracle sourced from the real pinned file (not a hand copy) means an M10 pin
+# the oracle sourced from the real pinned file (not a hand copy) means a pin
 # bump that changes any of these functions changes the oracle too -- exactly the
 # divergence the differential then catches against the (re-ported) Zig owner.
 #
@@ -14,7 +14,7 @@
 # glyph cluster is self-contained.
 #
 # Run from anywhere; rewrites charstring_diff_oracle.c next to this script. The
-# harness fails if the committed oracle is stale, so CI / the M10 cycle re-runs
+# harness fails if the committed oracle is stale, so CI re-runs
 # this and commits the result.
 set -euo pipefail
 

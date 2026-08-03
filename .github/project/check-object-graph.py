@@ -228,7 +228,7 @@ def main():
     if args.bump:
         doc = {
             "note": (
-                "REPORT-28 M1.2. The graph the LINKER builds, per target, from the "
+                "The graph the LINKER builds, per target, from the "
                 "object set the build DECLARES (zig build object-manifest). Distinct "
                 "from the @import graph in check-module-graph.py: moving a file "
                 "between directories changes that one and cannot change this one. "

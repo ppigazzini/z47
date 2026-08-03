@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# File-cohesion gate (REPORT-28 §33 NM11-0). The complement of the drawer ban:
+# File-cohesion gate. The complement of the drawer ban:
 # this fails the build on OVER-FRAGMENTATION -- micro-files that hold a single
 # fn/var where a cohesive owner belonged. Granularity is cohesion in BOTH
 # directions: don't pile unrelated things into a drawer (NM10-0), and don't split
@@ -40,7 +40,7 @@ done < <(git ls-files 'src/*.zig')
 baseline=$(grep -oE '"micro_files"[[:space:]]*:[[:space:]]*[0-9]+' "$baseline_file" | grep -oE '[0-9]+')
 
 if [ "${1:-}" = "--bump" ]; then
-    printf '{\n  "micro_files": %d,\n  "note": "REPORT-28 NM11: count of <15-line src files; monotonic downward -- barnacles only shrink."\n}\n' "$micro" > "$baseline_file"
+    printf '{\n  "micro_files": %d,\n  "note": "Count of <15-line src files; monotonic downward -- barnacles only shrink."\n}\n' "$micro" > "$baseline_file"
     echo "check-file-cohesion: re-pinned micro_files baseline to $micro"
     exit 0
 fi

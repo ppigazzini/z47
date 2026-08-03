@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# M1 (REPORT-27 ANNEX B): generate a malformed .p47 corpus that stresses the
+# Generate a malformed .p47 corpus that stresses the
 # program-load parser's header/length/offset math -- the OOB class upstream fixes
 # on the state/program-load path (577 statefile overflow, decode-literal-base-oob).
 # The corpus is run through the REAL load path (fnLoadProgram) under AddressSanitizer

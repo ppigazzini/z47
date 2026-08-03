@@ -12,7 +12,7 @@
 // Byte-compared against `save_load_golden.sav` by `zig build saveload_roundtrip`.
 // That golden WAS the C doSave bytes when this port landed; it has been regenerated
 // from this Zig writer several times since, so today it is a snapshot of z47's own
-// output -- a change detector, not a parity reference (REPORT-31 M31-1). What still
+// output -- a change detector, not a parity reference. What still
 // holds z47 to c43 here is the round-trip check and the testSuite, not the golden.
 
 const std = @import("std");
@@ -530,7 +530,7 @@ fn saveField(comptime name: []const u8, comptime value_format: []const u8, args:
 // "d.dddddddddddddddde+dd" writer, deliberately not `%.16e`, because a locale
 // that renders the radix point as a comma would make the state file unreadable.
 //
-// z47 wrote "%f" here -- six decimals, no exponent -- until REPORT-31 M31-10's
+// z47 wrote "%f" here -- six decimals, no exponent -- until the
 // c43 differential compared the two files byte for byte. That is a `.sav` FORMAT
 // divergence in both directions: z47's file lost every digit past the sixth
 // decimal of a plot delta, and a file written by a real C47 came back through a

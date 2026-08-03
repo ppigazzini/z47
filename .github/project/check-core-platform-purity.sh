@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Core platform-leak gate (REPORT-28 §38, law L8). Supersedes the §36 version,
+# Core platform-leak gate. Supersedes an earlier version,
 # which was WRONG in a way worth recording so it is not re-introduced.
 #
 # THE §36 ERROR: it treated every platform symbol core names as a violation and
@@ -41,7 +41,7 @@ count=${#offenders[@]}
 baseline=$(grep -oE '"platform_leak_files"[[:space:]]*:[[:space:]]*[0-9]+' "$baseline_file" | grep -oE '[0-9]+')
 
 if [ "${1:-}" = "--bump" ]; then
-    printf '{\n  "platform_leak_files": %d,\n  "note": "REPORT-28 §38 L8: core files reaching platform WITHOUT a hal contract (raw DMCP ROM/timers/keys). FROZEN at upstream parity -- upstream leaks these into its own library too, so z47 copies are faithful ports (L6). This is a NON-REGRESSION guard: it answers only \\"did z47 add a platform reach upstream does not have?\\". Calling the hal (ioFile*, readLine, lcd_*) is CORRECT and is not counted."\n}\n' "$count" > "$baseline_file"
+    printf '{\n  "platform_leak_files": %d,\n  "note": "Core files reaching platform WITHOUT a hal contract (raw DMCP ROM/timers/keys). FROZEN at upstream parity -- upstream leaks these into its own library too, so z47 copies are faithful ports (L6). This is a NON-REGRESSION guard: it answers only \\"did z47 add a platform reach upstream does not have?\\". Calling the hal (ioFile*, readLine, lcd_*) is CORRECT and is not counted."\n}\n' "$count" > "$baseline_file"
     echo "check-core-platform-purity: re-pinned platform_leak_files baseline to $count"
     exit 0
 fi

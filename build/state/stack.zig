@@ -20,7 +20,7 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
-    // REPORT-27 M-IDIOM-9: build this object with SanitizerCoverage
+    // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the stack-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
     // for the dedicated coverage harness variant, never a product/test object,
@@ -50,7 +50,7 @@ fn addRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    // L1 shared ABI bindings (REPORT-23 §5), imported as `@import("abi")`.
+    // L1 shared ABI bindings, imported as `@import("abi")`.
     const abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = target,

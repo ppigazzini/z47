@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Constant-offset oracle (REPORT-23 P3 / MILESTONES-4 M22).
+"""Constant-offset oracle.
 
 The abi/constants.zig typed accessors reach the generated `constants` blob at a
 hand-maintained byte offset (`at(4856)` -> const_1). A wrong offset reads mid-

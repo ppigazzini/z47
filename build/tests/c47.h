@@ -27,7 +27,7 @@ enum {
 #define ERR_REGISTER_LINE REGISTER_Z
 
 // The EXTRA_INFO_ON_CALC_ERROR branches upstream's own value now compiles need
-// these; declarations and a stub, not copied constants (REPORT-31 M31-23).
+// these; declarations and a stub, not copied constants.
 extern char *errorMessage;
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 const char *getRegisterDataTypeName(uint32_t dataType, bool_t padWithBlanks, bool_t article);
@@ -35,7 +35,7 @@ const char *getRegisterDataTypeName(uint32_t dataType, bool_t padWithBlanks, boo
 // Upstream's own value for a PC build (defines.h:555). It used to be 0 here,
 // which configured c43's diagnostic branches OUT of the compiled oracle -- so an
 // upstream edit inside one of them was silence rather than a build failure. Same
-// argument M31-2 took for the flags lane (REPORT-31 M31-23).
+// argument the flags lane takes.
 #define EXTRA_INFO_ON_CALC_ERROR 1
 
 extern uint8_t shortIntegerWordSize;

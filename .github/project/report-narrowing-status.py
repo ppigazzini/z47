@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rank the integer-narrowing sites on the untrusted-file load path (M-SAFE-3).
+"""Rank the integer-narrowing sites on the untrusted-file load path.
 
 WHY THIS EXISTS. `@intCast` and `@truncate` are not interchangeable, and the
 difference is a PARITY question before it is a safety one:

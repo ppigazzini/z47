@@ -162,7 +162,7 @@ def main():
     path = os.path.join(root, BASELINE)
     if args.bump:
         m["note"] = (
-            "REPORT-28 M1.3. Cycles in the @import graph, frozen by (size, zone) so a "
+            "Cycles in the @import graph, frozen by (size, zone) so a "
             "new cycle cannot hide behind a disappearing one. abi_cycles must reach 0 "
             "(the contract layer is the bottom). ccd/acd/nccd are REPORTED, not gated: "
             "Lakos's NCCD threshold assumes cycles cost compile time, and in z47 they "

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // keyboard parity: the Zig owner against c43's own keyboard.c, in one binary
-// (REPORT-31 M31-13).
+//.
 //
 // keyboard_state_oracle.c compiles c43's keyboard.c a second time under `oracle_`
 // names beside the Zig owner that replaced it. Both implementations then drive
@@ -388,7 +388,7 @@ static const struct {
   // character in the buffer -- and forcing it makes z47's closeNim() evaluate
   // strlen("") - 1 and trap on the unsigned underflow while c43 wraps to -1. The
   // divergence is the harness's, not the port's: a differential must seed states
-  // the reference can actually be in. Written up as REPORT-30 finding 25, where
+  // the reference can actually be in. It is a memory-safety finding, where
   // the open question is whether closeNim can be reached with an empty buffer at
   // all.
   {CM_AIM,              "ABC"},
@@ -400,7 +400,7 @@ static const struct {
   // the buffer out of bounds and carries on. The reference is undefined there, so
   // a differential cannot say which is right -- z47's answer is the safer one and
   // the comparison would be pinning c43's accident. It is a memory-safety
-  // question (REPORT-30's subject), not a parity one, and it wants triaging
+  // question, not a parity one, and it wants triaging
   // there: whether T_cursorPos can really be negative on a user's first DOWN in
   // an empty alpha buffer is the question, and this harness is not the place to
   // answer it.
@@ -441,8 +441,8 @@ static int runKeyHandlerDifferential(void) {
 // on either side.
 //
 // It is a row/column encoder with five ranges, and a hand-picked case set is
-// exactly how a membership table goes stale unnoticed (FLAG_IMPLOT, REPORT-31
-// M31-2). Sweeping the encoding space costs nothing here.
+// exactly how a membership table goes stale unnoticed, as FLAG_IMPLOT did.
+// Sweeping the encoding space costs nothing here.
 // ---------------------------------------------------------------------------
 static int runSetLastKeyCodeDifferential(void) {
   int before = failures;
@@ -518,7 +518,7 @@ static int runProcessKeyActionDifferential(void) {
 }
 
 // ---------------------------------------------------------------------------
-// Check 4 -- the keyboard LAYOUT tables, entry by entry (REPORT-31 M31-24).
+// Check 4 -- the keyboard LAYOUT tables, entry by entry.
 //
 // keyboard_entry_harness.c guards kbd_std_C47 with a frozen FNV-1a checksum, whose
 // own comment says it exists because "the keyboard Zig owners have no compiled C

@@ -1,15 +1,15 @@
-//! Extent arithmetic for the free-pool poison detector (REPORT-30 finding 5).
+//! Extent arithmetic for the free-pool poison detector.
 //!
 //! WHY THIS EXISTS. Registers, variables, programs, formulae, menus and the GMP
 //! heap all live in `ram`, one ~256 KiB allocation carved into 4-byte blocks. To
 //! AddressSanitizer that is a SINGLE allocation, so a block overrunning its
 //! neighbour is a write inside a live region and ASan says nothing -- and Zig's
 //! own checks miss it too, because blocks are reached by `[*c]` arithmetic off
-//! `ram`. Three of the defects REPORT-30 closed (findings 1, 16, 18) were exactly
+//! `ram`. Three closed memory-safety defects were exactly
 //! that shape, and one of them was caught only because it happened to run past the
 //! end of the pool entirely and hit unmapped memory.
 //!
-//! M-SAFE-6 proposed poisoning the pool with `__asan_poison_memory_region` and was
+//! Poisoning the pool with `__asan_poison_memory_region` was proposed and
 //! WITHDRAWN: Zig ships no AddressSanitizer runtime, so there is nothing to poison
 //! with. That verdict is still correct about ASan and was wrong to treat as the end
 //! of the matter -- a poison pattern needs no runtime at all.

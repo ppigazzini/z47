@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// PROVENANCE (REPORT-31 M31-22): the golden values below are DERIVED from each
+// PROVENANCE: the golden values below are DERIVED from each
 // distribution's closed form at high precision -- they are not read off c43 and
 // not regenerated from z47's own output. That makes this a *specified* oracle in
 // Barr et al.'s taxonomy, the strongest kind, and it is why this lane carries no

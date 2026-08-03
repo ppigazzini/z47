@@ -6,7 +6,7 @@ answers "which owner absorbs this .c". It is blind to the thing that actually bi
 us: upstream adding a guard INSIDE a function the Zig already has. Nothing in the
 tree compares the two bodies, which is how upstream's matrix-dimension capacity
 clamp -- a commented security fix, sitting in `saveRestoreCalcState.c` in plain
-sight -- survived four resyncs before M-SAFE-1 ported it.
+sight -- survived four resyncs before it was ported.
 
 WHAT A "GUARD" IS HERE. An `if` in the upstream C whose body REJECTS rather than
 computes: it zeroes the operands, returns, breaks, or raises a calculator error.
@@ -39,7 +39,7 @@ the fixed tree as broken at all three clamp sites. Depth is bounded and each nam
 expands once, because the call graph is cyclic and a deeper walk dilutes the
 evidence until everything looks covered.
 
-CALIBRATION. `--calibrate` reproduces the M-SAFE-1 miss: run against a worktree of
+CALIBRATION. `--calibrate` reproduces the matrix-clamp miss: run against a worktree of
 `75dbb6034^` and the matrix clamp must appear. Note that the milestone spec named
 `811c9905d` as the calibration tree; at that pin `restoreRegister` had not been
 ported to Zig at all, so there was no owner for the guard to be missing FROM. The
@@ -53,7 +53,7 @@ port that branches on nothing, and the state-file version range lives in
 before gating would leave the next resync unprotected for the sake of a number,
 and resync protection is the entire reason this exists. So `--check` fixes the
 count where it stands and fails if it RISES -- the same shape as the absence
-ratchet in check-upstream-correspondence.py. The REPORT-24 M2 objection is to
+ratchet in check-upstream-correspondence.py. The objection is to
 judging before calibrating; this is calibrated in both directions, against a tree
 with the bug and a tree without it.
 
@@ -365,7 +365,7 @@ def zig_bound_index(root: pathlib.Path) -> dict[str, list[str]]:
     `calc_state_header.zig`, not in `restoreOneSection` -- and such a finding is a
     false positive that costs a search to dismiss. Annotating is the right response
     rather than widening the match: widening to the whole tree would ALSO swallow
-    the M-SAFE-1 miss, because `maxInt(u16)` is compared against all over the tree.
+    the matrix-clamp miss, because `maxInt(u16)` is compared against all over the tree.
     So the queue still reports it, and just says where else to look.
     """
     index: dict[str, list[str]] = {}
@@ -532,7 +532,7 @@ def main() -> int:
     ap.add_argument(
         "--calibrate",
         action="store_true",
-        help="require the M-SAFE-1 matrix clamp in the queue, and exit nonzero if absent",
+        help="require the matrix-dimension clamp in the queue, and exit nonzero if absent",
     )
     ap.add_argument("--self-test", action="store_true", help="check the extractor and exit")
     ap.add_argument(
@@ -615,12 +615,12 @@ def main() -> int:
         ]
         if not hit:
             print(
-                "CALIBRATION FAIL: the M-SAFE-1 matrix clamp was not rediscovered. "
+                "CALIBRATION FAIL: the matrix-dimension clamp was not rediscovered. "
                 "A scan that cannot find the bug we already know about will not find the next one.",
                 file=sys.stderr,
             )
             return 1
-        print(f"CALIBRATION OK: rediscovered the M-SAFE-1 miss ({len(hit)} guard(s)).")
+        print(f"CALIBRATION OK: rediscovered the matrix-clamp miss ({len(hit)} guard(s)).")
     return 0
 
 

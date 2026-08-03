@@ -27,14 +27,14 @@ enum {
 #define ERROR_INVALID_DATA_TYPE_FOR_OP 24
 #define ERR_REGISTER_LINE REGISTER_Z
 
-// See build/tests/c47.h -- same reason (REPORT-31 M31-23).
+// See build/tests/c47.h -- same reason.
 extern char *errorMessage;
 void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4);
 const char *getRegisterDataTypeName(uint32_t dataType, bool_t padWithBlanks, bool_t article);
 // Upstream's own value for a PC build (defines.h:555). It used to be 0 here,
 // which configured c43's diagnostic branches OUT of the compiled oracle -- so an
 // upstream edit inside one of them was silence rather than a build failure. Same
-// argument M31-2 took for the flags lane (REPORT-31 M31-23).
+// argument the flags lane takes.
 #define EXTRA_INFO_ON_CALC_ERROR 1
 
 #define FLAG_CARRY 0x800b

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Every parity oracle in the tree is compiled from c43 source. Keep it that way.
 
-WHY THIS EXISTS (REPORT-31 M31-0, renamed at M31-14). z47's correctness claim is
-function parity with c43, so the only question that matters about a parity
-reference is: *when c43 changes, does this reference change with it?* Five oracles
-answered no. They were hand-transliterated C reimplementing c43's behaviour, which
-means the lane whose whole purpose is catching a c43 change was the reason nobody
-saw it -- the lane stayed green and manufactured positive evidence that parity
-held. All five are converted (M31-2, M31-3, M31-10, M31-12, M31-13) and the
-`frozen` list is EMPTY, which is the endpoint the report set.
+WHY THIS EXISTS. z47's correctness claim is function parity with c43, so the
+only question that matters about a parity reference is: *when c43 changes, does
+this reference change with it?* Five oracles answered no. They were
+hand-transliterated C reimplementing c43's behaviour, which means the lane whose
+whole purpose is catching a c43 change was the reason nobody saw it -- the lane
+stayed green and manufactured positive evidence that parity held. All five are
+converted and the `frozen` list is EMPTY, which is the endpoint: this list is
+meant to stay empty, not to be maintained.
 
 WHAT THIS GATE DOES NOW. Two things, and the second is the live one:
 
@@ -29,7 +29,7 @@ A COMPILED-FROM-c43 oracle -- the shape every parity lane now uses -- needs no
 entry in either list, because there is nothing to hash: the reference IS the
 imported source, and `check-imported-tree-pin.py` already holds that to the pin.
 
-AND A THIRD CHECK, WHICH IS THE ONE THAT STILL FINDS THINGS (REPORT-31 M31-15).
+AND A THIRD CHECK, WHICH IS THE ONE THAT STILL FINDS THINGS.
 Both lists above classify FILES. A reference is a FUNCTION. A file that
 `#include`s c43 source can still carry a hand-written `oracle_<c43 name>` BODY
 beside it -- and such a file was never eligible for the frozen list, so the
@@ -121,8 +121,8 @@ def check_frozen(repo: Path, entries: list[dict]) -> list[str]:
                 problems.append(
                     f"{oracle_rel}: c43 MOVED and this hand-written oracle did not.\n"
                     f"    {mirror_rel}: recorded {recorded[:16]}  actual {actual[:16]}\n"
-                    f"    {entry.get('milestone', 'REPORT-31')} converts this lane to"
-                    f" compile from the c43 source, which is the real fix. Until then:"
+                    f"    The real fix is to convert this lane to compile from"
+                    f" the c43 source. Until then:"
                     f" diff that file against the pin it was last transliterated at,"
                     f" port any behavioural change into the oracle AND the Zig owner,"
                     f" then `--bump`."
@@ -256,7 +256,7 @@ def check_functions(repo: Path) -> list[str]:
                 f" lane\n"
                 f"    compares against this, not against c43, so it cannot see c43 move --"
                 f" the\n"
-                f"    defect REPORT-31 exists to remove, at function granularity."
+                f"    same defect as a hand-written oracle FILE, one level down."
             )
         elif len(mirrors) > allowed:
             problems.append(
@@ -277,12 +277,11 @@ def bump_functions(repo: Path) -> int:
         json.dumps(
             {
                 "_why": (
-                    "REPORT-31 M31-15. Hand-written parity REFERENCE bodies -- an"
+                    "Hand-written parity REFERENCE bodies -- an"
                     " oracle_<X> function definition where X is a function c43 declares"
                     " -- living inside files that also #include c43 source, which is why"
                     " neither the frozen nor the generated list could ever see them. The"
-                    " ratchet only goes down; the endpoint is an empty object. Section 11"
-                    " of the report is the plan."
+                    " ratchet only goes down; the endpoint is an empty object."
                 ),
                 "counts": counts,
                 "mirrors": found,
@@ -423,7 +422,7 @@ def main() -> int:
             print(f"  {p}")
         print()
         print("A hand-written oracle cannot detect c43 moving -- it IS the reference, and")
-        print("it stayed put. That is why REPORT-31 exists. The fix is not to bump the")
+        print("it stayed put. The fix is not to bump the")
         print("hash and move on; it is to convert the lane to compile from the c43 source.")
         return 1
 
@@ -446,8 +445,8 @@ def main() -> int:
             f" pinned c43 counterparts, {len(generated)} generated oracles reproduce)"
         )
         print(
-            "  Frozen is not sound -- these lanes cannot see c43 move. REPORT-31 tracks"
-            " converting each one to compile from c43 source."
+            "  Frozen is not sound -- these lanes cannot see c43 move. Each one"
+            " still has to be converted to compile from c43 source."
         )
     else:
         print(
@@ -462,7 +461,7 @@ def main() -> int:
         )
         for rel, names in sorted(bodies.items()):
             print(f"    {len(names):>3}  {rel}")
-        print("  These are REPORT-31 section 11's subject. A file-level zero is not a clean bill.")
+        print("  A file-level zero is not a clean bill.")
     else:
         print("  and no hand-written reference bodies remain either -- the real zero.")
     return 0

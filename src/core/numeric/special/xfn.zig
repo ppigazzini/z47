@@ -1027,7 +1027,7 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
 /// Port of xfn.c `processResultantLongReal` -- the three-register long-real result
 /// writer, shared by doXfn and by saveRestoreCalcState.c's `restoreRegister`.
 ///
-/// WHY IT IS A SEPARATE, EXPORTED FUNCTION (REPORT-31 M31-10). In c43 this is
+/// WHY IT IS A SEPARATE, EXPORTED FUNCTION. In c43 this is
 /// file-scope and non-static precisely so `restoreRegister` can call it to
 /// reconstruct an "RXFN" register from a state or data file. The z47 port had
 /// INLINED it into doXfn, so nothing outside xfn could reach it -- and

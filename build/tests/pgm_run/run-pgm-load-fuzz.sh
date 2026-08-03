@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# M1 (REPORT-27 ANNEX B): drive a sanitizer-instrumented pgm_run harness over a corpus
+# Drive a sanitizer-instrumented pgm_run harness over a corpus
 # of MALFORMED .p47 files. The load path (fnLoadProgram) is the empirical memory-bug
 # surface upstream keeps fixing (577 statefile overflow, decode-literal-base-oob); the
 # existing cov tests only exercise VALID round-trips, so this fills the malformed-input
@@ -20,7 +20,7 @@ corpus="${2:?corpus dir required}"
 # raising SIGABRT; the marker grep is the primary signal either way.
 export PGM_LOAD_ONLY=1
 # The lane is instrumented with UBSan, not AddressSanitizer: Zig's `sanitize_c`
-# is the UBSan knob and Zig ships no ASan runtime at all (M-SAFE-13). ASAN_OPTIONS
+# is the UBSan knob and Zig ships no ASan runtime at all. ASAN_OPTIONS
 # is kept because it costs nothing and would apply if a real ASan is ever linked;
 # UBSAN_OPTIONS is the one that takes effect today.
 export ASAN_OPTIONS="detect_leaks=0:abort_on_error=0:exitcode=86:handle_segv=1"

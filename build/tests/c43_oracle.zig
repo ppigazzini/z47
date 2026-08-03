@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// The compile-from-c43 parity-harness recipe, in one place (REPORT-31 M31-9).
+// The compile-from-c43 parity-harness recipe, in one place.
 //
 // A parity oracle must be, or be compiled from, unmodified c43 source -- a
 // hand-transliterated one cannot see c43 move, so the lane whose purpose is
 // catching a c43 change becomes the reason nobody sees it. See
-// docs/70-tests-and-verification.md and __DEV/reports/REPORT-31-C-ORACLE.md.
+// docs/70-tests-and-verification.md.
 //
-// M31-2 and M31-3 each reached that by hand-building a per-lane mock `c47.h`.
-// M31-4/M31-5 measured the alternative and it wins outright: upstream's own
+// The first two conversions each did that with a per-lane mock `c47.h`.
+// Measuring the alternative showed it wins outright: upstream's own
 // `src/c47/c47.h` compiles in a headless harness given four include roots and six
 // placeholder typedefs, so every constant, struct and prototype comes from the pin
 // instead of from a copy. A conversion is then `#define` renames plus one
@@ -27,7 +27,7 @@
 // recorded decision, not an oversight -- it is noted in both harness headers.
 //
 // NOTHING CALLS THIS TODAY, and that is worth stating rather than hiding. The
-// three conversions that followed M31-9 -- calc_state, register_metadata,
+// three most recent conversions -- calc_state, register_metadata,
 // keyboard_state -- all took the FULL-CORE shape instead, because in each case
 // the environment a unit harness would have to model IS the thing under test
 // (the register pool, the value codecs, the GTK-bound entry path). A full core

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Compilation-carrier gate (REPORT-28 §39, law L9).
+# Compilation-carrier gate.
 #
 # THE DEFECT THIS FREEZES. A Zig owner drags other owners into its object with
 #   comptime { _ = @import("other.zig"); }
@@ -64,7 +64,7 @@ fi
 
 if [ "${1:-}" = "--bump" ]; then
     {
-        echo "# Sanctioned compilation carriers (REPORT-28 §39, law L9)."
+        echo "# Sanctioned compilation carriers."
         echo "# Each file below MUST be a module root (some object's root_source_file)."
         echo "# A force-import block in a non-root conscripts that owner as a carrier and"
         echo "# pins it to the code it carries -- give the carried code its own root instead."

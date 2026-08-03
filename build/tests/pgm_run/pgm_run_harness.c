@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
   printf("LOAD %s\n", pgm_path);
   fnLoadProgram(NOPARAM);
 
-  // M1 (REPORT-27 ANNEX B) load-only fuzz mode: exercise only the untrusted-file
+  // Load-only fuzz mode: exercise only the untrusted-file
   // PARSE surface. If the load returned without an OOB/crash, the malformed input
   // was handled -- pass, regardless of whether it produced a (garbage) program.
   // Executing a loaded program is a separate surface, out of M1's scope.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Transliteration-contract gate (REPORT-28 s41).
+"""Transliteration-contract gate.
 
 WHAT THIS PROTECTS, AND WHY IT LOOKS BACKWARDS
 
@@ -142,7 +142,7 @@ def bump(repo_root):
         )
     doc = {
         "note": (
-            f"REPORT-28 s41. Hot upstream C files (>={HOT_MIN_CHURN} commits/2yr) ported 1:1 to a "
+            f"Hot upstream C files (>={HOT_MIN_CHURN} commits/2yr) ported 1:1 to a "
             "same-named z47 owner. The 1:1 shape is what lets a maintainer apply an "
             "upstream diff textually, and these are the files upstream actually "
             "changes -- so their size is a SYNC CONTRACT, not a code smell to split. "

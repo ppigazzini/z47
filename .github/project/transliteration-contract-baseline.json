@@ -1,5 +1,5 @@
 {
-  "note": "REPORT-28 s41. Hot upstream C files (>=50 commits/2yr) ported 1:1 to a same-named z47 owner. The 1:1 shape is what lets a maintainer apply an upstream diff textually, and these are the files upstream actually changes -- so their size is a SYNC CONTRACT, not a code smell to split. Enforcement checks the owner still exists and still tracks the C size within 0.20; churn is pinned here because CI has no upstream checkout. Re-pin after a resync with --bump.",
+  "note": "Hot upstream C files (>=50 commits/2yr) ported 1:1 to a same-named z47 owner. The 1:1 shape is what lets a maintainer apply an upstream diff textually, and these are the files upstream actually changes -- so their size is a SYNC CONTRACT, not a code smell to split. Enforcement checks the owner still exists and still tracks the C size within 0.20; churn is pinned here because CI has no upstream checkout. Re-pin after a resync with --bump.",
   "tolerance": 0.2,
   "pairs": [
     {

@@ -2,15 +2,15 @@
 //
 // The whole cost of compiling c43 source into a headless parity harness.
 //
-// WHY THIS EXISTS (REPORT-31 M31-9). A parity oracle must be COMPILED FROM c43
+// WHY THIS EXISTS. A parity oracle must be COMPILED FROM c43
 // source, or it cannot see c43 move -- see docs/70-tests-and-verification.md and
-// __DEV/reports/REPORT-31-C-ORACLE.md. The first two conversions (M31-2 flags,
-// M31-3 program_serialization) each reached that by hand-building a per-lane mock
+// docs/70-tests-and-verification.md. The first two conversions (flags and
+// program_serialization) each did that with a per-lane mock
 // `c47.h` for the file under test. That works, but it is the same defect one level
 // down: a mock header carries hand-copied constants, and a hand-copied constant
 // does not move when c43 moves either.
 //
-// M31-4/M31-5 then measured the alternative and it is both cheaper and strictly
+// Measuring the alternative showed it is both cheaper and strictly
 // more faithful: upstream's OWN `src/c47/c47.h` compiles in a headless harness
 // with nothing hand-written at all -- given the vendored `dep/decNumberICU`
 // headers, the generated `src/generated/constantPointers.h`, and the six
@@ -33,7 +33,7 @@
 // resync, delete one line and rebuild a converted lane; if it still compiles, the
 // line is dead and should go.
 //
-// KEYBOARD IS THE ONE FILE THIS DOES NOT REACH (REPORT-31 M31-6/M31-13).
+// KEYBOARD IS THE ONE FILE THIS DOES NOT REACH.
 // `keyboard.c` reads `GdkEvent` FIELDS and declares a `GdkEventButton` BY VALUE,
 // so a placeholder name is not enough and it needs the real gtk+-3.0 headers.
 // That is why the keyboard lane is a full-core differential rather than a linked

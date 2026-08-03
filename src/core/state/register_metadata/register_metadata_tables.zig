@@ -11,7 +11,7 @@ const NUMBER_OF_RESERVED_VARIABLES: usize = 48;
 // defines.h computes this as (FIRST_NAMED_RESERVED_VARIABLE -
 // FIRST_RESERVED_VARIABLE), which is 31: the 26 lettered variables PLUS the
 // five RESERVED_VARIABLE_SPARE placeholders that follow them. z47 had 26 until
-// REPORT-31 M31-11 (c43's own trailing comment still says 26, and is stale).
+// c43's own trailing comment still says 26, and is stale.
 const NUMBER_OF_LETTERED_VARIABLES: calcRegister_t = 31;
 const REGISTER_X: calcRegister_t = 100;
 const INVALID_VARIABLE: calcRegister_t = 2199;

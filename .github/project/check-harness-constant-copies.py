@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """A constant hand-copied into a harness header is a frozen oracle one level down.
 
-WHY THIS EXISTS (REPORT-31 M31-9 step 4). REPORT-31's rule is that a parity oracle
-must be COMPILED FROM c43 source, because a hand-transliterated one cannot see c43
-move -- the lane stays green and manufactures positive evidence that parity holds.
+WHY THIS EXISTS. The rule is that a parity oracle must be COMPILED FROM c43
+source, because a hand-transliterated one cannot see c43 move -- the lane stays
+green and manufactures positive evidence that parity holds.
 Converting the oracles does not finish the job: the harness HEADER around an oracle
 carries constants too, and a hand-copied `#define`/enum value is the same defect at
 a smaller scale. When c43 renumbers a flag, widens an error code or reorganizes an
@@ -33,7 +33,7 @@ side.
 
 WHY A BASELINE AND NOT A HARD ZERO. Measured on the day this landed, the tree
 carries hundreds of such copies across a dozen harness headers -- far past the
-~20 that REPORT-31 M31-9 set as the point to stop and report rather than fix. So
+~20 at which this is worth reporting rather than fixing one by one. So
 this ships as a RATCHET: the recorded per-file counts may fall and may not rise,
 and any DRIFTED copy fails outright regardless of the baseline, because a drifted
 copy is a live wrong answer rather than a latent one. The fix for the backlog is
@@ -103,7 +103,7 @@ def as_int_literal(text: str) -> str | None:
 # placeholder GTK/glib/cairo typedefs (build/tests/common). The include roots below
 # are kept identical to build/tests/c43_oracle.zig's addUpstreamHeaderRoots on
 # purpose, and this gate is currently the only thing that EXERCISES them -- the
-# three conversions after M31-9 all took the full-core shape. If the two drift,
+# three most recent conversions all took the full-core shape. If the two drift,
 # this gate is measuring a configuration of c43 no lane could compile.
 PRELUDE = '#include "c47.h"\n'
 
@@ -302,7 +302,7 @@ def main() -> int:
             json.dumps(
                 {
                     "_why": (
-                        "REPORT-31 M31-9. Per-file count of c43 constants a z47 harness"
+                        "Per-file count of c43 constants a z47 harness"
                         " header declares by hand. These are frozen references one level"
                         " below a frozen oracle: correct today, unable to move when c43"
                         " moves. The ratchet allows a count to FALL and never to rise;"
@@ -311,7 +311,7 @@ def main() -> int:
                     ),
                     "_drifted": (
                         "Copies whose value ALREADY disagrees with c43, measured 2026-08-03."
-                        " Recorded rather than fixed: REPORT-31 M31-9 set ~20 as the point to"
+                        " Recorded rather than fixed: ~20 is the point to"
                         " stop and report instead of fixing, and this is 64 across 6 headers,"
                         " which is a finding about the harness layer and not part of that"
                         " milestone. Each run reprints them. A drifted name NOT on this list"
@@ -416,7 +416,7 @@ def main() -> int:
 
     print(
         "\nPASS: no new hand-copied c43 constants and no new drift."
-        " The recorded backlog above is REPORT-31 M31-9's measured finding, not a clean bill."
+        " The recorded backlog above is a measured finding, not a clean bill."
     )
     return 0
 

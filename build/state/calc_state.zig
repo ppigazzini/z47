@@ -39,7 +39,7 @@ fn addRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    // L1 shared ABI bindings (REPORT-23 §5).
+    // L1 shared ABI bindings.
     const abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = target,
@@ -137,7 +137,7 @@ pub fn addToModule(
     module.addObject(runtime_object);
 }
 
-// NO addParityExecutable HERE, deliberately (REPORT-31 M31-10).
+// NO addParityExecutable HERE, deliberately.
 //
 // The calc-state parity lane used to be a unit executable: a mock c47.h, a
 // counting fake runtime, link stubs, and a 194-line hand-written oracle that

@@ -2,7 +2,7 @@
 //
 // The calculator, as far as c43's flags.c is concerned.
 //
-// WHY THIS CLAIMS UPSTREAM'S GUARD (REPORT-31 M31-2). `flags.c` sits next to the
+// WHY THIS CLAIMS UPSTREAM'S GUARD. `flags.c` sits next to the
 // real `c47.h`, and a quoted `#include "c47.h"` searches the including file's own
 // directory first -- no `-I` can outrank that. Defining `C47_H` here before
 // pulling `flags.c` in makes the real header a no-op and this file the
@@ -12,13 +12,13 @@
 //
 // WHY IT INCLUDES UPSTREAM HEADERS RATHER THAN COPYING VALUES. This file used to
 // carry ~110 hand-written `#define`s -- every FLAG_*, TI_*, JC_*, the write-protect
-// test. That is the SAME defect one level down from the one REPORT-31 is about: a
+// test. That is the SAME defect one level down from a hand-written oracle: a
 // c43 constant change would leave the harness's copy behind and the lane green.
 // `defines.h`, `items.h` and `typeDefinitions.h` are pure headers with no includes
 // of their own, so they cost five opaque placeholder typedefs and buy every
 // constant and struct straight from the pin.
 //
-// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (REPORT-31 M31-9, decided
+// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (decided
 // 2026-08-03). Later conversions do not build a mock header at all: they put
 // upstream's OWN `src/c47/c47.h` on the include path with the six placeholder
 // typedefs from `build/tests/common/c43_harness_prelude.h`, which is cheaper and

@@ -19,7 +19,7 @@
 // Because (4) pins the save bytes and (6) pins restore against a correct save,
 // porting save and restore in SEPARATE commits is each independently caught.
 //
-// WHAT (4) IS NOT (REPORT-31 M31-1). The golden was the C `doSave` output when
+// WHAT (4) IS NOT. The golden was the C `doSave` output when
 // this harness was written and SAVE was still C. SAVE is Zig now, and the golden
 // has been regenerated from THIS harness (`zig build saveload_golden`) after every
 // deliberate output change since. So it is a snapshot of z47's own bytes, re-pinned
@@ -43,7 +43,7 @@
 #define SAVE_FILE "c47.sav"
 // The deterministic fixture state and the small file helpers now live in
 // calc_state_fixture.h so `calc_state_parity` -- the c43 differential -- serializes
-// the SAME calculator this lane does (REPORT-31 M31-10). Extracted verbatim: the
+// the SAME calculator this lane does. Extracted verbatim: the
 // committed golden is the byte output of that state.
 #include "calc_state_fixture.h"
 
@@ -58,7 +58,7 @@
 // (calc_state.zig) -> save() -> io_flow doSave -> z47_calc_state_save_sections
 // (the Zig section writer). The golden byte-compare verified the Zig SAVE port
 // against the original C output ONCE, at the commit that landed it; every
-// regeneration since has re-pinned it to Zig's output (see the M31-1 note above).
+// regeneration since has re-pinned it to Zig's output (see the note above).
 //
 // LOAD/RESTORE now also runs the Zig production path: the canonical fnLoad is
 // the Zig export -> load() -> io_flow doLoad -> header parse -> policy ->

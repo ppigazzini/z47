@@ -40,7 +40,7 @@ fn addRuntimeObject(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    // L1 shared ABI bindings (REPORT-23 §5).
+    // L1 shared ABI bindings.
     const abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = target,
@@ -113,7 +113,7 @@ pub fn addToModule(
     module.addObject(runtime_object);
 }
 
-// NO addParityExecutable HERE, deliberately (REPORT-31 M31-12).
+// NO addParityExecutable HERE, deliberately.
 //
 // The register-metadata parity lane used to be a unit executable over a MOCK
 // world: 1060 lines of hand-transliterated oracle, a 939-line driver, and 1649

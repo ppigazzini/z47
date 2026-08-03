@@ -121,7 +121,7 @@ void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t 
 
 // EXTRA_INFO_ON_CALC_ERROR is upstream's own 1 now, so c43's diagnostic branches
 // COMPILE in this lane instead of being configured away -- an upstream edit inside
-// one of them is a build failure rather than silence (REPORT-31 M31-23). They are
+// one of them is a build failure rather than silence. They are
 // diagnostics, so the environment they need is a buffer and two no-ops, shared by
 // both implementations exactly like every other stub here.
 static char z47_parity_error_message[512];
