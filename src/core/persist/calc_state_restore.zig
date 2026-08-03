@@ -785,6 +785,21 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 updateConstantsInEquations();
             }
         }
+    } else if (cmpName(tmpString, "C47/R47_data_file_00")) {
+        // A DATA file's version line pair. The state file carries its version in
+        // the header (calc_state_header.zig); a data file carries it as a section,
+        // so it arrives here instead. Without this branch the version line was
+        // read as an unknown section and dropped, and every data file written by a
+        // real C47 loaded as if it had no version at all.
+        //
+        // Same numbering and bounds as the state file: outside them the version is
+        // treated as absent rather than trusted.
+        calc_state.readLine(tmpString, TMP_STR_LENGTH);
+        var version = text.toUint32(tmpString);
+        if (version < 10000000 or version > 20000000) {
+            version = 0;
+        }
+        runtime.setLoadedVersion(version);
     } else if (cmpName(tmpString, "OTHER_CONFIGURATION_STUFF")) {
         restoreOtherConfiguration(load_mode, allow_user_keys, loaded_version, saved_calc_model);
         hourGlassIconEnabled = false;

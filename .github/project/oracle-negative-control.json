@@ -55,8 +55,7 @@
       "file": "src/core/persist/calc_state_register_codec.zig",
       "find": "            _ = strcpy(aim(), \"RXFN\");",
       "replace": "            _ = strcpy(aim(), \"RXFM\");",
-      "why": "The .sav writer's section tag for full-precision XFN registers. Kills only once the lane drives the XFN save entry point.",
-      "expected_survivor": "The lane drives fnSave(SM_MANUAL_SAVE), the ordinary state save. The RXFN branch is reached only through fnSaveDataRegisters(..., isXFN) -- the full-precision XFN data-register save, a different entry point the lane never calls. So the .sav bytes it compares never contain this tag. This is a real coverage gap, not an equivalent mutant: closing it means driving the XFN save path with a 1000-digit register, which is its own piece of work. Recorded so the gap is stated rather than implied by a green run."
+      "why": "The .sav/.d47 writer's section tag for full-precision XFN registers, reached through the data-file export the lane now drives."
     }
   ]
 }
