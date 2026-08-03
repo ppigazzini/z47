@@ -246,11 +246,11 @@
     {
       "lane": "math_real_rectangular_to_polar",
       "step": "math_real_rectangular_to_polar_oracle",
-      "what": "a NaN component stops poisoning both outputs",
+      "what": "the +inf/-inf quadrant loses the sign of its pi/4 angle",
       "file": "src/core/numeric/transform/transform_complex_helpers.zig",
-      "find": "    if (runtime.realIsNaN(&re) or runtime.realIsNaN(&im)) {\n        runtime.realSetNaN(magnitude);\n        runtime.realSetNaN(theta);\n        return;\n    }",
-      "replace": "    if (runtime.realIsNaN(&re) and runtime.realIsNaN(&im)) {\n        runtime.realSetNaN(magnitude);\n        runtime.realSetNaN(theta);\n        return;\n    }",
-      "why": "or -> and: one NaN component now falls through to the arithmetic instead of short-circuiting, which is exactly the kind of edit a port makes by accident."
+      "find": "                copyReal(theta, runtime.z47_math_wrappers_const_piOn4());\n                if (runtime.realIsNegative(&im)) {\n                    realSetNegativeSign(theta);\n                }",
+      "replace": "                copyReal(theta, runtime.z47_math_wrappers_const_piOn4());",
+      "why": "The lane drives pos_inf_neg_inf and pos_inf_pos_inf, which differ only in that sign. The earlier mutant (or -> and in the NaN guard) SURVIVED even though the corpus drives real_nan and imag_nan: the guard is an early-out, and without it the arithmetic propagates NaN to both outputs anyway. Same NaN-saturation equivalence as the asin domain guard."
     },
     {
       "lane": "math_random",
