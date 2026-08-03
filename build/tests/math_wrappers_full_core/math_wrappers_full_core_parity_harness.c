@@ -42,22 +42,33 @@ bool_t          screenChange;
 // (declared by upstream's own headers via <c47.h>); `oracle_` ones are c43's own
 // bodies, compiled a second time in math_wrappers_full_core_oracle.c.
 // ---------------------------------------------------------------------------
+// The two owner exports <c47.h> does not declare. c43 gives fnCheckReal external
+// linkage in checkValue.c and names it in no header; fnToRect it keeps static in
+// toRect.c, so the name is c43's but the linkage is the owner's alone.
+void fnCheckReal(uint16_t unusedButMandatoryParameter);
+void fnToRect(uint16_t angleInY);
+
 void oracle_fnCheckAngle(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckForZero(uint16_t mode);
+void oracle_fnCheckGreaterEqualPlusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckInfinite(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckInteger(uint16_t mode);
 void oracle_fnCheckIsVect2d(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckIsVect3d(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckLessEqualMinusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMatrix(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMatrixSquare(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckMinusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckNaN(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckNumber(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
+void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t type);
 void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
 void oracle_fnRound(uint16_t unusedButMandatoryParameter);
+void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
+void oracle_fnCubeRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDiv(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDivR(uint16_t unusedButMandatoryParameter);
 void oracle_fnXAlmostEqual(uint16_t regist);
@@ -73,6 +84,9 @@ void oracle_fnConjugate(uint16_t unusedButMandatoryParameter);
 void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
+// Not oracle_-prefixed on purpose: c43's fnToRect is static and takes an int8_t,
+// so this is the oracle file's adapter over it rather than c43's own body.
+void oracleFnToRectEntry(uint16_t angleInY);
 void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 // curtReal and compareTypeErrorX are NOT compared here, and will not be. The
 // question was asked properly and the answer is that exporting them would be the
@@ -488,6 +502,16 @@ static const predicate_t PREDICATES[] = {
   { "fnCheckSpecial",           fnCheckSpecial,      oracle_fnCheckSpecial,      0                  },
   { "fnGetType",                fnGetType,           oracle_fnGetType,           0                  },
 
+  // checkValue.c's own entry points, compiled into the oracle since the predicates
+  // above were added and driven by nothing until now. fnCheckReal has the further
+  // claim on a place here: the unit lane's reference for it is hand-written, and
+  // checkValue.c cannot compile against that lane's c47.h -- real34IsSpecial,
+  // compareTypeErrorX, getRegisterAsComplexOrAnyRealQuiet, isMatrix2dVector and
+  // the ITM_IS* items are all missing there. This is where c43's own body runs.
+  { "fnCheckGreaterEqualPlusZero", fnCheckGreaterEqualPlusZero, oracle_fnCheckGreaterEqualPlusZero, 0 },
+  { "fnCheckLessEqualMinusZero",   fnCheckLessEqualMinusZero,   oracle_fnCheckLessEqualMinusZero,   0 },
+  { "fnCheckReal",              fnCheckReal,         oracle_fnCheckReal,         0                  },
+
   { "fnCheckType/longInteger",  fnCheckType,         oracle_fnCheckType,         dtLongInteger      },
   { "fnCheckType/real34",       fnCheckType,         oracle_fnCheckType,         dtReal34           },
   { "fnCheckType/complex34",    fnCheckType,         oracle_fnCheckType,         dtComplex34        },
@@ -511,6 +535,11 @@ static const predicate_t PREDICATES[] = {
   // temporaryInformation.
   { "fnRound",                  fnRound,             oracle_fnRound,             0                  },
 
+  // squareRoot.c and cubeRoot.c were compiled into the oracle for the leaves they
+  // give the families above, and their own entry points were never driven.
+  { "fnSquareRoot",             fnSquareRoot,        oracle_fnSquareRoot,        0                  },
+  { "fnCubeRoot",               fnCubeRoot,          oracle_fnCubeRoot,          0                  },
+
   // Vector and complex families. These are the ones the unit lane could never
   // host: they dispatch into the matrix and complex leaves, which that lane's
   // fake numeric core answers differently from real decNumber. Here both sides
@@ -520,6 +549,12 @@ static const predicate_t PREDICATES[] = {
   { "fnUnitVector",             fnUnitVector,        oracle_fnUnitVector,        0                  },
   { "fnToPolar2",               fnToPolar2,          oracle_fnToPolar2,          0                  },
   { "fnToRect2",                fnToRect2,           oracle_fnToRect2,           0                  },
+
+  // fnToRect reads a SECOND register and swaps which of X and Y carries the angle
+  // on its parameter, so both values are driven: a pinned one exercises one
+  // assignment and calls the other covered.
+  { "fnToRect/angleInX",        fnToRect,            oracleFnToRectEntry,        0                  },
+  { "fnToRect/angleInY",        fnToRect,            oracleFnToRectEntry,        1                  },
 };
 
 // ---------------------------------------------------------------------------
