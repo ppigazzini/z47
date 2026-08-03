@@ -1,0 +1,33 @@
+{
+  "_why": "Unreachable static functions in harness sources, and the harness sources this check cannot analyse. Both may FALL and may not rise: the first because dead test code reads as coverage, the second because a gate that reports only what it could analyse reads as a clean bill for what it could not.",
+  "dead_statics": {
+    "build/tests/math_wrappers/math_wrappers_fake_runtime.c": 2,
+    "build/tests/math_wrappers/math_wrappers_parity.c": 96,
+    "build/tests/stack_state/stack_state_parity.c": 37
+  },
+  "unanalysable": [
+    "build/tests/calc_state/calc_state_oracle.c",
+    "build/tests/calc_state/calc_state_parity_harness.c",
+    "build/tests/calc_state/save_load_roundtrip_harness.c",
+    "build/tests/calc_state/state_load_harness.c",
+    "build/tests/charstring_diff/charstring_diff_harness.c",
+    "build/tests/keyboard_state/keyboard_entry_harness.c",
+    "build/tests/keyboard_state/keyboard_state_oracle.c",
+    "build/tests/keyboard_state/keyboard_state_parity_harness.c",
+    "build/tests/math_wrappers/math_ln_complex_runtime_constants.c",
+    "build/tests/math_wrappers/math_wrappers_atan2_diff.c",
+    "build/tests/math_wrappers/math_wrappers_atan_diff.c",
+    "build/tests/math_wrappers/math_wrappers_circular_trig_diff.c",
+    "build/tests/math_wrappers/math_wrappers_eigen_diff.c",
+    "build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c",
+    "build/tests/math_wrappers/math_wrappers_ln_complex_diff.c",
+    "build/tests/math_wrappers/math_wrappers_real_rectangular_to_polar_diff.c",
+    "build/tests/math_wrappers/math_wrappers_real_trig_primitives_diff.c",
+    "build/tests/math_wrappers_full_core/math_wrappers_full_core_oracle.c",
+    "build/tests/math_wrappers_full_core/math_wrappers_full_core_parity_harness.c",
+    "build/tests/pgm_run/pgm_run_harness.c",
+    "build/tests/register_metadata/register_metadata_oracle.c",
+    "build/tests/register_metadata/register_metadata_parity_harness.c",
+    "build/tests/stack_state/stack_state_oracle.c"
+  ]
+}

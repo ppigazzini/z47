@@ -128,6 +128,15 @@ step "[6g2b3/11] the fixture partition names the properties it partitions"
 # somebody saying what it is a representative OF.
 python3 .github/project/check-fixture-partition.py --self-test >/dev/null
 python3 .github/project/check-fixture-partition.py --repo-root .
+step "[6g2b4/11] no unreachable code in the harness sources"
+# 94 of the 135 are `configure*` fixtures whose wrappers migrated to another lane:
+# the cases were deleted and the fixtures left behind. They are the only record of
+# what that lane covered before the move, and one of them names a shape the move
+# dropped. The same technique found four DRIFTED c43 mirrors that nothing called.
+# Two ratchets: the dead count, and the files this check cannot analyse -- otherwise
+# the cheapest way to pass would be to make a file harder to compile.
+python3 .github/project/check-harness-dead-code.py --self-test >/dev/null
+python3 .github/project/check-harness-dead-code.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"
 # The same defect one level down. A frozen oracle is caught by
 # 6g2b; a frozen CONSTANT inside a harness c47.h is not, and it fails the same way
