@@ -142,6 +142,152 @@
       "what": "no single owner behaviour to mutate",
       "file": "src/abi/sci_format.zig",
       "no_mutation": "This lane proves every migrated sprintf->std.fmt translation is byte-identical to libc's. A mutation of the Zig side is exactly what it is built to catch, so it is already its own negative control: the lane exists because the translation could differ. A separate mutant would restate the lane."
+    },
+    {
+      "lane": "math_command_wrappers",
+      "step": "math_command_wrappers_parity",
+      "what": "changeSign stops routing a time register to its own worker",
+      "file": "src/core/numeric/arithmetic/sign_command.zig",
+      "find": "    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtTime) {\n        changeSignTime();\n        return;\n    }",
+      "replace": "",
+      "why": "The lane that is the ONLY coverage for 86 of 120 math wrappers had no mutant at all. changeSign.c dispatches dtTime before the monadic table and the driver seeds two time fixtures, so the branch is reachable and observable in the snapshot."
+    },
+    {
+      "lane": "charstring",
+      "step": "charstring_diff",
+      "what": "glyphLength counts a two-byte glyph twice",
+      "file": "src/abi/c47_string.zig",
+      "find": "        if (str[0] & 0x80 != 0) {\n            str += 2;\n            len += 1;",
+      "replace": "        if (str[0] & 0x80 != 0) {\n            str += 2;\n            len += 2;",
+      "why": "The lane's whole subject is stringGlyphLength against c43's extracted body; a wrong count for multi-byte glyphs is the defect it exists to catch."
+    },
+    {
+      "lane": "constants",
+      "step": "constants_parity",
+      "what": "fnPi stops lifting the stack",
+      "file": "src/abi/constants/constants.zig",
+      "find": "    _ = unused_but_mandatory_parameter;\n\n    runtime.liftStack();\n    clearSolverReadyToExecute();\n    runtime.storePiInX();",
+      "replace": "    _ = unused_but_mandatory_parameter;\n\n    clearSolverReadyToExecute();\n    runtime.storePiInX();",
+      "why": "Every constant command lifts before storing; dropping the lift overwrites X instead of pushing, which the register snapshot must see."
+    },
+    {
+      "lane": "distribution",
+      "step": "distribution_parity",
+      "what": "uniformL answers one below the low bound",
+      "file": "src/shell/distributions/uniform.zig",
+      "find": "        if (cmp < 0) {\n            res = dr.const0();",
+      "replace": "        if (cmp < 0) {\n            res = dr.const1();",
+      "why": "The lane drives uniformL-below explicitly. The earlier mutant (a zero-width range in uniformP) SURVIVED because every uniform case seeds a non-degenerate low/high pair -- a real gap, not an equivalent mutant, and the degenerate range is still unchecked."
+    },
+    {
+      "lane": "eigen",
+      "step": "eigen_parity",
+      "what": "dropNoise rounds at a fixed 39 digits instead of the requested precision",
+      "file": "src/core/numeric/matrix/eigen.zig",
+      "find": "    var c: realContext_t = runtime.ctxtReal39;\n    c.digits = dig;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
+      "replace": "    var c: realContext_t = runtime.ctxtReal39;\n    c.round = runtime.DEC_ROUND_HALF_UP;",
+      "why": "This lane drives the closed-form 2x2/3x3 workers, isRealSymmetric, dropNoise and the Householder QR step -- NOT calculateEigenvalues, the iterative driver. A mutant in that driver's convergence tolerance SURVIVED, which is how the lane's real scope became visible."
+    },
+    {
+      "lane": "keyboard_entry",
+      "step": "keyboard_entry_parity",
+      "what": "determineItem decodes the key index in base 11",
+      "file": "src/core/input/keyboard_state_shared.zig",
+      "find": "            const key_no: i8 = @intCast((@as(i32, data[0]) - '0') * 10 + @as(i32, data[1]) - '0');",
+      "replace": "            const key_no: i8 = @intCast((@as(i32, data[0]) - '0') * 11 + @as(i32, data[1]) - '0');",
+      "why": "The lane's subject is key-to-item dispatch through btnClicked, and this is the decode every case depends on. The earlier mutant (dropping KEY_fg from checkKeyShifts) SURVIVED: the entry corpus drives digits, ENTER and +, and no key it presses carries KEY_fg as its primary."
+    },
+    {
+      "lane": "keyboard_state",
+      "step": "keyboard_state_parity",
+      "what": "checkKeyShifts reads the standard layout while USER mode is on",
+      "file": "src/core/input/keyboard_state_shared.zig",
+      "find": "            const primary = if (use_usr) runtime.kbd_usr[key_no].primary else runtime.kbdStdAt(key_no).primary;",
+      "replace": "            const primary = runtime.kbdStdAt(key_no).primary;",
+      "why": "USER-mode remapping is the branch most likely to be dropped in a port, and both keyboard lanes drive it."
+    },
+    {
+      "lane": "math_atan",
+      "step": "math_atan_oracle",
+      "what": "atan skips its 1/x range reduction",
+      "file": "src/core/numeric/trig/wp34s_atan.zig",
+      "find": "    invert.* = @intFromBool(math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_1())));",
+      "replace": "    invert.* = 0;",
+      "why": "Every case in this lane runs at ctxtReal39, so the 1071-digit selector is unreachable from it and a mutant there SURVIVED as an equivalent. This one is on the 39-digit path the lane actually drives. NOTE: no lane in this tree drives the 1071-digit atan or atan2 implementations at all."
+    },
+    {
+      "lane": "math_atan2",
+      "step": "math_atan2_oracle",
+      "what": "atan2 loses the sign of a negative y",
+      "file": "src/core/numeric/trig/wp34s_atan.zig",
+      "find": "    const xNeg = realIsNegative(x);\n    const yNeg = realIsNegative(y);",
+      "replace": "    const xNeg = realIsNegative(x);\n    const yNeg = false;",
+      "why": "Same reason as math_atan: the lane drives ctxtReal39 only, so the precision selector is not reachable. Quadrant handling is what atan2 is for and this lane sweeps the sign combinations."
+    },
+    {
+      "lane": "math_circular_trig",
+      "step": "math_circular_trig_oracle",
+      "what": "the Taylor kernel drops to 51 digits where it should use 75",
+      "file": "src/core/numeric/trig/circular_trig.zig",
+      "find": "    if (real_context.digits > 51) {\n        real_context.digits = 75;\n        epsilon_digits = 72;\n        do_epsilon = true;",
+      "replace": "    if (real_context.digits > 51) {\n        real_context.digits = 51;\n        epsilon_digits = 72;\n        do_epsilon = true;",
+      "why": "The working precision of the sin/cos/tan Taylor series is what these oracles measure to the last digit."
+    },
+    {
+      "lane": "math_real_trig_primitives",
+      "step": "math_real_trig_primitives_oracle",
+      "what": "asin accepts an argument above one instead of answering NaN",
+      "file": "src/core/numeric/trig/wp34s_atan.zig",
+      "find": "    realCopyAbs(x, abx);\n    if (math_comparison_reals.realCompareGreaterThan(@alignCast(abx), @alignCast(const_1()))) {\n        realSetNaN(angle);\n        return false;\n    }\n    // angle = 2*atan(x/(1+sqrt(1-x*x)))",
+      "replace": "    realCopyAbs(x, abx);\n    // angle = 2*atan(x/(1+sqrt(1-x*x)))",
+      "why": "Kept because the reason is worth more than the entry. This lane drives Asin/Acos/SinhCosh/Tanh/ArcSinh/ArcTanh, not the circular Taylor kernel -- a mutant in that kernel SURVIVED because at 39 digits its branch is never taken. The killing mutant for this lane is the asin arithmetic below.",
+      "expected_survivor": "EQUIVALENT, not a gap. The corpus does drive asin at 2 and -2, but the guard is only an early-out: without it, 1-x*x is negative, realSquareRoot answers NaN and the whole expression is NaN anyway. Both sides agree either way."
+    },
+    {
+      "lane": "math_real_rectangular_to_polar",
+      "step": "math_real_rectangular_to_polar_oracle",
+      "what": "a NaN component stops poisoning both outputs",
+      "file": "src/core/numeric/transform/transform_complex_helpers.zig",
+      "find": "    if (runtime.realIsNaN(&re) or runtime.realIsNaN(&im)) {\n        runtime.realSetNaN(magnitude);\n        runtime.realSetNaN(theta);\n        return;\n    }",
+      "replace": "    if (runtime.realIsNaN(&re) and runtime.realIsNaN(&im)) {\n        runtime.realSetNaN(magnitude);\n        runtime.realSetNaN(theta);\n        return;\n    }",
+      "why": "or -> and: one NaN component now falls through to the arithmetic instead of short-circuiting, which is exactly the kind of edit a port makes by accident."
+    },
+    {
+      "lane": "math_random",
+      "step": "math_random_parity",
+      "what": "PCG32 stops advancing its state",
+      "file": "src/core/numeric/random/random_primitives.zig",
+      "find": "    const step = abi.pcg32.random(rng.state, rng.inc);\n    rng.state = step.next_state;\n    return step.value;",
+      "replace": "    const step = abi.pcg32.random(rng.state, rng.inc);\n    return step.value;",
+      "why": "A generator that does not advance returns the same number forever, and a lane comparing a sequence against c43's must notice from the second draw."
+    },
+    {
+      "lane": "program_serialization",
+      "step": "program_serialization_parity",
+      "what": "a refused load leaves the previous load's temporaryInformation standing",
+      "file": "src/core/program/program_serialization.zig",
+      "find": "    runtime.temporaryInformation = runtime.TI_NO_INFO; // only a completed load sets TI_PROGRAM_LOADED, so a refusal cannot leave the previous load's value standing.",
+      "replace": "",
+      "why": "The clear is the port's own fix for a stale-status defect, and the lane cannot see it removed. Recorded rather than widened; the killing mutant for this lane is the load bound below.",
+      "expected_survivor": "A GAP, not an equivalence. temporaryInformation IS in the compared snapshot, but the fixture resets it to 0 before every case, so a refused load leaves 0 whether or not the owner clears it. Reaching this needs a case that seeds TI_PROGRAM_LOADED and then refuses -- the same shape as the SPCRES precondition in the full-core lane."
+    },
+    {
+      "lane": "math_real_trig_primitives",
+      "step": "math_real_trig_primitives_oracle",
+      "what": "asin's half-angle identity adds where it subtracts",
+      "file": "src/core/numeric/trig/wp34s_atan.zig",
+      "find": "    realMultiply(x, x, z, realContext);\n    realSubtract(const_1(), z, z, realContext);\n    realSquareRoot(z, z, realContext);",
+      "replace": "    realMultiply(x, x, z, realContext);\n    realAdd(const_1(), z, z, realContext);\n    realSquareRoot(z, z, realContext);",
+      "why": "angle = 2*atan(x/(1+sqrt(1-x*x))). The lane drives asin at 0, +-0.5 and +-1, so a sign error in the radicand moves every in-domain answer."
+    },
+    {
+      "lane": "program_serialization",
+      "step": "program_serialization_parity",
+      "what": "the load path drops its 16-bit program-size bound",
+      "file": "src/core/program/program_serialization.zig",
+      "find": "    if (@as(u64, program_size_in_bytes) + 2 > @as(u64, runtime.freeProgramBytes) + runtime.getFreeRamMemoryBytes() or\n        @as(u64, program_size_in_bytes) + 2 > 0xFFFF)\n    {",
+      "replace": "    if (@as(u64, program_size_in_bytes) + 2 > @as(u64, runtime.freeProgramBytes) + runtime.getFreeRamMemoryBytes())\n    {",
+      "why": "freeProgramBytes is a uint16_t and addSpaceAfterPrograms takes a uint16_t, so a larger claim reserves only its low 16 bits while the read loop writes them all. The lane drives oversized loads."
     }
   ]
 }
