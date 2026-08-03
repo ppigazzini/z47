@@ -4,6 +4,23 @@
 
 #include "../../../upstream/src/c47/c47.h"
 
+// THE 1071-DIGIT IMPLEMENTATION IS NOT DRIVEN HERE, AND CANNOT BE.
+//
+// C47_WP34S_Atan selects between two implementations on realContext->digits, and
+// every case below runs at 39, so the `>= 1071` branch is compiled, shipped and
+// compared by nothing. Its own precision-selector mutant survives as an
+// equivalent for that reason, which is recorded in the negative-control manifest.
+//
+// Adding a case at 1071 digits was tried and SIGFPEs. realType.h:12 types real_t
+// as `decNumber  // 75 digits and 60 bytes`, and defines.h:589 fixes DECNUMDIGITS
+// at 75 -- so a context claiming 1071 digits over a real_t is out of bounds before
+// any arithmetic happens. c43 reaches that path only from xfn.c, inside
+// `#else //OPTION_XFN_1000`, and the storage question there is upstream's to
+// answer.
+//
+// So this is not a missing case row. Driving it needs a real_t wide enough to hold
+// the result, which is a different harness.
+
 typedef enum {
   INPUT_TEXT,
   INPUT_POS_INF,

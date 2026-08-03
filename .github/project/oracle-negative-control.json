@@ -296,6 +296,16 @@
       "find": "    if (@as(u64, program_size_in_bytes) + 2 > @as(u64, runtime.freeProgramBytes) + runtime.getFreeRamMemoryBytes() or\n        @as(u64, program_size_in_bytes) + 2 > 0xFFFF)\n    {",
       "replace": "    if (@as(u64, program_size_in_bytes) + 2 > @as(u64, runtime.freeProgramBytes) + runtime.getFreeRamMemoryBytes())\n    {",
       "why": "freeProgramBytes is a uint16_t and addSpaceAfterPrograms takes a uint16_t, so a larger claim reserves only its low 16 bits while the read loop writes them all. The lane drives oversized loads."
+    },
+    {
+      "lane": "eigen",
+      "step": "eigen_parity",
+      "what": "the iterative driver's convergence tolerance halves",
+      "file": "src/core/numeric/matrix/eigen.zig",
+      "find": "    const eigenTolerance: i32 = @min(70, toleranceDigits * 2);",
+      "replace": "    const eigenTolerance: i32 = @min(70, toleranceDigits);",
+      "expected_survivor": "A GAP, and a wide one. This lane drives the workers AROUND calculateEigenvalues, not the driver itself, and the driver is not exported -- so covering it here would mean adding a symbol to the shipped program for a test, which this project already declined for curtReal and compareTypeErrorX. Measured: the same mutation also passes all 12830 cases of c43's testSuite, which reaches the driver through the composed fnEigenvalues. Nothing in this project constrains this tolerance.",
+      "why": "Recorded rather than widened. Closing it needs a matrix whose eigenvalues take enough iterations for the difference to reach the displayed digits, driven through fnEigenvalues -- a testSuite case, and c43's testSuite is the oracle and is never extended."
     }
   ]
 }

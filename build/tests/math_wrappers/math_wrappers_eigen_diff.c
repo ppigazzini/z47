@@ -10,6 +10,27 @@
 // is a golden (math-truth) oracle, not a Zig-vs-C parity oracle: it drives the
 // exported Zig workers on fixed input matrices and compares the real_t outputs
 // against hand-verified reference eigenvalues.
+//
+// WHAT THIS LANE DOES NOT COVER, MEASURED.
+//
+// It drives the workers AROUND the iteration -- the closed-form 2x2 and 3x3
+// solvers, isRealSymmetric, dropNoise and the Householder QR step -- and not
+// calculateEigenvalues, the iterative driver that calls them.
+//
+// That is not an oversight this file can fix. calculateEigenvalues is `pub fn`
+// and not exported, so a worker-level case would need a new symbol in the shipped
+// program purely for a test -- the same question asked and answered for curtReal
+// and compareTypeErrorX in the full-core lane, where the answer was no.
+//
+// The gap is real and it is wider than "this lane". Halving the driver's
+// convergence tolerance -- `@min(70, toleranceDigits * 2)` to `@min(70,
+// toleranceDigits)` -- passes this lane AND all 12830 cases of c43's own
+// testSuite, which reaches it through the composed fnEigenvalues. So nothing in
+// this project constrains that tolerance.
+//
+// Closing it would need a matrix whose eigenvalues take enough iterations for the
+// difference to reach the displayed digits, driven through fnEigenvalues. That is
+// a testSuite case, and c43's testSuite is the oracle and is never extended.
 
 #include "../../../upstream/src/c47/c47.h"
 
