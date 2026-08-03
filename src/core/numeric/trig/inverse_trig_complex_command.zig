@@ -6,9 +6,13 @@ fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
 
+/// The three sites here negate with c43's `realMinus`, which is decNumberMinus --
+/// arithmetic negation, not a sign-bit flip. The distinction only shows on NaN:
+/// `bits ^= 0x80` turns a quiet NaN negative, while the arithmetic form leaves it
+/// positive, so arccos of NaN or of an out-of-domain infinity ended up with a
+/// negative NaN in its imaginary part.
 fn negateReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
-    copyReal(destination, source);
-    runtime.realChangeSign(destination);
+    runtime.realMinus(source, destination, &runtime.ctxtReal39);
 }
 
 pub fn arcsinCplx() callconv(.c) void {

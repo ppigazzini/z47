@@ -164,6 +164,39 @@
 #define unitVectorCxma oracle_unitVectorCxma
 #define unitVectorRema oracle_unitVectorRema
 
+// --- the inverse-circular and inverse-hyperbolic family (6 files) ---
+// These wrappers had no result-level comparison anywhere: the unit lane drives
+// them over a fake numeric core, which compares the paths they take and not the
+// numbers they produce. Here both sides run on real decNumber.
+#define arcsinCplx oracle_arcsinCplx
+#define arcsinReal oracle_arcsinReal
+#define ArcsinComplex oracle_ArcsinComplex
+#define fnArcsin oracle_fnArcsin
+
+#define arccosCplx oracle_arccosCplx
+#define arccosReal oracle_arccosReal
+#define fnArccos oracle_fnArccos
+
+#define arctanReal oracle_arctanReal
+#define arctanCplx oracle_arctanCplx
+#define ArctanComplex oracle_ArctanComplex
+#define fnArctan oracle_fnArctan
+
+#define arcsinhReal oracle_arcsinhReal
+#define arcsinhCplx oracle_arcsinhCplx
+#define ArcsinhReal oracle_ArcsinhReal
+#define ArcsinhComplex oracle_ArcsinhComplex
+#define fnArcsinh oracle_fnArcsinh
+
+#define arccoshCplx oracle_arccoshCplx
+#define arccoshReal oracle_arccoshReal
+#define realArcosh oracle_realArcosh
+#define fnArccosh oracle_fnArccosh
+
+#define arctanhCplx oracle_arctanhCplx
+#define arctanhReal oracle_arctanhReal
+#define fnArctanh oracle_fnArctanh
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -178,6 +211,12 @@
 #include "../../../upstream/src/c47/mathematics/conjugate.c"
 #include "../../../upstream/src/c47/mathematics/swapRealImaginary.c"
 #include "../../../upstream/src/c47/mathematics/unitVector.c"
+#include "../../../upstream/src/c47/mathematics/arcsin.c"
+#include "../../../upstream/src/c47/mathematics/arccos.c"
+#include "../../../upstream/src/c47/mathematics/arctan.c"
+#include "../../../upstream/src/c47/mathematics/arcsinh.c"
+#include "../../../upstream/src/c47/mathematics/arccosh.c"
+#include "../../../upstream/src/c47/mathematics/arctanh.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it
