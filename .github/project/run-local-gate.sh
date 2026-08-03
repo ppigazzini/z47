@@ -159,6 +159,15 @@ step "[10a/11] malformed-input corpora through the real load paths"
 zig build pgm_load_fuzz --summary none
 zig build state_load_fuzz --summary none
 
+step "[6g2d/11] owners do not change behaviour when they are being tested"
+# A build-option conditional inside an owner is fine when it mirrors an upstream
+# `#if` -- z47 is a 1:1 port of a C program full of them. It is a defect when it
+# exists only because z47 has a harness: the lane then tests a program that does
+# not ship. That is how four error codes came to differ between the harness and
+# the product build while both sides agreed with each other.
+python3 .github/project/check-owner-build-conditionals.py --self-test >/dev/null
+python3 .github/project/check-owner-build-conditionals.py --repo-root .
+
 step "[10e/11] every parity lane the build declares is actually run"
 # Enumerates the lanes from `zig build --help` and diffs them against the battery,
 # because "they are all in there" was a claim checked by reading and it was wrong
