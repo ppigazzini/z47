@@ -188,6 +188,30 @@ In the vocabulary of
 says the wrappers *called* the same functions with the same arguments, and says
 nothing about whether they computed the right number.
 
+### The rule: an owner must not change what it does because it is tested
+
+A build-option conditional inside an owner is fine when it mirrors an upstream
+`#if` — z47 is a 1:1 port of a C program full of them, and `DMCP_BUILD`,
+`SAVE_SPACE_*`, `OPTION_*` and even `TESTSUITE_BUILD` (which c43 uses itself) all
+have to be mirrored. It is a defect when it exists only because z47 has a harness.
+
+That distinction is not academic. An owner compiled
+`ERROR_INVALID_DATA_TYPE_FOR_OP` as 2 for the unit harness and 24 for the product;
+the harness header carried the same 2; the lane's two sides agreed perfectly about
+a number c43 has never used, and error codes in that lane were held to nothing.
+The same flag gave the harness build a matrix header with **no `mtag` field**, so
+no matrix angular-mode behaviour was reachable from the only lane that tests
+matrices.
+
+[check-owner-build-conditionals.py](../.github/project/check-owner-build-conditionals.py)
+ratchets these. Its most useful clause is that an option which is neither
+allowed nor banned is **a decision nobody has made** — that is what surfaced
+`free_regions_are_inline_array` and `use_array_backed_global_registers`, the same
+seam under names that do not start with `use_fake_`.
+
+Feathers calls this a preprocessing seam; see
+[90-official-references.md](90-official-references.md).
+
 ### The rule: a parity lane that is in no gate is not a lane
 
 Adding a lane is half the work; the half that keeps it alive is putting it in

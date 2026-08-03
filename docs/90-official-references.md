@@ -282,10 +282,25 @@ Secondary — how you know a check would actually catch anything:
 Secondary — what a golden file actually is:
 
 - **Feathers — *Working Effectively with Legacy Code*, Prentice Hall, 2004**,
-  ch. 13, "characterization tests": a characterization test pins *current*
+  two chapters, and this entry has earned its place twice.
+
+  **ch. 13, "characterization tests":** a characterization test pins *current*
   behaviour, is explicitly not a correctness claim, and exists to make change
   safe. That is exactly what `save_load_golden.sav` is, which is why it is not a
   parity reference no matter what the lane is called.
+
+  **ch. 4, "The Seam Model":** a seam is a place where behaviour can be changed
+  without editing in that place, and he classifies them as **object**, **link**
+  and **preprocessing** seams. His warning about the last two is that they let the
+  code under test differ from the code that ships, so they should be used sparingly
+  and visibly. z47 had that defect and did not name it for a long time: an owner
+  compiled `ERROR_INVALID_DATA_TYPE_FOR_OP` as 2 for its unit harness and 24 for
+  the product, the harness header carried the same 2, and the lane's two sides
+  agreed perfectly about a number c43 has never used. The same flag also gave the
+  harness build a matrix header with no `mtag`. This chapter is why
+  [check-owner-build-conditionals.py](../.github/project/check-owner-build-conditionals.py)
+  distinguishes a conditional that MIRRORS an upstream `#if` — which a 1:1 port
+  must have — from one that exists only because there is a harness.
 
 ### The in-tree mapping
 
@@ -303,6 +318,7 @@ first: it is the only question that matters about a reference.
 | `save_load_golden.sav` | characterization test | no | change detector only |
 | unit lane on a hand-built `c47.h` + fake runtime | fake-hosted derived oracle | partly — the *reference* does, the *environment* does not | full for control flow, **none** for anything the fake cannot compute |
 | snapshot of call counts and arguments | interaction (spy) oracle | no — it pins the port's call pattern | change detector; breaks on refactor, misses wrong results |
+| a lane whose owner is built with different constants or types than the product | preprocessing seam | n/a — the reference may be perfect | **negative**: it proves things about a program that does not ship |
 | hand-transliterated `*_oracle.c` | failed pseudo-oracle | no | **negative** |
 
 The last three rows are not "weak". The last is negative: it produces evidence of
