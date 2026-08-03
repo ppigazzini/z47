@@ -1312,6 +1312,16 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         .target = context.host_target,
         .optimize = optimize,
     });
+    // The owner tree reaches the shared C layouts as `@import("abi")`, so the
+    // module has to register it the way every other oracle here does. This was a
+    // second, latent failure: the module never had it, and the lane died on the
+    // module-path escapes first, so it was never reached (REPORT-31 M31-27).
+    const distribution_owners_abi_module = b.createModule(.{
+        .root_source_file = b.path("src/abi/types.zig"),
+        .target = context.host_target,
+        .optimize = optimize,
+    });
+    distribution_owners_module.addImport("abi", distribution_owners_abi_module);
     // The distribution owners (via frontier_distribution_runtime) expect the same
     // frontier_build_options the product frontier object gets; the harness is a
     // host-style link, so keep all distributions and the EXTRA_INFO hints.
