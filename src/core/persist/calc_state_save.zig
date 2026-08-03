@@ -664,6 +664,11 @@ fn doSaveDataFile(beginR: ?*const u16, endR: ?*const u16, registerName: [*c]cons
     codec.dataFileMode = true; // compact human-readable value forms for this file
     abi.fmtCStr(b(), "DATA_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
+    // Data file version number, mirroring the state file convention. The tag is
+    // model-independent, unlike the save file's C47_/R47_ tags: a data file
+    // carries no model-specific content, so C47 and R47 read each other's.
+    abi.fmtCStr(b(), "C47/R47_data_file_00\n{d}\n", .{cu(configFileVersion)});
+    save(b());
 
     _ = fnSaveDataRegisters(beginR, endR, registerName, isXFNRegister);
 

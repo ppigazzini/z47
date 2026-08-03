@@ -42,6 +42,7 @@
 #include <string.h>
 
 #define SAVE_FILE "c47.sav"
+#define REGS_FILE "c47.regs" // ioPathRegExport, per the host HAL
 
 // The deterministic fixture, shared with save_load_roundtrip_harness.c so the two
 // calc-state lanes serialize the same calculator.
@@ -53,6 +54,7 @@
 // are c43's own bodies from calc_state_oracle.c.
 // ---------------------------------------------------------------------------
 extern void oracle_fnSave(uint16_t saveMode);
+extern void oracle_fnSaveXFNRegister(uint16_t unusedButMandatoryParameter);
 extern void oracle_fnLoad(uint16_t loadMode);
 extern void oracle_doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType);
 
@@ -240,6 +242,58 @@ static int runSaveFormatDifferential(void) {
   return compareBytes("SAVE: z47's .sav bytes == c43's", zigSave, zigSaveLen, c43Save, c43SaveLen);
 }
 
+// The DATA-FILE save, which the ordinary .sav differential above cannot reach.
+//
+// fnSave writes the state file; the register export is a different entry point
+// (fnSaveXFNRegister -> doSaveDataFile -> fnSaveDataRegisters) writing a
+// human-readable register file through ioPathRegExport, which the host HAL maps
+// to c47.regs. It is the ONLY path that emits the RXFN type tag, because that tag
+// comes from registerToSaveString's isXFNRegister branch and nothing else sets
+// that flag.
+//
+// Without this the lane compared every byte c43 writes except the ones only this
+// path produces, and a mutation of the RXFN tag survived unnoticed.
+static unsigned char zigRegs[MAX_SAVE];
+static unsigned char c43Regs[MAX_SAVE];
+
+// The XFN export reads its value through getCombinedParameter, which combines
+// THREE consecutive registers as x*y+z and refuses the set unless their types and
+// angle modes agree. buildState leaves Z carrying an angle mode, so the combine
+// is refused and the writer takes its error branch -- which emits no type tag at
+// all. Seeding X/Y/Z as three plain reals is what makes the RXFN branch reachable;
+// without it the lane exercises only the refusal.
+static void seedXfnOperands(void) {
+  const int32_t values[3] = { 1234, 2, 5 };
+  for(int i = 0; i < 3; i++) {
+    reallocateRegister(REGISTER_X + i, dtReal34, 0, amNone);
+    int32ToReal34(values[i], REGISTER_REAL34_DATA(REGISTER_X + i));
+  }
+}
+
+static int runDataFileSaveDifferential(void) {
+  buildState();
+  seedXfnOperands();
+  fnSaveXFNRegister(0);
+  const long zigLen = readWholeFile(REGS_FILE, zigRegs, MAX_SAVE);
+  if(zigLen < 0) {
+    fail("could not read %s after the z47 XFN register export", REGS_FILE);
+    return 1;
+  }
+
+  // Re-seed, exactly as the .sav differential does: the oracle must see the
+  // calculator the Zig writer saw, not the one it left behind.
+  buildState();
+  seedXfnOperands();
+  oracle_fnSaveXFNRegister(0);
+  const long c43Len = readWholeFile(REGS_FILE, c43Regs, MAX_SAVE);
+  if(c43Len < 0) {
+    fail("could not read %s after the c43 XFN register export", REGS_FILE);
+    return 1;
+  }
+
+  return compareBytes("SAVE: z47's XFN register export == c43's", zigRegs, zigLen, c43Regs, c43Len);
+}
+
 // ---------------------------------------------------------------------------
 // Check 3 -- RESTORE parity, measured through a common writer.
 //
@@ -392,6 +446,7 @@ int main(void) {
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
   runParserFamilyDifferential();
+  runDataFileSaveDifferential();
   if(runSaveFormatDifferential() == 0) {
     runRestoreDifferential();
     runLoadPolicyDifferential();
