@@ -233,9 +233,9 @@ fn dblDivideOwned(remainder_mode: bool) void {
         runtime.clearSystemFlag(runtime.FLAG_OVERFLOW);
     }
 
-    runtime.fnDropY(0);
+    runtime.fnDropY(runtime.NOPARAM);
     if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        runtime.fnDropY(0);
+        runtime.fnDropY(runtime.NOPARAM);
     }
 }
 

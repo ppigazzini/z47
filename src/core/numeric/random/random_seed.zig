@@ -34,7 +34,7 @@ pub fn seed(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    runtime.fnDrop(0);
+    runtime.fnDrop(runtime.NOPARAM);
 
     const lsu_bytes: *const [50]u8 = @ptrCast(&register_x.lsu);
     var seed_value = readSeedWord(lsu_bytes, 0);

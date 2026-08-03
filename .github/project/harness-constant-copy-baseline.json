@@ -5,7 +5,7 @@
   "counts": {
     "build/tests/c47.h": 10,
     "build/tests/constants/c47.h": 12,
-    "build/tests/math_wrappers/c47.h": 127,
+    "build/tests/math_wrappers/c47.h": 126,
     "build/tests/memory/c47.h": 4,
     "build/tests/rotate_bits/c47.h": 12,
     "build/tests/stack_state/c47.h": 74,
@@ -16,14 +16,5 @@
       "RAM_SIZE_IN_BLOCKS": "The memory lane models c43's block allocator over a DELIBERATELY tiny pool so a host test binary can exhaust it, walk it and diff it whole; c43's 65534 blocks would make every full-pool case unrunnable. Taking upstream's value would not be a fix, it would delete the lane's method. The allocator LOGIC is what is under test and it is size-independent."
     }
   },
-  "drifted": {
-    "build/tests/math_wrappers/c47.h": [
-      "ERROR_INVALID_DATA_TYPE_FOR_OP",
-      "ERROR_MATRIX_MISMATCH",
-      "ERROR_OUT_OF_RANGE",
-      "ERROR_RAM_FULL",
-      "NOPARAM",
-      "bugMsgUnexpectedSValue"
-    ]
-  }
+  "drifted": {}
 }

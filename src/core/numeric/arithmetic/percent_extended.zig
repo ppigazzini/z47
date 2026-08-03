@@ -59,7 +59,7 @@ pub fn percentMRR(unused_but_mandatory_parameter: u16) void {
 
     runtime.adjustResult(runtime.REGISTER_X, true, true, runtime.REGISTER_X, no_register, no_register);
     if (runtime.lastErrorCode == 0) {
-        runtime.fnDropY(0);
+        runtime.fnDropY(runtime.NOPARAM);
     }
 }
 

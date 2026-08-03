@@ -35,9 +35,9 @@ fn ixyz() callconv(.c) void {
             runtime.WP34S_betai(&b_value, &a_value, &x_value, &result, &runtime.ctxtReal39);
             runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
             runtime.convertRealToReal34ResultRegister(&result, runtime.REGISTER_X);
-            runtime.fnDropY(0);
+            runtime.fnDropY(runtime.NOPARAM);
             if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-                runtime.fnDropY(0);
+                runtime.fnDropY(runtime.NOPARAM);
             }
         } else {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
