@@ -8,8 +8,9 @@ page assumes the build entrypoints and ownership split are already clear.
 
 Audit basis: 2026-08-03, upstream pin `b9e1cc0c1`, Zig `0.16.0` stable. The
 per-owner parity section was re-audited on that date, when the last
-hand-transliterated oracle was converted (REPORT-31 M31-14) — every `*_parity`
-lane's reference is now c43 source compiled at build time.
+hand-transliterated oracle FILE was converted (REPORT-31 M31-14). Two lanes still
+carry hand-written reference FUNCTIONS inside compiled oracles — see the rule
+below and REPORT-31 Annex C.
 
 ## The One-Command Local Gate
 
@@ -159,11 +160,18 @@ Concretely, when writing or touching an oracle:
   behavioural change into the c43 file, confirm red, revert. A conversion that
   cannot be shown to fail has been assumed, not verified.
 
-**No hand-written parity reference remains in the tree.** All five that existed
-were converted (REPORT-31 M31-2, M31-3, M31-10, M31-12, M31-13) and the `frozen`
-list in `.github/project/oracle-provenance-manifest.json` is EMPTY.
-`check-oracle-provenance.py` (local gate and CI) keeps it that way: re-adding an
-entry is a written admission that a lane cannot see c43 move, and the gate also
+**A reference is a FUNCTION, not a file.** All five hand-transliterated oracle
+FILES were converted (REPORT-31 M31-2, M31-3, M31-10, M31-12, M31-13) and the
+`frozen` list in `.github/project/oracle-provenance-manifest.json` is EMPTY — but
+that is not the same claim. Hand-written reference bodies still live inside two
+files that *also* `#include` c43 source, which is exactly why neither was ever
+eligible for that list: `math_wrappers_oracle.c` (38 of them, reached by 297 of
+the lane's 726 oracle calls) and `stack_state_oracle.c` (10). REPORT-31 Annex C
+measures it and §11 closes it. When you touch either lane, do not add a
+thirty-ninth.
+
+`check-oracle-provenance.py` (local gate and CI) keeps the file-level list empty:
+re-adding an entry is a written admission that a lane cannot see c43 move, and it also
 re-runs the one *generated* oracle's extractor (`charstring_diff`) and demands
 byte-identical output. A compiled-from-c43 oracle needs no entry at all, because
 `check-imported-tree-pin.py` already holds the source it includes to the pin.
