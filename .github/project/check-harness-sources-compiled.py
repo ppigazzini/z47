@@ -6,18 +6,25 @@ declared, that were buildable and green, and that NOTHING ran. This is the same
 defect one level down: four `.c` files under `build/tests/` that compile from c43
 source correctly and that no build step compiles.
 
-The worst of them was not dead code. `math_wrappers_transform_oracle.c` is a
-FINISHED compile-from-c43 conversion of `fnToRect` -- it `#define`s the names and
-`#include`s `mathematics/toRect.c`, which is the shape every parity oracle in this
-tree is supposed to have. Beside it, in the file the lane actually links, sat 73
-hand-written lines reimplementing the same function. The conversion had been done
-and never wired up, so the lane kept comparing against the transliteration.
+Every one of the four READ like a finished conversion: `#define` renames over an
+`#include` of the c43 file, which is the shape every parity oracle in this tree is
+supposed to have. Compiled, two of them did not build at all against the harness's
+`c47.h` -- `bugMsgUnexpectedSValue`, `realCopyAbs`, `mod2Pi`, `const39_3piOn2` and
+`unitVectorError` are not declared there -- and linking the other two produced 14
+duplicate symbols against the oracle the lane already links, which `#include`s
+every c43 file they do. They were superseded attempts, not pending work, and they
+were deleted.
 
-Nothing could have reported that. The provenance gate answers "where did this
-reference come from" and this file came from c43. The lane gate answers "is this
-lane run" and the lane was. Neither asks "is this FILE connected to anything",
-which is the question here and is why this is a separate gate rather than a clause
-in either of those.
+That is the reason this gate exists in the shape it does. An uncompiled source is
+never checked by anything: not the compiler, not the linker, not a lane. It rots
+in place while reading exactly like the thing it was supposed to become, and the
+only way to find out is to build it.
+
+Nothing else could have reported them. The provenance gate answers "where did this
+reference come from" and these came from c43. The lane gate answers "is this lane
+run" and the lanes were. Neither asks "is this FILE connected to anything", which
+is the question here and is why this is a separate gate rather than a clause in
+either of those.
 
 HOW IT WORKS. Every tracked `.c` under `build/tests/` must be named by some
 `b.path(...)` in a tracked `.zig` build file. Zig string concatenation is folded
@@ -72,15 +79,8 @@ EXEMPT: dict[str, str] = {
 
 # Meant to be compiled, and is not. NOT an exemption: no reason here is a good one,
 # and writing a plausible sentence beside each would have made the gate green while
-# the defect stayed. May only shrink; the endpoint is empty.
-BACKLOG: frozenset[str] = frozenset(
-    {
-        "build/tests/math_wrappers/math_wrappers_dispatch_oracle.c",
-        "build/tests/math_wrappers/math_wrappers_misc_oracle.c",
-        "build/tests/math_wrappers/math_wrappers_percent_oracle.c",
-        "build/tests/math_wrappers/math_wrappers_transform_oracle.c",
-    }
-)
+# the defect stayed. May only shrink; the endpoint is empty, and it is empty.
+BACKLOG: frozenset[str] = frozenset()
 
 
 def tracked(repo: Path, globs: tuple[str, ...]) -> list[str]:
@@ -163,8 +163,9 @@ def main() -> int:
             print(f"  {rel}")
         print(
             "\nWire each into a build step, delete it, or add it to EXEMPT in this file"
-            "\nWITH the sentence saying why it is not compiled. One of these was a finished"
-            "\nconversion sitting beside the hand-written body its lane was still using."
+            "\nWITH the sentence saying why it is not compiled. Build it before you judge"
+            "\nit: the four that opened this gate all READ as finished conversions, and two"
+            "\nof them did not compile while the other two duplicated symbols already linked."
         )
         return 1
 
