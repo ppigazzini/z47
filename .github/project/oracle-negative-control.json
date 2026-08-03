@@ -1,0 +1,62 @@
+{
+  "_why": "One deliberate behavioural change per lane, applied to z47's own Zig owner, that the lane MUST detect. A mutant that survives is a hole in the lane, not a bug in the owner. Never mutate the imported c43 tree: it is the reference, and editing it inverts what the lane measures.",
+  "_how": "check-oracle-negative-control.py applies each `find` -> `replace` (which must match exactly once), rebuilds and runs `step`, requires a non-zero exit, then restores the file. A mutant that fails to COMPILE counts as killed: the lane refused the change.",
+  "_survivors": "A survivor that is genuinely equivalent to the original gets `expected_survivor` with the reason and stops failing the gate. A survivor without one fails it. Do not delete an entry to make this pass.",
+  "mutants": [
+    {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "real34IsNegative stops being a raw sign-bit test",
+      "file": "src/core/numeric/command_wrappers/runtime.zig",
+      "find": "    return (value.bytes[15] & 0x80) == 0x80;",
+      "replace": "    return decQuadIsNegative(value) != 0;",
+      "why": "realType.h:105 is the sign bit; decQuadIsNegative excludes zeros and NaNs, so -0 answers differently. The signed-zero predicates must catch this."
+    },
+    {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "fnGetType divides by 100 instead of 1000",
+      "file": "src/core/numeric/compare/get_type.zig",
+      "find": "    runtime.real34Divide(&real_output, consts.q16632(), &real_output);",
+      "replace": "    runtime.real34Divide(&real_output, consts.q16552(), &real_output);",
+      "why": "The type report's scale. A lane that does not compare the produced value would miss it entirely."
+    },
+    {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "swapRealImaginary zeroes the bytes instead of writing decQuad's zero",
+      "file": "src/core/numeric/projection.zig",
+      "find": "        runtime.real34SetZero(complexMatrixRealPtr(&complex_matrix, index));",
+      "replace": "        complex_matrix.matrixElements[index].real = std.mem.zeroes(runtime.real34_t);",
+      "why": "Sixteen zero bytes is a different member of zero's cohort. Only a byte-level comparison of the register payload sees it."
+    },
+    {
+      "lane": "register_metadata",
+      "step": "register_metadata_parity",
+      "what": "the lettered reserved variables stop owning a null payload pointer",
+      "file": "src/core/state/register_metadata/registers_compat_exports.zig",
+      "find": "const C47_NULL: u16 = 65535; // defines.h: the null register-data pointer",
+      "replace": "const C47_NULL: u16 = 0; // defines.h: the null register-data pointer",
+      "why": "registers.c reads C47_NULL as `this entry owns no payload`; 0 makes every lettered reserved variable look writable. This is the defect the lane was built to find."
+    },
+    {
+      "lane": "stack_state",
+      "step": "stack_state_parity",
+      "what": "liftStack shifts one register too few",
+      "file": "src/core/state/stack/stack_mutation.zig",
+      "find": "        while (reg > runtime.REGISTER_X) : (reg -= 1) {",
+      "replace": "        while (reg > runtime.REGISTER_Y) : (reg -= 1) {",
+      "why": "The stack lift is the operation this lane exists to compare; stopping at Y leaves X holding the wrong value."
+    },
+    {
+      "lane": "calc_state",
+      "step": "calc_state_parity",
+      "what": "the RXFN section marker is misspelled on the way out",
+      "file": "src/core/persist/calc_state_register_codec.zig",
+      "find": "            _ = strcpy(aim(), \"RXFN\");",
+      "replace": "            _ = strcpy(aim(), \"RXFM\");",
+      "why": "The .sav writer's section tag for full-precision XFN registers. Kills only once the lane drives the XFN save entry point.",
+      "expected_survivor": "The lane drives fnSave(SM_MANUAL_SAVE), the ordinary state save. The RXFN branch is reached only through fnSaveDataRegisters(..., isXFN) -- the full-precision XFN data-register save, a different entry point the lane never calls. So the .sav bytes it compares never contain this tag. This is a real coverage gap, not an equivalent mutant: closing it means driving the XFN save path with a 1000-digit register, which is its own piece of work. Recorded so the gap is stated rather than implied by a green run."
+    }
+  ]
+}

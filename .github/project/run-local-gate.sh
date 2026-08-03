@@ -159,6 +159,17 @@ step "[10a/11] malformed-input corpora through the real load paths"
 zig build pgm_load_fuzz --summary none
 zig build state_load_fuzz --summary none
 
+step "[10d/11] the parity lanes still fail when the owner is wrong"
+# The negative control for everything step 10 just ran green. Each lane above
+# reports "all agree"; this asks whether it CAN report anything else, by breaking
+# one behaviour in the Zig owner and requiring the lane to notice.
+#
+# Deliberately here and NOT in run-host-parity-battery.sh: every mutant costs a
+# full rebuild of its lane, which is minutes rather than seconds, and the battery
+# is what CI runs on every push. A pre-push gate is the right cadence for a check
+# whose answer changes only when a lane's coverage changes.
+python3 .github/project/check-oracle-negative-control.py --repo-root .
+
 step "[10b/11] firmware link for every DMCP package variant"
 # NOT redundant with `zig build dmcp` / `dmcp5`, and not optional. The OLD_HW
 # package-3 layout asserts `_ebss <= 0x10002000` and sits EXACTLY on it, so a few
