@@ -1092,6 +1092,10 @@ static const pair_t PAIRS[] = {
   { "zero:-1234",             seedRealPlusZero,          secondRealMinus1234       },
   { "minusZero:-1234",        seedRealMinusZero,         secondRealMinus1234       },
   { "shortIntZero:-1234",     seedShortInteger,          secondRealMinus1234       },
+  // The last two classes the partition gate wanted in the X position.
+  { "outOfDomainNoRes:real7", seedRealOutOfDomainNoResults, secondReal7            },
+  { "spcresClear:real7",      seedComplexMatrixImagZero, secondReal7               },
+
   // STILL UNREACHED, and recorded rather than chased. All nine minus-infinity
   // results in division_cells.zig can be turned into plus-infinity with every case
   // here agreeing, and making divLonIReal return immediately changes nothing --
