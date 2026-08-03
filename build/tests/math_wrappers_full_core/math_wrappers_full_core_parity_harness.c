@@ -500,6 +500,69 @@ typedef struct {
   void      (*seed)(void);
 } fixture_t;
 
+// ---------------------------------------------------------------------------
+// The SIGN partition.
+//
+// The shapes above enumerate DATA TYPES exhaustively and every one of them is
+// non-negative: seedRealPositive is 1234, seedRealEven 42, seedRealOdd 43,
+// seedRealWithAngle +90 degrees, seedShortInteger 0xDEADBEEF with sign 0,
+// seedLongInteger +123456789012345678901234567890. Only realMinusZero carried a
+// sign, and it is a boundary rather than a magnitude -- so X was never negative in
+// any case this lane ran, while src/core/numeric/ branches on sign at 265 sites.
+//
+// It was demonstrable rather than theoretical: deleting the negative-infinity sign
+// handling from arctanReal, so that arctan(-inf) answers +90 degrees instead of
+// -90, left every case in this lane agreeing.
+//
+// A partition is only as good as the list of properties it was drawn over. This is
+// the second property; PARTITION_PROPERTIES below is the list.
+// ---------------------------------------------------------------------------
+
+static void seedRealNegative(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(-1234, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealNegativeFraction(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  stringToReal34("-1.5", REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealNegativeInfinity(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  stringToReal34("-Infinity", REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealNegativeWithAngle(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amDegree);
+  int32ToReal34(-90, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedShortIntegerNegative(void) {
+  convertUInt64ToShortIntegerRegister(1, 0xDEADBEEFULL, 16, REGISTER_X);
+}
+
+static void seedLongIntegerNegative(void) {
+  longInteger_t li;
+  longIntegerInit(li);
+  stringToLongInteger("-123456789012345678901234567890", 10, li);
+  convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+  longIntegerFree(li);
+}
+
+// The +-1 boundary. arcsin, arccos, arctanh and arccosh all branch on |x| > 1, and
+// the nearest fixtures were 1.5 and 0 -- so the edge itself, where boundary value
+// analysis says the errors cluster, was on neither side of any comparison.
+static void seedRealOne(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(1, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
+static void seedRealMinusOne(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(-1, REGISTER_REAL34_DATA(REGISTER_X));
+}
+
 static const fixture_t FIXTURES[] = {
   { "realPositive",    seedRealPositive    },
   { "realWithAngle",   seedRealWithAngle   },
@@ -523,6 +586,16 @@ static const fixture_t FIXTURES[] = {
   { "complexMatrix",   seedComplexMatrix   },
   { "complexMatrixImagZero", seedComplexMatrixImagZero },
   { "time",            seedTime            },
+
+  // The sign partition, and the +-1 boundary.
+  { "realNegative",          seedRealNegative          },
+  { "realNegativeFraction",  seedRealNegativeFraction  },
+  { "realNegativeInfinity",  seedRealNegativeInfinity  },
+  { "realNegativeWithAngle", seedRealNegativeWithAngle },
+  { "shortIntegerNegative",  seedShortIntegerNegative  },
+  { "longIntegerNegative",   seedLongIntegerNegative   },
+  { "realOne",               seedRealOne               },
+  { "realMinusOne",          seedRealMinusOne          },
 };
 
 typedef struct {
