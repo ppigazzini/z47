@@ -980,6 +980,20 @@ static void secondShortInteger(void) { convertUInt64ToShortIntegerRegister(0, 0x
 static void secondString(void)       { const char *s = "second"; reallocateRegister(REGISTER_Y, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone); strcpy(REGISTER_STRING_DATA(REGISTER_Y), s);
                                        reallocateRegister(REGISTER_Z, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone); strcpy(REGISTER_STRING_DATA(REGISTER_Z), s); }
 
+static void secondRealMinus1234(void){ reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); int32ToReal34(-1234, REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); int32ToReal34(-1234, REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondRealMinusInfinity(void) { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); stringToReal34("-Infinity", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); stringToReal34("-Infinity", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondLongIntegerNegative(void) { longInteger_t li; longIntegerInit(li); stringToLongInteger("-98765432109876543210", 10, li);
+                                       convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
+                                       convertLongIntegerToLongIntegerRegister(li, REGISTER_Z); longIntegerFree(li); }
+static void secondShortIntegerNegative(void) { convertUInt64ToShortIntegerRegister(1, 0x1FULL, 16, REGISTER_Y);
+                                       convertUInt64ToShortIntegerRegister(1, 0x1FULL, 16, REGISTER_Z); }
+static void secondMatrix2x3(void)    { initMatrixRegister(REGISTER_Y, 2, 3, false); for(int e = 0; e < 6; ++e) { int32ToReal34(e + 1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_Y) + e); }
+                                       initMatrixRegister(REGISTER_Z, 2, 3, false); for(int e = 0; e < 6; ++e) { int32ToReal34(e + 1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_Z) + e); } }
+static void secondTime(void)         { reallocateRegister(REGISTER_Y, dtTime, 0, amNone);
+                                       reallocateRegister(REGISTER_Z, dtTime, 0, amNone); }
+
 static const pair_t PAIRS[] = {
   { "real1234:real1234",   seedRealPositive,  secondReal1234     }, // equal
   { "real1234:real7",      seedRealPositive,  secondReal7        }, // greater
@@ -1001,6 +1015,90 @@ static const pair_t PAIRS[] = {
   { "string:real7",        seedString,        secondReal7        }, // type error
   { "matrix2x3:real7",     seedMatrix2x3,     secondReal7        },
   { "real1234:string",     seedRealPositive,  secondString       },
+
+  // ---------------------------------------------------------------------
+  // The CLASS coverage half of this table.
+  //
+  // The twenty pairs above were each picked for a reason and every one of those
+  // reasons is still worth having -- equal, greater, divides unevenly, divide by
+  // zero, type error. What they are NOT is a coverage criterion: they draw on
+  // twelve of the thirty-seven shapes in the X position and nine in Y, and nobody
+  // could say what fraction of class pairs they cover because nothing stated the
+  // classes.
+  //
+  // Measured, that mattered. X was never negative in any binary case, so making
+  // divide-by-zero answer +Infinity regardless of the dividend's sign -- which
+  // turns -1234/0 into +Infinity where c43 gives -Infinity -- left the whole lane
+  // agreeing.
+  //
+  // The rows below give every class in PARTITION_PROPERTIES a representative in
+  // the X position, and every signed class one in Y. They are additions, not
+  // replacements: a generated set that displaced the hand-picked one would trade
+  // this blind spot for the loss of the intent above.
+  // ---------------------------------------------------------------------
+  { "negative:real7",         seedRealNegative,          secondReal7               }, // sign of X
+  { "real1234:-1234",         seedRealPositive,          secondRealMinus1234       }, // sign of Y
+  { "negative:-1234",         seedRealNegative,          secondRealMinus1234       }, // both negative
+  { "negative:zero",          seedRealNegative,          secondRealZero            }, // -x/0 -> -Infinity
+  { "negativeFraction:real7", seedRealNegativeFraction,  secondReal7               },
+  { "minusZero:zero",         seedRealMinusZero,         secondRealZero            }, // signed zeros
+  { "minusOne:real7",         seedRealMinusOne,          secondReal7               }, // the -1 boundary
+  { "one:real7",              seedRealOne,               secondReal7               }, // the +1 boundary
+  { "minusInfinity:real7",    seedRealNegativeInfinity,  secondReal7               },
+  { "real1234:-infinity",     seedRealPositive,          secondRealMinusInfinity   },
+  { "longIntNegative:real7",  seedLongIntegerNegative,   secondReal7               },
+  { "longIntZero:real7",      seedLongIntegerZero,       secondReal7               },
+  { "real1234:longIntNeg",    seedRealPositive,          secondLongIntegerNegative },
+  { "shortIntNegative:real7", seedShortIntegerNegative,  secondReal7               },
+  { "real1234:shortIntNeg",   seedRealPositive,          secondShortIntegerNegative },
+  { "realWithAngle:real7",    seedRealWithAngle,         secondReal7               },
+  { "negativeAngle:real7",    seedRealNegativeWithAngle, secondReal7               },
+  { "complexRealZero:real7",  seedComplexRealZero,       secondReal7               },
+  { "complexImagZero:real7",  seedComplexImagZero,       secondReal7               },
+  { "complexPolar:real7",     seedComplexPolar,          secondReal7               },
+  { "matrixSquare:real7",     seedMatrixSquare,          secondReal7               },
+  { "matrixWithAngle:real7",  seedMatrixWithAngle,       secondReal7               },
+  { "vector2d:real7",         seedVector2d,              secondReal7               },
+  { "vector3d:real7",         seedVector3d,              secondReal7               },
+  { "complexMatrix:real7",    seedComplexMatrix,         secondReal7               },
+  { "cxMatrixWithAngle:real7", seedComplexMatrixWithAngle, secondReal7             },
+  { "real1234:matrix2x3",     seedRealPositive,          secondMatrix2x3           },
+  { "matrix2x3:matrix2x3",    seedMatrix2x3,             secondMatrix2x3           },
+  { "time:real7",             seedTime,                  secondReal7               },
+  { "real1234:time",          seedRealPositive,          secondTime                },
+  { "outOfDomainNoCpx:real7", seedRealOutOfDomainNoComplex, secondReal7            },
+  { "hprp:real7",             seedRealHprp,              secondReal7               },
+
+  // Class PAIRS, not just classes in the X position. The rows above vary X against
+  // a fixed Y of 7, which covers every class once and still leaves the interesting
+  // combinations out: dividing a long integer by zero lives in its own dispatch
+  // cell, and reaching it needs a zero in one operand AND a long integer in the
+  // other. Varying one axis at a time is what a pairwise criterion exists to stop.
+  { "zero:longIntNegative",   seedRealPlusZero,          secondLongIntegerNegative },
+  { "zero:longInteger",       seedRealPlusZero,          secondReal1234            },
+  { "longIntNegative:zero",   seedLongIntegerNegative,   secondRealZero            },
+  { "negative:negative",      seedRealNegative,          secondRealMinus1234       },
+  { "minusInfinity:-infinity", seedRealNegativeInfinity, secondRealMinusInfinity   },
+  { "shortIntNegative:shortIntNeg", seedShortIntegerNegative, secondShortIntegerNegative },
+
+  // Divide-by-zero with a SIGNED dividend. Each division cell checks a different
+  // register for the zero, so covering the +-Infinity results needs the zero and
+  // the negative dividend in the right operands for each cell -- which is a pair
+  // of classes, not a class in one position. All nine minus-infinity results in
+  // division_cells.zig could be turned into plus-infinity without a single case
+  // noticing until these rows existed.
+  { "longIntZero:-1234",      seedLongIntegerZero,       secondRealMinus1234       },
+  { "longIntZero:real1234",   seedLongIntegerZero,       secondReal1234            },
+  { "zero:-1234",             seedRealPlusZero,          secondRealMinus1234       },
+  { "minusZero:-1234",        seedRealMinusZero,         secondRealMinus1234       },
+  { "shortIntZero:-1234",     seedShortInteger,          secondRealMinus1234       },
+  // STILL UNREACHED, and recorded rather than chased. All nine minus-infinity
+  // results in division_cells.zig can be turned into plus-infinity with every case
+  // here agreeing, and making divLonIReal return immediately changes nothing --
+  // while making divRealReal return immediately is noticed by exactly one case.
+  // So fnDivide is not routing through those cells for the operand pairs above.
+  // That is a question about the owner's dispatch, not about these fixtures, and
+  // adding more pairs will not answer it.
 };
 
 static const predicate_t BINARY[] = {
