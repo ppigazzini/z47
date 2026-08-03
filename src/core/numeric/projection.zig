@@ -363,6 +363,13 @@ fn conjugateRealMatrix() void {
 fn conjugateComplexMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
 
+    // linkToComplexMatrixRegister aliases the register's own storage, so the loop
+    // below edits the register in place and conjugate.c's conjCxma ends here. No
+    // write-back: convertComplex34MatrixToComplex34MatrixRegister would
+    // reallocateRegister the very block matrixElements points into and then copy
+    // from it, and it can raise ERROR_RAM_FULL on a path where c43 never allocates.
+    // conjRema below DOES write back and free, because its matrix is a converted
+    // copy rather than the register.
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     const count = complexMatrixElementCount(&complex_matrix);
 
@@ -373,8 +380,6 @@ fn conjugateComplexMatrix() void {
             runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));
         }
     }
-
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
 }
 
 fn conjugateComplex() callconv(.c) void {
@@ -451,6 +456,9 @@ fn swapRealImaginaryRealMatrix() void {
 fn swapRealImaginaryComplexMatrix() void {
     var complex_matrix: runtime.complex34Matrix_t = undefined;
 
+    // Aliased to the register, so the swap lands in place and
+    // swapRealImaginary.c's swapReImCxma ends here. swapReImRema below writes back
+    // and frees because its matrix is a converted copy, not the register.
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_X, &complex_matrix);
     const count = complexMatrixElementCount(&complex_matrix);
 
@@ -460,8 +468,6 @@ fn swapRealImaginaryComplexMatrix() void {
         complex_matrix.matrixElements[index].real = complex_matrix.matrixElements[index].imag;
         complex_matrix.matrixElements[index].imag = real_value;
     }
-
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);
 }
 
 pub fn swapRealImaginary() void {
