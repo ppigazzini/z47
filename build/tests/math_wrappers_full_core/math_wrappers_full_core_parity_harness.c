@@ -563,6 +563,51 @@ static void seedRealMinusOne(void) {
   int32ToReal34(-1, REGISTER_REAL34_DATA(REGISTER_X));
 }
 
+// ---------------------------------------------------------------------------
+// Shapes recovered from the orphaned fixtures of the unit lane.
+//
+// When these wrappers' coverage moved here, their cases were deleted and their
+// `configure*` fixtures were left behind unreferenced. Reading the 96 before
+// deleting them turned up four register configurations that the move did not
+// bring across -- a zero long integer, a polar complex, and an angular mode on a
+// matrix of either kind.
+//
+// The last two matter most. M31-37 unified matrixHeader_t with c43's bitfield
+// specifically so `mtag` would exist here, and then nothing ever set it: every
+// matrix fixture leaves amNone, so the eight owner sites that read or write a
+// matrix's angular mode were reachable in principle and reached by nothing.
+// ---------------------------------------------------------------------------
+
+static void seedLongIntegerZero(void) {
+  longInteger_t li;
+  longIntegerInit(li);
+  stringToLongInteger("0", 10, li);
+  convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+  longIntegerFree(li);
+}
+
+static void seedComplexPolar(void) {
+  reallocateRegister(REGISTER_X, dtComplex34, 0, amDegree | amPolar);
+  int32ToReal34(5, REGISTER_REAL34_DATA(REGISTER_X));
+  int32ToReal34(30, REGISTER_IMAG34_DATA(REGISTER_X));
+}
+
+static void seedMatrixWithAngle(void) {
+  initMatrixRegister(REGISTER_X, 1, 2, false);
+  int32ToReal34(3, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + 0);
+  int32ToReal34(4, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + 1);
+  REGISTER_MATRIX_HEADER(REGISTER_X)->mtag = amDegree | amPolar;
+}
+
+static void seedComplexMatrixWithAngle(void) {
+  initMatrixRegister(REGISTER_X, 1, 2, true);
+  for(int e = 0; e < 2; ++e) {
+    int32ToReal34(e + 1, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + e));
+    int32ToReal34(30, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + e));
+  }
+  REGISTER_MATRIX_HEADER(REGISTER_X)->mtag = amDegree | amPolar;
+}
+
 static const fixture_t FIXTURES[] = {
   { "realPositive",    seedRealPositive    },
   { "realWithAngle",   seedRealWithAngle   },
@@ -596,6 +641,12 @@ static const fixture_t FIXTURES[] = {
   { "longIntegerNegative",   seedLongIntegerNegative   },
   { "realOne",               seedRealOne               },
   { "realMinusOne",          seedRealMinusOne          },
+
+  // Recovered from the unit lane's orphaned fixtures.
+  { "longIntegerZero",        seedLongIntegerZero        },
+  { "complexPolar",           seedComplexPolar           },
+  { "matrixWithAngle",        seedMatrixWithAngle        },
+  { "complexMatrixWithAngle", seedComplexMatrixWithAngle },
 };
 
 // ---------------------------------------------------------------------------
@@ -689,6 +740,22 @@ static const partitionClass_t PARTITION_PROPERTIES[] = {
   // its reset value of SET -- so the clear side needs a fixture that clears it, or
   // every `!getSystemFlag(FLAG_SPCRES)` branch is unreachable. One mutant survived
   // on exactly that before this fixture existed.
+  // The angular mode a MATRIX carries in its header mtag. Separate from the
+  // register-level angularMode property: the owners read it through a different
+  // path, and no fixture set it until the orphaned unit-lane fixtures were read.
+  { "matrixAngularMode", "none",   "matrix2x3"              },
+  { "matrixAngularMode", "polar",  "matrixWithAngle"        },
+  { "matrixAngularMode", "complexNone",  "complexMatrix"         },
+  { "matrixAngularMode", "complexPolar", "complexMatrixWithAngle" },
+
+  // Polar representation of a scalar complex, which the transform wrappers branch
+  // on independently of the matrix case.
+  { "complexRepresentation", "rectangular", "complex"      },
+  { "complexRepresentation", "polar",       "complexPolar" },
+
+  // A zero long integer is its own class: the integer paths test for it directly.
+  { "integerZero", "longIntegerZero", "longIntegerZero" },
+
   { "spcres", "set",   "realPositive"          },
   { "spcres", "clear", "complexMatrixImagZero" },
 };
