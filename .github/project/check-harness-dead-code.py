@@ -17,6 +17,16 @@ The same technique found the twenty dead statics deleted from
 `math_wrappers_oracle.c` -- four of which were mirrors of c43 helpers that had
 DRIFTED, silently, because nothing called them.
 
+WHY TEN FILES STAY BLIND. The discovery above took the blind set from 23 to 10.
+The remaining ten all live beside a harness-local `c47.h` -- the fake surface --
+while also reaching upstream headers by relative path. A nested `#include "c47.h"`
+inside an upstream header then resolves to whichever of the two the include path
+offers first, and the two disagree about `angularMode_t` and `decQuad`. A single
+flat include path cannot serve both, so this is the fake-surface seam showing up
+in a third place rather than a missing header. It is recorded, not worked around:
+inventing an include order that happens to compile would measure a translation
+unit no build produces.
+
 TWO RATCHETS, AND THE SECOND IS THE POINT. A gate that reports only what it could
 analyse reads as a clean bill for what it could not. 23 of the 54 harness sources
 do not compile standalone -- they need generated headers that only exist inside a
@@ -56,6 +66,29 @@ COMMON_FLAGS = (
     "-Iupstream/src/testSuite",
 )
 
+# Headers the BUILD generates. Without them, 23 of the 54 harness sources stopped
+# at a missing include and were counted as unanalysable -- including the full-core
+# parity harness, the file this project has spent three passes growing. They live
+# under .zig-cache at content-addressed paths, so they are discovered rather than
+# named, and a tree that has never been built simply keeps the old blind set.
+GENERATED_HEADERS = ("softmenuCatalogs.h", "constantPointers.h", "gitCommitHash.h")
+
+
+def discovered_flags(repo: Path) -> list[str]:
+    """GTK's include paths and the build's generated header directories."""
+    flags: list[str] = []
+    gtk = subprocess.run(["pkg-config", "--cflags", "gtk+-3.0"], capture_output=True, text=True)
+    if gtk.returncode == 0:
+        flags.extend(gtk.stdout.split())
+    cache = repo / ".zig-cache"
+    if cache.is_dir():
+        for header in GENERATED_HEADERS:
+            found = next(cache.rglob(header), None)
+            if found is not None:
+                flags.append(f"-I{found.parent}")
+    return flags
+
+
 UNUSED_RE = re.compile(r"unused function '(\w+)'")
 # zig cc emits a trailing `FileNotFound` diagnostic of its own after a successful
 # -fsyntax-only run; it is not a compile error in the source.
@@ -71,7 +104,7 @@ def tracked(repo: Path) -> list[str]:
     ).stdout.split()
 
 
-def analyse(repo: Path, rel: str) -> tuple[bool, list[str]]:
+def analyse(repo: Path, rel: str, extra: list[str]) -> tuple[bool, list[str]]:
     """(analysable, dead function names)."""
     source = repo / rel
     completed = subprocess.run(
@@ -82,6 +115,7 @@ def analyse(repo: Path, rel: str) -> tuple[bool, list[str]]:
             "-Wunused-function",
             f"-I{source.parent}",
             *COMMON_FLAGS,
+            *extra,
             str(source),
         ],
         cwd=repo,
@@ -96,8 +130,9 @@ def analyse(repo: Path, rel: str) -> tuple[bool, list[str]]:
 def measure(repo: Path) -> tuple[dict[str, list[str]], list[str]]:
     dead: dict[str, list[str]] = {}
     unanalysable: list[str] = []
+    extra = discovered_flags(repo)
     for rel in tracked(repo):
-        ok, names = analyse(repo, rel)
+        ok, names = analyse(repo, rel, extra)
         if not ok:
             unanalysable.append(rel)
         elif names:
