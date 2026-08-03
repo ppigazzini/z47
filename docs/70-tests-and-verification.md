@@ -6,7 +6,10 @@ the smallest rerun lane that should move with each kind of change.
 Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
 page assumes the build entrypoints and ownership split are already clear.
 
-Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
+Audit basis: 2026-08-03, upstream pin `b9e1cc0c1`, Zig `0.16.0` stable. The
+per-owner parity section was re-audited on that date, when the last
+hand-transliterated oracle was converted (REPORT-31 M31-14) — every `*_parity`
+lane's reference is now c43 source compiled at build time.
 
 ## The One-Command Local Gate
 
@@ -138,29 +141,62 @@ Concretely, when writing or touching an oracle:
   quoted `#include "c47.h"` searches the including file's directory first and no
   `-I` outranks that.
 - Do not hand-copy c43 constants into the harness header either; that is the same
-  defect one level down. Include c43's own `defines.h` / `items.h` /
-  `typeDefinitions.h`, or upstream's `c47.h` outright — it compiles against the
-  vendored `dep/decNumberICU` headers, the generated `src/generated`, and a handful
-  of placeholder GTK/glib typedefs.
+  defect one level down, and
+  [check-harness-constant-copies.py](../.github/project/check-harness-constant-copies.py)
+  now measures it. For a UNIT harness, prefer upstream's own `c47.h` outright:
+  call `build/tests/c43_oracle.zig`'s `addUpstreamHeaderRoots` on the parity
+  executable and the harness declares no constants at all. (No lane calls it
+  today — the three conversions after it all went full-core — but the same four
+  roots are exercised by `check-harness-constant-copies.py` on every gate run.) It puts `build/tests/common`
+  (the stub `gtk`/`gdk` headers plus the six placeholder typedefs in
+  `c43_harness_prelude.h`), `dep/decNumberICU`, `src/generated` and `src/c47` on
+  the include path, with the same PC_BUILD/platform/word-size macros the product
+  host build uses — a different macro set would make the oracle a different
+  *configuration* of c43 rather than c43.
 - Stubs in the harness are fine and expected. They are the *environment*, shared by
   both implementations; what may not be hand-written is the *reference*.
 - A conversion is not verified until the lane has been **seen to fail**: patch a
   behavioural change into the c43 file, confirm red, revert. A conversion that
   cannot be shown to fail has been assumed, not verified.
 
-Any oracle that is still hand-written is listed in
-`.github/project/frozen-oracle-manifest.json` with the reason and the milestone
-that converts it, and `check-frozen-oracle-drift.py` (local gate and CI) fails when
-the c43 file it mirrors changes. That list is meant to reach zero, not to be
-maintained. `__DEV/reports/REPORT-31-C-ORACLE.md` has the full argument and the
-per-oracle state.
+**No hand-written parity reference remains in the tree.** All five that existed
+were converted (REPORT-31 M31-2, M31-3, M31-10, M31-12, M31-13) and the `frozen`
+list in `.github/project/oracle-provenance-manifest.json` is EMPTY.
+`check-oracle-provenance.py` (local gate and CI) keeps it that way: re-adding an
+entry is a written admission that a lane cannot see c43 move, and the gate also
+re-runs the one *generated* oracle's extractor (`charstring_diff`) and demands
+byte-identical output. A compiled-from-c43 oracle needs no entry at all, because
+`check-imported-tree-pin.py` already holds the source it includes to the pin.
+`__DEV/reports/REPORT-31-C-ORACLE.md` has the full argument and the per-oracle
+history.
+
+Three of the five conversions took the FULL-CORE shape rather than a linked unit
+oracle -- `calc_state`, `register_metadata`, `keyboard_state`. The rule for
+choosing: if sharing the environment "for real" means sharing the register pool,
+the value codecs or the GUI toolkit, the unit harness has to MODEL them, and then
+the lane measures the model. In a full core they are shared by construction and
+the stub burden is zero. `charstring_diff` is the precedent for the shape.
+
+This is not a local invention. The external basis — and the table that classifies
+every check kind in the tree, so a *new* check can be classified in one reading
+instead of argued about — is in
+[90-official-references.md](90-official-references.md) under *Test Oracle And
+Differential-Testing References*. The short version: a `*_parity` lane is
+**differential testing** (McKeeman 1998) against a **derived oracle** (Barr et
+al. 2015), a hand-written oracle loses all of its power to **correlated failure**
+(Knight & Leveson 1986) because it shares an author and a misreading with the
+port, and a golden file is a **characterization test** (Feathers 2004) — a change
+detector, never a parity reference.
 
 - `zig build logical_shortint_parity`, `zig build rotate_bits_parity`,
   `zig build logical_boolean_ops_suite` (short-integer owners)
 - `zig build stack_state_parity`, `zig build register_metadata_parity`,
   `zig build flags_parity`, `zig build memory_parity`,
   `zig build program_serialization_parity`, `zig build calc_state_parity`,
-  `zig build keyboard_state_parity` (state owners)
+  `zig build keyboard_state_parity` (state owners). `calc_state_parity` is the
+  one that holds the `.sav` **format** to c43: it links c43's own
+  `saveRestoreCalcState.c` beside the Zig owner in a full core and compares the
+  saved bytes, so a c43 format change turns it red rather than passing silently.
 - `zig build math_command_wrappers_parity`, `zig build math_random_parity`,
   and the focused `zig build math_*_oracle` lanes (mathematics owners)
 - `zig build constants_parity`, `zig build tone_parity`,

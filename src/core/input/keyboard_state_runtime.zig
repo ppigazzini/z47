@@ -380,7 +380,11 @@ pub const FIRST_LOCAL_REGISTER: i32 = 7000;
 pub const FIRST_NAMED_VARIABLE: i32 = 256;
 pub const LAST_RESERVED_VARIABLE: i32 = 2047;
 pub const FIRST_RESERVED_VARIABLE: i32 = 2000;
-pub const NUMBER_OF_LETTERED_VARIABLES: i32 = 26;
+// defines.h computes this as (FIRST_NAMED_RESERVED_VARIABLE -
+// FIRST_RESERVED_VARIABLE), which is 31: the 26 lettered variables PLUS the
+// five RESERVED_VARIABLE_SPARE placeholders that follow them. z47 had 26 until
+// REPORT-31 M31-11 (c43's own trailing comment still says 26, and is stale).
+pub const NUMBER_OF_LETTERED_VARIABLES: i32 = 31;
 pub const INVALID_VARIABLE: u16 = 2199;
 pub const PLOT_NXT: u16 = 1;
 pub const PLOT_REV: u16 = 2;

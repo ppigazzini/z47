@@ -149,8 +149,28 @@ pub export fn stringToInt32(str: [*:0]const u8) i32 {
     return @truncate(strtol(str, null, 0));
 }
 
+// NOT a member of the stringTo* macro family above, despite the resemblance.
+// c43 writes it out by hand next to the file-static toUint8/toUint16/toUint32:
+//
+//   int32_t toInt32(const char *str) { return strtol(str, NULL, 10); }
+//
+// Base TEN, explicitly. z47 had aliased it to stringToInt32, which is base 0 --
+// so a zero-padded field read "010" as 8 and refused "08" and "09" outright,
+// while c43 read 10, 8 and 9. Found by REPORT-31 M31-10's differential against
+// c43's own saveRestoreCalcState.c, which the previous hand-written oracle could
+// not see because it only ever fed the parsers plain unpadded decimal.
+//
+// Keep it OUT of the macro family: report-twin-divergence.py --macro-families
+// pairs the six siblings above and this is deliberately not one of them.
+//
+// WIDTH-CONTRACT: accepted -- identical to stringToInt32's window, and upstream
+// has the same split: `strtol` returns a 64-bit `long` on the Linux/macOS hosts
+// and a 32-bit one on the firmware and on Windows, so a value past 2**31 gives
+// the host its low bits after the @truncate and the firmware LONG_MAX. Consumers
+// are OTHER_CONFIGURATION_STUFF's signed scalar fields, none of which indexes
+// memory with the result, and a file carrying such a value is corrupt either way.
 pub export fn toInt32(str: [*:0]const u8) i32 {
-    return stringToInt32(str);
+    return @truncate(strtol(str, null, 10));
 }
 
 pub export fn readLine(line: [*c]u8, maxLen: usize) void {

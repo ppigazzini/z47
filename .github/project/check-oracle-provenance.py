@@ -1,41 +1,38 @@
 #!/usr/bin/env python3
-"""A parity oracle that cannot see c43 move must at least say so out loud.
+"""Every parity oracle in the tree is compiled from c43 source. Keep it that way.
 
-WHY THIS EXISTS (REPORT-31 M31-0). z47's correctness claim is function parity with
-c43, so the only question that matters about a parity reference is: *when c43
-changes, does this reference change with it?* Five oracles answered no. They are
-hand-transliterated C that reimplements c43's behaviour, which means the lane whose
-whole purpose is catching a c43 change is the reason nobody sees it -- the lane stays
-green and manufactures positive evidence that parity holds.
+WHY THIS EXISTS (REPORT-31 M31-0, renamed at M31-14). z47's correctness claim is
+function parity with c43, so the only question that matters about a parity
+reference is: *when c43 changes, does this reference change with it?* Five oracles
+answered no. They were hand-transliterated C reimplementing c43's behaviour, which
+means the lane whose whole purpose is catching a c43 change was the reason nobody
+saw it -- the lane stayed green and manufactured positive evidence that parity
+held. All five are converted (M31-2, M31-3, M31-10, M31-12, M31-13) and the
+`frozen` list is EMPTY, which is the endpoint the report set.
 
-The compensating control was human (`report-upstream-refresh.py` lists changed c43
-paths on a pin bump; a maintainer decides what to re-port) and it fails in the
-ordinary way: the list is long, the mirrored file changed for an unrelated reason,
-the parity lane is green, and the reviewer moves on.
+WHAT THIS GATE DOES NOW. Two things, and the second is the live one:
 
-WHAT THIS GATE DOES. It binds each frozen oracle to a CONTENT HASH of the c43 file
-it mirrors. When the pin advances and that c43 file changes, the hash no longer
-matches and this fails, naming the oracle that has to be re-transliterated -- or,
-better, converted to compile from the c43 source (REPORT-31 §4 option A) so the
-manifest entry can be deleted.
+  frozen    -- a hand-transliterated oracle, bound to a CONTENT HASH of the c43
+               file it mirrors so a pin bump that changes that file fails here
+               instead of staying green. THE LIST IS EMPTY AND IS MEANT TO STAY
+               EMPTY. It is kept rather than deleted because the machinery is what
+               makes re-adding one a deliberate, reviewable act: an entry here is
+               a written admission that a lane cannot see c43 move.
 
-It also records the oracle's OWN hash. A frozen oracle that changed without its
-mirror's hash being re-recorded is an untracked re-transliteration; refreshing both
-together is the act of asserting "I have re-read the c43 source and this mirrors it".
+  generated -- an oracle EXTRACTED from c43 source by a script. Sound in shape,
+               because the reference moves; the failure mode is not drift but
+               STALENESS, when nothing re-ran the extractor. Those entries carry a
+               `regenerate` command and this gate re-runs it and demands
+               byte-identical output. `charstring_diff` is the one that needs it.
 
-Generated oracles are a different, sound shape: the reference is extracted from c43
-source by a script, so it moves. The failure mode there is not drift but STALENESS --
-nothing re-ran the extractor. Those entries carry a `regenerate` command and this
-gate re-runs it and demands byte-identical output.
-
-WHAT IT IS NOT. This is an interim holding action, explicitly labelled as such in
-REPORT-31 §4 option D: it converts a silent failure into a blocking question. It does
-not make a frozen oracle correct. The endpoint is an empty `frozen` list.
+A COMPILED-FROM-c43 oracle -- the shape every parity lane now uses -- needs no
+entry in either list, because there is nothing to hash: the reference IS the
+imported source, and `check-imported-tree-pin.py` already holds that to the pin.
 
 Usage:
-  check-frozen-oracle-drift.py [--repo-root .]
-  check-frozen-oracle-drift.py --bump        # re-record hashes after re-transliterating
-  check-frozen-oracle-drift.py --self-test   # prove the gate fires
+  check-oracle-provenance.py [--repo-root .]
+  check-oracle-provenance.py --bump        # re-record hashes after re-transliterating
+  check-oracle-provenance.py --self-test   # prove the gate fires
 """
 
 from __future__ import annotations
@@ -50,7 +47,7 @@ from pathlib import Path
 
 from upstream_paths import upstream_path
 
-MANIFEST = ".github/project/frozen-oracle-manifest.json"
+MANIFEST = ".github/project/oracle-provenance-manifest.json"
 
 
 def sha256_of(path: Path) -> str:
@@ -60,7 +57,7 @@ def sha256_of(path: Path) -> str:
 def load_manifest(repo: Path) -> dict:
     path = repo / MANIFEST
     if not path.is_file():
-        raise SystemExit(f"check-frozen-oracle-drift: BROKEN -- missing {MANIFEST}.")
+        raise SystemExit(f"check-oracle-provenance: BROKEN -- missing {MANIFEST}.")
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -157,7 +154,7 @@ def bump(repo: Path) -> int:
         }
     (repo / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(
-        f"check-frozen-oracle-drift: re-recorded {len(manifest.get('frozen', []))} frozen oracles"
+        f"check-oracle-provenance: re-recorded {len(manifest.get('frozen', []))} frozen oracles"
     )
     return 0
 
@@ -171,7 +168,7 @@ def self_test(repo: Path) -> int:
     manifest = load_manifest(repo)
     frozen = manifest.get("frozen", [])
     if not frozen:
-        print("check-frozen-oracle-drift: --self-test SKIPPED (frozen list is empty -- the goal)")
+        print("check-oracle-provenance: --self-test SKIPPED (frozen list is empty -- the goal)")
         return 0
 
     entry = frozen[0]
@@ -192,7 +189,7 @@ def self_test(repo: Path) -> int:
         clean = check_frozen(scratch, [entry])
         if not any("c43 MOVED" in p for p in clean):
             print(
-                "check-frozen-oracle-drift: --self-test FAILED -- a changed c43 file did not fire."
+                "check-oracle-provenance: --self-test FAILED -- a changed c43 file did not fire."
             )
             return 1
 
@@ -201,10 +198,10 @@ def self_test(repo: Path) -> int:
         oracle.write_bytes(oracle.read_bytes() + b"\n// hand edit\n")
         edited = check_frozen(scratch, [entry])
         if not any("re-recorded" in p for p in edited):
-            print("check-frozen-oracle-drift: --self-test FAILED -- an edited oracle did not fire.")
+            print("check-oracle-provenance: --self-test FAILED -- an edited oracle did not fire.")
             return 1
 
-    print("check-frozen-oracle-drift: --self-test OK (both drift directions fire)")
+    print("check-oracle-provenance: --self-test OK (both drift directions fire)")
     return 0
 
 
@@ -238,7 +235,7 @@ def main() -> int:
 
     if frozen:
         print(
-            f"check-frozen-oracle-drift: OK ({len(frozen)} frozen oracles still mirror their"
+            f"check-oracle-provenance: OK ({len(frozen)} frozen oracles still mirror their"
             f" pinned c43 counterparts, {len(generated)} generated oracles reproduce)"
         )
         print(
@@ -247,7 +244,7 @@ def main() -> int:
         )
     else:
         print(
-            f"check-frozen-oracle-drift: OK (no frozen oracles remain;"
+            f"check-oracle-provenance: OK (no frozen oracles remain;"
             f" {len(generated)} generated oracles reproduce)"
         )
     return 0

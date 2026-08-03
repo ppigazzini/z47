@@ -47,10 +47,6 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
-    const build_options = b.addOptions();
-    build_options.addOption(bool, "use_fake_register_metadata_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
-    module.addOptions("register_metadata_build_options", build_options);
-
     const stack_build_options = b.addOptions();
     stack_build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     module.addOptions("stack_state_build_options", stack_build_options);
@@ -117,29 +113,16 @@ pub fn addToModule(
     module.addObject(runtime_object);
 }
 
-pub fn addParityExecutable(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
-    const exe = b.addExecutable(.{
-        .name = "register-metadata-parity",
-        .root_module = b.createModule(.{
-            .root_source_file = null,
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-    abi_host.addToModule(b, exe.root_module, target, optimize, "register-metadata-parity");
-
-    exe.root_module.addIncludePath(b.path("build/tests/register_metadata"));
-    exe.root_module.addIncludePath(b.path("build/tests/stack_state"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/stack_state/stack_state_fake_runtime.c"), .flags = &.{"-DZ47_REGISTER_METADATA_RUNTIME=1"} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/register_metadata/" ++ "register_metadata_fake_runtime_helpers.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/register_metadata/register_metadata_oracle.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/register_metadata/register_metadata_parity.c"), .flags = &.{} });
-    exe.root_module.addObject(runtime_object);
-    return exe;
-}
+// NO addParityExecutable HERE, deliberately (REPORT-31 M31-12).
+//
+// The register-metadata parity lane used to be a unit executable over a MOCK
+// world: 1060 lines of hand-transliterated oracle, a 939-line driver, and 1649
+// lines of fake runtime whose `registerHeader_t` was a packed descriptor word
+// rather than c43's bitfield struct. It is now a FULL-CORE differential
+// (build/host/steps.zig: register_metadata_parity) against c43's own registers.c,
+// because registers.c IS the register subsystem: sharing state with the Zig owner
+// means sharing globalRegister, the named variables, the RAM slab and the free
+// list, which is the whole calculator. The owner-side
+// `use_fake_register_metadata_harness_surface` fork went with it -- it replaced
+// twenty-one call sites with fakes, so the build the lane measured was not the
+// build that ships, and three live defects were hiding behind it.

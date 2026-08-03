@@ -1,0 +1,15 @@
+{
+  "_why": "REPORT-31 M31-0. Each entry binds a parity oracle to the c43 file whose behaviour it reproduces. `frozen` oracles are hand-transliterated and CANNOT see c43 move, so they are gated on a content hash of what they mirror; the endpoint is an empty list, not a maintained one. `generated` oracles are extracted from c43 source and are sound in shape -- they are gated on reproducing byte-identically, because nothing else re-runs the extractor.",
+  "_converted": "ALL FIVE ARE CONVERTED. flags_oracle.c left this list in M31-2, program_serialization_oracle.c in M31-3, calc_state_oracle.c in M31-10, register_metadata_oracle.c in M31-12 and keyboard_state_oracle.c in M31-13: each now #includes its c43 counterpart under oracle_* names, so the reference moves with c43 by construction and there is nothing left to hash. The last three took the FULL-CORE shape (build/host/steps.zig) rather than a linked unit oracle, because sharing the value codecs, the register subsystem and the keyboard's GTK-bound entry path for real needs the whole calculator; the payoff is that those lanes compare .sav BYTES, the RAM slab itself, and the state a keystroke leaves behind. Entries left here by being converted, never by being excused, and the list is meant to stay empty.",
+  "frozen": [],
+  "generated": [
+    {
+      "oracle": "build/tests/charstring_diff/charstring_diff_oracle.c",
+      "why": "Extracted from src/c47/charString.c by its own script, so the reference moves with c43 -- but the script's header comment claimed 'the harness fails if the committed oracle is stale' and nothing in the tree re-ran it. Sound shape, ungated until now.",
+      "regenerate": "build/tests/charstring_diff/extract_oracle.sh",
+      "mirrors": [
+        "src/c47/charString.c"
+      ]
+    }
+  ]
+}

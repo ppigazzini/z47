@@ -111,6 +111,9 @@ const FT_NILADIC: c_int = 100;
 const FT_MONADIC: c_int = 101;
 const FT_DYADIC: c_int = 102;
 const FT_SINGLEX: c_int = 103;
+// xfn.h FT_EXTERNAL: the function type saveRestoreCalcState.c's restoreRegister
+// passes when it rebuilds an "RXFN" register from a state or data file.
+pub const FT_EXTERNAL: c_int = 104;
 const NOANG: c_int = 200;
 const FORCEANG: c_int = 201;
 
@@ -809,7 +812,6 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
     const paramY = paramY_b.ptr();
     const paramTemp = paramTemp_b.ptr();
     realSetZero(paramX);
-    var tmpR: real_t = undefined;
 
     var c: realContext_t = runtime.ctxtReal75;
     c.digits = maxContextDigits;
@@ -987,12 +989,6 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
         }
     }
 
-    // Clip to 1034 digits
-    var cc: realContext_t = runtime.ctxtReal75;
-    cc.digits = maxAllowedDigits + 34;
-    cc.round = DEC_ROUND_HALF_UP;
-    realPlus(paramX, paramX, &cc);
-
     // Step 00: Handle the angle
     switch (function) {
         ITM_arcsin_XFN, ITM_arccos_XFN, ITM_arctan_XFN, ITM_atan2_XFN => {
@@ -1023,6 +1019,52 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
         fnDrop(NOPARAM);
     }
 
+    processResultantLongReal(@bitCast(registerNo), function, functionType, paramX, paramY, paramTemp, &angleMode, &tmpAngle);
+
+    return;
+}
+
+/// Port of xfn.c `processResultantLongReal` -- the three-register long-real result
+/// writer, shared by doXfn and by saveRestoreCalcState.c's `restoreRegister`.
+///
+/// WHY IT IS A SEPARATE, EXPORTED FUNCTION (REPORT-31 M31-10). In c43 this is
+/// file-scope and non-static precisely so `restoreRegister` can call it to
+/// reconstruct an "RXFN" register from a state or data file. The z47 port had
+/// INLINED it into doXfn, so nothing outside xfn could reach it -- and
+/// restoreRegister's RXFN branch went missing with it. The result was an
+/// asymmetry c43 does not have: z47 WRITES "RXFN" registers
+/// (calc_state_register_codec.zig) and could not read them back, so a long-real
+/// X survived a save and came back as "to be coded!". Compiling c43's
+/// saveRestoreCalcState.c as the calc-state oracle exposed it as an undefined
+/// symbol.
+///
+/// `registerNo` and `function` are unused here, exactly as in c43 (they survive
+/// in the signature for the DEBUG_XFN blocks). Keeping the shape means a resync
+/// diff of this function against xfn.c still lines up.
+pub export fn processResultantLongReal(
+    registerNo: u16,
+    function: c_int,
+    functionType: c_int,
+    paramX: *align(1) real_t,
+    paramY: *align(1) real_t,
+    paramTemp: *align(1) real_t,
+    angleMode: *angularMode_t,
+    tmpAngle: *angularMode_t,
+) linksection(runtime.code_section) callconv(.c) void {
+    _ = registerNo;
+    _ = function;
+
+    var tmpR: real_t = undefined;
+
+    var c: realContext_t = runtime.ctxtReal75;
+    c.digits = maxContextDigits;
+
+    // Clip to 1034 digits
+    var cc: realContext_t = runtime.ctxtReal75;
+    cc.digits = maxAllowedDigits + 34;
+    cc.round = DEC_ROUND_HALF_UP;
+    realPlus(paramX, paramX, &cc);
+
     // Step 1: Send a 0 addition term to the stack output
     setSystemFlagAslift();
     liftStack();
@@ -1044,12 +1086,16 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
     setSystemFlagAslift();
     liftStack();
     realPlus(paramY, &tmpR, &runtime.ctxtReal75);
-    convertRealToResultRegister(&tmpR, REGISTER_X, angleMode);
+    convertRealToResultRegister(&tmpR, REGISTER_X, angleMode.*);
     adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 
-    // Step 4: update difference term; re-using paramY
-    if (functionType == FT_NILADIC or functionType == FT_MONADIC or functionType == FT_DYADIC) {
-        if (!getCombinedParameter(1, REGISTER_X, paramY, paramTemp, &tmpAngle, &c)) {
+    // Step 4: update difference term; re-using paramY.
+    // FT_EXTERNAL belongs in this set: it is the restoreRegister caller, and the
+    // inlined copy this replaced had dropped it along with the caller.
+    if (functionType == FT_NILADIC or functionType == FT_MONADIC or
+        functionType == FT_DYADIC or functionType == FT_EXTERNAL)
+    {
+        if (!getCombinedParameter(1, REGISTER_X, paramY, paramTemp, tmpAngle, &c)) {
             return;
         }
         realSubtract(paramX, paramY, paramY, &c);
@@ -1063,8 +1109,6 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
         fnDropT(NOPARAM);
         fnDropT(NOPARAM);
     }
-
-    return;
 }
 
 fn noFunction() linksection(runtime.code_section) void {

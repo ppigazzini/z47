@@ -209,7 +209,54 @@ extern fn __gmpz_set_str(li: *MpzStruct, str: [*c]const u8, base: c_int) c_int;
 extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8;
 extern fn decNumberFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
 extern var ctxtReal34: OpaqueCtx;
-extern var ctxtReal75: OpaqueCtx;
+// Typed, not opaque: the RXFN branch copies it and narrows `digits` to 1034, as
+// c43's restoreRegister does. Every other use passes it straight to C, so it is
+// cast back to the opaque form there.
+extern var ctxtReal75: abi.RealContext;
+
+// ---------------------------------------------------------------------------
+// OPTION_XFN_1000 restore support (REPORT-31 M31-10).
+// ---------------------------------------------------------------------------
+
+const REGISTER_X: i16 = 100;
+const ERROR_OUT_OF_RANGE: u8 = 8;
+const ERR_REGISTER_LINE: i16 = -1;
+// PC and DMCP5 builds set EXTRA_INFO_ON_CALC_ERROR to 1; the block it guards is
+// diagnostic only, so the constant is taken rather than the branch dropped -- the
+// alternative is a silent divergence in what an error reports.
+const EXTRA_INFO_ON_CALC_ERROR: bool = true;
+
+extern fn displayCalcErrorMessage(err: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
+extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
+
+// xfn.h FT_EXTERNAL: the function type c43's restoreRegister passes so
+// processResultantLongReal takes its Step-4 difference-term path.
+const FT_EXTERNAL: c_int = 104;
+extern fn processResultantLongReal(
+    registerNo: u16,
+    function: c_int,
+    functionType: c_int,
+    paramX: [*c]u8,
+    paramY: [*c]u8,
+    paramTemp: [*c]u8,
+    angleMode: *u32,
+    tmpAngle: *u32,
+) void;
+
+// c43's REAL_T_PTR(name, 1071): a decNumber wide enough for `digits`, on the
+// stack. Same arithmetic as xfn.zig's, kept local because this owner has no
+// other reason to depend on that one.
+inline fn realMaxDigits(comptime digits: u32) u32 {
+    return ((digits + 2) / 6) * 6 + 3;
+}
+fn BigReal(comptime digits: u32) type {
+    return struct {
+        buf: [10 + 2 * (realMaxDigits(digits) / 3)]u8 align(4) = undefined,
+        inline fn bytes(self: *@This()) [*c]u8 {
+            return @ptrCast(&self.buf);
+        }
+    };
+}
 extern var statisticalSumsPointer: ?*anyopaque; // real_t*
 extern var errorMessage: [*c]u8;
 
@@ -577,6 +624,34 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         reallocateRegister(regist, dtReal34, 0, tag);
         if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
+    } else if (strcmpEq(type_str, "RXFN")) {
+        // OPTION_XFN_1000: the 1000-digit long-real form registerToSaveString
+        // writes above. FOUND MISSING by REPORT-31 M31-10 -- z47 emitted "RXFN"
+        // on save and had no branch to read it back, so a long-real X survived a
+        // save and returned as the "to be coded!" bug screen. c43 has had this
+        // branch all along; the port dropped it when it inlined
+        // processResultantLongReal into doXfn (see xfn.zig).
+        if (regist != REGISTER_X) {
+            displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            if (EXTRA_INFO_ON_CALC_ERROR) {
+                abi.fmtBufZ(errorMessage[0..512], "XFN import only to REGISTER_X (stack), got register {d}", .{@as(c_int, regist)});
+                moreInfoOnError("In function restoreRegister:", &errorMessage[0], null, null);
+            }
+            return;
+        }
+
+        var paramX_b = BigReal(1071){};
+        var paramY_b = BigReal(1071){};
+        var paramTemp_b = BigReal(1071){};
+        var c: abi.RealContext = ctxtReal75;
+        c.digits = 1034;
+        var angleMode: u32 = tag;
+        var tmpAngle: u32 = undefined;
+
+        if (dataFileMode) dataFileCommaToPeriod(value);
+        _ = decNumberFromString(paramX_b.bytes(), value, @ptrCast(&c));
+
+        processResultantLongReal(@bitCast(REGISTER_X), 0, FT_EXTERNAL, paramX_b.bytes(), paramY_b.bytes(), paramTemp_b.bytes(), &angleMode, &tmpAngle);
     } else if (strcmpEq(type_str, "Time")) {
         reallocateRegister(regist, dtTime, 0, amNone);
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
@@ -803,5 +878,5 @@ pub fn statSumToString(i: u16) void {
 pub fn loadStatSum(str: [*c]const u8, i: u16) void {
     @setRuntimeSafety(true); // untrusted file input -- see calc_state.zig's panic decl
     const base: [*c]u8 = @ptrCast(statisticalSumsPointer);
-    _ = decNumberFromString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, str, &ctxtReal75);
+    _ = decNumberFromString(base + @as(usize, i) * REAL_SIZE_IN_BYTES, str, @ptrCast(&ctxtReal75));
 }

@@ -105,13 +105,34 @@ fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
     );
 }
 
+/// The payload size `copySourceRegisterToDestRegister` asks reallocateRegister
+/// for, in blocks and without the header.
+///
+/// READS THE HEADER DIRECTLY, and that is the whole point. c43's copy computes
+/// this from `REGISTER_LONG_INTEGER_HEADER(src)->dataMaxLengthInBlocks`,
+/// `REGISTER_STRING_HEADER(src)->dataMaxLengthInBlocks` and, for a matrix, from
+/// `TO_BLOCKS(rows * columns * <element>_SIZE_IN_BYTES)` -- it does NOT go through
+/// `getRegisterMaxDataLengthInBlocks`.
+///
+/// The distinction is not cosmetic (REPORT-31 M31-12). Upstream's
+/// `getRegisterMaxDataLengthInBlocks` decrements `regist` into an index for the
+/// NAMED-VARIABLE lookup and then re-reads the data type with that decremented
+/// value -- so for a named variable it asks a GLOBAL register what type it is, and
+/// a named matrix falls through the matrix branch and returns the raw packed
+/// header word instead of the element count. z47 reproduces that faithfully,
+/// because it is c43's behaviour. Reusing it HERE did not: copying the 1x1 named
+/// matrix `Mat_A` asked reallocateRegister for 4097 blocks instead of 4, taking
+/// 16376 blocks out of a 232788-block pool in one call. Nothing saw it, because
+/// the resulting descriptor still looked correct once the matrix header was
+/// re-initialised to 1x1.
 pub fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u32) ?u16 {
     return switch (data_type) {
         runtime.dtLongInteger,
         runtime.dtString,
+        => runtime.dataMaxLengthInBlocks(descriptor_owned.getRegisterDataPointer(source_reg)),
         runtime.dtReal34Matrix,
         runtime.dtComplex34Matrix,
-        => getRegisterMaxDataLengthInBlocks(source_reg),
+        => matrixMaxLengthInBlocks(descriptor_owned.getRegisterDataPointer(source_reg), data_type),
         runtime.dtTime,
         runtime.dtDate,
         runtime.dtShortInteger,

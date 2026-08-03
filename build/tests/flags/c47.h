@@ -17,6 +17,17 @@
 // `defines.h`, `items.h` and `typeDefinitions.h` are pure headers with no includes
 // of their own, so they cost five opaque placeholder typedefs and buy every
 // constant and struct straight from the pin.
+//
+// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (REPORT-31 M31-9, decided
+// 2026-08-03). Later conversions do not build a mock header at all: they put
+// upstream's OWN `src/c47/c47.h` on the include path with the six placeholder
+// typedefs from `build/tests/common/c43_harness_prelude.h`, which is cheaper and
+// strictly more faithful. This lane was NOT retrofitted onto that. It is green,
+// verified, and seen to fail (adding FLAG_QUIET to c43's refreshStateFlags turns
+// six sweep cases red), and rebuilding a working oracle for stylistic uniformity
+// risks the conversion for no verification gain. The divergence in style is
+// deliberate. If this lane ever needs reworking for another reason, take the
+// c43_oracle.zig shape then.
 
 #ifndef C47_H
 #define C47_H

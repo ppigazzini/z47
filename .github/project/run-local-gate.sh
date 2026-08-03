@@ -99,13 +99,23 @@ step "[6g2/11] harness include paths resolve"
 # `zig build sim` nor `zig build test` runs. Costs milliseconds; catches all of
 # them at once.
 python3 .github/project/check-harness-includes.py --repo-root .
-step "[6g2b/11] frozen parity oracles still mirror their c43 counterparts"
-# REPORT-31: five oracles are hand-written C reproducing c43's behaviour, so the
-# lane whose purpose is catching a c43 change is the reason nobody sees it. Until
-# they compile from c43 source, bind them to a hash of what they mirror so a pin
-# bump that touches flags.c fails loudly instead of staying green.
-python3 .github/project/check-frozen-oracle-drift.py --self-test >/dev/null
-python3 .github/project/check-frozen-oracle-drift.py --repo-root .
+step "[6g2b/11] oracle provenance (no hand-written references, extractors fresh)"
+# REPORT-31: five oracles were hand-written C reproducing c43's behaviour, so the
+# lane whose purpose is catching a c43 change was the reason nobody saw it. All
+# five now compile from c43 source and the frozen list is EMPTY. What this still
+# guards: that nobody re-adds one without saying so, and that the one GENERATED
+# oracle (charstring_diff's extractor) still reproduces byte-identically.
+python3 .github/project/check-oracle-provenance.py --self-test >/dev/null
+python3 .github/project/check-oracle-provenance.py --repo-root .
+step "[6g2c/11] harness headers do not hand-copy c43 constants"
+# REPORT-31 M31-9: the same defect one level down. A frozen oracle is caught by
+# 6g2b; a frozen CONSTANT inside a harness c47.h is not, and it fails the same way
+# -- c43 renumbers, the copy stays, the lane keeps agreeing with an unported owner.
+# Compiles one _Static_assert per hand-declared constant against c43's own headers,
+# so enum members and cross-referencing #defines are resolved by the compiler
+# rather than guessed at by a regex.
+python3 .github/project/check-harness-constant-copies.py --self-test >/dev/null
+python3 .github/project/check-harness-constant-copies.py --repo-root .
 step "[6g3/11] imported-tree paths not anchored to the repo root"
 # Same class as 6g2, other language: a governance script reaching an upstream file
 # as `repo_root / "COPYING"`. Found the dead notice-staging path and a dead

@@ -389,16 +389,27 @@ jobs:
           # -I flag can rescue. A layout change breaks every oracle lane at once;
           # this fails here instead, naming each file.
           python3 .github/project/check-harness-includes.py --repo-root .
-      - name: Enforce frozen parity oracles still mirror their c43 counterparts
+      - name: Enforce oracle provenance (no hand-written references)
         shell: bash
         run: |
           set -euo pipefail
           # REPORT-31. A hand-transliterated oracle cannot detect c43 moving: it IS
-          # the reference and it stayed put, so the lane goes green on a divergence.
-          # Binding each one to a hash of the c43 file it mirrors makes a pin bump
-          # that touches that file a blocking question instead of silence.
-          python3 .github/project/check-frozen-oracle-drift.py --self-test
-          python3 .github/project/check-frozen-oracle-drift.py --repo-root .
+          # the reference and it stays put, so the lane goes green on a divergence.
+          # All five are converted and the frozen list is empty; this keeps it that
+          # way and re-runs the one generated oracle's extractor.
+          python3 .github/project/check-oracle-provenance.py --self-test
+          python3 .github/project/check-oracle-provenance.py --repo-root .
+      - name: Enforce harness headers do not hand-copy c43 constants
+        shell: bash
+        run: |
+          set -euo pipefail
+          # REPORT-31 M31-9, the same defect one level down. A frozen oracle is
+          # caught by the step above; a frozen CONSTANT inside a harness c47.h is
+          # not, and it fails identically -- c43 renumbers, the copy stays put, and
+          # the lane goes on agreeing with an unported owner. Compiled, not
+          # regexed: only the compiler knows what an implicit enum member is worth.
+          python3 .github/project/check-harness-constant-copies.py --self-test
+          python3 .github/project/check-harness-constant-copies.py --repo-root .
       - name: Enforce imported-tree paths are not anchored to the repo root
         shell: bash
         run: |

@@ -1,194 +1,94 @@
 // SPDX-License-Identifier: GPL-3.0-only
+//
+// The parity reference for the calc-state lane: c43's OWN saveRestoreCalcState.c,
+// compiled a second time into the full-core harness under `oracle_` names so it
+// links beside the Zig owner that replaced it.
+//
+// WHAT THIS REPLACED (REPORT-31 M31-10). 194 hand-written lines that modelled
+// save-file revision parsing and nothing else -- about 6% of a 2959-line file --
+// under a lane named for the whole subsystem. The other 94% had never been
+// compared to anything, and M31-1 had already established that
+// `saveload_roundtrip`'s golden is a z47 self-portrait regenerated from z47's own
+// writer. So NOTHING in the tree held z47's `.sav` FORMAT to c43's: a silent
+// state-file incompatibility on the most externally visible artifact z47 writes,
+// the file a user carries between a physical DM42 and the simulator.
+//
+// WHY A FULL-CORE DIFFERENTIAL AND NOT A LINKED UNIT ORACLE. M31-10 planned a unit
+// harness: 96 globals defined once and shared, real in-memory file I/O, SHARED
+// value codecs, counting stubs for the rest. Its own stop condition fired on step
+// 3 -- "if the shared-codec requirement turns out to need more than a handful of
+// real c43 files linked live, stop and re-plan; the honest shape may be a
+// full-core differential". The measurement: 210 undefined symbols, and the codecs
+// among them (decQuadToString/FromString, registerFMAOutputPlainString,
+// longIntegerToAllocatedString, getRegisterDataPointer/Type/Tag, reallocateRegister,
+// findOrAllocateNamedVariable, convert*Register*, utf8ToString) pull registers.c,
+// memory.c, charString.c, registerValueConversions.c, longIntegerType, dateTime,
+// decNumber and GMP. That is not a handful, and modelling any of them would mean
+// the lane measures the codec instead of the section writer.
+//
+// In a full core every one of those 210 symbols is already defined and the codecs
+// are shared by construction, because both implementations are literally calling
+// the same ones. The stub burden is ZERO -- the same inversion Annex A.3 recorded
+// for keyboard.c. `charstring_diff` is the in-tree precedent for the shape: lift
+// c43 functions under `oracle_*` renames and link them beside the Zig owner that
+// replaced them, in one binary, so the two can be diffed directly.
+//
+// Nothing here may be edited to make the lane pass. If the oracle and the Zig
+// owner disagree, c43 is right by definition and the owner is the thing to fix --
+// and a disagreement here is a `.sav` FORMAT divergence, not a cosmetic one.
 
-#include "calc_state_test_runtime.h"
+// Every symbol saveRestoreCalcState.c gives external linkage, renamed so it does
+// not collide with the Zig owner's export of the same c43 name. File-static
+// helpers (`doSave`, `restoreOneSection`, `save_sections`, ...) need no rename:
+// they are private to this translation unit either way, which is precisely why
+// compiling the whole file is what reaches them.
+//
+// Derived mechanically:
+//   nm -g --defined-only <saveRestoreCalcState.o> | awk '{print $3}'
+// Re-derive it that way after a resync rather than reading the header -- the
+// header does not list `strcmp2`, `fnSaveDataRegisters`, `savedCalcModel` or
+// `aimBuffer1`, and a missed name is a duplicate-symbol link error at best and a
+// silently shared global at worst.
 
-static bool_t isAutoLoadCompatibleVersion(uint32_t loadedVersion) {
-  return loadedVersion >= z47_calc_state_get_version_allowed() && loadedVersion <= z47_calc_state_get_config_file_version();
-}
+#define fnSave oracle_fnSave
+#define fnLoad oracle_fnLoad
+#define fnSaveAuto oracle_fnSaveAuto
+#define fnLoadAuto oracle_fnLoadAuto
+#define fnLoadedFile oracle_fnLoadedFile
+#define fnDeleteBackup oracle_fnDeleteBackup
+#define doLoad oracle_doLoad
 
-static void parseSaveFileRevision(void) {
-  char headerKey[256];
-  char ignoredRevision[256];
-  char calculatorId[256];
-  char versionLine[256];
-  uint16_t savedCalcModel = 0;
-  uint32_t loadedVersion = 0;
+#define fnSaveStackRegisters oracle_fnSaveStackRegisters
+#define fnSaveXFNRegister oracle_fnSaveXFNRegister
+#define fnSaveLetteredRegisters oracle_fnSaveLetteredRegisters
+#define fnSaveNRegisters oracle_fnSaveNRegisters
+#define fnSaveRegister oracle_fnSaveRegister
+#define fnSaveDataRegisters oracle_fnSaveDataRegisters
+#define fnLoadRegisters oracle_fnLoadRegisters
 
-  z47_calc_state_runtime_read_line(headerKey);
-  if(z47_calc_state_runtime_line_equals(headerKey, "SAVE_FILE_REVISION")) {
-    z47_calc_state_runtime_read_line(ignoredRevision);
-    z47_calc_state_runtime_read_line(calculatorId);
-    z47_calc_state_runtime_read_line(versionLine);
+#define save oracle_save
+#define readLine oracle_readLine
+#define read2Lines oracle_read2Lines
+#define strcmp2 oracle_strcmp2
+#define toInt32 oracle_toInt32
+#define _updateConstantsInEquations oracle_updateConstantsInEquations
+#define convert001090400T001090500 oracle_convert001090400T001090500
 
-    if(z47_calc_state_runtime_line_equals(calculatorId, "C47_save_file_00")) {
-      savedCalcModel = USER_C47;
-    }
-    else if(z47_calc_state_runtime_line_equals(calculatorId, "R47_save_file_00")) {
-      savedCalcModel = USER_R47;
-    }
+#define stringToUint8 oracle_stringToUint8
+#define stringToUint16 oracle_stringToUint16
+#define stringToUint32 oracle_stringToUint32
+#define stringToUint64 oracle_stringToUint64
+#define stringToInt8 oracle_stringToInt8
+#define stringToInt16 oracle_stringToInt16
+#define stringToInt32 oracle_stringToInt32
+#define stringToInt64 oracle_stringToInt64
+#define stringToFloat oracle_stringToFloat
 
-    if(savedCalcModel == USER_C47 || savedCalcModel == USER_R47) {
-      loadedVersion = z47_calc_state_runtime_parse_u32_line(versionLine);
-      if(loadedVersion < 10000000u || loadedVersion > 20000000u) {
-        loadedVersion = 0;
-      }
-    }
-  }
+// File-scope state the file owns. Renamed too, so the oracle keeps its own copy
+// rather than sharing the owner's -- both are private to saveRestoreCalcState.c
+// in c43 (nothing else in src/c47 references either), so a shared one would be a
+// coupling c43 does not have.
+#define savedCalcModel oracle_savedCalcModel
+#define aimBuffer1 oracle_aimBuffer1
 
-  z47_calc_state_set_saved_calc_model(savedCalcModel);
-  z47_calc_state_set_loaded_version(loadedVersion);
-}
-
-static void oracle_doSave(uint16_t saveType) {
-  int ret;
-
-  z47_calc_state_runtime_show_saving_status();
-  if(z47_calc_state_runtime_check_power()) {
-    return;
-  }
-
-  ret = z47_calc_state_runtime_open_save(saveType);
-  if(ret != FILE_OK) {
-    if(ret != FILE_CANCEL) {
-      z47_calc_state_runtime_display_write_error();
-    }
-    return;
-  }
-
-  z47_calc_state_runtime_write_save_sections();
-  z47_calc_state_runtime_close_file();
-  temporaryInformation = TI_SAVED;
-}
-
-void oracle_fnSave(uint16_t saveMode) {
-  if(saveMode == SM_MANUAL_SAVE) {
-    oracle_doSave(manualSave);
-  }
-  else if(saveMode == SM_STATE_SAVE) {
-    oracle_doSave(stateSave);
-  }
-}
-
-void oracle_doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t loadType) {
-  int ret;
-  uint32_t loadedVersion;
-  uint16_t savedCalcModel;
-  bool_t enableLoad = false;
-
-  z47_calc_state_reset_load_context();
-  ret = z47_calc_state_runtime_open_load(loadType);
-  if(ret != FILE_OK) {
-    if(ret != FILE_CANCEL) {
-      z47_calc_state_runtime_display_read_error();
-    }
-    return;
-  }
-
-  if(loadMode == LM_ALL) {
-    z47_calc_state_runtime_unwind_all_subroutines();
-  }
-
-  parseSaveFileRevision();
-  savedCalcModel = z47_calc_state_get_saved_calc_model();
-  loadedVersion = z47_calc_state_get_loaded_version();
-
-  switch(loadType) {
-    case manualLoad:
-      switch(loadMode) {
-        case LM_ALL:
-        case LM_PROGRAMS:
-        case LM_REGISTERS:
-        case LM_SYSTEM_STATE:
-        case LM_SUMS:
-        case LM_NAMED_VARIABLES:
-          enableLoad = true;
-          break;
-        default:
-          break;
-      }
-      break;
-    case stateLoad:
-      if(loadMode == LM_ALL) {
-        enableLoad = true;
-      }
-      break;
-    case autoLoad:
-      if(loadMode == LM_ALL && isAutoLoadCompatibleVersion(loadedVersion)) {
-        enableLoad = true;
-      }
-      break;
-    default:
-      break;
-  }
-
-  if(enableLoad) {
-    bool_t allowUserKeys = z47_calc_state_runtime_allow_user_keys(savedCalcModel);
-    while(z47_calc_state_restore_one_section(loadMode, s, n, d, allowUserKeys)) {
-    }
-    z47_calc_state_runtime_fixup_r47_shift_keys();
-  }
-
-  lastErrorCode = ERROR_NONE;
-  previousErrorCode = lastErrorCode;
-
-  z47_calc_state_runtime_close_file();
-  z47_calc_state_runtime_restart_post_load_timers();
-
-  if(loadType == manualLoad && loadMode == LM_ALL) {
-    temporaryInformation = TI_BACKUP_RESTORED;
-    z47_calc_state_runtime_stamp_last_state_file_opened();
-  }
-  else if(loadType == autoLoad && loadMode == LM_ALL && isAutoLoadCompatibleVersion(loadedVersion)) {
-    temporaryInformation = TI_BACKUP_RESTORED;
-    z47_calc_state_runtime_stamp_last_state_file_opened();
-  }
-  else if(loadType == stateLoad) {
-    temporaryInformation = TI_STATEFILE_RESTORED;
-    z47_calc_state_runtime_stamp_last_state_file_opened();
-  }
-  else if(loadMode == LM_PROGRAMS) {
-    temporaryInformation = TI_PROGRAMS_RESTORED;
-  }
-  else if(loadMode == LM_REGISTERS) {
-    temporaryInformation = TI_REGISTERS_RESTORED;
-  }
-  else if(loadMode == LM_SYSTEM_STATE) {
-    temporaryInformation = TI_SETTINGS_RESTORED;
-  }
-  else if(loadMode == LM_SUMS) {
-    temporaryInformation = TI_SUMS_RESTORED;
-  }
-  else if(loadMode == LM_NAMED_VARIABLES) {
-    temporaryInformation = TI_VARIABLES_RESTORED;
-  }
-
-  cachedDynamicMenu = 0;
-}
-
-void oracle_fnLoad(uint16_t loadMode) {
-  z47_calc_state_runtime_show_loading_status();
-  if(loadMode == LM_STATE_LOAD) {
-    oracle_doLoad(LM_ALL, 0, 0, 0, stateLoad);
-  }
-  else {
-    oracle_doLoad(loadMode, 0, 0, 0, manualLoad);
-  }
-  z47_calc_state_runtime_finish_load_ui(94);
-}
-
-void oracle_fnSaveAuto(uint16_t unusedButMandatoryParameter) {
-  (void)unusedButMandatoryParameter;
-}
-
-void oracle_fnLoadAuto(void) {
-  oracle_doLoad(LM_ALL, 0, 0, 0, autoLoad);
-  z47_calc_state_runtime_finish_load_ui(95);
-}
-
-void oracle_saveCalc(void) {
-  z47_calc_state_runtime_save_calc();
-}
-
-void oracle_restoreCalc(void) {
-  z47_calc_state_runtime_restore_calc();
-}
+#include "../../../upstream/src/c47/saveRestoreCalcState.c"

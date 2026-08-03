@@ -80,26 +80,33 @@ Then re-derive the changed C behavior into those owners (never edit `src/`). Pre
 **idiomatic fixed-width Zig** over transliterated C — see the Windows trap in §4 and
 `c-abi-width-types-are-transliteration-debt`.
 
-### 2b. Re-port the FROZEN ORACLES too — the worklist above cannot see them
+### 2b. The parity oracles — what a resync still owes them
 
-`report-resync-worklist.py` names the Zig owner of a changed C file. It does not name
-the **parity oracle** that reproduces that file by hand, and five of them do
-(REPORT-31): `flags`, `program_serialization`, `register_metadata`, `calc_state`,
-`keyboard_state`. Those oracles are the reference their lane compares against, so a
-c43 change that is ported into the Zig owner but not into the oracle turns the lane
-**red on a correct port**, and a change ported into neither leaves it **green on a
-divergence** — which is the worse half and the reason the report exists.
+`report-resync-worklist.py` names the Zig owner of a changed C file. That used to
+leave a gap: five parity oracles reproduced a c43 file BY HAND (REPORT-31), so a c43
+change ported into the Zig owner but not the oracle turned the lane **red on a
+correct port**, and a change ported into neither left it **green on a divergence** —
+the worse half, and the reason that report exists.
 
-`check-frozen-oracle-drift.py` (in the local gate and CI) fails when a mirrored c43
-file's hash moves. When it does:
+**That gap is closed.** All five oracles now `#include` their c43 counterpart, so a
+pin bump moves the reference automatically and the lane fails on its own if the Zig
+owner was not re-ported. There is nothing to re-transliterate and nothing to `--bump`.
 
-1. Diff that c43 file between the old and new pin.
-2. Port the behavioural change into **both** the Zig owner and the oracle.
-3. `python3 .github/project/check-frozen-oracle-drift.py --bump` to re-record.
+What still needs attention on a resync:
 
-Better than step 3: convert the lane to `#include` the c43 source (REPORT-31 §4
-option A, the `flags`/`program_serialization` pattern) and delete the entry. Then the
-work above stops being a resync chore forever.
+1. `check-oracle-provenance.py` re-runs the one GENERATED oracle's extractor
+   (`build/tests/charstring_diff/extract_oracle.sh`) and fails if the committed
+   output is stale. Re-run it and commit the result.
+2. The compiled-from-c43 oracles carry a RENAME BLOCK — one `#define` per symbol the
+   c43 file gives external linkage. A resync that adds an exported symbol to
+   `flags.c`, `saveRestorePrograms.c`, `saveRestoreCalcState.c`, `registers.c` or
+   `keyboard.c` breaks the link with a duplicate-symbol error. Re-derive the block
+   mechanically rather than reading the header:
+   `nm -g --defined-only <file>.o | awk '{print $3}'`.
+3. `check-harness-constant-copies.py` fails if a harness header hand-declares a c43
+   constant that is not already in its recorded backlog. The fix is never to edit the
+   copy: use `build/tests/c43_oracle.zig`'s `addUpstreamHeaderRoots` and include c43's
+   own headers.
 
 ## 3. THE GATE — run the full local gate before every push
 

@@ -709,10 +709,44 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const stack_state_parity_step = b.step("stack_state_parity", "Run the stack-state parity suite");
     stack_state_parity_step.dependOn(&run_stack_state_parity.step);
 
-    const register_metadata_parity = register_metadata.addParityExecutable(b, context.host_target, optimize);
-    const run_register_metadata_parity = b.addRunArtifact(register_metadata_parity);
-    run_register_metadata_parity.setCwd(b.path("."));
-    const register_metadata_parity_step = b.step("register_metadata_parity", "Run the register-metadata parity suite");
+    // register-metadata parity (REPORT-31 M31-12): the Zig owner against c43's OWN
+    // registers.c, compiled a second time under `oracle_` renames into the same
+    // binary. Both sides then share globalRegister, the named variables, the RAM
+    // slab and the free list, so nothing is modelled.
+    //
+    // A FULL CORE and not the linked unit harness M31-12 planned. registers.c does
+    // compile clean against upstream's c47.h -- but the unit harness was built on a
+    // MOCK c47.h whose registerHeader_t is a packed word rather than c43's bitfield
+    // struct, and compiling registers.c against it yields 424 errors. Rebuilding
+    // that world means rebuilding 1649 lines of fake runtime shared with the
+    // stack-state lane; here the stub burden is zero.
+    const register_metadata_parity_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "registerMetadataParity",
+        "build/tests/register_metadata/register_metadata_parity_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+        false,
+    );
+    register_metadata_parity_harness.root_module.addCSourceFile(.{
+        .file = b.path("build/tests/register_metadata/register_metadata_oracle.c"),
+        // build_common.sanitizerCFlags's `.off` set, as every other imported-C
+        // source in this harness gets. See the calc_state lane for why: the lane
+        // diffs z47 against c43 as z47 ships it, not audits c43 under UBSan.
+        .flags = &.{ "-Wno-date-time", "-fno-sanitize=undefined" },
+    });
+    const run_register_metadata_parity = b.addRunArtifact(register_metadata_parity_harness);
+    run_register_metadata_parity.setCwd(upstreamCwd(b));
+    const register_metadata_parity_step = b.step("register_metadata_parity", "Run the register-metadata differential against c43's own registers.c");
     register_metadata_parity_step.dependOn(&run_register_metadata_parity.step);
 
     const flags_parity = flags.addParityExecutable(b, context.host_target, optimize, context.common);
@@ -727,10 +761,57 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const memory_parity_step = b.step("memory_parity", "Run the memory-state parity suite");
     memory_parity_step.dependOn(&run_memory_parity.step);
 
-    const calc_state_parity = calc_state.addParityExecutable(b, context.host_target, optimize);
-    const run_calc_state_parity = b.addRunArtifact(calc_state_parity);
-    run_calc_state_parity.setCwd(b.path("."));
-    const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state parity suite");
+    // calc-state parity (REPORT-31 M31-10): z47's `.sav` bytes against c43's own,
+    // in ONE binary. calc_state_oracle.c compiles c43's saveRestoreCalcState.c a
+    // second time under `oracle_` renames, beside the Zig owner that replaced it,
+    // so both implementations share the same globals, the same register pool, the
+    // same value codecs and the same file I/O -- nothing is modelled, so a
+    // difference can only come from the code under test.
+    //
+    // A FULL CORE and not a unit harness, deliberately. M31-10 planned the unit
+    // shape and its own stop condition fired: sharing the value codecs "for real"
+    // needs registers.c, memory.c, charString.c, registerValueConversions.c,
+    // longIntegerType, dateTime, decNumber and GMP linked live, which is not the
+    // "handful of files" the milestone allowed. Here the stub burden is ZERO,
+    // because addFullCoreHarness already defines every one of the 210 symbols
+    // saveRestoreCalcState.c leaves undefined. charstring_diff is the precedent.
+    const calc_state_parity_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "calcStateParity",
+        "build/tests/calc_state/calc_state_parity_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+        false,
+    );
+    calc_state_parity_harness.root_module.addCSourceFile(.{
+        .file = b.path("build/tests/calc_state/calc_state_oracle.c"),
+        // CALCMODEL picks the save file's C47_/R47_ identity tag inside
+        // saveRestoreCalcState.c. The Zig owner's calc_model_user_id is USER_C47
+        // for every non-r47 build name, so the oracle has to be the same model or
+        // the lane would report a divergence it manufactured itself.
+        //
+        // The rest are build_common.sanitizerCFlags's `.off` set, which every
+        // other imported-C source in this harness is compiled with. The oracle
+        // must take them too: upstream's restoreOneSection reads programList_t
+        // through an under-aligned slab pointer, and with UBSan left on for this
+        // one file the lane aborts inside c43's own code instead of comparing it.
+        // The lane exists to diff z47 against c43 as z47 ships it, not to audit
+        // c43 -- and auditing the whole imported tree under UBSan is a different
+        // job with a different owner.
+        .flags = &.{ "-DCALCMODEL=USER_C47", "-Wno-date-time", "-fno-sanitize=undefined" },
+    });
+    const run_calc_state_parity = b.addRunArtifact(calc_state_parity_harness);
+    run_calc_state_parity.setCwd(upstreamCwd(b));
+    const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state differential against c43's own saveRestoreCalcState.c");
     calc_state_parity_step.dependOn(&run_calc_state_parity.step);
 
     // NOT a parity lane, despite what it was called until REPORT-31 M31-1. Its
@@ -1125,10 +1206,39 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const abi_layout_step = b.step("abi-layout-parity", "Cross-check abi/types.zig mirrors against the upstream C layout");
     abi_layout_step.dependOn(&run_abi_layout_test.step);
 
-    const keyboard_state_parity = keyboard_state.addParityExecutable(b, context.host_target, optimize);
-    const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity);
-    run_keyboard_state_parity.setCwd(b.path("."));
-    const keyboard_state_parity_step = b.step("keyboard_state_parity", "Run the keyboard-state parity suite");
+    // keyboard parity (REPORT-31 M31-13): the Zig owner against c43's OWN
+    // keyboard.c, compiled a second time under `oracle_` renames into the same
+    // binary. Option C from the report, and the only shape that works: keyboard.c
+    // reads GdkEvent fields and declares a GdkEventButton by value, so a headless
+    // unit harness cannot compile it at all -- while in a full core, which links
+    // GTK anyway, all 313 symbols it leaves undefined are already defined and the
+    // stub burden is zero.
+    const keyboard_state_parity_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "keyboardParity",
+        "build/tests/keyboard_state/keyboard_state_parity_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+        false,
+    );
+    keyboard_state_parity_harness.root_module.addCSourceFile(.{
+        .file = b.path("build/tests/keyboard_state/keyboard_state_oracle.c"),
+        // build_common.sanitizerCFlags's `.off` set, as every other imported-C
+        // source in this harness gets. See the calc_state lane for the reasoning.
+        .flags = &.{ "-Wno-date-time", "-fno-sanitize=undefined" },
+    });
+    const run_keyboard_state_parity = b.addRunArtifact(keyboard_state_parity_harness);
+    run_keyboard_state_parity.setCwd(upstreamCwd(b));
+    const keyboard_state_parity_step = b.step("keyboard_state_parity", "Run the keyboard differential against c43's own keyboard.c");
     keyboard_state_parity_step.dependOn(&run_keyboard_state_parity.step);
 
     const math_command_wrappers_parity = math_command_wrappers.addParityExecutable(b, context.host_target, optimize);

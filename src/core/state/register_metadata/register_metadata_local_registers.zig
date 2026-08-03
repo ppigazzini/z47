@@ -1,13 +1,8 @@
-const build_options = @import("register_metadata_build_options");
 const abi = @import("abi");
 const memory_owned = @import("../runtime/register_memory.zig");
 const block_math = abi.block_math;
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
-
-const use_fake_register_metadata_harness_surface =
-    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
-    build_options.use_fake_register_metadata_harness_surface;
 
 const localFlags_t = u32;
 const NUMBER_OF_LOCAL_FLAGS: u8 = 32;
@@ -219,11 +214,6 @@ fn shrinkLocalRegisters(number_of_registers_to_allocate: u16, old_number_of_loca
 }
 
 pub fn allocateLocalRegisters(number_of_registers_to_allocate: u16) void {
-    if (use_fake_register_metadata_harness_surface) {
-        runtime.allocateLocalRegistersRetained(number_of_registers_to_allocate);
-        return;
-    }
-
     if (number_of_registers_to_allocate > 99) {
         reportLocalRegisterRangeError(number_of_registers_to_allocate);
         return;

@@ -4,7 +4,6 @@ const register_runtime = @import("register_metadata_runtime.zig");
 const reg_param_product = @import("../runtime/stack_runtime_reg_param_product.zig");
 const product_real = @import("../runtime/stack_runtime_product_real.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
-const register_metadata_build_options = @import("register_metadata_build_options");
 const register_metadata_variables = @import("register_metadata_variables.zig");
 
 // The parity harness links register_metadata_oracle.c, which defines its own
@@ -12,9 +11,6 @@ const register_metadata_variables = @import("register_metadata_variables.zig");
 // export the symbol or the link fails with a duplicate definition. In the
 // product build the Zig table is the sole definition consumed by the runtime
 // helper C and the Zig variable accessors.
-const use_fake_register_metadata_harness_surface =
-    @hasDecl(register_metadata_build_options, "use_fake_register_metadata_harness_surface") and
-    register_metadata_build_options.use_fake_register_metadata_harness_surface;
 
 const register_descriptor_t = u32;
 const register_header_t = abi.RegisterHeader;
@@ -56,6 +52,54 @@ const ALL_LABELS: u8 = 0; // namedLabels_t: search local then global
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) stack_runtime.calcRegister_t;
 extern fn findMenu(menu_name: [*:0]const u8) i16;
 extern fn convertShortIntegerRegisterToUInt64(reg: stack_runtime.calcRegister_t, sign: *i16, value: *u64) void;
+
+// The word-size mask updateShortIntegerMasks() derives. Owned by
+// core/state/scalars/calc_mode_state.zig; read here only.
+extern var shortIntegerMask: u64;
+
+const FIRST_GLOBAL_REGISTER: stack_runtime.calcRegister_t = 0;
+const C47_NULL: u16 = 65535; // defines.h: the null register-data pointer
+
+/// Port of registers.c `clampShortIntegerRegistersToWordSize`.
+///
+/// FOUND MISSING by REPORT-31 M31-10: compiling c43's saveRestoreCalcState.c as
+/// the calc-state oracle left this symbol undefined, because the registers.c port
+/// never carried it and z47's `doLoad` / `doLoadDataFile` called only its
+/// companion `updateShortIntegerMasks()`. c43 calls the pair. Without the clamp,
+/// a state or data file that reassigns `shortIntegerWordSize` -- an older build
+/// that let a bit escape the word, or a hand-crafted OTHER_CONFIGURATION_STUFF
+/// section -- leaves out-of-range bits live in every short-integer register, and
+/// every later short-integer operation reads them.
+///
+/// Masks every register class that can hold a short integer: the whole global
+/// block (numbered, stack, stat, spare, saved-stack, temp), the allocated named
+/// variables, and the allocated local registers.
+pub export fn clampShortIntegerRegistersToWordSize() void {
+    var regist: stack_runtime.calcRegister_t = FIRST_GLOBAL_REGISTER;
+    while (regist <= stack_runtime.LAST_GLOBAL_REGISTER) : (regist += 1) {
+        clampOneShortIntegerRegister(regist);
+    }
+
+    var i: u16 = 0;
+    while (i < register_runtime.numberOfNamedVariables) : (i += 1) {
+        clampOneShortIntegerRegister(register_runtime.FIRST_NAMED_VARIABLE + @as(stack_runtime.calcRegister_t, @intCast(i)));
+    }
+
+    var local: u8 = 0;
+    const local_count = stack_runtime.currentLocalRegisterCount();
+    while (local < local_count) : (local += 1) {
+        clampOneShortIntegerRegister(stack_runtime.FIRST_LOCAL_REGISTER + @as(stack_runtime.calcRegister_t, local));
+    }
+}
+
+fn clampOneShortIntegerRegister(regist: stack_runtime.calcRegister_t) void {
+    if (stack_runtime.getRegisterDataType(regist) != dtShortInteger) return;
+    // REGISTER_SHORT_INTEGER_DATA(a) is `(uint64_t *)getRegisterDataPointer(a)`.
+    // A dtShortInteger register always has a payload, so a null here would be the
+    // descriptor lying about the type -- let it trap rather than silently skip.
+    const ptr: *align(1) u64 = @ptrCast(stack_runtime.getRegisterDataPointer(regist) orelse unreachable);
+    ptr.* &= shortIntegerMask;
+}
 
 // Indirect-addressing support: constants, runtime globals, and the long-integer
 // boundary used by the ported indirectAddressing resolver below.
@@ -209,38 +253,51 @@ pub export const varDescr: [reserved_variable_count]reserved_variable_desc_t = .
 // so it belongs in flash, not RAM. Declaring it `var` here put 576 bytes into
 // .data, which on the DM42 shares the 8Kb below the DMCP system data block with
 // .bss. Every consumer already binds it as `extern const`.
+// 0-25 are the LETTERED reserved variables. Their pointerToRegisterData is
+// C47_NULL, not 0: registers.c reads it as "this entry owns no payload", and
+// reservedAllowsDataTypeWrite refuses a data-type write on exactly that test. z47
+// wrote 0 here until REPORT-31 M31-12's differential against c43's own table --
+// which made every lettered reserved variable look writable, and made block 0 of
+// the RAM slab look like its payload.
 pub const allReservedVariables: [reserved_variable_count]reserved_variable_header_t = .{
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'X', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'Y', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'Z', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'T', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'A', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'B', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'C', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'D', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'L', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'I', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'J', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'K', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'M', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'N', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'P', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'Q', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'R', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'S', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'E', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'F', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'G', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'H', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'O', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'U', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'V', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, 0, 0, 0, 0, regName(1, 'W', 0, 0, 0, 0, 0, 0)),
-    makeReserved(0, @intCast(dtLongInteger), LI_POSITIVE, 1, 0, regName(3, 'A', 'D', 'M', 0, 0, 0, 0)),
-    makeReserved(0, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(5, 'D', '.', 'M', 'A', 'X', 0, 0)),
-    makeReserved(0, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 'I', 'S', 'M', 0, 0, 0, 0)),
-    makeReserved(0, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(6, 'R', 'E', 'A', 'L', 'D', 'F', 0)),
-    makeReserved(0, @intCast(dtLongInteger), LI_POSITIVE, 0, 0, regName(4, '#', 'D', 'E', 'C', 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'X', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'Y', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'Z', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'T', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'A', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'B', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'C', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'D', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'L', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'I', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'J', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'K', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'M', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'N', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'P', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'Q', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'R', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'S', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'E', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'F', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'G', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'H', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'O', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'U', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'V', 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 0, regName(1, 'W', 0, 0, 0, 0, 0, 0)),
+    // 26-30: c43's RESERVED_VARIABLE_SPARE1..5 -- removed variables kept as
+    // placeholders so the named block below never moves. `notUsed = 1` and an
+    // empty name are what make them unreachable by name lookup and unwritable.
+    // z47 carried live ADM / D.MAX / ISM / REALDF / #DEC entries here until
+    // REPORT-31 M31-11; those five names left the reserved-variable block for the
+    // config block upstream, so keeping them made "ADM" resolve to a reserved
+    // register in z47 and to nothing in c43.
+    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)),
     makeReserved(0, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 'A', 'C', 'C', 0, 0, 0, 0)),
     makeReserved(4, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(5, 161, 145, 'L', 'i', 'm', 0, 0)),
     makeReserved(8, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(5, 161, 147, 'L', 'i', 'm', 0, 0)),
@@ -261,35 +318,15 @@ pub const allReservedVariables: [reserved_variable_count]reserved_variable_heade
 };
 
 comptime {
-    if (!use_fake_register_metadata_harness_surface) {
-        @export(&allReservedVariables, .{ .name = "allReservedVariables" });
-    }
+    @export(&allReservedVariables, .{ .name = "allReservedVariables" });
 }
 
 pub export fn getRegParam(f: ?*bool, s: *u16, n: *u16, d: ?*u16) u8 {
     return reg_param_product.getRegParamProduct(f, s, n, d, stack_runtime.currentLocalRegisterCount());
 }
 
-// The parity harness does not link GMP, the decNumber real helpers, or the
-// named-variable lookups that the real resolver needs, and it never exercises
-// indirect addressing. Select a dependency-free stub there so the link stays
-// clean; the product build uses the faithful resolver.
-const indirect_impl = if (use_fake_register_metadata_harness_surface)
-    indirectAddressingStub
-else
-    indirectAddressingReal;
-
 pub export fn indirectAddressing(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {
-    return indirect_impl(regist, parameter_type, min_value, max_value_in, try_allocate);
-}
-
-fn indirectAddressingStub(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {
-    _ = regist;
-    _ = parameter_type;
-    _ = min_value;
-    _ = max_value_in;
-    _ = try_allocate;
-    return indirectError(ERROR_OUT_OF_RANGE);
+    return indirectAddressingReal(regist, parameter_type, min_value, max_value_in, try_allocate);
 }
 
 fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: u16, min_value: i16, max_value_in: i16, try_allocate: bool) i16 {

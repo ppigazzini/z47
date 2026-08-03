@@ -1,17 +1,10 @@
-const build_options = @import("register_metadata_build_options");
-const clear_sigma_owned = @import("register_metadata_clear_sigma.zig");
 const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 const named_menu_owned = @import("register_metadata_named_menu.zig");
 const size_owned = @import("register_metadata_size.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 const tables_owned = @import("register_metadata_tables.zig");
-const confirmation_owned = @import("register_metadata_confirmation.zig");
 const error_owned = @import("register_metadata_error.zig");
 const payload_bytes_owned = @import("register_metadata_payload_bytes.zig");
-
-const use_fake_register_metadata_harness_surface =
-    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
-    build_options.use_fake_register_metadata_harness_surface;
 
 pub const calcRegister_t = stack_runtime.calcRegister_t;
 pub const register_descriptor_t = stack_runtime.register_descriptor_t;
@@ -54,15 +47,21 @@ pub const LAST_GLOBAL_REGISTER = stack_runtime.LAST_GLOBAL_REGISTER;
 pub const FIRST_NAMED_VARIABLE: calcRegister_t = 256;
 pub const LAST_NAMED_VARIABLE: calcRegister_t = 1999;
 pub const FIRST_RESERVED_VARIABLE: calcRegister_t = 2000;
-pub const FIRST_NAMED_RESERVED_VARIABLE: calcRegister_t = 2026;
+// defines.h: the 26 lettered variables occupy 2000-2025, five
+// RESERVED_VARIABLE_SPARE placeholders 2026-2030, and the NAMED block starts at
+// RESERVED_VARIABLE_ACC = 2031.
+//
+// This was 2026 until REPORT-31 M31-11, with ADM/DENMAX/ISM/REALDF/NDEC named at
+// 2026-2030 -- five names c43 removed when it inserted the spares, and which live
+// in the CONFIG block now (config.h fnGetADM / fnGetREALDF / fnGetNDEC). Two
+// models coexisted in one tree: frontier_config and softmenus already used
+// ACC=2031/FV=2034/PMT=2038/PV=2039/UX=2041, while the range-check owners used
+// 2026. reserved-variable IDs are serialized into state files, so this was a
+// parity gap independently of the oracle work it was blocking.
+pub const FIRST_NAMED_RESERVED_VARIABLE: calcRegister_t = 2031;
 pub const LAST_RESERVED_VARIABLE: calcRegister_t = 2047;
 pub const FIRST_LOCAL_REGISTER = stack_runtime.FIRST_LOCAL_REGISTER;
 pub const LAST_LOCAL_REGISTER = stack_runtime.LAST_LOCAL_REGISTER;
-pub const RESERVED_VARIABLE_ADM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE;
-pub const RESERVED_VARIABLE_DENMAX: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 1;
-pub const RESERVED_VARIABLE_ISM: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 2;
-pub const RESERVED_VARIABLE_REALDF: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 3;
-pub const RESERVED_VARIABLE_NDEC: calcRegister_t = FIRST_NAMED_RESERVED_VARIABLE + 4;
 pub const INVALID_VARIABLE: calcRegister_t = @intCast(stack_runtime.INVALID_VARIABLE);
 
 pub const ITM_INPUT: u16 = 43;
@@ -282,16 +281,35 @@ pub fn reportTooManyVariables() void {
     error_owned.reportTooManyVariables(ERROR_TOO_MANY_VARIABLES);
 }
 
+// Folded in from register_metadata_clear_sigma.zig and
+// register_metadata_confirmation.zig (REPORT-31 M31-12). Both were one-line
+// forwarders wrapped around a build-option fork that swapped the real call for a
+// harness stub; with the unit lane and its fake surface gone, each was left as a
+// twelve-line file holding a single call to an extern this module already owns
+// the declarations for. That is the barnacle check-file-cohesion.sh names.
+extern fn fnClSigma(confirmation: u16) callconv(.c) void;
+extern fn setConfirmationMode(handler: *const fn (confirmation: u16) callconv(.c) void) void;
+
+// The confirmation handlers are reached as EXTERNS, not through
+// `@import("../register_metadata.zig")`, and that is not incidental: taking the
+// Zig-level address of those two exports adds an @import edge that closes an
+// eight-file cycle in core/state (check-module-graph.py refuses it, correctly --
+// a cycle means those files cannot be read one at a time). setConfirmationMode
+// wants a C-ABI function pointer, which is exactly what the export is, so the
+// link-time reference is also the more honest spelling of what happens.
+extern fn fnDeleteAllVariables(confirmation: u16) callconv(.c) void;
+extern fn fnClearAllVariables(confirmation: u16) callconv(.c) void;
+
 pub fn clearSigma() void {
-    clear_sigma_owned.clearSigma();
+    fnClSigma(CONFIRMED);
 }
 
 pub fn requestDeleteAllVariablesConfirmation() void {
-    confirmation_owned.requestDeleteAllVariablesConfirmation();
+    setConfirmationMode(&fnDeleteAllVariables);
 }
 
 pub fn requestClearAllVariablesConfirmation() void {
-    confirmation_owned.requestClearAllVariablesConfirmation();
+    setConfirmationMode(&fnClearAllVariables);
 }
 
 pub fn allocateLocalRegistersRetained(number_of_registers_to_allocate: u16) void {
