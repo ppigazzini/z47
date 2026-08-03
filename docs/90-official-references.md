@@ -240,14 +240,30 @@ Primary — what a test environment is, and why a green lane can still prove
 nothing:
 
 - [Meszaros — *xUnit Test Patterns: Refactoring Test Code*, Addison-Wesley,
-  2007](http://xunitpatterns.com/Test%20Double.html), and specifically
-  [Fake Object](http://xunitpatterns.com/Fake%20Object.html): the canonical
+  2007](http://xunitpatterns.com/Test%20Double.html), **two entries, and this
+  source has earned its place twice.**
+
+  [**Fake Object**](http://xunitpatterns.com/Fake%20Object.html): the canonical
   vocabulary for test doubles — Dummy, **Fake**, Stub, **Spy**, Mock. A Fake has
   a *working* implementation with a shortcut that makes it unsuitable for
   production, and the pattern's stated liability is that **the test then measures
   the Fake**. `build/tests/math_wrappers/` is a textbook instance: a hand-declared
   25-limb `real_t`, no decNumber linked, and `const39_3piOn4` equal to 2.25. That
   liability is why compiling more c43 into that lane does not strengthen it.
+
+  [**Lost Test**](http://xunitpatterns.com/Production%20Bugs.html), from the smell
+  catalogue: a test that exists but is not in the suite the build runs — the
+  `[test]` attribute forgotten, the name not matching the discovery convention,
+  the `suite.addTest` call never written. Meszaros lists it as a *cause of
+  production bugs*, which is the point: the test was written, so the coverage
+  discussion counts it, and it never runs. z47 has now hit this shape three
+  times, at three different granularities — four `*_parity` LANES the build
+  declared and nothing ran, four oracle SOURCE FILES no build step compiled (two
+  of which no longer even built), and six WRAPPERS whose oracle was compiled into
+  the binary with no case driving it. Hence
+  [check-parity-lanes-gated.py](../.github/project/check-parity-lanes-gated.py)
+  and
+  [check-harness-sources-compiled.py](../.github/project/check-harness-sources-compiled.py).
 - **Winters, Manshreck, Wright — *Software Engineering at Google*, O'Reilly,
   2020**, [ch. 13 "Test
   Doubles"](https://abseil.io/resources/swe-book/html/ch13.html): states the two
@@ -319,6 +335,7 @@ first: it is the only question that matters about a reference.
 | unit lane on a hand-built `c47.h` + fake runtime | fake-hosted derived oracle | partly — the *reference* does, the *environment* does not | full for control flow, **none** for anything the fake cannot compute |
 | snapshot of call counts and arguments | interaction (spy) oracle | no — it pins the port's call pattern | change detector; breaks on refactor, misses wrong results |
 | a lane whose owner is built with different constants or types than the product | preprocessing seam | n/a — the reference may be perfect | **negative**: it proves things about a program that does not ship |
+| an oracle source that compiles from c43 and that no build step compiles | **lost test** | yes — and irrelevant, since it never runs | **none**: it reads as coverage and is a file |
 | hand-transliterated `*_oracle.c` | failed pseudo-oracle | no | **negative** |
 
 The last three rows are not "weak". The last is negative: it produces evidence of
@@ -353,6 +370,13 @@ was never the rule, so here is the rule.
    set is a calibration for what is in the tree, not a reading list.
 2. A decision was made **without it**, and having it would have changed the
    decision or the plan.
+
+**And before searching outward, re-read what is already here for the chapter you
+did not admit it for.** The test has now run three times and twice its strongest
+candidate turned out to be a source already in this set, applied to one chapter
+and remembered only for that one: Feathers went in for characterization tests and
+was needed for seams, Meszaros went in for Fake Object and was needed for lost
+tests. A set that grows every time it is under-read stops being a calibration.
 
 That test rejects more than it admits. It rejected Fowler's "Mocks Aren't Stubs"
 (adds nothing over Meszaros), DeMillo 1978 as its own entry (the Jia & Harman
