@@ -82,6 +82,14 @@ python3 .github/project/audit-item-table-parity.py
 # corruption) fails here.
 zig build abi-layout-parity
 zig build keyboard_state_parity
+# Four lanes that existed and ran in NO gate -- not here, not in the local gate,
+# not in CI. They were found by enumerating the build's own lane list and diffing
+# it against this file, which is what check-parity-lanes-gated.py now does on
+# every run so the next one cannot hide the same way.
+zig build keyboard_entry_parity
+zig build charstring_diff
+zig build constants_parity
+zig build tone_parity
 zig build both
 # NON-BLOCKING: the headless GUI smoke trips a pixman SSE2 composite over-read
 # under Xvfb software rendering (version-independent; not a product regression;

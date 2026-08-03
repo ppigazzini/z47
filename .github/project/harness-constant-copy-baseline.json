@@ -1,6 +1,6 @@
 {
   "_why": "Per-file count of c43 constants a z47 harness header declares by hand. These are frozen references one level below a frozen oracle: correct today, unable to move when c43 moves. The ratchet allows a count to FALL and never to rise; the fix is build/tests/c43_oracle.zig, which lets a lane compile against upstream's own c47.h and declare nothing.",
-  "_drifted": "Copies whose value ALREADY disagrees with c43, measured 2026-08-03. Recorded rather than fixed: an earlier conversion set ~20 as the point to stop and report instead of fixing, and this is 64 across 6 headers, which is a finding about the harness layer and not part of that milestone. Each run reprints them. A drifted name NOT on this list fails the gate. Most of them are a mock header inventing its own compact numbering for a c43 enum (keyboard_state's CM_*/ITM_*, math_wrappers' ERROR_*), which the conversions delete outright.",
+  "_drifted": "Copies whose value ALREADY disagrees with c43, measured 2026-08-03. Recorded rather than fixed: ~20 is the point to stop and report instead of fixing, and this is 64 across 6 headers, which is a finding about the harness layer and not part of that milestone. Each run reprints them. A drifted name NOT on this list fails the gate. Most of them are a mock header inventing its own compact numbering for a c43 enum (keyboard_state's CM_*/ITM_*, math_wrappers' ERROR_*), which the conversions delete outright.",
   "_deliberate": "Divergences from c43 that are DESIGN DECISIONS, not stale copies, each with the reason it is one. Hand-authored: --bump preserves this map and never adds to it. An entry with an empty reason FAILS the gate.",
   "counts": {
     "build/tests/c47.h": 10,
@@ -20,19 +20,9 @@
     "build/tests/math_wrappers/c47.h": [
       "ERROR_INVALID_DATA_TYPE_FOR_OP",
       "ERROR_MATRIX_MISMATCH",
-      "ERROR_MESSAGE_LENGTH",
       "ERROR_OUT_OF_RANGE",
       "ERROR_RAM_FULL",
-      "FLAG_ASLIFT",
-      "FLAG_POLAR",
-      "FULLIRFRAC",
-      "LIMITEXP",
-      "MAX_NUMBER_OF_GLYPHS_IN_STRING",
       "NOPARAM",
-      "NUMBER_OF_DISPLAY_DIGITS",
-      "SCREEN_WIDTH",
-      "TI_FALSE",
-      "TI_TRUE",
       "bugMsgUnexpectedSValue"
     ]
   }

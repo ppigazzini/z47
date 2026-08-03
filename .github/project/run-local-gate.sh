@@ -159,6 +159,12 @@ step "[10a/11] malformed-input corpora through the real load paths"
 zig build pgm_load_fuzz --summary none
 zig build state_load_fuzz --summary none
 
+step "[10e/11] every parity lane the build declares is actually run"
+# Enumerates the lanes from `zig build --help` and diffs them against the battery,
+# because "they are all in there" was a claim checked by reading and it was wrong
+# four times over.
+python3 .github/project/check-parity-lanes-gated.py --repo-root .
+
 step "[10d/11] the parity lanes still fail when the owner is wrong"
 # The negative control for everything step 10 just ran green. Each lane above
 # reports "all agree"; this asks whether it CAN report anything else, by breaking
