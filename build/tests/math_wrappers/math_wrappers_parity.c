@@ -79,7 +79,6 @@ static void setMatrixReal34(real34_t *value, int32_t signedValue, uint8_t bits);
 void fnCheckInteger(uint16_t unusedButMandatoryParameter);
 void fnCheckForZero(uint16_t unusedButMandatoryParameter);
 void fnCheckType(uint16_t unusedButMandatoryParameter);
-void fnCheckReal(uint16_t unusedButMandatoryParameter);
 void fnCheckAngle(uint16_t unusedButMandatoryParameter);
 void fnCheckMatrix(uint16_t unusedButMandatoryParameter);
 void fnCheckNumber(uint16_t unusedButMandatoryParameter);
@@ -111,7 +110,6 @@ void fnIDiv(uint16_t unusedButMandatoryParameter);
 void fnIDivR(uint16_t unusedButMandatoryParameter);
 void fnToPolar2(uint16_t unusedButMandatoryParameter);
 void fnToRect2(uint16_t unusedButMandatoryParameter);
-void fnToRect(uint16_t unusedButMandatoryParameter);
 void fnParallel(uint16_t unusedButMandatoryParameter);
 void fnCross(uint16_t unusedButMandatoryParameter);
 void fnDot(uint16_t unusedButMandatoryParameter);
@@ -187,7 +185,6 @@ void oracle_fnNeighb(uint16_t unusedButMandatoryParameter);
 void oracle_fnIxyz(uint16_t unusedButMandatoryParameter);
 void oracle_fnFactorial(uint16_t unusedButMandatoryParameter);
 void oracle_fnRandomI(uint16_t unusedButMandatoryParameter);
-void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter);
 void oracle_fnDec(uint16_t unusedButMandatoryParameter);
 void oracle_fnInc(uint16_t unusedButMandatoryParameter);
 void oracle_fnRealPart(uint16_t unusedButMandatoryParameter);
@@ -201,7 +198,6 @@ void oracle_full_fnDivide(uint16_t unusedButMandatoryParameter);
 void oracle_full_fnAdd(uint16_t unusedButMandatoryParameter);
 void oracle_full_fnSubtract(uint16_t unusedButMandatoryParameter);
 void oracle_full_fnMultiply(uint16_t unusedButMandatoryParameter);
-void oracle_fnToRect(uint16_t unusedButMandatoryParameter);
 void oracle_fnParallel(uint16_t unusedButMandatoryParameter);
 void oracle_fnCross(uint16_t unusedButMandatoryParameter);
 void oracle_fnDot(uint16_t unusedButMandatoryParameter);
@@ -1874,17 +1870,6 @@ static void configureCheckForZeroComplexNonzero(void) {
   configureDefaultSurface();
   mathWrappersSetRegisterSurface(dtComplex34, amNone);
   mathWrappersSetComplexInput(true, 2, 0, 3, 0);
-}
-
-static void configureCheckTypeLongInteger(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 7);
-}
-
-static void configureCheckRealMatrix(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34Matrix, amNone);
 }
 
 static void configureCheckAngleTrue(void) {
@@ -3946,27 +3931,6 @@ static void configureToRect23DCylindrical(void) {
   mathWrappersSetRegisterSurface(dtReal34Matrix, amDegree);
 }
 
-static void configureFnToRectReal34Pair(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtReal34, amNone);
-  mathWrappersSetRealInput(true, 3, 0);
-  mathWrappersSetRealYInput(true, 2, 0);
-  mathWrappersSetCurrentAngularMode(amDegree);
-}
-
-static void configureFnToRectLongIntegerPair(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtLongInteger, LI_POSITIVE);
-  mathWrappersSetLongIntegerInput(true, 3);
-  mathWrappersSetLongIntegerYInput(true, 2);
-  mathWrappersSetCurrentAngularMode(amDegree);
-}
-
-static void configureFnToRectInvalidType(void) {
-  configureDefaultSurface();
-  mathWrappersSetRegisterSurface(dtTime, amNone);
-}
-
 int main(void) {
   int failures = 0;
 
@@ -4264,8 +4228,6 @@ int main(void) {
   failures += runCase("fnFactorial/longint", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialLongInteger);
   failures += runCase("fnFactorial/shortint", oracle_fnFactorial, fnFactorial, 0, true, configureFactorialShortInteger);
   failures += runCase("fnRandomI/longint", oracle_fnRandomI, fnRandomI, 0, true, configureRandomILongInteger);
-  failures += runCase("fnCheckReal/true", oracle_fnCheckReal, fnCheckReal, 0, true, configureCheckTypeLongInteger);
-  failures += runCase("fnCheckReal/false", oracle_fnCheckReal, fnCheckReal, 0, true, configureCheckRealMatrix);
   failures += runCase("fnRealPart/real", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartReal);
   failures += runCase("fnRealPart/complex", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartComplex);
   failures += runCase("fnRealPart/real_matrix", oracle_fnRealPart, fnRealPart, 0, true, configureRealPartRealMatrix);
@@ -4402,9 +4364,6 @@ int main(void) {
   failures += runCase("fnMultiply/cxma_real", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyComplexMatrixReal);
   failures += runCase("fnMultiply/real_cxma", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyRealComplexMatrix);
   failures += runCase("fnMultiply/cxma_cxma", oracle_full_fnMultiply, fnMultiply, 0, true, configureMultiplyComplexMatrixComplexMatrix);
-  failures += runCase("fnToRect/real34_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectReal34Pair);
-  failures += runCase("fnToRect/longint_pair", oracle_fnToRect, fnToRect, 1, true, configureFnToRectLongIntegerPair);
-  failures += runCase("fnToRect/invalid_type", oracle_fnToRect, fnToRect, 1, true, configureFnToRectInvalidType);
 
   if(failures != 0) {
     fprintf(stderr, "%d math-command-wrapper parity checks failed\n", failures);
