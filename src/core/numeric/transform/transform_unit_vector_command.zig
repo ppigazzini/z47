@@ -62,6 +62,11 @@ fn unitVectorComplex() void {
     runtime.convertComplexToResultRegister(&real_value, &imag_value, runtime.REGISTER_X);
 }
 
+// linkTo*MatrixRegister aliases the register's own storage, so both workers below
+// edit it in place and unitVector.c's unitVectorRema and unitVectorCxma end at
+// their loops. No write-back: convert*MatrixTo*MatrixRegister sets the header's
+// mtag to amNone (matrix.c:2255), which DESTROYS the angular mode a polar vector
+// carries -- c43 leaves it standing.
 fn unitVectorRema() void {
     var matrix: runtime.real34Matrix_t = undefined;
     var element: runtime.real_t = undefined;
@@ -85,8 +90,6 @@ fn unitVectorRema() void {
         runtime.realDivide(&element, &sum, &element, &runtime.ctxtReal39);
         runtime.realToReal34(&element, realMatrixElementPtr(&matrix, index));
     }
-
-    runtime.convertReal34MatrixToReal34MatrixRegister(&matrix, runtime.REGISTER_X);
 }
 
 fn unitVectorCxma() void {
@@ -118,8 +121,6 @@ fn unitVectorCxma() void {
         runtime.realToReal34(&real_value, complexMatrixRealPtr(&matrix, index));
         runtime.realToReal34(&imag_value, complexMatrixImagPtr(&matrix, index));
     }
-
-    runtime.convertComplex34MatrixToComplex34MatrixRegister(&matrix, runtime.REGISTER_X);
 }
 
 pub fn unitVector(unused_but_mandatory_parameter: u16) void {
