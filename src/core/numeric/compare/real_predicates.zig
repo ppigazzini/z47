@@ -52,9 +52,11 @@ pub inline fn realIsNaN(source: *align(1) const abi.Real) bool {
 }
 
 /// The raw sign bit of a decQuad (real34_t): the top bit of the last byte of the
-/// 16-byte big-endian blob. NOTE this is the raw encoding sign, which differs from
-/// decQuadIsNegative on NaN (a sign-set NaN is not "negative"); owners that need
-/// the decNumber negativity semantics use runtime.real34IsNegative instead.
+/// 16-byte big-endian blob, which is what realType.h:105 tests. It differs from
+/// decNumber's own decQuadIsNegative, which is
+/// `DFISSIGNED && !DFISZERO && !DFISNAN` and so answers false for -0 and for a
+/// sign-set NaN. c43 calls decQuadIsNegative nowhere, so no ported owner wants
+/// those semantics; runtime.real34IsNegative is this same test.
 pub inline fn real34IsNegative(source: *align(1) const abi.Real34) bool {
     return (source.bytes[15] & 0x80) == 0x80;
 }

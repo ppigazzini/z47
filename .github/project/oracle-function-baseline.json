@@ -1,29 +1,14 @@
 {
   "_why": "Hand-written parity REFERENCE bodies -- an oracle_<X> function definition where X is a function c43 declares -- living inside files that also #include c43 source, which is why neither the frozen nor the generated list could ever see them. The ratchet only goes down; the endpoint is an empty object.",
   "counts": {
-    "build/tests/math_wrappers/math_wrappers_oracle.c": 34
+    "build/tests/math_wrappers/math_wrappers_oracle.c": 19
   },
   "mirrors": {
     "build/tests/math_wrappers/math_wrappers_oracle.c": [
       "oracle_compareTypeErrorX",
       "oracle_curtReal",
       "oracle_fnAtan2",
-      "oracle_fnCheckAngle",
-      "oracle_fnCheckForZero",
-      "oracle_fnCheckInfinite",
-      "oracle_fnCheckInteger",
-      "oracle_fnCheckIsVect2d",
-      "oracle_fnCheckIsVect3d",
-      "oracle_fnCheckMatrix",
-      "oracle_fnCheckMatrixSquare",
-      "oracle_fnCheckMinusZero",
-      "oracle_fnCheckNaN",
-      "oracle_fnCheckNumber",
-      "oracle_fnCheckPlusZero",
-      "oracle_fnCheckSpecial",
-      "oracle_fnCheckType",
       "oracle_fnConjugate",
-      "oracle_fnGetType",
       "oracle_fnIDiv",
       "oracle_fnIDivR",
       "oracle_fnIsConverged",

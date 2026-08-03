@@ -58,3 +58,18 @@ void z47_math_wrappers_legacy_fnLINPOL(uint16_t unusedButMandatoryParameter) { (
 void z47_math_wrappers_legacy_fnCross(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnDot(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
 void z47_math_wrappers_legacy_fnLogXY(uint16_t unusedButMandatoryParameter) { (void)unusedButMandatoryParameter; }
+
+// get_type.zig forms its result in decQuad, reading const34_1000 out of the
+// generated constant blob, exactly as checkValue.c does. This lane links neither
+// decNumber nor the blob, so both symbols are filled in here.
+//
+// Nothing in this lane calls them: fnGetType is compared in the full-core
+// math-wrapper differential, where the real decQuad and the real blob are
+// present. A stub that is reached would silently answer 0; if a case is ever
+// added here that reaches one, it will read this comment first.
+uint8_t constants[1];
+
+void *decQuadFromUInt32(void *res, uint32_t value) {
+    (void)value;
+    return res;
+}

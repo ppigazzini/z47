@@ -1,6 +1,9 @@
 const std = @import("std");
 const math_type_encode = @import("type_encode.zig"); // std-only type-report encoders
 const runtime = @import("../command_wrappers/runtime.zig");
+const abi = @import("abi"); // shared ABI bindings
+const consts = abi.constants; // typed constant-blob accessors; q16632 is const34_1000
+const real34_t = abi.Real34;
 
 fn pushIntegerOut(value: u32) void {
     var long_integer: runtime.longInteger_t = undefined;
@@ -15,18 +18,28 @@ fn pushIntegerOut(value: u32) void {
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
 }
 
-fn pushRealOut(value: u32) void {
-    var real_output = std.mem.zeroes(runtime.real_t);
-    var scale = std.mem.zeroes(runtime.real_t);
+// checkValue.c forms this value in real34 (decQuad) throughout: uInt32ToReal34,
+// then real34Divide by const34_1000, then a raw real34Copy into X.
+//
+// The division has to stay in decQuad. Doing it in real_t under ctxtReal39 and
+// converting down afterwards yields the same NUMBER with a different decimal
+// COHORT -- 1 instead of 1.000 -- because decNumber's divide and the 39-to-34
+// digit narrowing pick a different exponent than decQuad's divide does. On a
+// calculator the cohort is the displayed trailing digits, so that is a visible
+// divergence and not a rounding detail.
+extern fn decQuadFromUInt32(res: *real34_t, value: u32) *real34_t;
 
-    runtime.uInt32ToReal(value, &real_output);
-    runtime.uInt32ToReal(1000, &scale);
-    runtime.realDivide(&real_output, &scale, &real_output, &runtime.ctxtReal39);
+fn pushRealOut(value: u32) void {
+    var real_output = std.mem.zeroes(real34_t);
+
+    _ = decQuadFromUInt32(&real_output, value);
+    runtime.real34Divide(&real_output, consts.q16632(), &real_output);
 
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     runtime.liftStack();
     runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-    runtime.convertRealToReal34ResultRegister(&real_output, runtime.REGISTER_X);
+    // real34Copy (realType.h macro): copy the 16-byte value verbatim.
+    runtime.registerReal34Ptr(runtime.REGISTER_X).bytes = real_output.bytes;
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
 }
 

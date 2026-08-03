@@ -1199,8 +1199,13 @@ pub inline fn real34IsZero(value: *const real34_t) bool {
     return decQuadIsZero(value) != 0;
 }
 
+// realType.h:105 -- `(bytes[15] & 0x80) == 0x80`, a raw sign-bit test. NOT
+// decQuadIsNegative, which decBasic.c defines as
+// `DFISSIGNED && !DFISZERO && !DFISNAN` and which therefore answers false for -0
+// and for a sign-set NaN. c43 never calls decQuadIsNegative anywhere, so every
+// upstream `real34IsNegative` call site means the sign bit.
 pub inline fn real34IsNegative(value: *const real34_t) bool {
-    return decQuadIsNegative(value) != 0;
+    return (value.bytes[15] & 0x80) == 0x80;
 }
 
 pub inline fn real34ToReal(source: *const real34_t, destination: *real_t) void {
