@@ -620,6 +620,45 @@ static void seedComplexMatrixWithAngle(void) {
   REGISTER_MATRIX_HEADER(REGISTER_X)->mtag = amDegree | amPolar;
 }
 
+// ---------------------------------------------------------------------------
+// The COMPLEX-RESULTS and SPECIAL-RESULTS flags, which together decide what an
+// out-of-domain real answers.
+//
+// arccosReal reads FLAG_CPXRES first and FLAG_SPCRES second, so |x| > 1 has three
+// outcomes: a complex result, a NaN, or a domain error. Every fixture above
+// leaves CPXRES SET, so only the first was ever reached -- forcing that branch
+// always-taken changed nothing across the whole lane. FLAG_CPXRES is read at 32
+// sites in src/core/numeric/ and was not one of the twelve partitioned properties.
+//
+// Two fixtures rather than one, because the two flags are read in sequence and
+// only the pair selects an outcome. Arranging one and leaving the other at its
+// reset value reaches two of the three branches and calls the third covered.
+// ---------------------------------------------------------------------------
+
+static void seedRealOutOfDomainNoComplex(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(2, REGISTER_REAL34_DATA(REGISTER_X));
+  clearSystemFlag(FLAG_CPXRES);
+}
+
+static void seedRealOutOfDomainNoResults(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(2, REGISTER_REAL34_DATA(REGISTER_X));
+  clearSystemFlag(FLAG_CPXRES);
+  clearSystemFlag(FLAG_SPCRES);
+}
+
+// FLAG_HPRP swaps which register the polar/rectangular wrappers treat as the
+// angle. It is CLEAR at reset -- forcing its branch always-taken diverges on
+// fnToRect2 -- so the clear side was reached all along and the SET side by
+// nothing. fnToPolar2, fnToRect2 and fnToRect are all driven here, so this gates
+// real computation in this lane rather than display.
+static void seedRealHprp(void) {
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_X));
+  setSystemFlag(FLAG_HPRP);
+}
+
 static const fixture_t FIXTURES[] = {
   { "realPositive",    seedRealPositive    },
   { "realWithAngle",   seedRealWithAngle   },
@@ -659,6 +698,11 @@ static const fixture_t FIXTURES[] = {
   { "complexPolar",           seedComplexPolar           },
   { "matrixWithAngle",        seedMatrixWithAngle        },
   { "complexMatrixWithAngle", seedComplexMatrixWithAngle },
+
+  // The CPXRES/SPCRES outcome selector.
+  { "outOfDomainNoComplex",   seedRealOutOfDomainNoComplex },
+  { "outOfDomainNoResults",   seedRealOutOfDomainNoResults },
+  { "realHprp",               seedRealHprp                 },
 };
 
 // ---------------------------------------------------------------------------
@@ -747,6 +791,28 @@ static const partitionClass_t PARTITION_PROPERTIES[] = {
   { "matrixShape", "square",      "matrixSquare" },
   { "matrixShape", "vector2d",    "vector2d"     },
   { "matrixShape", "vector3d",    "vector3d"     },
+
+  // FLAG_HPRP swaps which register the polar/rectangular wrappers read as the
+  // angle. Clear at reset, so only one side was ever reached.
+  { "hprp", "clear", "realPositive" },
+  { "hprp", "set",   "realHprp"     },
+
+  // FLAG_POLAR is deliberately NOT a property here. Its seven sites are in
+  // cxtore.zig and retocx.zig -- the ->CX and RE->CX commands -- and this lane
+  // drives neither, so a fixture for it would partition a property no wrapper in
+  // the case tables reads. It belongs to whichever lane covers those commands.
+
+  // FLAG_CPXRES decides whether an out-of-domain real answers with a COMPLEX
+  // result or falls through to SPCRES. 32 sites in src/core/numeric/ read it, and
+  // every fixture left it set until these two existed.
+  { "cpxres", "set",   "realPositive"            },
+  { "cpxres", "clear", "outOfDomainNoComplex"    },
+
+  // The pair of them, which is what actually selects the outcome: complex, NaN,
+  // or domain error. A 2-way combination, and the first one this table states.
+  { "resultFlags", "complex",     "realPositive"          },
+  { "resultFlags", "specialOnly", "outOfDomainNoComplex"  },
+  { "resultFlags", "errorOnly",   "outOfDomainNoResults"  },
 
   // FLAG_SPCRES gates the special-result branches, and the harness leaves it at
   // its reset value of SET -- so the clear side needs a fixture that clears it, or
