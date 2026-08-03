@@ -1,5 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
+// PROVENANCE (REPORT-31 M31-22): the golden values below are DERIVED from each
+// distribution's closed form at high precision -- they are not read off c43 and
+// not regenerated from z47's own output. That makes this a *specified* oracle in
+// Barr et al.'s taxonomy, the strongest kind, and it is why this lane carries no
+// entry in the oracle-provenance ratchets: there is no c43 reference to move with,
+// because mathematics is the reference. A golden here that nobody can re-derive
+// from the distribution's definition does not belong; state the closed form beside
+// it or delete it.
+//
 // Statistical-distribution parity harness driver. It runs the ported Zig
 // distribution owners against independent high-precision golden values, using
 // the real decNumber library (linked) through distribution_fake_runtime for the

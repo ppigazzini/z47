@@ -64,6 +64,23 @@ extern bool_t   oracle_isFunctionAllowingNewVariable(int16_t func);
 extern bool_t   oracle_namedVariableIsStats(calcRegister_t regist);
 extern void     oracle_clampShortIntegerRegistersToWordSize(void);
 extern void     oracle_fnDeleteVariable(uint16_t regist);
+
+// The ten registers.c functions the stack-state lane used to compare against a
+// hand-written body (REPORT-31 M31-20). Every one of them is already renamed by
+// register_metadata_oracle.c, so c43's real implementation is in THIS binary and
+// was simply not being called; the stack lane could not reach it because its own
+// world is a mock that registers.c cannot compile against (424 errors, the same
+// wall M31-12 measured). The cases move here, where the reference is real.
+extern void     oracle_fnClearRegisters(uint16_t confirmation);
+extern void     oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
+extern void     oracle_fnRegClr(uint16_t unusedButMandatoryParameter);
+extern void     oracle_fnRegCopy(uint16_t unusedButMandatoryParameter);
+extern void     oracle_fnRegSort(uint16_t unusedButMandatoryParameter);
+extern void     oracle_fnRegSwap(uint16_t unusedButMandatoryParameter);
+extern void     oracle_fnToReal(uint16_t unusedButMandatoryParameter);
+extern bool_t   oracle_saveLastX(void);
+extern void     oracle_adjustResult(calcRegister_t result, bool_t dropY, bool_t setCpxRes,
+                                    calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 extern void     oracle_fnClearAllVariables(uint16_t confirmation);
 extern void     oracle_fnDeleteAllVariables(uint16_t confirmation);
 
@@ -111,7 +128,15 @@ static void takeSnapshot(snapshot_t *out) {
   memcpy(out->ram, ram, sizeof(out->ram));
 }
 
+// Set for the one case family that allocates a scratch block and frees it again.
+// See diffCaseIgnoringPoolResidue.
+static int ignorePoolResidue = 0;
+
 static int reportSnapshotMismatch(const char *caseName) {
+  if(ignorePoolResidue) {
+    memset(snapshotA.ram, 0, sizeof(snapshotA.ram));
+    memset(snapshotB.ram, 0, sizeof(snapshotB.ram));
+  }
   if(memcmp(&snapshotA, &snapshotB, sizeof(snapshotA)) == 0) {
     return 0;
   }
@@ -220,7 +245,32 @@ static void runSide(void (*body)(void), snapshot_t *out) {
 static int diffCase(const char *caseName, void (*zigSide)(void), void (*c43Side)(void)) {
   runSide(zigSide, &snapshotA);
   runSide(c43Side, &snapshotB);
+  ignorePoolResidue = 0;
   return reportSnapshotMismatch(caseName);
+}
+
+// Same, minus the RAM-slab byte compare -- and the reason is specific, measured,
+// and must not be reused casually (REPORT-31 M31-20).
+//
+// c43's `sortReg` is a MERGE sort: it `allocC47Blocks` a scratch array per level
+// and frees it again. z47's `sortRegisterRange` is a swap-on-compare loop that
+// allocates nothing. Both leave the registers in the same order and the same free
+// count -- every descriptor and the free-block total match -- but c43's freed
+// scratch still holds the bytes it wrote, and z47's never held any. That is
+// residue in FREE pool space, which is not live calculator state; comparing it
+// would pin one implementation's allocation strategy as if it were the contract.
+//
+// What this deliberately does NOT excuse: the register descriptors, the payloads,
+// the free count and every scalar are still compared in full, so a real ordering
+// difference or a leaked block still fails. If a future case needs this flag,
+// prove the difference is confined to freed blocks first -- do not assume it.
+static int diffCaseIgnoringPoolResidue(const char *caseName, void (*zigSide)(void), void (*c43Side)(void)) {
+  runSide(zigSide, &snapshotA);
+  runSide(c43Side, &snapshotB);
+  ignorePoolResidue = 1;
+  const int bad = reportSnapshotMismatch(caseName);
+  ignorePoolResidue = 0;
+  return bad;
 }
 
 // ---------------------------------------------------------------------------
@@ -404,6 +454,7 @@ static const struct {
   // DELIBERATE divergence from REPORT-30's memory-safety programme, not a parity
   // defect, and a differential must not ask its reference to do something
   // undefined: the answer would be whatever that build's stack happened to hold.
+  // Recorded as REPORT-30 finding 26, CLOSED -- the guard is the right divergence.
 };
 
 static const struct {
@@ -541,6 +592,186 @@ static int runFunctionPredicateDifferential(void) {
   return failures - before;
 }
 
+// ---------------------------------------------------------------------------
+// Check 5 -- the ten registers.c entry points inherited from the stack lane.
+//
+// They were compared against 259 lines of hand-written body in
+// stack_state_oracle.c; one of them, `clearRegister`, is a function whose Zig twin
+// M31-12 had to fix, and the hand-written copy agreed with the broken one by
+// construction and could not say so. Here the reference is c43's own registers.c,
+// compiled into this binary.
+//
+// `fnRegClr` / `fnRegCopy` / `fnRegSort` / `fnRegSwap` read their range from
+// `getRegParam`, which reads the stack, so the fixture's X/Y are the parameters:
+// each case seeds them before running, and both sides see the same seed.
+// ---------------------------------------------------------------------------
+static uint16_t caseParam;
+static int32_t caseRangeStart;
+static int32_t caseRangeCount;
+static int32_t caseRangeDest;
+
+// Seed the PARAMETERS (X = start, Y = count, and Z = destination for fnRegCopy /
+// fnRegSwap) AND the registers the command will act on.
+//
+// Seeding only the parameters is not enough, and the seen-to-fail probe is what
+// said so: with the numbered registers left at fnReset's zeroed real34 defaults,
+// clearing or reordering them is invisible, and narrowing c43's fnRegClr range by
+// one produced NO failure. Every register the sweep can touch now carries a
+// distinct, type-varied value, so an off-by-one or a wrong order shows up.
+static void seedRegisterRange(void) {
+  for(int r = 0; r <= 10; r++) {
+    reallocateRegister(r, dtReal34, 0, amNone);
+    int32ToReal34(1000 + r * 7, REGISTER_REAL34_DATA(r));
+  }
+  for(int r = 90; r <= 99; r++) {
+    reallocateRegister(r, dtReal34, 0, amNone);
+    int32ToReal34(2000 - r * 3, REGISTER_REAL34_DATA(r));
+  }
+  // Type variety inside the swept range, so a command that only handles real34
+  // diverges visibly from one that handles the rest.
+  convertUInt64ToShortIntegerRegister(0, 0x5AULL, 16, 4);
+  {
+    longInteger_t li;
+    longIntegerInit(li);
+    stringToLongInteger("987654321098765432109876543210", 10, li);
+    convertLongIntegerToLongIntegerRegister(li, 5);
+    longIntegerFree(li);
+  }
+
+  // getRegParam reads ONE real34 from X, encoded `sss.nn`: the integer part is the
+  // first register and the two fraction digits are the count. Passing start in X
+  // and count in Y -- the obvious guess -- yields n = 0, so the command's loop body
+  // never runs and every probe of it is invisible. That is exactly what the first
+  // seen-to-fail attempt found, and it is why the encoding is spelled out here.
+  // fnRegCopy and fnRegSwap take a destination in the same word: `sss.nnddd`.
+  {
+    char param[32];
+    snprintf(param, sizeof(param), "%d.%02d%03d",
+             caseRangeStart, caseRangeCount, caseRangeDest);
+    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+    stringToReal34(param, REGISTER_REAL34_DATA(REGISTER_X));
+  }
+}
+
+static void zigClearRegisters(void)  { fnClearRegisters(caseParam); }
+static void c43ClearRegisters(void)  { oracle_fnClearRegisters(caseParam); }
+static void zigGetLocR(void)         { fnGetLocR(caseParam); }
+static void c43GetLocR(void)         { oracle_fnGetLocR(caseParam); }
+static void zigToReal(void)          { fnToReal(caseParam); }
+static void c43ToReal(void)          { oracle_fnToReal(caseParam); }
+static void zigSaveLastX(void)       { (void)saveLastX(); }
+static void c43SaveLastX(void)       { (void)oracle_saveLastX(); }
+static void zigRegClr(void)          { seedRegisterRange(); fnRegClr(NOPARAM); }
+static void c43RegClr(void)          { seedRegisterRange(); oracle_fnRegClr(NOPARAM); }
+static void zigRegCopy(void)         { seedRegisterRange(); fnRegCopy(NOPARAM); }
+static void c43RegCopy(void)         { seedRegisterRange(); oracle_fnRegCopy(NOPARAM); }
+static void zigRegSort(void)         { seedRegisterRange(); fnRegSort(NOPARAM); }
+static void c43RegSort(void)         { seedRegisterRange(); oracle_fnRegSort(NOPARAM); }
+
+// Three registers where two compare EQUAL. A stable sort keeps their input order;
+// an unstable one does not, and the two orders are distinguishable because the
+// equal pair carries different data TYPES. c43's sortReg is a merge sort (stable
+// as written); this is the case that tells the two apart.
+static void seedEqualKeySort(void) {
+  reallocateRegister(0, dtReal34, 0, amNone);
+  int32ToReal34(1, REGISTER_REAL34_DATA(0));
+  {
+    longInteger_t li;
+    longIntegerInit(li);
+    stringToLongInteger("1", 10, li);
+    convertLongIntegerToLongIntegerRegister(li, 1);
+    longIntegerFree(li);
+  }
+  reallocateRegister(2, dtReal34, 0, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(2));
+  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+  int32ToReal34(0, REGISTER_REAL34_DATA(REGISTER_X));
+  reallocateRegister(REGISTER_Y, dtReal34, 0, amNone);
+  int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_Y));
+}
+static void zigStableSort(void) { seedEqualKeySort(); fnRegSort(NOPARAM); }
+static void c43StableSort(void) { seedEqualKeySort(); oracle_fnRegSort(NOPARAM); }
+static void zigRegSwap(void)         { seedRegisterRange(); fnRegSwap(NOPARAM); }
+static void c43RegSwap(void)         { seedRegisterRange(); oracle_fnRegSwap(NOPARAM); }
+
+static bool_t caseDropY;
+static bool_t caseSetCpxRes;
+static calcRegister_t caseOp1;
+static void zigAdjustResult(void) { adjustResult(caseRegister, caseDropY, caseSetCpxRes, caseOp1, -1, -1); }
+static void c43AdjustResult(void) { oracle_adjustResult(caseRegister, caseDropY, caseSetCpxRes, caseOp1, -1, -1); }
+
+static int runRegistersEntryPointDifferential(void) {
+  int before = failures;
+  char label[128];
+
+  for(uint16_t confirmation = 0; confirmation <= 1; confirmation++) {
+    caseParam = confirmation;
+    snprintf(label, sizeof(label), "fnClearRegisters(%u)", confirmation);
+    diffCase(label, zigClearRegisters, c43ClearRegisters);
+  }
+
+  caseParam = NOPARAM;
+  diffCase("fnGetLocR", zigGetLocR, c43GetLocR);
+  diffCase("saveLastX", zigSaveLastX, c43SaveLastX);
+
+  // fnToReal over the value types its switch names, seeded into X by the fixture
+  // plus a per-case override.
+  for(size_t i = 0; i < SWEEP_COUNT; i++) {
+    caseRegister = sweepRegisters[i];
+    (void)caseRegister;
+  }
+  caseParam = NOPARAM;
+  diffCase("fnToReal (fixture X = real34)", zigToReal, c43ToReal);
+
+  {
+    const struct { int32_t start, count, dest; } ranges[] = {
+      {0, 0, 20}, {0, 1, 20}, {0, 5, 20}, {2, 3, 20}, {3, 4, 30},
+      {90, 5, 20}, {95, 5, 20}, {98, 4, 20}, {0, 99, 20},
+    };
+    for(size_t i = 0; i < sizeof(ranges) / sizeof(ranges[0]); i++) {
+      caseRangeStart = ranges[i].start;
+      caseRangeCount = ranges[i].count;
+      caseRangeDest = ranges[i].dest;
+      snprintf(label, sizeof(label), "fnRegClr(start=%d count=%d)", ranges[i].start, ranges[i].count);
+      diffCase(label, zigRegClr, c43RegClr);
+      snprintf(label, sizeof(label), "fnRegCopy(start=%d count=%d)", ranges[i].start, ranges[i].count);
+      diffCase(label, zigRegCopy, c43RegCopy);
+      snprintf(label, sizeof(label), "fnRegSort(start=%d count=%d)", ranges[i].start, ranges[i].count);
+      diffCaseIgnoringPoolResidue(label, zigRegSort, c43RegSort);
+      snprintf(label, sizeof(label), "fnRegSwap(start=%d count=%d)", ranges[i].start, ranges[i].count);
+      diffCase(label, zigRegSwap, c43RegSwap);
+    }
+  }
+
+  diffCaseIgnoringPoolResidue("fnRegSort stability (two keys compare equal)", zigStableSort, c43StableSort);
+
+  {
+    const struct { calcRegister_t reg; bool_t dropY, setCpxRes; calcRegister_t op1; } cases[] = {
+      {REGISTER_X, false, false, -1},
+      {REGISTER_X, true,  false, -1},
+      {REGISTER_X, false, true,  REGISTER_Z},
+      {REGISTER_X, true,  true,  REGISTER_Z},
+      {10,         false, false, -1},   // the matrix register
+      {REGISTER_A, false, false, -1},   // short integer
+      {REGISTER_B, false, false, -1},   // long integer
+    };
+    for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+      caseRegister = cases[i].reg;
+      caseDropY = cases[i].dropY;
+      caseSetCpxRes = cases[i].setCpxRes;
+      caseOp1 = cases[i].op1;
+      snprintf(label, sizeof(label), "adjustResult(%d, dropY=%d, cpxRes=%d)",
+               caseRegister, cases[i].dropY, cases[i].setCpxRes);
+      diffCase(label, zigAdjustResult, c43AdjustResult);
+    }
+  }
+
+  if(failures == before) {
+    printf("PASS: the ten registers.c entry points inherited from stack_state agree with c43\n");
+  }
+  return failures - before;
+}
+
 int main(void) {
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
@@ -548,6 +779,7 @@ int main(void) {
   runAccessorDifferential();
   runMutatorDifferential();
   runFunctionPredicateDifferential();
+  runRegistersEntryPointDifferential();
 
   if(failures != 0) {
     printf("REGISTER-METADATA PARITY: %d check(s) FAILED\n", failures);

@@ -144,7 +144,9 @@ Concretely, when writing or touching an oracle:
 - Do not hand-copy c43 constants into the harness header either; that is the same
   defect one level down, and
   [check-harness-constant-copies.py](../.github/project/check-harness-constant-copies.py)
-  now measures it. For a UNIT harness, prefer upstream's own `c47.h` outright:
+  now measures it, and `EXTRA_INFO_ON_CALC_ERROR` should be upstream's own value so
+  c43's diagnostic branches COMPILE rather than being configured away.
+  For a UNIT harness, prefer upstream's own `c47.h` outright:
   call `build/tests/c43_oracle.zig`'s `addUpstreamHeaderRoots` on the parity
   executable and the harness declares no constants at all. (No lane calls it
   today — the three conversions after it all went full-core — but the same four
@@ -158,7 +160,9 @@ Concretely, when writing or touching an oracle:
   both implementations; what may not be hand-written is the *reference*.
 - A conversion is not verified until the lane has been **seen to fail**: patch a
   behavioural change into the c43 file, confirm red, revert. A conversion that
-  cannot be shown to fail has been assumed, not verified.
+  cannot be shown to fail has been assumed, not verified. **Read the result off the
+  built artifact** (`.zig-cache/o/*/<exe>`), not off `zig build <lane>` — a Run step
+  can report success from cache while the new binary fails.
 
 **A reference is a FUNCTION, not a file.** All five hand-transliterated oracle
 FILES were converted (REPORT-31 M31-2, M31-3, M31-10, M31-12, M31-13) and the
@@ -168,7 +172,16 @@ files that *also* `#include` c43 source, which is exactly why neither was ever
 eligible for that list: `math_wrappers_oracle.c` (38 of them, reached by 297 of
 the lane's 726 oracle calls) and `stack_state_oracle.c` (10). REPORT-31 Annex C
 measures it and §11 closes it. When you touch either lane, do not add a
-thirty-ninth.
+thirty-ninth: `check-oracle-provenance.py` counts them and the ratchet only goes
+down. It is **34** now, all in `math_wrappers_oracle.c` — `stack_state_oracle.c`
+reached zero when its ten `registers.c` mirrors moved to the full-core lane where
+c43's own `registers.c` is compiled.
+
+`math_wrappers` is a special case worth knowing before you touch it: its `real_t`
+is a hand-declared struct, decNumber is not linked, and its `const39_*` are
+placeholder decimals, so the 86 c43 files it compiles run on fake arithmetic and
+what the lane compares is CONTROL FLOW. Compiling more c43 into it does not remove
+a mirror — measured twice, recorded in the file.
 
 `check-oracle-provenance.py` (local gate and CI) keeps the file-level list empty:
 re-adding an entry is a written admission that a lane cannot see c43 move, and it also

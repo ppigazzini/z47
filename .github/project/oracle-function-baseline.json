@@ -1,0 +1,44 @@
+{
+  "_why": "REPORT-31 M31-15. Hand-written parity REFERENCE bodies -- an oracle_<X> function definition where X is a function c43 declares -- living inside files that also #include c43 source, which is why neither the frozen nor the generated list could ever see them. The ratchet only goes down; the endpoint is an empty object. Section 11 of the report is the plan.",
+  "counts": {
+    "build/tests/math_wrappers/math_wrappers_oracle.c": 34
+  },
+  "mirrors": {
+    "build/tests/math_wrappers/math_wrappers_oracle.c": [
+      "oracle_compareTypeErrorX",
+      "oracle_curtReal",
+      "oracle_fnAtan2",
+      "oracle_fnCheckAngle",
+      "oracle_fnCheckForZero",
+      "oracle_fnCheckInfinite",
+      "oracle_fnCheckInteger",
+      "oracle_fnCheckIsVect2d",
+      "oracle_fnCheckIsVect3d",
+      "oracle_fnCheckMatrix",
+      "oracle_fnCheckMatrixSquare",
+      "oracle_fnCheckMinusZero",
+      "oracle_fnCheckNaN",
+      "oracle_fnCheckNumber",
+      "oracle_fnCheckPlusZero",
+      "oracle_fnCheckSpecial",
+      "oracle_fnCheckType",
+      "oracle_fnConjugate",
+      "oracle_fnGetType",
+      "oracle_fnIDiv",
+      "oracle_fnIDivR",
+      "oracle_fnIsConverged",
+      "oracle_fnRound",
+      "oracle_fnSwapRealImaginary",
+      "oracle_fnToPolar2",
+      "oracle_fnToRect2",
+      "oracle_fnUnitVector",
+      "oracle_fnXAlmostEqual",
+      "oracle_fnXEqualsTo",
+      "oracle_fnXGreaterEqual",
+      "oracle_fnXGreaterThan",
+      "oracle_fnXLessEqual",
+      "oracle_fnXLessThan",
+      "oracle_fnXNotEqual"
+    ]
+  }
+}

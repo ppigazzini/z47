@@ -79,3 +79,73 @@
 #define setLastKeyCode oracle_setLastKeyCode
 
 #include "../../../upstream/src/c47/keyboard.c"
+
+// ---------------------------------------------------------------------------
+// c43's OWN keyboard layout tables, for the table differential (REPORT-31 M31-24).
+//
+// keyboard_entry_harness.c guarded kbd_std_C47 with a frozen FNV-1a checksum and a
+// comment saying "the keyboard Zig owners have no compiled C oracle (the bridge was
+// deleted), so an upstream change to the layout would otherwise be caught by
+// nothing". That was true when it was written and is not any more: this lane
+// compiles c43's keyboard.c, and assign.c -- where the tables actually live --
+// compiles clean beside it. A checksum somebody has to re-pin by hand is a
+// characterization test; the table itself is the reference.
+// ---------------------------------------------------------------------------
+#define kbd_std_C47 oracle_kbd_std_C47
+#define kbd_std_D47 oracle_kbd_std_D47
+#define kbd_std_DM42 oracle_kbd_std_DM42
+#define kbd_std_E47 oracle_kbd_std_E47
+#define kbd_std_N47 oracle_kbd_std_N47
+#define kbd_std_V47 oracle_kbd_std_V47
+#define kbd_std_R47bk_fg oracle_kbd_std_R47bk_fg
+#define kbd_std_R47f_g oracle_kbd_std_R47f_g
+#define kbd_std_R47fg_bk oracle_kbd_std_R47fg_bk
+#define kbd_std_R47fg_g oracle_kbd_std_R47fg_g
+
+#define _assignItem oracle_assignItem
+#define assignEnterAlpha oracle_assignEnterAlpha
+#define assignGetName1 oracle_assignGetName1
+#define assignGetName2 oracle_assignGetName2
+#define assignLeaveAlpha oracle_assignLeaveAlpha
+#define assignToKey oracle_assignToKey
+#define assignToMyAlpha oracle_assignToMyAlpha
+#define assignToMyMenu oracle_assignToMyMenu
+#define assignToUserMenu oracle_assignToUserMenu
+#define createMenu oracle_createMenu
+#define fnAssign oracle_fnAssign
+#define fnClearUserMenus oracle_fnClearUserMenus
+#define fnDeleteMenu oracle_fnDeleteMenu
+#define fnDeleteUserMenus oracle_fnDeleteUserMenus
+#define getUserKeyLabelString oracle_getUserKeyLabelString
+#define initUserKeyArgument oracle_initUserKeyArgument
+#define removeUserItemAssignments oracle_removeUserItemAssignments
+#define setUserKeyArgument oracle_setUserKeyArgument
+#define updateAssignTamBuffer oracle_updateAssignTamBuffer
+
+// assign.c calls its own functions before defining them, and assign.h was already
+// pulled in by c47.h above -- under the ORIGINAL names, before these renames -- so
+// its include guard makes a re-include a no-op. Re-declare the prototypes the file
+// forward-calls, under the renamed spellings. Copied from assign.h; re-derive with
+//   grep -nE "^\s*(void|bool_t|int16_t)[^;]*\(" upstream/src/c47/assign.h
+// after a resync rather than by hand.
+void oracle_assignItem(userMenuItem_t *menuItem);
+void oracle_assignEnterAlpha(void);
+void oracle_assignGetName1(void);
+void oracle_assignGetName2(void);
+void oracle_assignLeaveAlpha(void);
+void oracle_assignToKey(const char *data);
+void oracle_assignToMyAlpha(uint16_t position);
+void oracle_assignToMyMenu(uint16_t position);
+void oracle_assignToUserMenu(uint16_t position);
+void oracle_createMenu(const char *name);
+void oracle_fnAssign(uint16_t mode);
+void oracle_fnClearUserMenus(uint16_t confirmation);
+void oracle_fnDeleteMenu(uint16_t id);
+void oracle_fnDeleteUserMenus(uint16_t confirmation);
+void oracle_initUserKeyArgument(void);
+void oracle_removeUserItemAssignments(int16_t item, char *userItemName);
+void oracle_setUserKeyArgument(uint16_t position, const char *name);
+void oracle_updateAssignTamBuffer(void);
+uint8_t *oracle_getUserKeyLabelString(int16_t n);
+
+#include "../../../upstream/src/c47/assign.c"

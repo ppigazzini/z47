@@ -98,19 +98,26 @@ static void runEigenvalues22(void) {
   real_t mat[8];
   real_t t1r, t1i, t2r, t2i;
 
-  // [[2,1],[1,2]] symmetric -> eigenvalues {3,1}, both real.
+  // PROVENANCE of every expected value in this file (REPORT-31 M31-22): each is
+  // DERIVED, not read off c43. That makes this a *specified* oracle in Barr et
+  // al.'s taxonomy -- the strongest kind, and legitimately not a c43 differential,
+  // which is why it does not appear in the provenance gate's ratchets. Each case
+  // states the identity it comes from; a value nobody can re-derive does not
+  // belong here.
+  //
+  // char. poly of [[2,1],[1,2]] is (2-L)^2 - 1 = 0 -> L = 3, 1.
   const char *sym[8] = {"2","0", "1","0", "1","0", "2","0"};
   loadMatrix(mat, 2, sym);
   calculateEigenvalues22(mat, 2, &t1r, &t1i, &t2r, &t2i, true, &ctxtReal39);
   expectEigenPair("eig22[[2,1],[1,2]]", &t1r, &t1i, &t2r, &t2i, "3", "0", "1", "0");
 
-  // [[0,-1],[1,0]] rotation -> eigenvalues {+i, -i}.
+  // char. poly of [[0,-1],[1,0]] is L^2 + 1 = 0 -> L = +i, -i.
   const char *rot[8] = {"0","0", "-1","0", "1","0", "0","0"};
   loadMatrix(mat, 2, rot);
   calculateEigenvalues22(mat, 2, &t1r, &t1i, &t2r, &t2i, false, &ctxtReal39);
   expectEigenPair("eig22[[0,-1],[1,0]]", &t1r, &t1i, &t2r, &t2i, "0", "1", "0", "-1");
 
-  // [[5,0],[0,3]] diagonal -> eigenvalues {5,3}.
+  // a diagonal matrix's eigenvalues ARE its diagonal -> 5, 3.
   const char *diag[8] = {"5","0", "0","0", "0","0", "3","0"};
   loadMatrix(mat, 2, diag);
   calculateEigenvalues22(mat, 2, &t1r, &t1i, &t2r, &t2i, true, &ctxtReal39);

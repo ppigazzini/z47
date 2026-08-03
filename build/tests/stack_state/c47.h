@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdint.h>
 
 typedef bool bool_t;
@@ -201,7 +202,11 @@ enum {
 #define REAL_SIZE_IN_BLOCKS(digits) TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
 
 #define C47_NULL 0
-#define EXTRA_INFO_ON_CALC_ERROR 0
+// Upstream's own value for a PC build (defines.h:555). It used to be 0 here,
+// which configured c43's diagnostic branches OUT of the compiled oracle -- so an
+// upstream edit inside one of them was silence rather than a build failure. Same
+// argument M31-2 took for the flags lane (REPORT-31 M31-23).
+#define EXTRA_INFO_ON_CALC_ERROR 1
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define ERROR_MESSAGE_LENGTH 256
 
@@ -225,6 +230,10 @@ extern registerHeader_t globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
 extern namedVariableHeader_t *allNamedVariables;
 extern registerHeader_t *currentLocalRegisters;
 extern const reservedVariableHeader_t allReservedVariables[];
+// defines.h:1472 spells it exactly this way -- an alias for REGISTER_Z, not a
+// literal, so it stays correct if c43 renumbers the register (REPORT-31 M31-23).
+#define ERR_REGISTER_LINE REGISTER_Z
+
 extern char *errorMessage;
 extern const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH];
 extern uint16_t numberOfNamedVariables;
@@ -364,8 +373,6 @@ void stackParitySeedCurrentStats(uint8_t seed);
 void stackParitySeedSavedStats(uint8_t seed);
 void stackParityCapture(stack_parity_snapshot_t *snapshot);
 void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
-void z47_registers_fnClearRegisters(uint16_t confirmation);
-void z47_registers_clearRegister(calcRegister_t reg);
 void z47_registers_fnRegCopy(uint16_t unusedButMandatoryParameter);
 void z47_registers_fnToReal(uint16_t unusedButMandatoryParameter);
 void z47_registers_sort_reg(uint16_t range_start, uint16_t range_end);
