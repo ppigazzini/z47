@@ -97,6 +97,22 @@ ALLOWED: dict[str, str] = {
 # Harness-only options that do NOT start with use_fake_. Recognising the family by
 # prefix alone missed these, and they are the same seam: each selects a different
 # TYPE for the owner depending on who is building it.
+# Sites that select which OWNERS ARE LINKED rather than what an owner DOES. This
+# is Feathers' LINK seam rather than a preprocessing one, and the distinction is
+# worth keeping: the owners that do get compiled behave identically, so nothing
+# here makes a tested owner differ from its shipped self. What it costs is
+# coverage -- the excluded owners are not in that lane -- and that is a fact about
+# the lane, not a defect in the owner. Each entry says where the excluded owners
+# ARE covered.
+LINK_SET: dict[str, str] = {
+    "src/core/numeric/command_wrappers.zig": (
+        "selects which owner files the math_command_wrappers lane links. The fake"
+        " runtime duplicates the WP34S_* surface and lacks the decNumber symbols"
+        " those owners call, so linking them there fails. They are covered by c43's"
+        " own testSuite (prime/beta/lnbeta/gd/agm/cyx/pyx and all trig/gamma)."
+    ),
+}
+
 HARNESS_ONLY: dict[str, str] = {
     "free_regions_are_inline_array": "FreeRegionsStorage becomes [N]T instead of [*]T",
     "use_array_backed_global_registers": "the global register file becomes an array instead of a pointer",
@@ -126,10 +142,11 @@ def tracked(repo: Path) -> list[str]:
     return out
 
 
-def scan(repo: Path) -> tuple[dict[str, list[str]], set[str]]:
-    """{option: [file:line, ...]} for banned options, plus every option seen."""
+def scan(repo: Path) -> tuple[dict[str, list[str]], set[str], dict[str, list[str]]]:
+    """{option: [file:line, ...]} for banned options, every option seen, link-set sites."""
     banned: dict[str, list[str]] = {}
     seen: set[str] = set()
+    link_set: dict[str, list[str]] = {}
 
     # An owner may alias a banned option to a local name and branch on that, which
     # is the same seam wearing a different spelling. Collect the aliases first.
@@ -156,9 +173,12 @@ def scan(repo: Path) -> tuple[dict[str, list[str]], set[str]]:
                 if re.search(rf"\b{re.escape(name)}\b", line):
                     hits.add(name)
             for opt in sorted(hits):
+                if rel in LINK_SET:
+                    link_set.setdefault(rel, []).append(f"{rel}:{number}")
+                    continue
                 banned.setdefault(opt, []).append(f"{rel}:{number}")
 
-    return banned, seen
+    return banned, seen, link_set
 
 
 def main() -> int:
@@ -169,7 +189,7 @@ def main() -> int:
     args = ap.parse_args()
     repo = Path(args.repo_root).resolve()
 
-    banned, seen = scan(repo)
+    banned, seen, link_set = scan(repo)
     counts = {opt: len(sites) for opt, sites in sorted(banned.items())}
     total = sum(counts.values())
 
@@ -252,6 +272,13 @@ def main() -> int:
         f"check-owner-build-conditionals: {total} harness-only conditional site(s)"
         f" across {len(counts)} option(s) in owners"
     )
+    if link_set:
+        linked = sum(len(v) for v in link_set.values())
+        print(
+            f"  plus {linked} LINK-SET site(s), which change which owners are compiled, not what they do:"
+        )
+        for rel in sorted(link_set):
+            print(f"    {rel}: {LINK_SET[rel]}")
     for opt, count in counts.items():
         print(f"    {count:>4}  {opt}")
 

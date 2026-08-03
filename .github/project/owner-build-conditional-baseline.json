@@ -1,7 +1,6 @@
 {
   "_why": "Build-option conditionals inside OWNERS that exist only because z47 has a test harness. Upstream has no counterpart, so every branch makes the tested program differ from the shipped one. The count may FALL and may not rise; the endpoint is an empty object. Removing them means giving the harnesses the real types instead of harness-shaped ones.",
   "counts": {
-    "export_public_ln_complex": 1,
     "free_regions_are_inline_array": 2,
     "max_free_regions": 2,
     "ram_size_in_blocks": 2,

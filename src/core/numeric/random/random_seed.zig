@@ -8,10 +8,9 @@ fn readSeedWord(lsu_bytes: *const [50]u8, offset: usize) u64 {
 }
 
 fn seedDefaults(seed_value: *u64, sequence: *u64) void {
-    if (runtime.harness_surface_is_fake) {
-        runtime.z47_math_wrappers_seed_defaults(seed_value, sequence);
-        return;
-    }
+    // random.c:224. The TESTSUITE_BUILD split is upstream's own, so it is mirrored;
+    // there is no harness branch, because a harness branch here routed through a C
+    // copy of this same logic -- the duplication this lane exists to remove.
     if (runtime.is_testsuite_build) {
         seed_value.* = 0xDeadBeef;
         sequence.* = 0xBadCafeFace;

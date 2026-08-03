@@ -1005,7 +1005,6 @@ pub extern fn z47_math_wrappers_report_ln_p1_real_infinite_domain_error() void;
 pub extern fn z47_math_wrappers_report_ln_p1_real_negative_domain_error() void;
 pub extern fn z47_math_wrappers_report_ln_p1_cplx_zero_domain_error() void;
 pub extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
-pub extern fn z47_math_wrappers_seed_defaults(seed: *u64, seq: *u64) void;
 pub extern fn z47_math_wrappers_do_int_random_i() void;
 
 // Extern surface for the Zig-owned addition/subtraction dispatch cells
