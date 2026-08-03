@@ -34,11 +34,38 @@ typedef struct {
   real34_t imag;
 } complex34_t;
 
+// typeDefinitions.h's bitfield, verbatim. It used to be `{uint16 rows, uint16
+// cols}`, which is a different layout AND has no `mtag` at all -- so every matrix
+// angular-mode behaviour was unreachable from this lane, and the owner had to be
+// compiled with a matching fake header to link against it.
+//
+// matrixElements stays an inline array below, deliberately: see the note there.
 typedef struct {
-  uint16_t matrixRows;
-  uint16_t matrixColumns;
+  unsigned matrixRows    : 12;
+  unsigned matrixColumns : 12;
+  unsigned mtag          :  6;
+  unsigned notUsed       :  2;
 } matrixHeader_t;
 
+// matrixElements is an INLINE ARRAY here and a POINTER in the real ABI, and that
+// divergence is recorded rather than fixed. Making it a pointer was attempted and
+// abandoned for a measured reason:
+//
+// this fake runtime never modelled matrix ALLOCATION at all. Inline storage meant
+// any matrix -- including one the owner declares `undefined` on its stack and
+// passes in to be filled -- always had somewhere to write. With a pointer, each of
+// its 34 matrix workers has to initialise its result exactly where c43's own
+// worker does, and the fake needs an arena to hand out. Four rounds of that fixed
+// four workers and revealed the next each time.
+//
+// That is the full-core conversion arriving by another route: the whole point of
+// the full-core lane is that the real pool and the real matrix lifecycle are
+// present. Matrix RESULT coverage belongs there, not here. What this lane can
+// still do is compare control flow, which is what it does.
+//
+// The header above IS unified, because it needed no lifecycle work and it is the
+// half that mattered more: without `mtag` no matrix angular-mode behaviour was
+// reachable from this lane at all.
 typedef struct {
   matrixHeader_t header;
   real34_t matrixElements[4];
