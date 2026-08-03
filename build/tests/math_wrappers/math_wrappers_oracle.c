@@ -392,145 +392,16 @@ void oracle_decompReal(void);
 #undef fnRandom
 #undef realRandomU01
 
-// NOT a parity reference, despite the shape of the bodies around it. Nothing
-// compares this against c43; it is the error-path helper the mirrors in this file
-// call when a type is unsupported, and it exists because compare.c is not
-// compiled here. Named without the `oracle_` prefix so it stops claiming a
-// provenance it does not have -- the whole point of that prefix is that the body
-// behind it came from c43.
-static void harnessCompareTypeErrorX(void) {
-	temporaryInformation = 12;
-	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, (calcRegister_t)103);
-}
-
+// HAND-WRITTEN, and the only hand-written reference body left in this file. It
+// reimplements checkValue.c's fnCheckReal rather than compiling it, so it cannot
+// see c43 move -- the defect this whole lane exists to catch, one level down.
+// c43's own body is compiled and compared in the full-core differential.
 void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter) {
 	const uint32_t t = getRegisterDataType(REGISTER_X);
 
 	(void)unusedButMandatoryParameter;
 	temporaryInformation = 12 + (t <= 4 || t == 8);
 }
-
-static bool_t oracle_getConvergenceInput(calcRegister_t reg, real_t *real, real_t *imag, bool_t *isComplex) {
-	switch(getRegisterDataType(reg)) {
-		case dtComplex34:
-			*isComplex = true;
-			return getRegisterAsComplex(reg, real, imag);
-
-		case dtReal34:
-			if(!getRegisterAsReal(reg, real)) {
-				return false;
-			}
-			realSetZero(imag);
-			return true;
-
-		case dtLongInteger:
-			convertLongIntegerRegisterToReal(reg, real, &ctxtReal39);
-			realSetZero(imag);
-			return true;
-
-		case dtShortInteger:
-			convertShortIntegerRegisterToReal(reg, real, &ctxtReal39);
-			realSetZero(imag);
-			return true;
-
-		default:
-			return false;
-	}
-}
-
-#define ORACLE_COMPARE_MODE_LESS_THAN 0x1
-#define ORACLE_COMPARE_MODE_EQUAL 0x2
-#define ORACLE_COMPARE_MODE_LESS_EQUAL 0x3
-#define ORACLE_COMPARE_MODE_GREATER_THAN 0x4
-#define ORACLE_COMPARE_MODE_NOT_EQUAL 0x5
-#define ORACLE_COMPARE_MODE_GREATER_EQUAL 0x6
-
-static void oracle_compareTypeError(calcRegister_t reg) {
-	temporaryInformation = 12;
-	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
-	sprintf(errorMessage, "cannot convert Register %d from %s", reg, getRegisterDataTypeName(reg, true, false));
-	moreInfoOnError("In function badTypeError:", errorMessage, NULL, NULL);
-}
-
-static int oracle_isOwnedCompareType(uint32_t dataType) {
-	return dataType == dtLongInteger || dataType == dtShortInteger || dataType == dtReal34 || dataType == dtComplex34;
-}
-
-static void oracle_cmpToResult(int result, uint8_t mode) {
-	if(result < 0) {
-		temporaryInformation = 12 + ((mode & ORACLE_COMPARE_MODE_LESS_THAN) != 0);
-	}
-	else if(result > 0) {
-		temporaryInformation = 12 + ((mode & ORACLE_COMPARE_MODE_GREATER_THAN) != 0);
-	}
-	else {
-		temporaryInformation = 12 + ((mode & ORACLE_COMPARE_MODE_EQUAL) != 0);
-	}
-}
-
-static void oracle_compareRealsToTemporaryInformation(real_t *left, real_t *right, uint8_t mode) {
-	if(realIsNaN(left) || realIsNaN(right)) {
-		temporaryInformation = 12;
-		return;
-	}
-
-	if(realCompareEqual(left, right)) {
-		oracle_cmpToResult(0, mode);
-	}
-	else if(realCompareLessThan(left, right)) {
-		oracle_cmpToResult(-1, mode);
-	}
-	else {
-		oracle_cmpToResult(1, mode);
-	}
-}
-
-static void oracle_compareComplexToTemporaryInformation(real_t *leftReal,
-	                                                    real_t *leftImag,
-	                                                    real_t *rightReal,
-	                                                    real_t *rightImag,
-	                                                    uint8_t mode,
-	                                                    calcRegister_t reg) {
-	if(mode != ORACLE_COMPARE_MODE_EQUAL && mode != ORACLE_COMPARE_MODE_NOT_EQUAL) {
-		oracle_compareTypeError(reg);
-		return;
-	}
-
-	oracle_compareRealsToTemporaryInformation(leftReal, rightReal, mode);
-	if(temporaryInformation != 12) {
-		oracle_compareRealsToTemporaryInformation(leftImag, rightImag, mode);
-	}
-}
-
-static void oracle_compareScalarRegister(calcRegister_t reg, uint8_t mode) {
-	const uint32_t xType = getRegisterDataType(REGISTER_X);
-	const uint32_t regType = getRegisterDataType(reg);
-	real_t xReal, xImag, regReal, regImag;
-	bool_t isComplex = false;
-
-	if(!oracle_isOwnedCompareType(xType) || !oracle_isOwnedCompareType(regType)) {
-		oracle_compareTypeError(reg);
-		return;
-	}
-
-	if(!oracle_getConvergenceInput(REGISTER_X, &xReal, &xImag, &isComplex) || !oracle_getConvergenceInput(reg, &regReal, &regImag, &isComplex)) {
-		oracle_compareTypeError(reg);
-		return;
-	}
-
-	if(isComplex) {
-		oracle_compareComplexToTemporaryInformation(&xReal, &xImag, &regReal, &regImag, mode, reg);
-	}
-	else {
-		oracle_compareRealsToTemporaryInformation(&xReal, &regReal, mode);
-	}
-}
-
-enum {
-	ORACLE_INTEGER_ADD = 0,
-	ORACLE_INTEGER_SUBTRACT = 1,
-	ORACLE_INTEGER_MULTIPLY = 2,
-};
 
 #define fnAdd oracle_full_fnAdd
 #if defined(__clang__)
@@ -569,136 +440,6 @@ enum {
 #pragma clang diagnostic pop
 #endif
 
-static bool_t oracle_tryIntegerLongDivide(bool_t withRemainder) {
-	const uint32_t xType = getRegisterDataType(REGISTER_X);
-	const uint32_t yType = getRegisterDataType(REGISTER_Y);
-	const bool_t xIsLong = xType == dtLongInteger;
-	const bool_t yIsLong = yType == dtLongInteger;
-	const bool_t xIsShort = xType == dtShortInteger;
-	const bool_t yIsShort = yType == dtShortInteger;
-	longInteger_t x;
-	longInteger_t y;
-
-	if((!xIsLong && !xIsShort) || (!yIsLong && !yIsShort)) {
-		return false;
-	}
-
-	if(!saveLastX()) {
-		return true;
-	}
-
-	if(xIsShort && yIsShort && !withRemainder) {
-		int16_t sign = 0;
-		uint64_t divisor = 0;
-
-		convertShortIntegerRegisterToUInt64(REGISTER_X, &sign, &divisor);
-		if(divisor == 0) {
-			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-			moreInfoOnError(withRemainder ? "In function fnIDivR:" : "In function fnIDiv:", "cannot divide current integer pair by 0", NULL, NULL);
-		}
-		else {
-			uint64_t *const xShort = (uint64_t *)getRegisterDataPointer(REGISTER_X);
-			const uint64_t *const yShort = (const uint64_t *)getRegisterDataPointer(REGISTER_Y);
-
-			*xShort = WP34S_intDivide(*yShort, *xShort);
-			setRegisterTag(REGISTER_X, getRegisterShortIntegerBase(REGISTER_Y));
-		}
-
-		adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, -1);
-		return true;
-	}
-
-	if(xIsLong) {
-		convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-	}
-	else {
-		convertShortIntegerRegisterToLongInteger(REGISTER_X, x);
-	}
-
-	if(yIsLong) {
-		convertLongIntegerRegisterToLongInteger(REGISTER_Y, y);
-	}
-	else {
-		convertShortIntegerRegisterToLongInteger(REGISTER_Y, y);
-	}
-
-	if(mpz_sgn(x) == 0) {
-		displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-		moreInfoOnError(withRemainder ? "In function fnIDivR:" : "In function fnIDiv:", "cannot divide current integer pair by 0", NULL, NULL);
-	}
-	else if(withRemainder) {
-		longInteger_t quotient;
-		longInteger_t remainder;
-
-		mpz_init(quotient);
-		mpz_init(remainder);
-		mpz_tdiv_qr(quotient, remainder, y, x);
-		if(xIsShort && yIsShort) {
-			const uint32_t baseY = getRegisterShortIntegerBase(REGISTER_Y);
-			convertLongIntegerToShortIntegerRegister(quotient, baseY, REGISTER_X);
-			convertLongIntegerToShortIntegerRegister(remainder, baseY, REGISTER_Y);
-		}
-		else {
-			convertLongIntegerToLongIntegerRegister(quotient, REGISTER_X);
-			if(yIsShort) {
-				convertLongIntegerToShortIntegerRegister(remainder, getRegisterShortIntegerBase(REGISTER_Y), REGISTER_Y);
-			}
-			else {
-				convertLongIntegerToLongIntegerRegister(remainder, REGISTER_Y);
-			}
-		}
-		mpz_clear(quotient);
-		mpz_clear(remainder);
-	}
-	else {
-		longInteger_t remainder;
-
-		mpz_init(remainder);
-		mpz_tdiv_qr(x, remainder, y, x);
-		convertLongIntegerToLongIntegerRegister(x, REGISTER_X);
-		mpz_clear(remainder);
-	}
-
-	mpz_clear(y);
-	mpz_clear(x);
-
-	if(withRemainder) {
-		adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
-		adjustResult(REGISTER_Y, false, false, REGISTER_X, REGISTER_Y, -1);
-	}
-	else {
-		adjustResult(REGISTER_X, true, false, REGISTER_X, REGISTER_Y, -1);
-	}
-
-	return true;
-}
-
-static void oracle_pushGetTypeIntegerOut(uint32_t value) {
-	longInteger_t lgInt;
-
-	longIntegerInit(lgInt);
-	uInt32ToLongInteger(value, lgInt);
-	setSystemFlag(FLAG_ASLIFT);
-	liftStack();
-	convertLongIntegerToLongIntegerRegister(lgInt, REGISTER_X);
-	longIntegerFree(lgInt);
-	setSystemFlag(FLAG_ASLIFT);
-}
-
-static void oracle_pushGetTypeRealOut(uint32_t value) {
-	real_t realOut;
-	real_t scale;
-
-	uInt32ToReal(value, &realOut);
-	uInt32ToReal(1000, &scale);
-	realDivide(&realOut, &scale, &realOut, &ctxtReal39);
-	setSystemFlag(FLAG_ASLIFT);
-	liftStack();
-	reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-	convertRealToReal34ResultRegister(&realOut, REGISTER_X);
-	setSystemFlag(FLAG_ASLIFT);
-}
-
 #define fnRealPart oracle_fnRealPart
 #include "../../../upstream/src/c47/mathematics/realPart.c"
 #undef fnRealPart
@@ -728,36 +469,12 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 #undef fnConjugate
 #undef conjCplx
 
-static void oracle_conjRema(void) {
-	complex34Matrix_t cMat;
-
-	convertReal34MatrixRegisterToComplex34Matrix(REGISTER_X, &cMat);
-	if(getSystemFlag(FLAG_SPCRES)) {
-		for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
-			real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
-		}
-	}
-	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
-}
-
-static void oracle_conjCxma(void) {
-	complex34Matrix_t cMat;
-
-	linkToComplexMatrixRegister(REGISTER_X, &cMat);
-	for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
-		real34ChangeSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
-		if(real34IsZero(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i])) && !getSystemFlag(FLAG_SPCRES)) {
-			real34SetPositiveSign(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
-		}
-	}
-	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
-}
-
-// NO HAND-WRITTEN REFERENCE BODIES REMAIN IN THIS FILE, and the way the last ones
-// went is worth knowing before adding another.
+// TWO HAND-WRITTEN REFERENCE BODIES REMAIN IN THIS FILE -- `oracle_fnCheckReal`
+// above and `oracle_fnToRect` below -- and the way the others went is worth
+// knowing before adding another.
 //
-// Every reference here is now c43's own code: either an `#include` of the c43 file
-// under `oracle_` renames, or a compiled `oracle_full_*` body. The wrappers that
+// Every other reference here is c43's own code: either an `#include` of the c43
+// file under `oracle_` renames, or a compiled `oracle_full_*` body. The wrappers that
 // once had a hand-written mirror -- the check predicates, the comparisons, the
 // integer-division and rounding families, and the vector/complex families --
 // moved to build/tests/math_wrappers_full_core/, which compiles c43's own
@@ -786,35 +503,6 @@ static void oracle_conjCxma(void) {
 #include "../../../upstream/src/c47/mathematics/swapRealImaginary.c"
 #undef fnSwapRealImaginary
 
-static void oracle_swapReImRema(void) {
-	complex34Matrix_t c;
-	real34Matrix_t r;
-
-	linkToRealMatrixRegister(REGISTER_X, &r);
-	convertReal34MatrixToComplex34Matrix(&r, &c);
-
-	for(uint16_t i = 0; i < c.header.matrixRows * c.header.matrixColumns; ++i) {
-		real34Copy(VARIABLE_REAL34_DATA(&c.matrixElements[i]), VARIABLE_IMAG34_DATA(&c.matrixElements[i]));
-		real34SetZero(VARIABLE_REAL34_DATA(&c.matrixElements[i]));
-	}
-
-	convertComplex34MatrixToComplex34MatrixRegister(&c, REGISTER_X);
-	complexMatrixFree(&c);
-}
-
-static void oracle_swapReImCxma(void) {
-	complex34Matrix_t cMat;
-	real34_t tmp;
-
-	linkToComplexMatrixRegister(REGISTER_X, &cMat);
-	for(uint16_t i = 0; i < cMat.header.matrixRows * cMat.header.matrixColumns; ++i) {
-		real34Copy(VARIABLE_REAL34_DATA(&cMat.matrixElements[i]), &tmp);
-		real34Copy(VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]), VARIABLE_REAL34_DATA(&cMat.matrixElements[i]));
-		real34Copy(&tmp, VARIABLE_IMAG34_DATA(&cMat.matrixElements[i]));
-	}
-	convertComplex34MatrixToComplex34MatrixRegister(&cMat, REGISTER_X);
-}
-
 #define arctan2 oracle_arctan2
 #define atan2Error oracle_atan2Error
 #define atan2RealReal oracle_atan2RealReal
@@ -835,61 +523,6 @@ void atan2LonIRema(void);
 #undef atan2RealRema
 #undef atan2RemaReal
 #undef atan2RemaRema
-
-static void oracle_atan2RealRemaFixed(void) {
-	real_t y;
-	real34Matrix_t x;
-
-	if(!getRegisterAsReal(REGISTER_Y, &y)) {
-		return;
-	}
-
-	linkToRealMatrixRegister(REGISTER_X, &x);
-	for(uint16_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
-		real_t xx;
-		real34ToReal(&x.matrixElements[i], &xx);
-		if(realIsZero(&y) && realIsZero(&xx) && !getSystemFlag(FLAG_SPCRES)) {
-			displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-			moreInfoOnError("In function atan2RealRema:", "X = 0 and Y = 0", NULL, NULL);
-			return;
-		}
-		C47_WP34S_Atan2(&y, &xx, &xx, &ctxtReal39);
-		convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
-		roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
-		realToReal34(&xx, &x.matrixElements[i]);
-	}
-
-	convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);
-}
-
-static void oracle_atan2RemaRemaFixed(void) {
-	real34Matrix_t y, x;
-
-	linkToRealMatrixRegister(REGISTER_Y, &y);
-	linkToRealMatrixRegister(REGISTER_X, &x);
-
-	if(y.header.matrixRows == x.header.matrixRows && y.header.matrixColumns == x.header.matrixColumns) {
-		for(uint16_t i = 0; i < x.header.matrixRows * x.header.matrixColumns; ++i) {
-			real_t yy, xx;
-			real34ToReal(&y.matrixElements[i], &yy);
-			real34ToReal(&x.matrixElements[i], &xx);
-			if(realIsZero(&yy) && realIsZero(&xx) && !getSystemFlag(FLAG_SPCRES)) {
-				displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-				moreInfoOnError("In function atan2RemaRema:", "X = 0 and Y = 0", NULL, NULL);
-				return;
-			}
-			C47_WP34S_Atan2(&yy, &xx, &xx, &ctxtReal39);
-			convertAngleFromTo(&xx, amRadian, currentAngularMode, &ctxtReal39);
-			roundToSignificantDigits(&xx, &xx, significantDigits == 0 ? 34 : significantDigits, &ctxtReal75);
-			realToReal34(&xx, &x.matrixElements[i]);
-		}
-		convertReal34MatrixToReal34MatrixRegister(&x, REGISTER_X);
-	}
-	else {
-		displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-		moreInfoOnError("In function atan2RemaRema:", "matrix size mismatch", NULL, NULL);
-	}
-}
 
 #undef atan2RealReal
 #undef atan2Error
@@ -1136,55 +769,3 @@ void oracle_unitVectorCxma(void);
 #undef unitVectorRema
 #undef unitVectorCplx
 #undef unitVectorError
-
-static void oracle_unitVectorErrorFixed(void) {
-	char message[128];
-	sprintf(message, "cannot calculate the unit vector of %s", getRegisterDataTypeName(REGISTER_X, true, false));
-	displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-	moreInfoOnError("In function fnUnitVector:", message, NULL, NULL);
-}
-
-static void oracle_unitVectorRemaFixed(void) {
-	real34Matrix_t matrix;
-	real_t elem, sum;
-
-	linkToRealMatrixRegister(REGISTER_X, &matrix);
-	realSetZero(&sum);
-	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
-		real34ToReal(&matrix.matrixElements[i], &elem);
-		realMultiply(&elem, &elem, &elem, &ctxtReal39);
-		realAdd(&sum, &elem, &sum, &ctxtReal39);
-	}
-	realSquareRoot(&sum, &sum, &ctxtReal39);
-	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
-		real34ToReal(&matrix.matrixElements[i], &elem);
-		realDivide(&elem, &sum, &elem, &ctxtReal39);
-		realToReal34(&elem, &matrix.matrixElements[i]);
-	}
-	convertReal34MatrixToReal34MatrixRegister(&matrix, REGISTER_X);
-}
-
-static void oracle_unitVectorCxmaFixed(void) {
-	complex34Matrix_t matrix;
-	real_t real, imag, sum;
-
-	linkToComplexMatrixRegister(REGISTER_X, &matrix);
-	realSetZero(&sum);
-	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
-		real34ToReal(&matrix.matrixElements[i].real, &real);
-		realMultiply(&real, &real, &real, &ctxtReal39);
-		realAdd(&sum, &real, &sum, &ctxtReal39);
-		real34ToReal(&matrix.matrixElements[i].imag, &imag);
-		realMultiply(&imag, &imag, &imag, &ctxtReal39);
-		realAdd(&sum, &imag, &sum, &ctxtReal39);
-	}
-	realSquareRoot(&sum, &sum, &ctxtReal39);
-	for(int i = 0; i < matrix.header.matrixRows * matrix.header.matrixColumns && i < 4; ++i) {
-		real34ToReal(&matrix.matrixElements[i].real, &real);
-		real34ToReal(&matrix.matrixElements[i].imag, &imag);
-		divComplexComplex(&real, &imag, &sum, const_0, &real, &imag, &ctxtReal39);
-		realToReal34(&real, &matrix.matrixElements[i].real);
-		realToReal34(&imag, &matrix.matrixElements[i].imag);
-	}
-	convertComplex34MatrixToComplex34MatrixRegister(&matrix, REGISTER_X);
-}
