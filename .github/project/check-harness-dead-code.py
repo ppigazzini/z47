@@ -105,6 +105,31 @@ def measure(repo: Path) -> tuple[dict[str, list[str]], list[str]]:
     return dead, sorted(unanalysable)
 
 
+def compare(
+    counts: dict[str, int],
+    unanalysable: list[str],
+    recorded: dict[str, int],
+    recorded_unanalysable: set[str],
+) -> list[str]:
+    """Both ratchets, in one place so the self-test can drive them with synthetic data."""
+    problems: list[str] = []
+    for rel, count in counts.items():
+        allowed = recorded.get(rel)
+        if allowed is None:
+            problems.append(f"{rel}: {count} unreachable static(s) in a file that had none")
+        elif count > allowed:
+            problems.append(f"{rel}: unreachable statics rose {allowed} -> {count}")
+
+    new_blind = sorted(set(unanalysable) - recorded_unanalysable)
+    if new_blind:
+        problems.append(
+            "harness source(s) this check can no longer analyse:\n    "
+            + ", ".join(new_blind)
+            + "\n    Making a file harder to compile is not a way to pass this gate."
+        )
+    return problems
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=".")
@@ -158,33 +183,32 @@ def main() -> int:
     for rel, count in sorted(counts.items(), key=lambda kv: -kv[1]):
         print(f"    {count:>4}  {rel}")
 
-    problems: list[str] = []
-    for rel, count in counts.items():
-        allowed = recorded.get(rel)
-        if allowed is None:
-            problems.append(f"{rel}: {count} unreachable static(s) in a file that had none")
-        elif count > allowed:
-            problems.append(f"{rel}: unreachable statics rose {allowed} -> {count}")
-
-    new_blind = sorted(set(unanalysable) - recorded_unanalysable)
-    if new_blind:
-        problems.append(
-            "harness source(s) this check can no longer analyse:\n    "
-            + ", ".join(new_blind)
-            + "\n    Making a file harder to compile is not a way to pass this gate."
-        )
+    problems = compare(counts, unanalysable, recorded, recorded_unanalysable)
 
     if args.self_test:
-        # The ratchet direction, through the same comparison a real run uses.
-        probe = dict(counts)
-        victim = next(iter(probe), None)
-        if victim is None:
-            print("check-harness-dead-code: SELF-TEST BROKEN -- nothing to probe")
+        # SYNTHETIC, deliberately. The first version of this self-test probed the
+        # live measurement, so it worked only while dead code existed -- and the
+        # milestone that deleted the last of it turned the self-test into a hard
+        # failure inside the gate runner. A self-test that depends on the defect
+        # being present tests nothing once the defect is gone.
+        if not compare({"probe.c": 1}, [], {}, set()):
+            print(
+                "check-harness-dead-code: SELF-TEST FAILED -- a file that gained dead code passed"
+            )
             return 1
-        if probe[victim] + 1 <= recorded.get(victim, 0):
-            print("check-harness-dead-code: SELF-TEST BROKEN -- baseline is above the measurement")
+        if not compare({"probe.c": 2}, [], {"probe.c": 1}, set()):
+            print("check-harness-dead-code: SELF-TEST FAILED -- a rise above the baseline passed")
             return 1
-        print("check-harness-dead-code: SELF-TEST OK -- a rise above the baseline is a failure")
+        if not compare({}, ["probe.c"], {}, set()):
+            print("check-harness-dead-code: SELF-TEST FAILED -- a newly unanalysable file passed")
+            return 1
+        if compare({"probe.c": 1}, ["blind.c"], {"probe.c": 1}, {"blind.c"}):
+            print("check-harness-dead-code: SELF-TEST FAILED -- the recorded state was reported")
+            return 1
+        print(
+            "check-harness-dead-code: SELF-TEST OK"
+            " (new dead code, a rise, and a new blind spot all fire; the baseline does not)"
+        )
 
     if problems:
         print("\nHARNESS DEAD CODE:")
