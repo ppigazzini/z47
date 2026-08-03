@@ -9,7 +9,7 @@
     "use_fake_harness_surface": 13,
     "use_fake_stack_state_harness_surface": 11,
     "use_fake_state_harness_surface": 1,
-    "use_fake_wp34s_harness_surface": 5,
+    "use_fake_wp34s_harness_surface": 4,
     "use_fake_wp34s_model": 23
   }
 }

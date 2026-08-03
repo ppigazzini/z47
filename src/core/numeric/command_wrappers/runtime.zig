@@ -160,13 +160,10 @@ pub const real34_t = abi.Real34;
 
 pub const complex34_t = abi.Complex34;
 
-pub const matrixHeader_t = if (use_fake_wp34s_harness_surface)
-    extern struct {
-        matrixRows: u16,
-        matrixColumns: u16,
-    }
-else
-    abi.MatrixHeader;
+// One header shape for every build. This used to be selected by the harness flag:
+// the unit lane got `{u16 rows, u16 cols}` with no `mtag`, so the owner compiled a
+// different struct there and no matrix angular-mode behaviour could be reached.
+pub const matrixHeader_t = abi.MatrixHeader;
 
 pub const real34Matrix_t = if (use_fake_wp34s_harness_surface)
     extern struct {
