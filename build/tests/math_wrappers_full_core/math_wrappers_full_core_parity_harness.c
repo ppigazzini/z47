@@ -74,14 +74,27 @@ void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
 void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
 void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
 void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
-// curtReal and compareTypeErrorX are NOT compared here, and cannot be: the Zig
-// owner keeps both internal and exports neither, so there is no second
-// implementation to diff. c43's own bodies exist in this binary under `oracle_`
-// names because cubeRoot.c and compare.c define them, but they are reached only
-// from inside c43's own compiled code. They are covered indirectly -- fnIDiv and
-// the comparisons route their type errors through compareTypeErrorX, and the
-// cube-root wrapper through curtReal -- so a divergence in either still surfaces
-// as a state mismatch in the cases below.
+// curtReal and compareTypeErrorX are NOT compared here, and will not be. The
+// question was asked properly and the answer is that exporting them would be the
+// wrong fix.
+//
+// c43 has both as functions. z47 has neither as a SYMBOL: curtReal is a
+// `callconv(.c)` local handed to a dispatcher, and compareTypeErrorX has no z47
+// counterpart at all -- its two-line body (temporaryInformation = TI_FALSE, then
+// badTypeError) is inlined into a local `typeErrorX` in check_value.zig and again
+// in convergence.zig. Both spellings are faithful, including the REGISTER_T the
+// error line carries: badTypeError passes REGISTER_T regardless of the register it
+// is complaining about (registerValueConversions.c:959).
+//
+// Exporting them so this lane could diff them would add symbols to the shipped
+// program for the test's benefit, which is exactly the seam
+// check-owner-build-conditionals.py exists to keep out. A differential is not
+// worth changing the product's symbol table for.
+//
+// They are covered indirectly and that is enough here: fnIDiv and the comparisons
+// route their type errors through compareTypeErrorX, and the cube-root wrapper
+// through curtReal, so a divergence in either still surfaces as a state mismatch
+// in the cases below.
 
 // typeError is the shared handler c43's headers reduce every per-file `*Error`
 // to when EXTRA_INFO_ON_CALC_ERROR is not 1. It is not renamed, so both sides
