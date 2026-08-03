@@ -111,6 +111,13 @@ step "[6g2b/11] oracle provenance (no hand-written references, extractors fresh)
 # And it re-runs the one GENERATED oracle's extractor (charstring_diff).
 python3 .github/project/check-oracle-provenance.py --self-test >/dev/null
 python3 .github/project/check-oracle-provenance.py --repo-root .
+step "[6g2b2/11] every harness source is compiled by something"
+# The lane gate asks whether a declared lane is RUN; the provenance gate asks where
+# a reference CAME FROM. Neither asks whether a harness file is connected to
+# anything, and four were not -- one of them a finished compile-from-c43 conversion
+# sitting beside the 73 hand-written lines its lane was still using.
+python3 .github/project/check-harness-sources-compiled.py --self-test >/dev/null
+python3 .github/project/check-harness-sources-compiled.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"
 # The same defect one level down. A frozen oracle is caught by
 # 6g2b; a frozen CONSTANT inside a harness c47.h is not, and it fails the same way
