@@ -197,6 +197,76 @@
 #define arctanhReal oracle_arctanhReal
 #define fnArctanh oracle_fnArctanh
 
+
+// --- the circular and hyperbolic families (6 files) ---
+#define sinComplex oracle_sinComplex
+#define sinCosReal oracle_sinCosReal
+#define sinCosCplx oracle_sinCosCplx
+#define sinReal oracle_sinReal
+#define sinCplx oracle_sinCplx
+#define fnSin oracle_fnSin
+
+#define cosComplex oracle_cosComplex
+#define cosReal oracle_cosReal
+#define cosCplx oracle_cosCplx
+#define fnCos oracle_fnCos
+
+#define tanReal oracle_tanReal
+#define tanCplx oracle_tanCplx
+#define TanComplex oracle_TanComplex
+#define fnTan oracle_fnTan
+
+#define sinhCoshReal oracle_sinhCoshReal
+#define sinhCoshCplx oracle_sinhCoshCplx
+#define sinhReal oracle_sinhReal
+#define sinhCplx oracle_sinhCplx
+#define fnSinh oracle_fnSinh
+
+#define coshReal oracle_coshReal
+#define coshCplx oracle_coshCplx
+#define fnCosh oracle_fnCosh
+
+#define tanhReal oracle_tanhReal
+#define tanhCplx oracle_tanhCplx
+#define TanhComplex oracle_TanhComplex
+#define fnTanh oracle_fnTanh
+
+
+// --- the logarithmic and exponential families (6 files) ---
+#define lnComplex oracle_lnComplex
+#define lnReal oracle_lnReal
+#define lnCplx oracle_lnCplx
+#define fnLn oracle_fnLn
+#define lnP1Complex oracle_lnP1Complex
+#define lnP1Real oracle_lnP1Real
+#define lnP1Cplx oracle_lnP1Cplx
+#define fnLnP1 oracle_fnLnP1
+#define realLog10 oracle_realLog10
+#define logxyReal oracle_logxyReal
+#define logxyCplx oracle_logxyCplx
+#define logxyLonI oracle_logxyLonI
+#define log10LonI oracle_log10LonI
+#define log10ShoI oracle_log10ShoI
+#define log10Real oracle_log10Real
+#define log10Cplx oracle_log10Cplx
+#define fnLog10 oracle_fnLog10
+#define log2LonI oracle_log2LonI
+#define log2ShoI oracle_log2ShoI
+#define log2Real oracle_log2Real
+#define log2Cplx oracle_log2Cplx
+#define fnLog2 oracle_fnLog2
+#define realExpLimitCheck oracle_realExpLimitCheck
+#define realExp oracle_realExp
+#define expComplex oracle_expComplex
+#define expReal oracle_expReal
+#define expCplx oracle_expCplx
+#define fnExp oracle_fnExp
+#define expM1Complex oracle_expM1Complex
+#define realExpM1 oracle_realExpM1
+#define expM1Real oracle_expM1Real
+#define expM1Cplx oracle_expM1Cplx
+#define fnExpM1 oracle_fnExpM1
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -217,6 +287,18 @@
 #include "../../../upstream/src/c47/mathematics/arcsinh.c"
 #include "../../../upstream/src/c47/mathematics/arccosh.c"
 #include "../../../upstream/src/c47/mathematics/arctanh.c"
+#include "../../../upstream/src/c47/mathematics/sin.c"
+#include "../../../upstream/src/c47/mathematics/cos.c"
+#include "../../../upstream/src/c47/mathematics/tan.c"
+#include "../../../upstream/src/c47/mathematics/sinh.c"
+#include "../../../upstream/src/c47/mathematics/cosh.c"
+#include "../../../upstream/src/c47/mathematics/tanh.c"
+#include "../../../upstream/src/c47/mathematics/ln.c"
+#include "../../../upstream/src/c47/mathematics/lnPOne.c"
+#include "../../../upstream/src/c47/mathematics/log10.c"
+#include "../../../upstream/src/c47/mathematics/log2.c"
+#include "../../../upstream/src/c47/mathematics/exp.c"
+#include "../../../upstream/src/c47/mathematics/expMOne.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it
