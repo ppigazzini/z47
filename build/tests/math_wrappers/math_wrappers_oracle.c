@@ -432,30 +432,6 @@ static bool_t oracle_getConvergenceInput(calcRegister_t reg, real_t *real, real_
 	}
 }
 
-void oracle_fnIsConverged(uint16_t mode) {
-	real_t xReal, xImag, yReal, yImag, tol;
-	bool_t isComplex = false;
-
-	convergenceTolerence(&tol);
-	if(!oracle_getConvergenceInput(REGISTER_X, &xReal, &xImag, &isComplex) || !oracle_getConvergenceInput(REGISTER_Y, &yReal, &yImag, &isComplex)) {
-		oracle_compareTypeErrorX();
-		return;
-	}
-
-	if(realIsNaN(&xReal) || realIsNaN(&yReal) || realIsNaN(&xImag) || realIsNaN(&yImag)) {
-		temporaryInformation = 12 + ((mode & 0x4) != 0);
-	}
-	else if(realIsInfinite(&xReal) || realIsInfinite(&yReal) || realIsInfinite(&xImag) || realIsInfinite(&yImag)) {
-		temporaryInformation = 12 + ((mode & 0x2) != 0);
-	}
-	else if(mode & 0x1) {
-		temporaryInformation = 12 + (isComplex ? WP34S_ComplexAbsError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_AbsoluteError(&xReal, &yReal, &tol, &ctxtReal39));
-	}
-	else {
-		temporaryInformation = 12 + (isComplex ? WP34S_ComplexRelativeError(&xReal, &xImag, &yReal, &yImag, &tol, &ctxtReal39) : WP34S_RelativeError(&xReal, &yReal, &tol, &ctxtReal39));
-	}
-}
-
 #define ORACLE_COMPARE_MODE_LESS_THAN 0x1
 #define ORACLE_COMPARE_MODE_EQUAL 0x2
 #define ORACLE_COMPARE_MODE_LESS_EQUAL 0x3
@@ -542,57 +518,6 @@ static void oracle_compareScalarRegister(calcRegister_t reg, uint8_t mode) {
 	else {
 		oracle_compareRealsToTemporaryInformation(&xReal, &regReal, mode);
 	}
-}
-
-void oracle_fnXLessThan(uint16_t regist) {
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_LESS_THAN);
-}
-
-void oracle_fnXLessEqual(uint16_t regist) {
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_LESS_EQUAL);
-}
-
-void oracle_fnXGreaterThan(uint16_t regist) {
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_GREATER_THAN);
-}
-
-void oracle_fnXGreaterEqual(uint16_t regist) {
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_GREATER_EQUAL);
-}
-
-void oracle_fnXEqualsTo(uint16_t regist) {
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_EQUAL);
-}
-
-void oracle_fnXNotEqual(uint16_t regist) {
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_NOT_EQUAL);
-}
-
-void oracle_fnXAlmostEqual(uint16_t regist) {
-	const uint32_t xType = getRegisterDataType(REGISTER_X);
-	const uint32_t regType = getRegisterDataType((calcRegister_t)regist);
-
-	if((xType != dtShortInteger && xType != dtLongInteger) || (regType != dtShortInteger && regType != dtLongInteger)) {
-		z47_math_wrappers_legacy_fnXAlmostEqual(regist);
-		return;
-	}
-
-	oracle_compareScalarRegister((calcRegister_t)regist, ORACLE_COMPARE_MODE_EQUAL);
-}
-
-void oracle_fnRound(uint16_t unusedButMandatoryParameter) {
-	const uint32_t xType = getRegisterDataType(REGISTER_X);
-
-	if(xType != dtShortInteger && xType != dtLongInteger) {
-		z47_math_wrappers_legacy_fnRound(unusedButMandatoryParameter);
-		return;
-	}
-
-	if(!saveLastX()) {
-		return;
-	}
-
-	adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
 
 enum {
@@ -740,18 +665,6 @@ static bool_t oracle_tryIntegerLongDivide(bool_t withRemainder) {
 	}
 
 	return true;
-}
-
-void oracle_fnIDiv(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongDivide(false)) {
-		z47_math_wrappers_legacy_fnIDiv(unusedButMandatoryParameter);
-	}
-}
-
-void oracle_fnIDivR(uint16_t unusedButMandatoryParameter) {
-	if(!oracle_tryIntegerLongDivide(true)) {
-		z47_math_wrappers_legacy_fnIDivR(unusedButMandatoryParameter);
-	}
 }
 
 static void oracle_pushGetTypeIntegerOut(uint32_t value) {
