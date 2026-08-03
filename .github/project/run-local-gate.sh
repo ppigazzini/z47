@@ -118,6 +118,16 @@ step "[6g2b2/11] every harness source is compiled by something"
 # sitting beside the 73 hand-written lines its lane was still using.
 python3 .github/project/check-harness-sources-compiled.py --self-test >/dev/null
 python3 .github/project/check-harness-sources-compiled.py --repo-root .
+step "[6g2b3/11] the fixture partition names the properties it partitions"
+# A fixture table is an equivalence-class partition, and the full-core one was drawn
+# over data TYPE alone: every shape in it was non-negative, while src/core/numeric/
+# branches on sign at 265 sites. Deleting arctanReal's negative-infinity sign
+# handling left the whole lane agreeing. Type was exhaustive because somebody listed
+# the types; sign was empty because nobody listed the properties. This gate is that
+# list -- and it fires in both directions, so a new shape cannot arrive without
+# somebody saying what it is a representative OF.
+python3 .github/project/check-fixture-partition.py --self-test >/dev/null
+python3 .github/project/check-fixture-partition.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"
 # The same defect one level down. A frozen oracle is caught by
 # 6g2b; a frozen CONSTANT inside a harness c47.h is not, and it fails the same way
