@@ -9,10 +9,10 @@
 
 #include "../../../upstream/src/c47/c47.h"
 
-void processResultantLongReal(uint16_t registerNo, int function, int functionType, real_t *paramX, real_t *paramY, real_t *paramTemp, angularMode_t *angleMode, angularMode_t *tmpAngle) {
-  (void)registerNo; (void)function; (void)functionType; (void)paramX; (void)paramY; (void)paramTemp; (void)angleMode; (void)tmpAngle;
-}
-
+// processResultantLongReal is NOT stubbed here any more. It used to be, because
+// nothing exported it -- the xfn port had inlined it into doXfn. REPORT-31 M31-10
+// factored it back out as a real export (saveRestoreCalcState.c's restoreRegister
+// needs it for the RXFN branch), so a stub here is now a duplicate symbol.
 void realToSci(real_t *num, char *dispString) {
   (void)num;
   if(dispString != NULL) {

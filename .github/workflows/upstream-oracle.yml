@@ -395,8 +395,9 @@ jobs:
           set -euo pipefail
           # REPORT-31. A hand-transliterated oracle cannot detect c43 moving: it IS
           # the reference and it stays put, so the lane goes green on a divergence.
-          # All five are converted and the frozen list is empty; this keeps it that
-          # way and re-runs the one generated oracle's extractor.
+          # All five FILES are converted and the frozen list is empty; this keeps it
+          # that way, ratchets the hand-written reference BODIES that survive inside
+          # compiled oracles (M31-15), and re-runs the generated oracle's extractor.
           python3 .github/project/check-oracle-provenance.py --self-test
           python3 .github/project/check-oracle-provenance.py --repo-root .
       - name: Enforce harness headers do not hand-copy c43 constants

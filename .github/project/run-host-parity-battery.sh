@@ -39,6 +39,20 @@ zig build calc_state_parity
 zig build saveload_roundtrip
 zig build math_command_wrappers_parity
 zig build math_random_parity
+# The seven focused math differentials, which sat OUTSIDE this battery until
+# REPORT-31 M31-22. That is not a theoretical gap: M31-10 exported
+# processResultantLongReal (restoreRegister needs it for the RXFN branch) and
+# turned the stub in math_wrappers_eigen_link_stubs.c into a duplicate symbol --
+# breaking all seven at link time while the full local gate stayed green, because
+# nothing ran them. Each links the real c43 worker beside the Zig owner, so they
+# are the differential coverage for the numeric core; they belong here.
+zig build math_ln_complex_oracle
+zig build eigen_parity
+zig build math_real_rectangular_to_polar_oracle
+zig build math_atan2_oracle
+zig build math_atan_oracle
+zig build math_real_trig_primitives_oracle
+zig build math_circular_trig_oracle
 # Format-equivalence oracle (M24): every migrated sprintf->std.fmt translation
 # must stay byte-identical to libc.
 zig build format_parity

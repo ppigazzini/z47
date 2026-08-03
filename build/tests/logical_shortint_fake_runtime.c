@@ -118,3 +118,20 @@ void convertUInt64ToShortIntegerRegister(int16_t sign, uint64_t value, uint32_t 
   reallocateRegister(regist, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, base);
   *registerWord(regist) = value & shortIntegerMask;
 }
+
+// EXTRA_INFO_ON_CALC_ERROR is upstream's own 1 now, so c43's diagnostic branches
+// COMPILE in this lane instead of being configured away -- an upstream edit inside
+// one of them is a build failure rather than silence (REPORT-31 M31-23). They are
+// diagnostics, so the environment they need is a buffer and two no-ops, shared by
+// both implementations exactly like every other stub here.
+static char z47_parity_error_message[512];
+char *errorMessage = z47_parity_error_message;
+
+void moreInfoOnError(const char *m1, const char *m2, const char *m3, const char *m4) {
+  (void)m1; (void)m2; (void)m3; (void)m4;
+}
+
+const char *getRegisterDataTypeName(uint32_t dataType, bool_t padWithBlanks, bool_t article) {
+  (void)dataType; (void)padWithBlanks; (void)article;
+  return "";
+}

@@ -30,18 +30,8 @@ void fnShuffle(uint16_t regist_order);
 void fnFillStack(uint16_t unusedButMandatoryParameter);
 
 void oracle_liftStack(void);
-bool_t oracle_saveLastX(void);
 void oracle_saveForUndo(void);
 void oracle_undo(void);
-void oracle_fnGetLocR(uint16_t unusedButMandatoryParameter);
-void oracle_fnClearRegisters(uint16_t confirmation);
-void oracle_clearRegister(calcRegister_t reg);
-void oracle_fnRegClr(uint16_t unusedButMandatoryParameter);
-void oracle_fnRegCopy(uint16_t unusedButMandatoryParameter);
-void oracle_fnRegSort(uint16_t unusedButMandatoryParameter);
-void oracle_fnToReal(uint16_t unusedButMandatoryParameter);
-void oracle_fnRegSwap(uint16_t unusedButMandatoryParameter);
-void oracle_adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 
 void oracle_fnDrop(uint16_t unusedButMandatoryParameter);
 void oracle_fnDropY(uint16_t unusedButMandatoryParameter);
@@ -524,44 +514,19 @@ static int runAdjustResultCase(const char *name, stack_adjust_result_fn oracle_f
 int main(void) {
   int failures = 0;
 
+  // The ten registers.c entry points that used to be compared here moved to
+  // register_metadata_parity (REPORT-31 M31-20). They were the only cases in this
+  // lane whose reference was HAND-WRITTEN -- 259 lines reimplementing clearRegister,
+  // adjustResult, saveLastX, fnRegClr/Copy/Sort/Swap, fnClearRegisters, fnGetLocR
+  // and fnToReal. They could not be converted in place: registers.c against this
+  // lane's mock c47.h is the same 424-error packed-word-vs-bitfield wall M31-12
+  // measured, because this IS that mock. In the register-metadata full-core lane
+  // c43's own registers.c is already compiled under oracle_* names, so the cases
+  // moved to where the reference is real. What stays here is stack.c, which this
+  // oracle compiles.
+
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithAslift);
   failures += runVoidCase("liftStack", oracle_liftStack, liftStack, setupLiftWithoutAslift);
-  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterRealCase, REGISTER_X);
-  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterComplexCase, REGISTER_X);
-  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterComplexReallocateCase, REGISTER_X);
-  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterLongIntegerCase, REGISTER_X);
-  failures += runRegCase("clearRegister", oracle_clearRegister, clearRegister, setupClearRegisterShortIntegerCase, REGISTER_X);
-  failures += runBoolCase("saveLastX", oracle_saveLastX, saveLastX, setupDropCase);
-  failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRCase, 0);
-  failures += runU16Case("fnGetLocR", oracle_fnGetLocR, fnGetLocR, setupGetLocRAsliftCase, 0);
-  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersCase, 1);
-  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersConfirmCase, NOT_CONFIRMED);
-  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersRunningCase, NOT_CONFIRMED);
-  failures += runU16Case("fnClearRegisters", oracle_fnClearRegisters, fnClearRegisters, setupClearRegistersStack8Case, 1);
-  failures += runU16Case("fnRegClr", oracle_fnRegClr, fnRegClr, setupRegClrCase, 0);
-  failures += runU16Case("fnRegClr", oracle_fnRegClr, fnRegClr, setupRegClrErrorCase, 0);
-  failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyForwardCase, 0);
-  failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyBackwardCase, 0);
-  failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyLoadCase, 0);
-  failures += runU16Case("fnRegCopy", oracle_fnRegCopy, fnRegCopy, setupRegCopyErrorCase, 0);
-  failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortNumericCase, 0);
-  failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortStrictTypeErrorCase, 0);
-  failures += runU16Case("fnRegSort", oracle_fnRegSort, fnRegSort, setupRegSortParseErrorCase, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealComplexZeroCase, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealLongIntegerCase, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealShortIntegerCase, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealTimeCase, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealDateCase, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealReal34Case, 0);
-  failures += runU16Case("fnToReal", oracle_fnToReal, fnToReal, setupToRealFallbackCase, 0);
-  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultRealMatrixCase, REGISTER_X, false, false, -1, -1, -1);
-  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultComplexMatrixCase, REGISTER_X, false, false, -1, -1, -1);
-  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultDefaultNoOpCase, REGISTER_X, false, true, 2, -1, -1);
-  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultCpxResCase, REGISTER_X, false, true, 2, -1, -1);
-  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultDropYCase, REGISTER_X, true, false, -1, -1, -1);
-  failures += runAdjustResultCase("adjustResult", oracle_adjustResult, adjustResult, setupAdjustResultErrorCase, REGISTER_X, true, false, -1, -1, -1);
-  failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapCase, 0);
-  failures += runU16Case("fnRegSwap", oracle_fnRegSwap, fnRegSwap, setupRegSwapOverlapCase, 0);
 
   failures += runU16Case("fnDrop", oracle_fnDrop, fnDrop, setupDropCase, 0);
   failures += runU16Case("fnDropY", oracle_fnDropY, fnDropY, setupDropCase, 0);

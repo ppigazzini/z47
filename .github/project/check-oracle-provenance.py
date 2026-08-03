@@ -29,6 +29,27 @@ A COMPILED-FROM-c43 oracle -- the shape every parity lane now uses -- needs no
 entry in either list, because there is nothing to hash: the reference IS the
 imported source, and `check-imported-tree-pin.py` already holds that to the pin.
 
+AND A THIRD CHECK, WHICH IS THE ONE THAT STILL FINDS THINGS (REPORT-31 M31-15).
+Both lists above classify FILES. A reference is a FUNCTION. A file that
+`#include`s c43 source can still carry a hand-written `oracle_<c43 name>` BODY
+beside it -- and such a file was never eligible for the frozen list, so the
+file-level answer was "sound" while 1960 lines of hand-written reference sat
+inside two of them. That is the same false confidence a green hand-written lane
+produces, committed by this gate.
+
+So the third check extracts every `oracle_*` function DEFINITION from z47-owned C
+and reports each whose stripped name c43 declares in its own headers. Two shapes
+are deliberately NOT findings:
+
+  * a driver helper -- `initRuntime`, `runCase`, `main`. Those carry no `oracle_`
+    prefix, so they never match.
+  * a DISAMBIGUATED name over a compiled reference -- `oracle_full_fnAdd`,
+    `oracle_fnAtan2_legacy`. The suffix says "this is not the plain mirror", and
+    the plain mirror is what the driver must not be calling.
+
+It ships as a RATCHET, like the constant gate: the measured backlog is recorded
+per file and may only fall.
+
 Usage:
   check-oracle-provenance.py [--repo-root .]
   check-oracle-provenance.py --bump        # re-record hashes after re-transliterating
@@ -40,6 +61,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -144,6 +166,173 @@ def check_generated(repo: Path, entries: list[dict]) -> list[str]:
     return problems
 
 
+# A function DEFINITION named oracle_<something>: a return type, the name, a
+# parameter list, and an opening brace. A declaration ends in `;` and does not
+# match; a call has no type in front of it.
+ORACLE_BODY_RE = re.compile(
+    r"^(?:static\s+)?[A-Za-z_][\w \*]*?\b(oracle_\w+)\s*\([^;]*\)\s*\{", re.M
+)
+
+# What c43 declares as a function in its OWN headers. A prototype line ends in
+# `;` and has a name followed by `(`; that is enough to separate a c43 function
+# name from a harness-local one, and it costs no compiler.
+C43_PROTOTYPE_RE = re.compile(r"\b([a-zA-Z_]\w*)\s*\(")
+
+FUNCTION_RATCHET = ".github/project/oracle-function-baseline.json"
+TRACKED_C_GLOBS = ("build/**/*.c", "bridge/**/*.c")
+
+
+def c43_function_names(repo: Path) -> set[str]:
+    names: set[str] = set()
+    root = upstream_path(repo, "src/c47")
+    for header in root.rglob("*.h"):
+        for raw in header.read_text(errors="replace").splitlines():
+            line = raw.strip()
+            if not line.endswith(";") or line.startswith("#"):
+                continue
+            match = C43_PROTOTYPE_RE.search(line)
+            if match:
+                names.add(match.group(1))
+    return names
+
+
+def tracked_c_sources(repo: Path) -> list[Path]:
+    out = subprocess.run(
+        ["git", "-C", str(repo), "ls-files", *TRACKED_C_GLOBS],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    return [repo / rel for rel in out]
+
+
+def measure_hand_written_bodies(repo: Path) -> dict[str, list[str]]:
+    """{file: [oracle_X, ...]} for every body whose X is a c43 function.
+
+    GENERATED oracles are skipped, and that exclusion is the difference between a
+    useful gate and a noisy one. `charstring_diff_oracle.c` holds five `oracle_*`
+    bodies that ARE c43's -- a script lifted them out of `charString.c`, and the
+    `generated` list above already gates them on reproducing byte-identically. A
+    body extracted by a tool is not a body somebody wrote.
+    """
+    c43 = c43_function_names(repo)
+    generated = {e["oracle"] for e in load_manifest(repo).get("generated", [])}
+    found: dict[str, list[str]] = {}
+    for source in tracked_c_sources(repo):
+        if source.relative_to(repo).as_posix() in generated:
+            continue
+        text = strip_block_comments(source.read_text(errors="replace"))
+        mirrors = sorted(
+            {name for name in ORACLE_BODY_RE.findall(text) if name[len("oracle_") :] in c43}
+        )
+        if mirrors:
+            found[source.relative_to(repo).as_posix()] = mirrors
+    return found
+
+
+BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+
+def strip_block_comments(text: str) -> str:
+    return BLOCK_COMMENT_RE.sub("", text)
+
+
+def check_functions(repo: Path) -> list[str]:
+    path = repo / FUNCTION_RATCHET
+    if not path.is_file():
+        return [f"missing {FUNCTION_RATCHET}. Run --bump-functions to record the current backlog."]
+    recorded = json.loads(path.read_text(encoding="utf-8")).get("counts", {})
+    found = measure_hand_written_bodies(repo)
+
+    problems: list[str] = []
+    for rel, mirrors in sorted(found.items()):
+        allowed = recorded.get(rel)
+        if allowed is None:
+            problems.append(
+                f"{rel}: {len(mirrors)} hand-written reference BODY(s) in a file that"
+                f" had none.\n"
+                f"    {', '.join(mirrors[:8])}\n"
+                f"    Each of these reimplements a c43 function under its own name. The"
+                f" lane\n"
+                f"    compares against this, not against c43, so it cannot see c43 move --"
+                f" the\n"
+                f"    defect REPORT-31 exists to remove, at function granularity."
+            )
+        elif len(mirrors) > allowed:
+            problems.append(
+                f"{rel}: hand-written reference bodies rose {allowed} ->"
+                f" {len(mirrors)}.\n"
+                f"    {', '.join(mirrors[:8])}\n"
+                f"    This ratchet only goes down. Compile the c43 source instead, or"
+                f" point the\n"
+                f"    driver at a compiled reference that is already linked."
+            )
+    return problems
+
+
+def bump_functions(repo: Path) -> int:
+    found = measure_hand_written_bodies(repo)
+    counts = {rel: len(names) for rel, names in sorted(found.items())}
+    (repo / FUNCTION_RATCHET).write_text(
+        json.dumps(
+            {
+                "_why": (
+                    "REPORT-31 M31-15. Hand-written parity REFERENCE bodies -- an"
+                    " oracle_<X> function definition where X is a function c43 declares"
+                    " -- living inside files that also #include c43 source, which is why"
+                    " neither the frozen nor the generated list could ever see them. The"
+                    " ratchet only goes down; the endpoint is an empty object. Section 11"
+                    " of the report is the plan."
+                ),
+                "counts": counts,
+                "mirrors": found,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    total = sum(counts.values())
+    print(
+        f"check-oracle-provenance: recorded {total} hand-written reference bodies"
+        f" across {len(counts)} files"
+    )
+    return 0
+
+
+def self_test_functions(repo: Path) -> int:
+    """Prove the function half fires, through the same extractor a real run uses."""
+    c43 = c43_function_names(repo)
+    if "fnAdd" not in c43:
+        print("check-oracle-provenance: --self-test FAILED -- c43 prototype scan found no fnAdd.")
+        return 1
+
+    probe = "void oracle_fnAdd(uint16_t unusedButMandatoryParameter) {\n  return;\n}\n"
+    mirrors = [n for n in ORACLE_BODY_RE.findall(probe) if n[len("oracle_") :] in c43]
+    if mirrors != ["oracle_fnAdd"]:
+        print(
+            "check-oracle-provenance: --self-test FAILED -- a hand-written reference body"
+            " went unseen."
+        )
+        return 1
+
+    # And the two shapes that must NOT fire.
+    for benign in (
+        "void oracle_full_fnAdd(uint16_t p) {\n  return;\n}\n",  # disambiguated
+        "static void initRuntime(void) {\n  return;\n}\n",  # driver helper
+        "void oracle_fnAdd(uint16_t p);\n",  # a declaration, not a body
+    ):
+        if [n for n in ORACLE_BODY_RE.findall(benign) if n[len("oracle_") :] in c43]:
+            print(
+                "check-oracle-provenance: --self-test FAILED -- reported a body that is"
+                f" not a hand-written reference: {benign.splitlines()[0]}"
+            )
+            return 1
+
+    print("check-oracle-provenance: --self-test OK (function half fires, and only on a mirror)")
+    return 0
+
+
 def bump(repo: Path) -> int:
     manifest = load_manifest(repo)
     for entry in manifest.get("frozen", []):
@@ -153,9 +342,7 @@ def bump(repo: Path) -> int:
             rel: sha256_of(upstream_path(repo, rel)) for rel in sorted(entry.get("mirrors", {}))
         }
     (repo / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    print(
-        f"check-oracle-provenance: re-recorded {len(manifest.get('frozen', []))} frozen oracles"
-    )
+    print(f"check-oracle-provenance: re-recorded {len(manifest.get('frozen', []))} frozen oracles")
     return 0
 
 
@@ -188,9 +375,7 @@ def self_test(repo: Path) -> int:
 
         clean = check_frozen(scratch, [entry])
         if not any("c43 MOVED" in p for p in clean):
-            print(
-                "check-oracle-provenance: --self-test FAILED -- a changed c43 file did not fire."
-            )
+            print("check-oracle-provenance: --self-test FAILED -- a changed c43 file did not fire.")
             return 1
 
         # And the other direction: the oracle edited without re-recording.
@@ -209,12 +394,20 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--bump", action="store_true", help="re-record hashes after re-transliterating")
+    ap.add_argument(
+        "--bump-functions",
+        action="store_true",
+        help="re-record the hand-written-reference-body ratchet",
+    )
     ap.add_argument("--self-test", action="store_true", help="prove the gate fires")
     args = ap.parse_args()
     repo = Path(args.repo_root).resolve()
 
     if args.self_test:
-        return self_test(repo)
+        rc = self_test(repo)
+        return rc or self_test_functions(repo)
+    if args.bump_functions:
+        return bump_functions(repo)
     if args.bump:
         return bump(repo)
 
@@ -222,6 +415,7 @@ def main() -> int:
     frozen = manifest.get("frozen", [])
     generated = manifest.get("generated", [])
     problems = check_frozen(repo, frozen) + check_generated(repo, generated)
+    function_problems = check_functions(repo)
 
     if problems:
         print("FROZEN PARITY ORACLES OUT OF STEP WITH c43:")
@@ -232,6 +426,19 @@ def main() -> int:
         print("it stayed put. That is why REPORT-31 exists. The fix is not to bump the")
         print("hash and move on; it is to convert the lane to compile from the c43 source.")
         return 1
+
+    if function_problems:
+        print("HAND-WRITTEN PARITY REFERENCES (function granularity):")
+        for p in function_problems:
+            print(f"  {p}")
+        print()
+        print("A reference is a FUNCTION, not a file. The lists above classify files, so a")
+        print("hand-written body inside a file that ALSO #includes c43 source is invisible")
+        print("to them -- which is how 1960 lines survived the first close-out.")
+        return 1
+
+    bodies = measure_hand_written_bodies(repo)
+    remaining = sum(len(v) for v in bodies.values())
 
     if frozen:
         print(
@@ -244,9 +451,20 @@ def main() -> int:
         )
     else:
         print(
-            f"check-oracle-provenance: OK (no frozen oracles remain;"
+            f"check-oracle-provenance: OK (no frozen oracle FILES remain;"
             f" {len(generated)} generated oracles reproduce)"
         )
+
+    if remaining:
+        print(
+            f"  {remaining} hand-written reference BODIES remain across {len(bodies)}"
+            f" file(s), at or below the recorded ratchet:"
+        )
+        for rel, names in sorted(bodies.items()):
+            print(f"    {len(names):>3}  {rel}")
+        print("  These are REPORT-31 section 11's subject. A file-level zero is not a clean bill.")
+    else:
+        print("  and no hand-written reference bodies remain either -- the real zero.")
     return 0
 
 

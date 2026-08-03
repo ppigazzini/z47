@@ -102,9 +102,13 @@ python3 .github/project/check-harness-includes.py --repo-root .
 step "[6g2b/11] oracle provenance (no hand-written references, extractors fresh)"
 # REPORT-31: five oracles were hand-written C reproducing c43's behaviour, so the
 # lane whose purpose is catching a c43 change was the reason nobody saw it. All
-# five now compile from c43 source and the frozen list is EMPTY. What this still
-# guards: that nobody re-adds one without saying so, and that the one GENERATED
-# oracle (charstring_diff's extractor) still reproduces byte-identically.
+# five FILES now compile from c43 source and the frozen list is EMPTY.
+#
+# It also checks FUNCTIONS, which is where the remaining ones are (M31-15). A file
+# that #includes c43 source can still carry a hand-written oracle_<c43 name> body
+# beside it, and such a file was never eligible for the frozen list -- which is how
+# 1960 lines survived the first close-out. Ratcheted per file; the endpoint is zero.
+# And it re-runs the one GENERATED oracle's extractor (charstring_diff).
 python3 .github/project/check-oracle-provenance.py --self-test >/dev/null
 python3 .github/project/check-oracle-provenance.py --repo-root .
 step "[6g2c/11] harness headers do not hand-copy c43 constants"

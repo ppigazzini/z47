@@ -85,6 +85,14 @@ extern bool_t  shiftKeyClearsError;
 extern void (*z47HostShowBugScreenHook)(const char *msg);
 extern void (*z47HostRequestRefreshHook)(uint16_t id);
 
+// c43's own keyboard layout tables, from the assign.c the oracle now compiles.
+extern const calcKey_t oracle_kbd_std_C47[37];
+extern const calcKey_t oracle_kbd_std_D47[37];
+extern const calcKey_t oracle_kbd_std_DM42[37];
+extern const calcKey_t oracle_kbd_std_E47[37];
+extern const calcKey_t oracle_kbd_std_N47[37];
+extern const calcKey_t oracle_kbd_std_V47[37];
+
 extern uint8_t oracle_asnKey[4];
 extern bool_t  oracle_releaseOverride;
 extern bool_t  oracle_showScreenDismissed;
@@ -380,7 +388,9 @@ static const struct {
   // character in the buffer -- and forcing it makes z47's closeNim() evaluate
   // strlen("") - 1 and trap on the unsigned underflow while c43 wraps to -1. The
   // divergence is the harness's, not the port's: a differential must seed states
-  // the reference can actually be in.
+  // the reference can actually be in. Written up as REPORT-30 finding 25, where
+  // the open question is whether closeNim can be reached with an empty buffer at
+  // all.
   {CM_AIM,              "ABC"},
   // NO empty-buffer AIM fixture, and this one is worth recording rather than
   // just dropping. Entering alpha mode with `calcModeAim(NOPARAM)` and no text,
@@ -507,6 +517,53 @@ static int runProcessKeyActionDifferential(void) {
   return failures - before;
 }
 
+// ---------------------------------------------------------------------------
+// Check 4 -- the keyboard LAYOUT tables, entry by entry (REPORT-31 M31-24).
+//
+// keyboard_entry_harness.c guards kbd_std_C47 with a frozen FNV-1a checksum, whose
+// own comment says it exists because "the keyboard Zig owners have no compiled C
+// oracle (the bridge was deleted), so an upstream change to the layout would
+// otherwise be caught by nothing". That stopped being true when this lane started
+// compiling c43's keyboard.c: assign.c, where the tables live, compiles beside it.
+//
+// A checksum a human re-pins after "an intended upstream layout change" is a
+// characterization test -- it detects change, it cannot say which side is right,
+// and re-pinning it is indistinguishable from accepting a porting mistake. The
+// table itself is the reference, and it moves with c43 for free.
+// ---------------------------------------------------------------------------
+static int compareKeyTable(const char *name, const calcKey_t *mine, const calcKey_t *theirs) {
+  int bad = 0;
+  for(int i = 0; i < 37; i++) {
+    if(memcmp(&mine[i], &theirs[i], sizeof(calcKey_t)) != 0) {
+      fail("%s[%d] differs -- z47{id=%d pri=%d f=%d g=%d aim=%d fAim=%d gAim=%d tam=%d}"
+           " c43{id=%d pri=%d f=%d g=%d aim=%d fAim=%d gAim=%d tam=%d}",
+           name, i,
+           mine[i].keyId, mine[i].primary, mine[i].fShifted, mine[i].gShifted,
+           mine[i].primaryAim, mine[i].fShiftedAim, mine[i].gShiftedAim, mine[i].primaryTam,
+           theirs[i].keyId, theirs[i].primary, theirs[i].fShifted, theirs[i].gShifted,
+           theirs[i].primaryAim, theirs[i].fShiftedAim, theirs[i].gShiftedAim, theirs[i].primaryTam);
+      bad = 1;
+    }
+  }
+  return bad;
+}
+
+static int runKeyboardLayoutDifferential(void) {
+  int before = failures;
+
+  compareKeyTable("kbd_std_C47", kbd_std_C47, oracle_kbd_std_C47);
+  compareKeyTable("kbd_std_D47", kbd_std_D47, oracle_kbd_std_D47);
+  compareKeyTable("kbd_std_DM42", kbd_std_DM42, oracle_kbd_std_DM42);
+  compareKeyTable("kbd_std_E47", kbd_std_E47, oracle_kbd_std_E47);
+  compareKeyTable("kbd_std_N47", kbd_std_N47, oracle_kbd_std_N47);
+  compareKeyTable("kbd_std_V47", kbd_std_V47, oracle_kbd_std_V47);
+
+  if(failures == before) {
+    printf("PASS: the six keyboard layout tables match c43's, entry for entry (6 x 37 keys)\n");
+  }
+  return failures - before;
+}
+
 int main(void) {
   mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
 
@@ -515,6 +572,7 @@ int main(void) {
   z47HostShowBugScreenHook = displayBugScreen;
   z47HostRequestRefreshHook = refreshScreen;
 
+  runKeyboardLayoutDifferential();
   runSetLastKeyCodeDifferential();
   runKeyHandlerDifferential();
   runProcessKeyActionDifferential();

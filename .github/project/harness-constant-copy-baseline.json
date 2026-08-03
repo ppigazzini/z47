@@ -7,13 +7,10 @@
     "build/tests/math_wrappers/c47.h": 127,
     "build/tests/memory/c47.h": 4,
     "build/tests/rotate_bits/c47.h": 12,
-    "build/tests/stack_state/c47.h": 76,
+    "build/tests/stack_state/c47.h": 77,
     "build/tests/tone/c47.h": 1
   },
   "drifted": {
-    "build/tests/c47.h": [
-      "EXTRA_INFO_ON_CALC_ERROR"
-    ],
     "build/tests/math_wrappers/c47.h": [
       "ERROR_INVALID_DATA_TYPE_FOR_OP",
       "ERROR_MATRIX_MISMATCH",
@@ -35,13 +32,9 @@
     "build/tests/memory/c47.h": [
       "RAM_SIZE_IN_BLOCKS"
     ],
-    "build/tests/rotate_bits/c47.h": [
-      "EXTRA_INFO_ON_CALC_ERROR"
-    ],
     "build/tests/stack_state/c47.h": [
       "C47_NULL",
       "ERROR_MESSAGE_LENGTH",
-      "EXTRA_INFO_ON_CALC_ERROR",
       "bugMsgNoNamedVariables",
       "bugMsgRegistMustBeLessThan"
     ]

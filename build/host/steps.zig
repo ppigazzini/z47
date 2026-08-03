@@ -138,7 +138,7 @@ fn addMathLnComplexOracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_ln_complex_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_ln_complex_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_ln_complex_diff.c"), .flags = core_c_flags });
     // math_ln_complex_runtime_constants.c is deliberately NOT linked: every
     // z47_math_wrappers_const_* accessor it defines now comes from the owner
     // tree (command_wrappers/helpers.zig), so linking both is a duplicate.
@@ -216,7 +216,7 @@ fn addMathEigenOracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_eigen_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_diff.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(eigen_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
@@ -283,7 +283,7 @@ fn addMathRealRectangularToPolarOracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_real_rectangular_to_polar_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_real_rectangular_to_polar_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_real_rectangular_to_polar_diff.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
@@ -350,7 +350,7 @@ fn addMathAtan2Oracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_atan2_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_atan2_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_atan2_diff.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
@@ -417,7 +417,7 @@ fn addMathAtanOracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_atan_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_atan_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_atan_diff.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
@@ -484,7 +484,7 @@ fn addMathRealTrigPrimitivesOracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_real_trig_primitives_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_real_trig_primitives_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_real_trig_primitives_diff.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
@@ -551,7 +551,7 @@ fn addMathCircularTrigOracle(
 
     exe.root_module.addCSourceFile(.{ .file = build_common.upstreamPath(b, "src/testSuite/testSuite.c"), .flags = &.{ "-Dmain=z47_math_circular_trig_oracle_testsuite_main", "-Wno-date-time", "-fno-sanitize=undefined" } });
     exe.root_module.addObject(host_builders.addTestSuiteHalObject(b, context.host_target, optimize, exe.name));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_circular_trig_oracle.c"), .flags = core_c_flags });
+    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_circular_trig_diff.c"), .flags = core_c_flags });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/math_wrappers/math_wrappers_eigen_link_stubs.c"), .flags = core_c_flags });
     exe.root_module.addObject(helper_object);
     exe.root_module.addCSourceFile(.{ .file = context.generated.raster_fonts_data, .flags = core_c_flags });
