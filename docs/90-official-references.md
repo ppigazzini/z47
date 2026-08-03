@@ -9,7 +9,10 @@ Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
 Zig memory-safety reference set was reviewed against upstream Zig on that date.
 The test-oracle reference set was added and verified 2026-08-03 (REPORT-31
 M31-8): until then every reference here was about *writing* the program and none
-was about *knowing whether it is right*.
+was about *knowing whether it is right*. It was extended from five sources to
+eight the same day (REPORT-31 M31-28) once executing the plan showed that the
+first five cover *what an oracle is* and not *what a test environment is*; the
+admission test that governs any further addition is at the end of that section.
 
 ## Reference Map
 
@@ -185,7 +188,10 @@ claim is function parity with a reference implementation that keeps moving.
 exist and what each is worth) and **McKeeman is the primary calibration for the
 technique** (a `*_parity` lane *is* differential testing, named). Knight & Leveson
 is primary for one specific question — why a hand-written oracle fails silently.
-The remaining two are secondary: they name check kinds z47 already has.
+Meszaros and *Software Engineering at Google* are primary for a second question
+the first five do not reach: not *what an oracle is*, but **what a test
+environment is**, and why a lane with a sound reference can still measure nothing.
+The rest are secondary: they name check kinds z47 already has.
 
 Primary — the taxonomy:
 
@@ -230,6 +236,49 @@ Secondary — the checks that need no external reference:
   *metamorphic relation*, which is a full-strength oracle kind and not a
   consolation prize for lacking a reference.
 
+Primary — what a test environment is, and why a green lane can still prove
+nothing:
+
+- [Meszaros — *xUnit Test Patterns: Refactoring Test Code*, Addison-Wesley,
+  2007](http://xunitpatterns.com/Test%20Double.html), and specifically
+  [Fake Object](http://xunitpatterns.com/Fake%20Object.html): the canonical
+  vocabulary for test doubles — Dummy, **Fake**, Stub, **Spy**, Mock. A Fake has
+  a *working* implementation with a shortcut that makes it unsuitable for
+  production, and the pattern's stated liability is that **the test then measures
+  the Fake**. `build/tests/math_wrappers/` is a textbook instance: a hand-declared
+  25-limb `real_t`, no decNumber linked, and `const39_3piOn4` equal to 2.25. That
+  liability was rediscovered the expensive way in REPORT-31 §12.4.
+- **Winters, Manshreck, Wright — *Software Engineering at Google*, O'Reilly,
+  2020**, [ch. 13 "Test
+  Doubles"](https://abseil.io/resources/swe-book/html/ch13.html): states the two
+  rules the conversion work arrived at independently. **Prefer the real
+  implementation over a double** — which is this page's compile-from-c43 rule,
+  written by someone else — and **prefer state testing to interaction testing**,
+  because an interaction test asserts *which functions were called*, breaks on a
+  refactor that changed no behaviour, and never verifies the outcome.
+
+Secondary — why an ungated lane is worse than a missing one:
+
+- *Software Engineering at Google*,
+  [ch. 23 "Continuous Integration"](https://abseil.io/resources/swe-book/html/ch23.html):
+  a test's value is realised by the system that runs it continuously. Seven math
+  differentials were broken at link time while the full local gate stayed green,
+  and `distribution_parity` had stopped compiling entirely — both invisible
+  because neither was in a gate (REPORT-31 §12.5, M31-27). Hence the rule in
+  [70-tests-and-verification.md](70-tests-and-verification.md): **a parity lane
+  that is in no gate is not a lane.**
+
+Secondary — how you know a check would actually catch anything:
+
+- [Jia & Harman — "An Analysis and Survey of the Development of Mutation
+  Testing", IEEE TSE 37(5):649–678,
+  2011](https://ieeexplore.ieee.org/document/5487526): the name for what this
+  repo calls **"seen to fail"** — patch a behavioural change into the reference,
+  confirm the lane goes red, revert. It carries the two assumptions that justify
+  the cheap one-patch version: the *competent programmer hypothesis* and the
+  *coupling effect*, both from DeMillo, Lipton & Sayward's 1978 "Hints on Test
+  Data Selection", which the survey traces.
+
 Secondary — what a golden file actually is:
 
 - **Feathers — *Working Effectively with Legacy Code*, Prentice Hall, 2004**,
@@ -252,11 +301,17 @@ first: it is the only question that matters about a reference.
 | `saveload_roundtrip` save→load→save, `backup.cfg` and data-file round-trips | metamorphic relation | n/a — needs none | full, and independent |
 | ASAN, safety panics, `state_load_fuzz` | implicit oracle | n/a | weak but free |
 | `save_load_golden.sav` | characterization test | no | change detector only |
+| unit lane on a hand-built `c47.h` + fake runtime | fake-hosted derived oracle | partly — the *reference* does, the *environment* does not | full for control flow, **none** for anything the fake cannot compute |
+| snapshot of call counts and arguments | interaction (spy) oracle | no — it pins the port's call pattern | change detector; breaks on refactor, misses wrong results |
 | hand-transliterated `*_oracle.c` | failed pseudo-oracle | no | **negative** |
 
-The last row is not "weak". It is negative: it produces evidence of parity where
-none exists, and a passing test is not visible in a coverage discussion the way a
-missing one is. That is why
+The last three rows are not "weak". The last is negative: it produces evidence of
+parity where none exists, and a passing test is not visible in a coverage
+discussion the way a missing one is. The two above it are the subtler version of
+the same trap — both are real, compiled, currently-green lanes whose *reference*
+is sound, and neither proves what its name suggests. A green `math_wrappers` run
+says the wrappers **called** the same runtime functions with the same arguments;
+it says nothing about whether they computed the right number. That is why
 [.github/project/oracle-provenance-manifest.json](../.github/project/oracle-provenance-manifest.json)
 is a list meant to reach zero rather than one to maintain.
 
@@ -270,9 +325,26 @@ the record, not a call to action — the transliteration contract is why, and
 `50-zig-c-boundaries-and-rewrite-policy.md` settles the memory-safety question
 separately.
 
-**Do not widen this set.** Five sources are enough and they are recorded here so
-nobody re-searches them, exactly as the Zig idiom sources are. The full argument
-they back is in `__DEV/reports/REPORT-31-C-ORACLE.md`.
+**Do not widen this set casually.** It is recorded here so nobody re-searches it,
+exactly as the Zig idiom sources are. This page used to say "five sources are
+enough", which was right about the discipline and wrong about the number: three
+more were admitted in REPORT-31 Annex E because three decisions had been made
+without them. The number was never the rule, so here is the rule.
+
+**A source is admitted only if BOTH hold:**
+
+1. It names a technique **z47 already practises** — not one it might adopt. This
+   set is a calibration for what is in the tree, not a reading list.
+2. A decision was made **without it**, and having it would have changed the
+   decision or the plan.
+
+That test rejects more than it admits. It rejected Fowler's "Mocks Aren't Stubs"
+(adds nothing over Meszaros), DeMillo 1978 as its own entry (the Jia & Harman
+survey carries it, and z47 needs the technique rather than its history), and
+*Software Engineering at Google* ch. 11 (its small/medium/large size taxonomy is
+real, and z47 does not use it). Argue against the test before adding to the list.
+
+The full argument these eight back is in `__DEV/reports/REPORT-31-C-ORACLE.md`.
 
 ## Zig Idiom And Style Guidance (secondary)
 

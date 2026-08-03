@@ -181,7 +181,30 @@ c43's own `registers.c` is compiled.
 is a hand-declared struct, decNumber is not linked, and its `const39_*` are
 placeholder decimals, so the 86 c43 files it compiles run on fake arithmetic and
 what the lane compares is CONTROL FLOW. Compiling more c43 into it does not remove
-a mirror — measured twice, recorded in the file.
+a mirror — measured twice, recorded in the file. In the vocabulary of
+[90-official-references.md](90-official-references.md), that environment is a
+**Fake** and its snapshot of 62 call counters is a **Spy** — so a green run there
+says the wrappers *called* the same functions with the same arguments, and says
+nothing about whether they computed the right number.
+
+### The rule: a parity lane that is in no gate is not a lane
+
+Adding a lane is half the work; the half that keeps it alive is putting it in
+[run-host-parity-battery.sh](../.github/project/run-host-parity-battery.sh).
+An unrun lane is worse than a missing one — it reads as coverage while proving
+nothing, which is the same failure mode as a hand-written oracle one level up.
+
+This is not theoretical. Both known instances were found by accident, not by a
+gate: the seven focused math differentials were broken at LINK time while the full
+local gate stayed green (found only because REPORT-31 M31-22 renamed the files, and
+renaming meant building them), and `distribution_parity` had stopped COMPILING
+entirely at HEAD — its module was rooted one directory too deep for its own
+imports, and it had never been given the `abi` module, a second failure the first
+one masked. Both are in the battery now.
+
+The one exception, and state it out loud when you take it: **do not add a red lane
+to the battery to "track" it.** A gate that is expected to fail is a gate somebody
+disables. Fix it first, or leave it out and give it a milestone.
 
 `check-oracle-provenance.py` (local gate and CI) keeps the file-level list empty:
 re-adding an entry is a written admission that a lane cannot see c43 move, and it also
