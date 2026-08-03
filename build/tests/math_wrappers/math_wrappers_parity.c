@@ -277,6 +277,24 @@ static int reportMismatch(const char *name,
     return 0;
   }
 
+  // The formatted lines below print a SUBSET of the snapshot, so a mismatch in
+  // any other field prints two identical lines and says nothing. Name the first
+  // differing byte before formatting anything.
+  {
+    const unsigned char *e = (const unsigned char *)expected;
+    const unsigned char *a = (const unsigned char *)actual;
+    for(size_t i = 0; i < sizeof(*expected); i++) {
+      if(e[i] != a[i]) {
+        fprintf(stderr, "%s(%u) first differing snapshot byte at offset %zu:"
+                        " expected 0x%02x actual 0x%02x | errCode exp=%d act=%d\n",
+                name, arg, i, e[i], a[i],
+                (int)expected->display_calc_error_last_code,
+                (int)actual->display_calc_error_last_code);
+        break;
+      }
+    }
+  }
+
     fprintf(stderr,
       "%s(%u) parity mismatch\n"
       "  expected: dtype=%u tag=%u save=%u/%d mono=%u imono=%u dyad=%u longIn=%u/%d longInQ=%u/%u/%d/%d longOut=%u/%d cvt=%u trig=%u sinh=%u mul=%u rdiv=%u(%d/%d) cmp=%u(%d,%d) divr=%u(%d;%d,%d) invm=%u cplxi=%u(%d,%d) cplxmul=%u ang=%u(%d;%d->%d) set=%u(%d) refresh=%u unit=%u chs=%u intmul=%u realOut=%u complexOut=%u err=%u more=%u final=%d/%u short=%llu yshort=%llu long=%d ylong=%d ovf=%d carry=%d\n"

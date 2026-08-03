@@ -156,23 +156,12 @@ real34_t *decQuadAdd(real34_t *res, const real34_t *operand1, const real34_t *op
 real34_t *decQuadDivide(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
 real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_t *operand2, realContext_t *context);
 #define ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN 1
-// THE SIX VALUES BELOW DISAGREE WITH c43 ON PURPOSE, and the reason is measured
-// rather than assumed. Correcting them turns this lane red: the fake runtime and
-// the driver's expectations are calibrated to them, so ERROR_* and NOPARAM are
-// load-bearing in the mock world rather than mere copies. Ten of the sixteen that
-// used to sit here WERE corrected -- the lane stayed green and they now agree with
-// c43 -- so what is left is the set that cannot move without rebuilding the fake.
-//
-// That rebuild is not worth doing: this lane compares control flow over a fake
-// numeric core, and the values it needs are the fake's, not c43's. The results
-// these wrappers compute are compared in build/tests/math_wrappers_full_core/,
-// where the environment is real and no such calibration exists.
-#define ERROR_INVALID_DATA_TYPE_FOR_OP 2
-#define ERROR_OUT_OF_RANGE 3
+#define ERROR_INVALID_DATA_TYPE_FOR_OP 24
+#define ERROR_OUT_OF_RANGE 8
 #define ERROR_OVERFLOW_PLUS_INF 4
 #define ERROR_OVERFLOW_MINUS_INF 5
-#define ERROR_RAM_FULL 6
-#define ERROR_MATRIX_MISMATCH 7
+#define ERROR_RAM_FULL 11
+#define ERROR_MATRIX_MISMATCH 21
 #define ERROR_SINGULAR_MATRIX 22
 #define ERROR_STRING_WOULD_BE_TOO_LONG 33
 #define FLAG_CARRY 0x800b
@@ -184,7 +173,7 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define FLAG_SPCRES 0x8017
 #define FLAG_ASLIFT 0xc023
 #define FLAG_HPRP 0x802b
-#define NOPARAM 0
+#define NOPARAM 9876
 #define NIM_REGISTER_LINE REGISTER_X
 #define TEMP_REGISTER_1 REGISTER_Z
 #define TO_QSPI
@@ -253,9 +242,10 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define TI_X_Y_SWAPPED 5
 #define SET_TI_TRUE_FALSE(condition) do { temporaryInformation = ((condition) ? TI_TRUE : TI_FALSE); } while(0)
 
-enum {
-  bugMsgUnexpectedSValue = 0,
-};
+// bugMsgUnexpectedSValue is deliberately absent. c43 numbers it 4
+// (typeDefinitions.h:316) and nothing this lane compiles references it, so
+// declaring it means carrying a value that can silently disagree with c43 in
+// exchange for nothing.
 
 #define realChangeSign(operand) ((operand)->bits ^= 0x80)
 #define realSetNegativeSign(operand) ((operand)->bits |= 0x80)

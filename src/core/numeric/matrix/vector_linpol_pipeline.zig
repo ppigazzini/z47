@@ -51,8 +51,8 @@ pub fn linpol() callconv(.c) void {
     }
 
     runtime.adjustResult(runtime.REGISTER_X, false, true, runtime.REGISTER_X, runtime.REGISTER_Y, runtime.REGISTER_Z);
-    runtime.fnDrop(0);
-    runtime.fnDrop(0);
+    runtime.fnDrop(runtime.NOPARAM);
+    runtime.fnDrop(runtime.NOPARAM);
 
     compute_owned.linpolScalar(&a_real, &b_real, &p, &result_real);
     if (!real_coefs) {

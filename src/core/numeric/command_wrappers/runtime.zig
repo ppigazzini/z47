@@ -112,12 +112,17 @@ pub const ifLongIntegerDoAngleReduction = true;
 
 pub const ERROR_NONE: u8 = 0;
 pub const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
-pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = if (use_fake_wp34s_harness_surface) 2 else 24;
-pub const ERROR_OUT_OF_RANGE: u8 = if (use_fake_wp34s_harness_surface) 3 else 8;
+// defines.h's values, unconditionally. These used to take different values when
+// built for the unit harness, which meant the lane compared an owner carrying
+// error codes c43 never uses against an oracle carrying the same wrong ones: the
+// two agreed, and the agreement was about nothing. An owner must not change what
+// it does because it is being tested.
+pub const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+pub const ERROR_OUT_OF_RANGE: u8 = 8;
 pub const ERROR_OVERFLOW_PLUS_INF: u8 = 4;
 pub const ERROR_OVERFLOW_MINUS_INF: u8 = 5;
-pub const ERROR_RAM_FULL: u8 = if (use_fake_wp34s_harness_surface) 6 else 11;
-pub const ERROR_MATRIX_MISMATCH: u8 = if (use_fake_wp34s_harness_surface) 7 else 21;
+pub const ERROR_RAM_FULL: u8 = 11;
+pub const ERROR_MATRIX_MISMATCH: u8 = 21;
 
 pub const FLAG_CPXRES: i32 = 0x8004;
 pub const FLAG_PROPFR: i32 = 0x8008;
