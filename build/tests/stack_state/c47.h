@@ -201,19 +201,23 @@ enum {
 #define REAL_SIZE_IN_BYTES(digits) ((uint32_t)sizeof(real_t))
 #define REAL_SIZE_IN_BLOCKS(digits) TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
 
-#define C47_NULL 0
+// `C47_NULL` used to be defined here as 0, against c43's 65535 (defines.h:2262),
+// because it was carrying TWO unrelated meanings under one name: c43's null
+// memory pointer, and this harness's fake-pool sentinel. Only the second was ever
+// used -- the pool reserves SLOT 0 and hands out 1..MAX_FAKE_MEMORY_SLOTS-1 -- so
+// the sentinel took its own name (FAKE_NULL_SLOT, in the fake runtime) and the
+// copy of c43's constant went away unused rather than being corrected. If a
+// resync brings a `stack.c` that needs it, the lane will fail to compile and it
+// gets re-added from c43, which is the right way round (REPORT-31 M31-26).
 // Upstream's own value for a PC build (defines.h:555). It used to be 0 here,
 // which configured c43's diagnostic branches OUT of the compiled oracle -- so an
 // upstream edit inside one of them was silence rather than a build failure. Same
 // argument M31-2 took for the flags lane (REPORT-31 M31-23).
 #define EXTRA_INFO_ON_CALC_ERROR 1
 #define min(a, b) ((a) < (b) ? (a) : (b))
-#define ERROR_MESSAGE_LENGTH 256
-
-enum {
-  bugMsgNoNamedVariables = 0,
-  bugMsgRegistMustBeLessThan = 1,
-};
+// c43's own value (defines.h:2481). It was 256, halved to keep a static buffer
+// small, which is not a saving worth a value that disagrees with c43 (M31-26).
+#define ERROR_MESSAGE_LENGTH 512
 
 uint16_t stackParityToC47MemPtr(const void *ptr);
 void *stackParityToPcMemPtr(uint16_t ptr);
@@ -235,7 +239,15 @@ extern const reservedVariableHeader_t allReservedVariables[];
 #define ERR_REGISTER_LINE REGISTER_Z
 
 extern char *errorMessage;
-extern const char commonBugScreenMessages[2][ERROR_MESSAGE_LENGTH];
+// `commonBugScreenMessages` used to be declared here as [2][ERROR_MESSAGE_LENGTH]
+// with a two-member `bugMsg*` enum renumbered to 0 and 1 to index it. c43's array
+// is [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE] = [10][100]
+// and the two indices are 2 and 6, so the harness disagreed with c43 on four
+// values at once. It also disagreed for no reason: this lane compiles only
+// `stack.c`, which references neither the array nor any `bugMsg*` name. They were
+// left behind when M31-20 moved the ten `registers.c` mirrors to the full-core
+// lane. Deleted rather than corrected -- a dead copy is not worth a right one
+// (REPORT-31 M31-26).
 extern uint16_t numberOfNamedVariables;
 extern uint8_t currentNumberOfLocalRegisters;
 
