@@ -70,10 +70,15 @@ typedef struct {
   uint16_t itemOp;
   uint16_t itemStatus;
   bool_t hasItem;
+  // Seeded AFTER the reset, so a refusal has something to leave standing. Without
+  // it the field is 0 on entry and 0 on exit whether or not the owner clears it,
+  // which made the clear unobservable and its mutant a recorded survivor.
+  uint8_t seedTemporaryInformation;
 } programCase_t;
 
 static void applyCase(const programCase_t *c) {
   programSerializationParityReset();
+  temporaryInformation = c->seedTemporaryInformation;
   programSerializationParitySetFileOpenResults(c->saveOpenResult, c->loadOpenResult);
   programSerializationParitySeedPrograms(c->image, c->imageSize, c->beginBlock, c->currentProgram, c->currentLocalStep);
   if(c->hasLabel) {
@@ -194,6 +199,23 @@ int main(void) {
     c.image = image;
     c.imageSize = sizeof(image);
     c.loadFile = validProgramFile;
+    failures += runCase(&c, oracle_fnLoadProgram, fnLoadProgram, 0);
+  }
+  {
+    // A refused load must not leave the PREVIOUS load's status standing. Both the
+    // cancel and the cannot-open paths return early, so each needs its own case:
+    // they leave through different branches.
+    programCase_t c = BASE_CASE("cancelled load does not keep a stale PROGRAM LOADED status");
+    c.loadOpenResult = FILE_CANCEL;
+    c.loadFile = validProgramFile;
+    c.seedTemporaryInformation = TI_PROGRAM_LOADED;
+    failures += runCase(&c, oracle_fnLoadProgram, fnLoadProgram, 0);
+  }
+  {
+    programCase_t c = BASE_CASE("unopenable load does not keep a stale PROGRAM LOADED status");
+    c.loadOpenResult = 0;
+    c.loadFile = validProgramFile;
+    c.seedTemporaryInformation = TI_PROGRAM_LOADED;
     failures += runCase(&c, oracle_fnLoadProgram, fnLoadProgram, 0);
   }
   {
