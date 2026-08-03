@@ -57,6 +57,25 @@ void oracle_fnCheckPlusZero(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckSpecial(uint16_t unusedButMandatoryParameter);
 void oracle_fnCheckType(uint16_t type);
 void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
+void oracle_fnRound(uint16_t unusedButMandatoryParameter);
+void oracle_fnIDiv(uint16_t unusedButMandatoryParameter);
+void oracle_fnIDivR(uint16_t unusedButMandatoryParameter);
+void oracle_fnXAlmostEqual(uint16_t regist);
+void oracle_fnXEqualsTo(uint16_t regist);
+void oracle_fnXGreaterEqual(uint16_t regist);
+void oracle_fnXGreaterThan(uint16_t regist);
+void oracle_fnXLessEqual(uint16_t regist);
+void oracle_fnXLessThan(uint16_t regist);
+void oracle_fnXNotEqual(uint16_t regist);
+void oracle_fnIsConverged(uint16_t mode);
+// curtReal and compareTypeErrorX are NOT compared here, and cannot be: the Zig
+// owner keeps both internal and exports neither, so there is no second
+// implementation to diff. c43's own bodies exist in this binary under `oracle_`
+// names because cubeRoot.c and compare.c define them, but they are reached only
+// from inside c43's own compiled code. They are covered indirectly -- fnIDiv and
+// the comparisons route their type errors through compareTypeErrorX, and the
+// cube-root wrapper through curtReal -- so a divergence in either still surfaces
+// as a state mismatch in the cases below.
 
 // typeError is the shared handler c43's headers reduce every per-file `*Error`
 // to when EXTRA_INFO_ON_CALC_ERROR is not 1. It is not renamed, so both sides
@@ -98,6 +117,8 @@ typedef struct {
   registerHeader_t globalRegister[NUMBER_OF_GLOBAL_REGISTERS];
   uint8_t          lastErrorCode;
   uint8_t          temporaryInformation;
+  uint64_t         systemFlags0;
+  uint64_t         systemFlags1;
   uint32_t         freeMemoryBlocks;
   uint8_t          ram[RAM_SIZE_IN_BLOCKS * 4];
 } snapshot_t;
@@ -110,6 +131,8 @@ static void takeSnapshot(snapshot_t *out) {
   memcpy(out->globalRegister, globalRegister, sizeof(out->globalRegister));
   out->lastErrorCode = lastErrorCode;
   out->temporaryInformation = temporaryInformation;
+  out->systemFlags0 = systemFlags0;
+  out->systemFlags1 = systemFlags1;
   out->freeMemoryBlocks = getFreeRamMemory();
   memcpy(out->ram, ram, sizeof(out->ram));
 }
@@ -139,6 +162,11 @@ static int reportSnapshotMismatch(const char *caseName) {
              snapshotB.globalRegister[i].tag);
       }
     }
+  }
+  if(snapshotA.systemFlags0 != snapshotB.systemFlags0 || snapshotA.systemFlags1 != snapshotB.systemFlags1) {
+    fail("%s: systemFlags z47=%016llx/%016llx c43=%016llx/%016llx", caseName,
+         (unsigned long long)snapshotA.systemFlags0, (unsigned long long)snapshotA.systemFlags1,
+         (unsigned long long)snapshotB.systemFlags0, (unsigned long long)snapshotB.systemFlags1);
   }
   if(snapshotA.freeMemoryBlocks != snapshotB.freeMemoryBlocks) {
     fail("%s: freeMemoryBlocks z47=%u c43=%u", caseName,
@@ -352,12 +380,108 @@ static const predicate_t PREDICATES[] = {
   { "fnCheckInteger/EVEN",      fnCheckInteger,      oracle_fnCheckInteger,      CHECK_INTEGER_EVEN },
   { "fnCheckInteger/ODD",       fnCheckInteger,      oracle_fnCheckInteger,      CHECK_INTEGER_ODD  },
   { "fnCheckInteger/FP",        fnCheckInteger,      oracle_fnCheckInteger,      CHECK_INTEGER_FP   },
+
+  // Unary on X but MUTATING: each saves last-X, writes a result and adjusts the
+  // stack, so the register file and the RAM slab carry the verdict, not just
+  // temporaryInformation.
+  { "fnRound",                  fnRound,             oracle_fnRound,             0                  },
 };
 
-// Run one side: reset the calculator, seed register X, call the wrapper, snapshot.
-static void runSide(void (*seed)(void), void (*body)(uint16_t), uint16_t param, snapshot_t *out) {
+// ---------------------------------------------------------------------------
+// Binary operands. fnIDiv, fnIDivR, the seven comparisons and fnIsConverged all
+// read a SECOND register, so they need a pair fixture; the unary table above
+// leaves Y at its reset value and would compare every pair against the same one.
+//
+// Y and Z are seeded alike so the `regist` parameter can be swept: a comparison
+// entry exists for both REGISTER_Y and REGISTER_Z, which is the difference
+// between testing the function and testing one hardcoded operand.
+// ---------------------------------------------------------------------------
+typedef struct {
+  const char *name;
+  void      (*seedX)(void);
+  void      (*seedSecond)(void);
+} pair_t;
+
+static void secondReal1234(void)     { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); int32ToReal34(1234, REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); int32ToReal34(1234, REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondReal7(void)        { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); int32ToReal34(7, REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); int32ToReal34(7, REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondRealMinus7(void)   { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); int32ToReal34(-7, REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); int32ToReal34(-7, REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondRealZero(void)     { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); stringToReal34("0", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); stringToReal34("0", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondRealNaN(void)      { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); stringToReal34("NaN", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); stringToReal34("NaN", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondRealInfinity(void) { reallocateRegister(REGISTER_Y, dtReal34, 0, amNone); stringToReal34("Infinity", REGISTER_REAL34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtReal34, 0, amNone); stringToReal34("Infinity", REGISTER_REAL34_DATA(REGISTER_Z)); }
+static void secondComplex(void)      { reallocateRegister(REGISTER_Y, dtComplex34, 0, amNone); int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_Y)); int32ToReal34(4, REGISTER_IMAG34_DATA(REGISTER_Y));
+                                       reallocateRegister(REGISTER_Z, dtComplex34, 0, amNone); int32ToReal34(3, REGISTER_REAL34_DATA(REGISTER_Z)); int32ToReal34(4, REGISTER_IMAG34_DATA(REGISTER_Z)); }
+static void secondShortInteger(void) { convertUInt64ToShortIntegerRegister(0, 0x1FULL, 16, REGISTER_Y);
+                                       convertUInt64ToShortIntegerRegister(0, 0x1FULL, 16, REGISTER_Z); }
+static void secondString(void)       { const char *s = "second"; reallocateRegister(REGISTER_Y, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone); strcpy(REGISTER_STRING_DATA(REGISTER_Y), s);
+                                       reallocateRegister(REGISTER_Z, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone); strcpy(REGISTER_STRING_DATA(REGISTER_Z), s); }
+
+static const pair_t PAIRS[] = {
+  { "real1234:real1234",   seedRealPositive,  secondReal1234     }, // equal
+  { "real1234:real7",      seedRealPositive,  secondReal7        }, // greater
+  { "real1234:real-7",     seedRealPositive,  secondRealMinus7   }, // greater, negative rhs
+  { "realOdd:real7",       seedRealOdd,       secondReal7        }, // divides unevenly
+  { "realEven:real7",      seedRealEven,      secondReal7        },
+  { "realFraction:real7",  seedRealFraction,  secondReal7        },
+  { "real1234:zero",       seedRealPositive,  secondRealZero     }, // divide by zero
+  { "zero:zero",           seedRealPlusZero,  secondRealZero     },
+  { "realNaN:real7",       seedRealNaN,       secondReal7        },
+  { "real1234:NaN",        seedRealPositive,  secondRealNaN      },
+  { "realInfinity:real7",  seedRealInfinity,  secondReal7        },
+  { "real1234:infinity",   seedRealPositive,  secondRealInfinity },
+  { "complex:complex",     seedComplex,       secondComplex      },
+  { "complex:real7",       seedComplex,       secondReal7        },
+  { "shortInteger:shortInteger", seedShortInteger, secondShortInteger },
+  { "shortInteger:real7",  seedShortInteger,  secondReal7        },
+  { "longInteger:real7",   seedLongInteger,   secondReal7        },
+  { "string:real7",        seedString,        secondReal7        }, // type error
+  { "matrix2x3:real7",     seedMatrix2x3,     secondReal7        },
+  { "real1234:string",     seedRealPositive,  secondString       },
+};
+
+static const predicate_t BINARY[] = {
+  { "fnIDiv",                 fnIDiv,          oracle_fnIDiv,          0            },
+  { "fnIDivR",                fnIDivR,         oracle_fnIDivR,         0            },
+
+  { "fnXLessThan/Y",          fnXLessThan,     oracle_fnXLessThan,     REGISTER_Y   },
+  { "fnXLessEqual/Y",         fnXLessEqual,    oracle_fnXLessEqual,    REGISTER_Y   },
+  { "fnXGreaterThan/Y",       fnXGreaterThan,  oracle_fnXGreaterThan,  REGISTER_Y   },
+  { "fnXGreaterEqual/Y",      fnXGreaterEqual, oracle_fnXGreaterEqual, REGISTER_Y   },
+  { "fnXEqualsTo/Y",          fnXEqualsTo,     oracle_fnXEqualsTo,     REGISTER_Y   },
+  { "fnXNotEqual/Y",          fnXNotEqual,     oracle_fnXNotEqual,     REGISTER_Y   },
+  { "fnXAlmostEqual/Y",       fnXAlmostEqual,  oracle_fnXAlmostEqual,  REGISTER_Y   },
+
+  { "fnXLessThan/Z",          fnXLessThan,     oracle_fnXLessThan,     REGISTER_Z   },
+  { "fnXGreaterThan/Z",       fnXGreaterThan,  oracle_fnXGreaterThan,  REGISTER_Z   },
+  { "fnXEqualsTo/Z",          fnXEqualsTo,     oracle_fnXEqualsTo,     REGISTER_Z   },
+  { "fnXAlmostEqual/Z",       fnXAlmostEqual,  oracle_fnXAlmostEqual,  REGISTER_Z   },
+
+  // fnIsConverged reads bit 0 (absolute vs relative), bit 1 (infinite) and
+  // bit 2 (NaN), so all eight combinations are distinct behaviour.
+  { "fnIsConverged/0",        fnIsConverged,   oracle_fnIsConverged,   0            },
+  { "fnIsConverged/1",        fnIsConverged,   oracle_fnIsConverged,   1            },
+  { "fnIsConverged/2",        fnIsConverged,   oracle_fnIsConverged,   2            },
+  { "fnIsConverged/3",        fnIsConverged,   oracle_fnIsConverged,   3            },
+  { "fnIsConverged/4",        fnIsConverged,   oracle_fnIsConverged,   4            },
+  { "fnIsConverged/5",        fnIsConverged,   oracle_fnIsConverged,   5            },
+  { "fnIsConverged/6",        fnIsConverged,   oracle_fnIsConverged,   6            },
+  { "fnIsConverged/7",        fnIsConverged,   oracle_fnIsConverged,   7            },
+};
+
+// Run one side: reset the calculator, seed the operands, call the wrapper,
+// snapshot. `seedSecond` is NULL for the unary families.
+static void runSide(void (*seed)(void), void (*seedSecond)(void), void (*body)(uint16_t),
+                    uint16_t param, snapshot_t *out) {
   fnReset(CONFIRMED);
   seed();
+  if(seedSecond != NULL) {
+    seedSecond();
+  }
   temporaryInformation = TI_NO_INFO;
   lastErrorCode = ERROR_NONE;
   body(param);
@@ -405,8 +529,20 @@ int main(void) {
       char caseName[128];
       snprintf(caseName, sizeof(caseName), "%s/%s", PREDICATES[p].name, FIXTURES[f].name);
 
-      runSide(FIXTURES[f].seed, PREDICATES[p].owner, PREDICATES[p].param, &snapshotA);
-      runSide(FIXTURES[f].seed, PREDICATES[p].oracle, PREDICATES[p].param, &snapshotB);
+      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].owner, PREDICATES[p].param, &snapshotA);
+      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].oracle, PREDICATES[p].param, &snapshotB);
+      reportSnapshotMismatch(caseName);
+      cases++;
+    }
+  }
+
+  for(size_t p = 0; p < sizeof(BINARY) / sizeof(BINARY[0]); p++) {
+    for(size_t f = 0; f < sizeof(PAIRS) / sizeof(PAIRS[0]); f++) {
+      char caseName[128];
+      snprintf(caseName, sizeof(caseName), "%s/%s", BINARY[p].name, PAIRS[f].name);
+
+      runSide(PAIRS[f].seedX, PAIRS[f].seedSecond, BINARY[p].owner, BINARY[p].param, &snapshotA);
+      runSide(PAIRS[f].seedX, PAIRS[f].seedSecond, BINARY[p].oracle, BINARY[p].param, &snapshotB);
       reportSnapshotMismatch(caseName);
       cases++;
     }
@@ -416,7 +552,8 @@ int main(void) {
     printf("MATH-WRAPPER FULL-CORE PARITY: %d failure(s) over %d cases\n", failures, cases);
     return 1;
   }
-  printf("math-wrappers full-core: %d cases, %zu predicates x %zu register shapes, all agree\n",
-         cases, sizeof(PREDICATES) / sizeof(PREDICATES[0]), sizeof(FIXTURES) / sizeof(FIXTURES[0]));
+  printf("math-wrappers full-core: %d cases agree (%zu unary x %zu shapes, %zu binary x %zu pairs)\n",
+         cases, sizeof(PREDICATES) / sizeof(PREDICATES[0]), sizeof(FIXTURES) / sizeof(FIXTURES[0]),
+         sizeof(BINARY) / sizeof(BINARY[0]), sizeof(PAIRS) / sizeof(PAIRS[0]));
   return 0;
 }

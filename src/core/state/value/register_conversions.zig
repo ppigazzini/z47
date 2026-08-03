@@ -1398,8 +1398,14 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
         },
         dtShortInteger => {
             reallocateRegister(reg, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.siBase);
-            const data: [*c]u64 = @ptrCast(@alignCast(getRegisterDataPointer(reg)));
-            data[0] = s.siVal;
+            // The pool allocates in 4-byte blocks, so a register payload is only
+            // 4-byte aligned and an @alignCast to u64 traps on half of them.
+            // REGISTER_SHORT_INTEGER_DATA is `(uint64_t *)getRegisterDataPointer(a)`,
+            // an under-aligned 64-bit store that x86 absorbs silently; `*align(1)`
+            // is the spelling that reproduces it instead of trapping, and is what
+            // the other short-integer payload writers already use.
+            const data: *align(1) u64 = @ptrCast(getRegisterDataPointer(reg));
+            data.* = s.siVal;
             setRegisterTag(reg, s.siBase); // setRegisterShortIntegerBase(reg, base) macro
         },
         else => {},

@@ -71,8 +71,14 @@ pub inline fn registerComplex34Aligned(reg: i16) *Complex34 {
 pub inline fn registerMatrixHeaderAligned(reg: i16) *MatrixHeader {
     return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
 }
-pub inline fn registerShortIntegerAligned(reg: i16) *u64 {
-    return @ptrCast(@alignCast(getRegisterDataPointer(reg).?));
+// The pool allocates in 4-byte blocks, so a register payload is NOT guaranteed
+// to be 8-byte aligned and an @alignCast to `*u64` traps on the ones that are
+// not. c43 reaches this payload as `(uint64_t *)getRegisterDataPointer(a)`, an
+// under-aligned 64-bit access; `*align(1)` is the spelling that reproduces it.
+// The other views above are safe as written because Real34/Complex34 are
+// `[N]u8` (alignment 1) and registerConfig asks only for align(4).
+pub inline fn registerShortIntegerAligned(reg: i16) *align(1) u64 {
+    return @ptrCast(getRegisterDataPointer(reg).?);
 }
 pub inline fn registerReal34MatrixElements(reg: i16) [*]align(1) Real34 {
     const base: [*]align(1) u8 = @ptrCast(getRegisterDataPointer(reg).?);
