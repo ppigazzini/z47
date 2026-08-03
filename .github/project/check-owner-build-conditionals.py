@@ -104,21 +104,56 @@ ALLOWED: dict[str, str] = {
 # coverage -- the excluded owners are not in that lane -- and that is a fact about
 # the lane, not a defect in the owner. Each entry says where the excluded owners
 # ARE covered.
-LINK_SET: dict[str, str] = {
-    "src/core/numeric/command_wrappers.zig": (
-        "selects which owner files the math_command_wrappers lane links. The fake"
-        " runtime duplicates the WP34S_* surface and lacks the decNumber symbols"
-        " those owners call, so linking them there fails. They are covered by c43's"
-        " own testSuite (prime/beta/lnbeta/gd/agm/cyx/pyx and all trig/gamma)."
-    ),
-}
+# Keyed on FILE, which is why it is empty. It used to hold
+# src/core/numeric/command_wrappers.zig with a reason about which owner files the
+# math_command_wrappers lane links -- and that file contains exactly one
+# build_options site, `export_public_ln_complex`, which is an EXPORT decision and
+# not a link-set one. The exemption was carrying a plausible sentence about a
+# decision that is not made at the site it exempted, and it hid that site for as
+# long as it existed.
+#
+# A file-level exemption cannot distinguish two kinds of seam in one file. If one
+# is needed again, key it on (file, option).
+LINK_SET: dict[str, str] = {}
 
+# Each entry is a VERDICT, not a label. The count sat at 59 across 9 options for
+# four passes while the text below said "the endpoint is zero", and nobody had
+# written down which of these can actually reach zero. Three answers exist and they
+# are not the same answer:
+#
+#   REMOVABLE   -- no reason beyond nobody having done it.
+#   BLOCKED     -- removable in principle, blocked on a named piece of work.
+#   METHOD      -- the divergence IS the lane's method; removing it deletes the
+#                  lane rather than fixing it, and the endpoint for these is not
+#                  zero. Saying so is the honest form of "or a written reason".
 HARNESS_ONLY: dict[str, str] = {
-    "free_regions_are_inline_array": "FreeRegionsStorage becomes [N]T instead of [*]T",
-    "use_array_backed_global_registers": "the global register file becomes an array instead of a pointer",
-    "max_free_regions": "caps the free-region table for a host binary",
-    "ram_size_in_blocks": "shrinks the pool so a host binary can exhaust and diff it",
-    "export_public_ln_complex": "exports a worker so a focused oracle can link it",
+    "free_regions_are_inline_array": (
+        "BLOCKED. FreeRegionsStorage becomes [N]T instead of [*]T because the fake"
+        " runtime cannot allocate. Same obstacle as M31-37's matrix element half:"
+        " unblocking it means the fake modelling allocation, which is the full-core"
+        " conversion by another route."
+    ),
+    "use_array_backed_global_registers": (
+        "BLOCKED. The global register file becomes an array instead of a pointer, for"
+        " the same reason and behind the same work."
+    ),
+    "max_free_regions": (
+        "METHOD. Caps the free-region table so a host binary can exhaust and walk it."
+        " The allocator LOGIC is what is under test and it is size-independent;"
+        " upstream's size makes every full-pool case unrunnable. Endpoint is not zero."
+    ),
+    "ram_size_in_blocks": (
+        "METHOD. 64 against c43's 65534, so a host binary can exhaust and diff the"
+        " whole pool. Already recorded as a reasoned deliberate divergence in"
+        " check-harness-constant-copies.py; this is the same decision seen from the"
+        " owner side. Endpoint is not zero."
+    ),
+    "export_public_ln_complex": (
+        "REMOVABLE. Exports a worker so a focused oracle can link it -- the same"
+        " question answered NO for curtReal and compareTypeErrorX, where the ruling"
+        " was that a differential is not worth changing the product's symbol table."
+        " This one predates that ruling and should go the same way."
+    ),
 }
 
 # Any option matching this is harness scaffolding reaching into an owner.
@@ -291,7 +326,9 @@ def main() -> int:
     if total:
         print(
             "  Recorded, not accepted: each of these makes the tested program differ from"
-            "\n  the shipped one. The endpoint is zero."
+            "\n  the shipped one. The endpoint is zero for the REMOVABLE and BLOCKED"
+            "\n  options and NOT for the METHOD ones, whose divergence IS the lane's"
+            "\n  method -- see the verdict beside each in HARNESS_ONLY."
         )
     return 0
 
