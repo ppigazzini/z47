@@ -396,13 +396,6 @@ void oracle_decompReal(void);
 // reimplements checkValue.c's fnCheckReal rather than compiling it, so it cannot
 // see c43 move -- the defect this whole lane exists to catch, one level down.
 // c43's own body is compiled and compared in the full-core differential.
-void oracle_fnCheckReal(uint16_t unusedButMandatoryParameter) {
-	const uint32_t t = getRegisterDataType(REGISTER_X);
-
-	(void)unusedButMandatoryParameter;
-	temporaryInformation = 12 + (t <= 4 || t == 8);
-}
-
 #define fnAdd oracle_full_fnAdd
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -469,29 +462,31 @@ void complexMagnitude(const real_t *a, const real_t *b, real_t *c, realContext_t
 #undef fnConjugate
 #undef conjCplx
 
-// TWO HAND-WRITTEN REFERENCE BODIES REMAIN IN THIS FILE -- `oracle_fnCheckReal`
-// above and `oracle_fnToRect` below -- and the way the others went is worth
-// knowing before adding another.
+// NO HAND-WRITTEN REFERENCE BODIES REMAIN IN THIS FILE, over c43's whole
+// vocabulary -- the functions its headers declare AND the statics only its .c
+// files define. The way the last ones went is worth knowing before adding another.
 //
-// Every other reference here is c43's own code: either an `#include` of the c43
-// file under `oracle_` renames, or a compiled `oracle_full_*` body. The wrappers that
+// Every reference here is c43's own code: either an `#include` of the c43 file
+// under `oracle_` renames, or a compiled `oracle_full_*` body. The wrappers that
 // once had a hand-written mirror -- the check predicates, the comparisons, the
-// integer-division and rounding families, and the vector/complex families --
-// moved to build/tests/math_wrappers_full_core/, which compiles c43's own
-// mathematics/*.c beside the Zig owners on real decNumber and compares the state
-// each leaves behind.
+// integer-division and rounding families, the vector/complex families, fnCheckReal
+// and fnToRect -- moved to build/tests/math_wrappers_full_core/, which compiles
+// c43's own mathematics/*.c beside the Zig owners on real decNumber and compares
+// the state each leaves behind.
 //
-// THEY COULD NOT BE FIXED HERE, and that was measured twice rather than argued.
-// This lane's `real_t` is a hand-declared 25-limb struct, its arithmetic is
+// THEY COULD NOT BE FIXED HERE, and that was measured rather than argued. This
+// lane's `real_t` is a hand-declared 25-limb struct, its arithmetic is
 // math_wrappers_fake_runtime.c, and its `const39_*` values are placeholder
 // decimals -- there is no decNumber and no matrix subsystem. Swapping a mirror for
 // c43's real file produced six mismatches for the arithmetic four and twelve for
 // toPolar/toRect, in both cases because c43's real files dispatch into leaves the
-// fake core answers differently, with neither side wrong. Do not repeat either
-// experiment.
+// fake core answers differently, with neither side wrong. Compiling checkValue.c
+// here does not even reach that stage: real34IsSpecial, compareTypeErrorX,
+// getRegisterAsComplexOrAnyRealQuiet, isMatrix2dVector and the ITM_IS* items are
+// not declared in this lane's c47.h. Do not repeat any of the three experiments.
 //
-// WHAT THIS LANE IS FOR NOW, and why it is not deleted. It still drives 436 cases
-// over 88 wrappers the full-core differential does not cover -- fnAdd, the
+// WHAT THIS LANE IS FOR NOW, and why it is not deleted. It still drives 430 cases
+// over 86 wrappers the full-core differential does not cover -- fnAdd, the
 // trigonometric and hyperbolic families, the logarithms, the Bernoulli numbers and
 // the rest -- against references that ARE c43's own bodies. What it compares is
 // control flow over a fake numeric core, which is real coverage of dispatch and
@@ -547,80 +542,6 @@ void atan2LonIRema(void);
 #define fnCube oracle_fnCube
 #include "../../../upstream/src/c47/mathematics/cube.c"
 #undef fnCube
-
-void oracle_fnToRect(uint16_t angleInY) {
-	uint32_t dataTypeX, dataTypeY;
-	calcRegister_t REG_X, REG_Y;
-	angularMode_t yAngularMode;
-	real_t x, y;
-
-	if((int8_t)angleInY == 1) {
-		REG_X = REGISTER_X;
-		REG_Y = REGISTER_Y;
-	}
-	else {
-		REG_X = REGISTER_Y;
-		REG_Y = REGISTER_X;
-	}
-
-	dataTypeX = getRegisterDataType(REG_X);
-	dataTypeY = getRegisterDataType(REG_Y);
-	if(!((dataTypeX == dtLongInteger || dataTypeX == dtReal34) &&
-	     (dataTypeY == dtLongInteger || dataTypeY == dtReal34))) {
-		displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REG_X);
-		moreInfoOnError("In function fnToRect:", "cannot convert current X/Y pair to rectangular coordinates", NULL, NULL);
-		return;
-	}
-
-	yAngularMode = getRegisterAngularMode(REG_Y);
-	if(!saveLastX()) {
-		return;
-	}
-
-	if(dataTypeX == dtLongInteger) {
-		convertLongIntegerRegisterToReal(REG_X, &x, &ctxtReal39);
-	}
-	else {
-		real34ToReal(REGISTER_REAL34_DATA(REG_X), &x);
-	}
-
-	if(dataTypeY == dtLongInteger) {
-		yAngularMode = currentAngularMode;
-	}
-	else if(yAngularMode == amNone) {
-		yAngularMode = currentAngularMode;
-	}
-
-	if(dataTypeY == dtLongInteger) {
-		convertLongIntegerRegisterToReal(REG_Y, &y, &ctxtReal39);
-	}
-	else {
-		real34ToReal(REGISTER_REAL34_DATA(REG_Y), &y);
-	}
-	convertAngleFromTo(&y, yAngularMode, amRadian, &ctxtReal39);
-	realPolarToRectangular(&x, &y, &x, &y, &ctxtReal39);
-
-	if(getSystemFlag(FLAG_HPRP)) {
-		REG_X = REGISTER_X;
-		REG_Y = REGISTER_Y;
-	}
-	else {
-		REG_X = REGISTER_Y;
-		REG_Y = REGISTER_X;
-	}
-
-	reallocateRegister(REG_X, dtReal34, 0, amNone);
-	reallocateRegister(REG_Y, dtReal34, 0, amNone);
-	convertRealToReal34ResultRegister(&x, REG_X);
-	convertRealToReal34ResultRegister(&y, REG_Y);
-
-	if(getSystemFlag(FLAG_HPRP)) {
-		temporaryInformation = TI_X_Y;
-	}
-	else {
-		temporaryInformation = TI_X_Y_SWAPPED;
-	}
-}
 
 #define fnParallel oracle_fnParallel
 #include "../../../upstream/src/c47/mathematics/parallel.c"
