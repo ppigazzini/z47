@@ -42,12 +42,11 @@ lets a lane compile against upstream's own `c47.h` and declare no constants at a
 
 THREE CATEGORIES, NOT TWO. A harness value that disagrees with c43 is either a
 stale copy (`drifted` -- a wrong answer, ratcheted, meant to reach zero) or a
-DESIGN DECISION (`deliberate` -- the harness must disagree, and says why). Those
-were one column until REPORT-31 M31-29, which meant a decision got re-counted and
-re-argued on every pass while sitting next to twenty real defects. `deliberate` is
-hand-authored, survives `--bump`, and every entry must carry a reason: a
-deliberate divergence with a stated reason is a decision, one without is a stale
-copy that learned to hide.
+design decision (`deliberate` -- the harness must disagree, and says why). Keeping
+them in one column makes a decision indistinguishable from a defect, so the two
+are separate here. `deliberate` is hand-authored, survives `--bump`, and every
+entry must carry a reason: a deliberate divergence with a stated reason is a
+decision, one without is a stale copy that learned to hide.
 
 Usage:
   check-harness-constant-copies.py [--repo-root .]
@@ -282,7 +281,7 @@ def main() -> int:
     # decision in the same column as twenty stale copies, so it was re-counted and
     # re-explained on every pass. It is its own category now, and it costs a
     # written reason: a deliberate divergence with a stated reason is a decision,
-    # one without is a stale copy that learned to hide (REPORT-31 M31-29).
+    # one without is a stale copy that learned to hide.
     existing = {}
     baseline_file = repo / BASELINE
     if baseline_file.is_file():
@@ -324,7 +323,7 @@ def main() -> int:
                         "Divergences from c43 that are DESIGN DECISIONS, not stale copies,"
                         " each with the reason it is one. Hand-authored: --bump preserves"
                         " this map and never adds to it. An entry with an empty reason"
-                        " FAILS the gate (REPORT-31 M31-29)."
+                        " FAILS the gate."
                     ),
                     "counts": counts,
                     "deliberate": deliberate,

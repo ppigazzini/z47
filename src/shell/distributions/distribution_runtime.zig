@@ -57,15 +57,13 @@ pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 
 const abi = @import("abi"); // shared ABI bindings
-// The five C entry points below used to be reached by importing ../real_type.zig
-// and ../register_value_conversions.zig. All five are `pub extern fn` there --
-// C-ABI declarations carrying no code -- so those imports bought nothing but
-// dragged both files' whole closure in with them, and register_value_conversions
-// reaches the display tree. That made the distributions unbuildable in any module
-// not rooted at src/, which is why `distribution_parity` failed to compile at HEAD
-// (it roots at src/shell/distributions/). Declared here instead: same symbols,
-// same linkage, resolved at link time by whatever provides them -- the product's
-// C core, or the harness's fake runtime (REPORT-31 M31-27).
+// Declared here rather than imported from ../real_type.zig and
+// ../register_value_conversions.zig, which also declare them. Both spellings give
+// the same symbol and the same link-time resolution, but an @import binds this
+// file to the other file's whole import closure, and register_value_conversions
+// reaches the display tree. That closure forces any module containing this file
+// to be rooted at src/, which the distribution parity harness is not. Keep new C
+// entry points declared here for the same reason.
 extern fn realSetZero(r: *real_t) callconv(.c) void;
 extern fn realSetOne(r: *real_t) callconv(.c) void;
 extern fn realSetNaN(r: *real_t) callconv(.c) void;

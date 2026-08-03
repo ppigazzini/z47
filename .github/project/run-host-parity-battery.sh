@@ -38,14 +38,16 @@ zig build calc_state_parity
 # battery, so its golden silently rotted out of date; run it here.
 zig build saveload_roundtrip
 zig build math_command_wrappers_parity
+# The full-core math-wrapper differential: c43's own mathematics/*.c compiled
+# beside the Zig owners on real decNumber and the real register file. It breaks
+# when a rename stops taking, which still LINKS, so nothing else catches it.
+zig build math_wrappers_full_core_parity
 zig build math_random_parity
-# The seven focused math differentials, which sat OUTSIDE this battery until
-# REPORT-31 M31-22. That is not a theoretical gap: M31-10 exported
-# processResultantLongReal (restoreRegister needs it for the RXFN branch) and
-# turned the stub in math_wrappers_eigen_link_stubs.c into a duplicate symbol --
-# breaking all seven at link time while the full local gate stayed green, because
-# nothing ran them. Each links the real c43 worker beside the Zig owner, so they
-# are the differential coverage for the numeric core; they belong here.
+# The seven focused math differentials. Each links the real c43 worker beside the
+# Zig owner, so together they are the differential coverage for the numeric core.
+# They break at LINK time when an owner starts exporting a symbol one of their
+# stub files also defines, and nothing else in this battery builds them, so a
+# duplicate-symbol regression is invisible unless they run here.
 zig build math_ln_complex_oracle
 zig build eigen_parity
 zig build math_real_rectangular_to_polar_oracle
@@ -53,12 +55,10 @@ zig build math_atan2_oracle
 zig build math_atan_oracle
 zig build math_real_trig_primitives_oracle
 zig build math_circular_trig_oracle
-# The distribution differential, found the same way and for the same reason: it
-# was in no gate, and had stopped COMPILING at HEAD. Its module was rooted at
-# src/shell/distributions/, which distribution_runtime.zig's imports escaped, and
-# it had never been given the `abi` module -- a second failure the first one
-# masked. Its expected values are derived from each distribution's closed form,
-# so it is a specified oracle and belongs here (REPORT-31 M31-27).
+# The distribution differential. Its expected values are derived from each
+# distribution's closed form, which makes it a specified oracle. It is sensitive
+# to the module rooting of src/shell/distributions: an @import there that escapes
+# the harness module's path breaks this lane and nothing else.
 zig build distribution_parity
 # Format-equivalence oracle (M24): every migrated sprintf->std.fmt translation
 # must stay byte-identical to libc.
