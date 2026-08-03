@@ -68,6 +68,12 @@ void oracle_fnXLessEqual(uint16_t regist);
 void oracle_fnXLessThan(uint16_t regist);
 void oracle_fnXNotEqual(uint16_t regist);
 void oracle_fnIsConverged(uint16_t mode);
+void oracle_fnAtan2(uint16_t unusedButMandatoryParameter);
+void oracle_fnConjugate(uint16_t unusedButMandatoryParameter);
+void oracle_fnSwapRealImaginary(uint16_t unusedButMandatoryParameter);
+void oracle_fnToPolar2(uint16_t unusedButMandatoryParameter);
+void oracle_fnToRect2(uint16_t unusedButMandatoryParameter);
+void oracle_fnUnitVector(uint16_t unusedButMandatoryParameter);
 // curtReal and compareTypeErrorX are NOT compared here, and cannot be: the Zig
 // owner keeps both internal and exports neither, so there is no second
 // implementation to diff. c43's own bodies exist in this binary under `oracle_`
@@ -126,6 +132,88 @@ typedef struct {
 static snapshot_t snapshotA;
 static snapshot_t snapshotB;
 
+// matrixHeader_t's top two bits are `notUsed` -- "2 bits free" in
+// typeDefinitions.h:435 -- and neither implementation initialises them, so a
+// freshly allocated header carries whatever the pool block last held. c43 treats
+// them as junk too: saveRestoreBackup.c:51 clears them on the way out with the
+// comment "clear spare bits and clear Polar flag, setting only amNone", so they
+// never reach backup.cfg and cannot be observed by a user.
+//
+// Comparing them would be comparing uninitialised memory, which is not a parity
+// question. They are zeroed in BOTH snapshots instead of the whole RAM slab being
+// waived, so every other byte of every matrix -- header dimensions, mtag,
+// elements -- is still held to c43.
+// Keep only the RAM bytes that belong to a live register.
+//
+// A wrapper that converts a real matrix to a complex one allocates a temporary,
+// writes it, copies it back and frees it. The freed block keeps whatever the two
+// implementations last wrote there, and that residue differs without either
+// being wrong -- it is memory nobody owns. Comparing it compares garbage.
+//
+// The alternative used elsewhere in the tree is to waive the whole RAM slab for
+// such cases, which also drops the matrix ELEMENTS -- the bytes these families
+// exist to get right. Masking to live extents keeps those and drops only the
+// unowned bytes.
+//
+// The mask covers every register class that can own pool memory: the globals
+// (which include the stack and last-X), the reserved variables, the named
+// variables and the current local frame. Anything outside all of those is memory
+// no register owns.
+static void markLive(uint8_t *live, size_t liveLen, calcRegister_t reg) {
+  const uint8_t *data = (const uint8_t *)getRegisterDataPointer(reg);
+  if(data == NULL) {
+    return;
+  }
+  const ptrdiff_t base = data - (const uint8_t *)ram;
+  const ptrdiff_t size = (ptrdiff_t)getRegisterFullSizeInBlocks(reg) * 4;
+  if(base < 0 || size <= 0 || base + size > (ptrdiff_t)liveLen) {
+    return;
+  }
+  memset(live + base, 1, (size_t)size);
+}
+
+static void keepOnlyLiveRegisterBytes(snapshot_t *out) {
+  static uint8_t live[RAM_SIZE_IN_BLOCKS * 4];
+  memset(live, 0, sizeof(live));
+
+  for(int reg = 0; reg < NUMBER_OF_GLOBAL_REGISTERS; reg++) {
+    markLive(live, sizeof(live), (calcRegister_t)reg);
+  }
+  for(int v = FIRST_RESERVED_VARIABLE; v <= LAST_RESERVED_VARIABLE; v++) {
+    markLive(live, sizeof(live), (calcRegister_t)v);
+  }
+  for(int v = 0; v < numberOfNamedVariables; v++) {
+    markLive(live, sizeof(live), (calcRegister_t)(FIRST_NAMED_VARIABLE + v));
+  }
+  for(int v = 0; v < currentNumberOfLocalRegisters; v++) {
+    markLive(live, sizeof(live), (calcRegister_t)(FIRST_LOCAL_REGISTER + v));
+  }
+
+  for(size_t i = 0; i < sizeof(out->ram); i++) {
+    if(!live[i]) {
+      out->ram[i] = 0;
+    }
+  }
+}
+
+static void normalizeMatrixHeaderSpareBits(snapshot_t *out) {
+  for(int reg = 0; reg < NUMBER_OF_GLOBAL_REGISTERS; reg++) {
+    const uint32_t dt = out->globalRegister[reg].dataType;
+    if(dt != dtReal34Matrix && dt != dtComplex34Matrix) {
+      continue;
+    }
+    const uint8_t *live = (const uint8_t *)getRegisterDataPointer(reg);
+    if(live == NULL) {
+      continue;
+    }
+    const ptrdiff_t offset = live - (const uint8_t *)ram;
+    if(offset < 0 || (size_t)offset + 4 > sizeof(out->ram)) {
+      continue;
+    }
+    out->ram[offset + 3] &= 0x3f; // keep mtag's 6 bits, drop the 2 spare
+  }
+}
+
 static void takeSnapshot(snapshot_t *out) {
   memset(out, 0, sizeof(*out));
   memcpy(out->globalRegister, globalRegister, sizeof(out->globalRegister));
@@ -135,6 +223,8 @@ static void takeSnapshot(snapshot_t *out) {
   out->systemFlags1 = systemFlags1;
   out->freeMemoryBlocks = getFreeRamMemory();
   memcpy(out->ram, ram, sizeof(out->ram));
+  keepOnlyLiveRegisterBytes(out);
+  normalizeMatrixHeaderSpareBits(out);
 }
 
 static int reportSnapshotMismatch(const char *caseName) {
@@ -175,8 +265,30 @@ static int reportSnapshotMismatch(const char *caseName) {
   if(memcmp(snapshotA.ram, snapshotB.ram, sizeof(snapshotA.ram)) != 0) {
     for(size_t i = 0; i < sizeof(snapshotA.ram); i++) {
       if(snapshotA.ram[i] != snapshotB.ram[i]) {
-        fail("%s: ram[%zu] z47=0x%02x c43=0x%02x", caseName, i,
-             snapshotA.ram[i], snapshotB.ram[i]);
+        // Name the register that owns the byte. A bare offset says a matrix
+        // differs somewhere; the owner and the offset within it say which.
+        int owner = -1;
+        ptrdiff_t within = 0;
+        for(int reg = 0; reg < NUMBER_OF_GLOBAL_REGISTERS; reg++) {
+          const uint8_t *live = (const uint8_t *)getRegisterDataPointer(reg);
+          if(live == NULL) {
+            continue;
+          }
+          const ptrdiff_t base = live - (const uint8_t *)ram;
+          const ptrdiff_t size = (ptrdiff_t)getRegisterFullSizeInBlocks(reg) * 4;
+          if((ptrdiff_t)i >= base && (ptrdiff_t)i < base + size) {
+            owner = reg;
+            within = (ptrdiff_t)i - base;
+            break;
+          }
+        }
+        if(owner >= 0) {
+          fail("%s: ram[%zu] z47=0x%02x c43=0x%02x (register %d, byte %ld of its data)",
+               caseName, i, snapshotA.ram[i], snapshotB.ram[i], owner, (long)within);
+        } else {
+          fail("%s: ram[%zu] z47=0x%02x c43=0x%02x (not inside any live register)",
+               caseName, i, snapshotA.ram[i], snapshotB.ram[i]);
+        }
         break;
       }
     }
@@ -385,6 +497,16 @@ static const predicate_t PREDICATES[] = {
   // stack, so the register file and the RAM slab carry the verdict, not just
   // temporaryInformation.
   { "fnRound",                  fnRound,             oracle_fnRound,             0                  },
+
+  // Vector and complex families. These are the ones the unit lane could never
+  // host: they dispatch into the matrix and complex leaves, which that lane's
+  // fake numeric core answers differently from real decNumber. Here both sides
+  // run the same arithmetic, so the comparison is about the result.
+  { "fnConjugate",              fnConjugate,         oracle_fnConjugate,         0                  },
+  { "fnSwapRealImaginary",      fnSwapRealImaginary, oracle_fnSwapRealImaginary, 0                  },
+  { "fnUnitVector",             fnUnitVector,        oracle_fnUnitVector,        0                  },
+  { "fnToPolar2",               fnToPolar2,          oracle_fnToPolar2,          0                  },
+  { "fnToRect2",                fnToRect2,           oracle_fnToRect2,           0                  },
 };
 
 // ---------------------------------------------------------------------------
@@ -471,6 +593,13 @@ static const predicate_t BINARY[] = {
   { "fnIsConverged/5",        fnIsConverged,   oracle_fnIsConverged,   5            },
   { "fnIsConverged/6",        fnIsConverged,   oracle_fnIsConverged,   6            },
   { "fnIsConverged/7",        fnIsConverged,   oracle_fnIsConverged,   7            },
+
+  // fnAtan2 dispatches on the (X, Y) type pair through c43's arctan2 table.
+  { "fnAtan2",                fnAtan2,         oracle_fnAtan2,         0            },
+  // fnToPolar2 and fnToRect2 read Y as the second component when X is a plain
+  // real, so they belong in the pair sweep as well as the unary one.
+  { "fnToPolar2/pair",        fnToPolar2,      oracle_fnToPolar2,      0            },
+  { "fnToRect2/pair",         fnToRect2,       oracle_fnToRect2,       0            },
 };
 
 // Run one side: reset the calculator, seed the operands, call the wrapper,
@@ -490,6 +619,11 @@ static void runSide(void (*seed)(void), void (*seedSecond)(void), void (*body)(u
 
 int main(void) {
   int cases = 0;
+
+
+
+
+
 
 
   // The reference and the owner must be DIFFERENT code. A rename that did not

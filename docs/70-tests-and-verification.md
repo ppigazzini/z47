@@ -168,15 +168,21 @@ is converted and the `frozen` list in
 `.github/project/oracle-provenance-manifest.json` is EMPTY — but that is not the
 same claim. Hand-written reference bodies can live inside a file that *also*
 `#include`s c43 source, which is exactly why such a file is never eligible for
-that list. `math_wrappers_oracle.c` still carries **34** of them. When you touch
-that lane, do not add a thirty-fifth: `check-oracle-provenance.py` counts them
-and the ratchet only goes down.
+that list. `check-oracle-provenance.py` counts those separately and **both counts
+are now zero**. Keep them there: every reference in the tree is c43's own code,
+and the ratchet does not go back up.
 
 `math_wrappers` is a special case worth knowing before you touch it: its `real_t`
 is a hand-declared struct, decNumber is not linked, and its `const39_*` are
 placeholder decimals, so the 86 c43 files it compiles run on fake arithmetic and
-what the lane compares is CONTROL FLOW. Compiling more c43 into it does not remove
-a mirror — measured twice, recorded in the file. In the vocabulary of
+what the lane compares is CONTROL FLOW. Compiling more c43 into it does not help —
+measured twice, recorded in the file. **There are two math-wrapper lanes and they
+answer different questions.** `math_command_wrappers_parity` drives 436 cases over
+88 wrappers and tells you which paths a wrapper takes;
+`math_wrappers_full_core_parity` drives 1140 cases over 32 and tells you what it
+computes, because there both sides run on real decNumber and the real register
+file. Neither substitutes for the other, which is why the first is not deleted.
+In the vocabulary of
 [90-official-references.md](90-official-references.md), that environment is a
 **Fake** and its snapshot of 62 call counters is a **Spy** — so a green run there
 says the wrappers *called* the same functions with the same arguments, and says

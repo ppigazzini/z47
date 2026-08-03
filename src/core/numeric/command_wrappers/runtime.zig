@@ -335,6 +335,12 @@ pub extern fn decQuadZero(result: *real34_t) *real34_t;
 pub inline fn real34SetZero(destination: *real34_t) void {
     _ = decQuadZero(destination);
 }
+
+pub extern fn decQuadFromUInt32(result: *real34_t, value: u32) *real34_t;
+// uInt32ToReal34 (realType.h): the decQuad form, distinct from uInt32ToReal.
+pub inline fn uInt32ToReal34(value: u32, destination: *real34_t) void {
+    _ = decQuadFromUInt32(destination, value);
+}
 // The canonical subtract command (subtraction.c), used by fnVectorDist.
 pub extern fn fnSubtract(parameter: u16) void;
 // Matrix register allocation and the dimension-argument parser, still in the

@@ -437,7 +437,11 @@ fn swapRealImaginaryRealMatrix() void {
     var index: usize = 0;
     while (index < count) : (index += 1) {
         complex_matrix.matrixElements[index].imag = complex_matrix.matrixElements[index].real;
-        complex_matrix.matrixElements[index].real = std.mem.zeroes(runtime.real34_t);
+        // real34SetZero (decQuadZero), NOT sixteen zero bytes. An all-zero blob
+        // is a valid decQuad but a DIFFERENT member of zero's cohort than the one
+        // decQuadZero writes, so the register ends up holding bytes c43 never
+        // produces. swapRealImaginary.c uses real34SetZero here.
+        runtime.real34SetZero(complexMatrixRealPtr(&complex_matrix, index));
     }
 
     runtime.convertComplex34MatrixToComplex34MatrixRegister(&complex_matrix, runtime.REGISTER_X);

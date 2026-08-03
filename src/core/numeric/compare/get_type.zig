@@ -27,12 +27,10 @@ fn pushIntegerOut(value: u32) void {
 // digit narrowing pick a different exponent than decQuad's divide does. On a
 // calculator the cohort is the displayed trailing digits, so that is a visible
 // divergence and not a rounding detail.
-extern fn decQuadFromUInt32(res: *real34_t, value: u32) *real34_t;
-
 fn pushRealOut(value: u32) void {
     var real_output = std.mem.zeroes(real34_t);
 
-    _ = decQuadFromUInt32(&real_output, value);
+    runtime.uInt32ToReal34(value, &real_output);
     runtime.real34Divide(&real_output, consts.q16632(), &real_output);
 
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
