@@ -69,6 +69,12 @@ void oracle_fnGetType(uint16_t unusedButMandatoryParameter);
 void oracle_fnRound(uint16_t unusedButMandatoryParameter);
 void oracle_fnSquareRoot(uint16_t unusedButMandatoryParameter);
 void oracle_fnCubeRoot(uint16_t unusedButMandatoryParameter);
+void oracle_fnArcsin(uint16_t unusedButMandatoryParameter);
+void oracle_fnArccos(uint16_t unusedButMandatoryParameter);
+void oracle_fnArctan(uint16_t unusedButMandatoryParameter);
+void oracle_fnArcsinh(uint16_t unusedButMandatoryParameter);
+void oracle_fnArccosh(uint16_t unusedButMandatoryParameter);
+void oracle_fnArctanh(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDiv(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDivR(uint16_t unusedButMandatoryParameter);
 void oracle_fnXAlmostEqual(uint16_t regist);
@@ -571,6 +577,16 @@ static const predicate_t PREDICATES[] = {
   // give the families above, and their own entry points were never driven.
   { "fnSquareRoot",             fnSquareRoot,        oracle_fnSquareRoot,        0                  },
   { "fnCubeRoot",               fnCubeRoot,          oracle_fnCubeRoot,          0                  },
+
+  // The inverse-circular and inverse-hyperbolic family. Until now these had no
+  // result-level comparison in any lane: the unit lane drives them over a fake
+  // numeric core, so it compares the paths they take and never the numbers.
+  { "fnArcsin",                fnArcsin,            oracle_fnArcsin,            0                  },
+  { "fnArccos",                fnArccos,            oracle_fnArccos,            0                  },
+  { "fnArctan",                fnArctan,            oracle_fnArctan,            0                  },
+  { "fnArcsinh",               fnArcsinh,           oracle_fnArcsinh,           0                  },
+  { "fnArccosh",               fnArccosh,           oracle_fnArccosh,           0                  },
+  { "fnArctanh",               fnArctanh,           oracle_fnArctanh,           0                  },
 
   // Vector and complex families. These are the ones the unit lane could never
   // host: they dispatch into the matrix and complex leaves, which that lane's

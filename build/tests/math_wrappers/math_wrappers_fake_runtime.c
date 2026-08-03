@@ -1713,6 +1713,18 @@ void real34NextMinus(const real34_t *source, real34_t *destination) {
   setRegisterReal34((uint8_t *)destination, fakeReal34Value(source) - 1, source->bytes[15] & 0x70);
 }
 
+// The owner calls decNumberMinus directly now, because realType.h's realMinus is
+// that call and the two are NOT interchangeable with a sign-bit flip on NaN. This
+// lane models real_t as a small integer and cannot represent that distinction, so
+// the shim matches c47.h's own realMinus macro above: the lane keeps comparing
+// control flow, and the NaN behaviour is the full-core lane's to check.
+real_t *decNumberMinus(real_t *result, const real_t *rhs, realContext_t *realContext) {
+  (void)realContext;
+  realCopy(rhs, result);
+  realChangeSign(result);
+  return result;
+}
+
 void realToReal34(const real_t *source, real34_t *destination) {
   setRegisterReal34((uint8_t *)destination, fakeRealValue(source), source->bits & 0x70);
 }

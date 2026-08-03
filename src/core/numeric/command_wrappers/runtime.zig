@@ -742,6 +742,16 @@ pub extern fn int32ToReal(source: i32, destination: *real_t) void;
 pub extern fn decNumberCompare(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;
 pub extern fn decNumberPlus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+pub extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+
+/// realType.h:157 -- `decNumberMinus(res, operand, ctxt)`, an ARITHMETIC negation
+/// (0 - x under the context's rules). NOT the same as realChangeSign, which is a
+/// raw `bits ^= 0x80`: the two agree on every finite value and disagree on NaN,
+/// where the arithmetic form canonicalises the result positive and the bit flip
+/// produces a negative NaN. Use whichever c43 uses at the site being ported.
+pub inline fn realMinus(operand: *const real_t, result: *real_t, real_context: *realContext_t) void {
+    _ = decNumberMinus(result, operand, real_context);
+}
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
