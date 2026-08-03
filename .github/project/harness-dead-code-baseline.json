@@ -1,10 +1,6 @@
 {
   "_why": "Unreachable static functions in harness sources, and the harness sources this check cannot analyse. Both may FALL and may not rise: the first because dead test code reads as coverage, the second because a gate that reports only what it could analyse reads as a clean bill for what it could not.",
-  "dead_statics": {
-    "build/tests/math_wrappers/math_wrappers_fake_runtime.c": 2,
-    "build/tests/math_wrappers/math_wrappers_parity.c": 96,
-    "build/tests/stack_state/stack_state_parity.c": 37
-  },
+  "dead_statics": {},
   "unanalysable": [
     "build/tests/calc_state/calc_state_oracle.c",
     "build/tests/calc_state/calc_state_parity_harness.c",
