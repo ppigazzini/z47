@@ -46,8 +46,6 @@ calcRegister_t graphVariabl1 = 0;
 uint32_t currentAngularMode = amNone;
 static char errorMessage__stg[ERROR_MESSAGE_LENGTH];
 char *errorMessage = errorMessage__stg;
-// `commonBugScreenMessages` was defined here with two hand-copied c43 message
-// STRINGS. Nothing in this lane read it -- see the note in c47.h (M31-26).
 uint16_t numberOfNamedVariables = 0;
 uint8_t currentNumberOfLocalRegisters = 0;
 
@@ -144,11 +142,10 @@ uint16_t stackParityToC47MemPtr(const void *ptr) {
   return findSlot(ptr);
 }
 
-// The fake pool reserves slot 0 as its own null: `findSlot` returns it for NULL,
-// `freeSlot` refuses it, and every scan starts at 1, so it is never handed out.
-// That is this harness's sentinel and NOT c43's `C47_NULL`, which is 65535; the
-// two shared a name until M31-26. c43's value still lands in the NULL branch --
-// via the bounds clause, since 65535 >= MAX_FAKE_MEMORY_SLOTS.
+// This harness's own null slot, distinct from c43's C47_NULL (65535). The pool
+// reserves slot 0: findSlot returns it for NULL, freeSlot refuses it, and every
+// scan starts at 1, so it is never handed out. c43's value also reaches the NULL
+// branch below, through the bounds clause, since 65535 >= MAX_FAKE_MEMORY_SLOTS.
 #define FAKE_NULL_SLOT 0
 
 void *stackParityToPcMemPtr(uint16_t ptr) {

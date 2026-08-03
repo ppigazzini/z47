@@ -7,12 +7,12 @@ Prefer these exact surfaces over broad summaries or secondary writeups.
 
 Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
 Zig memory-safety reference set was reviewed against upstream Zig on that date.
-The test-oracle reference set was added and verified 2026-08-03 (REPORT-31
-M31-8): until then every reference here was about *writing* the program and none
-was about *knowing whether it is right*. It was extended from five sources to
-eight the same day (REPORT-31 M31-28) once executing the plan showed that the
-first five cover *what an oracle is* and not *what a test environment is*; the
-admission test that governs any further addition is at the end of that section.
+The test-oracle reference set was added and verified 2026-08-03: until then every
+reference here was about *writing* the program and none was about *knowing
+whether it is right*. It was extended from five sources to eight the same day,
+because the first five cover *what an oracle is* and not *what a test environment
+is*; the admission test that governs any further addition is at the end of that
+section.
 
 ## Reference Map
 
@@ -247,7 +247,7 @@ nothing:
   production, and the pattern's stated liability is that **the test then measures
   the Fake**. `build/tests/math_wrappers/` is a textbook instance: a hand-declared
   25-limb `real_t`, no decNumber linked, and `const39_3piOn4` equal to 2.25. That
-  liability was rediscovered the expensive way in REPORT-31 §12.4.
+  liability is why compiling more c43 into that lane does not strengthen it.
 - **Winters, Manshreck, Wright — *Software Engineering at Google*, O'Reilly,
   2020**, [ch. 13 "Test
   Doubles"](https://abseil.io/resources/swe-book/html/ch13.html): states the two
@@ -264,7 +264,7 @@ Secondary — why an ungated lane is worse than a missing one:
   a test's value is realised by the system that runs it continuously. Seven math
   differentials were broken at link time while the full local gate stayed green,
   and `distribution_parity` had stopped compiling entirely — both invisible
-  because neither was in a gate (REPORT-31 §12.5, M31-27). Hence the rule in
+  because neither was in a gate. Hence the rule in
   [70-tests-and-verification.md](70-tests-and-verification.md): **a parity lane
   that is in no gate is not a lane.**
 
@@ -328,8 +328,8 @@ separately.
 **Do not widen this set casually.** It is recorded here so nobody re-searches it,
 exactly as the Zig idiom sources are. This page used to say "five sources are
 enough", which was right about the discipline and wrong about the number: three
-more were admitted in REPORT-31 Annex E because three decisions had been made
-without them. The number was never the rule, so here is the rule.
+more were admitted because three decisions had been made without them. The number
+was never the rule, so here is the rule.
 
 **A source is admitted only if BOTH hold:**
 
@@ -344,7 +344,6 @@ survey carries it, and z47 needs the technique rather than its history), and
 *Software Engineering at Google* ch. 11 (its small/medium/large size taxonomy is
 real, and z47 does not use it). Argue against the test before adding to the list.
 
-The full argument these eight back is in `__DEV/reports/REPORT-31-C-ORACLE.md`.
 
 ## Zig Idiom And Style Guidance (secondary)
 

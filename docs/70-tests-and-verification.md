@@ -8,9 +8,8 @@ page assumes the build entrypoints and ownership split are already clear.
 
 Audit basis: 2026-08-03, upstream pin `b9e1cc0c1`, Zig `0.16.0` stable. The
 per-owner parity section was re-audited on that date, when the last
-hand-transliterated oracle FILE was converted (REPORT-31 M31-14). Two lanes still
-carry hand-written reference FUNCTIONS inside compiled oracles — see the rule
-below and REPORT-31 Annex C.
+hand-transliterated oracle FILE was converted. One lane still carries
+hand-written reference FUNCTIONS inside a compiled oracle — see the rule below.
 
 ## The One-Command Local Gate
 
@@ -164,18 +163,14 @@ Concretely, when writing or touching an oracle:
   built artifact** (`.zig-cache/o/*/<exe>`), not off `zig build <lane>` — a Run step
   can report success from cache while the new binary fails.
 
-**A reference is a FUNCTION, not a file.** All five hand-transliterated oracle
-FILES were converted (REPORT-31 M31-2, M31-3, M31-10, M31-12, M31-13) and the
-`frozen` list in `.github/project/oracle-provenance-manifest.json` is EMPTY — but
-that is not the same claim. Hand-written reference bodies still live inside two
-files that *also* `#include` c43 source, which is exactly why neither was ever
-eligible for that list: `math_wrappers_oracle.c` (38 of them, reached by 297 of
-the lane's 726 oracle calls) and `stack_state_oracle.c` (10). REPORT-31 Annex C
-measures it and §11 closes it. When you touch either lane, do not add a
-thirty-ninth: `check-oracle-provenance.py` counts them and the ratchet only goes
-down. It is **34** now, all in `math_wrappers_oracle.c` — `stack_state_oracle.c`
-reached zero when its ten `registers.c` mirrors moved to the full-core lane where
-c43's own `registers.c` is compiled.
+**A reference is a FUNCTION, not a file.** Every hand-transliterated oracle FILE
+is converted and the `frozen` list in
+`.github/project/oracle-provenance-manifest.json` is EMPTY — but that is not the
+same claim. Hand-written reference bodies can live inside a file that *also*
+`#include`s c43 source, which is exactly why such a file is never eligible for
+that list. `math_wrappers_oracle.c` still carries **34** of them. When you touch
+that lane, do not add a thirty-fifth: `check-oracle-provenance.py` counts them
+and the ratchet only goes down.
 
 `math_wrappers` is a special case worth knowing before you touch it: its `real_t`
 is a hand-declared struct, decNumber is not linked, and its `const39_*` are
@@ -196,8 +191,7 @@ nothing, which is the same failure mode as a hand-written oracle one level up.
 
 This is not theoretical. Both known instances were found by accident, not by a
 gate: the seven focused math differentials were broken at LINK time while the full
-local gate stayed green (found only because REPORT-31 M31-22 renamed the files, and
-renaming meant building them), and `distribution_parity` had stopped COMPILING
+local gate stayed green, and `distribution_parity` had stopped COMPILING
 entirely at HEAD — its module was rooted one directory too deep for its own
 imports, and it had never been given the `abi` module, a second failure the first
 one masked. Both are in the battery now.
@@ -211,8 +205,6 @@ re-adding an entry is a written admission that a lane cannot see c43 move, and i
 re-runs the one *generated* oracle's extractor (`charstring_diff`) and demands
 byte-identical output. A compiled-from-c43 oracle needs no entry at all, because
 `check-imported-tree-pin.py` already holds the source it includes to the pin.
-`__DEV/reports/REPORT-31-C-ORACLE.md` has the full argument and the per-oracle
-history.
 
 Three of the five conversions took the FULL-CORE shape rather than a linked unit
 oracle -- `calc_state`, `register_metadata`, `keyboard_state`. The rule for

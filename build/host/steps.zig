@@ -1247,6 +1247,45 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const math_command_wrappers_parity_step = b.step("math_command_wrappers_parity", "Run the math-command wrapper parity suite");
     math_command_wrappers_parity_step.dependOn(&run_math_command_wrappers_parity.step);
 
+    // The math-wrapper differential: c43's own thirteen mathematics/*.c compiled
+    // beside the Zig owners that replaced them, on real decNumber, the real
+    // register file and the real constant blob, comparing state after each call.
+    //
+    // This is a FULL CORE and not a unit harness because the wrappers cannot be
+    // compared in isolation from the arithmetic they dispatch into. The
+    // math_command_wrappers unit lane runs on a hand-declared real_t with a fake
+    // runtime, so it can compare which runtime functions a wrapper CALLED but not
+    // what it computed; compiling c43's real files into that lane makes them
+    // disagree with the fake leaves, not with the owner. Both lanes are live: the
+    // unit one covers dispatch and error paths, this one covers results.
+    const math_wrappers_full_core_harness = host_builders.addFullCoreHarness(
+        b,
+        context.host_target,
+        "mathWrappersFullCoreParity",
+        "build/tests/math_wrappers_full_core/math_wrappers_full_core_parity_harness.c",
+        optimize,
+        context.core_sources,
+        context.test_sources,
+        context.common,
+        context.version_headers_dir,
+        context.generated,
+        context.shortint_objects,
+        context.keyboard_state_objects,
+        context.stack_state_objects,
+        null,
+        false,
+    );
+    math_wrappers_full_core_harness.root_module.addCSourceFile(.{
+        .file = b.path("build/tests/math_wrappers_full_core/math_wrappers_full_core_oracle.c"),
+        // build_common.sanitizerCFlags's `.off` set, as every other imported-C
+        // source in this harness gets. See the calc_state lane for the reasoning.
+        .flags = &.{ "-Wno-date-time", "-fno-sanitize=undefined" },
+    });
+    const run_math_wrappers_full_core = b.addRunArtifact(math_wrappers_full_core_harness);
+    run_math_wrappers_full_core.setCwd(upstreamCwd(b));
+    const math_wrappers_full_core_step = b.step("math_wrappers_full_core_parity", "Run the math-wrapper differential against c43's own mathematics/*.c");
+    math_wrappers_full_core_step.dependOn(&run_math_wrappers_full_core.step);
+
     const math_ln_complex_oracle = addMathLnComplexOracle(b, context, optimize);
     const run_math_ln_complex_oracle = b.addRunArtifact(math_ln_complex_oracle);
     run_math_ln_complex_oracle.setCwd(b.path("."));
@@ -1313,9 +1352,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         .optimize = optimize,
     });
     // The owner tree reaches the shared C layouts as `@import("abi")`, so the
-    // module has to register it the way every other oracle here does. This was a
-    // second, latent failure: the module never had it, and the lane died on the
-    // module-path escapes first, so it was never reached (REPORT-31 M31-27).
+    // module has to register it the way every other oracle here does.
     const distribution_owners_abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = context.host_target,

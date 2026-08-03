@@ -201,22 +201,18 @@ enum {
 #define REAL_SIZE_IN_BYTES(digits) ((uint32_t)sizeof(real_t))
 #define REAL_SIZE_IN_BLOCKS(digits) TO_BLOCKS(REAL_SIZE_IN_BYTES(digits))
 
-// `C47_NULL` used to be defined here as 0, against c43's 65535 (defines.h:2262),
-// because it was carrying TWO unrelated meanings under one name: c43's null
-// memory pointer, and this harness's fake-pool sentinel. Only the second was ever
-// used -- the pool reserves SLOT 0 and hands out 1..MAX_FAKE_MEMORY_SLOTS-1 -- so
-// the sentinel took its own name (FAKE_NULL_SLOT, in the fake runtime) and the
-// copy of c43's constant went away unused rather than being corrected. If a
-// resync brings a `stack.c` that needs it, the lane will fail to compile and it
-// gets re-added from c43, which is the right way round (REPORT-31 M31-26).
-// Upstream's own value for a PC build (defines.h:555). It used to be 0 here,
-// which configured c43's diagnostic branches OUT of the compiled oracle -- so an
-// upstream edit inside one of them was silence rather than a build failure. Same
-// argument M31-2 took for the flags lane (REPORT-31 M31-23).
+// C47_NULL is deliberately absent. c43 defines it (defines.h:2262) but nothing
+// this lane compiles references it: the only null this harness needs is its own
+// fake-pool sentinel, which is FAKE_NULL_SLOT in the fake runtime. A resync that
+// brings a `stack.c` needing C47_NULL fails to compile here, and it is then
+// declared from c43's value rather than guessed.
+//
+// Upstream's own value for a PC build (defines.h:555). Setting it to 0 would
+// configure c43's diagnostic branches out of the compiled oracle, making an
+// upstream edit inside one of them silence rather than a build failure.
 #define EXTRA_INFO_ON_CALC_ERROR 1
 #define min(a, b) ((a) < (b) ? (a) : (b))
-// c43's own value (defines.h:2481). It was 256, halved to keep a static buffer
-// small, which is not a saving worth a value that disagrees with c43 (M31-26).
+// c43's own value (defines.h:2481). Sizes errorMessage__stg in the fake runtime.
 #define ERROR_MESSAGE_LENGTH 512
 
 uint16_t stackParityToC47MemPtr(const void *ptr);
@@ -235,19 +231,15 @@ extern namedVariableHeader_t *allNamedVariables;
 extern registerHeader_t *currentLocalRegisters;
 extern const reservedVariableHeader_t allReservedVariables[];
 // defines.h:1472 spells it exactly this way -- an alias for REGISTER_Z, not a
-// literal, so it stays correct if c43 renumbers the register (REPORT-31 M31-23).
+// literal, so it stays correct if c43 renumbers the register.
 #define ERR_REGISTER_LINE REGISTER_Z
 
 extern char *errorMessage;
-// `commonBugScreenMessages` used to be declared here as [2][ERROR_MESSAGE_LENGTH]
-// with a two-member `bugMsg*` enum renumbered to 0 and 1 to index it. c43's array
-// is [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE] = [10][100]
-// and the two indices are 2 and 6, so the harness disagreed with c43 on four
-// values at once. It also disagreed for no reason: this lane compiles only
-// `stack.c`, which references neither the array nor any `bugMsg*` name. They were
-// left behind when M31-20 moved the ten `registers.c` mirrors to the full-core
-// lane. Deleted rather than corrected -- a dead copy is not worth a right one
-// (REPORT-31 M31-26).
+// commonBugScreenMessages and the bugMsg* indices are deliberately absent. This
+// lane compiles only `stack.c`, which references neither. Declaring them means
+// copying c43's array dimensions (NUMBER_OF_BUG_SCREEN_MESSAGES by
+// SIZE_OF_EACH_BUG_SCREEN_MESSAGE) and its index values, and a copy no compiled
+// source reads is four constants that can silently disagree with c43.
 extern uint16_t numberOfNamedVariables;
 extern uint8_t currentNumberOfLocalRegisters;
 
