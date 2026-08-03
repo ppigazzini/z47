@@ -1,15 +1,11 @@
 {
   "_why": "Hand-written parity REFERENCE bodies -- an oracle_<X> function definition where X is a function c43 HAS, declared in a header or defined in a .c -- living inside files that also #include c43 source, which is why neither the frozen nor the generated list could ever see them. The ratchet only goes down; the endpoint is an empty object. The counts here are over c43's FULL vocabulary. They were zero over a header-only one, which cannot see a static -- and every entry below mirrors a static, because a static is the function a harness cannot link to and so is the one somebody transliterates.",
   "counts": {
-    "build/tests/math_wrappers/math_wrappers_oracle.c": 2,
-    "build/tests/math_wrappers/math_wrappers_transform_oracle.c": 1
+    "build/tests/math_wrappers/math_wrappers_oracle.c": 2
   },
   "mirrors": {
     "build/tests/math_wrappers/math_wrappers_oracle.c": [
       "oracle_fnCheckReal",
-      "oracle_fnToRect"
-    ],
-    "build/tests/math_wrappers/math_wrappers_transform_oracle.c": [
       "oracle_fnToRect"
     ]
   }
