@@ -154,7 +154,14 @@ fn tryToRect2Real34Pair() bool {
     loadToPolarNumericInput(radius_reg, radius_type, &radius_value);
     loadToPolarNumericInput(angle_reg, angle_type, &angle_value);
 
-    if (angle_type == runtime.dtReal34 and angle_mode == runtime.amNone) {
+    // A long integer register's tag holds its SIGN, not an angular mode --
+    // LI_NEGATIVE is 1 and LI_POSITIVE is 2, which collide with amGrad and
+    // amDegree. toRect.c reads currentAngularMode for a long-integer angle and the
+    // register's own tag only for a real34, so the sign is never mistaken for a
+    // mode. tryToRectReal34Pair below already does this; this one did not.
+    if (angle_type == runtime.dtLongInteger) {
+        angle_mode = runtime.currentAngularMode;
+    } else if (angle_mode == runtime.amNone) {
         angle_mode = runtime.currentAngularMode;
     }
 
