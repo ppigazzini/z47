@@ -43,12 +43,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import signal
 import subprocess
 import sys
 from pathlib import Path
 
 MANIFEST = ".github/project/oracle-negative-control.json"
+COVERAGE_BASELINE = ".github/project/oracle-negative-control-coverage.json"
 
 # Every file this gate has edited and not yet put back. A `finally` is not enough
 # on its own: it runs on an exception, but NOT when the process is killed by a
@@ -72,6 +74,29 @@ def _on_signal(signum, _frame):  # pragma: no cover - signal path
     print(f"\ncheck-oracle-negative-control: signal {signum}; restoring mutated files")
     _restore_all()
     sys.exit(128 + signum)
+
+
+def declared_lane_steps(repo: Path) -> list[str]:
+    """The build's own lane list, the same source check-parity-lanes-gated.py uses."""
+    completed = subprocess.run(["zig", "build", "--help"], cwd=repo, capture_output=True, text=True)
+    if completed.returncode != 0:
+        return []
+    return sorted(
+        set(
+            re.findall(
+                r"^\s{2}([\w-]+(?:_parity|_oracle|_diff|_suite|-parity))\s", completed.stdout, re.M
+            )
+        )
+    )
+
+
+def covered_lane_count(entries: list[dict]) -> int:
+    return len({entry["step"] for entry in entries})
+
+
+def uncovered_lanes(repo: Path, entries: list[dict]) -> list[str]:
+    covered = {entry["step"] for entry in entries}
+    return [lane for lane in declared_lane_steps(repo) if lane not in covered]
 
 
 def run_lane(repo: Path, step: str) -> int:
@@ -111,6 +136,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--only", default=None, help="run a single lane by name")
+    ap.add_argument(
+        "--bump-coverage", action="store_true", help="re-record which lanes have no mutant"
+    )
     ap.add_argument("--self-test", action="store_true", help="prove this gate fires")
     args = ap.parse_args()
     repo = Path(args.repo_root).resolve()
@@ -134,11 +162,20 @@ def main() -> int:
     survivors: list[str] = []
     killed = 0
     recorded_survivors = 0
+    documented = 0
 
     try:
         for entry in entries:
             path = repo / entry["file"]
             name = f"{entry['lane']}: {entry['what']}"
+
+            # An entry may carry no mutation at all: some lanes have no single
+            # owner behaviour to change, and saying so is better than a placeholder
+            # that reports SURVIVED for a mutation that never happened.
+            if entry.get("no_mutation"):
+                documented += 1
+                print(f"  documented {name}  [{entry['no_mutation'][:70]}...]")
+                continue
 
             if not path.is_file():
                 problems.append(f"{name}: {entry['file']} does not exist")
@@ -172,8 +209,55 @@ def main() -> int:
 
     print(
         f"check-oracle-negative-control: {killed} mutant(s) killed,"
-        f" {recorded_survivors} recorded survivor(s)"
+        f" {recorded_survivors} recorded survivor(s),"
+        f" {documented} lane(s) documented as having no single behaviour to mutate"
     )
+
+    # A lane with no mutant cannot produce a finding. Being RUN is not being proven
+    # to detect anything, so the lanes still missing one are counted and ratcheted
+    # rather than left silent -- a gate that reports only what it checked reads as
+    # a clean bill for what it did not.
+    if not args.only:
+        uncovered = uncovered_lanes(repo, entries)
+        coverage_path = repo / COVERAGE_BASELINE
+        if args.bump_coverage:
+            coverage_path.write_text(
+                json.dumps(
+                    {
+                        "_why": (
+                            "Parity lanes with no mutant in oracle-negative-control.json."
+                            " They run, but nothing proves they would fail if the owner were"
+                            " wrong. The count may FALL and may not rise; the endpoint is an"
+                            " empty list."
+                        ),
+                        "lanes_without_a_mutant": uncovered,
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            print(
+                f"check-oracle-negative-control: recorded {len(uncovered)} lane(s) with no mutant"
+            )
+            return 0
+        recorded_uncovered = []
+        if coverage_path.is_file():
+            recorded_uncovered = json.loads(coverage_path.read_text(encoding="utf-8")).get(
+                "lanes_without_a_mutant", []
+            )
+        print(
+            f"  {len(uncovered)} lane(s) still have NO mutant, of {len(uncovered) + covered_lane_count(entries)}:"
+        )
+        for lane in uncovered:
+            print(f"    {lane}")
+        new_uncovered = sorted(set(uncovered) - set(recorded_uncovered))
+        if new_uncovered:
+            problems.append(
+                "lane(s) with no mutant that were not on the recorded list:\n"
+                f"    {', '.join(new_uncovered)}\n"
+                "    A new lane needs a mutant, or this ratchet is meaningless."
+            )
 
     if args.self_test:
         # The gate's own negative control: a mutation the lane cannot possibly
