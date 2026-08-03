@@ -1,0 +1,19 @@
+{
+  "_why": "Parity lanes with no mutant in oracle-negative-control.json. They run, but nothing proves they would fail if the owner were wrong. The count may FALL and may not rise; the endpoint is an empty list.",
+  "lanes_without_a_mutant": [
+    "charstring_diff",
+    "constants_parity",
+    "distribution_parity",
+    "eigen_parity",
+    "keyboard_entry_parity",
+    "keyboard_state_parity",
+    "math_atan2_oracle",
+    "math_atan_oracle",
+    "math_circular_trig_oracle",
+    "math_command_wrappers_parity",
+    "math_random_parity",
+    "math_real_rectangular_to_polar_oracle",
+    "math_real_trig_primitives_oracle",
+    "program_serialization_parity"
+  ]
+}

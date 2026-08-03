@@ -56,6 +56,83 @@
       "find": "            _ = strcpy(aim(), \"RXFN\");",
       "replace": "            _ = strcpy(aim(), \"RXFM\");",
       "why": "The .sav/.d47 writer's section tag for full-precision XFN registers, reached through the data-file export the lane now drives."
+    },
+    {
+      "lane": "flags",
+      "step": "flags_parity",
+      "what": "a user flag resolves to the wrong bank word",
+      "file": "src/core/state/flags/flag_bits.zig",
+      "find": "        return .{ .global = .{ .index = @intCast(flag / 16), .shift = @intCast(flag % 16) } };",
+      "replace": "        return .{ .global = .{ .index = @intCast(flag / 8), .shift = @intCast(flag % 16) } };",
+      "why": "Flag-to-bit resolution is the whole subject of this lane."
+    },
+    {
+      "lane": "rotate_bits",
+      "step": "rotate_bits_parity",
+      "what": "the shift result skips the word-size mask",
+      "file": "src/core/numeric/integer/rotate_bits.zig",
+      "find": "    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, word & runtime.shortIntegerMask);",
+      "replace": "    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, word);",
+      "why": "Every shift result is masked to the word size; dropping it leaks bits above it."
+    },
+    {
+      "lane": "logical_boolean_ops",
+      "step": "logical_boolean_ops_suite",
+      "what": "NOT stops masking to the word size",
+      "file": "src/core/numeric/integer/logical_boolean_ops.zig",
+      "find": "    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = ~runtime.registerShortIntegerPtr(runtime.REGISTER_X).* & runtime.shortIntegerMask;",
+      "replace": "    runtime.registerShortIntegerPtr(runtime.REGISTER_X).* = ~runtime.registerShortIntegerPtr(runtime.REGISTER_X).*;",
+      "why": "NOT is the only one of the seven logical ops c43's corpus exercises at a word size below 64 (not.txt has WS=13 as well as WS=64). At WS=64 the mask is all-ones and dropping it is an EQUIVALENT mutant -- which is what the first attempt here picked, on NAND, and why it survived. The corpus is the oracle and is never extended, so NOT is where this behaviour is reachable."
+    },
+    {
+      "lane": "tone",
+      "step": "tone_parity",
+      "what": "a tone plays the wrong frequency",
+      "file": "src/shell/audio/tone.zig",
+      "find": "const frequency = [10]u32{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 440000, 554365 };",
+      "replace": "const frequency = [10]u32{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 441000, 554365 };",
+      "why": "The frequency table is what this lane compares."
+    },
+    {
+      "lane": "memory",
+      "step": "memory_parity",
+      "what": "an allocation stops updating the used-block count",
+      "file": "src/core/memory/memory_c47_alloc.zig",
+      "find": "        runtime.c47MemInBlocks +%= sizeInBlocks;",
+      "replace": "        runtime.c47MemInBlocks +%= sizeInBlocks + 1;",
+      "why": "The pool's used-block accounting is what this lane diffs against c43's."
+    },
+    {
+      "lane": "logical_shortint",
+      "step": "logical_shortint_parity",
+      "what": "MASKL accepts a bit count wider than the word size",
+      "file": "src/core/numeric/integer/bit_manipulation.zig",
+      "find": "pub export fn fnMaskl(number_of_bits: u16) callconv(.c) void {\n    if (number_of_bits > runtime.shortIntegerWordSize) {",
+      "replace": "pub export fn fnMaskl(number_of_bits: u16) callconv(.c) void {\n    if (number_of_bits > runtime.shortIntegerWordSize + 1) {",
+      "why": "The word-size bound on MASKL. The first attempt here mutated rotate_bits, which this lane does not drive at all -- it drives the bit-manipulation commands (Bc/Bs/Cb/CountBits/Fb/Maskl/Maskr/Sb)."
+    },
+    {
+      "lane": "math_ln_complex",
+      "step": "math_ln_complex_oracle",
+      "what": "ln(0) stops returning -infinity",
+      "file": "src/core/numeric/ln_complex.zig",
+      "find": "    if (runtime.realIsZero(real) and runtime.realIsZero(imag)) {",
+      "replace": "    if (runtime.realIsZero(real) and !runtime.realIsZero(imag)) {",
+      "why": "The zero-argument branch of the complex logarithm, which this oracle drives directly."
+    },
+    {
+      "lane": "abi_layout",
+      "step": "abi-layout-parity",
+      "what": "no single owner behaviour to mutate",
+      "file": "src/abi/primitives.zig",
+      "no_mutation": "This lane compares STRUCT LAYOUTS against translate-c'd upstream headers, so the only mutation it can detect is a layout change -- and any layout change breaks every other lane first, which makes it a mutation of the whole tree rather than of this one. Its negative control is that it caught real layout drift when it was written. Recorded rather than forced."
+    },
+    {
+      "lane": "format",
+      "step": "format_parity",
+      "what": "no single owner behaviour to mutate",
+      "file": "src/abi/sci_format.zig",
+      "no_mutation": "This lane proves every migrated sprintf->std.fmt translation is byte-identical to libc's. A mutation of the Zig side is exactly what it is built to catch, so it is already its own negative control: the lane exists because the translation could differ. A separate mutant would restate the lane."
     }
   ]
 }
