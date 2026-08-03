@@ -57,8 +57,20 @@ pub const ERROR_INVALID_DISTRIBUTION_PARAM: u8 = 16;
 pub const ERROR_NO_ROOT_FOUND: u8 = 20;
 
 const abi = @import("abi"); // shared ABI bindings
-const frontier_real_type = @import("../real_type.zig");
-const frontier_register_value_conversions = @import("../register_value_conversions.zig");
+// The five C entry points below used to be reached by importing ../real_type.zig
+// and ../register_value_conversions.zig. All five are `pub extern fn` there --
+// C-ABI declarations carrying no code -- so those imports bought nothing but
+// dragged both files' whole closure in with them, and register_value_conversions
+// reaches the display tree. That made the distributions unbuildable in any module
+// not rooted at src/, which is why `distribution_parity` failed to compile at HEAD
+// (it roots at src/shell/distributions/). Declared here instead: same symbols,
+// same linkage, resolved at link time by whatever provides them -- the product's
+// C core, or the harness's fake runtime (REPORT-31 M31-27).
+extern fn realSetZero(r: *real_t) callconv(.c) void;
+extern fn realSetOne(r: *real_t) callconv(.c) void;
+extern fn realSetNaN(r: *real_t) callconv(.c) void;
+extern fn realSetPlusInfinity(r: *real_t) callconv(.c) void;
+extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, realContext: *realContext_t) callconv(.c) void;
 pub const real_t = abi.Real;
 
 pub const realContext_t = abi.RealContext;
@@ -199,16 +211,16 @@ pub inline fn powerReal(y: *const real_t, x: *const real_t, result: *real_t, rea
     PowerReal(y, x, result, real_context);
 }
 pub inline fn setZero(value: *real_t) void {
-    frontier_real_type.realSetZero(value);
+    realSetZero(value);
 }
 pub inline fn setOne(value: *real_t) void {
-    frontier_real_type.realSetOne(value);
+    realSetOne(value);
 }
 pub inline fn setPlusInfinity(value: *real_t) void {
-    frontier_real_type.realSetPlusInfinity(value);
+    realSetPlusInfinity(value);
 }
 pub inline fn setNaN(value: *real_t) void {
-    frontier_real_type.realSetNaN(value);
+    realSetNaN(value);
 }
 
 pub inline fn realIsSpecial(value: *const real_t) bool {
@@ -245,7 +257,7 @@ pub inline fn isAnInteger(value: *const real_t) bool {
     return realIsAnInteger(value);
 }
 pub inline fn toIntegralValue(source: *const real_t, destination: *real_t, mode: c_int, real_context: *realContext_t) void {
-    frontier_register_value_conversions.realToIntegralValue(source, destination, mode, real_context);
+    realToIntegralValue(source, destination, mode, real_context);
 }
 pub inline fn linearInterpolate(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void {
     linpol(a, b, p, res);

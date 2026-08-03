@@ -53,6 +53,13 @@ zig build math_atan2_oracle
 zig build math_atan_oracle
 zig build math_real_trig_primitives_oracle
 zig build math_circular_trig_oracle
+# The distribution differential, found the same way and for the same reason: it
+# was in no gate, and had stopped COMPILING at HEAD. Its module was rooted at
+# src/shell/distributions/, which distribution_runtime.zig's imports escaped, and
+# it had never been given the `abi` module -- a second failure the first one
+# masked. Its expected values are derived from each distribution's closed form,
+# so it is a specified oracle and belongs here (REPORT-31 M31-27).
+zig build distribution_parity
 # Format-equivalence oracle (M24): every migrated sprintf->std.fmt translation
 # must stay byte-identical to libc.
 zig build format_parity
