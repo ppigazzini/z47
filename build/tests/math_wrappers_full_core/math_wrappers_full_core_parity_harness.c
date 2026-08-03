@@ -87,6 +87,10 @@ void oracle_fnLog10(uint16_t unusedButMandatoryParameter);
 void oracle_fnLog2(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
 void oracle_fnExpM1(uint16_t unusedButMandatoryParameter);
+void oracle_fnAdd(uint16_t unusedButMandatoryParameter);
+void oracle_fnSubtract(uint16_t unusedButMandatoryParameter);
+void oracle_fnMultiply(uint16_t unusedButMandatoryParameter);
+void oracle_fnDivide(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDiv(uint16_t unusedButMandatoryParameter);
 void oracle_fnIDivR(uint16_t unusedButMandatoryParameter);
 void oracle_fnXAlmostEqual(uint16_t regist);
@@ -139,6 +143,10 @@ extern void (*const oracle_idiv[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF
 extern void (*const oracle_idivr[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 extern void (*const oracle_arctan2[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 extern void (*const oracle_Round[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const oracle_addition[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const oracle_subtraction[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const oracle_multiplication[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const oracle_division[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 extern void (*const oracle_unitVector[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 
 // The owner-side tables. c43 does not declare these in c47.h -- they are
@@ -148,6 +156,10 @@ extern void (*const oracle_unitVector[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(vo
 extern void (*const idiv[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 extern void (*const idivr[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 extern void (*const Round[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const addition[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const subtraction[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const multiplication[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
+extern void (*const division[NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS])(void);
 
 static int failures = 0;
 
@@ -926,6 +938,13 @@ static const pair_t PAIRS[] = {
 };
 
 static const predicate_t BINARY[] = {
+  // The four arithmetic dispatchers -- the largest type-dispatch tables in the
+  // tree, and the wrappers every other one leans on.
+  { "fnAdd",                 fnAdd,           oracle_fnAdd,           0            },
+  { "fnSubtract",            fnSubtract,      oracle_fnSubtract,      0            },
+  { "fnMultiply",            fnMultiply,      oracle_fnMultiply,      0            },
+  { "fnDivide",              fnDivide,        oracle_fnDivide,        0            },
+
   { "fnIDiv",                 fnIDiv,          oracle_fnIDiv,          0            },
   { "fnIDivR",                fnIDivR,         oracle_fnIDivR,         0            },
 
@@ -1016,6 +1035,22 @@ int main(void) {
   }
   if((const void *)oracle_idiv == (const void *)idiv) {
     printf("math-wrappers full-core: oracle_idiv IS idiv -- dispatch-table rename did not take\n");
+    return 1;
+  }
+  if((const void *)oracle_addition == (const void *)addition) {
+    printf("math-wrappers full-core: oracle_addition IS addition -- dispatch-table rename did not take\n");
+    return 1;
+  }
+  if((const void *)oracle_subtraction == (const void *)subtraction) {
+    printf("math-wrappers full-core: oracle_subtraction IS subtraction -- dispatch-table rename did not take\n");
+    return 1;
+  }
+  if((const void *)oracle_multiplication == (const void *)multiplication) {
+    printf("math-wrappers full-core: oracle_multiplication IS multiplication -- dispatch-table rename did not take\n");
+    return 1;
+  }
+  if((const void *)oracle_division == (const void *)division) {
+    printf("math-wrappers full-core: oracle_division IS division -- dispatch-table rename did not take\n");
     return 1;
   }
   if((const void *)oracle_idivr == (const void *)idivr) {
