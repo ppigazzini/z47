@@ -182,11 +182,11 @@
     {
       "lane": "distribution",
       "step": "distribution_parity",
-      "what": "uniformL answers one below the low bound",
+      "what": "uniformP answers zero where a zero-width range gives one",
       "file": "src/shell/distributions/uniform.zig",
-      "find": "        if (cmp < 0) {\n            res = dr.const0();",
-      "replace": "        if (cmp < 0) {\n            res = dr.const1();",
-      "why": "The lane drives uniformL-below explicitly. The earlier mutant (a zero-width range in uniformP) SURVIVED because every uniform case seeds a non-degenerate low/high pair -- a real gap, not an equivalent mutant, and the degenerate range is still unchecked."
+      "find": "            if (dr.realIsZero(&range)) {\n                res = dr.const1();",
+      "replace": "            if (dr.realIsZero(&range)) {\n                res = dr.const0();",
+      "why": "The degenerate uniform (low == high) is a boundary c43 answers explicitly. This mutant SURVIVED until uniformP-degenerate existed, because every other uniform case seeds a non-degenerate low/high pair."
     },
     {
       "lane": "eigen",
@@ -277,8 +277,7 @@
       "file": "src/core/program/program_serialization.zig",
       "find": "    runtime.temporaryInformation = runtime.TI_NO_INFO; // only a completed load sets TI_PROGRAM_LOADED, so a refusal cannot leave the previous load's value standing.",
       "replace": "",
-      "why": "The clear is the port's own fix for a stale-status defect, and the lane cannot see it removed. Recorded rather than widened; the killing mutant for this lane is the load bound below.",
-      "expected_survivor": "A GAP, not an equivalence. temporaryInformation IS in the compared snapshot, but the fixture resets it to 0 before every case, so a refused load leaves 0 whether or not the owner clears it. Reaching this needs a case that seeds TI_PROGRAM_LOADED and then refuses -- the same shape as the SPCRES precondition in the full-core lane."
+      "why": "The clear is the port's own fix for a stale-status defect. It was unobservable until the fixture stopped zeroing temporaryInformation before every case: with TI_PROGRAM_LOADED seeded and the load refused, a missing clear leaves the previous load's status standing."
     },
     {
       "lane": "math_real_trig_primitives",

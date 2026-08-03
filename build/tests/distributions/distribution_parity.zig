@@ -138,6 +138,11 @@ pub fn main() void {
     caseU("uniformP-oob", &uniform.uniformP, 0, "10", "2", "7", "0"); // x above high -> 0
     caseU("uniformL-below", &uniform.uniformL, 0, "0", "2", "7", "0"); // x below low -> 0
     caseU("uniformL-above", &uniform.uniformL, 0, "10", "2", "7", "1"); // x above high -> 1
+    // The DEGENERATE uniform: low == high, so range is zero. Every case above
+    // seeds a non-degenerate pair, which left uniform.c's zero-range branches
+    // unreachable -- a mutant that answered 0 where the density is 1 survived.
+    caseU("uniformP-degenerate", &uniform.uniformP, 0, "5", "5", "5", "1");
+    caseU("uniformL-degenerate", &uniform.uniformL, 0, "5", "5", "5", "1");
     // Discrete Uniform on integers [1, 6] (discrete = 1).
     caseU("uniformP-d", &uniform.uniformP, 1, "3", "1", "6", "0.166666666666666666666666666666666667");
     caseU("uniformL-d", &uniform.uniformL, 1, "3", "1", "6", "0.5");
