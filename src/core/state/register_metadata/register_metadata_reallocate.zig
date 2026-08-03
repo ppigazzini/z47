@@ -5,14 +5,6 @@ const memory_owned = @import("../runtime/register_memory.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 
-fn isSyntheticReservedCopySource(reg: runtime.calcRegister_t) bool {
-    return reg == runtime.RESERVED_VARIABLE_ADM or
-        reg == runtime.RESERVED_VARIABLE_DENMAX or
-        reg == runtime.RESERVED_VARIABLE_ISM or
-        reg == runtime.RESERVED_VARIABLE_REALDF or
-        reg == runtime.RESERVED_VARIABLE_NDEC;
-}
-
 fn isReservedRegister(reg: runtime.calcRegister_t) bool {
     return reserved_register.isReservedRegister(reg, runtime.LAST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE);
 }
@@ -35,10 +27,11 @@ fn needsReallocate(reg: runtime.calcRegister_t, data_type: u32, payload_size_in_
 }
 
 pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t, dest_register: runtime.calcRegister_t) void {
-    if (isSyntheticReservedCopySource(source_register)) {
-        return;
-    }
-
+    // No early return for 2026-2030 here: c43's copySourceRegisterToDestRegister
+    // has none. Those five slots were z47's stale ADM/DENMAX/ISM/REALDF/NDEC and
+    // are c43's RESERVED_VARIABLE_SPARE placeholders, which normalizeLettered-
+    // Reserved now maps onto the global block exactly as c43 does (REPORT-31
+    // M31-11).
     const normalized_source = normalizeLetteredReservedRegister(source_register);
     const normalized_dest = normalizeLetteredReservedRegister(dest_register);
     const source_type = descriptor_owned.getRegisterDataType(normalized_source);

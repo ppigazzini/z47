@@ -205,7 +205,7 @@ realType	core/state/value/real_special_values;core/state/value/register_conversi
 recall	shell/recall	port	symbol
 registerValueConversions	core/state/value/register_conversions;shell/register_value_conversions	port	symbol
 registers	core/state/register_metadata;core/state/register_metadata/register_metadata_descriptor;core/state/register_metadata/register_metadata_local_registers;core/state/register_metadata/register_metadata_payload;core/state/register_metadata/register_metadata_reallocate;core/state/register_metadata/register_metadata_variables;core/state/register_metadata/registers_compat_exports;core/state/runtime/register_memory;core/state/stack;core/state/stack/stack_clear;core/state/stack/stack_mutation;core/state/stack/stack_register_commands;core/state/stack/stack_result	port	symbol
-saveRestoreBackup	core/persist/calc_state_backup;core/persist/calc_state_io	port	symbol
+saveRestoreBackup	core/persist/calc_state_backup	port	symbol
 saveRestoreCalcState	abi/complex_text;core/persist/calc_state;core/persist/calc_state_entrypoints;core/persist/calc_state_io_flow;core/persist/calc_state_load;core/persist/calc_state_register_codec;core/persist/calc_state_restore;core/persist/calc_state_save;core/persist/calc_state_text;shell/matrix_editor/matrix_lifecycle	port	symbol
 saveRestorePrograms	core/program/program_serialization	port	symbol
 screen	abi/host;core/input/keyboard_state_runtime;shell/display/screen;shell/display/screen_snap	port	symbol

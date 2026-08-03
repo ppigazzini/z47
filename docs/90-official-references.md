@@ -7,6 +7,9 @@ Prefer these exact surfaces over broad summaries or secondary writeups.
 
 Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
 Zig memory-safety reference set was reviewed against upstream Zig on that date.
+The test-oracle reference set was added and verified 2026-08-03 (REPORT-31
+M31-8): until then every reference here was about *writing* the program and none
+was about *knowing whether it is right*.
 
 ## Reference Map
 
@@ -16,6 +19,7 @@ flowchart TD
   B[Upstream C47 project]
   C[Zig toolchain and build system]
   G[Zig memory safety]
+  H[Test oracles and differential testing]
   D[Retained dependencies]
   E[CI and packaging]
   F[Repo-local audited files]
@@ -23,6 +27,7 @@ flowchart TD
   A --> B
   A --> C
   C --> G
+  A --> H
   A --> D
   A --> E
   A --> F
@@ -163,6 +168,111 @@ What Zig does not give you:
   decNumber, GTK and the DMCP SDK), and the estimated 1-6x overhead is priced for
   a server, not a calculator. Track it for the host test lane only, and do not
   let a roadmap depend on it.
+
+## Test Oracle And Differential-Testing References
+
+Verified 2026-08-03. These are the external basis for the rule in
+[70-tests-and-verification.md](70-tests-and-verification.md) that *an oracle must
+be compiled from c43 source*, and for the classification of every check kind in
+the tree. They sit here, before the style references, because they are a
+**verification** reference set: the idiom ratchet has TigerStyle as a calibrated
+external yardstick, and until this section existed the parity lanes — which are
+the entire basis of z47's correctness claim — had none.
+
+Domain match (which yardstick applies): z47 is a **port**, so its correctness
+claim is function parity with a reference implementation that keeps moving.
+**Barr et al. is the primary calibration for the taxonomy** (what kinds of oracle
+exist and what each is worth) and **McKeeman is the primary calibration for the
+technique** (a `*_parity` lane *is* differential testing, named). Knight & Leveson
+is primary for one specific question — why a hand-written oracle fails silently.
+The remaining two are secondary: they name check kinds z47 already has.
+
+Primary — the taxonomy:
+
+- [Barr, Harman, McMinn, Shahbaz, Yoo — "The Oracle Problem in Software Testing:
+  A Survey", IEEE TSE 41(5):507–525, 2015](https://dl.acm.org/doi/10.1109/TSE.2014.2372785)
+  ([UCL open access](https://discovery.ucl.ac.uk/id/eprint/1471263/)): the
+  canonical survey. Names the problem — distinguishing correct from incorrect
+  behaviour with no independent authority — and gives the four-way split
+  (specified / derived / implicit / no oracle) that the mapping table below is an
+  instance of.
+
+Primary — the technique:
+
+- [McKeeman — "Differential Testing for Software", Digital Technical Journal
+  10(1):100–107, 1998](https://www.cs.tufts.edu/comp/150FP/archive/bill-mckeeman/DifferentailTesting.pdf):
+  the original naming of exactly what a `*_parity` lane is. z47 has been doing
+  differential testing against a reference implementation since M3.3; this is the
+  term for it.
+
+Primary — why the frozen oracles failed the way they did:
+
+- [Knight & Leveson — "An Experimental Evaluation of the Assumption of
+  Independence in Multiversion Programming", IEEE TSE 12(1),
+  1986](https://www.csc.kth.se/utbildning/kth/kurser/DA2210/vettig13/Seminarier/KnightLeveson.pdf):
+  27 independently written versions from one specification, one million inputs;
+  common-mode failures far above the independence prediction, the hypothesis
+  rejected at 99% confidence. A differential test's power comes entirely from the
+  two implementations failing *independently*, and a hand-written oracle shares
+  its author, its source and its misreadings with the port — so correlated
+  failure is the expected case, not a risk. This is what happened to
+  `FLAG_IMPLOT`, which was missing from the same two c43 flag tables in the
+  hand-written oracle **and** in the Zig owner, so the diff was silent.
+  **The corollary is the whole rule in one line:** a compiled-from-c43 oracle is
+  not a second, *independent* implementation — it **is** c43's, which is why it
+  works. It sidesteps the independence assumption rather than relying on it.
+
+Secondary — the checks that need no external reference:
+
+- [Segura, Fraser, Sánchez, Ruiz-Cortés — "A Survey on Metamorphic Testing", IEEE
+  TSE 42(9):805–824, 2016](https://eprints.whiterose.ac.uk/id/eprint/110335/1/segura16-tse.pdf):
+  round-trip idempotence — `saveload_roundtrip`'s save→load→save checks — is a
+  *metamorphic relation*, which is a full-strength oracle kind and not a
+  consolation prize for lacking a reference.
+
+Secondary — what a golden file actually is:
+
+- **Feathers — *Working Effectively with Legacy Code*, Prentice Hall, 2004**,
+  ch. 13, "characterization tests": a characterization test pins *current*
+  behaviour, is explicitly not a correctness claim, and exists to make change
+  safe. That is exactly what `save_load_golden.sav` is, which is why it is not a
+  parity reference no matter what the lane is called.
+
+### The in-tree mapping
+
+Every check kind in z47 against its established name. Read the third column
+first: it is the only question that matters about a reference.
+
+| z47 check | established name | reference moves with c43? | strength |
+| --- | --- | --- | --- |
+| c43's `testSuite` corpus, run unmodified | specified oracle | it **is** c43 | full |
+| `*_parity` lane vs a compiled-from-c43 `.c` | derived / pseudo-oracle (differential) | yes | full |
+| `audit-*.py` preprocessing live c43 source | derived oracle | yes | full |
+| `charstring_diff` (extracts c43 functions at build time) | derived oracle | yes | full |
+| `saveload_roundtrip` save→load→save, `backup.cfg` and data-file round-trips | metamorphic relation | n/a — needs none | full, and independent |
+| ASAN, safety panics, `state_load_fuzz` | implicit oracle | n/a | weak but free |
+| `save_load_golden.sav` | characterization test | no | change detector only |
+| hand-transliterated `*_oracle.c` | failed pseudo-oracle | no | **negative** |
+
+The last row is not "weak". It is negative: it produces evidence of parity where
+none exists, and a passing test is not visible in a coverage discussion the way a
+missing one is. That is why
+[.github/project/oracle-provenance-manifest.json](../.github/project/oracle-provenance-manifest.json)
+is a list meant to reach zero rather than one to maintain.
+
+Where TigerStyle reaches into this: its ≥2-assertions-per-function rule is an
+**implicit oracle** mandate — assertions turn silent wrong states into loud ones
+with no external reference at all. Of the four oracle kinds above, z47 is strong
+on two (specified, derived), sound on the third (metamorphic), and weak on the
+fourth: measured at pin `d1b643e7` on 2026-07-11 across 162k owner lines, the
+owner surface sits at 0.005 assertions per function. That is an observation for
+the record, not a call to action — the transliteration contract is why, and
+`50-zig-c-boundaries-and-rewrite-policy.md` settles the memory-safety question
+separately.
+
+**Do not widen this set.** Five sources are enough and they are recorded here so
+nobody re-searches them, exactly as the Zig idiom sources are. The full argument
+they back is in `__DEV/reports/REPORT-31-C-ORACLE.md`.
 
 ## Zig Idiom And Style Guidance (secondary)
 

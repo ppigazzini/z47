@@ -1,7 +1,6 @@
 const std = @import("std");
 const name_glyph = @import("name_glyph.zig"); // std-only variable-name glyph decoding
 const abi = @import("abi");
-const build_options = @import("register_metadata_build_options");
 
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const memory_owned = @import("../runtime/register_memory.zig");
@@ -26,8 +25,6 @@ const glyph_sup_a: u16 = 0x2482;
 const glyph_sub_Z: u16 = 0x24e9;
 const compare_name_mode: i32 = 3;
 const reserved_variable_count = runtime.LAST_RESERVED_VARIABLE - runtime.FIRST_RESERVED_VARIABLE + 1;
-const max_fake_named_variables: u16 = 64;
-const use_fake_register_metadata_harness_surface = @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and build_options.use_fake_register_metadata_harness_surface;
 
 const register_header_t = abi.RegisterHeader;
 
@@ -128,15 +125,6 @@ fn namedVariableHeaderBlocks(count: u16) usize {
 }
 
 fn allocateFirstNamedVariableHeader() bool {
-    if (use_fake_register_metadata_harness_surface) {
-        if (!isMemoryBlockAvailable(namedVariableHeaderBlocks(1), 1, 0.0)) {
-            return false;
-        }
-
-        runtime.numberOfNamedVariables = 1;
-        return true;
-    }
-
     const data_ptr = stack_runtime.allocC47Blocks(namedVariableHeaderBlocks(1)) orelse return false;
     allNamedVariables = @ptrCast(@alignCast(data_ptr));
     runtime.numberOfNamedVariables = 1;
@@ -144,19 +132,6 @@ fn allocateFirstNamedVariableHeader() bool {
 }
 
 fn appendNamedVariableHeader(index: *u16) bool {
-    if (use_fake_register_metadata_harness_surface) {
-        if (!isMemoryBlockAvailable(namedVariableHeaderBlocks(runtime.numberOfNamedVariables + 1), 1, 0.0)) {
-            return false;
-        }
-        if (runtime.numberOfNamedVariables >= max_fake_named_variables) {
-            return false;
-        }
-
-        index.* = runtime.numberOfNamedVariables;
-        runtime.numberOfNamedVariables += 1;
-        return true;
-    }
-
     const original_headers = allNamedVariables;
     index.* = runtime.numberOfNamedVariables;
 
@@ -172,10 +147,6 @@ fn appendNamedVariableHeader(index: *u16) bool {
 }
 
 fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
-    if (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables) {
-        return;
-    }
-
     const headers = allNamedVariables orelse return;
     const text: [*:0]const u8 = @ptrCast(variable_name);
     const slot = &headers[index];
@@ -189,7 +160,7 @@ fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
 }
 
 fn clearNamedVariableSlot(index: u16) void {
-    if (index >= runtime.numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
+    if (index >= runtime.numberOfNamedVariables) {
         return;
     }
 
@@ -199,7 +170,7 @@ fn clearNamedVariableSlot(index: u16) void {
 }
 
 fn shrinkNamedVariableHeaderStorage() void {
-    if (use_fake_register_metadata_harness_surface or runtime.numberOfNamedVariables == 0) {
+    if (runtime.numberOfNamedVariables == 0) {
         return;
     }
 
@@ -392,13 +363,26 @@ pub fn deleteVariable(regist: u16) void {
         runtime.removeNamedVariableRecallAssignment(index);
         memory_owned.freeRegisterData(register);
 
+        // Whole-struct copy, and clear only the two name bytes c43 clears.
+        //
+        // c43 shifts with `allNamedVariables[i] = allNamedVariables[i + 1]` and then
+        // zeroes exactly `.descriptor`, `.variableName[0]` and `.variableName[1]` of
+        // the vacated last slot. z47 used to decompose that into a descriptor write
+        // plus storeNamedVariableName (which re-zeroes the whole name array) and a
+        // clearNamedVariableSlot that @memset the array. Tidier, and WRONG: the RAM
+        // image ends up different from c43's, and backup.cfg is a raw RAM dump, so
+        // the difference reaches a user-visible file. Found by REPORT-31 M31-12's
+        // differential, which compares the slab byte for byte.
+        const headers = allNamedVariables orelse return;
         var shift_index = index;
         while (shift_index + 1 < runtime.numberOfNamedVariables) : (shift_index += 1) {
-            runtime.setNamedDescriptorUnchecked(shift_index, runtime.namedDescriptorUnchecked(shift_index + 1));
-            storeNamedVariableName(shift_index, runtime.namedVariableName(shift_index + 1));
+            headers[shift_index] = headers[shift_index + 1];
         }
 
-        clearNamedVariableSlot(runtime.numberOfNamedVariables - 1);
+        const vacated = &headers[runtime.numberOfNamedVariables - 1];
+        vacated.header.descriptor = 0;
+        vacated.variableName[0] = 0;
+        vacated.variableName[1] = 0;
         shrinkNamedVariableHeaderStorage();
         runtime.numberOfNamedVariables -= 1;
         invalidateNamedVariableCache(); // one entry gone and the ones after it shifted: no remembered index still describes the table
@@ -472,7 +456,7 @@ pub fn clearAllVariables(confirmation: u16) void {
 // byte length, the chars follow), or null past the same surface guards
 // namedVariableName() applies.
 fn namedVariableHeaderName(index: u16) ?[*]const u8 {
-    if (index >= runtime.numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
+    if (index >= runtime.numberOfNamedVariables) {
         return null;
     }
     const headers = allNamedVariables orelse return null;

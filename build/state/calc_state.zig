@@ -1,5 +1,4 @@
 const std = @import("std");
-const abi_host = @import("../abi_host.zig");
 
 pub const RuntimeObjects = struct {
     calc_state: *std.Build.Step.Compile,
@@ -68,7 +67,6 @@ fn addRuntimeObject(
     core_state_module.addImport("abi", abi_module);
     module.addImport("core_state", core_state_module);
     const build_options = b.addOptions();
-    build_options.addOption(bool, "use_fake_calc_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
     // R47 build variants ("r47", "dmcpr47") select USER_R47 (66); otherwise
     // USER_C47 (46). Only allow_user_keys consumes this in the product path.
     build_options.addOption(u16, "calc_model_user_id", if (std.mem.indexOf(u8, name_prefix, "r47") != null) 66 else 46);
@@ -139,33 +137,14 @@ pub fn addToModule(
     module.addObject(runtime_object);
 }
 
-pub fn addParityExecutable(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
-    const exe = b.addExecutable(.{
-        .name = "calc-state-parity",
-        .root_module = b.createModule(.{
-            .root_source_file = null,
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-    abi_host.addToModule(b, exe.root_module, target, optimize, "calc-state-parity");
-
-    exe.root_module.addIncludePath(b.path("build/tests/calc_state"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/calc_state/calc_state_fake_runtime.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/calc_state/calc_state_oracle.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/calc_state/calc_state_parity.c"), .flags = &.{} });
-    // Link stubs for the calc-state owner C deps not provided by the fake
-    // surface (codec leaves, gmp, calc-state globals); unexercised by the
-    // header-only fixture, present only to satisfy the link. gmp is stubbed in
-    // the link-stub file (not linked) so the harness needs no system gmp — which
-    // the Windows/macOS runners can't resolve via linkSystemLibrary.
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/calc_state/calc_state_parity_link_stubs.c"), .flags = &.{} });
-    exe.root_module.addObject(runtime_object);
-    return exe;
-}
+// NO addParityExecutable HERE, deliberately (REPORT-31 M31-10).
+//
+// The calc-state parity lane used to be a unit executable: a mock c47.h, a
+// counting fake runtime, link stubs, and a 194-line hand-written oracle that
+// modelled save-file revision parsing and nothing else. It is now a FULL-CORE
+// differential (build/host/steps.zig: calc_state_parity), because sharing the
+// value codecs with c43's own saveRestoreCalcState.c "for real" -- rather than
+// modelling them -- needs the whole calculator, and only then can the lane
+// compare `.sav` BYTES. The owner-side `use_fake_calc_state_harness_surface`
+// fork went with it: it replaced eighteen call sites with counting stubs, so the
+// build the lane measured was not the build that ships.

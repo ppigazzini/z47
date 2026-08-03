@@ -1,10 +1,5 @@
-const build_options = @import("register_metadata_build_options");
 const descriptor_storage = @import("../runtime/register_descriptor_storage.zig");
 const block_math = abi.block_math;
-
-const use_fake_register_metadata_harness_surface =
-    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
-    build_options.use_fake_register_metadata_harness_surface;
 
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
@@ -13,7 +8,11 @@ const FIRST_RESERVED_VARIABLE: calcRegister_t = 2000;
 // LAST_RESERVED_VARIABLE 2047 - FIRST_RESERVED_VARIABLE 2000 + 1. The defines.h
 // inline comment claiming 41 is stale; the array holds 48 entries.
 const NUMBER_OF_RESERVED_VARIABLES: usize = 48;
-const NUMBER_OF_LETTERED_VARIABLES: calcRegister_t = 26;
+// defines.h computes this as (FIRST_NAMED_RESERVED_VARIABLE -
+// FIRST_RESERVED_VARIABLE), which is 31: the 26 lettered variables PLUS the
+// five RESERVED_VARIABLE_SPARE placeholders that follow them. z47 had 26 until
+// REPORT-31 M31-11 (c43's own trailing comment still says 26, and is stale).
+const NUMBER_OF_LETTERED_VARIABLES: calcRegister_t = 31;
 const REGISTER_X: calcRegister_t = 100;
 const INVALID_VARIABLE: calcRegister_t = 2199;
 const C47_NULL: u32 = 65535;
@@ -71,16 +70,10 @@ fn namedVariableHeaderBlocks(count: usize) usize {
 }
 
 pub fn reservedDescriptor(reg: calcRegister_t) register_descriptor_t {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_get_reserved_descriptor(reg);
-    }
     return allReservedVariables[@intCast(reg - FIRST_RESERVED_VARIABLE)].header.descriptor;
 }
 
 pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_get_reserved_data_type_descriptor(reg);
-    }
     const index = reg - FIRST_RESERVED_VARIABLE;
     if (index < NUMBER_OF_LETTERED_VARIABLES) {
         return descriptor_storage.globalDescriptor(index + REGISTER_X);
@@ -89,17 +82,11 @@ pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
 }
 
 pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_reserved_allows_data_type_write(reg);
-    }
     const descriptor = allReservedVariables[@intCast(reg - FIRST_RESERVED_VARIABLE)].header.descriptor;
     return (descriptor & 0xffff) != C47_NULL and ((descriptor >> 25) & 0x01) == 0;
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_to_pc_mem_ptr(mem_ptr);
-    }
     if (mem_ptr == C47_NULL) {
         return null;
     }
@@ -107,31 +94,19 @@ pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
 }
 
 pub fn toC47MemPtr(mem_ptr: ?*const anyopaque) u16 {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_to_c47_mem_ptr(mem_ptr);
-    }
     const ptr = mem_ptr orelse return @intCast(C47_NULL);
     return @intCast((@intFromPtr(ptr) - @intFromPtr(ram)) / @sizeOf(u32));
 }
 
 pub fn builtinMenuItemCount() u32 {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_builtin_menu_item_count();
-    }
     return LAST_ITEM;
 }
 
 pub fn builtinMenuItemIsMenu(index: u32) bool {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_builtin_menu_item_is_menu(index);
-    }
     return index < LAST_ITEM and (indexOfItems[index].status & CAT_STATUS) == CAT_MENU;
 }
 
 pub fn builtinMenuItemName(index: u32) [*c]const u8 {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_builtin_menu_item_name(index);
-    }
     if (index >= LAST_ITEM) {
         return "";
     }
@@ -139,9 +114,6 @@ pub fn builtinMenuItemName(index: u32) [*c]const u8 {
 }
 
 pub fn allocateFirstNamedVariableHeader() bool {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_allocate_first_named_variable_header();
-    }
     const ptr = allocC47Blocks(namedVariableHeaderBlocks(1));
     allNamedVariables = @ptrCast(@alignCast(ptr));
     if (ptr == null) {
@@ -152,9 +124,6 @@ pub fn allocateFirstNamedVariableHeader() bool {
 }
 
 pub fn appendNamedVariableHeader(index: *u16) bool {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_append_named_variable_header(index);
-    }
     const orig = allNamedVariables;
     index.* = numberOfNamedVariables;
     const ptr = reallocC47Blocks(
@@ -172,10 +141,6 @@ pub fn appendNamedVariableHeader(index: *u16) bool {
 }
 
 pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
-    if (use_fake_register_metadata_harness_surface) {
-        z47_register_metadata_store_named_variable_name(index, variable_name);
-        return;
-    }
     const headers = allNamedVariables orelse return;
     const name_field = &headers[index].variableName;
 
@@ -194,10 +159,6 @@ pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
 }
 
 pub fn clearNamedVariableSlot(index: u16) void {
-    if (use_fake_register_metadata_harness_surface) {
-        z47_register_metadata_clear_named_variable_slot(index);
-        return;
-    }
     if (index >= numberOfNamedVariables) {
         return;
     }
@@ -207,10 +168,6 @@ pub fn clearNamedVariableSlot(index: u16) void {
 }
 
 pub fn shrinkNamedVariableHeaderStorage() void {
-    if (use_fake_register_metadata_harness_surface) {
-        z47_register_metadata_shrink_named_variable_header_storage();
-        return;
-    }
     if (numberOfNamedVariables == 0) {
         return;
     }
@@ -222,16 +179,10 @@ pub fn shrinkNamedVariableHeaderStorage() void {
 }
 
 pub fn compareMenuNames(left: [*c]const u8, right: [*c]const u8) i32 {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_compare_menu_names(left, right);
-    }
     return compareString(left, right, CMP_NAME);
 }
 
 pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t {
-    if (use_fake_register_metadata_harness_surface) {
-        return z47_register_metadata_find_reserved_variable_name(variable_name, glyph_length);
-    }
     var reg: usize = 0;
     while (reg < NUMBER_OF_RESERVED_VARIABLES) : (reg += 1) {
         if (allReservedVariables[reg].reservedVariableName[0] != glyph_length) {

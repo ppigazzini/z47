@@ -1,238 +1,81 @@
 // SPDX-License-Identifier: GPL-3.0-only
+//
+// The parity reference for the keyboard lane: c43's OWN keyboard.c, compiled a
+// second time into the full-core harness under `oracle_` names so it links beside
+// the Zig owner that replaced it.
+//
+// WHAT THIS REPLACED (REPORT-31 M31-13). 238 hand-written lines modelling roughly
+// 4% of a 4982-line file, under a lane named for the whole subsystem -- and, by
+// its own driver's admission, the handler cases had already been deleted because
+// the simplified oracle no longer matched the ported handlers. What was left was
+// four pure translation helpers with a hand-written reference, which is the shape
+// this report exists to remove.
+//
+// WHY THE FULL CORE IS THE ONLY SHAPE THAT WORKS HERE (Annex A.3). keyboard.c is
+// the one file the compile-from-c43 unit recipe fails on: it reads `GdkEvent`
+// FIELDS and declares a `GdkEventButton` BY VALUE, so the six placeholder typedefs
+// in build/tests/common are not enough and it needs real gtk+-3.0 headers -- and
+// even then it leaves 313 undefined symbols. As a unit harness that is the worst
+// of the five: a GUI toolkit dragged into a lane whose point is to be small and
+// headless, 313 stubs, to replace an oracle covering 4%.
+//
+// In a FULL CORE the same number costs nothing: addFullCoreHarness already links
+// GTK, GMP, libm and the entire core object graph, so every one of those 313
+// symbols is already defined. The stub burden is ZERO, and the environment
+// keyboard.c demands is exactly the environment the harness already has.
+//
+// Nothing here may be edited to make the lane pass.
 
-#include "c47.h"
+// Every symbol keyboard.c gives external linkage. Derived mechanically:
+//   nm -g --defined-only <keyboard.o> | awk '{print $3}'
+//
+// `key`, `asnKey` and `CatalogMenus` are FILE-SCOPE STATE, not functions, and
+// nothing outside keyboard.c references them (checked across src/c47), so the
+// oracle keeps its own copies. The harness zeroes both sides' copies when it
+// seeds, because they persist across calls and an un-reset one would make case
+// N+1 depend on case N.
+//
+// `key` is also a struct member name (`tamState_t.key`). Renaming it here renames
+// the member consistently within THIS translation unit -- same layout, same
+// offsets, no ABI effect -- which is why the rename is safe despite how common
+// the token is.
 
-void z47_keyboard_state_processKeyAction(int16_t item);
-void z47_keyboard_state_fnKeyEnter(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_fnKeyExit(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_fnKeyCC(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_fnKeyBackspace(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_fnKeyUp(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_fnKeyDown(uint16_t unusedButMandatoryParameter);
-void z47_keyboard_state_fnKeyDotD(uint16_t unusedButMandatoryParameter);
+#define CatalogMenus oracle_CatalogMenus
+#define asnKey oracle_asnKey
+#define key oracle_key
 
-bool_t oracle_caseReplacements(uint8_t id, bool_t lowerCaseSelected, int16_t item, int16_t *itemOut) {
-  (void)id;
+#define btnClicked oracle_btnClicked
+#define btnClickedP oracle_btnClickedP
+#define btnClickedR oracle_btnClickedR
+#define btnFnClicked oracle_btnFnClicked
+#define btnFnClickedP oracle_btnFnClickedP
+#define btnFnClickedR oracle_btnFnClickedR
+#define btnFnPressed oracle_btnFnPressed
+#define btnFnReleased oracle_btnFnReleased
+#define btnPressed oracle_btnPressed
+#define btnReleased oracle_btnReleased
+#define checkKeyShifts oracle_checkKeyShifts
+#define determineFunctionKeyItem_C47 oracle_determineFunctionKeyItem_C47
+#define execAutoRepeat oracle_execAutoRepeat
+#define frmCalcMouseButtonPressed oracle_frmCalcMouseButtonPressed
+#define frmCalcMouseButtonReleased oracle_frmCalcMouseButtonReleased
+#define leavePem oracle_leavePem
+#define nimWhenButtonPressed oracle_nimWhenButtonPressed
+#define processAimInput oracle_processAimInput
+#define processKeyAction oracle_processKeyAction
+#define releaseOverride oracle_releaseOverride
+#define shiftKeyClearsError oracle_shiftKeyClearsError
+#define showScreenDismissed oracle_showScreenDismissed
 
-  *itemOut = item;
-  if(lowerCaseSelected && ITM_A <= item && item <= ITM_Z) {
-    *itemOut = item + (ITM_a - ITM_A);
-    return true;
-  }
-  else if(!lowerCaseSelected && ITM_A <= item && item <= ITM_Z) {
-    return true;
-  }
-  else if(!lowerCaseSelected && ITM_a <= item && item <= ITM_z) {
-    *itemOut = item - (ITM_a - ITM_A);
-    return true;
-  }
-  else if(lowerCaseSelected && ITM_a <= item && item <= ITM_z) {
-    return true;
-  }
+// The eight entry points the deleted oracle modelled, and the ones this lane
+// drives directly.
+#define fnKeyBackspace oracle_fnKeyBackspace
+#define fnKeyCC oracle_fnKeyCC
+#define fnKeyDotD oracle_fnKeyDotD
+#define fnKeyDown oracle_fnKeyDown
+#define fnKeyEnter oracle_fnKeyEnter
+#define fnKeyExit oracle_fnKeyExit
+#define fnKeyUp oracle_fnKeyUp
+#define setLastKeyCode oracle_setLastKeyCode
 
-  return false;
-}
-
-bool_t oracle_keyReplacements(int16_t item, int16_t *item1, bool_t NL, bool_t FSHIFT, bool_t GSHIFT) {
-  if(calcMode == CM_AIM || calcMode == CM_EIM || calcMode == CM_PEM || (tam.mode && tam.alpha) || (calcMode == CM_ASSIGN && itemToBeAssigned == 0)) {
-    if(GSHIFT) {
-      switch(item) {
-        case ITM_sigma: *item1 = ITM_SIGMA; break;
-        case ITM_delta: *item1 = ITM_DELTA; break;
-        case ITM_NULL: *item1 = ITM_SPACE; break;
-        default: break;
-      }
-    }
-    else if(NL) {
-      uint16_t ix = 15;
-
-      item -= (ITM_A + 26 <= item && item <= ITM_Z + 26) ? -26 : 0;
-      while(ix < 37) {
-        if(kbd_std[ix].primaryAim != ITM_EXIT1 && kbd_std[ix].primaryAim != ITM_UP1 && kbd_std[ix].primaryAim != ITM_DOWN1 && kbd_std[ix].primaryAim != ITM_BACKSPACE) {
-          if(!FSHIFT && item == kbd_std[ix].primaryAim) {
-            *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].gShiftedAim : kbd_std[ix].gShiftedAim;
-            break;
-          }
-          if(FSHIFT && ix >= 31 && item == kbd_std[ix].gShiftedAim) {
-            *item1 = getSystemFlag(FLAG_USER) ? kbd_usr[ix].primaryAim : kbd_std[ix].primaryAim;
-            break;
-          }
-        }
-        ix++;
-      }
-    }
-  }
-
-  return *item1 != 0;
-}
-
-uint16_t oracle_numlockReplacements(uint16_t id, int16_t item, bool_t NL, bool_t FSHIFT, bool_t GSHIFT) {
-  int16_t item1 = 0;
-
-  (void)id;
-  if(oracle_keyReplacements(item, &item1, NL, FSHIFT, GSHIFT)) {
-    return (uint16_t)(item1 < 0 ? -item1 : item1);
-  }
-
-  return (uint16_t)(item < 0 ? -item : item);
-}
-
-void oracle_setLastKeyCode(int key) {
-  if(1 <= key && key <= 43) {
-    if(key <= 6) {
-      lastKeyCode = key + 20;
-    }
-    else if(key <= 12) {
-      lastKeyCode = key - 6 + 30;
-    }
-    else if(key <= 17) {
-      lastKeyCode = key - 12 + 40;
-    }
-    else if(key <= 22) {
-      lastKeyCode = key - 17 + 50;
-    }
-    else if(key <= 27) {
-      lastKeyCode = key - 22 + 60;
-    }
-    else if(key <= 32) {
-      lastKeyCode = key - 27 + 70;
-    }
-    else if(key <= 43) {
-      lastKeyCode = key - 37 + 10;
-    }
-  }
-}
-
-void oracle_processKeyAction(int16_t item) {
-  if((item == ITM_UP1_ITEM || item == ITM_DOWN1_ITEM) &&
-     calcMode == CM_FLAG_BROWSER &&
-     tam.mode == 0 &&
-     lastErrorCode == 0 &&
-     temporaryInformation == TI_NO_INFO &&
-     programRunStop != PGM_WAITING &&
-     calcMode != CM_PLOT_STAT &&
-     calcMode != CM_GRAPH) {
-    keyActionProcessed = false;
-    keyActionProcessed = true;
-
-    if(item == ITM_UP1_ITEM) {
-      oracle_fnKeyUp(0);
-      screenUpdatingMode &= (uint8_t)~(SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
-      refreshScreen(118);
-    }
-    else {
-      oracle_fnKeyDown(0);
-      screenUpdatingMode &= (uint8_t)~(SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
-      refreshScreen(119);
-    }
-
-    keyActionProcessed = true;
-    return;
-  }
-
-  z47_keyboard_state_processKeyAction(item);
-}
-
-void oracle_fnKeyEnter(uint16_t unusedButMandatoryParameter) {
-  z47_keyboard_state_fnKeyEnter(unusedButMandatoryParameter);
-}
-
-void oracle_fnKeyExit(uint16_t unusedButMandatoryParameter) {
-  z47_keyboard_state_fnKeyExit(unusedButMandatoryParameter);
-}
-
-void oracle_fnKeyCC(uint16_t complexType) {
-  if(calcMode == CM_NIM && complexType != KEY_COMPLEX) {
-    addItemToNimBuffer(ITM_CC);
-    return;
-  }
-
-  switch(calcMode) {
-    case CM_REGISTER_BROWSER:
-    case CM_FLAG_BROWSER:
-    case CM_ASN_BROWSER:
-    case CM_FONT_BROWSER:
-    case CM_PLOT_STAT:
-    case CM_TIMER:
-    case CM_LISTXY:
-    case CM_GRAPH:
-      return;
-    default:
-      z47_keyboard_state_fnKeyCC(complexType);
-      return;
-  }
-}
-
-void oracle_fnKeyBackspace(uint16_t unusedButMandatoryParameter) {
-  if(tam.mode == 0 && calcMode == CM_NIM) {
-    addItemToNimBuffer(ITM_BACKSPACE_ITEM);
-    screenUpdatingMode &= (uint8_t)~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
-    return;
-  }
-
-  z47_keyboard_state_fnKeyBackspace(unusedButMandatoryParameter);
-}
-
-void oracle_fnKeyUp(uint16_t unusedButMandatoryParameter) {
-  switch(calcMode) {
-    case CM_FLAG_BROWSER:
-      currentFlgScr = (uint8_t)(currentFlgScr + 1);
-      return;
-    case CM_LISTXY:
-      ListXYposition += 10;
-      keyActionProcessed = true;
-      return;
-    default:
-      z47_keyboard_state_fnKeyUp(unusedButMandatoryParameter);
-      return;
-  }
-}
-
-void oracle_fnKeyDown(uint16_t unusedButMandatoryParameter) {
-  switch(calcMode) {
-    case CM_FLAG_BROWSER:
-      currentFlgScr = (uint8_t)(currentFlgScr - 1);
-      return;
-    case CM_LISTXY:
-      ListXYposition -= 10;
-      keyActionProcessed = true;
-      return;
-    default:
-      z47_keyboard_state_fnKeyDown(unusedButMandatoryParameter);
-      return;
-  }
-}
-
-void oracle_fnKeyDotD(uint16_t unusedButMandatoryParameter) {
-  (void)unusedButMandatoryParameter;
-
-  switch(calcMode) {
-    case CM_NORMAL: {
-      int32_t flag = getSystemFlag(FLAG_IRFRQ) ? FLAG_IRFRAC : FLAG_FRACT;
-      if(getSystemFlag(flag)) {
-        clearSystemFlag((uint32_t)flag);
-      }
-      else {
-        runFunction(ITM_toREAL);
-      }
-      return;
-    }
-    case CM_NIM:
-      addItemToNimBuffer(ITM_dotD);
-      return;
-    case CM_REGISTER_BROWSER:
-    case CM_FLAG_BROWSER:
-    case CM_ASN_BROWSER:
-    case CM_FONT_BROWSER:
-    case CM_PLOT_STAT:
-    case CM_GRAPH:
-    case CM_MIM:
-    case CM_EIM:
-    case CM_TIMER:
-    case CM_LISTXY:
-      return;
-    default:
-      z47_keyboard_state_fnKeyDotD(0);
-      return;
-  }
-}
+#include "../../../upstream/src/c47/keyboard.c"

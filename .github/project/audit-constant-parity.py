@@ -46,19 +46,21 @@ NAME_RE = re.compile(
 
 # Constants that resolve in C but legitimately differ from the owner value.
 # Keep this list tiny and always cite why.
-KNOWN_DIVERGENCES = {
-    # Deferred: the whole reserved-variable block is stale (OLD ADM/.. @2026 vs
-    # current C ACC/.. @2031). Partial-fixing just this base would desync it from
-    # LAST_RESERVED_VARIABLE and the RESERVED_VARIABLE_* body -- a parity-risky
-    # reorganization deferred with near-zero practical impact. See the memory note
-    # reserved-variable-model-stale.
-    "FIRST_NAMED_RESERVED_VARIABLE": "deferred stale reserved-variable block (2026 vs C 2031)",
-    # Derived from the above: defines.h computes it as (FIRST_NAMED_RESERVED_VARIABLE
-    # - FIRST_RESERVED_VARIABLE), so the owner's 26 vs C's 31 is the SAME deferred
-    # reserved-variable staleness, not an independent bug. Was previously hidden by
-    # the clang error-limit truncation this audit just removed.
-    "NUMBER_OF_LETTERED_VARIABLES": "derived from the deferred reserved-variable block (26 vs C 31)",
-}
+#
+# EMPTY, and that is the exit criterion of REPORT-31 M31-11. It used to carry
+# FIRST_NAMED_RESERVED_VARIABLE (2026 vs C 2031) and its derived
+# NUMBER_OF_LETTERED_VARIABLES (26 vs C 31): z47 still named ADM/DENMAX/ISM/
+# REALDF/NDEC at 2026-2030 after c43 replaced them with RESERVED_VARIABLE_SPARE
+# placeholders and moved the named block to 2031. Two models coexisted in one
+# tree -- frontier_config and softmenus already used the new values while the
+# range-check owners used the old ones -- and reserved-variable IDs are
+# serialized into state files, so it was a real parity gap and not only the
+# blocker on converting the register-metadata oracle.
+#
+# Adding a row here is claiming z47 may differ from c43 on a constant. Do not do
+# it to make this audit pass; a divergence that survives review belongs in a
+# report with a milestone that closes it.
+KNOWN_DIVERGENCES: dict[str, str] = {}
 
 # Base translate-unit: same header prelude as the abi-layout ground-truth oracle,
 # plus items.h for the ITM_* enum.
@@ -250,10 +252,12 @@ def main():
             f"{len(conflicts)} conflict(s), {len(str_bad)} string divergence(s)"
         )
         return 1
-    print(
-        "\nPASS: every C-mirrored constant and glyph string matches upstream C "
-        "(known-deferred exceptions allowlisted)"
+    allowlisted = (
+        f" ({len(KNOWN_DIVERGENCES)} allowlisted)"
+        if KNOWN_DIVERGENCES
+        else " (nothing allowlisted)"
     )
+    print(f"\nPASS: every C-mirrored constant and glyph string matches upstream C{allowlisted}")
     return 0
 
 

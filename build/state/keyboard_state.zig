@@ -245,33 +245,17 @@ pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u
     return try filtered.toOwnedSlice(b.allocator);
 }
 
-pub fn addParityExecutable(
-    b: *std.Build,
-    target: std.Build.ResolvedTarget,
-    optimize: std.builtin.OptimizeMode,
-) *std.Build.Step.Compile {
-    const runtime_object = addRuntimeObjectWithIncludeDir(b, target, optimize, "parity", b.path("build/tests/keyboard_state/keyboard_state_parity.zig"), .{});
-    runtime_object.root_module.addImport("z47_keyboard_state_shared", b.createModule(.{
-        .root_source_file = b.path("src/core/input/keyboard_state_shared.zig"),
-        .target = target,
-        .optimize = optimize,
-    }));
-    runtime_object.root_module.addIncludePath(b.path("build/tests/keyboard_state"));
-    const exe = b.addExecutable(.{
-        .name = "keyboard-state-parity",
-        .root_module = b.createModule(.{
-            .root_source_file = null,
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-    abi_host.addToModule(b, exe.root_module, target, optimize, "keyboard-state-parity");
-
-    exe.root_module.addIncludePath(b.path("build/tests/keyboard_state"));
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/keyboard_state/keyboard_state_fake_runtime.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/keyboard_state/keyboard_state_oracle.c"), .flags = &.{} });
-    exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/keyboard_state/keyboard_state_parity.c"), .flags = &.{} });
-    exe.root_module.addObject(runtime_object);
-    return exe;
-}
+// NO addParityExecutable HERE, deliberately (REPORT-31 M31-13).
+//
+// The keyboard parity lane used to be a unit executable with a 238-line
+// hand-written oracle covering ~4% of keyboard.c -- and by its own driver's
+// admission the handler cases had already been deleted, leaving four pure
+// translation helpers checked against a hand-written reference. It is now a
+// FULL-CORE differential (build/host/steps.zig: keyboard_state_parity) against
+// c43's own keyboard.c.
+//
+// A unit harness was never possible here: keyboard.c reads GdkEvent fields and
+// declares a GdkEventButton by value, so it needs real gtk+-3.0 headers, and it
+// leaves 313 symbols undefined. In a full core, which links GTK anyway, all 313
+// are already defined -- the stub burden is zero. That inversion is why the
+// report chose option C for this file and option A for the others.

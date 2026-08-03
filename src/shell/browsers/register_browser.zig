@@ -61,7 +61,11 @@ const FIRST_LOCAL_REGISTER: calcRegister_t = 7000;
 const FIRST_NAMED_VARIABLE: calcRegister_t = 256;
 const FIRST_RESERVED_VARIABLE: c_int = 2000;
 const LAST_RESERVED_VARIABLE: c_int = 2047;
-const NUMBER_OF_LETTERED_VARIABLES: c_int = 26;
+// defines.h computes this as (FIRST_NAMED_RESERVED_VARIABLE -
+// FIRST_RESERVED_VARIABLE), which is 31: the 26 lettered variables PLUS the
+// five RESERVED_VARIABLE_SPARE placeholders that follow them. z47 had 26 until
+// REPORT-31 M31-11 (c43's own trailing comment still says 26, and is stale).
+const NUMBER_OF_LETTERED_VARIABLES: c_int = 31;
 
 // data types (typeDefinitions.h dataType_t).
 const dtReal34: u32 = 1;

@@ -2,10 +2,6 @@ const builtin = @import("builtin");
 const backup_owned = @import("calc_state_backup.zig");
 const build_options = @import("calc_state_build_options");
 
-const use_fake_calc_state_harness_surface =
-    @hasDecl(build_options, "use_fake_calc_state_harness_surface") and
-    build_options.use_fake_calc_state_harness_surface;
-
 const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id"))
     build_options.calc_model_user_id
 else
@@ -87,25 +83,6 @@ const rom = @import("dmcp_rom");
 const calc_state = @import("calc_state.zig"); // intra-object Zig-to-Zig
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 
-extern fn z47_calc_state_runtime_check_power() bool;
-extern fn z47_calc_state_runtime_open_save(save_type: u16) c_int;
-extern fn z47_calc_state_runtime_open_load(load_type: u16) c_int;
-extern fn z47_calc_state_runtime_close_file() void;
-extern fn z47_calc_state_runtime_display_write_error() void;
-extern fn z47_calc_state_runtime_display_read_error() void;
-extern fn z47_calc_state_runtime_unwind_all_subroutines() void;
-extern fn z47_calc_state_runtime_read_line(buffer: [*c]u8) void;
-extern fn z47_calc_state_runtime_allow_user_keys(saved_calc_model: u16) bool;
-extern fn z47_calc_state_runtime_fixup_r47_shift_keys() void;
-extern fn z47_calc_state_runtime_restart_post_load_timers() void;
-extern fn z47_calc_state_runtime_stamp_last_state_file_opened() void;
-extern fn z47_calc_state_runtime_show_saving_status() void;
-extern fn z47_calc_state_runtime_show_loading_status() void;
-extern fn z47_calc_state_runtime_write_save_sections() void;
-extern fn z47_calc_state_runtime_finish_load_ui(refresh_code: u16) void;
-extern fn z47_calc_state_runtime_save_calc() void;
-extern fn z47_calc_state_runtime_restore_calc() void;
-
 fn cStringLength(text: [*c]const u8) usize {
     var len: usize = 0;
     while (text[len] != 0) : (len += 1) {}
@@ -113,32 +90,18 @@ fn cStringLength(text: [*c]const u8) usize {
 }
 
 pub fn saveCalc() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_save_calc();
-        return;
-    }
     backup_owned.saveCalc();
 }
 
 pub fn restoreCalc() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_restore_calc();
-        return;
-    }
     backup_owned.restoreCalc();
 }
 
 pub fn checkPower() bool {
-    if (use_fake_calc_state_harness_surface) {
-        return z47_calc_state_runtime_check_power();
-    }
     return rom.power_check_screen();
 }
 
 pub fn openSave(save_type: u16) c_int {
-    if (use_fake_calc_state_harness_surface) {
-        return z47_calc_state_runtime_open_save(save_type);
-    }
     const path: c_int = if (save_type == autoSave)
         ioPathAutoSave
     else if (save_type == manualSave)
@@ -149,9 +112,6 @@ pub fn openSave(save_type: u16) c_int {
 }
 
 pub fn openLoad(load_type: u16) c_int {
-    if (use_fake_calc_state_harness_surface) {
-        return z47_calc_state_runtime_open_load(load_type);
-    }
     const path: c_int = if (load_type == autoLoad)
         ioPathAutoSave
     else if (load_type == manualLoad)
@@ -162,34 +122,18 @@ pub fn openLoad(load_type: u16) c_int {
 }
 
 pub fn closeFile() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_close_file();
-        return;
-    }
     ioFileClose();
 }
 
 pub fn displayWriteError() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_display_write_error();
-        return;
-    }
     displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub fn displayReadError() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_display_read_error();
-        return;
-    }
     displayCalcErrorMessage(ERROR_CANNOT_READ_FILE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub fn unwindAllSubroutines() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_unwind_all_subroutines();
-        return;
-    }
     while (true) {
         const level = currentSubroutineLevelData orelse break;
         if (level.subroutineLevel == 0) break;
@@ -198,25 +142,14 @@ pub fn unwindAllSubroutines() void {
 }
 
 pub fn readLineInto(buffer: [*c]u8, maxLen: usize) void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_read_line(buffer);
-        return;
-    }
     calc_state.readLine(buffer, maxLen);
 }
 
 pub fn allowUserKeys(saved_calc_model: u16) bool {
-    if (use_fake_calc_state_harness_surface) {
-        return z47_calc_state_runtime_allow_user_keys(saved_calc_model);
-    }
     return saved_calc_model == calc_model_user_id;
 }
 
 pub fn fixupR47ShiftKeys() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_fixup_r47_shift_keys();
-        return;
-    }
     const std_kbd: *const [37]calcKey_t = switch (calcModel) {
         USER_R47f_g => &kbd_std_R47f_g,
         USER_R47bk_fg => &kbd_std_R47bk_fg,
@@ -234,10 +167,6 @@ pub fn fixupR47ShiftKeys() void {
 }
 
 pub fn restartPostLoadTimers() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_restart_post_load_timers();
-        return;
-    }
     if (is_dmcp_build) {
         rom.sys_timer_disable(TIMER_IDX_REFRESH_SLEEP);
         rom.sys_timer_start(TIMER_IDX_REFRESH_SLEEP, 1000);
@@ -246,10 +175,6 @@ pub fn restartPostLoadTimers() void {
 }
 
 pub fn stampLastStateFileOpened() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_stamp_last_state_file_opened();
-        return;
-    }
     getDateString(&lastStateFileOpened[0]);
     var len = cStringLength(&lastStateFileOpened[0]);
     if (len + 2 < lastStateFileOpened.len) {
@@ -270,34 +195,18 @@ pub fn stampLastStateFileOpened() void {
 }
 
 pub fn showSavingStatus() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_show_saving_status();
-        return;
-    }
     printStatus(0, &errorMessages[SAVING_STATE_FILE][0], force);
 }
 
 pub fn showLoadingStatus() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_show_loading_status();
-        return;
-    }
     printStatus(0, &errorMessages[LOADING_STATE_FILE][0], force);
 }
 
 pub fn writeSaveSections() void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_write_save_sections();
-        return;
-    }
     calc_state.z47_calc_state_save_sections();
 }
 
 pub fn finishLoadUi(refresh_code: u16) void {
-    if (use_fake_calc_state_harness_surface) {
-        z47_calc_state_runtime_finish_load_ui(refresh_code);
-        return;
-    }
     fnClearFlag(FLAG_USER);
     screenUpdatingMode &= ~SCRUPD_MANUAL_MENU;
     refreshScreen(refresh_code);

@@ -12,6 +12,15 @@
 // pre-load screening pass, nor the RAM-full bound, nor the `TI_NO_INFO` reset at
 // load entry, and it restored the saved program number on an error path where
 // c43 does not.
+//
+// WHY THIS IS NOT `build/tests/c43_oracle.zig`'s SHAPE (REPORT-31 M31-9, decided
+// 2026-08-03). Later conversions skip the mock header entirely and compile
+// against upstream's OWN `src/c47/c47.h` with the six placeholder typedefs from
+// `build/tests/common/c43_harness_prelude.h` -- cheaper, and strictly more
+// faithful because nothing is modelled. This lane was NOT retrofitted: it is
+// green, verified and seen to fail (tightening c43's MAX_LABEL_NAME_LENGTH test
+// turns the legal-label case red), and rebuilding a working oracle for stylistic
+// uniformity risks two live defect finds for no verification gain. Deliberate.
 
 #ifndef C47_H
 #define C47_H

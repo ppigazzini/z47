@@ -488,8 +488,8 @@ pub fn writeSaveSections() void {
     saveField("amortP1", "%u\n", .{cu(amortP1)});
     saveField("amortP2", "%u\n", .{cu(amortP2)});
     saveField("lrChosen", "%u\n", .{cu(lrChosen)});
-    saveField("graph_dx", "%f\n", .{@as(f64, graph_dx)});
-    saveField("graph_dy", "%f\n", .{@as(f64, graph_dy)});
+    saveFloatField("graph_dx", graph_dx);
+    saveFloatField("graph_dy", graph_dy);
     saveField("roundedTicks", "%u\n", .{cu(roundedTicks)});
     saveField("PLOT_AXIS", "%u\n", .{cu(PLOT_AXIS)});
     saveField("PLOT_ZMY", "%u\n", .{cu(@as(u8, @bitCast(PLOT_ZMY)))});
@@ -512,19 +512,33 @@ pub fn writeSaveSections() void {
 // arguments matching it.
 fn saveField(comptime name: []const u8, comptime value_format: []const u8, args: anytype) void {
     // The only value formats in use are "%u\n"/"%d\n" (plain decimal; args
-    // pre-cast via cu()/ci() to the right signedness, so both -> "{d}\n") and
-    // "%f\n" (== "%.6f\n", routed through the byte-exact fixed formatter). A new
-    // spec trips the @compileError rather than silently mis-formatting the save.
-    if (comptime std.mem.eql(u8, value_format, "%f\n")) {
-        var fb: [512]u8 = undefined;
-        abi.fmtCStr(b(), name ++ "\n{s}\n", .{abi.fmtFixedBuf(&fb, 6, args[0])});
-    } else {
-        const zfmt = comptime if (std.mem.eql(u8, value_format, "%u\n") or std.mem.eql(u8, value_format, "%d\n"))
-            "{d}\n"
-        else
-            @compileError("saveField: unhandled value_format \"" ++ value_format ++ "\"");
-        abi.fmtCStr(b(), name ++ "\n" ++ zfmt, args);
-    }
+    // pre-cast via cu()/ci() to the right signedness, so both -> "{d}\n"). The
+    // two double-valued fields go through saveFloatField instead. A new spec
+    // trips the @compileError rather than silently mis-formatting the save.
+    const zfmt = comptime if (std.mem.eql(u8, value_format, "%u\n") or std.mem.eql(u8, value_format, "%d\n"))
+        "{d}\n"
+    else
+        @compileError("saveField: unhandled value_format \"" ++ value_format ++ "\"");
+    abi.fmtCStr(b(), name ++ "\n" ++ zfmt, args);
+    save(b());
+}
+
+// Emit one `name\n<value>` config line whose value is a double.
+//
+// c43 formats these with registerValueConversions.c's `sci_fmt` into a 32-byte
+// buffer, NOT with printf: sci_fmt is a hand-rolled locale-independent
+// "d.dddddddddddddddde+dd" writer, deliberately not `%.16e`, because a locale
+// that renders the radix point as a comma would make the state file unreadable.
+//
+// z47 wrote "%f" here -- six decimals, no exponent -- until REPORT-31 M31-10's
+// c43 differential compared the two files byte for byte. That is a `.sav` FORMAT
+// divergence in both directions: z47's file lost every digit past the sixth
+// decimal of a plot delta, and a file written by a real C47 came back through a
+// reader that never saw the form c43 writes.
+fn saveFloatField(comptime name: []const u8, value: f64) void {
+    var floatString: [32]u8 = undefined; // c43: char floatString[32]
+    abi.sci_format.sciFmt(&floatString, value);
+    abi.fmtCStr(b(), name ++ "\n{s}\n", .{@as([*:0]const u8, @ptrCast(&floatString))});
     save(b());
 }
 

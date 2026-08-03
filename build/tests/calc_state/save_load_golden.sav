@@ -6314,9 +6314,9 @@ amortP2
 lrChosen
 0
 graph_dx
-0.000000
+0.00000000000000e+00
 graph_dy
-0.000000
+0.00000000000000e+00
 roundedTicks
 0
 PLOT_AXIS

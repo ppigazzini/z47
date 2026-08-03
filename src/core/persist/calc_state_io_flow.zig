@@ -31,6 +31,10 @@ const CONFIRMED: u16 = 9877; // items.h: confirmation for RESET, CLPALL, CLALL
 // Post-restore program-memory screen (manage.c owner, shell object).
 extern fn programMemoryHasOverlongLabelName(step: [*c]u8) bool;
 extern fn fnClPAll(confirmation: u16) void;
+// registers.c's companion to updateShortIntegerMasks. Owned by the
+// register-metadata owner (registers_compat_exports.zig); c43 calls the two
+// together at both load exits.
+extern fn clampShortIntegerRegistersToWordSize() void;
 extern var beginOfProgramMemory: [*c]u8;
 
 pub fn doSave(save_type: u16) void {
@@ -86,8 +90,12 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
 
         // The register section precedes shortIntegerWordSize in the file and the
         // file stores neither mask, so rederive both from the loaded word size
-        // (config.c updateShortIntegerMasks) before any later short-integer op.
+        // (config.c updateShortIntegerMasks) before any later short-integer op,
+        // then clamp every short-integer register to it so no out-of-range bits
+        // survive the load. c43 calls the PAIR here; the clamp was missing until
+        // REPORT-31 M31-10's oracle conversion left its symbol undefined.
         runtime.updateShortIntegerMasks();
+        clampShortIntegerRegistersToWordSize();
     }
 
     runtime.lastErrorCode = runtime.ERROR_NONE;
@@ -155,6 +163,13 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
     while (runtime.ioEof() == 0) {
         _ = runtime.restoreOneSection(load_mode, s, n, d, false);
     }
+
+    // Sanitise loaded short integers, as doLoad does. A normal data file carries
+    // no word size, so this is a no-op; but a hand-crafted file could include an
+    // OTHER_CONFIGURATION_STUFF section that reassigns shortIntegerWordSize
+    // without rederiving the mask. Same missing pair as in doLoad above.
+    runtime.updateShortIntegerMasks();
+    clampShortIntegerRegistersToWordSize();
 
     codec.dataFileMode = false;
     ioFileClose();

@@ -1,10 +1,3 @@
-const build_options = @import("register_metadata_build_options");
-
-const use_fake_register_metadata_harness_surface =
-    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
-    build_options.use_fake_register_metadata_harness_surface;
-
-const max_fake_named_variables: u16 = 64;
 const ITM_RCL: u16 = 51;
 
 const abi = @import("abi"); // shared ABI bindings
@@ -33,7 +26,7 @@ pub fn userMenuName(index: u32) [*c]const u8 {
 }
 
 pub fn namedVariableName(index: u16) [*c]const u8 {
-    if (index >= numberOfNamedVariables or (use_fake_register_metadata_harness_surface and index >= max_fake_named_variables)) {
+    if (index >= numberOfNamedVariables) {
         return "";
     }
 
@@ -42,7 +35,7 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
 }
 
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
-    if (use_fake_register_metadata_harness_surface or index >= numberOfNamedVariables) {
+    if (index >= numberOfNamedVariables) {
         return;
     }
 

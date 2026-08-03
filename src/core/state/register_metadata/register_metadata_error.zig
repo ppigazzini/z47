@@ -1,9 +1,4 @@
-const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
-
-const use_fake_register_metadata_harness_surface =
-    @hasDecl(build_options, "use_fake_register_metadata_harness_surface") and
-    build_options.use_fake_register_metadata_harness_surface;
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
 pub const REGISTER_Y = stack_runtime.REGISTER_Y;
@@ -13,8 +8,8 @@ extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: sta
 fn reportError(error_code: u8) void {
     displayCalcErrorMessage(
         error_code,
-        if (use_fake_register_metadata_harness_surface) REGISTER_X else stack_runtime.REGISTER_Z,
-        if (use_fake_register_metadata_harness_surface) REGISTER_Y else REGISTER_X,
+        stack_runtime.REGISTER_Z,
+        REGISTER_X,
     );
 }
 
