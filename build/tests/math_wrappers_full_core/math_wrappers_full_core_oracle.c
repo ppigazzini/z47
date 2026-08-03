@@ -267,6 +267,224 @@
 #define expM1Cplx oracle_expM1Cplx
 #define fnExpM1 oracle_fnExpM1
 
+
+// --- the four arithmetic dispatchers (4 files, 4 STATE tables) ---
+// The largest dispatch tables in the tree: every wrapper above leans on these, and
+// none of them had a result-level comparison anywhere. They are added AFTER the
+// fixture set gained its sign partition, because they dispatch on the types of two
+// operands and then compute with them -- driving them over an all-positive shape
+// table would have repeated the mistake with the four highest-traffic wrappers in
+// the port.
+#define addition oracle_addition              // dispatch table, not a function
+#define subtraction oracle_subtraction        // dispatch table, not a function
+#define multiplication oracle_multiplication  // dispatch table, not a function
+#define division oracle_division              // dispatch table, not a function
+// --- addition.c ---
+#define fnAdd oracle_fnAdd
+#define addRegYStri oracle_addRegYStri
+#define addLonILonI oracle_addLonILonI
+#define addLonITime oracle_addLonITime
+#define addTimeLonI oracle_addTimeLonI
+#define addLonIDate oracle_addLonIDate
+#define addDateLonI oracle_addDateLonI
+#define addLonIShoI oracle_addLonIShoI
+#define addShoILonI oracle_addShoILonI
+#define addLonIReal oracle_addLonIReal
+#define addRealLonI oracle_addRealLonI
+#define addLonICplx oracle_addLonICplx
+#define addCplxLonI oracle_addCplxLonI
+#define addTimeTime oracle_addTimeTime
+#define addTimeReal oracle_addTimeReal
+#define addRealTime oracle_addRealTime
+#define addDateReal oracle_addDateReal
+#define addRealDate oracle_addRealDate
+#define _addString oracle__addString
+#define addStriLonI oracle_addStriLonI
+#define addStriTime oracle_addStriTime
+#define addStriDate oracle_addStriDate
+#define addStriStri oracle_addStriStri
+#define addStriRema oracle_addStriRema
+#define addStriCxma oracle_addStriCxma
+#define addStriShoI oracle_addStriShoI
+#define addStriReal oracle_addStriReal
+#define addStriCplx oracle_addStriCplx
+#define addRemaLonI oracle_addRemaLonI
+#define addLonIRema oracle_addLonIRema
+#define addRemaRema oracle_addRemaRema
+#define addRemaCxma oracle_addRemaCxma
+#define addCxmaRema oracle_addCxmaRema
+#define addRemaShoI oracle_addRemaShoI
+#define addShoIRema oracle_addShoIRema
+#define addRemaReal oracle_addRemaReal
+#define addRealRema oracle_addRealRema
+#define addRemaCplx oracle_addRemaCplx
+#define addCplxRema oracle_addCplxRema
+#define addCxmaLonI oracle_addCxmaLonI
+#define addLonICxma oracle_addLonICxma
+#define addCxmaCxma oracle_addCxmaCxma
+#define addCxmaShoI oracle_addCxmaShoI
+#define addShoICxma oracle_addShoICxma
+#define addCxmaReal oracle_addCxmaReal
+#define addRealCxma oracle_addRealCxma
+#define addCxmaCplx oracle_addCxmaCplx
+#define addCplxCxma oracle_addCplxCxma
+#define addShoIShoI oracle_addShoIShoI
+#define addShoIReal oracle_addShoIReal
+#define addRealShoI oracle_addRealShoI
+#define addShoICplx oracle_addShoICplx
+#define addCplxShoI oracle_addCplxShoI
+#define addRealReal oracle_addRealReal
+#define addRealCplx oracle_addRealCplx
+#define addCplxReal oracle_addCplxReal
+#define addComplex oracle_addComplex
+#define addCplxCplx oracle_addCplxCplx
+// --- subtraction.c ---
+#define fnSubtract oracle_fnSubtract
+#define subLonILonI oracle_subLonILonI
+#define subLonITime oracle_subLonITime
+#define subTimeLonI oracle_subTimeLonI
+#define subDateLonI oracle_subDateLonI
+#define subLonIShoI oracle_subLonIShoI
+#define subShoILonI oracle_subShoILonI
+#define subLonIReal oracle_subLonIReal
+#define subRealLonI oracle_subRealLonI
+#define subLonICplx oracle_subLonICplx
+#define subCplxLonI oracle_subCplxLonI
+#define subTimeTime oracle_subTimeTime
+#define subTimeReal oracle_subTimeReal
+#define subRealTime oracle_subRealTime
+#define subDateDate oracle_subDateDate
+#define subDateReal oracle_subDateReal
+#define subRemaLonI oracle_subRemaLonI
+#define subLonIRema oracle_subLonIRema
+#define subRemaRema oracle_subRemaRema
+#define subRemaCxma oracle_subRemaCxma
+#define subCxmaRema oracle_subCxmaRema
+#define subRemaShoI oracle_subRemaShoI
+#define subShoIRema oracle_subShoIRema
+#define subRemaReal oracle_subRemaReal
+#define subRealRema oracle_subRealRema
+#define subRemaCplx oracle_subRemaCplx
+#define subCplxRema oracle_subCplxRema
+#define subCxmaLonI oracle_subCxmaLonI
+#define subLonICxma oracle_subLonICxma
+#define subCxmaCxma oracle_subCxmaCxma
+#define subCxmaShoI oracle_subCxmaShoI
+#define subShoICxma oracle_subShoICxma
+#define subCxmaReal oracle_subCxmaReal
+#define subRealCxma oracle_subRealCxma
+#define subCxmaCplx oracle_subCxmaCplx
+#define subCplxCxma oracle_subCplxCxma
+#define subShoIShoI oracle_subShoIShoI
+#define subShoIReal oracle_subShoIReal
+#define subRealShoI oracle_subRealShoI
+#define subShoICplx oracle_subShoICplx
+#define subCplxShoI oracle_subCplxShoI
+#define subRealReal oracle_subRealReal
+#define subRealCplx oracle_subRealCplx
+#define subCplxReal oracle_subCplxReal
+#define subComplex oracle_subComplex
+#define subCplxCplx oracle_subCplxCplx
+// --- multiplication.c ---
+#define fnMultiply oracle_fnMultiply
+#define mulComplexi oracle_mulComplexi
+#define mulComplexComplex75 oracle_mulComplexComplex75
+#define mulComplexComplex159 oracle_mulComplexComplex159
+#define mulComplexComplex oracle_mulComplexComplex
+#define mulComplexReal oracle_mulComplexReal
+#define mulLonILonI oracle_mulLonILonI
+#define mulLonITime oracle_mulLonITime
+#define mulTimeLonI oracle_mulTimeLonI
+#define mulLonIRema oracle_mulLonIRema
+#define mulRemaLonI oracle_mulRemaLonI
+#define mulLonICxma oracle_mulLonICxma
+#define mulCxmaLonI oracle_mulCxmaLonI
+#define mulLonIShoI oracle_mulLonIShoI
+#define mulShoILonI oracle_mulShoILonI
+#define mulLonIReal oracle_mulLonIReal
+#define mulRealLonI oracle_mulRealLonI
+#define mulLonICplx oracle_mulLonICplx
+#define mulCplxLonI oracle_mulCplxLonI
+#define mulTimeShoI oracle_mulTimeShoI
+#define mulShoITime oracle_mulShoITime
+#define mulTimeReal oracle_mulTimeReal
+#define mulRealTime oracle_mulRealTime
+#define mulRemaRema oracle_mulRemaRema
+#define mulRemaCxma oracle_mulRemaCxma
+#define mulCxmaRema oracle_mulCxmaRema
+#define mulRemaShoI oracle_mulRemaShoI
+#define mulShoIRema oracle_mulShoIRema
+#define mulRemaReal oracle_mulRemaReal
+#define mulRealRema oracle_mulRealRema
+#define mulRemaCplx oracle_mulRemaCplx
+#define mulCplxRema oracle_mulCplxRema
+#define mulCxmaCxma oracle_mulCxmaCxma
+#define mulCxmaShoI oracle_mulCxmaShoI
+#define mulShoICxma oracle_mulShoICxma
+#define mulCxmaReal oracle_mulCxmaReal
+#define mulRealCxma oracle_mulRealCxma
+#define mulCxmaCplx oracle_mulCxmaCplx
+#define mulCplxCxma oracle_mulCplxCxma
+#define mulShoIShoI oracle_mulShoIShoI
+#define mulShoIReal oracle_mulShoIReal
+#define mulRealShoI oracle_mulRealShoI
+#define mulShoICplx oracle_mulShoICplx
+#define mulCplxShoI oracle_mulCplxShoI
+#define mulRealReal oracle_mulRealReal
+#define mulRealCplx oracle_mulRealCplx
+#define mulCplxReal oracle_mulCplxReal
+#define mulCplxCplx oracle_mulCplxCplx
+// --- division.c ---
+#define fnDivide oracle_fnDivide
+#define divComplexComplex75 oracle_divComplexComplex75
+#define divComplexComplex159 oracle_divComplexComplex159
+#define divComplexComplex oracle_divComplexComplex
+#define divRealComplex oracle_divRealComplex
+#define divComplexReal oracle_divComplexReal
+#define divLonILonI oracle_divLonILonI
+#define divLonIShoI oracle_divLonIShoI
+#define divShoILonI oracle_divShoILonI
+#define divLonIReal oracle_divLonIReal
+#define divRealLonI oracle_divRealLonI
+#define divLonICplx oracle_divLonICplx
+#define divCplxLonI oracle_divCplxLonI
+#define divTimeLonI oracle_divTimeLonI
+#define divLonITime oracle_divLonITime
+#define divTimeShoI oracle_divTimeShoI
+#define divShoITime oracle_divShoITime
+#define divTimeReal oracle_divTimeReal
+#define divRealTime oracle_divRealTime
+#define divTimeTime oracle_divTimeTime
+#define divRemaLonI oracle_divRemaLonI
+#define divLonIRema oracle_divLonIRema
+#define divRemaRema oracle_divRemaRema
+#define divRemaCxma oracle_divRemaCxma
+#define divRemaShoI oracle_divRemaShoI
+#define divShoIRema oracle_divShoIRema
+#define divRemaReal oracle_divRemaReal
+#define divRealRema oracle_divRealRema
+#define divRemaCplx oracle_divRemaCplx
+#define divCplxRema oracle_divCplxRema
+#define divCxmaLonI oracle_divCxmaLonI
+#define divLonICxma oracle_divLonICxma
+#define divCxmaRema oracle_divCxmaRema
+#define divCxmaCxma oracle_divCxmaCxma
+#define divCxmaShoI oracle_divCxmaShoI
+#define divShoICxma oracle_divShoICxma
+#define divCxmaReal oracle_divCxmaReal
+#define divRealCxma oracle_divRealCxma
+#define divCxmaCplx oracle_divCxmaCplx
+#define divCplxCxma oracle_divCplxCxma
+#define divShoIShoI oracle_divShoIShoI
+#define divShoIReal oracle_divShoIReal
+#define divRealShoI oracle_divRealShoI
+#define divShoICplx oracle_divShoICplx
+#define divCplxShoI oracle_divCplxShoI
+#define divRealReal oracle_divRealReal
+#define divRealCplx oracle_divRealCplx
+#define divCplxReal oracle_divCplxReal
+#define divCplxCplx oracle_divCplxCplx
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -299,6 +517,10 @@
 #include "../../../upstream/src/c47/mathematics/log2.c"
 #include "../../../upstream/src/c47/mathematics/exp.c"
 #include "../../../upstream/src/c47/mathematics/expMOne.c"
+#include "../../../upstream/src/c47/mathematics/addition.c"
+#include "../../../upstream/src/c47/mathematics/subtraction.c"
+#include "../../../upstream/src/c47/mathematics/multiplication.c"
+#include "../../../upstream/src/c47/mathematics/division.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it
