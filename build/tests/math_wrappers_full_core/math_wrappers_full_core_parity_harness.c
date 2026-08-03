@@ -442,6 +442,36 @@ static void seedVector3d(void) {
   }
 }
 
+// A COMPLEX matrix in X. Nothing in this tree has ever seeded one: this harness
+// named dtComplex34Matrix in exactly one place -- normalizeMatrixHeaderSpareBits,
+// which normalises a matrix register's spare header bits before comparison -- so
+// the lane was prepared to COMPARE a complex matrix register and never to CREATE
+// one. Every wrapper that dispatches on dtComplex34Matrix took its real-matrix or
+// scalar branch here and its complex-matrix branch nowhere.
+static void seedComplexMatrix(void) {
+  initMatrixRegister(REGISTER_X, 2, 2, true);
+  for(int e = 0; e < 4; ++e) {
+    int32ToReal34(e + 1, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + e));
+    int32ToReal34(-(e + 1), VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + e));
+  }
+}
+
+// The same, with a zero imaginary part in every element AND special results off.
+// conjCxma restores a POSITIVE sign on a zero imaginary part only when SPCRES is
+// clear, and both halves of that condition have to be arranged: a fixture whose
+// imaginary parts are all non-zero never reaches the line, and this harness leaves
+// SPCRES at its reset value, which is SET. Without the clear below, deleting the
+// restore from the Zig owner changes nothing that either side computes -- measured,
+// not assumed: that mutant survived until this line existed.
+static void seedComplexMatrixImagZero(void) {
+  initMatrixRegister(REGISTER_X, 1, 2, true);
+  for(int e = 0; e < 2; ++e) {
+    int32ToReal34(e + 1, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + e));
+    real34SetZero(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + e));
+  }
+  clearSystemFlag(FLAG_SPCRES);
+}
+
 static void seedTime(void) {
   reallocateRegister(REGISTER_X, dtTime, 0, amNone);
   int32ToReal34(12345, REGISTER_REAL34_DATA(REGISTER_X));
@@ -472,6 +502,8 @@ static const fixture_t FIXTURES[] = {
   { "matrixSquare",    seedMatrixSquare    },
   { "vector2d",        seedVector2d        },
   { "vector3d",        seedVector3d        },
+  { "complexMatrix",   seedComplexMatrix   },
+  { "complexMatrixImagZero", seedComplexMatrixImagZero },
   { "time",            seedTime            },
 };
 

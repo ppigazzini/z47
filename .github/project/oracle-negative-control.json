@@ -31,6 +31,15 @@
       "why": "Sixteen zero bytes is a different member of zero's cohort. Only a byte-level comparison of the register payload sees it."
     },
     {
+      "lane": "math_wrappers_full_core",
+      "step": "math_wrappers_full_core_parity",
+      "what": "conjCxma stops restoring a positive sign on a zero imaginary part",
+      "file": "src/core/numeric/projection.zig",
+      "find": "        if (runtime.real34IsZero(complexMatrixImagPtr(&complex_matrix, index)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {\n            runtime.real34SetPositiveSign(complexMatrixImagPtr(&complex_matrix, index));\n        }",
+      "replace": "",
+      "why": "Guards the complex-matrix branch, which no fixture in any lane reached until seedComplexMatrix existed. It needs BOTH halves of the condition arranged -- a zero imaginary part and SPCRES clear -- and this mutant survived until seedComplexMatrixImagZero cleared the flag, because the harness leaves it at its reset value of SET."
+    },
+    {
       "lane": "register_metadata",
       "step": "register_metadata_parity",
       "what": "the lettered reserved variables stop owning a null payload pointer",
