@@ -40,6 +40,15 @@ copy is a live wrong answer rather than a latent one. The fix for the backlog is
 not to edit these headers one by one -- it is `build/tests/c43_oracle.zig`, which
 lets a lane compile against upstream's own `c47.h` and declare no constants at all.
 
+THREE CATEGORIES, NOT TWO. A harness value that disagrees with c43 is either a
+stale copy (`drifted` -- a wrong answer, ratcheted, meant to reach zero) or a
+DESIGN DECISION (`deliberate` -- the harness must disagree, and says why). Those
+were one column until REPORT-31 M31-29, which meant a decision got re-counted and
+re-argued on every pass while sitting next to twenty real defects. `deliberate` is
+hand-authored, survives `--bump`, and every entry must carry a reason: a
+deliberate divergence with a stated reason is a decision, one without is a stale
+copy that learned to hide.
+
 Usage:
   check-harness-constant-copies.py [--repo-root .]
   check-harness-constant-copies.py --bump        # re-record counts after removing copies
@@ -265,8 +274,28 @@ def main() -> int:
 
     counts = {rel: len(names) for rel, names in sorted(per_file.items())}
     total = sum(counts.values())
+
+    # DELIBERATE divergences are hand-authored and survive --bump. A harness may
+    # legitimately disagree with c43 -- build/tests/memory/c47.h shrinks
+    # RAM_SIZE_IN_BLOCKS to 64 so the lane's pool fits a test binary, and setting
+    # it to 65534 would not be a fix. Recording that as `drifted` put a design
+    # decision in the same column as twenty stale copies, so it was re-counted and
+    # re-explained on every pass. It is its own category now, and it costs a
+    # written reason: a deliberate divergence with a stated reason is a decision,
+    # one without is a stale copy that learned to hide (REPORT-31 M31-29).
+    existing = {}
+    baseline_file = repo / BASELINE
+    if baseline_file.is_file():
+        existing = json.loads(baseline_file.read_text(encoding="utf-8"))
+    deliberate: dict[str, dict[str, str]] = existing.get("deliberate", {})
+
+    def is_deliberate(rel: str, name: str) -> bool:
+        return name in deliberate.get(rel, {})
+
     drifted_by_file: dict[str, list[str]] = {}
     for rel, name, _requirement in drifted:
+        if is_deliberate(rel, name):
+            continue
         drifted_by_file.setdefault(rel, []).append(name)
 
     if args.bump:
@@ -291,7 +320,14 @@ def main() -> int:
                         " compact numbering for a c43 enum (keyboard_state's CM_*/ITM_*,"
                         " math_wrappers' ERROR_*), which the conversions delete outright."
                     ),
+                    "_deliberate": (
+                        "Divergences from c43 that are DESIGN DECISIONS, not stale copies,"
+                        " each with the reason it is one. Hand-authored: --bump preserves"
+                        " this map and never adds to it. An entry with an empty reason"
+                        " FAILS the gate (REPORT-31 M31-29)."
+                    ),
                     "counts": counts,
+                    "deliberate": deliberate,
                     "drifted": {
                         rel: sorted(names) for rel, names in sorted(drifted_by_file.items())
                     },
@@ -303,7 +339,8 @@ def main() -> int:
         )
         print(
             f"check-harness-constant-copies: recorded {total} copies across {len(counts)}"
-            f" headers, {len(drifted)} of them already drifted"
+            f" headers, {sum(len(n) for n in drifted_by_file.values())} of them already"
+            f" drifted, {sum(len(d) for d in deliberate.values())} deliberate"
         )
         return 0
 
@@ -332,6 +369,8 @@ def main() -> int:
             )
 
     for rel, name, requirement in sorted(drifted):
+        if is_deliberate(rel, name):
+            continue
         if name in recorded_drift.get(rel, set()):
             continue
         problems.append(
@@ -340,16 +379,35 @@ def main() -> int:
             f"    c43's. Fix it at the source: include c43's header instead of copying."
         )
 
+    # A deliberate divergence earns its exemption with a written reason. Without
+    # one it is indistinguishable from the stale copies it sits beside.
+    for rel, names in sorted(deliberate.items()):
+        for name, reason in sorted(names.items()):
+            if not str(reason).strip():
+                problems.append(
+                    f"{rel}: {name} is listed as a DELIBERATE divergence with no reason.\n"
+                    f"    Write why the harness must disagree with c43 here, or move it\n"
+                    f"    back to `drifted` and fix it."
+                )
+
+    real_drift = [(r, n, q) for r, n, q in drifted if not is_deliberate(r, n)]
+    deliberate_seen = [(r, n, q) for r, n, q in drifted if is_deliberate(r, n)]
+
     print(
         f"check-harness-constant-copies: {len(candidates)} distinct (name, value) pairs scanned"
         f" across {len(headers)} harness headers"
     )
     print(f"  {len(undeclared)} harness-local (c43 does not declare them)")
     print(f"  {total} are copies of a c43 constant, across {len(counts)} headers")
-    print(f"  {len(drifted)} of those already disagree with c43's value:")
-    for rel, name, requirement in sorted(drifted):
+    print(f"  {len(real_drift)} of those already disagree with c43's value:")
+    for rel, name, requirement in sorted(real_drift):
         status = "recorded" if name in recorded_drift.get(rel, set()) else "NEW"
         print(f"    [{status}] {rel}: {name}  c43 vs harness {requirement}")
+    if deliberate_seen:
+        print(f"  {len(deliberate_seen)} diverge DELIBERATELY, each with a stated reason:")
+        for rel, name, requirement in sorted(deliberate_seen):
+            print(f"    [deliberate] {rel}: {name}  c43 vs harness {requirement}")
+            print(f"                 {deliberate[rel][name]}")
 
     if problems:
         print("\nHARNESS CONSTANT COPIES:")
