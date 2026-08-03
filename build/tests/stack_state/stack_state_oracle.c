@@ -31,7 +31,7 @@ void oracle_undo(void);
 #define undo oracle_undo
 #define fillStackWithReal0 oracle_fillStackWithReal0
 
-// `clearRegister` is deliberately NOT renamed (REPORT-31 M31-20). It is a
+// `clearRegister` is deliberately NOT renamed. It is a
 // registers.c function, not a stack.c one, so in this lane it is ENVIRONMENT --
 // shared by both implementations, exactly as the report's rule says a stub should
 // be. It used to be renamed onto a 60-line hand-written body here, which made it a
@@ -49,4 +49,3 @@ void z47_registers_fnToReal(uint16_t unusedButMandatoryParameter);
 bool_t z47_registers_adjust_result_no_drop_y(calcRegister_t res, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 bool_t z47_registers_adjust_result_no_drop_y_no_cpxres(calcRegister_t res, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
 void z47_registers_sort_reg(uint16_t range_start, uint16_t range_end);
-

@@ -215,7 +215,7 @@ extern var ctxtReal34: OpaqueCtx;
 extern var ctxtReal75: abi.RealContext;
 
 // ---------------------------------------------------------------------------
-// OPTION_XFN_1000 restore support (REPORT-31 M31-10).
+// OPTION_XFN_1000 restore support.
 // ---------------------------------------------------------------------------
 
 const REGISTER_X: i16 = 100;
@@ -626,7 +626,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
     } else if (strcmpEq(type_str, "RXFN")) {
         // OPTION_XFN_1000: the 1000-digit long-real form registerToSaveString
-        // writes above. FOUND MISSING by REPORT-31 M31-10 -- z47 emitted "RXFN"
+        // writes above. FOUND MISSING by the differential -- z47 emitted "RXFN"
         // on save and had no branch to read it back, so a long-real X survived a
         // save and returned as the "to be coded!" bug screen. c43 has had this
         // branch all along; the port dropped it when it inlined
@@ -764,7 +764,7 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         // version number the file supplies. Upstream's guard was already in the
         // pinned C when this owner was written; the resync never picked it up.
         //
-        // Found by report-clamp-correspondence.py, which M-SAFE-8 built for exactly
+        // Found by report-clamp-correspondence.py, which exists for exactly
         // this class: an upstream guard living inside a function the Zig already
         // has, where symbol-level correspondence sees nothing missing.
         if (loaded_version >= 10000020) {

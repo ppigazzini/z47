@@ -60,10 +60,10 @@ zig build math_circular_trig_oracle
 # to the module rooting of src/shell/distributions: an @import there that escapes
 # the harness module's path breaks this lane and nothing else.
 zig build distribution_parity
-# Format-equivalence oracle (M24): every migrated sprintf->std.fmt translation
+# Format-equivalence oracle: every migrated sprintf->std.fmt translation
 # must stay byte-identical to libc.
 zig build format_parity
-# Constant-offset oracle (REPORT-23 P3 / M22): every abi/constants.zig typed
+# Constant-offset oracle: every abi/constants.zig typed
 # accessor's blob offset must match the C constantPointers.h ground truth, so the
 # offset-crash class stays caught after each pin advance. constantPointers.h is a
 # gitignored generateConstants output, so refresh it into src/generated first.

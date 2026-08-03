@@ -47,7 +47,7 @@ NAME_RE = re.compile(
 # Constants that resolve in C but legitimately differ from the owner value.
 # Keep this list tiny and always cite why.
 #
-# EMPTY, and that is the exit criterion of REPORT-31 M31-11. It used to carry
+# EMPTY, and that is the exit criterion. It used to carry
 # FIRST_NAMED_RESERVED_VARIABLE (2026 vs C 2031) and its derived
 # NUMBER_OF_LETTERED_VARIABLES (26 vs C 31): z47 still named ADM/DENMAX/ISM/
 # REALDF/NDEC at 2026-2030 after c43 replaced them with RESERVED_VARIABLE_SPARE

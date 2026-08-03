@@ -515,11 +515,11 @@ int main(void) {
   int failures = 0;
 
   // The ten registers.c entry points that used to be compared here moved to
-  // register_metadata_parity (REPORT-31 M31-20). They were the only cases in this
+  // register_metadata_parity. They were the only cases in this
   // lane whose reference was HAND-WRITTEN -- 259 lines reimplementing clearRegister,
   // adjustResult, saveLastX, fnRegClr/Copy/Sort/Swap, fnClearRegisters, fnGetLocR
   // and fnToReal. They could not be converted in place: registers.c against this
-  // lane's mock c47.h is the same 424-error packed-word-vs-bitfield wall M31-12
+  // lane's mock c47.h is the same 424-error packed-word-vs-bitfield wall register_metadata
   // measured, because this IS that mock. In the register-metadata full-core lane
   // c43's own registers.c is already compiled under oracle_* names, so the cases
   // moved to where the reference is real. What stays here is stack.c, which this

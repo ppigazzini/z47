@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-# M-SAFE-1 (REPORT-30): generate a malformed state-file corpus that stresses the
+# Generate a malformed state-file corpus that stresses the
 # restore parser's dimension/length math -- the OOB class upstream guards against
 # in saveRestoreCalcState.c and z47 had never ported.
 #
-# CONSUMED BY: `zig build state_load_fuzz` (M-SAFE-7), which drives every file
+# CONSUMED BY: `zig build state_load_fuzz`, which drives every file
 # here through the real doLoad and checks two things -- that the restore path did
 # not crash, hang or trip a Zig safety check, and that it produced the outcome
 # `expectations.txt` states. The second matters because the defect class this
@@ -84,7 +84,7 @@ def write(name: str, lines: list[str], expect_version: int | None = None) -> Non
 # 16384 is the first that does not (65537). 128x128 is that first refused shape,
 # and it is a plausible matrix rather than a hostile one -- which is the point.
 #
-# Before the M-SAFE-1 fix this file reached
+# Without the matrix-dimension clamp this file reaches
 #   reallocateRegister(regist, dtReal34Matrix, @intCast(4 * rows * cols), tag)
 # with a value of 65536 and panicked with "integer does not fit in destination
 # type" on a safe host build; on the ReleaseSmall firmware the same cast truncates
@@ -128,8 +128,8 @@ write(
 )
 
 
-# M-SAFE-4: the header version line, forged. Under the wrapping u32 arithmetic the
-# state-side parser used before M-SAFE-4, these digits evaluate to exactly
+# The header version line, forged. Under wrapping u32 arithmetic the
+# state-side parser once used, these digits evaluate to exactly
 # 10000025 -- inside the [10000000, 20000000] window parseSaveFileRevision accepts
 # -- so a file could claim any version and thereby select the parse layout used
 # for everything after it. With the saturating parse the value pins to
@@ -157,7 +157,7 @@ print(f"{(outdir / 'expectations.txt').relative_to(root)}: {len(expectations)} e
 
 
 # =====================================================================
-# M-SAFE-14: the corpus M-SAFE-7 specified and did not build.
+# The corpus the state-file fuzz lane needs.
 #
 # Everything above is a REPRODUCER of a bug already found and fixed -- useful as
 # a regression guard, incapable of finding anything new. Everything below is the
@@ -188,7 +188,7 @@ SECTION_COUNTS = {
 # 0 and 1 probe the "section is not really there" and "one entry" edges; 0x7FFF
 # is the i16 boundary the EQUATIONS loop cared about; 0xFFFF and 0xFFFFFFFF are
 # the u16 and u32 ceilings a count field can express.
-# 0x100000000 and above are the M-SAFE-10 width probes, and the corpus stopped one
+# 0x100000000 and above are the strtoul width probes, and the corpus stopped one
 # short of them for two milestones: 0xFFFFFFFF is the LARGEST value at which a
 # 64-bit and a 32-bit `unsigned long` still agree. The divergence window opens at
 # 2**32 -- there a host reads the true low bits and the firmware reads 0xFFFFFFFF --
@@ -401,11 +401,11 @@ def _version(v: int) -> list[str]:
 # Version boundaries. The restore path BRANCHES on loadedVersion all over --
 # `restoreRegister` alone gates the config-descriptor decode on it -- and every
 # file derived from a real save carries the current version, so those older arms
-# were reached by nothing. M-SAFE-8's scan found a live out-of-bounds write behind
+# were reached by nothing. A scan found a live out-of-bounds write behind
 # one of them, which is what put this class in the corpus.
 #
 # Inside [10000000, 20000000] the header accepts the value, so the expectation is
-# the version itself; outside it the header forces 0 (M-SAFE-4's range check).
+# the version itself; outside it the header forces 0, by the version range check.
 for v in (10000000, 10000007, 10000008, 10000019, 10000020, 20000000):
     write(f"version_{v}.sav", _version(v), expect_version=v)
 for v in (9999999, 20000001):

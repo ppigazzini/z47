@@ -1,4 +1,4 @@
-# Sanctioned compilation carriers (REPORT-28 §39, law L9).
+# Sanctioned compilation carriers.
 # Each file below MUST be a module root (some object's root_source_file).
 # A force-import block in a non-root conscripts that owner as a carrier and
 # pins it to the code it carries -- give the carried code its own root instead.

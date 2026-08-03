@@ -18,7 +18,7 @@
 //! INTEGER class:
 //! overflowing arithmetic and out-of-range `@intCast`. That is not a
 //! consolation prize. It is precisely the class of the three bugs the M1 fuzz
-//! found and of the matrix-capacity defect M-SAFE-1 fixed. The spatial class
+//! found and of the matrix-capacity defect. The spatial class
 //! stays invisible until those regions become slices.
 //!
 //! So the namespace is chosen by target, not by build mode: freestanding traps,

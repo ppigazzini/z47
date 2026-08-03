@@ -4,16 +4,16 @@
 // compiled a second time into the full-core harness under `oracle_` names so it
 // links beside the Zig owner that replaced it.
 //
-// WHAT THIS REPLACED (REPORT-31 M31-10). 194 hand-written lines that modelled
+// WHAT THIS REPLACED. 194 hand-written lines that modelled
 // save-file revision parsing and nothing else -- about 6% of a 2959-line file --
 // under a lane named for the whole subsystem. The other 94% had never been
-// compared to anything, and M31-1 had already established that
+// compared to anything, and it was already established that
 // `saveload_roundtrip`'s golden is a z47 self-portrait regenerated from z47's own
 // writer. So NOTHING in the tree held z47's `.sav` FORMAT to c43's: a silent
 // state-file incompatibility on the most externally visible artifact z47 writes,
 // the file a user carries between a physical DM42 and the simulator.
 //
-// WHY A FULL-CORE DIFFERENTIAL AND NOT A LINKED UNIT ORACLE. M31-10 planned a unit
+// WHY A FULL-CORE DIFFERENTIAL AND NOT A LINKED UNIT ORACLE. A unit
 // harness: 96 globals defined once and shared, real in-memory file I/O, SHARED
 // value codecs, counting stubs for the rest. Its own stop condition fired on step
 // 3 -- "if the shared-codec requirement turns out to need more than a handful of

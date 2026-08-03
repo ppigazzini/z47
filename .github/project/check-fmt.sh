@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Formatting gate (REPORT-27 M-IDIOM-1): fail if any z47-owned Zig source is not
+# Formatting gate: fail if any z47-owned Zig source is not
 # canonically formatted by `zig fmt`. Idiomatic Zig is `zig fmt`-clean by
 # definition; this gate keeps the tree that way so unformatted code cannot land.
 #

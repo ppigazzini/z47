@@ -174,7 +174,7 @@ pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line:
 // `use_fake_harness_surface`, which swapped these four bodies for counting stubs
 // -- so the lane compared an oracle against a build of the owner that skipped
 // the very branches the oracle was taking. Now that the oracle IS c43's flags.c
-// (REPORT-31 M31-2), the harness supplies calcModeAim / calcModeNormal /
+//, the harness supplies calcModeAim / calcModeNormal /
 // popSoftmenu / setConfirmationMode / displayCalcErrorMessage under their real
 // names and both sides run their production path through the same environment.
 

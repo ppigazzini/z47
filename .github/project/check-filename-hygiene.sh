@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Filename hygiene gate (REPORT-28 §32 NM10-0). A source filename must name its
+# Filename hygiene gate. A source filename must name its
 # RESPONSIBILITY, never how it was produced. This fails the build on any src
 # filename that carries a migration-artifact / dumping-ground token, so the
 # "*_bulk"-class regression that the NM9 severance push introduced cannot come

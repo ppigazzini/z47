@@ -80,7 +80,7 @@ static int diff_one(const char *s) {
   }
 
   // stringToFileNameChars writes a sanitized filename into an output buffer;
-  // compare the two outputs byte-for-byte. This is the function the M10 delta
+  // compare the two outputs byte-for-byte. This is the function the delta
   // changes upstream (a new distinctQuotes parameter), so the oracle will flip
   // RED against the Zig owner the moment the imported C is refreshed (M10.2)
   // until the owner is re-ported to match.

@@ -2,7 +2,7 @@
 //
 // The one calculator state the calc-state lanes agree to look at.
 //
-// WHY THIS IS SHARED (REPORT-31 M31-10 step 4). Two lanes exercise
+// WHY THIS IS SHARED. Two lanes exercise
 // saveRestoreCalcState.c from opposite directions: `saveload_roundtrip` asserts
 // that z47's save->load->save is idempotent (a metamorphic relation, which needs
 // no external reference), and `calc_state_parity` asserts that z47's bytes equal

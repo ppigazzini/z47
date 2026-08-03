@@ -7,7 +7,7 @@ status) for every one of the ~2861 items. That table is C-DERIVED DATA maintaine
 by hand, so an upstream items.c change (new items, changed status/param/name)
 silently desyncs it -- and because nothing gated it, an upstream pin advance that
 grew LAST_ITEM crashed the testSuite with an indexOfItems[op] out-of-bounds before
-this audit existed (see REPORT-27 "Pin-Advance Trial").
+this audit existed.
 
 This audit closes that gap the same way the constant-parity audit does: it parses
 the real upstream `indexOfItems[]` initializer, evaluates every row's data fields

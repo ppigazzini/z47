@@ -836,7 +836,7 @@ fn restoreStateValue(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_st
         // in this same owner re-reads the pair and refuses any block index the pool
         // cannot hold, on both targets. That check is the reason this one can be
         // accepted -- and it is the check the STATE owner was missing until
-        // M-SAFE-10 ported it across.
+        // It was ported across.
         @as(*u32, @ptrCast(@alignCast(buffer))).* = @truncate(strtoul(vp, null, 0));
     } else if (streq(type_str, "hexDump")) {
         const numberOfBytes = calc_state.stringToUint32(vp);

@@ -120,7 +120,7 @@ int main(void) {
   lcd_buffer = (uint8_t *)calloc((size_t)240 * (400 / 8 + 2) + 4, 1) + 2;
 
   // The kbd_std_C47 FNV-1a layout checksum that used to sit here is GONE
-  // (REPORT-31 M31-24). It existed because "the keyboard Zig owners have no
+  //. It existed because "the keyboard Zig owners have no
   // compiled C oracle (the bridge was deleted)", and that is no longer true:
   // keyboard_state_parity compiles c43's keyboard.c AND assign.c, and compares all
   // six layout tables against c43's own, entry for entry, on every run.

@@ -29,7 +29,7 @@ Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable.
 | wrong value, right shape | the corpus (`zig build test`), with a value assertion | every sanitizer |
 | wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
 | out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- 19 load-path functions do, nothing else does** |
-| C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan**, live since M-SAFE-13 | the corpus, the parity lanes |
+| C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan** | the corpus, the parity lanes |
 | heap overflow / use-after-free in retained C | **nothing.** There is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every lane in this tree |
 | **one C47 block overrunning its neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic |
 | malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
@@ -66,7 +66,7 @@ differently -- it is which latent write the other targets are absorbing.
 
 `zig build test_asan`, `both_asan` and `pgm_load_fuzz` run **UndefinedBehaviorSanitizer**,
 not AddressSanitizer. The `*_asan` names are historical and wrong; the lanes were
-also, until M-SAFE-13, running no sanitizer at all.
+also, for a time, running no sanitizer at all.
 
 **There is no AddressSanitizer in this tree and there cannot be one today.** Zig's
 `sanitize_c` is the UBSan knob -- built the same C with `.off`, `.trap` and

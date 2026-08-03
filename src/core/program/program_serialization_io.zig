@@ -6,7 +6,7 @@ const builtin = @import("builtin");
 // helpers below with counting stubs -- so the lane compared c43 against a build
 // of the owner that never ran selectProgram, the label walk, or the pre-load
 // screening pass at all. Now that the oracle IS c43's saveRestorePrograms.c
-// (REPORT-31 M31-3), the harness supplies ioFileOpen / readLine /
+//, the harness supplies ioFileOpen / readLine /
 // scanLabelsAndPrograms / show_warning and the rest under their real c43 names,
 // and both sides run their production path through the same environment.
 

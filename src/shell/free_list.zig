@@ -47,7 +47,7 @@ inline fn freeRegions() [*c]freeMemoryRegion_t {
 }
 
 // ---------------------------------------------------------------------------
-// Free-pool poison detector (REPORT-30 finding 5, M-SAFE-15). PC-only, and gated
+// Free-pool poison detector. PC-only, and gated
 // on the same `track_allocations` flag as the double-free diagnostics so the
 // firmware is byte-identical: `if (comptime ...)` around every call site means
 // none of this reaches a DMCP build.

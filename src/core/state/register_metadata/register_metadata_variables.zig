@@ -371,7 +371,7 @@ pub fn deleteVariable(regist: u16) void {
         // plus storeNamedVariableName (which re-zeroes the whole name array) and a
         // clearNamedVariableSlot that @memset the array. Tidier, and WRONG: the RAM
         // image ends up different from c43's, and backup.cfg is a raw RAM dump, so
-        // the difference reaches a user-visible file. Found by REPORT-31 M31-12's
+        // the difference reaches a user-visible file. Found by the
         // differential, which compares the slab byte for byte.
         const headers = allNamedVariables orelse return;
         var shift_index = index;

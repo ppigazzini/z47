@@ -181,7 +181,7 @@ static int runSetSettingCase(uint16_t argument,
 // The equation-editor arm of leaving alpha mode. Reachable only with
 // calcMode == CM_EIM, which no other case sets: upstream's `_clearAlpha` walks
 // softmenuStack -> softmenu -> allFormulae there, and the Zig owner mirrors that
-// walk. Before REPORT-31 M31-2 neither side ran it in this lane -- the oracle did
+// walk. Neither side used to run it in this lane -- the oracle did
 // not model it and the owner was built with the branch stubbed out.
 static int runAlphaExitCase(const char *name,
                             uint16_t argument,
@@ -407,7 +407,7 @@ int main(void) {
   // one upstream is invisible to every case that does not name that flag. That
   // is not hypothetical: FLAG_IMPLOT was in two of those tables in c43 and in
   // neither the old hand-written oracle nor the Zig owner, and this lane was
-  // green (REPORT-31 M31-2). Sweeping the whole encoding space is cheap and
+  // green. Sweeping the whole encoding space is cheap and
   // makes table membership a mechanical comparison instead of a remembered one.
   for(uint32_t flag = 0; flag < 0x80; flag++) {
     const uint16_t plain = (uint16_t)(0x8000u | flag);

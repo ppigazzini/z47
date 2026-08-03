@@ -108,7 +108,7 @@ def main():
     if args.bump:
         doc = {
             "note": (
-                "REPORT-28 M8 / goal G6. `pub export` symbols ABSENT from the pinned C "
+                "`pub export` symbols ABSENT from the pinned C "
                 "tree: z47's own ABI surface. The other ~2599 exports are the parity "
                 "contract and are deliberately NOT counted here -- driving those down "
                 "would mean deviating from the C that parity requires. This list may "

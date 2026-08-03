@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""core/shell coupling guard (REPORT-28 s42).
+"""core/shell coupling guard.
 
 Measures two directed couplings from `src/core/` to `src/shell/`:
 
@@ -32,7 +32,7 @@ definition genuinely belonged in core. Re-pin with --update when that happens.
 The 4 symbols that are NOT in upstream's headers were real debt, and asking this
 question is what found them: PLOT_RMS/PLOT_INTG/PLOT_DIFF/PLOT_SHADE, globals
 upstream replaced with system flags (FLAG_PRMS..FLAG_PSHADE) and z47 did not
-follow. See REPORT-28 s42.
+follow.
 
 Baseline lives in core-shell-severance-baseline.json.
 """

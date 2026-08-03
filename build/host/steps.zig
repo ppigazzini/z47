@@ -709,12 +709,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const stack_state_parity_step = b.step("stack_state_parity", "Run the stack-state parity suite");
     stack_state_parity_step.dependOn(&run_stack_state_parity.step);
 
-    // register-metadata parity (REPORT-31 M31-12): the Zig owner against c43's OWN
+    // register-metadata parity: the Zig owner against c43's OWN
     // registers.c, compiled a second time under `oracle_` renames into the same
     // binary. Both sides then share globalRegister, the named variables, the RAM
     // slab and the free list, so nothing is modelled.
     //
-    // A FULL CORE and not the linked unit harness M31-12 planned. registers.c does
+    // A FULL CORE and not a linked unit harness. registers.c does
     // compile clean against upstream's c47.h -- but the unit harness was built on a
     // MOCK c47.h whose registerHeader_t is a packed word rather than c43's bitfield
     // struct, and compiling registers.c against it yields 424 errors. Rebuilding
@@ -761,14 +761,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const memory_parity_step = b.step("memory_parity", "Run the memory-state parity suite");
     memory_parity_step.dependOn(&run_memory_parity.step);
 
-    // calc-state parity (REPORT-31 M31-10): z47's `.sav` bytes against c43's own,
+    // calc-state parity: z47's `.sav` bytes against c43's own,
     // in ONE binary. calc_state_oracle.c compiles c43's saveRestoreCalcState.c a
     // second time under `oracle_` renames, beside the Zig owner that replaced it,
     // so both implementations share the same globals, the same register pool, the
     // same value codecs and the same file I/O -- nothing is modelled, so a
     // difference can only come from the code under test.
     //
-    // A FULL CORE and not a unit harness, deliberately. M31-10 planned the unit
+    // A FULL CORE and not a unit harness, deliberately. The unit
     // shape and its own stop condition fired: sharing the value codecs "for real"
     // needs registers.c, memory.c, charString.c, registerValueConversions.c,
     // longIntegerType, dateTime, decNumber and GMP linked live, which is not the
@@ -814,7 +814,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const calc_state_parity_step = b.step("calc_state_parity", "Run the calc-state differential against c43's own saveRestoreCalcState.c");
     calc_state_parity_step.dependOn(&run_calc_state_parity.step);
 
-    // NOT a parity lane, despite what it was called until REPORT-31 M31-1. Its
+    // NOT a parity lane, despite the name it once carried. Its
     // golden was the C `doSave` bytes once; it has since been regenerated from
     // z47's OWN save path a dozen times (stats call-order, FLAG_SIGZEROS, the G4b
     // deletion), so the reference is a z47 self-portrait that does not move when
@@ -893,7 +893,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     // handler are compiled ONLY into this dedicated binary, never a product or
     // normal-test one.
     //
-    // REPORT-27 M-IDIOM-9: the keyboard_state and stack_state owners are exercised
+    // The keyboard_state and stack_state owners are exercised
     // by this harness (btnClicked dispatch + stack ops), but the shared context
     // objects are built WITHOUT the coverage flag and reused by sim/test, so we
     // cannot flip sancov on them (the handler symbol is linked only here). Instead
@@ -997,7 +997,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const charstring_diff_step = b.step("charstring_diff", "Run the C-vs-Zig differential (stringGlyphLength vs the pinned upstream oracle) (Annex A5)");
     charstring_diff_step.dependOn(&run_charstring_diff.step);
 
-    // Format-equivalence oracle (M24): a self-contained differential that proves
+    // Format-equivalence oracle: a self-contained differential that proves
     // each C sprintf conversion byte-equal to its std.fmt translation over a fuzz
     // matrix (libc snprintf is the ground truth). Gates the sprintf->std.fmt
     // migration -- a translation may only be applied at a call site once it is
@@ -1020,7 +1020,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     });
     const run_format_parity = b.addRunArtifact(format_parity_exe);
     run_format_parity.setCwd(b.path("."));
-    const format_parity_step = b.step("format_parity", "Run the sprintf<->std.fmt format-equivalence oracle (M24)");
+    const format_parity_step = b.step("format_parity", "Run the sprintf<->std.fmt format-equivalence oracle");
     format_parity_step.dependOn(&run_format_parity.step);
 
     // Headless .p47 program runner: load a user program file through the real
@@ -1053,7 +1053,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const pgm_run_step = b.step("pgm_run", "Load and XEQ a .p47 program on the full core (-Dpgm=<file.p47>)");
     pgm_run_step.dependOn(&run_pgm_run.step);
 
-    // M1 (REPORT-27 ANNEX B): run a corpus of MALFORMED .p47 files through the real
+    // Run a corpus of MALFORMED .p47 files through the real
     // program-load path under AddressSanitizer. This is the one justified memory-
     // correctness task -- the load path is the empirical bug surface (upstream 577
     // statefile overflow, decode-literal-base-oob), and the existing cov tests only
@@ -1083,10 +1083,10 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const pgm_load_fuzz_step = b.step("pgm_load_fuzz", "M1: run malformed .p47 files through the load path under ASAN");
     pgm_load_fuzz_step.dependOn(&pgm_load_fuzz_cmd.step);
 
-    // M-SAFE-7 (REPORT-30): the same treatment for STATE files. saveload_roundtrip
+    // The same treatment for STATE files. saveload_roundtrip
     // and saveload_golden only round-trip files the calculator just wrote, so the
     // 137 lines of bounds 31fb6f755 added to calc_state_restore.zig, and the
-    // matrix-dimension guard M-SAFE-1 ported, had no adversarial coverage at all.
+    // ported matrix-dimension guard had no adversarial coverage at all.
     // Built at the default optimize level on purpose: Zig's safety checks are the
     // detector here, since an out-of-range @intCast on the load path traps in a
     // safe build and wraps silently in the ReleaseSmall firmware.
@@ -1111,7 +1111,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     state_load_fuzz_cmd.addArtifactArg(state_load_harness);
     state_load_fuzz_cmd.addArg("build/tests/calc_state/malformed");
     state_load_fuzz_cmd.setCwd(b.path("."));
-    const state_load_fuzz_step = b.step("state_load_fuzz", "M-SAFE-7: run malformed state files through the real restore path");
+    const state_load_fuzz_step = b.step("state_load_fuzz", "Run malformed state files through the real restore path");
     state_load_fuzz_step.dependOn(&state_load_fuzz_cmd.step);
 
     // Program-memory pointer-math harness: verifies the HW-geometry-dependent
@@ -1146,7 +1146,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const ringbuffer_test_step = b.step("keyboard_ringbuffer_test", "Run the DMCP key ring-buffer mechanics tests");
     ringbuffer_test_step.dependOn(&run_ringbuffer_test.step);
 
-    // REPORT-23 §7.2/§11: the idiomatic-refactor colocated `test {}` blocks. These
+    // The idiomatic-refactor colocated `test {}` blocks. These
     // are hermetic (no C runtime) -- the L1 abi ABI-contract asserts and, as the
     // L2 owner cores land, their pure-logic tests. The C parity oracle stays the
     // authority for behavior; this covers invariants the oracle cannot express.
@@ -1158,7 +1158,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
         }),
     });
     const run_idiom_test = b.addRunArtifact(idiom_test);
-    const idiom_test_step = b.step("idiom-test", "Run the REPORT-23 idiomatic-Zig colocated test blocks");
+    const idiom_test_step = b.step("idiom-test", "Run the idiomatic-Zig colocated test blocks");
     idiom_test_step.dependOn(&run_idiom_test.step);
 
     // Seam-and-core harness: cross-check the abi/types.zig numeric mirrors
@@ -1206,7 +1206,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const abi_layout_step = b.step("abi-layout-parity", "Cross-check abi/types.zig mirrors against the upstream C layout");
     abi_layout_step.dependOn(&run_abi_layout_test.step);
 
-    // keyboard parity (REPORT-31 M31-13): the Zig owner against c43's OWN
+    // keyboard parity: the Zig owner against c43's OWN
     // keyboard.c, compiled a second time under `oracle_` renames into the same
     // binary. Option C from the report, and the only shape that works: keyboard.c
     // reads GdkEvent fields and declares a GdkEventButton by value, so a headless
@@ -1283,7 +1283,7 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     });
     const run_math_wrappers_full_core = b.addRunArtifact(math_wrappers_full_core_harness);
     run_math_wrappers_full_core.setCwd(upstreamCwd(b));
-    const math_wrappers_full_core_step = b.step("math_wrappers_full_core_parity", "Run the math-wrapper differential against c43's own mathematics/*.c");
+    const math_wrappers_full_core_step = b.step("math_wrappers_full_core_parity", "Run the math-wrapper differential against c43's own mathematics sources");
     math_wrappers_full_core_step.dependOn(&run_math_wrappers_full_core.step);
 
     const math_ln_complex_oracle = addMathLnComplexOracle(b, context, optimize);

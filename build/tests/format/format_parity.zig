@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Format-equivalence oracle (REPORT-23 / MILESTONES-4 M24).
+// Format-equivalence oracle.
 //
 // The port formats display/label/error strings with C `sprintf`/`snprintf` for
 // byte-identical output (the LCD + error-hint text the testSuite parity checks).
@@ -118,7 +118,7 @@ fn proveUnsigned(
 }
 
 pub fn main() !void {
-    std.debug.print("format-equivalence oracle (M24): proving sprintf <-> std.fmt byte-equality\n", .{});
+    std.debug.print("format-equivalence oracle: proving sprintf <-> std.fmt byte-equality\n", .{});
 
     // Value matrices: include negatives + boundaries so a bad translation cannot
     // hide (that is the whole point -- the oracle must catch %04d/{d:0>4} etc.).

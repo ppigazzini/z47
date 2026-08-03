@@ -27,7 +27,7 @@ pub const RuntimeObjectOptions = struct {
     // that compile-time model, and the keyboard-state object is shared between a
     // HW's C47 and R47 builds, so the distinction is threaded as a build option.
     is_r47: bool = false,
-    // REPORT-27 M-IDIOM-9: build this object with SanitizerCoverage
+    // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the keyboard-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
     // for the dedicated coverage harness variant, never a product/test object,
@@ -83,7 +83,7 @@ fn addRuntimeObjectWithIncludeDir(
         .omit_frame_pointer = options.omit_frame_pointer,
         .error_tracing = options.error_tracing,
     });
-    // L1 shared ABI bindings (REPORT-23 §5).
+    // L1 shared ABI bindings.
     const abi_module = b.createModule(.{
         .root_source_file = b.path("src/abi/types.zig"),
         .target = target,
@@ -245,7 +245,7 @@ pub fn filterCoreSources(b: *std.Build, core_sources: [][]const u8) ![][]const u
     return try filtered.toOwnedSlice(b.allocator);
 }
 
-// NO addParityExecutable HERE, deliberately (REPORT-31 M31-13).
+// NO addParityExecutable HERE, deliberately.
 //
 // The keyboard parity lane used to be a unit executable with a 238-line
 // hand-written oracle covering ~4% of keyboard.c -- and by its own driver's

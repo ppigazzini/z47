@@ -82,7 +82,7 @@ fn buildImpl(b: *std.Build) !void {
     );
 }
 
-// REPORT-27 M-IDIOM-3: native Zig unit tests that run without the upstream C
+// Native Zig unit tests that run without the upstream C
 // oracle. Only self-contained, std-only pure-logic modules belong here (no
 // global calculator state, no C extern, no build_options). This gives a
 // correctness signal independent of the C testSuite. Extend `pure_modules` as

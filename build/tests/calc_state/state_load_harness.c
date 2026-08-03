@@ -3,13 +3,13 @@
 // Headless state-file loader, for driving MALFORMED .sav / .d47 input through
 // the real restore path.
 //
-// M-SAFE-7 (REPORT-30). The state path is the surface upstream's worst memory
+// The state path is the surface upstream's worst memory
 // bug lived on (the 577 statefile overflow), and until this existed nothing in
 // the tree fed it anything but files the calculator itself had just written:
 // `saveload_roundtrip` and `saveload_golden` round-trip valid state, and
 // `pgm_load_fuzz` covers `.p47` programs only. The bounds commit 31fb6f755 added
 // to calc_state_restore.zig -- 137 lines of them -- had no adversarial coverage
-// at all, and the matrix-dimension guard that M-SAFE-1 ported had none either.
+// at all, and the ported matrix-dimension guard had none either.
 //
 // Usage:  state_load <file.sav> [loadMode]
 //
@@ -54,7 +54,7 @@ bool_t          screenChange;
 
 // fnLoad is a Zig export (calc_state.zig); no C header declares it.
 extern void fnLoad(uint16_t loadMode);
-// M-SAFE-15 / finding 5: the pool poison detector (free_list.zig). ASan sees `ram`
+// The pool poison detector (free_list.zig). ASan sees `ram`
 // as one allocation, so a block overrunning its neighbour is invisible to every
 // other lane here. Poisoning free space before the load and auditing it after
 // catches an overrun that lands in free pool space -- not one that lands in
@@ -62,7 +62,7 @@ extern void fnLoad(uint16_t loadMode);
 extern void z47_free_list_poison_free_space(void);
 extern int  z47_free_list_audit_free_space(void);
 // Reported after the load so a corpus file that FORGES a version is visible in
-// the log rather than only in a crash (M-SAFE-4's wrap-to-10000025 case).
+// the log rather than only in a crash (the wrap-to-10000025 case).
 extern uint32_t z47_calc_state_get_loaded_version(void);
 
 #define LM_ALL 0

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# M-SAFE-7 (REPORT-30): drive a corpus of MALFORMED state files through the real
+# Drive a corpus of MALFORMED state files through the real
 # restore path (fnLoad -> doLoad -> restoreOneSection -> restoreRegister).
 #
 # PASS: the harness returns. That includes a file the parser REFUSES -- refusing
@@ -13,7 +13,7 @@
 # are live: an out-of-range @intCast or an overflowing add on the load path traps
 # here rather than wrapping silently as it would in the ReleaseSmall firmware.
 # That is the detector this lane actually depends on -- the C is UBSan-
-# instrumented too (M-SAFE-13), but there is no AddressSanitizer anywhere in this
+# instrumented too, but there is no AddressSanitizer anywhere in this
 # tree, so an overrun INSIDE the `ram` pool is still invisible. See
 # docs/75-debugging.md.
 #
@@ -54,7 +54,7 @@ fail=0
 #   0 = LM_ALL   1 = LM_PROGRAMS   2 = LM_REGISTERS   5 = LM_SYSTEM_STATE
 LOAD_MODES="0 1 2 5"
 
-# M-SAFE-15's pool poison detector is NEW, and on its first run it reported two
+# The pool poison detector is NEW, and on its first run it reported two
 # files whose writer is not yet identified (finding 22). Per the rule this tree
 # applies to every new heuristic -- calibrate before you judge -- it lands as a
 # REPORT with a known-list rather than a gate. A poison report from any OTHER file
@@ -95,7 +95,7 @@ for f in "$corpus"/*.sav; do
     echo "FAIL (sanitizer exitcode): $label"
     fail=$((fail + 1))
   elif [ "$rc" -eq 87 ]; then
-    # The pool poison detector (M-SAFE-15). Something wrote past its allocation
+    # The pool poison detector. Something wrote past its allocation
     # into free pool space -- the class ASan cannot see here, because `ram` is one
     # allocation to it. This is finding 5's only detector.
     # ' %s ' on BOTH sides: '%s ' alone leaves the first entry without a leading
@@ -165,8 +165,8 @@ if [ "$total" -eq 0 ]; then
 fi
 
 if [ "$fail" -ne 0 ]; then
-  echo "M-SAFE-7 state_load_fuzz: $fail of $total malformed state file x load-mode runs FAILED."
+  echo "state_load_fuzz: $fail of $total malformed state file x load-mode runs FAILED."
   exit 1
 fi
 
-echo "M-SAFE-7 state_load_fuzz: $total malformed state file x load-mode runs handled with no crash / hang / safety panic."
+echo "state_load_fuzz: $total malformed state file x load-mode runs handled with no crash / hang / safety panic."

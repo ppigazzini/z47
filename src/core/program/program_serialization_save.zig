@@ -40,7 +40,7 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
 
     // c43's `_selectProgram` is void: an out-of-range label raises the error and
     // the save CONTINUES with whatever program is current. Gating the save on it
-    // was a z47 divergence the frozen oracle could not see (REPORT-31 M31-3).
+    // was a z47 divergence the frozen oracle could not see.
     runtime.selectProgram(label);
 
     const ret = runtime.openSaveProgram(path);

@@ -2,7 +2,7 @@
 //
 // calc-state parity: z47's `.sav` bytes against c43's, in one binary.
 //
-// WHAT THIS LANE IS FOR (REPORT-31 M31-10). A state file is the artifact a user
+// WHAT THIS LANE IS FOR. A state file is the artifact a user
 // carries between a physical DM42 and the simulator, and until this lane existed
 // NOTHING in the tree held its format to c43:
 //
@@ -16,7 +16,7 @@
 //
 // So a c43 format change -- a widened field, a reordered section, a renamed
 // header key -- would have been invisible, and every state file z47 writes
-// silently incompatible. That is REPORT-31 §1.1 aimed at the most externally
+// silently incompatible. That is the parity rule aimed at the most externally
 // visible thing z47 produces.
 //
 // HOW IT WORKS. calc_state_oracle.c compiles c43's OWN saveRestoreCalcState.c a
@@ -137,7 +137,7 @@ static int compareBytes(const char *what, const unsigned char *a, long na, const
 //
 // The sweep is deliberately width- and platform-agnostic in what it ASSERTS: it
 // never claims a value, only that the two implementations agree. That makes the
-// 32-vs-64-bit `unsigned long` divergence (M-SAFE-10's subject) visible as a
+// 32-vs-64-bit `unsigned long` divergence visible as a
 // disagreement if one side stops matching, instead of being encoded here as if
 // one platform's answer were the contract.
 // ---------------------------------------------------------------------------

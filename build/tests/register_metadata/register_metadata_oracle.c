@@ -4,13 +4,13 @@
 // compiled a second time into the full-core harness under `oracle_` names so it
 // links beside the Zig owner that replaced it.
 //
-// WHAT THIS REPLACED (REPORT-31 M31-12). 1060 lines and 43 `oracle_*` functions
+// WHAT THIS REPLACED. 1060 lines and 43 `oracle_*` functions
 // hand-transliterating 42% of registers.c -- a fork, not an oracle. It could not
 // see c43 move, and it had drifted: it carried the pre-SPARE reserved-variable
 // model (an "ADM" entry at table index 26 where c43 has a placeholder), which is
-// the divergence M31-11 had to land before this conversion could be honest.
+// a divergence that had to land before this conversion could be honest.
 //
-// WHY A FULL-CORE DIFFERENTIAL AND NOT A LINKED UNIT ORACLE. M31-12 planned the
+// WHY A FULL-CORE DIFFERENTIAL AND NOT A LINKED UNIT ORACLE. The
 // unit shape on the strength of "registers.c compiles clean against upstream's
 // own c47.h, 87 stubs". It does -- but the existing unit harness is not built on
 // upstream's c47.h, it is built on a MOCK one whose `registerHeader_t` is a
@@ -19,7 +19,7 @@
 // rebuilding the harness world (1649 lines of fake runtime, shared with the
 // stack-state lane) on upstream's types.
 //
-// The deeper reason is the one that redirected M31-10. registers.c IS the
+// The deeper reason is the one that redirected calc_state. registers.c IS the
 // register subsystem, so "share the state with the Zig owner" means sharing
 // globalRegister, allNamedVariables, the RAM slab and the free list -- which is
 // the whole calculator. In a full core all of that is shared by construction and

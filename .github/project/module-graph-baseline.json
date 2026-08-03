@@ -1,44 +1,44 @@
 {
- "abi_cycles": 0,
- "acd": 36.7,
- "ccd": 15762,
- "cycles": [
-  {
-   "size": 56,
-   "zone": "shell/display"
-  },
-  {
-   "size": 37,
-   "zone": "core/numeric"
-  },
-  {
-   "size": 12,
-   "zone": "core/persist"
-  },
-  {
-   "size": 8,
-   "zone": "core/state"
-  },
-  {
-   "size": 5,
-   "zone": "core/analysis"
-  },
-  {
-   "size": 3,
-   "zone": "core/numeric"
-  },
-  {
-   "size": 2,
-   "zone": "core/state"
-  },
-  {
-   "size": 2,
-   "zone": "core/state"
-  }
- ],
- "edges": 1388,
- "files": 429,
- "files_in_cycles": 125,
- "nccd": 4.69,
- "note": "REPORT-28 M1.3. Cycles in the @import graph, frozen by (size, zone) so a new cycle cannot hide behind a disappearing one. abi_cycles must reach 0 (the contract layer is the bottom). ccd/acd/nccd are REPORTED, not gated: Lakos's NCCD threshold assumes cycles cost compile time, and in z47 they cost neither compile time, flash nor test isolation."
+  "abi_cycles": 0,
+  "acd": 36.7,
+  "ccd": 15762,
+  "cycles": [
+    {
+      "size": 56,
+      "zone": "shell/display"
+    },
+    {
+      "size": 37,
+      "zone": "core/numeric"
+    },
+    {
+      "size": 12,
+      "zone": "core/persist"
+    },
+    {
+      "size": 8,
+      "zone": "core/state"
+    },
+    {
+      "size": 5,
+      "zone": "core/analysis"
+    },
+    {
+      "size": 3,
+      "zone": "core/numeric"
+    },
+    {
+      "size": 2,
+      "zone": "core/state"
+    },
+    {
+      "size": 2,
+      "zone": "core/state"
+    }
+  ],
+  "edges": 1388,
+  "files": 429,
+  "files_in_cycles": 125,
+  "nccd": 4.69,
+  "note": "Cycles in the @import graph, frozen by (size, zone) so a new cycle cannot hide behind a disappearing one. abi_cycles must reach 0 (the contract layer is the bottom). ccd/acd/nccd are REPORTED, not gated: Lakos's NCCD threshold assumes cycles cost compile time, and in z47 they cost neither compile time, flash nor test isolation."
 }

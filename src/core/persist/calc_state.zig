@@ -112,7 +112,7 @@ pub export fn z47_calc_state_save_sections() void {
 // Nothing could see it: the twin scan pairs functions ACROSS the two load
 // families and all six live here, and the parity oracles only ever feed them
 // plain decimal. report-twin-divergence.py --macro-families is the detector built
-// for this class (M-SAFE-11); it reports zero for this family only while all six
+// for this class; it reports zero for this family only while all six
 // bodies agree, so keep them identical to their siblings below.
 //
 // Do NOT confuse these with calc_state_text.zig's toUint8/toUint16/toUint32/
@@ -156,7 +156,7 @@ pub export fn stringToInt32(str: [*:0]const u8) i32 {
 //
 // Base TEN, explicitly. z47 had aliased it to stringToInt32, which is base 0 --
 // so a zero-padded field read "010" as 8 and refused "08" and "09" outright,
-// while c43 read 10, 8 and 9. Found by REPORT-31 M31-10's differential against
+// while c43 read 10, 8 and 9. Found by the differential against
 // c43's own saveRestoreCalcState.c, which the previous hand-written oracle could
 // not see because it only ever fed the parsers plain unpadded decimal.
 //
@@ -257,7 +257,7 @@ pub export fn read2Lines(line1: [*c]u8, maxLen1: usize, line2: [*c]u8, maxLen2: 
 // Canonical string→number leaf helpers (saveRestoreCalcState.c), base 0 like the
 // C strtol/strtoul/strtoll/strtoull/strtof originals. The int16/int32/uint8/
 // uint32 members of the same two macro families are exported above; until
-// M-SAFE-11 this comment claimed base 0 for them while they parsed base 10.
+// this comment once claimed base 0 for them while they parsed base 10.
 extern fn strtoll(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_longlong;
 extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn strtol(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;

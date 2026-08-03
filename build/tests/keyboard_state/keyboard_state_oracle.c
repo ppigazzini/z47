@@ -4,7 +4,7 @@
 // second time into the full-core harness under `oracle_` names so it links beside
 // the Zig owner that replaced it.
 //
-// WHAT THIS REPLACED (REPORT-31 M31-13). 238 hand-written lines modelling roughly
+// WHAT THIS REPLACED. 238 hand-written lines modelling roughly
 // 4% of a 4982-line file, under a lane named for the whole subsystem -- and, by
 // its own driver's admission, the handler cases had already been deleted because
 // the simplified oracle no longer matched the ported handlers. What was left was
@@ -81,7 +81,7 @@
 #include "../../../upstream/src/c47/keyboard.c"
 
 // ---------------------------------------------------------------------------
-// c43's OWN keyboard layout tables, for the table differential (REPORT-31 M31-24).
+// c43's OWN keyboard layout tables, for the table differential.
 //
 // keyboard_entry_harness.c guarded kbd_std_C47 with a frozen FNV-1a checksum and a
 // comment saying "the keyboard Zig owners have no compiled C oracle (the bridge was

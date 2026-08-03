@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Idiom-status census for the REPORT-23 idiomatic-Zig refactor (Phase infinity).
+"""Idiom-status census for the idiomatic-Zig refactor.
 
-Counts the transliteration anti-patterns REPORT-23 §2 tracks, across src/,
+Counts the tracked transliteration anti-patterns, across src/,
 per-owner. The census is split into two layers (churn-driven roadmap): CORE
 (hand-written owner code) is the ratchet ceiling metric and is meant to fall as
 owners move to idiomatic Zig; SEAM (generated ABI shims -- files under a
@@ -149,7 +149,7 @@ def scan(repo_root: Path) -> dict:
             seam_file_count += 1
             continue
         # "Owner" = an idiomatic core file. The historical `_owned` role suffix was
-        # dropped in M25 (project structure), so count every src file that is
+        # dropped when the project was restructured, so count every src file that is
         # not an L3 C-ABI runtime/shared shim.
         if not path.name.endswith(("_runtime.zig", "_shared.zig")):
             owner_count += 1
@@ -172,7 +172,7 @@ def print_report(result: dict) -> None:
         f"src files: {result['file_count']}  owners: {result['owner_count']}"
         f"  seam files: {result['seam_file_count']}"
     )
-    print("\nCore (hand-written) anti-pattern totals -- ratchet ceiling (REPORT-23 §2):")
+    print("\nCore (hand-written) anti-pattern totals -- ratchet ceiling:")
     for label, _, mode in PATTERNS:
         print(f"  {label:26s} {result['totals'][label]:6d}  ({mode})")
     if result["seam_file_count"]:

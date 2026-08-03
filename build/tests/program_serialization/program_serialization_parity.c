@@ -295,7 +295,7 @@ int main(void) {
 
   // --- the pre-load screening pass ---------------------------------------
   //
-  // None of these could be compared before REPORT-31 M31-3: the frozen oracle
+  // None of these could be compared while the oracle was frozen: it
   // did not model the screen, and the Zig owner's screen was compiled out of the
   // parity build entirely.
   {

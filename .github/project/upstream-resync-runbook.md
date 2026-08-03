@@ -83,7 +83,7 @@ Then re-derive the changed C behavior into those owners (never edit `src/`). Pre
 ### 2b. The parity oracles — what a resync still owes them
 
 `report-resync-worklist.py` names the Zig owner of a changed C file. That used to
-leave a gap: five parity oracles reproduced a c43 file BY HAND (REPORT-31), so a c43
+leave a gap: five parity oracles reproduced a c43 file BY HAND, so a c43
 change ported into the Zig owner but not the oracle turned the lane **red on a
 correct port**, and a change ported into neither left it **green on a divergence** —
 the worse half, and the reason that report exists.

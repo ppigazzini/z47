@@ -5,7 +5,7 @@ The companion audit ``check-c-dependency-allowlist.py`` scans build ``.zig``
 files for path-like ``.c`` string literals. That is fast but structurally
 fragile: first-party C pulled in by a directory glob (``collectRelativeCFiles``)
 or by a manifest the scanner does not resolve is invisible to it, which is how a
-laundered "0" was historically possible (see REPORT-15).
+laundered "0" was historically possible.
 
 This check closes that gap by parsing the *actual* ``zig build <target>
 --verbose`` compiler invocations and asserting that every product compile/link

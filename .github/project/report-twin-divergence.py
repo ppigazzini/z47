@@ -7,10 +7,10 @@ structurally identical helpers. Twice a fix has been applied to one and not the
 other, and neither time did any lane notice:
 
   * upstream's matrix-dimension capacity clamp -- absent from the Zig for four
-    resyncs (M-SAFE-1);
-  * the M1 fuzz's saturating `parseU32LineZ` -- fixed in
+    resyncs;
+  * the fuzz lane's saturating `parseU32LineZ` -- fixed in
     program_serialization_runtime.zig while the byte-identical twin in
-    calc_state_runtime.zig kept wrapping for three weeks (M-SAFE-4).
+    calc_state_runtime.zig kept wrapping for three weeks.
 
 Nothing existing can see this class. The parity oracles compare each owner
 against upstream C, so two owners that differ from EACH OTHER both look fine, and
@@ -19,15 +19,15 @@ the idiom/narrowing ratchets count shapes rather than semantics.
 RANKING, and this is the whole design. Divergence between twins is NORMAL -- the
 two formats really are different -- so a list of "these differ" is noise. What is
 suspicious is a twin pair that is ALMOST identical: a one-operator drift like `*`
-versus `*|` is the M-SAFE-4 bug exactly, while a wholesale rewrite is two
+versus `*|` is the version-forgery bug exactly, while a wholesale rewrite is two
 functions that merely share a name. So pairs are ranked by similarity DESCENDING
 and the near-misses come first.
 
 TWO MODES, two kinds of twin. The default mode ranks same-named functions across
-the two directories above. `--macro-families` (M-SAFE-11) compares the members of
+the two directories above. `--macro-families` compares the members of
 one upstream `#define`-generated family against EACH OTHER -- see the section
 below. The cross-directory mode stays a REPORT: some divergence there is
-legitimate and the false-positive rate is not yet known, so per the REPORT-24 M2
+legitimate and the false-positive rate is not yet known, so per the same
 lesson it is not gated. The macro-family mode IS gated, at zero, because a macro
 guarantees its members are identical and there is nothing to calibrate away.
 
@@ -62,7 +62,7 @@ from upstream_paths import upstream_path
 # `use_fake_program_serialization_harness_surface` -- and that is not a
 # behavioural difference, it is the family label. Left in, those pairs score ~0.86
 # and crowd the top of the ranking while the real defect sits below them: measured
-# on the tree before M-SAFE-4, the parseU32LineZ bug ranked SEVENTH of eight, under
+# on the tree before that fix, the parseU32LineZ bug ranked SEVENTH of eight, under
 # five such pairs. Canonicalising the stem drops them to identical and lets the
 # ranking mean what it claims.
 FAMILIES = (
@@ -174,7 +174,7 @@ def compare(root: pathlib.Path) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Macro families (M-SAFE-11, from finding 10)
+# Macro families
 #
 # A "twin" is not only a cross-directory relationship. Upstream generates whole
 # sets of functions from ONE `#define`, which makes them a family that must be
@@ -372,7 +372,7 @@ def self_test() -> int:
         )
     )
 
-    # --- macro families (M-SAFE-11) ---
+    # --- macro families ---
     # The first two exist because the scan shipped a run reporting a clean tree
     # for both of these reasons, and a clean report is not distinguishable from a
     # correct one by looking at it.

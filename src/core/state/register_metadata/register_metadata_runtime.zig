@@ -51,7 +51,7 @@ pub const FIRST_RESERVED_VARIABLE: calcRegister_t = 2000;
 // RESERVED_VARIABLE_SPARE placeholders 2026-2030, and the NAMED block starts at
 // RESERVED_VARIABLE_ACC = 2031.
 //
-// This was 2026 until REPORT-31 M31-11, with ADM/DENMAX/ISM/REALDF/NDEC named at
+// This was 2026, with ADM/DENMAX/ISM/REALDF/NDEC named at
 // 2026-2030 -- five names c43 removed when it inserted the spares, and which live
 // in the CONFIG block now (config.h fnGetADM / fnGetREALDF / fnGetNDEC). Two
 // models coexisted in one tree: frontier_config and softmenus already used
@@ -282,7 +282,7 @@ pub fn reportTooManyVariables() void {
 }
 
 // Folded in from register_metadata_clear_sigma.zig and
-// register_metadata_confirmation.zig (REPORT-31 M31-12). Both were one-line
+// register_metadata_confirmation.zig. Both were one-line
 // forwarders wrapped around a build-option fork that swapped the real call for a
 // harness stub; with the unit lane and its fake surface gone, each was left as a
 // twelve-line file holding a single call to an extern this module already owns
