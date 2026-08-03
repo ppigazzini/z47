@@ -32,10 +32,24 @@ honest:
     that would have caught the sign gap, because it forces the question "which
     property is this a class of?" every time the table grows.
 
+AND THE BINARY TABLE, WHICH IT USED TO IGNORE. The first version of this gate
+parsed `FIXTURES` and contained no reference to `PAIRS` at all -- so it enforced a
+property list over the 58 unary wrappers and said nothing whatever about the 28
+binary ones, which include the four arithmetic dispatchers. Measured at that
+point: 22 of 34 shapes never appeared as the X operand of any binary case,
+including every negative one. Extending the pair table found a live defect
+immediately (a long integer's sign tag read as an angular mode).
+
+So the gate now requires every class to appear at least once in the X position of
+`PAIRS`, and reports how many appear in Y. A gate is exactly as complete as the
+list it enforces, OVER EXACTLY THE TABLE IT PARSES, and this one had two bounds
+while admitting to one.
+
 WHAT IT DOES NOT CHECK. That the property list is complete. Nothing can: the set
 of properties a program branches on is not derivable from a fixture table. What it
 does is make the list explicit, so an incomplete one is an argument somebody can
-have rather than a silence nobody notices.
+have rather than a silence nobody notices. That sentence is a statement of what
+somebody still owes, not a discharge of it.
 
 Usage:
   check-fixture-partition.py [--repo-root .]
@@ -57,6 +71,13 @@ PARTITION_RE = re.compile(
     r"static const partitionClass_t PARTITION_PROPERTIES\[\] = \{(.*?)\n\};", re.S
 )
 PARTITION_ROW_RE = re.compile(r'\{\s*"([\w]+)"\s*,\s*"([\w]+)"\s*,\s*"([\w]+)"\s*\}')
+PAIRS_RE = re.compile(r"static const pair_t PAIRS\[\] = \{(.*?)\n\};", re.S)
+PAIRS_ROW_RE = re.compile(r'\{\s*"[^"]+"\s*,\s*(\w+)\s*,\s*(\w+)\s*\}')
+FIXTURE_SEED_RE = re.compile(r'\{\s*"([\w]+)"\s*,\s*(\w+)\s*\}')
+
+# Classes whose fixture cannot be the X operand of a binary case, with the reason.
+# Empty: every shape the harness can build has been placed in the X position.
+PAIR_X_EXEMPT: dict[str, str] = {}
 
 # A fixture may belong to no class only with a reason. Empty on purpose: every
 # shape in the table is a representative of something, and if one is not, saying
@@ -64,17 +85,51 @@ PARTITION_ROW_RE = re.compile(r'\{\s*"([\w]+)"\s*,\s*"([\w]+)"\s*,\s*"([\w]+)"\s
 UNCLASSIFIED: dict[str, str] = {}
 
 
-def parse(repo: Path) -> tuple[list[str], list[tuple[str, str, str]]]:
+def parse(repo: Path):
+    """(fixture names, partition rows, fixture->seed, X seeds in PAIRS, Y seeds)."""
     text = (repo / HARNESS).read_text(encoding="utf-8")
     fixtures_block = FIXTURES_RE.search(text)
     partition_block = PARTITION_RE.search(text)
+    pairs_block = PAIRS_RE.search(text)
     if not fixtures_block:
         raise RuntimeError("FIXTURES table not found")
     if not partition_block:
         raise RuntimeError("PARTITION_PROPERTIES table not found")
+    if not pairs_block:
+        raise RuntimeError("PAIRS table not found")
     fixtures = FIXTURE_ROW_RE.findall(fixtures_block.group(1))
     rows = PARTITION_ROW_RE.findall(partition_block.group(1))
-    return fixtures, rows
+    seed_of = dict(FIXTURE_SEED_RE.findall(fixtures_block.group(1)))
+    pair_rows = PAIRS_ROW_RE.findall(pairs_block.group(1))
+    return fixtures, rows, seed_of, {x for x, _ in pair_rows}, {y for _, y in pair_rows}
+
+
+def pair_problems(
+    rows: list[tuple[str, str, str]],
+    seed_of: dict[str, str],
+    pair_x: set[str],
+) -> list[str]:
+    """Every class must have a representative in the X operand of a binary case.
+
+    The X position is the one that mattered: it was the position 22 of 34 shapes
+    never occupied, and the position whose missing negative long integer hid a
+    live defect.
+    """
+    found: list[str] = []
+    for prop, class_name, fixture in rows:
+        if fixture in PAIR_X_EXEMPT:
+            continue
+        seed = seed_of.get(fixture)
+        if seed is None or seed in pair_x:
+            continue
+        found.append(
+            f"class {prop}/{class_name} (fixture `{fixture}`) never appears as the X"
+            f" operand of a binary case.\n"
+            f"    The binary wrappers include the four arithmetic dispatchers. A class"
+            f" that only\n"
+            f"    ever appears in the unary table is unpartitioned for every one of them."
+        )
+    return found
 
 
 def problems_for(fixtures: list[str], rows: list[tuple[str, str, str]]) -> list[str]:
@@ -108,7 +163,7 @@ def main() -> int:
     repo = Path(args.repo_root).resolve()
 
     try:
-        fixtures, rows = parse(repo)
+        fixtures, rows, seed_of, pair_x, pair_y = parse(repo)
     except (RuntimeError, OSError) as exc:
         print(f"check-fixture-partition: BROKEN -- {exc}")
         return 1
@@ -117,10 +172,19 @@ def main() -> int:
     for prop, class_name, _ in rows:
         properties.setdefault(prop, set()).add(class_name)
 
+    classes_in_x = sum(1 for _, _, f in rows if seed_of.get(f) in pair_x)
     print(
         f"check-fixture-partition: {len(fixtures)} fixture(s),"
         f" {len(properties)} partitioned propert(ies),"
         f" {len(rows)} (property, class) pair(s)"
+    )
+    # The Y operand is seeded by its own `second*` family, which sets Y and Z
+    # together, so a fixture seed never appears there and a "classes in Y" fraction
+    # over the same rows would always read zero. Report the count and leave the
+    # fraction to the X position, which is the one that hid a defect.
+    print(
+        f"    binary table: {classes_in_x}/{len(rows)} classes in the X operand,"
+        f" {len(pair_x)} distinct X seed(s), {len(pair_y)} distinct Y seed(s)"
     )
     for prop in sorted(properties):
         print(f"    {prop:14s} {len(properties[prop])} class(es)")
@@ -135,12 +199,25 @@ def main() -> int:
         if not any("seedProbeUnclassified" in p for p in unclassified):
             print("check-fixture-partition: SELF-TEST FAILED -- an unclassified fixture passed")
             return 1
+        # And the binary direction: drop one class's seed from the X position.
+        victim = next((f for _, _, f in rows if seed_of.get(f) in pair_x), None)
+        if victim is None:
+            print("check-fixture-partition: SELF-TEST BROKEN -- no class is in the X position")
+            return 1
+        thinned = pair_x - {seed_of[victim]}
+        if not any(victim in p for p in pair_problems(rows, seed_of, thinned)):
+            print(
+                "check-fixture-partition: SELF-TEST FAILED -- a class missing from the X"
+                " operand passed"
+            )
+            return 1
         print(
             "check-fixture-partition: SELF-TEST OK"
-            " (a class with no fixture and a fixture with no class both fire)"
+            " (a class with no fixture, a fixture with no class, and a class missing"
+            " from the binary X operand all fire)"
         )
 
-    found = problems_for(fixtures, rows)
+    found = problems_for(fixtures, rows) + pair_problems(rows, seed_of, pair_x)
     if found:
         print("\nFIXTURE PARTITION INCOMPLETE:")
         for problem in found:
