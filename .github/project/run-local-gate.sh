@@ -85,6 +85,14 @@ bash .github/project/check-module-carriers.sh
 python3 .github/project/check-dead-force-imports.py --repo-root .
 step "[6h/11] authored ABI surface"
 python3 .github/project/check-authored-abi.py --repo-root .
+step "[6h2/11] every governance gate is run by something"
+# REPORT-31 Annex N: six of the nine gates that report built ran in NO workflow --
+# only here, when somebody chose to type this command. This gate is the inventory
+# that makes the difference visible; the endpoint is not zero CI-exempt gates, it is
+# zero gates that are neither.
+python3 .github/project/check-gate-inventory.py --self-test >/dev/null
+python3 .github/project/check-gate-inventory.py --repo-root .
+bash .github/project/check-build-paths.sh
 step "[6g0/11] imported tree matches its pinned SHA"
 # The pin was an unverified claim until this gate existed: the tree had drifted
 # to a stale bundled DMCP5 firmware and eleven missing example programs.
