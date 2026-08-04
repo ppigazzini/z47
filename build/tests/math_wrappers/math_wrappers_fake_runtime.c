@@ -3841,6 +3841,53 @@ void convertShortIntegerRegisterToLongInteger(calcRegister_t reg, longInteger_t 
   }
 }
 
+// The overflow-checked long integer operators, with c43's own bounds. They are
+// the reason the exponentiation loops terminate: those halve an exponent and
+// square a base once per bit, so a multiply that never refuses grows the operand
+// until the allocator gives out.
+void longIntegerMultiply(longInteger_t opY, longInteger_t opX, longInteger_t result) {
+  if(mpz_sizeinbase(opY, 2) + mpz_sizeinbase(opX, 2) <= MAX_LONG_INTEGER_SIZE_IN_BITS) {
+    mpz_mul(result, opY, opX);
+  }
+  else {
+    displayCalcErrorMessage(mpz_sgn(opY) == mpz_sgn(opX) ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
+                            ERR_REGISTER_LINE, REGISTER_X);
+  }
+}
+
+void longIntegerSquare(longInteger_t op, longInteger_t result) {
+  if(mpz_sizeinbase(op, 2) * 2 <= MAX_LONG_INTEGER_SIZE_IN_BITS) {
+    mpz_mul(result, op, op);
+  }
+  else {
+    displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
+  }
+}
+
+void longIntegerAdd(longInteger_t opY, longInteger_t opX, longInteger_t result) {
+  const size_t widest = mpz_sizeinbase(opY, 2) > mpz_sizeinbase(opX, 2) ? mpz_sizeinbase(opY, 2) : mpz_sizeinbase(opX, 2);
+
+  if(mpz_sgn(opY) != mpz_sgn(opX) || widest <= MAX_LONG_INTEGER_SIZE_IN_BITS - 1) {
+    mpz_add(result, opY, opX);
+  }
+  else {
+    displayCalcErrorMessage(mpz_sgn(opY) == 0 ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
+                            ERR_REGISTER_LINE, REGISTER_X);
+  }
+}
+
+void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t result) {
+  const size_t widest = mpz_sizeinbase(opY, 2) > mpz_sizeinbase(opX, 2) ? mpz_sizeinbase(opY, 2) : mpz_sizeinbase(opX, 2);
+
+  if(mpz_sgn(opY) == mpz_sgn(opX) || widest <= MAX_LONG_INTEGER_SIZE_IN_BITS - 1) {
+    mpz_sub(result, opY, opX);
+  }
+  else {
+    displayCalcErrorMessage(mpz_sgn(opY) == 0 ? ERROR_OVERFLOW_PLUS_INF : ERROR_OVERFLOW_MINUS_INF,
+                            ERR_REGISTER_LINE, REGISTER_X);
+  }
+}
+
 void longInteger2Pow(int32_t exponent, longInteger_t result) {
   mpz_ui_pow_ui(result, 2, (unsigned long)exponent);
 }
