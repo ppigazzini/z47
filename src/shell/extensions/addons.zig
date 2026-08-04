@@ -2400,10 +2400,10 @@ fn processDefaultVector(regist: calcRegister_t, p: u8, d: u8, xarr: [*]cmplxPair
     return 1;
 }
 
-// stkexV4 rides on OPTION_SLV_ZETA_BETA rather than OPTION_VECTOR, so the switch
-// itself is unconditional here (see fnConvertStkToMx) and only the V2/V3 arms stay
-// behind option_vector.
+// The whole switch, stkexV4 included, is behind OPTION_VECTOR: every arm exchanges a
+// stack tuple with a vector, so none of it is reachable on a build without vectors.
 pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
+    if (comptime !option_vector) return;
     switch (opType) {
         ITM_stkexV2 => if (comptime option_vector) {
             if (isRegisterMatrix2dVector(REGISTER_X)) {
@@ -2454,15 +2454,11 @@ inline fn invalidDataTypeHint(where: [*c]const u8) void {
     }
 }
 
-// Upstream now compiles the stk<->mx converters under
-// OPTION_VECTOR || OPTION_ELEC || OPTION_SLV_ZETA_BETA, because SLVC/SLVQ take a
-// coefficient vector and need the 1x4 form. z47 does not model
-// OPTION_SLV_ZETA_BETA -- it is defined on every build z47 produces, and #undef'd
-// only in the DM42 single-file no-QSPI package -- so that disjunction is always
-// true here and the converters are unconditional. Only the polar/spherical/
-// cylindrical blocks inside them stay behind vector_or_elec, exactly as upstream
-// re-gated them.
+// The stk<->mx converters compile under OPTION_VECTOR || OPTION_ELEC: those two are
+// the only features with a stack tuple to convert. SLVQ/SLVC build their own 1x4
+// coefficient vector in the slvc owner and do not come through here.
 pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
+    if (comptime !vector_or_elec) return;
     var complexCoefs: bool_t = 0;
     var x: [4]cmplxPair = undefined;
     var matrix: real34Matrix_t = undefined;
@@ -2621,8 +2617,9 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     }
 }
 
-// Unconditional for the same reason as fnConvertStkToMx above.
+// OPTION_VECTOR || OPTION_ELEC, for the same reason as fnConvertStkToMx above.
 pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
+    if (comptime !vector_or_elec) return;
     var matrix: real34Matrix_t = undefined;
     var matrixC: complex34Matrix_t = undefined;
     var Xrows: u16 = undefined;

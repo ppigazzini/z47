@@ -5,6 +5,13 @@ const abi = @import("abi");
 // flash-limited DM42 old_hw firmware to keep main FLASH free; host/dmcp5/macOS
 // keep the normal section (no-op there). Same mechanism as the math owners.
 const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+
+/// defines.h's OPTION_INFSUMS: the infinity sum and the early stop it carries. The
+/// plain programmable sum and product are outside it. Enabled by default and
+/// #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000 and OPTION_SLVP_POLY
+/// (400 bytes of flash), so it is off for exactly the same builds. Absent from a
+/// harness's options => on, matching the host default.
+pub const option_infsums = !@hasDecl(solve_build_options, "option_infsums") or solve_build_options.option_infsums;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
@@ -146,3 +153,9 @@ pub inline fn mallocReal() ?*abi.Real {
 pub inline fn freeReal(ptr: ?*abi.Real) void {
     free(ptr);
 }
+
+// comparisonReals.c's real_t orderings, declared once for the whole solver object.
+// Five owners in it each carried their own copy of these two, which is five chances
+// for the signatures to drift apart against one C definition.
+pub extern fn realCompareLessThan(number1: *align(1) const abi.Real, number2: *align(1) const abi.Real) bool;
+pub extern fn realCompareGreaterThan(number1: *align(1) const abi.Real, number2: *align(1) const abi.Real) bool;

@@ -125,6 +125,7 @@ fn applyTab(column: u16) void {
 fn applyLcd(unused_but_mandatory_parameter: u16) void {
     _ = unused_but_mandatory_parameter;
     if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)))) {
+        frontier_print.z47_frontier_print_lcd_to_printer();
         return;
     }
     screen.fnSNAP(9876);

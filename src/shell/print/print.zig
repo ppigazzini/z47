@@ -410,6 +410,9 @@ extern fn fnClearFlag(flag: u16) void;
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
 
+extern var screenUpdatingMode: u8;
+const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
+
 extern fn fnTimerStart(nr: u8, param: u16, time: u32) void;
 
 extern fn sendByteIR(byte: u8) void;
@@ -1497,6 +1500,9 @@ fn printLcd() void {
         sendByteIR(0xff);
         sendByteIR(if (x == 0) 0xf1 else 0xff);
         sendByteIR('\n');
+        if (_exitKeyPressed()) {
+            break;
+        }
     }
     setPrintMode(0x00);
     print_lfImpl();
@@ -2209,6 +2215,23 @@ pub fn z47_frontier_print_alpha_register(register_no: u16) void {
 pub fn z47_frontier_print_set_printer_sbi(status: bool_t) void {
     if (comptime ir_printing) {
         setPrinterSBI(status);
+    }
+}
+
+/// The printer half of fnP_LCD: send the screen as graphics. Martel only, and only on
+/// real hardware -- the 82240 has no graphics mode this byte sequence reaches, and the
+/// simulator has no printer at all, so both fall through and print nothing.
+pub fn z47_frontier_print_lcd_to_printer() void {
+    if (comptime ir_printing and dmcp_build) {
+        if (printerState.printer_model != PRINTER_MARTEL) {
+            return;
+        }
+        setPrinterSBI(true);
+        resetShiftState(); // so no f or g is left in the top left of the printed screen
+        frontier_screen.refreshScreen(80);
+        printLcd();
+        screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+        setPrinterSBI(false);
     }
 }
 

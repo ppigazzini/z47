@@ -102,9 +102,12 @@ src/testSuite/tests/histo_cov.txt
 src/testSuite/tests/integrate_cov.txt
 src/testSuite/tests/iteration_cov.txt
 src/testSuite/tests/jacobi_audit.txt
+src/testSuite/tests/mateditscroll_cov.txt
 src/testSuite/tests/mathmisc_cov.txt
 src/testSuite/tests/mathspecial_cov.txt
 src/testSuite/tests/matrix2_cov.txt
+src/testSuite/tests/matrixedit_cov.txt
+src/testSuite/tests/matrixelem_cov.txt
 src/testSuite/tests/matrix_cov.txt
 src/testSuite/tests/matrixops_cov.txt
 src/testSuite/tests/mvarmenu_cov.txt

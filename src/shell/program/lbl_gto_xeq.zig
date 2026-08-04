@@ -1233,10 +1233,12 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
         }
     }
 
-    if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING)) {
-        frontier_status_bar.showHideHourGlass();
+    if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING) and !graphAccActive) {
         screenUpdatingMode = SCRUPD_AUTO;
         screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+        // After the screenUpdatingMode writes, not before: showHideHourGlass paints the
+        // P, and a set SCRUPD_MANUAL_STATUSBAR makes it return without painting.
+        frontier_status_bar.showHideHourGlass();
     }
 
     if (menuLabel != INVALID_VARIABLE) {

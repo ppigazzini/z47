@@ -1072,7 +1072,7 @@ fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
 // the testSuite, so it is omitted here; the user-interrupt path is kept.
 // ===========================================================================
 // SLVP feeds its companion matrix through here (upstream drops the `static` on
-// matrix.c's copy when OPTION_SLVP is on); slvp.zig shares this object, so the
+// matrix.c's copy when OPTION_SLVP_POLY is on); slvp.zig shares this object, so the
 // Zig side needs `pub`, not a C-ABI export.
 pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, previousDiagonal: [*]align(1) real_t, size: u16, shifted_in: bool, reducedSignificantDigits: bool, realContext: *realContext_t) void {
     var shifted = shifted_in;

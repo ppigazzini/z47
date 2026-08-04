@@ -23,7 +23,7 @@ Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
   `https://gitlab.com/rpncalculators/c43.git`. The GitLab path still uses the
   historical `c43` name even though the project identifies itself as C47.
 - The imported upstream working tree is mounted under `upstream/`, pinned at
-  commit `b9e1cc0c18717423a5f7b9e9a78fe866f1c14d01` (verified fact from
+  commit `c66d6567b8ac2aa5227997d329ebae7a54cf278f` (verified fact from
   `.github/project/upstream-pin.env`).
 - `build.zig` is the canonical maintained build entrypoint.
 

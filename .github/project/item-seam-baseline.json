@@ -7810,8 +7810,8 @@
    "32914"
   ],
   "2755": [
-   "&itemToBeCoded",
-   "9876"
+   "if (option_infsums) ext_fnProgrammableSumInf else &itemToBeCoded",
+   "if (option_infsums) 10018 else 9876"
   ],
   "2756": [
    "&itemToBeCoded",

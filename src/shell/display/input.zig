@@ -379,7 +379,7 @@ pub export fn fnPause(dur: u16) callconv(.c) void {
 
     var previousProgramRunStop: u8 = programRunStop;
     if (previousProgramRunStop == PGM_RUNNING) {
-        frontier_status_bar.refreshStatusBar(); // the run-mode statusbar cadence can leave the bar stale; paint it once so the pause shows the current state
+        frontier_status_bar.refreshStatusBar(); // with the 256-step refresh cadence the bar can be out of date here; refresh it once so the pause shows the current state
     }
     programRunStop = PGM_PAUSED;
 

@@ -238,8 +238,6 @@ extern fn realSetOne(value: *real_t) void;
 extern fn realSetNaN(value: *real_t) void;
 extern fn realSetMinusInfinity(value: *real_t) void;
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareLessEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
@@ -620,7 +618,7 @@ fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align
             if (!(j > 1)) break;
         }
 
-        if (realCompareGreaterThan(&s, const_1e_32())) { // if sum of |h| > small ...
+        if (runtime.realCompareGreaterThan(&s, const_1e_32())) { // if sum of |h| > small ...
             _ = realSubtract(&lfl, &lfr, &h, realContext);
             realCopy(&lr, &r);
             if (!realIsZero(&h)) { // if last diff != 0, back up r by one step
@@ -628,7 +626,7 @@ fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align
             }
             realSetPositiveSign(&lfl);
             realSetPositiveSign(&lfr);
-            if (realCompareLessThan(&lfl, &lfr)) {
+            if (runtime.realCompareLessThan(&lfl, &lfr)) {
                 _ = realDivide(d, &r, d, realContext); // move d closer to the finite endpoint
             } else {
                 _ = realMultiply(d, &r, d, realContext); // move d closer to the infinite endpoint
@@ -771,7 +769,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 _ = realMultiply(&d, &r, &xx, realContext); // x = d*r;
 
                 _ = realAdd(a, &xx, &s1, realContext);
-                if (realCompareGreaterThan(&s1, a)) { // if too close to a then reuse previous fp
+                if (runtime.realCompareGreaterThan(&s1, a)) { // if too close to a then reuse previous fp
                     DEI_xeq_user(regist, &s1, &y, realContext);
                     if (!realIsInfinite(&y)) {
                         realCopy(&y, &fp);
@@ -779,7 +777,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 }
 
                 _ = realSubtract(b, &xx, &s1, realContext);
-                if (realCompareLessThan(&s1, b)) {
+                if (runtime.realCompareLessThan(&s1, b)) {
                     DEI_xeq_user(regist, &s1, &y, realContext);
                     if (!realIsInfinite(&y)) {
                         realCopy(&y, &fm);
@@ -792,7 +790,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 _ = realMultiply(&t, &eh, &t, realContext); // t *= eh
 
                 _ = realMultiply(&eps, realCopyAbs(&p, &s1), &s2, realContext); // s2 = eps*abs(p)
-                if (!realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)) break; // while abs(q) > eps*abs(p)
+                if (!runtime.realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)) break; // while abs(q) > eps*abs(p)
             }
         } else {
             _ = realMultiply(&t, const_1on2(), &t, realContext);
@@ -857,7 +855,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 _ = realAdd(&p, &q, &p, realContext); // p += q;
                 _ = realMultiply(&t, &eh, &t, realContext); // t *= eh;
                 _ = realMultiply(&eps, realCopyAbs(&p, &s1), &s2, realContext); // s2 = eps*abs(p)
-                if (!realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)) break; // while abs(q) > eps*abs(p)
+                if (!runtime.realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)) break; // while abs(q) > eps*abs(p)
             }
         }
 
@@ -876,7 +874,7 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
         if (realIsNaN(errorp)) {
             realSetOne(errorp); // only happens when v, s both zero
         }
-        if (!(realCompareGreaterThan(&s2, realMultiply(const_10(), realMultiply(&eps, &s1, &s3, realContext), &s3, realContext)) and k <= maxlevel)) break; // while abs(v) > 10*eps*abs(s)
+        if (!(runtime.realCompareGreaterThan(&s2, realMultiply(const_10(), realMultiply(&eps, &s1, &s3, realContext), &s3, realContext)) and k <= maxlevel)) break; // while abs(v) > 10*eps*abs(s)
     }
     return;
 }
@@ -897,7 +895,7 @@ pub export fn integrate(regist: calcRegister_t, a: *align(1) const real_t, b: *a
         thereIsSomethingToUndo = false;
     } else {
         // USE_NEW_DEI_INTEGRATION_CODE > 0
-        if (realCompareLessThan(a, b)) {
+        if (runtime.realCompareLessThan(a, b)) {
             dbl_exp_int_new(regist, a, b, acc, res, 1, realContext);
         } else { // a, b might be NaN or both equal; handled in function.
             dbl_exp_int_new(regist, b, a, acc, res, -1, realContext);

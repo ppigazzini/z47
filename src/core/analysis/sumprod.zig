@@ -2,12 +2,13 @@
 const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/sumprod.c: the programmable Sigma / Pi
-// (fnProgrammableSum / fnProgrammableProduct). This file is UNCOVERED by the
-// testSuite (no test gate) - it is verified by build only. Faithful line-by-line
-// translation preserving the exact order of every real_t / real34_t operation.
+// (fnProgrammableSum / fnProgrammableSumInf / fnProgrammableProduct). This file is
+// UNCOVERED by the testSuite (no test gate) - it is verified by build only. Faithful
+// line-by-line translation preserving the exact order of every real_t / real34_t
+// operation.
 //
-// fnProgrammableSum / fnProgrammableProduct are exported under the names
-// z47_solver_fnProgrammableSum and z47_solver_fnProgrammableProduct; those are
+// The three entry points are exported as z47_solver_fnProgrammableSum,
+// z47_solver_fnProgrammableSumInf and z47_solver_fnProgrammableProduct; those are
 // the symbols solve.zig's dispatcher calls. The static
 // _programmableSumProd / _checkArgument become private. showProgressReal is also
 // defined in sumprod.c and is used by graph.c, so it is re-exported here.
@@ -40,9 +41,14 @@ const longInteger_t = [1]mpz_struct;
 extern fn __gmpz_init(op: *mpz_struct) void;
 extern fn __gmpz_clear(op: *mpz_struct) void;
 extern fn __gmpz_fdiv_ui(op: *const mpz_struct, d: c_ulong) c_ulong;
+extern fn __gmpz_set_ui(rop: *mpz_struct, op: c_ulong) void;
+extern fn convertLongIntegerToLongIntegerRegister(longInteger: *const mpz_struct, regist: calcRegister_t) void;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
+}
+inline fn uInt32ToLongInteger(source: u32, destination: *mpz_struct) void {
+    __gmpz_set_ui(destination, source);
 }
 inline fn longIntegerFree(op: *mpz_struct) void {
     __gmpz_clear(op);
@@ -65,6 +71,7 @@ const LAST_LABEL: u16 = 6999;
 const INVALID_VARIABLE: u16 = 2199;
 
 const ERROR_NONE: u8 = 0;
+const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_BAD_INPUT: u8 = 53;
@@ -99,6 +106,7 @@ extern var programRunStop: u8;
 extern var currentKeyCode: u8;
 extern var dynamicMenuItem: i16;
 extern var currentSolverNestingDepth: u16;
+extern var significantDigits: u8;
 
 extern var ctxtReal75: realContext_t;
 extern var ctxtReal34: realContext_t;
@@ -116,6 +124,7 @@ inline fn const_1() *align(1) const real_t {
 inline fn const34_0() *align(1) const real34_t {
     return consts.q16200();
 }
+const const_10 = consts.const_10;
 
 // ---------------------------------------------------------------------------
 // decNumber primitives / real_t macros
@@ -143,6 +152,16 @@ inline fn realIsZero(source: *const real_t) bool {
     return decNumberIsZero(source);
 }
 extern fn realSetZero(value: *real_t) void;
+extern fn decNumberDivide(res: *real_t, op1: *align(1) const real_t, op2: *align(1) const real_t, ctxt: *realContext_t) *real_t;
+// realType.h macros, not functions.
+inline fn realSetPositiveSign(value: *real_t) void {
+    value.bits &= 0x7F;
+}
+inline fn realDivide(dividend: *align(1) const real_t, divisor: *align(1) const real_t, quotient: *real_t, real_context: *realContext_t) void {
+    _ = decNumberDivide(quotient, dividend, divisor, real_context);
+}
+extern fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) void;
+extern fn int32ToReal(source: i32, destination: *real_t) void;
 extern fn mulComplexComplex(f1r: *const real_t, f1i: *const real_t, f2r: *const real_t, f2i: *const real_t, pr: *real_t, pi: *real_t, real_context: *realContext_t) void;
 
 // ---------------------------------------------------------------------------
@@ -237,10 +256,41 @@ pub export fn showProgressReal(a: *const real_t, ai: *real_t, cpx: bool_t) links
 }
 
 // ===========================================================================
+// Early abort, reached through the infinity sum only: the passes still to come
+// cannot reach the last digit of the answer, so the run stops. Real sums only.
+// ===========================================================================
+const EARLY_ABORT_WATCH_FROM: u32 = 10; // first iteration whose term is judged; anything before it is ignored
+const EARLY_ABORT_NOT_BEFORE: u32 = 50; // earliest iteration a run may stop on
+// The test needs a magnitude, so a complex run counts to the end. Kept as a named
+// constant because the complex accumulation branch below is written to it.
+const EARLY_ABORT_IN_COMPLEX: bool = false;
+
+// What _checkArgument and _programmableSumProd do with each term.
+const SUMMING: bool_t = false;
+const MULTIPLYING: bool_t = true;
+// No early-stop state, so every iteration the caller asked for.
+const RUNALL: ?*EarlyAbort = null;
+
+/// Only the infinity sum carries this, on its own frame.
+const EarlyAbort = struct {
+    previousTerm: real_t,
+    term: real_t,
+    remaining: real_t,
+    allowance: real_t,
+    scale: real_t,
+    haveTerm: bool_t,
+    falling: bool_t,
+    pass: u32,
+};
+
+// ===========================================================================
 // _programmableSumProd
 // ===========================================================================
-fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_section) void {
+fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksection(runtime.code_section) void {
     currentKeyCode = 255;
+    const inf = runtime.option_infsums and early != null;
+    // Read once: the term program itself can set CPXRES.
+    const cpxAllowed = getFlag(FLAG_CPXRES);
     var loop: i32 = 0;
     var finished: i16 = 0;
     var resultX: real_t = undefined;
@@ -287,6 +337,16 @@ fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_secti
         currentSolverNestingDepth += 1;
         setSystemFlag(FLAG_SOLVING);
 
+        if (inf) {
+            const e = early.?;
+            realSetZero(&e.previousTerm);
+            e.haveTerm = false;
+            e.falling = true;
+            e.pass = 0;
+            int32ToReal(if (significantDigits == 0) 34 else significantDigits, &e.scale);
+            realPower(const_10(), &e.scale, &e.scale, &ctxtReal75); // 10^SDIGS, fixed for the run
+        }
+
         while (lastErrorCode == ERROR_NONE) {
             loop -= 1;
             if (checkHalfSec()) {
@@ -315,8 +375,21 @@ fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_secti
                 break;
             }
 
-            if (getFlag(FLAG_CPXRES) and (getRegisterDataType(REGISTER_X) == dtComplex34 or !realIsZero(&resultRi))) {
-                changedOverToComplex = true; // Only latch over to complex operation if CPXRES is true, as well as either sum or new f(n) is complex
+            if (getRegisterDataType(REGISTER_X) == dtComplex34 or !realIsZero(&resultRi)) {
+                if (cpxAllowed) {
+                    changedOverToComplex = true; // Only latch over to complex operation if CPXRES is true, as well as either sum or new f(n) is complex
+                } else {
+                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                    moreInfoOnError("In function _programmableSumProd:", "f(n) returned a complex value while flag I is not set!", null, null);
+                    break;
+                }
+            }
+
+            if (inf) { // counted for the complex branch too, and saturates
+                const e = early.?;
+                if (e.pass < 0xFFFFFFFF) {
+                    e.pass += 1;
+                }
             }
 
             if (!changedOverToComplex) {
@@ -329,8 +402,36 @@ fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_secti
                     realMultiply(&resultR, &resultX, &resultR, &ctxtReal75);
                 } else {
                     realAdd(&resultR, &resultX, &resultR, &ctxtReal75);
+                    if (inf) {
+                        const e = early.?;
+                        realCopy(&resultX, &e.term); // the term itself, which outlives a saturated total
+                        realSetPositiveSign(&e.term);
+                        if (!realIsZero(&e.term)) { // a term of zero says nothing about the terms after it
+                            if (e.haveTerm and e.pass >= EARLY_ABORT_WATCH_FROM and
+                                runtime.realCompareGreaterThan(&e.term, &e.previousTerm))
+                            {
+                                e.falling = false; // one rise after the watch point disqualifies the run
+                            }
+                            if (e.falling and e.pass >= EARLY_ABORT_NOT_BEFORE) {
+                                real34Subtract(&loopTo, &counter, &rLoop); // iterations still to come, no integer count
+                                if (!real34IsZero(&loopStep)) {
+                                    real34Divide(&rLoop, &loopStep, &rLoop);
+                                }
+                                real34ToReal(&rLoop, &e.remaining);
+                                realSetPositiveSign(&e.remaining);
+                                realDivide(&resultR, &e.scale, &e.allowance, &ctxtReal75); // one last digit of the answer
+                                realSetPositiveSign(&e.allowance);
+                                realDivide(&e.allowance, &e.term, &e.allowance, &ctxtReal75); // iterations it is worth
+                                if (runtime.realCompareLessThan(&e.remaining, &e.allowance)) {
+                                    break;
+                                }
+                            }
+                            realCopy(&e.term, &e.previousTerm);
+                            e.haveTerm = true;
+                        }
+                    }
                 }
-            } else { // dtComplex34
+            } else { // dtComplex34, and EARLY_ABORT_IN_COMPLEX is false, so this branch always runs the full count
                 real34ToReal(registerReal34Ptr(REGISTER_X), &resultX); // Result accumulated
                 real34ToReal(registerImag34Ptr(REGISTER_X), &resultXi); // Result accumulated
                 if (prod) {
@@ -349,6 +450,13 @@ fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_secti
         } // WHILE
 
         if (lastErrorCode == ERROR_NONE) {
+            if (inf) { // iterations actually run, so a short run is visible
+                var iPass: longInteger_t = undefined;
+                longIntegerInit(&iPass[0]);
+                uInt32ToLongInteger(early.?.pass, &iPass[0]);
+                convertLongIntegerToLongIntegerRegister(&iPass[0], REGISTER_Y);
+                longIntegerFree(&iPass[0]);
+            }
             if (!changedOverToComplex) {
                 if (getRegisterDataType(REGISTER_X) != dtReal34) {
                     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
@@ -382,10 +490,10 @@ fn _programmableSumProd(label: u16, prod: bool_t) linksection(runtime.code_secti
 // ===========================================================================
 // _checkArgument
 // ===========================================================================
-fn _checkArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section) void {
+fn _checkArgument(label_in: u16, prod: bool_t, early: ?*EarlyAbort) linksection(runtime.code_section) void {
     var label = label_in;
     if (FIRST_LABEL <= label and label <= LAST_LABEL) {
-        _programmableSumProd(label, prod);
+        _programmableSumProd(label, prod, early);
     } else if (REGISTER_X <= @as(calcRegister_t, @intCast(label)) and @as(calcRegister_t, @intCast(label)) <= REGISTER_T) {
         // Interactive mode
         var buf: [2]u8 = undefined;
@@ -396,7 +504,7 @@ fn _checkArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section)
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function _checkArgument:", "string is not a named label", null, null);
         } else {
-            _programmableSumProd(label, prod);
+            _programmableSumProd(label, prod, early);
         }
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
@@ -405,9 +513,18 @@ fn _checkArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section)
 }
 
 pub export fn z47_solver_fnProgrammableSum(label: u16) linksection(runtime.code_section) callconv(.c) void {
-    _checkArgument(label, false);
+    _checkArgument(label, SUMMING, RUNALL);
+}
+
+/// Reached from solve.zig's dispatcher through the module graph, not an exported
+/// symbol: both files land in the same object.
+pub fn programmableSumInf(label: u16) linksection(runtime.code_section) void {
+    if (comptime runtime.option_infsums) {
+        var earlyAbort: EarlyAbort = undefined; // this frame carries the early stop state
+        _checkArgument(label, SUMMING, &earlyAbort);
+    }
 }
 
 pub export fn z47_solver_fnProgrammableProduct(label: u16) linksection(runtime.code_section) callconv(.c) void {
-    _checkArgument(label, true);
+    _checkArgument(label, MULTIPLYING, RUNALL);
 }

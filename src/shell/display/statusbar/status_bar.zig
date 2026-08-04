@@ -632,10 +632,14 @@ fn showBaseMode() bool_t {
     }
 
     var SBchanged: bool_t = false;
-    const adj: u8 = if (lastIntegerBase >= 2 and didSystemFlagChange(FLAG_TOPHEX)) 0x40 else 0;
+    // Read once: didSystemFlagChange CLEARS the changed indicator, so asking a second
+    // time in the assignment answered false and the 0x40 never reached the shown value
+    // -- which made the next TOPHEX switch compare equal and skip its repaint. The
+    // stored value is the base alone; the 0x40 only forces this comparison to differ.
+    const topHexChanged = lastIntegerBase >= 2 and didSystemFlagChange(FLAG_TOPHEX);
+    const adj: u8 = if (topHexChanged) 0x40 else 0;
     if (@as(u8, @truncate(lastIntegerBase)) +% adj != SBlastIntegerBaseShown) {
-        const adj2: u8 = if (lastIntegerBase >= 2 and didSystemFlagChange(FLAG_TOPHEX)) 0x40 else 0;
-        SBlastIntegerBaseShown = @as(u8, @truncate(lastIntegerBase)) +% adj2;
+        SBlastIntegerBaseShown = @as(u8, @truncate(lastIntegerBase));
         SBchanged = true;
     }
 
@@ -678,7 +682,16 @@ pub export fn showFracMode() callconv(.c) void {
         return;
     }
 
-    if (didSystemFlagChange(FLAG_FRACT) or didSystemFlagChange(FLAG_IRFRAC) or didSystemFlagChange(FLAG_PROPFR) or didSystemFlagChange(SETTING_DMX) or didSystemFlagChange(FLAG_DENFIX) or didSystemFlagChange(FLAG_DENANY)) {
+    // Read every one of the six, not `or`: didSystemFlagChange clears the indicator it
+    // reports, and `or` short-circuits, so the flags after the first true one kept their
+    // changed indicator and re-fired the repaint on a later refresh.
+    const fract = didSystemFlagChange(FLAG_FRACT);
+    const irfrac = didSystemFlagChange(FLAG_IRFRAC);
+    const propfr = didSystemFlagChange(FLAG_PROPFR);
+    const dmx = didSystemFlagChange(SETTING_DMX);
+    const denfix = didSystemFlagChange(FLAG_DENFIX);
+    const denany = didSystemFlagChange(FLAG_DENANY);
+    if (fract or irfrac or propfr or dmx or denfix or denany) {
         var statusMessage: [20]u8 = undefined;
         var x: i32 = X_FRAC_MODE;
 
@@ -925,7 +938,11 @@ pub export fn showHideAlphaMode() callconv(.c) void {
         SBAlphaModeLastShown = settAlphaMode();
         SBchanged = true;
     }
-    if (didSystemFlagChange(FLAG_alphaCAP) or didSystemFlagChange(FLAG_NUMLOCK) or SBchanged or toSwitchOff or textModeIconDisplay) {
+    // Read both before the `or`, as in showFracMode: short-circuiting left NUMLOCK's
+    // changed indicator uncleared whenever alphaCAP had changed.
+    const alphaCapChanged = didSystemFlagChange(FLAG_alphaCAP);
+    const numLockChanged = didSystemFlagChange(FLAG_NUMLOCK);
+    if (alphaCapChanged or numLockChanged or SBchanged or toSwitchOff or textModeIconDisplay) {
         var status: c_int = 0;
         var nChar: u8 = undefined;
         if (scrLock == NC_NORMAL) {
@@ -1318,6 +1335,12 @@ pub export fn refreshStatusBar() callconv(.c) void {
 // showHideStackLift (!DMCP)
 // ===========================================================================
 fn showHideStackLiftImpl() callconv(.c) void {
+    // The S/L annunciator is not painted during program execution: the run-mode
+    // statusbar cadence repaints on its own schedule, and this drawing on top of it
+    // smeared S and L across consecutive refresh cycles.
+    if (programRunStop == PGM_RUNNING) {
+        return;
+    }
     if (getSystemFlag(FLAG_ASLIFT)) {
         // Draw S
         setBlackPixel(392, 1);

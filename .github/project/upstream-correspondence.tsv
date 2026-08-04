@@ -30,7 +30,7 @@ debug	shell/debug	port	symbol
 display	core/state/value/register_conversions;core/text/word_break;frontier;shell/display/display;shell/display/display_format	port	symbol
 distributions/binomial	frontier	port	symbol
 distributions/cauchy	frontier	port	symbol
-distributions/chi2	frontier;shell/distributions/chi2	port	symbol
+distributions/chi2	frontier	port	symbol
 distributions/exponential	frontier	port	symbol
 distributions/f	frontier	port	symbol
 distributions/geometric	frontier	port	symbol
@@ -234,6 +234,7 @@ config	shell/input/adm_encoding	port	comment
 display	core/text/glyph_font_search	port	comment
 distributions/binomial	shell/distributions/binomial	port	comment
 distributions/cauchy	shell/distributions/cauchy	port	comment
+distributions/chi2	shell/distributions/chi2	port	comment
 distributions/exponential	shell/distributions/exponential	port	comment
 distributions/f	shell/distributions/f	port	comment
 distributions/geometric	shell/distributions/geometric	port	comment

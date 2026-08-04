@@ -7,10 +7,10 @@
 // digits: slot i is (c[2i] re, c[2i+1] im), the layout calculateEigenvalues
 // works on. The general case builds the monic companion matrix and hands it to
 // the already-Zig-owned QR eigensolver in matrix/eigen.zig, which shares this
-// object -- upstream drops the `static` on its copy under OPTION_SLVP, the Zig
+// object -- upstream drops the `static` on its copy under OPTION_SLVP_POLY, the Zig
 // side only needs the `pub`.
 //
-// OPTION_SLVP is #undef'd for the flash-limited DM42 firmware, where the whole
+// OPTION_SLVP_POLY is #undef'd for the flash-limited DM42 firmware, where the whole
 // body compiles away and fnSlvp is an empty stub (items.zig still binds the
 // symbol, and softmenus.zig strikes the item out).
 
@@ -150,7 +150,7 @@ fn rootsOfXdEqualsW(
 // ---------------------------------------------------------------------------
 pub export fn fnSlvp(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    if (comptime !runtime.option_slvp) return;
+    if (comptime !runtime.option_slvp_poly) return;
 
     var xr: real34Matrix_t = undefined;
     var xc: complex34Matrix_t = undefined;

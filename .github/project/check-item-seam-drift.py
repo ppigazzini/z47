@@ -47,11 +47,13 @@ ITEMS = "src/shell/display/items/items.zig"
 BASELINE = ".github/project/item-seam-baseline.json"
 
 # Every row, in table order, so the parse index IS the item number.
-# The func field is captured as an EXPRESSION, not an identifier: ~30 rows are
-# comptime-conditional (`if (option_xfn_1000) ext_fnXXfn else &itemToBeCoded`) and
-# skipping them would shift the index of every row after position 2554, turning one
-# upstream change into thousands of false drifts.
-ROW = re.compile(r"\.\{\s*\.func\s*=\s*([^,]+?)\s*,\s*\.param\s*=\s*(\d+)\s*,")
+# BOTH func and param are captured as EXPRESSIONS, not identifiers or literals:
+# ~30 rows are comptime-conditional (`if (option_xfn_1000) ext_fnXXfn else
+# &itemToBeCoded`), and item 2755 varies its param too (`if (option_infsums) 10018
+# else 9876`, TM_LBLONLY vs NOPARAM). A row this pattern fails to match drops out of
+# the list and shifts the index of every row after it, turning one upstream change
+# into thousands of false drifts -- which is what a `\d+` param did when 2755 landed.
+ROW = re.compile(r"\.\{\s*\.func\s*=\s*([^,]+?)\s*,\s*\.param\s*=\s*([^,]+?)\s*,")
 ANY_ROW = re.compile(r"\.\{\s*\.func\s*=")
 
 

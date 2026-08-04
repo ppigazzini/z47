@@ -258,7 +258,6 @@ extern fn realSetOne(value: *real_t) void;
 extern fn realSetZero(value: *real_t) void;
 extern fn realSetNaN(value: *real_t) void;
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realExp(x: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void;
 extern fn roundToSignificantDigits(source: *const real_t, destination: *real_t, digits: i32, ctxt: *realContext_t) void;
