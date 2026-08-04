@@ -25,6 +25,8 @@
 
 #include "c47.h"
 
+#include "../common/harness_resource_budget.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -1263,7 +1265,9 @@ static bool_t isNonTerminating(const char *predicate, const char *fixture) {
 // Run one side: reset the calculator, seed the operands, call the wrapper,
 // snapshot. `seedSecond` is NULL for the unary families.
 static void runSide(void (*seed)(void), void (*seedSecond)(void), void (*body)(uint16_t),
-                    uint16_t param, snapshot_t *out) {
+                    uint16_t param, snapshot_t *out, const char *caseName, const char *side) {
+  char budgetedCase[160];
+
   fnReset(CONFIRMED);
   seed();
   if(seedSecond != NULL) {
@@ -1271,7 +1275,15 @@ static void runSide(void (*seed)(void), void (*seedSecond)(void), void (*body)(u
   }
   temporaryInformation = TI_NO_INFO;
   lastErrorCode = ERROR_NONE;
+
+  // The budget covers the wrapper call and nothing else, and it names the side:
+  // when one implementation is bounded and the other is not, which one breached
+  // IS the finding.
+  snprintf(budgetedCase, sizeof(budgetedCase), "%s (%s)", caseName, side);
+  harnessBudgetSetCase(budgetedCase);
   body(param);
+  harnessBudgetCaseFinished();
+
   takeSnapshot(out);
 }
 
@@ -1279,8 +1291,10 @@ int main(void) {
   int cases = 0;
   int skipped = 0;
 
-
-
+  // Both sides of every case below are real implementations of a calculator
+  // command, and a command that computes without a bound exhausts this process
+  // rather than failing it. The budget makes that a named red case.
+  harnessInstallResourceBudget("math-wrappers full-core");
 
 
 
@@ -1361,8 +1375,8 @@ int main(void) {
         skipped++;
         continue;
       }
-      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].oracle, PREDICATES[p].param, &snapshotB);
-      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].owner, PREDICATES[p].param, &snapshotA);
+      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].oracle, PREDICATES[p].param, &snapshotB, caseName, "oracle");
+      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].owner, PREDICATES[p].param, &snapshotA, caseName, "owner");
       reportSnapshotMismatch(caseName);
       cases++;
     }
@@ -1373,8 +1387,8 @@ int main(void) {
       char caseName[128];
       snprintf(caseName, sizeof(caseName), "%s/%s", BINARY[p].name, PAIRS[f].name);
 
-      runSide(PAIRS[f].seedX, PAIRS[f].seedSecond, BINARY[p].owner, BINARY[p].param, &snapshotA);
-      runSide(PAIRS[f].seedX, PAIRS[f].seedSecond, BINARY[p].oracle, BINARY[p].param, &snapshotB);
+      runSide(PAIRS[f].seedX, PAIRS[f].seedSecond, BINARY[p].owner, BINARY[p].param, &snapshotA, caseName, "owner");
+      runSide(PAIRS[f].seedX, PAIRS[f].seedSecond, BINARY[p].oracle, BINARY[p].param, &snapshotB, caseName, "oracle");
       reportSnapshotMismatch(caseName);
       cases++;
     }
@@ -1390,5 +1404,6 @@ int main(void) {
   printf("math-wrappers full-core: %d cases agree (%zu unary x %zu shapes, %zu binary x %zu pairs)\n",
          cases, sizeof(PREDICATES) / sizeof(PREDICATES[0]), sizeof(FIXTURES) / sizeof(FIXTURES[0]),
          sizeof(BINARY) / sizeof(BINARY[0]), sizeof(PAIRS) / sizeof(PAIRS[0]));
+  harnessReportResourceUse();
   return 0;
 }
