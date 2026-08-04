@@ -111,11 +111,6 @@ NOT_A_GATE: dict[str, str] = {
     "run-host-parity-battery.sh": "Runner: the shared battery CI and the local gate both invoke.",
     "run-upstream-sync-checks.sh": "Runner: the resync helper sequence, invoked during a sync.",
     "run-upstream-reportgap-dryrun.sh": "Runner: dry-run helper for the upstream report gap.",
-    "report-fixture-partition-gap.py": (
-        "REPORT, deliberately not a gate: M31-69. It lists properties the owners"
-        " branch on that the fixture table does not partition. Gating it at zero"
-        " would buy silence by adding fixtures for branches nothing runs."
-    ),
     "report-idiom-status.py": "Report: prints the idiom metrics that check-idiom-ratchet.sh gates.",
     "report-narrowing-status.py": "Report: prints the narrowing metrics behind the ratchet.",
     "report-c-dependency-status.py": "Report: prints the C-dependency picture the Phase I policy gates.",

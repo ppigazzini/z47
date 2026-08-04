@@ -440,6 +440,11 @@ jobs:
           # FIXTURES table and the binary PAIRS table.
           python3 .github/project/check-fixture-partition.py --self-test
           python3 .github/project/check-fixture-partition.py --repo-root .
+          # And the completeness half's bookkeeping: the gap itself is deliberately
+          # not gated at zero, but an OPEN row that another lane covers, or a verdict
+          # whose evidence has moved, is a claim that has outlived its reason.
+          python3 .github/project/report-fixture-partition-gap.py --self-test
+          python3 .github/project/report-fixture-partition-gap.py --repo-root . --check
       - name: Enforce every harness source is compiled by something
         shell: bash
         run: |
