@@ -148,7 +148,14 @@ def build_probe_and_dump(zig, tmp):
     localm = extract_block(
         src_lines, r"#define PER_\b", r"#if defined\(USECURVES\)", inclusive=False
     )
-    s18 = extract_block(src_lines, r"#if defined\(OPTION_XFN_1000\)", r"#endif //OPTION_XFN_1000")
+    # The per-OPTION macro blocks that resolve a row's func/param/status when the option
+    # is off (S18_* for OPTION_XFN_1000, INF_* for OPTION_INFSUMS). They sit contiguously
+    # between the USECURVES guard and the banner that opens the table, so take the whole
+    # region rather than naming each block: OPTION_INFSUMS arrived with the c66d6567b pin
+    # and a per-block list would have left the probe with an undeclared identifier again.
+    optionm = extract_block(
+        src_lines, r"#if defined\(OPTION_XFN_1000\)", r"^//=====", inclusive=False
+    )
     probe = [
         "#include <stdio.h>",
         "#define PC_BUILD 1",
@@ -156,7 +163,7 @@ def build_probe_and_dump(zig, tmp):
         "#define OS64BIT 1",
         '#include "c47.h"',
         localm,
-        s18,
+        optionm,
         "static const item_t rows[] = {",
     ]
     probe += ["  " + r + "," for r in rows]

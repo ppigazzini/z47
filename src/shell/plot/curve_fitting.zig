@@ -171,9 +171,13 @@ extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const r
 extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 
 // libm (the double-precision forecast path).
-extern fn exp(x: f64) f64;
-extern fn log(x: f64) f64;
-extern fn pow(x: f64, y: f64) f64;
+/// b^e through the single-precision exp and log. Every caller narrows its result to
+/// f32 anyway, so single precision suffices, and the double-precision pow/exp/log trio
+/// (7.3 kB of libm) leaves the link. b <= 0 yields NaN or the 0/inf limits, exactly as
+/// pow does for a fractional exponent.
+fn fastPowF(b: f64, e: f64) f64 {
+    return @as(f64, @exp(@as(f32, @floatCast(e)) * @log(@as(f32, @floatCast(b)))));
+}
 
 // decNumber externs behind the real* macros.
 extern fn decNumberAdd(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -996,7 +1000,7 @@ pub export fn processCurvefitSelectionAll(selection_arg: u16, RR_: *real_t, MX: 
 // ===========================================================================
 // yIsFnx
 // ===========================================================================
-pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1: f64, a2: f64, XX: *real_t, YY: *real_t, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) callconv(.c) void {
+pub export fn yIsFnx(useFloating: u8, selection: u16, x: f64, y: *f64, a0: f64, a1: f64, a2: f64, XX: *real_t, YY: *real_t, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) callconv(.c) void {
     _ = RR;
     _ = SMI;
     y.* = 0;
@@ -1006,16 +1010,16 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
     var UU: real_t = undefined;
 
     frontier_real_type.realSetZero(YY);
-    if (USEFLOAT == useREAL4) {
+    if (useFloating == useREAL4) {
         realContextForecast = &ctxtReal4;
     } else {
-        if (USEFLOAT == useREAL39) {
+        if (useFloating == useREAL39) {
             realContextForecast = &ctxtReal39;
         }
     }
     switch (orOrtho(selection)) {
         CF_LINEAR_FITTING, CF_ORTHOGONAL_FITTING => {
-            if (USEFLOAT == 0) {
+            if (useFloating == 0) {
                 y.* = a1 * x + a0;
             } else {
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
@@ -1025,8 +1029,8 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_EXPONENTIAL_FITTING => {
-            if (USEFLOAT == 0) {
-                y.* = a0 * exp(a1 * x);
+            if (useFloating == 0) {
+                y.* = a0 * @as(f64, @exp(@as(f32, @floatCast(a1 * x))));
             } else {
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
                 realExp(&UU, &UU, realContextForecast.?);
@@ -1036,8 +1040,8 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_LOGARITHMIC_FITTING => {
-            if (USEFLOAT == 0) {
-                y.* = a0 + a1 * log(x);
+            if (useFloating == 0) {
+                y.* = a0 + a1 * @as(f64, @log(@as(f32, @floatCast(x))));
             } else {
                 WP34S_Ln(XX, &SS, realContextForecast.?);
                 realMultiply(&SS, aa1, &UU, realContextForecast.?);
@@ -1047,8 +1051,8 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_POWER_FITTING => {
-            if (USEFLOAT == 0) {
-                y.* = a0 * pow(x, a1);
+            if (useFloating == 0) {
+                y.* = a0 * fastPowF(x, a1);
             } else {
                 realPower(XX, aa1, &SS, realContextForecast.?);
                 realMultiply(&SS, aa0, YY, realContextForecast.?);
@@ -1057,8 +1061,8 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_ROOT_FITTING => {
-            if (USEFLOAT == 0) {
-                y.* = a0 * pow(a1, 1 / x);
+            if (useFloating == 0) {
+                y.* = a0 * fastPowF(a1, 1 / x);
             } else {
                 realDivide(const_1(), XX, &SS, realContextForecast.?);
                 realPower(aa1, &SS, &SS, realContextForecast.?); // very very slow with a1=0.9982, probably in the 0.4 < x < 1.0 area
@@ -1068,7 +1072,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_HYPERBOLIC_FITTING => {
-            if (USEFLOAT == 0) {
+            if (useFloating == 0) {
                 y.* = 1 / (a1 * x + a0);
             } else {
                 realMultiply(XX, aa1, &UU, realContextForecast.?);
@@ -1079,7 +1083,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_PARABOLIC_FITTING => {
-            if (USEFLOAT == 0) {
+            if (useFloating == 0) {
                 y.* = a2 * x * x + a1 * x + a0;
             } else {
                 realMultiply(XX, XX, &TT, realContextForecast.?);
@@ -1092,8 +1096,8 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_GAUSS_FITTING => {
-            if (USEFLOAT == 0) {
-                y.* = a0 * exp((x - a1) * (x - a1) / a2);
+            if (useFloating == 0) {
+                y.* = a0 * @as(f64, @exp(@as(f32, @floatCast((x - a1) * (x - a1) / a2))));
             } else {
                 realSubtract(XX, aa1, &TT, realContextForecast.?);
                 realMultiply(&TT, &TT, &TT, realContextForecast.?);
@@ -1105,7 +1109,7 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
             }
         },
         CF_CAUCHY_FITTING => {
-            if (USEFLOAT == 0) {
+            if (useFloating == 0) {
                 y.* = 1 / (a0 * (x + a1) * (x + a1) + a2);
             } else {
                 realAdd(XX, aa1, &TT, realContextForecast.?);
@@ -1116,7 +1120,6 @@ pub export fn yIsFnx(USEFLOAT: u8, selection: u16, x: f64, y: *f64, a0: f64, a1:
                 frontier_register_value_conversions.realToFloat(YY, &yf);
                 y.* = @floatCast(yf);
             }
-            // C falls through into the (empty) default here.
         },
         else => {},
     }

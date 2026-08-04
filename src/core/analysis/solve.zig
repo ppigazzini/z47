@@ -1,8 +1,11 @@
 const runtime = @import("solve_runtime.zig");
+// sumprod is in this object, so fnProgrammableSumInf is reached through the module
+// graph rather than a new exported symbol: the compiler checks the call, and z47's
+// authored ABI does not grow for a dispatch inside one object.
+const sumprod = @import("sumprod.zig");
 
 comptime {
     _ = @import("tvm.zig");
-    _ = @import("sumprod.zig");
     _ = @import("isumprod.zig");
     _ = @import("differentiate.zig");
     _ = @import("solve_owned.zig");
@@ -128,6 +131,10 @@ pub export fn fnTvmEndMode(unused_but_mandatory_parameter: u16) callconv(.c) voi
 
 pub export fn fnProgrammableSum(label: u16) callconv(.c) void {
     runtime.z47_solver_fnProgrammableSum(label);
+}
+
+pub export fn fnProgrammableSumInf(label: u16) callconv(.c) void {
+    sumprod.programmableSumInf(label);
 }
 
 pub export fn fnProgrammableProduct(label: u16) callconv(.c) void {

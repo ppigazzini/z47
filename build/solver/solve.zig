@@ -81,6 +81,12 @@ fn addRuntimeObject(
     // OLD_HW (DM42, name_prefix "dmcp") vs NEW_HW (DM42n/DMCP5, "dmcp5"): the engine-nesting depth cap
     // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific.
     build_options.addOption(bool, "is_old_hw", std.mem.eql(u8, name_prefix, "dmcp"));
+    // OPTION_INFSUMS (the infinity sum and its early stop; the plain programmable
+    // sum and product stay either way) sits in the same TWO_FILE #undef block as
+    // OPTION_XFN_1000 and OPTION_SLVP_POLY and costs 400 bytes of flash, so it is
+    // off for exactly the "dmcp" prefix. sumprod.zig carries the early-stop state
+    // and the fnProgrammableSumInf entry point behind it.
+    build_options.addOption(bool, "option_infsums", !std.mem.eql(u8, name_prefix, "dmcp"));
     module.addOptions("solve_build_options", build_options);
     return b.addObject(.{
         .name = b.fmt("{s}-solver-solve", .{name_prefix}),

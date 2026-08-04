@@ -946,24 +946,25 @@ pub export fn auto_tick(tick_int_f_in: f64) callconv(.c) f64 {
         return tick_int_f;
     }
 
-    // Scale the ticks to about 20 intervals across the axis. Upstream replaced
-    // its old "%.1e" string surgery with this numeric mantissa/exponent split
-    // (the string form pulled in _printf_float, no longer linked on DMCP);
-    // log10/pow live in libm, which nano.specs does not strip.
+    // Scale the ticks to about 20 intervals across the axis. The mantissa/exponent
+    // split is numeric, not the old "%.1e" string surgery (which pulled in
+    // _printf_float, no longer linked on DMCP), and it walks one iteration per decade
+    // rather than calling log10/pow, which keeps libm's last double entry points --
+    // that nano.specs does not strip -- out of the link.
     var tick_m: f64 = fabs(tick_int_f);
     var tick_mult: f64 = 1.0;
     if (tick_m > 0) {
-        tick_mult = frontier_graphs.pow(10.0, @floor(@log10(tick_m))); // decade of the value
-        tick_m /= tick_mult; // mantissa, 1 <= m < 10 up to one step of log10/pow rounding, corrected below
-        if (tick_m < 1.0) {
+        while (tick_m < 1.0) {
             tick_m *= 10.0;
             tick_mult /= 10.0;
         }
-        if (tick_m >= 10.0) {
+        while (tick_m >= 10.0) {
             tick_m /= 10.0;
             tick_mult *= 10.0;
         }
-        tick_m = @floor(tick_m * 10.0 + 0.5) / 10.0; // round the mantissa to 1 decimal as "%.1e" did
+        // Round the mantissa to 1 decimal as "%.1e" did. The argument is in
+        // [10, 101), so truncating the cast is the floor.
+        tick_m = @as(f64, @floatFromInt(@as(i32, @intFromFloat(tick_m * 10.0 + 0.5)))) / 10.0;
         if (tick_m >= 10.0) {
             tick_m /= 10.0;
             tick_mult *= 10.0;
@@ -1575,6 +1576,9 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 
     var XX: real_t = undefined;
     var YY: real_t = undefined;
+    // XX is written only by the USEFLOATING real branches below, so it reaches yIsFnx
+    // uninitialised on the double path.
+    realSetZero(&XX);
     if (selection == 0) {
         return;
     }

@@ -1186,9 +1186,9 @@ fn fnEulPhi(unused_but_mandatory_parameter: u16) void {
 // ===========================================================================
 
 fn is_perfect_square_uint32(n: u32, sqrt_out: ?*u32) c_int {
-    // Exact integer sqrt (abi.int_math, unit-tested) instead of libm @sqrt + the
-    // r/r+1 float-rounding guard: for a u32 the floor square root is exact, so a
-    // single r*r == n test is sufficient and identical in result.
+    // Exact integer sqrt (abi.int_math, unit-tested). The floor square root of a u32
+    // is exact, so one r*r == n test settles it and no +-1 rounding tolerance is
+    // needed. c43 reaches the same answer through its own isqrt32.
     const r: u32 = @intCast(abi.int_math.isqrt(n));
     if (r * r == n) {
         if (sqrt_out) |so| {

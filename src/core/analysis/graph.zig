@@ -339,7 +339,6 @@ extern fn subComplex(aReal: *const real_t, aImag: *const real_t, bReal: *const r
 extern fn realSetZero(r: *real_t) void;
 extern fn realSetOne(r: *real_t) void;
 extern fn realCompareEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
-extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareLessEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn showHideHourGlass() void;
@@ -381,7 +380,6 @@ extern fn decNumberPlus(r: *real_t, a: *align(1) const real_t, ctx: *realContext
 extern fn decNumberCopyAbs(r: *real_t, src: *align(1) const real_t) *real_t;
 extern fn decNumberFromInt32(r: *real_t, source: i32) *real_t;
 extern fn decQuadZero(v: *align(1) real34_t) *align(1) real34_t;
-extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareGreaterEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
 extern fn fnSwapXY(unusedButMandatoryParameter: u16) void;
@@ -410,7 +408,6 @@ inline fn lcdRefresh() void {
 extern fn fabs(x: f64) f64;
 extern fn fmax(x: f64, y: f64) f64;
 extern fn fmin(x: f64, y: f64) f64;
-extern fn pow(x: f64, y: f64) f64;
 extern fn atan2(y: f64, x: f64) f64;
 extern fn sqrt(x: f64) f64;
 
@@ -581,6 +578,9 @@ fn execute_rpn_function() void {
             var resReal: real_t = undefined;
             real34ToReal(reg34(REGISTER_X), &xReal);
             solve_owned._executeSolverReal(@bitCast(currentSolverVariable), &xReal, &resReal, null);
+            // The program is free to leave any type in X, so the sample is written back
+            // through a real34 X, not into whatever data area the last step left there.
+            reallocateRegister(REGISTER_X, dtReal34, 0, amNoneU);
             realToReal34(&resReal, reg34(REGISTER_X));
         } else {
             equation.parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
@@ -762,7 +762,7 @@ pub export fn graphRangeGuard(lo: *real_t, hi: *real_t) callconv(.c) void {
     var span: real_t = undefined;
     var mag: real_t = undefined;
     var tmpR: real_t = undefined;
-    if (realCompareGreaterThan(lo, hi)) { // swap if entered in incorrect sequence
+    if (runtime.realCompareGreaterThan(lo, hi)) { // swap if entered in incorrect sequence
         realCopy(hi, &tmpR);
         realCopy(lo, hi);
         realCopy(&tmpR, lo);
@@ -770,7 +770,7 @@ pub export fn graphRangeGuard(lo: *real_t, hi: *real_t) callconv(.c) void {
     realSubtract(hi, lo, &span, &ctxtReal39); // span = hi - lo, >= 0 after the swap
     realCopyAbs(lo, &mag); // mag = |lo|
     realCopyAbs(hi, &tmpR); // tmpR = |hi|
-    if (realCompareGreaterThan(&tmpR, &mag)) {
+    if (runtime.realCompareGreaterThan(&tmpR, &mag)) {
         realCopy(&tmpR, &mag); // mag = max(|lo|, |hi|)
     }
     realSetOne(&tmpR);
@@ -811,7 +811,7 @@ pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int
         realSubtract(&buffer[@intCast(i)].y, &buffer[@intCast(i - 1)].y, &diff, ctxtGraphs);
         realCopyAbs(&diff, &jump);
         realAdd(&totalVariation, &jump, &totalVariation, ctxtGraphs);
-        if (realCompareGreaterThan(&jump, &maxJump)) {
+        if (runtime.realCompareGreaterThan(&jump, &maxJump)) {
             realCopy(&jump, &maxJump);
         }
     }
@@ -824,15 +824,15 @@ pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int
     realSubtract(yAfter, &buffer[@intCast(count - 1)].y, &diff, ctxtGraphs);
     realCopyAbs(&diff, &endJump);
 
-    if (realCompareGreaterThan(&startJump, &maxJump)) {
+    if (runtime.realCompareGreaterThan(&startJump, &maxJump)) {
         realCopy(&startJump, &maxJump);
     }
-    if (realCompareGreaterThan(&endJump, &maxJump)) {
+    if (runtime.realCompareGreaterThan(&endJump, &maxJump)) {
         realCopy(&endJump, &maxJump);
     }
 
     // If the maximum jump in fine steps is still above threshold, discontinuity persists
-    const discontinuityResolved: bool = realCompareLessThan(&maxJump, discontinuityThreshold);
+    const discontinuityResolved: bool = runtime.realCompareLessThan(&maxJump, discontinuityThreshold);
 
     // Additional check: fine points should show reasonable continuity
     var avgVariation: real_t = undefined;
@@ -845,8 +845,8 @@ pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int
     realCopy(discontinuityThreshold, &halfThresh);
     realDivideBy2(&halfThresh, ctxtGraphs);
 
-    const below3xAvg: bool = realCompareLessThan(&maxJump, &threeAvg);
-    const belowHalfThresh: bool = realCompareLessThan(&maxJump, &halfThresh);
+    const below3xAvg: bool = runtime.realCompareLessThan(&maxJump, &threeAvg);
+    const belowHalfThresh: bool = runtime.realCompareLessThan(&maxJump, &halfThresh);
     const smoothTransition: bool = below3xAvg or belowHalfThresh;
 
     return discontinuityResolved and smoothTransition;
@@ -868,7 +868,7 @@ pub export fn calculateNewStepSize(discontinuityDetected: c_int, grad1: *align(1
         realDivide(grad2, grad1, &ratio1, ctxtGraphs);
         realDivide(grad1, grad2, &ratio2, ctxtGraphs);
         stringToReal("1.8", &ss1Real, ctxtGraphs); // _R_STR_OF(SS1)
-        const scaleHalf: bool = realCompareGreaterThan(&ratio1, &ss1Real) or realCompareGreaterThan(&ratio2, &ss1Real);
+        const scaleHalf: bool = runtime.realCompareGreaterThan(&ratio1, &ss1Real) or runtime.realCompareGreaterThan(&ratio2, &ss1Real);
         if (scaleHalf) {
             realMultiply(dx0, consts.const_1on2(), newDx, ctxtGraphs);
         } else {
@@ -932,8 +932,8 @@ pub export fn detectTrueDiscontinuity(y0: *align(1) const real_t, y1: *align(1) 
     realMultiply(consts.const_100(), yAvg, &hundredYAvg, ctxtGraphs);
     realMultiply(consts.const_10(), yAvg, &tenYAvg, ctxtGraphs);
 
-    const absY2GtHundred: bool = realCompareGreaterThan(&absY2, &hundredYAvg);
-    const absY1LtTen: bool = realCompareLessThan(&absY1, &tenYAvg);
+    const absY2GtHundred: bool = runtime.realCompareGreaterThan(&absY2, &hundredYAvg);
+    const absY1LtTen: bool = runtime.realCompareLessThan(&absY1, &tenYAvg);
     const extremeMagnitudeJump: bool = absY2GtHundred and absY1LtTen;
 
     var gradientDiscontinuity: bool = false;
@@ -972,9 +972,9 @@ pub export fn detectTrueDiscontinuity(y0: *align(1) const real_t, y1: *align(1) 
         realMultiply(&const20, &absY1mY0, &twentyAbsY1mY0, ctxtGraphs);
         realMultiply(consts.const_5(), yAvg, &fiveYAvg, ctxtGraphs);
 
-        const ratioGt50: bool = realCompareGreaterThan(&gradientRatio, &const50);
-        const y2mY1Gt20Y1mY0: bool = realCompareGreaterThan(&absY2mY1, &twentyAbsY1mY0);
-        const y2mY1Gt5YAvg: bool = realCompareGreaterThan(&absY2mY1, &fiveYAvg);
+        const ratioGt50: bool = runtime.realCompareGreaterThan(&gradientRatio, &const50);
+        const y2mY1Gt20Y1mY0: bool = runtime.realCompareGreaterThan(&absY2mY1, &twentyAbsY1mY0);
+        const y2mY1Gt5YAvg: bool = runtime.realCompareGreaterThan(&absY2mY1, &fiveYAvg);
 
         // Only flag if gradient changes by more than 50x AND the function values suggest discontinuity
         gradientDiscontinuity = ratioGt50 and y2mY1Gt20Y1mY0 and y2mY1Gt5YAvg;
@@ -1001,9 +1001,9 @@ pub export fn detectTrueDiscontinuity(y0: *align(1) const real_t, y1: *align(1) 
             realMultiply(consts.const_5(), &mag1, &fiveMag1, ctxtGraphs);
             realMultiply(consts.const_5(), &mag0, &fiveMag0, ctxtGraphs);
             realMultiply(consts.const_10(), yAvg, &tenYAvg2, ctxtGraphs);
-            const mag2Gt5Mag1: bool = realCompareGreaterThan(&mag2, &fiveMag1);
-            const mag1Gt5Mag0: bool = realCompareGreaterThan(&mag1, &fiveMag0);
-            const mag2Gt10YAvg: bool = realCompareGreaterThan(&mag2, &tenYAvg2);
+            const mag2Gt5Mag1: bool = runtime.realCompareGreaterThan(&mag2, &fiveMag1);
+            const mag1Gt5Mag0: bool = runtime.realCompareGreaterThan(&mag1, &fiveMag0);
+            const mag2Gt10YAvg: bool = runtime.realCompareGreaterThan(&mag2, &tenYAvg2);
             signOscillationInstability = mag2Gt5Mag1 and mag1Gt5Mag0 and mag2Gt10YAvg;
         }
     }
@@ -1023,7 +1023,7 @@ pub export fn detectAndCharacterizeAsymptote(xLeft: *align(1) const real_t, yLef
     realSubtract(xMax, xMin, &xRange, ctxtGraphs);
     stringToReal("0.001", &minRatio, ctxtGraphs); // _R_STR_OF(MIN_GAP_WIDTH_RATIO)
     realMultiply(&minRatio, &xRange, &minGap, ctxtGraphs);
-    if (realCompareLessThan(gapWidth, &minGap)) {
+    if (runtime.realCompareLessThan(gapWidth, &minGap)) {
         return false;
     }
 
@@ -1071,10 +1071,10 @@ pub export fn detectAndCharacterizeAsymptote(xLeft: *align(1) const real_t, yLef
         }
 
         convertRegisterToReal(REGISTER_Y, &sampleY);
-        if (realCompareGreaterThan(&sampleY, &leftMaxY)) {
+        if (runtime.realCompareGreaterThan(&sampleY, &leftMaxY)) {
             realCopy(&sampleY, &leftMaxY);
         }
-        if (realCompareLessThan(&sampleY, &leftMinY)) {
+        if (runtime.realCompareLessThan(&sampleY, &leftMinY)) {
             realCopy(&sampleY, &leftMinY);
         }
 
@@ -1089,10 +1089,10 @@ pub export fn detectAndCharacterizeAsymptote(xLeft: *align(1) const real_t, yLef
         }
 
         convertRegisterToReal(REGISTER_Y, &sampleY);
-        if (realCompareGreaterThan(&sampleY, &rightMaxY)) {
+        if (runtime.realCompareGreaterThan(&sampleY, &rightMaxY)) {
             realCopy(&sampleY, &rightMaxY);
         }
-        if (realCompareLessThan(&sampleY, &rightMinY)) {
+        if (runtime.realCompareLessThan(&sampleY, &rightMinY)) {
             realCopy(&sampleY, &rightMinY);
         }
     }
@@ -1106,10 +1106,10 @@ pub export fn detectAndCharacterizeAsymptote(xLeft: *align(1) const real_t, yLef
     realAdd(yMax, &extremeThreshold, &yMaxPlus, ctxtGraphs);
     realSubtract(yMin, &extremeThreshold, &yMinMinus, ctxtGraphs);
 
-    const leftGoesPositive: bool = realCompareGreaterThan(&leftMaxY, &yMaxPlus);
-    const leftGoesNegative: bool = realCompareLessThan(&leftMinY, &yMinMinus);
-    const rightGoesPositive: bool = realCompareGreaterThan(&rightMaxY, &yMaxPlus);
-    const rightGoesNegative: bool = realCompareLessThan(&rightMinY, &yMinMinus);
+    const leftGoesPositive: bool = runtime.realCompareGreaterThan(&leftMaxY, &yMaxPlus);
+    const leftGoesNegative: bool = runtime.realCompareLessThan(&leftMinY, &yMinMinus);
+    const rightGoesPositive: bool = runtime.realCompareGreaterThan(&rightMaxY, &yMaxPlus);
+    const rightGoesNegative: bool = runtime.realCompareLessThan(&rightMinY, &yMinMinus);
 
     // Must have extreme behavior on at least one side
     if (!(leftGoesPositive or leftGoesNegative or rightGoesPositive or rightGoesNegative)) {
@@ -1325,7 +1325,7 @@ fn graph_eqn(mode: u16) void {
     realCopy(&x_min_r, &x);
     while (true) {
         // x <= x_max ?
-        if (realCompareGreaterThan(&x, &x_max_r)) break;
+        if (runtime.realCompareGreaterThan(&x, &x_max_r)) break;
 
         // R/S/EXIT or a nested-engine abort stops the plot
         if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
@@ -1339,8 +1339,8 @@ fn graph_eqn(mode: u16) void {
 
         jumpedBack = false;
         // x = max(x_min, min(x_max, x))
-        if (realCompareGreaterThan(&x, &x_max_r)) realCopy(&x_max_r, &x);
-        if (realCompareLessThan(&x, &x_min_r)) realCopy(&x_min_r, &x);
+        if (runtime.realCompareGreaterThan(&x, &x_max_r)) realCopy(&x_max_r, &x);
+        if (runtime.realCompareLessThan(&x, &x_min_r)) realCopy(&x_min_r, &x);
 
         convertRealToReal34RegisterPush(&x, REGISTER_X);
         execute_rpn_function_graphAcc();
@@ -1423,22 +1423,22 @@ fn graph_eqn(mode: u16) void {
                     realCopyAbs(&tmpA, &absG1mG0);
                     realMultiply(consts.const_10(), &absG1mG0, &tenAbsG1mG0, ctxtGraphs);
 
-                    const a1: bool = realCompareGreaterThan(&absY02OverY01, &oneOhOne);
-                    const a2: bool = realCompareGreaterThan(&absG2OverG1, &ss2_r);
+                    const a1: bool = runtime.realCompareGreaterThan(&absY02OverY01, &oneOhOne);
+                    const a2: bool = runtime.realCompareGreaterThan(&absG2OverG1, &ss2_r);
                     const yRatioCheck1: bool = a1 and a2;
 
-                    const b1: bool = realCompareGreaterThan(&absY01OverY02, &oneOhOne);
-                    const b2: bool = realCompareGreaterThan(&absG1OverG2, &ss2_r);
+                    const b1: bool = runtime.realCompareGreaterThan(&absY01OverY02, &oneOhOne);
+                    const b2: bool = runtime.realCompareGreaterThan(&absG1OverG2, &ss2_r);
                     const yRatioCheck2: bool = b1 and b2;
 
                     // Conservative oscillation detection - only flag if truly problematic
-                    const y02BigEnough: bool = realCompareGreaterThan(&absY02, &twoAbsY01);
-                    const y00BigEnough: bool = realCompareGreaterThan(&absY00, &twoAbsY01);
+                    const y02BigEnough: bool = runtime.realCompareGreaterThan(&absY02, &twoAbsY01);
+                    const y00BigEnough: bool = runtime.realCompareGreaterThan(&absY00, &twoAbsY01);
                     const signOscillation1: bool = (ss0 == 1 and ss1 == -1 and ss2 == 1) and y02BigEnough and y00BigEnough;
                     const signOscillation2: bool = (ss0 == -1 and ss1 == 1 and ss2 == -1) and y02BigEnough and y00BigEnough;
 
                     // Zero crossing detection - only if accompanied by large gradient changes
-                    const bigGradJump: bool = realCompareGreaterThan(&absG2mG1, &tenAbsG1mG0);
+                    const bigGradJump: bool = runtime.realCompareGreaterThan(&absG2mG1, &tenAbsG1mG0);
                     const y01Pos: bool = !graphIsZero(&y01) and graphIsPositive(&y01);
                     const y02Neg: bool = graphIsNegative(&y02);
                     const y01Neg: bool = graphIsNegative(&y01);
@@ -1453,7 +1453,7 @@ fn graph_eqn(mode: u16) void {
 
                 // Update running average (count == 0 path intentionally absent)
                 realCopyAbs(&y02, &tmpA);
-                if (realCompareGreaterThan(&tmpA, &yAvg)) {
+                if (runtime.realCompareGreaterThan(&tmpA, &yAvg)) {
                     int32ToReal(@as(i32, count), &tmpB);
                     realDivide(&tmpA, &tmpB, &tmpA, ctxtGraphs); // |y02|/count
                     realAdd(&yAvg, &tmpA, &yAvg, ctxtGraphs);
@@ -1655,7 +1655,7 @@ fn graph_eqn(mode: u16) void {
                 // newDx < prevDx * REVERT_THRESHOLD ?
                 convertDoubleToReal(REVERT_THRESHOLD, &tmpA, ctxtGraphs);
                 realMultiply(&prevDx, &tmpA, &tmpB, ctxtGraphs);
-                const newDxBelowThresh: bool = realCompareLessThan(&newDx, &tmpB);
+                const newDxBelowThresh: bool = runtime.realCompareLessThan(&newDx, &tmpB);
                 const curvNonZero: bool = !graphIsZero(&curvatureChange) and graphIsPositive(&curvatureChange);
                 if (!jumpedBack and !inHighResMode and newDxBelowThresh and discontinuityDetected == 0 and curvNonZero) {
                     realCopy(&x01, &savedXBeforeHighres); // Save the last good x position
@@ -1915,7 +1915,7 @@ fn execute_rpn_function_reals(from: *const cplx_t, to: *cplx_t, magnitude: *real
     complexMagnitude(&to.Real, &to.Imag, magnitude, ctxtSolver2);
     if (realCompareLessEqual(magnitude, &cpxSlvBestMagnitudeY)) {
         copyComplex(from, &cpxSlvBestX);
-        if (realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
+        if (runtime.realCompareLessThan(magnitude, &cpxSlvBestMagnitudeY)) {
             realCopy(magnitude, &cpxSlvBestMagnitudeY);
         }
         return true;
@@ -2125,7 +2125,7 @@ fn complexSolver() void {
         }
 
         // If converging, increment convergence counter
-        if (realCompareLessThan(magnitudeY, oldMagnitudeY)) {
+        if (runtime.realCompareLessThan(magnitudeY, oldMagnitudeY)) {
             convergent += 1;
         } else {
             if (Y2IsCloseToZero) {
@@ -2165,7 +2165,15 @@ fn complexSolver() void {
                 oscillationIterationCounter = 0;
                 oscillations = 0;
                 convergent = 0;
-                const kick: f64 = 0.8123 * @as(f64, @floatFromInt(kicker)) * @as(f64, @floatFromInt(kicker)) * pow(2.0, @floatFromInt(kicker));
+                // 2^kicker by exact doubling. kicker is a small integer, so the powers
+                // of two are exact either way and libm's pow stays out of the link.
+                var p2: f64 = 1.0;
+                {
+                    var k2 = kicker;
+                    while (k2 > 0) : (k2 -= 1) p2 *= 2.0;
+                    while (k2 < 0) : (k2 += 1) p2 *= 0.5;
+                }
+                const kick: f64 = 0.8123 * @as(f64, @floatFromInt(kicker)) * @as(f64, @floatFromInt(kicker)) * p2;
                 convertDoubleToReal(if (@rem(kicker, 2) != 0) -kick else kick, &temp1.Real, ctxtSolver2);
                 convertDoubleToReal(kick, &temp1.Imag, ctxtSolver2);
                 addComplex(&temp1.Real, &temp1.Imag, &X0.Real, &X0.Imag, &X2.Real, &X2.Imag, ctxtSolver2);
@@ -2181,7 +2189,7 @@ fn complexSolver() void {
         // if same as cpxSlvBestX we probably hit the precision limit for this equation?
         subComplex(&cpxSlvBestX.Real, &cpxSlvBestX.Imag, &X2.Real, &X2.Imag, &temp1.Real, &temp1.Imag, ctxtSolver2);
         complexMagnitude(&temp1.Real, &temp1.Imag, &temp1.Real, ctxtSolver2);
-        Y2IsCloseToZero = Y2IsCloseToZero or (realCompareLessThan(&cpxSlvBestMagnitudeY, consts.c4508()) and realIsZero(&temp1.Real) and realIsZero(&temp1.Imag));
+        Y2IsCloseToZero = Y2IsCloseToZero or (runtime.realCompareLessThan(&cpxSlvBestMagnitudeY, consts.c4508()) and realIsZero(&temp1.Real) and realIsZero(&temp1.Imag));
 
         iterAfterBest = if (execute_rpn_function_reals(X2, Y2N, magnitudeY)) 0 else iterAfterBest + 1;
         powCplxNat(Y2N, &yPower, Y2);
@@ -2504,7 +2512,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
                 }
             }
 
-            if (rangeOK and realCompareGreaterThan(&hiX, &loX)) { // pre-condition the plotter: x_min = Y, x_max = X
+            if (rangeOK and runtime.realCompareGreaterThan(&hiX, &loX)) { // pre-condition the plotter: x_min = Y, x_max = X
                 realCopy(&loX, x_min);
                 realCopy(&hiX, x_max);
             }

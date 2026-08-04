@@ -827,10 +827,10 @@ const STD_e_ACUTE = "\x80\xe9";
 // rule with the string: non-merge commits only, author aliases merged per
 // person, Robbert Jan is doc-only and carries no count; each total is code
 // commits plus the manual c47-wiki repo plus c47-wiki page edits.
-const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3990)," ++ spc1 ++ "Martin Lorang" ++ spc ++ "(1382)," ++ spc1 ++ "Robbert Jan van Meenen" ++ spc ++ "(doc)," ++ spc1 ++
+const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3996)," ++ spc1 ++ "Martin Lorang" ++ spc ++ "(1382)," ++ spc1 ++ "Robbert Jan van Meenen" ++ spc ++ "(doc)," ++ spc1 ++
     "MihailJP" ++ spc ++ "(1093)," ++ spc1 ++ "Ralf Ahlbrink" ++ spc ++ "(459)," ++ spc1 ++ "Paul Dale" ++ spc ++ "(449)," ++ spc1 ++ "Didier Lachieze" ++ spc ++ "(277)," ++ spc1 ++
     "Walter Bonin" ++ spc ++ "(270)," ++ spc1 ++ "Benjamin Titmus" ++ spc ++ "(215)," ++ spc1 ++ "Hartmut Bromkamp" ++ spc ++ "(187)," ++ spc1 ++
-    "Pasquale Pigazzini" ++ spc ++ "(161)," ++ spc1 ++ "Mike Leffel" ++ spc ++ "(107)," ++ spc1 ++ "Warren Young" ++ spc ++ "(68)," ++ spc1 ++ "David Emerson" ++ spc ++ "(64)," ++ spc1 ++
+    "Pasquale Pigazzini" ++ spc ++ "(161)," ++ spc1 ++ "Mike Leffel" ++ spc ++ "(107)," ++ spc1 ++ "David Emerson" ++ spc ++ "(69)," ++ spc1 ++ "Warren Young" ++ spc ++ "(68)," ++ spc1 ++
     "Bj" ++ STD_o_DIARESIS ++ "rn Jadelius" ++ spc ++ "(47)," ++ spc1 ++ "Philippe Martens" ++ spc ++ "(46)," ++ spc1 ++ "Marcel Dan" ++ spc ++ "(37)," ++ spc1 ++
     "H" ++ STD_a_RING ++ "kon Hansen" ++ spc ++ "(36)," ++ spc1 ++ "Gert Menke" ++ spc ++ "(31)," ++ spc1 ++ "John Boydon" ++ spc ++ "(29)," ++ spc1 ++ "Michael Peter" ++ spc ++ "(28)," ++ spc1 ++
     "Ian Abbott" ++ spc ++ "(21)," ++ spc1 ++ "R" ++ STD_e_ACUTE ++ "my Trotin" ++ spc ++ "(19)," ++ spc1 ++ "fridlmue" ++ spc ++ "(17)," ++ spc1 ++ "A. Vosough" ++ spc ++ "(16)," ++ spc1 ++
@@ -1205,8 +1205,6 @@ extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 extern fn strstr(h: [*c]const u8, n: [*c]const u8) [*c]u8;
 extern fn memcpy(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
-extern fn pow(x: f64, y: f64) f64;
-extern fn log10(x: f64) f64;
 
 // GTK event-loop pumping (host only; referenced under !dmcp_build).
 const gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
@@ -4261,7 +4259,13 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         } else if (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/') {
             var lb: [*c]u8 = lastBase;
 
-            var iDigit: u32 = @intFromFloat(pow(10, @floor(log10(@as(f64, @floatFromInt(lastDenominator)))) + 1));
+            // Smallest power of ten strictly above lastDenominator, by repeated
+            // multiplication: the value pow(10, log10(d) + 1) computed, reached without
+            // libm and without its rounding at the decade boundaries.
+            var iDigit: u32 = 1;
+            while (iDigit <= lastDenominator) {
+                iDigit *= 10;
+            }
             var iDigit1: u32 = undefined;
             while (iDigit >= 10) {
                 iDigit1 = iDigit / 10;

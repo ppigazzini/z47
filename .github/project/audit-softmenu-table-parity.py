@@ -58,7 +58,7 @@ HOST_OPTIONS = {
     "old_hw": False,
     "option_vector": True,
     "option_elec": True,
-    "option_slvp": True,
+    "option_slvp_poly": True,
     "option_xfn_1000": True,
     "option_tvm_amort": True,
     "ir_printing": True,

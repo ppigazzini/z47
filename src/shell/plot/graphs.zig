@@ -304,7 +304,6 @@ extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn snprintf(buf: [*c]u8, size: usize, fmt: [*:0]const u8, ...) c_int;
-pub extern fn pow(base: f64, exp: f64) f64;
 
 // host-only screen refresh (referenced under !dmcp_build).
 
@@ -609,13 +608,16 @@ pub export fn fnPlotZoom(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 // calculateZoomFactor / multiplyZoomFactors (static)
 // ===========================================================================
-const basefactor: f32 = 4.5;
-fn calculateZoomFactor(factor: f32, aa: *f32) void {
-    if (factor != 0) {
-        // C: (*aa) *= pow(basefactor, -factor); pow returns double and the f32 *aa
-        // promotes to double for the multiply, then narrows back on store.
-        aa.* = @floatCast(@as(f64, aa.*) * pow(@as(f64, basefactor), @as(f64, -factor)));
+/// Multiplies `aa` by stepBase^-zoomLevel. The zoom levels are small integers, so the
+/// power is reached by repeated double multiplication rather than libm's pow, and
+/// stepBase carries what used to be the 4.5^0.75 or 4.5^0.55 step per level.
+fn calculateZoomFactor(stepBase: f64, zoomLevel: i16, aa: *f32) void {
+    var m: f64 = 1.0;
+    var z: i16 = if (zoomLevel < 0) -zoomLevel else zoomLevel;
+    while (z > 0) : (z -= 1) {
+        m *= stepBase;
     }
+    aa.* = @floatCast(if (zoomLevel > 0) @as(f64, aa.*) / m else @as(f64, aa.*) * m);
 }
 
 fn multiplyZoomFactors(plotzoomx: f32, plotzoomy: f32, histofactor: f32, x_min_: *real_t, x_max_: *real_t, y_min_: *real_t, y_max_: *real_t, dx: *real_t, dy: *real_t) void {
@@ -1055,6 +1057,11 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
         realAdd(y_min, consts.const_1on2(), y_max, ctx);
         realSubtract(y_max, consts.const_1(), y_min, ctx);
         realSubtract(y_max, y_min, &dy, ctx);
+    } else {
+        // A non-zero range can still be below the graph's working precision, which
+        // compresses the plot; widen it the same way Ylo/Yhi are widened.
+        graphRangeGuard(y_min, y_max);
+        realSubtract(y_max, y_min, &dy, ctx);
     }
     if (realIsZero(&dx)) {
         realAdd(x_min, consts.const_1on2(), x_max, ctx);
@@ -1069,8 +1076,7 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
         // the ZOOM command from outside the PLOT mode only works for PLSTAT
         // widen the histogram range to (n+2)/(n-1) of the bin-mid span: 1.5 bin widths of margin per side for the columns
         const histofactor: f32 = if (drawHistogram == 0) 1 else (@as(f32, @floatFromInt(statnum)) + 2.0) / (@as(f32, @floatFromInt(statnum)) - 1.0);
-        // C: PLOT_ZOOM * 0.75 is (int8 * double) -> double, narrowed to float at the arg.
-        calculateZoomFactor(@floatCast(@as(f64, @floatFromInt(PLOT_ZOOM)) * 0.75), &plotzoomx);
+        calculateZoomFactor(3.0896507158606767, PLOT_ZOOM, &plotzoomx); // 4.5^0.75 per zoom level
         plotzoomy = if (drawHistogram == 1) 1 else plotzoomx;
         multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, x_min, x_max, y_min, y_max, &dx, &dy);
         if (drawHistogram == 1) {
@@ -1085,8 +1091,7 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
             } else if (PLOT_ZMY < zoomRangeLo) {
                 PLOT_ZMY = zoomRangeHi;
             }
-            // C: PLOT_ZMY * 0.55 is (int8 * double) -> double, narrowed to float at the arg.
-            calculateZoomFactor(@floatCast(@as(f64, @floatFromInt(PLOT_ZMY)) * 0.55), &plotzoomy);
+            calculateZoomFactor(2.2870037808402090, PLOT_ZMY, &plotzoomy); // 4.5^0.55 per zoom level
             multiplyZoomFactors(plotzoomx, plotzoomy, 1, x_min, x_max, y_min, y_max, &dx, &dy);
         } else {
             // PLOT_ZMY = 18, special case to allow Ylo Yhi; _LY/_UY override only if

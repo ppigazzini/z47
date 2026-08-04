@@ -288,7 +288,6 @@ extern fn realSetOne(value: *real_t) void;
 extern fn realSetZero(value: *real_t) void;
 extern fn realSetNaN(value: *real_t) void;
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realGetExponentComp(val: *const real_t) i32;
 extern fn convergenceTolerence(tol: *real_t) void;
@@ -915,7 +914,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
         realSubtract(bb, aa, ss, ctxtSolver());
         if (realCompareAbsLessThan(ss, minBracketSpacing)) {
             realCopy(minBracketSpacing, ss);
-            if (realCompareLessThan(bb, aa)) {
+            if (runtime.realCompareLessThan(bb, aa)) {
                 realSetNegativeSign(ss);
             }
             realSubtract(aa, ss, aa, ctxtSolver());
@@ -1121,7 +1120,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                         bp1 = ss;
                     } else if (realCompareEqual(bb, ss)) {
                         bp1 = mm;
-                    } else if (realCompareLessThan(delta, deltaB) and realCompareLessThan(smb, deltaB)) {
+                    } else if (runtime.realCompareLessThan(delta, deltaB) and runtime.realCompareLessThan(smb, deltaB)) {
                         bp1 = ss;
                     } else {
                         bp1 = mm;

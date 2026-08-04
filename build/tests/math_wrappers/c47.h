@@ -17,6 +17,21 @@
 // true. The branch is harmless for the oracle, so silence the diagnostic.
 #pragma clang diagnostic ignored "-Wpointer-bool-conversion"
 
+// This header stands in for defines.h, so an OPTION_* the product build has ON and
+// this file leaves undefined does not make the oracle refuse -- it makes the oracle
+// EMPTY, and an empty oracle agrees with nothing while reporting no failure. c43
+// moved fnErfc and WP34S_Erfc inside OPTION_DIST_NORMAL at the c66d6567b pin, which
+// is how that showed up: the lane began comparing a fnErfc that did nothing.
+//
+// Four more options are reachable from the sources the oracles #include and are
+// still undefined here -- OPTION_CUBIC_159, OPTION_SQUARE_159, OPTION_EIGEN_159 and
+// OPTION_EIGEN, all of them ON in the host product build. They select the internal
+// working precision of the cube/square-root and eigen paths rather than whether the
+// function has a body, so the lane is measuring the wrong precision there, not
+// nothing. Deciding each is its own piece of work; this comment is the record that
+// they are known, not that they are fine.
+#define OPTION_DIST_NORMAL
+
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
 typedef int32_t angularMode_t;
