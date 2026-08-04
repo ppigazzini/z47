@@ -98,6 +98,16 @@ void oracle_fnWpositive(uint16_t unusedButMandatoryParameter);
 void oracle_fnSinc(uint16_t unusedButMandatoryParameter);
 void oracle_fnSincpi(uint16_t unusedButMandatoryParameter);
 void oracle_fnSqrt1Px2(uint16_t unusedButMandatoryParameter);
+void oracle_fnCeil(uint16_t unusedButMandatoryParameter);
+void oracle_fnFloor(uint16_t unusedButMandatoryParameter);
+void oracle_fnIp(uint16_t unusedButMandatoryParameter);
+void oracle_fnFp(uint16_t unusedButMandatoryParameter);
+void oracle_fnRoundi(uint16_t unusedButMandatoryParameter);
+void oracle_fnMant(uint16_t unusedButMandatoryParameter);
+void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
+void oracle_fnSign(uint16_t unusedButMandatoryParameter);
+void oracle_fnLint(uint16_t unusedButMandatoryParameter);
+void oracle_fnSint(uint16_t unusedButMandatoryParameter);
 void oracle_fnAdd(uint16_t unusedButMandatoryParameter);
 void oracle_fnSubtract(uint16_t unusedButMandatoryParameter);
 void oracle_fnMultiply(uint16_t unusedButMandatoryParameter);
@@ -975,6 +985,20 @@ static const predicate_t PREDICATES[] = {
   { "fnWnegative",             fnWnegative,         oracle_fnWnegative,         0                  },
   { "fnWpositive",             fnWpositive,         oracle_fnWpositive,         0                  },
   { "fnSqrt1Px2",              fnSqrt1Px2,          oracle_fnSqrt1Px2,          0                  },
+
+  // Rounding, integer parts and the digit-level predicates. fnMant and fnUlp read
+  // the decimal ENCODING rather than the value, which is the family this report
+  // has found four defects in, so they are the reason this slice went first.
+  { "fnCeil",                  fnCeil,              oracle_fnCeil,              0                  },
+  { "fnFloor",                 fnFloor,             oracle_fnFloor,             0                  },
+  { "fnIp",                    fnIp,                oracle_fnIp,                0                  },
+  { "fnFp",                    fnFp,                oracle_fnFp,                0                  },
+  { "fnRoundi",                fnRoundi,            oracle_fnRoundi,            0                  },
+  { "fnMant",                  fnMant,              oracle_fnMant,              0                  },
+  { "fnUlp",                   fnUlp,               oracle_fnUlp,               0                  },
+  { "fnSign",                  fnSign,              oracle_fnSign,              0                  },
+  { "fnLint",                  fnLint,              oracle_fnLint,              0                  },
+  { "fnSint",                  fnSint,              oracle_fnSint,              0                  },
 
   // Vector and complex families. These are the ones the unit lane could never
   // host: they dispatch into the matrix and complex leaves, which that lane's
