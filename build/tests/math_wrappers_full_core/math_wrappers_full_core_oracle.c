@@ -526,6 +526,33 @@
 #define sqrt1Px2Cplx oracle_sqrt1Px2Cplx
 #define fnSqrt1Px2 oracle_fnSqrt1Px2
 
+// --- rounding, integer parts and the digit-level predicates (10 files) ---
+// Rename blocks derived with `nm -g --defined-only`, not read off the headers:
+// mant.c and roundi.c each export four helpers the header does not list, and a
+// missed name is a duplicate-symbol link error at best and a silently shared
+// global at worst.
+#define fnCeil oracle_fnCeil
+#define fnFloor oracle_fnFloor
+#define integerPartCplx oracle_integerPartCplx
+#define integerPartNoOp oracle_integerPartNoOp
+#define integerPartReal oracle_integerPartReal
+#define fnIp oracle_fnIp
+#define fnFp oracle_fnFp
+#define Roundi oracle_Roundi
+#define roundiError oracle_roundiError
+#define roundiReal oracle_roundiReal
+#define roundiRema oracle_roundiRema
+#define fnRoundi oracle_fnRoundi
+#define mant oracle_mant
+#define mantError oracle_mantError
+#define mantLonI oracle_mantLonI
+#define mantReal oracle_mantReal
+#define fnMant oracle_fnMant
+#define fnUlp oracle_fnUlp
+#define fnSign oracle_fnSign
+#define fnLint oracle_fnLint
+#define fnSint oracle_fnSint
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -572,6 +599,16 @@
 #include "../../../upstream/src/c47/mathematics/sinc.c"
 #include "../../../upstream/src/c47/mathematics/sincpi.c"
 #include "../../../upstream/src/c47/mathematics/sqrt1Px2.c"
+#include "../../../upstream/src/c47/mathematics/ceil.c"
+#include "../../../upstream/src/c47/mathematics/floor.c"
+#include "../../../upstream/src/c47/mathematics/integerPart.c"
+#include "../../../upstream/src/c47/mathematics/fractionalPart.c"
+#include "../../../upstream/src/c47/mathematics/roundi.c"
+#include "../../../upstream/src/c47/mathematics/mant.c"
+#include "../../../upstream/src/c47/mathematics/ulp.c"
+#include "../../../upstream/src/c47/mathematics/sign.c"
+#include "../../../upstream/src/c47/mathematics/integerPartLonginteger.c"
+#include "../../../upstream/src/c47/mathematics/integerPartShortinteger.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it
