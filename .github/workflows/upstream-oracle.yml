@@ -445,6 +445,18 @@ jobs:
           # whose evidence has moved, is a claim that has outlived its reason.
           python3 .github/project/report-fixture-partition-gap.py --self-test
           python3 .github/project/report-fixture-partition-gap.py --repo-root . --check
+      - name: Enforce long integer arithmetic goes through the width-checked operators
+        shell: bash
+        run: |
+          set -euo pipefail
+          # c43 refuses a long integer result wider than MAX_LONG_INTEGER_SIZE_IN_BITS
+          # and reports an overflow. Twenty-three owner call sites used the raw GMP
+          # entry points instead: nineteen answered where c43 errors, and two were in
+          # a loop that squares its operand once per bit of an exponent, which without
+          # the refusal exhausts the host. The guard was ported, exported and already
+          # used by a sibling owner -- nothing checked that the rest used it.
+          python3 .github/project/check-raw-gmp-call-sites.py --self-test
+          python3 .github/project/check-raw-gmp-call-sites.py --repo-root .
       - name: Enforce every harness source is compiled by something
         shell: bash
         run: |

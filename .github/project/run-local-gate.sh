@@ -213,6 +213,11 @@ step "[10e/11] every parity lane the build declares is actually run"
 # Enumerates the lanes from `zig build --help` and diffs them against the battery,
 # because "they are all in there" was a claim checked by reading and it was wrong
 # four times over.
+# Long integer arithmetic goes through the width-checked operators. The two call
+# sites that mattered were inside a squaring loop, so the missing refusal did not
+# produce a wrong answer -- it produced an allocation that ended the session.
+python3 .github/project/check-raw-gmp-call-sites.py --self-test >/dev/null
+python3 .github/project/check-raw-gmp-call-sites.py --repo-root .
 python3 .github/project/check-parity-lanes-gated.py --repo-root .
 
 step "[10d/11] the parity lanes still fail when the owner is wrong"
