@@ -136,6 +136,13 @@ step "[6g2b3/11] the fixture partition names the properties it partitions"
 # somebody saying what it is a representative OF.
 python3 .github/project/check-fixture-partition.py --self-test >/dev/null
 python3 .github/project/check-fixture-partition.py --repo-root .
+# The completeness half. The GAP is deliberately not gated at zero -- fixtures for
+# branches nothing runs is this report's failure mode inverted -- but its BOOKKEEPING
+# is: an OPEN row another lane demonstrably covers, or a COVERED/BLOCKED row whose
+# evidence has moved, is a verdict outliving its reason. FLAG_CARRY sat in OPEN for a
+# pass while rotate_bits_parity had been varying it in 38 cases all along.
+python3 .github/project/report-fixture-partition-gap.py --self-test >/dev/null
+python3 .github/project/report-fixture-partition-gap.py --repo-root . --check >/dev/null
 step "[6g2b4/11] no unreachable code in the harness sources"
 # 94 of the 135 are `configure*` fixtures whose wrappers migrated to another lane:
 # the cases were deleted and the fixtures left behind. They are the only record of
