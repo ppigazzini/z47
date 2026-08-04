@@ -256,17 +256,24 @@ real34_t *decQuadMultiply(real34_t *res, const real34_t *operand1, const real34_
 #define longIntegerSetZero(op) mpz_set_ui((op), 0)
 #define longIntegerInitSizeInBits(op, bits) mpz_init2((op), (bits))
 #define longIntegerDivideUInt(op, divisor, result) mpz_fdiv_q_ui((result), (op), (divisor))
-#define longIntegerMultiply(op_y, op_x, result) mpz_mul((result), (op_y), (op_x))
 #define longIntegerMultiplyUInt(lhs, rhs, result) mpz_mul_ui((result), (lhs), (rhs))
-#define longIntegerSquare(op, result) mpz_mul((result), (op), (op))
 #define longIntegerCompare(lhs, rhs) mpz_cmp((lhs), (rhs))
 #define longIntegerCopy(source, destination) mpz_set((destination), (source))
-#define longIntegerSubtract(lhs, rhs, result) mpz_sub((result), (lhs), (rhs))
 #define longIntegerSubtractUInt(lhs, rhs, result) mpz_sub_ui((result), (lhs), (rhs))
 #define longIntegerCompareUInt(lhs, rhs) mpz_cmp_ui((lhs), (rhs))
 #define longIntegerToUInt32(source, destination) ((destination) = (uint32_t)mpz_get_ui((source)))
 #define longIntegerAddUInt(lhs, rhs, result) mpz_add_ui((result), (lhs), (rhs))
-#define longIntegerAdd(lhs, rhs, result) mpz_add((result), (lhs), (rhs))
+
+// The four overflow-checked operators are FUNCTIONS, not macros over mpz_. c43
+// gives them external linkage in integers.c and they refuse a result wider than
+// MAX_LONG_INTEGER_SIZE_IN_BITS; expanded to a bare mpz_ call they lose the check
+// on the oracle side and, because the symbol then exists nowhere, an owner that
+// calls one cannot link at all. The wrappers that halve an exponent and square a
+// base once per bit depend on the refusal to terminate.
+void longIntegerMultiply(longInteger_t opY, longInteger_t opX, longInteger_t result);
+void longIntegerSquare(longInteger_t op, longInteger_t result);
+void longIntegerAdd(longInteger_t opY, longInteger_t opX, longInteger_t result);
+void longIntegerSubtract(longInteger_t opY, longInteger_t opX, longInteger_t result);
 #define longIntegerGcd(lhs, rhs, result) mpz_gcd((result), (lhs), (rhs))
 #define longIntegerLcm(lhs, rhs, result) mpz_lcm((result), (lhs), (rhs))
 #define longIntegerDivide(lhs, rhs, result) mpz_tdiv_q((result), (lhs), (rhs))
