@@ -110,6 +110,24 @@ jobs:
         run: |
           set -euo pipefail
           zig build test:unit
+      - name: Enforce every declared parity lane is in the battery
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The lane list comes from `zig build --help`, so this needs the toolchain
+          # and belongs here rather than with the pure-Python guards. Four lanes were
+          # once declared, buildable, green and run by nothing at all.
+          python3 .github/project/check-parity-lanes-gated.py --repo-root .
+      - name: Enforce the object graph matches the build's own declaration
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The build DECLARES the object set it links and the gate consumes the
+          # declaration; scraping --verbose-link instead would observe the truth in
+          # CI and nothing on a cached local build.
+          zig build object-manifest
+          python3 .github/project/check-object-graph.py --repo-root .
+          bash .github/project/test-check-object-graph.sh
 
   zig-master-compatibility:
     name: Zig master compatibility monitor
@@ -411,6 +429,35 @@ jobs:
           # regexed: only the compiler knows what an implicit enum member is worth.
           python3 .github/project/check-harness-constant-copies.py --self-test
           python3 .github/project/check-harness-constant-copies.py --repo-root .
+      - name: Enforce the fixture table partitions the properties the owners branch on
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The full-core fixture table is an equivalence-class partition, and it was
+          # drawn over data TYPE alone while src/core/numeric/ branches on sign at 265
+          # sites: deleting arctanReal's negative-infinity handling left the whole lane
+          # agreeing. This is the written property list, enforced over both the unary
+          # FIXTURES table and the binary PAIRS table.
+          python3 .github/project/check-fixture-partition.py --self-test
+          python3 .github/project/check-fixture-partition.py --repo-root .
+      - name: Enforce every harness source is compiled by something
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The lane gate asks whether a declared lane RUNS; provenance asks where a
+          # reference came from. Neither asks whether a harness file is connected to
+          # anything, and four were not -- one of them a finished compile-from-c43
+          # conversion sitting beside the hand-written lines its lane still used.
+          python3 .github/project/check-harness-sources-compiled.py --self-test
+          python3 .github/project/check-harness-sources-compiled.py --repo-root .
+      - name: Enforce owner build conditionals do not exist for the harness's benefit
+        shell: bash
+        run: |
+          set -euo pipefail
+          # A conditional MIRRORING an upstream #if is mandatory; one that exists
+          # because there is a HARNESS makes the tested program differ from the
+          # shipped one, and the difference was once the matrix data layout.
+          python3 .github/project/check-owner-build-conditionals.py --repo-root .
       - name: Enforce imported-tree paths are not anchored to the repo root
         shell: bash
         run: |
@@ -419,6 +466,61 @@ jobs:
           # upstream file as `repo_root / "COPYING"`. That one only surfaced when a
           # package-staging lane ran, so gate it where it costs milliseconds.
           python3 .github/project/check-imported-root-references.py --repo-root .
+      - name: Enforce the severance gate itself still fires
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash .github/project/test-check-core-shell-severance.sh
+      - name: Enforce no dead force-imports
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/project/check-dead-force-imports.py --repo-root .
+      - name: Enforce the strtoul width contract has a decided answer
+        shell: bash
+        run: |
+          set -euo pipefail
+          # `unsigned long` is 64-bit on the Linux/macOS hosts and 32-bit on the
+          # firmware and on Windows, so upstream's own answer differs by target while
+          # the oracles only check the host. This does not judge the verdict; it
+          # insists one exists.
+          python3 .github/project/check-strtoul-width-contract.py --self-test
+          python3 .github/project/check-strtoul-width-contract.py
+      - name: Enforce upstream clamp correspondence
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The symbol join is blind to upstream adding a GUARD inside a function the
+          # Zig already has -- how the matrix capacity clamp survived four resyncs.
+          python3 .github/project/report-clamp-correspondence.py --check
+      - name: Enforce generated function families do not diverge from each other
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Upstream generates families from one #define, so their ports must agree
+          # with each other. Four of six stringTo* parsers had drifted to a different
+          # base and a different overflow answer; neither the twin scan nor the
+          # decimal-only parity oracles could see it.
+          python3 .github/project/report-twin-divergence.py --self-test
+          python3 .github/project/report-twin-divergence.py --check
+      - name: Enforce build path literals resolve to tracked owners
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Cheap, and it was run by nothing at all until REPORT-31 Annex N counted
+          # what runs each gate: a rename that desyncs a build root from its owner.
+          bash .github/project/check-build-paths.sh
+      - name: Enforce every governance gate is run by something
+        shell: bash
+        run: |
+          set -euo pipefail
+          # REPORT-31 Annex N: six of the nine gates that report built ran in NO
+          # workflow -- they fired only when a developer chose to type the local-gate
+          # command. That is the same defect check-parity-lanes-gated.py exists to
+          # stop, one level up, in the gates rather than the lanes. A gate that is
+          # neither in CI nor recorded as deliberately local is a check nobody runs.
+          python3 .github/project/check-gate-inventory.py --self-test
+          python3 .github/project/check-gate-inventory.py --repo-root .
       - name: Enforce module-graph cycles do not grow
         shell: bash
         run: |
@@ -599,6 +701,18 @@ jobs:
           # how menu_FCNS kept a 364-entry drift. Re-run it here, where the battery
           # above has populated the build cache, and refuse any unjudged menu.
           python3 .github/project/audit-softmenu-table-parity.py --repo-root . --require-generated
+      - name: Enforce no unreachable code in the harness sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Same reason as the step above: this check DECLARES that it needs the
+          # generated headers and exits 2 -- CANNOT MEASURE, not a ratchet failure --
+          # where they are absent, so it belongs after the battery has produced them
+          # rather than in the pure-Python governance job. 94 orphaned `configure*`
+          # fixtures once sat here as the only record of what a lane covered before
+          # its cases moved, and one of them named a shape the move had dropped.
+          python3 .github/project/check-harness-dead-code.py --self-test
+          python3 .github/project/check-harness-dead-code.py --repo-root .
       - name: Run Linux ASAN wrapper surface
         shell: bash
         run: |
