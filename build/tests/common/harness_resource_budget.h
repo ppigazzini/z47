@@ -84,14 +84,14 @@ static size_t      harnessGmpPeakBytes;
 // the harness immediately before each side of each case runs. It is COPIED: a
 // caller that composes the name in a local buffer would otherwise leave this
 // pointing into a dead frame by the time anything reads it.
-static void harnessBudgetSetCase(const char *caseName) {
+static inline void harnessBudgetSetCase(const char *caseName) {
   snprintf(harnessBudgetCase, sizeof(harnessBudgetCase), "%s", caseName);
 #if HARNESS_HAS_CASE_TIME_BUDGET
   alarm(HARNESS_CASE_BUDGET_IN_SECONDS);
 #endif
 }
 
-static void harnessBudgetCaseFinished(void) {
+static inline void harnessBudgetCaseFinished(void) {
 #if HARNESS_HAS_CASE_TIME_BUDGET
   alarm(0);
 #endif
@@ -142,22 +142,10 @@ static void harnessBudgetAlarm(int signalNumber) {
 }
 #endif
 
-// gmp.h spells this as a macro over the __gmp_ symbol, and a harness that has not
-// included gmp.h still needs to install the trio.
-extern void __gmp_set_memory_functions(void *(*alloc)(size_t),
-                                       void *(*realloc)(void *, size_t, size_t),
-                                       void (*free)(void *, size_t));
-
-static void harnessInstallResourceBudget(const char *laneName) {
-  harnessBudgetLane = laneName;
-  __gmp_set_memory_functions(harnessAllocGmp, harnessReallocGmp, harnessFreeGmp);
-#if HARNESS_HAS_CASE_TIME_BUDGET
-  signal(SIGALRM, harnessBudgetAlarm);
-#endif
-}
-
-// Printed by every lane that installs a budget: the peak states the real headroom,
-// and a non-zero residual is GMP memory the cases did not give back.
+// Printed by every lane that installs a budget, from an atexit hook rather than
+// from each lane's own closing line: the peak states the real headroom, and a
+// non-zero residual is GMP memory the cases did not give back. A breach exits
+// through _exit and so prints its own diagnosis and not this.
 static void harnessReportResourceUse(void) {
   printf("%s: GMP peak %zu bytes of %u budgeted", harnessBudgetLane,
          harnessGmpPeakBytes, (unsigned)HARNESS_GMP_BUDGET_IN_BYTES);
@@ -168,6 +156,21 @@ static void harnessReportResourceUse(void) {
   printf("; no per-case time budget on this platform");
 #endif
   printf("\n");
+}
+
+// gmp.h spells this as a macro over the __gmp_ symbol, and a harness that has not
+// included gmp.h still needs to install the trio.
+extern void __gmp_set_memory_functions(void *(*alloc)(size_t),
+                                       void *(*realloc)(void *, size_t, size_t),
+                                       void (*free)(void *, size_t));
+
+static void harnessInstallResourceBudget(const char *laneName) {
+  harnessBudgetLane = laneName;
+  __gmp_set_memory_functions(harnessAllocGmp, harnessReallocGmp, harnessFreeGmp);
+  atexit(harnessReportResourceUse);
+#if HARNESS_HAS_CASE_TIME_BUDGET
+  signal(SIGALRM, harnessBudgetAlarm);
+#endif
 }
 
 #endif // HARNESS_RESOURCE_BUDGET_H

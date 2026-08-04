@@ -106,8 +106,6 @@ extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_fdiv_q_2exp(q: *mpz_struct, n: *const mpz_struct, b: c_ulong) void;
 
 // Overflow-guarded long-integer operators (integers owner).
-extern fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct) void;
-extern fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) void;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
     __gmpz_init(op);
@@ -195,13 +193,13 @@ pub export fn longIntegerPower(base: *mpz_struct, exponent: *mpz_struct, result:
 
         while (!longIntegerIsZero(exponent)) {
             if (longIntegerIsOdd(exponent)) {
-                longIntegerMultiply(result, base, result);
+                runtime.longIntegerMultiply(result, base, result);
             }
 
             longIntegerDivide2(exponent, exponent);
 
             if (!longIntegerIsZero(exponent)) {
-                longIntegerSquare(base, base);
+                runtime.longIntegerSquare(base, base);
             }
         }
     }

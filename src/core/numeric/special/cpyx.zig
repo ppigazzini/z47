@@ -56,7 +56,6 @@ extern fn convertShortIntegerRegisterToLongInteger(reg: calcRegister_t, lgInt: *
 extern fn __gmpz_cmp_si(op: *const mpz_struct, v: c_long) c_int;
 extern fn __gmpz_set(rop: *mpz_struct, op: *const mpz_struct) void;
 // Overflow-guarded multiply (integers.c).
-extern fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_struct) void;
 
 inline fn longIntegerInit(op: *mpz_struct) void {
     runtime.__gmpz_init(op);
@@ -138,7 +137,7 @@ fn cyxLong(y: *mpz_struct, x: *mpz_struct, result: *mpz_struct) void {
         while (counter <= loops) {
             counter += 1;
             longIntegerAddUInt(y, 1, y);
-            longIntegerMultiply(result, y, result);
+            runtime.longIntegerMultiply(result, y, result);
             longIntegerDivideUInt(result, counter, result);
         }
     } else {
@@ -224,7 +223,7 @@ fn pyxLong(y: *mpz_struct, x: *mpz_struct, result: *mpz_struct) void {
             loops -%= 1;
             if (cur == 0) break;
             longIntegerAddUInt(y, 1, y);
-            longIntegerMultiply(result, y, result);
+            runtime.longIntegerMultiply(result, y, result);
         }
     } else {
         var xReal: real_t = undefined;
