@@ -216,6 +216,11 @@ step "[10e/11] every parity lane the build declares is actually run"
 # Long integer arithmetic goes through the width-checked operators. The two call
 # sites that mattered were inside a squaring loop, so the missing refusal did not
 # produce a wrong answer -- it produced an allocation that ended the session.
+# A CI job that runs `zig build` must provision what that build links. The gate
+# inventory cannot see this: it asks whether a workflow names a script, not whether
+# the job naming it can run it. Both questions have to be asked.
+python3 .github/project/check-ci-build-prerequisites.py --self-test >/dev/null
+python3 .github/project/check-ci-build-prerequisites.py --repo-root .
 python3 .github/project/check-raw-gmp-call-sites.py --self-test >/dev/null
 python3 .github/project/check-raw-gmp-call-sites.py --repo-root .
 python3 .github/project/check-parity-lanes-gated.py --repo-root .
