@@ -1195,6 +1195,7 @@ static const pair_t PAIRS[] = {
   { "real1234:-infinity",     seedRealPositive,          secondRealMinusInfinity   },
   { "longIntNegative:real7",  seedLongIntegerNegative,   secondReal7               },
   { "longIntZero:real7",      seedLongIntegerZero,       secondReal7               },
+  { "longIntSmall:real7",     seedLongIntegerSmall,      secondReal7               },
   // Both operands at the width ceiling: the only pair that reaches the overflow
   // guard in the long integer add, subtract and multiply.
   { "longIntWide:longIntWide", seedLongIntegerWide,      secondLongIntegerWide     },
@@ -1484,6 +1485,5 @@ int main(void) {
   printf("math-wrappers full-core: %d cases agree (%zu unary x %zu shapes, %zu binary x %zu pairs)\n",
          cases, sizeof(PREDICATES) / sizeof(PREDICATES[0]), sizeof(FIXTURES) / sizeof(FIXTURES[0]),
          sizeof(BINARY) / sizeof(BINARY[0]), sizeof(PAIRS) / sizeof(PAIRS[0]));
-  harnessReportResourceUse();
   return 0;
 }

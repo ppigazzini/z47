@@ -46,9 +46,6 @@ extern fn decQuadSubtract(result: *real34_t, lhs: *const real34_t, rhs: *const r
 
 // Overflow-checked long integer arithmetic from src/c47/integers.c (linkable
 // functions, unlike the longIntegerXxx static inlines).
-extern fn longIntegerMultiply(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
-extern fn longIntegerSquare(op: *const mpz_struct, result: *mpz_struct) void;
-extern fn longIntegerAdd(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
 
 // GMP entry points not present in the runtime module. Only the public
 // __gmpz_* symbols link; mpz_* names are header macros.
@@ -613,7 +610,7 @@ pub export fn z47_math_wrappers_mod_long_integer() linksection(runtime.code_sect
     runtime.__gmpz_init(&remainder[0]);
     defer runtime.__gmpz_clear(&remainder[0]);
     runtime.__gmpz_tdiv_r(&remainder[0], &y[0], &x[0]);
-    longIntegerAdd(&remainder[0], &x[0], &remainder[0]);
+    runtime.longIntegerAdd(&remainder[0], &x[0], &remainder[0]);
     runtime.__gmpz_tdiv_r(&remainder[0], &remainder[0], &x[0]);
 
     runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_X);
@@ -648,7 +645,7 @@ pub export fn z47_math_wrappers_mod_short_integer() linksection(runtime.code_sec
     runtime.__gmpz_init(&remainder[0]);
     defer runtime.__gmpz_clear(&remainder[0]);
     runtime.__gmpz_tdiv_r(&remainder[0], &y[0], &x[0]);
-    longIntegerAdd(&remainder[0], &x[0], &remainder[0]);
+    runtime.longIntegerAdd(&remainder[0], &x[0], &remainder[0]);
     runtime.__gmpz_tdiv_r(&remainder[0], &remainder[0], &x[0]);
 
     runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], base_y, runtime.REGISTER_X);
@@ -814,7 +811,7 @@ pub export fn z47_math_wrappers_neighb_long_integer() linksection(runtime.code_s
 
     if (cmp != 0) {
         runtime.__gmpz_set_si(&y[0], if (cmp > 0) 1 else -1);
-        longIntegerAdd(&x[0], &y[0], &x[0]);
+        runtime.longIntegerAdd(&x[0], &y[0], &x[0]);
     }
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }

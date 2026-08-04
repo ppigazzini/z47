@@ -745,6 +745,7 @@ pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz
 // limit and report an overflow, which is a behaviour of the command and not a
 // property of the host's memory.
 pub extern fn longIntegerMultiply(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
+pub extern fn longIntegerSquare(op: *const mpz_struct, result: *mpz_struct) void;
 pub extern fn longIntegerAdd(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
 pub extern fn longIntegerSubtract(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;

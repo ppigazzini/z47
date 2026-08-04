@@ -61,14 +61,6 @@ fn longIntegerSetPositiveSign(value: *runtime.mpz_struct) void {
     }
 }
 
-// The overflow-checked long integer operators. They refuse an operation whose
-// result would exceed the calculator's long integer width and set lastErrorCode
-// instead, which is the only thing that ends the loop in smallBasePowerLonI: the
-// exponent there can be any long integer the user can key in, so raw mpz
-// multiplication would square the base until the allocator gives out.
-extern fn longIntegerMultiply(op_y: *const runtime.mpz_struct, op_x: *const runtime.mpz_struct, result: *runtime.mpz_struct) void;
-extern fn longIntegerSquare(op: *const runtime.mpz_struct, result: *runtime.mpz_struct) void;
-
 fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn () callconv(.c) void) void {
     var exponent: runtime.longInteger_t = undefined;
     var base: runtime.longInteger_t = undefined;
@@ -103,15 +95,18 @@ fn smallBasePowerLonI(base_value: c_ulong, negative_exponent_callback: *const fn
     defer runtime.__gmpz_clear(&power[0]);
     runtime.__gmpz_set_ui(&power[0], 1);
 
+    // The width-checked operators are what ends this loop: the exponent is any
+    // long integer the user can key in, and each pass squares the base, so the
+    // refusal that sets lastErrorCode is the only bound on the operand.
     while (exponent[0]._mp_size != 0 and runtime.lastErrorCode == 0) {
         if ((exponent[0]._mp_d[0] & 1) != 0) {
-            longIntegerMultiply(&power[0], &base[0], &power[0]);
+            runtime.longIntegerMultiply(&power[0], &base[0], &power[0]);
         }
 
         _ = runtime.__gmpz_tdiv_q_ui(&exponent[0], &exponent[0], 2);
 
         if (exponent[0]._mp_size != 0) {
-            longIntegerSquare(&base[0], &base[0]);
+            runtime.longIntegerSquare(&base[0], &base[0]);
         }
     }
 
