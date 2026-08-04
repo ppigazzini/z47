@@ -966,6 +966,9 @@ static const predicate_t PREDICATES[] = {
   // Both sides run here, so this does not yet say whether z47, c43 or both are
   // slow. Driving it needs that attribution and a per-case time bound first; a lane
   // nobody will wait for is not a lane.
+  { "fnWinverse",              fnWinverse,          oracle_fnWinverse,          0                  },
+  { "fnWnegative",             fnWnegative,         oracle_fnWnegative,         0                  },
+  { "fnWpositive",             fnWpositive,         oracle_fnWpositive,         0                  },
   { "fnSqrt1Px2",              fnSqrt1Px2,          oracle_fnSqrt1Px2,          0                  },
 
   // Vector and complex families. These are the ones the unit lane could never
@@ -1187,6 +1190,47 @@ static const predicate_t BINARY[] = {
   { "fnToRect2/pair",         fnToRect2,       oracle_fnToRect2,       0            },
 };
 
+// (wrapper, shape) pairs that NEITHER implementation returns from.
+//
+// WP34S_ComplexLambertW is `while(1)` with a single exit: an absolute-error test
+// between successive iterates (wp34s.c:2370-2387). Fed an infinity the iteration
+// produces NaNs, the error test is never satisfied, and both c43 and the Zig owner
+// spin forever -- confirmed by running the ORACLE side first and watching it fail
+// to return.
+//
+// So this is upstream behaviour that the port reproduces faithfully, and the port
+// must keep reproducing it: "fixing" it here would be a deliberate divergence from
+// the reference this lane exists to measure against. It is skipped, named, and
+// left to whoever owns the upstream question.
+//
+// NOT to be confused with the NaN case, which WAS this port's own defect: a local
+// re-derivation of realCompareGreaterEqual answered false where c43 answers true,
+// sending a NaN down this same non-terminating path. That one is fixed.
+typedef struct {
+  const char *predicate;
+  const char *fixture;
+  const char *why;
+} nonTerminating_t;
+
+static const nonTerminating_t NON_TERMINATING[] = {
+  { "fnWpositive", "realNegativeInfinity", "WP34S_ComplexLambertW never converges on an infinity" },
+  { "fnWnegative", "realNegativeInfinity", "same loop, negative branch" },
+  { "fnWinverse",  "realNegativeInfinity", "same loop, reached through the inverse wrapper" },
+  { "fnWpositive", "realInfinity",         "same loop, positive infinity" },
+  { "fnWnegative", "realInfinity",         "same loop, positive infinity" },
+  { "fnWinverse",  "realInfinity",         "same loop, positive infinity" },
+};
+
+static bool_t isNonTerminating(const char *predicate, const char *fixture) {
+  for(size_t i = 0; i < sizeof(NON_TERMINATING) / sizeof(NON_TERMINATING[0]); i++) {
+    if(strcmp(NON_TERMINATING[i].predicate, predicate) == 0 &&
+       strcmp(NON_TERMINATING[i].fixture, fixture) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Run one side: reset the calculator, seed the operands, call the wrapper,
 // snapshot. `seedSecond` is NULL for the unary families.
 static void runSide(void (*seed)(void), void (*seedSecond)(void), void (*body)(uint16_t),
@@ -1204,6 +1248,7 @@ static void runSide(void (*seed)(void), void (*seedSecond)(void), void (*body)(u
 
 int main(void) {
   int cases = 0;
+  int skipped = 0;
 
 
 
@@ -1282,8 +1327,13 @@ int main(void) {
       char caseName[128];
       snprintf(caseName, sizeof(caseName), "%s/%s", PREDICATES[p].name, FIXTURES[f].name);
 
-      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].owner, PREDICATES[p].param, &snapshotA);
+      // Before either side runs: the oracle is the side that does not return.
+      if(isNonTerminating(PREDICATES[p].name, FIXTURES[f].name)) {
+        skipped++;
+        continue;
+      }
       runSide(FIXTURES[f].seed, NULL, PREDICATES[p].oracle, PREDICATES[p].param, &snapshotB);
+      runSide(FIXTURES[f].seed, NULL, PREDICATES[p].owner, PREDICATES[p].param, &snapshotA);
       reportSnapshotMismatch(caseName);
       cases++;
     }
@@ -1304,6 +1354,9 @@ int main(void) {
   if(failures) {
     printf("MATH-WRAPPER FULL-CORE PARITY: %d failure(s) over %d cases\n", failures, cases);
     return 1;
+  }
+  if(skipped) {
+    printf("math-wrappers full-core: %d case(s) SKIPPED as non-terminating in BOTH implementations\n", skipped);
   }
   printf("math-wrappers full-core: %d cases agree (%zu unary x %zu shapes, %zu binary x %zu pairs)\n",
          cases, sizeof(PREDICATES) / sizeof(PREDICATES[0]), sizeof(FIXTURES) / sizeof(FIXTURES[0]),
