@@ -7,16 +7,11 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DIST_1)
+#if !defined(OPTION_DIST_C)
   void fnNegBinomialP  (uint16_t unusedButMandatoryParameter){}
   void fnNegBinomialL  (uint16_t unusedButMandatoryParameter){}
   void fnNegBinomialR  (uint16_t unusedButMandatoryParameter){}
   void fnNegBinomialI  (uint16_t unusedButMandatoryParameter){}
-  void pdf_NegBinomial (const real_t *x, const real_t *p0, const real_t *r, real_t *res, realContext_t *realContext){}
-  void cdfu_NegBinomial(const real_t *x, const real_t *p0, const real_t *r, real_t *res, realContext_t *realContext){}
-  void cdf_NegBinomial (const real_t *x, const real_t *p0, const real_t *r, real_t *res, realContext_t *realContext){}
-  void cdf_NegBinomial2(const real_t *x, const real_t *p0, const real_t *r, real_t *res, realContext_t *realContext){}
-  void qf_NegBinomial  (const real_t *x, const real_t *p0, const real_t *r, real_t *res, realContext_t *realContext){}
 
 #else
   static bool_t checkParamNegBinom(real_t *x, real_t *i, real_t *j) {
@@ -256,5 +251,5 @@
     WP34S_Qf_Newton(QF_NEWTON_NEGBINOM, x, &s, p0, r, NULL, res, realContext);
   }
 
-#endif // !OPTION_DIST_1
+#endif // !OPTION_DIST_C
 

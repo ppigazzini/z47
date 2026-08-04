@@ -189,11 +189,15 @@ end:
 
 
 
-static void calculateZoomFactor(float factor, float *aa) {
-  #define basefactor 4.5f
-  if(factor != 0) {
-    (*aa) *= pow(basefactor, -factor);
+// Multiplies *aa by stepBase^-zoomLevel. The zoom levels are small integers, so repeated double
+// multiplication replaces libm's pow; stepBase carries the old 4.5^0.75 or 4.5^0.55 step per level.
+static void calculateZoomFactor(double stepBase, int16_t zoomLevel, float *aa) {
+  double m = 1.0;
+  int16_t z = zoomLevel < 0 ? (int16_t)-zoomLevel : zoomLevel;
+  while(z--) {
+    m *= stepBase;
   }
+  *aa = (float)(zoomLevel > 0 ? (double)*aa / m : (double)*aa * m);
 }
 
 
@@ -356,7 +360,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
     float dx, dy, ddx, dydx, zz, zzz;
     dydx = yn-yo;
     ddx = xn-xo;
-    zz  = sqrt(dydx*dydx + ddx*ddx);
+    zz  = sqrtf(dydx*dydx + ddx*ddx);
     zzz = 3;
     dy  = dydx * (zzz/zz);
     dx  = ddx * (zzz/zz);
@@ -675,6 +679,10 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
     realSubtract(y_max, const_1, y_min, &ctxtReal39);  // y_min = y_max - 1
     realSubtract(y_max, y_min, &dy, &ctxtReal39);      // dy = y_max - y_min
   }
+  else {
+    graphRangeGuard(y_min, y_max);                     //a range below the graph working precision compresses it: widen as per  Ylo/Yhi
+    realSubtract(y_max, y_min, &dy, &ctxtReal39);      // dy = y_max - y_min
+  }
   if(realIsZero(&dx)) {                                // dx == 0: manufacture a 1-wide window around the value
     realAdd(x_min, const_1on2, x_max, &ctxtReal39);    // x_max = x_min + 0.5
     realSubtract(x_max, const_1, x_min, &ctxtReal39);  // x_min = x_max - 1
@@ -700,7 +708,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
 //    }
     //widen the histogram range to (n+2)/(n-1) of the bin-mid span: 1.5 bin widths of margin per side for the columns
     float histofactor = drawHistogram == 0 ? 1 : ((float)statnum + 2.0f)  /  ((float)(statnum) - 1.0f);
-    calculateZoomFactor(PLOT_ZOOM * 0.75, &plotzoomx);
+    calculateZoomFactor(3.0896507158606767, PLOT_ZOOM, &plotzoomx);   // 4.5^0.75 per zoom level
     plotzoomy = drawHistogram == 1 ? 1 : plotzoomx;
     multiplyZoomFactors(plotzoomx, plotzoomy, histofactor, x_min, x_max, y_min, y_max, &dx, &dy);
     if(drawHistogram == 1) {
@@ -718,7 +726,7 @@ void graph_Include0(bool_t mode, uint16_t statnum) {
       else if(PLOT_ZMY < zoomRangeLo) {
         PLOT_ZMY = zoomRangeHi;
       }
-      calculateZoomFactor(PLOT_ZMY * 0.55, &plotzoomy);
+      calculateZoomFactor(2.2870037808402090, PLOT_ZMY, &plotzoomy);  // 4.5^0.55 per zoom level
       //use this line if the x-display-range is to be the same as the y-display-range
       //plotzoomx = plotStatMx[0]=='D' ? 1 : plotzoomy;
       multiplyZoomFactors(plotzoomx, plotzoomy, 1/*histofactor*/, x_min, x_max, y_min, y_max, &dx, &dy);
@@ -897,7 +905,7 @@ void graph_plotmem(void) {
         if(getSystemFlag(FLAG_PINTG)) {
           rmsy = fabs(grf_y(0));
           for(ix = 0; (ix < statnum); ++ix) {
-            rmsy = sqrt((rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0));      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
+            rmsy = sqrtf((rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0f));      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
           }
         inty_off = rmsy;
         }
@@ -979,7 +987,7 @@ void graph_plotmem(void) {
 /**/                }
 /**/              }
 /**/              if(getSystemFlag(FLAG_PRMS)) {
-/**/                rmsy = sqrt((rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0));      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
+/**/                rmsy = sqrtf((rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0f));      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
 /**/                convertDoubleToReal(rmsy, &yr, &ctxtReal39);        // yr = rmsy, the float overlay value as y-range candidate
 /**/                if(realCompareLessThan(&yr, y_min)) {                 // if(rmsy < y_min) y_min = rmsy
 /**/                  realCopy(&yr, y_min);
@@ -1042,7 +1050,7 @@ void graph_plotmem(void) {
 /**/          if(realCompareGreaterThan(&yr, y_max)) {                     // if(grf_y(cnt) > y_max) y_max = grf_y(cnt)
 /**/            realCopy(&yr, y_max);
 /**/          }
-/**/          scaleRmsy = sqrt((scaleRmsy * scaleRmsy * cnt + grf_y(cnt) * grf_y(cnt)) / (cnt+1.0));
+/**/          scaleRmsy = sqrtf((scaleRmsy * scaleRmsy * cnt + grf_y(cnt) * grf_y(cnt)) / (cnt+1.0f));
 /**/        }
 /**/
 /**/        //The peak filter and symmetry heuristics below are dimensionless float logic: run them on float mirrors of the
@@ -1268,7 +1276,7 @@ void graph_plotmem(void) {
               }
 
               if(getSystemFlag(FLAG_PRMS))  {
-                rmsy = sqrt ( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
+                rmsy = sqrtf( (rmsy * rmsy * ix + grf_y(ix) * grf_y(ix)) / (ix+1.0f) );      // Changed rmsy to use the standard RMS calc, and not shoft it to the trapezium x-centre
               }
               if(getSystemFlag(FLAG_PINTG)) {
                 inty = inty + (grf_y(ix) + grf_y(ix-1)) / 2 * ddx;

@@ -16,11 +16,6 @@
   void fnLogNormalL(uint16_t unusedButMandatoryParameter){}
   void fnLogNormalR(uint16_t unusedButMandatoryParameter){}
   void fnLogNormalI(uint16_t unusedButMandatoryParameter){}
-  void WP34S_Pdf_Q   (const real_t *x, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdfu_Q  (const real_t *x, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdf_Q   (const real_t *x, real_t *res, realContext_t *realContext){}
-  void WP34S_qf_q_est(const real_t *x, real_t *res, real_t* resY, realContext_t *realContext){}
-  void WP34S_Qf_Q    (const real_t *x, real_t *res, realContext_t *realContext){}
   void fnStdNormalP(uint16_t unusedButMandatoryParameter){}
   void fnStdNormalL(uint16_t unusedButMandatoryParameter){}
   void fnStdNormalR(uint16_t unusedButMandatoryParameter){}

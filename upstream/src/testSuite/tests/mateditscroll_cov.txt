@@ -1,0 +1,73 @@
+;*************************************************************
+;** Coverage: the matrix editor's column scroll offset      **
+;** across a reshape (showRealMatrix, showComplexMatrix).   **
+;** Each case opens the editor on the 16x1 vector in X,     **
+;** presses the down arrow NN times and reports one number. **
+;** FARG=0NN scrolled, 1NN the offset after M.COL+1 widens  **
+;** to two columns, 2NN whether it is past the new shape,   **
+;** 3NN the offset when widened to the offset itself, 4NN   **
+;** whether that made the two equal. 1NN and 3NN are the    **
+;** gate: unbounded they kill the run, not just fail.       **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+;=======================================
+; Real 16x1: sixteen columns on screen
+;=======================================
+
+; no press leaves the view unscrolled; fifteen force a scroll
+Func: fnMatEditScrollCov
+In:  FARG=0 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"0"
+Func: fnMatEditScrollCov
+In:  FARG=15 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"1"
+
+; M.COL+1 makes the vector 16x2
+Func: fnMatEditScrollCov
+In:  FARG=215 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"1"
+
+; the gate: the refresh must leave an offset the matrix has
+Func: fnMatEditScrollCov
+In:  FARG=100 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"0"
+Func: fnMatEditScrollCov
+In:  FARG=115 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"0"
+
+; the same gate with the offset equal to the width, not past it
+Func: fnMatEditScrollCov
+In:  FARG=415 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"1"
+Func: fnMatEditScrollCov
+In:  FARG=315 RX=ReMa:"M16,1[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]"
+Out: EC=0 RX=Real:"0"
+
+;=======================================
+; Complex 16x1: the twin display path
+;=======================================
+
+Func: fnMatEditScrollCov
+In:  FARG=0 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"0"
+Func: fnMatEditScrollCov
+In:  FARG=15 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"1"
+Func: fnMatEditScrollCov
+In:  FARG=215 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"1"
+
+; the complex display declares maxCols as int, so cols - sCol goes negative
+Func: fnMatEditScrollCov
+In:  FARG=100 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"0"
+Func: fnMatEditScrollCov
+In:  FARG=115 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"0"
+Func: fnMatEditScrollCov
+In:  FARG=415 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"1"
+Func: fnMatEditScrollCov
+In:  FARG=315 RX=CxMa:"M16,1[1i1,2i2,3i3,4i4,5i5,6i6,7i7,8i8,9i9,10i10,11i11,12i12,13i13,14i14,15i15,16i16]"
+Out: EC=0 RX=Real:"0"

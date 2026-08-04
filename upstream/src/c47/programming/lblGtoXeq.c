@@ -908,9 +908,9 @@ void runProgram(bool_t singleStep, uint16_t menuLabel) {
   #endif // DMCP_BUILD
 
   if(!getSystemFlag(FLAG_INTING) && !getSystemFlag(FLAG_SOLVING) && !graphAccActive) {
-    showHideHourGlass();
     screenUpdatingMode = SCRUPD_AUTO;
     screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
+    showHideHourGlass();               // paints the P; a set SCRUPD_MANUAL_STATUSBAR makes it return unpainted, so it must follow the screenUpdatingMode writes above
   }
 
   if(menuLabel != INVALID_VARIABLE) {

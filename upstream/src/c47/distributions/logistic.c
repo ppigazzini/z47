@@ -7,15 +7,11 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DIST_2)
+#if !defined(OPTION_DIST_B)
   void fnLogisticP     (uint16_t unusedButMandatoryParameter){}
   void fnLogisticL     (uint16_t unusedButMandatoryParameter){}
   void fnLogisticR     (uint16_t unusedButMandatoryParameter){}
   void fnLogisticI     (uint16_t unusedButMandatoryParameter){}
-  void WP34S_Pdf_Logit (const real_t *x, const real_t *mu, const real_t *s, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdfu_Logit(const real_t *x, const real_t *mu, const real_t *s, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdf_Logit (const real_t *x, const real_t *mu, const real_t *s, real_t *res, realContext_t *realContext){}
-  void WP34S_Qf_Logit  (const real_t *x, const real_t *mu, const real_t *s, real_t *res, realContext_t *realContext){}
 
 #else
   static bool_t checkParamLogistic(real_t *x, real_t *i, real_t *j) {
@@ -173,4 +169,4 @@
     realAdd(&p, mu, res, realContext);
   }
 
-#endif // !OPTION_DIST_2
+#endif // !OPTION_DIST_B

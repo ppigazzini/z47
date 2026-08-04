@@ -507,8 +507,8 @@ static void bessel(const real_t *alpha, const real_t *x, bool_t neg, real_t *res
 }
 #endif // !OPTION_BESSEL
 
-void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContext_t *realContext) {
 #if defined(OPTION_BESSEL)
+void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContext_t *realContext) {
   real_t a, beta, gamma;
 
   if(realIsNaN(alpha) || realIsSpecial(x)) {
@@ -548,8 +548,8 @@ void WP34S_BesselJ(const real_t *alpha, const real_t *x, real_t *res, realContex
   else {
     bessel(&a, x, true, res, realContext);
   }
-#endif // !OPTION_BESSEL
 }
+#endif // !OPTION_BESSEL
 
 // See A&S page 360 section 9.1.11
 #if defined(OPTION_BESSEL)
@@ -650,8 +650,8 @@ static void bessel2_int_series(const real_t *n, const real_t *x, real_t *res, re
 }
 #endif // !OPTION_BESSEL
 
-void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContext_t *realContext) {
 #if defined(OPTION_BESSEL)
+void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContext_t *realContext) {
   real_t a, t, u, s, c, beta, gamma;
 
   if(realIsNaN(alpha) || realIsSpecial(x)) {
@@ -702,5 +702,5 @@ void WP34S_BesselY(const real_t *alpha, const real_t *x, real_t *res, realContex
   else {
     bessel2_int_series(alpha, x, res, realContext);
   }
-#endif // !OPTION_BESSEL
 }
+#endif // !OPTION_BESSEL

@@ -15,6 +15,15 @@
   uint16_t              tmpRow;
   uint16_t              matrixIndex = INVALID_VARIABLE;
 
+  // Callers derive maxCols from cols - sCol on unsigned.
+  static uint16_t boundScrollColumn(bool_t forEditor, uint16_t sCol, uint16_t cols) {
+    if(forEditor && sCol >= cols) {
+      scrollColumn = 0;
+      return 0;
+    }
+    return sCol;
+  }
+
   static bool_t incIReal(real34Matrix_t *matrix) {
     setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
     wrapIJ(matrix->header.matrixRows, matrix->header.matrixColumns);
@@ -1151,6 +1160,8 @@ void showRealMatrix(const real34Matrix_t *matrix, int16_t prefixWidth, bool_t to
     rows = 1;
   }
 
+  sCol = boundScrollColumn(forEditor, sCol, cols);
+
   toDisplay |= forEditor || rows > 1;
   strcpy(errorMessage, "[");
 
@@ -1567,6 +1578,8 @@ void showComplexMatrix(const complex34Matrix_t *matrix, int16_t prefixWidth, ang
     cols = rows;
     rows = 1;
   }
+
+  sCol = boundScrollColumn(forEditor, sCol, cols);
 
   int maxCols = cols > MATRIX_MAX_COLUMNS ? MATRIX_MAX_COLUMNS : cols;
   const int maxRows = rows > MATRIX_MAX_ROWS ? MATRIX_MAX_ROWS : rows;

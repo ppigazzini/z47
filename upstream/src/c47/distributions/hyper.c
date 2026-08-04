@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DIST_1)
+#if !defined(OPTION_DIST_C)
   void fnHypergeometricP  (uint16_t unusedButMandatoryParameter){}
   void fnHypergeometricL  (uint16_t unusedButMandatoryParameter){}
   void fnHypergeometricR  (uint16_t unusedButMandatoryParameter){}
@@ -331,4 +331,4 @@
     WP34S_Qf_Newton(QF_NEWTON_HYPERGEOMETRIC, x, &s, k0, n, n0, res, realContext);
   }
 
-#endif // !OPTION_DIST_1
+#endif // !OPTION_DIST_C

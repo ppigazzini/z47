@@ -1958,6 +1958,7 @@ void WP34S_Erf(const real_t *x, real_t *res, realContext_t *realContext) {
 }
 
 
+#if defined(OPTION_DIST_NORMAL)   // its only step is WP34S_Cdf_Q, which normal.c stubs out with the option
 void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
   real_t p;
 
@@ -1967,6 +1968,7 @@ void WP34S_Erfc(const real_t *x, real_t *res, realContext_t *realContext) {
   WP34S_Cdf_Q(&p, &p, realContext);
   realMultiply(&p, const_2, res, realContext);
 }
+#endif // OPTION_DIST_NORMAL
 
 
 static void check_low(real_t *d) {

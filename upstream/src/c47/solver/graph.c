@@ -103,6 +103,7 @@ uint8_t DXR = 0, DYR = 0, DXI = 0, DYI = 0;
                                     #if defined(GRAPHDEBUG_MIN)
                                       printRealToConsole(&resReal,"resReal:","\n");
                                     #endif //GRAPHDEBUG_MIN
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);   // a program may leave any type in X;
       realToReal34(&resReal, REGISTER_REAL34_DATA(REGISTER_X));
     } else {
       parseEquation(currentFormula, EQUATION_PARSER_XEQ, tmpString, tmpString + AIM_BUFFER_LENGTH);
@@ -2336,7 +2337,14 @@ static inline void powCplxNat(const cplx_t *base, const uint8_t *exp, cplx_t *re
                                           #if defined(VERBOSE_SOLVER2)
                                                   printComplexToConsole(CPLX(*X2), "\n>>>>>>>>>> from ", "");
                                           #endif // VERBOSE_SOLVER2
-          double kick = 0.8123 * kicker * kicker * pow(2.0, kicker);
+          double p2 = 1.0;                       // 2^kicker by exact doubling; kicker is a small integer and this keeps libm's pow out of the link
+          for(int16_t k2 = kicker; k2 > 0; k2--) {
+            p2 *= 2.0;
+          }
+          for(int16_t k2 = kicker; k2 < 0; k2++) {
+            p2 *= 0.5;
+          }
+          double kick = 0.8123 * kicker * kicker * p2;
           convertDoubleToReal(kicker%2 ? -kick : kick, &temp1->Real, ctxtSolver2);
           convertDoubleToReal(kick, &temp1->Imag, ctxtSolver2);
           addComplex(CPLX(*temp1), CPLX(*X0), CPLX(*X2), ctxtSolver2);

@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DIST_3)
+#if !defined(OPTION_DIST_D)
   void fnGEVP                      (uint16_t unusedButMandatoryParameter){}
   void fnGEVL                      (uint16_t unusedButMandatoryParameter){}
   void fnGEVR                      (uint16_t unusedButMandatoryParameter){}
@@ -170,4 +170,4 @@ void fnGEVI(uint16_t unusedButMandatoryParameter) {
   adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
 
-#endif // !OPTION_DIST_3
+#endif // !OPTION_DIST_D
