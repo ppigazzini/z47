@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if defined(OPTION_SLVP)
+#if defined(OPTION_SLVP_POLY)
 
 // Coefficients and roots live in interleaved complex slots of real_t at 75 digits: slot i is (c[2i] re, c[2i+1] im), the layout calculateEigenvalues works on.
 
@@ -46,7 +46,7 @@ static void _rootsOfXdEqualsW(const real_t *wRe, const real_t *wIm, uint16_t d, 
     }
   }
 }
-#endif // OPTION_SLVP
+#endif // OPTION_SLVP_POLY
 
 
 
@@ -58,7 +58,7 @@ static void _rootsOfXdEqualsW(const real_t *wRe, const real_t *wIm, uint16_t d, 
  * \return void
  ***********************************************/
 void fnSlvp(uint16_t unusedButMandatoryParameter) {
-#if defined(OPTION_SLVP)
+#if defined(OPTION_SLVP_POLY)
   real34Matrix_t xr;
   complex34Matrix_t xc;
   bool_t complexCoefs, realContent;
@@ -306,5 +306,5 @@ void fnSlvp(uint16_t unusedButMandatoryParameter) {
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
   freeC47Blocks(coef, wsSize);
-#endif // OPTION_SLVP
+#endif // OPTION_SLVP_POLY
 }

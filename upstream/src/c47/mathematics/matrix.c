@@ -6565,9 +6565,9 @@ static void solveEigenBlock(real_t *a, real_t *eig, uint16_t size, int first_unc
 
 
 
-#if !defined(OPTION_SLVP)                                                                     // SLVP feeds its companion matrix through here; without it the engine stays file-local
+#if !defined(OPTION_SLVP_POLY)                                                                     // SLVP feeds its companion matrix through here; without it the engine stays file-local
 static
-#endif // !OPTION_SLVP
+#endif // !OPTION_SLVP_POLY
 void calculateEigenvalues(real_t *a, real_t *q, real_t *r, real_t *eig, real_t *previousDiagonal, uint16_t size, bool_t shifted, bool_t reducedSignificantDigits, realContext_t *realContext) {
   real_t SumTolerance, changeDiagonalSum, previousChangeDiagonalSum;
 

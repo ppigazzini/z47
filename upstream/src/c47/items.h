@@ -2853,8 +2853,8 @@
 #define ITM_KGtoBLOB                2752
 #define ITM_TONNEtoKG               2753
 #define ITM_KGtoTONNE               2754
-#define ITM_2755                    2755
-#define ITM_2756                    2756 // XFN spares
+#define ITM_SIGMAnINF               2755
+#define ITM_2756                    2756 /*reserved export d47 data*/
 #define ITM_XEXPORT                 2757
 #define ITM_EXPATOW                 2758
 #define ITM_EXPSTK                  2759

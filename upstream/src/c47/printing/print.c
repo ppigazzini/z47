@@ -1225,7 +1225,7 @@ uint8_t reverse(uint8_t b) {
 }
 
 //
-//  Print LCD screen
+//  Print LCD screen on Martel printers
 //
 void printLcd(void) {
   int32_t x, y;
@@ -1234,9 +1234,7 @@ void printLcd(void) {
   int16_t i;
   int32_t offset;
 
-  //setPrintMode(0x01);  // 48 chars/line
   sendByteIR('\n');
-  //for(x=0; x<SCREEN_WIDTH/8; x++) {
   for(x=16; x>=0; x--) {
     //New graphic line
     printerColumn = 0;
@@ -1278,7 +1276,9 @@ void printLcd(void) {
     sendByteIR(0xff);
     sendByteIR((x == 0 ? 0xf1 : 0xff));
     sendByteIR('\n');
-    //print_lf();
+    if(_exitKeyPressed()) {
+      break;
+    }
   }
 
   setPrintMode(0x00);  // Default 24 chars/line
@@ -2150,12 +2150,16 @@ void fnP_User(uint16_t unusedButMandatoryParameter) {
 void fnP_LCD(uint16_t unusedButMandatoryParameter) {
   if(getSystemFlag(FLAG_PRTACT)) {  // Print to the printer)
     #if defined(OPTION_IR_PRINTING)
-    return; // Not yet working for the 82240 printer
-    setPrinterSBI(true);
-    resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
-    refreshScreen(80);
-    printLcd();
-    setPrinterSBI(false);
+      #if defined(DMCP_BUILD)
+        if(printerState.printer_model == PRINTER_MARTEL) { // Only for Martel on HW, not on simulator and not for 82240
+          setPrinterSBI(true);
+          resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+          refreshScreen(80);
+          printLcd();
+          screenUpdatingMode &= ~SCRUPD_MANUAL_STATUSBAR;
+          setPrinterSBI(false);
+        }
+      #endif // DMCP_BUILD
     #endif //OPTION_IR_PRINTING
   }
   else {                             // SNAP

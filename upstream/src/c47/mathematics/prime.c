@@ -1247,18 +1247,32 @@ static void fnEulPhi(uint16_t unusedButMandatoryParameter) {
     }
 
 
+    // floor(sqrt(n)) by the bitwise method: exact for the whole uint32_t range, no libm
+    static uint32_t isqrt32(uint32_t n) {
+        uint32_t r = 0;
+        uint32_t bit = UINT32_C(1) << 30;
+        while(bit > n) {
+          bit >>= 2;
+        }
+        while(bit != 0) {
+          if(n >= r + bit) {
+            n -= r + bit;
+            r = (r >> 1) + bit;
+          }
+          else {
+            r >>= 1;
+          }
+          bit >>= 2;
+        }
+        return r;
+    }
+
     // Fast perfect square check using 32-bit integer sqrt
     static int is_perfect_square_uint32(uint32_t n, uint32_t* sqrt_out) {
-        uint32_t r = (uint32_t)(sqrt((double)n));
+        uint32_t r = isqrt32(n);       // exact floor, so no +-1 rounding tolerance is needed
         if(r * r == n) {
           if(sqrt_out) {
             *sqrt_out = r;
-          }
-          return 1;
-        }
-        if((r + 1) * (r + 1) == n) {
-          if(sqrt_out) {
-            *sqrt_out = r + 1;
           }
           return 1;
         }

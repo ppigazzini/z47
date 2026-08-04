@@ -205,8 +205,9 @@ void drawBattery(uint16_t voltage);
     }
 
     bool_t  SBchanged = false;
-    if(lastIntegerBase + ((lastIntegerBase >= 2 && didSystemFlagChange(FLAG_TOPHEX)) ? 0x40 : 0) != SBlastIntegerBaseShown) {
-      SBlastIntegerBaseShown = lastIntegerBase + ((lastIntegerBase >= 2 && didSystemFlagChange(FLAG_TOPHEX)) ? 0x40 : 0);
+    bool_t  topHexChanged = (lastIntegerBase >= 2 && didSystemFlagChange(FLAG_TOPHEX));  // note, read once: didSystemFlagChange clears on reading;
+    if(lastIntegerBase + (topHexChanged ? 0x40 : 0) != SBlastIntegerBaseShown) {
+      SBlastIntegerBaseShown = lastIntegerBase;
       SBchanged = true;
     }
 
@@ -245,7 +246,13 @@ void drawBattery(uint16_t voltage);
       return;
     }
 
-    if(didSystemFlagChange(FLAG_FRACT)  || didSystemFlagChange(FLAG_IRFRAC) || didSystemFlagChange(FLAG_PROPFR) || didSystemFlagChange(SETTING_DMX) || didSystemFlagChange(FLAG_DENFIX) || didSystemFlagChange(FLAG_DENANY)) {
+    bool_t aa = didSystemFlagChange(FLAG_FRACT);     // note, read separately, not || : didSystemFlagChange clears on reading and the short circuiting of || causes each didSystemFlagChange to clear in a following refresh.
+    bool_t bb = didSystemFlagChange(FLAG_IRFRAC);
+    bool_t cc = didSystemFlagChange(FLAG_PROPFR);
+    bool_t dd = didSystemFlagChange(SETTING_DMX);
+    bool_t ee = didSystemFlagChange(FLAG_DENFIX);
+    bool_t ff = didSystemFlagChange(FLAG_DENANY);
+    if(aa || bb || cc || dd || ee || ff) {
       char statusMessage[20];
       uint32_t x = X_FRAC_MODE;
 
@@ -458,7 +465,9 @@ void drawBattery(uint16_t voltage);
        SBAlphaModeLastShown = SETT_AlphaMode;
        SBchanged = true;
     }
-    if(didSystemFlagChange(FLAG_alphaCAP) || didSystemFlagChange(FLAG_NUMLOCK) || SBchanged || toSwitchOff || textModeIconDisplay) {
+    bool_t aa = didSystemFlagChange(FLAG_alphaCAP);  // note, read separately, not || : didSystemFlagChange clears on reading, see showFracMode.
+    bool_t bb = didSystemFlagChange(FLAG_NUMLOCK);
+    if(aa || bb || SBchanged || toSwitchOff || textModeIconDisplay) {
 
       int status=0;
       uint8_t nChar;
@@ -867,6 +876,9 @@ void drawBattery(uint16_t voltage) {
 
   #if !defined(DMCP_BUILD)
     void showHideStackLift(void) {
+      if(programRunStop == PGM_RUNNING) {
+        return;
+      }
 
       #if defined(BATTERYTEST)
         drawBattery(exponentLimit); //test battery indicator

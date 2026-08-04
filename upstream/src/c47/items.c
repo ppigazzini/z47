@@ -85,11 +85,15 @@ bool_t isFunctionOldParam16(uint16_t func) {
   bool_t itemNotAvail(int16_t itemNr) {
   #if defined(DMCP_BUILD) || defined(PC_BUILD)
     #if defined(OPTION_IR_PRINTING)
-      if(itemNr == ITM_PRINTERLCD && printerState.printer_model != PRINTER_MARTEL) {
+      if(itemNr == ITM_PRINTERLCD) {
         #if defined(PC_BUILD) && (VERBOSE_LEVEL >= 0)
           printf("Item %i Printer softkey item not available, not executing and/or struck through.\n", itemNr);
         #endif
-        return true;
+        #if defined( DMCP_BUILD)  //Only supported for Martel printer on HW - not supported on simulator
+          return (printerState.printer_model != PRINTER_MARTEL);
+        #else
+          return true;
+        #endif
       }
     #endif //OPTION_IR_PRINTING
     if(itemERRTIVal(itemNr) != _TO_ITM_NONE) {
@@ -1376,6 +1380,7 @@ bool_t isFunctionOldParam16(uint16_t func) {
   void fnEqCursorRight             (uint16_t unusedButMandatoryParameter) {}
   void fnEqCalc                    (uint16_t unusedButMandatoryParameter) {}
   void fnProgrammableSum           (uint16_t unusedButMandatoryParameter) {}
+  void fnProgrammableSumInf        (uint16_t unusedButMandatoryParameter) {}
   void fnProgrammableProduct       (uint16_t unusedButMandatoryParameter) {}
   void fnProgrammableiSum          (uint16_t unusedButMandatoryParameter) {}
   void fnProgrammableiProduct      (uint16_t unusedButMandatoryParameter) {}
@@ -1775,6 +1780,16 @@ bool_t isFunctionOldParam16(uint16_t func) {
   #define S18_fnXXfn_RSD     itemToBeCoded
 #endif //OPTION_XFN_1000
 
+#if defined(OPTION_INFSUMS)
+  #define INF_fnSumInf       fnProgrammableSumInf
+  #define INF_FNCT           CAT_FNCT
+  #define INF_TM             TM_LBLONLY
+#else //OPTION_INFSUMS
+  #define INF_fnSumInf       itemToBeCoded
+  #define INF_FNCT           CAT_NONE
+  #define INF_TM             NOPARAM
+#endif //OPTION_INFSUMS
+
 
 
 //==============================================================================
@@ -1783,8 +1798,8 @@ bool_t isFunctionOldParam16(uint16_t func) {
          // Helper macro for multiplicative unit conversions.
          // Add two UNIT_CONV lines at the correct new item numbers, one per direction: Best to copy and edit two prior pairs to ensure spacing is standard.
          // UNIT_CONV(constFactor<Xxx>, multiply, ...) converts the left unit to the right one
-         // (result = X x factor); the partner line uses divide with the SAME factor. Both name fields hold only 
-         //   the LEFT unit plus the arrow ("mph" STD_RIGHT_ARROW is a complete name) 
+         // (result = X x factor); the partner line uses divide with the SAME factor. Both name fields hold only
+         //   the LEFT unit plus the arrow ("mph" STD_RIGHT_ARROW is a complete name)
          //   the right-hand side is rebuilt at runtime from the partner item, fullConvSoftMenuItemName-InclHPCONV().
          // Next Step: CONV step 6/6 in src/c47/softmenus.c.
 //==============================================================================
@@ -4625,9 +4640,9 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2753 */  UNIT_CONV(constFactorTonneKg     , multiply         ,            "tonne"                              STD_RIGHT_ARROW                                                ,            "tonne"                              STD_RIGHT_ARROW                                                ),
 /* 2754 */  UNIT_CONV(constFactorTonneKg     , divide           ,            "kg"                                 STD_RIGHT_ARROW                                                ,            "kg"                                 STD_RIGHT_ARROW                                                ),
 
-/* 2755 */  { itemToBeCoded,                NOPARAM,                     "2755",                                           "2755",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
-/* 2756 */  { itemToBeCoded,                NOPARAM,                     "2756",                                           "2756",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
+/* 2755 */  { INF_fnSumInf,                     INF_TM,                     STD_INFINITY STD_SUM STD_SUB_n,                STD_INFINITY STD_SUM STD_SUB_n,                (0 << TAM_MAX_BITS) |    99, INF_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_LABEL        | HG_ENABLED         | RESULT_IN_X },
 
+/* 2756 */  { itemToBeCoded,                   NOPARAM,                     "2756",   /*reserved export d47 data*/         "2756",                                        (0 << TAM_MAX_BITS) |     0, CAT_FREE | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_DISABLED     | HG_ENABLED         },
 /* 2757 */  { fnSaveXFNRegister,               NOPARAM,                     "EXPxfnx",                                     "EXPxfnx",                                     (0 << TAM_MAX_BITS) |    97, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2758 */  { fnSaveLetteredRegisters,         NOPARAM,                     "EXPltr",                                      "EXPltr",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2759 */  { fnSaveStackRegisters,            NOPARAM,                     "EXPstk",                                      "EXPstk",                                      (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_UNCHANGED | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
@@ -4644,7 +4659,7 @@ TO_QSPI const item_t indexOfItems[] = {
 /* 2767 */  { fnSetREALDF,                  REGISTER_X,                     "DF",                                          "DF",                                          (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 2768 */  { fnGetNDEC,                       NOPARAM,                     "NDEC#",                                       "NDEC#",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
 /* 2769 */  { fnSetNDEC,                    REGISTER_X,                     "NDEC",                                        "NDEC",                                        (0 << TAM_MAX_BITS) |    99, CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         | RESULT_IN_X },
-/* 2770 */  { fnSetDMX,                     REGISTER_X,                     "DMX",                                         "DMX",                                         (0 << TAM_MAX_BITS) | 1    , CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
+/* 2770 */  { fnSetDMX,                     REGISTER_X,                     "DMXX",                                        "DMXX",                                        (0 << TAM_MAX_BITS) | 1    , CAT_FNCT | SLS_ENABLED   | US_ENABLED   | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 
 /* 2771 */  { fnClDisplay,                  NOPARAM,                     "CLD",                                            "CLD",                                         (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_UNCHANGED | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },
 /* 2772 */  { fnClLcd,                      CLLCD_FULL,                  "CLLCD",                                          "CLLCD",                                       (0 << TAM_MAX_BITS) |     0, CAT_FNCT | SLS_ENABLED   | US_ENABL_XEQ | EIM_DISABLED | PTP_NONE         | HG_ENABLED         },

@@ -1,0 +1,350 @@
+;*************************************************************
+;** Coverage: element and submatrix access on the INDEXed   **
+;** matrix - STOEL, RCLEL, STOSEQ, RCLSEQ, M.GETM, M.PUTM   **
+;** and M.FIND - in store.c, recall.c and                   **
+;** mathematics/matrix.c.                                   **
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64 FL_GROW=0
+
+; fnIndexedElementCov INDEXes the matrix in R00, restores the cursor from I and
+; J, runs the operation and drops the index. FARG selects it:
+;   0 STOEL  1 RCLEL  2 STOSEQ  3 RCLSEQ  4 M.GETM  5 M.PUTM  6 M.FIND
+;   7 I+  8 I-  9 J+  10 J-
+; I and J read back as long integers: the cursor accessors write them through
+; setIRegisterAsInt.
+
+; --- STOEL and RCLEL address the cursor cell and leave the cursor alone ---
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 R00=ReMa:"M2,2[1,2,7,4]" RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=1 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"0" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RX=Real:"4" RI=LonI:"2" RJ=LonI:"2"
+
+; --- STOSEQ and RCLSEQ do the same and step J. Stepping off the last cell
+; returns the cursor to (1,1) and leaves the size alone while GROW is clear.
+Func: fnIndexedElementCov
+In:  FARG=2 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 R00=ReMa:"M2,2[7,2,3,4]" RI=LonI:"1" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=3 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"0" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RX=Real:"1" RI=LonI:"1" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=2 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 R00=ReMa:"M2,2[1,2,3,7]" RI=LonI:"1" RJ=LonI:"1"
+
+; --- storing a complex into a real matrix promotes the matrix; storing a real
+; or a long integer into a complex one zeroes the imaginary part ---
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Cplx:"5i6" RI=Real:"1" RJ=Real:"2"
+Out: EC=0 R00=CxMa:"M2,2[1i0,5i6,3i0,4i0]"
+Func: fnIndexedElementCov
+In:  FARG=1 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Real:"0" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 RX=Cplx:"3i3"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Real:"0.35" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 R00=CxMa:"M2,2[1i1,2i2,0.35i0,4i4]"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=LonI:"99999" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 R00=ReMa:"M2,2[1,2,99999,4]"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=LonI:"7" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 R00=CxMa:"M2,2[1i1,2i2,7i0,4i4]"
+
+; --- element values that a converter can lose: a fraction, a wide value and
+; both exponent ends ---
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"0.35" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 R00=ReMa:"M2,2[1,2,0.35,4]"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"99999" RI=Real:"1" RJ=Real:"2"
+Out: EC=0 R00=ReMa:"M2,2[1,99999,3,4]"
+Func: fnIndexedElementCov
+In:  FARG=1 R00=ReMa:"M2,2[0.35,99999,-0.00001,1e100]" RX=Real:"0" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RX=Real:"0.35"
+Func: fnIndexedElementCov
+In:  FARG=1 R00=ReMa:"M2,2[0.35,99999,-0.00001,1e100]" RX=Real:"0" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RX=Real:"1e100"
+
+; --- callByIndexedMatrix bounds the cursor, and refuses an index on a register
+; holding no matrix. The element stores refuse a value they cannot convert.
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"3" RJ=Real:"1"
+Out: EC=8 R00=ReMa:"M2,2[1,2,3,4]"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Cplx:"7i7" RI=Real:"3" RJ=Real:"1"
+Out: EC=8 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=Real:"5" RX=Real:"7" RI=Real:"1" RJ=Real:"1"
+Out: EC=24 R00=Real:"5" RX=Real:"7"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RX=Stri:"ab" RI=Real:"2" RJ=Real:"1"
+Out: EC=24 R00=ReMa:"M2,2[1,2,3,4]"
+Func: fnIndexedElementCov
+In:  FARG=0 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Stri:"ab" RI=Real:"2" RJ=Real:"1"
+Out: EC=24 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+
+; --- M.GETM takes the submatrix at the cursor, Y rows by X columns ---
+Func: fnIndexedElementCov
+In:  FARG=4 R00=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RY=Real:"2" RX=Real:"2" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RX=ReMa:"M2,2[5,6,8,9]"
+Func: fnIndexedElementCov
+In:  FARG=4 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RY=Real:"1" RX=Real:"2" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 RX=CxMa:"M1,2[3i3,4i4]"
+Func: fnIndexedElementCov
+In:  FARG=4 R00=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RY=Real:"3" RX=Real:"3" RI=Real:"2" RJ=Real:"2"
+Out: EC=8 R00=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RX=Real:"3"
+Func: fnIndexedElementCov
+In:  FARG=4 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RY=Real:"3" RX=Real:"3" RI=Real:"1" RJ=Real:"1"
+Out: EC=8 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+Func: fnIndexedElementCov
+In:  FARG=4 R00=ReMa:"M2,2[1,2,3,4]" RY=Stri:"ab" RX=Real:"1" RI=Real:"1" RJ=Real:"1"
+Out: EC=24 R00=ReMa:"M2,2[1,2,3,4]"
+
+; --- M.PUTM writes the matrix in X into the INDEXed one at the cursor.
+; putMatrixComplex refuses a real matrix and putMatrixReal a complex one.
+Func: fnIndexedElementCov
+In:  FARG=5 R00=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RX=ReMa:"M2,2[71,72,73,74]" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 R00=ReMa:"M3,3[1,2,3,4,71,72,7,73,74]"
+Func: fnIndexedElementCov
+In:  FARG=5 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=CxMa:"M1,2[7i8,9i0]" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 R00=CxMa:"M2,2[1i1,2i2,7i8,9i0]"
+Func: fnIndexedElementCov
+In:  FARG=5 R00=ReMa:"M2,2[1,2,3,4]" RX=ReMa:"M2,2[71,72,73,74]" RI=Real:"2" RJ=Real:"2"
+Out: EC=8 R00=ReMa:"M2,2[1,2,3,4]"
+Func: fnIndexedElementCov
+In:  FARG=5 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=CxMa:"M2,2[7i7,8i8,9i9,0i0]" RI=Real:"2" RJ=Real:"2"
+Out: EC=8 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+Func: fnIndexedElementCov
+In:  FARG=5 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=ReMa:"M1,2[7,9]" RI=Real:"2" RJ=Real:"1"
+Out: EC=24 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+Func: fnIndexedElementCov
+In:  FARG=5 R00=ReMa:"M2,2[1,2,3,4]" RX=CxMa:"M1,2[7i7,8i8]" RI=Real:"1" RJ=Real:"1"
+Out: EC=24 R00=ReMa:"M2,2[1,2,3,4]"
+
+; --- M.FIND leaves the cursor on the first matching element, and converts the
+; search value by its type. A complex value matches a real matrix only where its
+; imaginary part is zero.
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=Real:"5" RI=Real:"1" RJ=Real:"3"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=LonI:"5" RI=Real:"1" RJ=Real:"3"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=ShoI:"5#10" RI=Real:"1" RJ=Real:"3"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,0.35,4,5,6]" RX=Real:"0.35" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"3"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=Cplx:"5i0" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Cplx:"3i3" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=CxMa:"M2,2[1i0,2i0,3i0,4i0]" RX=LonI:"3" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=CxMa:"M2,2[1i0,2i0,3i0,4i0]" RX=ShoI:"3#10" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=CxMa:"M2,2[1i0,2i0,3i0,4i0]" RX=Real:"3" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+
+; --- the searches that never run. Each value is present in the matrix away from
+; the cursor, so a search that ran would move the cursor onto it.
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=Real:"5:DEG" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=Cplx:"5i1" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=6 R00=CxMa:"M2,2[1i0,2i0,3i0,4i0]" RX=Real:"3:DEG" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"1"
+
+; --- the cursor steps I+, I-, J+ and J- over a 2x3. wrapIJ carries a row step
+; off the last row into the next column and a column step off the last column
+; into the next row, and folds both directions at the ends.
+Func: fnIndexedElementCov
+In:  FARG=7 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"1" RJ=Real:"2"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=7 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"3"
+Func: fnIndexedElementCov
+In:  FARG=8 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"2"
+Func: fnIndexedElementCov
+In:  FARG=8 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"1" RJ=Real:"2"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=9 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"1" RJ=Real:"2"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"3"
+Func: fnIndexedElementCov
+In:  FARG=9 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"1" RJ=Real:"3"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=10 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=10 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"2" RJ=Real:"1"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"3"
+Func: fnIndexedElementCov
+In:  FARG=7 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"2" RJ=Real:"3"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=9 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"2" RJ=Real:"3"
+Out: EC=0 RI=LonI:"1" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=8 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"3"
+Func: fnIndexedElementCov
+In:  FARG=10 R00=ReMa:"M2,3[1,2,3,4,5,6]" RI=Real:"1" RJ=Real:"1"
+Out: EC=0 RI=LonI:"2" RJ=LonI:"3"
+
+; --- M.GROW and M.WRAP select what a step off the last cell does. The flag they
+; set has no register, so each is followed by the J+ that reads it.
+Func: fnSetGrowMode
+In:  FARG=1
+Out: EC=0
+Func: fnIndexedElementCov
+In:  FARG=9 R00=ReMa:"M2,2[1,2,3,4]" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 R00=ReMa:"M3,2[1,2,3,4,0,0]" RI=LonI:"3" RJ=LonI:"1"
+Func: fnSetGrowMode
+In:  FARG=0
+Out: EC=0
+Func: fnIndexedElementCov
+In:  FARG=9 R00=ReMa:"M2,2[1,2,3,4]" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 R00=ReMa:"M2,2[1,2,3,4]" RI=LonI:"1" RJ=LonI:"1"
+Func: fnIndexedElementCov
+In:  FARG=2 FL_GROW=1 R00=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"2" RJ=Real:"2"
+Out: EC=0 R00=ReMa:"M3,2[1,2,3,7,0,0]" RI=LonI:"3" RJ=LonI:"1"
+
+; --- fnStoreVElement and fnRecallVElement take a linear element number and
+; drive the index themselves. I and J are seeded 0.35 and 99999, which the walk
+; must hand back unrounded and untruncated.
+Func: fnStoreVElement
+In:  FARG=3 RY=ReMa:"M2,2[1,2,3,4]" RX=Real:"7" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=0 RY=ReMa:"M2,2[1,2,7,4]" RX=Real:"7" RI=Real:"0.35" RJ=Real:"99999"
+Func: fnRecallVElement
+In:  FARG=4 RX=ReMa:"M2,2[1,2,3,4]" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=0 RX=Real:"4" RY=ReMa:"M2,2[1,2,3,4]" RI=Real:"0.35" RJ=Real:"99999"
+Func: fnStoreVElement
+In:  FARG=1 RY=ReMa:"M2,2[1,2,3,4]" RX=Real:"7"
+Out: EC=0 RY=ReMa:"M2,2[7,2,3,4]"
+Func: fnStoreVElement
+In:  FARG=4 RY=ReMa:"M2,2[1,2,3,4]" RX=Real:"7"
+Out: EC=0 RY=ReMa:"M2,2[1,2,3,7]"
+Func: fnStoreVElement
+In:  FARG=3 RY=ReMa:"M2,2[1,2,3,4]" RX=Real:"0.35"
+Out: EC=0 RY=ReMa:"M2,2[1,2,0.35,4]"
+
+; --- a linear index resolves through the column count. A 1x4 and a 4x1 hold the
+; same elements with the dimensions swapped.
+Func: fnStoreVElement
+In:  FARG=3 RY=ReMa:"M1,4[1,2,3,4]" RX=Real:"0.35"
+Out: EC=0 RY=ReMa:"M1,4[1,2,0.35,4]"
+Func: fnStoreVElement
+In:  FARG=3 RY=ReMa:"M4,1[1,2,3,4]" RX=Real:"0.35"
+Out: EC=0 RY=ReMa:"M4,1[1,2,0.35,4]"
+Func: fnRecallVElement
+In:  FARG=2 RX=ReMa:"M1,4[10,20,30,40]"
+Out: EC=0 RX=Real:"20"
+Func: fnRecallVElement
+In:  FARG=2 RX=ReMa:"M4,1[10,20,30,40]"
+Out: EC=0 RX=Real:"20"
+
+; --- past the end, and arguments the walk refuses before it opens the index ---
+Func: fnStoreVElement
+In:  FARG=5 RY=ReMa:"M2,2[1,2,3,4]" RX=Real:"7"
+Out: EC=8 RY=ReMa:"M2,2[1,2,3,4]"
+Func: fnRecallVElement
+In:  FARG=5 RX=ReMa:"M2,2[1,2,3,4]"
+Out: EC=8 RX=ReMa:"M2,2[1,2,3,4]"
+Func: fnStoreVElement
+In:  FARG=1 RY=ReMa:"M2,2[1,2,3,4]" RX=Stri:"ab" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=24 RI=Real:"0.35" RJ=Real:"99999"
+Func: fnStoreVElement
+In:  FARG=1 RY=Real:"5" RX=Real:"7" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=24 RI=Real:"0.35" RJ=Real:"99999"
+
+; --- the complex arms ---
+Func: fnStoreVElement
+In:  FARG=2 RY=ReMa:"M2,2[1,2,3,4]" RX=Cplx:"5i6"
+Out: EC=0 RY=CxMa:"M2,2[1i0,5i6,3i0,4i0]"
+Func: fnStoreVElement
+In:  FARG=2 RY=CxMa:"M2,2[1i1,2i2,3i3,4i4]" RX=Real:"99999"
+Out: EC=0 RY=CxMa:"M2,2[1i1,99999i0,3i3,4i4]"
+Func: fnRecallVElement
+In:  FARG=3 RX=CxMa:"M2,2[1i1,2i2,3i3,4i4]"
+Out: EC=0 RX=Cplx:"3i3"
+
+; --- fnRecallVector and fnStoreVector walk the whole matrix. The destination
+; registers are seeded away from every value the walk writes.
+Func: fnRecallVector
+In:  FARG=10 R10=Real:"-1" R11=Real:"-1" R12=Real:"-1" R13=Real:"-1" R14=Real:"-1" R15=Real:"-1" RX=ReMa:"M2,3[5,6,7,8,9,10]" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=0 R10=Real:"5" R11=Real:"6" R12=Real:"7" R13=Real:"8" R14=Real:"9" R15=Real:"10" RX=ReMa:"M2,3[5,6,7,8,9,10]" RI=Real:"0.35" RJ=Real:"99999"
+Func: fnStoreVector
+In:  FARG=10 R10=Real:"61" R11=Real:"62" R12=Real:"63" R13=Real:"64" R14=Real:"65" R15=Real:"66" RX=ReMa:"M2,3[0,0,0,0,0,0]" RY=Real:"41" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=0 RX=ReMa:"M2,3[61,62,63,64,65,66]" RY=Real:"41" RI=Real:"0.35" RJ=Real:"99999"
+
+; --- neither walk starts without a matrix, and one killed mid-walk still hands
+; the cursor back ---
+Func: fnStoreVector
+In:  FARG=10 RX=Real:"5" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=24 RX=Real:"5" RI=Real:"0.35" RJ=Real:"99999"
+Func: fnRecallVector
+In:  FARG=10 RX=Real:"5" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=24 RX=Real:"5" RI=Real:"0.35" RJ=Real:"99999"
+Func: fnStoreVector
+In:  FARG=10 R10=Real:"61" R11=Stri:"ab" R12=Real:"63" R13=Real:"64" RX=ReMa:"M2,2[0,0,0,0]" RI=Real:"0.35" RJ=Real:"99999"
+Out: EC=24 RX=ReMa:"M2,2[61,0,0,0]" RI=Real:"0.35" RJ=Real:"99999"
+
+; --- M.NEW takes rows from Y and columns from X, zero filled, consuming both.
+; It refuses a zero dimension, and 127x127 - 258 KB against a pool of 256 KB -
+; for want of memory.
+Func: fnNewMatrix
+In:  RY=Real:"2" RX=Real:"3" RZ=Real:"12" RT=Real:"13"
+Out: EC=0 RX=ReMa:"M2,3[0,0,0,0,0,0]" RY=Real:"12" RZ=Real:"13"
+Func: fnNewMatrix
+In:  RY=Real:"0" RX=Real:"3" RZ=Real:"12"
+Out: EC=1 RX=Real:"3" RY=Real:"0" RZ=Real:"12"
+Func: fnNewMatrix
+In:  RY=Real:"127" RX=Real:"127" RZ=Real:"12"
+Out: EC=39 RX=Real:"127" RY=Real:"127" RZ=Real:"12"
+
+; --- M.DIMN# and 42DIM# push columns into X and rows into Y, and refuse a
+; register holding no matrix ---
+Func: fnGetMatrixDimensions
+In:  FARG=0 R00=ReMa:"M2,3[1,2,3,4,5,6]" RX=Real:"-1" RY=Real:"-1"
+Out: EC=0 RX=LonI:"3" RY=LonI:"2"
+Func: fnGetMatrixDimensions
+In:  FARG=0 R00=CxMa:"M3,2[1i1,2i2,3i3,4i4,5i5,6i6]" RX=Real:"-1" RY=Real:"-1"
+Out: EC=0 RX=LonI:"2" RY=LonI:"3"
+Func: fnGetMatrixDimensions42
+In:  RX=ReMa:"M2,3[1,2,3,4,5,6]" RY=Real:"-1"
+Out: EC=0 RX=LonI:"3" RY=LonI:"2"
+Func: fnGetMatrixDimensions
+In:  FARG=0 R00=Real:"5" RX=Real:"-1" RY=Real:"-1"
+Out: EC=24 R00=Real:"5" RX=Real:"-1" RY=Real:"-1"
+Func: fnGetMatrixDimensions42
+In:  RX=Real:"5"
+Out: EC=24 RX=Real:"5"
+
+; --- M.DIMgr resizes in place, keeping each element at its row and column,
+; growing and shrinking ---
+Func: fnSetMatrixDimensionsGr
+In:  FARG=0 R00=ReMa:"M2,2[1,2,3,4]" RY=Real:"3" RX=Real:"3"
+Out: EC=0 R00=ReMa:"M3,3[1,2,0,3,4,0,0,0,0]"
+Func: fnSetMatrixDimensionsGr
+In:  FARG=0 R00=ReMa:"M3,3[1,2,3,4,5,6,7,8,9]" RY=Real:"2" RX=Real:"2"
+Out: EC=0 R00=ReMa:"M2,2[1,2,4,5]"
+
+; --- a fixture, not an assertion: hand I, J and FLAG_GROW back, the first two
+; of which programs.txt's SPIRAL reads as data, and free the R00 matrix ---
+Func: fnNop
+In:  FL_GROW=0 R00=Real:"0" RI=Real:"0" RJ=Real:"0"
+Out: EC=0

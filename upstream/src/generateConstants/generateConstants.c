@@ -15,9 +15,9 @@
 realContext_t ctxtReal34, ctxtReal;
 
 char whiteSpace[50];
-char externalDeclarations[1000000]; // .h file
-char realArray[1000000];            // .c file
-char realTConstantArray[1000000];   // added to .c file
+static char externalDeclarations[1000000]; // .h file
+static char realArray[1000000];            // .c file
+static char realTConstantArray[1000000];   // added to .c file
 FILE *constantsC, *constantsH;
 int32_t  idx, cntRealt;
 

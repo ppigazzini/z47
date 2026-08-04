@@ -7,15 +7,11 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DIST_2)
+#if !defined(OPTION_DIST_B)
   void fnWeibullP     (uint16_t unusedButMandatoryParameter){}
   void fnWeibullL     (uint16_t unusedButMandatoryParameter){}
   void fnWeibullR     (uint16_t unusedButMandatoryParameter){}
   void fnWeibullI     (uint16_t unusedButMandatoryParameter){}
-  void WP34S_Pdf_Weib (const real_t *x, const real_t *b, const real_t *t, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdfu_Weib(const real_t *x, const real_t *b, const real_t *t, real_t *res, realContext_t *realContext){}
-  void WP34S_Cdf_Weib (const real_t *x, const real_t *b, const real_t *t, real_t *res, realContext_t *realContext){}
-  void WP34S_Qf_Weib  (const real_t *x, const real_t *b, const real_t *t, real_t *res, realContext_t *realContext){}
 
 #else
   static bool_t checkParamWeibull(real_t *x, real_t *shape, real_t *scale) {
@@ -171,4 +167,4 @@
     realMultiply(&p, b, res, realContext);
   }
 
-#endif // !OPTION_DIST_2
+#endif // !OPTION_DIST_B

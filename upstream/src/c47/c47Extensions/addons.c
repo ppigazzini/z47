@@ -1619,7 +1619,7 @@ void fn_cnst_op_A(uint16_t option) {
 
 
 
-#if defined(OPTION_VECTOR) || defined(OPTION_ELEC) || defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_VECTOR) || defined(OPTION_ELEC)
 TO_QSPI static const struct {
     unsigned rows  : 2;
     unsigned cols  : 3;
@@ -1664,11 +1664,11 @@ TO_QSPI static const struct {
     }
     return true;
   }
-#endif //OPTION_VECTOR || OPTION_ELEC || OPTION_SLV_ZETA_BETA
+#endif //OPTION_VECTOR || OPTION_ELEC
 
 
 void fnExchangeStkToMx(uint16_t opType) {
-#if defined(OPTION_VECTOR) || defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_VECTOR)
   switch(opType) {
 #if defined(OPTION_VECTOR)
     case ITM_stkexV2:{
@@ -1724,12 +1724,12 @@ void fnExchangeStkToMx(uint16_t opType) {
 
     default:break;
   }
-#endif //OPTION_VECTOR || OPTION_SLV_ZETA_BETA
+#endif //OPTION_VECTOR
 }
 
 
 void fnConvertStkToMx(uint16_t constVector1) {
-#if defined(OPTION_VECTOR) || defined(OPTION_ELEC) || defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_VECTOR) || defined(OPTION_ELEC)
   bool_t complexCoefs = false;
   struct cmplxPair x[4];
   real34Matrix_t matrix;
@@ -1906,12 +1906,12 @@ void fnConvertStkToMx(uint16_t constVector1) {
     temporaryInformation = TI_VECTOR;
   }
 #endif //OPTION_VECTOR || OPTION_ELEC
-#endif //OPTION_VECTOR || OPTION_ELEC || OPTION_SLV_ZETA_BETA
+#endif //OPTION_VECTOR || OPTION_ELEC
 }
 
 
 void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower nibble, then try the vector type in higher nibble unless high nibble = 0
-#if defined(OPTION_VECTOR) || defined(OPTION_ELEC) || defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_VECTOR) || defined(OPTION_ELEC)
   real34Matrix_t matrix;
   complex34Matrix_t matrixC;
   uint16_t Xrows, Xcols;
@@ -2077,7 +2077,7 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     setRegisterAngularMode(REGISTER_Y, ang3Dy);
     temporaryInformation = TI_VECTORCOMP_3DRECT;
   }
-#endif //OPTION_VECTOR || OPTION_ELEC || OPTION_SLV_ZETA_BETA
+#endif //OPTION_VECTOR || OPTION_ELEC
 }
 
 

@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
- #if !defined(OPTION_DIST_3)
+ #if !defined(OPTION_DIST_D)
   void fnParetoP   (uint16_t unusedButMandatoryParameter){}
   void fnParetoL   (uint16_t unusedButMandatoryParameter){}
   void fnParetoU   (uint16_t unusedButMandatoryParameter){}
@@ -179,4 +179,4 @@ void fnPareto2I(uint16_t unusedButMandatoryParameter) {
   }
 }
 
-#endif // !OPTION_DIST_3
+#endif // !OPTION_DIST_D

@@ -18,7 +18,7 @@
  * \return void
  ***********************************************/
 void fnSlvq(uint16_t unusedButMandatoryParameter) {
-#if defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_SLVQ_SLVC)
   bool_t realCoefs=false, realRoots=true, complexCoefs=false;
   real_t aReal, bReal, cReal, rReal, x1Real, x2Real;
   real_t aImag, bImag, cImag, rImag, x1Imag, x2Imag;
@@ -106,11 +106,12 @@ void fnSlvq(uint16_t unusedButMandatoryParameter) {
   #else
     fnDropZ(0);
   #endif //DISCRIMINANT
-#endif // !OPTION_SLV_ZETA_BETA
+#endif // !OPTION_SLVQ_SLVC
 }
 
 
 // a x^2 + b x + c = 0 at the precision the build selects: 159 digits under OPTION_SQUARE_159, 75 otherwise, results rounded to 39.
+#if defined(OPTION_SLVQ_SLVC)
 void solveQuadratic(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, const real_t *cReal, const real_t *cImag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag) {
 #if defined(OPTION_SQUARE_159)
   realContext_t c = ctxtReal75;
@@ -151,6 +152,7 @@ void solveQuadratic(const real_t *aReal, const real_t *aImag, const real_t *bRea
   solveQuadraticEquation(aReal, aImag, bReal, bImag, cReal, cImag, rReal, rImag, x1Real, x1Imag, x2Real, x2Imag, &ctxtReal75);
 #endif // OPTION_SQUARE_159
 }
+#endif // OPTION_SLVQ_SLVC
 
 
 void solveQuadraticEquation(const real_t *aReal, const real_t *aImag, const real_t *bReal, const real_t *bImag, const real_t *cReal, const real_t *cImag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, realContext_t *realContext) {

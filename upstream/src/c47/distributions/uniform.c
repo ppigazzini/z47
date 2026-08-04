@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-#if !defined(OPTION_DIST_3)
+#if !defined(OPTION_DIST_D)
   void fnUniformP           (uint16_t discrete){}
   void fnUniformL           (uint16_t discrete){}
   void fnUniformU           (uint16_t discrete){}
@@ -169,4 +169,4 @@ void fnUniformI(uint16_t discrete) {
   }
 }
 
-#endif // !OPTION_DIST_3
+#endif // !OPTION_DIST_D

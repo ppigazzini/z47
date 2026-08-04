@@ -13,7 +13,7 @@ struct cmplxPair {
   real_t r, i;
 };
 
-#if defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_SLVQ_SLVC)
 static int cmplxSortCompare(const void *v1, const void *v2) {
   const struct cmplxPair *p1 = (const struct cmplxPair *)v1;
   const struct cmplxPair *p2 = (const struct cmplxPair *)v2;
@@ -107,7 +107,7 @@ static void solveGeneralCubic(const real_t *aReal, const real_t *aImag, real_t *
   }
   qsort(x, 3, sizeof(x[0]), &cmplxSortCompare);
 }
-#endif //OPTION_SLV_ZETA_BETA
+#endif //OPTION_SLVQ_SLVC
 
 
 /********************************************//**
@@ -119,7 +119,7 @@ static void solveGeneralCubic(const real_t *aReal, const real_t *aImag, real_t *
  * \return void
  ***********************************************/
 void fnSlvc(uint16_t unusedButMandatoryParameter) {
-#if defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_SLVQ_SLVC)
   bool_t complexCoefs=false;
   real_t aReal, bReal, cReal, dReal, rReal;
   real_t aImag, bImag, cImag, dImag, rImag;
@@ -177,11 +177,11 @@ void fnSlvc(uint16_t unusedButMandatoryParameter) {
   #else // !DISCIMINANT
     fnDropT(0);
   #endif // DISCRIMINANT
-#endif // !OPTION_SLV_ZETA_BETA
+#endif // !OPTION_SLVQ_SLVC
 }
 
 
-#if defined(OPTION_SLV_ZETA_BETA)
+#if defined(OPTION_SLVQ_SLVC)
 // X = a 1 x m or m x 1 coefficient vector, highest degree first: the element count picks the solver, 2 the linear, 3 the quadratic and 4 the cubic,
 // from either command. All roots come back as a row vector replacing X, real when every root is real; the rest of the stack is not consumed.
 void solveCoefficientVector(void) {
@@ -304,7 +304,7 @@ void solveCoefficientVector(void) {
 
   adjustResult(REGISTER_X, false, true, REGISTER_X, -1, -1);
 }
-#endif // OPTION_SLV_ZETA_BETA
+#endif // OPTION_SLVQ_SLVC
 
 
 
@@ -358,6 +358,7 @@ static void _realCheckedSubtract(const real_t *operand1, const real_t *operand2,
 }
 
 // Monic x^3 + b x^2 + c x + d = 0 at the precision the build selects: 159 digits under OPTION_CUBIC_159, 75 otherwise, results rounded to 39.
+#if defined(OPTION_SLVQ_SLVC)
 void solveCubic(const real_t *bReal, const real_t *bImag, const real_t *cReal, const real_t *cImag, const real_t *dReal, const real_t *dImag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, real_t *x3Real, real_t *x3Imag) {
 #if defined(OPTION_CUBIC_159)
   realContext_t c = ctxtReal75;
@@ -404,6 +405,7 @@ void solveCubic(const real_t *bReal, const real_t *bImag, const real_t *cReal, c
   solveCubicEquation(bReal, bImag, cReal, cImag, dReal, dImag, rReal, rImag, x1Real, x1Imag, x2Real, x2Imag, x3Real, x3Imag, &ctxtReal75);
 #endif // OPTION_CUBIC_159
 }
+#endif // OPTION_SLVQ_SLVC
 
 
 void solveCubicEquation(const real_t *c2Real, const real_t *c2Imag, const real_t *c1Real, const real_t *c1Imag, const real_t *c0Real, const real_t *c0Imag, real_t *rReal, real_t *rImag, real_t *x1Real, real_t *x1Imag, real_t *x2Real, real_t *x2Imag, real_t *x3Real, real_t *x3Imag, realContext_t *realContext) {
