@@ -738,6 +738,15 @@ pub extern fn __gmpz_tdiv_qr(quotient: *mpz_struct, remainder: *mpz_struct, divi
 pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
+
+// The overflow-checked long integer operators. Every wrapper that adds, subtracts
+// or multiplies two long integers goes through these rather than the __gmpz_ entry
+// points above: they refuse a result wider than the calculator's long integer
+// limit and report an overflow, which is a behaviour of the command and not a
+// property of the host's memory.
+pub extern fn longIntegerMultiply(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
+pub extern fn longIntegerAdd(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
+pub extern fn longIntegerSubtract(op_y: *const mpz_struct, op_x: *const mpz_struct, result: *mpz_struct) void;
 pub extern fn int32ToReal(source: i32, destination: *real_t) void;
 pub extern fn decNumberCompare(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;

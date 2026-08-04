@@ -87,7 +87,7 @@ fn dblMultiplyOwned() void {
     var product: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&product[0]);
     defer runtime.__gmpz_clear(&product[0]);
-    runtime.__gmpz_mul(&product[0], &y_value[0], &x_value[0]);
+    runtime.longIntegerMultiply(&y_value[0], &x_value[0], &product[0]);
 
     if (sim == runtime.SIM_1COMPL) {
         if (signs_differ) {
@@ -174,21 +174,21 @@ fn dblDivideOwned(remainder_mode: bool) void {
     var dividend: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&dividend[0]);
     defer runtime.__gmpz_clear(&dividend[0]);
-    runtime.__gmpz_mul(&dividend[0], &dividend_hi[0], &scale[0]);
-    runtime.__gmpz_add(&dividend[0], &dividend[0], &dividend_lo[0]);
+    runtime.longIntegerMultiply(&dividend_hi[0], &scale[0], &dividend[0]);
+    runtime.longIntegerAdd(&dividend[0], &dividend_lo[0], &dividend[0]);
 
     if (sim != runtime.SIM_UNSIGN) {
         setPowerOfTwo(&scale[0], word_size * 2 - 1);
         if (runtime.__gmpz_cmp(&dividend[0], &scale[0]) >= 0) {
             if (sim == runtime.SIM_SIGNMT) {
-                runtime.__gmpz_sub(&dividend[0], &dividend[0], &scale[0]);
+                runtime.longIntegerSubtract(&dividend[0], &scale[0], &dividend[0]);
                 setNegativeSign(&dividend[0]);
             } else {
                 setPowerOfTwo(&scale[0], word_size * 2);
                 if (sim == runtime.SIM_1COMPL) {
                     runtime.__gmpz_sub_ui(&scale[0], &scale[0], 1);
                 }
-                runtime.__gmpz_sub(&dividend[0], &scale[0], &dividend[0]);
+                runtime.longIntegerSubtract(&scale[0], &dividend[0], &dividend[0]);
                 setNegativeSign(&dividend[0]);
             }
         }

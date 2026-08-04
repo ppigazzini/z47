@@ -8,7 +8,7 @@ fn squareLonI() callconv(.c) void {
     }
     defer runtime.__gmpz_clear(&x[0]);
 
-    runtime.__gmpz_mul(&x[0], &x[0], &x[0]);
+    runtime.longIntegerMultiply(&x[0], &x[0], &x[0]);
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 
@@ -59,8 +59,8 @@ fn cubeLonI() callconv(.c) void {
     runtime.__gmpz_init(&cube_value[0]);
     defer runtime.__gmpz_clear(&cube_value[0]);
 
-    runtime.__gmpz_mul(&cube_value[0], &x[0], &x[0]);
-    runtime.__gmpz_mul(&cube_value[0], &cube_value[0], &x[0]);
+    runtime.longIntegerMultiply(&x[0], &x[0], &cube_value[0]);
+    runtime.longIntegerMultiply(&cube_value[0], &x[0], &cube_value[0]);
     runtime.convertLongIntegerToLongIntegerRegister(&cube_value[0], runtime.REGISTER_X);
 }
 

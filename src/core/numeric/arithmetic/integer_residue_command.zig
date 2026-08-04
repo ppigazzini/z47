@@ -68,7 +68,7 @@ fn neighbLonI() callconv(.c) void {
 
     if (cmp != 0) {
         runtime.__gmpz_set_si(&y[0], if (cmp > 0) 1 else -1);
-        runtime.__gmpz_add(&x[0], &x[0], &y[0]);
+        runtime.longIntegerAdd(&x[0], &y[0], &x[0]);
     }
 
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
@@ -236,7 +236,7 @@ fn modLonI() callconv(.c) void {
     defer runtime.__gmpz_clear(&remainder[0]);
 
     runtime.__gmpz_tdiv_r(&remainder[0], &y[0], &x[0]);
-    runtime.__gmpz_add(&remainder[0], &remainder[0], &x[0]);
+    runtime.longIntegerAdd(&remainder[0], &x[0], &remainder[0]);
     runtime.__gmpz_tdiv_r(&remainder[0], &remainder[0], &x[0]);
     runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_X);
 }
@@ -266,7 +266,7 @@ fn modShoI() callconv(.c) void {
     defer runtime.__gmpz_clear(&remainder[0]);
 
     runtime.__gmpz_tdiv_r(&remainder[0], &y[0], &x[0]);
-    runtime.__gmpz_add(&remainder[0], &remainder[0], &x[0]);
+    runtime.longIntegerAdd(&remainder[0], &x[0], &remainder[0]);
     runtime.__gmpz_tdiv_r(&remainder[0], &remainder[0], &x[0]);
     runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], runtime.getRegisterTag(runtime.REGISTER_Y), runtime.REGISTER_X);
 }

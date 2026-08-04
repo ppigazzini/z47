@@ -59,7 +59,7 @@ pub fn doIntRandomI() callconv(.c) void {
     var range: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&range[0]);
     defer runtime.__gmpz_clear(&range[0]);
-    runtime.__gmpz_sub(&range[0], max_value, min_value);
+    runtime.longIntegerSubtract(max_value, min_value, &range[0]);
 
     if (runtime.__gmpz_cmp_ui(&range[0], range_limit) >= 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);

@@ -125,7 +125,7 @@ pub export fn subLonILonI() callconv(.c) void {
     runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
     runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
 
-    runtime.__gmpz_sub(&x[0], &y[0], &x[0]);
+    runtime.longIntegerSubtract(&y[0], &x[0], &x[0]);
 
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 
@@ -162,7 +162,7 @@ pub export fn subLonIShoI() callconv(.c) void {
     runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
     runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
 
-    runtime.__gmpz_sub(&x[0], &y[0], &x[0]);
+    runtime.longIntegerSubtract(&y[0], &x[0], &x[0]);
 
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 
@@ -178,7 +178,7 @@ pub export fn subShoILonI() callconv(.c) void {
     runtime.convertShortIntegerRegisterToLongInteger(runtime.REGISTER_Y, &y[0]);
     runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x[0]);
 
-    runtime.__gmpz_sub(&x[0], &y[0], &x[0]);
+    runtime.longIntegerSubtract(&y[0], &x[0], &x[0]);
 
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 

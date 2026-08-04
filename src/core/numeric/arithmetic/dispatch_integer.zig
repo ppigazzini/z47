@@ -60,9 +60,9 @@ fn tryDyadicLongIntegerArithmetic(operation: u8) bool {
     defer runtime.__gmpz_clear(&y_value[0]);
 
     switch (operation) {
-        dyadic_integer_add => runtime.__gmpz_add(&x_value[0], &y_value[0], &x_value[0]),
-        dyadic_integer_subtract => runtime.__gmpz_sub(&x_value[0], &y_value[0], &x_value[0]),
-        dyadic_integer_multiply => runtime.__gmpz_mul(&x_value[0], &y_value[0], &x_value[0]),
+        dyadic_integer_add => runtime.longIntegerAdd(&y_value[0], &x_value[0], &x_value[0]),
+        dyadic_integer_subtract => runtime.longIntegerSubtract(&y_value[0], &x_value[0], &x_value[0]),
+        dyadic_integer_multiply => runtime.longIntegerMultiply(&y_value[0], &x_value[0], &x_value[0]),
         else => unreachable,
     }
 
