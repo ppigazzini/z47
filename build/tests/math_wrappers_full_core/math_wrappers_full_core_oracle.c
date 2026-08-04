@@ -485,6 +485,47 @@
 #define divCplxReal oracle_divCplxReal
 #define divCplxCplx oracle_divCplxCplx
 
+
+// --- the long tail (10 files) ---
+// Bernoulli, Fibonacci, the error functions, the Lambert-W trio, the sinc pair
+// and sqrt(1+x^2). Small files, one wrapper each, dispatching into leaves this
+// binary already links.
+#define bn_common oracle_bn_common
+#define fnBn oracle_fnBn
+#define fnBnStar oracle_fnBnStar
+#define fibLonI oracle_fibLonI
+#define FibonacciReal oracle_FibonacciReal
+#define FibonacciComplex oracle_FibonacciComplex
+#define fibReal oracle_fibReal
+#define fibCplx oracle_fibCplx
+#define fnFib oracle_fnFib
+#define erfReal oracle_erfReal
+#define fnErf oracle_fnErf
+#define erfcReal oracle_erfcReal
+#define fnErfc oracle_fnErfc
+#define wInvReal oracle_wInvReal
+#define wInvCplx oracle_wInvCplx
+#define fnWinverse oracle_fnWinverse
+#define get_1oneE oracle_get_1oneE
+#define wNegReal oracle_wNegReal
+#define wNegCplx oracle_wNegCplx
+#define fnWnegative oracle_fnWnegative
+#define wPosReal oracle_wPosReal
+#define wPosCplx oracle_wPosCplx
+#define fnWpositive oracle_fnWpositive
+#define sincComplex oracle_sincComplex
+#define sincReal oracle_sincReal
+#define sincCplx oracle_sincCplx
+#define fnSinc oracle_fnSinc
+#define sincpiComplex oracle_sincpiComplex
+#define sincpiReal oracle_sincpiReal
+#define sincpiCplx oracle_sincpiCplx
+#define fnSincpi oracle_fnSincpi
+#define sqrt1Px2Complex oracle_sqrt1Px2Complex
+#define sqrt1Px2Real oracle_sqrt1Px2Real
+#define sqrt1Px2Cplx oracle_sqrt1Px2Cplx
+#define fnSqrt1Px2 oracle_fnSqrt1Px2
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -521,6 +562,16 @@
 #include "../../../upstream/src/c47/mathematics/subtraction.c"
 #include "../../../upstream/src/c47/mathematics/multiplication.c"
 #include "../../../upstream/src/c47/mathematics/division.c"
+#include "../../../upstream/src/c47/mathematics/bn.c"
+#include "../../../upstream/src/c47/mathematics/fib.c"
+#include "../../../upstream/src/c47/mathematics/erf.c"
+#include "../../../upstream/src/c47/mathematics/erfc.c"
+#include "../../../upstream/src/c47/mathematics/w_inverse.c"
+#include "../../../upstream/src/c47/mathematics/w_negative.c"
+#include "../../../upstream/src/c47/mathematics/w_positive.c"
+#include "../../../upstream/src/c47/mathematics/sinc.c"
+#include "../../../upstream/src/c47/mathematics/sincpi.c"
+#include "../../../upstream/src/c47/mathematics/sqrt1Px2.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it

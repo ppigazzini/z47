@@ -87,6 +87,17 @@ void oracle_fnLog10(uint16_t unusedButMandatoryParameter);
 void oracle_fnLog2(uint16_t unusedButMandatoryParameter);
 void oracle_fnExp(uint16_t unusedButMandatoryParameter);
 void oracle_fnExpM1(uint16_t unusedButMandatoryParameter);
+void oracle_fnBn(uint16_t unusedButMandatoryParameter);
+void oracle_fnBnStar(uint16_t unusedButMandatoryParameter);
+void oracle_fnFib(uint16_t unusedButMandatoryParameter);
+void oracle_fnErf(uint16_t unusedButMandatoryParameter);
+void oracle_fnErfc(uint16_t unusedButMandatoryParameter);
+void oracle_fnWinverse(uint16_t unusedButMandatoryParameter);
+void oracle_fnWnegative(uint16_t unusedButMandatoryParameter);
+void oracle_fnWpositive(uint16_t unusedButMandatoryParameter);
+void oracle_fnSinc(uint16_t unusedButMandatoryParameter);
+void oracle_fnSincpi(uint16_t unusedButMandatoryParameter);
+void oracle_fnSqrt1Px2(uint16_t unusedButMandatoryParameter);
 void oracle_fnAdd(uint16_t unusedButMandatoryParameter);
 void oracle_fnSubtract(uint16_t unusedButMandatoryParameter);
 void oracle_fnMultiply(uint16_t unusedButMandatoryParameter);
@@ -928,6 +939,34 @@ static const predicate_t PREDICATES[] = {
   { "fnLog2",                  fnLog2,              oracle_fnLog2,              0                  },
   { "fnExp",                   fnExp,               oracle_fnExp,               0                  },
   { "fnExpM1",                 fnExpM1,             oracle_fnExpM1,             0                  },
+
+  // The long tail: one small c43 file per wrapper.
+  { "fnBn",                    fnBn,                oracle_fnBn,                0                  },
+  { "fnBnStar",                fnBnStar,            oracle_fnBnStar,            0                  },
+  { "fnFib",                   fnFib,               oracle_fnFib,               0                  },
+  { "fnErf",                   fnErf,               oracle_fnErf,               0                  },
+  { "fnErfc",                  fnErfc,              oracle_fnErfc,              0                  },
+  { "fnSinc",                  fnSinc,              oracle_fnSinc,              0                  },
+  { "fnSincpi",                fnSincpi,            oracle_fnSincpi,            0                  },
+  // THE LAMBERT-W TRIO IS DELIBERATELY NOT DRIVEN HERE, and the reason is a
+  // finding rather than a preference.
+  //
+  // fnWpositive alone, over the 37 shapes, does not finish in 240 seconds. The
+  // other eight wrappers in this block cost 2.3s for 296 cases, and the whole lane
+  // without the trio is 71.7s for 4262 -- so this is not the case count growing,
+  // it is one family that does not terminate in reasonable time on at least one
+  // register shape.
+  //
+  // c43's own corpus has w_positive.txt, w_negative.txt and w_inverse.txt and runs
+  // them in seconds, so the code is fast on the inputs it was written against. What
+  // it has never been given is an infinity, a NaN, a 30-digit long integer or a
+  // matrix -- which is exactly what an equivalence-partitioned shape table feeds
+  // every wrapper, and exactly what a hand-picked corpus does not.
+  //
+  // Both sides run here, so this does not yet say whether z47, c43 or both are
+  // slow. Driving it needs that attribution and a per-case time bound first; a lane
+  // nobody will wait for is not a lane.
+  { "fnSqrt1Px2",              fnSqrt1Px2,          oracle_fnSqrt1Px2,          0                  },
 
   // Vector and complex families. These are the ones the unit lane could never
   // host: they dispatch into the matrix and complex leaves, which that lane's
