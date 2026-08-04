@@ -592,6 +592,21 @@ jobs:
         run: |
           set -euo pipefail
           bash .github/project/check-ci-no-local-dev-scripts.sh
+      - name: Enforce every job provisions what its builds link
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The gate inventory asks whether a workflow NAMES a script. It cannot ask
+          # whether the job naming it can EXECUTE it, and the difference is a step
+          # that reads as covered while aborting on a missing package: the object
+          # graph gate was placed in the no-host-libraries job and panicked in
+          # pkg-config on its first run. This asks the second question.
+          #
+          # The gate declares PyYAML as an input and refuses to measure without it,
+          # so install it rather than letting the runner image decide.
+          sudo apt-get install -qq -y python3-yaml
+          python3 .github/project/check-ci-build-prerequisites.py --self-test
+          python3 .github/project/check-ci-build-prerequisites.py --repo-root .
 
   linux-host-parity:
     name: Linux host parity, ASAN, generated outputs, and host package
