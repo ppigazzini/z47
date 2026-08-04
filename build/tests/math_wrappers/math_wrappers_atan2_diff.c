@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../../../upstream/src/c47/c47.h"
+#include "../common/harness_resource_budget.h"
 
 typedef enum {
   INPUT_TEXT,
@@ -45,7 +46,7 @@ static const atan2Case_t atan2Cases[] = {
 };
 
 static void initRuntime(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("math-wrappers atan2");
   c47MemInBlocks = 0;
   gmpMemInBytes = 0;
   fnReset(CONFIRMED);

@@ -33,6 +33,7 @@
 // a testSuite case, and c43's testSuite is the oracle and is never extended.
 
 #include "../../../upstream/src/c47/c47.h"
+#include "../common/harness_resource_budget.h"
 
 // Exported Zig workers under test (math_matrix_eigen_owned.zig). The matrices
 // are interleaved-complex, row-major: element (i,j) real at [(i*size+j)*2],
@@ -44,7 +45,7 @@ void dropNoise(real_t *eig, uint16_t size, uint16_t dig);
 void QR_decomposition_householder(const real_t *mat, uint16_t size, real_t *q, real_t *r, realContext_t *realContext);
 
 static void initRuntime(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("math-wrappers eigen");
   c47MemInBlocks = 0;
   gmpMemInBytes = 0;
   fnReset(CONFIRMED);

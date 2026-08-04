@@ -46,6 +46,7 @@
 // the SAME calculator this lane does. Extracted verbatim: the
 // committed golden is the byte output of that state.
 #include "calc_state_fixture.h"
+#include "../common/harness_resource_budget.h"
 
 // Drive the REAL C text-section serialization directly (the namespaced legacy
 // entrypoints). The Zig host io_flow path is currently a stub on host, and the
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]) {
   const char *goldenPath = argv[1];
   bool writeGolden = (argc >= 3 && strcmp(argv[2], "--write-golden") == 0);
 
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("calc-state save/load roundtrip");
 
   static unsigned char save1[MAX_SAVE];
   static unsigned char save2[MAX_SAVE];

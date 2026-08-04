@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../common/harness_resource_budget.h"
 
 // Screen/GUI globals the core references; normally testSuite.c's. Headless here.
 GtkWidget      *screen;
@@ -773,7 +774,7 @@ static int runRegistersEntryPointDifferential(void) {
 }
 
 int main(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("register-metadata parity");
 
   runReservedVariableTableDifferential();
   runAccessorDifferential();

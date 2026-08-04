@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../common/harness_resource_budget.h"
 
 // The 6 screen/keyboard globals testSuite.c normally provides; this harness
 // replaces testSuite.c, so it must define them itself. Mirrors
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
   // install the GMP allocators, reset, load the configuration defaults fnReset
   // does not, and allocate the LCD framebuffer any render path touches. The
   // restore path refreshes the screen, so the framebuffer is not optional.
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("calc-state load");
   fnReset(CONFIRMED);
   resetOtherConfigurationStuff(true);
   extern uint8_t *lcd_buffer;

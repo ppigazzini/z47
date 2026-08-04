@@ -131,6 +131,10 @@ static real34_t fake_const34_zero_value;
 static real34_t fake_const34_86400_value;
 const real_t *const_NaN = &fake_const_nan_value;
 uint8_t lastErrorCode = 0;
+
+// c43 keeps this running total in its GMP allocator, and a lane that installs a
+// resource budget maintains it the same way.
+size_t gmpMemInBytes = 0;
 static char errorMessage__stg[ERROR_MESSAGE_LENGTH];
 char *errorMessage = errorMessage__stg;
 static char tmpString__stg[ERROR_MESSAGE_LENGTH];
