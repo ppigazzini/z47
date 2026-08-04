@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "math_wrappers_test_runtime.h"
+#include "../common/harness_resource_budget.h"
 
 void fnMin(uint16_t unusedButMandatoryParameter);
 void fnMax(uint16_t unusedButMandatoryParameter);
@@ -3040,6 +3041,7 @@ static void configureDivideComplexMatrixComplexMatrix(void) {
 }
 
 int main(void) {
+  harnessInstallResourceBudget("math-command-wrappers unit");
   int failures = 0;
 
   failures += runCase("fnMin", oracle_fnMin, fnMin, 0, false, NULL);

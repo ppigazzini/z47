@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../../../upstream/src/c47/c47.h"
+#include "../common/harness_resource_budget.h"
 
 // THE 1071-DIGIT IMPLEMENTATION IS NOT DRIVEN HERE, AND CANNOT BE.
 //
@@ -58,7 +59,7 @@ static const atanCase_t atanCases[] = {
 };
 
 static void initRuntime(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("math-wrappers atan");
   c47MemInBlocks = 0;
   gmpMemInBytes = 0;
   fnReset(CONFIRMED);

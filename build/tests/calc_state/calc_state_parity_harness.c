@@ -47,6 +47,7 @@
 // The deterministic fixture, shared with save_load_roundtrip_harness.c so the two
 // calc-state lanes serialize the same calculator.
 #include "calc_state_fixture.h"
+#include "../common/harness_resource_budget.h"
 
 // ---------------------------------------------------------------------------
 // The two implementations. The unprefixed names are the Zig owner's exports,
@@ -443,7 +444,7 @@ static int runLoadPolicyDifferential(void) {
 }
 
 int main(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("calc-state parity");
 
   runParserFamilyDifferential();
   runDataFileSaveDifferential();

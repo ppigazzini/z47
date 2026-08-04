@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../common/harness_resource_budget.h"
 
 // The 6 screen/keyboard globals testSuite.c normally provides; this harness
 // replaces testSuite.c, so it must define them itself (the GTK/HAL surface is
@@ -64,7 +65,7 @@ int main(int argc, char **argv) {
   // Startup init, matching the sim/testSuite (see keyboard_entry_harness.c):
   // install the GMP allocators, reset, load the configuration defaults that
   // fnReset does not, and allocate the LCD framebuffer any render path touches.
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("pgm-run");
   fnReset(CONFIRMED);
   resetOtherConfigurationStuff(true);
   extern uint8_t *lcd_buffer;

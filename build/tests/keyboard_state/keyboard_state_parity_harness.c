@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../common/harness_resource_budget.h"
 
 // Screen/GUI globals the core references; normally testSuite.c's. Headless here.
 GtkWidget      *screen;
@@ -565,7 +566,7 @@ static int runKeyboardLayoutDifferential(void) {
 }
 
 int main(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("keyboard-state parity");
 
   // Bind the core's host hooks to the same shell functions c43's keyboard.c
   // calls directly, so both implementations have the same observable effect.

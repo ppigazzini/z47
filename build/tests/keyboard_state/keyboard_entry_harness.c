@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../common/harness_resource_budget.h"
 
 // The 6 screen/keyboard globals testSuite.c normally provides; this harness
 // replaces testSuite.c, so it must define them itself (the GTK/HAL surface is
@@ -101,7 +102,7 @@ int main(void) {
   // The number-input path commits via the calc memory allocator; without this
   // the NIM number silently fails to materialise in X (the GMP allocators must
   // be installed exactly as the sim/testSuite do at startup).
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("keyboard entry");
   fnReset(CONFIRMED);
   // fnReset does NOT install the configuration defaults (Input_Default,
   // displayFormat, roundingMode, ...); the sim does this at startup. Without it

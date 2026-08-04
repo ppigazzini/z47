@@ -32,6 +32,11 @@
 // THE BYTE CEILING IS THE PORTABLE HALF. The wall-clock half needs POSIX signals
 // and compiles to nothing on Windows, where a hung case still hangs. Say so
 // rather than letting the Windows lane read as equally protected.
+//
+// THE BYTE CEILING ALSO NEEDS NOTHING FROM THE LANE. Installing it is the whole
+// wiring. The wall-clock budget is armed by harnessBudgetSetCase, so a lane that
+// does not name its cases gets the ceiling and not the clock -- and its breach
+// message says which lane rather than which case, because that is all it knows.
 
 #ifndef HARNESS_RESOURCE_BUDGET_H
 #define HARNESS_RESOURCE_BUDGET_H
@@ -71,7 +76,7 @@
 extern size_t gmpMemInBytes;
 
 static const char *harnessBudgetLane = "harness";
-static char        harnessBudgetCase[192] = "<before the first case>";
+static char        harnessBudgetCase[192] = "<this lane does not name its cases>";
 static size_t      harnessGmpLiveBytes;
 static size_t      harnessGmpPeakBytes;
 

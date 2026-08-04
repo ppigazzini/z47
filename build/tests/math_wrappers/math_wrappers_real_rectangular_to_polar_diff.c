@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include "../../../upstream/src/c47/c47.h"
+#include "../common/harness_resource_budget.h"
 
 typedef enum {
   INPUT_TEXT,
@@ -41,7 +42,7 @@ static const realRectangularToPolarCase_t realRectangularToPolarCases[] = {
 };
 
 static void initRuntime(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("math-wrappers realRectangularToPolar");
   c47MemInBlocks = 0;
   gmpMemInBytes = 0;
   fnReset(CONFIRMED);

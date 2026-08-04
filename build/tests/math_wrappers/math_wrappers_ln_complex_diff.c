@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include "../../../upstream/src/c47/c47.h"
+#include "../common/harness_resource_budget.h"
 
 void z47_math_wrappers_owned_lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
 void lnComplex(const real_t *real, const real_t *imag, real_t *lnReal, real_t *lnImag, realContext_t *realContext);
@@ -27,7 +28,7 @@ static const lnComplexCase_t lnComplexCases[] = {
 };
 
 static void initRuntime(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("math-wrappers lnComplex");
   c47MemInBlocks = 0;
   gmpMemInBytes = 0;
   fnReset(CONFIRMED);

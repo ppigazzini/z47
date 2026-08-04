@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../../../upstream/src/c47/c47.h"
+#include "../common/harness_resource_budget.h"
 
 typedef enum {
   CTX_39,
@@ -52,7 +53,7 @@ static realContext_t *selectContext(contextKind_t contextKind) {
 }
 
 static void initRuntime(void) {
-  mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+  harnessInstallResourceBudget("math-wrappers circular trig");
   c47MemInBlocks = 0;
   gmpMemInBytes = 0;
   fnReset(CONFIRMED);
