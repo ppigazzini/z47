@@ -223,6 +223,21 @@ pub export fn realCompareGreaterThan(a: *const real_t, b: *const real_t) callcon
     _ = decNumberSubtract(&d, a, b, &ctxtReal39);
     return (d.bits & 0x80) == 0 and !diffIsZero(&d); // a - b > 0
 }
+// comparisonReals.c builds these from a sign-bit test on decNumberCompare's
+// result, so a NaN operand makes GreaterEqual answer TRUE and LessEqual FALSE.
+// The owners call the real ones now instead of re-deriving them from LessThan and
+// Equal, which got exactly those two cases backwards; the shims mirror the same
+// shape over this lane's subtract-based comparison.
+pub export fn realCompareGreaterEqual(a: *const real_t, b: *const real_t) callconv(.c) bool {
+    var d: real_t = undefined;
+    _ = decNumberSubtract(&d, a, b, &ctxtReal39);
+    return (d.bits & 0x80) == 0 or diffIsZero(&d);
+}
+pub export fn realCompareLessEqual(a: *const real_t, b: *const real_t) callconv(.c) bool {
+    var d: real_t = undefined;
+    _ = decNumberSubtract(&d, a, b, &ctxtReal39);
+    return (d.bits & 0x80) != 0 or diffIsZero(&d);
+}
 pub export fn realIsAnInteger(value: *const real_t) callconv(.c) bool {
     var integral: real_t = undefined;
     _ = decNumberToIntegralValue(&integral, value, &ctxtReal39);

@@ -260,14 +260,12 @@ pub inline fn toIntegralValue(source: *const real_t, destination: *real_t, mode:
 pub inline fn linearInterpolate(a: *const real_t, b: *const real_t, p: *const real_t, res: *real_t) void {
     linpol(a, b, p, res);
 }
-pub inline fn realCompareLessEqual(lhs: *const real_t, rhs: *const real_t) bool {
-    return realCompareLessThan(lhs, rhs) or realCompareEqual(lhs, rhs);
-}
-pub inline fn realCompareGreaterEqual(lhs: *const real_t, rhs: *const real_t) bool {
-    // Faithful to C realCompareGreaterEqual = isPositive || isZero (FALSE for NaN).
-    // `!realCompareLessThan` would wrongly return true for NaN operands.
-    return realCompareGreaterThan(lhs, rhs) or realCompareEqual(lhs, rhs);
-}
+// comparisonReals.c's own functions, not re-derived from LessThan and Equal.
+// Each is a sign-bit test on the result of decNumberCompare, so a NaN operand
+// makes GreaterEqual and GreaterThan answer TRUE and LessEqual and LessThan
+// answer FALSE -- the opposite of what rebuilding them from Equal produces.
+pub extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realCompareGreaterEqual(number1: *const real_t, number2: *const real_t) bool;
 
 pub fn const0() *const real_t {
     return z47_math_wrappers_const_0();

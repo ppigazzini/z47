@@ -3130,6 +3130,24 @@ bool_t realCompareLessThan(const real_t *number1, const real_t *number2) {
   return fakeRealValue(number1) < fakeRealValue(number2);
 }
 
+// comparisonReals.c derives these from a sign-bit test on decNumberCompare's
+// result, so a NaN operand makes GreaterEqual and GreaterThan answer TRUE and
+// LessEqual FALSE. The owners call the real ones now rather than re-deriving them
+// from LessThan and Equal, which had those cases backwards and sent a NaN into an
+// unbounded loop. This lane models real_t as a small integer and has no NaN, so
+// the shims are the ordinary orderings.
+bool_t realCompareGreaterEqual(const real_t *number1, const real_t *number2) {
+  return fakeRealValue(number1) >= fakeRealValue(number2);
+}
+
+bool_t realCompareGreaterThan(const real_t *number1, const real_t *number2) {
+  return fakeRealValue(number1) > fakeRealValue(number2);
+}
+
+bool_t realCompareLessEqual(const real_t *number1, const real_t *number2) {
+  return fakeRealValue(number1) <= fakeRealValue(number2);
+}
+
 bool_t realIsAnInteger(const real_t *x) {
   return !realIsSpecial(x);
 }

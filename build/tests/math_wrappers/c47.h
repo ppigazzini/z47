@@ -352,9 +352,15 @@ extern uint64_t systemFlags1;
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
 #define realDivideRemainder(dividend, divisor, remainder, ctxt) WP34S_Mod((dividend), (divisor), (remainder), (ctxt))
 #define realCompareAbsLessThan(number1, number2) (!realCompareAbsEqual((number1), (number2)) && !realCompareAbsGreaterThan((number1), (number2)))
-#define realCompareGreaterEqual(number1, number2) (!realCompareLessThan((number1), (number2)))
-#define realCompareLessEqual(number1, number2) (!realCompareLessThan((number2), (number1)))
-#define realCompareGreaterThan(number1, number2) realCompareLessThan((number2), (number1))
+// NOT macros. comparisonReals.c defines all three as FUNCTIONS built from a
+// sign-bit test on decNumberCompare's result, and rebuilding them out of
+// realCompareLessThan gets the NaN cases backwards -- which is how a NaN reached
+// an unbounded loop in the Lambert-W wrapper. A #define of a symbol that is a
+// function upstream also stops the owner's real call ever being linked, so the
+// lane would compare a shape the product does not have.
+bool_t realCompareGreaterEqual(const real_t *number1, const real_t *number2);
+bool_t realCompareLessEqual(const real_t *number1, const real_t *number2);
+bool_t realCompareGreaterThan(const real_t *number1, const real_t *number2);
 #define WP34S_BigMod(x, y, res, real_context) WP34S_Mod((x), (y), (res), (real_context))
 #define EXTRA_INFO_MESSAGE(function, msg) do { moreInfoOnError((function), (msg), NULL, NULL); } while(0)
 #define real34Copy(source, destination) (*(destination) = *(source))

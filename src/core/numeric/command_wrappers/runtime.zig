@@ -757,6 +757,15 @@ pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) b
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;
+/// comparisonReals.c:215-241. Each is `realCompare` (decNumberCompare) followed by
+/// a SIGN-BIT test on the result, and that is why a NaN operand does not answer
+/// what intuition expects: comparing with a NaN yields a NaN, whose sign bit is
+/// clear, so `realIsPositive` of it is TRUE. c43 therefore answers TRUE from
+/// GreaterEqual and GreaterThan on a NaN, and FALSE from LessEqual and LessThan.
+/// Re-deriving these from LessThan and Equal gets the NaN cases backwards.
+pub extern fn realCompareGreaterEqual(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realCompareGreaterThan(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realCompareLessEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realIsAnInteger(x: *const real_t) bool;
 pub extern fn real34IsAnInteger(value: *const real34_t) bool;
 pub extern fn divRealComplex(

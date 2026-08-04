@@ -1,15 +1,5 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 
-fn realCompareGreaterEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    // Faithful to C realCompareGreaterEqual = isPositive(lhs-rhs) || isZero (FALSE for NaN).
-    // realCompareLessThan(rhs, lhs) == lhs>rhs strictly; OR Equal gives >=, false for NaN.
-    return runtime.realCompareLessThan(rhs, lhs) or runtime.realCompareEqual(lhs, rhs);
-}
-
-fn realCompareLessEqual(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
-    return !runtime.realCompareLessThan(rhs, lhs);
-}
-
 fn minusOneOverE() runtime.real_t {
     var value = runtime.z47_math_wrappers_const_1oneE().*;
     runtime.realChangeSign(&value);
@@ -51,7 +41,7 @@ fn wPosReal() callconv(.c) void {
         return;
     }
 
-    if (realCompareGreaterEqual(&x_value, &limit)) {
+    if (runtime.realCompareGreaterEqual(&x_value, &limit)) {
         runtime.WP34S_LambertW(&x_value, &result, false, &runtime.ctxtReal39);
         runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
     } else if (runtime.getSystemFlag(runtime.FLAG_CPXRES)) {
@@ -86,7 +76,7 @@ fn wNegReal() callconv(.c) void {
         return;
     }
 
-    if (realCompareGreaterEqual(&x_value, &limit) and realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_0())) {
+    if (runtime.realCompareGreaterEqual(&x_value, &limit) and runtime.realCompareLessEqual(&x_value, runtime.z47_math_wrappers_const_0())) {
         runtime.WP34S_LambertW(&x_value, &result, true, &runtime.ctxtReal39);
         runtime.convertRealToResultRegister(&result, runtime.REGISTER_X, runtime.amNone);
     } else {
@@ -106,7 +96,7 @@ fn wNegCplx() callconv(.c) void {
     }
 
     if (runtime.realIsZero(&imag_value)) {
-        if (realCompareGreaterEqual(&real_value, &limit) and realCompareLessEqual(&real_value, runtime.z47_math_wrappers_const_0())) {
+        if (runtime.realCompareGreaterEqual(&real_value, &limit) and runtime.realCompareLessEqual(&real_value, runtime.z47_math_wrappers_const_0())) {
             runtime.WP34S_LambertW(&real_value, &result, true, &runtime.ctxtReal39);
             runtime.convertComplexToResultRegister(&result, runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X);
         } else {
