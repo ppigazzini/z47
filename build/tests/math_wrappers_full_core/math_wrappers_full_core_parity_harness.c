@@ -468,6 +468,39 @@ static void seedLongInteger(void) {
   longIntegerFree(li);
 }
 
+// The magnitude of a long integer AS AN OPERAND, which is a different property
+// from its type and from its sign. Every long integer fixture above is the same
+// 30-digit value, chosen to discriminate a data type; nothing asked what it means
+// to a wrapper that reads it as an exponent or multiplies it by itself.
+//
+// Both ends of the range matter. A small exponent lets the exponentiation
+// wrappers COMPUTE, so their answers are compared rather than their refusals.
+// A value near MAX_LONG_INTEGER_SIZE_IN_BITS is the only shape that reaches the
+// overflow guards at all: 10^1002 is 3329 bits, which is over the add and
+// subtract rule's one bit of headroom on its own, and squaring or multiplying it
+// by itself is twice over the ceiling.
+static void seedLongIntegerSmall(void) {
+  longInteger_t li;
+  longIntegerInit(li);
+  stringToLongInteger("7", 10, li);
+  convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+  longIntegerFree(li);
+}
+
+static void seedLongIntegerWide(void) {
+  char digits[1004];
+  longInteger_t li;
+
+  digits[0] = '1';
+  memset(digits + 1, '0', 1002);
+  digits[1003] = 0;
+
+  longIntegerInit(li);
+  stringToLongInteger(digits, 10, li);
+  convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+  longIntegerFree(li);
+}
+
 static void seedString(void) {
   const char *s = "register string";
   reallocateRegister(REGISTER_X, dtString, TO_BLOCKS((int)strlen(s) + 1), amNone);
@@ -727,6 +760,8 @@ static const fixture_t FIXTURES[] = {
 
   // Recovered from the unit lane's orphaned fixtures.
   { "longIntegerZero",        seedLongIntegerZero        },
+  { "longIntegerSmall",       seedLongIntegerSmall       },
+  { "longIntegerWide",        seedLongIntegerWide        },
   { "complexPolar",           seedComplexPolar           },
   { "matrixWithAngle",        seedMatrixWithAngle        },
   { "complexMatrixWithAngle", seedComplexMatrixWithAngle },
@@ -865,6 +900,14 @@ static const partitionClass_t PARTITION_PROPERTIES[] = {
 
   // A zero long integer is its own class: the integer paths test for it directly.
   { "integerZero", "longIntegerZero", "longIntegerZero" },
+
+  // The magnitude of a long integer read as an operand. The overflow guards in
+  // the integer arithmetic are reachable from no other class: they compare the
+  // operand WIDTH against MAX_LONG_INTEGER_SIZE_IN_BITS, and a 30-digit value is
+  // 100 bits.
+  { "integerMagnitude", "small",       "longIntegerSmall" },
+  { "integerMagnitude", "typical",     "longInteger"      },
+  { "integerMagnitude", "nearOverflow", "longIntegerWide" },
 
   { "spcres", "set",   "realPositive"          },
   { "spcres", "clear", "complexMatrixImagZero" },
@@ -1081,6 +1124,16 @@ static void secondRealMinusInfinity(void) { reallocateRegister(REGISTER_Y, dtRea
 static void secondLongIntegerNegative(void) { longInteger_t li; longIntegerInit(li); stringToLongInteger("-98765432109876543210", 10, li);
                                        convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
                                        convertLongIntegerToLongIntegerRegister(li, REGISTER_Z); longIntegerFree(li); }
+static void secondLongIntegerWide(void) { char digits[1004]; longInteger_t li;
+                                       digits[0] = '1'; memset(digits + 1, '0', 1002); digits[1003] = 0;
+                                       longIntegerInit(li); stringToLongInteger(digits, 10, li);
+                                       convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
+                                       convertLongIntegerToLongIntegerRegister(li, REGISTER_Z); longIntegerFree(li); }
+static void secondLongIntegerWideNegative(void) { char digits[1005]; longInteger_t li;
+                                       digits[0] = '-'; digits[1] = '1'; memset(digits + 2, '0', 1002); digits[1004] = 0;
+                                       longIntegerInit(li); stringToLongInteger(digits, 10, li);
+                                       convertLongIntegerToLongIntegerRegister(li, REGISTER_Y);
+                                       convertLongIntegerToLongIntegerRegister(li, REGISTER_Z); longIntegerFree(li); }
 static void secondShortIntegerNegative(void) { convertUInt64ToShortIntegerRegister(1, 0x1FULL, 16, REGISTER_Y);
                                        convertUInt64ToShortIntegerRegister(1, 0x1FULL, 16, REGISTER_Z); }
 static void secondMatrix2x3(void)    { initMatrixRegister(REGISTER_Y, 2, 3, false); for(int e = 0; e < 6; ++e) { int32ToReal34(e + 1, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_Y) + e); }
@@ -1142,6 +1195,12 @@ static const pair_t PAIRS[] = {
   { "real1234:-infinity",     seedRealPositive,          secondRealMinusInfinity   },
   { "longIntNegative:real7",  seedLongIntegerNegative,   secondReal7               },
   { "longIntZero:real7",      seedLongIntegerZero,       secondReal7               },
+  // Both operands at the width ceiling: the only pair that reaches the overflow
+  // guard in the long integer add, subtract and multiply.
+  { "longIntWide:longIntWide", seedLongIntegerWide,      secondLongIntegerWide     },
+  // Opposite signs at the ceiling: subtract's rule permits same-sign operands of
+  // any width, so this is the only shape that reaches its refusal.
+  { "longIntWide:-longIntWide", seedLongIntegerWide,     secondLongIntegerWideNegative },
   { "real1234:longIntNeg",    seedRealPositive,          secondLongIntegerNegative },
   { "shortIntNegative:real7", seedShortIntegerNegative,  secondReal7               },
   { "real1234:shortIntNeg",   seedRealPositive,          secondShortIntegerNegative },
