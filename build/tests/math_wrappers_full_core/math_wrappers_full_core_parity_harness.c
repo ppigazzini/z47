@@ -948,24 +948,29 @@ static const predicate_t PREDICATES[] = {
   { "fnErfc",                  fnErfc,              oracle_fnErfc,              0                  },
   { "fnSinc",                  fnSinc,              oracle_fnSinc,              0                  },
   { "fnSincpi",                fnSincpi,            oracle_fnSincpi,            0                  },
-  // THE LAMBERT-W TRIO IS DELIBERATELY NOT DRIVEN HERE, and the reason is a
-  // finding rather than a preference.
+  // THE LAMBERT-W TRIO IS DRIVEN, MINUS SIX (wrapper, shape) PAIRS, and what those
+  // six cost to establish is worth the paragraph.
   //
-  // fnWpositive alone, over the 37 shapes, does not finish in 240 seconds. The
-  // other eight wrappers in this block cost 2.3s for 296 cases, and the whole lane
-  // without the trio is 71.7s for 4262 -- so this is not the case count growing,
-  // it is one family that does not terminate in reasonable time on at least one
-  // register shape.
+  // Adding the trio made the lane stop finishing: fnWpositive alone, over the 37
+  // shapes, did not return in 240 seconds, while the other eight wrappers in this
+  // block cost 2.3s for 296 cases. Two separate causes were underneath it.
+  //
+  // The first is upstream's. WP34S_ComplexLambertW is a `while(1)` whose only exit
+  // is an absolute-error test between successive iterates; fed an infinity the
+  // iteration produces NaNs, the test is never satisfied, and BOTH sides spin --
+  // confirmed by running the oracle alone and watching it fail to return. Those are
+  // the six pairs in NON_TERMINATING below, skipped by name.
+  //
+  // The second was ours, and only the shape table found it: four owners had rebuilt
+  // realCompareGreaterEqual out of realCompareLessThan and realCompareEqual, which
+  // inverts the answer for NaN, and the inverted answer sent a NaN down that same
+  // non-terminating path. Fixed at the owners; they call c43's comparisons now.
   //
   // c43's own corpus has w_positive.txt, w_negative.txt and w_inverse.txt and runs
-  // them in seconds, so the code is fast on the inputs it was written against. What
-  // it has never been given is an infinity, a NaN, a 30-digit long integer or a
-  // matrix -- which is exactly what an equivalence-partitioned shape table feeds
-  // every wrapper, and exactly what a hand-picked corpus does not.
-  //
-  // Both sides run here, so this does not yet say whether z47, c43 or both are
-  // slow. Driving it needs that attribution and a per-case time bound first; a lane
-  // nobody will wait for is not a lane.
+  // them in seconds, so the code was always fast on the inputs it was written
+  // against. What it had never been given is an infinity, a NaN, a 30-digit long
+  // integer or a matrix -- which is exactly what an equivalence-partitioned shape
+  // table feeds every wrapper, and exactly what a hand-picked corpus does not.
   { "fnWinverse",              fnWinverse,          oracle_fnWinverse,          0                  },
   { "fnWnegative",             fnWnegative,         oracle_fnWnegative,         0                  },
   { "fnWpositive",             fnWpositive,         oracle_fnWpositive,         0                  },
