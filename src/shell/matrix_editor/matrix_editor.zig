@@ -260,6 +260,18 @@ pub export var scrollColumn: u16 = 0;
 pub export var tmpRow: u16 = 0;
 pub export var matrixIndex: u16 = INVALID_VARIABLE;
 
+/// A reshape can leave scrollColumn past the last column of the new shape. Both
+/// display paths then derive their column count as `cols - sCol` on unsigned, which
+/// wraps to an enormous width. Bound it to the shape the matrix actually has, and
+/// reset the stored offset so the next redraw starts from the left.
+fn boundScrollColumn(forEditor: bool, sCol: u16, cols: u16) u16 {
+    if (forEditor and sCol >= cols) {
+        scrollColumn = 0;
+        return 0;
+    }
+    return sCol;
+}
+
 // ===========================================================================
 // External globals (c47 owns these).
 // ===========================================================================
@@ -566,17 +578,16 @@ fn setRegisterAsInt(asArrayPointer: bool_t, toStoreIn: i16, reg: calcRegister_t)
     __gmpz_clear(&tmp_lgInt);
 }
 
-inline fn getIRegisterAsIntL(asArrayPointer: bool_t) i16 {
-    return getRegisterAsInt(asArrayPointer, REGISTER_I);
-}
-inline fn getJRegisterAsIntL(asArrayPointer: bool_t) i16 {
-    return getRegisterAsInt(asArrayPointer, REGISTER_J);
-}
+// getRegisterAsInt / setRegisterAsInt above address the USER's I and J. Nothing in
+// this file may call them except getIRegisterAsInt, getJRegisterAsInt,
+// setIRegisterAsInt and setJRegisterAsInt below, which answer the shadow pair while
+// the editor is open. Reading the raw registers there reports the user's I and J,
+// which are 0 with the editor open -- one less than that, as an array pointer.
 
 // _resetCursorPos (static in matrixEditor.c). Used by the init-aim helpers.
 fn resetCursorPos() void {
     frontier_screen.clearRegisterLine(NIM_REGISTER_LINE, false, true);
-    abi.fmtBufZ(tmpString[0..2560], "{d};{d}= ", .{ @as(i32, getRegisterAsInt(false, REGISTER_I)), @as(i32, getRegisterAsInt(false, REGISTER_J)) });
+    abi.fmtBufZ(tmpString[0..2560], "{d};{d}= ", .{ @as(i32, getIRegisterAsInt(false)), @as(i32, getJRegisterAsInt(false)) });
     xCursor = frontier_screen.showString(tmpString, &numericFont, 0, Y_POSITION_OF_NIM_LINE, 0, 1, 1) + 1;
     yCursor = Y_POSITION_OF_NIM_LINE;
     cursorEnabled = 1;
@@ -692,6 +703,8 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
         rows = 1;
     }
 
+    sCol = boundScrollColumn(forEditor, sCol, @intCast(cols));
+
     if (forEditor or rows > 1) toDisplay = true;
     _ = strcpy(errorMessage, "[");
 
@@ -701,8 +714,8 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, to
         maxCols = @intCast(cols - @as(c_int, sCol));
     }
 
-    const matSelRow: i16 = if (colVector) getJRegisterAsIntL(true) else getIRegisterAsIntL(true);
-    const matSelCol: i16 = if (colVector) getIRegisterAsIntL(true) else getJRegisterAsIntL(true);
+    const matSelRow: i16 = if (colVector) getJRegisterAsInt(true) else getIRegisterAsInt(true);
+    const matSelCol: i16 = if (colVector) getIRegisterAsInt(true) else getJRegisterAsInt(true);
 
     var vm: videoMode_t = 0;
     var digits: i16 = 0;
@@ -1129,11 +1142,13 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
         rows = 1;
     }
 
+    sCol = boundScrollColumn(forEditor, sCol, @intCast(cols));
+
     var maxCols: c_int = if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols;
     const maxRows: c_int = if (rows > MATRIX_MAX_ROWS) MATRIX_MAX_ROWS else rows;
 
-    const matSelRow: i16 = if (colVector) getJRegisterAsIntL(true) else getIRegisterAsIntL(true);
-    const matSelCol: i16 = if (colVector) getIRegisterAsIntL(true) else getJRegisterAsIntL(true);
+    const matSelRow: i16 = if (colVector) getJRegisterAsInt(true) else getIRegisterAsInt(true);
+    const matSelCol: i16 = if (colVector) getIRegisterAsInt(true) else getJRegisterAsInt(true);
 
     var vm: videoMode_t = 0;
     if (maxCols + @as(c_int, sCol) >= cols) {
@@ -1571,31 +1586,31 @@ pub fn z47_frontier_matrix_reload_open_matrix_from_register() void {
 
 // callByIndexedMatrix dispatch (matrixEditor.c static). The inc/dec real/complex
 // helpers are file-local.
-fn incIReal(matrix: *real34Matrix_t) bool_t {
-    setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_I) + 1, REGISTER_I);
+fn incIReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    setIRegisterAsInt(true, getIRegisterAsInt(true) + 1);
     _ = wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns);
     return false;
 }
-fn decIReal(matrix: *real34Matrix_t) bool_t {
-    setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_I) - 1, REGISTER_I);
+fn decIReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    setIRegisterAsInt(true, getIRegisterAsInt(true) - 1);
     _ = wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns);
     return false;
 }
-fn incJReal(matrix: *real34Matrix_t) bool_t {
-    setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_J) + 1, REGISTER_J);
+fn incJReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
     if (wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns)) {
         insRowRealMatrix(matrix, matrix.header.matrixRows, addFlag); // addFlag: append at the true end (rows is swapped to 1 for colVector)
         return true;
     }
     return false;
 }
-fn decJReal(matrix: *real34Matrix_t) bool_t {
-    setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_J) - 1, REGISTER_J);
+fn decJReal(matrix: *real34Matrix_t) callconv(.c) bool {
+    setJRegisterAsInt(true, getJRegisterAsInt(true) - 1);
     _ = wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns);
     return false;
 }
-fn incJComplex(matrix: *complex34Matrix_t) bool_t {
-    setRegisterAsInt(true, getRegisterAsInt(true, REGISTER_J) + 1, REGISTER_J);
+fn incJComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
+    setJRegisterAsInt(true, getJRegisterAsInt(true) + 1);
     if (wrapIJImpl(matrix.header.matrixRows, matrix.header.matrixColumns)) {
         insRowComplexMatrix(matrix, matrix.header.matrixRows, addFlag); // addFlag: append at the true end (rows is swapped to 1 for colVector)
         return true;
@@ -1603,21 +1618,18 @@ fn incJComplex(matrix: *complex34Matrix_t) bool_t {
     return false;
 }
 
-// callByIndexedMatrix: dispatch on the open matrix's data type.
-fn callByIndexedMatrix(realFn: *const fn (*real34Matrix_t) bool_t, complexFn: *const fn (*complex34Matrix_t) bool_t) void {
-    if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-        _ = realFn(&openMatrixMIMPointer.realMatrix);
-    } else {
-        _ = complexFn(&openMatrixMIMPointer.complexMatrix);
-    }
-}
-fn incIComplex(matrix: *complex34Matrix_t) bool_t {
+// The matrix.c callByIndexedMatrix, not a local stand-in: it reads the INDEXED
+// REGISTER into a matrix of its own, refuses an out-of-range cursor, and writes the
+// result back when the callback reports a change. Walking openMatrixMIMPointer here
+// instead would only work with the editor open, and I+/J+/STOSEQ/RCLSEQ run outside it.
+extern fn callByIndexedMatrix(real_f: ?*const fn (*real34Matrix_t) callconv(.c) bool, complex_f: ?*const fn (*complex34Matrix_t) callconv(.c) bool) void;
+fn incIComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     return incIReal(@ptrCast(matrix));
 }
-fn decIComplex(matrix: *complex34Matrix_t) bool_t {
+fn decIComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     return decIReal(@ptrCast(matrix));
 }
-fn decJComplex(matrix: *complex34Matrix_t) bool_t {
+fn decJComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
     return decJReal(@ptrCast(matrix));
 }
 
@@ -1631,26 +1643,26 @@ pub fn z47_frontier_matrix_inc_dec_j(mode: u16) void {
 
 pub fn z47_frontier_matrix_insert_row(add: bool) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-        insRowRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_I)), add);
+        insRowRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getIRegisterAsInt(true)), add);
     } else {
-        insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getRegisterAsInt(true, REGISTER_I)), add);
+        insRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getIRegisterAsInt(true)), add);
     }
 }
 
 pub fn z47_frontier_matrix_insert_col(add: bool) void {
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-        insColRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_J)), add);
+        insColRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getJRegisterAsInt(true)), add);
     } else {
-        insColComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getRegisterAsInt(true, REGISTER_J)), add);
+        insColComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getJRegisterAsInt(true)), add);
     }
 }
 
 pub fn z47_frontier_matrix_delete_row() void {
     if (openMatrixMIMPointer.header.matrixRows > 1) {
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-            delRowRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_I)));
+            delRowRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getIRegisterAsInt(true)));
         } else {
-            delRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getRegisterAsInt(true, REGISTER_I)));
+            delRowComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getIRegisterAsInt(true)));
         }
     }
 }
@@ -1658,9 +1670,9 @@ pub fn z47_frontier_matrix_delete_row() void {
 pub fn z47_frontier_matrix_delete_col() void {
     if (openMatrixMIMPointer.header.matrixColumns > 1) {
         if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
-            delColRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getRegisterAsInt(true, REGISTER_J)));
+            delColRealMatrix(&openMatrixMIMPointer.realMatrix, @bitCast(getJRegisterAsInt(true)));
         } else {
-            delColComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getRegisterAsInt(true, REGISTER_J)));
+            delColComplexMatrix(&openMatrixMIMPointer.complexMatrix, @bitCast(getJRegisterAsInt(true)));
         }
     }
 }
@@ -1721,8 +1733,8 @@ pub fn z47_frontier_matrix_aim_clear_single_plus_digit() void {
 
 pub fn z47_frontier_matrix_zero_current_element() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
-    const row: i16 = getRegisterAsInt(true, REGISTER_I);
-    const col: i16 = getRegisterAsInt(true, REGISTER_J);
+    const row: i16 = getIRegisterAsInt(true);
+    const col: i16 = getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(c_int, row) * cols + @as(c_int, col));
 
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
@@ -1736,8 +1748,8 @@ pub fn z47_frontier_matrix_zero_current_element() void {
 
 pub fn z47_frontier_matrix_change_sign_current_element() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
-    const row: i16 = getRegisterAsInt(true, REGISTER_I);
-    const col: i16 = getRegisterAsInt(true, REGISTER_J);
+    const row: i16 = getIRegisterAsInt(true);
+    const col: i16 = getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(c_int, row) * cols + @as(c_int, col));
 
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
@@ -1751,8 +1763,8 @@ pub fn z47_frontier_matrix_change_sign_current_element() void {
 
 pub fn z47_frontier_matrix_make_j_element() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
-    const row: i16 = getRegisterAsInt(true, REGISTER_I);
-    const col: i16 = getRegisterAsInt(true, REGISTER_J);
+    const row: i16 = getIRegisterAsInt(true);
+    const col: i16 = getJRegisterAsInt(true);
 
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         var cxma: complex34Matrix_t = undefined;
@@ -1782,8 +1794,8 @@ pub fn z47_frontier_matrix_make_j_element() void {
 
 pub fn z47_frontier_matrix_set_current_to_pi() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
-    const row: i16 = getRegisterAsInt(true, REGISTER_I);
-    const col: i16 = getRegisterAsInt(true, REGISTER_J);
+    const row: i16 = getIRegisterAsInt(true);
+    const col: i16 = getJRegisterAsInt(true);
     const idx: usize = @intCast(@as(c_int, row) * cols + @as(c_int, col));
 
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
@@ -1816,8 +1828,8 @@ pub fn z47_frontier_matrix_open_is_complex() bool {
 }
 
 pub fn z47_frontier_matrix_capture_selected_before() void {
-    const i: i16 = getRegisterAsInt(true, REGISTER_I);
-    const j: i16 = getRegisterAsInt(true, REGISTER_J);
+    const i: i16 = getIRegisterAsInt(true);
+    const j: i16 = getJRegisterAsInt(true);
     saved_is_complex = z47_frontier_matrix_open_is_complex();
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
@@ -1831,8 +1843,8 @@ pub fn z47_frontier_matrix_capture_selected_before() void {
 }
 
 pub fn z47_frontier_matrix_load_selected_into_register_x() void {
-    const i: i16 = getRegisterAsInt(true, REGISTER_I);
-    const j: i16 = getRegisterAsInt(true, REGISTER_J);
+    const i: i16 = getIRegisterAsInt(true);
+    const j: i16 = getJRegisterAsInt(true);
     var re: real34_t = undefined;
     var im: real34_t = undefined;
     const isComplex = z47_frontier_matrix_open_is_complex();
@@ -1868,8 +1880,8 @@ pub fn z47_frontier_matrix_convert_register_x_short_to_real34() void {
 }
 
 pub fn z47_frontier_matrix_apply_register_x_to_selected() bool {
-    const i: i16 = getRegisterAsInt(true, REGISTER_I);
-    const j: i16 = getRegisterAsInt(true, REGISTER_J);
+    const i: i16 = getIRegisterAsInt(true);
+    const j: i16 = getJRegisterAsInt(true);
     const isComplex = z47_frontier_matrix_open_is_complex();
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
@@ -1909,8 +1921,8 @@ pub fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() void 
         return;
     }
 
-    const i: i16 = getRegisterAsInt(true, REGISTER_I);
-    const j: i16 = getRegisterAsInt(true, REGISTER_J);
+    const i: i16 = getIRegisterAsInt(true);
+    const j: i16 = getJRegisterAsInt(true);
 
     if (saved_is_complex) {
         var linkedMatrix: complex34Matrix_t = undefined;
@@ -2037,8 +2049,8 @@ pub fn z47_frontier_matrix_render_editor_body(colVector: bool, rows: i16, cols: 
 
 pub fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
-    const row: i16 = getRegisterAsInt(true, REGISTER_I);
-    const col: i16 = getRegisterAsInt(true, REGISTER_J);
+    const row: i16 = getIRegisterAsInt(true);
+    const col: i16 = getJRegisterAsInt(true);
     var realChanged: bool_t = false;
     const idx: usize = @intCast(@as(c_int, row) * cols + @as(c_int, col));
 
@@ -2118,14 +2130,14 @@ pub fn z47_frontier_matrix_mim_enter_commit_open_matrix() void {
 // ===========================================================================
 fn wrapIJImpl(rows: u16, cols: u16) bool_t {
     const r = matrix_wrap.wrapIJ(
-        getRegisterAsInt(true, REGISTER_I),
-        getRegisterAsInt(true, REGISTER_J),
+        getIRegisterAsInt(true),
+        getJRegisterAsInt(true),
         rows,
         cols,
         getSystemFlag(FLAG_GROW),
     );
-    setRegisterAsInt(true, r.i, REGISTER_I);
-    setRegisterAsInt(true, r.j, REGISTER_J);
+    setIRegisterAsInt(true, r.i);
+    setJRegisterAsInt(true, r.j);
     if (r.wrap_edge) setSystemFlag(FLAG_WRAPEDG) else clearSystemFlag(FLAG_WRAPEDG);
     if (r.wrap_end) setSystemFlag(FLAG_WRAPEND) else clearSystemFlag(FLAG_WRAPEND);
     return r.at_rows;
@@ -2220,11 +2232,8 @@ pub fn matrixModeUndefinedError() void {
     frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }
 
+// No editor-mode guard, as fnIncDecI: J+ and J- walk the INDEXED matrix.
 pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
-    if (!matrixEnsureEditorMode()) {
-        return;
-    }
-
     matrix_nav.incDec(.col, mode);
 }
 

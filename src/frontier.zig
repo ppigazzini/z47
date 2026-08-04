@@ -652,11 +652,10 @@ pub export fn fnSetGrowMode(grow_flag: u16) callconv(.c) void {
     matrix_goto_grow.setGrowMode(grow_flag);
 }
 
+// No editor-mode guard: I+ and I- walk the INDEXED matrix, which is what STOSEQ,
+// RCLSEQ and the I+/J+ keys need outside CM_MIM. callByIndexedMatrix does the
+// refusing, on there being no indexed matrix rather than on the calculator mode.
 pub export fn fnIncDecI(mode: u16) callconv(.c) void {
-    if (!frontier_matrix_editor.matrixEnsureEditorMode()) {
-        return;
-    }
-
     matrix_nav.incDec(.row, mode);
 }
 

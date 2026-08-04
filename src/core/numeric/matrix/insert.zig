@@ -90,8 +90,11 @@ pub export fn insColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16, add:
         while (i < rows) : (i += 1) {
             real34SetZero(&dst[before + i * (cols + 1)]);
         }
+        // j < cols, not cols + 1: the tail runs over the SOURCE columns, which the
+        // destination holds one to the right. Going one further read past the end of
+        // src and wrote over the zeroed column of the next destination row.
         j = before;
-        while (j < @as(usize, cols) + 1) : (j += 1) {
+        while (j < cols) : (j += 1) {
             i = 0;
             while (i < rows) : (i += 1) {
                 real34Copy(&src[j + i * cols], &dst[(j + 1) + i * (cols + 1)]);
@@ -158,8 +161,10 @@ pub export fn insColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16
             real34SetZero(&dst[before + i * (cols + 1)].real);
             real34SetZero(&dst[before + i * (cols + 1)].imag);
         }
+        // j < cols, as in insColRealMatrix: one further read past the end of src and
+        // wrote over the zeroed column of the next destination row.
         j = before;
-        while (j < @as(usize, cols) + 1) : (j += 1) {
+        while (j < cols) : (j += 1) {
             i = 0;
             while (i < rows) : (i += 1) {
                 complex34Copy(&src[j + i * cols], &dst[(j + 1) + i * (cols + 1)]);
