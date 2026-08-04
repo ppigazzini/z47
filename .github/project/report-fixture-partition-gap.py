@@ -148,6 +148,19 @@ REVIEWED: dict[str, str] = {
         " an input the fixtures should vary."
     ),
     "FLAG_QUIET": "Error-message suppression; changes what is displayed, not computed.",
+    "FLAG_OVERFLOW": (
+        "An OUTPUT, and the proof is stronger than the FLAG_ASLIFT one. 15 writes"
+        " across src/core/ and the only reads anywhere are statusBar (display) and"
+        " ONE guard, in convertLongIntegerToShortIntegerRegister"
+        " (shell/register_value_conversions.zig, mirroring"
+        " registerValueConversions.c:114): `if(overflow && !getSystemFlag(FLAG_OVERFLOW))"
+        " setSystemFlag(FLAG_OVERFLOW)`. That is outcome-identical to `if(overflow)"
+        " setSystemFlag(...)` -- setting a set flag changes nothing -- so no fixture"
+        " can discriminate on it however the flag is arranged. Dropping the guard was"
+        " run against 12976 testSuite cases and the full-core lane: both stay green,"
+        " which is what an equivalent mutant looks like. c43's integers.c:409 read is"
+        " inside a `never used` comment block."
+    ),
     "FLAG_WRAPEDG": (
         "The FLAG_ASLIFT verdict in a different owner. Set and cleared by the MATRIX"
         " EDITOR (matrix_nav.zig, matrix_editor.zig, mirroring ui/matrixEditor.c) and"
@@ -192,22 +205,10 @@ COVERED: dict[str, dict[str, object]] = {
 }
 
 # Cannot be discriminated by any fixture over the CURRENT owner set, and the reason
-# is a fact about the port. `evidence` must still name the site that blocks it.
-BLOCKED: dict[str, dict[str, object]] = {
-    "FLAG_OVERFLOW": {
-        "evidence": "src/core/state/runtime/stack_runtime.zig",
-        "needle": "extern fn convertLongIntegerToShortIntegerRegister",
-        "why": (
-            "15 writes and 0 reads across src/core/. c43's only live reader is"
-            " convertLongIntegerToShortIntegerRegister (registerValueConversions.c:114);"
-            " integers.c:409 is inside a `never used` comment block and statusBar.c is"
-            " display. z47 has not ported that conversion -- it is `extern fn` in"
-            " stack_runtime.zig and stack_runtime_store.zig -- so both sides of the"
-            " differential call the same C body and a fixture varying the flag would"
-            " compare a function with itself. The obligation is on the port, M31-77."
-        ),
-    },
-}
+# is a fact about the port. `evidence` must still name the site that blocks it, and
+# `needle` says what to look for there -- the token itself is usually not the thing
+# that proves the verdict.
+BLOCKED: dict[str, dict[str, object]] = {}
 
 # Owner-visible things that SHOULD be partitioned and are not. Distinct from
 # REVIEWED, COVERED and BLOCKED on purpose: these are open findings with a reason to
