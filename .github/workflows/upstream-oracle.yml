@@ -118,16 +118,6 @@ jobs:
           # and belongs here rather than with the pure-Python guards. Four lanes were
           # once declared, buildable, green and run by nothing at all.
           python3 .github/project/check-parity-lanes-gated.py --repo-root .
-      - name: Enforce the object graph matches the build's own declaration
-        shell: bash
-        run: |
-          set -euo pipefail
-          # The build DECLARES the object set it links and the gate consumes the
-          # declaration; scraping --verbose-link instead would observe the truth in
-          # CI and nothing on a cached local build.
-          zig build object-manifest
-          python3 .github/project/check-object-graph.py --repo-root .
-          bash .github/project/test-check-object-graph.sh
 
   zig-master-compatibility:
     name: Zig master compatibility monitor
@@ -730,6 +720,24 @@ jobs:
           # its cases moved, and one of them named a shape the move had dropped.
           python3 .github/project/check-harness-dead-code.py --self-test
           python3 .github/project/check-harness-dead-code.py --repo-root .
+      - name: Enforce the object graph matches the build's own declaration
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The build DECLARES the object set it links and the gate consumes the
+          # declaration; scraping --verbose-link instead would observe the truth in
+          # CI and nothing on a cached local build.
+          #
+          # It belongs HERE and not in the unit-test job, for the same reason as the
+          # two steps above. The manifest names each object by its EMITTED BINARY,
+          # so writing it builds the simulator's object set -- including the GTK
+          # runtime objects, whose translate-c step calls pkg-config for freetype2.
+          # The unit-test job installs no host libraries by design ("no C oracle"),
+          # so there the step aborts on a missing package rather than measuring
+          # anything. The battery above has already built every object it names.
+          zig build object-manifest
+          python3 .github/project/check-object-graph.py --repo-root .
+          bash .github/project/test-check-object-graph.sh
       - name: Run Linux ASAN wrapper surface
         shell: bash
         run: |
