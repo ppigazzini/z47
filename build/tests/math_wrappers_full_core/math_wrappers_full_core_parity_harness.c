@@ -110,6 +110,15 @@ void oracle_fnUlp(uint16_t unusedButMandatoryParameter);
 void oracle_fnSign(uint16_t unusedButMandatoryParameter);
 void oracle_fnLint(uint16_t unusedButMandatoryParameter);
 void oracle_fnSint(uint16_t unusedButMandatoryParameter);
+void oracle_fn10Pow(uint16_t unusedButMandatoryParameter);
+void oracle_fn2Pow(uint16_t unusedButMandatoryParameter);
+void oracle_fnSquare(uint16_t unusedButMandatoryParameter);
+void oracle_fnCube(uint16_t unusedButMandatoryParameter);
+void oracle_fnExpt(uint16_t unusedButMandatoryParameter);
+void oracle_fnLogXY(uint16_t unusedButMandatoryParameter);
+void oracle_fnM1Pow(uint16_t unusedButMandatoryParameter);
+void oracle_fnInvert(uint16_t unusedButMandatoryParameter);
+void oracle_fnChangeSign(uint16_t unusedButMandatoryParameter);
 void oracle_fnAdd(uint16_t unusedButMandatoryParameter);
 void oracle_fnSubtract(uint16_t unusedButMandatoryParameter);
 void oracle_fnMultiply(uint16_t unusedButMandatoryParameter);
@@ -1001,6 +1010,18 @@ static const predicate_t PREDICATES[] = {
   { "fnSign",                  fnSign,              oracle_fnSign,              0                  },
   { "fnLint",                  fnLint,              oracle_fnLint,              0                  },
   { "fnSint",                  fnSint,              oracle_fnSint,              0                  },
+
+  // Powers and the reciprocal/negate pair. fnExpt and fnLogXY are binary and
+  // appear in the pair sweep as well.
+  { "fn10Pow",                 fn10Pow,              oracle_fn10Pow,                    0                  },
+  { "fn2Pow",                  fn2Pow,               oracle_fn2Pow,                     0                  },
+  { "fnSquare",                fnSquare,             oracle_fnSquare,                   0                  },
+  { "fnCube",                  fnCube,               oracle_fnCube,                     0                  },
+  { "fnExpt",                  fnExpt,               oracle_fnExpt,                     0                  },
+  { "fnLogXY",                 fnLogXY,              oracle_fnLogXY,                    0                  },
+  { "fnM1Pow",                 fnM1Pow,              oracle_fnM1Pow,                    0                  },
+  { "fnInvert",                fnInvert,             oracle_fnInvert,                   0                  },
+  { "fnChangeSign",            fnChangeSign,         oracle_fnChangeSign,               0                  },
 
   // Vector and complex families. These are the ones the unit lane could never
   // host: they dispatch into the matrix and complex leaves, which that lane's

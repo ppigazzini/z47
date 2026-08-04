@@ -553,6 +553,24 @@
 #define fnLint oracle_fnLint
 #define fnSint oracle_fnSint
 
+// --- powers, roots-by-another-name, and the sign/reciprocal pair (9 files) ---
+#define intPowCplx oracle_intPowCplx
+#define intPowReal oracle_intPowReal
+#define realPower10 oracle_realPower10
+#define fn10Pow oracle_fn10Pow
+#define realPower2 oracle_realPower2
+#define fn2Pow oracle_fn2Pow
+#define fnSquare oracle_fnSquare
+#define fnCube oracle_fnCube
+#define fnExpt oracle_fnExpt
+#define fnLogXY oracle_fnLogXY
+#define fnM1Pow oracle_fnM1Pow
+#define fnInvert oracle_fnInvert
+#define chsCplx oracle_chsCplx
+#define chsReal oracle_chsReal
+#define chsShoI oracle_chsShoI
+#define fnChangeSign oracle_fnChangeSign
+
 #include "../../../upstream/src/c47/mathematics/checkValue.c"
 #include "../../../upstream/src/c47/mathematics/compare.c"
 #include "../../../upstream/src/c47/mathematics/int.c"
@@ -609,6 +627,15 @@
 #include "../../../upstream/src/c47/mathematics/sign.c"
 #include "../../../upstream/src/c47/mathematics/integerPartLonginteger.c"
 #include "../../../upstream/src/c47/mathematics/integerPartShortinteger.c"
+#include "../../../upstream/src/c47/mathematics/10pow.c"
+#include "../../../upstream/src/c47/mathematics/2pow.c"
+#include "../../../upstream/src/c47/mathematics/square.c"
+#include "../../../upstream/src/c47/mathematics/cube.c"
+#include "../../../upstream/src/c47/mathematics/expt.c"
+#include "../../../upstream/src/c47/mathematics/logxy.c"
+#include "../../../upstream/src/c47/mathematics/minusOnePow.c"
+#include "../../../upstream/src/c47/mathematics/invert.c"
+#include "../../../upstream/src/c47/mathematics/changeSign.c"
 
 // The one function in this file that is not c43's own body. c43's fnToRect is
 // static, so the harness cannot call it across a translation unit; this hands it
