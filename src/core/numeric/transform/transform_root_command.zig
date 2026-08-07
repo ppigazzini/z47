@@ -27,7 +27,7 @@ fn sqrtReal() callconv(.c) void {
 
     if (runtime.realIsInfinite(&value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function sqrtReal:", "cannot use infinity as X input of sqrt when flag D is not set", null, null);
+        runtime.moreInfoOnError("In function sqrtReal:", "cannot use infinity as X input of sqrt when flag SPCRES is not set", null, null);
         return;
     }
 
@@ -142,7 +142,7 @@ fn curtReal() callconv(.c) void {
 
     if (runtime.realIsInfinite(&value) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function curtReal:", "cannot use infinity as X input of curt when flag D is not set", null, null);
+        runtime.moreInfoOnError("In function curtReal:", "cannot use infinity as X input of curt when flag SPCRES is not set", null, null);
         return;
     }
 

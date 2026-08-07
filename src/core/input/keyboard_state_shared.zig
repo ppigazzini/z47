@@ -1059,7 +1059,7 @@ pub fn implementation(comptime runtime: type) type {
                 if (item == runtime.ITM_UP1 or item == runtime.ITM_DOWN1 or item == runtime.ITM_EXIT1 or item == runtime.ITM_BACKSPACE) {
                     runtime.temporaryInformation = runtime.TI_VIEW_REGISTER;
                 }
-            } else if (runtime.temporaryInformation != runtime.TI_NO_INFO and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE and
+            } else if (runtime.temporaryInformation != runtime.TI_NO_INFO and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE and item != runtime.ITM_SNAP and
                 !(((item == runtime.ITM_RCL or item == runtime.ITM_RS or (item >= ITM_0 and item <= ITM_9 and runtime.allowShowDigits)) and runtime.showMode())))
             {
                 if (runtime.showMode()) {

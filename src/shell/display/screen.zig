@@ -57,6 +57,7 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
+const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // OPTION_TVM_AMORT: defines.h #undefs it only for the old_hw single-file pkgs.
 const option_tvm_amort: bool = !(dmcp_build and old_hw);
 
@@ -740,10 +741,10 @@ const STD_NOCHAR: u8 = 1;
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1000 = constR(5456);
+const const_1000 = constR(5636);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
-const const34_0 = constR34(16276);
-const const34_1e6 = constR34(16932);
+const const34_0 = constR34(16456);
+const const34_1e6 = constR34(17112);
 
 // ---------------------------------------------------------------------------
 // font tables (real extern const structs, taken by &name).
@@ -1225,6 +1226,12 @@ extern fn strncpy(dst: [*c]u8, src: [*c]const u8, n: usize) [*c]u8;
 extern var _ioFileNameOverride: [1024]u8;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, nmemb: usize, stream: ?*FILE) usize;
 extern fn fclose(stream: ?*FILE) c_int;
+extern fn printf(fmt: [*c]const u8, ...) c_int;
+// defines.h C47_PATH_MAX, the sim's capture-name width. The C macro takes the
+// host's PATH_MAX/MAX_PATH when one is visible and 1024 otherwise; 1024 is the
+// width _ioFileNameOverride is already bound at above, and both ends of the
+// copy must agree, so the fallback is the value used here.
+const C47_PATH_MAX = 1024;
 
 // real34 = decQuad helpers (libdecnumber).
 extern fn decQuadReduce(r: *align(1) real34_t, a: *align(1) const real34_t, ctx: *realContext_t) *align(1) real34_t;
@@ -2922,7 +2929,10 @@ pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) call
         }
     }
     if (temporaryInformation != TI_NO_INFO) {
-        temporaryInformation = TI_NO_INFO;
+        // SNAP captures the screen as it stands, so the long press that runs it keeps the TI.
+        if (item != ITM_SNAP) {
+            temporaryInformation = TI_NO_INFO;
+        }
         lastErrorCode = 0;
         screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
     }
@@ -6108,7 +6118,9 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
 pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (comptime !dmcp_build) {
-        var bmpFileName: [22]u8 = undefined;
+        frontier_status_bar.paintDateTimeForCapture();
+        // Holds whatever _ioFileNameOverride holds; fnMenuDump uses 1024 for the same job.
+        var bmpFileName: [C47_PATH_MAX]u8 = undefined;
         var rawTime: time_t = undefined;
         _ = c_time(&rawTime);
         const timeInfo = localtime(&rawTime);
@@ -6119,9 +6131,14 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
             bmpFileName[bmpFileName.len - 1] = 0;
             _ioFileNameOverride[0] = 0;
         } else {
-            _ = strftime(&bmpFileName, 22, "%Y%m%d-%H%M%S00.bmp", timeInfo);
+            _ = strftime(&bmpFileName, bmpFileName.len, "%Y%m%d-%H%M%S00.bmp", timeInfo);
         }
         const bmp = fopen(&bmpFileName, "wb");
+        // A name whose folder does not exist: report and leave, the writes below take no NULL.
+        if (bmp == null) {
+            _ = printf(">>> SNAP: cannot open %s\n", &bmpFileName);
+            return;
+        }
 
         _ = fwrite("BM", 1, 2, bmp);
 
@@ -6416,7 +6433,12 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
     resetShiftState();
-    temporaryInformation = TI_NO_INFO;
+    // The capture carries the date and time, so the test build reads a fixed
+    // clock and the stored hashes stay put. The TI survives a capture: SNAP is
+    // excluded in runProgram, processKeyAction and showFunctionName.
+    if (comptime testsuite_build) {
+        frontier_date_time.testClockFrozen = true;
+    }
     // Upstream captures from a fully repainted screen: it resets the update mode
     // to AUTO so this refresh redraws every band, whatever the plot left behind.
     // (Its `if(!snapSkipRefresh)` guard reads a --snapskiprefresh command-line
@@ -6442,4 +6464,7 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
         print_all_regs.fnP_All_Regs(PRN_STK);
     }
     frontier_screen_snap.z47_frontier_snap_restore_tam(&tam_backup);
+    if (comptime testsuite_build) {
+        frontier_date_time.testClockFrozen = false;
+    }
 }

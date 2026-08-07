@@ -165,6 +165,7 @@ const ITM_RTN: u16 = 4;
 const ITM_STOP: u16 = 70;
 const ITM_BACK: u16 = 1412;
 const ITM_CASE: u16 = 1418;
+const ITM_SNAP: u16 = 1405;
 const ITM_END: u16 = 1458;
 const ITM_LBLQ: u16 = 1503;
 const ITM_RTNP1: u16 = 1579;
@@ -1258,7 +1259,7 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
         if (opCode & 0x80 != 0) {
             opCode = (@as(u16, opCode & 0x7F) << 8) | currentStep[1];
         }
-        if (temporaryInformation == TI_TRUE or temporaryInformation == TI_FALSE or temporaryInformation == TI_SOLVER_FAILED or (opCode != ITM_RTN and opCode != ITM_STOP and opCode != ITM_END and opCode != 0x7fff)) {
+        if (temporaryInformation == TI_TRUE or temporaryInformation == TI_FALSE or temporaryInformation == TI_SOLVER_FAILED or (opCode != ITM_RTN and opCode != ITM_STOP and opCode != ITM_END and opCode != ITM_SNAP and opCode != 0x7fff)) {
             temporaryInformation = TI_NO_INFO;
         }
         stepsToBeAdvanced = executeOneStep(currentStep);

@@ -247,6 +247,7 @@ const STD_DOT = "\x80\xb7";
 // ---------------------------------------------------------------------------
 extern var calcMode: u8;
 extern var programRunStop: u8;
+extern var screenHoldsDrawnPixels: bool;
 extern var screenUpdatingMode: u8;
 extern var lastIntegerBase: u32;
 extern var denMax: u32;
@@ -485,6 +486,10 @@ pub export fn forceSBupdate() callconv(.c) void {
     reInstateOCModeDisplay = false;
 }
 
+// Set only around the one forced paint a capture takes, not affecting restrained
+// paints everywhere else.
+var paintDateTimeForced: bool = false;
+
 // ===========================================================================
 // timeChanged
 // ===========================================================================
@@ -503,10 +508,10 @@ pub export fn timeChanged() callconv(.c) bool_t {
 // showDateTime
 // ===========================================================================
 pub export fn showDateTime() callconv(.c) bool_t {
-    if (timeChanged() == false) { // == !timeHasChanged
+    if (timeChanged() == false and !paintDateTimeForced) { // == !timeHasChanged
         return false;
     }
-    if (programRunStop == PGM_RUNNING) {
+    if (programRunStop == PGM_RUNNING and !paintDateTimeForced) {
         return false;
     }
 
@@ -553,6 +558,21 @@ pub export fn showDateTime() callconv(.c) bool_t {
         showShiftState();
     }
     return true;
+}
+
+// ===========================================================================
+// paintDateTimeForCapture
+// ===========================================================================
+// The date and time are painted only when they change, and a graph draw or a
+// program's screen clear wipes them.
+pub export fn paintDateTimeForCapture() callconv(.c) void {
+    // A screen CLLCD, PIXEL, POINT or AGRAPH painted keeps the blank status bar it asked for.
+    if (screenHoldsDrawnPixels) {
+        return;
+    }
+    paintDateTimeForced = true;
+    _ = showDateTime();
+    paintDateTimeForced = false;
 }
 
 // ===========================================================================

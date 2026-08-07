@@ -310,35 +310,35 @@ const oneOverE = "(" ++ STD_EulerE ++ STD_SUP_MINUS ++ STD_SUP_1 ++ STD_SPACE_HA
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1 = constR(4932);
-const const_1000 = constR(5456);
-const const_1024 = constR(5468);
-const const_60 = constR(5372);
-const const_3600 = constR(5524);
-const const_86400 = constR(5600);
-const const_100 = constR(7608);
-const const_24 = constR(5244);
-const const_12 = constR(5220);
-const const39_ln2 = constR(4704);
-const const39_root2 = constR(4740);
+const const_1 = constR(5112);
+const const_1000 = constR(5636);
+const const_1024 = constR(5648);
+const const_60 = constR(5552);
+const const_3600 = constR(5704);
+const const_86400 = constR(5780);
+const const_100 = constR(7788);
+const const_24 = constR(5424);
+const const_12 = constR(5400);
+const const39_ln2 = constR(4884);
+const const39_root2 = constR(4920);
 const const39_pi = constR(1848);
 const const39_eE = constR(176);
 const const39_PHI = constR(1596);
-const const39_rt3 = constR(5796);
-const const39_rt5 = constR(5832);
-const const39_rt7 = constR(5868);
-const const39_rtpi = constR(5928);
-const const39_1onpi = constR(5964);
-const const39_1oneE = constR(4464);
-const const39_pisq = constR(6000);
-const const39_eEsq = constR(6036);
-const const39_1onpisq = constR(6072);
-const const39_1oneEsq = constR(6108);
+const const39_rt3 = constR(5976);
+const const39_rt5 = constR(6012);
+const const39_rt7 = constR(6048);
+const const39_rtpi = constR(6108);
+const const39_1onpi = constR(6144);
+const const39_1oneE = constR(4644);
+const const39_pisq = constR(6180);
+const const39_eEsq = constR(6216);
+const const39_1onpisq = constR(6252);
+const const39_1oneEsq = constR(6288);
 const const_plusInfinity = constR(1696);
 const const_minusInfinity = constR(1684);
-const const_1e_24 = constR(4548);
-const const34_1e_24 = constR34(16324);
-const const34_2p32 = constR34(16964);
+const const_1e_24 = constR(4728);
+const const34_1e_24 = constR34(16504);
+const const34_2p32 = constR34(17144);
 
 // ---------------------------------------------------------------------------
 // font tables: real extern const structs (taken by &name).
@@ -1284,18 +1284,24 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             var ii: i8 = 0;
             while (tmpString100[@intCast(ii)] != 0) {
                 while (tmpString100[@intCast(ii)] == '0') {
-                    if (tmpString100[@intCast(ii)] == 0) break;
                     ii += 1;
                 }
+                // Stop at the terminator: the zero-skip above lands on it when the
+                // digits run out, and every scan below indexes from ii.
+                if (tmpString100[@intCast(ii)] == 0) break;
                 if (tmpString100[@intCast(ii)] == '.') {
                     ii += 1;
                     while (tmpString100[@intCast(ii)] == '0') {
-                        if (tmpString100[@intCast(ii)] == 0) break;
                         ii += 1;
                     }
                     // SIG0 clear keeps full precision for the FIX stage to round; only SIG0 set truncates here.
                     if (tmpString100[@intCast(ii)] != 0 and forceSigZeroes) {
-                        ii = ii + @as(i8, @intCast(displayFormatDigits)) + 1;
+                        // Hold the sum wide and clamp it to the terminator:
+                        // displayFormatDigits is not bounded by the digits present,
+                        // and an i8 sum of the two wraps negative.
+                        const string_length: i32 = @intCast(std.mem.sliceTo(&tmpString100, 0).len);
+                        const digits_end: i32 = @as(i32, ii) + @as(i32, displayFormatDigits) + 1;
+                        ii = @intCast(@min(digits_end, string_length));
                         var jj: i8 = ii;
                         while (tmpString100[@intCast(jj)] != 0 and tmpString100[@intCast(jj)] != 'E') {
                             jj += 1;

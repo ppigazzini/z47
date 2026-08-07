@@ -18,7 +18,7 @@
 
 const std = @import("std");
 
-pub const NUM_CONVERT_PAIRS = 318;
+pub const NUM_CONVERT_PAIRS = 324;
 
 pub const ConvPair = struct {
     item: i16,
@@ -253,24 +253,24 @@ const convert_pairs = [NUM_CONVERT_PAIRS]ConvPair{
     .{ .item = 2188, .partner = 2187, .unity = 2189, .exponent = 0, .type = 12 },
     .{ .item = 2189, .partner = 2190, .unity = 0, .exponent = 0, .type = 12 },
     .{ .item = 2190, .partner = 2189, .unity = 2189, .exponent = 0, .type = 12 },
-    .{ .item = 2204, .partner = 2205, .unity = 0, .exponent = 0, .type = 15 },
+    .{ .item = 2204, .partner = 2205, .unity = 2205, .exponent = 0, .type = 15 },
     .{ .item = 2205, .partner = 2204, .unity = 0, .exponent = 0, .type = 15 },
     .{ .item = 2206, .partner = 2207, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2207, .partner = 2206, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2208, .partner = 2209, .unity = 0, .exponent = 0, .type = 16 },
+    .{ .item = 2207, .partner = 2206, .unity = 2206, .exponent = 0, .type = 16 },
+    .{ .item = 2208, .partner = 2209, .unity = 2209, .exponent = 0, .type = 16 },
     .{ .item = 2209, .partner = 2208, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2210, .partner = 2211, .unity = 0, .exponent = 0, .type = 15 },
+    .{ .item = 2210, .partner = 2211, .unity = 2211, .exponent = 0, .type = 15 },
     .{ .item = 2211, .partner = 2210, .unity = 0, .exponent = 0, .type = 15 },
-    .{ .item = 2212, .partner = 2213, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2213, .partner = 2212, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2214, .partner = 2215, .unity = 0, .exponent = 0, .type = 16 },
+    .{ .item = 2212, .partner = 2213, .unity = 2215, .exponent = 0, .type = 16 },
+    .{ .item = 2213, .partner = 2212, .unity = 2864, .exponent = 0, .type = 16 },
+    .{ .item = 2214, .partner = 2215, .unity = 2215, .exponent = 0, .type = 16 },
     .{ .item = 2215, .partner = 2214, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2216, .partner = 2217, .unity = 0, .exponent = 0, .type = 15 },
+    .{ .item = 2216, .partner = 2217, .unity = 2217, .exponent = 0, .type = 15 },
     .{ .item = 2217, .partner = 2216, .unity = 0, .exponent = 0, .type = 15 },
-    .{ .item = 2218, .partner = 2219, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2219, .partner = 2218, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2220, .partner = 2221, .unity = 0, .exponent = 0, .type = 16 },
-    .{ .item = 2221, .partner = 2220, .unity = 0, .exponent = 0, .type = 16 },
+    .{ .item = 2218, .partner = 2219, .unity = 2215, .exponent = 0, .type = 16 },
+    .{ .item = 2219, .partner = 2218, .unity = 2866, .exponent = 0, .type = 16 },
+    .{ .item = 2220, .partner = 2221, .unity = 2868, .exponent = 0, .type = 16 },
+    .{ .item = 2221, .partner = 2220, .unity = 2215, .exponent = 0, .type = 16 },
     .{ .item = 2464, .partner = 2465, .unity = 0, .exponent = 0, .type = 8 },
     .{ .item = 2465, .partner = 2464, .unity = 2464, .exponent = 0, .type = 8 },
     .{ .item = 2466, .partner = 2467, .unity = 2163, .exponent = -2, .type = 1 },
@@ -349,6 +349,12 @@ const convert_pairs = [NUM_CONVERT_PAIRS]ConvPair{
     .{ .item = 2861, .partner = 2860, .unity = 2092, .exponent = 0, .type = 12 }, // KNOTtoMPH: unity MPHtoMPS,  UT_SPEED
     .{ .item = 2862, .partner = 2863, .unity = 2189, .exponent = 0, .type = 12 }, // MPHtoFPS:  unity FPStoMPS,  UT_SPEED
     .{ .item = 2863, .partner = 2862, .unity = 2092, .exponent = 0, .type = 12 }, // FPStoMPH:  unity MPHtoMPS,  UT_SPEED
+    .{ .item = 2864, .partner = 2865, .unity = 0, .exponent = 0, .type = 16 },
+    .{ .item = 2865, .partner = 2864, .unity = 2864, .exponent = 0, .type = 16 },
+    .{ .item = 2866, .partner = 2867, .unity = 0, .exponent = 0, .type = 16 },
+    .{ .item = 2867, .partner = 2866, .unity = 2866, .exponent = 0, .type = 16 },
+    .{ .item = 2868, .partner = 2869, .unity = 0, .exponent = 0, .type = 16 },
+    .{ .item = 2869, .partner = 2868, .unity = 2868, .exponent = 0, .type = 16 },
 };
 
 /// Binary search the item-sorted table; null if `input` is not a conversion item.

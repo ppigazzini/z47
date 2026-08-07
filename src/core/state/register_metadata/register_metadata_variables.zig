@@ -264,11 +264,12 @@ pub fn validateName(name: [*c]const u8) bool {
     var offset = validateNameNextGlyphOffset(text, 0);
     while (text[offset] != 0) : (offset = validateNameNextGlyphOffset(text, offset)) {
         switch (text[offset]) {
-            '+', '-', ':', '/', '^', '(', ')', '=', ';', '|', '!', ' ' => return false,
+            '+', '-', ':', '*', '/', '^', '(', ')', '=', ';', '|', '!', ' ' => return false,
             else => {},
         }
 
-        if (validateNameGlyphCode(text, offset) == glyph_cross) {
+        const code = validateNameGlyphCode(text, offset);
+        if (code == glyph_cross or code == glyph_divide) {
             return false;
         }
     }

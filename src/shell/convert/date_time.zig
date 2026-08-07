@@ -36,6 +36,7 @@ else
     ".text";
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1451,6 +1452,19 @@ pub export fn fnGetWeekOfYearRule(unusedButMandatoryParameter: u16) linksection(
     temporaryInformation = TI_WOY_RULE;
 }
 
+// True only inside fnSNAP, so a stored capture hash does not move with the
+// calendar. Frozen on 2000-01-01 12:34 fixed, to avoid changes by host timezone.
+pub export var testClockFrozen: bool = false;
+const testClock: Tm = .{ .sec = 0, .min = 34, .hour = 12, .mday = 1, .mon = 0, .year = 100, .wday = 6, .yday = 0, .isdst = 0 };
+
+// The host clock, with the testSuite freeze applied.
+fn localTimeInfo(epoch: *const i64) *const Tm {
+    if (testsuite_build and testClockFrozen) {
+        return &testClock;
+    }
+    return localtime(epoch);
+}
+
 pub export fn getDateString(dateString: [*]u8) linksection(code_section) callconv(.c) void {
     if (comptime dmcp_build) {
         var timeInfo: tm_t = undefined;
@@ -1480,7 +1494,7 @@ pub export fn getDateString(dateString: [*]u8) linksection(code_section) callcon
         }
     } else {
         const epoch: i64 = time(null);
-        const timeInfo = localtime(&epoch);
+        const timeInfo = localTimeInfo(&epoch);
 
         // For the format string : man strftime
         if (!getSystemFlag(FLAG_TDM24)) { // time format = 12H ==> 2 digit year
@@ -1525,7 +1539,7 @@ pub export fn getTimeString(timeString: [*]u8) linksection(code_section) callcon
         }
     } else {
         const epoch: i64 = time(null);
-        const timeInfo = localtime(&epoch);
+        const timeInfo = localTimeInfo(&epoch);
 
         // For the format string : man strftime
         if (getSystemFlag(FLAG_TDM24)) { // time format = 24H
@@ -1557,7 +1571,7 @@ pub export fn getWeekOfYearString(weekOfYearString: [*]u8) linksection(code_sect
         uInt32ToReal34(dateInfo.day, &d);
     } else {
         const epoch: i64 = time(null);
-        const timeInfo = localtime(&epoch);
+        const timeInfo = localTimeInfo(&epoch);
 
         uInt32ToReal34(@intCast(timeInfo.year + 1900), &y);
         uInt32ToReal34(@intCast(timeInfo.mon + 1), &m);

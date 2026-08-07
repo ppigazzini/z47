@@ -45,7 +45,9 @@ const font_t = abi.Font;
 // Constants (verified via C probe against the sim build)
 // ---------------------------------------------------------------------------
 const TMP_STR_LENGTH: usize = 2560;
-const FILENAMELEN: usize = 40;
+// defines.h: sim gets 1024 because a scripted capture name may carry a path;
+// hardware keeps 40, sized for DMCP DATA\ names in the RAM it has.
+const FILENAMELEN: usize = if (dmcp_build) 40 else 1024;
 const SCREEN_WIDTH: i16 = 400;
 const SCREEN_HEIGHT: i16 = 240;
 const Y_POSITION_OF_REGISTER_T_LINE: i16 = 24;

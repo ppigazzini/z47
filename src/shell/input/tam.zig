@@ -1077,11 +1077,12 @@ fn _tamProcessInput(item: u16) void {
             if ((tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or (tam.mode == TM_KEY and tam.keyInputFinished)) and !tam.indirect) {
                 const param: i32 = @intCast(indexOfItems[item].param);
                 if (registerLookup[@intCast(param - FIRST_LETTERED_REGISTER)][1] == ALPHA_LABEL) {
+                    tam.colon = true; // Local named label
                     tam.alpha = true;
                     aimBuffer[0] = @intCast(registerLookup[@intCast(param - FIRST_LETTERED_REGISTER)][0]);
                     aimBuffer[1] = 0;
                     forceTry = true;
-                } else {
+                } else { // Local lettered label
                     tam.value = FIRST_UC_LOCAL_LABEL - 'A' + registerLookup[@intCast(param - FIRST_LETTERED_REGISTER)][0];
                     forceTry = true;
                     tryOoR = true;

@@ -143,6 +143,11 @@ fn addRuntimeObject(
     build_options.addOption(u8, "calcmodel", options.calcmodel);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_vector", options.option_vector);
+    // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
+    // that here so fnSNAP freezes the clock the date/time formatters read and a
+    // stored capture hash does not move with the calendar. startsWith, not eql:
+    // the ASAN lane builds "testSuite-asan" and needs the same frozen clock.
+    build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
 
     // versionStr / versionStr2 (was screen_snap_helpers.c): assembled here the
     // same way generated.zig builds version.h, so the ported owner needs no C

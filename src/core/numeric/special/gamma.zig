@@ -128,7 +128,7 @@ fn checkGammaDomain(xReal: *const real_t, out: *real_t) i32 {
             realSetNaN(out);
         } else if (!runtime.getSystemFlag(FLAG_SPCRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function checkGammaDomain:", "cannot use +-Infinity as X input of gamma when flag D is not set", null, null);
+            moreInfoOnError("In function checkGammaDomain:", "cannot use +-Infinity as X input of gamma when flag SPCRES is not set", null, null);
         } else {
             realCopy(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), out);
         }
@@ -137,7 +137,7 @@ fn checkGammaDomain(xReal: *const real_t, out: *real_t) i32 {
     if (math_comparison_reals.realCompareLessEqual(xReal, const_0()) and realIsAnInteger(xReal)) {
         if (!runtime.getSystemFlag(FLAG_SPCRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function checkGammaDomain:", "cannot use a negative integer as X input of gamma when flag D is not set", null, null);
+            moreInfoOnError("In function checkGammaDomain:", "cannot use a negative integer as X input of gamma when flag SPCRES is not set", null, null);
         } else {
             realSetNaN(out);
         }

@@ -96,7 +96,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
     if (realIsInfinite(xReal)) {
         if (!runtime.getSystemFlag(FLAG_SPCRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function _checkLnGammaArgs", "cannot use +-Infinity as X input of lnbeta when flag D is not set", null, null);
+            moreInfoOnError("In function _checkLnGammaArgs", "cannot use +-Infinity as X input of lnbeta when flag SPCRES is not set", null, null);
         } else {
             math_runtime_helpers.realToReal34(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), runtime.registerReal34Ptr(REGISTER_X));
         }
@@ -106,7 +106,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
         if (realIsAnInteger(xReal)) {
             if (!runtime.getSystemFlag(FLAG_SPCRES)) {
                 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnError("In function _checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag D is not set", null, null);
+                moreInfoOnError("In function _checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag SPCRES is not set", null, null);
             } else {
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 convertRealToReal34ResultRegister(const_NaN(), REGISTER_X);

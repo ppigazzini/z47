@@ -38,7 +38,9 @@ const NUMBER_OF_GLYPH_ROWS = 268; // defines.h: 268. Sizes the exported glyphRow
 const SOFTMENU_STACK_SIZE = 8;
 const DISPLAY_VALUE_LEN = 80;
 const stateFileNameVarLength = 20;
-const FILENAMELEN = 40;
+// defines.h: sim gets 1024 because a scripted capture name may carry a path;
+// hardware keeps 40, sized for DMCP DATA\ names in the RAM it has.
+const FILENAMELEN = if (dmcp_build) 40 else 1024;
 const TIMER_APP_STOPPED: u32 = 0xFFFFFFFF;
 const INVALID_VARIABLE: u16 = 2199;
 
