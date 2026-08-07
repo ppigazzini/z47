@@ -2979,12 +2979,12 @@
          // It is best to only add CONV items incrementally, without re-using old available slots, to keep the tables sorted incrementally
          // Next Step: CONV step 5/6 in src/c47/items.c.
 //==============================================================================
-#define ITM_2864                    2864 // CONV spares
-#define ITM_2865                    2865 // CONV spares
-#define ITM_2866                    2866 // CONV spares
-#define ITM_2867                    2867 // CONV spares
-#define ITM_2868                    2868 // CONV spares
-#define ITM_2869                    2869 // CONV spares
+#define ITM_MGEUStoK100K            2864
+#define ITM_K100KtoMGEUS            2865
+#define ITM_MGEUKtoK100K            2866
+#define ITM_K100KtoMGEUK            2867
+#define ITM_MIKtoK100K              2868
+#define ITM_K100KtoMIK              2869
 
 #define LAST_ITEM                   2870
 

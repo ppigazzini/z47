@@ -2386,7 +2386,7 @@ RELEASE_END:
         temporaryInformation = TI_VIEW_REGISTER;
       }
     }
-    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE &&
+    else if(temporaryInformation != TI_NO_INFO && item != ITM_UP1 && item != ITM_DOWN1 && item != ITM_EXIT1 && item != ITM_BACKSPACE && item != ITM_SNAP &&
            !(  (  item == ITM_RCL || item == ITM_RS || (item >= ITM_0 && item <= ITM_9 && allowShowDigits)  ) && SHOWMODE  ) ) {
       if(SHOWMODE) {
         closeShowMenu();

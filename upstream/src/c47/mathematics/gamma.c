@@ -15,7 +15,7 @@ static int checkGammaDomain(const real_t *xReal, real_t *out) {
     else if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function checkGammaDomain:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag D is not set", NULL, NULL);
+        moreInfoOnError("In function checkGammaDomain:", "cannot use " STD_PLUS_MINUS STD_INFINITY " as X input of gamma when flag SPCRES is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {
@@ -27,7 +27,7 @@ static int checkGammaDomain(const real_t *xReal, real_t *out) {
     if(!getSystemFlag(FLAG_SPCRES)) {
       displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        moreInfoOnError("In function checkGammaDomain:", "cannot use a negative integer as X input of gamma when flag D is not set", NULL, NULL);
+        moreInfoOnError("In function checkGammaDomain:", "cannot use a negative integer as X input of gamma when flag SPCRES is not set", NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
     else {

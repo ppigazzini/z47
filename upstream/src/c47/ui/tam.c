@@ -690,12 +690,13 @@
 
           int param = indexOfItems[item].param;
           if(registerLookup[param - FIRST_LETTERED_REGISTER][1] == ALPHA_LABEL) {
+            tam.colon = true;  // Local named label
             tam.alpha = true;
             aimBuffer[0] = registerLookup[param - FIRST_LETTERED_REGISTER][0];
             aimBuffer[1] = 0;
             forceTry = true;
           }
-          else {
+          else {               // Local lettered label
             tam.value = FIRST_UC_LOCAL_LABEL - 'A' + registerLookup[param - FIRST_LETTERED_REGISTER][0];
             forceTry = true;
             tryOoR = true;

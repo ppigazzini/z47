@@ -29,7 +29,7 @@ In:  FL_ASLIFT=1 RZ=Real:"-5" RY=Real:"5" RX=Stri:"X^2" PGM="G1"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=0
-Out: EC=0 RX=Stri:"9C804C44D5B233E64EA969DC4F9CF35E53D431697ADD0BEEA22CBB18BB248C77"
+Out: EC=0 RX=Stri:"5907951D746A7A19DA94C79F887E7F6FFB5C36908FDD5B03C49E7466F2674432"
 
 ; equation plot (G1): f(X)=SIN(X) over [-5,5] (radians), X^2 staged and swapped out
 Func: fnEqSetCov
@@ -43,7 +43,7 @@ In:  FL_ASLIFT=1 RZ=Real:"-5" RY=Real:"5" RX=Stri:"SIN(X)" PGM="G1"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=1
-Out: EC=0 RX=Stri:"7164E1B8A390797ADC903C1D7A8AE5F0EC80B54845D20CD5E422F137EDCDEB81"
+Out: EC=0 RX=Stri:"8AD86BE33DBF00F603ED1DA6B3F4823C09BFBE9205B8E49A7653ED953DBC8EB2"
 
 ; program plot (G2: PGMPLT ->00, PLTf 'x', SNAP): label name from R00, plot variable 'x' sacrificial, range [-5,5] from the stack
 Func: fnBmpNameCov
@@ -54,7 +54,7 @@ In:  FL_ASLIFT=1 R00=Stri:"S" RY=Real:"-5" RX=Real:"5" PGM="G2"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=2
-Out: EC=0 RX=Stri:"708E9B6A67A0B9BA2EBBAAAE35E5BE0D2CF67379885C7C2994AADE6FA5115217"
+Out: EC=0 RX=Stri:"2935F0D0E0A1240964A7C512D5BEBED06832AF41975180099723D14EB21D19FE"
 
 ; program plot from a no-equation state (G2b): fnEqClearCov drops every formula, then the same G2 plot runs. A program plot needs no formula and renders the identical
 ; bitmap, so it pins G2's hash, while an over-broad no-equation guard aborts it and the hash mismatches. G2 alone misses this because it inherits a formula from the
@@ -70,7 +70,7 @@ In:  FL_ASLIFT=1 R00=Stri:"S" RY=Real:"-5" RX=Real:"5" PGM="G2"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=10
-Out: EC=0 RX=Stri:"708E9B6A67A0B9BA2EBBAAAE35E5BE0D2CF67379885C7C2994AADE6FA5115217"
+Out: EC=0 RX=Stri:"2935F0D0E0A1240964A7C512D5BEBED06832AF41975180099723D14EB21D19FE"
 
 ; statistics plots: seed five (Y,X) data points once, then plot the same data with PLSTAT (G3) and with SCATR (G4)
 Func: fnClSigma
@@ -99,7 +99,7 @@ In:  FL_ASLIFT=1 PGM="G3"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=3
-Out: EC=0 RX=Stri:"710088EB701BC2B5D706DCEA8A338F4B9BCDA326D5D92468D53D1E6B1E43B05F"
+Out: EC=0 RX=Stri:"11EF7F64C7634ADA4C7ECD620F821DE9415661CCFEF53B68D50B282962CDAB48"
 
 ; scatter plot: points only - every fnPlotStat plot resets the plot flags itself (statGraphReset), no forcing needed
 Func: fnBmpNameCov
@@ -110,7 +110,7 @@ In:  FL_ASLIFT=1 PGM="G4"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=4
-Out: EC=0 RX=Stri:"2A237EFC7B341273E460CB641130471FEE9358BAE1128F9CB8653793F2FEFF1A"
+Out: EC=0 RX=Stri:"2863A3D4266910F81459524AE13598E1FEDE93076F758BA227D246550DDAC49E"
 
 ; assessment plot (G5: BestF 1 then ASSESS = PLOT_LR) - draws the linear-regression
 ; assessment (fit y=a0+a1x, r^2, and the fit line) from the seeded STATS sums.
@@ -125,7 +125,7 @@ In:  FL_ASLIFT=1 PGM="G5"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=5
-Out: EC=0 RX=Stri:"4E21C2E4531F626867CAB399CD586F8CEB3703C532AAB9A389F1EDFBFFB38918"
+Out: EC=0 RX=Stri:"C43211C16787499BDB6AD31DECFF7B86EB46624407C552406FE72D73FBDD9AD3"
 
 ; centroid plot (G7: CENTRL = PLOT_ORTHOF) - draws the data with the orthogonal
 ; fit and centroid cross from the seeded STATS sums. CENTRL selects the
@@ -139,7 +139,7 @@ In:  FL_ASLIFT=1 PGM="G7"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=7
-Out: EC=0 RX=Stri:"F37EED64A93C6CB35C0BD76526CB561F4B19A4E8B3E28A19E5BCFA39156DE8FC"
+Out: EC=0 RX=Stri:"DEEC963F46A04DEADEBB7A99D05267364DB89E23F9CCCD77A5214E6A07B9AE3A"
 
 ; power-fit assessment (G9: BestF 8 then ASSESS) - the programmed model selection
 ; pattern of G5 with the power model y = a0*x^a1. The rendered fit of the seeded
@@ -153,7 +153,7 @@ In:  FL_ASLIFT=1 PGM="G9"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=9
-Out: EC=0 RX=Stri:"B31C4FC3A3EA1DA8A187709A2BA56EB9EBF796015AF25BB3709EAB2890916AB1"
+Out: EC=0 RX=Stri:"E12DD11E602C2942C2C9CDCBD8B2CDB7CF1CA8AD6C594D81C15B2AAA55209D2C"
 
 ; histogram data: the fit-plot points above give a 2-1-2 histogram (a valley - the Gauss "peak" fits upside down), so the histogram
 ; plots get their own nine points: three bins (nBINS = ceil(sqrt(9)) = 3, edges 1/2/3/4), counts 3-4-2 - the middle bar highest and
@@ -201,7 +201,7 @@ In:  FL_ASLIFT=1 PGM="G6"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=6
-Out: EC=0 RX=Stri:"CE7BF22B3FD0536D6BB65A0AE851F53800E2CF7A83568AE8E9C1F4ECF662DAD7"
+Out: EC=0 RX=Stri:"8C35A5E15473ACB49BAE5A1A968AE7D5782AC14B1CB940D213C312C4B282593F"
 
 ; histogram with normal fit (G8: HISTOX builds the HISTO matrix, HNORM overlays
 ; the Gauss fit). The window auto-ranges to the fitted bell (x to a1 +- 3 sigma,
@@ -216,7 +216,7 @@ In:  FL_ASLIFT=1 PGM="G8"
 Out: EC=0
 Func: fnHashBmpCov
 In:  FARG=8
-Out: EC=0 RX=Stri:"2B09956B925D466A747A3711F5B0BB33D710B4F8CFC5B71C882AA4F897470775"
+Out: EC=0 RX=Stri:"D80DB39C0A6137B69EBC23961C420DEFC81D0E9BEB56D2B3BF67FB268A23BF88"
 
 ; clear the statistical sums so they do not leak past this file
 Func: fnClSigma

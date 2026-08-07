@@ -1090,6 +1090,13 @@ void fnGetWeekOfYearRule(uint16_t unusedButMandatoryParameter) {
 }
 
 
+#if defined(TESTSUITE_BUILD)
+  bool_t testClockFrozen = false;
+  // Freeze on 2000-01-01 12:34 fixed, avoid changes by host timezone
+  static const struct tm testClock = { .tm_sec = 0, .tm_min = 34, .tm_hour = 12, .tm_mday = 1, .tm_mon = 0, .tm_year = 100, .tm_wday = 6, .tm_yday = 0, .tm_isdst = 0 };
+#endif // TESTSUITE_BUILD
+
+
 void getDateString(char *dateString) {
   #if defined(DMCP_BUILD)
     tm_t timeInfo;
@@ -1127,6 +1134,11 @@ void getDateString(char *dateString) {
   #else // !DMCP_BUILD
     time_t epoch = time(NULL);
     struct tm *timeInfo = localtime(&epoch);
+    #if defined(TESTSUITE_BUILD)
+      if(testClockFrozen) {
+        timeInfo = (struct tm *)&testClock;
+      }
+    #endif // TESTSUITE_BUILD
 
     // For the format string : man strftime
     if(!getSystemFlag(FLAG_TDM24)) { // time format = 12H ==> 2 digit year
@@ -1183,6 +1195,11 @@ void getTimeString(char *timeString) {
   #else // !DMCP_BUILD
     time_t epoch = time(NULL);
     struct tm *timeInfo = localtime(&epoch);
+    #if defined(TESTSUITE_BUILD)
+      if(testClockFrozen) {
+        timeInfo = (struct tm *)&testClock;
+      }
+    #endif // TESTSUITE_BUILD
 
     // For the format string : man strftime
     if(getSystemFlag(FLAG_TDM24)) { // time format = 24H
@@ -1214,6 +1231,11 @@ void getWeekOfYearString(char *weekOfYearString) {
   #else // !DMCP_BUILD
     time_t epoch = time(NULL);
     struct tm *timeInfo = localtime(&epoch);
+    #if defined(TESTSUITE_BUILD)
+      if(testClockFrozen) {
+        timeInfo = (struct tm *)&testClock;
+      }
+    #endif // TESTSUITE_BUILD
 
     uInt32ToReal34(timeInfo->tm_year + 1900, &y);
     uInt32ToReal34(timeInfo->tm_mon + 1, &m);
