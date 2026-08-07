@@ -203,6 +203,7 @@ const PARSER_NUMERIC_STACK_SIZE: u32 = PARSER_OPERATOR_STACK_SIZE;
 // STD_* glyph strings (fonts.h)
 const STD_CROSS = "\x80\xd7";
 const STD_DOT = "\x80\xb7";
+const STD_DIVIDE = "\x80\xf7";
 const STD_CURSOR = "\xa4\x27";
 const STD_ELLIPSIS = "\xa0\x26";
 const STD_EulerE = "\xa1\x47";
@@ -801,12 +802,13 @@ pub export fn showEquation(equationId: u16, startAt: u16, cursorAt: u16, dryRun:
                     inNumeric = false;
                     beginningOfNumber = false;
                     inExponent = false;
-                } else if ((!inLabel) and (strPtr[0] == '=' or strPtr[0] == '+' or strPtr[0] == '-' or strPtr[0] == '/' or strPtr[0] == '!' or strPtr[0] == '|')) {
+                } else if ((!inLabel) and (strPtr[0] == '=' or strPtr[0] == '+' or strPtr[0] == '-' or strPtr[0] == '/' or strPtr[0] == '!' or strPtr[0] == '|' or compareChar(strPtr, STD_DIVIDE) == 0)) {
                     // Operators
                     if (strPtr[0] != '|' or (strLength > (startAt + 1))) {
                         _addSpace(&bufPtr, &strWidth, &doubleBytednessHistory);
                     }
-                    bufPtr[0] = strPtr[0];
+                    // The obelus is a synonym of /
+                    bufPtr[0] = if (compareChar(strPtr, STD_DIVIDE) == 0) '/' else strPtr[0];
                     bufPtr[1] = 0;
                     strWidth += stringWidth(bufPtr, &standardFont, true, true);
                     bufPtr[1] = STD_SPACE_PUNCTUATION[0];
@@ -819,8 +821,8 @@ pub export fn showEquation(equationId: u16, startAt: u16, cursorAt: u16, dryRun:
                     inNumeric = true;
                     beginningOfNumber = true;
                     inExponent = false;
-                } else if ((!inLabel) and (compareChar(strPtr, STD_CROSS) == 0 or compareChar(strPtr, STD_DOT) == 0)) {
-                    // Multiply
+                } else if ((!inLabel) and (compareChar(strPtr, STD_CROSS) == 0 or compareChar(strPtr, STD_DOT) == 0 or strPtr[0] == '*')) {
+                    // Multiply; * is a synonym of the multiply glyph
                     _addSpace(&bufPtr, &strWidth, &doubleBytednessHistory);
                     const ps = PRODUCT_SIGN();
                     bufPtr[0] = ps[0];
@@ -1701,14 +1703,25 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
                     exponentSignCanOccur = false;
                 }
 
-                if (compareChar(strPtr, STD_CROSS) == 0 or compareChar(strPtr, STD_DOT) == 0) {
+                // * is a synonym of the multiply glyph, the obelus of /
+                if (compareChar(strPtr, STD_CROSS) == 0 or compareChar(strPtr, STD_DOT) == 0 or strPtr[0] == '*' or compareChar(strPtr, STD_DIVIDE) == 0) {
                     bufPtr[0] = 0;
                     bufPtr += 1;
                     _parseWord(buffer, parseMode, PARSER_HINT_REGULAR(buffer, numericCount), mvarBuffer, pointerInFormula);
-                    buffer[0] = strPtr[0];
-                    strPtr += 1;
-                    buffer[1] = strPtr[0];
-                    strPtr += 1;
+                    if (strPtr[0] == '*') {
+                        buffer[0] = STD_CROSS[0];
+                        buffer[1] = STD_CROSS[1];
+                        strPtr += 1;
+                    } else if (compareChar(strPtr, STD_DIVIDE) == 0) {
+                        buffer[0] = '/';
+                        buffer[1] = 0;
+                        strPtr += 2;
+                    } else {
+                        buffer[0] = strPtr[0];
+                        strPtr += 1;
+                        buffer[1] = strPtr[0];
+                        strPtr += 1;
+                    }
                     buffer[2] = 0;
                     _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer, pointerInFormula);
                     bufPtr = buffer;

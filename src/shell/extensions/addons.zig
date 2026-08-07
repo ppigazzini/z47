@@ -121,6 +121,7 @@ const frontier_recall = @import("../recall.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("../display/screen.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
 const frontier_tam = @import("../input/tam.zig");
 const frontier_textfiles = @import("textfiles.zig");
 const real_t = abi.Real;
@@ -536,21 +537,21 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
-const const_1 = constR(4932);
-const const_1on2 = constR(4656);
-const const_1on4 = constR(4608);
-const const39_root3on2 = constR(4848);
-const const39_rt3 = constR(5796);
-const const_1e_16 = constR(4560);
-const const_1e_24 = constR(4548);
-const const_10p9__1 = constR(5676);
+const const_1 = constR(5112);
+const const_1on2 = constR(4836);
+const const_1on4 = constR(4788);
+const const39_root3on2 = constR(5028);
+const const39_rt3 = constR(5976);
+const const_1e_16 = constR(4740);
+const const_1e_24 = constR(4728);
+const const_10p9__1 = constR(5856);
 const const39_pi = constR(1848);
-const const34_10 = constR34(16500);
-const const34_60 = constR34(16612);
-const const34_100 = constR34(16628);
-const const34_3600 = constR34(16756);
-const const34_0 = constR34(16276);
-const const34_24 = constR34(16548);
+const const34_10 = constR34(16680);
+const const34_60 = constR34(16792);
+const const34_100 = constR34(16808);
+const const34_3600 = constR34(16936);
+const const34_0 = constR34(16456);
+const const34_24 = constR34(16728);
 
 // ===========================================================================
 // C-arrays bound by address (NOT pointer-typed externs).
@@ -1942,6 +1943,7 @@ const DISPLAY_WAIT_FOR_RELEASE: bool_t = 1;
 // ===========================================================================
 fn standardScreenDump() void {
     resetShiftState();
+    frontier_status_bar.paintDateTimeForCapture();
     var vol: i32 = 0;
     vol = getBeepVolume();
     fnSetVolume(11);

@@ -446,7 +446,7 @@ fn doXthRootReal() linksection(runtime.code_section) callconv(.c) void {
 
     if ((realIsInfinite(&x) or realIsInfinite(&y)) and !getSystemFlag(FLAG_SPCRES)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function doXthRootReal:", "cannot use +-Infinity as X or Y input of xthRoot when flag D is not set", null, null);
+        moreInfoOnError("In function doXthRootReal:", "cannot use +-Infinity as X or Y input of xthRoot when flag SPCRES is not set", null, null);
         return;
     }
 

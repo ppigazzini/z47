@@ -514,7 +514,7 @@ fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t,
         fnFillStack(NOPARAM);
         _integratorIteration();
         real34ToReal(registerReal34Ptr(REGISTER_X), res);
-        if (realIsSpecial(res)) { // do not stop in error (if flag D was set)
+        if (realIsSpecial(res)) { // do not stop in error (if SPCRES was set)
             realSetZero(res);
         }
     } else { // DEI_bad_absc

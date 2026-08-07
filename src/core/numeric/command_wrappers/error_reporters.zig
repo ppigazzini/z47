@@ -20,15 +20,15 @@ fn reportDomainError(comptime message1: [*:0]const u8, comptime message2: ?[*:0]
 }
 
 pub export fn z47_math_wrappers_report_sinc_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function sincReal:", "cannot divide a real34 by " ++ std_plus_minus ++ std_infinity ++ " when flag D is not set", null);
+    reportDomainError("In function sincReal:", "cannot divide a real34 by " ++ std_plus_minus ++ std_infinity ++ " when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_sincpi_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function sincpiReal:", "cannot divide a real34 by " ++ std_plus_minus ++ std_infinity ++ " when flag D is not set", null);
+    reportDomainError("In function sincpiReal:", "cannot divide a real34 by " ++ std_plus_minus ++ std_infinity ++ " when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_exp_m1_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function expM1Real:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of exp when flag D is not set", null);
+    reportDomainError("In function expM1Real:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of exp when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_ln_p1_real_zero_domain_error() linksection(runtime.code_section) callconv(.c) void {
@@ -48,7 +48,7 @@ pub export fn z47_math_wrappers_report_ln_p1_cplx_zero_domain_error() linksectio
 }
 
 pub export fn z47_math_wrappers_report_exp_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function expReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of exp when flag D is not set", null);
+    reportDomainError("In function expReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of exp when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_arcsin_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
@@ -80,7 +80,7 @@ pub export fn z47_math_wrappers_report_arctanh_real_domain_error() linksection(r
 }
 
 pub export fn z47_math_wrappers_report_int_pow_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function intPowReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of 10^x when flag D is not set", null);
+    reportDomainError("In function intPowReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of 10^x when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_eulers_formula_complex_domain_error() linksection(runtime.code_section) callconv(.c) void {
@@ -100,15 +100,15 @@ pub export fn z47_math_wrappers_report_invert_real_divide_by_zero_error() linkse
 }
 
 pub export fn z47_math_wrappers_report_sinh_cosh_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function sinhCoshReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of sinh when flag D is not set", null);
+    reportDomainError("In function sinhCoshReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of sinh when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_tanh_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function tanhReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of tanh when flag D is not set", null);
+    reportDomainError("In function tanhReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of tanh when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_square_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function squareReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of curt when flag D is not set", null);
+    reportDomainError("In function squareReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of curt when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_tan_real_pole_error() linksection(runtime.code_section) callconv(.c) void {
@@ -116,5 +116,5 @@ pub export fn z47_math_wrappers_report_tan_real_pole_error() linksection(runtime
 }
 
 pub export fn z47_math_wrappers_report_cube_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function cubeReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of curt when flag D is not set", null);
+    reportDomainError("In function cubeReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of curt when flag SPCRES is not set", null);
 }
