@@ -510,11 +510,16 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Operators */
-        else if((!inLabel) && ((*strPtr) == '=' || (*strPtr) == '+' || (*strPtr) == '-' || (*strPtr) == '/' || (*strPtr) == '!' || (*strPtr) == '|')) {
+        else if((!inLabel) && ((*strPtr) == '=' || (*strPtr) == '+' || (*strPtr) == '-' || (*strPtr) == '/' || (*strPtr) == '!' || (*strPtr) == '|' || compareChar(strPtr, STD_DIVIDE) == 0)) {
           if((*strPtr) != '|' || (strLength > (startAt + 1))) {
             _addSpace(&bufPtr, &strWidth, &doubleBytednessHistory);
           }
-          *bufPtr       = *strPtr;
+          if(compareChar(strPtr, STD_DIVIDE) == 0) {   // the obelus is a synonym of /
+            *bufPtr = '/';
+          }
+          else {
+            *bufPtr = *strPtr;
+          }
           *(bufPtr + 1) = 0;
           strWidth += stringWidth(bufPtr, &standardFont, true, true);
           *(bufPtr + 1) = STD_SPACE_PUNCTUATION[0];
@@ -530,7 +535,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
         }
 
         /* Multiply */
-        else if((!inLabel) && (compareChar(strPtr, STD_CROSS) == 0 || compareChar(strPtr, STD_DOT) == 0)) {
+        else if((!inLabel) && (compareChar(strPtr, STD_CROSS) == 0 || compareChar(strPtr, STD_DOT) == 0 || (*strPtr) == '*')) {   // * is a synonym of the multiply glyph
           _addSpace(&bufPtr, &strWidth, &doubleBytednessHistory);
           *bufPtr       = PRODUCT_SIGN[0];
           *(bufPtr + 1) = PRODUCT_SIGN[1];
@@ -1551,11 +1556,23 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
           exponentSignCanOccur = false;
         }
 
-        if(compareChar(strPtr, STD_CROSS) == 0 || compareChar(strPtr, STD_DOT) == 0) {
+        if(compareChar(strPtr, STD_CROSS) == 0 || compareChar(strPtr, STD_DOT) == 0 || (*strPtr) == '*' || compareChar(strPtr, STD_DIVIDE) == 0) {   // * is a synonym of the multiply glyph, the obelus of /
           *(bufPtr++) = 0;
           _parseWord(buffer, parseMode, PARSER_HINT_REGULAR, mvarBuffer, pointerInFormula);
-          buffer[0] = *(strPtr++);
-          buffer[1] = *(strPtr++);
+          if((*strPtr) == '*') {
+            buffer[0] = STD_CROSS[0];
+            buffer[1] = STD_CROSS[1];
+            ++strPtr;
+          }
+          else if(compareChar(strPtr, STD_DIVIDE) == 0) {
+            buffer[0] = '/';
+            buffer[1] = 0;
+            strPtr += 2;
+          }
+          else {
+            buffer[0] = *(strPtr++);
+            buffer[1] = *(strPtr++);
+          }
           buffer[2] = 0;
           _parseWord(buffer, parseMode, PARSER_HINT_OPERATOR, mvarBuffer, pointerInFormula);
           bufPtr = buffer;

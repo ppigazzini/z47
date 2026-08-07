@@ -1969,6 +1969,19 @@ returnKeyPressedFalse:
   }
 
 
+  // Headless twin of scriptInjectGtkKey: no window to receive an event, so the handlers are called direct.
+  // keyPressed and keyReleased read keyval and state only; keyReleased clears event_keyval and SHIFT_State.
+  gboolean scriptInjectKeyHeadless(uint32_t keyval) {
+    GdkEventKey keyEvent;
+    keyEvent.keyval = keyval;
+    keyEvent.state  = 0;
+
+    keyPressed(NULL, &keyEvent, NULL);
+    keyReleased(NULL, &keyEvent, NULL);
+    return TRUE;
+  }
+
+
   #if (SIMULATOR_ON_SCREEN_KEYBOARD == 1)
     /* Reads the CSS file to configure the calc's GUI style. */
     static void prepareCssData(void) {

@@ -375,7 +375,7 @@ static void _integratorIteration(void) {
 //      at really bigs/small points (up to 1e±199 in DBLOFF mode and
 //      1e±3088 in DBLON mode). Ensure that your integrand program
 //      behaves as expected for such arguments (you may consider to set
-//      flag D in some circumstances)
+//      SPCRES in some circumstances)
 //    - the double exponential method relies on the function to be
 //      integrated being analytic over the integration interval, except,
 //      perhaps, at the interval ends. Thus, if it is known that the
@@ -425,11 +425,11 @@ static void DEI_xeq_user(calcRegister_t regist, const real_t *x, real_t *res, re
     _integratorIteration();
     //printReal34ToConsole(REGISTER_REAL34_DATA(REGISTER_X), "", "\n"); fflush(stdout);
     real34ToReal(REGISTER_REAL34_DATA(REGISTER_X), res);
-    if(realIsSpecial(res)) { // do not stop in error (if flag D was set)
+    if(realIsSpecial(res)) { // do not stop in error (if SPCRES was set)
       realSetZero(res);
     }
     //if(d) {
-    //  setSystemFlag(FLAG_SPCRES); // set flag D for internal calculations
+    //  setSystemFlag(FLAG_SPCRES); // set SPCRES for internal calculations
     //}
   }
   else { // DEI_bad_absc::

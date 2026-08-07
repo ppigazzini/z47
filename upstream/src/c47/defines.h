@@ -2501,7 +2501,11 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define ERROR_MESSAGE_LENGTH    512
 #define DISPLAY_VALUE_LEN        80
 
-#define FILENAMELEN              40
+#if defined(PC_BUILD)
+  #define FILENAMELEN          1024                                     // sim: a scripted capture name may carry a path
+#else
+  #define FILENAMELEN            40                                     // hardware: DMCP DATA\ names, sized for RAM
+#endif
 
 //************************
 //* Macros for debugging *

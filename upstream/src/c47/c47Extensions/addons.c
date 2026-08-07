@@ -1073,6 +1073,7 @@ err:
 #if defined(DMCP_BUILD)
   void standardScreenDump(void) {
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
+  paintDateTimeForCapture();
   char *savedBuffers = malloc(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH);          // on the heap: tmpString is DMCP's own aux buffer, so it is not a safe place to hold a backup across create_screenshot
   if(savedBuffers == NULL) {
     return;

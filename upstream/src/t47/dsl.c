@@ -854,7 +854,7 @@ static int xeqCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
  * Helper for pressOne() to handle the common elements for each keypress.
  */
 static int injectScriptKey(Jim_Interp *interp, const char *keyCode, uint32_t keyval) {
-  if(!scriptInjectGtkKey(keyval)) {
+  if(!(headlessMode ? scriptInjectKeyHeadless(keyval) : scriptInjectGtkKey(keyval))) {
     Jim_SetResultFormatted(interp, "press: failed to inject key '%s'", keyCode);
     return JIM_ERR;
   }
@@ -1000,13 +1000,6 @@ static int nimCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
  * press <keycode> - Press a keyboard key (like pressing the button)
  */
 static int pressCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
-  // Registered in every build so the refusal names the reason: an unregistered command reports only "invalid command name".
-  if(headlessMode) {
-    Jim_SetResultString(interp, "press: needs the GTK GUI, which t47 and --headless do not start. Run ./c47 or ./r47 without --headless, "
-                                "or drive the function directly with item, xeq or menu.", -1);
-    return JIM_ERR;
-  }
-
   if(argc < 2) {
     Jim_SetResultString(interp, "press: missing key code argument", -1);
     return JIM_ERR;

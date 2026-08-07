@@ -2164,7 +2164,9 @@ return res;
       }
     }
     if(temporaryInformation != TI_NO_INFO) {
-      temporaryInformation = TI_NO_INFO;
+      if(item != ITM_SNAP) {            //SNAP captures the screen as it stands, so the long press that runs it keeps the TI
+        temporaryInformation = TI_NO_INFO;
+      }
       lastErrorCode = 0;
       screenUpdatingMode &= ~SCRUPD_MANUAL_STACK;
     }
@@ -6273,12 +6275,24 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   }
 
 
+// SNAP details compiled during the rationalization of TI, and DAT prints on SNAP
+// ACCESS FROM:   Ctrl+S, SNAP key, SNAP softkey, R47 longpress EXIT, DSL snap, PRLCD with PRTACT clear.
+// WRITERS:       fnScreenDump on PC, standardScreenDump on DMCP. The GTK mockup calls fnScreenDump too.
+// f+DISP:        key 44 (c47.c) and the PSE key loop (input.c) call standardScreenDump direct: no refresh, live screen.
+// TI:            survives a capture. SNAP is excluded in runProgram, processKeyAction and showFunctionName.
+// CLOCK:         date and time paint on a minute change only, and never while a program runs.
+// ERASE:         a graph draw or a program screen clear wipes the field, and the throttle then skips the repaint.
+// REPAINT:       paintDateTimeForCapture() forces one paint, in both writers, so f-DISP gets it too.
+// PIXEL etc.:    screenHoldsDrawnPixels keeps a CLLCD, PIXEL, POINT or AGRAPH screen blank. snapSkipRefresh keeps the raw screen.
+// testSuite:     TESTSUITE_BUILD freezes the clock across fnSNAP (testClockFrozen) so stored capture hashes hold.
 void fnSNAP(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
     printf("fnSNAP!\n");
   #endif // PC_BUILD
   resetShiftState();                  //JM To avoid f or g top left of the screen, clear to make sure
-  temporaryInformation = TI_NO_INFO;
+  #if defined(TESTSUITE_BUILD)
+    testClockFrozen = true;           // the capture carries the date and time, so the test build reads a fixed clock and the stored hashes stay put
+  #endif // TESTSUITE_BUILD
   if(!snapSkipRefresh && !screenHoldsDrawnPixels) {   //--snapskiprefresh, or a screen a program drew, keeps the raw graphic screen
     screenUpdatingMode = SCRUPD_AUTO;
     refreshScreen(80);
@@ -6301,14 +6315,18 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
     fnP_All_Regs(PRN_STK); //print stack
   }
   xcopy(tamBuffer, ss, TAM_BUFFER_LENGTH);      //Backup the TamBuffer, in case we are in a TAM screen when doing screenshot
+  #if defined(TESTSUITE_BUILD)
+    testClockFrozen = false;
+  #endif // TESTSUITE_BUILD
 }
 
 
 void fnScreenDump(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
+    paintDateTimeForCapture();
     extern char _ioFileNameOverride[];
     FILE *bmp;
-    char bmpFileName[22];
+    char bmpFileName[C47_PATH_MAX];   // holds whatever _ioFileNameOverride holds; fnMenuDump uses 1024 for the same job
     time_t rawTime;
     struct tm *timeInfo;
     int32_t x, y;
@@ -6338,6 +6356,10 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
       }
     }
     bmp = fopen(bmpFileName, "wb");
+    if(bmp == NULL) {               //a name whose folder does not exist: report and leave, the writes below take no NULL
+      printf(">>> SNAP: cannot open %s\n", bmpFileName);
+      return;
+    }
 
     fwrite("BM", 1, 2, bmp);        // Offset 0x00  0  BMP header
 

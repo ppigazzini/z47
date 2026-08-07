@@ -272,9 +272,9 @@ void generateAllConstants(void) {
          generateConstant("FlozukToMl",     9, EXACT,  "+28.4130625"                                                  ); // ml     = flozuk × 4.54609e-3 / 160 × 1000000
          generateConstant("FlozusToMl",    12, EXACT,  "+29.5735295625"                                               ); // ml     = flozus × 231 × 0.0254³ / 128 × 1000000
 
-         generateConstant("FlozukToIn3",   33, EXACT,  "+1.73387145494763430471742833249446"                          ); // in³    = flozuk × 4.54609e-3 / 160 × 1000000     / 2.54³
+         generateConstant("FlozukToIn3",   39, APPROX, "+1.733871454947634304717428332494460264511080203262768730e+00"); // in³    = flozuk × 4.54609e-3 / 160 × 1000000 / 2.54³                       // repeating decimal
          generateConstant("FlozusToIn3",    8, EXACT,  "+1.8046875"                                                   ); // in³    = flozus × 231 × 0.0254³ / 128 × 1000000  / 2.54³
-         generateConstant("Ft3ToGalUS",    33, EXACT,  "+7.48051948051948051948051948051948"                          ); // galus  = feet3 * (1/(231 × 0.0254³ × 1000)) * (12*0.254)³
+         generateConstant("Ft3ToGalUS",    39, APPROX, "+7.480519480519480519480519480519480519480519480519480519e+00"); // galus  = ft³ × 1728 / 231 = 576/77                                          // repeating decimal
 
          generateConstant("GalusToL",      10, EXACT,  "+3.785411784"                                                 ); // l      = galus × 231 × 0.0254³ × 1000
          generateConstant("GalukToL",       6, EXACT,  "+4.54609"                                                     ); // l      = galuk × 4.54609e-3 × 1000
@@ -295,6 +295,10 @@ void generateAllConstants(void) {
          generateConstant("MphToFps",      39, APPROX, "+1.4666666666666666666666666666666666666666666667"            ); // ft/s   = mph × 5280 / 3600 = 22 / 15
          generateConstant("SlugToKg",      39, APPROX, "+1.459390293720636482939632545931758530183727034120734908e+01"); // kg     = slug × 0.45359237 × 9.80665 / 0.3048
          generateConstant("SlinchToKg",    39, APPROX, "+1.751268352464763779527559055118110236220472440944881890e+02"); // kg     = slinch × 12 × SlugToKg
+
+         generateConstant("MgeusToK100K",  39, APPROX, "+2.094020917839815477610753201304382406744611469020917840e+03"); // kWh/100km = GaluseqE × 100 / mgeus / MiToKm
+         generateConstant("MgeukToK100K",  39, APPROX, "+2.514814265285334343063235157118071626808675553381038553e+03"); // kWh/100km = MgeusToK100K × GalukToL / GalusToL
+         generateConstant("MikToK100K",    39, APPROX, "+6.213711922373339696174341843633182215859381213711922373e+01"); // kWh/100km = 100 / (mi/kWh) / MiToKm
 
          generateConstant("CalToJ",         5, EXACT,  "+4.1868"                                                      ); // joule  = calorie × 4.1868
          generateConstant("BtuToJ",        12, EXACT,  "+1055.05585262"                                               ); // joule  = Btu × 1055.05585262
@@ -326,11 +330,11 @@ void generateAllConstants(void) {
 
          generateConstant("furToM",         6, EXACT,  "+201.168"                                                     ); // fff menu: Convert furlong to meter
          generateConstant("ftnToS",         5, EXACT,  "+1.2096e+06"                                                  ); // fff menu: Convert fortnight to second
-         generateConstant("fpfToMps",      15, EXACT,  "+1.66309523809524e-04"                                        ); // fff menu: Convert furlong per fortnight to meter per second
+         generateConstant("fpfToMps",      39, APPROX, "+1.663095238095238095238095238095238095238095238095238095e-04"); // fff menu: furlong per fortnight to meter per second = 201.168 / 1209600     // repeating decimal
          generateConstant("brdsTom",        1, EXACT,  "+1e-08"                                                       ); // fff menu: Convert beardsecond to meter
          generateConstant("firToKg",        9, EXACT,  "+40.8233133"                                                  ); // fff menu: Convert firkin to kilogram
-         generateConstant("fpfToKph",      15, EXACT,  "+5.98714285714286e-04"                                        ); // fff menu: Convert furlong per fortnight to kilometer per hour
-         generateConstant("brdsToIn",      15, EXACT,  "+3.93700787401575e-07"                                        ); // fff menu: Convert beardsecond to inch
+         generateConstant("fpfToKph",      39, APPROX, "+5.987142857142857142857142857142857142857142857142857143e-04"); // fff menu: furlong per fortnight to kilometer per hour = fpfToMps × 3.6      // repeating decimal
+         generateConstant("brdsToIn",      39, APPROX, "+3.937007874015748031496062992125984251968503937007874016e-07"); // fff menu: beardsecond to inch = 1e-8 / 0.0254                               // repeating decimal
          generateConstant("firToLb",        2, EXACT,  "+90"                                                          ); // fff menu: Convert firkin to pound; firkin = 90 lb exactly
          generateConstant("fpfToMph",      39, APPROX, "+3.72023809523809523809523809523809523810e-04"                ); // fff menu: Convert furlong per fortnight to mile per hour = (201.168/1209600)/0.44704
 
@@ -358,7 +362,7 @@ void generateAllConstants(void) {
          generateConstant("In3Ml",          8, EXACT,  "+16.387064"                                                   ); // defined          :  (     in x 2.54)^3   x
          generateConstant("Ft3Gluk",       34, EXACT,  "+6.228835459042825812951349401353691"                         ); // defined uk       : ((ft × 12 × 2.54)^3 / 1000) / (4.54609e-3 × 1000, definition UK) x
          generateConstant("Ft3L",          11, EXACT,  "+28.316846592"                                                ); // defined          :  (ft × 12 × 2.54)^3 / 1000
-         generateConstant("LQtus",         15, EXACT,  "+1.05668820943259"                                            ); // defined us       : 1000 / (GallonUK / 768 x 192) x
+         generateConstant("LQtus",         39, APPROX, "+1.056688209432593661519599686436650031837064730815557687e+00"); // defined us       : 1000 / 946.352946 (US gallon / 4)                         // repeating decimal
          generateConstant("GlukFzuk",       3, EXACT,  "+160"                                                         ); // defined uk       : 1600 x
          generateConstant("GlusFzus",       3, EXACT,  "+128"                                                         ); // defined uz       : 1200 x
          generateConstant("bananamm",       3, EXACT,  "+178"                                                         );

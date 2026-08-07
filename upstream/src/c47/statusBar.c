@@ -28,6 +28,7 @@ void drawBattery(uint16_t voltage);
   char     alphaOutput[3];
   bool_t   reInstateIntegerModeDisplay;
   bool_t   reInstateOCModeDisplay;
+  static bool_t paintDateTimeForced = false;   // set only around the one forced paint a capture takes, not affecting restrained paints everywhere else
 
   void forceSBupdate(void) {                   // note set all SB activation/change indicator flags to 'changed'
                                 #if defined(ANALYSE_REFRESH)
@@ -65,10 +66,10 @@ void drawBattery(uint16_t voltage);
 
 //Note: in PC_BUILD this is called several times per second, continuously
   bool_t showDateTime(void) {
-    if(timeChanged() == !timeHasChanged) {     // creates oldTime here
+    if(timeChanged() == !timeHasChanged && !paintDateTimeForced) {     // creates oldTime here
       return false;
     }
-    if(programRunStop == PGM_RUNNING) {
+    if(programRunStop == PGM_RUNNING && !paintDateTimeForced) {
       //printf("RUNNING, NO TIME/DATE SBI PRINTED\n");
       return false;
     }
@@ -121,6 +122,16 @@ void drawBattery(uint16_t voltage);
       showShiftState();
     }
     return true;
+  }
+
+
+  void paintDateTimeForCapture(void) {         // the date and time are painted only when they change, and a graph draw or a program's screen clear wipes them
+    if(screenHoldsDrawnPixels) {               // a screen CLLCD, PIXEL, POINT or AGRAPH painted keeps the blank status bar it asked for
+      return;
+    }
+    paintDateTimeForced = true;
+    showDateTime();
+    paintDateTimeForced = false;
   }
 
 
