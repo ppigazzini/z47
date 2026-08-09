@@ -77,6 +77,12 @@ extern fn decNumberCopyAbs(res: *align(1) real_t, source: *align(1) const real_t
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
 // severing the direct engine->shell link; it reports "no abort" when headless.
 const exitKeyWaiting = abi.host.exitKeyWaiting;
+const checkHalfSec = abi.host.checkHalfSec;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer;
+const timed: u8 = 0;
+const halfSec_clearZ: bool = true;
+const halfSec_clearT: bool = true;
+const halfSec_disp: bool = true;
 extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
 extern var significantDigits: u8;
@@ -1066,10 +1072,10 @@ fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
 // ===========================================================================
 // calculateEigenvalues -- the shifted QR-iteration driver. size 2/3 use the
 // closed-form solvers; size > 3 runs the Householder QR loop with deflation,
-// stagnation detection and final block solves. The on-device half-second
-// progress display (checkHalfSec / formatDoubleWidth / progressHalfSecUpdate)
-// is a pure UI side effect with no calc-state impact and is not exercised by
-// the testSuite, so it is omitted here; the user-interrupt path is kept.
+// stagnation detection and final block solves. The half-second progress display
+// carries the deflation count and iteration rather than upstream's tolerance
+// figure; the call itself is load-bearing, because on the host build it is what
+// drains the GUI event queue and lets the interrupt path see a key at all.
 // ===========================================================================
 // SLVP feeds its companion matrix through here (upstream drops the `static` on
 // matrix.c's copy when OPTION_SLVP_POLY is on); slvp.zig shares this object, so the
@@ -1185,6 +1191,16 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
         while (!converged and iteration < maxEigenIter and activeSize > 1 and runtime.lastErrorCode == runtime.ERROR_NONE) {
             iteration += 1;
 
+            // checkHalfSec is not only the progress cadence: on the host build it
+            // drains the pending GUI events, which is how a key press reaches
+            // currentKeyCode at all. exitKeyWaiting deliberately does not pump
+            // them, so without this call the QR loop can never see the abort and
+            // the window stays frozen for up to maxEigenIter sweeps.
+            if (checkHalfSec()) {
+                var progressStr: [64]u8 = undefined;
+                abi.fmtBufZ(&progressStr, "{d}/{d} Iter: ", .{ size - activeSize, size });
+                _ = progressHalfSecUpdate_Integer(timed, @ptrCast(&progressStr[0]), iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            }
             if (exitKeyWaiting()) {
                 runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, runtime.REGISTER_T, runtime.REGISTER_X);
                 if (runtime.extra_info_on_calc_error) {
