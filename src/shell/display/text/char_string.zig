@@ -319,7 +319,9 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
             }
 
             if (glyph == null) {
-                abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected value returned by findGlyph!", .{ "_calculateStringWidth", @as(c_int, glyphId) });
+                // Format from the shared table, so an edit to that message reaches
+                // this call site the way it reaches the others.
+                _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueReturnedByFindGlyph]), "_calculateStringWidth", @as(c_int, glyphId));
                 frontier_error.displayBugScreen(errorMessage);
                 width.* = 0;
                 return;
