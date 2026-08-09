@@ -17,9 +17,10 @@ const consts = abi.constants;
 // so everything is ported unconditionally. The PC_BUILD-gated diagnostics
 // that carry SIDE EFFECTS (lastErrorCode resets in initialize_function /
 // execute_rpn_function) are reproduced under !is_dmcp_build; the
-// PC_BUILD-active console output (VERBOSE_SOLVER_ITERDATA per-iteration
-// line, the kick/yPower/revert notices, printSolverResult) is reproduced
-// too, since those blocks are compiled into the current host builds. The
+// PC_BUILD-active console output (the kick/revert notices, printSolverResult)
+// is reproduced too, since those blocks are compiled into the current host
+// builds. VERBOSE_SOLVER_ITERDATA is NOT: it is commented out and undef'd at
+// the source, so its two per-iteration lines print nowhere upstream. The
 // ENABLE_COMPLEXSOLVER_FILE_OUTPUT blocks are compile-time dead (== 0).
 // Cold code (user-invoked plots) but kept in main .text (43+ KB flash free);
 // tag with linksection(runtime.code_section) only if a package overflows.
@@ -2210,9 +2211,6 @@ fn complexSolver() void {
                 yPower += 2;
                 powCplxNat(Y0, &yPower, Y0);
                 powCplxNat(Y1, &yPower, Y1);
-                if (comptime !is_dmcp_build) {
-                    _ = printf("-------- yPower: %u, iter: %u\n", @as(c_uint, yPower), @as(c_uint, @intCast(iterationCounter)));
-                }
             }
             copyComplex(X2, temp0);
             // If increment is oscillating it is assumed that it is unstable and needs to have a complex starting value
@@ -2265,22 +2263,6 @@ fn complexSolver() void {
         checkNaN = checkNaN or realIsNaN(&X2.Real) or realIsNaN(&X2.Imag) or
             realIsNaN(&Y2N.Real) or realIsNaN(&Y2N.Imag);
         Y2IsCloseToZero = Y2IsCloseToZero or checkRealZeroTol(magnitudeY, tolClose);
-
-        // VERBOSE_SOLVER_ITERDATA (active on PC_BUILD): one line per iteration.
-        if (comptime !is_dmcp_build) {
-            var dbYr: f32 = undefined;
-            var dbYi: f32 = undefined;
-            const arrows = [8][*:0]const u8{ "→", "↗︎", "↑", "↖︎", "←", "↙︎", "↓", "↘︎" };
-            realToFloat(&Y2N.Real, &dbYr);
-            realToFloat(&Y2N.Imag, &dbYi);
-            const angVal: f64 = 4.0 * (atan2(@as(f64, dbYi), @as(f64, dbYr))) / 3.14159265358979323846 + 8.5;
-            // C casts to int (UB on NaN); guard the Debug trap, value only picks the arrow glyph.
-            const angRaw: c_int = if (angVal != angVal) 0 else @intFromFloat(angVal);
-            const ang: u8 = @intCast(@mod(angRaw, 8));
-            const magn: f64 = sqrt(@as(f64, dbYr) * @as(f64, dbYr) + @as(f64, dbYi) * @as(f64, dbYi));
-            _ = printf("#%-4u osc=%-2i conv=%-2i close=%i !best=%-2u Y=%s%5.0e ", @as(c_uint, @intCast(iterationCounter)), @as(c_int, oscillations), @as(c_int, convergent), @as(c_int, @intFromBool(Y2IsCloseToZero)), @as(c_uint, @intCast(@as(u16, @bitCast(iterAfterBest)))), arrows[ang % 8], magn);
-            printComplexToConsole(&X2.Real, &X2.Imag, "X=", "\n");
-        }
 
         //*************** DETERMINE DX and DY, to calculate the slope (or the inverse of the slope in this case) *******************
         copyComplex(dX, dXold); // store old DELTA values, for oscillation check
