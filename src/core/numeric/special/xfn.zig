@@ -117,8 +117,11 @@ pub const FT_EXTERNAL: c_int = 104;
 const NOANG: c_int = 200;
 const FORCEANG: c_int = 201;
 
-// use1071 / context-digit policy.
-const use1071: bool = runtime.is_testsuite_build or !runtime.wp34s_mod_small_buffers;
+// use1071 / context-digit policy. Unconditional at the source: X.FN is the
+// extended-precision engine, and a build that carries it carries it at full
+// width. Narrowing it on firmware computed at 75 digits and refused exponents
+// past 68 rather than 1000.
+const use1071: bool = true;
 const maxAllowedDigits: i32 = if (use1071) 1000 else 68;
 const maxContextDigits: i32 = if (use1071) 1071 else 75;
 
