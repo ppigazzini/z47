@@ -63,7 +63,9 @@ pub fn bounded(state: u64, inc: u64, s: u32) Bounded {
     const integer_part: u32 = @intCast(initial_product >> 32);
     var fractional_part: u32 = @truncate(initial_product);
 
-    if (fractional_part <= 1 + ~s) {
+    // `1 + ~s` is the two's-complement negation of s, which wraps to 0 at s == 0;
+    // this is exported with C linkage, so a caller outside the tree can reach it.
+    if (fractional_part <= 1 +% ~s) {
         return .{ .value = integer_part, .next_state = st };
     }
 

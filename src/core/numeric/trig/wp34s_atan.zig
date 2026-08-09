@@ -414,6 +414,13 @@ fn doAtan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1)
 // WP34S_Atan2_75temp / 1071temp (static) + dispatcher
 // ===========================================================================
 fn WP34S_Atan2_75temp(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+    // These bodies work at real75; a wider caller context is narrowed for the
+    // duration and put back on every exit.
+    const savedContextDigits = realContext.digits;
+    if (realContext.digits > 75) {
+        realContext.digits = 75;
+    }
+    defer realContext.digits = savedContextDigits;
     var r: real_t = undefined;
     var t: real_t = undefined;
     if (!doAtan2(y, x, atan, &r, &t, realContext)) {
@@ -471,6 +478,13 @@ fn doAsin(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
 }
 
 fn WP34S_Asin_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    // These bodies work at real75; a wider caller context is narrowed for the
+    // duration and put back on every exit.
+    const savedContextDigits = realContext.digits;
+    if (realContext.digits > 75) {
+        realContext.digits = 75;
+    }
+    defer realContext.digits = savedContextDigits;
     var abx: real_t = undefined;
     var z: real_t = undefined;
     if (!doAsin(x, angle, &abx, &z, realContext)) {
@@ -531,6 +545,13 @@ fn doAcos(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
 }
 
 fn WP34S_Acos_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    // These bodies work at real75; a wider caller context is narrowed for the
+    // duration and put back on every exit.
+    const savedContextDigits = realContext.digits;
+    if (realContext.digits > 75) {
+        realContext.digits = 75;
+    }
+    defer realContext.digits = savedContextDigits;
     var abx: real_t = undefined;
     var z: real_t = undefined;
     if (!doAcos(x, angle, &abx, &z, realContext)) {
