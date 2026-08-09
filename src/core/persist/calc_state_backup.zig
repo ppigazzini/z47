@@ -904,6 +904,12 @@ const FLAG_IRFRAC: c_uint = 32839;
 const MNU_HOME: i16 = 1921;
 const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 const FLAG_SBadm: c_uint = 32879; // 0x806F
+const FLAG_BASE_MYM: c_uint = 0x805C;
+const FLAG_G_DOUBLETAP: c_uint = 0x805D;
+const FLAG_BASE_HOME: c_uint = 0x805E;
+const FLAG_MYM_TRIPLE: c_uint = 0x805F;
+const FLAG_HOME_TRIPLE: c_uint = 0x8060;
+const FLAG_SHFT_4s: c_uint = 0x8061;
 
 fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
     restoreStateValue(buffer, size, name, type_str);
@@ -1159,7 +1165,13 @@ pub fn restoreCalc() void {
     rv(&c47MemInBlocks[0], 8, "c47MemInBlocks", "uint64");
     rv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
     rv(&catalog[0], 2, "catalog", "int16");
-    rv(&lastCatalogPosition[0], 46, "lastCatalogPosition", "int16");
+    if (backupVersion < 1012) { // the FNCS_EIM catalog was added at 1012
+        rv(&lastCatalogPosition[0], 46 - 4, "lastCatalogPosition", "int16");
+        lastCatalogPosition[22 * 2] = 0;
+        lastCatalogPosition[22 * 2 + 1] = 0;
+    } else {
+        rv(&lastCatalogPosition[0], 46, "lastCatalogPosition", "int16");
+    }
     rv(&displayValueX[0], 80, "displayValueX", "hexDump");
     rv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
     rv(&exponentLimit[0], 2, "exponentLimit", "int16");
@@ -1285,6 +1297,27 @@ pub fn restoreCalc() void {
     rv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
     graphVariabl1 = INVALID_VARIABLE;
     rv(&graphVariabl1, 2, "graphVariabl1", "int16");
+    if (backupVersion < 1013) {
+        // Six flags that lived under their own parameter names until 1013.
+        // BASE_HOME and BASE_MYM each have two old spellings; the later one wins.
+        const transfers = [_]struct { name: [*c]const u8, flag: c_uint }{
+            .{ .name = "jm_G_DOUBLETAP", .flag = FLAG_G_DOUBLETAP },
+            .{ .name = "HOME3", .flag = FLAG_HOME_TRIPLE },
+            .{ .name = "MYM3", .flag = FLAG_MYM_TRIPLE },
+            .{ .name = "ShiftTimoutMode", .flag = FLAG_SHFT_4s },
+            .{ .name = "BASE_HOME", .flag = FLAG_BASE_HOME },
+            .{ .name = "SH_BASE_HOME", .flag = FLAG_BASE_HOME },
+            .{ .name = "BASE_MYM", .flag = FLAG_BASE_MYM },
+            .{ .name = "jm_BASE_SCREEN", .flag = FLAG_BASE_MYM },
+        };
+        // One scratch for the whole chain, as the C declares it: a name the file
+        // omits leaves the previous transfer's value standing.
+        var tmp1: u8 = 0;
+        for (transfers) |t| {
+            rv(&tmp1, 1, t.name, "bool");
+            if (tmp1 != 0) setSystemFlag(t.flag) else clearSystemFlag(t.flag);
+        }
+    }
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
     if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // SIGZEROS is on per default
     if (backupVersion < 1017) setSystemFlag(FLAG_SBadm); // the angular mode annunciator is on per default
