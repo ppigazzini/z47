@@ -1,3 +1,4 @@
+const export_owned = @import("program_serialization_export.zig");
 const runtime = @import("program_serialization_runtime.zig");
 
 pub fn saveProgram(label: u16) void {
@@ -5,9 +6,15 @@ pub fn saveProgram(label: u16) void {
 }
 
 // Port of fnSaveAllPrograms: walk every global label and write each program
-// (whose first global label it is) to ioPathSaveAllPrograms, which writes
-// directly to PROGRAMS/ALLPGMS without the interactive file-picker dialog.
+// (whose first global label it is) both to ioPathSaveAllPrograms as a `.p47`
+// byte dump and to ioPathExportRTFAllPrograms as an RTF listing, neither of
+// which opens the interactive file-picker dialog. Simulator only; the firmware
+// has no such command.
 pub fn saveAllPrograms() void {
+    if (comptime !runtime.is_host_build) {
+        return;
+    }
+
     const saved_current_local_step_number = runtime.currentLocalStepNumber;
     const saved_current_program_number = runtime.currentProgramNumber;
     defer {
@@ -15,6 +22,9 @@ pub fn saveAllPrograms() void {
         runtime.currentProgramNumber = saved_current_program_number;
     }
 
+    // Seeded to 0 rather than to the current program, so the first global label
+    // walked is always written: 0 is not a program number.
+    var old_program_number: u16 = 0;
     var i: u16 = 0;
     while (i < runtime.numberOfLabels) : (i += 1) {
         var label_name: [256]u8 = undefined; // a global label name is a 1-byte-length string, so up to 255 bytes
@@ -22,11 +32,15 @@ pub fn saveAllPrograms() void {
             continue;
         }
         const label = runtime.findNamedLabel(&label_name, runtime.GLOBAL_LABELS);
-        const old_program_number = runtime.currentProgramNumber;
         runtime.selectProgram(label);
         if (runtime.currentProgramNumber != old_program_number) {
+            runtime.reportProgramExported(label, runtime.currentProgramNumber, &label_name);
             saveProgramToPath(label, runtime.ioPathSaveAllPrograms);
+            export_owned.exportProgram(label, runtime.ioPathExportRTFAllPrograms);
+        } else {
+            runtime.reportProgramNotExported(runtime.currentProgramNumber, &label_name);
         }
+        old_program_number = runtime.currentProgramNumber;
     }
 }
 

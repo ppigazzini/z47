@@ -79,6 +79,22 @@ fn boundProgramNameLength(name_start: [*c]const u8, claimed: u8) u8 {
     return claimed;
 }
 
+// The RTF export half. `tmpString` is the shared scratch buffer
+// decodeOneStep_XPORT and stringToRTF both write through, so the export path has
+// to use it rather than a private buffer.
+pub const TMP_STR_LENGTH: usize = 2560;
+extern var tmpString: [*c]u8;
+extern var lastFunc: i16;
+
+extern fn decodeOneStep_XPORT(step: [*c]u8) void;
+extern fn stringToRTF(str: [*c]const u8, rtf: [*c]u8) void;
+extern fn findNextStep(step: [*c]u8) [*c]u8;
+extern fn defineFirstDisplayedStep() void;
+extern fn getNumberOfSteps() u16;
+extern fn _getProgramSize() u32;
+extern fn printProgram(list: bool, lines: u16) void;
+extern fn getSystemFlag(sf: i32) bool;
+
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
 extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
 extern fn ioFileClose() void;
@@ -186,6 +202,82 @@ pub fn writeU8Line(value: u8) void {
     ioFileWrite(line.ptr, @intCast(line.len));
 }
 
+// tmpString accessors. Every one of them clamps at TMP_STR_LENGTH - 1 and keeps
+// the terminator: upstream's stringCopy has no bound, and a decoded step longer
+// than the buffer would run past it.
+pub fn tmpStringContent() []const u8 {
+    return tmpString[0..cStringLength(tmpString)];
+}
+
+pub fn tmpStringSet(text: []const u8) void {
+    const n = @min(text.len, TMP_STR_LENGTH - 1);
+    @memcpy(tmpString[0..n], text[0..n]);
+    tmpString[n] = 0;
+}
+
+pub fn tmpStringAppend(text: []const u8) void {
+    const at = cStringLength(tmpString);
+    if (at + 1 >= TMP_STR_LENGTH) return;
+    const n = @min(text.len, TMP_STR_LENGTH - 1 - at);
+    @memcpy(tmpString[at..][0..n], text[0..n]);
+    tmpString[at + n] = 0;
+}
+
+/// Shift tmpString right by `indent` bytes and fill the gap with spaces, using
+/// `scratch` as the intermediate copy exactly as fnPExport uses asciiString.
+pub fn tmpStringIndent(indent: usize, scratch: []u8) void {
+    const len = @min(cStringLength(tmpString), scratch.len - 1);
+    @memcpy(scratch[0..len], tmpString[0..len]);
+    scratch[len] = 0;
+    const n = @min(len, TMP_STR_LENGTH - 1 - indent);
+    @memcpy(tmpString[indent..][0..n], scratch[0..n]);
+    tmpString[indent + n] = 0;
+    var ii: usize = 0;
+    while (ii < indent) : (ii += 1) {
+        tmpString[ii] = ' ';
+    }
+}
+
+pub fn writeTmpString() void {
+    ioFileWrite(tmpString, @intCast(cStringLength(tmpString)));
+}
+
+pub fn tmpStringToRTFInPlace(source: [*c]const u8) void {
+    stringToRTF(source, tmpString);
+}
+
+pub fn decodeStepForExport(step: [*c]u8) void {
+    decodeOneStep_XPORT(step);
+}
+
+pub fn nextStep(step: [*c]u8) [*c]u8 {
+    return findNextStep(step);
+}
+
+pub fn defineFirstStep() void {
+    defineFirstDisplayedStep();
+}
+
+pub fn numberOfSteps() u16 {
+    return getNumberOfSteps();
+}
+
+pub fn programSize() u32 {
+    return _getProgramSize();
+}
+
+pub fn systemFlag(sf: i32) bool {
+    return getSystemFlag(sf);
+}
+
+pub fn lastFunction() i16 {
+    return lastFunc;
+}
+
+pub fn printProgramListing(list: bool, lines: u16) void {
+    printProgram(list, lines);
+}
+
 pub fn readLineInto(buffer: [*c]u8, maxLen: usize) void {
     readLine(buffer, maxLen);
 }
@@ -195,6 +287,37 @@ pub fn closeFile() void {
 }
 
 pub fn displayWriteError() void {
+    displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
+extern fn fflush(stream: ?*anyopaque) c_int;
+extern fn stringToASCII(str: [*c]const u8, ascii: [*c]u8) void;
+
+pub const is_host_build = !is_dmcp_build;
+
+/// The two stdout lines the simulator's export-all walk prints per label. Host
+/// only: `fnSaveAllPrograms` does not exist on the firmware at all.
+pub fn reportProgramExported(label: u16, program_number: u16, name: [*c]const u8) void {
+    var ascii_name: [500]u8 = undefined;
+    stringToASCII(name, &ascii_name);
+    _ = printf("Export & saving labelnumber %5i in program number %5u: Files %s.p47 %s.rtf\n", @as(c_int, label), @as(c_uint, program_number), &ascii_name, &ascii_name);
+    _ = fflush(null);
+}
+
+pub fn reportProgramNotExported(program_number: u16, name: [*c]const u8) void {
+    var ascii_name: [500]u8 = undefined;
+    stringToASCII(name, &ascii_name);
+    _ = printf("   Not saved: %s is not the first label in program %5u.\n", &ascii_name, @as(c_uint, program_number));
+    _ = fflush(null);
+}
+
+/// The export path's open failure: the simulator says so on stdout before the
+/// calculator error, the firmware only raises the error.
+pub fn displayExportWriteError() void {
+    if (comptime !is_dmcp_build) {
+        _ = printf("Cannot export program!\n");
+    }
     displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
 }
 
