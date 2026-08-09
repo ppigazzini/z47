@@ -196,10 +196,7 @@ pub const Any34Matrix = extern union {
 /// hard-coding either one is wrong for the other: c_int makes printerState_t 16
 /// bytes on firmware where C makes it 8, and u8 would corrupt the layout the
 /// host parity oracles compare against real C.
-pub const CEnum = switch (@import("builtin").target.cpu.arch) {
-    .arm, .armeb, .thumb, .thumbeb => u8,
-    else => c_int,
-};
+pub const CEnum = primitives.CEnum;
 
 /// Printer state (printerState_t, typeDefinitions.h). The C
 /// print_modes_t/printerModel_t are enums, so this is 16 bytes align 4 on the

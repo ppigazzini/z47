@@ -73,6 +73,18 @@ pub const MatrixHeader = packed struct(u32) {
 
 /// Config descriptor (dtConfigDescriptor_t): the full config-serialization
 /// record; body extracted verbatim from the owners (sub-types mapped to abi).
+/// Width GCC gives a small C enum on this target. The ARM EABI mandates
+/// -fshort-enums, so `enum { ... }` with few values is one byte on the DM42 and
+/// DMCP5 firmware, while the host toolchain gives it int. An extern struct with
+/// enum-typed fields therefore has a different size on the two sides, and
+/// hard-coding either one is wrong for the other: c_int makes printerState_t 16
+/// bytes on firmware where C makes it 8, and u8 would corrupt the layout the
+/// host parity oracles compare against real C.
+pub const CEnum = switch (@import("builtin").target.cpu.arch) {
+    .arm, .armeb, .thumb, .thumbeb => u8,
+    else => c_int,
+};
+
 pub const DtConfigDescriptor = extern struct {
     shortIntegerMode: u8,
     shortIntegerWordSize: u8,
@@ -85,7 +97,7 @@ pub const DtConfigDescriptor = extern struct {
     grpGroupingGr1LeftOverflow: u8,
     grpGroupingGr1Left: u8,
     grpGroupingRight: u8,
-    currentAngularMode: c_int,
+    currentAngularMode: CEnum,
     lrSelection: u16,
     lrChosen: u16,
     denMax: u32,

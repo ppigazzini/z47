@@ -636,6 +636,27 @@ const dmcp = struct {
         return if (a < b) a else b;
     }
 
+    // Alpha keyboard mapping for DMCP, from the DM41X example, with the R47
+    // keycodes. Index 0 is unused; '@' marks a key with no alpha character.
+    //        +-------+-------+-------+-------+-------+-------+
+    //  1- 6  |  x^2  |  SQRT |  1/x  |  y^x  |  LOG  |  LN   |
+    //  7-12  |  STO  |  RCL  |  Rdn  |  DRG  |   f   |   g   |
+    // 13-17  | ENTER | x<>y  |  +/-  |   E   |  <--  |
+    // 18-22  |  XEQ  |   7   |   8   |   9   |  DIV  |
+    // 23-27  |  UP   |   4   |   5   |   6   |  MUL  |
+    // 28-32  |  DOWN |   1   |   2   |   3   |  SUB  |
+    // 33-37  |  ON   |   0   |  DOT  |  R/S  |  ADD  |
+    const alpha_upper_transl: [*:0]const u8 = "_" ++
+        "ABCDEF" ++
+        "GHIJ@@" ++
+        "@KML@" ++
+        "@NOPQ" ++
+        "@RSTU" ++
+        "@VWXY" ++
+        "@Z,? ";
+    // sys_sdb_t.key_to_alpha_table: calc_state (uint32_t) then ppgm_fp (pointer).
+    const key_to_alpha_table: *[*:0]const u8 = @ptrFromInt(SDB_ADDR + 8);
+
     pub fn convertKeyCode(key_in: c_int) callconv(.c) c_int {
         return keycode_remap.remapKey(key_in, isR47FAM(), wp43KbdLayout);
     }
@@ -648,6 +669,12 @@ const dmcp = struct {
         c47MemInBlocks = 0;
         gmpMemInBytes = 0;
         mp_set_memory_functions(allocGmp, reallocGmp, freeGmp);
+
+        if (comptime CALCMODEL == USER_R47) {
+            // Remap the alpha keyboard layout DMCP's own dialogs read. The F keys
+            // carry no alpha character on this layout, so the table stops at 37.
+            key_to_alpha_table.* = alpha_upper_transl;
+        }
 
         // initialize lcd_buffer mainly used in hal/lcd.c
         lcd_buffer = lcd_line_addr(0) - 2;
