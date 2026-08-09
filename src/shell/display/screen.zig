@@ -150,6 +150,7 @@ const reservedVariableHeader_t = abi.ReservedVariableHeader;
 // ---------------------------------------------------------------------------
 const SCREEN_WIDTH: i16 = 400;
 const SCREEN_HEIGHT: i16 = 240;
+const CLLCD_XY: u16 = 1;
 const REGISTER_LINE_HEIGHT: i16 = 36;
 const Y_POSITION_OF_REGISTER_X_LINE: i16 = 132;
 const Y_POSITION_OF_REGISTER_Y_LINE: i16 = 96;
@@ -5332,8 +5333,8 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
                 const tlen: i16 = @intCast(stringByteLength(tmpString));
                 const savedDisplayFormat: u8 = displayFormat;
                 const savedDisplayFormatDigits: u8 = displayFormatDigits;
-                displayFormatDigits = 20;
-                displayFormat = DF_SCI;
+                displayFormatDigits = 42; // fill the screen with LI, with no seps
+                displayFormat = DF_ALL;
                 frontier_display.longIntegerRegisterToRealDisplayString(regist, tmpString + @as(usize, @intCast(tlen)), @as(i32, TMP_STR_LENGTH) - tlen, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.* - w_p.*), 0, toRemoveTrailingRadix);
                 displayFormat = savedDisplayFormat;
                 displayFormatDigits = savedDisplayFormatDigits;
@@ -6285,11 +6286,15 @@ fn getPixelPos(x: *i32, y: *i32) void {
     y.* = _getPositionFromRegister(REGISTER_Y, SCREEN_HEIGHT);
 }
 
-pub export fn fnClLcd(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
-    var x: i32 = undefined;
-    var y: i32 = undefined;
-    getPixelPos(&x, &y);
+pub export fn fnClLcd(clear_mode: u16) callconv(.c) void {
+    var x: i32 = 0;
+    var y: i32 = 0;
+    // CLLCD clears the whole screen; only CLLCDxy takes a corner from X and Y.
+    if (clear_mode == CLLCD_XY) {
+        getPixelPos(&x, &y);
+        x = absI(x);
+        y = absI(y);
+    }
     if (lastErrorCode == ERROR_NONE) {
         screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
         screenHoldsDrawnPixels = true;
@@ -6305,10 +6310,21 @@ pub export fn fnPixel(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (lastErrorCode == ERROR_NONE) {
         screenUpdatingMode |= SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_SHIFT_STATUS;
         screenHoldsDrawnPixels = true;
-        if ((@as(i32, SCREEN_HEIGHT) - y - 1) <= Y_POSITION_OF_REGISTER_T_LINE) {
+        if ((@as(i32, SCREEN_HEIGHT) - absI(y) - 1) <= Y_POSITION_OF_REGISTER_T_LINE) {
             screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
         }
-        setBlackPixel(@intCast(x), @intCast(@as(i32, SCREEN_HEIGHT) - y - 1));
+
+        if (x >= 0 and y >= 0) { // set the pixel at (x,y)
+            setBlackPixel(@intCast(x), @intCast(@as(i32, SCREEN_HEIGHT) - y - 1));
+        }
+        if (x < 0) { // a negative abscissa draws a vertical line at |x|
+            x = if (x > -@as(i32, SCREEN_WIDTH)) -x else 0; // -400 maps to x = 0
+            lcd_fill_rect(@intCast(x), 0, 1, SCREEN_HEIGHT, LCD_EMPTY_VALUE);
+        }
+        if (y < 0) { // a negative ordinate draws a horizontal line at |y|
+            y = if (y > -@as(i32, SCREEN_HEIGHT)) -y else 0; // -240 maps to y = 0
+            lcd_fill_rect(0, @intCast(@as(i32, SCREEN_HEIGHT) - y - 1), SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
+        }
     }
 }
 
@@ -6323,7 +6339,22 @@ pub export fn fnPoint(unusedButMandatoryParameter: u16) callconv(.c) void {
         if ((@as(i32, SCREEN_HEIGHT) - y - 2) <= Y_POSITION_OF_REGISTER_T_LINE) {
             screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR;
         }
-        lcd_fill_rect(@intCast(x - 1), @intCast(@as(i32, SCREEN_HEIGHT) - y - 2), 3, 3, LCD_EMPTY_VALUE);
+
+        if (x >= 0 and y >= 0) { // set the point at (x,y)
+            lcd_fill_rect(@intCast(x - 1), @intCast(@as(i32, SCREEN_HEIGHT) - y - 2), 3, 3, LCD_EMPTY_VALUE);
+        }
+        if (x < 0) { // a negative abscissa draws a vertical line at |x|
+            x = if (x > -@as(i32, SCREEN_WIDTH)) -x else 0; // -400 maps to x = 0
+            const a: i32 = if (x == 0) 0 else 1; // clips x
+            const b: i32 = if (x == 0) 0 else (if (x == 399) 0 else 1); // clips the width at the borders
+            lcd_fill_rect(@intCast(x - a), 0, @intCast(2 + b), SCREEN_HEIGHT, LCD_EMPTY_VALUE);
+        }
+        if (y < 0) { // a negative ordinate draws a horizontal line at |y|
+            y = if (y > -@as(i32, SCREEN_HEIGHT)) -y else 0; // -240 maps to y = 0
+            const a: i32 = if (y == 239) 1 else 2; // clips y
+            const b: i32 = if (y == 0) 0 else (if (y == 239) 0 else 1); // clips the width at the borders
+            lcd_fill_rect(0, @intCast(@as(i32, SCREEN_HEIGHT) - y - a), SCREEN_WIDTH, @intCast(2 + b), LCD_EMPTY_VALUE);
+        }
     }
 }
 
@@ -6333,6 +6364,8 @@ pub export fn fnAGraph(regist: u16) callconv(.c) void {
     var gramod: u32 = undefined;
     var liGramod: longInteger_t = undefined;
     getPixelPos(&x, &y);
+    x = absI(x);
+    y = absI(y);
     frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, &liGramod[0]);
     longIntegerToUInt32(&liGramod, &gramod);
     longIntegerFree(&liGramod);

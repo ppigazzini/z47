@@ -2032,10 +2032,37 @@ fn showPanelledView(x1: i16, x2: i16, y1: i16, videoMode: videoMode_t) void {
         }
     }
 }
-fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
+fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
     _ = showValue;
     _ = showCb;
     _ = showText;
+
+    // Combined key = two slots with a floating mid-divider; the two names share
+    // the width the arrows leave behind. Only clip when the pair together
+    // overflows, and let a short partner donate its slack so a long name
+    // opposite it is kept whole.
+    var lab0: [50]u8 = undefined;
+    var lab1: [50]u8 = undefined;
+    _ = frontier_char_string.xcopy(&lab0, label0in, @intCast(@min(stringByteLength(label0in) + 1, @as(i32, lab0.len))));
+    _ = frontier_char_string.xcopy(&lab1, label1in, @intCast(@min(stringByteLength(label1in) + 1, @as(i32, lab1.len))));
+    lab0[lab0.len - 1] = 0;
+    lab1[lab1.len - 1] = 0;
+    const arrowR: i16 = @intCast(frontier_screen.showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, @intCast(y1 + YY), videoMode, 0, 0, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
+    const arrowL: i16 = @intCast(frontier_screen.showStringEnhanced(STD_LEFT_ARROW, &standardFont, 0, @intCast(y1 + YY), videoMode, 0, 0, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
+    const w0: i16 = @intCast(frontier_screen.stringWidthC47(&lab0, stdNoEnlarge, DO_compress, 0, 0));
+    const w1: i16 = @intCast(frontier_screen.stringWidthC47(&lab1, stdNoEnlarge, DO_compress, 0, 0));
+    // px for both names once both arrows and the minimal gaps are reserved
+    const avail: i16 = @intCast(maxI(16, @as(i32, x2 - x1) - arrowR - arrowL - 7));
+    if (w0 + w1 > avail) { // only intervene when the pair really overflows
+        const half: i16 = @divTrunc(avail, 2);
+        const b0: u16 = @intCast(if (w1 < half) avail - w1 else half); // a short partner donates its slack to the long side
+        const b1: u16 = @intCast(if (w0 < half) avail - w0 else half);
+        _ = trimSoftKeyName(b0, &lab0, stdNoEnlarge, DO_compress, 0, 0);
+        _ = trimSoftKeyName(b1, &lab1, stdNoEnlarge, DO_compress, 0, 0);
+    }
+    const label0p: [*c]const u8 = &lab0;
+    const label1: [*c]const u8 = &lab1;
+
     var Text0: i16 = undefined;
     var Arr0: i16 = undefined;
     var midpoint: i16 = undefined;
@@ -2857,7 +2884,10 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
             }
         }
 
-        var itemName: [16]u8 = undefined;
+        // 50 bytes, not 16: the user-menu conversion path pastes two names
+        // around an arrow, and the MVAR path appends a '*' to a 15-glyph
+        // variable name.
+        var itemName: [50]u8 = undefined;
         itemName[0] = 0;
         var showText: [16]u8 = undefined;
         showText[0] = 0;
@@ -2865,6 +2895,9 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
         var showCb: i8 = NOVAL;
         var showValue: i16 = NOVAL;
         var convUserMenu: bool = false;
+        // isOneOfAConvertPair only writes this on an even slot; the odd slot to
+        // its right reads what the even slot recorded, so it cannot be per-slot.
+        var oddNrPartnerForEven: i16 = 0;
         showText[0] = 0;
 
         if (m < NUMBER_OF_DYNAMIC_SOFTMENUS) {
@@ -2879,6 +2912,9 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                 while (y < 3) : (y += 1) {
                     x = 0;
                     while (x < 6) : (x += 1) {
+                        if ((x & 1) == 0) {
+                            oddNrPartnerForEven = 0;
+                        }
                         if (x + 6 * y + currentFirstItem < numberOfItems) {
                             if (ptr[0] != 0) {
                                 vm = vmNormal;
@@ -2963,7 +2999,6 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                         userMenus[@intCast(currentUserMenu)].menuItem[@intCast(softKeyIx)].item
                                     else
                                         0;
-                                    var oddNrPartnerForEven: i16 = 0;
                                     _ = frontier_conversion_pairs.isOneOfAConvertPair(@intCast(x), itemNr, &oddNrPartnerForEven);
                                     const bothConfigurable = frontier_conversion_pairs.areBothConvertConfigurable(itemNr, itemNrPair);
                                     // A fixed table pair converts directly and renders plainly.
