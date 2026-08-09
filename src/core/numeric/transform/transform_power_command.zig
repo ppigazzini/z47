@@ -3,10 +3,12 @@ const runtime = @import("../command_wrappers/runtime.zig");
 fn squareLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
+    // getRegisterAsLongInt initialises its output on every path, refusals
+    // included, so the clear has to be registered before the refusal check.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     runtime.longIntegerMultiply(&x[0], &x[0], &x[0]);
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
@@ -51,10 +53,12 @@ fn cubeLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
     var cube_value: runtime.longInteger_t = undefined;
 
+    // getRegisterAsLongInt initialises its output on every path, refusals
+    // included, so the clear has to be registered before the refusal check.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     runtime.__gmpz_init(&cube_value[0]);
     defer runtime.__gmpz_clear(&cube_value[0]);
