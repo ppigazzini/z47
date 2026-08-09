@@ -27,6 +27,9 @@ pub const RuntimeObjectOptions = struct {
     // that compile-time model, and the keyboard-state object is shared between a
     // HW's C47 and R47 builds, so the distinction is threaded as a build option.
     is_r47: bool = false,
+    // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
+    // end of RAM. A quarter of what every other target gets.
+    old_hw: bool = false,
     // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the keyboard-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
@@ -93,6 +96,7 @@ fn addRuntimeObjectWithIncludeDir(
 
     const kb_build_options = b.addOptions();
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
+    kb_build_options.addOption(bool, "state_old_hw", options.old_hw);
     module.addOptions("keyboard_state_build_options", kb_build_options);
 
     const object = b.addObject(.{
