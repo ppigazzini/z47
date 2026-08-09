@@ -54,15 +54,19 @@ fn neighbLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
     var y: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
     const cmp = runtime.__gmpz_cmp(&y[0], &x[0]);
 
@@ -80,15 +84,19 @@ fn gcdInt() callconv(.c) void {
     var frac_x = false;
     var frac_y = false;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     if (frac_x) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -122,15 +130,19 @@ fn lcmInt() callconv(.c) void {
     var frac_x = false;
     var frac_y = false;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     if (frac_x) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -216,10 +228,12 @@ fn modLonI() callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var remainder: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     if (x[0]._mp_size == 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -227,10 +241,12 @@ fn modLonI() callconv(.c) void {
         return;
     }
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
     runtime.__gmpz_init(&remainder[0]);
     defer runtime.__gmpz_clear(&remainder[0]);
@@ -246,10 +262,12 @@ fn modShoI() callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var remainder: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     if (x[0]._mp_size == 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -257,10 +275,12 @@ fn modShoI() callconv(.c) void {
         return;
     }
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
     runtime.__gmpz_init(&remainder[0]);
     defer runtime.__gmpz_clear(&remainder[0]);
@@ -276,10 +296,12 @@ fn rmdShoI() callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var remainder: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     if (x[0]._mp_size == 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -287,10 +309,12 @@ fn rmdShoI() callconv(.c) void {
         return;
     }
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
     runtime.__gmpz_init(&remainder[0]);
     defer runtime.__gmpz_clear(&remainder[0]);
@@ -304,10 +328,12 @@ fn rmdLonI() callconv(.c) void {
     var y: runtime.longInteger_t = undefined;
     var remainder: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     if (x[0]._mp_size == 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -315,10 +341,12 @@ fn rmdLonI() callconv(.c) void {
         return;
     }
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&y[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&y[0]);
 
     runtime.__gmpz_init(&remainder[0]);
     defer runtime.__gmpz_clear(&remainder[0]);

@@ -64,7 +64,9 @@ pub export fn fnCb(bit: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getBitOperand(bit, &base, &word, true)) return;
 
-    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, core.clearBit(word, bit));
+    // Masked like the other logical ops: keeps the result inside the word and
+    // cleanses out-of-range values inherited from older saved states.
+    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, core.clearBit(word, bit) & runtime.shortIntegerMask);
 }
 
 pub export fn fnSb(bit: u16) callconv(.c) void {
@@ -72,7 +74,9 @@ pub export fn fnSb(bit: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getBitOperand(bit, &base, &word, true)) return;
 
-    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, core.setBit(word, bit));
+    // Masked like the other logical ops: keeps the result inside the word and
+    // cleanses out-of-range values inherited from older saved states.
+    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, core.setBit(word, bit) & runtime.shortIntegerMask);
 }
 
 pub export fn fnFb(bit: u16) callconv(.c) void {
@@ -80,7 +84,9 @@ pub export fn fnFb(bit: u16) callconv(.c) void {
     var base: u32 = undefined;
     if (!getBitOperand(bit, &base, &word, true)) return;
 
-    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, core.flipBit(word, bit));
+    // Masked like the other logical ops: keeps the result inside the word and
+    // cleanses out-of-range values inherited from older saved states.
+    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, base, core.flipBit(word, bit) & runtime.shortIntegerMask);
 }
 
 pub export fn fnBc(bit: u16) callconv(.c) void {
