@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const builtin = @import("builtin");
 const runtime = @import("flags/flags_runtime.zig");
 const flag_classify = @import("flags/flag_classify.zig"); // std-only flag classification
@@ -123,11 +124,23 @@ fn isWriteProtectedSystemFlag(flag: u16) bool {
     return flag_classify.isWriteProtectedSystemFlag(flag);
 }
 
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+extern var errorMessage: [*c]u8;
+
+/// The refusal all three flag commands share, with the verb each one used.
+fn refuseWriteProtected(comptime who: [*:0]const u8, comptime verb: [*:0]const u8, flag: u16) void {
+    runtime.handleWriteProtectedFlag();
+    abi.fmtCStr(errorMessage, "protected system flag ({d})!", .{flag & 0x3fff});
+    moreInfoOnError(who, verb, errorMessage, null);
+}
+
 fn setUserFlag(flag: u16) void {
     switch (flag_bits.flagLocation(flag, runtime.FLAG_K, runtime.LAST_LOCAL_FLAG, runtime.NUMBER_OF_GLOBAL_FLAGS, runtime.NUMBER_OF_LOCAL_FLAGS, runtime.FLAG_M, runtime.FLAG_W)) {
         .global, .extra => |g| runtime.globalFlags[g.index] |= @as(u16, 1) << g.shift,
         .local => |l| if (runtime.currentLocalFlags != null) {
             runtime.currentLocalFlags[0] |= @as(u32, 1) << l.shift;
+        } else {
+            moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
         },
         .none => {},
     }
@@ -138,6 +151,8 @@ fn clearUserFlag(flag: u16) void {
         .global, .extra => |g| runtime.globalFlags[g.index] &= ~(@as(u16, 1) << g.shift),
         .local => |l| if (runtime.currentLocalFlags != null) {
             runtime.currentLocalFlags[0] &= ~(@as(u32, 1) << l.shift);
+        } else {
+            moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
         },
         .none => {},
     }
@@ -148,6 +163,8 @@ fn flipUserFlag(flag: u16) void {
         .global, .extra => |g| runtime.globalFlags[g.index] ^= @as(u16, 1) << g.shift,
         .local => |l| if (runtime.currentLocalFlags != null) {
             runtime.currentLocalFlags[0] ^= @as(u32, 1) << l.shift;
+        } else {
+            moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
         },
         .none => {},
     }
@@ -472,6 +489,8 @@ pub export fn getFlag(flag: u16) bool {
                 const shift: u5 = @intCast(local_flag);
                 return (runtime.currentLocalFlags[0] & (@as(u32, 1) << shift)) != 0;
             }
+        } else {
+            moreInfoOnError("In function getFlag:", "no local flags defined!", "", "");
         }
 
         return false;
@@ -497,7 +516,7 @@ pub export fn fnGetSystemFlag(system_flag: u16) void {
 pub export fn fnSetFlag(flag: u16) void {
     if ((flag & 0x8000) != 0) {
         if (isWriteProtectedSystemFlag(flag)) {
-            runtime.handleWriteProtectedFlag();
+            refuseWriteProtected("In function fnSetFlag:", "Tying to set a write", flag);
         } else if (flag == runtime.FLAG_ALPHA) {
             runtime.leaveTamModeIfEnabled();
             runtime.enterAlphaMode();
@@ -513,7 +532,7 @@ pub export fn fnSetFlag(flag: u16) void {
 pub export fn fnClearFlag(flag: u16) void {
     if ((flag & 0x8000) != 0) {
         if (isWriteProtectedSystemFlag(flag)) {
-            runtime.handleWriteProtectedFlag();
+            refuseWriteProtected("In function fnClearFlag:", "Tying to clear a write", flag);
         } else if (flag == runtime.FLAG_ALPHA) {
             runtime.leaveTamModeIfEnabled();
             runtime.leaveAlphaMode();
@@ -529,7 +548,7 @@ pub export fn fnClearFlag(flag: u16) void {
 pub export fn fnFlipFlag(flag: u16) void {
     if ((flag & 0x8000) != 0) {
         if (isWriteProtectedSystemFlag(flag)) {
-            runtime.handleWriteProtectedFlag();
+            refuseWriteProtected("In function fnFlipFlag:", "Tying to flip a write", flag);
         } else if (flag == runtime.FLAG_ALPHA) {
             runtime.leaveTamModeIfEnabled();
             if (getSystemFlag(@as(i32, @intCast(runtime.FLAG_ALPHA)))) {

@@ -17,7 +17,7 @@ fn getExponent(result: *i32) bool {
 
     if (runtime.realIsInfinite(&x_value)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function getExponent:", "cannot use +/-inf as an input of EXPT", null, null);
+        runtime.moreInfoOnError("In function getExponent:", "cannot use \xc2\xb1\xe2\x88\x9e as an input of EXPT", null, null);
         return false;
     }
 
