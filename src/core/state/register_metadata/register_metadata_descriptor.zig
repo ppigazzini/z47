@@ -1,3 +1,4 @@
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 const codec = @import("register_descriptor_codec.zig"); // std-only descriptor bit-field codec
@@ -58,6 +59,8 @@ pub fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             return descriptorDataType(descriptor);
+        } else if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function getRegisterDataType:", "no local registers defined!", "", "");
         }
         return invalid_data_type;
     }
@@ -92,6 +95,8 @@ pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             return dataPointerFromDescriptor(descriptor);
+        } else if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function getRegisterDataPointer:", "no local registers defined!", "", "");
         }
 
         return null;
@@ -127,6 +132,8 @@ pub fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             return descriptorTag(descriptor);
+        } else if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function getRegisterTag:", "no local registers defined!", "", "");
         }
 
         return 0;
@@ -169,6 +176,8 @@ pub fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             _ = runtime.trySetLocalDescriptor(reg, withDataTypeTag(descriptor, data_type, tag));
             return;
+        } else if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function setRegisterDataType:", "no local registers defined!", "", "");
         }
 
         return;
@@ -203,6 +212,8 @@ pub fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyo
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             _ = runtime.trySetLocalDescriptor(reg, withPointer(descriptor, encoded));
             return;
+        } else if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", "", "");
         }
 
         return;
@@ -240,6 +251,8 @@ pub fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             _ = runtime.trySetLocalDescriptor(reg, withTag(descriptor, tag));
             return;
+        } else if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function setRegisterTag:", "no local registers defined!", "", "");
         }
 
         return;

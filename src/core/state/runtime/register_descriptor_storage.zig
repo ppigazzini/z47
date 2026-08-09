@@ -96,6 +96,12 @@ pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t
     headers[index].header.descriptor = descriptor;
 }
 
+/// True when no local-register frame exists at all, which is the one failure
+/// the C reports on the console; an index past the frame's end is a bug screen.
+pub fn noLocalRegisterFrame() bool {
+    return currentLocalRegisters == null;
+}
+
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
     const index = resolveIndex(reg, FIRST_LOCAL_REGISTER, localRegisterCount()) orelse return false;
     const headers = currentLocalRegisters orelse return false;

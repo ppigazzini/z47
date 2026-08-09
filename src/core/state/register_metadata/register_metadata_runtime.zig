@@ -119,6 +119,10 @@ pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t
     descriptor_storage.setNamedDescriptorUnchecked(index, descriptor);
 }
 
+pub fn noLocalRegisterFrame() bool {
+    return descriptor_storage.noLocalRegisterFrame();
+}
+
 pub fn tryGetLocalDescriptor(reg: calcRegister_t, descriptor: *register_descriptor_t) bool {
     return descriptor_storage.tryGetLocalDescriptor(reg, descriptor);
 }

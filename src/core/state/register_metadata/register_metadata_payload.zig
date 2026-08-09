@@ -1,3 +1,4 @@
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
@@ -223,6 +224,9 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
     }
 
     if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
+        if (runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no local registers defined!", "", "");
+        }
         return;
     }
 }
@@ -240,6 +244,10 @@ pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
         if (reg > runtime.LAST_LOCAL_REGISTER) {
             stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
             return 0;
+        }
+
+        if (reg > runtime.LAST_RESERVED_VARIABLE and runtime.noLocalRegisterFrame()) {
+            moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no local registers defined!", "", "");
         }
 
         return 0;
