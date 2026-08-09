@@ -906,14 +906,6 @@ pub fn normKey00Key() i16 {
 }
 
 // SHOWMODE macro (defines.h:2187).
-pub fn showMode() bool {
-    return calcMode == CM_NORMAL and
-        (temporaryInformation == TI_SHOW_REGISTER or
-            temporaryInformation == TI_SHOW_REGISTER_BIG or
-            temporaryInformation == TI_SHOW_REGISTER_SMALL or
-            temporaryInformation == TI_SHOW_REGISTER_TINY or
-            temporaryInformation == TI_SHOWNOTHING);
-}
 
 pub extern fn fnC47Show(fn_show_param: u16) void;
 pub extern fn fnFlipFlag(flag: u16) void;

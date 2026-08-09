@@ -135,7 +135,9 @@ extern fn standardScreenDump() void;
 extern fn resetShiftState() void;
 extern fn resetKeytimers() void;
 extern fn emptyKeyBuffer() bool_t;
-extern fn outKeyBuffer(outKey: *u8) bool_t;
+// Returns BUFFER_FAIL (0) or BUFFER_SUCCESS (1); the definition types it u8,
+// and any other value read as a Zig bool would be illegal behaviour.
+extern fn outKeyBuffer(outKey: *u8) u8;
 extern fn getSystemFlag(flag: c_int) bool_t;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
