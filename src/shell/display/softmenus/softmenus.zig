@@ -120,6 +120,7 @@ const frontier_addons = @import("../../extensions/addons.zig");
 const frontier_assign = @import("../../input/assign.zig");
 const frontier_calc_mode = @import("../../calc_mode.zig");
 const frontier_char_string = @import("../text/char_string.zig");
+const frontier_conversion_units = @import("../../convert/conversion_units.zig");
 const frontier_debug = @import("../../debug.zig");
 const frontier_error = @import("../../error.zig");
 const frontier_items = @import("../items/items.zig");
@@ -3012,16 +3013,12 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                     } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_ALPHA) and calcMode == CM_PEM and @rem(@as(i32, item), 10000) == ITM_ASSIGN) {
                         // do nothing
                     } else if (item > 0 and indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemSoftmenuName[0] != 0) {
-                        if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVS) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVANG) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVE) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVP) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVFP) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVM) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVX) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVV) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVA) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_UNITCONV) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MISC) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVHUM) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVYMMV) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVCHEF) or
-                            softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVTEMP))
-                        {
-                            showSoftkey2(1, &indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText, 0);
+                        if (frontier_conversion_units.isItemConversion(@intCast(@rem(@as(i32, item), 10000)))) {
+                            // The softkey text for a fixed-menu conversion pair, including the
+                            // HPCONV swap. indexOfItems no longer carries the second text part.
+                            var www: [64]u8 = undefined;
+                            frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(@intCast(@rem(@as(i32, item), 10000)), &www);
+                            showSoftkey2(1, &www, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText, 0);
                         } else {
                             if ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS_EIM) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONST)) or
                                 ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_IO) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_PFN)) and (item == ITM_STOCFG or item == ITM_RCLCFG)))
