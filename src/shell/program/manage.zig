@@ -85,7 +85,9 @@ const SOFTMENU_STACK_SIZE: usize = 8;
 const AIM_BUFFER_LENGTH: i32 = 1024;
 const NIM_BUFFER_LENGTH: usize = 200;
 
-const RAM_SIZE_IN_BLOCKS: u32 = 65534;
+// defines.h: 16384 blocks on DM42 (DMCP without NEW_HW), 65534 everywhere else.
+// 65535 is excluded throughout because it is the C47_NULL pointer value.
+const RAM_SIZE_IN_BLOCKS: u32 = if (dmcp_build and old_hw) 16384 else 65534;
 const BYTES_PER_BLOCK: u32 = 4;
 const BPB: u5 = 2;
 const C47_NULL: u16 = 65535;

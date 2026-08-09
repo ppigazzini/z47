@@ -11,6 +11,8 @@ const builtin = @import("builtin");
 // and both sides run their production path through the same environment.
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
+const build_options = @import("program_serialization_build_options");
+const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_Z: i16 = 102;
@@ -18,7 +20,9 @@ const ERR_REGISTER_LINE: i16 = REGISTER_Z;
 
 const FIRST_LABEL: u16 = 2200;
 const LAST_LABEL: u16 = 6999;
-const RAM_SIZE_IN_BLOCKS: u16 = 65534;
+// defines.h: 16384 blocks on DM42 (DMCP without NEW_HW), 65534 everywhere else.
+// 65535 is excluded throughout because it is the C47_NULL pointer value.
+const RAM_SIZE_IN_BLOCKS: u16 = if (is_dmcp_build and state_old_hw) 16384 else 65534;
 
 const ioPathLoadProgram: c_int = 11;
 const ioModeWrite: c_int = 1;

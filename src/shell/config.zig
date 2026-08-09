@@ -255,7 +255,9 @@ const VAR_NO_GRAMOD: usize = 40;
 const VAR_NO_UX: usize = 41;
 const VAR_NO_LY: usize = 47;
 
-const RAM_SIZE_IN_BLOCKS: u32 = 65534;
+// defines.h: 16384 blocks on DM42 (DMCP without NEW_HW), 65534 everywhere else.
+// 65535 is excluded throughout because it is the C47_NULL pointer value.
+const RAM_SIZE_IN_BLOCKS: u32 = if (dmcp_build and old_hw) 16384 else 65534;
 const NUMBER_OF_GLOBAL_REGISTERS: usize = 137;
 const MAX_FREE_REGIONS: usize = 200;
 const BYTES_PER_BLOCK: u32 = 4;
