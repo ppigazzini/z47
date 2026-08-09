@@ -1132,7 +1132,7 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
         // flush operator stack: closing parenthesis, equal, or end of formula
         if (func == PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT or func == PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT or func == PARSER_OPERATOR_ITM_EQUAL or func == PARSER_OPERATOR_ITM_END_OF_FORMULA) {
             var i: i32 = @as(i32, @intCast(opStackTop)) - 1;
-            outer: while (i >= 0) : (i -= 1) {
+            while (i >= 0) : (i -= 1) {
                 const iu: usize = @intCast(i);
                 switch (opStack[iu]) {
                     PARSER_OPERATOR_ITM_PARENTHESIS_LEFT => {
@@ -1165,8 +1165,9 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                         if (func == PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT or func == PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT) {
                             return;
                         }
+                        // The C `break` leaves the switch only; the unwind loop
+                        // keeps going and zeroes the deeper slots too.
                         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                        break :outer;
                     },
                 }
             }

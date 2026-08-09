@@ -1656,12 +1656,13 @@ pub export fn leaveTamModeIfEnabled() callconv(.c) void {
     tam.mode = 0;
     clearSystemFlag(FLAG_ALPHA);
 
-    if (numberOfTamMenusToPop > 0) {
-        while (numberOfTamMenusToPop > 0) {
-            numberOfTamMenusToPop -= 1;
-            frontier_softmenus.popSoftmenu();
-        }
+    // `while(numberOfTamMenusToPop--)`: the post-decrement runs once more on the
+    // zero test, so the counter ends at -1 and that value is what gets persisted.
+    while (numberOfTamMenusToPop != 0) {
+        numberOfTamMenusToPop -= 1;
+        frontier_softmenus.popSoftmenu();
     }
+    numberOfTamMenusToPop -= 1;
 
     if (comptime !dmcp_build) {
         switch (calcMode) {

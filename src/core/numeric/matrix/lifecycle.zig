@@ -80,8 +80,16 @@ pub export fn realMatrixInit(matrix: *real34Matrix_t, rows: u16, cols: u16) call
         return false;
     }
     matrix.matrixElements = @ptrCast(@alignCast(allocC47Blocks(needed_size)));
-    matrix.header.matrixColumns = @intCast(cols);
-    matrix.header.matrixRows = @intCast(rows);
+    // The header fields are 12-bit, and the C assignment truncates into them.
+    matrix.header.matrixColumns = @truncate(cols);
+    matrix.header.matrixRows = @truncate(rows);
+
+    if (matrix.matrixElements == null) { // alloc can fail even when isMemoryBlockAvailable said yes
+        matrix.header.matrixColumns = 0;
+        matrix.header.matrixRows = 0;
+        reportRamFullInfo("In function realMatrixInit:");
+        return false;
+    }
 
     const elems = realElems(matrix);
     const count = @as(usize, rows) * @as(usize, cols);
@@ -146,8 +154,9 @@ pub export fn complexMatrixInit(matrix: *complex34Matrix_t, rows: u16, cols: u16
         return false;
     }
     matrix.matrixElements = @ptrCast(@alignCast(allocC47Blocks(needed_size)));
-    matrix.header.matrixColumns = @intCast(cols);
-    matrix.header.matrixRows = @intCast(rows);
+    // The header fields are 12-bit, and the C assignment truncates into them.
+    matrix.header.matrixColumns = @truncate(cols);
+    matrix.header.matrixRows = @truncate(rows);
     if (matrix.matrixElements == null) { // alloc can fail even when isMemoryBlockAvailable said yes
         matrix.header.matrixColumns = 0;
         matrix.header.matrixRows = 0;

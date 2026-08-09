@@ -12,6 +12,9 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
+    // OLD_HW selects the DM42 memory pool size, which is a quarter of the one
+    // every other target uses.
+    old_hw: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -49,6 +52,9 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    const build_options = b.addOptions();
+    build_options.addOption(bool, "state_old_hw", options.old_hw);
+    module.addOptions("program_serialization_build_options", build_options);
     // The DMCP ROM shim is shared by the calc-state and program-serialization
     // owners, so it is a REGISTERED module: directory-free, letting each owner
     // family live in its own subdirectory without a cross-module relative import.

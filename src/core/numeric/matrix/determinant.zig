@@ -4,13 +4,15 @@ const consts = abi.constants;
 // Zig port of the determinant cluster of src/c47/mathematics/matrix.c:
 // detRealMatrix / detComplexMatrix. Both pack the matrix into an interleaved
 // real/imag real_t scratch array and run a partial-pivoting complex LU
-// decomposition (the static workers detCpxMat / luCpxMat, kept private here),
+// decomposition (the static worker detCpxMat is kept private here; the complex
+// LU worker is shared, so this owner calls the one in complex_core),
 // then multiply the diagonal and flip sign per pivot swap. The remaining
 // linear-algebra engine (QR, eigen, inverse, sqrt) and the LU helpers that the
 // not-yet-ported engine still calls stay in the matrix bridge as their own C
 // statics; only the two public determinant entry points are renamed.
 
 const runtime = @import("../command_wrappers/runtime.zig");
+const math_matrix_complex_core = @import("complex_core.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -47,79 +49,6 @@ fn reportRamFull(comptime function_name: [*:0]const u8, comptime info: [*:0]cons
     }
 }
 
-// In-place partial-pivoting LU of an interleaved-complex size*size matrix.
-// Returns false on a singular pivot. Mirrors the static luCpxMat in matrix.c.
-fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *runtime.realContext_t) bool {
-    const n: usize = size;
-    var max: real_t = undefined;
-    var t: real_t = undefined;
-    var u: real_t = undefined;
-    var v: real_t = undefined;
-
-    var k: usize = 0;
-    while (k < n) : (k += 1) {
-        // Find the pivot row.
-        var pvt: usize = k;
-        runtime.complexMagnitude(&tmp_mat[(k * n + k) * 2], &tmp_mat[(k * n + k) * 2 + 1], &max, real_context);
-        var j: usize = k + 1;
-        while (j < n) : (j += 1) {
-            runtime.complexMagnitude(&tmp_mat[(j * n + k) * 2], &tmp_mat[(j * n + k) * 2 + 1], &u, real_context);
-            if (math_comparison_reals.realCompareGreaterThan(&u, &max)) {
-                realCopy(&u, &max);
-                pvt = j;
-            }
-        }
-        p[k] = @intCast(pvt);
-
-        // Pivot if required.
-        if (pvt != k) {
-            var i: usize = 0;
-            while (i < n) : (i += 1) {
-                realCopy(&tmp_mat[(k * n + i) * 2], &t);
-                realCopy(&tmp_mat[(pvt * n + i) * 2], &tmp_mat[(k * n + i) * 2]);
-                realCopy(&t, &tmp_mat[(pvt * n + i) * 2]);
-                realCopy(&tmp_mat[(k * n + i) * 2 + 1], &t);
-                realCopy(&tmp_mat[(pvt * n + i) * 2 + 1], &tmp_mat[(k * n + i) * 2 + 1]);
-                realCopy(&t, &tmp_mat[(pvt * n + i) * 2 + 1]);
-            }
-        }
-
-        // Check for singular.
-        if (runtime.realIsZero(&tmp_mat[(k * n + k) * 2]) and runtime.realIsZero(&tmp_mat[(k * n + k) * 2 + 1])) {
-            return false;
-        }
-
-        // Lower triangular elements for column k.
-        var i: usize = k + 1;
-        while (i < n) : (i += 1) {
-            runtime.divComplexComplex(&tmp_mat[(i * n + k) * 2], &tmp_mat[(i * n + k) * 2 + 1], &tmp_mat[(k * n + k) * 2], &tmp_mat[(k * n + k) * 2 + 1], &t, &u, real_context);
-            realCopy(&t, &tmp_mat[(i * n + k) * 2]);
-            realCopy(&u, &tmp_mat[(i * n + k) * 2 + 1]);
-        }
-        // Update the upper triangular elements.
-        i = k + 1;
-        while (i < n) : (i += 1) {
-            j = k + 1;
-            while (j < n) : (j += 1) {
-                runtime.mulComplexComplex(&tmp_mat[(i * n + k) * 2], &tmp_mat[(i * n + k) * 2 + 1], &tmp_mat[(k * n + j) * 2], &tmp_mat[(k * n + j) * 2 + 1], &t, &u, real_context);
-                realCopy(&tmp_mat[(i * n + j) * 2], &v);
-                realCopy(&tmp_mat[(i * n + j) * 2 + 1], &max);
-                runtime.realSubtract(&v, &t, &tmp_mat[(i * n + j) * 2], real_context);
-                runtime.realSubtract(&max, &u, &tmp_mat[(i * n + j) * 2 + 1], real_context);
-                runtime.realDivide(&tmp_mat[(i * n + j) * 2], &v, &t, &runtime.ctxtReal39); // condition number
-                runtime.realDivide(&tmp_mat[(i * n + j) * 2 + 1], &max, &u, &runtime.ctxtReal39);
-                if (math_comparison_reals.realCompareAbsLessThan(&t, const_1e_37())) {
-                    runtime.realSetZero(&tmp_mat[(i * n + j) * 2]); // prevent ill-conditionedness
-                }
-                if (math_comparison_reals.realCompareAbsLessThan(&u, const_1e_37())) {
-                    runtime.realSetZero(&tmp_mat[(i * n + j) * 2 + 1]);
-                }
-            }
-        }
-    }
-    return true;
-}
-
 // Determinant of an interleaved-complex size*size matrix. Mirrors the static
 // detCpxMat in matrix.c.
 fn detCpxMat(matrix: [*]const real_t, size: u16, res_r: *real_t, res_i: *real_t, real_context: *runtime.realContext_t) void {
@@ -135,7 +64,7 @@ fn detCpxMat(matrix: [*]const real_t, size: u16, res_r: *real_t, res_i: *real_t,
             var ti: real_t = undefined;
             runtime.realSetOne(&tr);
             runtime.realSetZero(&ti);
-            if (luCpxMat(lu, size, p, real_context)) {
+            if (math_matrix_complex_core.luCpxMat(lu, size, p, real_context)) {
                 var i: usize = 0;
                 while (i < n) : (i += 1) {
                     runtime.mulComplexComplex(&tr, &ti, &lu[(i * n + i) * 2], &lu[(i * n + i) * 2 + 1], &tr, &ti, real_context);
