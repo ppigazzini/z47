@@ -141,11 +141,16 @@ pub fn imaginaryPart() void {
 }
 
 fn realArgValue(x_value: *const runtime.real_t) *const runtime.real_t {
-    return if (runtime.realIsNaN(x_value))
-        x_value
-    else if (runtime.realIsZero(x_value) and runtime.getSystemFlag(runtime.FLAG_SPCRES))
-        x_value
-    else if (runtime.realIsNegative(x_value))
+    if (runtime.realIsNaN(x_value)) {
+        return x_value;
+    }
+    // The zero test is terminal, whatever SPCRES says: it only decides whether
+    // the sign of a zero is preserved. Falling through to the sign test would
+    // read -0 as negative and answer 180 degrees.
+    if (runtime.realIsZero(x_value)) {
+        return if (runtime.getSystemFlag(runtime.FLAG_SPCRES)) x_value else runtime.z47_math_wrappers_const_0();
+    }
+    return if (runtime.realIsNegative(x_value))
         runtime.z47_math_wrappers_const_180()
     else
         runtime.z47_math_wrappers_const_0();

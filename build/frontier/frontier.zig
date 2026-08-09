@@ -79,19 +79,23 @@ pub const RuntimeObjectOptions = struct {
     calcmodel: u8 = 46,
     // IR_PRINTING gates the IR printer paths (printViewAview / printInputPrompt
     // in display.c's fnView/fnAview/fnPrompt). Upstream defines.h enables it by
-    // default and #undef's it for every flash-limited DMCP TWO_FILE package
-    // (1, 2, 3 and 4). DMCP5 (NEW_HW) and host keep it. Defaults true (host).
+    // default and #undef's it for DMCP packages 1 and 3; packages 2 and 4,
+    // DMCP5 (NEW_HW) and host keep it. Defaults true (host).
     ir_printing: bool = true,
     // OPTION_VECTOR gates the 2D/3D vector display special-case in display.c's
-    // real34MatrixToDisplayString. Upstream enables it by default and #undef's
-    // it for DMCP packages 1, 2 and 4 (package 3 and DMCP5 keep it). Defaults
-    // true (host).
+    // real34MatrixToDisplayString and the VECTOR menu entries. Upstream enables
+    // it by default and #undef's it in the block common to DMCP packages 1-4,
+    // so no DM42 package has it; DMCP5 and host do. Defaults true (host).
     option_vector: bool = true,
     // OPTION_SAMPLEPGMS gates loading res/testPgms into program memory on RESET.
-    // Upstream enables it by default and #undef's it for NEW_HW and for DMCP
-    // package 4. Defaults true (host), where the load is still gated at runtime
-    // on the loadTestPrograms command-line flag.
+    // Upstream enables it by default and #undef's it for NEW_HW and again for
+    // packages 1-4, so no DMCP build has it. Defaults true (host), where the
+    // load is still gated at runtime on the loadTestPrograms command-line flag.
     option_samplepgms: bool = true,
+    // OPTION_EIGEN gates EIGVAL, EIGVEC, M.QR and MSQRT. Upstream enables it by
+    // default and #undef's it for DMCP packages 1, 2 and 4; package 3, DMCP5 and
+    // host keep it. Defaults true (host).
+    option_eigen: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -159,6 +163,7 @@ fn addRuntimeObject(
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_vector", options.option_vector);
     build_options.addOption(bool, "option_samplepgms", options.option_samplepgms);
+    build_options.addOption(bool, "option_eigen", options.option_eigen);
     // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
     // that here so fnSNAP freezes the clock the date/time formatters read and a
     // stored capture hash does not move with the calendar. startsWith, not eql:

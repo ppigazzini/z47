@@ -258,8 +258,10 @@ fn printUserPrinterEnabled() bool {
     return getSystemFlag(@as(c_int, @intCast(FLAG_PRTACT)));
 }
 
+/// True outside a running or single-stepping program, which is where the
+/// printing-disabled refusal applies: inside one, P.USR is silently ignored.
 fn printUserRunStateAllowsPrint() bool {
-    return !((programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP));
+    return (programRunStop != PGM_RUNNING) and (programRunStop != PGM_SINGLE_STEP);
 }
 
 fn printUserUseTelemetryPipeline() bool {

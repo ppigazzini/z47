@@ -15,9 +15,6 @@ const consts = abi.constants;
 // referenced under !dmcp_build. The DMCP status-bit macros (CLR_ST/SET_ST/ST) are
 // modelled over the fixed-address sdb.calc_state word. The PC-only gTime /
 // gRemoveTimer / gTimerId state and the gTimer callback live here on the host.
-// The IR_PRINTING printInputPrompt call is omitted (IR_PRINTING is never defined
-// for any z47 build).
-//
 // input.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
@@ -26,6 +23,9 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const ir_printing: bool = frontier_build_options.ir_printing;
+const printInputPrompt = if (ir_printing) @extern(*const fn (func: u16, regist: u16) callconv(.c) void, .{ .name = "printInputPrompt" }) else {};
+const ITM_INPUT: u16 = 43;
 // CALCMODEL == USER_R47 (66); the C47 family is 46.
 const is_r47: bool = frontier_build_options.calcmodel == 66;
 
@@ -287,7 +287,9 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
         } else {
             _ = frontier_screen.refreshLcd(null);
         }
-        // IR_PRINTING printInputPrompt omitted (never defined for z47).
+        if (comptime ir_printing) {
+            printInputPrompt(ITM_INPUT, regist);
+        }
     }
 }
 

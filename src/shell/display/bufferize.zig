@@ -36,6 +36,9 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+// OPTION_IR_PRINTING guards more than printing here: the region also carries the
+// lastItem writes keyboard.c reads on key release.
+const ir_printing: bool = frontier_build_options.ir_printing;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -2708,11 +2711,12 @@ pub export fn closeNim() callconv(.c) void {
             chsShoI();
         }
 
-        // IR_PRINTING (always enabled).
-        if ((lastItem != ITM_ms) and (lastItem != ITM_dotD) and (lastItem != ITM_DRG)) {
-            frontier_print.printTraceX(LINE_NOLF);
+        if (comptime ir_printing) {
+            if ((lastItem != ITM_ms) and (lastItem != ITM_dotD) and (lastItem != ITM_DRG)) { // avoid double tracing for functions changing X after closeNim
+                frontier_print.printTraceX(LINE_NOLF);
+            }
+            lastItem = 0;
         }
-        lastItem = 0;
     } // closeNim_exit
 
     nimNumberPart = NP_EMPTY; // Ensure insertStepInProgram sees the correct value.
@@ -2989,9 +2993,10 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
         return;
     }
 
-    // IR_PRINTING (always defined).
-    if (calcMode == CM_NIM) {
-        lastItem = item;
+    if (comptime ir_printing) {
+        if (calcMode == CM_NIM) {
+            lastItem = item;
+        }
     }
 
     if (item >= ITM_A and item <= ITM_F and lastIntegerBase == 0) {
