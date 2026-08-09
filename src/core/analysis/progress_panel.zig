@@ -116,14 +116,19 @@ pub fn showSolverBracket(a_in: *align(1) const real34_t, b_in: *align(1) const r
     lcdRefreshOnFirmware();
 }
 
-/// The solver panel refreshes the whole LCD rather than going through
-/// force_refresh, and only on the firmware.
+/// The solver and integrator panels refresh the whole LCD rather than going
+/// through force_refresh, and only on the firmware. lcd_refresh is a DMCP ROM
+/// jump-table call there, not a link symbol.
+const solve_build_options = @import("solve_build_options");
+const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
+const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+const library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
 fn lcdRefreshOnFirmware() void {
-    if (comptime @import("builtin").target.os.tag == .freestanding) {
-        lcd_refresh();
+    if (comptime is_dmcp_build) {
+        const f: *const fn () callconv(.c) void = @ptrFromInt(library_fn_base + 48);
+        f();
     }
 }
-extern fn lcd_refresh() void;
 
 /// The integrator's panel: the partial integral on X and the remaining interval
 /// width on Y.

@@ -809,6 +809,8 @@ pub export fn fnErf(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub export fn fnErfc(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    // erfc is the normal CDF in disguise, so it goes with OPTION_DIST_NORMAL.
+    if (comptime !runtime.option_dist_normal) return;
     erf_owned.fnErfc(unused_but_mandatory_parameter);
 }
 

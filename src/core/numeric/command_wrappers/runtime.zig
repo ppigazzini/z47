@@ -18,6 +18,12 @@ const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.d
 /// constraint", ~5Kb of flash). Absent from a harness's options => on, matching
 /// the host default.
 pub const option_xfn_1000 = !@hasDecl(build_options, "option_xfn_1000") or build_options.option_xfn_1000;
+// Each of these empties the matching command bodies upstream, so a build
+// without one answers nothing rather than computing on a stubbed helper.
+pub const option_elliptic = !@hasDecl(build_options, "option_elliptic") or build_options.option_elliptic;
+pub const option_bessel = !@hasDecl(build_options, "option_bessel") or build_options.option_bessel;
+pub const option_ortho = !@hasDecl(build_options, "option_ortho") or build_options.option_ortho;
+pub const option_dist_normal = !@hasDecl(build_options, "option_dist_normal") or build_options.option_dist_normal;
 
 /// defines.h's OPTION_SLVP_POLY: the SLVP polynomial-root command. Enabled by
 /// default and #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000

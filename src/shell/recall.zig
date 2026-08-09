@@ -504,7 +504,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         grpGroupingGr1LeftOverflow = configToRecall.grpGroupingGr1LeftOverflow;
         grpGroupingGr1Left = configToRecall.grpGroupingGr1Left;
         grpGroupingRight = configToRecall.grpGroupingRight;
-        currentAngularMode = configToRecall.currentAngularMode;
+        currentAngularMode = @intCast(configToRecall.currentAngularMode);
         lrSelection = configToRecall.lrSelection;
         lrChosen = configToRecall.lrChosen;
         denMax = configToRecall.denMax;

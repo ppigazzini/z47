@@ -646,6 +646,7 @@ fn getSingleParameter(registerNo: calcRegister_t, combined: *align(1) real_t, an
 // registerFMAOutputString
 // ===========================================================================
 pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const u8, displayString: [*]u8) linksection(runtime.code_section) callconv(.c) bool {
+    if (comptime !runtime.option_xfn_1000) return false;
     var angle: angularMode_t = undefined;
     var tmp1_b = BigReal(1071){};
     var tmp2_b = BigReal(1071){};
@@ -720,6 +721,7 @@ const registerReal34Data = abi.registerReal34;
 // fnXXfn
 // ===========================================================================
 pub export fn fnXXfn(function: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     var ErrorLocation: c_int = 0;
     const functionType = lookupFunctionId(function);
     const functionAngle = lookupFunctionAngle(function);
@@ -754,93 +756,123 @@ fn fnXfnIndirect(registerNo: calcRegister_t, function: u16, functionParam: u16) 
 // fnXXfn_* trampolines
 // ===========================================================================
 pub export fn fnXXfn_ToDEG(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_DEG2_XFN), 0);
 }
 pub export fn fnXXfn_ToRAD(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_RAD2_XFN), 0);
 }
 pub export fn fnXXfn_sin(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_sin_XFN), 0);
 }
 pub export fn fnXXfn_cos(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_cos_XFN), 0);
 }
 pub export fn fnXXfn_tan(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_tan_XFN), 0);
 }
 pub export fn fnXXfn_pi(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_pi_XFN), 0);
 }
 pub export fn fnXXfn_atan2(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_atan2_XFN), 0);
 }
 pub export fn fnXXfn_arcsin(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_arcsin_XFN), 0);
 }
 pub export fn fnXXfn_arccos(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_arccos_XFN), 0);
 }
 pub export fn fnXXfn_arctan(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_arctan_XFN), 0);
 }
 pub export fn fnXXfn_LN(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_LN_XFN), 0);
 }
 pub export fn fnXXfn_LOG(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_LOG_XFN), 0);
 }
 pub export fn fnXXfn_EXP(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_EXP_XFN), 0);
 }
 pub export fn fnXXfn_10X(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_10X_XFN), 0);
 }
 pub export fn fnXXfn_POWER(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_POWER_XFN), 0);
 }
 pub export fn fnXXfn_SQRT(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_SQRT_XFN), 0);
 }
 pub export fn fnXXfn_1ONX(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_1ONX_XFN), 0);
 }
 pub export fn fnXXfn_ADD(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_ADD_XFN), 0);
 }
 pub export fn fnXXfn_SUB(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_SUB_XFN), 0);
 }
 pub export fn fnXXfn_MULT(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_MULT_XFN), 0);
 }
 pub export fn fnXXfn_DIV(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_DIV_XFN), 0);
 }
 pub export fn fnXXfn_MOD(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_MOD_XFN), 0);
 }
 pub export fn fnXXfn_MODANG(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_MODANG_XFN), 0);
 }
 pub export fn fnXXfn_TO(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_TO_XFN), 0);
 }
 pub export fn fnXXfn_DRG(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_DRG_XFN), 0);
 }
 pub export fn fnXXfn_SQR(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_SQR_XFN), 0);
 }
 pub export fn fnXXfn_YRTX(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_XTHROOT_XFN), 0);
 }
 pub export fn fnXXfn_RDP(digits: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(REGISTER_X, @intCast(ITM_RDP_XFN), digits);
 }
 pub export fn fnXXfn_RSD(digits: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(REGISTER_X, @intCast(ITM_RSD_XFN), digits);
 }
 pub export fn fnXXfn_CHS(registerNo: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_xfn_1000) return;
     fnXfnIndirect(@intCast(registerNo), @intCast(ITM_CHS_XFN), 0);
 }
 

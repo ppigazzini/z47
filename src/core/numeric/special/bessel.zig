@@ -190,6 +190,7 @@ fn fnBesselJCore() BesselError!void {
 }
 
 pub export fn fnBesselJ(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_bessel) return;
     _ = unusedButMandatoryParameter;
     fnBesselJCore() catch |e| {
         reportBesselError(e);
@@ -240,6 +241,7 @@ fn fnBesselYCore() BesselError!void {
 }
 
 pub export fn fnBesselY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_bessel) return;
     _ = unusedButMandatoryParameter;
     fnBesselYCore() catch |e| {
         reportBesselError(e);
@@ -719,6 +721,7 @@ fn bessel(alpha: *const real_t, x: *const real_t, neg: bool, res: *real_t, realC
 // WP34S_BesselJ
 // ===========================================================================
 pub export fn WP34S_BesselJ(alpha: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_bessel) return;
     var a: real_t = undefined;
     var beta: real_t = undefined;
     var gamma: real_t = undefined;
@@ -873,6 +876,7 @@ fn bessel2_int_series(n_in: *const real_t, x: *const real_t, res: *real_t, realC
 // WP34S_BesselY
 // ===========================================================================
 pub export fn WP34S_BesselY(alpha: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_bessel) return;
     var a: real_t = undefined;
     var t: real_t = undefined;
     var u: real_t = undefined;

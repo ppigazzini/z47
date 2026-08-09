@@ -73,6 +73,7 @@ fn getOrthoPolyParam(regist: calcRegister_t, val: *real_t, realContext: *realCon
 }
 
 pub export fn fnOrthoPoly(kind: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     var z: real_t = undefined;
@@ -100,30 +101,37 @@ pub export fn fnOrthoPoly(kind: u16) linksection(runtime.code_section) callconv(
 }
 
 pub export fn fnHermite(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_HERMITE_HE);
 }
 pub export fn fnHermiteP(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_HERMITE_H);
 }
 pub export fn fnLaguerre(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_LAGUERRE_L);
 }
 pub export fn fnLaguerreAlpha(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_LAGUERRE_L_ALPHA);
 }
 pub export fn fnLegendre(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_LEGENDRE_P);
 }
 pub export fn fnChebyshevT(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_CHEBYSHEV_T);
 }
 pub export fn fnChebyshevU(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_ortho) return;
     _ = unusedButMandatoryParameter;
     fnOrthoPoly(ORTHOPOLY_CHEBYSHEV_U);
 }

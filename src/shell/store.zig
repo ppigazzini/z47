@@ -751,7 +751,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.grpGroupingGr1LeftOverflow = grpGroupingGr1LeftOverflow;
     configToStore.grpGroupingGr1Left = grpGroupingGr1Left;
     configToStore.grpGroupingRight = grpGroupingRight;
-    configToStore.currentAngularMode = currentAngularMode;
+    configToStore.currentAngularMode = @intCast(currentAngularMode);
     configToStore.lrSelection = lrSelection;
     configToStore.lrChosen = lrChosen;
     configToStore.denMax = denMax;
