@@ -10,6 +10,11 @@ const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 const calc_state = @import("calc_state.zig");
 const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+// backup.cfg is the simulator's own state store: upstream wraps the whole file
+// in `#if defined(PC_BUILD)`, and its two entry points are reached only from the
+// GTK shell. Compiling the bodies out on firmware keeps several hundred bytes of
+// field-name strings and writer code out of a flash budget that has none to give.
+const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id")) build_options.calc_model_user_id else 46;
 
 const FILE_OK: c_int = 1;
@@ -414,6 +419,7 @@ fn offWithin(p: [*c]const u8) u32 {
 }
 
 pub fn saveCalc() void {
+    if (comptime is_dmcp_build) return;
     const ok = (calc_model_user_id == USER_R47 and (calcModel == USER_R47f_g or calcModel == USER_R47fg_g or calcModel == USER_R47fg_bk or calcModel == USER_R47bk_fg)) or
         (calc_model_user_id == USER_C47 and (calcModel == USER_C47 or calcModel == USER_DM42));
     if (!ok) return;
@@ -985,6 +991,7 @@ fn programStep(idx: u16) i32 {
 }
 
 pub fn restoreCalc() void {
+    if (comptime is_dmcp_build) return;
     doFnReset(CONFIRMED, loadAutoSav);
     if (backupOpenParse() != FILE_OK) return;
     var backupVersion: u32 = 0;
