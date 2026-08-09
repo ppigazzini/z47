@@ -63,6 +63,9 @@ const frontend_settings = @import("../frontend_settings.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+// The two stk<->vector refusals are guarded on TESTSUITE_BUILD upstream, not on
+// the firmware build: the testSuite drives them and would print.
+const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_vector: bool = frontier_build_options.option_vector;
@@ -636,11 +639,7 @@ extern var gapItemRight: u16;
 // Function externs (cross-owner / runtime / libc / decNumber / GMP).
 // ===========================================================================
 extern fn getSystemFlag(sf: c_int) bool_t;
-// Deferred: addons' stale signature (frontSpace: [*c]const u8, nim)
-// differs from frontier_display's real34ToDisplayString (frontSpace: bool_t,
-// limitIrfrac); a faithful @import conversion needs semantic reconciliation, so
-// this one symbol stays extern to preserve exact current behavior.
-extern fn real34ToDisplayString(value34: *align(1) const real34_t, angularMode: angularMode_t, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayDigits: c_int, allowLEDOff: bool_t, frontSpace: [*c]const u8, nim: bool_t) void;
+extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: c_int) void;
 extern fn setSystemFlag(sf: c_uint) void;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
@@ -1216,7 +1215,9 @@ fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: 
 
     grpGroupingLeft = 0;
     grpGroupingRight = 0;
-    real34ToDisplayString(real34, amNone, tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 1, STD_SPACE_PUNCTUATION, 1);
+    // The C passes a string literal in the frontSpace slot, which converts to
+    // true, and true in the irfrac slot.
+    real34ToDisplayString(real34, amNone, tmpString, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 1, 1, 1);
     grpGroupingRight = grpGroupingRightOld;
     grpGroupingLeft = grpGroupingLeftOld;
 
@@ -2125,7 +2126,7 @@ fn fnFrom_msRegisterImpl(regist: i16) void {
         }
         if (temporaryInformation == TI_FROM_MS_DEG) {
             // !LIMITEXP=0, FRONTSPACE=1, NOIRFRAC=0
-            real34ToDisplayString(reg34(regist), getRegisterAngularMode(regist), &tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, 1, 0);
+            real34ToDisplayString(reg34(regist), @intCast(getRegisterAngularMode(regist)), &tmpString100, &standardFont, SCREEN_WIDTH, NUMBER_OF_DISPLAY_DIGITS, 0, 1, 0);
             var tmp_i: i16 = 0;
             while (tmpString100[@intCast(tmp_i)] != 0 and tmpString100[@intCast(tmp_i + 1)] != 0) : (tmp_i += 1) {
                 if (tmpString100[@intCast(tmp_i)] == 128 and tmpString100[@intCast(tmp_i + 1)] == 176) {
@@ -2445,7 +2446,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
             } else if ((getRegisterDataType(REGISTER_X) == dtReal34 or getRegisterDataType(REGISTER_X) == dtLongInteger) and (getRegisterDataType(REGISTER_Y) == dtReal34 or getRegisterDataType(REGISTER_Y) == dtLongInteger)) {
                 fnConvertStkToMx(indexOfItems[ITM_STKtoV2].param);
             } else {
-                if (comptime !dmcp_build) {
+                if (comptime !testsuite_build) {
                     frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                     invalidDataTypeHint("In function fnExchangeStkToMx:");
                 }
@@ -2460,7 +2461,7 @@ pub export fn fnExchangeStkToMx(opType: u16) callconv(.c) void {
             {
                 fnConvertStkToMx(VECT_CR_AUT);
             } else {
-                if (comptime !dmcp_build) {
+                if (comptime !testsuite_build) {
                     frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                     invalidDataTypeHint("In function fnExchangeStkToMx:");
                 }
