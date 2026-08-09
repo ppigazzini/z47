@@ -2121,24 +2121,106 @@ fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i
     showPanelledView(x1, x2, y1, videoMode);
 }
 
+// Trim the label from the right, one glyph at a time, until it fits the slot or
+// only one glyph is left. A cut that would swallow an arrow is pushed to just
+// past it, so the arrow survives.
+fn trimSoftKeyName(lim: u16, l: [*c]u8, mode: c_int, comp: c_int, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) u32 {
+    var w: u32 = frontier_screen.stringWidthC47(l, mode, comp, withLeadingEmptyRows, withEndingEmptyRows);
+    if (w >= lim) {
+        var arrowEnd: i16 = -1; // byte index just past the first arrow, or -1
+        var i: i16 = 0;
+        while (l[@intCast(i)] != 0 and l[@intCast(i + 1)] != 0) : (i += 1) {
+            const a = l[@intCast(i)];
+            const b = l[@intCast(i + 1)];
+            if ((STD_RIGHT_ARROW[0] == a and STD_RIGHT_ARROW[1] == b) or
+                (STD_LEFT_ARROW[0] == a and STD_LEFT_ARROW[1] == b))
+            {
+                arrowEnd = i + 2;
+                break;
+            }
+        }
+        var cut = frontier_screen.stringAfterPixelsC47(l, mode, comp, lim, withLeadingEmptyRows, withEndingEmptyRows);
+        if (cut == l) { // first glyph alone too wide; keep one glyph anyway
+            cut = l + @as(usize, @intCast(frontier_char_string.stringNextGlyph(l, 0)));
+        }
+        if (arrowEnd > 0 and @intFromPtr(cut) < @intFromPtr(l) + @as(usize, @intCast(arrowEnd))) {
+            cut = l + @as(usize, @intCast(arrowEnd));
+        }
+        cut[0] = 0;
+        w = frontier_screen.stringWidthC47(l, mode, comp, withLeadingEmptyRows, withEndingEmptyRows);
+    }
+    return w;
+}
+
+// Trim from the left by shifting the remainder down in place, stopping at the
+// arrow, which is preserved.
+fn trimSoftKeyNameFromLeft(lim: u16, l: [*c]u8, mode: c_int, comp: c_int, withLeadingEmptyRows: bool_t, withEndingEmptyRows: bool_t) u32 {
+    var w: u32 = frontier_screen.stringWidthC47(l, mode, comp, withLeadingEmptyRows, withEndingEmptyRows);
+    while (w >= lim and l[0] != 0 and l[1] != 0) {
+        if ((STD_RIGHT_ARROW[0] == l[0] and STD_RIGHT_ARROW[1] == l[1]) or
+            (STD_LEFT_ARROW[0] == l[0] and STD_LEFT_ARROW[1] == l[1]))
+        {
+            break;
+        }
+        const step = frontier_char_string.stringNextGlyph(l, 0);
+        if (step == 0) {
+            break;
+        }
+        var k: usize = 0;
+        while (l[@as(usize, @intCast(step)) + k] != 0) : (k += 1) {
+            l[k] = l[@as(usize, @intCast(step)) + k];
+        }
+        l[k] = 0;
+        w = frontier_screen.stringWidthC47(l, mode, comp, withLeadingEmptyRows, withEndingEmptyRows);
+    }
+    return w;
+}
+
+// Trim the side the slot position calls for; if it still does not fit, trim the
+// other side too.
+fn trimKey(itemName: [*c]u8, x: i16) u32 {
+    const lim: u16 = if (x == 5) 65 else 66;
+    var w: u32 = undefined;
+    if ((x & 1) == 0) {
+        w = trimSoftKeyName(lim, itemName, stdNoEnlarge, 1, 0, 0);
+        if (w >= lim) {
+            _ = trimSoftKeyNameFromLeft(lim, itemName, stdNoEnlarge, 1, 0, 0);
+        }
+    } else {
+        w = trimSoftKeyNameFromLeft(lim, itemName, stdNoEnlarge, 1, 0, 0);
+        if (w >= lim) {
+            _ = trimSoftKeyName(lim, itemName, stdNoEnlarge, 1, 0, 0);
+        }
+    }
+    return w;
+}
+
 pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) callconv(.c) void {
     var w: i16 = undefined;
-    var l: [16]u8 = undefined;
+    var l: [50]u8 = undefined;
+    var ll: [50]u8 = undefined;
 
     drawKeyFrame(x1, x2, y1, y2, videoMode, topLine, bottomLine);
 
     _ = frontier_char_string.xcopy(&l, label, @intCast(stringByteLength(label) + 1));
-    w = @intCast(frontier_screen.stringWidthC47(frontier_radio_button_catalog.figlabel(&l, showText, showValue), stdNoEnlarge, 0, 0, 0));
+
+    // Continue with the trimmed label: truncate only if it will not fit even
+    // compressed. The uncompressed width then drives the compress decision, or
+    // wide labels print uncompressed.
+    _ = stringCopy(&ll, frontier_radio_button_catalog.figlabel(&l, showText, showValue));
+    _ = trimKey(&ll, 0);
+    w = @intCast(frontier_screen.stringWidthC47(&ll, stdNoEnlarge, 0, 0, 0));
     if ((showCb >= 0) or (@as(i32, w) >= @divTrunc((@as(i32, @intCast(minI(x2, SCREEN_WIDTH))) - maxI(0, x1)) * 3, 4))) {
-        w = @intCast(frontier_screen.stringWidthC47(frontier_radio_button_catalog.figlabel(&l, showText, showValue), stdNoEnlarge, 1, 0, 0));
+        w = @intCast(frontier_screen.stringWidthC47(&ll, stdNoEnlarge, 1, 0, 0));
         if (showCb >= 0) {
             w = w + 8;
         }
         compressString = 1;
-        _ = frontier_screen.showString(frontier_radio_button_catalog.figlabel(&l, showText, showValue), &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
+        _ = frontier_screen.showString(&ll, &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
         compressString = 0;
     } else {
-        _ = frontier_screen.showString(frontier_radio_button_catalog.figlabel(&l, showText, showValue), &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
+        // Clearly short enough, so no trimming was needed anyway.
+        _ = frontier_screen.showString(&ll, &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
     }
 
     // JM_LINE2_DRAW is not defined -> skipped.
