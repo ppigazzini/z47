@@ -386,11 +386,12 @@ fn moreInfoOnErrorStub(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8
     _ = m4;
 }
 
-// The C symbol `moreInfoOnError` exists on every target: the real popup on host,
-// a no-op stub on firmware (matching error.c's #if PC_BUILD, with a no-op on
-// !PC_BUILD). Zig math owners call it unconditionally.
+// The C symbol `moreInfoOnError` exists on every target: the real popup where the
+// hints are compiled in, a no-op stub everywhere else. Upstream guards every call
+// site with EXTRA_INFO_ON_CALC_ERROR, which is 0 on firmware AND in the testSuite;
+// owners here call it unconditionally, so the gate lives on the symbol instead.
 comptime {
-    @export(if (dmcp_build) &moreInfoOnErrorStub else &moreInfoOnErrorImpl, .{ .name = "moreInfoOnError", .linkage = .strong });
+    @export(if (dmcp_build or !extra_info) &moreInfoOnErrorStub else &moreInfoOnErrorImpl, .{ .name = "moreInfoOnError", .linkage = .strong });
 }
 
 // ---------------------------------------------------------------------------
