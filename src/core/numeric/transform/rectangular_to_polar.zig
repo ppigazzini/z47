@@ -1,6 +1,8 @@
 const build_options = @import("math_command_wrappers_build_options");
 const atan2_owned = @import("../trig/atan2.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
+const abi = @import("abi");
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
@@ -88,6 +90,13 @@ pub fn rectangularToPolarReal(
         } else {
             runtime.realSetZero(theta);
         }
+        return;
+    }
+
+    // The conversion is only correct up to 75 digits; a wider context is a
+    // caller bug, and the C says so rather than computing.
+    if (real_context.digits > 75) {
+        displayBugScreen("In function realRectangularToPolar: The number of digits is > 75");
         return;
     }
 

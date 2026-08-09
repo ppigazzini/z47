@@ -626,20 +626,28 @@ fn dblDivideImpl(remainder_mode: bool) void {
         return;
     }
 
+    // Every path from here reaches the C's cleanup label, including the two
+    // saveLastX refusals.
+    defer runtime.__gmpz_clear(&x[0]);
+
     var wd: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&wd[0]);
+    defer runtime.__gmpz_clear(&wd[0]);
     longInteger2Pow(runtime.shortIntegerWordSize, &wd[0]);
 
     var z: runtime.longInteger_t = undefined;
     var y: runtime.longInteger_t = undefined;
     runtime.shortIntegerMode = runtime.SIM_UNSIGN;
     runtime.convertShortIntegerRegisterToLongInteger(REGISTER_Z, &z[0]);
+    defer runtime.__gmpz_clear(&z[0]);
     runtime.convertShortIntegerRegisterToLongInteger(REGISTER_Y, &y[0]);
+    defer runtime.__gmpz_clear(&y[0]);
     runtime.shortIntegerMode = sim;
     const base = runtime.getRegisterShortIntegerBase(REGISTER_Y);
 
     var dividend: runtime.longInteger_t = undefined;
     runtime.__gmpz_init(&dividend[0]);
+    defer runtime.__gmpz_clear(&dividend[0]);
     support.longIntegerMultiply(&y[0], &wd[0], &dividend[0]);
     support.longIntegerAdd(&dividend[0], &z[0], &dividend[0]);
 
@@ -670,7 +678,7 @@ fn dblDivideImpl(remainder_mode: bool) void {
 
     if (remainder_mode) {
         if (!runtime.saveLastX()) {
-            return; // mirrors upstream early return without cleanup
+            return;
         }
         runtime.convertLongIntegerToShortIntegerRegister(&y[0], base, REGISTER_X);
     } else {
@@ -692,7 +700,7 @@ fn dblDivideImpl(remainder_mode: bool) void {
 
         if (!quotient_overflow) {
             if (!runtime.saveLastX()) {
-                return; // mirrors upstream early return without cleanup
+                return;
             }
             runtime.convertLongIntegerToShortIntegerRegister(&z[0], base, REGISTER_X);
 
@@ -715,12 +723,6 @@ fn dblDivideImpl(remainder_mode: bool) void {
             runtime.fnDropY(support.NOPARAM);
         }
     }
-
-    runtime.__gmpz_clear(&dividend[0]);
-    runtime.__gmpz_clear(&x[0]);
-    runtime.__gmpz_clear(&y[0]);
-    runtime.__gmpz_clear(&z[0]);
-    runtime.__gmpz_clear(&wd[0]);
 }
 
 pub export fn dblDivide(remainder_mode: bool) linksection(runtime.code_section) callconv(.c) void {

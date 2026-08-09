@@ -309,8 +309,23 @@ pub fn fmtGBuf(buf: []u8, width: usize, precision: usize, upper: bool, value: f6
     var blen: usize = 0;
 
     // Exponent X after rounding to P significant digits (via the exact %e).
+    // A NaN or an infinity has no exponent to read: %g prints the same word,
+    // right-justified, which is what C does.
     const e = fmtExpBuf(&tmp, P - 1, value);
-    const epos = std.mem.indexOfScalar(u8, e, 'e').?;
+    const epos = std.mem.indexOfScalar(u8, e, 'e') orelse {
+        var pos: usize = 0;
+        if (e.len < width) {
+            for (0..width - e.len) |_| {
+                buf[pos] = ' ';
+                pos += 1;
+            }
+        }
+        @memcpy(buf[pos..][0..e.len], e);
+        if (upper) {
+            for (buf[pos..][0..e.len]) |*ch| ch.* = std.ascii.toUpper(ch.*);
+        }
+        return buf[0 .. pos + e.len];
+    };
     const esign: i64 = if (e[epos + 1] == '-') -1 else 1;
     var x: i64 = 0;
     for (e[epos + 2 ..]) |ch| x = x * 10 + @as(i64, ch - '0');
