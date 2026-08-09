@@ -349,6 +349,12 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1453, .param = 0, .radioButton = 132 },
     .{ .itemNr = 1528, .param = 2, .radioButton = 132 },
     .{ .itemNr = 1649, .param = 1, .radioButton = 132 },
+    .{ .itemNr = 1410, .param = 0, .radioButton = 133 },
+    .{ .itemNr = 1460, .param = 3, .radioButton = 133 },
+    .{ .itemNr = 1473, .param = 1, .radioButton = 133 },
+    .{ .itemNr = 1587, .param = 2, .radioButton = 133 },
+    .{ .itemNr = 1866, .param = 4, .radioButton = 133 },
+    .{ .itemNr = 1867, .param = 5, .radioButton = 133 },
     .{ .itemNr = 1890, .param = 0, .radioButton = 141 },
     .{ .itemNr = 1889, .param = 4, .radioButton = 141 },
     .{ .itemNr = 1887, .param = 2, .radioButton = 141 },
@@ -428,6 +434,8 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1924, .param = 32854, .radioButton = 142 },
     .{ .itemNr = 1895, .param = 32828, .radioButton = 142 },
     .{ .itemNr = 2052, .param = 32785, .radioButton = 142 },
+    .{ .itemNr = 2051, .param = 32873, .radioButton = 142 },
+    .{ .itemNr = 2050, .param = 32874, .radioButton = 142 },
     .{ .itemNr = 2053, .param = 32829, .radioButton = 142 },
     .{ .itemNr = 1876, .param = 32777, .radioButton = 142 },
     .{ .itemNr = 1877, .param = 32778, .radioButton = 142 },
@@ -441,6 +449,7 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1865, .param = 32838, .radioButton = 142 },
     .{ .itemNr = 2056, .param = 32839, .radioButton = 142 },
     .{ .itemNr = 2384, .param = 32843, .radioButton = 142 },
+    .{ .itemNr = 2735, .param = 32786, .radioButton = 142 },
     .{ .itemNr = 2014, .param = 32844, .radioButton = 142 },
     .{ .itemNr = 2015, .param = 32845, .radioButton = 142 },
     .{ .itemNr = 2011, .param = 32846, .radioButton = 142 },
@@ -554,6 +563,8 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32854, // FLAG_MNUp1
     32828, // FLAG_HPBASE
     32785, // FLAG_AMORT_HP12C
+    32873, // FLAG_BOLD
+    32874, // FLAG_SIGZEROS
     32829, // FLAG_2TO10
     32777, // FLAG_DENANY
     32778, // FLAG_DENFIX
@@ -567,6 +578,7 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32838, // FLAG_LARGELI
     32839, // FLAG_IRFRAC
     32843, // FLAG_CPXPLOT
+    32786, // FLAG_IMPLOT
     32844, // FLAG_SHOWX
     32845, // FLAG_SHOWY
     32846, // FLAG_PBOX

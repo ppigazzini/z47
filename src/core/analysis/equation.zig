@@ -62,6 +62,7 @@ const ERROR_SYNTAX_ERROR_IN_EQUATION: u8 = 45;
 const ERROR_EQUATION_TOO_COMPLEX: u8 = 46;
 const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
 const ERROR_NONE: u8 = 0;
+const ERROR_NO_EQUATION_DEFINED: u8 = 65;
 
 const FLAG_SOLVING: u32 = 0xc026;
 const FLAG_ASLIFT: u32 = 0xc023;
@@ -1448,6 +1449,14 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
 }
 
 pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mvarBuffer: [*c]u8) linksection(runtime.code_section) callconv(.c) void {
+    // No equation, or an empty one: allFormulae is null once numberOfFormulae
+    // reaches zero, so this test has to precede the dereference below.
+    if (equationId >= numberOfFormulae or allFormulae[equationId].pointerToFormulaData == C47_NULL) {
+        buffer[0] = 0;
+        mvarBuffer[0] = 0;
+        displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        return;
+    }
     var strPtr: [*c]const u8 = TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
     var bufPtr: [*c]u8 = buffer;
     var pointerInFormula: [*c]const u8 = strPtr;

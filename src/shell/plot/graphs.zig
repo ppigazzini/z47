@@ -145,6 +145,10 @@ const RESERVED_VARIABLE_LY: calcRegister_t = 2047;
 // c_uint params of set/clear/flipSystemFlag AND the c_int param of getSystemFlag,
 // exactly as the C int literals convert at each call site.
 const FLAG_CPXPLOT = 0x804B;
+const FLAG_IMPLOT = 0x8012;
+const ITM_CPXPLOT: u16 = 2384;
+const ITM_IMPLOT: u16 = 2735;
+const ERROR_NONE: u8 = 0;
 const FLAG_SHOWX = 0x804C;
 const FLAG_SHOWY = 0x804D;
 const FLAG_PBOX = 0x804E;
@@ -229,6 +233,7 @@ var gpm_prev_y_unclipped: i16 = 0; // graph_plotmem's static int16_t prev_y_uncl
 // plotstat.h
 extern var graph_dx: f64;
 extern var graph_dy: f64;
+extern var lastErrorCode: u8;
 extern var roundedTicks: bool_t;
 extern var PLOT_AXIS: bool_t;
 extern var PLOT_ZOOM: i8;
@@ -655,12 +660,19 @@ pub export fn fnPshade(unusedButMandatoryParameter: u16) callconv(.c) void {
 // ===========================================================================
 // fnComplexPlot / fnPx / fnPy
 // ===========================================================================
-pub export fn fnComplexPlot(unusedButMandatoryParameter: u16) callconv(.c) void {
-    _ = unusedButMandatoryParameter;
-    flipSystemFlag(FLAG_CPXPLOT);
+pub export fn fnComplexPlot(mode: u16) callconv(.c) void {
+    // CPXPLT and IMPLT share this entry and are told apart by the item number
+    // they carry; each toggles only its own flag.
+    if (mode == ITM_CPXPLOT) {
+        flipSystemFlag(FLAG_CPXPLOT);
+    } else if (mode == ITM_IMPLOT) {
+        flipSystemFlag(FLAG_IMPLOT);
+    }
     frontier_radio_button_catalog.fnRefreshState();
     fnEqSolvGraph(EQ_PLOT_LU);
-    fnPlotSQ(0);
+    if (lastErrorCode == ERROR_NONE) { // same guard as fnPlotf
+        fnPlotSQ(0);
+    }
 }
 
 pub export fn fnPx(unusedButMandatoryParameter: u16) callconv(.c) void {
