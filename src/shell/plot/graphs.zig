@@ -135,6 +135,7 @@ const REGISTER_Z: calcRegister_t = 102;
 const REGISTER_T: calcRegister_t = 103;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
+const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const INVALID_VARIABLE: calcRegister_t = 2199;
 
 // reserved variables (defines.h enum)
@@ -1188,10 +1189,23 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
     }
 
     // LOW_GRAPH_ACC IS defined -> change to SDIGS digit operation for graphs.
+    const s34 = ctxtReal34.digits;
+    const s39 = ctxtReal39.digits;
+    const s51 = ctxtReal51.digits;
+    const s75 = ctxtReal75.digits;
     ctxtReal34.digits = significantDigitsForScreen;
     ctxtReal39.digits = significantDigitsForScreen + 3;
     ctxtReal51.digits = significantDigitsForScreen + 3;
     ctxtReal75.digits = significantDigitsForScreen + 3;
+    // Every exit below restores what was saved, including the EXIT-key bail-outs
+    // mid-plot; leaving graph accuracy in place would narrow every later
+    // calculation for the rest of the session.
+    defer {
+        ctxtReal34.digits = s34;
+        ctxtReal39.digits = s39;
+        ctxtReal51.digits = s51;
+        ctxtReal75.digits = s75;
+    }
 
     regStatsXY = findNamedVariable(&plotStatMx);
     var cnt: u16 = undefined;
@@ -1470,6 +1484,14 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
         }
         // ###### end scaling loop ######
 
+        if (realCompareGreaterThan(x_min, x_max) or realCompareGreaterThan(y_min, y_max)) {
+            // The +-1E38 seeds are untouched: not one finite sample in the range,
+            // so there is nothing to draw.
+            calcMode = CM_NORMAL;
+            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            return;
+        }
+
         graph_Include0(!PLOTSTAT, 0);
 
         roundedTicks = true;
@@ -1714,12 +1736,6 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             }
         }
     }
-
-    // LOW_GRAPH_ACC IS defined -> change back to normal operation for graphs.
-    ctxtReal34.digits = 34;
-    ctxtReal39.digits = 39;
-    ctxtReal51.digits = 51;
-    ctxtReal75.digits = 75;
 }
 
 // ===========================================================================

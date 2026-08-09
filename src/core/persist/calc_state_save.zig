@@ -22,6 +22,12 @@ const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 
 const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+
+const USER_R47: u16 = 66;
+const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id"))
+    build_options.calc_model_user_id
+else
+    46; // USER_C47
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
@@ -245,7 +251,12 @@ pub fn writeSaveSections() void {
     // SAV file version number + identifying model line.
     abi.fmtCStr(b(), "SAVE_FILE_REVISION\n{d}\n", .{cu(@as(u8, 0))});
     save(b());
-    abi.fmtCStr(b(), "C47_save_file_00\n{d}\n", .{cu(configFileVersion)});
+    // Identify which model wrote the file: the reader compares this against its
+    // own model before it will restore keyboard assignments.
+    abi.fmtCStr(b(), if (calc_model_user_id == USER_R47)
+        "R47_save_file_00\n{d}\n"
+    else
+        "C47_save_file_00\n{d}\n", .{cu(configFileVersion)});
     save(b());
 
     // Global registers
