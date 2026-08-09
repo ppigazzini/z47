@@ -86,6 +86,22 @@ pub const KeyBuffer = struct {
         return BUFFER_SUCCESS;
     }
 
+    // interruptKeyInBuffer(): is an EXIT (33) or R/S (36) sitting in the ring?
+    // A refresh's keyBuffer_pop can move a key out of the DMCP SDK buffer into
+    // here, where C47PopKeyNoBuffer -- which reads only the SDK buffer -- would
+    // miss it. EXIT and RUN map to themselves through convertKeyCode, so the raw
+    // codes are correct on both C47 and R47.
+    pub fn hasInterruptKey(self: *const KeyBuffer) bool {
+        var i = self.read;
+        while (i != self.write) {
+            if (self.data[i] == 33 or self.data[i] == 36) {
+                return true;
+            }
+            i = (i +% 1) & BUFFER_MASK;
+        }
+        return false;
+    }
+
     // outKeyBuffer(pKey): fetch one byte. Returns BUFFER_FAIL when empty.
     pub fn pop(self: *KeyBuffer, p_key: *u8) u8 {
         if (self.read == self.write) {
@@ -124,6 +140,9 @@ fn c_emptyKeyBuffer() callconv(.c) bool {
 }
 fn c_clearKeyBuffer() callconv(.c) void {
     buffer.clear();
+}
+fn c_interruptKeyInBuffer() callconv(.c) bool {
+    return buffer.hasInterruptKey();
 }
 // The keyBuffer_pop drain loop, factored out of c_keyBuffer_pop so it can be
 // EXECUTED and asserted on host: the firmware path (romKeyPop via the DMCP ROM
@@ -165,6 +184,7 @@ comptime {
         @export(&c_fullKeyBuffer, .{ .name = "fullKeyBuffer" });
         @export(&c_emptyKeyBuffer, .{ .name = "emptyKeyBuffer" });
         @export(&c_clearKeyBuffer, .{ .name = "clearKeyBuffer" });
+        @export(&c_interruptKeyInBuffer, .{ .name = "interruptKeyInBuffer" });
         @export(&c_keyBuffer_pop, .{ .name = "keyBuffer_pop" });
     }
 }
