@@ -290,7 +290,7 @@ fn _processOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
         PARAM_FLAG => {
             if (opParam <= LAST_LOCAL_FLAG) { // Global flag 00..99, Lettered X..K, or Local .00..31
                 // nothing to do
-            } else if (FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam and opParam < FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS + NUMBER_OF_SYSTEM_FLAGS) { // Local register from .00 to .31
+            } else if (FIRST_LOCAL_FLAG + NUMBER_OF_LOCAL_FLAGS <= opParam and opParam < SYSTEM_FLAG_NUMBER) { // Lettered flag from M to S or E to W, or unused codes
                 // nothing to do
             } else if (opParam == SYSTEM_FLAG_NUMBER) {
                 // nothing to do
