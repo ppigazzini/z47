@@ -75,6 +75,7 @@ ALLOWED: dict[str, str] = {
     "ir_printing": "PRINTER / IR printing block",
     "option_elec": "OPTION_ELEC",
     "option_vector": "OPTION_VECTOR",
+    "option_samplepgms": "OPTION_SAMPLEPGMS",
     "option_xfn_1000": "OPTION_XFN_1000",
     "calcmodel": "CALCMODEL / the C47 vs R47 model split",
     "calc_model_user_id": "CALCMODEL",
