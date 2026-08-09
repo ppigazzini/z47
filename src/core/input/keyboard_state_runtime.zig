@@ -1,3 +1,6 @@
+const keyboard_state_build_options = @import("keyboard_state_build_options");
+const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
+    keyboard_state_build_options.state_old_hw;
 const std = @import("std");
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const builtin = @import("builtin");
@@ -1265,9 +1268,11 @@ pub fn isEqn2ndDer() bool {
 pub extern var FN_timed_out_to_NOP_or_Executed: bool_t;
 pub extern fn btnFnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
 
-// leavePem dependencies (keyboard.c 2309-2334). Host owner: RAM_SIZE_IN_BLOCKS
-// is the !DMCP_BUILD (NEW_HW) value (defines.h:1988).
-pub const RAM_SIZE_IN_BLOCKS: u32 = 65534;
+// leavePem dependencies (keyboard.c 2309-2334). defines.h: 16384 blocks on DM42
+// (DMCP without NEW_HW), 65534 everywhere else. leavePem is a shared both-lane
+// body, so this object is linked into the DM42 firmware and has to follow the
+// board.
+pub const RAM_SIZE_IN_BLOCKS: u32 = if (state_old_hw) 16384 else 65534;
 pub extern var freeProgramBytes: u16;
 pub extern var beginOfProgramMemory: [*c]u8;
 pub extern var firstDisplayedStep: [*c]u8;

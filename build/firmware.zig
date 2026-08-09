@@ -360,6 +360,7 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        .old_hw = true, // DM42: quarter-size pool, read by leavePem
     });
     const dmcp5_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", .{
         .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
@@ -399,6 +400,7 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        .old_hw = true, // DM42: quarter-size pool, read by leavePem
         .is_r47 = true,
     });
     const dmcp5r47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", .{
