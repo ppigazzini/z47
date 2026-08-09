@@ -129,6 +129,9 @@ extern var shiftG: [1]u8;
 extern var rbrMode: [1]u8;
 extern var showContent: [1]u8;
 extern var numScreensNumericFont: [1]u8;
+extern var numScreensNumericFontBold: [1]u8;
+extern var numLinesNumericFontBold: [1]u8;
+extern var graphToRemainOnScreen: u8;
 extern var numLinesNumericFont: [1]u8;
 extern var numScreensStandardFont: [1]u8;
 extern var numLinesStandardFont: [1]u8;
@@ -429,6 +432,7 @@ pub fn saveCalc() void {
     sv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
     sv(&calcMode, 1, "calcMode", "uint8");
     sv(&previousCalcMode, 1, "previousCalcMode", "uint8");
+    sv(&graphToRemainOnScreen, 1, "graphToRemainOnScreen", "bool");
     sv(&calcModel, 1, "calcModel", "uint8");
     sv(&globalFlags[0], 16, "globalFlags", "hexDump");
     sv(&errorMessage[0], 512, "errorMessage", "hexDump");
@@ -493,7 +497,9 @@ pub fn saveCalc() void {
     sv(&rbrMode[0], 1, "rbrMode", "uint8");
     sv(&showContent[0], 1, "showContent", "bool");
     sv(&numScreensNumericFont[0], 1, "numScreensNumericFont", "uint8");
+    sv(&numScreensNumericFontBold[0], 1, "numScreensNumericFontBold", "uint8");
     sv(&numLinesNumericFont[0], 1, "numLinesNumericFont", "uint8");
+    sv(&numLinesNumericFontBold[0], 1, "numLinesNumericFontBold", "uint8");
     sv(&numScreensStandardFont[0], 1, "numScreensStandardFont", "uint8");
     sv(&numLinesStandardFont[0], 1, "numLinesStandardFont", "uint8");
     sv(&numScreensTinyFont[0], 1, "numScreensTinyFont", "uint8");
@@ -1016,6 +1022,7 @@ pub fn restoreCalc() void {
     rv(globalRegister, REGISTER_HEADER_SIZE * NUMBER_OF_GLOBAL_REGISTERS, "globalRegister", "hexDump");
     rv(&calcMode, 1, "calcMode", "uint8");
     rv(&previousCalcMode, 1, "previousCalcMode", "uint8");
+    rv(&graphToRemainOnScreen, 1, "graphToRemainOnScreen", "bool");
     rv(&calcModel, 1, "calcModel", "uint8");
 
     var poolPointersInRange = true;
@@ -1115,7 +1122,9 @@ pub fn restoreCalc() void {
     rv(&rbrMode[0], 1, "rbrMode", "uint8");
     rv(&showContent[0], 1, "showContent", "bool");
     rv(&numScreensNumericFont[0], 1, "numScreensNumericFont", "uint8");
+    rv(&numScreensNumericFontBold[0], 1, "numScreensNumericFontBold", "uint8");
     rv(&numLinesNumericFont[0], 1, "numLinesNumericFont", "uint8");
+    rv(&numLinesNumericFontBold[0], 1, "numLinesNumericFontBold", "uint8");
     rv(&numScreensStandardFont[0], 1, "numScreensStandardFont", "uint8");
     rv(&numLinesStandardFont[0], 1, "numLinesStandardFont", "uint8");
     rv(&numScreensTinyFont[0], 1, "numScreensTinyFont", "uint8");

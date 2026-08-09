@@ -669,6 +669,7 @@ const programmableMenu_t = abi.ProgrammableMenu;
 extern var programmableMenu: programmableMenu_t;
 
 extern var calcMode: u8;
+extern var graphToRemainOnScreen: bool_t;
 extern var menuPageNumber: u16;
 extern var catalog: i16;
 extern var dynamicMenuItem: i16;
@@ -3515,6 +3516,11 @@ pub export fn isJMAlphaOnlySoftmenu() callconv(.c) bool_t {
 }
 
 pub export fn fnPseudoMenu(target: u16) callconv(.c) void {
+    if (@as(i16, @intCast(target & 0x3fff)) == MNU_PLOT_FUNC and
+        !(graphToRemainOnScreen != 0 or calcMode == CM_GRAPH))
+    {
+        return;
+    }
     menuPageNumber = @intCast(target >> 14);
     fnOpenMenu(@as(u16, @bitCast(@as(i16, @intCast(target & 0x3fff)))));
 }

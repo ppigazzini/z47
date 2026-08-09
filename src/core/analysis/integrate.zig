@@ -419,6 +419,10 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
         convertRealToReal34ResultRegister(&acc, REGISTER_Y);
         if (lastErrorCode != ERROR_SOLVER_ABORT) {
             temporaryInformation = TI_INTEGRAL;
+        } else {
+            // The abort halts the program; PGM_WAITING lets an outer engine stop
+            // too, the same way fnSolve reports it.
+            programRunStop = PGM_WAITING;
         }
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else {
@@ -741,6 +745,19 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 var xx: real_t = undefined;
 
                 exitSignalled = exitSignalled or exitKeyWaiting();
+                if (programRunStop == PGM_WAITING) {
+                    // A nested engine aborted: stop at once rather than via the
+                    // half-second path.
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    return;
+                }
+                if (exitSignalled) {
+                    // INTEGRATION_TWO_STAGE_EXIT undefined: abort on the key now.
+                    // Waiting for the ~0.5 s tick lets a short nested integral
+                    // finish first and swallow the press.
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    return;
+                }
                 loop += 1;
                 if (checkHalfSec()) {
                     if (progressHalfSecUpdate_Integer(timed, "Level: ", loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
@@ -800,6 +817,19 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                 var xx: real_t = undefined;
 
                 exitSignalled = exitSignalled or exitKeyWaiting();
+                if (programRunStop == PGM_WAITING) {
+                    // A nested engine aborted: stop at once rather than via the
+                    // half-second path.
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    return;
+                }
+                if (exitSignalled) {
+                    // INTEGRATION_TWO_STAGE_EXIT undefined: abort on the key now.
+                    // Waiting for the ~0.5 s tick lets a short nested integral
+                    // finish first and swallow the press.
+                    displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    return;
+                }
                 loop += 1;
                 if (checkHalfSec()) {
                     if (progressHalfSecUpdate_Integer(timed, "Level: ", loop, !(interruptedLoop != 0), !(interruptedLoop != 0), !(interruptedLoop != 0))) {
