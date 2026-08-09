@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
 const rectangular_to_polar_owned = @import("transform/rectangular_to_polar.zig");
@@ -129,7 +130,7 @@ pub fn lnRealValue(
     // The blob constant, not a runtime sqrt(1/2): computing it at the caller's
     // precision moves the threshold and lands an inexact status in the caller's
     // context on every ln.
-    while (realCompareLessEqual(&z, runtime.z47_math_wrappers_const39_root2on2())) {
+    while (realCompareLessEqual(&z, abi.constants.const39_root2on2())) {
         runtime.realMultiply(&f, runtime.z47_math_wrappers_const_2(), &f, real_context);
         runtime.realSquareRoot(&z, &z, real_context);
     }
