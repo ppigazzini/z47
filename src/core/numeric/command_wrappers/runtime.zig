@@ -282,6 +282,22 @@ pub extern fn fnChangeBase(base: u16) void;
 pub extern fn forceSystemFlag(sf: c_uint, set: c_int) void;
 pub extern fn fnSetFlag(flag: u16) void;
 pub extern fn fnRefreshState() void;
+
+// The integer-check commands push the LCD out before answering, which is a
+// screen refresh, not a state refresh. On the firmware it is a DMCP ROM
+// jump-table call rather than a link symbol.
+const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
+const dm42_pkg_xip_refresh = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
+const refresh_library_fn_base: usize = if (dm42_pkg_xip_refresh) 0x08000201 else 0x08000301;
+extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on the host
+pub inline fn refreshScreenNow() void {
+    if (comptime is_dmcp_build) {
+        const f: *const fn () callconv(.c) void = @ptrFromInt(refresh_library_fn_base + 48);
+        f();
+    } else {
+        _ = refreshLcd(null);
+    }
+}
 pub extern fn setLastintegerBasetoZero() void;
 pub extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 pub extern fn linkToComplexMatrixRegister(reg: calcRegister_t, matrix: *complex34Matrix_t) void;
