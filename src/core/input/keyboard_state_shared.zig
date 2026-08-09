@@ -248,6 +248,7 @@ pub fn implementation(comptime runtime: type) type {
                                     processAimInput(item);
                                     if (runtime.tam.mode != 0) {
                                         runtime.popSoftmenu();
+                                        runtime.numberOfTamMenusToPop -= 1;
                                     }
                                 } else {
                                     runtime.addStepInProgram(item);
@@ -2241,6 +2242,9 @@ pub fn implementation(comptime runtime: type) type {
                             runtime.popSoftmenu();
                         }
                         runtime.popSoftmenu();
+                        if (-runtime.currentMenu() == runtime.MNU_SHOW) { // this would be after programmed plot
+                            runtime.popSoftmenu();
+                        }
                     }
 
                     if (runtime.currentMenu() == -runtime.MNU_TIMERF) {
@@ -2695,7 +2699,14 @@ pub fn implementation(comptime runtime: type) type {
                             runtime.closeAim();
                         }
                         runtime.fnBst(runtime.NOPARAM);
-                        _ = runtime.refreshLcd(null);
+                        // The firmware lane blits the framebuffer; refreshLcd is
+                        // C47's own full refresh, which also blinks the cursor and
+                        // steps the function-name counter.
+                        if (comptime runtime.is_dmcp_build) {
+                            runtime.lcd_refresh();
+                        } else {
+                            _ = runtime.refreshLcd(null);
+                        }
                     }
                     if (runtime.currentMenu() == -runtime.MNU_PLOT_ASSESS) {
                         _ = runtime.strcpy(&runtime.plotStatMx[0], "STATS");
@@ -2864,7 +2875,14 @@ pub fn implementation(comptime runtime: type) type {
                             runtime.closeAim();
                         }
                         runtime.fnSst(runtime.NOPARAM);
-                        _ = runtime.refreshLcd(null);
+                        // The firmware lane blits the framebuffer; refreshLcd is
+                        // C47's own full refresh, which also blinks the cursor and
+                        // steps the function-name counter.
+                        if (comptime runtime.is_dmcp_build) {
+                            runtime.lcd_refresh();
+                        } else {
+                            _ = runtime.refreshLcd(null);
+                        }
                     }
                     if (runtime.currentMenu() == -runtime.MNU_PLOT_ASSESS) {
                         _ = runtime.strcpy(&runtime.plotStatMx[0], "STATS");

@@ -156,8 +156,7 @@ fn frmCalcMouseButtonReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, dat
 
 // keyboard.c btnPressed (1778-1943), lane-merged: the host body plus the DMCP
 // divergences gated by comptime is_dmcp_build (btnPressedDmcp wraps it for the
-// DMCP signature). The C program-stop path clears the status-bar flags with a
-// buggy `&= !(mask)` (logical not); that fix is folded in here as `&= ~(mask)`.
+// DMCP signature).
 fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = not_used;
     // event is the GdkEvent on the host lane only; the DMCP btnPressed body takes
@@ -224,7 +223,11 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     if (comptime !is_dmcp_build) {
         if (runtime.programRunStop == runtime.PGM_RUNNING or runtime.programRunStop == runtime.PGM_PAUSED) {
             if ((item == runtime.ITM_RS or item == runtime.ITM_EXIT1) and !runtime.getSystemFlag(runtime.FLAG_INTING) and !runtime.getSystemFlag(runtime.FLAG_SOLVING)) {
-                runtime.screenUpdatingMode &= ~(runtime.SCRUPD_MANUAL_STATUSBAR | runtime.SCRUPD_SKIP_STATUSBAR_ONE_TIME);
+                // The C writes `&= !(mask)` -- a logical not, so the right-hand
+                // side is 0 and every manual bit clears, not just the two named.
+                // That full reset is what puts the stack and menu back under
+                // automatic refresh when a program stops.
+                runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
                 runtime.programRunStop = runtime.PGM_WAITING;
                 runtime.showFunctionNameItem = 0;
                 // IR_PRINTING (defined on host): trace the STOP.

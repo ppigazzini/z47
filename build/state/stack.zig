@@ -26,6 +26,10 @@ pub const RuntimeObjectOptions = struct {
     // for the dedicated coverage harness variant, never a product/test object,
     // because the sancov handler symbol is linked only into that binary.
     coverage: bool = false,
+    // EXTRA_INFO_ON_CALC_ERROR. Upstream compiles the swap-target diagnostics out
+    // on firmware and in the testSuite, where an out-of-range swap target is
+    // silently ignored rather than reported. Default true mirrors a host build.
+    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -59,6 +63,10 @@ fn addRuntimeObject(
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
+    // firmware does; keep the owner's diagnostics out of both.
+    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
     module.addOptions("stack_state_build_options", build_options);
 
     const descriptor_storage_options = b.addOptions();

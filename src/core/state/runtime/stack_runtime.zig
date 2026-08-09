@@ -12,6 +12,8 @@ const swap_descriptor_owned = @import("stack_runtime_swap_descriptor.zig");
 const use_fake_stack_state_harness_surface =
     @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
+const extra_info: bool = @hasDecl(build_options, "extra_info_on_calc_error") and
+    build_options.extra_info_on_calc_error;
 
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
@@ -245,9 +247,13 @@ pub fn trySetSwapTargetDescriptor(reg: u16, descriptor: register_descriptor_t) b
     return swap_descriptor_owned.trySetSwapTargetDescriptor(reg, descriptor);
 }
 
+// The whole report sits inside EXTRA_INFO_ON_CALC_ERROR upstream, so on firmware
+// and in the testSuite an out-of-range swap target does nothing at all.
 pub fn reportInvalidSwapTarget(reg: u16) void {
     _ = reg;
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, REGISTER_Z, REGISTER_X);
+    if (comptime extra_info) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, REGISTER_Z, REGISTER_X);
+    }
 }
 
 pub fn statisticalSumsBlocks() u16 {
