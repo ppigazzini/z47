@@ -895,6 +895,7 @@ extern var screenUpdatingMode: u8;
 extern var screenHoldsDrawnPixels: bool;
 extern var refreshNIMdone: bool_t;
 extern var calcMode: u8;
+extern var graphToRemainOnScreen: bool_t;
 extern var temporaryInformation: u8;
 extern var lastErrorCode: u8;
 extern var displayStack: u8;
@@ -5777,6 +5778,7 @@ fn _refreshPemScreen() void {
 }
 
 fn _refreshNormalScreen() void {
+    graphToRemainOnScreen = 0;
     if (calcMode != CM_NIM) {
         refreshNIMdone = 0;
     }
@@ -5998,6 +6000,7 @@ pub export fn refreshScreen(source: u16) callconv(.c) void {
         CM_GRAPH => {
             doRefreshSoftMenu = 0;
             frontier_graphs.graph_plotmem();
+            graphToRemainOnScreen = 1; // a graph is now the on-screen content
             displayShiftAndTamBuffer();
             frontier_softmenus.showSoftmenuCurrentPart();
             if (programRunStop == PGM_RUNNING or programRunStop == PGM_PAUSED) {

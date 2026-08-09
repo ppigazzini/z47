@@ -154,6 +154,13 @@ extern var currentMvarLabel: u16;
 extern var currentFormula: u16;
 extern var numberOfLabels: u16;
 extern var significantDigits: u8;
+// Set and cleared with the graph accuracy reduction in execute_rpn_function_graphAcc.
+extern var graphAccActive: bool;
+
+// defines.h: significantDigits == 0 ? 12 : significantDigits.
+inline fn significantDigitsForEqnGraphs() i32 {
+    return if (significantDigits == 0) 12 else significantDigits;
+}
 extern var screenUpdatingMode: u8;
 extern var entryStatus: u8;
 extern var errorMessage: [*c]u8;
@@ -492,6 +499,7 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
                 SOLVER_RESULT_ABORTED => {
                     temporaryInformation = TI_SOLVER_FAILED;
                     displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    programRunStop = PGM_WAITING; // R/S halts the whole program on the SOLVE step
                 },
                 else => {},
             }
@@ -860,6 +868,16 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
 
         realSetOne(minBracketSpacing);
         minBracketSpacing.exponent -= if (significantDigits == 0 or significantDigits == 34) solverTvmTol else significantDigits;
+    } else if (graphAccActive) {
+        // graphAccActive is true only inside execute_rpn_function_graphAcc, where
+        // the contexts are narrowed to significantDigitsForEqnGraphs + 3. Follow
+        // the grapher and converge to graph precision; asking for more than the
+        // narrowed context can deliver spins to the iteration cap.
+        realSetOne(tol);
+        tol.exponent -= significantDigitsForEqnGraphs();
+        realSetOne(minBracketSpacing);
+        minBracketSpacing.exponent -= significantDigitsForEqnGraphs();
+        stringToReal("1e-34", tolAlmostZero, ctxtSolver()); // residual floor stays at real34 precision
     } else {
         convergenceTolerence(tol);
         stringToReal("1e-34", tolAlmostZero, ctxtSolver());
@@ -1006,9 +1024,11 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                     }
                 }
 
-                if (exitKeyWaiting()) {
+                // A key/EXIT, or a nested engine that already aborted: PGM_WAITING
+                // survives where lastErrorCode does not.
+                if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
                     _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted Iter:", loop, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                    programRunStop = 2; // PGM_WAITING
+                    programRunStop = PGM_WAITING;
                     displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
                     break;
                 }
@@ -1371,7 +1391,6 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
         result = SOLVER_RESULT_EXTREMUM;
     }
 
-    engineNestingDepth -= 1; // after the extremum check above, which re-runs the user program
     currentSolverNestingDepth -= 1;
     if (currentSolverNestingDepth == 0) {
         clearSystemFlag(FLAG_SOLVING);
@@ -1416,6 +1435,11 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
             clearSystemFlag(FLAG_SOLVING);
         }
     }
+
+    // After the extremum check above, which re-runs the user program: releasing
+    // the nesting slot any earlier lets that run start an engine the cap exists
+    // to refuse.
+    engineNestingDepth -= 1;
 
     if (result == SOLVER_RESULT_NORMAL and real34IsInfinite(registerReal34Ptr(variable)) and extendRange and real34IsZero(resZ)) {
         result = SOLVER_RESULT_CONSTANT;

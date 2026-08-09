@@ -146,6 +146,7 @@ pub export var keyActionProcessed: bool_t = false;
 pub export var fnKeyInCatalog: bool_t = false;
 pub export var hourGlassIconEnabled: bool_t = false;
 pub export var graphAccActive: bool_t = false; // graph-eqn precision reduction is active (read by a nested SOLVE)
+pub export var graphToRemainOnScreen: bool_t = false; // a graph is the on-screen content and must survive the next halt
 pub export var watchIconEnabled: bool_t = false;
 pub export var printerIconEnabled: bool_t = false;
 pub export var serialIOIconEnabled: bool_t = false;

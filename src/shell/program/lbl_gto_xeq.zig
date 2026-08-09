@@ -273,6 +273,9 @@ extern var programRunStop: u8;
 extern var lastErrorCode: u8;
 extern var previousErrorCode: u8;
 extern var graphAccActive: bool;
+extern var graphToRemainOnScreen: bool_t;
+const CM_NORMAL: u8 = 0;
+const CM_GRAPH: u8 = 15;
 extern fn resetVbatSampleSchedule() callconv(.c) void;
 extern fn getUptimeMs() u32;
 extern var temporaryInformation: u8;
@@ -1146,6 +1149,11 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
             currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
             _executeOp(step, op, PARAM_REGISTER);
             if (temporaryInformation == TI_SOLVER_FAILED) {
+                if (lastErrorCode == ERROR_SOLVER_ABORT) {
+                    // Keep the error so the loop halts on the SOLVE step, as INT
+                    // does; this is an abort, not a root that was not found.
+                    return 0;
+                }
                 lastErrorCode = ERROR_NONE;
                 return 2;
             } else {
@@ -1333,10 +1341,13 @@ pub export fn runProgram(singleStep: bool_t, menuLabel: u16) callconv(.c) void {
         frontier_status_bar.forceSBupdate();
         screenUpdatingMode &= ~SCRUPD_SKIP_STATUSBAR_ONE_TIME;
     }
-    if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING)) {
+    if (!getSystemFlag(FLAG_INTING) and !getSystemFlag(FLAG_SOLVING) and !graphAccActive) {
         frontier_status_bar.showHideHourGlass();
         if (temporaryInformation == TI_VIEW_REGISTER) {
             screenUpdatingMode |= SCRUPD_SKIP_STACK_ONE_TIME;
+        }
+        if (graphToRemainOnScreen != 0 and calcMode == CM_NORMAL) {
+            calcMode = CM_GRAPH;
         }
         if (screenUpdatingMode == SCRUPD_AUTO and singleStep == 0) {
             frontier_screen.refreshScreen(4);
