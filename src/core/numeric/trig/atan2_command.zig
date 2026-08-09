@@ -145,7 +145,9 @@ pub fn atan2(unused_but_mandatory_parameter: u16) void {
         atan2RealReal();
     } else if (data_type_x == runtime.dtReal34Matrix and data_type_y == runtime.dtReal34Matrix) {
         atan2RemaRema();
-    } else if (data_type_x == runtime.dtReal34Matrix and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger or data_type_y == runtime.dtShortInteger)) {
+        // A short-integer Y against a real-matrix X is an error in the table;
+        // only the mirrored pair (short-integer X, real-matrix Y) computes.
+    } else if (data_type_x == runtime.dtReal34Matrix and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger)) {
         atan2RealRema();
     } else if (data_type_y == runtime.dtReal34Matrix and (data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger or data_type_x == runtime.dtShortInteger)) {
         runtime.elementwiseRemaReal(&atan2RealReal);

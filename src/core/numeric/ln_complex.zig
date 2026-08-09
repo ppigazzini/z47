@@ -95,7 +95,6 @@ pub fn lnRealValue(
     var v: runtime.real_t = undefined;
     var w: runtime.real_t = undefined;
     var e: runtime.real_t = undefined;
-    var root2on2: runtime.real_t = undefined;
     var exponent_adjust: i32 = 0;
 
     if (runtime.realIsSpecial(x_in)) {
@@ -127,10 +126,10 @@ pub fn lnRealValue(
         z.exponent = -z.digits;
     }
 
-    copyReal(&root2on2, runtime.z47_math_wrappers_const_1on2());
-    runtime.realSquareRoot(&root2on2, &root2on2, real_context);
-
-    while (realCompareLessEqual(&z, &root2on2)) {
+    // The blob constant, not a runtime sqrt(1/2): computing it at the caller's
+    // precision moves the threshold and lands an inexact status in the caller's
+    // context on every ln.
+    while (realCompareLessEqual(&z, runtime.z47_math_wrappers_const39_root2on2())) {
         runtime.realMultiply(&f, runtime.z47_math_wrappers_const_2(), &f, real_context);
         runtime.realSquareRoot(&z, &z, real_context);
     }

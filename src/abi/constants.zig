@@ -106,6 +106,9 @@ pub inline fn const39_piOn2() *const Real {
 pub inline fn const39_piOn4() *const Real {
     return at(4992);
 }
+pub inline fn const39_root2on2() *const Real {
+    return at(4956);
+}
 pub inline fn const75_2pi() *const Real {
     return at(7896);
 }
