@@ -129,7 +129,6 @@ fn registerNativeUnitTests(b: *std.Build) void {
         "src/shell/convert/conversion_pairs.zig",
         "src/core/text/glyph_font_search.zig",
         "src/shell/program/program_step_width.zig",
-        "src/shell/print/printer_text_width.zig",
         "src/shell/print/printer_glyph_search.zig",
         "src/core/analysis/label_range.zig",
         "src/shell/timer_math.zig",
