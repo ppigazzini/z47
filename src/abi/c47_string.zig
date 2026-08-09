@@ -51,7 +51,8 @@ pub fn nextGlyphNoEndCheck(str: [*]const u8, posIn: i16) i16 {
 /// stringNextGlyph: advance one glyph, clamped to the byte length.
 pub fn nextGlyph(str: [*]const u8, posIn: i16) i16 {
     var pos = posIn;
-    const lg: i16 = @intCast(byteLen(str));
+    // The C stores the length in an int16_t, which truncates.
+    const lg: i16 = @truncate(byteLen(str));
     if (pos >= lg) {
         return lg;
     }
@@ -67,7 +68,8 @@ pub fn nextGlyph(str: [*]const u8, posIn: i16) i16 {
 pub fn prevGlyph(str: [*]const u8, posIn: i16) i16 {
     var pos = posIn;
     var prev: i16 = 0;
-    const lg: i16 = @intCast(byteLen(str));
+    // The C stores the length in an int16_t, which truncates.
+    const lg: i16 = @truncate(byteLen(str));
     if (pos >= lg) {
         pos = lg;
     }
@@ -117,7 +119,8 @@ pub fn prevNumberGlyph(str: [*]const u8, pos: i16) i16 {
 /// stringLastGlyph body (the null guard stays in the owner wrapper).
 pub fn lastGlyph(str: [*]const u8) i16 {
     var last: i16 = 0;
-    const lg: i16 = @intCast(byteLen(str));
+    // The C stores the length in an int16_t, which truncates.
+    const lg: i16 = @truncate(byteLen(str));
     var next: i16 = 0;
     while (true) {
         if (last >= lg) {
@@ -212,7 +215,8 @@ pub fn utf8ToCodePoint(utf8: [*]const u8, codePoint: *u32) u32 {
 pub fn stringToUtf8(strIn: [*]const u8, utf8In: [*]u8) void {
     var str = strIn;
     var utf8 = utf8In;
-    const len: i16 = @intCast(glyphLength(str));
+    // The C stores the length in an int16_t, which truncates.
+    const len: i16 = @truncate(glyphLength(str));
 
     if (len == 0) {
         utf8[0] = 0;

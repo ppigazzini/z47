@@ -49,8 +49,10 @@ fn realMatrixSwap(matrix: *const real34Matrix_t, res: *real34Matrix_t, a: u16, b
             const span: usize = if (is_row) cols else rows;
             var i: usize = 0;
             while (i < span) : (i += 1) {
-                const ia: usize = if (is_row) @as(usize, a) * cols + i else i * cols + a;
-                const ib: usize = if (is_row) @as(usize, b) * cols + i else i * cols + b;
+                // The C forms these in uint16_t, so the index truncates rather than
+                // widening for a matrix with more elements than that holds.
+                const ia: usize = @as(u16, @truncate(if (is_row) @as(usize, a) * cols + i else i * cols + a));
+                const ib: usize = @as(u16, @truncate(if (is_row) @as(usize, b) * cols + i else i * cols + b));
                 var t: real34_t = undefined;
                 real34Copy(&elems[ia], &t);
                 real34Copy(&elems[ib], &elems[ia]);
@@ -76,8 +78,10 @@ fn complexMatrixSwap(matrix: *const complex34Matrix_t, res: *complex34Matrix_t, 
             const span: usize = if (is_row) cols else rows;
             var i: usize = 0;
             while (i < span) : (i += 1) {
-                const ia: usize = if (is_row) @as(usize, a) * cols + i else i * cols + a;
-                const ib: usize = if (is_row) @as(usize, b) * cols + i else i * cols + b;
+                // The C forms these in uint16_t, so the index truncates rather than
+                // widening for a matrix with more elements than that holds.
+                const ia: usize = @as(u16, @truncate(if (is_row) @as(usize, a) * cols + i else i * cols + a));
+                const ib: usize = @as(u16, @truncate(if (is_row) @as(usize, b) * cols + i else i * cols + b));
                 var t: real34_t = undefined;
                 real34Copy(&elems[ia].real, &t);
                 real34Copy(&elems[ib].real, &elems[ia].real);
