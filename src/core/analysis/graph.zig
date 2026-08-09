@@ -663,6 +663,9 @@ fn AddtoDrawMx() void {
         realToReal34(&x, @ptrCast(&stats.matrixElements.?[(@as(u32, rows) - 1) * cols]));
         realToReal34(&y, @ptrCast(&stats.matrixElements.?[(@as(u32, rows) - 1) * cols + 1]));
     } else {
+        // Leave the graph screen, or the error line is never rendered and the
+        // next fnPlot repaints over it.
+        calcMode = CM_NORMAL;
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         moreInfoOnError("In function AddtoDrawMx:", "additional matrix line not added", null, null);
     }
@@ -2281,6 +2284,10 @@ fn complexSolver() void {
         if (exitKeyWaiting()) {
             _ = showString("key Waiting ...", &standardFont, 20, 40, vmNormal, false, false);
             _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted Iter:", iterationCounter, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            lastErrorCode = ERROR_SOLVER_ABORT;
+            if (programRunStop == PGM_RUNNING) {
+                programRunStop = PGM_WAITING; // halt the outer program too, as every other abort point does
+            }
             calcMode = CM_NORMAL;
             screenUpdatingMode = SCRUPD_AUTO;
             screenUpdatingMode |= SCRUPD_SKIP_STATUSBAR_ONE_TIME;
@@ -2460,13 +2467,11 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
     }
 
     graphVariabl1 = @bitCast(currentSolverVariable);
-    if (graphVariabl1 < 0) {
-        graphVariabl1 = -graphVariabl1;
-    }
-
     if (graphVariabl1 >= FIRST_NAMED_VARIABLE and graphVariabl1 <= LAST_NAMED_VARIABLE) {
         // VERBOSE diagnostic only.
     } else {
+        // Leave the graph screen so the error line renders.
+        calcMode = CM_NORMAL;
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function fnEqSolvGraph:", "unexpected parameter", null, null);
         return;

@@ -1847,7 +1847,10 @@ pub fn z47_frontier_matrix_load_selected_into_register_x() void {
     const j: i16 = getJRegisterAsInt(true);
     var re: real34_t = undefined;
     var im: real34_t = undefined;
-    const isComplex = z47_frontier_matrix_open_is_complex();
+    // The value captured before mimEnter, not a fresh query: mimEnter promotes a
+    // real matrix to complex when the pending number is complex, so re-reading
+    // here would index the promoted array with the other layout's stride.
+    const isComplex = saved_is_complex;
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
     if (isComplex) {
@@ -1882,7 +1885,9 @@ pub fn z47_frontier_matrix_convert_register_x_short_to_real34() void {
 pub fn z47_frontier_matrix_apply_register_x_to_selected() bool {
     const i: i16 = getIRegisterAsInt(true);
     const j: i16 = getJRegisterAsInt(true);
-    const isComplex = z47_frontier_matrix_open_is_complex();
+    // Same capture the read used, so both halves address the matrix the editor
+    // was opened on.
+    const isComplex = saved_is_complex;
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
     if (isComplex and getRegisterDataType(REGISTER_X) == dtComplex34) {
