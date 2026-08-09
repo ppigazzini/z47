@@ -289,6 +289,15 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
 // keyboard.c btnFnPressed (579-742) for the host lane (the large /* */ block in
 // the C is dead code).  A soft-function-key press; the actual buffering goes
 // through btnFnPressed_StateMachine to pick up long/double-press conditions.
+/// The underline bit for a function key. The C shifts by `FN_key_pressed - 38`
+/// in `int`, so a key number below 38 -- which FN_cancel leaves behind when it
+/// zeroes the key while the timeout flags stay set -- shifts by a negative
+/// amount. That is undefined in C but lands on a masked count in practice; the
+/// wrap here keeps it a mask rather than a trap.
+inline fn softkeyUnderlineMask(key: i16) u16 {
+    return @as(u16, 1) << @truncate(@as(u16, @bitCast(key -% 38)));
+}
+
 fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = not_used;
     // event is the GdkEvent on the host lane only; the DMCP btnFnPressed body takes
@@ -1196,7 +1205,7 @@ pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) 
     }
 
     if (runtime.FN_state == runtime.ST_3_PRESS2 and runtime.fnTimerGetStatus(runtime.TO_FN_EXEC) != runtime.TMR_RUNNING) {
-        runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 3);
+        runtime.underline_softkey(softkeyUnderlineMask(runtime.FN_key_pressed), 3);
         runtime.hideFunctionName();
         runtime.FN_timeouts_in_progress = false;
         runtime.FN_state = runtime.ST_1_PRESS1;
@@ -1296,7 +1305,7 @@ pub export fn btnFnReleased_StateMachine(unused: ?*anyopaque, data: ?*anyopaque)
     charKey[0] = 0;
     const EXEC_pri = runtime.FN_timeouts_in_progress and (runtime.FN_key_pressed != 0);
     if (runtime.FN_timed_out_to_RELEASE_EXEC or runtime.FN_timed_out_to_NOP_or_Executed or EXEC_pri) {
-        runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 3);
+        runtime.underline_softkey(softkeyUnderlineMask(runtime.FN_key_pressed), 3);
         charKey[1] = 0;
         charKey[0] = @intCast(runtime.FN_key_pressed + (-37 + 48));
         runtime.hideFunctionName();

@@ -303,13 +303,13 @@ pub export const errorMessages linksection(code_section) = [NUMBER_OF_ERROR_CODE
     errRow(""), // 97
     errRow(""), // 98
     errRow(""), // 99
-    errRow("  Loading state file ..."),
-    errRow("  Saving state file ..."),
-    errRow("  Loading stats ..."),
-    errRow("  Solving for real/complex root ..."),
-    errRow("  Calculating graph coordinates ..."),
-    errRow("  Re-calculating sums ... "),
-    errRow("  Solving for real root ..."),
+    errRow(" Loading state file ..."),
+    errRow(" Saving state file ..."),
+    errRow(" Loading stats ..."),
+    errRow(" Solving for real/complex root ..."),
+    errRow(" Calculating graph coordinates ..."),
+    errRow(" Re-calculating sums ... "),
+    errRow(" Solving for real root ..."),
     errRow("Backup restored"),
     errRow("State file loaded"),
     errRow("Programs and equations loaded"),
