@@ -88,10 +88,12 @@ pub fn chsShoI() callconv(.c) void {
 pub fn chsLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
 
+    // getRegisterAsLongInt initialises its output on every path, refusals
+    // included, so the clear has to be registered before the refusal check.
+    defer runtime.__gmpz_clear(&x[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&x[0]);
 
     x[0]._mp_size = -x[0]._mp_size;
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);

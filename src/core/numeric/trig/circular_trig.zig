@@ -1,4 +1,6 @@
 const std = @import("std");
+const abi = @import("abi");
+const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 const owner = @import("../special/wp34s.zig");
@@ -122,6 +124,7 @@ fn doTaylorIterations(
         runtime.realDivide(a2, j, z, real_context);
         runtime.realMultiply(t, z, t, real_context);
         runtime.realChangeSign(t);
+        var t_exp: i32 = owner.realGetExponent(t);
 
         if (!end_cos) {
             copyReal(z, cos_value);
@@ -136,6 +139,7 @@ fn doTaylorIterations(
 
         runtime.realAdd(j, runtime.z47_math_wrappers_const_1(), j, real_context);
         runtime.realDivide(t, j, t, real_context);
+        t_exp = @max(t_exp, owner.realGetExponent(t));
 
         if (!end_sin) {
             copyReal(z, sin_value);
@@ -146,6 +150,21 @@ fn doTaylorIterations(
                 _ = runtime.decNumberCompare(epsilon_or_compare, sin_value, z, real_context);
             }
             end_sin = (!do_epsilon and runtime.realIsZero(epsilon_or_compare)) or (do_epsilon and runtime.realCompareLessThan(z, epsilon_or_compare));
+        }
+
+        if (owner.explicitTaylorIterVisibilitySelection and owner.checkHalfSec()) {
+            var ss: [100]u8 = undefined;
+            abi.fmtBufZ(&ss, "Taylor Iter: {d}/{d}; Dig: {d}/", .{ iteration, taylor_iteration_max, -@as(i16, @truncate(t_exp)) });
+            ss[40] = 0; // hard limit to what the screen shows
+            _ = owner.progressHalfSecUpdate_Integer(owner.halfSec_timed, @ptrCast(&ss[0]), epsilon_digits, owner.halfSec_clearZ, owner.halfSec_clearT, owner.halfSec_disp);
+        }
+        // Firmware only: the host build runs the Taylor loop to completion.
+        if (comptime is_dmcp_build) {
+            if (owner.exitKeyWaiting()) {
+                _ = owner.progressHalfSecUpdate_Integer(owner.halfSec_force + 1, "Interrupted Iter:", @intCast(iteration), owner.halfSec_clearZ, owner.halfSec_clearT, owner.halfSec_disp);
+                owner.displayCalcErrorMessage(owner.ERROR_SOLVER_ABORT, owner.REGISTER_T, owner.NIM_REGISTER_LINE);
+                break;
+            }
         }
     }
 

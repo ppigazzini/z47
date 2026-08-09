@@ -277,6 +277,8 @@ inline fn currentRoundingMode() c_int {
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
 const REGISTER_Z: calcRegister_t = 102;
+const REGISTER_T: calcRegister_t = 103;
+const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const REGISTER_L: calcRegister_t = 108;
 const REGISTER_G: calcRegister_t = 120;
 const REGISTER_H: calcRegister_t = 121;
@@ -1688,6 +1690,19 @@ fn addFactor(factor: *mpz_struct, regist: calcRegister_t, lastAdded: *real34_t, 
     dumpExponents(REGISTER_X, faddr, 13);
     updateMatrixHeightCache();
     refreshRegisterLine(REGISTER_X);
+    // Simulator only: clear as many lines as the stack shows, so no debris from
+    // the previous result is left behind. The hardware clears the screen itself.
+    if (comptime !is_dmcp_build) {
+        if (cachedDisplayStack <= 3) {
+            refreshRegisterLine(REGISTER_Y);
+        }
+        if (cachedDisplayStack <= 2) {
+            refreshRegisterLine(REGISTER_Z);
+        }
+        if (cachedDisplayStack <= 1) {
+            refreshRegisterLine(REGISTER_T);
+        }
+    }
 
     return true;
 }
