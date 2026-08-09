@@ -7,7 +7,7 @@ const std = @import("std");
 // real34/complex34/angle34 -> display string (FIX/SCI/ENG/ALL/SIG/UN modes with
 // IRFRAC fraction substitution and digit grouping), fraction / short-integer /
 // long-integer / date / time / matrix / vector -> display string, the
-// _numerator/_denominator/strPrepend helpers, realToSci, mimShowElement, fnC47Show
+// _numerator/_denominator/strPrepend helpers, mimShowElement, fnC47Show
 // (the multi-font SHOW page builder), and _view/fnView/fnAview/fnPrompt.
 //
 // Notes on the build matrix (defines.h):
@@ -2999,7 +2999,7 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
 // realSCIToDisplayString renders work in SCI form into displayString via
 // emitSciDigits, showing digitsToDisplay digits after the radix.
 // bcd points to caller-supplied scratch (>= maxDigits bytes). (display.c)
-fn realSCIToDisplayString(work: *const real_t, displayString: [*c]u8, digitsToDisplay_in: i16, frontSpace: bool_t, bcd: [*c]u8, maxDigits: i16) void {
+pub export fn realSCIToDisplayString(work: *const real_t, displayString: [*c]u8, digitsToDisplay_in: i16, frontSpace: bool_t, bcd: [*c]u8, maxDigits: i16) callconv(.c) void {
     var numDigits: i16 = undefined;
     var digitPointer: i16 = undefined;
     var firstDigit: i16 = undefined;
@@ -3849,96 +3849,6 @@ fn prepLongintIntoLines(last: *i16, src: *i16, dest: *i16, fontToUse: *const fon
     }
 
     src.* = sourceReturn;
-}
-
-pub export fn realToSci(num: *const real_t, dispString: [*c]u8) callconv(.c) void {
-    var p: [*c]u8 = undefined;
-    const radix: [*c]const u8 = Rx();
-    var sep: [*c]const u8 = SEPARATOR_RIGHT();
-    var neg: c_int = undefined;
-    var exp: c_int = undefined;
-    var mi: c_int = 0;
-    var ival: c_int = 1;
-    var d: c_int = 0;
-    const sepGroup: c_int = GROUPWIDTH_RIGHT();
-
-    if (realGetExponent(num) > 672 or num.digits > 672) {
-        sep = STD_SPACE_FIGURE;
-    }
-
-    exp = realGetExponent(num);
-    realToString(num, dispString + 1500);
-    if (realIsZeroB(num)) {
-        abi.fmtCStr(dispString, "0{s}0", .{@as([*:0]const u8, radix)});
-        return;
-    }
-
-    neg = @intFromBool((dispString + 1500)[0] == '-');
-    p = dispString + 1500 + @as(usize, @intCast(neg));
-
-    while (p[0] != 0 and (p[0] < '0' or p[0] > '9')) {
-        p += 1;
-    }
-
-    if (p[0] == '0' and (p + 1)[0] == '.') {
-        p += 2;
-        while (p[0] == '0') {
-            p += 1;
-        }
-    }
-    dispString[@intCast(mi)] = if (neg != 0) '-' else ' ';
-    mi += 1;
-    dispString[@intCast(mi)] = p[0];
-    mi += 1;
-    p += 1;
-    if (p[0] == '.') {
-        p += 1;
-    }
-    if (p[0] != 'E') {
-        dispString[@intCast(mi)] = radix[0];
-        mi += 1;
-        if ((radix[0] & 0x80) != 0 and radix[1] != 0 and radix[1] != 1) {
-            dispString[@intCast(mi)] = radix[1];
-            mi += 1;
-        }
-    }
-
-    while (p[0] != 0 and p[0] != 'E' and ival < 1000) {
-        if (p[0] >= '0' and p[0] <= '9') {
-            if (d > 0 and @rem(d, sepGroup) == 0 and !GROUPRIGHT_DISABLED()) {
-                dispString[@intCast(mi)] = sep[0];
-                mi += 1;
-                if ((sep[0] & 0x80) != 0 and sep[1] != 0 and sep[1] != 1) {
-                    dispString[@intCast(mi)] = sep[1];
-                    mi += 1;
-                }
-            }
-            dispString[@intCast(mi)] = p[0];
-            mi += 1;
-            ival += 1;
-            d += 1;
-        }
-        p += 1;
-    }
-
-    while (mi > 1 and
-        ((dispString[@intCast(mi - 1)] == '0') or
-            (dispString[@intCast(mi - 2)] == sep[0] and sep[1] != 0 and sep[1] != 1 and dispString[@intCast(mi - 1)] == sep[1]) or
-            (dispString[@intCast(mi - 1)] == sep[0] and sep[1] != 0 and sep[1] != 1 and dispString[@intCast(mi)] == sep[1])))
-    {
-        mi -= 1;
-    }
-    if (mi > 0 and (dispString[@intCast(mi - 1)] == radix[0] and (radix[1] == 0 or radix[1] == 1 or (radix[1] != 0 and radix[1] != 1 and dispString[@intCast(mi - 1)] == radix[1])))) {
-        mi -= 1;
-    }
-    if (mi > 1 and (dispString[@intCast(mi - 2)] == radix[0] and (radix[1] != 0 and radix[1] != 1 and dispString[@intCast(mi - 1)] == radix[1]))) {
-        mi -= 2;
-    }
-
-    dispString[@intCast(mi)] = 0;
-    var tt: [32]u8 = undefined;
-    exponentToDisplayString(exp, &tt, null, 0);
-    abi.fmtCStr(dispString + @as(usize, @intCast(mi)), "{s}", .{@as([*:0]const u8, @as([*c]const u8, &tt))});
 }
 
 fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16, numLines: i16, showName: bool) void {

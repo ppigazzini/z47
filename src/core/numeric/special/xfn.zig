@@ -249,7 +249,53 @@ inline fn realGetDigits(x: *align(1) const real_t) i32 {
     return x.digits;
 }
 
-extern fn realToSci(num: *align(1) const real_t, dispString: [*]u8) void;
+extern fn realSCIToDisplayString(work: *align(1) const real_t, displayString: [*]u8, digitsToDisplay: i16, frontSpace: u8, bcd: [*]u8, maxDigits: i16) void;
+
+// The SEPARATOR_RIGHT macro (defines.h gapChar1Right): a lone separator
+// character is normalised to a two-byte form, anything else passes through.
+extern var gapItemRight: u16;
+extern var indexOfItems: [*]abi.Item;
+const STD_SPACE_FIGURE = "\xa0\x07";
+fn separatorRight() [*c]const u8 {
+    const s: [*c]const u8 = if (gapItemRight == 0) "\x01\x01" else @ptrCast(&indexOfItems[gapItemRight].itemSoftmenuName);
+    if (s[0] != 0 and (s[1] == 0 or s[2] == 0)) {
+        return switch (s[0]) {
+            ',' => ",\x01",
+            '.' => ".\x01",
+            '\'' => "'\x01",
+            '_' => "_\x01",
+            else => s,
+        };
+    }
+    return s;
+}
+
+/// Narrows the rendered string by swapping each digit separator for a figure
+/// space, which is the width of a digit rather than of a punctuation glyph.
+fn replaceSeparatorWithFigureSpace(displayString: [*]u8) void {
+    const sep = separatorRight();
+    const sepLen: usize = if (sep[0] != 1) (if (sep[1] != 1) 2 else 1) else 0;
+    if (sepLen == 0) {
+        return;
+    }
+    const tmp = tmpString;
+    var src: usize = 0;
+    var dst: usize = 0;
+    while (displayString[src] != 0) {
+        if (displayString[src] == sep[0] and (sepLen == 1 or displayString[src + 1] == sep[1])) {
+            tmp[dst] = STD_SPACE_FIGURE[0];
+            tmp[dst + 1] = STD_SPACE_FIGURE[1];
+            dst += 2;
+            src += sepLen;
+        } else {
+            tmp[dst] = displayString[src];
+            dst += 1;
+            src += 1;
+        }
+    }
+    tmp[dst] = 0;
+    @memcpy(displayString[0 .. dst + 1], tmp[0 .. dst + 1]);
+}
 
 // WP34S / Taylor engine (operands *align(1)).
 
@@ -610,7 +656,10 @@ pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const
     c.round = DEC_ROUND_HALF_UP;
     if (getCombinedParameter(1, regist, tmp1, tmp2, &angle, &c)) {
         _ = strcpy(displayString, prefix);
-        realToSci(tmp1, displayString + strlen(@ptrCast(displayString)));
+        realSCIToDisplayString(tmp1, displayString + strlen(@ptrCast(displayString)), 1000, 0, tmpString, 2560);
+        if (realGetExponent(tmp1) > 672 or tmp1.digits > 672) {
+            replaceSeparatorWithFigureSpace(displayString);
+        }
         return true;
     }
     return false;

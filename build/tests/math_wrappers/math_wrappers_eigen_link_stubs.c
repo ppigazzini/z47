@@ -13,10 +13,12 @@
 // nothing exported it -- the xfn port had inlined it into doXfn. The
 // factored it back out as a real export (saveRestoreCalcState.c's restoreRegister
 // needs it for the RXFN branch), so a stub here is now a duplicate symbol.
-void realToSci(real_t *num, char *dispString) {
-  (void)num;
-  if(dispString != NULL) {
-    dispString[0] = 0;
+// realSCIToDisplayString lives in the display owner, which this lane does not
+// link; registerFMAOutputString reaches it and nothing here drives that path.
+void realSCIToDisplayString(const real_t *work, char *displayString, int16_t digitsToDisplay, bool_t frontSpace, uint8_t *bcd, int16_t maxDigits) {
+  (void)work; (void)digitsToDisplay; (void)frontSpace; (void)bcd; (void)maxDigits;
+  if(displayString != NULL) {
+    displayString[0] = 0;
   }
 }
 
