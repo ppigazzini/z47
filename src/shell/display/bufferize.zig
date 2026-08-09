@@ -541,6 +541,18 @@ const ITM_LBFtoKGF = 2837;
 const ITM_UNSLUGtoKG = 2838;
 const ITM_KGtoUNSLUG = 2839;
 const ITM_UNSLINCHtoKG = 2840;
+const ITM_MPHtoKNOT = 2860;
+const ITM_KNOTtoMPH = 2861;
+const ITM_MPHtoFPS = 2862;
+const ITM_FPStoMPH = 2863;
+const ITM_MGEUStoK100K = 2864;
+const ITM_K100KtoMGEUS = 2865;
+const ITM_MGEUKtoK100K = 2866;
+const ITM_K100KtoMGEUK = 2867;
+const ITM_MIKtoK100K = 2868;
+const ITM_K100KtoMIK = 2869;
+const ITM_KGtoLT = 310;
+const ITM_LTtoKG = 313;
 const ITM_KGtoUNSLINCH = 2841;
 const ITM_MILEtoM = 336;
 const ITM_MINUS = 819;
@@ -1776,6 +1788,18 @@ const MimFunctionsType2 = [_]fInMim_t{
     .{ .itemNr = ITM_op_a },
     .{ .itemNr = ITM_op_a2 },
     .{ .itemNr = ITM_EE_EXP_TH },
+    .{ .itemNr = ITM_MPHtoKNOT },
+    .{ .itemNr = ITM_KNOTtoMPH },
+    .{ .itemNr = ITM_MPHtoFPS },
+    .{ .itemNr = ITM_FPStoMPH },
+    .{ .itemNr = ITM_MGEUStoK100K },
+    .{ .itemNr = ITM_K100KtoMGEUS },
+    .{ .itemNr = ITM_MGEUKtoK100K },
+    .{ .itemNr = ITM_K100KtoMGEUK },
+    .{ .itemNr = ITM_MIKtoK100K },
+    .{ .itemNr = ITM_K100KtoMIK },
+    .{ .itemNr = ITM_KGtoLT },
+    .{ .itemNr = ITM_LTtoKG },
 };
 
 const NumMsg = [_]numStr{
@@ -1785,6 +1809,8 @@ const NumMsg = [_]numStr{
 
 const bugScreenNoParam = "In function addItemToBuffer:item should not be NOPARAM=7654!";
 
+// fType 2 and above both select the merged type-2 table, which already carries
+// the conversion pairs the C keeps in a separate type-3 table.
 fn isFunctionInMim(com: i16, fType: u8) bool {
     const table: []const fInMim_t = if (fType == 0) &MimFunctionsType0 else if (fType == 1) &MimFunctionsType1 else &MimFunctionsType2;
     for (table) |entry| {
