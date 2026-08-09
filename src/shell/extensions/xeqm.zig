@@ -62,6 +62,8 @@ const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 // ---------------------------------------------------------------------------
 // Globals
 // ---------------------------------------------------------------------------
+extern fn malloc(size: usize) ?*anyopaque;
+extern fn free(ptr: ?*anyopaque) void;
 extern var calcMode: u8;
 extern var aimBuffer: [*c]u8;
 extern var T_cursorPos: i16;
@@ -232,16 +234,20 @@ pub export fn fnXSWAP(mode: u16) callconv(.c) void {
             frontier_softmenus.showSoftmenu(-MNU_ALPHA);
         }
     } else if (calcMode == CM_NORMAL and getRegisterDataType(REGISTER_X) != dtString) {
-        var line1: [TMP_STR_LENGTH]u8 = undefined;
+        // Off the stack: this branch runs inside fnXSWAP, whose frame was 2600
+        // bytes of the DM42's stack grant. Freed before the recursive call, so
+        // only one of the two frames ever holds the buffer.
+        const line1: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return);
         line1[0] = 0;
-        _ = strcpy(&line1, " ");
-        const len: i16 = @intCast(stringByteLength(&line1));
+        _ = strcpy(line1, " ");
+        const len: i16 = @intCast(stringByteLength(line1));
         if (getSystemFlag(@bitCast(FLAG_ERPN))) { // JM NEWERPN
             setSystemFlag(FLAG_ASLIFT); // JM NEWERPN OVERRIDE SLS, AS ERPN ENTER ALWAYS HAS SLS SET
         } // JM NEWERPN
         liftStack();
         reallocateRegister(REGISTER_X, dtString, toBlocks(len), amNone);
-        _ = strcpy(regString(REGISTER_X), &line1);
+        _ = strcpy(regString(REGISTER_X), line1);
+        free(line1);
         fnXSWAP(0);
     }
 

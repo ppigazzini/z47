@@ -155,9 +155,16 @@ pub export fn copyRegisterToClipboardString2(regist: calcRegister_t, clipboardSt
 // ===========================================================================
 // stackregister_csv_out  (USING tmpString !!)
 // ===========================================================================
+extern fn malloc(size: usize) ?*anyopaque;
+extern fn free(ptr: ?*anyopaque) void;
+
 pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) callconv(.c) void {
     var tmp_b: [100]u8 = undefined;
     var tmp_e: [100]u8 = undefined;
+    // Off the stack: this calls copyRegisterToClipboardString, and the pair
+    // overran the DM42 stack grant.
+    const tmpString2: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return);
+    defer free(tmpString2);
 
     var ix: i16 = reg_b;
     while (ix <= reg_e) {
@@ -176,10 +183,9 @@ pub export fn stackregister_csv_out(reg_b: i16, reg_e: i16, oneLine: bool_t) cal
             abi.fmtBufZ(&tmp_b, CSV_STR ++ "N{d:0>3}" ++ CSV_STR ++ CSV_TAB ++ CSV_STR ++ "{s}" ++ CSV_STR ++ CSV_TAB, .{ @as(u32, @intCast(@as(c_int, ix) - 100)), std.mem.span(@as([*c]const u8, @ptrCast(&allNamedVariables[@intCast(ix - FIRST_NAMED_VARIABLE)].variableName)) + 1) });
         }
 
-        var tmpString2: [TMP_STR_LENGTH]u8 = undefined;
         copyRegisterToClipboardString2(ix, tmpString);
-        frontier_char_string.utf8ToString(tmpString, &tmpString2);
-        frontier_char_string.stringToASCII(&tmpString2, tmpString);
+        frontier_char_string.utf8ToString(tmpString, tmpString2);
+        frontier_char_string.stringToASCII(tmpString2, tmpString);
 
         if (!oneLine or ix == reg_e) { // use tabs, except at the last register, use newline
             _ = strcat(&tmp_e, CSV_NEWLINE);

@@ -974,15 +974,17 @@ pub export fn showHideAlphaMode() callconv(.c) void {
             nChar = scrLock;
         }
         if (textModeIconDisplay) {
-            var handledDead = false;
+            // The dead-key arm is an else on the plainTextMode statement alone: the
+            // case chain below still runs and still overwrites status.
+            var deadKeyHeld = false;
             if (comptime !dmcp_build) {
                 if (deadKey != 0) {
                     status = 20;
-                    handledDead = true;
+                    deadKeyHeld = true;
                 }
             }
-            if (!handledDead) {
-                if (plainTextMode()) {
+            {
+                if (!deadKeyHeld and plainTextMode()) {
                     if (alphaCase == AC_UPPER) {
                         setSystemFlag(@bitCast(FLAG_alphaCAP));
                     } else {

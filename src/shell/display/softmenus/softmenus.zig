@@ -2405,6 +2405,45 @@ inline fn strlenc(s: [*c]const u8) usize {
     return strlen(s);
 }
 
+/// One significant digit of an accuracy setting, in the shape %G would give it:
+/// fixed notation from 1 down to 0.0001 and an exponent below that. Rounds half
+/// up, and takes its decimal separator from the radix-mark setting.
+fn accToString(s: [*c]u8, x: f32) void {
+    var e: i16 = 0;
+    var m: f64 = x;
+    while (m != 0 and m < 1.0) {
+        m *= 10.0;
+        e -= 1;
+    }
+    var d: i16 = @intFromFloat(m + 0.5);
+    if (d >= 10) {
+        d = 1;
+        e += 1;
+    }
+    if (e >= -4 and e <= 0) { // fixed notation "1", "0.5" .. "0.0001", as %G does
+        var i: usize = 0;
+        if (e == 0) {
+            s[i] = '0' + @as(u8, @intCast(d));
+            i += 1;
+        } else {
+            s[i] = '0';
+            i += 1;
+            s[i] = RADIX34_MARK_CHAR();
+            i += 1;
+            var z: i16 = 0;
+            while (z < -e - 1) : (z += 1) {
+                s[i] = '0';
+                i += 1;
+            }
+            s[i] = '0' + @as(u8, @intCast(d));
+            i += 1;
+        }
+        s[i] = 0;
+    } else {
+        abi.fmtCStr(s, "{d}E-{d:0>2}", .{ d, -e });
+    }
+}
+
 fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, showCb: *i8, showValue: *i16, showText: [*c]u8) void {
     _ = menuNr;
     var tmpF: f32 = 0;
@@ -2437,8 +2476,7 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                     } else if (tmpF > 1) {
                         _ = strcpy(&tmpS, concat2(STD_GAUSS_WHITE_R, "1"));
                     } else {
-                        abi.fmtGC(&tmpS, 5, 0, true, @as(f64, tmpF));
-                        _ = strcpy(&tmpS, frontier_debug.eatSpacesMid(&tmpS));
+                        accToString(&tmpS, tmpF);
                     }
                 }
                 _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), &tmpS);
@@ -3603,7 +3641,10 @@ pub export fn showSoftmenu(id_in: i16) callconv(.c) void {
                 varList = @constCast("\x00");
             }
         } else {
-            _ = parseEquation(currentFormula, EQUATION_PARSER_MVAR, aimBuffer, tmpString);
+            // MVAR: use the scratch area at the end of tmpString (as _dynmenuConstructMVars
+            // does) to leave aimBuffer be. In PEM it holds the pending step entry, and a
+            // leftover token there makes the next insert delete the current step.
+            _ = parseEquation(currentFormula, EQUATION_PARSER_MVAR, &tmpString[TMP_STR_LENGTH - AIM_BUFFER_LENGTH], tmpString);
             varList = tmpString;
         }
 

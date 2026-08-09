@@ -3277,11 +3277,11 @@ pub export fn dateToDisplayString(regist: calcRegister_t, displayString: [*c]u8)
     yearval64 = (@as(u64, real34ToUInt32(&yy)) << 32) | @as(u64, real34ToUInt32(&y));
 
     if (getSystemFlag(FLAG_DMY_v) != 0) {
-        abi.fmtCStr(displayString, "{d:0>2}.{d:0>2}.{s}{d:0>4}", .{ real34ToUInt32(&d), real34ToUInt32(&m), @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @intCast(yearval64)) });
+        abi.fmtCStr(displayString, "{d:0>2}.{d:0>2}.{s}{d:0>4}", .{ real34ToUInt32(&d), real34ToUInt32(&m), @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @truncate(yearval64)) });
     } else if (getSystemFlag(FLAG_MDY_v) != 0) {
-        abi.fmtCStr(displayString, "{d:0>2}/{d:0>2}/{s}{d:0>4}", .{ real34ToUInt32(&m), real34ToUInt32(&d), @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @intCast(yearval64)) });
+        abi.fmtCStr(displayString, "{d:0>2}/{d:0>2}/{s}{d:0>4}", .{ real34ToUInt32(&m), real34ToUInt32(&d), @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @truncate(yearval64)) });
     } else {
-        abi.fmtCStr(displayString, "{s}{d:0>4}-{d:0>2}-{d:0>2}", .{ @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @intCast(yearval64)), real34ToUInt32(&m), real34ToUInt32(&d) });
+        abi.fmtCStr(displayString, "{s}{d:0>4}-{d:0>2}-{d:0>2}", .{ @as([*:0]const u8, @as([*c]const u8, &sign)), @as(u32, @truncate(yearval64)), real34ToUInt32(&m), real34ToUInt32(&d) });
     }
 }
 
