@@ -1148,7 +1148,7 @@ fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
         longIntegerFree(&lgInt[0]);
         return;
     }
-    var len: i32 = @intCast(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
+    var len: i32 = @truncate(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
     if (len < 0) {
         len = 0;
     } else if (len > lgString) {
@@ -1162,7 +1162,7 @@ fn _alphaLeftMidRight(regist: u16, sf_type: u8) void {
             longIntegerFree(&lgInt[0]);
             return;
         }
-        start = @intCast(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
+        start = @truncate(__gmpz_get_si(&lgInt[0])); // longIntegerToInt32
         if (start < 0) {
             start = 0;
         }

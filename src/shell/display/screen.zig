@@ -1330,7 +1330,7 @@ inline fn realIsSpecial(source_: *const real_t) bool_t {
     return @intFromBool((source_.bits & 0x70) != 0);
 }
 inline fn longIntegerToInt32(op: *longInteger_t, dst: *i32) void {
-    dst.* = @intCast(__gmpz_get_si(&op[0]));
+    dst.* = @truncate(__gmpz_get_si(&op[0]));
 }
 inline fn longIntegerToUInt32(op: *longInteger_t, dst: *u32) void {
     dst.* = @intCast(__gmpz_get_ui(&op[0]));

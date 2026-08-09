@@ -561,7 +561,10 @@ fn getRegisterAsInt(asArrayPointer: bool_t, reg: calcRegister_t) i16 {
     } else {
         __gmpz_init(&tmp_lgInt);
     }
-    ret = @truncate(@as(i32, @intCast(__gmpz_get_si(&tmp_lgInt))));
+    // longIntegerToInt32 is a plain assignment in C, so it narrows by
+    // truncation. c_long is 64-bit on the host, and an I or J register can
+    // legitimately hold a value outside int32.
+    ret = @truncate(__gmpz_get_si(&tmp_lgInt));
     __gmpz_clear(&tmp_lgInt);
 
     if (asArrayPointer) ret -= 1;
