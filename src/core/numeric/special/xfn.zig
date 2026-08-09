@@ -466,8 +466,9 @@ fn lookupFunctionAngle(function_id: c_int) linksection(runtime.code_section) c_i
 // ===========================================================================
 fn getLongintegerRegisterAsReal1071(registerNo: calcRegister_t, result: *align(1) real_t, c: *realContext_t) linksection(runtime.code_section) bool {
     if (getRegisterDataType(registerNo) == dtLongInteger) {
+        // getRegisterAsLongInt initialises the value itself on every path, so
+        // initialising it here first would strand that first allocation.
         var lint: mpz_struct = undefined;
-        longIntegerInit(&lint);
         var frac: bool = false;
         if (getRegisterAsLongInt(registerNo, &lint, &frac)) {
             longIntegerToString(&lint, 10, tmpString);

@@ -437,7 +437,10 @@ fn screenWindowYr(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_
             temp = 0;
         }
     }
-    return @intCast(SCREEN_HEIGHT_GRAPH - 1 - @as(i32, temp));
+    // The C returns through an (int16_t) cast, which truncates. The nolimit
+    // caller deliberately skips the clamp above, so the value can leave the
+    // int16 range and must wrap rather than trap.
+    return @truncate(SCREEN_HEIGHT_GRAPH - 1 - @as(i32, temp));
 }
 
 pub export fn screen_window_y_r(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t) callconv(.c) i16 {

@@ -1,4 +1,7 @@
+const frontier_build_options = @import("frontier_build_options");
+const dmcp_build: bool = frontier_build_options.dmcp_build;
 const plot_regression = @import("plot_regression.zig");
+const frontier_graphs = @import("graphs.zig");
 const frontier_curve_fitting = @import("curve_fitting.zig");
 const frontier_error = @import("../error.zig");
 const frontier_plotstat = @import("plotstat.zig");
@@ -150,8 +153,15 @@ fn applyModeSelection(ctx: *PlotStatContext) void {
     }
 }
 
+// The firmware lane blits the framebuffer. refreshLcd is C47's own full refresh,
+// which also blinks the cursor, steps the function-name counter and re-reads the
+// clock -- none of which upstream does at this point.
 fn refreshPlotLcd() void {
-    _ = frontier_screen.refreshLcd(null);
+    if (comptime dmcp_build) {
+        frontier_graphs.lcd_refresh();
+    } else {
+        _ = frontier_screen.refreshLcd(null);
+    }
 }
 
 fn showSoftmenuForMode(ctx: PlotStatContext) void {
