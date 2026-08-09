@@ -79,7 +79,6 @@ const offset_const_3 = 5268; // const_3
 const offset_const_5 = 5328; // const_5
 const offset_const_1on2 = 4836; // const_1on2
 const offset_const39_1on3 = 4800; // const39_1on3
-const offset_const39_root2on2 = 4956; // const39_root2on2
 const offset_const39_1oneE = 4644; // const39_1oneE
 const offset_const_90 = 7800; // const_90
 const offset_const_100 = 7788; // const_100
@@ -133,10 +132,6 @@ pub export fn z47_math_wrappers_const_2() linksection(runtime.code_section) call
 
 pub export fn z47_math_wrappers_const_3() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
     return constantPointer(offset_const_3);
-}
-
-pub export fn z47_math_wrappers_const39_root2on2() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {
-    return constantPointer(offset_const39_root2on2);
 }
 
 pub export fn z47_math_wrappers_const_5() linksection(runtime.code_section) callconv(.c) *align(1) const real_t {

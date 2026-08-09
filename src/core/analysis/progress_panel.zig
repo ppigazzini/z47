@@ -24,11 +24,11 @@ const SCREEN_WIDTH: u32 = 400;
 const TMP_STR_LENGTH: i32 = 2560;
 
 const vmNormal: c_int = 0;
-const amNone: u32 = 0;
+const amNone: u32 = 5;
 const DF_ALL: u8 = 0;
 const FLAG_CPXj: c_int = 0x8009;
-const STD_op_i = "\x83\xa6";
-const STD_op_j = "\x83\xa7";
+const STD_op_i = "\xa1\x48";
+const STD_op_j = "\xa1\x49";
 /// force_refresh's "force" mode (screen.h).
 const force: u8 = 1;
 

@@ -3,7 +3,25 @@ const abi = @import("abi");
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
-const owner = @import("../special/wp34s.zig");
+
+// The Taylor progress/abort surface, declared here rather than imported from the
+// wp34s owner: that owner reaches command_wrappers.zig, which reaches this file.
+extern var explicitTaylorIterVisibilitySelection: bool;
+const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
+const exitKeyWaiting = abi.host.exitKeyWaiting;
+const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
+const ERROR_SOLVER_ABORT: u8 = 60;
+const REGISTER_T: runtime.calcRegister_t = 103;
+const NIM_REGISTER_LINE: runtime.calcRegister_t = 100; // REGISTER_X
+const halfSec_timed: u8 = 0;
+const halfSec_force: u8 = 1;
+const halfSec_clearZ: bool = true;
+const halfSec_clearT: bool = true;
+const halfSec_disp: bool = true;
+inline fn realGetExponent(source: *align(1) const runtime.real_t) i32 {
+    return source.digits + source.exponent - 1;
+}
 
 const taylor_iteration_max: usize = 1000;
 
@@ -124,7 +142,7 @@ fn doTaylorIterations(
         runtime.realDivide(a2, j, z, real_context);
         runtime.realMultiply(t, z, t, real_context);
         runtime.realChangeSign(t);
-        var t_exp: i32 = owner.realGetExponent(t);
+        var t_exp: i32 = realGetExponent(t);
 
         if (!end_cos) {
             copyReal(z, cos_value);
@@ -139,7 +157,7 @@ fn doTaylorIterations(
 
         runtime.realAdd(j, runtime.z47_math_wrappers_const_1(), j, real_context);
         runtime.realDivide(t, j, t, real_context);
-        t_exp = @max(t_exp, owner.realGetExponent(t));
+        t_exp = @max(t_exp, realGetExponent(t));
 
         if (!end_sin) {
             copyReal(z, sin_value);
@@ -152,17 +170,17 @@ fn doTaylorIterations(
             end_sin = (!do_epsilon and runtime.realIsZero(epsilon_or_compare)) or (do_epsilon and runtime.realCompareLessThan(z, epsilon_or_compare));
         }
 
-        if (owner.explicitTaylorIterVisibilitySelection and owner.checkHalfSec()) {
+        if (explicitTaylorIterVisibilitySelection and checkHalfSec()) {
             var ss: [100]u8 = undefined;
             abi.fmtBufZ(&ss, "Taylor Iter: {d}/{d}; Dig: {d}/", .{ iteration, taylor_iteration_max, -@as(i16, @truncate(t_exp)) });
             ss[40] = 0; // hard limit to what the screen shows
-            _ = owner.progressHalfSecUpdate_Integer(owner.halfSec_timed, @ptrCast(&ss[0]), epsilon_digits, owner.halfSec_clearZ, owner.halfSec_clearT, owner.halfSec_disp);
+            _ = progressHalfSecUpdate_Integer(halfSec_timed, @ptrCast(&ss[0]), epsilon_digits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         }
         // Firmware only: the host build runs the Taylor loop to completion.
         if (comptime is_dmcp_build) {
-            if (owner.exitKeyWaiting()) {
-                _ = owner.progressHalfSecUpdate_Integer(owner.halfSec_force + 1, "Interrupted Iter:", @intCast(iteration), owner.halfSec_clearZ, owner.halfSec_clearT, owner.halfSec_disp);
-                owner.displayCalcErrorMessage(owner.ERROR_SOLVER_ABORT, owner.REGISTER_T, owner.NIM_REGISTER_LINE);
+            if (exitKeyWaiting()) {
+                _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", @intCast(iteration), halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
                 break;
             }
         }
@@ -177,7 +195,7 @@ fn doTaylorIterations(
     runtime.realMultiply(sin_value, angle, sin_value, real_context);
     // One Taylor run consumes the request: whoever wants the iteration counter
     // shown next time has to ask again.
-    owner.explicitTaylorIterVisibilitySelection = false;
+    explicitTaylorIterVisibilitySelection = false;
 }
 
 fn sinCosTanTaylorTemp75(
@@ -302,8 +320,8 @@ pub fn convertAngleToSinCosTan(
     }
 
     if (runtime.realCompareEqual(&angle, &angle45)) {
-        if (sin_out) |output| copyReal(output, runtime.z47_math_wrappers_const39_root2on2());
-        if (cos_out) |output| copyReal(output, runtime.z47_math_wrappers_const39_root2on2());
+        if (sin_out) |output| copyReal(output, abi.constants.const39_root2on2());
+        if (cos_out) |output| copyReal(output, abi.constants.const39_root2on2());
         if (tan_out) |output| {
             runtime.realSetOne(output);
         }

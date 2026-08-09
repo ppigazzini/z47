@@ -12,7 +12,10 @@ const consts = abi.constants;
 // statics; only the two public determinant entry points are renamed.
 
 const runtime = @import("../command_wrappers/runtime.zig");
-const math_matrix_complex_core = @import("complex_core.zig");
+// The one complex LU worker, reached by its exported name rather than by
+// @import: complex_core sits above this owner in the module graph and importing
+// it closes a 38-file cycle through the command-wrapper dispatcher.
+extern fn luCpxMat(tmp_mat: [*]runtime.real_t, size: u16, p: [*]u16, real_context: *runtime.realContext_t) bool;
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
@@ -64,7 +67,7 @@ fn detCpxMat(matrix: [*]const real_t, size: u16, res_r: *real_t, res_i: *real_t,
             var ti: real_t = undefined;
             runtime.realSetOne(&tr);
             runtime.realSetZero(&ti);
-            if (math_matrix_complex_core.luCpxMat(lu, size, p, real_context)) {
+            if (luCpxMat(lu, size, p, real_context)) {
                 var i: usize = 0;
                 while (i < n) : (i += 1) {
                     runtime.mulComplexComplex(&tr, &ti, &lu[(i * n + i) * 2], &lu[(i * n + i) * 2 + 1], &tr, &ti, real_context);
