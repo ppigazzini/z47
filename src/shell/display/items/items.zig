@@ -244,10 +244,6 @@ const ITM_GTOP: i16 = 1482;
 const ITM_LASTT: i16 = 1677;
 const ITM_RCL: i16 = 51;
 const ITM_STO: i16 = 44;
-const ITM_LASTERR: i16 = 1905;
-const ITM_BACK: i16 = 1412;
-const ITM_CASE: i16 = 1418;
-const ITM_SKIP: i16 = 1603;
 const ITM_EIGVAL: i16 = 1456;
 const ITM_EIGVEC: i16 = 1457;
 const ITM_RCLELPLUS: i16 = 2249;
@@ -791,12 +787,10 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         screenUpdatingMode = @truncate(SCRUPD_AUTO);
     }
 
-    switch (func) {
-        ITM_LASTERR, ITM_GTO, ITM_XEQ, ITM_BACK, ITM_CASE, ITM_SKIP => {},
-        else => {
-            previousErrorCode = lastErrorCode;
-        },
-    }
+    // The C names six items as exempt from updating LastERR, but every one of
+    // their cases is empty and falls through into the default, so the update runs
+    // for all of them. The behaviour is the assignment, not the list.
+    previousErrorCode = lastErrorCode;
 
     if (programRunStop != PGM_RUNNING) {
         frontier_timer.LastOpTimerLap(@bitCast(func));

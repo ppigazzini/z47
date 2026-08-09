@@ -71,7 +71,6 @@ const amNone: u32 = 5;
 
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_OUT_OF_RANGE: u8 = 8;
-const ERROR_EMPTY_STRING: u8 = 34;
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Z: calcRegister_t = 102;
@@ -344,16 +343,19 @@ pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void 
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
             // The register converter re-initializes lgInt itself (matches the C).
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
+                longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
                 frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
@@ -414,6 +416,10 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
         return;
     }
 
+    if (programRunStop == PGM_RUNNING) {
+        copySourceRegisterToDestRegister(REGISTER_X, SAVED_REGISTER_X); // save register X
+    }
+
     if (getRegisterDataType(REGISTER_X) != dtString) {
         // A numeric X is converted to a single-glyph string first (matches C); a
         // conversion error (out-of-range -> EC=8, bad type -> EC=24) aborts here.
@@ -423,27 +429,24 @@ pub export fn fnAlphaPos(regist: u16) callconv(.c) void {
         }
     }
 
-    if (frontier_char_string.stringGlyphLength(regString(@intCast(regist))) == 0 or frontier_char_string.stringGlyphLength(regString(REGISTER_X)) == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1POS? on or with an empty string", .{});
-            moreInfoOnError("In function fnAlphaPos:", errorMessage);
-        }
-        return;
-    }
-
     if (!saveLastX()) {
         return;
     }
 
     longIntegerInit(&lgInt[0]);
-    const ptrTarget: [*c]u8 = regString(REGISTER_X);
-    const ptrRegist: [*c]u8 = regString(@intCast(regist));
-    const lgTarget: i16 = @intCast(stringByteLength(ptrTarget));
-    const lgRegist: i16 = @intCast(stringByteLength(ptrRegist));
+    // An empty string on either side is not an error: the answer is simply "not
+    // found", which is the -1 the search starts from.
+    var position: i16 = -1;
+    if (frontier_char_string.stringGlyphLength(regString(@intCast(regist))) != 0 and frontier_char_string.stringGlyphLength(regString(REGISTER_X)) != 0) {
+        const ptrTarget: [*c]u8 = regString(REGISTER_X);
+        const ptrRegist: [*c]u8 = regString(@intCast(regist));
+        const lgTarget: i16 = @intCast(stringByteLength(ptrTarget));
+        const lgRegist: i16 = @intCast(stringByteLength(ptrRegist));
+        position = substringPosition(ptrRegist, lgRegist, ptrTarget, lgTarget);
+    }
+    int32ToLongInteger(position, &lgInt[0]);
 
-    int32ToLongInteger(substringPosition(ptrRegist, lgRegist, ptrTarget, lgTarget), &lgInt[0]);
-
+    copySourceRegisterToDestRegister(SAVED_REGISTER_X, REGISTER_X); // restore register X
     liftStack();
     frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&lgInt[0], REGISTER_X);
     longIntegerFree(&lgInt[0]);
@@ -468,17 +471,13 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
 
     const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RR on an empty string", .{});
-            moreInfoOnError("In function fnAlphaRR:", errorMessage);
-        }
-        return;
+        return; // nothing to rotate or shift, and nothing to complain about
     }
 
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
@@ -493,6 +492,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
             }
         },
         dtShortInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
@@ -501,6 +501,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
                 abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RR when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaRR:", errorMessage);
             }
+            longIntegerFree(&lgInt[0]); // free the pre-init before the error return
             return;
         },
     }
@@ -557,17 +558,13 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
 
     const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1RL on an empty string", .{});
-            moreInfoOnError("In function fnAlphaRL:", errorMessage);
-        }
-        return;
+        return; // nothing to rotate or shift, and nothing to complain about
     }
 
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
@@ -582,6 +579,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
             }
         },
         dtShortInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
@@ -590,6 +588,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
                 abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1RL when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaRL:", errorMessage);
             }
+            longIntegerFree(&lgInt[0]); // free the pre-init before the error return
             return;
         },
     }
@@ -634,27 +633,25 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
 
     const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SR on an empty string", .{});
-            moreInfoOnError("In function fnAlphaSR:", errorMessage);
-        }
-        return;
+        return; // nothing to rotate or shift, and nothing to complain about
     }
 
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
+                longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
                 frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
@@ -663,6 +660,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
                 abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SR when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaSR:", errorMessage);
             }
+            longIntegerFree(&lgInt[0]); // free the pre-init before the error return
             return;
         },
     }
@@ -708,27 +706,25 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     const ptr: [*c]u8 = regString(@intCast(regist));
     const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(ptr));
     if (stringGlyphLen == 0) {
-        frontier_error.displayCalcErrorMessage(ERROR_EMPTY_STRING, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "cannot use \x83\xb1SL on an empty string", .{});
-            moreInfoOnError("In function fnAlphaSL:", errorMessage);
-        }
-        return;
+        return; // nothing to rotate or shift, and nothing to complain about
     }
 
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
         dtLongInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         dtReal34 => {
             if (real34CompareAbsGreaterThan(reg34(REGISTER_X), const34_1e6())) {
                 uInt32ToLongInteger(1000000, &lgInt[0]);
             } else {
+                longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
                 frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
             }
         },
         dtShortInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
             frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
         },
         else => {
@@ -737,6 +733,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
                 abi.fmtBufZ(errorMessage[0..512], "cannot \x83\xb1SL when X is {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, true, false))});
                 moreInfoOnError("In function fnAlphaSL:", errorMessage);
             }
+            longIntegerFree(&lgInt[0]); // free the pre-init before the error return
             return;
         },
     }
@@ -852,9 +849,18 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
     var lgInt: longInteger_t = undefined;
     longIntegerInit(&lgInt[0]);
     switch (getRegisterDataType(REGISTER_X)) {
-        dtLongInteger => frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
-        dtReal34 => frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN),
-        dtShortInteger => frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]),
+        dtLongInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
+            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+        },
+        dtReal34 => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
+            frontier_register_value_conversions.convertReal34ToLongInteger(reg34(REGISTER_X), &lgInt[0], DEC_ROUND_DOWN);
+        },
+        dtShortInteger => {
+            longIntegerFree(&lgInt[0]); // the converter re-initialises lgInt; free the pre-init first
+            frontier_register_value_conversions.convertShortIntegerRegisterToLongInteger(REGISTER_X, &lgInt[0]);
+        },
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {

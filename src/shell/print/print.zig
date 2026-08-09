@@ -2124,11 +2124,11 @@ const summationRegisterName = blk: {
         }
     };
     // STD_SIGMA, STD_SUP_2/3/4, STD_DOT byte sequences (fonts.h).
-    const SIG = "\x80\x85";
+    const SIG = "\x83\xa3";
     const S2 = "\xa1\x62";
     const S3 = "\xa1\x63";
     const S4 = "\xa1\x64";
-    const DOT = "\xa0\x09";
+    const DOT = "\x80\xb7";
     break :blk [NUMBER_OF_STATISTICAL_SUMS]summationRegisterName_t{
         SS.row("n"),
         SS.row(SIG ++ "X"),

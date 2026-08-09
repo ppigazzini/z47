@@ -1955,6 +1955,17 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             exponent += 1;
         }
 
+        // SIG no-zero: clamp to the significant digits (ignore noise past numDigits),
+        // then drop trailing zeros left by the value or by rounding.
+        if (displayFormat == DF_SF and !forceSigZeroes) {
+            if (digitsToDisplay > numDigits - 1) {
+                digitsToDisplay = numDigits - 1;
+            }
+            while (digitsToDisplay > 0 and bcd[@intCast(firstDigit + digitsToDisplay)] == 0) {
+                digitsToDisplay -= 1;
+            }
+        }
+
         if (sign != 0) {
             displayString[charIndex] = '-';
             charIndex += 1;

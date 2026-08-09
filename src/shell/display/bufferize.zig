@@ -1953,8 +1953,11 @@ pub export fn validShortIntegerInX() callconv(.c) bool_t {
     if (nimNumberPart == NP_INT_BASE) {
         return 1;
     } else {
+        // C computes the bound as int, so a buffer of 0 or 1 characters gives a
+        // bound below the start index and the loop does not run.
+        const upper: u16 = if (lg >= 2) lg - 1 else 0;
         i = 1;
-        while (i < lg - 1) : (i += 1) { // do not check the # on the very begin or very end
+        while (i < upper) : (i += 1) { // do not check the # on the very begin or very end
             if (aimBuffer[i] == '#') {
                 posHash = i;
             }
@@ -1968,10 +1971,13 @@ pub export fn validShortIntegerInX() callconv(.c) bool_t {
         }
     }
     var base: u8 = 0;
-    if (aimBuffer[lg - 2] == '#' and (aimBuffer[lg - 1] >= '0' and aimBuffer[lg - 1] <= '9')) {
+    // Same promotion: `aimBuffer[lg - 2]` with lg < 2 indexes before the buffer
+    // in the C. A buffer that short cannot carry the base suffix these two tests
+    // look for, so the length is required up front instead.
+    if (lg >= 2 and aimBuffer[lg - 2] == '#' and (aimBuffer[lg - 1] >= '0' and aimBuffer[lg - 1] <= '9')) {
         base = aimBuffer[lg - 1];
     }
-    if (aimBuffer[lg - 3] == '#' and (aimBuffer[lg - 2] >= '0' and aimBuffer[lg - 2] <= '1') and (aimBuffer[lg - 1] >= '0' and aimBuffer[lg - 1] <= '9')) {
+    if (lg >= 3 and aimBuffer[lg - 3] == '#' and (aimBuffer[lg - 2] >= '0' and aimBuffer[lg - 2] <= '1') and (aimBuffer[lg - 1] >= '0' and aimBuffer[lg - 1] <= '9')) {
         base = aimBuffer[lg - 2] *% 10 +% aimBuffer[lg - 1];
     }
     if (base < 2 or base > 16) {
