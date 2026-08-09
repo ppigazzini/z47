@@ -804,6 +804,7 @@ pub extern fn z47_math_wrappers_const_0() *const real_t;
 pub extern fn z47_math_wrappers_const_1() *const real_t;
 pub extern fn z47_math_wrappers_const_minus_1() *const real_t;
 pub extern fn z47_math_wrappers_const_2() *const real_t;
+pub extern fn z47_math_wrappers_const39_root2on2() *const real_t;
 pub extern fn z47_math_wrappers_const_3() *const real_t;
 pub extern fn z47_math_wrappers_const_5() *const real_t;
 pub extern fn z47_math_wrappers_const_100() *const real_t;

@@ -31,15 +31,6 @@ fn buildQuarter(result: *runtime.real_t, real_context: *runtime.realContext_t) v
     runtime.realDivide(runtime.z47_math_wrappers_const_1(), &four, result, real_context);
 }
 
-fn buildRoot2on2(result: *runtime.real_t) void {
-    var two: runtime.real_t = undefined;
-    var root_context = runtime.ctxtReal39;
-
-    runtime.uInt32ToReal(2, &two);
-    runtime.realSquareRoot(&two, &two, &root_context);
-    runtime.realDivide(&two, runtime.z47_math_wrappers_const_2(), result, &root_context);
-}
-
 fn roundToCallerPrecision(value: *runtime.real_t, real_context: *runtime.realContext_t) void {
     _ = runtime.decNumberPlus(value, value, real_context);
 }
@@ -242,7 +233,6 @@ pub fn convertAngleToSinCosTan(
     var angle45: runtime.real_t = undefined;
     var angle90: runtime.real_t = undefined;
     var angle180: runtime.real_t = undefined;
-    var root2on2: runtime.real_t = undefined;
     var sin_neg = false;
     var cos_neg = false;
     var swap = false;
@@ -284,9 +274,8 @@ pub fn convertAngleToSinCosTan(
     }
 
     if (runtime.realCompareEqual(&angle, &angle45)) {
-        buildRoot2on2(&root2on2);
-        if (sin_out) |output| copyReal(output, &root2on2);
-        if (cos_out) |output| copyReal(output, &root2on2);
+        if (sin_out) |output| copyReal(output, runtime.z47_math_wrappers_const39_root2on2());
+        if (cos_out) |output| copyReal(output, runtime.z47_math_wrappers_const39_root2on2());
         if (tan_out) |output| {
             runtime.realSetOne(output);
         }
