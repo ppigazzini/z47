@@ -114,6 +114,8 @@ const LINEBREAK = if (dmcp_build) "\n\r" else "\n";
 
 // CLIPSTR: 30000 on host (PC_BUILD), TMP_STR_LENGTH (2560) on firmware.
 const CLIPSTR: usize = if (dmcp_build) 2560 else 30000;
+extern fn malloc(size: usize) ?*anyopaque;
+extern fn free(ptr: ?*anyopaque) void;
 
 // cairo / gdk constants.
 const CAIRO_FORMAT_RGB24: c_int = 1;
@@ -259,8 +261,13 @@ fn angularUnitToString(angularMode: angularMode_t, string: [*c]u8) void {
 // copyRegisterToClipboardString (PC_BUILD || DMCP_BUILD => always)
 // ---------------------------------------------------------------------------
 pub export fn copyRegisterToClipboardString(regist: calcRegister_t, clipboardString: [*c]u8, forPrinter: bool_t) callconv(.c) void {
-    var string: [CLIPSTR]u8 = undefined;
-    const buf: [*c]u8 = &string;
+    // Off the stack: this runs under stackregister_csv_out, and the pair overran
+    // the DM42 stack grant.
+    const buf: [*c]u8 = @ptrCast(malloc(CLIPSTR) orelse {
+        clipboardString[0] = 0;
+        return;
+    });
+    defer free(buf);
 
     switch (getRegisterDataType(regist)) {
         dtLongInteger => {

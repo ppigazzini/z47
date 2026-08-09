@@ -492,6 +492,8 @@ const TI_Saved_system_settings_restored: usize = 113;
 const TI_Saved_statistic_data_restored: usize = 114;
 const TI_Saved_user_variables_restored: usize = 115;
 const TI_Program_file_loaded: usize = 116;
+const TI_Data_file_loaded: usize = 124;
+const TI_Data_file_saved: usize = 125;
 
 // CF_ fitting selection codes (curveFitting.h)
 const CF_ORTHOGONAL_FITTING: u16 = 512;
@@ -586,6 +588,8 @@ const TI_DISP_JULIAN: u8 = 83;
 const TI_FROM_DATEX: u8 = 84;
 const TI_LAST_CONST_CATNAME: u8 = 85;
 const TI_PROGRAM_LOADED: u8 = 86;
+const TI_DATA_LOADED: u8 = 142;
+const TI_DATA_SAVED: u8 = 143;
 const TI_PROGRAMS_RESTORED: u8 = 87;
 const TI_REGISTERS_RESTORED: u8 = 88;
 const TI_SETTINGS_RESTORED: u8 = 89;
@@ -3971,6 +3975,12 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_PROGRAM_LOADED and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Program_file_loaded)});
+            displayTemporaryInformationOnX(&prefix);
+        } else if (temporaryInformation == TI_DATA_SAVED and regist == REGISTER_X) {
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Data_file_saved)});
+            displayTemporaryInformationOnX(&prefix);
+        } else if (temporaryInformation == TI_DATA_LOADED and regist == REGISTER_X) {
+            abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Data_file_loaded)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_UNDO_DISABLED and regist == REGISTER_X) {
             _ = showString(&errorMessages[ERROR_TI_UNDO_FAILED], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
