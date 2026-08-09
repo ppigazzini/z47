@@ -35,12 +35,13 @@ const const_1e_6143 = consts.const_1e_6143;
 // solve.zig). The real-name public symbols
 // fnIntVar and integrate are exported here. The non-static _fnIntegrate /
 // _showProgress are only referenced internally and become private (the
-// host-only _showProgress drawing is a no-op, matching the sumprod precedent;
+// _showProgress paints through the shared progress-panel owner;
 // the surrounding interrupt control flow is preserved). ENABLE_INTEGRATOR_FILE_
 // OUTPUT==0 and INTEGRATION_TWO_STAGE_EXIT undefined; the sprintf/radixProcess
 // display string building is reduced to a fixed literal (no effect on result).
 
 const runtime = @import("solve_runtime.zig");
+const progress_panel = @import("progress_panel.zig");
 
 const abi = @import("abi"); // shared ABI bindings
 const equation = @import("equation.zig");
@@ -527,17 +528,21 @@ fn DEI_xeq_user(regist: calcRegister_t, x: *align(1) const real_t, res: *real_t,
 }
 
 // ===========================================================================
-// _showProgress: host-only progress display, reduced to a no-op (no effect on
-// the computed result). ENABLE_SOLVER_PROGRESS == 1 body omitted.
+// _showProgress: the partial integral and the interval still to cover.
 // ===========================================================================
 fn _showProgress(ss: *align(1) const real_t, bma2: *align(1) const real_t, h: *align(1) const real_t, a: *align(1) const real_t, b: *align(1) const real_t, fact: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
-    _ = ss;
-    _ = bma2;
-    _ = h;
-    _ = a;
-    _ = b;
-    _ = fact;
-    _ = realContext;
+    var res: real_t = undefined;
+    var span: real_t = undefined;
+    var partial34: real34_t = undefined;
+    var span34: real34_t = undefined;
+
+    _ = realMultiply(ss, bma2, &res, realContext);
+    _ = realMultiply(&res, h, &res, realContext);
+    _ = realMultiply(&res, fact, &res, realContext);
+    realToReal34(&res, &partial34);
+    _ = realSubtract(a, b, &span, realContext);
+    realToReal34(&span, &span34);
+    progress_panel.showIntegralPartial(&partial34, &span34);
 }
 
 // ===========================================================================

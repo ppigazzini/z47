@@ -14,12 +14,13 @@ const consts = abi.constants;
 // _inverseQuadraticInterpolation, _showProgress) stay private.
 //
 // SOLVERDEBUG/SOLVERDEBUG2 and the PC_BUILD printf blocks are #undef'd under
-// TESTSUITE_BUILD and omitted. ENABLE_SOLVER_PROGRESS _showProgress is reduced
-// to a no-op (no effect on the computed result; underlying flow preserved).
+// TESTSUITE_BUILD and omitted. _showProgress paints the bracket panel through
+// the shared progress-panel owner.
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under TESTSUITE/DMCP and
 // omitted. ctxtSolver/ctxtSolverHi == ctxtReal39; solverTvmTol=34, solverTvmZer=35.
 
 const runtime = @import("solve_runtime.zig");
+const progress_panel = @import("progress_panel.zig");
 const solve_build_options = @import("solve_build_options");
 const dmcp_build: bool = solve_build_options.is_dmcp_build;
 const old_hw: bool = solve_build_options.is_old_hw;
@@ -672,10 +673,11 @@ fn _inverseQuadraticInterpolation(a: *const real_t, b: *const real_t, c: *const 
 }
 
 fn _showProgress(a: *align(1) const real34_t, b: *align(1) const real34_t, fa: *align(1) const real34_t, fb: *align(1) const real34_t) linksection(runtime.code_section) void {
-    _ = a;
-    _ = b;
-    _ = fa;
-    _ = fb;
+    // The panel is for a bare solve only: a TVM application or a formula draws
+    // its own screen, and a nested solve would paint over the outer one.
+    if ((currentSolverStatus & (SOLVER_STATUS_TVM_APPLICATION & SOLVER_STATUS_USES_FORMULA)) == 0 and currentSolverNestingDepth == 1) {
+        progress_panel.showSolverBracket(a, b, fa, fb);
+    }
 }
 
 // ===========================================================================

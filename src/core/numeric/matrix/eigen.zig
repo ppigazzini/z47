@@ -2203,7 +2203,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
         if (!runtime.initMatrixRegister(runtime.REGISTER_X, 1, 1, isComplex)) {
             runtime.fnDrop(runtime.NOPARAM);
             runtime.displayCalcErrorMessage(runtime.ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function createEigenVectorIf1x1:", "Not enough memory for a 1\xc3\x971 matrix", null, null);
+            if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function createEigenVectorIf1x1:", "Not enough memory for a 1\x80\xd71 matrix", null, null);
             return 255;
         }
         if (isComplex) {
@@ -2709,7 +2709,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
             runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [64]u8 = undefined;
-                const m = bufPrintZ(&buf, "not a square matrix ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
+                const m = bufPrintZ(&buf, "not a square matrix ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
                 runtime.moreInfoOnError("In function fnMatrixSquareRoot:", m, null, null);
             }
         } else {
@@ -2778,7 +2778,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runti
             runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [64]u8 = undefined;
-                const m = bufPrintZ(&buf, "not a square matrix ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
+                const m = bufPrintZ(&buf, "not a square matrix ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "not square";
                 runtime.moreInfoOnError("In function fnMatrixSquareRoot:", m, null, null);
             }
         } else {

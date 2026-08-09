@@ -311,7 +311,7 @@ fn getPutOutOfRange(a: u16, b: u16, fnName: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [64]u8 = undefined;
-        const m = runtime.bufPrintZ(&buf, "{d} \xc3\x97 {d} out of range", .{ a, b }) catch "out of range";
+        const m = runtime.bufPrintZ(&buf, "{d} \x80\xd7 {d} out of range", .{ a, b }) catch "out of range";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }

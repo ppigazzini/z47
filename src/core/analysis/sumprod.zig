@@ -13,16 +13,16 @@ const consts = abi.constants;
 // _programmableSumProd / _checkArgument become private. showProgressReal is also
 // defined in sumprod.c and is used by graph.c, so it is re-exported here.
 //
-// The host-only progress display (showProgressReal body, guarded by
-// ENABLE_SOLVER_PROGRESS == 1) has no effect on the computed stack result; the
-// underlying control-flow functions (progressHalfSecUpdate_Integer, checkHalfSec)
-// are still called so programRunStop / flag side effects are preserved, but the
-// actual screen drawing is reduced to a no-op (same precedent as the prime
-// owner's _showProgress). The VERBOSE_COUNTER debug blocks are #undef'd in the C
+// The progress display (showProgressReal, guarded by ENABLE_SOLVER_PROGRESS == 1)
+// paints through the shared progress-panel owner; it has no effect on the
+// computed stack result, and the control-flow functions around it
+// (progressHalfSecUpdate_Integer, checkHalfSec) run either way so the
+// programRunStop and flag side effects are preserved. The VERBOSE_COUNTER debug blocks are #undef'd in the C
 // and are omitted. EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed
 // moreInfoOnError strings (no-op under TESTSUITE/DMCP).
 
 const runtime = @import("solve_runtime.zig");
+const progress_panel = @import("progress_panel.zig");
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // shared ABI bindings
@@ -110,6 +110,7 @@ extern var significantDigits: u8;
 
 extern var ctxtReal75: realContext_t;
 extern var ctxtReal34: realContext_t;
+extern fn decimal128FromNumber(dest: *align(1) real34_t, src: *align(1) const real_t, ctxt: *realContext_t) *align(1) real34_t;
 
 // ---------------------------------------------------------------------------
 // Constants blob accessors
@@ -245,14 +246,17 @@ const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback 
 const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 
 // ===========================================================================
-// showProgressReal: host-only progress display. The drawing is reduced to a
-// no-op (no effect on the computed result); still exported because graph.c
-// calls it. (ENABLE_SOLVER_PROGRESS == 1 body omitted.)
+// showProgressReal: the running sum or product, real or complex. Exported
+// because the grapher calls it too.
 // ===========================================================================
 pub export fn showProgressReal(a: *const real_t, ai: *real_t, cpx: bool_t) linksection(runtime.code_section) callconv(.c) void {
-    _ = a;
-    _ = ai;
-    _ = cpx;
+    var a34: real34_t = undefined;
+    var ai34: real34_t = undefined;
+    _ = decimal128FromNumber(&a34, a, &ctxtReal34);
+    if (cpx) {
+        _ = decimal128FromNumber(&ai34, ai, &ctxtReal34);
+    }
+    progress_panel.showRealPartial(&a34, &ai34, cpx);
 }
 
 // ===========================================================================
