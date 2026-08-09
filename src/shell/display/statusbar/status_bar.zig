@@ -346,11 +346,10 @@ inline fn setWhitePixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 
-// get_vbat is firmware-only (only referenced under dmcp_build).
-inline fn get_vbat() c_int {
-    const f: *const fn () callconv(.c) c_int = @ptrFromInt(LIBRARY_FN_BASE + 240);
-    return f();
-}
+// The rate-limited battery reading. The gauge uses this rather than get_vbat so
+// it neither triggers an ADC conversion of its own nor tracks the dip whenever
+// the LCD or IR draws current.
+extern fn updateVbatIntegrated(minutePulse: bool_t) c_int;
 
 // ---------------------------------------------------------------------------
 // max/min helpers (C macros).
@@ -462,6 +461,7 @@ inline fn lowerUnderLine() i32 {
 // ---------------------------------------------------------------------------
 pub export var SBlastIntegerBaseShown: u8 = 0xFF;
 pub export var SBAlphaModeLastShown: u16 = 0xFFFF;
+pub export var SBbatteryLastShown: u16 = 0xFFFF; // drawn battery bar level, not the raw voltage
 pub export var SBhourglassShown: [2]u8 = undefined;
 pub export var alphaOutput: [3]u8 = undefined;
 // C file-scope .bss globals -> zero-initialized (false). `= undefined` left a
@@ -474,6 +474,7 @@ pub export var reInstateOCModeDisplay: bool_t = false;
 // ===========================================================================
 pub export fn forceSBupdate() callconv(.c) void {
     setAllSystemFlagChanged();
+    SBbatteryLastShown = 0xFFFF;
     SBlastIntegerBaseShown = 0xFF;
     SBAlphaModeLastShown = 0xFFFF;
     SBhourglassShown[0] = 0xFF;
@@ -950,7 +951,7 @@ pub export fn showHideAlphaMode() callconv(.c) void {
     const textModeIconDisplay: bool_t = plainTextMode() or calcMode == CM_EIM or (catalog != 0 and catalog != CATALOG_MVAR) or (tam.mode != 0 and tam.alpha);
     const toSwitchOff: bool_t = !textModeIconDisplay and alphaOutput[0] != 0;
 
-    if (!true or calcMode == CM_GRAPH) { // SBARUPD_AlphaMode == 1
+    if (!true or graphMode()) { // SBARUPD_AlphaMode == 1
         return;
     }
     var SBchanged: bool_t = false;
@@ -1153,7 +1154,7 @@ fn showStackSize() void {
 // light_ASB_icon
 // ===========================================================================
 pub export fn light_ASB_icon() callconv(.c) void {
-    if (!true or calcMode == CM_GRAPH) { // SBARUPD_AlphaMode == 1
+    if (!true or graphMode()) { // SBARUPD_AlphaMode == 1
         return;
     }
     lcd_fill_rect(@intCast(X_ALPHA_MODE), 18, 9, 2, LCD_EMPTY_VALUE);
@@ -1169,7 +1170,7 @@ pub export fn light_ASB_icon() callconv(.c) void {
 // kill_ASB_icon
 // ===========================================================================
 pub export fn kill_ASB_icon() callconv(.c) void {
-    if (!true or calcMode == CM_GRAPH) {
+    if (!true or graphMode()) {
         return;
     }
     lcd_fill_rect(@intCast(X_ALPHA_MODE), 18, 9, 2, LCD_SET_VALUE);
@@ -1237,10 +1238,20 @@ fn showHideUserMode() void {
 // drawBattery
 // ===========================================================================
 pub export fn drawBattery(voltage: u16) callconv(.c) void {
-    lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
     // C: (uint16_t)(min(max(voltage-2000,0),3100) / (float)(((float)3100 - 2000.0f) / (float)DY_BATTERY))
     const vf: f32 = @as(f32, @floatFromInt(minI(maxI(@as(i32, voltage) - 2000, 0), 3100))) / ((@as(f32, 3100) - 2000.0) / @as(f32, @floatFromInt(DY_BATTERY)));
     const vv: u16 = @intFromFloat(vf);
+
+    // The drawn pixels depend on the bar level and the 2750 mV threshold alone,
+    // so an unchanged pair needs no repaint. Returning before the fill is what
+    // keeps the gauge from being blanked and redrawn on every refresh.
+    const drawnState: u16 = vv | (if (voltage > 2750) @as(u16, 0x100) else 0);
+    if (drawnState == SBbatteryLastShown) {
+        return;
+    }
+    SBbatteryLastShown = drawnState;
+
+    lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
     {
         // C assigns min(vv-1, ...) to a uint16_t: when vv==0, vv-1 is -1 and
         // truncates to 65535 (the loop then simply doesn't run). @intCast would
@@ -1271,18 +1282,25 @@ pub export fn drawBattery(voltage: u16) callconv(.c) void {
 // ===========================================================================
 fn showHideUsbLowBatteryImpl() callconv(.c) void {
     if (!true) { // SBARUPD_Battery == 1
+        // The area holds a glyph or is blank, so the next gauge draw repaints.
         lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
+        SBbatteryLastShown = 0xFFFF;
         return;
     }
     if (getSystemFlag(FLAG_USB)) {
         _ = frontier_screen.showGlyph(STD_USB_SYMBOL, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
+        SBbatteryLastShown = 0xFFFF;
     } else {
         if (sbBatVoltage()) {
-            drawBattery(@intCast(minI(get_vbat(), vbatVIntegrated)));
+            // The rate-limited reading, so the gauge adds no ADC conversion of
+            // its own and does not dip whenever the LCD or IR draws current.
+            drawBattery(@intCast(minI(updateVbatIntegrated(false), vbatVIntegrated)));
         } else if (getSystemFlag(FLAG_LOWBAT)) {
             _ = frontier_screen.showGlyph(STD_BATTERY, &standardFont, @intCast(X_BATTERY), 0, vmNormal, 1, 0, 0);
+            SBbatteryLastShown = 0xFFFF;
         } else {
             lcd_fill_rect(@intCast(X_BATTERY), 0, 11, 20, LCD_SET_VALUE);
+            SBbatteryLastShown = 0xFFFF;
         }
     }
 }
