@@ -34,7 +34,7 @@ fn roundiReal() callconv(.c) void {
 
     if (runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function roundiReal:", "cannot use +/-inf as an input of ROUNDI", null, null);
+        runtime.moreInfoOnError("In function roundiReal:", "cannot use \xc2\xb1\xe2\x88\x9e as an input of ROUNDI", null, null);
         return;
     }
 
@@ -66,7 +66,7 @@ fn ulpReal() void {
 
     if (runtime.real34IsInfinite(runtime.registerReal34Ptr(runtime.REGISTER_X))) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function fnUlp:", "cannot use +/-inf input of ULP", null, null);
+        runtime.moreInfoOnError("In function fnUlp:", "cannot use \xc2\xb1\xe2\x88\x9e input of ULP?", null, null);
     }
 
     runtime.real34NextPlus(runtime.registerReal34Ptr(runtime.REGISTER_X), &next_value);

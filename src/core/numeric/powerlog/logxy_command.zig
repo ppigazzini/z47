@@ -180,6 +180,9 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
     if (runtime.realIsZero(&a)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function logxyReal:", "cannot calculate log2(0)", null, null);
+            }
             return;
         }
 
@@ -216,6 +219,9 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
         runtime.realSetNaN(&a);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError("In function logxyReal:", "cannot calculate log2 of a negative number when CPXRES is not set!", null, null);
+        }
         return;
     }
 
@@ -233,6 +239,9 @@ pub fn logxyCplx(denom: *const runtime.real_t) callconv(.c) void {
     if (runtime.realIsZero(&a) and runtime.realIsZero(&b)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function logxyCplx:", "cannot calculate log2(0)", null, null);
+            }
             return;
         }
 

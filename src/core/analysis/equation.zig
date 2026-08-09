@@ -330,6 +330,7 @@ extern fn runFunction(item: i16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn adjustResult(res: calcRegister_t, drop_y: bool, set_cpx_res: bool, op1: calcRegister_t, op2: calcRegister_t, op3: calcRegister_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 
 extern fn findNamedVariable(variableName: [*:0]const u8) calcRegister_t;
@@ -470,6 +471,7 @@ pub export fn fnEqNew(unusedButMandatoryParameter: u16) linksection(runtime.code
             currentSolverVariable = INVALID_VARIABLE;
         } else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            moreInfoOnError("In function fnEqNew:", "there is not enough memory for a new equation!", null, null);
             return;
         }
     } else {
@@ -488,6 +490,7 @@ pub export fn fnEqNew(unusedButMandatoryParameter: u16) linksection(runtime.code
             graphVariabl1 = 0;
         } else {
             displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            moreInfoOnError("In function fnEqNew:", "there is not enough memory for a new equation!", null, null);
             return;
         }
     }
@@ -564,6 +567,7 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
         allFormulae[equationId].pointerToFormulaData = TO_C47MEMPTR(newPtr);
     } else {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function setEquation:", "there is not enough memory for a new equation!", null, null);
         return;
     }
     allFormulae[equationId].sizeInBlocks = @intCast(newSizeInBlocks);
@@ -1010,6 +1014,7 @@ fn _pushNumericStack(mvarBuffer: [*c]u8, re: *align(1) const real34_t, im: *alig
         sp[0] += 1;
     } else {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function _pushNumericStack:", "numeric stack overflow!", null, null);
     }
 }
 
@@ -1024,6 +1029,7 @@ fn _popNumericStack(mvarBuffer: [*c]u8, re: *align(1) real34_t, im: ?*align(1) r
         }
     } else {
         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function _popNumericStack:", "numeric stack is empty!", null, null);
         realToReal34(const_NaN(), re);
         if (im) |imp| {
             realToReal34(const_NaN(), imp);
@@ -1138,12 +1144,14 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                     PARSER_OPERATOR_ITM_PARENTHESIS_LEFT => {
                         if (func == PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT) {
                             displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "parenthesis not closed", null);
                         }
                     },
                     PARSER_OPERATOR_ITM_VERTICAL_BAR_LEFT => {
                         _runEqFunction(mvarBuffer, ITM_MAGNITUDE);
                         if (func == PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT) {
                             displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                            moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "unpaired vertical bar within parentheses", null);
                         }
                     },
                     PARSER_OPERATOR_ITM_YX => {
@@ -1168,15 +1176,18 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                         // The C `break` leaves the switch only; the unwind loop
                         // keeps going and zeroes the deeper slots too.
                         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                        moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "parenthesis not closed", null);
                     },
                 }
             }
             switch (func) {
                 PARSER_OPERATOR_ITM_PARENTHESIS_RIGHT => {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening parenthesis", null);
                 },
                 PARSER_OPERATOR_ITM_VERTICAL_BAR_RIGHT => {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function _processOperator:", "parentheses mismatch!", "no corresponding opening vertical bar", null);
                 },
                 PARSER_OPERATOR_ITM_EQUAL => {
                     if (getRegisterDataType(REGISTER_X) != dtComplex34) { // a complex left hand side cannot convert: the complex solver leaves one in X
@@ -1227,6 +1238,7 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                     opStack[i] = func;
                 } else {
                     displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function _processOperator:", "operator stack overflow!", null, null);
                 }
                 return;
             }
@@ -1243,6 +1255,7 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
         }
     } else {
         displayCalcErrorMessage(ERROR_EQUATION_TOO_COMPLEX, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function _processOperator:", "operator stack overflow!", null, null);
     }
 }
 
@@ -1333,6 +1346,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                     }
                 } else {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function parseEquation:", "attempt to call a number as a function!", null, null);
                 }
             }
         },
@@ -1372,6 +1386,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                     fnDrop(NOPARAM);
                 } else {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function parseEquation:", "= appears more than once", null, null);
                 }
             } else if (parserHint == PARSER_HINT_NUMERIC) {
                 var val: real34_t = undefined;
