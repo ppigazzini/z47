@@ -1,3 +1,4 @@
+const abi = @import("abi");
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of src/c47/mathematics/idiv.c, idivr.c, dblMultiplication.c,
 // dblDivision.c, round.c and decomp.c (dispatch tables, cells and the
@@ -772,13 +773,6 @@ pub export fn z47_math_wrappers_legacy_fnRound(unused_but_mandatory_parameter: u
 
     runtime.adjustResult(REGISTER_X, false, false, REGISTER_X, no_register, no_register);
 }
-
-fn real34FromInt32(value: i32) runtime.real34_t {
-    var result: runtime.real34_t = undefined;
-    _ = support.decQuadFromInt32(&result, value);
-    return result;
-}
-
 pub export fn roundTime() linksection(runtime.code_section) callconv(.c) void {
     var real34: runtime.real34_t = undefined;
 
@@ -787,10 +781,12 @@ pub export fn roundTime() linksection(runtime.code_section) callconv(.c) void {
     switch (support.timeDisplayFormatDigits) {
         0 => {}, // no rounding
         1, 2 => { // round to minutes
-            const sixty = real34FromInt32(60); // const34_60
-            runtime.real34Divide(&real34, &sixty, &real34);
+            // The blob constants, not rebuilt ones: they are real34Reduce'd, so
+            // 60 is stored as 6E+1 and a plain 60 divides differently.
+            const sixty = abi.constants.const34_60();
+            runtime.real34Divide(&real34, sixty, &real34);
             runtime.real34ToIntegralValue(&real34, &real34, runtime.DEC_ROUND_DOWN);
-            runtime.real34Multiply(&real34, &sixty, &real34);
+            runtime.real34Multiply(&real34, sixty, &real34);
         },
         else => { // round to seconds, milliseconds, microseconds, ...
             // round to timeDisplayFormatDigits decimal places via scaleB (exponent shift)
@@ -813,16 +809,16 @@ pub export fn roundDate() linksection(runtime.code_section) callconv(.c) void {
 
     real34 = runtime.registerReal34Ptr(REGISTER_X).*;
 
-    const half_day = real34FromInt32(43200); // const34_43200
-    const full_day = real34FromInt32(86400); // const34_86400
+    const half_day = abi.constants.const34_43200();
+    const full_day = abi.constants.const34_86400();
 
-    runtime.real34Subtract(&real34, &half_day, &real34);
-    runtime.real34Divide(&real34, &full_day, &real34);
+    runtime.real34Subtract(&real34, half_day, &real34);
+    runtime.real34Divide(&real34, full_day, &real34);
 
     runtime.real34ToIntegralValue(&real34, &real34, support.roundingModeTable[support.roundingMode]);
 
-    runtime.real34Multiply(&real34, &full_day, &real34);
-    runtime.real34Add(&real34, &half_day, &real34);
+    runtime.real34Multiply(&real34, full_day, &real34);
+    runtime.real34Add(&real34, half_day, &real34);
 
     runtime.registerReal34Ptr(REGISTER_X).* = real34;
 }

@@ -301,7 +301,7 @@ pub fn checkInteger(mode: u16) void {
     } else if (fractional) {
         runtime.setTemporaryInformation(mode == CHECK_INTEGER_FP);
     } else {
-        runtime.fnRefreshState();
+        runtime.refreshScreenNow();
         setCheckIntegerResult(mode, value[0]._mp_size != 0 and (value[0]._mp_d[0] & 1) != 0);
     }
 }
