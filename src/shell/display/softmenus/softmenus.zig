@@ -3636,7 +3636,7 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         softmenuStack[0].firstItem +%= @bitCast(item);
         showSoftmenuCurrentPart();
 
-        var bmpFileName: [600]u8 = undefined;
+        var bmpFileName: [1024]u8 = undefined;
         var x: i32 = undefined;
         var y: i32 = undefined;
         var uint32: u32 = undefined;
@@ -3663,7 +3663,12 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
             _ = printf(">>> filename:%s|\n", &bmpFileName);
         }
 
-        const bmp = fopen(&bmpFileName, "wb");
+        const bmp = fopen(&bmpFileName, "wb") orelse {
+            // Reachable: a filename-format argument outside the two known values
+            // leaves bmpFileName unwritten.
+            _ = printf(">>> menuDump: cannot open %s\n", &bmpFileName);
+            return;
+        };
 
         _ = fwrite("BM", 1, 2, bmp);
 
@@ -3685,7 +3690,10 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         _ = fwrite(&uint16, 1, 2, bmp);
         uint32 = 0;
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = 0x000030c0;
+        // Size of bitmap data including padding. A menu dump is the softmenu
+        // strip, not the whole screen, so this is not the full-screen value the
+        // screen dump writes.
+        uint32 = (SCREEN_WIDTH / 8 + 2) * (SCREEN_HEIGHT - 171);
         _ = fwrite(&uint32, 1, 4, bmp);
         // Horizontal and vertical print resolution: 2835 pixels/m (72 dpi), so
         // sim and hardware menu dumps produce byte-identical BMPs.

@@ -249,7 +249,6 @@ distributions/uniform	shell/distributions/uniform	port	comment
 distributions/weibull	shell/distributions/weibull	port	comment
 integers	abi/shortint_arith	port	comment
 printing/martelFonts	shell/generated/frontier_martel_fonts	port	comment
-printing/print	shell/print/printer_text_width	port	comment
 printing/printerFont8	shell/generated/frontier_printer_font8	port	comment
 realType	shell/real_type	port	comment
 registerValueConversions	abi/sci_format	port	comment

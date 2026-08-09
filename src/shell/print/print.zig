@@ -62,7 +62,6 @@ const frontier_matrix_editor = @import("../matrix_editor/matrix_editor.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_bufferize = @import("../display/bufferize.zig");
 const frontier_char_string = @import("../display/text/char_string.zig");
-const printer_text_width = @import("printer_text_width.zig"); // std-only width math
 const printer_glyph_search = @import("printer_glyph_search.zig"); // std+abi glyph search
 const printer_char_map = @import("printer_char_map.zig"); // std-only HP82240 reverse lookup
 const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
@@ -1062,11 +1061,10 @@ fn printLineImpl(buff_in: [*c]const u8, with_lf: c_int) void {
 }
 
 fn printJustifiedImpl(buff: [*c]const u8) void {
-    const pmode = printerState.print_mode;
-    var len: u16 = if (pmode == PMODE_DEFAULT)
-        @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1
-    else
-        @intCast(printer_text_width.pixelLength(buff, pmode == PMODE_SMALLGRAPHICS));
+    // One width model for every print mode: the per-mode pixel measurement was
+    // retired upstream, where the line that read print_mode survives only as a
+    // comment.
+    var len: u16 = @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1;
     const paperWidth: u16 = @intCast(PAPER_WIDTH);
 
     if (len >= paperWidth - printerColumn) {
@@ -1079,11 +1077,10 @@ fn printJustifiedImpl(buff: [*c]const u8) void {
 }
 
 fn printJustifiedLeft(buff: [*c]const u8) void {
-    const pmode = printerState.print_mode;
-    var len: u16 = if (pmode == PMODE_DEFAULT)
-        @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1
-    else
-        @intCast(printer_text_width.pixelLength(buff, pmode == PMODE_SMALLGRAPHICS));
+    // One width model for every print mode: the per-mode pixel measurement was
+    // retired upstream, where the line that read print_mode survives only as a
+    // comment.
+    var len: u16 = @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1;
     const paperWidth: u16 = (@as(u16, @intCast(PAPER_WIDTH)) / 2) - 7;
 
     if (len >= paperWidth - printerColumn) {
