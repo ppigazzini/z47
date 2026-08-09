@@ -1051,7 +1051,7 @@ fn isHistoMatrix(rows: *u16, mx: [*c]const u8) bool {
     return true;
 }
 
-fn initHistoMatrix(s: *real_t) void {
+fn initHistoMatrix(s: *real_t) bool {
     var rows: u16 = 0;
     var cols: u16 = undefined;
     var regHisto: calcRegister_t = findNamedVariable("HISTO");
@@ -1070,6 +1070,16 @@ fn initHistoMatrix(s: *real_t) void {
         linkToRealMatrixRegister(regHisto, &histo);
         rows = histo.header.matrixRows;
         cols = histo.header.matrixColumns;
+        if (rows == 0) {
+            // matrixRows is a 12-bit field: 4096 rows or more wrap to 0, which
+            // would make (rows - 1) index far out of bounds.
+            frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                abi.fmtBufZ(errorMessage[0..512], "HISTO row count wrapped the 12-bit matrixRows field", .{});
+                moreInfoOnError("In function initHistoMatrix:", errorMessage);
+            }
+            return false;
+        }
         realToReal34(s, @ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols]));
         real34SetZero(@ptrCast(&histo.matrixElements.?[@as(usize, rows - 1) * cols + 1]));
     } else {
@@ -1079,6 +1089,7 @@ fn initHistoMatrix(s: *real_t) void {
             moreInfoOnError("In function initHistoMatrix:", errorMessage);
         }
     }
+    return regHisto != INVALID_VARIABLE;
 }
 
 pub export fn fnSetLoBin(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1213,17 +1224,25 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
         const rows: u16 = stats.header.matrixRows;
         const cols: u16 = stats.header.matrixColumns;
         if (cols == 2) {
+            var histoBuilt = true;
+
             i = 0;
             while (@as(i32, i) < NN) : (i += 1) {
                 int32ToReal(i, &ii);
                 realAdd(&ii, const_1on2(), &ii, &ctxtReal39);
                 realMultiply(&ii, &bw, &ii, &ctxtReal39);
                 realAdd(&ii, &lb, &ii, &ctxtReal39); // bin midpoint
-                initHistoMatrix(&ii); // Set up all x-mid-points of the bins in HISTO, with 0 in y
+                // Set up all x-mid-points of the bins in HISTO, with 0 in y. An
+                // append that fails on a full pool stops the loop before the
+                // populate pass writes past HISTO.
+                if (!initHistoMatrix(&ii)) {
+                    histoBuilt = false;
+                    break;
+                }
                 linkToRealMatrixRegister(regHisto, &histo);
             }
 
-            if (isStatsMatrix(&i, &statMx) and isHistoMatrix(&i, "HISTO")) {
+            if (histoBuilt and isStatsMatrix(&i, &statMx) and isHistoMatrix(&i, "HISTO")) {
                 linkToRealMatrixRegister(regStats, &stats); // every initHistoMatrix append above reallocates the pool and can move the STATS data
                 i = 0;
                 while (i < rows) : (i += 1) {
@@ -1252,15 +1271,19 @@ fn convertStatsMatrixToHistoMatrix(statsVariableToHistogram: u16) void {
                 }
             }
 
-            liftStack();
-            setSystemFlag(FLAG_ASLIFT);
-            liftStack();
-            setSystemFlag(FLAG_ASLIFT);
-            liftStack();
-            frontier_register_value_conversions.convertRealToResultRegister(&nb, REGISTER_Z, amNone);
-            frontier_register_value_conversions.convertRealToResultRegister(&lb, REGISTER_Y, amNone);
-            frontier_register_value_conversions.convertRealToResultRegister(&hb, REGISTER_X, amNone);
-            temporaryInformation = TI_STATISTIC_HISTO;
+            if (histoBuilt) {
+                // A failed build already has the memory error on display; lifting
+                // the stack here would overwrite it with results.
+                liftStack();
+                setSystemFlag(FLAG_ASLIFT);
+                liftStack();
+                setSystemFlag(FLAG_ASLIFT);
+                liftStack();
+                frontier_register_value_conversions.convertRealToResultRegister(&nb, REGISTER_Z, amNone);
+                frontier_register_value_conversions.convertRealToResultRegister(&lb, REGISTER_Y, amNone);
+                frontier_register_value_conversions.convertRealToResultRegister(&hb, REGISTER_X, amNone);
+                temporaryInformation = TI_STATISTIC_HISTO;
+            }
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
             if (comptime extra_info) {
