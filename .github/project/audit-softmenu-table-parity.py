@@ -69,7 +69,9 @@ HOST_OPTIONS = {
     "strip_17b": False,
     "strip_17c": False,
     "strip_21_hp35": False,
-    "strip_ortho_bessel_ellip": False,
+    "strip_ortho": False,
+    "strip_bessel": False,
+    "strip_elliptic": False,
 }
 
 # Menus whose initialiser lives in the generated softmenuCatalogs.h.

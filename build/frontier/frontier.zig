@@ -48,11 +48,15 @@ pub const RuntimeObjectOptions = struct {
     // softmenus.c's menu_Dev. Upstream defines it only for DMCP package 1.
     // Defaults false (host / other packages keep the HP35 profile shortcut).
     strip_21_hp35: bool = false,
-    // SAVE_SPACE_DM42_12{ORTHO,BESSEL,ELLIP} are always defined together (the
-    // NOBESSEL_NOORTHO packages 1, 3 and 4); they gate the corresponding
-    // ORTHO/BESSEL/ELLIP case labels in softmenus.c's savedspace() strike-out
-    // helper. Defaults false (host / package 2 / DMCP5 keep those functions).
-    strip_ortho_bessel_ellip: bool = false,
+    // The inverses of upstream's OPTION_ORTHO, OPTION_BESSEL and OPTION_ELLIPTIC,
+    // which gate the matching case labels in softmenus.c's savedspace()
+    // strike-out helper. They are three separate options with three different
+    // per-package values, so they cannot share one flag: elliptic is out of
+    // packages 1, 3 and 4, while ortho and bessel are out of package 4 alone.
+    // Default false (host / DMCP5 keep all three).
+    strip_ortho: bool = false,
+    strip_bessel: bool = false,
+    strip_elliptic: bool = false,
     // Emit the EXTRA_INFO_ON_CALC_ERROR console hints. Upstream compiles these
     // out on firmware (DMCP_BUILD), so default off there to match and save flash;
     // host/sim keep them. Default true mirrors a normal host build.
@@ -135,7 +139,9 @@ fn addRuntimeObject(
     build_options.addOption(bool, "strip_17c", options.strip_17c);
     build_options.addOption(bool, "strip_15", options.strip_15);
     build_options.addOption(bool, "strip_21_hp35", options.strip_21_hp35);
-    build_options.addOption(bool, "strip_ortho_bessel_ellip", options.strip_ortho_bessel_ellip);
+    build_options.addOption(bool, "strip_ortho", options.strip_ortho);
+    build_options.addOption(bool, "strip_bessel", options.strip_bessel);
+    build_options.addOption(bool, "strip_elliptic", options.strip_elliptic);
     build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);
     build_options.addOption(bool, "dmcp_build", options.dmcp_build);
     build_options.addOption(bool, "old_hw", options.old_hw);
