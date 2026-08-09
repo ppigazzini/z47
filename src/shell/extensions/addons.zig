@@ -805,6 +805,7 @@ extern fn getBeepVolume() u16;
 extern fn fnSetVolume(volume: u16) void;
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
+extern fn interruptKeyInBuffer() bool;
 
 // libc
 extern fn strlen(s: [*c]const u8) usize;
@@ -1972,15 +1973,31 @@ pub export fn anyKeyWaiting() callconv(.c) bool_t {
     }
 }
 
+// EXIT (32) or R/S (35) both stop a long computation (solver, integrator,
+// grapher, prime, matrix, ...).
 pub export fn exitKeyWaiting() callconv(.c) bool_t {
     if (comptime dmcp_build) {
-        const checkKey: bool_t = @intFromBool(C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE) == 32);
+        const interruptKey = C47PopKeyNoBuffer(DISPLAY_WAIT_FOR_RELEASE);
+        // An EXIT or R/S that a refresh's keyBuffer_pop parked in the C47 ring
+        // buffer is invisible to C47PopKeyNoBuffer, which reads the SDK buffer only.
+        const ringInterrupt = interruptKeyInBuffer();
+        const checkKey: bool_t = @intFromBool((interruptKey == 32 or interruptKey == 35) or ringInterrupt);
         if (checkKey == 0) {
             key_pop_all();
+            clearKeyBuffer();
+        } else if (ringInterrupt) {
+            // Consume the ring-buffer key so a queued R/S cannot later relaunch
+            // fnRunProgram; an EXIT arriving through the SDK is left untouched.
             clearKeyBuffer();
         }
         return checkKey;
     } else {
+        if (currentKeyCode == 35) {
+            // R/S is a run/stop toggle, so a surviving press was being re-read as
+            // "run" and relaunching the operation it just stopped.
+            currentKeyCode = 255;
+            return 1;
+        }
         return @intFromBool(currentKeyCode == 32);
     }
 }
