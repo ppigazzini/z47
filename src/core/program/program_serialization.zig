@@ -1,6 +1,7 @@
 const abi = @import("abi");
 const header_owned = @import("program_serialization_header.zig");
 const load_apply_owned = @import("program_serialization_load_apply.zig");
+const export_owned = @import("program_serialization_export.zig");
 const save_owned = @import("program_serialization_save.zig");
 const screen_owned = @import("program_serialization_screen.zig");
 const runtime = @import("program_serialization_runtime.zig");
@@ -66,8 +67,7 @@ pub export fn fnSaveProgram(label: u16) void {
 }
 
 pub export fn fnExportProgram(label: u16) void {
-    // Compatibility shim: use the Zig-owned save path until dedicated export formatting lands.
-    saveProgram(label);
+    export_owned.exportProgram(label, runtime.ioPathExportRTFProgram);
 }
 
 pub export fn fnSaveAllPrograms(unusedButMandatoryParameter: u16) void {

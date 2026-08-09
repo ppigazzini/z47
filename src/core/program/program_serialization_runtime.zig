@@ -72,6 +72,89 @@ pub inline fn writeU8Line(value: u8) void {
     io_owned.writeU8Line(value);
 }
 
+pub const TI_PRINT_COMPLETE: u8 = 136;
+pub const EXPORT_VERSION: u32 = 3;
+pub const FLAG_PRTACT: i32 = 0xc020;
+pub const ITM_PRINTERPROG: i16 = 1713;
+/// print.h's `list` argument: PROG lists a program, ALPHA lists the alpha register.
+pub const PROG: bool = false;
+pub const ioPathExportRTFProgram: c_int = 10;
+pub const ioPathExportRTFAllPrograms: c_int = 13;
+
+pub extern var firstDisplayedLocalStepNumber: u16;
+pub extern var programListEnd: bool;
+pub extern var lastProgramListEnd: bool;
+
+pub inline fn tmpStringContent() []const u8 {
+    return io_owned.tmpStringContent();
+}
+
+pub inline fn tmpStringSet(text: []const u8) void {
+    io_owned.tmpStringSet(text);
+}
+
+pub inline fn tmpStringAppend(text: []const u8) void {
+    io_owned.tmpStringAppend(text);
+}
+
+pub inline fn tmpStringIndent(indent: usize, scratch: []u8) void {
+    io_owned.tmpStringIndent(indent, scratch);
+}
+
+pub inline fn writeTmpString() void {
+    io_owned.writeTmpString();
+}
+
+pub inline fn tmpStringToRTFInPlace(source: [*c]const u8) void {
+    io_owned.tmpStringToRTFInPlace(source);
+}
+
+pub inline fn decodeStepForExport(step: [*c]u8) void {
+    io_owned.decodeStepForExport(step);
+}
+
+pub inline fn nextStep(step: [*c]u8) [*c]u8 {
+    return io_owned.nextStep(step);
+}
+
+pub inline fn defineFirstStep() void {
+    io_owned.defineFirstStep();
+}
+
+pub inline fn numberOfSteps() u16 {
+    return io_owned.numberOfSteps();
+}
+
+pub inline fn programSize() u32 {
+    return io_owned.programSize();
+}
+
+pub inline fn systemFlag(sf: i32) bool {
+    return io_owned.systemFlag(sf);
+}
+
+pub inline fn lastFunction() i16 {
+    return io_owned.lastFunction();
+}
+
+pub inline fn printProgramListing(list: bool, lines: u16) void {
+    io_owned.printProgramListing(list, lines);
+}
+
+pub inline fn displayExportWriteError() void {
+    io_owned.displayExportWriteError();
+}
+
+pub const is_host_build = io_owned.is_host_build;
+
+pub inline fn reportProgramExported(label: u16, program_number: u16, name: [*c]const u8) void {
+    io_owned.reportProgramExported(label, program_number, name);
+}
+
+pub inline fn reportProgramNotExported(program_number: u16, name: [*c]const u8) void {
+    io_owned.reportProgramNotExported(program_number, name);
+}
+
 pub inline fn readLine(buffer: []u8) void {
     io_owned.readLineInto(buffer.ptr, buffer.len);
 }
