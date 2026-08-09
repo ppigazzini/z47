@@ -151,9 +151,11 @@ pub fn lint(unused_but_mandatory_parameter: u16) void {
         return;
     }
 
-    if (runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
-        defer runtime.__gmpz_clear(&value[0]);
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&value[0]);
 
+    if (runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
         runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
         if (data_type == runtime.dtShortInteger) {
             runtime.setLastintegerBasetoZero();

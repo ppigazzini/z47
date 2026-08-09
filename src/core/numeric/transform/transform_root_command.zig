@@ -51,10 +51,12 @@ fn sqrtReal() callconv(.c) void {
 fn sqrtLonI() callconv(.c) void {
     var value: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&value[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&value[0]);
 
     if (value[0]._mp_size >= 0) {
         var rem: runtime.longInteger_t = undefined;
@@ -162,10 +164,12 @@ fn curtLonI() callconv(.c) void {
     var rem: runtime.longInteger_t = undefined;
     var root: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear must cover the failure branch too.
+    defer runtime.__gmpz_clear(&value[0]);
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&value[0]);
 
     runtime.__gmpz_init(&rem[0]);
     defer runtime.__gmpz_clear(&rem[0]);

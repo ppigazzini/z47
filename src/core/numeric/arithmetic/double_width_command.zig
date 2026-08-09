@@ -99,7 +99,12 @@ fn dblMultiplyOwned() void {
         runtime.shortIntegerMode = runtime.SIM_UNSIGN;
     }
 
-    runtime.__gmpz_tdiv_qr(&x_value[0], &y_value[0], &product[0], &scale[0]);
+    // The low word is the Euclidean remainder, so it stays in [0, 2^wordSize),
+    // and the high word is the exact quotient of what is left. A truncating
+    // divide would hand back a negative low word for a negative product.
+    runtime.__gmpz_mod(&y_value[0], &product[0], &scale[0]);
+    runtime.__gmpz_sub(&x_value[0], &product[0], &y_value[0]);
+    runtime.__gmpz_tdiv_q(&x_value[0], &x_value[0], &scale[0]);
 
     if (sim == runtime.SIM_SIGNMT) {
         runtime.shortIntegerMode = runtime.SIM_SIGNMT;
