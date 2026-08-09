@@ -57,38 +57,24 @@ extern var ctxtReal39: realContext_t;
 extern fn checkMinimumDataPoints(n: *const real_t) bool;
 extern var statisticalSumsPointer: ?[*]real_t;
 
+const IDX_SIGMA_N: usize = 0;
+const IDX_SIGMA_X: usize = 1;
+const IDX_SIGMA_Y: usize = 2;
+const IDX_SIGMA_X2: usize = 3;
+const IDX_SIGMA_Y2: usize = 5;
+const IDX_SIGMA_lnX: usize = 8;
+const IDX_SIGMA_lnY: usize = 11;
+const IDX_SIGMA_1onX: usize = 17;
+const IDX_SIGMA_1onY: usize = 20;
+
 inline fn sigma(index: usize) *real_t {
     return &statisticalSumsPointer.?[index];
 }
-inline fn SIGMA_N() *real_t {
-    return sigma(0);
-}
-inline fn SIGMA_X() *real_t {
-    return sigma(1);
-}
 inline fn SIGMA_Y() *real_t {
-    return sigma(2);
-}
-inline fn SIGMA_X2() *real_t {
-    return sigma(3);
-}
-inline fn SIGMA_Y2() *real_t {
-    return sigma(5);
+    return sigma(IDX_SIGMA_Y);
 }
 inline fn SIGMA_XY() *real_t {
     return sigma(6);
-}
-inline fn SIGMA_lnX() *real_t {
-    return sigma(8);
-}
-inline fn SIGMA_lnY() *real_t {
-    return sigma(11);
-}
-inline fn SIGMA_1onX() *real_t {
-    return sigma(17);
-}
-inline fn SIGMA_1onY() *real_t {
-    return sigma(20);
 }
 
 // Blob constants.
@@ -96,7 +82,11 @@ const cstR = abi.constants.cstRAligned;
 
 const TransformFn = ?*const fn (operand: *const real_t, result: *real_t) callconv(.c) void;
 
-fn calculateMean(displayInfo: u8, sumX: *real_t, numberX: *real_t, sumY: ?*real_t, numberY: ?*real_t, transform: TransformFn) linksection(runtime.code_section) void {
+// The sums are named by index rather than by pointer so that nothing reaches into
+// statisticalSumsPointer before checkMinimumDataPoints has established there is
+// summation data at all. The C passes address-of macros, which compute an address
+// without loading through it; resolving indices after the guard is the same order.
+fn calculateMean(displayInfo: u8, sumX: usize, numberX: usize, sumY: ?usize, numberY: ?usize, transform: TransformFn) linksection(runtime.code_section) void {
     if (checkMinimumDataPoints(const_1())) {
         var tempReal1: real_t = undefined;
         var tempReal2: real_t = undefined;
@@ -108,7 +98,7 @@ fn calculateMean(displayInfo: u8, sumX: *real_t, numberX: *real_t, sumY: ?*real_
             liftStack();
         }
 
-        realDivide(sumX, numberX, &tempReal1, &ctxtReal39);
+        realDivide(sigma(sumX), sigma(numberX), &tempReal1, &ctxtReal39);
         if (transform != null) {
             transform.?(&tempReal1, &tempReal2);
         }
@@ -116,7 +106,7 @@ fn calculateMean(displayInfo: u8, sumX: *real_t, numberX: *real_t, sumY: ?*real_
         convertRealToReal34ResultRegister(mean, REGISTER_X);
 
         if (sumY != null) {
-            realDivide(sumY.?, numberY.?, &tempReal1, &ctxtReal39);
+            realDivide(sigma(sumY.?), sigma(numberY.?), &tempReal1, &ctxtReal39);
             if (transform != null) {
                 transform.?(&tempReal1, &tempReal2);
             }
@@ -129,12 +119,12 @@ fn calculateMean(displayInfo: u8, sumX: *real_t, numberX: *real_t, sumY: ?*real_
 
 pub export fn fnMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_MEANX_MEANY, SIGMA_X(), SIGMA_N(), SIGMA_Y(), SIGMA_N(), null);
+    calculateMean(TI_MEANX_MEANY, IDX_SIGMA_X, IDX_SIGMA_N, IDX_SIGMA_Y, IDX_SIGMA_N, null);
 }
 
 pub export fn fnMeanX(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_MEANX, SIGMA_X(), SIGMA_N(), null, null, null);
+    calculateMean(TI_MEANX, IDX_SIGMA_X, IDX_SIGMA_N, null, null, null);
 }
 
 fn geometricMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime.code_section) callconv(.c) void {
@@ -143,12 +133,12 @@ fn geometricMeanTransform(operand: *const real_t, result: *real_t) linksection(r
 
 pub export fn fnGeometricMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_GEOMMEANX_GEOMMEANY, SIGMA_lnX(), SIGMA_N(), SIGMA_lnY(), SIGMA_N(), &geometricMeanTransform);
+    calculateMean(TI_GEOMMEANX_GEOMMEANY, IDX_SIGMA_lnX, IDX_SIGMA_N, IDX_SIGMA_lnY, IDX_SIGMA_N, &geometricMeanTransform);
 }
 
 pub export fn fnHarmonicMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_HARMMEANX_HARMMEANY, SIGMA_N(), SIGMA_1onX(), SIGMA_N(), SIGMA_1onY(), null);
+    calculateMean(TI_HARMMEANX_HARMMEANY, IDX_SIGMA_N, IDX_SIGMA_1onX, IDX_SIGMA_N, IDX_SIGMA_1onY, null);
 }
 
 fn RMSMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime.code_section) callconv(.c) void {
@@ -157,7 +147,7 @@ fn RMSMeanTransform(operand: *const real_t, result: *real_t) linksection(runtime
 
 pub export fn fnRMSMeanXY(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateMean(TI_RMSMEANX_RMSMEANY, SIGMA_X2(), SIGMA_N(), SIGMA_Y2(), SIGMA_N(), &RMSMeanTransform);
+    calculateMean(TI_RMSMEANX_RMSMEANY, IDX_SIGMA_X2, IDX_SIGMA_N, IDX_SIGMA_Y2, IDX_SIGMA_N, &RMSMeanTransform);
 }
 
 pub export fn fnWeightedMeanX(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
