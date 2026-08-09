@@ -28,6 +28,9 @@ const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_screen = @import("../display/screen.zig");
 const frontier_sort = @import("../display/sort.zig");
 const frontier_textfiles = @import("../extensions/textfiles.zig");
+const frontier_plotstat = @import("plotstat.zig");
+extern fn malloc(n: usize) ?*anyopaque;
+extern fn free(p: ?*anyopaque) void;
 const frontier_timer = @import("../timer.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
@@ -254,12 +257,15 @@ pub export fn print_inlinestr(line1: [*c]const u8, endline: bool_t) callconv(.c)
 // print_Register_line (both builds)
 // ===========================================================================
 pub export fn print_Register_line(regist: calcRegister_t, before: [*c]u8, after: [*c]u8, line_init: bool_t) callconv(.c) void {
-    var str: [TMP_STR_LENGTH]u8 = undefined;
+    // Off the stack: copyRegisterToClipboardString2 holds another buffer of this
+    // size, and the two together overrun the program stack on hardware.
+    const str: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return);
+    defer free(str);
 
-    frontier_textfiles.copyRegisterToClipboardString2(regist, &str);
-    frontier_char_string.addStrBothSides(&str, before, after);
+    frontier_textfiles.copyRegisterToClipboardString2(regist, str);
+    frontier_char_string.addStrBothSides(str, before, after);
 
-    print_numberstr(&str, line_init);
+    print_numberstr(str, line_init);
 }
 
 // ===========================================================================
@@ -519,13 +525,21 @@ pub export fn export_append_line(inputstring: [*c]const u8) callconv(.c) i16 {
 // ===========================================================================
 pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
     if (comptime dmcp_build) {
-        var line: [TMP_STR_LENGTH]u8 = undefined; // Line buffer
+        // Line buffer on the heap: this calls export_append_string_to_file, and
+        // the pair overran the DM42 stack grant.
+        const line: [*c]u8 = @ptrCast(malloc(TMP_STR_LENGTH) orelse return 1);
+        defer free(line);
+        var xs: [24]u8 = undefined;
+        var ys: [24]u8 = undefined;
         create_filename(".STAT.TSV");
-        var xb: [64]u8 = undefined;
-        var yb: [64]u8 = undefined;
-        abi.fmtCStr(&line, "{s}\t{s}\n", .{ abi.fmtExpBuf(&xb, 16, @as(f64, x)), abi.fmtExpBuf(&yb, 16, @as(f64, y)) });
-        if (export_append_string_to_file(&line, APPEND, &filename_csv) != 0) {
-            return 1;
+        abi.sci_format.sciFmt(&xs, @as(f64, x));
+        abi.sci_format.sciFmt(&ys, @as(f64, y));
+        // Radix mark setting, as REGS.TSV does.
+        _ = frontier_plotstat.radixProcess(&xs, &xs);
+        _ = frontier_plotstat.radixProcess(&ys, &ys);
+        abi.fmtCStr(line[0..TMP_STR_LENGTH], "{s}\t{s}\n", .{ @as([*:0]const u8, @ptrCast(&xs)), @as([*:0]const u8, @ptrCast(&ys)) });
+        if (export_append_string_to_file(line, APPEND, &filename_csv) != 0) {
+            return 1; // error already announced
         }
         return 0;
     } else {

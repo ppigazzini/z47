@@ -16,6 +16,9 @@ const real_t = owner.real_t;
 const realContext_t = owner.realContext_t;
 const TaylorIterationMax = owner.TaylorIterationMax;
 const BigReal = owner.BigReal;
+const mallocBigReal = owner.mallocBigReal;
+const freeBigReal = owner.freeBigReal;
+const runtime = @import("../command_wrappers/runtime.zig");
 const formatEminusD = owner.formatEminusD;
 const stringToReal = owner.stringToReal;
 const uInt32ToReal = owner.uInt32ToReal;
@@ -239,19 +242,36 @@ fn WP34S_Atan_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realCon
 // ===========================================================================
 // C47do_WP34S_Atan_1071temp (static)
 // ===========================================================================
+// The eight working reals come from the heap, not the frame: eight 1071-digit
+// decNumbers at 724 bytes each is 5792 bytes, nearly all of what was the largest
+// frame in the build.
 fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var a_buf: BigReal(1071) = .{};
-    var b_buf: BigReal(1071) = .{};
-    var a2_buf: BigReal(1071) = .{};
-    var t_buf: BigReal(1071) = .{};
-    var j_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    var last_buf: BigReal(1071) = .{};
-    var epsilon_buf: BigReal(1071) = .{};
+    const a = mallocBigReal(1071);
+    const b = mallocBigReal(1071);
+    const a2 = mallocBigReal(1071);
+    const t = mallocBigReal(1071);
+    const j = mallocBigReal(1071);
+    const z = mallocBigReal(1071);
+    const last = mallocBigReal(1071);
+    const epsilon = mallocBigReal(1071);
+    defer {
+        freeBigReal(a);
+        freeBigReal(b);
+        freeBigReal(a2);
+        freeBigReal(t);
+        freeBigReal(j);
+        freeBigReal(z);
+        freeBigReal(last);
+        freeBigReal(epsilon);
+    }
+    if (a == null or b == null or a2 == null or t == null or j == null or z == null or last == null or epsilon == null) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
     var doubles: i32 = 0;
     var invert: c_int = undefined;
     var neg: c_int = undefined;
-    if (!doAtan(a_buf.ptr(), angle, a2_buf.ptr(), t_buf.ptr(), j_buf.ptr(), z_buf.ptr(), x, b_buf.ptr(), epsilon_buf.ptr(), last_buf.ptr(), true, 1040, &doubles, &invert, &neg, realContext)) {
+    if (!doAtan(a.?, angle, a2.?, t.?, j.?, z.?, x, b.?, epsilon.?, last.?, true, 1040, &doubles, &invert, &neg, realContext)) {
         return; // NaN
     }
 }
@@ -396,10 +416,19 @@ fn WP34S_Atan2_75temp(y: *align(1) const real_t, x: *align(1) const real_t, atan
     }
 }
 
+// Two 1071-digit decNumbers at 724 bytes each were nearly the whole frame.
 fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
-    var r_buf: BigReal(1071) = .{};
-    var t_buf: BigReal(1071) = .{};
-    if (!doAtan2(y, x, atan, r_buf.ptr(), t_buf.ptr(), realContext)) {
+    const r = mallocBigReal(1071);
+    const t = mallocBigReal(1071);
+    defer {
+        freeBigReal(r);
+        freeBigReal(t);
+    }
+    if (r == null or t == null) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    if (!doAtan2(y, x, atan, r.?, t.?, realContext)) {
         return; // NaN
     }
 }
@@ -445,9 +474,17 @@ fn WP34S_Asin_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realCon
 }
 
 fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var abx_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    if (!doAsin(x, angle, abx_buf.ptr(), z_buf.ptr(), realContext)) {
+    const abx = mallocBigReal(1071);
+    const z = mallocBigReal(1071);
+    defer {
+        freeBigReal(abx);
+        freeBigReal(z);
+    }
+    if (abx == null or z == null) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    if (!doAsin(x, angle, abx.?, z.?, realContext)) {
         return; // NaN
     }
 }
@@ -497,9 +534,17 @@ fn WP34S_Acos_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realCon
 }
 
 fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    var abx_buf: BigReal(1071) = .{};
-    var z_buf: BigReal(1071) = .{};
-    if (!doAcos(x, angle, abx_buf.ptr(), z_buf.ptr(), realContext)) {
+    const abx = mallocBigReal(1071);
+    const z = mallocBigReal(1071);
+    defer {
+        freeBigReal(abx);
+        freeBigReal(z);
+    }
+    if (abx == null or z == null) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    if (!doAcos(x, angle, abx.?, z.?, realContext)) {
         return; // NaN
     }
 }
