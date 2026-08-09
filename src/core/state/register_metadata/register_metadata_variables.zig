@@ -1,3 +1,4 @@
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const std = @import("std");
 const name_glyph = @import("name_glyph.zig"); // std-only variable-name glyph decoding
 const abi = @import("abi");
@@ -339,6 +340,9 @@ pub fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_d
 
     if (runtime.numberOfNamedVariables == (runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE + 1)) {
         runtime.reportTooManyVariables();
+        var detail: [64]u8 = undefined;
+        const text_detail = std.fmt.bufPrintZ(&detail, "{d} named variables!", .{runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE + 1}) catch "named variables!";
+        moreInfoOnError("In function allocateNamedVariable:", "you can allocate up to", text_detail.ptr, null);
         return;
     }
 
