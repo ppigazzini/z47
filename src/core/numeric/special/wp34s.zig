@@ -1077,23 +1077,51 @@ fn doMod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) re
     realPlus(out, res, realContext);
 }
 
+// Both buffers come off the heap: at 2139 and 12321 digits they are far past
+// what the DM42 program stack grants, and a failed allocation has to say so
+// rather than compute through a buffer that is not there.
 pub export fn WP34S_Mod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
     if (runtime.wp34s_mod_small_buffers) {
-        var small_buf: BigReal(2139) = .{};
-        doMod(x, y, res, realContext, 2139, small_buf.ptr());
+        const small = mallocBigReal(2139);
+        defer freeBigReal(small);
+        if (small) |buf| {
+            doMod(x, y, res, realContext, 2139, buf);
+        } else {
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            realSetNaN(res);
+        }
     } else {
-        var temp_buf: BigReal(12321) = .{};
-        doMod(x, y, res, realContext, 6147, temp_buf.ptr());
+        const temp = mallocBigReal(12321);
+        defer freeBigReal(temp);
+        if (temp) |buf| {
+            doMod(x, y, res, realContext, 6147, buf);
+        } else {
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            realSetNaN(res);
+        }
     }
 }
 
+// Same buffer sizes as WP34S_Mod, taken the same way. This is the one mod2Pi calls.
 pub export fn WP34S_BigMod(x: *align(1) const real_t, y: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
     if (runtime.wp34s_mod_small_buffers) {
-        var small_buf: BigReal(2139) = .{};
-        doMod(x, y, res, realContext, 2139, small_buf.ptr());
+        const small = mallocBigReal(2139);
+        defer freeBigReal(small);
+        if (small) |buf| {
+            doMod(x, y, res, realContext, 2139, buf);
+        } else {
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            realSetNaN(res);
+        }
     } else {
-        var temp_buf: BigReal(12321) = .{};
-        doMod(x, y, res, realContext, 12321, temp_buf.ptr());
+        const temp = mallocBigReal(12321);
+        defer freeBigReal(temp);
+        if (temp) |buf| {
+            doMod(x, y, res, realContext, 12321, buf);
+        } else {
+            runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            realSetNaN(res);
+        }
     }
 }
 
