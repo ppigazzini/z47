@@ -651,6 +651,8 @@ extern fn setRegisterTag(regist: calcRegister_t, tag: u32) void;
 extern fn setRegisterDataType(regist: calcRegister_t, dataType: u32, tag: u32) void;
 // freeRegisterData is a macro = freeC47Blocks(ptr, getRegisterFullSizeInBlocks).
 extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
+extern fn malloc(size: usize) ?*anyopaque;
+extern fn free(ptr: ?*anyopaque) void;
 extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
 inline fn freeRegisterData(regist: calcRegister_t) void {
     freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist));
@@ -801,8 +803,6 @@ inline fn setWhitePixel(x: u32, y: u32) void {
     bitblt24(x, 1, y, 1, BLT_ANDN, BLT_NONE);
 }
 extern fn _Buzz(a: i32, b: i32) void;
-extern fn getBeepVolume() u16;
-extern fn fnSetVolume(volume: u16) void;
 extern fn resetShiftState() void;
 extern fn clearKeyBuffer() void;
 extern fn interruptKeyInBuffer() bool;
@@ -1759,10 +1759,19 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
     var regNumber: u16 = undefined;
     const paramMode: u16 = (indexOfItems[@intCast(func)].status & PTP_STATUS) >> 9;
     if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE) or (opParam == INDIRECT_VARIABLE)) {
+        // opParam2 is a name length read from the step; a corrupt or imported
+        // step can make it exceed varOrLblName, so clamp the copy and the
+        // terminator to the buffer while still consuming opParam2 bytes.
+        const name_limit: i16 = @intCast(varOrLblName.len - 1);
         index.* = 0;
         while (index.* < opParam2) : (index.* += 1) {
-            varOrLblName[@intCast(index.*)] = currentStep[@intCast(i)];
+            if (index.* < name_limit) {
+                varOrLblName[@intCast(index.*)] = currentStep[@intCast(i)];
+            }
             i += 1;
+        }
+        if (index.* > name_limit) {
+            index.* = name_limit;
         }
         varOrLblName[@intCast(index.*)] = 0;
     }
@@ -1942,18 +1951,24 @@ const DISPLAY_WAIT_FOR_RELEASE: bool_t = 1;
 // ===========================================================================
 // standardScreenDump (DMCP_BUILD) + key buffer helpers.
 // ===========================================================================
+const BACKED_UP_BUFFER_BYTES: u32 = ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH;
+
 fn standardScreenDump() void {
     resetShiftState();
     frontier_status_bar.paintDateTimeForCapture();
-    var vol: i32 = 0;
-    vol = getBeepVolume();
-    fnSetVolume(11);
+    // On the heap: tmpString is DMCP's own aux buffer, so it is not a safe place
+    // to hold a backup across create_screenshot -- the screenshot writes through
+    // it and the restore would copy that back over the four real buffers.
+    const saved: [*c]u8 = @ptrCast(malloc(BACKED_UP_BUFFER_BYTES) orelse return);
+    defer free(saved);
+
+    // OUT_VOL_MAX is #define'd and immediately #undef'd upstream, so the marks
+    // play at whatever volume the user set and the volume is never touched.
     _Buzz(100, 5);
-    _ = frontier_char_string.xcopy(tmpString, errorMessage, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH));
+    _ = frontier_char_string.xcopy(saved, errorMessage, BACKED_UP_BUFFER_BYTES);
     _ = create_screenshot(0);
-    _ = frontier_char_string.xcopy(errorMessage, tmpString, @intCast(ERROR_MESSAGE_LENGTH + AIM_BUFFER_LENGTH + NIM_BUFFER_LENGTH + TAM_BUFFER_LENGTH));
+    _ = frontier_char_string.xcopy(errorMessage, saved, BACKED_UP_BUFFER_BYTES);
     _Buzz(100, 5);
-    fnSetVolume(@intCast(vol));
 }
 
 comptime {
@@ -3583,12 +3598,15 @@ pub export fn getSmallestDenom(val: *const real_t) callconv(.c) i32 {
     // loop finding terms until denom gets too big
     while (true) {
         ai = frontier_real_type.realToInt32C47(&xx, null);
-        if (!(m[1][0] * ai + m[1][1] <= maxden)) break;
+        // The C evaluates these in int32 and wraps: xx is clamped to 1e9-1 once
+        // the residual gets small, so the products leave int32 on ordinary
+        // inputs and the wrap is what ends the loop.
+        if (!(m[1][0] *% ai +% m[1][1] <= maxden)) break;
         var t: i32 = undefined;
-        t = m[0][0] * ai + m[0][1];
+        t = m[0][0] *% ai +% m[0][1];
         m[0][1] = m[0][0];
         m[0][0] = t;
-        t = m[1][0] * ai + m[1][1];
+        t = m[1][0] *% ai +% m[1][1];
         m[1][1] = m[1][0];
         m[1][0] = t;
 
