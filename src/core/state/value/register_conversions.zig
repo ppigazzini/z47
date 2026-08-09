@@ -665,7 +665,10 @@ fn fnRealToDouble(r: *const real_t) f64 {
         return if (realIsPositive(r)) @as(f64, 0.0) else -@as(f64, 0.0);
     }
     _ = decNumberToString(r, &buffer);
-    return strtod(&buffer, null);
+    // decNumberToString always emits '.', so the parse has to go through the
+    // locale-normalising reader; a bare strtod stops at the separator under a
+    // comma-decimal locale and keeps only the integer part.
+    return stringToDouble(&buffer);
 }
 
 fn typeIsNumber(t: u32, cmplx: ?*bool) bool {

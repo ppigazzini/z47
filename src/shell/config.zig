@@ -55,6 +55,8 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
+const option_samplepgms: bool = frontier_build_options.option_samplepgms;
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -463,6 +465,7 @@ const Settings = [_]i32{
     3,    1,      -10001, -10001, -10001, 32814,  -10001, -10001, -10001,
     3,    1,      32815,  -10001, -10001, -10001, -10001, 32815,  -10001,
     3,    0,      32816,  -10001, -10001, -10001, -10001, 32816,  -10001,
+    3,    1,      32879,  -10001, -10001, -10001, -10001, 32879,  -10001,
     3,    1,      32817,  -10001, -10001, -10001, -10001, 32817,  -10001,
     3,    1,      32818,  -10001, -10001, -10001, -10001, 32818,  -10001,
     3,    0,      -10001, -10001, -10001, 32818,  -10001, -10001, -10001,
@@ -798,6 +801,8 @@ extern var currentSolverVariable: u16;
 extern var currentSolverNestingDepth: u16;
 extern var engineNestingDepth: u16;
 extern var plotEngineActive: u16;
+extern var graphAccActive: bool_t;
+extern var loadTestPrograms: bool_t;
 extern var graphVariabl1: calcRegister_t;
 extern var timerCraAndDeciseconds: u8;
 extern var timerValue: u32;
@@ -1519,7 +1524,9 @@ pub export fn fnSetISM(regist: u16) callconv(.c) void {
         mpz_clear(&lgInt);
         return;
     }
-    const value: i32 = @intCast(mpz_get_si(&lgInt));
+    // The C assigns a long into an int32_t, which truncates; on a 64-bit host an
+    // unmasked cast would refuse the same value instead.
+    const value: i32 = @truncate(mpz_get_si(&lgInt));
     switch (value) {
         2 => shortIntegerMode = SIM_2COMPL,
         1 => shortIntegerMode = SIM_1COMPL,
@@ -2332,8 +2339,15 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         screenUpdatingMode = SCRUPD_AUTO;
         frontier_screen.refreshScreen(163);
 
-        // !SAVE_SPACE_DM42_14 (never defined here)
-        addTestPrograms();
+        // The testSuite always wants the sample programs; elsewhere they load
+        // only when the build carries them and the command line asked for them.
+        if (comptime is_testsuite_build) {
+            addTestPrograms();
+        } else if (comptime option_samplepgms) {
+            if (loadTestPrograms) {
+                addTestPrograms();
+            }
+        }
 
         allFormulae = null;
         numberOfFormulae = 0;
@@ -2345,6 +2359,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         currentSolverNestingDepth = 0;
         engineNestingDepth = 0;
         plotEngineActive = 0;
+        graphAccActive = false;
 
         graphVariabl1 = 0;
 

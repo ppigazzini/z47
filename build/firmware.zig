@@ -212,6 +212,7 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     // budget is reworked.
     opts.ir_printing = (pkg == 2);
     opts.option_vector = (pkg != 4);
+    opts.option_samplepgms = (pkg != 4);
     return opts;
 }
 

@@ -38,18 +38,25 @@ pub const WordSizeResult = struct {
 /// normalization), then the request is normalized, and reduce/mask/sign_bit are
 /// derived from the normalized value.
 pub fn resolveWordSize(requested: u16, current_word_size: u8) WordSizeResult {
-    const changed = current_word_size != @as(u8, @truncate(requested));
+    // The C compares the stored uint8_t against the uint16_t argument after
+    // integer promotion, so a request of 256 counts as a change even though it
+    // stores as 0.
+    const changed = @as(u16, current_word_size) != requested;
 
     const normalized: u16 = if (requested == 0) 64 else requested;
     const reduce = normalized < current_word_size;
+    // Truncated on the way into the uint8_t, exactly as the store does, and the
+    // masks then come off that stored value. A request of 256 lands on 0 here,
+    // where the shift counts wrap the way they do on the C target rather than
+    // trapping.
     const word_size: u8 = @truncate(normalized);
 
     const mask: u64 = if (word_size == 64)
-        @bitCast(@as(i64, -1))
+        ~@as(u64, 0)
     else
-        (@as(u64, 1) << @intCast(word_size)) - 1;
+        (@as(u64, 1) << @truncate(word_size)) - 1;
 
-    const sign_bit: u64 = @as(u64, 1) << @intCast(word_size - 1);
+    const sign_bit: u64 = @as(u64, 1) << @truncate(word_size -% 1);
 
     return .{
         .changed = changed,

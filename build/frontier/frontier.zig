@@ -87,6 +87,11 @@ pub const RuntimeObjectOptions = struct {
     // it for DMCP packages 1, 2 and 4 (package 3 and DMCP5 keep it). Defaults
     // true (host).
     option_vector: bool = true,
+    // OPTION_SAMPLEPGMS gates loading res/testPgms into program memory on RESET.
+    // Upstream enables it by default and #undef's it for NEW_HW and for DMCP
+    // package 4. Defaults true (host), where the load is still gated at runtime
+    // on the loadTestPrograms command-line flag.
+    option_samplepgms: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -149,6 +154,7 @@ fn addRuntimeObject(
     build_options.addOption(u8, "calcmodel", options.calcmodel);
     build_options.addOption(bool, "ir_printing", options.ir_printing);
     build_options.addOption(bool, "option_vector", options.option_vector);
+    build_options.addOption(bool, "option_samplepgms", options.option_samplepgms);
     // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
     // that here so fnSNAP freezes the clock the date/time formatters read and a
     // stored capture hash does not move with the calendar. startsWith, not eql:

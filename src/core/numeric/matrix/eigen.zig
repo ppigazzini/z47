@@ -1072,10 +1072,11 @@ fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
 // ===========================================================================
 // calculateEigenvalues -- the shifted QR-iteration driver. size 2/3 use the
 // closed-form solvers; size > 3 runs the Householder QR loop with deflation,
-// stagnation detection and final block solves. The half-second progress display
-// carries the deflation count and iteration rather than upstream's tolerance
-// figure; the call itself is load-bearing, because on the host build it is what
-// drains the GUI event queue and lets the interrupt path see a key at all.
+// stagnation detection and final block solves. Upstream's half-second progress
+// text is omitted: this is the one package built with EIGEN and it has no flash
+// to spare for it. The checkHalfSec call it hangs off is kept, because that call
+// drains the GUI event queue on the host build, and without it a key press never
+// reaches currentKeyCode -- so the interrupt below could never fire.
 // ===========================================================================
 // SLVP feeds its companion matrix through here (upstream drops the `static` on
 // matrix.c's copy when OPTION_SLVP_POLY is on); slvp.zig shares this object, so the
@@ -1196,11 +1197,7 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
             // currentKeyCode at all. exitKeyWaiting deliberately does not pump
             // them, so without this call the QR loop can never see the abort and
             // the window stays frozen for up to maxEigenIter sweeps.
-            if (checkHalfSec()) {
-                var progressStr: [64]u8 = undefined;
-                abi.fmtBufZ(&progressStr, "{d}/{d} Iter: ", .{ size - activeSize, size });
-                _ = progressHalfSecUpdate_Integer(timed, @ptrCast(&progressStr[0]), iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            }
+            _ = checkHalfSec();
             if (exitKeyWaiting()) {
                 runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, runtime.REGISTER_T, runtime.REGISTER_X);
                 if (runtime.extra_info_on_calc_error) {
