@@ -18,6 +18,23 @@
 
 const std = @import("std");
 
+/// Copy `text` into `buf` NUL-terminated, truncating to the C `n` bound the way
+/// `snprintf` does.
+fn writeLiteral(buf: []u8, text: []const u8) void {
+    if (buf.len == 0) return;
+    const n = @min(text.len, buf.len - 1);
+    @memcpy(buf[0..n], text[0..n]);
+    buf[n] = 0;
+}
+
+/// "NaN", "+Inf" or "-Inf" for a special value, or null for a normal finite one.
+pub fn doubleSpecialLabel(value: f64) ?[]const u8 {
+    if (std.math.isNan(value)) return "NaN";
+    if (value > std.math.floatMax(f64)) return "+Inf";
+    if (value < -std.math.floatMax(f64)) return "-Inf";
+    return null;
+}
+
 /// Format `x` into `buf` in the C47 scientific form ("d.ddddddddddddddde+NN"),
 /// NUL-terminated. `buf.len` plays the role of the C `n` bound (the exponent is
 /// only appended while `i + 6 < buf.len`, matching the C `i < n - 6`). Callers
@@ -26,6 +43,17 @@ pub fn sciFmt(buf: []u8, x_arg: f64) void {
     var x = x_arg;
     var exp: i32 = 0;
     var i: usize = 0;
+    // A special value has to leave before the normalisation loops: +Inf never
+    // falls below 10 when divided, so the scaling loop would not terminate, and
+    // NaN skips both loops and reaches a float-to-int conversion it cannot make.
+    if (std.math.isNan(x)) {
+        writeLiteral(buf, "nan");
+        return;
+    }
+    if (std.math.isInf(x)) {
+        writeLiteral(buf, if (x < 0) "-inf" else "inf");
+        return;
+    }
     if (x < 0) {
         buf[i] = '-';
         i += 1;
@@ -78,6 +106,11 @@ pub fn sciFmt(buf: []u8, x_arg: f64) void {
 /// malformed layout. Byte-identical to convertDoubleToString (its PC_BUILD
 /// host-only diagnostic printf is dropped, as in the owner).
 pub fn normalizeDoubleString(buf: []u8, x: f64) void {
+    if (doubleSpecialLabel(x)) |special| {
+        writeLiteral(buf, special);
+        return;
+    }
+
     var i: usize = 2;
     var j: usize = 2;
     var err: bool = false;

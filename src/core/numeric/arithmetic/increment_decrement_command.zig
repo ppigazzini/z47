@@ -82,17 +82,20 @@ fn incDecShoI(regist: runtime.calcRegister_t, operation: Operation) void {
     var value: u64 = 0;
 
     runtime.convertShortIntegerRegisterToUInt64(regist, &sign, &value);
+    // The magnitude wraps: decrementing a zero magnitude yields all-ones, which
+    // convertUInt64ToShortIntegerRegister masks back into the word. Stepping a
+    // negative value away from zero can carry past the word in the same way.
     if (sign != 0) {
         if (operation == .dec) {
-            value += 1;
+            value +%= 1;
         } else {
-            value -= 1;
+            value -%= 1;
         }
     } else {
         if (operation == .inc) {
-            value += 1;
+            value +%= 1;
         } else {
-            value -= 1;
+            value -%= 1;
         }
     }
     runtime.convertUInt64ToShortIntegerRegister(sign, value, runtime.getRegisterTag(regist), regist);

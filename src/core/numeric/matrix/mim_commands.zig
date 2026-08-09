@@ -55,6 +55,23 @@ inline fn rmEl(m: *const real34Matrix_t, i: usize) *real34_t {
     const e: [*]real34_t = @ptrCast(m.matrixElements);
     return &e[i];
 }
+
+// I and J reach these commands as `register - 1`, so a register holding 0 or a
+// non-numeric type yields a negative origin. C forms the element address in
+// signed arithmetic and lets the pointer run before the array; these helpers
+// compute the same address with wrapping integer arithmetic so the out-of-range
+// case lands where C lands rather than trapping on a negative-to-unsigned cast.
+inline fn subIndex(r: usize, i: i16, cols: usize, c: usize, j: i16) isize {
+    return (@as(isize, @intCast(r)) + i) * @as(isize, @intCast(cols)) + @as(isize, @intCast(c)) + j;
+}
+inline fn rmElAt(m: *const real34Matrix_t, index: isize) *real34_t {
+    const off: usize = @bitCast(index *% @as(isize, @sizeOf(real34_t)));
+    return @ptrFromInt(@intFromPtr(m.matrixElements) +% off);
+}
+inline fn cmElAt(m: *const complex34Matrix_t, index: isize) *complex34_t {
+    const off: usize = @bitCast(index *% @as(isize, @sizeOf(complex34_t)));
+    return @ptrFromInt(@intFromPtr(m.matrixElements) +% off);
+}
 inline fn cmEl(m: *const complex34Matrix_t, i: usize) *complex34_t {
     const e: [*]complex34_t = @ptrCast(m.matrixElements);
     return &e[i];
@@ -96,10 +113,13 @@ fn _swapReal(matrix: *real34Matrix_t, isRow: bool) bool {
     const b = truncToU16(runtime.realToInt32C47(&rx, null));
     if (realIsPositive(&rx) and realIsPositive(&ry) and math_comparison_reals.realCompareLessEqual(&rx, &rlimit) and math_comparison_reals.realCompareLessEqual(&ry, &rlimit)) {
         if (!runtime.realCompareEqual(&ry, &rx)) {
+            // +0 passes the range guard above, so a zero index reaches here and its
+            // 1-based-to-0-based step wraps to 65535 — a value the swap helpers'
+            // `< limit` test rejects, leaving the matrix untouched.
             if (isRow) {
-                runtime.realMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+                runtime.realMatrixSwapRows(matrix, matrix, a -% 1, b -% 1);
             } else {
-                math_matrix_swap.realMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+                math_matrix_swap.realMatrixSwapColumns(matrix, matrix, a -% 1, b -% 1);
             }
         }
     } else {
@@ -119,10 +139,12 @@ fn _swapComplex(matrix: *complex34Matrix_t, isRow: bool) bool {
     const b = truncToU16(runtime.realToInt32C47(&rx, null));
     if (realIsPositive(&rx) and realIsPositive(&ry) and math_comparison_reals.realCompareLessEqual(&rx, &rlimit) and math_comparison_reals.realCompareLessEqual(&ry, &rlimit)) {
         if (!runtime.realCompareEqual(&ry, &rx)) {
+            // Zero index wraps to 65535 and is rejected by the helpers' `< limit`
+            // test, matching the real path above.
             if (isRow) {
-                math_matrix_swap.complexMatrixSwapRows(matrix, matrix, a - 1, b - 1);
+                math_matrix_swap.complexMatrixSwapRows(matrix, matrix, a -% 1, b -% 1);
             } else {
-                math_matrix_swap.complexMatrixSwapColumns(matrix, matrix, a - 1, b - 1);
+                math_matrix_swap.complexMatrixSwapColumns(matrix, matrix, a -% 1, b -% 1);
             }
         }
     } else {
@@ -179,7 +201,7 @@ fn getMatrixReal(matrix: *real34Matrix_t) callconv(.c) bool {
                 while (r < a) : (r += 1) {
                     var c: usize = 0;
                     while (c < b) : (c += 1) {
-                        rmEl(&mat, r * b + c).* = rmEl(matrix, (r + @as(usize, @intCast(i))) * cols + c + @as(usize, @intCast(j))).*;
+                        rmEl(&mat, r * b + c).* = rmElAt(matrix, subIndex(r, i, cols, c, j)).*;
                     }
                 }
             } else {
@@ -217,7 +239,7 @@ fn getMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
                 while (r < a) : (r += 1) {
                     var c: usize = 0;
                     while (c < b) : (c += 1) {
-                        cmEl(&mat, r * b + c).* = cmEl(matrix, (r + @as(usize, @intCast(i))) * cols + c + @as(usize, @intCast(j))).*;
+                        cmEl(&mat, r * b + c).* = cmElAt(matrix, subIndex(r, i, cols, c, j)).*;
                     }
                 }
             } else {
@@ -246,7 +268,7 @@ fn putMatrixReal(matrix: *real34Matrix_t) callconv(.c) bool {
         while (r < mat.header.matrixRows) : (r += 1) {
             var c: usize = 0;
             while (c < mat.header.matrixColumns) : (c += 1) {
-                rmEl(matrix, (r + @as(usize, @intCast(i))) * cols + c + @as(usize, @intCast(j))).* = rmEl(&mat, r * mat.header.matrixColumns + c).*;
+                rmElAt(matrix, subIndex(r, i, cols, c, j)).* = rmEl(&mat, r * mat.header.matrixColumns + c).*;
             }
         }
     } else {
@@ -271,7 +293,7 @@ fn putMatrixComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
         while (r < mat.header.matrixRows) : (r += 1) {
             var c: usize = 0;
             while (c < mat.header.matrixColumns) : (c += 1) {
-                cmEl(matrix, (r + @as(usize, @intCast(i))) * cols + c + @as(usize, @intCast(j))).* = cmEl(&mat, r * mat.header.matrixColumns + c).*;
+                cmElAt(matrix, subIndex(r, i, cols, c, j)).* = cmEl(&mat, r * mat.header.matrixColumns + c).*;
             }
         }
     } else {

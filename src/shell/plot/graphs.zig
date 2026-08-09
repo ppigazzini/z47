@@ -1154,6 +1154,14 @@ pub export fn graph_Include0(mode: bool_t, statnum: u16) linksection(code_sectio
 // ===========================================================================
 // graph_plotmem
 // ===========================================================================
+/// True when sample `i` has a non-finite x or y. Such a point cannot be scaled or
+/// formatted, so the autoscale and accumulation loops step over it instead of
+/// folding it into the plot window.
+inline fn isSpecialSample(i: u16) bool {
+    return abi.sci_format.doubleSpecialLabel(@as(f64, frontier_plotstat.grf_x(@intCast(i)))) != null or
+        abi.sci_format.doubleSpecialLabel(@as(f64, frontier_plotstat.grf_y(@intCast(i)))) != null;
+}
+
 pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
     currentKeyCode = 255;
     // SAVE_SPACE_DM42_13GRF_JM is NOT defined -> this whole body is LIVE.
@@ -1251,6 +1259,9 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
 
                 ix = 0;
                 while (ix < statnum) : (ix += 1) {
+                    if (isSpecialSample(ix)) {
+                        continue;
+                    }
                     if (ix != 0) {
                         ddx = frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1)); // used in DIFF and INT
                         if (ddx <= 0) { // Cannot get slope or area if x is not growing positively
@@ -1322,6 +1333,9 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                 // pre-loop to cover trivial cases of symmetrical axis: real_t min/max
                 cnt = 0;
                 while (cnt < statnum) : (cnt += 1) {
+                    if (isSpecialSample(cnt)) {
+                        continue;
+                    }
                     frontier_plotstat.grf_x_r(@intCast(cnt), &xr);
                     if (realCompareLessThan(&xr, x_min)) realCopy(&xr, x_min);
                     if (realCompareGreaterThan(&xr, x_max)) realCopy(&xr, x_max);
@@ -1354,6 +1368,9 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                 {
                     cnt = 0;
                     while (cnt < statnum) : (cnt += 1) {
+                        if (isSpecialSample(cnt)) {
+                            continue;
+                        }
                         a8 = a7;
                         a7 = a6;
                         a6 = a5;
@@ -1415,6 +1432,13 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             while (cnt < statnum) : (cnt += 1) { // ### Note XXX E- will stuff up statnum!
                 sx = sx + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_x(@intCast(cnt)) else frontier_plotstat.grf_y(@intCast(cnt)));
                 sy = sy + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_y(@intCast(cnt)) else frontier_plotstat.grf_x(@intCast(cnt)));
+                // Once a running sum has gone non-finite the conversion below cannot
+                // format it, so the sample is skipped rather than carried into the scale.
+                if (abi.sci_format.doubleSpecialLabel(@as(f64, sx)) != null or
+                    abi.sci_format.doubleSpecialLabel(@as(f64, sy)) != null)
+                {
+                    continue;
+                }
                 convertDoubleToReal(@as(f64, sx), &xr, &ctxtReal39); // xr = sx, the running vector sum
                 convertDoubleToReal(@as(f64, sy), &yr, &ctxtReal39);
                 if (realCompareLessThan(&xr, x_min)) {

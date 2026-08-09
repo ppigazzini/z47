@@ -1004,6 +1004,9 @@ pub fn z47_frontier_push_u32_to_x(value: u32) void {
 pub fn z47_frontier_release_saved_statistical_sums() void {
     if (savedStatisticalSumsPointer != null) {
         freeC47Blocks(savedStatisticalSumsPointer, NUMBER_OF_STATISTICAL_SUMS * realSizeInBlocks75);
+        // A non-null pointer is what every consumer reads as "saved sums exist",
+        // so the block must not stay addressable after it goes back to the pool.
+        savedStatisticalSumsPointer = null;
     }
 }
 // REAL_SIZE_IN_BLOCKS(75) == 15
