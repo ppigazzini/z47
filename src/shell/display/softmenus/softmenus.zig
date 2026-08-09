@@ -58,16 +58,19 @@ const strip_17c: bool = frontier_build_options.strip_17c;
 const strip_ortho: bool = frontier_build_options.strip_ortho;
 const strip_bessel: bool = frontier_build_options.strip_bessel;
 const strip_elliptic: bool = frontier_build_options.strip_elliptic;
-// OPTION_XFN_1000 / OPTION_TVM_AMORT are #undef'd for the flash-limited DMCP
-// TWO_FILE packages (dmcp_build and old_hw); host and DMCP5 keep them.
+// OPTION_XFN_1000 is #undef'd for the flash-limited DMCP TWO_FILE packages
+// (dmcp_build and old_hw); host and DMCP5 keep it. OPTION_TVM_AMORT is defined
+// for every package, DMCP5 and host alike.
 const option_xfn_1000: bool = !(dmcp_build and old_hw);
-const option_tvm_amort: bool = !(dmcp_build and old_hw);
-// OPTION_SLVP_POLY (SLVP polynomial roots) sits in the same TWO_FILE #undef block as
-// OPTION_XFN_1000, so it follows the same gate. Its defines.h dependency
-// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP_POLY` adds nothing here: z47 models
-// OPTION_EIGEN as on for every target (menu_MATX carries EIG_VAL/EIG_QR
-// unconditionally), and every target that #undefs it is already dmcp+old_hw.
+const option_tvm_amort: bool = true;
+// OPTION_SLVP_POLY (SLVP polynomial roots) sits in the same TWO_FILE #undef block
+// as OPTION_XFN_1000, so it follows the same gate; defines.h's
+// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP_POLY` adds nothing on top,
+// because every target that drops EIGEN has already dropped SLVP here.
 const option_slvp_poly: bool = !(dmcp_build and old_hw);
+// OPTION_EIGEN blanks EIGVEC, EIGVAL, M.QR and MSQRT; LU stays. Package 3 is the
+// only DM42 package that keeps it.
+const option_eigen: bool = frontier_build_options.option_eigen;
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -819,7 +822,7 @@ extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
 // Menu tables (probe-generated, byte-faithful; per-target gates applied).
 // ===========================================================================
 // menu_HOME and menu_MyPFN are referenced by name from functions (createHOME/createPFN)
-pub export const menu_HOME linksection(code_section) = [_]i16{ (if (dmcp_build) @as(i16, 1830) else 1873), (if (dmcp_build) @as(i16, 1795) else 60), (if (dmcp_build) @as(i16, 108) else 58), (if (dmcp_build) @as(i16, 63) else 67), (if (dmcp_build) @as(i16, 67) else 65), (if (dmcp_build) @as(i16, 65) else 1795), 1868, 122, (if (dmcp_build) @as(i16, 1405) else 108), 1703, (if (dmcp_build) @as(i16, 2083) else 1816), (if (dmcp_build) @as(i16, 1816) else 2083), 94, 93, (if (dmcp_build) @as(i16, 1622) else -2229), (if (option_vector) @as(i16, -1925) else 0), 1949, 1946 };
+pub export const menu_HOME linksection(code_section) = [_]i16{ (if (dmcp_build) @as(i16, 1830) else 1873), (if (dmcp_build) @as(i16, 1795) else 60), (if (dmcp_build) @as(i16, 108) else 58), (if (dmcp_build) @as(i16, 63) else 67), (if (dmcp_build) @as(i16, 67) else 65), (if (dmcp_build) @as(i16, 65) else 1795), 1868, 122, (if (dmcp_build) @as(i16, 1405) else 108), 1703, (if (dmcp_build) @as(i16, 2083) else 1816), (if (dmcp_build) @as(i16, 1816) else 2083), 94, 93, (if (dmcp_build) @as(i16, 1622) else -2229), -1925, 1949, 1946 };
 const menu_MyPFN linksection(code_section) = [_]i16{ 1, 2, 3, 4, 1458, -1356, 0, 0, 0, 0, -1342, -1365, 2404, 0, 0, 0, -2403, -1357 };
 
 const menu_1stDeriv linksection(code_section) = [_]i16{ 0, 0, 0, 0, -2374, 2377 };
@@ -908,7 +911,7 @@ const menu_Inl_Tst linksection(code_section) = [_]i16{ 1884, 0, 0, 1882, 1885, 1
 const menu_KEYS linksection(code_section) = [_]i16{ -1920, -2235, -2234, 1411, 1729, 1958, (if (dmcp_build) @as(i16, 2391) else 1959), (if (dmcp_build) @as(i16, 2393) else 1916), (if (dmcp_build) @as(i16, 2394) else 0), (if (dmcp_build) @as(i16, 2392) else 0), 0, 0 };
 const menu_LOOP linksection(code_section) = [_]i16{ 8, 10, 9, 5, 7, 6, 91, 0, 0, 0, 0, 92 };
 const menu_Logis linksection(code_section) = [_]i16{ 1243, 0, 1244, 1245, 0, 1246, 0, 0, 0, 0, 0, 0, 2326, 2328, 0, 0, 0, 0 };
-const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, -2106, 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 0, 0, 1705, 2727, 1578, 2710, 1702, -2106, 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, 1457, 1456, 1535, 1646, 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
+const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, -2106, 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 0, 0, 1705, (if (option_eigen) @as(i16, 2727) else 0), 1578, 2710, 1702, -2106, 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, (if (option_eigen) @as(i16, 1457) else 0), (if (option_eigen) @as(i16, 1456) else 0), 1535, (if (option_eigen) @as(i16, 1646) else 0), 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
 const menu_MODE linksection(code_section) = [_]i16{ 1445, 1557, 1480, 2197, 1949, 1946, 2043, 2044, 0, 1853, 1917, 1941, 0, 0, 0, 0, 0, 0, 1938, 1939, 1856, 1940, 1949, 1946, 1890, 1887, 1889, 1891, 121, 1941, 0, 0, 0, 0, 0, 0, 2038, 1797, 1855, 1897, 2058, 2059, 2064, 2060, 2062, 1924, 1796, 1859, 2063, 2065, 2061, 2039, 1861, 1854 };
 const menu_MODEL linksection(code_section) = [_]i16{ 1299, 1298, 1300, 1302, 1516, 1759, 1307, 1306, 1305, 1304, 1303, 0, 1309, 1308, 1310, 1435, 0, 1301 };
 const menu_MULTSTK linksection(code_section) = [_]i16{ 2588, 2589, 2587, 2585, 2586, 2595, 2593, 2594, 2622, 2620, 2621, 0 };
@@ -2692,13 +2695,20 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
     }
     if (comptime strip_16) {
         switch (itemNr) {
-            -1252, 1253, 1254, 1255, 1256, 1238, 1239, 1240, 1241, -1277, 1278, 1279, 1280, 1281 => return 1,
+            -1252, 1253, 1254, 1255, 1256, 1238, 1239, 1240, 1241, -1277, 1278, 1279, 1280, 1281, 1467 => return 1,
             else => {},
         }
     }
     if (comptime strip_17) {
         switch (itemNr) {
             -1222, -1207, -1232, -1257, -1227, 1223, 1224, 1225, 1226, 1208, 1209, 1210, 1211, 1248, 1249, 1250, 1251, 1233, 1234, 1235, 1236, 1258, 1259, 1260, 1261, 1228, 1229, 1230, 1231 => return 1,
+            else => {},
+        }
+    }
+    // !OPTION_EIGEN: EIGVAL, EIGVEC, M.QR and MSQRT.
+    if (comptime !option_eigen) {
+        switch (itemNr) {
+            1456, 1457, 1646, 2727 => return 1,
             else => {},
         }
     }

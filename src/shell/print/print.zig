@@ -152,6 +152,7 @@ const FLAG_QUIET: c_int = 0x8019; // defines.h
 const FLAG_PRTEN: c_uint = 0x8067;
 const FLAG_NORM: c_uint = 0x8068;
 const FLAG_TRACE: c_int = 0x8013;
+const FLAG_MULTx: c_int = 0x801b;
 const FLAG_SSIZE8: c_int = 0x8018;
 const FLAG_2TO10: c_int = 0x803D;
 
@@ -312,7 +313,10 @@ const PRINT_GRA_LN: c_int = 1;
 
 // STD_* byte sequences (fonts.h, verified via C probe).
 const STD_MEASURED_ANGLE = "\xa2\x21";
-const PRODUCT_SIGN = "\x80\xb7";
+const STD_DOT = "\x80\xb7";
+inline fn PRODUCT_SIGN() [*c]const u8 {
+    return if (getSystemFlag(FLAG_MULTx)) STD_CROSS else STD_DOT;
+}
 const STD_CROSS = "\x80\xd7";
 const STD_DEGREE = "\x80\xb0";
 const STD_SUP_MINUS = "\xa1\x6b";
@@ -320,7 +324,7 @@ const STD_SUP_0 = "\xa1\x60";
 const STD_SUP_9 = "\xa1\x69";
 const STD_SUP_pir = "\xac\x66";
 const STD_SUP_pi = "\xac\x65";
-const STD_BLACK_RIGHT_TRIANGLE = "\xa5\xb6";
+const STD_BLACK_RIGHTSMALLTRIANGLE = "\xa5\xb8";
 const STD_LEFT_SINGLE_QUOTE = "\xa0\x18";
 const STD_RIGHT_SINGLE_QUOTE = "\xa0\x19";
 const STD_RIGHT_ARROW = "\xa1\x92";
@@ -1064,11 +1068,14 @@ fn printJustifiedImpl(buff: [*c]const u8) void {
     // One width model for every print mode: the per-mode pixel measurement was
     // retired upstream, where the line that read print_mode survives only as a
     // comment.
-    var len: u16 = @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1;
+    // C computes this in int and narrows on the assignment: an empty name
+    // gives -1, which lands as 65535 and the clamp below turns into a no-op.
+    var len: u16 = @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(buff) * 7 - 1)));
     const paperWidth: u16 = @intCast(PAPER_WIDTH);
 
-    if (len >= paperWidth - printerColumn) {
-        len = paperWidth - printerColumn;
+    const room: i32 = @as(i32, paperWidth) - @as(i32, printerColumn);
+    if (@as(i32, len) >= room) {
+        len = @truncate(@as(u32, @bitCast(room)));
     }
     if (len > 0) {
         printTabImpl(paperWidth - len);
@@ -1080,11 +1087,14 @@ fn printJustifiedLeft(buff: [*c]const u8) void {
     // One width model for every print mode: the per-mode pixel measurement was
     // retired upstream, where the line that read print_mode survives only as a
     // comment.
-    var len: u16 = @as(u16, @intCast(frontier_char_string.stringGlyphLength(buff))) * 7 - 1;
+    // C computes this in int and narrows on the assignment: an empty name
+    // gives -1, which lands as 65535 and the clamp below turns into a no-op.
+    var len: u16 = @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(buff) * 7 - 1)));
     const paperWidth: u16 = (@as(u16, @intCast(PAPER_WIDTH)) / 2) - 7;
 
-    if (len >= paperWidth - printerColumn) {
-        len = paperWidth - printerColumn;
+    const room: i32 = @as(i32, paperWidth) - @as(i32, printerColumn);
+    if (@as(i32, len) >= room) {
+        len = @truncate(@as(u32, @bitCast(room)));
     }
     if (len > 0) {
         printTabImpl(paperWidth - len);
@@ -1247,7 +1257,7 @@ fn _complex34ToPrintString(registReal34: *real34_t, registImag34: *real34_t, tag
         tagAngle = if (tagAngle == amNone) @intCast(currentAngularMode) else tagAngle;
     } else {
         _ = strcat(tmpString, "+i");
-        _ = strcat(tmpString, PRODUCT_SIGN);
+        _ = strcat(tmpString, PRODUCT_SIGN());
         tagAngle = @intCast(amNone);
     }
 
@@ -1616,7 +1626,7 @@ pub export fn cmdPrint(arg: u16, op: printArgument_t) callconv(.c) void {
 
 pub export fn printTraceErrorFunction(func: i16, errorString: [*c]u8) callconv(.c) void {
     if (comptime !ir_printing) return;
-    if ((calcMode != CM_NORMAL) or ((tam.mode != 0) and ((func == ITM_BACKSPACE) or (func == 2017)))) {
+    if ((calcMode != CM_NORMAL) or ((tam.mode != 0) and ((func == ITM_BACKSPACE) or (func == ITM_EXIT1)))) {
         return;
     }
     if (getSystemFlag(FLAG_TRACE) and getSystemFlag(FLAG_PRTACT)) {
@@ -1795,7 +1805,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
     var param = param_in;
 
     printerState.trace_done = true;
-    if (((calcMode != CM_NORMAL) and (calcMode != CM_MIM)) or ((tam.mode != 0) and ((func == ITM_BACKSPACE) or (func == 2017)))) {
+    if (((calcMode != CM_NORMAL) and (calcMode != CM_MIM)) or ((tam.mode != 0) and ((func == ITM_BACKSPACE) or (func == ITM_EXIT1)))) {
         return;
     }
 
@@ -1922,7 +1932,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
                 } else if ((func == ITM_MENU) and (dynamicMenuItem >= 0)) {
                     _ = frontier_char_string.xcopy(tmpString, &programmableMenu.itemName[@intCast(dynamicMenuItem)], 16);
                 }
-                const width: u16 = @as(u16, @intCast(frontier_char_string.stringGlyphLength(tmpString))) * 7 - 1;
+                const width: u16 = @truncate(@as(u32, @bitCast(frontier_char_string.stringGlyphLength(tmpString) * 7 - 1)));
                 if (@as(c_int, printerColumn) + width > PAPER_WIDTH) {
                     printAdvance(0);
                 }
@@ -1937,7 +1947,7 @@ pub export fn printTrace(func: i16, param_in: u16) callconv(.c) void {
             if (func == ITM_LBL) {
                 printAdvance(0);
                 abi.fmtBufZ(&traceBuffer, " {d:0>2}", .{@as(u32, @intCast(currentLocalStepNumber))});
-                _ = strcat(&traceBuffer, STD_BLACK_RIGHT_TRIANGLE);
+                _ = strcat(&traceBuffer, STD_BLACK_RIGHTSMALLTRIANGLE);
                 _ = strcat(&traceBuffer, tmpString);
                 printJustifiedImpl(&traceBuffer);
                 if (comptime !dmcp_build) {
@@ -2038,7 +2048,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
                 }
                 printAdvance(0);
                 abi.fmtBufZ(tmpString[0..2560], " {d:0>2}", .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
-                _ = strcat(tmpString, STD_BLACK_RIGHT_TRIANGLE);
+                _ = strcat(tmpString, STD_BLACK_RIGHTSMALLTRIANGLE);
                 printLineImpl(tmpString, 0);
             } else if (!startOfLine) {
                 if (@as(c_int, printerColumn) + 14 <= PAPER_WIDTH) {
@@ -2049,7 +2059,7 @@ pub export fn printProgram(list: bool_t, lines: u16) callconv(.c) void {
             }
         } else {
             abi.fmtBufZ(tmpString[0..2560], "{d:0>2}", .{@as(u32, @intCast(@as(c_int, @intCast(@as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam))))});
-            _ = strcat(tmpString, if (isLabel) STD_BLACK_RIGHT_TRIANGLE else " ");
+            _ = strcat(tmpString, if (isLabel) STD_BLACK_RIGHTSMALLTRIANGLE else " ");
             printLineImpl(tmpString, 0);
         }
 

@@ -58,8 +58,9 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
 const testsuite_build: bool = frontier_build_options.is_testsuite_build;
-// OPTION_TVM_AMORT: defines.h #undefs it only for the old_hw single-file pkgs.
-const option_tvm_amort: bool = !(dmcp_build and old_hw);
+// OPTION_TVM_AMORT is defined for every DMCP package as well as for DMCP5 and
+// host; the only #undef is in the legacy single-file block z47 never builds.
+const option_tvm_amort: bool = true;
 
 // ---------------------------------------------------------------------------
 // Types

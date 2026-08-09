@@ -192,6 +192,11 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     //
     // DIST all keeps every distribution; limB keeps normal plus DIST_B; limA
     // keeps normal alone; none keeps nothing.
+    //
+    // Options the "common to all hardware packages 1-4" block settles AFTER the
+    // per-package blocks -- VECTOR, SAMPLEPGMS, XFN_1000, EDIT_X, EDIT_PEM,
+    // INFSUMS, SLVP_POLY and the three *_159 -- are the same for every package
+    // and belong with the board, not here.
     opts.strip_16 = (pkg == 4); // !OPTION_DIST_NORMAL
     opts.strip_17b = (pkg == 3 or pkg == 4); // !OPTION_DIST_B
     opts.strip_17 = (pkg != 1); // !OPTION_DIST_C
@@ -205,14 +210,11 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.strip_bessel = (pkg == 4); // !OPTION_BESSEL
     opts.strip_elliptic = (pkg == 1 or pkg == 3 or pkg == 4); // !OPTION_ELLIPTIC
     opts.option_elec = (pkg == 1 or pkg == 3);
-    // Upstream also defines OPTION_IR_PRINTING for package 4, but that package's
-    // .bss already ends 4 bytes below the DMCP system data block at 0x10002000,
-    // and the IR buffers do not fit in what is left. Package 4 is the
-    // pipeline-compile package, so it carries the divergence until the DM42 RAM
-    // budget is reworked.
-    opts.ir_printing = (pkg == 2);
-    opts.option_vector = (pkg != 4);
-    opts.option_samplepgms = (pkg != 4);
+    opts.ir_printing = (pkg == 2 or pkg == 4);
+    opts.option_eigen = (pkg == 3);
+    // OPTION_VECTOR is #undef'd in the block common to packages 1-4, which runs
+    // after the per-package blocks, so no DM42 package carries the vector code.
+    opts.option_vector = false;
     return opts;
 }
 
@@ -324,6 +326,9 @@ pub fn registerSteps(
         // tracking. old_hw (static freeMemoryRegions array) is set per board by
         // frontierDistributionStrip for DMCP; DMCP5 keeps the default (pointer).
         .dmcp_build = true,
+        // OPTION_SAMPLEPGMS is #undef'd for NEW_HW and again in the block common
+        // to packages 1-4, so no DMCP build carries the sample programs.
+        .option_samplepgms = false,
     };
     const firmware_solve_options: solve.RuntimeObjectOptions = .{
         .strip = true,
