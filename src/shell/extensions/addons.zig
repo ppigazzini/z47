@@ -2343,7 +2343,7 @@ pub export fn fn_cnst_op_A(option: u16) callconv(.c) void {
 
     if (initMatrixRegister(REGISTER_X, 3, 3, 1) != 0) {} else {
         frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnErr("In function fn_cnst_op_A:", "Not enough memory for a 1\xc3\x97" ++ "1 matrix");
+        moreInfoOnErr("In function fn_cnst_op_A:", "Not enough memory for a 1\x80\xd7" ++ "1 matrix");
         return;
     }
     adjustResult(REGISTER_X, 0, 0, REGISTER_X, -1, -1);
@@ -2591,7 +2591,7 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     if (getRegisterDataType(REGISTER_X) != dtReal34Matrix and getRegisterDataType(REGISTER_X) != dtComplex34Matrix) {
         if (initMatrixRegister(REGISTER_X, vc.rows, vc.cols, complexCoefs) != 0) {} else {
             frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnErr("In function fnConvertStkToMx:", "Not enough memory for a 1\xc3\x97" ++ "1 matrix");
+            moreInfoOnErr("In function fnConvertStkToMx:", "Not enough memory for a 1\x80\xd7" ++ "1 matrix");
             return;
         }
         adjustResult(REGISTER_X, 0, 0, REGISTER_X, -1, -1);
@@ -2722,7 +2722,7 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
                 frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
                 if (comptime extra_info) {
                     if (comptime !dmcp_build) {
-                        abi.fmtBufZ(errorMessage[0..512], "a vector is needed, not ({d}\xc3\x97{d})", .{ Xrows, Xcols });
+                        abi.fmtBufZ(errorMessage[0..512], "a vector is needed, not ({d}\x80\xd7{d})", .{ Xrows, Xcols });
                         moreInfoOnError("In function fnConvertMxToStk:", errorMessage, null, null);
                     }
                 }

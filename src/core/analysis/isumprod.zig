@@ -15,6 +15,7 @@
 // TESTSUITE/DMCP (EXTRA_INFO_ON_CALC_ERROR == 0) so they are omitted.
 
 const runtime = @import("solve_runtime.zig");
+const progress_panel = @import("progress_panel.zig");
 
 const abi = @import("abi"); // shared ABI bindings
 const real34_t = abi.Real34;
@@ -137,11 +138,10 @@ const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback 
 const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; // routed through the host-callback boundary
 
 // ===========================================================================
-// _showProgress: host-only progress display reduced to a no-op (no effect on
-// the computed result). ENABLE_SOLVER_PROGRESS == 1 body omitted.
+// _showProgress: the running sum or product.
 // ===========================================================================
 fn _showProgress(a: *const mpz_struct) linksection(runtime.code_section) void {
-    _ = a;
+    progress_panel.showLongIntegerPartial(a);
 }
 
 // ===========================================================================
