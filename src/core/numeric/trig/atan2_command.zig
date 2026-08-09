@@ -80,9 +80,9 @@ fn atan2RealRema() void {
     var y_scalar: runtime.real_t = undefined;
     var x_matrix: runtime.real34Matrix_t = undefined;
 
-    if (!runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_scalar)) {
-        return;
-    }
+    // The C reads Y's real34 directly, at 34 digits, not through the widening
+    // register reader.
+    runtime.real34ToReal(runtime.registerReal34Ptr(runtime.REGISTER_Y), &y_scalar);
 
     runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x_matrix);
     const count = realMatrixElementCount(&x_matrix);
@@ -148,6 +148,11 @@ pub fn atan2(unused_but_mandatory_parameter: u16) void {
         // A short-integer Y against a real-matrix X is an error in the table;
         // only the mirrored pair (short-integer X, real-matrix Y) computes.
     } else if (data_type_x == runtime.dtReal34Matrix and (data_type_y == runtime.dtReal34 or data_type_y == runtime.dtLongInteger)) {
+        if (data_type_y == runtime.dtLongInteger) {
+            // The long-integer cell converts Y in place first, so the loop below
+            // reads a real34 either way.
+            runtime.convertLongIntegerRegisterToReal34Register(runtime.REGISTER_Y, runtime.REGISTER_Y);
+        }
         atan2RealRema();
     } else if (data_type_y == runtime.dtReal34Matrix and (data_type_x == runtime.dtReal34 or data_type_x == runtime.dtLongInteger or data_type_x == runtime.dtShortInteger)) {
         runtime.elementwiseRemaReal(&atan2RealReal);
