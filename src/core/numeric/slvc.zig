@@ -367,6 +367,13 @@ pub export fn solveCubic(
     x3Real: *align(1) real_t,
     x3Imag: *align(1) real_t,
 ) linksection(runtime.code_section) callconv(.c) void {
+    // Without OPTION_CUBIC_159 the whole 159-digit staging goes and the solver
+    // runs directly at 75, which is a different algorithm, not a faster one.
+    if (comptime !runtime.option_cubic_159) {
+        solveCubicEquation(bReal, bImag, cReal, cImag, dReal, dImag, rReal, rImag, x1Real, x1Imag, x2Real, x2Imag, x3Real, x3Imag, &runtime.ctxtReal75);
+        return;
+    }
+
     var c159 = ctxtReal75;
     c159.digits = 159;
     var x1r_b = BigReal(159){};
