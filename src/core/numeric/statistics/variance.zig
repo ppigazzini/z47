@@ -96,6 +96,16 @@ extern fn processCurvefitSelection(selection: u16, RR_: *real_t, SMI_: *real_t, 
 extern fn processCurvefitSelectionAll(selection: u16, RR_: *real_t, MX: *real_t, MX2: *real_t, SX2: *real_t, SY2: *real_t, SMI_: *real_t, aa0: *real_t, aa1: *real_t, aa2: *real_t) void;
 extern var statisticalSumsPointer: ?[*]real_t;
 
+const IDX_SIGMA_N: usize = 0;
+const IDX_SIGMA_X: usize = 1;
+const IDX_SIGMA_Y: usize = 2;
+const IDX_SIGMA_X2: usize = 3;
+const IDX_SIGMA_Y2: usize = 5;
+const IDX_SIGMA_lnX: usize = 8;
+const IDX_SIGMA_ln2X: usize = 9;
+const IDX_SIGMA_lnY: usize = 11;
+const IDX_SIGMA_ln2Y: usize = 12;
+
 inline fn sigma(index: usize) *real_t {
     return &statisticalSumsPointer.?[index];
 }
@@ -119,18 +129,6 @@ inline fn SIGMA_Y2() *real_t {
 }
 inline fn SIGMA_XY() *real_t {
     return sigma(6);
-}
-inline fn SIGMA_lnX() *real_t {
-    return sigma(8);
-}
-inline fn SIGMA_ln2X() *real_t {
-    return sigma(9);
-}
-inline fn SIGMA_lnY() *real_t {
-    return sigma(11);
-}
-inline fn SIGMA_ln2Y() *real_t {
-    return sigma(12);
 }
 
 // Blob constants.
@@ -174,14 +172,17 @@ fn do_stddev(sumXX: *const real_t, sumX: *const real_t, numberX: *const real_t, 
     realToReal34(p, registerReal34Ptr(regIndex));
 }
 
-fn calculateStandardDeviation(sumX2: *const real_t, sumX: *const real_t, number: *const real_t, sumY2: *const real_t, sumY: *const real_t, sample: c_int, rootn: c_int, exp: c_int, displayInfo: u8) linksection(runtime.code_section) void {
+// Sums are named by index, not by pointer, so that none of them is resolved out
+// of statisticalSumsPointer before checkMinimumDataPoints has established there
+// is summation data to resolve them from.
+fn calculateStandardDeviation(sumX2: usize, sumX: usize, number: usize, sumY2: usize, sumY: usize, sample: c_int, rootn: c_int, exp: c_int, displayInfo: u8) linksection(runtime.code_section) void {
     if (checkMinimumDataPoints(const_2())) {
         liftStack();
         setSystemFlag(FLAG_ASLIFT);
         liftStack();
 
-        do_stddev(sumX2, sumX, number, sample, rootn, exp, REGISTER_X);
-        do_stddev(sumY2, sumY, number, sample, rootn, exp, REGISTER_Y);
+        do_stddev(sigma(sumX2), sigma(sumX), sigma(number), sample, rootn, exp, REGISTER_X);
+        do_stddev(sigma(sumY2), sigma(sumY), sigma(number), sample, rootn, exp, REGISTER_Y);
 
         runtime.temporaryInformation = displayInfo;
     }
@@ -189,32 +190,32 @@ fn calculateStandardDeviation(sumX2: *const real_t, sumX: *const real_t, number:
 
 pub export fn fnSampleStdDev(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateStandardDeviation(SIGMA_X2(), SIGMA_X(), SIGMA_N(), SIGMA_Y2(), SIGMA_Y(), 1, 0, 0, TI_SAMPLSTDDEV);
+    calculateStandardDeviation(IDX_SIGMA_X2, IDX_SIGMA_X, IDX_SIGMA_N, IDX_SIGMA_Y2, IDX_SIGMA_Y, 1, 0, 0, TI_SAMPLSTDDEV);
 }
 
 pub export fn fnPopulationStdDev(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateStandardDeviation(SIGMA_X2(), SIGMA_X(), SIGMA_N(), SIGMA_Y2(), SIGMA_Y(), 0, 0, 0, TI_POPLSTDDEV);
+    calculateStandardDeviation(IDX_SIGMA_X2, IDX_SIGMA_X, IDX_SIGMA_N, IDX_SIGMA_Y2, IDX_SIGMA_Y, 0, 0, 0, TI_POPLSTDDEV);
 }
 
 pub export fn fnStandardError(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateStandardDeviation(SIGMA_X2(), SIGMA_X(), SIGMA_N(), SIGMA_Y2(), SIGMA_Y(), 1, 1, 0, TI_STDERR);
+    calculateStandardDeviation(IDX_SIGMA_X2, IDX_SIGMA_X, IDX_SIGMA_N, IDX_SIGMA_Y2, IDX_SIGMA_Y, 1, 1, 0, TI_STDERR);
 }
 
 pub export fn fnGeometricSampleStdDev(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateStandardDeviation(SIGMA_ln2X(), SIGMA_lnX(), SIGMA_N(), SIGMA_ln2Y(), SIGMA_lnY(), 1, 0, 1, TI_GEOMSAMPLSTDDEV);
+    calculateStandardDeviation(IDX_SIGMA_ln2X, IDX_SIGMA_lnX, IDX_SIGMA_N, IDX_SIGMA_ln2Y, IDX_SIGMA_lnY, 1, 0, 1, TI_GEOMSAMPLSTDDEV);
 }
 
 pub export fn fnGeometricPopulationStdDev(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateStandardDeviation(SIGMA_ln2X(), SIGMA_lnX(), SIGMA_N(), SIGMA_ln2Y(), SIGMA_lnY(), 0, 0, 1, TI_GEOMPOPLSTDDEV);
+    calculateStandardDeviation(IDX_SIGMA_ln2X, IDX_SIGMA_lnX, IDX_SIGMA_N, IDX_SIGMA_ln2Y, IDX_SIGMA_lnY, 0, 0, 1, TI_GEOMPOPLSTDDEV);
 }
 
 pub export fn fnGeometricStandardError(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    calculateStandardDeviation(SIGMA_ln2X(), SIGMA_lnX(), SIGMA_N(), SIGMA_ln2Y(), SIGMA_lnY(), 1, 1, 1, TI_GEOMSTDERR);
+    calculateStandardDeviation(IDX_SIGMA_ln2X, IDX_SIGMA_lnX, IDX_SIGMA_N, IDX_SIGMA_ln2Y, IDX_SIGMA_lnY, 1, 1, 1, TI_GEOMSTDERR);
 }
 
 // Weighted standard deviation, standard error
