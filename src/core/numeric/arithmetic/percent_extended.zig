@@ -3,9 +3,12 @@ const runtime = @import("../command_wrappers/runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
-fn setNaNOrDomainError(result: *runtime.real_t) bool {
+fn setNaNOrDomainError(result: *runtime.real_t, comptime who: [*:0]const u8, comptime why: [*:0]const u8) bool {
     if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError(who, why, null, null);
+        }
         return false;
     }
 
@@ -13,9 +16,12 @@ fn setNaNOrDomainError(result: *runtime.real_t) bool {
     return true;
 }
 
-fn setSignedInfinity(result: *runtime.real_t, is_negative: bool) bool {
+fn setSignedInfinity(result: *runtime.real_t, is_negative: bool, comptime who: [*:0]const u8, comptime why: [*:0]const u8) bool {
     if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError(who, why, null, null);
+        }
         return false;
     }
 
@@ -40,9 +46,9 @@ pub fn percentMRR(unused_but_mandatory_parameter: u16) void {
 
     if (runtime.getRegisterAsReal(runtime.REGISTER_X, &x_value) and runtime.getRegisterAsReal(runtime.REGISTER_Y, &y_value) and runtime.getRegisterAsReal(runtime.REGISTER_Z, &z_value)) {
         if (runtime.realIsZero(&x_value) and runtime.realIsZero(&y_value)) {
-            _ = setNaNOrDomainError(&result);
+            _ = setNaNOrDomainError(&result, "In function percentMRR:", "cannot divide x=0 by y=0");
         } else if (runtime.realIsZero(&y_value)) {
-            _ = setSignedInfinity(&result, runtime.realIsNegative(&x_value));
+            _ = setSignedInfinity(&result, runtime.realIsNegative(&x_value), "In function percentMRR:", "cannot divide a real by 0");
         } else {
             runtime.realDivide(&x_value, &y_value, &result, &runtime.ctxtReal75);
             runtime.realDivide(runtime.z47_math_wrappers_const_1(), &z_value, &z_value, &runtime.ctxtReal75);
@@ -79,11 +85,11 @@ pub fn percentPlusMG(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.realCompareEqual(&x_value, runtime.z47_math_wrappers_const_100()) and runtime.realIsZero(&y_value)) {
-        if (!setNaNOrDomainError(&result)) {
+        if (!setNaNOrDomainError(&result, "In function percentPlusMGReal:", "cannot divide 0 by 0")) {
             return;
         }
     } else if (runtime.realCompareEqual(&x_value, runtime.z47_math_wrappers_const_100())) {
-        if (!setSignedInfinity(&result, runtime.realIsNegative(&y_value))) {
+        if (!setSignedInfinity(&result, runtime.realIsNegative(&y_value), "In function percentPlusMGReal:", "cannot divide a real by 0")) {
             return;
         }
     } else {
@@ -115,11 +121,11 @@ pub fn percentT(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.realIsZero(&x_value) and runtime.realIsZero(&y_value)) {
-        if (setNaNOrDomainError(&result)) {
+        if (setNaNOrDomainError(&result, "In function percentTReal:", "cannot divide x=0 by y=0")) {
             write_result = true;
         }
     } else if (runtime.realIsZero(&y_value)) {
-        if (setSignedInfinity(&result, runtime.realIsNegative(&x_value))) {
+        if (setSignedInfinity(&result, runtime.realIsNegative(&x_value), "In function percentTReal:", "cannot divide a real by y=0")) {
             write_result = true;
         }
     } else {
@@ -153,9 +159,9 @@ pub fn deltaPercent(unused_but_mandatory_parameter: u16) void {
     }
 
     if (runtime.realIsZero(&x_value) and runtime.realCompareEqual(&x_value, &y_value)) {
-        _ = setNaNOrDomainError(&result);
+        _ = setNaNOrDomainError(&result, "In function deltaPercentReal:", "cannot divide 0 by 0");
     } else if (runtime.realIsZero(&y_value)) {
-        _ = setSignedInfinity(&result, runtime.realIsZero(&x_value));
+        _ = setSignedInfinity(&result, runtime.realIsZero(&x_value), "In function deltaPercentReal:", "cannot divide a real by y=0");
     } else {
         runtime.realSubtract(&x_value, &y_value, &result, &runtime.ctxtReal39);
         runtime.realDivide(&result, &y_value, &result, &runtime.ctxtReal39);
