@@ -1220,6 +1220,51 @@ pub export fn detectTrueDiscontinuityWithAsymptote(y0: *align(1) const real_t, y
 // ===========================================================================
 // graph_eqn (static)
 // ===========================================================================
+// graph_eqn's working set, taken from the heap in one block so a nested plot
+// through PGMPLT gets its own and the frame stays small.
+const GraphWork = extern struct {
+    x: real_t,
+    x01: real_t,
+    y01: real_t,
+    y02: real_t,
+    y00: real_t,
+    dy: real_t,
+    dx0: real_t,
+    dx: real_t,
+    grad2: real_t,
+    grad1: real_t,
+    grad0: real_t,
+    prevDx: real_t,
+    yAvg: real_t,
+    x_min_r: real_t,
+    x_max_r: real_t,
+    y_min_r: real_t,
+    y_max_r: real_t,
+    jumpBackStartX: real_t,
+    jumpBackStartY: real_t,
+    jumpBackX: real_t,
+    jumpBackDx: real_t,
+    jbY: real_t,
+    discontinuityThreshold: real_t,
+    curvatureChange: real_t,
+    newDx: real_t,
+    improvementRatio: real_t,
+    highResStartX: real_t,
+    cumulativeCurvatureChange: real_t,
+    baselineCurvatureChange: real_t,
+    savedXBeforeHighres: real_t,
+    savedDxBeforeHighres: real_t,
+    tmpA: real_t,
+    tmpB: real_t,
+    asymptotes: [MAX_ASYMPTOTES]AsymptoteInfo,
+};
+fn allocGraphWork() ?*GraphWork {
+    return @ptrCast(@alignCast(malloc(@sizeOf(GraphWork))));
+}
+fn freeGraphWork(w: *GraphWork) void {
+    free(@ptrCast(w));
+}
+
 fn graph_eqn(mode: u16) void {
     var plotAborted: bool = false; // R/S/EXIT or a nested-engine abort: skip the draw and exit dead
     currentKeyCode = 255;
@@ -1231,39 +1276,6 @@ fn graph_eqn(mode: u16) void {
     ctxtGraphsLocal = ctxtReal39;
     ctxtGraphsLocal.digits = GRAPH_WORKING_DIGITS;
 
-    var x: real_t = undefined;
-    var x01: real_t = undefined;
-    var y01: real_t = undefined;
-    var y02: real_t = undefined;
-    var y00: real_t = undefined; // Add y00 for improved discontinuity detection
-    var dy: real_t = undefined;
-    var dx0: real_t = undefined;
-    var dx: real_t = undefined;
-    var grad2: real_t = undefined;
-    var grad1: real_t = undefined;
-    var grad0: real_t = undefined;
-    var prevDx: real_t = undefined; // Track previous step size
-    var yAvg: real_t = undefined;
-    var x_min_r: real_t = undefined; // real_t copy of external x_min
-    var x_max_r: real_t = undefined; // real_t copy of external x_max
-    var y_min_r: real_t = undefined; // real_t copy of external y_min
-    var y_max_r: real_t = undefined; // real_t copy of external y_max
-    var jumpBackStartX: real_t = undefined;
-    var jumpBackStartY: real_t = undefined;
-    var jumpBackX: real_t = undefined;
-    var jumpBackDx: real_t = undefined;
-    var jbY: real_t = undefined;
-    var discontinuityThreshold: real_t = undefined;
-    var curvatureChange: real_t = undefined;
-    var newDx: real_t = undefined;
-    var improvementRatio: real_t = undefined;
-    var highResStartX: real_t = undefined;
-    var cumulativeCurvatureChange: real_t = undefined;
-    var baselineCurvatureChange: real_t = undefined;
-    var savedXBeforeHighres: real_t = undefined;
-    var savedDxBeforeHighres: real_t = undefined;
-    var tmpA: real_t = undefined;
-    var tmpB: real_t = undefined;
     var count: i16 = 0;
     var ss0: i16 = 0;
     var ss1: i16 = 0;
@@ -1272,28 +1284,69 @@ fn graph_eqn(mode: u16) void {
     var grad2IncreaseDetected: bool = false;
     var loop: c_int = 0;
     var jumpedBack: bool = false;
-    var asymptotes: [MAX_ASYMPTOTES]AsymptoteInfo = undefined;
+    // The working reals and the asymptote records come from the heap, not the
+    // frame: together they are around 4 kB on a 6 kB DM42 program stack. Taken
+    // per call, so a nested plot through PGMPLT gets its own set.
+    const wk = allocGraphWork() orelse {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+    };
+    defer freeGraphWork(wk);
+    const x = &wk.x;
+    const x01 = &wk.x01;
+    const y01 = &wk.y01;
+    const y02 = &wk.y02;
+    const y00 = &wk.y00;
+    const dy = &wk.dy;
+    const dx0 = &wk.dx0;
+    const dx = &wk.dx;
+    const grad2 = &wk.grad2;
+    const grad1 = &wk.grad1;
+    const grad0 = &wk.grad0;
+    const prevDx = &wk.prevDx;
+    const yAvg = &wk.yAvg;
+    const x_min_r = &wk.x_min_r;
+    const x_max_r = &wk.x_max_r;
+    const y_min_r = &wk.y_min_r;
+    const y_max_r = &wk.y_max_r;
+    const jumpBackStartX = &wk.jumpBackStartX;
+    const jumpBackStartY = &wk.jumpBackStartY;
+    const jumpBackX = &wk.jumpBackX;
+    const jumpBackDx = &wk.jumpBackDx;
+    const jbY = &wk.jbY;
+    const discontinuityThreshold = &wk.discontinuityThreshold;
+    const curvatureChange = &wk.curvatureChange;
+    const newDx = &wk.newDx;
+    const improvementRatio = &wk.improvementRatio;
+    const highResStartX = &wk.highResStartX;
+    const cumulativeCurvatureChange = &wk.cumulativeCurvatureChange;
+    const baselineCurvatureChange = &wk.baselineCurvatureChange;
+    const savedXBeforeHighres = &wk.savedXBeforeHighres;
+    const savedDxBeforeHighres = &wk.savedDxBeforeHighres;
+    const tmpA = &wk.tmpA;
+    const tmpB = &wk.tmpB;
+    const asymptotes = &wk.asymptotes;
     var asymptoteCount: c_int = 0;
 
-    realPlus(x_min, &x_min_r, ctxtGraphs); // x_min_r = x_min rounded to the graph working digits
-    realPlus(x_max, &x_max_r, ctxtGraphs);
-    realPlus(y_min, &y_min_r, ctxtGraphs);
-    realPlus(y_max, &y_max_r, ctxtGraphs);
-    realCopy(&x_min_r, &x01);
-    realSetZero(&y01);
-    realSetZero(&y02);
-    realSetZero(&y00);
-    realSetZero(&dy);
-    realSubtract(&x_max_r, &x_min_r, &tmpA, ctxtGraphs);
-    int32ToReal(400, &tmpB); // SCREEN_WIDTH_GRAPH
-    realDivide(&tmpA, &tmpB, &tmpA, ctxtGraphs);
-    realMultiply(&tmpA, consts.const_10(), &dx0, ctxtGraphs);
-    realCopy(&dx0, &dx);
-    realSetOne(&grad2);
-    realSetOne(&grad1);
-    realSetOne(&grad0);
-    realCopy(&dx0, &prevDx);
-    realCopy(consts.const_1on10(), &yAvg);
+    realPlus(x_min, x_min_r, ctxtGraphs); // x_min_r = x_min rounded to the graph working digits
+    realPlus(x_max, x_max_r, ctxtGraphs);
+    realPlus(y_min, y_min_r, ctxtGraphs);
+    realPlus(y_max, y_max_r, ctxtGraphs);
+    realCopy(x_min_r, x01);
+    realSetZero(y01);
+    realSetZero(y02);
+    realSetZero(y00);
+    realSetZero(dy);
+    realSubtract(x_max_r, x_min_r, tmpA, ctxtGraphs);
+    int32ToReal(400, tmpB); // SCREEN_WIDTH_GRAPH
+    realDivide(tmpA, tmpB, tmpA, ctxtGraphs);
+    realMultiply(tmpA, consts.const_10(), dx0, ctxtGraphs);
+    realCopy(dx0, dx);
+    realSetOne(grad2);
+    realSetOne(grad1);
+    realSetOne(grad0);
+    realCopy(dx0, prevDx);
+    realCopy(consts.const_1on10(), yAvg);
 
     if (graphVariabl1 < FIRST_NAMED_VARIABLE or graphVariabl1 > LAST_NAMED_VARIABLE) {
         regStatsXY = INVALID_VARIABLE;
@@ -1302,11 +1355,11 @@ fn graph_eqn(mode: u16) void {
 
     fillStackWithReal0();
 
-    convertRealToReal34RegisterPush(&x_max_r, REGISTER_X);
+    convertRealToReal34RegisterPush(x_max_r, REGISTER_X);
     execute_rpn_function_graphAcc();
-    convertRegisterToReal(REGISTER_Y, &tmpA);
-    realCopyAbs(&tmpA, &tmpA);
-    realFMA(consts.const_2(), &tmpA, &yAvg, &yAvg, ctxtGraphs); // yAvg += 2 * |f(x_max)|
+    convertRegisterToReal(REGISTER_Y, tmpA);
+    realCopyAbs(tmpA, tmpA);
+    realFMA(consts.const_2(), tmpA, yAvg, yAvg, ctxtGraphs); // yAvg += 2 * |f(x_max)|
 
     if (mode == initDrwMx) {
         fnClDrawMx(3);
@@ -1319,16 +1372,16 @@ fn graph_eqn(mode: u16) void {
     var highResBuffer: [@intCast(HIGH_RES_SAMPLE_COUNT)]PlotPoint = undefined;
     var highResCount: c_int = 0;
     var inHighResMode: bool = false;
-    realSetZero(&highResStartX);
-    realSetZero(&cumulativeCurvatureChange);
-    realSetZero(&baselineCurvatureChange);
-    realSetZero(&savedXBeforeHighres);
-    realCopy(&dx0, &savedDxBeforeHighres);
+    realSetZero(highResStartX);
+    realSetZero(cumulativeCurvatureChange);
+    realSetZero(baselineCurvatureChange);
+    realSetZero(savedXBeforeHighres);
+    realCopy(dx0, savedDxBeforeHighres);
 
-    realCopy(&x_min_r, &x);
+    realCopy(x_min_r, x);
     while (true) {
         // x <= x_max ?
-        if (runtime.realCompareGreaterThan(&x, &x_max_r)) break;
+        if (runtime.realCompareGreaterThan(x, x_max_r)) break;
 
         // R/S/EXIT or a nested-engine abort stops the plot
         if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
@@ -1342,10 +1395,10 @@ fn graph_eqn(mode: u16) void {
 
         jumpedBack = false;
         // x = max(x_min, min(x_max, x))
-        if (runtime.realCompareGreaterThan(&x, &x_max_r)) realCopy(&x_max_r, &x);
-        if (runtime.realCompareLessThan(&x, &x_min_r)) realCopy(&x_min_r, &x);
+        if (runtime.realCompareGreaterThan(x, x_max_r)) realCopy(x_max_r, x);
+        if (runtime.realCompareLessThan(x, x_min_r)) realCopy(x_min_r, x);
 
-        convertRealToReal34RegisterPush(&x, REGISTER_X);
+        convertRealToReal34RegisterPush(x, REGISTER_X);
         execute_rpn_function_graphAcc();
 
         if (lastErrorCode == ERROR_SOLVER_ABORT or programRunStop == PGM_WAITING or exitKeyWaiting()) {
@@ -1370,27 +1423,27 @@ fn graph_eqn(mode: u16) void {
             }
 
             reduceRegisterYToComponent();
-            convertRegisterToReal(REGISTER_Y, &y02);
+            convertRegisterToReal(REGISTER_Y, y02);
 
             // === Begin of skip and jump section
             if (count > 0) {
-                realSubtract(&y02, &y01, &dy, ctxtGraphs);
-                if (!realCompareEqual(&x, &x01)) {
-                    realSubtract(&x, &x01, &tmpA, ctxtGraphs);
-                    realDivide(&dy, &tmpA, &grad2, ctxtGraphs);
+                realSubtract(y02, y01, dy, ctxtGraphs);
+                if (!realCompareEqual(x, x01)) {
+                    realSubtract(x, x01, tmpA, ctxtGraphs);
+                    realDivide(dy, tmpA, grad2, ctxtGraphs);
                 } else {
-                    realSetZero(&grad2);
+                    realSetZero(grad2);
                 }
 
                 // Update sign states
                 ss0 = ss1;
                 ss1 = ss2;
-                ss2 = if (graphIsZero(&grad2)) @as(i16, 0) else if (graphIsNegative(&grad2)) @as(i16, -1) else @as(i16, 1);
-                realCopy(&grad1, &grad0);
-                realCopy(&grad2, &grad1);
+                ss2 = if (graphIsZero(grad2)) @as(i16, 0) else if (graphIsNegative(grad2)) @as(i16, -1) else @as(i16, 1);
+                realCopy(grad1, grad0);
+                realCopy(grad2, grad1);
 
                 // Detect gradient anomalies using improved logic
-                if (!graphIsZero(&grad1) and !graphIsZero(&grad2)) {
+                if (!graphIsZero(grad1) and !graphIsZero(grad2)) {
                     var absY02OverY01: real_t = undefined;
                     var absY01OverY02: real_t = undefined;
                     var absG2OverG1: real_t = undefined;
@@ -1408,22 +1461,22 @@ fn graph_eqn(mode: u16) void {
                     stringToReal("1.01", &oneOhOne, ctxtGraphs);
                     convertDoubleToReal(SS2, &ss2_r, ctxtGraphs);
 
-                    realDivide(&y02, &y01, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &absY02OverY01);
-                    realDivide(&y01, &y02, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &absY01OverY02);
-                    realDivide(&grad2, &grad1, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &absG2OverG1);
-                    realDivide(&grad1, &grad2, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &absG1OverG2);
-                    realCopyAbs(&y00, &absY00);
-                    realCopyAbs(&y01, &absY01);
-                    realCopyAbs(&y02, &absY02);
+                    realDivide(y02, y01, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, &absY02OverY01);
+                    realDivide(y01, y02, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, &absY01OverY02);
+                    realDivide(grad2, grad1, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, &absG2OverG1);
+                    realDivide(grad1, grad2, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, &absG1OverG2);
+                    realCopyAbs(y00, &absY00);
+                    realCopyAbs(y01, &absY01);
+                    realCopyAbs(y02, &absY02);
                     realMultiply(consts.const_2(), &absY01, &twoAbsY01, ctxtGraphs);
-                    realSubtract(&grad2, &grad1, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &absG2mG1);
-                    realSubtract(&grad1, &grad0, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &absG1mG0);
+                    realSubtract(grad2, grad1, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, &absG2mG1);
+                    realSubtract(grad1, grad0, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, &absG1mG0);
                     realMultiply(consts.const_10(), &absG1mG0, &tenAbsG1mG0, ctxtGraphs);
 
                     const a1: bool = runtime.realCompareGreaterThan(&absY02OverY01, &oneOhOne);
@@ -1442,10 +1495,10 @@ fn graph_eqn(mode: u16) void {
 
                     // Zero crossing detection - only if accompanied by large gradient changes
                     const bigGradJump: bool = runtime.realCompareGreaterThan(&absG2mG1, &tenAbsG1mG0);
-                    const y01Pos: bool = !graphIsZero(&y01) and graphIsPositive(&y01);
-                    const y02Neg: bool = graphIsNegative(&y02);
-                    const y01Neg: bool = graphIsNegative(&y01);
-                    const y02Pos: bool = !graphIsZero(&y02) and graphIsPositive(&y02);
+                    const y01Pos: bool = !graphIsZero(y01) and graphIsPositive(y01);
+                    const y02Neg: bool = graphIsNegative(y02);
+                    const y01Neg: bool = graphIsNegative(y01);
+                    const y02Pos: bool = !graphIsZero(y02) and graphIsPositive(y02);
                     const zeroCrossing1: bool = (ss1 == 1 and ss2 == -1 and y01Pos and y02Neg) and bigGradJump;
                     const zeroCrossing2: bool = (ss1 == -1 and ss2 == 1 and y01Neg and y02Pos) and bigGradJump;
 
@@ -1455,22 +1508,22 @@ fn graph_eqn(mode: u16) void {
                 }
 
                 // Update running average (count == 0 path intentionally absent)
-                realCopyAbs(&y02, &tmpA);
-                if (runtime.realCompareGreaterThan(&tmpA, &yAvg)) {
-                    int32ToReal(@as(i32, count), &tmpB);
-                    realDivide(&tmpA, &tmpB, &tmpA, ctxtGraphs); // |y02|/count
-                    realAdd(&yAvg, &tmpA, &yAvg, ctxtGraphs);
+                realCopyAbs(y02, tmpA);
+                if (runtime.realCompareGreaterThan(tmpA, yAvg)) {
+                    int32ToReal(@as(i32, count), tmpB);
+                    realDivide(tmpA, tmpB, tmpA, ctxtGraphs); // |y02|/count
+                    realAdd(yAvg, tmpA, yAvg, ctxtGraphs);
                 }
 
                 // Use improved discontinuity detection
                 if (discontinuityDetected == 0) {
                     var x00: real_t = undefined;
                     if (count > 1) {
-                        realSubtract(&x01, &dx, &x00, ctxtGraphs);
+                        realSubtract(x01, dx, &x00, ctxtGraphs);
                     } else {
-                        realCopy(&x_min_r, &x00);
+                        realCopy(x_min_r, &x00);
                     }
-                    const trueDiscontinuity: bool = detectTrueDiscontinuityWithAsymptote(&y00, &y01, &y02, &grad0, &grad1, &grad2, &yAvg, count, &x00, &x01, &x, &x_min_r, &x_max_r, &y_min_r, &y_max_r, &asymptotes, &asymptoteCount);
+                    const trueDiscontinuity: bool = detectTrueDiscontinuityWithAsymptote(y00, y01, y02, grad0, grad1, grad2, yAvg, count, &x00, x01, x, x_min_r, x_max_r, y_min_r, y_max_r, asymptotes, &asymptoteCount);
                     if (trueDiscontinuity) {
                         discontinuityDetected = @intCast(FINE);
                     }
@@ -1484,65 +1537,65 @@ fn graph_eqn(mode: u16) void {
                     }
 
                     // Store the current position and original discontinuity trigger
-                    realCopy(&x, &jumpBackStartX);
-                    realCopy(&y02, &jumpBackStartY);
+                    realCopy(x, jumpBackStartX);
+                    realCopy(y02, jumpBackStartY);
                     const wasDiscontinuity: bool = (discontinuityDetected == FINE);
                     // discontinuityThreshold = wasDiscontinuity ? |y02 - y01| * 0.1 : 0
                     if (wasDiscontinuity) {
-                        realSubtract(&y02, &y01, &tmpA, ctxtGraphs);
-                        realCopyAbs(&tmpA, &tmpA);
-                        realMultiply(&tmpA, consts.const_1on10(), &discontinuityThreshold, ctxtGraphs);
+                        realSubtract(y02, y01, tmpA, ctxtGraphs);
+                        realCopyAbs(tmpA, tmpA);
+                        realMultiply(tmpA, consts.const_1on10(), discontinuityThreshold, ctxtGraphs);
                     } else {
-                        realSetZero(&discontinuityThreshold);
+                        realSetZero(discontinuityThreshold);
                     }
 
                     // x -= dx * JMP
-                    convertDoubleToReal(JMP, &tmpA, ctxtGraphs);
-                    realMultiply(&dx, &tmpA, &tmpB, ctxtGraphs);
-                    realSubtract(&x, &tmpB, &x, ctxtGraphs);
+                    convertDoubleToReal(JMP, tmpA, ctxtGraphs);
+                    realMultiply(dx, tmpA, tmpB, ctxtGraphs);
+                    realSubtract(x, tmpB, x, ctxtGraphs);
                     jumpedBack = true;
-                    convertRealToReal34RegisterPush(&x, REGISTER_X);
+                    convertRealToReal34RegisterPush(x, REGISTER_X);
                     execute_rpn_function_graphAcc();
                     reduceRegisterYToComponent();
-                    convertRegisterToReal(REGISTER_Y, &y02);
+                    convertRegisterToReal(REGISTER_Y, y02);
                     // grad2 = (y02 - y01) / (x - x01)
-                    realSubtract(&y02, &y01, &tmpA, ctxtGraphs);
-                    realSubtract(&x, &x01, &tmpB, ctxtGraphs);
-                    realDivide(&tmpA, &tmpB, &grad2, ctxtGraphs);
+                    realSubtract(y02, y01, tmpA, ctxtGraphs);
+                    realSubtract(x, x01, tmpB, ctxtGraphs);
+                    realDivide(tmpA, tmpB, grad2, ctxtGraphs);
                     ss0 = ss1;
                     ss1 = ss2;
-                    ss2 = if (graphIsZero(&grad2)) @as(i16, 0) else if (graphIsNegative(&grad2)) @as(i16, -1) else @as(i16, 1);
+                    ss2 = if (graphIsZero(grad2)) @as(i16, 0) else if (graphIsNegative(grad2)) @as(i16, -1) else @as(i16, 1);
 
                     // Sample the fine-stepped points
                     var jumpBackBuffer: [@intCast(FINE)]PlotPoint = undefined;
                     var jumpBackCount: c_int = 0;
-                    realCopy(&x, &jumpBackX);
+                    realCopy(x, jumpBackX);
                     // jumpBackDx = dJMP * dx0
-                    convertDoubleToReal(dJMP, &tmpA, ctxtGraphs);
-                    realMultiply(&tmpA, &dx0, &jumpBackDx, ctxtGraphs);
+                    convertDoubleToReal(dJMP, tmpA, ctxtGraphs);
+                    realMultiply(tmpA, dx0, jumpBackDx, ctxtGraphs);
 
                     var jbStep: c_int = 0;
                     while (jbStep < FINE) : (jbStep += 1) {
                         // jumpBackX < jumpBackStartX ?
-                        if (realCompareGreaterEqual(&jumpBackX, &jumpBackStartX)) break;
+                        if (realCompareGreaterEqual(jumpBackX, jumpBackStartX)) break;
 
-                        convertRealToReal34RegisterPush(&jumpBackX, REGISTER_X);
+                        convertRealToReal34RegisterPush(jumpBackX, REGISTER_X);
                         execute_rpn_function_graphAcc();
                         reduceRegisterYToComponent();
-                        convertRegisterToReal(REGISTER_Y, &jbY);
+                        convertRegisterToReal(REGISTER_Y, jbY);
 
                         jumpBackBuffer[@intCast(jumpBackCount)].stored = false;
-                        realCopy(&jumpBackX, &jumpBackBuffer[@intCast(jumpBackCount)].x);
-                        realCopy(&jbY, &jumpBackBuffer[@intCast(jumpBackCount)].y);
+                        realCopy(jumpBackX, &jumpBackBuffer[@intCast(jumpBackCount)].x);
+                        realCopy(jbY, &jumpBackBuffer[@intCast(jumpBackCount)].y);
                         jumpBackCount += 1;
-                        realAdd(&jumpBackX, &jumpBackDx, &jumpBackX, ctxtGraphs);
+                        realAdd(jumpBackX, jumpBackDx, jumpBackX, ctxtGraphs);
                     }
 
                     var shouldCommitPoints: bool = false;
 
                     if (wasDiscontinuity) {
                         // For discontinuity cases, validate that fine points actually resolve the discontinuity
-                        const discontinuityResolved: bool = validateDiscontinuityResolution(&jumpBackBuffer, jumpBackCount, &y01, &jumpBackStartY, &discontinuityThreshold);
+                        const discontinuityResolved: bool = validateDiscontinuityResolution(&jumpBackBuffer, jumpBackCount, y01, jumpBackStartY, discontinuityThreshold);
                         if (discontinuityResolved) {
                             shouldCommitPoints = true;
                             discontinuityDetected = 0; // Clear discontinuity flag
@@ -1555,8 +1608,8 @@ fn graph_eqn(mode: u16) void {
                         if (jumpBackCount >= 3) {
                             var spanX: real_t = undefined;
                             var spanY: real_t = undefined;
-                            realSubtract(&jumpBackStartX, &x01, &spanX, ctxtGraphs); // spanX = jumpBackStartX - x01
-                            realSubtract(&jumpBackStartY, &y01, &spanY, ctxtGraphs); // spanY = jumpBackStartY - y01
+                            realSubtract(jumpBackStartX, x01, &spanX, ctxtGraphs); // spanX = jumpBackStartX - x01
+                            realSubtract(jumpBackStartY, y01, &spanY, ctxtGraphs); // spanY = jumpBackStartY - y01
                             if (realIsZero(&spanY)) { // flat region
                                 realCopy(&spanX, &spanY);
                             }
@@ -1567,12 +1620,12 @@ fn graph_eqn(mode: u16) void {
                                 var maxCurvD: f64 = 0;
                                 var i: c_int = 1;
                                 while (i < jumpBackCount - 1) : (i += 1) {
-                                    const xi: f64 = normCoord(&jumpBackBuffer[@intCast(i)].x, &x01, &spanX);
-                                    const xim1: f64 = normCoord(&jumpBackBuffer[@intCast(i - 1)].x, &x01, &spanX);
-                                    const xip1: f64 = normCoord(&jumpBackBuffer[@intCast(i + 1)].x, &x01, &spanX);
-                                    const yi: f64 = normCoord(&jumpBackBuffer[@intCast(i)].y, &y01, &spanY);
-                                    const yim1: f64 = normCoord(&jumpBackBuffer[@intCast(i - 1)].y, &y01, &spanY);
-                                    const yip1: f64 = normCoord(&jumpBackBuffer[@intCast(i + 1)].y, &y01, &spanY);
+                                    const xi: f64 = normCoord(&jumpBackBuffer[@intCast(i)].x, x01, &spanX);
+                                    const xim1: f64 = normCoord(&jumpBackBuffer[@intCast(i - 1)].x, x01, &spanX);
+                                    const xip1: f64 = normCoord(&jumpBackBuffer[@intCast(i + 1)].x, x01, &spanX);
+                                    const yi: f64 = normCoord(&jumpBackBuffer[@intCast(i)].y, y01, &spanY);
+                                    const yim1: f64 = normCoord(&jumpBackBuffer[@intCast(i - 1)].y, y01, &spanY);
+                                    const yip1: f64 = normCoord(&jumpBackBuffer[@intCast(i + 1)].y, y01, &spanY);
                                     const g1d: f64 = (yi - yim1) / (xi - xim1);
                                     const g2d: f64 = (yip1 - yi) / (xip1 - xi);
                                     const curvChangeD: f64 = fabs(g2d - g1d);
@@ -1581,16 +1634,16 @@ fn graph_eqn(mode: u16) void {
                                     }
                                 }
                                 // Compare with linear interpolation
-                                const jumpBackStartYd: f64 = normCoord(&jumpBackStartY, &y01, &spanY);
-                                const jumpBackStartXd: f64 = normCoord(&jumpBackStartX, &x01, &spanX);
+                                const jumpBackStartYd: f64 = normCoord(jumpBackStartY, y01, &spanY);
+                                const jumpBackStartXd: f64 = normCoord(jumpBackStartX, x01, &spanX);
                                 const y01d: f64 = 0.0;
                                 const x01d: f64 = 0.0;
                                 const linearSlopeD: f64 = (jumpBackStartYd - y01d) / (jumpBackStartXd - x01d);
                                 var interpErrD: f64 = 0;
                                 var j: c_int = 0;
                                 while (j < jumpBackCount) : (j += 1) {
-                                    const xi: f64 = normCoord(&jumpBackBuffer[@intCast(j)].x, &x01, &spanX);
-                                    const yi: f64 = normCoord(&jumpBackBuffer[@intCast(j)].y, &y01, &spanY);
+                                    const xi: f64 = normCoord(&jumpBackBuffer[@intCast(j)].x, x01, &spanX);
+                                    const yi: f64 = normCoord(&jumpBackBuffer[@intCast(j)].y, y01, &spanY);
                                     const expectedYd: f64 = y01d + linearSlopeD * (xi - x01d);
                                     const errD: f64 = fabs(yi - expectedYd);
                                     if (errD > interpErrD) {
@@ -1614,110 +1667,110 @@ fn graph_eqn(mode: u16) void {
                         }
 
                         // Also plot the original grid point (jumpBackStartX, jumpBackStartY)
-                        convertRealToReal34RegisterPush(&jumpBackStartX, REGISTER_X);
+                        convertRealToReal34RegisterPush(jumpBackStartX, REGISTER_X);
                         execute_rpn_function_graphAcc();
                         reduceRegisterYToComponent();
                         AddtoDrawMx();
 
                         // Set position to continue from the original grid point
-                        realCopy(&jumpBackStartX, &x);
-                        realCopy(&jumpBackStartY, &y02);
-                        realCopy(&dx0, &dx); // Reset to original step size
+                        realCopy(jumpBackStartX, x);
+                        realCopy(jumpBackStartY, y02);
+                        realCopy(dx0, dx); // Reset to original step size
                         jumpedBack = false; // Clear flag since we've handled the plotting
                     } else { // not fine points
                         // Restore to the original grid point and continue normal processing
-                        realCopy(&jumpBackStartX, &x);
-                        realCopy(&jumpBackStartY, &y02);
-                        realCopy(&dx0, &dx); // Revert to original step size
+                        realCopy(jumpBackStartX, x);
+                        realCopy(jumpBackStartY, y02);
+                        realCopy(dx0, dx); // Revert to original step size
                         jumpedBack = false; // Clear flag so the original point gets plotted normally
 
                         // Recalculate gradient for the original point
-                        realSubtract(&y02, &y01, &tmpA, ctxtGraphs);
-                        realSubtract(&x, &x01, &tmpB, ctxtGraphs);
-                        realDivide(&tmpA, &tmpB, &grad2, ctxtGraphs);
+                        realSubtract(y02, y01, tmpA, ctxtGraphs);
+                        realSubtract(x, x01, tmpB, ctxtGraphs);
+                        realDivide(tmpA, tmpB, grad2, ctxtGraphs);
                         ss0 = ss1;
                         ss1 = ss2;
-                        ss2 = if (graphIsZero(&grad2)) @as(i16, 0) else if (graphIsNegative(&grad2)) @as(i16, -1) else @as(i16, 1);
+                        ss2 = if (graphIsZero(grad2)) @as(i16, 0) else if (graphIsNegative(grad2)) @as(i16, -1) else @as(i16, 1);
                     }
                 }
 
                 // Calculate curvature change for resolution assessment
-                realSetZero(&curvatureChange);
-                if (count > 1 and !graphIsZero(&grad0) and !graphIsZero(&grad1)) {
+                realSetZero(curvatureChange);
+                if (count > 1 and !graphIsZero(grad0) and !graphIsZero(grad1)) {
                     // curvatureChange = |(grad2 - grad1) - (grad1 - grad0)|
-                    realSubtract(&grad2, &grad1, &tmpA, ctxtGraphs);
-                    realSubtract(&grad1, &grad0, &tmpB, ctxtGraphs);
-                    realSubtract(&tmpA, &tmpB, &tmpA, ctxtGraphs);
-                    realCopyAbs(&tmpA, &curvatureChange);
+                    realSubtract(grad2, grad1, tmpA, ctxtGraphs);
+                    realSubtract(grad1, grad0, tmpB, ctxtGraphs);
+                    realSubtract(tmpA, tmpB, tmpA, ctxtGraphs);
+                    realCopyAbs(tmpA, curvatureChange);
                 }
 
                 // Determine new step size and resolution mode
-                calculateNewStepSize(discontinuityDetected, &grad1, &grad2, grad2IncreaseDetected, &dx0, &newDx);
+                calculateNewStepSize(discontinuityDetected, grad1, grad2, grad2IncreaseDetected, dx0, newDx);
 
                 // Check if we're entering high-resolution mode (only if not jumped back)
                 // newDx < prevDx * REVERT_THRESHOLD ?
-                convertDoubleToReal(REVERT_THRESHOLD, &tmpA, ctxtGraphs);
-                realMultiply(&prevDx, &tmpA, &tmpB, ctxtGraphs);
-                const newDxBelowThresh: bool = runtime.realCompareLessThan(&newDx, &tmpB);
-                const curvNonZero: bool = !graphIsZero(&curvatureChange) and graphIsPositive(&curvatureChange);
+                convertDoubleToReal(REVERT_THRESHOLD, tmpA, ctxtGraphs);
+                realMultiply(prevDx, tmpA, tmpB, ctxtGraphs);
+                const newDxBelowThresh: bool = runtime.realCompareLessThan(newDx, tmpB);
+                const curvNonZero: bool = !graphIsZero(curvatureChange) and graphIsPositive(curvatureChange);
                 if (!jumpedBack and !inHighResMode and newDxBelowThresh and discontinuityDetected == 0 and curvNonZero) {
-                    realCopy(&x01, &savedXBeforeHighres); // Save the last good x position
-                    realCopy(&prevDx, &savedDxBeforeHighres);
-                    enterHighResMode(&inHighResMode, &highResCount, &highResStartX, &baselineCurvatureChange, &cumulativeCurvatureChange, &x, &curvatureChange);
+                    realCopy(x01, savedXBeforeHighres); // Save the last good x position
+                    realCopy(prevDx, savedDxBeforeHighres);
+                    enterHighResMode(&inHighResMode, &highResCount, highResStartX, baselineCurvatureChange, cumulativeCurvatureChange, x, curvatureChange);
                 }
 
                 // If in high-res mode, buffer the point and assess improvement
                 if (inHighResMode and !jumpedBack) {
-                    realAdd(&cumulativeCurvatureChange, &curvatureChange, &cumulativeCurvatureChange, ctxtGraphs);
+                    realAdd(cumulativeCurvatureChange, curvatureChange, cumulativeCurvatureChange, ctxtGraphs);
 
                     if (highResCount < HIGH_RES_SAMPLE_COUNT) { // Buffer high-res points in order
-                        realCopy(&x, &highResBuffer[@intCast(highResCount)].x);
-                        realCopy(&y02, &highResBuffer[@intCast(highResCount)].y);
-                        realCopy(&grad2, &highResBuffer[@intCast(highResCount)].grad);
+                        realCopy(x, &highResBuffer[@intCast(highResCount)].x);
+                        realCopy(y02, &highResBuffer[@intCast(highResCount)].y);
+                        realCopy(grad2, &highResBuffer[@intCast(highResCount)].grad);
                         highResBuffer[@intCast(highResCount)].stored = false;
                         highResCount += 1;
                     } else {
                         // improvementRatio = (baseline > 0) ? cumCurv / (baseline * count_r) : 1
-                        const baselinePos: bool = !graphIsZero(&baselineCurvatureChange) and graphIsPositive(&baselineCurvatureChange);
+                        const baselinePos: bool = !graphIsZero(baselineCurvatureChange) and graphIsPositive(baselineCurvatureChange);
                         if (baselinePos) {
-                            realMultiply(&baselineCurvatureChange, consts.const_3(), &tmpB, ctxtGraphs);
-                            realDivide(&cumulativeCurvatureChange, &tmpB, &improvementRatio, ctxtGraphs);
+                            realMultiply(baselineCurvatureChange, consts.const_3(), tmpB, ctxtGraphs);
+                            realDivide(cumulativeCurvatureChange, tmpB, improvementRatio, ctxtGraphs);
                         } else {
-                            realSetOne(&improvementRatio);
+                            realSetOne(improvementRatio);
                         }
 
-                        convertDoubleToReal(MIN_IMPROVEMENT_RATIO, &tmpA, ctxtGraphs);
-                        if (realCompareGreaterEqual(&improvementRatio, &tmpA)) { // High-res beneficial, commit buffered points
+                        convertDoubleToReal(MIN_IMPROVEMENT_RATIO, tmpA, ctxtGraphs);
+                        if (realCompareGreaterEqual(improvementRatio, tmpA)) { // High-res beneficial, commit buffered points
                             commitHighResPointsInOrder(&highResBuffer, highResCount);
-                            resetHighResTracking(&highResCount, &inHighResMode, &cumulativeCurvatureChange);
+                            resetHighResTracking(&highResCount, &inHighResMode, cumulativeCurvatureChange);
                             // Continue with current step size
                         } else { // High-res didn't help, abandon and continue from last good point with larger dx
                             abandonHighResMode(&highResCount, &inHighResMode);
-                            realAdd(&savedXBeforeHighres, &savedDxBeforeHighres, &x, ctxtGraphs);
-                            realCopy(&savedDxBeforeHighres, &dx);
+                            realAdd(savedXBeforeHighres, savedDxBeforeHighres, x, ctxtGraphs);
+                            realCopy(savedDxBeforeHighres, dx);
                             break :advance; // goto incrementX
                         }
                     }
                 }
 
-                realCopy(&dx, &prevDx);
-                realCopy(&newDx, &dx);
+                realCopy(dx, prevDx);
+                realCopy(newDx, dx);
             }
             // < End of skip and jump section
 
             // Add point to plot (skip if in high-res buffering mode or jumped back)
             // dx >= 0 ?
-            if (!jumpedBack and !graphIsNegative(&dx) and !inHighResMode) {
+            if (!jumpedBack and !graphIsNegative(dx) and !inHighResMode) {
                 AddtoDrawMx();
             }
 
             // Update state for next iteration
             if (count > 0) {
-                realCopy(&grad2, &grad1);
+                realCopy(grad2, grad1);
             }
-            realCopy(&y01, &y00); // Update y00 for improved discontinuity detection
-            realCopy(&y02, &y01);
-            realCopy(&x, &x01);
+            realCopy(y01, y00); // Update y00 for improved discontinuity detection
+            realCopy(y02, y01);
+            realCopy(x, x01);
 
             if (discontinuityDetected != 0) {
                 discontinuityDetected -= 1;
@@ -1747,9 +1800,9 @@ fn graph_eqn(mode: u16) void {
         }
 
         // incrementX: x += STEP_OFFSET * dx
-        convertDoubleToReal(STEP_OFFSET, &tmpA, ctxtGraphs);
-        realMultiply(&tmpA, &dx, &tmpB, ctxtGraphs);
-        realAdd(&x, &tmpB, &x, ctxtGraphs);
+        convertDoubleToReal(STEP_OFFSET, tmpA, ctxtGraphs);
+        realMultiply(tmpA, dx, tmpB, ctxtGraphs);
+        realAdd(x, tmpB, x, ctxtGraphs);
     }
 
     if (inHighResMode and highResCount > 0) {
