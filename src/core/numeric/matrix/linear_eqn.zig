@@ -178,20 +178,24 @@ fn ramFull(fnName: [*:0]const u8, tag: [*:0]const u8) void {
     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError(fnName, tag, null, null);
 }
 fn mismatch(a: *const real34Matrix_t, r: *const real34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
-    _ = r;
+    _ = a;
     runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
-        const m = runtime.bufPrintZ(&buf, "{s} ({d}\xc3\x97{d})", .{ what, a.header.matrixRows, a.header.matrixColumns }) catch "mismatch";
+        // The dimensions reported are the right-hand side's, which is the one
+        // that failed the column-vector test. STD_CROSS is a C47 glyph pair.
+        const m = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, r.header.matrixRows, r.header.matrixColumns }) catch "mismatch";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }
 fn mismatchC(a: *const complex34Matrix_t, r: *const complex34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
-    _ = r;
+    _ = a;
     runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
-        const m = runtime.bufPrintZ(&buf, "{s} ({d}\xc3\x97{d})", .{ what, a.header.matrixRows, a.header.matrixColumns }) catch "mismatch";
+        // The dimensions reported are the right-hand side's, which is the one
+        // that failed the column-vector test. STD_CROSS is a C47 glyph pair.
+        const m = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, r.header.matrixRows, r.header.matrixColumns }) catch "mismatch";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }
