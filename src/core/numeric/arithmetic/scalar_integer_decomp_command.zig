@@ -62,13 +62,15 @@ fn decompReal() void {
     runtime.__gmpz_init(&value[0]);
     defer runtime.__gmpz_clear(&value[0]);
 
-    runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(numer)));
+    // Both parts go out through a uint32_t, so the 64-bit accumulation above is
+    // truncated to its low 32 bits rather than widened by the host's word size.
+    runtime.__gmpz_set_ui(&value[0], @as(u32, @truncate(numer)));
     if (sign == -1) {
         value[0]._mp_size = -value[0]._mp_size;
     }
     runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_Y);
 
-    runtime.__gmpz_set_ui(&value[0], @as(c_ulong, @intCast(denom)));
+    runtime.__gmpz_set_ui(&value[0], @as(u32, @truncate(denom)));
     runtime.convertLongIntegerToLongIntegerRegister(&value[0], runtime.REGISTER_X);
 }
 

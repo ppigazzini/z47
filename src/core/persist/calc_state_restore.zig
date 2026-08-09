@@ -477,7 +477,10 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
         calc_state.readLine(tmpString, TMP_STR_LENGTH);
         numberOfRegs = text.toInt16(tmpString);
         if (load_mode == LM_ALL or load_mode == LM_REGISTERS) {
-            allocateLocalRegisters(@intCast(numberOfRegs));
+            // The count is signed on the way in and unsigned on the way out, so a
+            // negative line arrives as a large request and is refused by the
+            // callee's "up to 99" test instead of trapping the cast.
+            allocateLocalRegisters(@bitCast(numberOfRegs));
         }
         if ((load_mode != LM_ALL and load_mode != LM_REGISTERS) or lastErrorCode == ERROR_NONE) {
             i = 0;

@@ -15,7 +15,7 @@ const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id"
 const FILE_OK: c_int = 1;
 const ioPathBackup: c_int = 4;
 const ioModeWrite: c_int = 1;
-const BACKUP_VERSION: u32 = 1016; // C saveRestoreBackup.c:14 (graph range defaults float -> real)
+const BACKUP_VERSION: u32 = 1017; // C saveRestoreBackup.c:14 (FLAG_SBadm)
 const INVALID_VARIABLE: i16 = 2199;
 const CM_CONFIRMATION: u8 = 11;
 const USER_C47: u16 = 46;
@@ -132,6 +132,7 @@ extern var numScreensNumericFont: [1]u8;
 extern var numScreensNumericFontBold: [1]u8;
 extern var numLinesNumericFontBold: [1]u8;
 extern var graphToRemainOnScreen: u8;
+extern var programmableMenu: [332]u8;
 extern var numLinesNumericFont: [1]u8;
 extern var numScreensStandardFont: [1]u8;
 extern var numLinesStandardFont: [1]u8;
@@ -639,6 +640,7 @@ pub fn saveCalc() void {
     sv(&printerState[0], 1, "printerState.print_on", "bool");
     sv(&printerState[8], 4, "printerState.printer_model", "uint8");
     sv(&printerState[12], 2, "printerState.delay", "uint16");
+    sv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
     {
         var cf: i8 = cursorFontId();
         sv(&cf, 1, "cursorFont", "int8");
@@ -895,6 +897,7 @@ const FLAG_FRACT: c_uint = 32775;
 const FLAG_IRFRAC: c_uint = 32839;
 const MNU_HOME: i16 = 1921;
 const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
+const FLAG_SBadm: c_uint = 32879; // 0x806F
 
 fn rv(buffer: ?*anyopaque, size: u32, name: [*c]const u8, type_str: [*c]const u8) void {
     restoreStateValue(buffer, size, name, type_str);
@@ -1272,10 +1275,12 @@ pub fn restoreCalc() void {
     rv(&printerState[0], 1, "printerState.print_on", "bool");
     rv(&printerState[8], 4, "printerState.printer_model", "uint8");
     rv(&printerState[12], 2, "printerState.delay", "uint16");
+    rv(&programmableMenu[0], 332, "programmableMenu", "hexDump");
     graphVariabl1 = INVALID_VARIABLE;
     rv(&graphVariabl1, 2, "graphVariabl1", "int16");
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
-    if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreBackup.c:1153-1155
+    if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // SIGZEROS is on per default
+    if (backupVersion < 1017) setSystemFlag(FLAG_SBadm); // the angular mode annunciator is on per default
     if (getSystemFlag(@intCast(FLAG_FRACT))) {
         setSystemFlag(FLAG_FRACT);
     } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {

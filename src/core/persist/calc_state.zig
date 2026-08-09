@@ -263,6 +263,8 @@ extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn strtol(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;
 extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong;
 extern fn strtof(s: [*c]const u8, endptr: ?*[*c]u8) f32;
+const c_lconv = extern struct { decimal_point: [*:0]const u8 };
+extern fn localeconv() *c_lconv;
 // WIDTH-CONTRACT: no-width-question -- `long long` is 64-bit on every target.
 pub export fn stringToInt64(str: [*:0]const u8) i64 {
     return @intCast(strtoll(str, null, 0));
@@ -280,8 +282,17 @@ pub export fn stringToInt8(str: [*:0]const u8) i8 {
 pub export fn stringToUint16(str: [*:0]const u8) u16 {
     return @truncate(strtoul(str, null, 0));
 }
+// Accepts '.' or ',' in the file whatever the locale, so a config written under
+// one regional setting loads under another.
 pub export fn stringToFloat(str: [*:0]const u8) f32 {
-    return strtof(str, null);
+    var buf: [48]u8 = undefined;
+    const radix: u8 = localeconv().decimal_point[0];
+    var i: usize = 0;
+    while (str[i] != 0 and i < buf.len - 1) : (i += 1) {
+        buf[i] = if (str[i] == '.' or str[i] == ',') radix else str[i];
+    }
+    buf[i] = 0;
+    return strtof(@ptrCast(&buf), null);
 }
 
 // Pre-001090500 reverse-blue-key parameter migration (saveRestoreCalcState.c).
