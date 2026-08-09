@@ -11,11 +11,13 @@
 // verbatim (only the four exported entry points drop their C-ABI qualifiers to
 // become the plain pub fns the owner's wrappers call).
 
+const abi = @import("abi");
 const owner = @import("../special/wp34s.zig");
 const real_t = owner.real_t;
 const realContext_t = owner.realContext_t;
 const TaylorIterationMax = owner.TaylorIterationMax;
 const BigReal = owner.BigReal;
+const realGetExponent = owner.realGetExponent;
 const mallocBigReal = owner.mallocBigReal;
 const freeBigReal = owner.freeBigReal;
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -173,7 +175,10 @@ fn doAtan(
         }
 
         if (owner.explicitTaylorIterVisibilitySelection and checkHalfSec()) {
-            _ = progressHalfSecUpdate_Integer(halfSec_timed, "Taylor Iter", epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            var ss: [100]u8 = undefined;
+            abi.fmtBufZ(&ss, "Taylor Iter: {d}/{d}; Dig: {d}/", .{ i, TaylorIterationMax, -@as(i16, @truncate(realGetExponent(b))) });
+            ss[40] = 0; // hard limit to what the screen shows
+            _ = progressHalfSecUpdate_Integer(halfSec_timed, @ptrCast(&ss[0]), epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         }
         if (exitKeyWaiting()) {
             _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);

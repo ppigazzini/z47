@@ -1359,13 +1359,21 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             }
 
             graph_axis();
-            yn = screenY(@as(f64, grf_y(0)));
-            xn = screenX(@as(f64, grf_x(0)));
+            var xr: real_t = undefined;
+            var yr: real_t = undefined;
+            // Through the real_t readers, not the float ones: the range this maps
+            // against is a decimal and survives any exponent, so squeezing the
+            // sample through f32 first loses points the range can still place.
+            grf_y_r(0, &yr);
+            grf_x_r(0, &xr);
+            yn = screen_window_y_r(y_min, &yr, y_max);
+            xn = screen_window_x_r(x_min, &xr, x_max);
             xN = xn;
             yN = yn;
 
             // yr and xr hold the last and first x values for the bar pitch
-            const xLast: i16 = screenX(@as(f64, grf_x(@intCast(numberOfPlotPoints - 1))));
+            grf_x_r(@intCast(numberOfPlotPoints - 1), &yr);
+            const xLast: i16 = screen_window_x_r(x_min, &yr, x_max);
             const pitchDivisor: i32 = if (numberOfPlotPoints > 1) @as(i32, numberOfPlotPoints) - 1 else 1;
             // centre-to-centre bar spacing, one integer for all bars
             const barPitch: i16 = @intFromFloat(@as(f32, @floatFromInt(@as(i32, xLast) - @as(i32, xn))) / @as(f32, @floatFromInt(pitchDivisor)) + 0.5);
