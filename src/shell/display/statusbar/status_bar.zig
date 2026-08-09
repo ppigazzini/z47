@@ -461,7 +461,7 @@ inline fn lowerUnderLine() i32 {
 // ---------------------------------------------------------------------------
 pub export var SBlastIntegerBaseShown: u8 = 0xFF;
 pub export var SBAlphaModeLastShown: u16 = 0xFFFF;
-pub export var SBbatteryLastShown: u16 = 0xFFFF; // drawn battery bar level, not the raw voltage
+var SBbatteryLastShown: u16 = 0xFFFF; // drawn battery bar level, not the raw voltage
 pub export var SBhourglassShown: [2]u8 = undefined;
 pub export var alphaOutput: [3]u8 = undefined;
 // C file-scope .bss globals -> zero-initialized (false). `= undefined` left a

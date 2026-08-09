@@ -182,7 +182,7 @@ inline fn realMaxDigits(comptime digits: u32) u32 {
 inline fn realSizeInBytes(comptime digits: u32) u32 {
     return 10 + 2 * (realMaxDigits(digits) / 3);
 }
-fn BigReal(comptime digits: u32) type {
+fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
     return struct {
         buf: [realSizeInBytes(digits)]u8 align(4) = undefined,
         inline fn ptr(self: *@This()) *align(1) real_t {
@@ -290,7 +290,7 @@ inline fn realSizeInBlocks(comptime digits: u32) u32 {
 }
 
 // adjCpxMat: conjugate transpose of a size x size interleaved-complex matrix.
-fn adjCpxMat(x: [*]align(1) const real_t, size: u16, res: [*]align(1) real_t) void {
+fn adjCpxMat(x: [*]align(1) const real_t, size: u16, res: [*]align(1) real_t) linksection(runtime.code_section) void {
     const sz: usize = size;
     var i: usize = 0;
     while (i < sz) : (i += 1) {
@@ -678,7 +678,7 @@ pub export fn calculateEigenvalues33(
 // ===========================================================================
 
 // Wilkinson-style shift from the bottom-right 2x2 block.
-fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real_t, im: *align(1) real_t, is_real_symmetric: bool, realContext: *realContext_t) void {
+fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real_t, im: *align(1) real_t, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     _ = is_real_symmetric;
     if (size < 2) {
         realSetZero(re);
@@ -749,7 +749,7 @@ fn calculateQrShift(mat: [*]align(1) const real_t, size: u16, re: *align(1) real
 
 // Merge-sort the computed eigenvalues (stored on the diagonal of eig) by
 // descending magnitude, using the (i+1)/(i+2) off-diagonal slots as scratch.
-fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) void {
+fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u16, end_b: u16, realContext: *realContext_t) linksection(runtime.code_section) void {
     const end_a: u16 = begin_b - 1;
     const sz: usize = size;
 
@@ -814,7 +814,7 @@ fn sortEigenvalues(eig: [*]align(1) real_t, size: u16, begin_a: u16, begin_b: u1
 }
 
 // Final 2x2 deflation block: eigenvalues straight onto the diagonal.
-fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) void {
+fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     const sz: usize = size;
     var block: [8]real_t = undefined;
     for (0..2) |i| {
@@ -831,7 +831,7 @@ fn solve2x2Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_r
 }
 
 // Final 3x3 deflation block.
-fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) void {
+fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     const sz: usize = size;
     var block: [18]real_t = undefined;
     for (0..3) |i| {
@@ -848,7 +848,7 @@ fn solve3x3Block(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, is_r
 }
 
 // True when every off-diagonal element has magnitude below tol.
-fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) bool {
+fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     const sz: usize = size;
     for (0..sz) |i| {
         for (0..sz) |j| {
@@ -870,7 +870,7 @@ fn isMatrixDiagonal(matrix: [*]align(1) const real_t, size: u16, tol: *align(1) 
 // every z47 build, so the diagonal sums accumulate sum-of-squares directly.
 // ===========================================================================
 
-fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real_t, previousDiagonal: [*]align(1) real_t, size: u16, activeSize: u16, mode: c_int, sum: *align(1) real_t, firstCall: bool, realContext: *realContext_t) void {
+fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real_t, previousDiagonal: [*]align(1) real_t, size: u16, activeSize: u16, mode: c_int, sum: *align(1) real_t, firstCall: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     _ = heading;
     var elemRe: real_t = undefined;
     var elemIm: real_t = undefined;
@@ -939,7 +939,7 @@ fn sumOfSubSupDiagonalAll(heading: [*:0]const u8, matrix: [*]align(1) const real
     }
 }
 
-pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) callconv(.c) void {
+pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) linksection(runtime.code_section) callconv(.c) void {
     var c: realContext_t = runtime.ctxtReal39;
     c.digits = dig;
     c.round = runtime.DEC_ROUND_HALF_UP;
@@ -953,7 +953,7 @@ pub export fn dropNoise(eig: [*]align(1) real_t, size: u16, dig: u16) callconv(.
     }
 }
 
-fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) bool {
+fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1) const real_t, tol: *align(1) const real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
     var mag: real_t = undefined;
     // Copy the align(1) blob operands into naturally-aligned locals before the
     // naturally-aligned complexMagnitude call; @alignCast on a constant-pool
@@ -965,7 +965,7 @@ fn isElementWithinTolerance(value_re: *align(1) const real_t, value_im: *align(1
     return math_comparison_reals.realCompareLessThan(&mag, @alignCast(tol));
 }
 
-fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagonal: bool, realContext: *realContext_t) bool {
+fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagonal: bool, realContext: *realContext_t) linksection(runtime.code_section) bool {
     var tol: real_t = undefined;
     realSetOne(&tol);
     tol.exponent -= symmetricTolerance;
@@ -1000,15 +1000,15 @@ fn checkMatrixProperties(a: [*]align(1) const real_t, size: u16, checkTridiagona
     return true;
 }
 
-fn isSymmetricTridiagonal(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) bool {
+fn isSymmetricTridiagonal(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) bool {
     return checkMatrixProperties(a, size, true, realContext);
 }
 
-pub export fn isRealSymmetric(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) callconv(.c) bool {
+pub export fn isRealSymmetric(a: [*]align(1) const real_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) bool {
     return checkMatrixProperties(a, size, false, realContext);
 }
 
-fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) void {
+fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, first_unconverged: c_int, last_unconverged: c_int, is_real_symmetric: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     const n = last_unconverged - first_unconverged + 1;
     if (n < 2 or n > 3) {
         return;
@@ -1044,7 +1044,7 @@ fn solveEigenBlock(a: [*]align(1) real_t, eig: [*]align(1) real_t, size: u16, fi
 
 // Detect a circulant companion matrix (x^n - c), which the Householder QR
 // cannot handle; calculateEigenvalues raises ERROR_OUT_OF_RANGE for it.
-fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
+fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) linksection(runtime.code_section) bool {
     const sz: usize = size;
     var isCompanion = true;
     var i: usize = 0;
@@ -1081,7 +1081,7 @@ fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) bool {
 // SLVP feeds its companion matrix through here (upstream drops the `static` on
 // matrix.c's copy when OPTION_SLVP_POLY is on); slvp.zig shares this object, so the
 // Zig side needs `pub`, not a C-ABI export.
-pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, previousDiagonal: [*]align(1) real_t, size: u16, shifted_in: bool, reducedSignificantDigits: bool, realContext: *realContext_t) void {
+pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, previousDiagonal: [*]align(1) real_t, size: u16, shifted_in: bool, reducedSignificantDigits: bool, realContext: *realContext_t) linksection(runtime.code_section) void {
     var shifted = shifted_in;
     const sz: usize = size;
 
@@ -1523,14 +1523,14 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
 // calculateEigenvalues, and write the diagonal eigenvalues back. eigenContext is
 // &ctxtReal75. pub-exported, dead until fnEigenvalues wires them.
 // ===========================================================================
-fn ramFull(comptime where: [*:0]const u8, comptime tag: [*:0]const u8) void {
+fn ramFull(comptime where: [*:0]const u8, comptime tag: [*:0]const u8) linksection(runtime.code_section) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         runtime.moreInfoOnError(where, tag, null, null);
     }
 }
 
-fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) void {
+fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 4 + sz * 2);
@@ -1578,7 +1578,7 @@ fn realEigenvalues(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*
     }
 }
 
-fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
+fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     const bulkSize: usize = realSizeInBlocks(75) * (sz * sz * 2 * 4 + sz * 2);
@@ -1618,7 +1618,7 @@ fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t)
 // vector of the eigenvalues lifted onto the stack. Pushed through the same
 // stack-lift / adjustResult sequence as upstream.
 // ===========================================================================
-pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
+pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedParamButMandatory;
     var doneAdjusting = false;
     const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
@@ -1754,7 +1754,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) callconv(.c) void {
 
 // Extract the diagonal of a square matrix into a 1xN row vector (the eigenvalue
 // list pushed onto the stack by fnEigenvalues). real34Plus rounds at ctxtReal34.
-fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34Matrix_t) void {
+fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = source.header.matrixRows;
     const sz: usize = size;
     if (runtime.realMatrixInit(dest, 1, size)) {
@@ -1769,7 +1769,7 @@ fn extractDiagonalToRowReal34Matrix(source: *const real34Matrix_t, dest: *real34
     }
 }
 
-fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *complex34Matrix_t) void {
+fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *complex34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = source.header.matrixRows;
     const sz: usize = size;
     if (runtime.complexMatrixInit(dest, 1, size)) {
@@ -1791,7 +1791,7 @@ fn extractDiagonalToRowComplex34Matrix(source: *const complex34Matrix_t, dest: *
 // ===========================================================================
 // Exported (was file-local) so the linear-equation solver owner can share it;
 // cpxLinearEqn is static in matrix.c, so the Zig global does not clash.
-pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, realContext: *realContext_t) callconv(.c) void {
+pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const real_t, r: [*]align(1) real_t, size: u16, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     const blocks: usize = @as(usize, size) * size * realSizeInBlocks(75) * 2;
     if (allocC47Blocks(blocks)) |inv_a| {
         _ = runtime.xcopy(@ptrCast(inv_a), @ptrCast(a), @intCast(blocks << 2)); // TO_BYTES, BPB=2
@@ -1815,7 +1815,7 @@ pub export fn cpxLinearEqn(a: [*]align(1) const real_t, b: [*]align(1) const rea
 // complex34Matrix_t (shared header); the C copy stays file-local so the Zig
 // signature is chosen for convenience.
 // ===========================================================================
-fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) void {
+fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]align(1) real_t, eig: [*]align(1) real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
     // real34Matrix_t and complex34Matrix_t share the {header, matrixElements}
     // layout; the complex element view reinterprets the same element pointer.
     const size: u16 = matrix.header.matrixRows;
@@ -2035,7 +2035,7 @@ fn calculateEigenvectors(matrix: *const real34Matrix_t, isComplex: bool, a: [*]a
 // eigenvalues, solve for each eigenvector, detect defective (zero) columns,
 // normalize each column, and write real (res) + imaginary (ires) parts back.
 // ===========================================================================
-fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) void {
+fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?*real34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
@@ -2134,7 +2134,7 @@ fn realEigenvectors(matrix: *const real34Matrix_t, res: *real34Matrix_t, ires: ?
 // ===========================================================================
 // complexEigenvectors (static) -- eigenvectors of a complex square matrix.
 // ===========================================================================
-fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
+fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) linksection(runtime.code_section) void {
     const size: u16 = matrix.header.matrixRows;
     const sz: usize = size;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
@@ -2192,7 +2192,7 @@ fn complexEigenvectors(matrix: *const complex34Matrix_t, res: *complex34Matrix_t
 
 // createEigenVectorIf1x1 (static) -- 1x1 matrices have the trivial eigenvector
 // [1]; build it directly. Returns 1 (handled), 255 (alloc failed), 0 (not 1x1).
-fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) u8 {
+fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(runtime.code_section) u8 {
     if (rows == 1 and cols == 1) {
         runtime.setSystemFlag(FLAG_ASLIFT);
         runtime.liftStack();
@@ -2228,7 +2228,7 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) u8 {
 // fnEigenvectors (EIGVEC) -- the public command. Eigenvectors of X as columns;
 // complex results lift onto the stack. Defective matrices raise SINGULAR.
 // ===========================================================================
-pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
+pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedParamButMandatory;
     const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
     if (dt == runtime.dtReal34Matrix) {
@@ -2337,7 +2337,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) callconv(.c) void {
 // fnMatrixSquareRoot is exported as the public command.
 // ===========================================================================
 
-fn isRealMatrixDiagonal(matrix: *const real34Matrix_t) bool {
+fn isRealMatrixDiagonal(matrix: *const real34Matrix_t) linksection(runtime.code_section) bool {
     const rows = matrix.header.matrixRows;
     const cols: usize = matrix.header.matrixColumns;
     const elems: [*]const real34_t = abi.matrixConstRealElems(matrix);
@@ -2351,7 +2351,7 @@ fn isRealMatrixDiagonal(matrix: *const real34Matrix_t) bool {
     return true;
 }
 
-fn isComplexMatrixDiagonal(matrix: *const complex34Matrix_t) bool {
+fn isComplexMatrixDiagonal(matrix: *const complex34Matrix_t) linksection(runtime.code_section) bool {
     const rows = matrix.header.matrixRows;
     const cols: usize = matrix.header.matrixColumns;
     const elems: [*]const runtime.complex34_t = abi.matrixConstComplexElems(matrix);
@@ -2367,7 +2367,7 @@ fn isComplexMatrixDiagonal(matrix: *const complex34Matrix_t) bool {
 
 // verifySqrtMatrix -- confirm Y^2 == matrix below ||matrix||_F * 1e-30, run in
 // complex for both paths (catches spurious roots like [[0,0],[1,0]]).
-fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real34Matrix_t, inputComplex: ?*const complex34Matrix_t, resultComplex: ?*const complex34Matrix_t) bool {
+fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real34Matrix_t, inputComplex: ?*const complex34Matrix_t, resultComplex: ?*const complex34Matrix_t) linksection(runtime.code_section) bool {
     const isComplex = inputComplex != null;
     const rows: u16 = if (isComplex) inputComplex.?.header.matrixRows else inputReal.?.header.matrixRows;
     const cols: u16 = if (isComplex) inputComplex.?.header.matrixColumns else inputReal.?.header.matrixColumns;
@@ -2422,7 +2422,7 @@ fn verifySqrtMatrix(inputReal: ?*const real34Matrix_t, resultReal: ?*const real3
     return verified;
 }
 
-fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) void {
+fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) linksection(runtime.code_section) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
     var Lambda = std.mem.zeroes(real34Matrix_t);
@@ -2538,7 +2538,7 @@ fn sqrtRealMatrixEigen(matrix: *const real34Matrix_t, res: *real34Matrix_t) void
     }
 }
 
-fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
+fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) linksection(runtime.code_section) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
     var Lambda = std.mem.zeroes(complex34Matrix_t);
@@ -2601,7 +2601,7 @@ fn sqrtComplexMatrixEigen(matrix: *const complex34Matrix_t, res: *complex34Matri
     }
 }
 
-fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void {
+fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) linksection(runtime.code_section) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
     res.matrixElements = null;
@@ -2649,7 +2649,7 @@ fn sqrtRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void {
     }
 }
 
-fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void {
+fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) linksection(runtime.code_section) void {
     const n = matrix.header.matrixRows;
     const nn: usize = n;
     res.matrixElements = null;
@@ -2684,7 +2684,7 @@ fn sqrtComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) 
     }
 }
 
-fn sqrtNoConverge() void {
+fn sqrtNoConverge() linksection(runtime.code_section) void {
     runtime.temporaryInformation = runtime.TI_NO_INFO;
     if (runtime.programRunStop == runtime.PGM_WAITING) runtime.programRunStop = runtime.PGM_STOPPED;
 }
@@ -2693,7 +2693,7 @@ fn sqrtNoConverge() void {
 // fnMatrixSquareRoot (M.SQRT) -- the public command. Real input falls back to a
 // complex root (and auto-downgrades to real) when FL_CPXRES is set.
 // ===========================================================================
-pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) callconv(.c) void {
+pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedParamButMandatory;
     if (!runtime.saveLastX()) return;
 
@@ -2811,7 +2811,7 @@ pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) callconv(.c) void
 // real34/complex34 input to interleaved-complex real_t scratch, run Householder
 // QR at ctxtReal39, write Q and R back. fnQrDecomposition (Zig) drives these.
 // ===========================================================================
-pub export fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Matrix_t, r: *real34Matrix_t) callconv(.c) void {
+pub export fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Matrix_t, r: *real34Matrix_t) linksection(runtime.code_section) callconv(.c) void {
     const rows = matrix.header.matrixRows;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
     const n2: usize = @as(usize, rows) * matrix.header.matrixColumns;
@@ -2851,7 +2851,7 @@ pub export fn real_QR_decomposition(matrix: *const real34Matrix_t, q: *real34Mat
     }
 }
 
-pub export fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) callconv(.c) void {
+pub export fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *complex34Matrix_t, r: *complex34Matrix_t) linksection(runtime.code_section) callconv(.c) void {
     const rows = matrix.header.matrixRows;
     if (matrix.header.matrixRows != matrix.header.matrixColumns) return;
     const n2: usize = @as(usize, rows) * matrix.header.matrixColumns;

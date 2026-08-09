@@ -2359,10 +2359,16 @@ inline fn cmodNonNeg(n: i32, d: i32) i32 {
 // concat2: build a small comptime-known concatenation of two byte strings on a
 // scratch buffer. Used to reproduce C string-literal concatenation (e.g.
 // STD_GAUSS_WHITE_R STD_SUB_0). The two operands here are always short STD_*.
-var concatBuf: [64]u8 = undefined;
-fn concat2(a: [*c]const u8, b: [*c]const u8) [*c]const u8 {
-    _ = str_concat.concat2(&concatBuf, a, b);
-    return &concatBuf;
+// The C writes these as adjacent string literals, which the compiler pastes into
+// one constant. Doing the same at comptime keeps them in read-only memory instead
+// of a RAM scratch buffer.
+fn concat2(comptime a: anytype, comptime b: anytype) [*c]const u8 {
+    const joined = comptime blk: {
+        const sa: []const u8 = std.mem.span(@as([*:0]const u8, a));
+        const sb: []const u8 = std.mem.span(@as([*:0]const u8, b));
+        break :blk sa ++ sb ++ "\x00";
+    };
+    return @ptrCast(joined.ptr);
 }
 extern fn strlen(s: [*c]const u8) usize;
 inline fn strlenc(s: [*c]const u8) usize {
@@ -2567,12 +2573,15 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
         return;
     }
 }
-// concat3: three-operand string concat onto a separate scratch buffer (does not
-// alias concatBuf, since changeSoftKey passes concat3 alongside other strings).
-var concat3Buf: [64]u8 = undefined;
-fn concat3(a: [*c]const u8, b: [*c]const u8, c: [*c]const u8) [*c]const u8 {
-    _ = str_concat.concat3(&concat3Buf, a, b, c);
-    return &concat3Buf;
+// Three-operand form of the same comptime paste.
+fn concat3(comptime a: anytype, comptime b: anytype, comptime c: anytype) [*c]const u8 {
+    const joined = comptime blk: {
+        const sa: []const u8 = std.mem.span(@as([*:0]const u8, a));
+        const sb: []const u8 = std.mem.span(@as([*:0]const u8, b));
+        const sc: []const u8 = std.mem.span(@as([*:0]const u8, c));
+        break :blk sa ++ sb ++ sc ++ "\x00";
+    };
+    return @ptrCast(joined.ptr);
 }
 
 pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
