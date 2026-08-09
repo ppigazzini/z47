@@ -2430,6 +2430,14 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
         },
         EQ_PLOT => { // uses X, Y
             if (getRegisterAsReal(REGISTER_X, &x) and getRegisterAsReal(REGISTER_Y, &y)) {
+                if (realIsSpecial(&x) or realIsSpecial(&y) or realCompareEqual(&x, &y)) {
+                    // Screen the raw incoming range: keep the old UX/LX and error.
+                    // Leave the graph screen so the error line renders, as
+                    // graph_stat and fnPlotStat do.
+                    calcMode = CM_NORMAL;
+                    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                    return;
+                }
                 reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, 0, amNoneU);
                 reallocateRegister(RESERVED_VARIABLE_LX, dtReal34, 0, amNoneU);
                 realToReal34(&x, reg34(RESERVED_VARIABLE_UX));

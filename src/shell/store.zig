@@ -102,8 +102,11 @@ const LAST_TEMP_REGISTER: u16 = 136;
 const FIRST_NAMED_VARIABLE: u16 = 256;
 const FIRST_RESERVED_VARIABLE: u16 = 2000;
 const RESERVED_VARIABLE_GRAMOD: u16 = 2040;
+const RESERVED_VARIABLE_UX: u16 = 2041;
+const RESERVED_VARIABLE_LX: u16 = 2042;
 const RESERVED_VARIABLE_UY: u16 = 2046;
 const RESERVED_VARIABLE_LY: u16 = 2047;
+const CM_NORMAL: u8 = 0;
 const LAST_RESERVED_VARIABLE: u16 = 2047;
 const FIRST_LOCAL_REGISTER: u16 = 7000;
 const INVALID_VARIABLE: u16 = 2199;
@@ -133,6 +136,7 @@ extern var numberOfNamedVariables: u16;
 extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
 extern const allReservedVariables: [48]reservedVariableHeader_t;
 extern var PLOT_ZMY: i8;
+extern var calcMode: u8;
 
 const Fn0 = ?*const fn () callconv(.c) void;
 extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]Fn0;
@@ -420,10 +424,20 @@ fn storeIjComplex(matrix: *complex34Matrix_t) callconv(.c) bool {
 // ===========================================================================
 // _storeValue (static in the C)
 // ===========================================================================
+extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
+extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
+extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
+
+inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
+    return decQuadIsNaN(v) != 0 or decQuadIsSignaling(v) != 0 or decQuadIsInfinite(v) != 0;
+}
+
+/// The four reserved variables holding the plot window bounds.
+inline fn isPlotRangeVariable(regist: u16) bool {
+    return regist == RESERVED_VARIABLE_UX or regist == RESERVED_VARIABLE_LX or
+        regist == RESERVED_VARIABLE_UY or regist == RESERVED_VARIABLE_LY;
+}
 fn _storeValue(regist: u16) void {
-    if (regist == RESERVED_VARIABLE_UY or regist == RESERVED_VARIABLE_LY) {
-        PLOT_ZMY = zoomOverride; // PLOT EQN
-    }
     if (regist == RESERVED_VARIABLE_GRAMOD) {
         copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
         fnLint(NOPARAM);
@@ -445,8 +459,25 @@ fn _storeValue(regist: u16) void {
         copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
         fnToReal(NOPARAM);
         if (lastErrorCode == ERROR_NONE) {
-            copySourceRegisterToDestRegister(REGISTER_X, @intCast(regist));
-            copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+            if (isPlotRangeVariable(regist) and real34IsSpecial(reg34(REGISTER_X))) {
+                // Screen the plot range at the door: NaN and the infinities are
+                // rejected and the old limit kept. The range STO items live in the
+                // plot menu, so leave the graph screen for the error line to render.
+                copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+                calcMode = CM_NORMAL;
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                if (comptime extra_info) {
+                    moreInfoOnError("In function _storeValue:", "plot range limits must be finite", null);
+                }
+            } else {
+                copySourceRegisterToDestRegister(REGISTER_X, @intCast(regist));
+                copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
+                if (regist == RESERVED_VARIABLE_UY or regist == RESERVED_VARIABLE_LY) {
+                    // Only a store that actually landed may move the zoom override;
+                    // a rejected store must leave no side effect behind.
+                    PLOT_ZMY = zoomOverride;
+                }
+            }
         }
     } else {
         copySourceRegisterToDestRegister(REGISTER_X, @intCast(regist));
