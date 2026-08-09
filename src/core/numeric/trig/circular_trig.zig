@@ -1,6 +1,7 @@
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
+const owner = @import("../special/wp34s.zig");
 
 const taylor_iteration_max: usize = 1000;
 
@@ -155,6 +156,9 @@ fn doTaylorIterations(
         runtime.realSetPositiveSign(sin_value);
     }
     runtime.realMultiply(sin_value, angle, sin_value, real_context);
+    // One Taylor run consumes the request: whoever wants the iteration counter
+    // shown next time has to ask again.
+    owner.explicitTaylorIterVisibilitySelection = false;
 }
 
 fn sinCosTanTaylorTemp75(
@@ -230,9 +234,14 @@ pub fn convertAngleToSinCosTan(
     real_context: *runtime.realContext_t,
 ) void {
     var angle: runtime.real_t = undefined;
+    // Zero, not undefined: the reduction leaves all three alone for an angular
+    // mode it does not know, and the comparisons below still read them.
     var angle45: runtime.real_t = undefined;
     var angle90: runtime.real_t = undefined;
     var angle180: runtime.real_t = undefined;
+    runtime.realSetZero(&angle45);
+    runtime.realSetZero(&angle90);
+    runtime.realSetZero(&angle180);
     var sin_neg = false;
     var cos_neg = false;
     var swap = false;
