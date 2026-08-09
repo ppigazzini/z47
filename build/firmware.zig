@@ -178,27 +178,40 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     // array rather than a pointer. DMCP5 (NEW_HW) keeps the pointer layout.
     opts.old_hw = true;
     const pkg = dmcp_package orelse return opts;
-    opts.strip_16 = true; // SAVE_SPACE_DM42_16 (normal) set on every DM42 package
-    opts.strip_17 = true; // SAVE_SPACE_DM42_17 is set on every DM42 package
-    opts.strip_17b = (pkg == 2 or pkg == 4);
-    opts.strip_17c = (pkg == 2 or pkg == 3 or pkg == 4);
-    // SAVE_SPACE_DM42_15 (all distributions, drops the DISTR softmenu entry from
-    // menu_PROB) is defined only for package 4. Mirrors the upstream defines.h.
+    // Each strip_* below is the inverse of the matching upstream OPTION_*, which
+    // is an include flag: defined means the feature is compiled in, and its
+    // absence is what turns the bodies into empty stubs. The per-package values
+    // come from the DMCP_PACKAGE1..4 blocks of defines.h, which read:
+    //
+    //   pkg │ DIST │ X.FN       │ EIGEN │ ELEC │ IR
+    //   ────┼──────┼────────────┼───────┼──────┼────
+    //    1  │ all  │ no ellip   │  no   │ yes  │ no
+    //    2  │ limB │ full       │  no   │  no  │ yes
+    //    3  │ limA │ no ellip   │ yes   │ yes  │ no
+    //    4  │ none │ no e-B-O   │  no   │  no  │ yes
+    //
+    // DIST all keeps every distribution; limB keeps normal plus DIST_B; limA
+    // keeps normal alone; none keeps nothing.
+    opts.strip_16 = (pkg == 4); // !OPTION_DIST_NORMAL
+    opts.strip_17b = (pkg == 3 or pkg == 4); // !OPTION_DIST_B
+    opts.strip_17 = (pkg != 1); // !OPTION_DIST_C
+    opts.strip_17c = (pkg != 1); // !OPTION_DIST_D
+    // !OPTION_DISTRIBUTIONS drops the DISTR entry from menu_PROB.
     opts.strip_15 = (pkg == 4);
-    // SAVE_SPACE_DM42_21_HP35 (drops the SetHP35 dev-profile from menu_Dev) is
-    // defined only for package 1. Mirrors the upstream defines.h.
-    opts.strip_21_hp35 = (pkg == 1);
-    // SAVE_SPACE_DM42_12{ORTHO,BESSEL,ELLIP} (strike-out savedspace cases) are
-    // defined together for the NOBESSEL_NOORTHO packages 1, 3 and 4.
-    opts.strip_ortho_bessel_ellip = (pkg == 1 or pkg == 3 or pkg == 4);
-    // OPTION_ELEC is #undef'd for DMCP packages 1, 2 and 4; only package 3 keeps
-    // the ELEC functions (fnJM body). Mirrors the upstream defines.h package
-    // blocks.
-    opts.option_elec = (pkg == 3);
-    // IR_PRINTING is #undef'd for every DMCP TWO_FILE package (1, 2, 3, 4).
-    opts.ir_printing = false;
-    // OPTION_VECTOR is #undef'd for DMCP packages 1, 2 and 4; package 3 keeps it.
-    opts.option_vector = (pkg == 3);
+    // OPTION_HP35 stays defined for every TWO_FILE_PGM package, so menu_Dev keeps
+    // its SetHP35 entry throughout.
+    opts.strip_21_hp35 = false;
+    opts.strip_ortho = (pkg == 4); // !OPTION_ORTHO
+    opts.strip_bessel = (pkg == 4); // !OPTION_BESSEL
+    opts.strip_elliptic = (pkg == 1 or pkg == 3 or pkg == 4); // !OPTION_ELLIPTIC
+    opts.option_elec = (pkg == 1 or pkg == 3);
+    // Upstream also defines OPTION_IR_PRINTING for package 4, but that package's
+    // .bss already ends 4 bytes below the DMCP system data block at 0x10002000,
+    // and the IR buffers do not fit in what is left. Package 4 is the
+    // pipeline-compile package, so it carries the divergence until the DM42 RAM
+    // budget is reworked.
+    opts.ir_printing = (pkg == 2);
+    opts.option_vector = (pkg != 4);
     return opts;
 }
 

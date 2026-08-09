@@ -55,7 +55,9 @@ const strip_16: bool = frontier_build_options.strip_16;
 const strip_17: bool = frontier_build_options.strip_17;
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
-const strip_ortho_bessel_ellip: bool = frontier_build_options.strip_ortho_bessel_ellip;
+const strip_ortho: bool = frontier_build_options.strip_ortho;
+const strip_bessel: bool = frontier_build_options.strip_bessel;
+const strip_elliptic: bool = frontier_build_options.strip_elliptic;
 // OPTION_XFN_1000 / OPTION_TVM_AMORT are #undef'd for the flash-limited DMCP
 // TWO_FILE packages (dmcp_build and old_hw); host and DMCP5 keep them.
 const option_xfn_1000: bool = !(dmcp_build and old_hw);
@@ -2480,21 +2482,21 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
             else => {},
         }
     }
-    if (comptime strip_ortho_bessel_ellip) {
+    if (comptime strip_ortho) {
         switch (itemNr) {
             -1352, 1483, 1505, 1506, 1550, 1623, 1627, 1484 => return 1,
             else => {},
         }
     }
     // gate defined_SAVE_SPACE_DM42_20_TIMER_ never defined for any frontier build -> omitted
-    if (comptime strip_ortho_bessel_ellip) {
+    if (comptime strip_bessel) {
         switch (itemNr) {
             1492, 1665 => return 1,
             else => {},
         }
     }
     // gate defined_SAVE_SPACE_DM42_12PRIME_ never defined for any frontier build -> omitted
-    if (comptime strip_ortho_bessel_ellip) {
+    if (comptime strip_elliptic) {
         switch (itemNr) {
             -1397, 1682, 1683, 1684, 1726, 1727, 1728, 1584, 1763, 1764, 1765, 2104, 2105, 2599, 2598, 2395 => return 1,
             else => {},
