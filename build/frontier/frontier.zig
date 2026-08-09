@@ -147,7 +147,11 @@ fn addRuntimeObject(
     build_options.addOption(bool, "strip_ortho", options.strip_ortho);
     build_options.addOption(bool, "strip_bessel", options.strip_bessel);
     build_options.addOption(bool, "strip_elliptic", options.strip_elliptic);
-    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error);
+    // The testSuite build forces EXTRA_INFO_ON_CALC_ERROR to 0, as the firmware
+    // does. Leaving the hints in made the tested owners write the shared
+    // errorMessage buffer and print on paths the C oracle compiles out.
+    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
     build_options.addOption(bool, "dmcp_build", options.dmcp_build);
     build_options.addOption(bool, "old_hw", options.old_hw);
     build_options.addOption(bool, "option_elec", options.option_elec);

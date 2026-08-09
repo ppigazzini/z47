@@ -325,6 +325,8 @@ pub export fn freeListReduce(pcMemPtr: ?*anyopaque, oldSizeInBlocksArg: usize, n
         }
     }
 
+    checkFreeRegionOverlap("freeListReduce()");
+
     if (!done) {
         insertFreeBlock(c47RamPtr, @intCast(oldSizeInBlocks - newSizeInBlocks));
     }
@@ -390,8 +392,27 @@ pub export fn freeListFree(pcMemPtr: ?*anyopaque, sizeInBlocksArg: usize) callco
         }
     }
 
+    checkFreeRegionOverlap("freeListFree()");
+
     if (!done) {
         insertFreeBlock(c47RamPtr, @intCast(sizeInBlocks));
+    }
+}
+
+// Upstream's own double-free detector, host builds only: after a coalesce the
+// regions must stay disjoint and sorted, so a region that reaches into the next
+// one means the same block was released twice.
+fn checkFreeRegionOverlap(where: []const u8) void {
+    if (comptime dmcp_build) return;
+    const fr = freeRegions();
+    var i: i32 = 1;
+    while (i < numberOfFreeMemoryRegions) : (i += 1) {
+        const prev = fr[@as(usize, @intCast(i - 1))];
+        if (@as(u32, prev.blockAddress) + @as(u32, prev.sizeInBlocks) >= @as(u32, fr[@as(usize, @intCast(i))].blockAddress)) {
+            std.debug.print("\n*** Free memory regions overlap discovered in {s}!\n", .{where});
+            std.debug.print("*** This suggests there was double-free!\n", .{});
+            break;
+        }
     }
 }
 
