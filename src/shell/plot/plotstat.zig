@@ -1170,7 +1170,7 @@ pub export fn formatCore(value_in: f64, digits: c_int, handle_zero: bool_t, buf:
         var value34: real34_t = undefined;
         var valueR: real_t = undefined;
         var ok: bool_t = undefined;
-        var tmpBuf: [128]u8 = undefined;
+        var tmpBuf: [150]u8 = undefined;
         frontier_register_value_conversions.convertDoubleToReal(value, &valueR, &ctxtReal39);
         realToReal34(&valueR, &value34);
         _ = strcpy(buf, sign);

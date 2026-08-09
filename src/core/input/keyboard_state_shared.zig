@@ -489,7 +489,10 @@ pub fn implementation(comptime runtime: type) type {
 
         pub fn assignToMenu(data: [*c]u8) runtime.bool_t {
             // keyboard.c _assignToMenu (748-807). goto endReturnTrue -> labeled block.
-            const position: u16 = @intCast((@as(i32, data[0]) - '1') + (if (runtime.shiftG) @as(i32, 12) else if (runtime.shiftF) @as(i32, 6) else 0));
+            // The C computes this inside each menu case, so the arms that never use
+            // it never evaluate it. Truncating keeps a key byte below '1' -- which
+            // FN_cancel can leave behind -- a wrapped index rather than a trap.
+            const position: u16 = @truncate(@as(u32, @bitCast((@as(i32, data[0]) - '1') + (if (runtime.shiftG) @as(i32, 12) else if (runtime.shiftF) @as(i32, 6) else 0))));
             end_true: {
                 switch (-runtime.currentMenu()) {
                     runtime.MNU_MyMenu => {

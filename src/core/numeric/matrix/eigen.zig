@@ -1627,7 +1627,11 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
         runtime.linkToRealMatrixRegister(runtime.REGISTER_X, &x);
         if (x.header.matrixRows != x.header.matrixColumns) {
             runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError("In function fnEigenvalues:", "", null, null);
+            if (runtime.extra_info_on_calc_error) {
+                var buf: [80]u8 = undefined;
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                runtime.moreInfoOnError("In function fnEigenvalues:", m, null, null);
+            }
             return;
         }
         if (!runtime.saveLastX()) return;
@@ -1709,7 +1713,7 @@ pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.co
             runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
-                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
                 runtime.moreInfoOnError("In function fnEigenvalues:", m, null, null);
             }
             return;
@@ -2238,7 +2242,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
             runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
-                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
                 runtime.moreInfoOnError("In function fnEigenvectors:", m, null, null);
             }
             return;
@@ -2295,7 +2299,7 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
             runtime.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
             if (runtime.extra_info_on_calc_error) {
                 var buf: [80]u8 = undefined;
-                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\xc3\x97{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
+                const m = bufPrintZ(&buf, "rectangular or single-element matrix or ({d}\x80\xd7{d})", .{ x.header.matrixRows, x.header.matrixColumns }) catch "rectangular matrix";
                 runtime.moreInfoOnError("In function fnEigenvectors:", m, null, null);
             }
             return;

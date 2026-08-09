@@ -21,6 +21,8 @@ const realGetExponent = owner.realGetExponent;
 const mallocBigReal = owner.mallocBigReal;
 const freeBigReal = owner.freeBigReal;
 const runtime = @import("../command_wrappers/runtime.zig");
+// The abort below is !PC_BUILD only; the host runs the loop to completion.
+const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const formatEminusD = owner.formatEminusD;
 const stringToReal = owner.stringToReal;
 const uInt32ToReal = owner.uInt32ToReal;
@@ -180,10 +182,13 @@ fn doAtan(
             ss[40] = 0; // hard limit to what the screen shows
             _ = progressHalfSecUpdate_Integer(halfSec_timed, @ptrCast(&ss[0]), epsilonDigits, halfSec_clearZ, halfSec_clearT, halfSec_disp);
         }
-        if (exitKeyWaiting()) {
-            _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-            displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
-            break;
+        // Firmware only: the host build runs the Taylor loop to completion.
+        if (comptime is_dmcp_build) {
+            if (exitKeyWaiting()) {
+                _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", i, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+                break;
+            }
         }
 
         i += 1;
