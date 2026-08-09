@@ -580,7 +580,7 @@ pub fn implementation(comptime runtime: type) type {
 
             runtime.fnTimerExec(runtime.TO_FN_EXEC);
 
-            if ((key.primary != runtime.ITM_SHIFTf) and (key.primary != runtime.KEY_fg) and (!runtime.showMode() or !(key.primary == runtime.ITM_RCL or key.primary == runtime.ITM_RS or key.primary == runtime.ITM_UP1 or key.primary == runtime.ITM_DOWN1 or (runtime.allowShowDigits and key.primary >= ITM_0 and key.primary <= ITM_9)))) {
+            if ((key.primary != runtime.ITM_SHIFTf) and (key.primary != runtime.KEY_fg) and (!runtime.isShowMode() or !(key.primary == runtime.ITM_RCL or key.primary == runtime.ITM_RS or key.primary == runtime.ITM_UP1 or key.primary == runtime.ITM_DOWN1 or (runtime.allowShowDigits and key.primary >= ITM_0 and key.primary <= ITM_9)))) {
                 runtime.showRegis = 9999;
             }
 
@@ -593,7 +593,7 @@ pub fn implementation(comptime runtime: type) type {
             }
 
             // SHOWMODE f / fg: send EXIT over to the key release.
-            if (runtime.showMode() and (key.primary == runtime.KEY_fg or key.primary == runtime.ITM_SHIFTf)) {
+            if (runtime.isShowMode() and (key.primary == runtime.KEY_fg or key.primary == runtime.ITM_SHIFTf)) {
                 runtime.shiftF = true;
                 runtime.shiftG = false;
                 runtime.lastItem = key.primary;
@@ -711,7 +711,7 @@ pub fn implementation(comptime runtime: type) type {
                 }
             }
 
-            if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER or runtime.showMode()) {
+            if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER or runtime.isShowMode()) {
                 runtime.shiftKeyClearsError = true;
             }
             if (runtime.temporaryInformation == runtime.TI_VIEW_REGISTER) {
@@ -744,7 +744,7 @@ pub fn implementation(comptime runtime: type) type {
                 runtime.refreshScreen(1201);
             }
 
-            if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
+            if (runtime.isShowMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
                 runtime.closeShowMenu();
             }
 
@@ -1061,9 +1061,9 @@ pub fn implementation(comptime runtime: type) type {
                     runtime.temporaryInformation = runtime.TI_VIEW_REGISTER;
                 }
             } else if (runtime.temporaryInformation != runtime.TI_NO_INFO and item != runtime.ITM_UP1 and item != runtime.ITM_DOWN1 and item != runtime.ITM_EXIT1 and item != runtime.ITM_BACKSPACE and item != runtime.ITM_SNAP and
-                !(((item == runtime.ITM_RCL or item == runtime.ITM_RS or (item >= ITM_0 and item <= ITM_9 and runtime.allowShowDigits)) and runtime.showMode())))
+                !(((item == runtime.ITM_RCL or item == runtime.ITM_RS or (item >= ITM_0 and item <= ITM_9 and runtime.allowShowDigits)) and runtime.isShowMode())))
             {
-                if (runtime.showMode()) {
+                if (runtime.isShowMode()) {
                     runtime.closeShowMenu();
                 }
                 runtime.temporaryInformation = runtime.TI_NO_INFO;
@@ -1086,7 +1086,7 @@ pub fn implementation(comptime runtime: type) type {
                 item = runtime.ITM_CC;
             }
 
-            if (runtime.calcMode == runtime.CM_NORMAL and runtime.showMode() and runtime.currentMenu() != -runtime.MNU_EQN) {
+            if (runtime.calcMode == runtime.CM_NORMAL and runtime.isShowMode() and runtime.currentMenu() != -runtime.MNU_EQN) {
                 switch (item) {
                     runtime.ITM_UP1, runtime.ITM_DOWN1, runtime.ITM_RS => {
                         runtime.fnC47Show(@bitCast(item));
@@ -1160,7 +1160,7 @@ pub fn implementation(comptime runtime: type) type {
                     },
 
                     runtime.ITM_EXIT1 => {
-                        if (runtime.showMode() or runtime.calcMode == runtime.CM_LISTXY) {
+                        if (runtime.isShowMode() or runtime.calcMode == runtime.CM_LISTXY) {
                             keyExit(runtime.NOPARAM);
                             runtime.keyActionProcessed = true;
                         } else if (runtime.calcMode == runtime.CM_PEM) {
@@ -1363,7 +1363,7 @@ pub fn implementation(comptime runtime: type) type {
                         } else {
                             switch (runtime.calcMode) {
                                 runtime.CM_NORMAL => {
-                                    if (runtime.showMode()) {
+                                    if (runtime.isShowMode()) {
                                         if (item == runtime.ITM_RCL) {
                                             runtime.keyActionProcessed = true;
                                             runtime.fnRecall(runtime.showRegis);

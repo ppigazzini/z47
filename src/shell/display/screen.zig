@@ -1131,7 +1131,7 @@ inline fn calcModeAimGui() void {
         calcModeAimGuiExtern();
     }
 }
-const keypress_long_f: i16 = 0; // #define keypress_long_f false
+const keypress_long_f: bool = false; // #define keypress_long_f false
 extern fn fnDisplayStack(numberOfStackLines: u16) void;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
@@ -1144,7 +1144,7 @@ extern fn findNamedVariable(name: [*c]const u8) calcRegister_t;
 extern fn processKeyAction(item: i16) void;
 extern fn fnKeyBackspace(p: u16) void;
 extern fn fnInc(regist: calcRegister_t) void;
-extern fn openHOMEorMyM(keypress: i16) void;
+extern fn openHOMEorMyM(situation: bool) void;
 extern fn resetShiftState() void;
 extern fn showShiftState() void;
 extern fn nameFunction(keyOffset: i16, sf: bool_t, sg: bool_t) i16;

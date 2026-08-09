@@ -291,7 +291,7 @@ fn modShoI() callconv(.c) void {
     runtime.convertLongIntegerToShortIntegerRegister(&remainder[0], runtime.getRegisterTag(runtime.REGISTER_Y), runtime.REGISTER_X);
 }
 
-fn rmdShoI() callconv(.c) void {
+fn rmdLonI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
     var y: runtime.longInteger_t = undefined;
     var remainder: runtime.longInteger_t = undefined;
@@ -323,7 +323,7 @@ fn rmdShoI() callconv(.c) void {
     runtime.convertLongIntegerToLongIntegerRegister(&remainder[0], runtime.REGISTER_X);
 }
 
-fn rmdLonI() callconv(.c) void {
+fn rmdShoI() callconv(.c) void {
     var x: runtime.longInteger_t = undefined;
     var y: runtime.longInteger_t = undefined;
     var remainder: runtime.longInteger_t = undefined;
@@ -372,7 +372,7 @@ pub fn fnMod(unused_but_mandatory_parameter: u16) callconv(.c) void {
 
 pub fn fnRmd(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &rmdLonI, &rmdShoI);
+    runtime.processIntRealComplexDyadicFunction(&rmdReal, null, &rmdShoI, &rmdLonI);
 }
 
 pub fn fnNeighb(unused_but_mandatory_parameter: u16) callconv(.c) void {

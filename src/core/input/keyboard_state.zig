@@ -167,7 +167,7 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     // This press closes a SHOW or WHO screen, which clears temporaryInformation
     // before the release handles EXIT; the release needs to know it happened so
     // EXIT only dismisses the screen and leaves the menu underneath.
-    runtime.showScreenDismissed = runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW;
+    runtime.showScreenDismissed = runtime.isShowMode() or runtime.currentMenu() == -runtime.MNU_SHOW;
     if (runtime.showScreenDismissed) {
         runtime.closeShowMenu();
     }
@@ -320,7 +320,7 @@ fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
     }
 
     const dat: [*c]u8 = @ptrCast(data);
-    if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
+    if (runtime.isShowMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
         runtime.closeShowMenu();
         runtime.releaseOverride = true; // the key that dismissed the screen is swallowed: neither press nor release acts
         return;
@@ -494,21 +494,21 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
     const dat: [*c]u8 = @ptrCast(data);
     const keyCode: c_int = (@as(c_int, dat[0]) - '0') * 10 + @as(c_int, dat[1]) - '0';
 
-    if (runtime.showMode() and (runtime.lastItem == runtime.KEY_fg or runtime.lastItem == runtime.ITM_SHIFTf) and runtime.lastItem != runtime.SCREENDUMP) {
+    if (runtime.isShowMode() and (runtime.lastItem == runtime.KEY_fg or runtime.lastItem == runtime.ITM_SHIFTf) and runtime.lastItem != runtime.SCREENDUMP) {
         runtime.fg_processing_jm();
         runtime.shiftF = true;
         runtime.shiftG = false;
         runtime.lastshiftF = runtime.shiftF;
         runtime.lastshiftG = runtime.shiftG;
         runtime.lastItem = 0;
-        if (runtime.showMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
+        if (runtime.isShowMode() or runtime.currentMenu() == -runtime.MNU_SHOW) {
             runtime.closeShowMenu();
         }
         runtime.showShiftState();
         runtime.refreshModeGui();
         runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_SHIFT_STATUS;
     }
-    if (runtime.showMode()) {
+    if (runtime.isShowMode()) {
         runtime.lastItem = 0;
     }
     if (runtime.temporaryInformation == runtime.TI_SHOWNOTHING) {
@@ -538,7 +538,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
         runtime.screenUpdatingMode |= runtime.SCRUPD_MANUAL_MENU;
         runtime.screenUpdatingMode &= ~runtime.SCRUPD_SKIP_MENU_ONE_TIME;
 
-        if (runtime.calcMode == runtime.CM_NORMAL and runtime.showFunctionNameItem == 0 and runtime.lastKeyItemDetermined == runtime.ITM_RS and !runtime.showMode() and runtime.calcMode != runtime.CM_REGISTER_BROWSER) {
+        if (runtime.calcMode == runtime.CM_NORMAL and runtime.showFunctionNameItem == 0 and runtime.lastKeyItemDetermined == runtime.ITM_RS and !runtime.isShowMode() and runtime.calcMode != runtime.CM_REGISTER_BROWSER) {
             runtime.showFunctionNameItem = runtime.ITM_RS;
             runtime.temporaryInformation = runtime.TI_NO_INFO;
             runtime.refreshRegisterLine(runtime.REGISTER_T);
