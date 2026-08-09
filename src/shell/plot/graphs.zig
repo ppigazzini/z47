@@ -328,7 +328,7 @@ inline fn lcd_fill_rect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
         c_lcd_fill_rect(x, y, dx, dy, val);
     }
 }
-inline fn lcd_refresh() void {
+pub inline fn lcd_refresh() void {
     if (comptime dmcp_build) {
         const f: *const fn () callconv(.c) void = @ptrFromInt(LIBRARY_FN_BASE + 48);
         f();
@@ -826,11 +826,18 @@ const tabDelta linksection(code_section) = [_]plotdeltas{
     .{ .valid = 1, .xd1 = 1, .yd1 = 2, .xd2 = 0, .yd2 = 0 },
     .{ .valid = 0, .xd1 = 0, .yd1 = 0, .xd2 = 0, .yd2 = 0 },
 };
+/// A pixel offset as placePixel receives it. The C adds in `int` and converts to
+/// the uint32_t parameter, so an off-screen negative arrives as a large value
+/// that placePixel's range test rejects; that conversion is the bounds check.
+inline fn pixelCoord(base: i16, delta: i8) u32 {
+    return @bitCast(@as(i32, base) + @as(i32, delta));
+}
+
 fn plotdelta(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDelta[@intCast(ii)].valid == 1) {
         const e = tabDelta[@intCast(ii)];
-        frontier_plotstat.placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
+        frontier_plotstat.placePixel(pixelCoord(xn, e.xd1), pixelCoord(yn, e.yd1));
         ii += 1;
     }
 }
@@ -867,7 +874,7 @@ fn plotint(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDeltaInt[@intCast(ii)].valid == 1) {
         const e = tabDeltaInt[@intCast(ii)];
-        frontier_plotstat.placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
+        frontier_plotstat.placePixel(pixelCoord(xn, e.xd1), pixelCoord(yn, e.yd1));
         ii += 1;
     }
 }
@@ -888,7 +895,7 @@ fn plotrms(xn: i16, yn: i16) void {
     var ii: i8 = 0;
     while (tabDeltaRms[@intCast(ii)].valid == 1) {
         const e = tabDeltaRms[@intCast(ii)];
-        frontier_plotstat.placePixel(@intCast(xn + @as(i16, e.xd1)), @intCast(yn + @as(i16, e.yd1)));
+        frontier_plotstat.placePixel(pixelCoord(xn, e.xd1), pixelCoord(yn, e.yd1));
         ii += 1;
     }
 }
@@ -900,13 +907,19 @@ fn showGraphTickText1(tick_int_x_: f64, tick_int_y_: f64, xoff: i32, yoff1: i32,
     var buff: [32]u8 = undefined;
     var outstr: [bufLen]u8 = undefined;
     var tmpBuf: [100]u8 = undefined;
-    abi.fmtBufZ(tmpString[0..2560], "  y {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
-    frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
-    _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, 1, 1);
+    // A tick interval of 0 means it underflowed double beyond 1e+-308, so no
+    // ticks are drawn and there is nothing to label.
+    if (tick_int_y_ > 0) {
+        abi.fmtBufZ(tmpString[0..2560], "  y {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
+        frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
+        _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, 1, 1);
+    }
 
-    abi.fmtBufZ(tmpString[0..2560], "  x {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
-    frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
-    _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, 1, 1);
+    if (tick_int_x_ > 0) {
+        abi.fmtBufZ(tmpString[0..2560], "  x {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
+        frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
+        _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, 1, 1);
+    }
 }
 
 // ===========================================================================
@@ -1741,9 +1754,18 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
 // ===========================================================================
 // fnStatList
 // ===========================================================================
+/// "NaN", "+Inf" or "-Inf" for a special value, otherwise the ordinary rendering.
+fn formatStatValue(value: f64, buf: []u8) [*:0]const u8 {
+    if (abi.sci_format.doubleSpecialLabel(value)) |special| {
+        abi.fmtBufZ(buf, "{s}", .{special});
+        return @ptrCast(buf.ptr);
+    }
+    return frontier_plotstat.formatCore(value, 10, false, @ptrCast(buf.ptr), @intCast(buf.len));
+}
+
 pub export fn fnStatList() callconv(.c) void {
-    var tmpstr1: [100]u8 = undefined;
-    var tmpstr2: [100]u8 = undefined;
+    var tmpstr1: [150]u8 = undefined;
+    var tmpstr2: [150]u8 = undefined;
     var ix: i16 = undefined;
     var ixx: i16 = undefined;
     var statnum: i16 = undefined;
@@ -1766,10 +1788,10 @@ pub export fn fnStatList() callconv(.c) void {
         ix = 0;
         while (ix < minI(10, statnum)) : (ix += 1) {
             ixx = statnum - ix - 1 + ListXYposition;
-            var tmpBuf: [100]u8 = undefined;
+            var tmpBuf: [150]u8 = undefined;
 
-            abi.fmtBufZ(&tmpstr1, "[{d}] x{s}{s}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, frontier_plotstat.formatCore(@as(f64, frontier_plotstat.grf_x(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
-            abi.fmtBufZ(&tmpstr2, "y{s}{s}, ", .{ @as([*:0]const u8, @as([*:0]const u8, "")), @as([*:0]const u8, frontier_plotstat.formatCore(@as(f64, frontier_plotstat.grf_y(@intCast(ixx))), 10, false, &tmpBuf, 150)) });
+            abi.fmtBufZ(&tmpstr1, "[{d:>3}] x{s:>4}{s:>14}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, ""), @as([*:0]const u8, formatStatValue(@as(f64, frontier_plotstat.grf_x(@intCast(ixx))), &tmpBuf)) });
+            abi.fmtBufZ(&tmpstr2, "y{s:>4}{s:>14}, ", .{ @as([*:0]const u8, ""), @as([*:0]const u8, formatStatValue(@as(f64, frontier_plotstat.grf_y(@intCast(ixx))), &tmpBuf)) });
             _ = strcat(&tmpstr1, &tmpstr2);
 
             frontier_graph_text.print_numberstr(&tmpstr1, false);
