@@ -198,6 +198,7 @@ const ITM_REG_Z = 529;
 const ITM_RNORM = 1574;
 const ITM_SKIP = 1603;
 const ITM_SOLVE = 1608;
+const ITM_PLTf = 2734;
 const ITM_STO = 44;
 const ITM_STOADD = 45;
 const ITM_STOCFG = 1611;
@@ -858,7 +859,7 @@ fn _tamProcessInput(item: u16) void {
             } else if (tam.mode == TM_LBLONLY) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);
             } else if (tam.mode == TM_SOLVE) {
-                if (tam.function == ITM_SOLVE and calcMode == CM_PEM) {
+                if ((tam.function == ITM_SOLVE or tam.function == ITM_PLTf) and calcMode == CM_PEM) {
                     frontier_softmenus.showSoftmenu(-MNU_TAMVARONLY);
                 } else {
                     frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);
@@ -1580,7 +1581,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
             frontier_softmenus.showSoftmenu(-MNU_TAMMENU);
         },
         TM_SOLVE => {
-            if (func == ITM_SOLVE and calcMode == CM_PEM) {
+            if ((func == ITM_SOLVE or func == ITM_PLTf) and calcMode == CM_PEM) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMVARONLY);
             } else {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);

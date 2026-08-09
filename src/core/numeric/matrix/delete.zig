@@ -34,8 +34,8 @@ fn reportRamFull(comptime function_name: [*:0]const u8) void {
 }
 
 pub export fn delRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
 
     var new_mat: real34Matrix_t = undefined;
     if (math_matrix_lifecycle.realMatrixInit(&new_mat, rows - 1, cols)) {
@@ -59,8 +59,8 @@ pub export fn delRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16) call
 }
 
 pub export fn delColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
 
     var new_mat: real34Matrix_t = undefined;
     if (math_matrix_lifecycle.realMatrixInit(&new_mat, rows, cols - 1)) {
@@ -90,8 +90,8 @@ pub export fn delColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16) call
 }
 
 pub export fn delRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
 
     var new_mat: complex34Matrix_t = undefined;
     if (math_matrix_lifecycle.complexMatrixInit(&new_mat, rows - 1, cols)) {
@@ -115,8 +115,8 @@ pub export fn delRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16
 }
 
 pub export fn delColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
 
     var new_mat: complex34Matrix_t = undefined;
     if (math_matrix_lifecycle.complexMatrixInit(&new_mat, rows, cols - 1)) {

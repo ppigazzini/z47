@@ -41,8 +41,8 @@ fn reportRamFull(comptime function_name: [*:0]const u8) void {
 }
 
 pub export fn insRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16, add: bool) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
     const before: usize = if (add) rows else before_row_no;
 
     var new_mat: real34Matrix_t = undefined;
@@ -71,8 +71,8 @@ pub export fn insRowRealMatrix(matrix: *real34Matrix_t, before_row_no: u16, add:
 }
 
 pub export fn insColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16, add: bool) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
     const before: usize = if (add) cols else before_col_no;
 
     var new_mat: real34Matrix_t = undefined;
@@ -110,8 +110,8 @@ pub export fn insColRealMatrix(matrix: *real34Matrix_t, before_col_no: u16, add:
 }
 
 pub export fn insRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16, add: bool) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
     const before: usize = if (add) rows else before_row_no;
 
     var new_mat: complex34Matrix_t = undefined;
@@ -141,8 +141,8 @@ pub export fn insRowComplexMatrix(matrix: *complex34Matrix_t, before_row_no: u16
 }
 
 pub export fn insColComplexMatrix(matrix: *complex34Matrix_t, before_col_no: u16, add: bool) callconv(.c) void {
-    const rows = matrix.header.matrixRows;
-    const cols = matrix.header.matrixColumns;
+    const rows: u16 = matrix.header.matrixRows;
+    const cols: u16 = matrix.header.matrixColumns;
     const before: usize = if (add) cols else before_col_no;
 
     var new_mat: complex34Matrix_t = undefined;

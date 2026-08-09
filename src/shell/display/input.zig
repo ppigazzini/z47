@@ -26,6 +26,8 @@ const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+// CALCMODEL == USER_R47 (66); the C47 family is 46.
+const is_r47: bool = frontier_build_options.calcmodel == 66;
 
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 const SDB_BASE: usize = if (old_hw) 0x10002000 else 0x20000000;
@@ -585,9 +587,10 @@ pub export fn fnKeyType(regist: u16) callconv(.c) void {
         53 => __gmpz_set_ui(&kt[0], 8),
         54 => __gmpz_set_ui(&kt[0], 9),
         43, 44, 83 => __gmpz_set_ui(&kt[0], 10),
-        // CALCMODEL != USER_R47 (CALCMODEL == USER_C47), so 35/36 -> 12, 71 -> 11.
-        35, 36 => __gmpz_set_ui(&kt[0], 12),
-        71 => __gmpz_set_ui(&kt[0], 11),
+        // The two models disagree about these three keys: R47 reads 35/36 as 11
+        // and 71 as 12, C47 the other way round.
+        35, 36 => __gmpz_set_ui(&kt[0], if (comptime is_r47) 11 else 12),
+        71 => __gmpz_set_ui(&kt[0], if (comptime is_r47) 12 else 11),
         11, 12, 13, 14, 15, 16 => __gmpz_set_ui(&kt[0], 13),
         21, 22, 23, 24, 25, 26, 31, 32, 33, 34, 41, 42, 45, 51, 55, 61, 65, 75, 81, 84, 85 => __gmpz_set_ui(&kt[0], 12),
         else => {

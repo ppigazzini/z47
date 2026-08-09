@@ -1375,9 +1375,9 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
             tmpString[1] = STRING_LABEL_VARIABLE;
             tmpString[2] = 0;
             _insertInProgram(tmpString, 3);
-        } else { // rem
+        } else { // rem or 42str
             tmpString[0] = @intCast((@as(u16, @bitCast(tam.function)) >> 8) | 0x80);
-            tmpString[1] = @intCast(@as(u16, @bitCast(tam.function)) & 0x7f);
+            tmpString[1] = @intCast(@as(u16, @bitCast(tam.function)) & 0xff);
             tmpString[2] = STRING_LABEL_VARIABLE;
             tmpString[3] = 0;
             _insertInProgram(tmpString, 4);
@@ -1479,9 +1479,9 @@ pub export fn pemAlpha(item_in: i16) callconv(.c) void {
         tmpString[2] = @intCast(stringByteLength(aimBuffer));
         _ = frontier_char_string.xcopy(tmpString + 3, aimBuffer, @intCast(stringByteLength(aimBuffer)));
         _insertInProgram(tmpString, @intCast(stringByteLength(aimBuffer) + 3));
-    } else { // rem
+    } else { // rem or 42str
         tmpString[0] = @intCast((@as(u16, @bitCast(aimFunc2)) >> 8) | 0x80);
-        tmpString[1] = @intCast(@as(u16, @bitCast(aimFunc2)) & 0x7f);
+        tmpString[1] = @intCast(@as(u16, @bitCast(aimFunc2)) & 0xff);
         tmpString[2] = STRING_LABEL_VARIABLE;
         tmpString[3] = @intCast(stringByteLength(aimBuffer));
         _ = frontier_char_string.xcopy(tmpString + 4, aimBuffer, @intCast(stringByteLength(aimBuffer)));

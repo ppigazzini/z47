@@ -23,14 +23,18 @@ pub export fn allocateNamedMatrix(name: [*:0]const u8, rows: u16, cols: u16) cal
 }
 
 pub export fn appendRowAtMatrixRegister(regist: calcRegister_t) callconv(.c) bool {
-    const header = runtime.registerMatrixHeader(regist);
-    const rows = header.matrixRows;
-    const cols = header.matrixColumns;
     if (regist == runtime.INVALID_VARIABLE) {
         return false;
     } else if (runtime.getRegisterDataType(regist) == runtime.dtReal34Matrix or
         runtime.getRegisterDataType(regist) == runtime.dtComplex34Matrix)
     {
+        // The header is read only once the register is known to hold a matrix.
+        // Widening the 12-bit fields to u16 first is what lets a 4096th row reach
+        // redimMatrixRegister as 4096 and truncate back to 0 there, which is the
+        // wrap the callers test for.
+        const header = runtime.registerMatrixHeader(regist);
+        const rows: u16 = header.matrixRows;
+        const cols: u16 = header.matrixColumns;
         return runtime.redimMatrixRegister(regist, rows + 1, cols, ITM_M_DIM);
     } else {
         return false;
