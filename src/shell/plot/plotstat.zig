@@ -295,6 +295,7 @@ extern fn realLog10(x: *align(1) const real_t, res: *real_t, realContext: *realC
 extern fn realCompareAbsGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
 extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
 extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
+extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool_t;
 
 // decNumber/decQuad behind the real*/real34* macros.
 // decQuadToNumber/decQuadFromNumber are `#define`s over the linkable decimal128
@@ -307,6 +308,8 @@ extern fn decNumberMultiply(r: *real_t, a: *align(1) const real_t, b: *align(1) 
 
 // DECNAN | DECSNAN (decNumber.h).
 const DEC_NAN_BITS: u8 = 0x20 | 0x10;
+const DEC_INF_BIT: u8 = 0x40;
+const DEC_SPECIAL_BITS: u8 = DEC_INF_BIT | DEC_NAN_BITS;
 
 inline fn real34ToReal(src: *align(1) const real34_t, dst: *real_t) void {
     _ = decimal128ToNumber(src, dst);
@@ -328,6 +331,14 @@ inline fn realIsNaN(src: *align(1) const real_t) bool_t {
 }
 inline fn realIsNegative(src: *align(1) const real_t) bool_t {
     return (src.bits & 0x80) == 0x80;
+}
+inline fn realIsInfinite(src: *align(1) const real_t) bool_t {
+    // decNumberIsInfinite is a macro: ((dn->bits & DECINF) != 0).
+    return (src.bits & DEC_INF_BIT) != 0;
+}
+inline fn realIsSpecial(src: *align(1) const real_t) bool_t {
+    // decNumberIsSpecial is a macro: ((dn->bits & DECSPECIAL) != 0).
+    return (src.bits & DEC_SPECIAL_BITS) != 0;
 }
 inline fn realMultiply(op1: *align(1) const real_t, op2: *align(1) const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberMultiply(res, op1, op2, ctxt);
@@ -366,11 +377,6 @@ inline fn realDivide(a: *align(1) const real_t, b: *align(1) const real_t, res: 
 }
 inline fn int32ToReal(source: i32, dst: *real_t) void {
     _ = decNumberFromInt32(dst, source);
-}
-inline fn realToFloatL(v: *const real_t) f32 {
-    var f: f32 = 0;
-    frontier_register_value_conversions.realToFloat(v, &f);
-    return f;
 }
 extern fn realToDouble(vv: *const real_t, v: *f64) void;
 inline fn realToDoubleVal(v: *const real_t) f64 {
@@ -785,13 +791,17 @@ pub export fn pixelline(xo_in: i16, yo_in: i16, xn: i16, yn: i16, vmNormalArg: b
 // graphAxisDraw
 // ===========================================================================
 pub export fn graphAxisDraw() callconv(.c) void {
+    // Rejects NaN, infinite, reversed, empty and never-autoscaled ranges (the
+    // +-1E38 seeds); any magnitude is drawable.
+    if (realIsSpecial(x_min) or realIsSpecial(x_max) or realIsSpecial(y_min) or realIsSpecial(y_max) or
+        realCompareGreaterEqual(x_min, x_max) or realCompareGreaterEqual(y_min, y_max))
+    {
+        return;
+    }
     const fx_min = realToDoubleVal(x_min);
     const fx_max = realToDoubleVal(x_max);
     const fy_min = realToDoubleVal(y_min);
     const fy_max = realToDoubleVal(y_max);
-    if (fx_min <= FLoatingMin or fx_min >= FLoatingMax or fx_max <= FLoatingMin or fx_max >= FLoatingMax or fy_min <= FLoatingMin or fy_min >= FLoatingMax or fy_max <= FLoatingMin or fy_max >= FLoatingMax) {
-        return;
-    }
     var cnt: u32 = undefined;
 
     clearScreenPixels();
@@ -1288,10 +1298,16 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                 }
             }
 
-            if (realToFloatL(x_min) <= FLoatingMin or realToFloatL(x_max) <= FLoatingMin or realToFloatL(y_min) <= FLoatingMin or realToFloatL(y_max) <= FLoatingMin) {
+            if ((realIsInfinite(x_min) and realIsNegative(x_min)) or (realIsInfinite(x_max) and realIsNegative(x_max)) or
+                (realIsInfinite(y_min) and realIsNegative(y_min)) or (realIsInfinite(y_max) and realIsNegative(y_max)))
+            {
                 return scaleMinusInfinity();
             }
-            if (realToFloatL(x_min) >= FLoatingMax or realToFloatL(x_max) >= FLoatingMax or realToFloatL(y_min) >= FLoatingMax or realToFloatL(y_max) >= FLoatingMax) {
+            // +infinite or NaN data, or the +-1E38 seeds untouched (no plottable
+            // point); any finite magnitude passes.
+            if (realIsSpecial(x_min) or realIsSpecial(x_max) or realIsSpecial(y_min) or realIsSpecial(y_max) or
+                realCompareGreaterThan(x_min, x_max) or realCompareGreaterThan(y_min, y_max))
+            {
                 return scalePlusInfinity();
             }
 
@@ -1326,10 +1342,16 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
 
             roundedTicks = false;
 
-            if (realToFloatL(x_min) <= FLoatingMin or realToFloatL(x_max) <= FLoatingMin or realToFloatL(y_min) <= FLoatingMin or realToFloatL(y_max) <= FLoatingMin) {
+            if ((realIsInfinite(x_min) and realIsNegative(x_min)) or (realIsInfinite(x_max) and realIsNegative(x_max)) or
+                (realIsInfinite(y_min) and realIsNegative(y_min)) or (realIsInfinite(y_max) and realIsNegative(y_max)))
+            {
                 return scaleMinusInfinity();
             }
-            if (realToFloatL(x_min) >= FLoatingMax or realToFloatL(x_max) >= FLoatingMax or realToFloatL(y_min) >= FLoatingMax or realToFloatL(y_max) >= FLoatingMax) {
+            // +infinite or NaN data, or the +-1E38 seeds untouched (no plottable
+            // point); any finite magnitude passes.
+            if (realIsSpecial(x_min) or realIsSpecial(x_max) or realIsSpecial(y_min) or realIsSpecial(y_max) or
+                realCompareGreaterThan(x_min, x_max) or realCompareGreaterThan(y_min, y_max))
+            {
                 return scalePlusInfinity();
             }
 
