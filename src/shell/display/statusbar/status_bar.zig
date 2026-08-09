@@ -553,7 +553,9 @@ pub export fn showDateTime() callconv(.c) bool_t {
         }
     }
 
-    lcd_fill_rect(x, 0, @intCast(X_REAL_COMPLEX - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
+    // The C computes this width in uint32_t, so an x past the field wraps to a
+    // large value that lcd_fill_rect clamps, rather than trapping here.
+    lcd_fill_rect(x, 0, @bitCast(X_REAL_COMPLEX - @as(i32, @intCast(x))), 20, LCD_SET_VALUE);
 
     if (yShift() == 0 and xShift() < 200) {
         showShiftState();
@@ -1484,9 +1486,11 @@ fn mockupSBImpl() callconv(.c) void {
     frontier_date_time.getWeekOfYearString(&dateTimeString);
     x = showStringY(&dateTimeString, &standardFont, x, L3, vmNormal, true, false);
 
-    _ = showGlyphY(STD_MODE_F, &standardFont, @intCast(xShift()), L0, vmNormal, true, true, false);
-    _ = showGlyphY(STD_MODE_F, &standardFont, @intCast(xShift()), L2, vmNormal, true, true, false);
-    _ = showGlyphY(STD_MODE_G, &standardFont, @intCast(xShift()), L0, vmNormal, true, true, false);
+    // The mockup draws both shift positions, so these are fixed rather than the
+    // runtime side the FLAG_SBshfR setting selects.
+    _ = showGlyphY(STD_MODE_F, &standardFont, @intCast(X_SHIFT_L), L0, vmNormal, true, true, false);
+    _ = showGlyphY(STD_MODE_F, &standardFont, @intCast(X_SHIFT_L), L2, vmNormal, true, true, false);
+    _ = showGlyphY(STD_MODE_G, &standardFont, @intCast(X_SHIFT_R), L0, vmNormal, true, true, false);
 
     x = @intCast(X_REAL_COMPLEX);
     x = showGlyphY(STD_COMPLEX_C, &standardFont, x, 0, vmNormal, true, false, false);

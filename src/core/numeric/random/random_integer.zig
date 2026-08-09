@@ -12,12 +12,20 @@ fn loadIntegerRangeBounds(
     var frac_x = false;
     var frac_y = false;
 
+    // The caller clears both values on every exit, and the reader below is what
+    // initialises them -- so the two paths that leave before Y is ever read have
+    // to leave it in a state that can be cleared.
+    runtime.__gmpz_init(&y[0]);
+
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &x[0], &frac_x)) {
         return false;
     }
     if (frac_x) {
         return false;
     }
+
+    // The reader initialises Y itself, so release the placeholder first.
+    runtime.__gmpz_clear(&y[0]);
 
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_Y, &y[0], &frac_y)) {
         return false;

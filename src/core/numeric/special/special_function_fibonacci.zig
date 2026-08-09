@@ -71,10 +71,13 @@ fn fibLonI() callconv(.c) void {
     var value: runtime.longInteger_t = undefined;
     var result: runtime.longInteger_t = undefined;
 
+    // The reader initialises its value on every path, refusals included, so the
+    // clear has to cover the failure branch too.
+    defer runtime.__gmpz_clear(&value[0]);
+
     if (!runtime.getRegisterAsLongInt(runtime.REGISTER_X, &value[0], null)) {
         return;
     }
-    defer runtime.__gmpz_clear(&value[0]);
 
     const neg = value[0]._mp_size < 0;
     if (neg) {

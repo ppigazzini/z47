@@ -191,7 +191,9 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
             }
 
             finished = @truncate(longIntegerCompare(&iCounter[0], &loopTo[0])); // 0 mean equal
-            finished = finished * @as(i16, @truncate(longIntegerCompareUInt(&loopStep[0], 0)));
+            // The C multiplies in int and truncates the product, so an i16 overflow
+            // here has to wrap rather than trap.
+            finished = @truncate(@as(i32, finished) * longIntegerCompareUInt(&loopStep[0], 0));
             if (finished > 0) {
                 break;
             }
