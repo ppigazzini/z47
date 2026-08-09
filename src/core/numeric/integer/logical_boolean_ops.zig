@@ -1,11 +1,15 @@
 const runtime = @import("shortint_runtime.zig");
 
-const long_integer_result_base: u32 = 10;
-
 fn logicalOpResult(res: bool, xtype: u32, ytype: u32) void {
     if (xtype == runtime.dtLongInteger and ytype == runtime.dtLongInteger) {
-        runtime.setRawShortIntegerRegister(runtime.REGISTER_X, long_integer_result_base, @as(u64, @intFromBool(res)));
-        runtime.convertShortIntegerRegisterToLongIntegerRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+        // Straight to a long integer: routing the 0/1 through a short-integer
+        // register would pick up the word size and sign mode, and at WSIZE 1 a
+        // stored 1 reads back as -1.
+        var ires: runtime.longInteger_t = undefined;
+        runtime.longIntegerInit(&ires[0]);
+        runtime.uInt32ToLongInteger(@intFromBool(res), &ires[0]);
+        runtime.convertLongIntegerToLongIntegerRegister(&ires[0], runtime.REGISTER_X);
+        runtime.longIntegerFree(&ires[0]);
         return;
     }
 

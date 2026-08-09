@@ -83,6 +83,26 @@ pub extern fn convertComplexToResultRegister(real: *const real_t, imag: *const r
 pub extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: calcRegister_t) void;
 pub extern fn convertShortIntegerRegisterToLongIntegerRegister(source: calcRegister_t, destination: calcRegister_t) void;
 
+/// longInteger_t is `mpz_t`, a one-element array, so it decays to a pointer at
+/// every call site.
+pub const longInteger_t = [1]abi.Mpz;
+// longIntegerInit / longIntegerFree / uInt32ToLongInteger are static inline
+// wrappers over GMP in longIntegerType.h, so the link names are GMP's own.
+extern fn __gmpz_init(op: *abi.Mpz) void;
+extern fn __gmpz_clear(op: *abi.Mpz) void;
+extern fn __gmpz_set_ui(op: *abi.Mpz, value: c_ulong) void;
+pub extern fn convertLongIntegerToLongIntegerRegister(op: *const abi.Mpz, destination: calcRegister_t) void;
+
+pub inline fn longIntegerInit(op: *abi.Mpz) void {
+    __gmpz_init(op);
+}
+pub inline fn longIntegerFree(op: *abi.Mpz) void {
+    __gmpz_clear(op);
+}
+pub inline fn uInt32ToLongInteger(value: u32, op: *abi.Mpz) void {
+    __gmpz_set_ui(op, value);
+}
+
 pub fn registerShortIntegerPtr(regist: calcRegister_t) *align(1) u64 {
     return register_storage_owned.registerShortIntegerPtr(getRegisterDataPointer, regist);
 }

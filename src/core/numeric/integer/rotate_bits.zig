@@ -24,8 +24,14 @@ fn justifyResultToRegisters(count: u32, base: u32, value: u64) void {
     setShiftResult(value, base);
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     runtime.liftStack();
-    runtime.setRawShortIntegerRegister(runtime.REGISTER_X, 10, count);
-    runtime.convertShortIntegerRegisterToLongIntegerRegister(runtime.REGISTER_X, runtime.REGISTER_X);
+    // The shift count is a plain long integer. Staging it in a short-integer
+    // register would apply the word size and sign mode to it, so at WSIZE 2 a
+    // count of 2 would read back as -2.
+    var ireg: runtime.longInteger_t = undefined;
+    runtime.longIntegerInit(&ireg[0]);
+    runtime.uInt32ToLongInteger(count, &ireg[0]);
+    runtime.convertLongIntegerToLongIntegerRegister(&ireg[0], runtime.REGISTER_X);
+    runtime.longIntegerFree(&ireg[0]);
 }
 
 fn topShift() u6 {
