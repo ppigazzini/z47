@@ -212,23 +212,27 @@ fn _ellipseE() linksection(runtime.code_section) callconv(.c) void {
 }
 
 pub export fn fnEllipse(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     processIntRealComplexDyadicFunction(&_ellipseE, null, &_ellipseE, &_ellipseE);
 }
 
 pub export fn fnKtoM(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     math_command_wrappers.fnSquare(NOPARAM);
     temporaryInformation = TI_ELLIPSE_M;
 }
 
 pub export fn fnMtoK(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     math_command_wrappers.fnSquareRoot(NOPARAM);
     temporaryInformation = TI_ELLIPSE_K;
 }
 
 pub export fn fnMtoTheta(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     math_command_wrappers.fnSquareRoot(NOPARAM);
     math_inverse_trig_command.fnArcsin(NOPARAM);
@@ -236,6 +240,7 @@ pub export fn fnMtoTheta(unusedButMandatoryParameter: u16) linksection(runtime.c
 }
 
 pub export fn fnThetatoM(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     math_circular_trig_command.fnSin(NOPARAM);
     math_command_wrappers.fnSquare(NOPARAM);
@@ -466,6 +471,7 @@ fn jacobi_check_inputs_phi(m: *real_t, phiReal: *real_t, phiImag: *real_t, realI
 }
 
 pub export fn jacobiElliptic(u: *const real_t, m: *const real_t, am: ?*real_t, sn: ?*real_t, cn: ?*real_t, dn: ?*real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var _sn: real_t = undefined;
     calc_real_elliptic(if (sn) |s| s else &_sn, cn, dn, u, m, realContext);
     if (am) |amp| {
@@ -474,11 +480,13 @@ pub export fn jacobiElliptic(u: *const real_t, m: *const real_t, am: ?*real_t, s
 }
 
 pub export fn jacobiComplexAm(ur: *const real_t, ui: *const real_t, m: *const real_t, rr: *real_t, ri: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     jacobiComplexSn(ur, ui, m, rr, ri, realContext);
     _ = math_inverse_trig_command.ArcsinComplex(rr, ri, rr, ri, realContext);
 }
 
 pub export fn jacobiComplexSn(ur: *const real_t, ui: *const real_t, m: *const real_t, rr: *real_t, ri: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var a: real_t = undefined;
     var b: real_t = undefined;
     var denom: real_t = undefined;
@@ -500,6 +508,7 @@ pub export fn jacobiComplexSn(ur: *const real_t, ui: *const real_t, m: *const re
 }
 
 pub export fn jacobiComplexCn(ur: *const real_t, ui: *const real_t, m: *const real_t, rr: *real_t, ri: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var a: real_t = undefined;
     var b: real_t = undefined;
     var denom: real_t = undefined;
@@ -522,6 +531,7 @@ pub export fn jacobiComplexCn(ur: *const real_t, ui: *const real_t, m: *const re
 }
 
 pub export fn jacobiComplexDn(ur: *const real_t, ui: *const real_t, m: *const real_t, rr: *real_t, ri: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var a: real_t = undefined;
     var b: real_t = undefined;
     var denom: real_t = undefined;
@@ -545,6 +555,7 @@ pub export fn jacobiComplexDn(ur: *const real_t, ui: *const real_t, m: *const re
 }
 
 pub export fn ellipticKE(m: *const real_t, k: ?*real_t, ki: ?*real_t, e: ?*real_t, ei: ?*real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var a: real_t = undefined;
     var b: real_t = undefined;
     var cr: real_t = undefined;
@@ -971,6 +982,7 @@ fn _ellipticF_5(phi: *const real_t, psi: *const real_t, m: *const real_t, res: *
 }
 
 pub export fn ellipticF(phi: *const real_t, psi: *const real_t, m: *const real_t, res: *real_t, resi: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var phi1: real_t = undefined;
     var phiQuotient: real_t = undefined;
     var phiRemainder: real_t = undefined;
@@ -1082,6 +1094,7 @@ fn _ellipticE_fromZeta(phi: *const real_t, psi: *const real_t, m: *const real_t,
 }
 
 pub export fn ellipticE(phi: *const real_t, psi: *const real_t, m: *const real_t, res: *real_t, resi: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var phi1: real_t = undefined;
     var phiQuotient: real_t = undefined;
     var phiRemainder: real_t = undefined;
@@ -1494,6 +1507,7 @@ fn _jacobiZeta(phi: *const real_t, psi: *const real_t, m: *const real_t, res: *r
 }
 
 pub export fn jacobiZeta(phi: *const real_t, psi: *const real_t, m: *const real_t, res: *real_t, resi: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     var v: real_t = undefined;
     var vi: real_t = undefined;
     var negative: bool = realIsNegative(phi);
@@ -1668,6 +1682,7 @@ fn _ellipticPi_4(n: *const real_t, m: *const real_t, res: *real_t, resi: *real_t
 }
 
 pub export fn ellipticPi(n: *const real_t, m: *const real_t, res: *real_t, resi: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     if (realIsZero(n)) {
         ellipticKE(m, res, resi, null, null, realContext);
     } else if (realIsZero(m)) {
@@ -1724,6 +1739,7 @@ pub export fn ellipticPi(n: *const real_t, m: *const real_t, res: *real_t, resi:
 // fnJacobiSn / Cn / Dn / Amplitude
 // ===========================================================================
 pub export fn fnJacobiSn(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     var realInput: bool = undefined;
     var m: real_t = undefined;
@@ -1746,6 +1762,7 @@ pub export fn fnJacobiSn(unusedButMandatoryParameter: u16) linksection(runtime.c
 }
 
 pub export fn fnJacobiCn(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     var realInput: bool = undefined;
     var m: real_t = undefined;
@@ -1768,6 +1785,7 @@ pub export fn fnJacobiCn(unusedButMandatoryParameter: u16) linksection(runtime.c
 }
 
 pub export fn fnJacobiDn(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     var realInput: bool = undefined;
     var m: real_t = undefined;
@@ -1790,6 +1808,7 @@ pub export fn fnJacobiDn(unusedButMandatoryParameter: u16) linksection(runtime.c
 }
 
 pub export fn fnJacobiAmplitude(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     var realInput: bool = undefined;
     var m: real_t = undefined;
@@ -1884,6 +1903,7 @@ fn fnEllipticKCore() EllipticError!void {
 }
 
 pub export fn fnEllipticK(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     fnEllipticKCore() catch |e| {
         reportEllipticError(e);
@@ -1912,6 +1932,7 @@ fn fnEllipticECore() EllipticError!void {
 }
 
 pub export fn fnEllipticE(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     fnEllipticECore() catch |e| {
         reportEllipticError(e);
@@ -1948,6 +1969,7 @@ fn fnEllipticPiCore() EllipticError!void {
 }
 
 pub export fn fnEllipticPi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     fnEllipticPiCore() catch |e| {
         reportEllipticError(e);
@@ -1982,6 +2004,7 @@ fn fnEllipticFphiCore() EllipticError!void {
 }
 
 pub export fn fnEllipticFphi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     fnEllipticFphiCore() catch |e| {
         reportEllipticError(e);
@@ -2016,6 +2039,7 @@ fn fnEllipticEphiCore() EllipticError!void {
 }
 
 pub export fn fnEllipticEphi(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     fnEllipticEphiCore() catch |e| {
         reportEllipticError(e);
@@ -2050,6 +2074,7 @@ fn fnJacobiZetaCore() EllipticError!void {
 }
 
 pub export fn fnJacobiZeta(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    if (comptime !runtime.option_elliptic) return;
     _ = unusedButMandatoryParameter;
     fnJacobiZetaCore() catch |e| {
         reportEllipticError(e);

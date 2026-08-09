@@ -42,6 +42,13 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // Per-package OPTION_* from defines.h. Each is an include flag: with it out,
+    // upstream compiles the whole owner down to empty stubs, so the commands
+    // return without touching the stack. Defaults match a host build.
+    option_elliptic: bool = true,
+    option_bessel: bool = true,
+    option_ortho: bool = true,
+    option_dist_normal: bool = true,
 };
 
 fn addRuntimeObject(
@@ -101,6 +108,10 @@ fn addRuntimeObject(
     // softmenus.zig gates the ADV softkey and the savedspace strike-out on the
     // same condition.
     build_options.addOption(bool, "option_slvp_poly", !std.mem.eql(u8, name_prefix, "dmcp"));
+    build_options.addOption(bool, "option_elliptic", options.option_elliptic);
+    build_options.addOption(bool, "option_bessel", options.option_bessel);
+    build_options.addOption(bool, "option_ortho", options.option_ortho);
+    build_options.addOption(bool, "option_dist_normal", options.option_dist_normal);
     module.addOptions("math_command_wrappers_build_options", build_options);
 
     return b.addObject(.{

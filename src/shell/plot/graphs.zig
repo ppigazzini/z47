@@ -767,20 +767,23 @@ pub export fn fnPlotStatAdv(unusedButMandatoryParameter: u16) callconv(.c) void 
 fn plotarrow(xo: i16, yo: i16, xn: i16, yn: i16) void {
     var dx: f32 = undefined;
     var dy: f32 = undefined;
-    const dydx: f32 = @floatFromInt(yn - yo);
-    const ddx: f32 = @floatFromInt(xn - xo);
+    const dydx: f32 = @floatFromInt(@as(i32, yn) - @as(i32, yo));
+    const ddx: f32 = @floatFromInt(@as(i32, xn) - @as(i32, xo));
     const zz: f32 = @sqrt(dydx * dydx + ddx * ddx);
     const zzz: f32 = 3;
     dy = dydx * (zzz / zz);
     dx = ddx * (zzz / zz);
+    const xnf: f32 = @floatFromInt(xn);
+    const ynf: f32 = @floatFromInt(yn);
     if (!(xo == xn and yo == yn)) {
-        frontier_plotstat.plotline1(xn + fToI16(-3 * dx + dy), yn + fToI16(-3 * dy - dx), xn, yn);
-        frontier_plotstat.plotline1(xn + fToI16(-3 * dx - dy), yn + fToI16(-3 * dy + dx), xn, yn);
+        frontier_plotstat.plotline1(fToI16(xnf + (-3 * dx + dy)), fToI16(ynf + (-3 * dy - dx)), xn, yn);
+        frontier_plotstat.plotline1(fToI16(xnf + (-3 * dx - dy)), fToI16(ynf + (-3 * dy + dx)), xn, yn);
     } else {
         frontier_plotstat.placePixel(@intCast(xn), @intCast(yn));
     }
 }
-// C implicitly truncates the float argument to int16_t in frontier_plotstat.plotline1(int16_t,...).
+// The C adds the offset to the endpoint as a float and truncates the sum at the
+// call, not the offset before it.
 inline fn fToI16(v: f32) i16 {
     return @intFromFloat(@trunc(v));
 }

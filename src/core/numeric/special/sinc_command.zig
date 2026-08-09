@@ -120,6 +120,13 @@ fn sincpiReal() callconv(.c) void {
     runtime.convertRealToResultRegister(result, runtime.REGISTER_X, runtime.amNone);
 }
 
+// decNumberRemainder, not WP34S_Mod: the sign of the remainder follows the
+// dividend here, and the plain remainder needs no 8 KB working buffer.
+extern fn decNumberRemainder(res: *runtime.real_t, lhs: *align(1) const runtime.real_t, rhs: *align(1) const runtime.real_t, ctxt: *runtime.realContext_t) *runtime.real_t;
+inline fn realDivideRemainder(operand1: *align(1) const runtime.real_t, operand2: *align(1) const runtime.real_t, res: *runtime.real_t, ctxt: *runtime.realContext_t) void {
+    _ = decNumberRemainder(res, operand1, operand2, ctxt);
+}
+
 fn sincpiComplex(
     real: *const runtime.real_t,
     imag: *const runtime.real_t,
@@ -133,7 +140,7 @@ fn sincpiComplex(
 
     copyReal(&rr, real);
     copyReal(&ii, imag);
-    runtime.WP34S_Mod(&rr, runtime.z47_math_wrappers_const_1(), &remainder, real_context);
+    realDivideRemainder(&rr, runtime.z47_math_wrappers_const_1(), &remainder, real_context);
 
     if (runtime.realIsZero(&rr) and runtime.realIsZero(&ii)) {
         runtime.realSetOne(res_real);

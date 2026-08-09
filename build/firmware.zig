@@ -342,7 +342,14 @@ pub fn registerSteps(
     const dmcp5_shortint_objects = shortint.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_leaf_options);
     const dmcp_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_flags_options);
     const dmcp5_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_flags_options);
-    const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_math_command_wrapper_options);
+    // Per package: OPTION_ELLIPTIC, _BESSEL, _ORTHO and _DIST_NORMAL each empty
+    // the matching command bodies upstream, so the object cannot be shared.
+    var dmcp_math_command_wrapper_options = firmware_math_command_wrapper_options;
+    dmcp_math_command_wrapper_options.option_elliptic = (dmcp_package == 2);
+    dmcp_math_command_wrapper_options.option_bessel = (dmcp_package != 4);
+    dmcp_math_command_wrapper_options.option_ortho = (dmcp_package != 4);
+    dmcp_math_command_wrapper_options.option_dist_normal = (dmcp_package != 4);
+    const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_math_command_wrapper_options);
     const dmcp5_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_math_command_wrapper_options);
     const dmcp_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_constants_options);
     const dmcp5_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_constants_options);
@@ -507,6 +514,12 @@ pub fn registerSteps(
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
     for (dmcp_packages, 0..) |package, index| {
         const variant_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-variant-pkg{d}", .{package}), frontierDistributionStrip(firmware_frontier_options, package));
+        var variant_math_options = firmware_math_command_wrapper_options;
+        variant_math_options.option_elliptic = (package == 2);
+        variant_math_options.option_bessel = (package != 4);
+        variant_math_options.option_ortho = (package != 4);
+        variant_math_options.option_dist_normal = (package != 4);
+        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", variant_math_options);
         const variant_build = addFirmwareBuild(b, .{
             .step_name = b.fmt("dmcp_pkg{d}", .{package}),
             .description = b.fmt("Build the C47 DMCP firmware for package {d} without Make or Meson", .{package}),
@@ -516,7 +529,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, variant_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, variant_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, variant_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 

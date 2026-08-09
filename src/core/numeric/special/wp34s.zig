@@ -1319,6 +1319,8 @@ pub export fn WP34S_Erf(x: *align(1) const real_t, res: *align(1) real_t, realCo
 }
 
 pub export fn WP34S_Erfc(x: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+    // Its only step is WP34S_Cdf_Q, which the option stubs out.
+    if (comptime !runtime.option_dist_normal) return;
     var p: real_t = undefined;
 
     realSquareRoot(const_2(), &p, realContext);

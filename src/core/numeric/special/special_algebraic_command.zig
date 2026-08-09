@@ -168,10 +168,16 @@ fn m1PowReal() callconv(.c) void {
         runtime.fnSetFlag(runtime.FLAG_CPXRES);
         runtime.fnRefreshState();
 
+        // Euler's formula takes its angle in radians; the display mode goes back
+        // afterwards, so the result carries the POLAR tag the user chose.
+        const saved_angular_mode = runtime.currentAngularMode;
+        runtime.currentAngularMode = runtime.amRadian;
+
         runtime.realMultiply(&x, runtime.z47_math_wrappers_const_pi(), &x, &runtime.ctxtReal75);
         eulersFormula(&x, runtime.z47_math_wrappers_const_0(), &x, &y, &runtime.ctxtReal39);
 
         runtime.convertComplexToResultRegister(&x, &y, runtime.REGISTER_X);
+        runtime.currentAngularMode = saved_angular_mode;
     }
 }
 
