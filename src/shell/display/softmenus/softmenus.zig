@@ -1955,7 +1955,7 @@ fn showSoftkey(label: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: vid
     showKey(label, x1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
 }
 
-fn showSoftkey2(labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) void {
+fn showSoftkey2(valid: bool_t, labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
     var x1: i16 = undefined;
     var y1: i16 = undefined;
     var x2: i16 = undefined;
@@ -1972,12 +1972,14 @@ fn showSoftkey2(labelSM1: [*c]const u8, xSoftkey: i16, ySoftKey: i16, videoMode:
     }
     truncateAtArrow(&label0);
 
-    if (xSoftkey == 1 or xSoftkey == 3 or xSoftkey == 5) {
+    // The odd half draws the pair. `valid` says the two really are a pair; without
+    // it a lone item in an odd slot renders as the partner of the key to its left.
+    if ((xSoftkey & 1) != 0 and valid != 0) {
         label1[0] = 0;
         _ = stringCopy(@ptrCast(&label1[@intCast(stringByteLength(&label1))]), labelSM1);
         frontier_char_string.compressConversionName(&label1);
         truncateAtArrow(&label1);
-        showKey2(&label0, &label1, xx1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText);
+        showKey2(&label0, &label1, xx1, x2, y1, y2, videoMode, topLine, bottomLine, showCb, showValue, showText, doubleMidLine);
     }
 }
 
@@ -1990,7 +1992,45 @@ fn drawKeyFrame(x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topL
 
 const YY: i16 = -100;
 
-fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) void {
+// The ASSIGN-mode rivets drawn in the corners of a soft key. Shared by the
+// single and combined key renderers.
+fn showPanelledView(x1: i16, x2: i16, y1: i16, videoMode: videoMode_t) void {
+    const _off: i16 = 1;
+    if (calcMode == CM_ASSIGN and itemToBeAssigned != 0 and
+        (currentMenu() == -%@as(i16, MNU_HOME) or
+            currentMenu() == -%@as(i16, MNU_MyMenu) or
+            currentMenu() == -%@as(i16, MNU_MyAlpha) or
+            currentMenu() == -%@as(i16, MNU_PFN) or
+            currentMenu() == -%@as(i16, MNU_DYNAMIC)))
+    {
+        var xs: [4]i16 = undefined;
+        var ys: [4]i16 = undefined;
+        var ws: [4]i16 = undefined;
+        var hs: [4]i16 = undefined;
+        // _off == 2 branch is dead (constant 1); take the else.
+        xs[0] = @intCast(maxI(0, x1) + 2 + _off);
+        ys[0] = y1 + 1 + _off;
+        ws[0] = 3;
+        hs[0] = 2;
+        xs[1] = @intCast(maxI(0, x1) + 2 + _off);
+        ys[1] = y1 + SOFTMENU_HEIGHT - 2 - _off;
+        ws[1] = 3;
+        hs[1] = 2;
+        xs[2] = x2 - 1 - 3 - _off;
+        ys[2] = y1 + 1 + _off;
+        ws[2] = 3;
+        hs[2] = 2;
+        xs[3] = x2 - 1 - 3 - _off;
+        ys[3] = y1 + SOFTMENU_HEIGHT - 2 - _off;
+        ws[3] = 3;
+        hs[3] = 2;
+        var i: usize = 0;
+        while (i < 4) : (i += 1) {
+            lcd_fill_rect(@intCast(xs[i]), @intCast(ys[i]), @intCast(ws[i]), @intCast(hs[i]), if (videoMode == vmNormal) LCD_EMPTY_VALUE else LCD_SET_VALUE);
+        }
+    }
+}
+fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8, doubleMidLine: bool_t) void {
     _ = showValue;
     _ = showCb;
     _ = showText;
@@ -2027,7 +2067,7 @@ fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i
         w[1] = STD_RIGHT_ARROW;
         w[2] = STD_LEFT_ARROW;
         w[3] = label1;
-        arrowSpace = 10;
+        arrowSpace = 4;
     }
     {
         var i: usize = 0;
@@ -2067,7 +2107,18 @@ fn showKey2(label0p: [*c]const u8, label1: [*c]const u8, x1: i16, x2: i16, y1: i
             _ = frontier_screen.showStringEnhanced(t[i], &standardFont, @intCast(xpos[i]), @intCast(y1 + 1), videoMode, 0, 0, DO_compress, NO_raise, DO_Show, NO_Bold, NO_LF);
         }
     }
-    lcd_fill_rect(@intCast(x1 + midpoint), @intCast(y1 + 5), 1, @bitCast(@as(i32, @intCast(minI(y2, SCREEN_HEIGHT - 1))) + 1 - y1 - 2 * 5), if (videoMode == vmNormal) LCD_EMPTY_VALUE else LCD_SET_VALUE);
+    // Mid vertical line: one stroke normally, two when the pair is drawn as a
+    // combined key.
+    const midHeight: u32 = @bitCast(@as(i32, @intCast(minI(y2, SCREEN_HEIGHT - 1))) + 1 - y1 - 2 * 5);
+    const midColour = if (videoMode == vmNormal) LCD_EMPTY_VALUE else LCD_SET_VALUE;
+    if (doubleMidLine == 0) {
+        lcd_fill_rect(@intCast(x1 + midpoint), @intCast(y1 + 5), 1, midHeight, midColour);
+    } else {
+        lcd_fill_rect(@intCast(x1 + midpoint - 1), @intCast(y1 + 5), 1, midHeight, midColour);
+        lcd_fill_rect(@intCast(x1 + midpoint + 1), @intCast(y1 + 5), 1, midHeight, midColour);
+    }
+
+    showPanelledView(x1, x2, y1, videoMode);
 }
 
 pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, videoMode: videoMode_t, topLine: bool_t, bottomLine: bool_t, showCb: i8, showValue: i16, showText: [*c]const u8) callconv(.c) void {
@@ -2110,40 +2161,7 @@ pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, v
         }
     }
 
-    const _off: i16 = 1;
-    if (calcMode == CM_ASSIGN and itemToBeAssigned != 0 and
-        (currentMenu() == -%@as(i16, MNU_HOME) or
-            currentMenu() == -%@as(i16, MNU_MyMenu) or
-            currentMenu() == -%@as(i16, MNU_MyAlpha) or
-            currentMenu() == -%@as(i16, MNU_PFN) or
-            currentMenu() == -%@as(i16, MNU_DYNAMIC)))
-    {
-        var xs: [4]i16 = undefined;
-        var ys: [4]i16 = undefined;
-        var ws: [4]i16 = undefined;
-        var hs: [4]i16 = undefined;
-        // _off == 2 branch is dead (constant 1); take the else.
-        xs[0] = @intCast(maxI(0, x1) + 2 + _off);
-        ys[0] = y1 + 1 + _off;
-        ws[0] = 3;
-        hs[0] = 2;
-        xs[1] = @intCast(maxI(0, x1) + 2 + _off);
-        ys[1] = y1 + SOFTMENU_HEIGHT - 2 - _off;
-        ws[1] = 3;
-        hs[1] = 2;
-        xs[2] = x2 - 1 - 3 - _off;
-        ys[2] = y1 + 1 + _off;
-        ws[2] = 3;
-        hs[2] = 2;
-        xs[3] = x2 - 1 - 3 - _off;
-        ys[3] = y1 + SOFTMENU_HEIGHT - 2 - _off;
-        ws[3] = 3;
-        hs[3] = 2;
-        var i: usize = 0;
-        while (i < 4) : (i += 1) {
-            lcd_fill_rect(@intCast(xs[i]), @intCast(ys[i]), @intCast(ws[i]), @intCast(hs[i]), if (videoMode == vmNormal) LCD_EMPTY_VALUE else LCD_SET_VALUE);
-        }
-    }
+    showPanelledView(x1, x2, y1, videoMode);
 }
 
 pub export fn isFunctionItemAMenu(item: i16) callconv(.c) bool_t {
@@ -2921,7 +2939,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                             softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVYMMV) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVCHEF) or
                             softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONVTEMP))
                         {
-                            showSoftkey2(&indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText);
+                            showSoftkey2(1, &indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText, 0);
                         } else {
                             if ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS_EIM) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONST)) or
                                 ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_IO) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_PFN)) and (item == ITM_STOCFG or item == ITM_RCLCFG)))
