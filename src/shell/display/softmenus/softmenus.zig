@@ -121,6 +121,7 @@ const frontier_assign = @import("../../input/assign.zig");
 const frontier_calc_mode = @import("../../calc_mode.zig");
 const frontier_char_string = @import("../text/char_string.zig");
 const frontier_conversion_units = @import("../../convert/conversion_units.zig");
+const frontier_conversion_pairs = @import("../../convert/conversion_pairs.zig");
 const frontier_debug = @import("../../debug.zig");
 const frontier_error = @import("../../error.zig");
 const frontier_items = @import("../items/items.zig");
@@ -2854,6 +2855,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
         var vm: videoMode_t = vmNormal;
         var showCb: i8 = NOVAL;
         var showValue: i16 = NOVAL;
+        var convUserMenu: bool = false;
         showText[0] = 0;
 
         if (m < NUMBER_OF_DYNAMIC_SOFTMENUS) {
@@ -2884,6 +2886,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                         if (itemNr < 0) {
                                             vm = vmReverse;
                                         } else {
+                                            convUserMenu = true;
                                             if (userMenuItems[@intCast(x + 6 * y)].argumentName[0] == 0) {
                                                 changeSoftKey(softmenu[@intCast(m)].menuItem, itemNr, &itemName, &vm, &showCb, &showValue, &showText);
                                             }
@@ -2898,6 +2901,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                         if (itemNr < 0) {
                                             vm = vmReverse;
                                         } else {
+                                            convUserMenu = true;
                                             if (userMenus[@intCast(currentUserMenu)].menuItem[@intCast(x + 6 * y)].argumentName[0] == 0) {
                                                 changeSoftKey(softmenu[@intCast(m)].menuItem, itemNr, &itemName, &vm, &showCb, &showValue, &showText);
                                             }
@@ -2939,7 +2943,53 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                         vm = vmNormal;
                                     },
                                 }
-                                showSoftkey(&itemName, x, y, vm, 1, 1, showCb, showValue, &showText);
+                                if (convUserMenu) { // user menus
+                                    // Swap the arrows and move the midpoint for a
+                                    // conversion pair sitting on a user menu.
+                                    const softKeyIx: i16 = (x ^ 1) + 6 * y;
+                                    const curMenu: i16 = -%softmenu[@intCast(m)].menuItem;
+                                    const itemNrPair: i16 = if (curMenu == MNU_MyMenu)
+                                        userMenuItems[@intCast(softKeyIx)].item
+                                    else if (curMenu == MNU_DYNAMIC)
+                                        userMenus[@intCast(currentUserMenu)].menuItem[@intCast(softKeyIx)].item
+                                    else
+                                        0;
+                                    var oddNrPartnerForEven: i16 = 0;
+                                    _ = frontier_conversion_pairs.isOneOfAConvertPair(@intCast(x), itemNr, &oddNrPartnerForEven);
+                                    const bothConfigurable = frontier_conversion_pairs.areBothConvertConfigurable(itemNr, itemNrPair);
+                                    // A fixed table pair converts directly and renders plainly.
+                                    const standardPair = frontier_conversion_pairs.isStandardPair(itemNr, itemNrPair);
+                                    const areBothConv = bothConfigurable or standardPair;
+                                    const flag = bothConfigurable and !standardPair;
+                                    const cond = flag or ((x & 1) == 0) or (itemNr == oddNrPartnerForEven);
+
+                                    if (areBothConv) {
+                                        if (getSystemFlag(FLAG_HPCONV) != 0) {
+                                            changeSoftKey(softmenu[@intCast(m)].menuItem, frontier_conversion_pairs.conversionPartner(itemNrPair, null, null, null), &itemName, &vm, &showCb, &showValue, &showText);
+                                        }
+                                        showSoftkey2(@intFromBool(cond), &itemName, x, y, vm, 1, 1, showCb, showValue, &showText, @intFromBool(flag));
+                                    } else {
+                                        // A single softkey on a user menu.
+                                        if (frontier_conversion_pairs.isItemConversion(itemNr)) {
+                                            var s1: [64]u8 = undefined;
+                                            var s2: [64]u8 = undefined;
+                                            _ = stringCopy(&s1, &indexOfItems[@intCast(frontier_conversion_pairs.conversionPartner(itemNr, null, null, null))].itemSoftmenuName);
+                                            truncateAtArrow(&s1);
+                                            _ = stringCopy(&s2, &indexOfItems[@intCast(itemNr)].itemSoftmenuName);
+                                            truncateAtArrow(&s2);
+                                            _ = stringCopy(&itemName, &s2);
+                                            _ = strcat(&itemName, STD_RIGHT_ARROW);
+                                            _ = strcat(&itemName, &s1);
+                                            frontier_char_string.compressConversionName(&itemName); // keep E compressed
+                                            // Trim the combined key from the less important side, so the
+                                            // unit normally on the face of the key dominates.
+                                            _ = trimKey(&itemName, @intCast(getSystemFlag(FLAG_HPCONV)));
+                                        }
+                                        showSoftkey(&itemName, x, y, vm, 1, 1, showCb, showValue, &showText);
+                                    }
+                                } else { // non-user menus
+                                    showSoftkey(&itemName, x, y, vm, 1, 1, showCb, showValue, &showText);
+                                }
                                 fnStrikeOutIfNotCoded(itemNr, x, y);
                                 fnStrikeThroughIfNA(itemNr, x, y);
                             }
