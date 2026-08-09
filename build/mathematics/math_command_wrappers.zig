@@ -108,6 +108,11 @@ fn addRuntimeObject(
     // softmenus.zig gates the ADV softkey and the savedspace strike-out on the
     // same condition.
     build_options.addOption(bool, "option_slvp_poly", !std.mem.eql(u8, name_prefix, "dmcp"));
+    // OPTION_CUBIC_159 and OPTION_EIGEN_159 sit in the same TWO_FILE #undef block
+    // as OPTION_XFN_1000, so they are off for exactly the "dmcp" prefix.
+    // OPTION_SQUARE_159 is not defined for any target, so SLVQ is always 75.
+    build_options.addOption(bool, "option_cubic_159", !std.mem.eql(u8, name_prefix, "dmcp"));
+    build_options.addOption(bool, "option_eigen_159", !std.mem.eql(u8, name_prefix, "dmcp"));
     build_options.addOption(bool, "option_elliptic", options.option_elliptic);
     build_options.addOption(bool, "option_bessel", options.option_bessel);
     build_options.addOption(bool, "option_ortho", options.option_ortho);

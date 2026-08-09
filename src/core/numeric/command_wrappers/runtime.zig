@@ -24,6 +24,8 @@ pub const option_elliptic = !@hasDecl(build_options, "option_elliptic") or build
 pub const option_bessel = !@hasDecl(build_options, "option_bessel") or build_options.option_bessel;
 pub const option_ortho = !@hasDecl(build_options, "option_ortho") or build_options.option_ortho;
 pub const option_dist_normal = !@hasDecl(build_options, "option_dist_normal") or build_options.option_dist_normal;
+pub const option_cubic_159 = !@hasDecl(build_options, "option_cubic_159") or build_options.option_cubic_159;
+pub const option_eigen_159 = !@hasDecl(build_options, "option_eigen_159") or build_options.option_eigen_159;
 
 /// defines.h's OPTION_SLVP_POLY: the SLVP polynomial-root command. Enabled by
 /// default and #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000

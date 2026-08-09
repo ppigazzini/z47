@@ -1254,8 +1254,6 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
     var yo: i16 = undefined;
     var yn: i16 = undefined;
     var yN: i16 = undefined;
-    var x: f32 = undefined;
-    var y: f32 = undefined;
 
     numberOfPlotPoints = 0;
     roundedTicks = false;
@@ -1385,12 +1383,14 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             // MAIN GRAPH LOOP
             ix = 0;
             while (ix < numberOfPlotPoints) : (ix += 1) {
-                x = grf_x(ix);
-                y = grf_y(ix);
+                // The decimals go straight to the screen mapper: routing them
+                // through grf_x/grf_y would round every plotted point to f32.
+                grf_x_r(ix, &xr);
+                grf_y_r(ix, &yr);
                 xo = xN;
                 yo = yN;
-                xN = screenX(@as(f64, x));
-                yN = screenY(@as(f64, y));
+                xN = screen_window_x_r(x_min, &xr, x_max);
+                yN = screen_window_y_r(y_min, &yr, y_max);
                 if (drawHistogram != 0) {
                     xN = @intCast(@as(i32, barX0) + @as(i32, ix) * @as(i32, barPitch)); // rounding each bin centre separately varied the gaps between bars
                 }
