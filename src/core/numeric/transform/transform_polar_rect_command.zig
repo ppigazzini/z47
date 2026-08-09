@@ -43,10 +43,17 @@ fn tryToPolar2Real34Pair() bool {
         }
     }
 
-    const data_type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const data_atag_x = runtime.getRegisterAngularMode(runtime.REGISTER_X);
-    const data_type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
-    const data_atag_y = runtime.getRegisterAngularMode(runtime.REGISTER_Y);
+    // The registers are chosen first and the types read from the chosen ones, so
+    // each operand is decoded with its own type. Reading the types from X and Y
+    // and then swapping only the registers crosses them whenever HPRP is clear.
+    const hp_rp = runtime.getSystemFlag(runtime.FLAG_HPRP);
+    const real_reg = if (hp_rp) runtime.REGISTER_X else runtime.REGISTER_Y;
+    const imag_reg = if (hp_rp) runtime.REGISTER_Y else runtime.REGISTER_X;
+
+    const data_type_x = runtime.getRegisterDataType(real_reg);
+    const data_atag_x = runtime.getRegisterAngularMode(real_reg);
+    const data_type_y = runtime.getRegisterDataType(imag_reg);
+    const data_atag_y = runtime.getRegisterAngularMode(imag_reg);
 
     const x_valid = data_type_x == runtime.dtLongInteger or (data_type_x == runtime.dtReal34 and data_atag_x == runtime.amNone);
     const y_valid = data_type_y == runtime.dtLongInteger or (data_type_y == runtime.dtReal34 and data_atag_y == runtime.amNone);
@@ -55,10 +62,6 @@ fn tryToPolar2Real34Pair() bool {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         return true;
     }
-
-    const hp_rp = runtime.getSystemFlag(runtime.FLAG_HPRP);
-    const real_reg = if (hp_rp) runtime.REGISTER_X else runtime.REGISTER_Y;
-    const imag_reg = if (hp_rp) runtime.REGISTER_Y else runtime.REGISTER_X;
 
     if (!runtime.saveLastX()) {
         return true;

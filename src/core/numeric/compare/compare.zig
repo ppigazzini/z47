@@ -42,9 +42,16 @@ fn runCompare(parameter: u16, mode: Mode) void {
     // The owned fast path only covers integer/real/complex scalars. Anything
     // else (e.g. dtTime, which the legacy compareRegisters normalizes by
     // dividing seconds by const_3600) must defer to the legacy machinery.
+    const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
+    const type_r = runtime.getRegisterDataType(regist);
+    // An integer against an integer is compared exactly, through the long-integer
+    // path. Routing it through a real conversion decides two values equal as soon
+    // as they agree to the context's digit count, and a long integer carries far
+    // more digits than that.
     if (!isOwnedStackRegister(regist) or
-        !isOwnedCompareType(runtime.getRegisterDataType(runtime.REGISTER_X)) or
-        !isOwnedCompareType(runtime.getRegisterDataType(regist)))
+        !isOwnedCompareType(type_x) or
+        !isOwnedCompareType(type_r) or
+        (isOwnedAlmostEqualIntegerType(type_x) and isOwnedAlmostEqualIntegerType(type_r)))
     {
         callLegacyCompare(mode, parameter);
         return;
@@ -147,7 +154,9 @@ fn getCompareInput(
             return true;
         },
         runtime.dtLongInteger => {
-            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
+            // 75 digits, as getRegisterAsComplexOrAnyRealQuiet uses: a long integer
+            // mixed with a real must not lose digits on the way in.
+            runtime.convertLongIntegerRegisterToReal(regist, real, &runtime.ctxtReal75);
             runtime.realSetZero(imag);
             return true;
         },
