@@ -160,6 +160,13 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
 
     liftStack();
 
+    // A data file without a version line pair is treated as written by the
+    // current version; the C47/R47_data_file_00 branch in restoreOneSection
+    // overrides this when the pair is present, so version-gated content -- the
+    // Conf register descriptor -- is judged on the writing firmware's version
+    // rather than on whatever the last state load happened to leave behind.
+    runtime.setLoadedVersion(runtime.configFileVersion());
+
     while (runtime.ioEof() == 0) {
         _ = runtime.restoreOneSection(load_mode, s, n, d, false);
     }
