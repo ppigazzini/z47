@@ -318,6 +318,14 @@ rather than closed.
   where upstream's unsigned arithmetic wraps, and saturate with `+|`/`*|` where the
   intent is that an absurd size stays absurd. Reserve `@intCast` for values that
   provably fit. Getting this wrong is a parity bug before it is a safety bug.
+  It is also a bug whose symptom depends on the build: a checked `@intCast` on a
+  value C converts modularly panics on the safety-checked host and testSuite
+  builds and truncates on `ReleaseSmall`, so the two disagree about what the
+  program does and only one of them is upstream's behaviour. Widen before the
+  arithmetic where C's integer promotion widens -- C evaluates `rows - 1` and
+  `a * b` in `int` even when both operands are narrower, and a port that does the
+  same arithmetic in the operand width has changed the expression, not preserved
+  it.
 - Raise `@setRuntimeSafety(true)` on a function that walks bytes z47 did not write.
   It works in `ReleaseSmall`, so it reaches the device; it is lexical, so it does
   not follow calls and must go on each function; and it is a backstop under the

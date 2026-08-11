@@ -207,6 +207,46 @@ old hardware, rerun `zig build dist_dmcp_pkg3 --summary none`; rerun
 `zig build dist_dmcp_pkg2 --summary none` as well when the change touches the
 package-2-only overlay trims.
 
+### How An `OPTION_*` Value Is Established
+
+Upstream's `OPTION_*` macros in `upstream/src/c47/defines.h` are **include**
+flags. Defined means the feature is compiled in; the macro's *absence* is what
+turns the guarded function bodies into empty stubs. A feature is therefore
+removed from a package by an `#undef`, not by a `#define`.
+
+`defines.h` settles each option in layers, in this order:
+
+1. a default block that defines or undefines the option for every build;
+2. the `DMCP_PACKAGE1..4` block for the selected package;
+3. a block common to hardware packages 1-4 that runs **after** the per-package
+   blocks and overrides them;
+4. dependency fixups at the end -- `OPTION_SLVP_POLY` and `OPTION_EIGEN_159` are
+   dropped when `OPTION_EIGEN` is absent, and `OPTION_FACTOR` when
+   `OPTION_PRIME` is.
+
+Two consequences follow, and both have produced port defects:
+
+- **The per-package block does not give the answer.** An option a package block
+  defines can be undefined again by the common block below it. `OPTION_VECTOR`,
+  `OPTION_XFN_1000` and the `*_159` family are settled that way for every DM42
+  package.
+- **The `check` and `ballot-box` markers in the comments do not track the
+  resulting state.** They annotate the intent of individual lines, and reading
+  them as the per-package matrix inverts it.
+
+Derive the value instead, by preprocessing `defines.h` in the configuration you
+are asking about: `-DPC_BUILD` for host, `-DDMCP_BUILD -DNEW_HW` for DMCP5, and
+`-DDMCP_BUILD -DOLD_HW -DTWO_FILE_PGM -DDMCP_PACKAGE=<n>` for a DM42 package.
+
+z47 records the derived value in the build -- the option sets in
+`../build/frontier/frontier.zig` and `../build/mathematics/math_command_wrappers.zig`,
+assigned per package in `../build/firmware.zig` -- and an owner reads it from the
+build-options module it imports. An owner must not re-derive an option from
+`old_hw`, from the target OS tag, or from a package-name proxy: none of those is
+the same predicate as the macro, so the owner and the build then disagree about
+what the firmware contains. Which conditionals an owner may carry is ratcheted by
+[check-owner-build-conditionals.py](../.github/project/check-owner-build-conditionals.py).
+
 ## Change Rules
 
 - Fix shared firmware behavior in the Zig owners under `../src/` or the Zig
