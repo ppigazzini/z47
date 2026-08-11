@@ -157,6 +157,12 @@ Concretely, when writing or touching an oracle:
   *configuration* of c43 rather than c43.
 - Stubs in the harness are fine and expected. They are the *environment*, shared by
   both implementations; what may not be hand-written is the *reference*.
+- A harness header must not `#define` a name that upstream declares as a function
+  or defines as a macro. That is the constant-copy defect in its most damaging
+  form: the substitution reaches c43's own source, so the reference computes the
+  harness's answer and the lane can never report a divergence in the substituted
+  behaviour. `grep` the harness `.h` for `#define`s of names that resolve to
+  functions or to `STD_*` glyph macros upstream.
 - A conversion is not verified until the lane has been **seen to fail**: patch a
   behavioural change into the c43 file, confirm red, revert. A conversion that
   cannot be shown to fail has been assumed, not verified. **Read the result off the
@@ -218,6 +224,38 @@ Adding a lane is half the work; the half that keeps it alive is putting it in
 [run-host-parity-battery.sh](../.github/project/run-host-parity-battery.sh).
 An unrun lane is worse than a missing one — it reads as coverage while proving
 nothing, which is the same failure mode as a hand-written oracle one level up.
+
+### The rule: know which surfaces the oracle cannot reach
+
+The imported c43 tree answers one question — *does this owner still do what
+upstream does?* — and there are two surfaces where it cannot answer at all. Both
+produce green gates that mean nothing, so they have to be verified some other way
+rather than assumed.
+
+**Owners with no upstream counterpart.** Part of `src/` is port scaffolding that
+c43 has no file for: the shared ABI module, the typed constant-blob accessors,
+the dispatch and predicate helpers, the command-wrapper runtime. Which owners
+these are is recorded by the join in
+`.github/project/upstream-correspondence.tsv` and checked by
+[check-upstream-correspondence.py](../.github/project/check-upstream-correspondence.py)
+— read the manifest for the current set rather than a number written here. A
+1:1 diff says nothing about that code, and neither do the per-owner parity
+oracles, because there is no c43 function to compile as the reference. It is held
+by the shared testSuite and the native unit tests alone, and a change there needs
+a behavioural test, not a reading.
+
+**Code behind a firmware-only build guard.** Every lane that *runs* a program in
+the local gate is a host build. An owner branch selected by `DMCP_BUILD`, by
+`old_hw`, or by a `.freestanding` target test is compiled — step `[10b/11]` links
+every DMCP package variant, which is what catches a branch that no longer builds
+— but nothing in the gate executes it. So the gate proves those branches compile
+and says nothing about what they do, by construction rather than because they are
+correct. A guard that returns early on the firmware target changes what both
+firmware images compute while every lane stays green. When a change adds or edits
+a firmware-only branch, the evidence is a hardware or simulator check, and the
+commit should say which one was run. `extra_info_on_calc_error` is a second case
+of the same shape: it is forced off for the testSuite build, so the diagnostic
+branches gated on it are outside the testSuite's reach even on the host.
 
 This is not theoretical. Both known instances were found by accident, not by a
 gate: the seven focused math differentials were broken at LINK time while the full
