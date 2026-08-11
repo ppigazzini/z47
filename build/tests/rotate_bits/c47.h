@@ -3,13 +3,21 @@
 #ifndef Z47_ROTATE_BITS_FAKE_C47_H
 #define Z47_ROTATE_BITS_FAKE_C47_H
 
+#include <gmp.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
-typedef uint32_t longInteger_t[1];
+// The real mpz_t, as longIntegerType.h declares it, because the Zig port calls
+// GMP directly: longIntegerInit and friends are static inline wrappers upstream,
+// so shortint_runtime.zig binds mpz_init/mpz_set_ui/mpz_clear by their own link
+// names. A fake integer here would leave the two sides of the differential
+// staging the shift count through different representations, and the fake
+// convertLongIntegerToLongIntegerRegister would read the C oracle's count and
+// the Zig object's mpz header fields.
+typedef mpz_t longInteger_t;
 
 enum REG_NUMBERS {
   REGISTER_X = 100,
@@ -93,11 +101,15 @@ void setSystemFlag(unsigned int sf);
 void forceSystemFlag(unsigned int sf, int set);
 void fnSetWordSize(uint16_t ws);
 void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegister_t op1, calcRegister_t op2, calcRegister_t op3);
-void longIntegerInit(longInteger_t value);
-void uInt32ToLongInteger(uint32_t source, longInteger_t dest);
+// Macros over GMP, matching longIntegerType.h's static inlines, so the C oracle
+// compiled here runs the same allocator and the same value representation the
+// Zig object does.
+#define longIntegerInit(op) mpz_init(op)
+#define uInt32ToLongInteger(source, destination) mpz_set_ui((destination), (source))
+#define longIntegerFree(op) mpz_clear(op)
+
 void convertLongIntegerToLongIntegerRegister(const longInteger_t value, calcRegister_t dest);
 void convertShortIntegerRegisterToLongIntegerRegister(calcRegister_t source, calcRegister_t dest);
-void longIntegerFree(longInteger_t value);
 
 void rotateBitsResetState(uint8_t wordSize,
                           uint64_t xRaw,

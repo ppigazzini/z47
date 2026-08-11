@@ -1,6 +1,7 @@
 const std = @import("std");
 const abi_host = @import("../abi_host.zig");
 const build_common = @import("../common.zig");
+const host_platform = @import("../host/platform.zig");
 
 const replaced_core_sources_manifest = @embedFile("shortint_replaced_core_sources.txt");
 const parity_oracle_sources_manifest = @embedFile("shortint_parity_oracle_sources.txt");
@@ -170,6 +171,11 @@ pub fn addRotateBitsParityExecutable(
         }),
     });
     abi_host.addToModule(b, exe.root_module, target, optimize, "rotate-bits-parity");
+    // fnLj and fnRj stage their shift count as a plain long integer, which is
+    // GMP on both sides: rotate_bits.zig reaches mpz_init/mpz_set_ui/mpz_clear
+    // through shortint_runtime.zig's inline wrappers, and the oracle reaches the
+    // same three through c47.h's macros.
+    host_platform.linkGmp(exe.root_module, target);
 
     exe.root_module.addIncludePath(b.path("build/tests/rotate_bits"));
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/rotate_bits/rotate_bits_fake_runtime.c"), .flags = &.{} });
