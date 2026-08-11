@@ -85,6 +85,57 @@ uint32_t z47_matrix_header_field_mask(int field) {
   return u.raw;
 }
 
+// The five aggregates that EMBED a bitfield word are opaque{} to translate-c for
+// the same reason the two words above are, so the Zig oracle cannot @sizeOf or
+// @offsetOf them either. Hand the C ground truth over by index instead: sizes,
+// alignments and -- the part sizeof alone cannot prove -- each member's offset.
+// Indices match the lists in the Zig tests.
+size_t z47_bitfield_aggregate_size(int which) {
+  switch (which) {
+    case 0: return sizeof(real34Matrix_t);
+    case 1: return sizeof(complex34Matrix_t);
+    case 2: return sizeof(any34Matrix_t);
+    case 3: return sizeof(namedVariableHeader_t);
+    case 4: return sizeof(reservedVariableHeader_t);
+    default: return (size_t)-1;
+  }
+}
+
+size_t z47_bitfield_aggregate_align(int which) {
+  switch (which) {
+    case 0: return _Alignof(real34Matrix_t);
+    case 1: return _Alignof(complex34Matrix_t);
+    case 2: return _Alignof(any34Matrix_t);
+    case 3: return _Alignof(namedVariableHeader_t);
+    case 4: return _Alignof(reservedVariableHeader_t);
+    default: return (size_t)-1;
+  }
+}
+
+size_t z47_bitfield_aggregate_field_offset(int which) {
+  switch (which) {
+    case 0: return offsetof(real34Matrix_t, header);
+    case 1: return offsetof(real34Matrix_t, matrixElements);
+    case 2: return offsetof(complex34Matrix_t, header);
+    case 3: return offsetof(complex34Matrix_t, matrixElements);
+    case 4: return offsetof(namedVariableHeader_t, header);
+    case 5: return offsetof(namedVariableHeader_t, variableName);
+    case 6: return offsetof(reservedVariableHeader_t, header);
+    case 7: return offsetof(reservedVariableHeader_t, reservedVariableName);
+    default: return (size_t)-1;
+  }
+}
+
+// Flexible array members are the other thing translate-c drops: font_t's
+// `glyph_t glyphs[]` simply has no counterpart in the generated struct, so the
+// Zig oracle cannot reach the one offset that matters about it.
+size_t z47_flexible_array_member_offset(int which) {
+  switch (which) {
+    case 0: return offsetof(font_t, glyphs);
+    default: return (size_t)-1;
+  }
+}
+
 // frontier_register_browser hardcodes CONFIG_SIZE_IN_BYTES = 840 (a testSuite-
 // blind display constant). Pin it to the C computation so an upstream growth of
 // dtConfigDescriptor_t is caught here instead of silently showing a wrong size.

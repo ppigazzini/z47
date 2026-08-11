@@ -10,13 +10,16 @@ static constants_snapshot_t snapshot;
 static bool_t constants_initialized = false;
 static real_t constant_values[NOUC];
 static real34_t register_x_real34;
-static const real_t pi_value = {314};
+
+// The generated constant blob. Only the real_t the const39_pi macro points at
+// (offset 1848) is populated; its id is 314, the value the identity checks use.
+// Aligned to 4 because the port's typed blob accessors align-cast the offset.
+_Alignas(4) const uint8_t constants[1848 + 64] = {[1848] = 314 & 0xff, [1849] = 314 >> 8};
 
 uint16_t currentSolverStatus;
 static char errorMessage__stg[512];
 char *errorMessage = errorMessage__stg;
 const real_t *realtConstants[NOUC];
-const real_t *const39_pi = &pi_value;
 
 static void ensureConstantsInitialized(void) {
   if(constants_initialized) {
@@ -28,10 +31,9 @@ static void ensureConstantsInitialized(void) {
     realtConstants[i] = &constant_values[i];
   }
 
-  // In the real build the generated realtConstants table's last entry aliases
-  // the standalone const39_pi symbol (see constantPointers2.c). Mirror that here
-  // so fnPi sourcing pi from realtConstants[NOUC-1] and the oracle sourcing it
-  // from const39_pi resolve to the same value.
+  // The generated realtConstants table's last entry is const39_pi
+  // (constantPointers2.c:95). Mirror that here so a fnConstant(NOUC - 1) and a
+  // fnPi resolve to the same value.
   realtConstants[NOUC - 1] = const39_pi;
 
   constants_initialized = true;

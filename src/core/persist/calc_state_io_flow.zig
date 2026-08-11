@@ -53,9 +53,18 @@ pub fn doSave(save_type: u16) void {
         runtime.displayWriteError();
         return;
     }
-    defer runtime.closeFile();
+
+    // The busy indicator is raised only once the file is open -- a cancelled or
+    // refused save never shows it -- and dropped again after the file is closed,
+    // unconditionally, so a save also clears an hourglass a caller left raised.
+    hourGlassIconEnabled = true;
+    showHideHourGlass();
 
     runtime.writeSaveSections();
+
+    runtime.closeFile();
+
+    hourGlassIconEnabled = false;
     runtime.temporaryInformation = runtime.TI_SAVED;
 }
 

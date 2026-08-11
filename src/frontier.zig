@@ -35,6 +35,9 @@ const strip_16: bool = frontier_build_options.strip_16;
 const strip_17: bool = frontier_build_options.strip_17;
 const strip_17b: bool = frontier_build_options.strip_17b;
 const strip_17c: bool = frontier_build_options.strip_17c;
+const dmcp_build: bool = frontier_build_options.dmcp_build;
+
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
 comptime {
     // These owners hold the dispatch wrappers that used to live in this root. The
@@ -418,10 +421,18 @@ pub export fn fnDisplayFormatTime(display_format_n: u16) callconv(.c) void {
     display_format.run(.time, display_format_n);
 }
 
+/// DYNMNU. The console trace is the function's entire effect, and it is gated on
+/// the build alone -- neither VERBOSE_LEVEL nor a telltale macro -- so it is live
+/// on every host lane. The firmware build has no body at all.
 pub export fn fnDynamicMenu(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
-    _ = frontier_softmenus.z47_frontier_dynamic_menu_softmenu_id();
-    _ = frontier_softmenus.z47_frontier_dynamic_menu_item();
+    if (comptime !dmcp_build) {
+        _ = printf(
+            "fnDynamicMenu:\n       softmenuId = %d\n  dynamicMenuItem = %d\n",
+            @as(c_int, frontier_softmenus.z47_frontier_dynamic_menu_softmenu_id()),
+            @as(c_int, frontier_softmenus.z47_frontier_dynamic_menu_item()),
+        );
+    }
 }
 
 pub export fn fnNop(unused_but_mandatory_parameter: u16) callconv(.c) void {
@@ -618,11 +629,9 @@ pub export fn fnPlotStat(plot_mode: u16) callconv(.c) void {
     plot_stat.run(plot_mode);
 }
 
+// The editor-mode guard lives with the mutation, which knows which of the four
+// C functions is refusing and so can name it in the console hint.
 fn matrixRunMutation(kind: matrix_mutation.Kind) void {
-    if (!frontier_matrix_editor.matrixEnsureEditorMode()) {
-        return;
-    }
-
     matrix_mutation.run(kind);
 }
 
@@ -999,12 +1008,20 @@ pub export fn fnChi2I(unused_but_mandatory_parameter: u16) linksection(dr.code_s
     if (comptime !strip_17b) chi2.chi2I(unused_but_mandatory_parameter);
 }
 
-// checkRegisterNoFP is defined in upstream chi2.c (17B cluster) and used by the
-// binomial/hyper/negBinom/f members; export it so they link where the cluster is
-// kept. On packages with 17B stripped it is the upstream stub (returns false).
-pub export fn checkRegisterNoFP(reg: *const chi2.real_t) linksection(dr.code_section) callconv(.c) bool {
-    if (comptime !strip_17b) return chi2.checkRegisterNoFP(reg);
-    return false;
+// checkRegisterNoFP is defined in upstream chi2.c and used by the
+// binomial/hyper/negBinom/f members; export it so they link where the 17B
+// cluster is kept. Both its definition and its declaration sit inside
+// `#if defined(OPTION_DIST_B)`, so with 17B stripped there is no symbol at all --
+// and no caller either, because that also forces OPTION_DIST_C off
+// (defines.h:303-306), which is exactly why the export can go with it.
+fn checkRegisterNoFPExport(reg: *const chi2.real_t) linksection(dr.code_section) callconv(.c) bool {
+    return chi2.checkRegisterNoFP(reg);
+}
+
+comptime {
+    if (!strip_17b) {
+        @export(&checkRegisterNoFPExport, .{ .name = "checkRegisterNoFP" });
+    }
 }
 
 pub export fn fnStdNormalP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) callconv(.c) void {

@@ -81,8 +81,10 @@ pub fn exitKeyWaiting() bool {
 
 // checkHalfSec: has the half-second progress interval elapsed? The long
 // computations poll it to decide when to refresh their on-screen progress. The
-// default reports "not elapsed", so a headless core never takes the progress
-// branch -- exactly the non-interactive behaviour.
+// C is gated on FLAG_MONIT, not on the build, so it ticks and returns true on a
+// headless lane too whenever MONIT is set; the default here reports "not
+// elapsed" and so agrees with the C only while MONIT is clear. Any lane that
+// certifies the product must install the real implementation.
 const check_half_sec_hook = Slot(*const fn () callconv(.c) bool_t, "z47HostCheckHalfSecHook");
 
 /// Install the shell's half-second progress-clock implementation.
@@ -101,8 +103,10 @@ pub fn checkHalfSec() bool {
 
 // progressHalfSecUpdate_Integer: refresh the on-screen progress line of a long
 // computation with an iteration label and counter, returning whether the user
-// interrupted. The default reports "no interrupt", so a headless core runs to
-// completion -- exactly the non-interactive behaviour. The hook keeps the shell
+// interrupted. Like checkHalfSec the C gates on FLAG_MONIT alone, and with MONIT
+// set it draws and refreshes the LCD; the default reports "no interrupt" and
+// draws nothing, which agrees with the C only while MONIT is clear. The hook
+// keeps the shell
 // owner's C-ABI shape (char* label, byte booleans); the forwarder exposes an
 // idiomatic sentinel-string / bool signature to the callers.
 const progress_half_sec_hook = Slot(*const fn (u8, [*c]u8, i32, bool_t, bool_t, bool_t) callconv(.c) bool_t, "z47HostProgressHalfSecHook");
@@ -167,8 +171,11 @@ pub fn reportBugError(errorCode: u8, errMessageRegisterLine: i16) void {
 }
 
 // showBugScreen: paint the full-screen internal-error report with a formatted
-// message the core already built. Genuine UI; a no-op when the core runs
-// headless, which matches the no-op displayBugScreen fakes the harnesses link.
+// message the core already built. Not pixels alone: the C sets previousCalcMode,
+// switches calcMode to CM_BUG_ON_SCREEN, clears FLAG_ALPHA, hides the cursor and
+// clears cursorEnabled before painting, and it is compiled unconditionally. A
+// lane that leaves this uninstalled therefore diverges in calculator state, not
+// just in what is drawn, for everything that runs after.
 const show_bug_screen_hook = Slot(*const fn ([*:0]const u8) callconv(.c) void, "z47HostShowBugScreenHook");
 
 /// Install the shell's bug-screen renderer.

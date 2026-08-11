@@ -20,6 +20,7 @@
 // is byte-identical to the original save.
 
 const std = @import("std");
+const builtin = @import("builtin");
 const runtime = @import("calc_state_runtime.zig");
 const text = @import("calc_state_text.zig");
 const progmem = @import("calc_state_progmem.zig");
@@ -94,6 +95,16 @@ const USER_R47f_g: u16 = 61;
 const USER_R47fg_g: u16 = 64;
 const USER_R47fg_bk: u16 = 63;
 const USER_R47bk_fg: u16 = 62;
+const USER_V47: u16 = 40;
+const USER_E47: u16 = 43;
+const USER_D47: u16 = 47;
+const USER_N47: u16 = 51;
+
+// CALCMODEL == USER_R47 for the firmware this object is linked into. The R47
+// firmware carries only the R47 layouts, so its kbd_std selector is a different
+// one -- read the model the build stamped in, never re-derive it.
+const built_for_r47: bool = build_options.calc_model_user_id == USER_R47;
+const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 const ITM_END: i32 = 1458;
 const MNU_HOME: i16 = 1921;
@@ -220,6 +231,12 @@ extern const kbd_std_R47f_g: [37]calcKey_t;
 extern const kbd_std_R47bk_fg: [37]calcKey_t;
 extern const kbd_std_R47fg_bk: [37]calcKey_t;
 extern const kbd_std_R47fg_g: [37]calcKey_t;
+// assign.c:95-274 defines these four only under PC_BUILD, so kbdStdPrimary may
+// only name them on the host.
+extern const kbd_std_E47: [37]calcKey_t;
+extern const kbd_std_D47: [37]calcKey_t;
+extern const kbd_std_V47: [37]calcKey_t;
+extern const kbd_std_N47: [37]calcKey_t;
 fn isAtEndOfProgram(step: [*c]const u8) bool {
     return checkOpCodeOfStep(step, @intCast(ITM_END));
 }
@@ -231,15 +248,29 @@ fn normKey00Key() i16 {
         else => -1, // USER_R47f_g and others
     };
 }
+// The kbd_std macro (c47.h:257-267). Three different selectors, chosen by the
+// preprocessor: PC_BUILD walks every layout the simulator can be switched to;
+// a CALCMODEL == USER_R47 firmware only ever reaches the four R47 layouts and
+// falls back to R47f_g; every other firmware only ever reaches DM42 and C47.
 fn kbdStdPrimary(idx: i16) i16 {
-    const std_kbd: *const [37]calcKey_t = switch (@as(u16, calcModel)) {
+    const std_kbd: *const [37]calcKey_t = if (comptime !is_dmcp_build) switch (@as(u16, calcModel)) {
+        USER_C47 => &kbd_std_C47,
         USER_DM42 => &kbd_std_DM42,
         USER_R47f_g => &kbd_std_R47f_g,
         USER_R47bk_fg => &kbd_std_R47bk_fg,
         USER_R47fg_bk => &kbd_std_R47fg_bk,
         USER_R47fg_g => &kbd_std_R47fg_g,
+        USER_E47 => &kbd_std_E47,
+        USER_D47 => &kbd_std_D47,
+        USER_V47 => &kbd_std_V47,
+        USER_N47 => &kbd_std_N47,
         else => &kbd_std_C47,
-    };
+    } else if (comptime built_for_r47) switch (@as(u16, calcModel)) {
+        USER_R47bk_fg => &kbd_std_R47bk_fg,
+        USER_R47fg_bk => &kbd_std_R47fg_bk,
+        USER_R47fg_g => &kbd_std_R47fg_g,
+        else => &kbd_std_R47f_g,
+    } else if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
     return std_kbd[@intCast(idx)].primary;
 }
 

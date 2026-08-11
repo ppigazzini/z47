@@ -176,7 +176,11 @@ fn special(w: *Writer, bits: u64, precision: usize, comptime is_fixed: bool) ?st
     const raw_exp: u64 = (bits >> 52) & 0x7ff;
     const frac: u64 = bits & 0xFFFFFFFFFFFFF;
     if (raw_exp == 0x7ff) {
-        if (frac != 0) w.s("nan") else w.s(if (neg) "-inf" else "inf");
+        // glibc prints the sign of a NaN as well as of an infinity, so a NaN with
+        // the sign bit set comes out "-nan" -- which is what 0.0/0.0 produces on
+        // x86-64.
+        if (neg) w.c('-');
+        w.s(if (frac != 0) "nan" else "inf");
         return null;
     }
     if (neg) w.c('-');
