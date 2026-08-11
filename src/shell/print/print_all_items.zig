@@ -106,7 +106,19 @@ const PrintAllItemsRunner = struct {
     }
 };
 
+// fnP_PrintAllItems is the one body in print.c gated on both conditions:
+// `#if defined(PC_BUILD) && defined(OPTION_IR_PRINTING)`. PC_BUILD is the host
+// simulator, so on every calculator -- dmcp5 included, where OPTION_IR_PRINTING
+// is on and the IR engine is live -- the body is empty and the item is a no-op:
+// currentKeyCode stays put, temporaryInformation is not set and the 2870-item
+// listing is never driven to the printer.
+const print_all_items_enabled: bool = !frontier_print.is_dmcp_build and frontier_print.ir_printing;
+
 pub fn run() void {
+    if (comptime !print_all_items_enabled) {
+        return;
+    }
+
     var runner = PrintAllItemsRunner{};
     runner.run();
 }

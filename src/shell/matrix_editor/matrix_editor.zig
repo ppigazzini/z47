@@ -36,11 +36,14 @@ const consts = abi.constants;
 //
 // Build flavour, matching the sibling owners and the dominant C config:
 //   OPTION_VECTOR is ON (defines.h:70; only #undef'd in space-saving DMCP
-//   packages). OPTION_VECTOR_EDIT is OFF (defines.h:73). IR_PRINTING trace blocks
-//   are omitted (siblings treat it as never defined). The PC_BUILD refreshLcd()
-//   tail of mimRunFunction is host-only (!dmcp_build). EXTRA_INFO_ON_CALC_ERROR
-//   console hints are gated on extra_info && !dmcp_build — but those all live in
-//   the renamed publics, which are elsewhere, so none appear here.
+//   packages). OPTION_VECTOR_EDIT is OFF (defines.h:73). The two OPTION_IR_PRINTING
+//   trace calls matrixEditor.c makes — printTraceString for the number-entry
+//   buffer mimEnter closes, printTrace for the j/CC complex promotion — are
+//   reproduced here behind the print owner's ir_printing flag. The PC_BUILD
+//   refreshLcd() tail of mimRunFunction is host-only (!dmcp_build).
+//   EXTRA_INFO_ON_CALC_ERROR console hints are gated on extra_info; the one that
+//   lands here is the "works in MIM only" refusal shared by _fnInsRow, _fnInsCol,
+//   fnDelRow and fnDelCol, which is why it takes the refusing function's name.
 //
 // matrixEditor.c is not reachable from the testSuite directly; verification is
 // build/link across every target plus the distributions/boundary gates. The
@@ -85,6 +88,7 @@ const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
 const frontier_display = @import("../display/display.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
+const frontier_print = @import("../print/print.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("../display/screen.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
@@ -185,6 +189,11 @@ const SHOWLineSize: usize = 120;
 const ERROR_NONE: u8 = 0;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_OPERATION_UNDEFINED: u8 = 13;
+const ERROR_MESSAGE_LENGTH: usize = 512;
+
+const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+
+const LINE_NOLF: u16 = 3;
 
 const NUMERIC_FONT_HEIGHT: i16 = 36;
 const STANDARD_FONT_HEIGHT: i16 = 22;
@@ -277,6 +286,7 @@ fn boundScrollColumn(forEditor: bool, sCol: u16, cols: u16) u16 {
 // ===========================================================================
 extern var calcMode: u8;
 extern var lastErrorCode: u8;
+extern var lastFunc: i16;
 extern var cursorEnabled: u8;
 extern var xCursor: u32;
 extern var yCursor: u32;
@@ -1764,7 +1774,10 @@ pub fn z47_frontier_matrix_change_sign_current_element() void {
     setSystemFlag(FLAG_ASLIFT);
 }
 
-pub fn z47_frontier_matrix_make_j_element() void {
+/// The j / CC arm of mimAddNumber with an empty number-entry buffer: promote the
+/// open matrix to complex (or set the current element to the imaginary unit) and
+/// trace the keystroke, which `item` identifies.
+pub fn z47_frontier_matrix_make_j_element(item: i16) void {
     const cols: c_int = openMatrixMIMPointer.header.matrixColumns;
     const row: i16 = getIRegisterAsInt(true);
     const col: i16 = getJRegisterAsInt(true);
@@ -1793,6 +1806,7 @@ pub fn z47_frontier_matrix_make_j_element() void {
             real34SetOne(&elm.imag);
         }
     }
+    frontier_print.printTrace(lastFunc, @bitCast(item));
 }
 
 pub fn z47_frontier_matrix_set_current_to_pi() void {
@@ -2066,6 +2080,15 @@ pub fn z47_frontier_matrix_mim_enter_apply_aim_buffer() void {
         return;
     }
 
+    // The value being closed goes to the printer before it is applied. The
+    // leading '+' the number-entry buffer carries is a sign placeholder, not
+    // part of the typed number, so a positive entry is traced without it.
+    if (aimBuffer[0] == '+') {
+        frontier_print.printTraceString(aimBuffer + 1, LINE_NOLF);
+    } else {
+        frontier_print.printTraceString(aimBuffer, LINE_NOLF);
+    }
+
     if (getRegisterDataType(@bitCast(matrixIndex)) == dtReal34Matrix) {
         var real34tmp: real34_t = undefined;
         const real34Ptr = &openMatrixMIMPointer.realMatrix.matrixElements.?[idx];
@@ -2228,16 +2251,23 @@ pub fn matrixInEditorMode() bool {
     return calcMode == CM_MIM;
 }
 
-pub fn matrixEnsureEditorMode() bool {
+pub fn matrixEnsureEditorMode(where: [*:0]const u8) bool {
     if (matrixInEditorMode()) {
         return true;
     }
-    matrixModeUndefinedError();
+    matrixModeUndefinedError(where);
     return false;
 }
 
-pub fn matrixModeUndefinedError() void {
+/// The refusal every matrix-editor entry point makes outside CM_MIM. The console
+/// hint names the function that refused, so the caller supplies its
+/// "In function <name>:" prefix.
+pub fn matrixModeUndefinedError(where: [*:0]const u8) void {
     frontier_error.displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    if (comptime extra_info) {
+        abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "works in MIM only", .{});
+        frontier_error.moreInfoOnErrorImpl(where, errorMessage, null, null);
+    }
 }
 
 // No editor-mode guard, as fnIncDecI: J+ and J- walk the INDEXED matrix.
@@ -2245,18 +2275,13 @@ pub export fn fnIncDecJ(mode: u16) callconv(.c) void {
     matrix_nav.incDec(.col, mode);
 }
 
+// Neither mimAddNumber nor mimRunFunction tests calcMode: both start straight
+// into the work. Every call site already sits inside a CM_MIM branch, so a mode
+// guard here would only add a refusal, and an error code, that c47 never raises.
 pub export fn mimAddNumber(item: i16) callconv(.c) void {
-    if (!matrixEnsureEditorMode()) {
-        return;
-    }
-
     matrix_mim_add.run(item);
 }
 
 pub export fn mimRunFunction(func: i16, param: u16) callconv(.c) void {
-    if (!matrixEnsureEditorMode()) {
-        return;
-    }
-
     matrix_mim_run.run(func, param);
 }

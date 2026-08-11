@@ -10,10 +10,25 @@ pub const Kind = enum {
 };
 
 pub fn run(kind: Kind) void {
+    if (!frontier_matrix_editor.matrixEnsureEditorMode(refusingFunction(kind))) {
+        return;
+    }
+
     matrix_lifecycle.mimEnter(false);
     defer matrix_lifecycle.mimEnter(true);
 
     apply(kind);
+}
+
+/// The four row/column mutations are four separate C functions, and each names
+/// itself in the console hint it prints when it refuses outside CM_MIM.
+fn refusingFunction(kind: Kind) [*:0]const u8 {
+    return switch (kind) {
+        .insert_row_before, .insert_row_after => "In function _fnInsRow:",
+        .insert_col_before, .insert_col_after => "In function _fnInsCol:",
+        .delete_row => "In function fnDelRow:",
+        .delete_col => "In function fnDelCol:",
+    };
 }
 
 fn apply(kind: Kind) void {

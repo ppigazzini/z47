@@ -34,12 +34,14 @@ pub fn wrap(rows: u16, cols: u16) bool {
     return frontier_matrix_editor.getIRegisterAsInt(true) == @as(i16, @intCast(rows));
 }
 
+// `rows - 1` and `cols - 1` are int arithmetic in C: a degenerate 0 dimension
+// gives -1, not a wrapped 65535.
 fn lastRow(rows: u16) i16 {
-    return @as(i16, @intCast(rows - 1));
+    return @intCast(@as(c_int, rows) - 1);
 }
 
 fn lastCol(cols: u16) i16 {
-    return @as(i16, @intCast(cols - 1));
+    return @intCast(@as(c_int, cols) - 1);
 }
 
 fn markWrapEdge() void {

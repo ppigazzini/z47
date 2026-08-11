@@ -1,6 +1,10 @@
 const std = @import("std");
+const abi = @import("abi");
 const frontier_error = @import("../error.zig");
 const frontier_print = @import("print.zig");
+
+const ERROR_MESSAGE_LENGTH: usize = 512;
+
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_PRTEN: u16 = 0x8067;
 
@@ -65,8 +69,12 @@ const PrintUserTelemetry = struct {
     }
 };
 
+// A global label name is a 1-byte-length string, so it holds up to 255 bytes
+// plus the terminator.
+const LABEL_LENGTH: usize = 256;
+
 const PrintUserContext = struct {
-    label: [32]u8 = std.mem.zeroes([32]u8),
+    label: [LABEL_LENGTH]u8 = std.mem.zeroes([LABEL_LENGTH]u8),
     user_variable_found: bool = false,
     step: [*]u8 = undefined,
     program_number: u16 = 1,
@@ -85,6 +93,12 @@ const PrintUserContext = struct {
         if (!printUserPrinterEnabled()) {
             if (getSystemFlag(@as(c_int, @intCast(FLAG_PRTEN))) or printUserRunStateAllowsPrint()) {
                 frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                // `#if defined(PC_BUILD)` console hint, host-only like the
+                // printf traces in the print owner.
+                if (comptime !frontier_print.is_dmcp_build) {
+                    abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Printing is disabled", .{});
+                    frontier_error.moreInfoOnErrorImpl("In function fnP_User:", errorMessage, null, null);
+                }
             }
             return false;
         }
@@ -117,6 +131,15 @@ const PrintUserContext = struct {
             }
 
             self.printVariableLine();
+            if (frontier_print.z47_frontier_print_exit_pressed()) {
+                return false;
+            }
+
+            // The variable loop tests the EXIT key twice per printed variable:
+            // once at the end of the branch that printed it and again at the
+            // bottom of the loop, which the skipped names bypass. On firmware
+            // the test is not pure -- it drains the DMCP key buffer -- so both
+            // calls have to happen.
             if (frontier_print.z47_frontier_print_exit_pressed()) {
                 return false;
             }
@@ -268,11 +291,19 @@ fn printUserUseTelemetryPipeline() bool {
     return true;
 }
 
+// print.c wraps the whole of fnP_User in `#if defined(OPTION_IR_PRINTING)`, so on
+// the DM42 packages that drop the option the key is inert: currentKeyCode is not
+// touched, no ERROR_PRINTING_DISABLED is raised and nothing is printed.
 pub fn run() void {
+    if (comptime !frontier_print.ir_printing) {
+        return;
+    }
+
     var runner = PrintUserRunner{};
     runner.run();
 }
 
+extern var errorMessage: [*c]u8;
 extern var programRunStop: u8;
 extern var currentKeyCode: u8;
 extern var numberOfNamedVariables: u16;

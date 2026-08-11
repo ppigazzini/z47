@@ -39,6 +39,20 @@ fn needsSbi(command: Command) bool {
     };
 }
 
+// print.c wraps the bodies of fnP_SetDelay, fnP_Advance, fnP_PrinterList,
+// fnP_Byte, fnP_Char and fnP_Tab in `#if defined(OPTION_IR_PRINTING)`, so on the
+// DM42 packages that drop the option those keys do nothing at all: no printer
+// state write, no setPrinterSBI, no error. fnP_PrinterOnOff, fnP_PrinterMode and
+// fnSetPrinter carry the same guard commented out upstream, so they stay live
+// everywhere; fnP_LCD guards only its print-to-printer arm and keeps its SNAP
+// arm, which z47_frontier_print_lcd_to_printer already handles.
+fn gatedOnIrPrinting(command: Command) bool {
+    return switch (command) {
+        .set_delay, .advance, .list, .byte, .char, .tab => true,
+        .on_off, .mode, .set_model, .lcd => false,
+    };
+}
+
 fn applyOn() void {
     printerState.print_on = true;
     setSystemFlag(FLAG_PRTACT);
@@ -132,6 +146,12 @@ fn applyLcd(unused_but_mandatory_parameter: u16) void {
 }
 
 pub fn run(command: Command, value: u16) void {
+    if (comptime !frontier_print.ir_printing) {
+        if (gatedOnIrPrinting(command)) {
+            return;
+        }
+    }
+
     const use_sbi = needsSbi(command);
     if (use_sbi) {
         frontier_print.z47_frontier_print_set_printer_sbi(true);
