@@ -16,8 +16,9 @@
 //     moreInfoOnError console hints are gated on the extra_info build option, like
 //     the sibling error owner; the sprintf-into-errorMessage that precedes them is
 //     gated the same way (it only feeds moreInfoOnError's split-string form).
-//   * PC_BUILD-only debug printf / jm_show_calc_state / VERBOSE_MINIMUM blocks are
-//     host-only (gated on !dmcp_build).
+//   * PC_BUILD-only debug printf and jm_show_calc_state blocks are host-only
+//     (gated on !dmcp_build); the VERBOSE_MINIMUM one also excludes the testSuite,
+//     which undefines that macro.
 //   * DEBUGUNDO is never defined; those printf lines are skipped.
 //   * INTEGERSHORTCUTS / isR47FAM / GROUPWIDTH_* / SEPARATOR_* / RADIX34_MARK /
 //     COMPLEX_UNIT / PRODUCT_SIGN are runtime macros over globals, reproduced
@@ -39,6 +40,8 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 // OPTION_IR_PRINTING guards more than printing here: the region also carries the
 // lastItem writes keyboard.c reads on key release.
 const ir_printing: bool = frontier_build_options.ir_printing;
+// TESTSUITE_BUILD undefines VERBOSE_MINIMUM but leaves MONITOR_IRPRINT defined.
+const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1038,6 +1041,7 @@ extern fn atoi(s: [*c]const u8) c_int;
 extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 extern fn printf(fmt: [*c]const u8, ...) c_int;
+extern fn fflush(stream: ?*anyopaque) c_int;
 
 // PC_BUILD-only debug hook (referenced only under !dmcp_build).
 const jm_show_calc_state = if (!dmcp_build) @extern(*const fn (comment: [*c]u8) callconv(.c) void, .{ .name = "jm_show_calc_state" }) else {};
@@ -1101,10 +1105,10 @@ inline fn radix34MarkByte1() u8 {
     return radix34MarkBytes().b1;
 }
 inline fn separatorLeft() TwoBytes {
-    return gapChar1Bytes(gapItemLeft);
+    return gapChar1Bytes(gapItemLeft, false);
 }
 inline fn separatorRight() TwoBytes {
-    return gapChar1Bytes(gapItemRight);
+    return gapChar1Bytes(gapItemRight, true);
 }
 const ERROR_MESSAGE_LENGTH: usize = 512;
 
@@ -2103,22 +2107,25 @@ pub export fn fnAlphaCursorEnd(unusedButMandatoryParameter: u16) callconv(.c) vo
 //   SEPARATOR_LEFT[1] / SEPARATOR_RIGHT[1] reproduced via separatorByte1Left/Right.
 // ---------------------------------------------------------------------------
 inline fn separatorLeftByte1() u8 {
-    return gapChar1Bytes(gapItemLeft).b1;
+    return gapChar1Bytes(gapItemLeft, false).b1;
 }
 inline fn separatorRightByte1() u8 {
-    return gapChar1Bytes(gapItemRight).b1;
+    return gapChar1Bytes(gapItemRight, true).b1;
 }
 const TwoBytes = struct { b0: u8, b1: u8 };
-// Reproduces Lt/Rt -> gapChar1Left/Right: returns the first two bytes of the
-// separator string (byte[1] == 1 means "single-byte separator").
-fn gapChar1Bytes(gapItem: u16) TwoBytes {
+// Reproduces Lt/Rt -> gapChar1Left/gapChar1Right: returns the first two bytes of
+// the separator string (byte[1] == 1 means "single-byte separator"). The two
+// macros share the ',' '.' '\'' '_' set but not the length test: the left one
+// requires s[1]==0 && s[2]==0, the right one only s[1]==0 || s[2]==0.
+fn gapChar1Bytes(gapItem: u16, comptime right: bool) TwoBytes {
     var s: [*c]const u8 = undefined;
     if (gapItem == 0) {
         s = "\x01\x01\x00";
     } else {
         s = &indexOfItems[gapItem].itemSoftmenuName;
     }
-    if (s[0] != 0 and s[1] == 0 and s[2] == 0) {
+    const applies = if (right) (s[0] != 0 and (s[1] == 0 or s[2] == 0)) else (s[0] != 0 and s[1] == 0 and s[2] == 0);
+    if (applies) {
         switch (s[0]) {
             ',' => return .{ .b0 = ',', .b1 = 1 },
             '.' => return .{ .b0 = '.', .b1 = 1 },
@@ -2701,7 +2708,7 @@ pub export fn closeNim() callconv(.c) void {
                         reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
                         closeNimWithComplex(reg34(REGISTER_X), regImag34(REGISTER_X));
                     } else {
-                        abi.fmtBufZ(errorMessage[0..512], "In function {s}: {d} is an unexpected {s} value!", .{ "closeNIM", @as(c_int, nimNumberPart), "nimNumberPart" });
+                        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgUnexpectedSValue]), "closeNIM", @as(c_uint, nimNumberPart), "nimNumberPart");
                         frontier_error.displayBugScreen(errorMessage);
                     }
                 }
@@ -2713,6 +2720,12 @@ pub export fn closeNim() callconv(.c) void {
 
         if (comptime ir_printing) {
             if ((lastItem != ITM_ms) and (lastItem != ITM_dotD) and (lastItem != ITM_DRG)) { // avoid double tracing for functions changing X after closeNim
+                // PC_BUILD && MONITOR_IRPRINT: both are defined for the simulator
+                // and for the testSuite.
+                if (comptime !dmcp_build) {
+                    _ = printf("**[DL]** closeNim printTraceX lastItem %d\n", @as(c_int, lastItem));
+                    _ = fflush(null);
+                }
                 frontier_print.printTraceX(LINE_NOLF);
             }
             lastItem = 0;
@@ -3814,8 +3827,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 }
             }
         } else if (item != ITM_NOP) {
-            if (comptime !dmcp_build) {
-                // PC_BUILD && VERBOSE_MINIMUM block: VERBOSE_MINIMUM not defined -> skip.
+            // PC_BUILD && VERBOSE_MINIMUM: defined for the simulator, undefined for
+            // the testSuite.
+            if (comptime !dmcp_build and !is_testsuite_build) {
+                _ = printf("addItemToNimBuffer: delayCloseNim=%u\n", @as(c_uint, delayCloseNim));
+                _ = fflush(null);
             }
             if (delayCloseNim == 0) {
                 switch (item) {

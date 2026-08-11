@@ -31,9 +31,26 @@ extern const standardFont: font_t;
 // lead difference are pure and live in the shared std-only abi.glyph_code module.
 const glyph_code = abi.glyph_code;
 
+// The C-ABI bool the sort.h prototypes declare (realType.h).
+const bool_t = u8;
+
 // Rank of a charCode in the standard font (replacement-glyph ordering).
 inline fn standardGlyphs() [*]const glyph_t {
     return @ptrCast(&standardFont.glyphs);
+}
+
+// findGlyph returns -1 for a charCode the standard font (id == 1) does not
+// carry, and C indexes glyphs[-1] with it, reading the bytes in front of the
+// glyph array. Ranking an absent glyph 0 keeps the read inside the array; every
+// charCode the font does carry is unaffected.
+inline fn glyphRank1(charCode: u16) i16 {
+    const id = frontier_fonts.findGlyph(&standardFont, charCode);
+    return if (id < 0) 0 else standardGlyphs()[@intCast(id)].rank1;
+}
+
+inline fn glyphRank2(charCode: u16) i16 {
+    const id = frontier_fonts.findGlyph(&standardFont, charCode);
+    return if (id < 0) 0 else standardGlyphs()[@intCast(id)].rank2;
 }
 
 pub export fn compareChar(char1: [*c]const u8, char2: [*c]const u8) callconv(.c) i32 {
@@ -47,7 +64,7 @@ pub export fn foldNameToCharCodes(name: [*c]const u8, folded: [*c]u16, maxGlyphs
     return glyph_code.foldNameToCharCodes(name, folded[0..@intCast(maxGlyphs)]);
 }
 
-pub export fn nameEqualsPrefolded(candidate: [*c]const u8, folded: [*c]const u16, foldedLength: i32) callconv(.c) u32 {
+pub export fn nameEqualsPrefolded(candidate: [*c]const u8, folded: [*c]const u16, foldedLength: i32) callconv(.c) bool_t {
     const len: usize = if (foldedLength > 0) @intCast(foldedLength) else 0;
     return @intFromBool(glyph_code.nameEqualsPrefolded(candidate, folded[0..len], foldedLength));
 }
@@ -91,13 +108,12 @@ pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonTy
     }
 
     // Compare using replacement glyphs (rank1).
-    const glyphs = standardGlyphs();
     var posa: i16 = 0;
     var posb: i16 = 0;
     var i: i32 = 0;
     while (i < shorter) : (i += 1) {
-        const ranka = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(stra, posa)))].rank1;
-        const rankb = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(strb, posb)))].rank1;
+        const ranka = glyphRank1(glyphCodeAt(stra, posa));
+        const rankb = glyphRank1(glyphCodeAt(strb, posb));
         if (ranka < rankb) return -1;
         if (ranka > rankb) return 1;
         posa = frontier_char_string.stringNextGlyph(stra, posa);
@@ -112,8 +128,8 @@ pub export fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonTy
         posb = 0;
         i = 0;
         while (i < shorter) : (i += 1) {
-            const ranka = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(stra, posa)))].rank2;
-            const rankb = glyphs[@intCast(frontier_fonts.findGlyph(&standardFont, glyphCodeAt(strb, posb)))].rank2;
+            const ranka = glyphRank2(glyphCodeAt(stra, posa));
+            const rankb = glyphRank2(glyphCodeAt(strb, posb));
             if (ranka < rankb) return -1;
             if (ranka > rankb) return 1;
             posa = frontier_char_string.stringNextGlyph(stra, posa);

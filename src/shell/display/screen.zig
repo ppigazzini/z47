@@ -189,9 +189,20 @@ const numHalf: c_int = 4;
 const combinationFontsDefault: u8 = 2;
 const DOUBLING_A: u16 = 15; // REPLACEFONT defined; C: DOUBLING = (checkHP ? DOUBLING_A : 6)
 const DOUBLINGBASEX: u16 = 8;
-const REDUCT_A: c_int = 3;
-const REDUCT_B: c_int = 4;
-const REDUCT_OFF: c_int = 3;
+// REPLACEFONT is defined, so the reduction ratio and offset are the *1 variants
+// when checkHP holds and the plain 3/4/3 triple otherwise.
+const REDUCT_A1: c_int = 4;
+const REDUCT_B1: c_int = 4;
+const REDUCT_OFFSET1: c_int = 0;
+inline fn REDUCT_A() c_int {
+    return if (checkHP()) REDUCT_A1 else 3;
+}
+inline fn REDUCT_B() c_int {
+    return if (checkHP()) REDUCT_B1 else 4;
+}
+inline fn REDUCT_OFF() c_int {
+    return if (checkHP()) REDUCT_OFFSET1 else 3;
+}
 
 const NO_LF: bool_t = 0;
 const DO_LF: bool_t = 1;
@@ -1413,10 +1424,14 @@ inline fn getComplexRegisterAngularMode(reg: calcRegister_t) angularMode_t {
 inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
-// COPY_REGISTER_STRING_TO(dest, regist) = frontier_char_string.xcopy(dest, REGISTER_STRING_DATA(regist), len+1)
+// COPY_REGISTER_STRING_TO(dest, regist) from registers.h: skips the copy when
+// the register data pointer is NULL.
 inline fn COPY_REGISTER_STRING_TO(dest: [*c]u8, regist: calcRegister_t) void {
-    const src = REGISTER_STRING_DATA(regist);
-    _ = frontier_char_string.xcopy(dest, src, @intCast(strlen(src) + 1));
+    const regData: [*c]u8 = getRegisterDataPointer(regist);
+    if (regData != null) {
+        const src: [*c]u8 = regData + SIZEOF_STR_LG_INT_HEADER;
+        _ = frontier_char_string.xcopy(dest, src, @intCast(strlen(src) + 1));
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -2103,7 +2118,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
         lcd_fill_rect(x, @intCast(maxI(0, yy)), @as(u32, @intCast(@as(i32, @intCast(@as(u32, @intCast(doubling)) * ((xGlyph + g.colsGlyph + endingCols) >> @intCast(miniC)))) >> 3)), @intCast(maxI(0, @as(i32, @intCast(yNewMaxDx)) + (if (yy < 0) yy else 0))), if (videoMode == vmNormal) LCD_SET_VALUE else LCD_EMPTY_VALUE);
     }
     if (displaymode == numHalf) {
-        y +%= @bitCast(@divTrunc(@as(i32, g.rowsAboveGlyph) * REDUCT_A, REDUCT_B) * (if (rep_enlarge) @as(i32, 2) else 1));
+        y +%= @bitCast(@divTrunc(@as(i32, g.rowsAboveGlyph) * REDUCT_A(), REDUCT_B()) * (if (rep_enlarge) @as(i32, 2) else 1));
     } else {
         y +%= @as(u32, g.rowsAboveGlyph) * (if (rep_enlarge) @as(u32, 2) else 1);
     }
@@ -2118,7 +2133,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
         y +%= 1;
     }) {
         if (displaymode == numHalf) {
-            if (@rem(REDUCT_A * @as(i32, @intCast(row)) + REDUCT_OFF, REDUCT_B) == 0) {
+            if (@rem(REDUCT_A() * @as(i32, @intCast(row)) + REDUCT_OFF(), REDUCT_B()) == 0) {
                 y -%= 1;
             }
         }
@@ -2607,11 +2622,11 @@ pub export fn showStringEdC47(lastline_in: u32, offset: i16, edcursor: i16, stri
         if (x + numPixels > SCREEN_WIDTH - 1 - ALLOW_PIXELS_FOR_CURSOR and lastline == orglastlines) {
             x = xMultiLineEdOffset;
             y += yincr;
-            lastline -= 1;
+            lastline -%= 1;
         } else if (x + numPixels > SCREEN_WIDTH - 1 - ALLOW_PIXELS_FOR_CURSOR and lastline > 1) {
             x = 1;
             y += yincr;
-            lastline -= 1;
+            lastline -%= 1;
         } else if (x + numPixels > SCREEN_WIDTH - 1 - ALLOW_PIXELS_FOR_CURSOR and lastline <= 1) {
             xCursor = x;
             yCursor = y;
@@ -2883,7 +2898,7 @@ pub export fn showingProbMenu() callconv(.c) bool_t {
 pub export fn showFunctionName(itm: i16, delayInMs: i16, arg: [*c]const u8) callconv(.c) void {
     const item: i16 = itm;
     var functionName: [64]u8 = undefined;
-    var padding: [25]u8 = undefined;
+    var padding: [64]u8 = undefined;
     functionName[0] = 0;
     showFunctionNameArg = null;
 
@@ -3572,7 +3587,14 @@ const noLine: bool_t = 0;
 fn _displaySigmaPlus(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16, doLine: bool_t) void {
     const w: i32 = frontier_real_type.realToInt32C47(SIGMA_N.ptr(), null);
     if (regist == REGISTER_X) {
-        abi.fmtCStr(prefix, "{d:0>3} data point", .{@as(u32, @intCast(@as(c_int, w)))});
+        // C's "%03" PRId32 pads the whole field, sign included, to three characters,
+        // so a negative count renders as "-01" and not as a zero-filled "0-1".
+        const digits: u32 = @abs(w);
+        if (w < 0) {
+            abi.fmtCStr(prefix, "-{d:0>2} data point", .{digits});
+        } else {
+            abi.fmtCStr(prefix, "{d:0>3} data point", .{digits});
+        }
         if (w > 1) {
             _ = stringCopy(prefix + @as(usize, @intCast(stringByteLength(prefix))), "s");
         }
@@ -4251,7 +4273,6 @@ const const34_1e6_unused = {};
 fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegister_t, restoreRegisterT: bool_t, baseY: i16, prefix: [*c]u8, lastBase: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, wLastBaseNumeric_p: *i16, wLastBaseStandard_p: *i16, prefixPre: bool_t, prefixPost: bool_t) void {
     _ = restoreRegisterT;
     const regist = regist_p.*;
-    const hp = checkHPoffset();
 
     if (lastErrorCode != 0 and regist == errorMessageRegisterLine) {
         if (frontier_char_string.stringWidth(&errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
@@ -4325,7 +4346,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         if (T_cursorPos < 0) {
             T_cursorPos = tmplen;
         }
-        _ = showStringEdC47(multiEdLines, displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - 3 - hp), vmNormal, 1, 1, 0);
+        _ = showStringEdC47(multiEdLines, displayAIMbufferoffset, T_cursorPos, aimBuffer, 1, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - 3 - checkHPoffset()), vmNormal, 1, 1, 0);
 
         if (T_cursorPos == tmplen) {
             cursorEnabled = 1;
@@ -4353,14 +4374,14 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
         if (prefixWidth_p.* > 0) {
             if (temporaryInformation == TI_INTEGRAL and regist == REGISTER_X) {
-                _ = showString(prefix, &numericFont, 1, @intCast(@as(i32, baseY) - hp), vmNormal, prefixPre, prefixPost);
+                _ = showString(prefix, &numericFont, 1, @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, prefixPre, prefixPost);
             } else {
-                _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) - hp + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+                _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) - checkHPoffset() + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
             }
         }
 
         if (w_p.* <= SCREEN_WIDTH) {
-            _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+            _ = showString(tmpString, &numericFont, @intCast(@as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
         } else {
             w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
             lineWidth_p.* = @intCast(w_p.*);
@@ -4377,23 +4398,23 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     }
     // Main type dtReal34
     else if (getRegisterDataType(regist) == dtReal34) {
-        refreshReal34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, hp);
+        refreshReal34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
     }
     // Main type dtComplex34
     else if (getRegisterDataType(regist) == dtComplex34) {
-        refreshComplex34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, hp);
+        refreshComplex34(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
     }
     // Main type dtString
     else if (getRegisterDataType(regist) == dtString) {
-        refreshString(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, hp);
+        refreshString(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
     }
     // Main type dtShortInteger
     else if (getRegisterDataType(regist) == dtShortInteger) {
-        refreshShortInteger(regist, origRegist, baseY, prefix, prefixWidth_p, w_p, prefixPre, prefixPost, hp);
+        refreshShortInteger(regist, origRegist, baseY, prefix, prefixWidth_p, w_p, prefixPre, prefixPost);
     }
     // Main type dtLongInteger
     else if (getRegisterDataType(regist) == dtLongInteger) {
-        refreshLongInteger(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost, hp);
+        refreshLongInteger(regist, origRegist, baseY, prefix, prefixWidth_p, lineWidth_p, w_p, prefixPre, prefixPost);
     }
     // Main type dtTime
     else if (getRegisterDataType(regist) == dtTime) {
@@ -4409,7 +4430,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
-        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     }
     // Main type dtDate
     else if (getRegisterDataType(regist) == dtDate) {
@@ -4440,7 +4461,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
-        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     }
     // Main type dtConfig
     else if (getRegisterDataType(regist) == dtConfig) {
@@ -4458,7 +4479,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
         if (prefixWidth_p.* > 0) {
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
-        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     }
     // Main type dtReal34Matrix
     else if (getRegisterDataType(regist) == dtReal34Matrix) {
@@ -4475,7 +4496,7 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
 // dtReal34 prefix builder + render.
 const compact_real = {};
-fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, hp: i32) void {
+fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_THETA_RADIUS) {
@@ -5036,7 +5057,8 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     } else if (temporaryInformation == TI_REGTYPE) {
         _displayRegType(regist, prefix, prefixWidth_p);
     } else if (option_vector and temporaryInformation >= TI_VECTORCOMP_3DSPH and temporaryInformation <= TI_VECTORCOMP_2DRECT) {
-        tiVector(regist, prefix, prefixWidth_p, @intFromBool(temporaryInformation != TI_VECTOR));
+        // C passes `!compact`, and `compact` is #define'd true in this file.
+        tiVector(regist, prefix, prefixWidth_p, 0);
     }
 
     if (prefixWidth_p.* > 0 and temporaryInformation != TI_VIEW_REGISTER) {
@@ -5055,15 +5077,15 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     lineWidth_p.* = @intCast(w_p.*);
     if (prefixWidth_p.* > 0) {
         if (temporaryInformation == TI_INTEGRAL and regist == REGISTER_X) {
-            _ = showString(prefix, &numericFont, 1, @intCast(@as(i32, baseY) - hp), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &numericFont, 1, @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, prefixPre, prefixPost);
         } else {
-            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) - hp + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
+            _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) - checkHPoffset() + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
     }
-    _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+    _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
 }
 
-fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, hp: i32) void {
+fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE_RESULT) {
@@ -5108,10 +5130,10 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
     if (prefixWidth_p.* > 0) {
         _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
-    _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+    _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
 }
 
-fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, hp: i32) void {
+fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
     if (temporaryInformation == TI_COPY_FROM_SHOW and regist == REGISTER_X) {
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
@@ -5139,13 +5161,13 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
     var w: i16 = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, SCREEN_WIDTH, 0, 1));
     if (temporaryInformation != TI_VIEW_REGISTER and regist == REGISTER_X and w < SCREEN_WIDTH) {
         lineWidth_p.* = w;
-        _ = showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 6 - hp), vmNormal, 0, 1);
+        _ = showStringC47(REGISTER_STRING_DATA(regist), stdnumEnlarge, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 6 - checkHPoffset()), vmNormal, 0, 1);
     } else if (regist >= REGISTER_Y and regist <= REGISTER_T and blk: {
         w = @intCast(stringWidthWithLimitC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - prefixWidth_p.*), 0, 1));
         break :blk w < SCREEN_WIDTH - prefixWidth_p.*;
     }) {
         lineWidth_p.* = w;
-        _ = showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - hp), vmNormal, 0, 1);
+        _ = showStringC47(REGISTER_STRING_DATA(regist), numHalf, nocompress, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - checkHPoffset()), vmNormal, 0, 1);
     } else {
         w = frontier_char_string.stringWidth(REGISTER_STRING_DATA(regist), &standardFont, false, true);
         if (w >= SCREEN_WIDTH - prefixWidth_p.*) {
@@ -5161,7 +5183,7 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                     _ = showString(tmpString, &standardFont, @intCast(prefixWidth_p.*), Y_POSITION_OF_REGISTER_T_LINE - 3, vmNormal, 0, 1);
                 } else {
-                    _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - 3 - hp), vmNormal, 0, 1);
+                    _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - 3 - checkHPoffset()), vmNormal, 0, 1);
                 }
                 w = @intCast(stringByteLength(tmpString));
                 COPY_REGISTER_STRING_TO(tmpString, regist);
@@ -5178,7 +5200,7 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                     _ = showString(tmpString, &standardFont, @intCast(prefixWidth_p.*), Y_POSITION_OF_REGISTER_T_LINE + 18, vmNormal, 0, 1);
                 } else {
-                    _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 18 - hp), vmNormal, 0, 1);
+                    _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 18 - checkHPoffset()), vmNormal, 0, 1);
                 }
             } else {
                 COPY_REGISTER_STRING_TO(tmpString, regist);
@@ -5186,7 +5208,7 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
                 _ = frontier_char_string.xcopy(tmpStrW, STD_ELLIPSIS, 3);
                 w = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
                 lineWidth_p.* = w;
-                _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - hp), vmNormal, 0, 1);
+                _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - checkHPoffset()), vmNormal, 0, 1);
             }
         } else {
             lineWidth_p.* = w;
@@ -5197,18 +5219,18 @@ fn refreshString(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
             if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
                 _ = showString(tmpString, &standardFont, @intCast(prefixWidth_p.*), @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, 0, 1);
             } else {
-                _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - hp), vmNormal, 0, 1);
+                _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), @intCast(@as(i32, baseY) + 6 - checkHPoffset()), vmNormal, 0, 1);
             }
         }
     }
     _ = w_p;
 }
 
-fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, hp: i32) void {
+fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
     _ = w_p;
     {
         frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
-        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) hp else 0)), vmNormal, 0, 1);
+        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) checkHPoffset() else 0)), vmNormal, 0, 1);
 
         if (regist == REGISTER_X) {
             displayBaseMode(regist);
@@ -5253,11 +5275,11 @@ fn refreshShortInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY
         if (tmpString[0] != 0) {
             frontier_display.shortIntegerToDisplayString(regist, tmpString, 1, noBaseOverride);
         }
-        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) hp else 0)), vmNormal, 0, 1);
+        _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, baseY) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) - (if (fontForShortInteger == &numericFont) checkHPoffset() else 0)), vmNormal, 0, 1);
     }
 }
 
-fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t, hp: i32) void {
+fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16, prefix: [*c]u8, prefixWidth_p: *i16, lineWidth_p: *i16, w_p: *i32, prefixPre: bool_t, prefixPost: bool_t) void {
     if (!(temporaryInformation == TI_NO_INFO and currentInputVariable != INVALID_VARIABLE)) {
         prefix[0] = 0;
     }
@@ -5364,7 +5386,7 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
         _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
     }
     if (w_p.* <= SCREEN_WIDTH) {
-        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - hp), vmNormal, 0, 1);
+        _ = showString(tmpString, &numericFont, @intCast(if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) @as(i32, prefixWidth_p.*) else @as(i32, SCREEN_WIDTH) - w_p.*), @intCast(@as(i32, baseY) - checkHPoffset()), vmNormal, 0, 1);
     } else {
         w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, false, true);
         if (w_p.* > SCREEN_WIDTH) {
@@ -5522,16 +5544,15 @@ fn _showAngularModeGlyph(angularMode: angularMode_t, font: *const font_t, x: u32
 pub export fn displayNim(nim: [*c]const u8, lastBase: [*c]const u8, wLastBaseNumeric: i16, wLastBaseStandard: i16) callconv(.c) void {
     var w: i16 = undefined;
     const xangularMode: angularMode_t = getRegisterAngularMode(REGISTER_X);
-    const hp = checkHPoffset();
     if (frontier_char_string.stringWidth(nim, &numericFont, true, true) + wLastBaseNumeric <= SCREEN_WIDTH - 16) {
-        xCursor = showString(nim, &numericFont, 0, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - hp), vmNormal, 1, 1);
+        xCursor = showString(nim, &numericFont, 0, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()), vmNormal, 1, 1);
         yCursor = Y_POSITION_OF_NIM_LINE;
         cursorFont = &numericFont;
 
         if (lastIntegerBase != 0 or (aimBuffer[0] != 0 and aimBuffer[strlen(aimBuffer) - 1] == '/')) {
-            _ = showString(lastBase, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - hp), vmNormal, 1, 1);
+            _ = showString(lastBase, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()), vmNormal, 1, 1);
         } else if ((getRegisterDataType(REGISTER_X) == dtReal34) and (xangularMode < amNone)) {
-            _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - hp));
+            _showAngularModeGlyph(xangularMode, &numericFont, xCursor + 16, @intCast(@as(i32, Y_POSITION_OF_NIM_LINE) - checkHPoffset()));
         }
     } else if (frontier_char_string.stringWidth(nim, &standardFont, true, true) + wLastBaseStandard <= SCREEN_WIDTH - 8) {
         xCursor = showString(nim, &standardFont, 0, Y_POSITION_OF_NIM_LINE + 6, vmNormal, 1, 1);
@@ -6151,6 +6172,17 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
             _ioFileNameOverride[0] = 0;
         } else {
             _ = strftime(&bmpFileName, bmpFileName.len, "%Y%m%d-%H%M%S00.bmp", timeInfo);
+            // If the name clashes, increment the trailing 00..99 until free; 99 overwrites.
+            var i: u8 = 0;
+            while (i < 100) : (i += 1) {
+                bmpFileName[15] = '0' + i / 10;
+                bmpFileName[16] = '0' + i % 10;
+                const existing = fopen(&bmpFileName, "rb");
+                if (existing == null) {
+                    break;
+                }
+                _ = fclose(existing);
+            }
         }
         const bmp = fopen(&bmpFileName, "wb");
         // A name whose folder does not exist: report and leave, the writes below take no NULL.
