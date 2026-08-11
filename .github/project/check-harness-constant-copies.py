@@ -216,13 +216,39 @@ def main() -> int:
     ap.add_argument("--repo-root", default=".")
     ap.add_argument("--bump", action="store_true", help="re-record the per-file counts")
     ap.add_argument("--self-test", action="store_true", help="prove the gate fires")
+    ap.add_argument(
+        "--require-tools",
+        action="store_true",
+        help="fail instead of skipping when the compiler or the generated headers are absent",
+    )
     args = ap.parse_args()
     repo = Path(args.repo_root).resolve()
 
+    # This gate decides by COMPILING, and it counts a name c43 does not declare as
+    # harness-local. So an environment that cannot resolve c43's headers does not
+    # measure a smaller number -- it measures zero, and a ratchet that only goes
+    # down passes on that. Both preconditions below are therefore failures under
+    # --require-tools, which is what CI passes; interactively they stay skips so a
+    # bare checkout can still run the rest of the suite.
+    def missing(what: str) -> int:
+        if args.require_tools:
+            print(f"check-harness-constant-copies: FAIL -- {what}")
+            print("  Refusing to report a count this environment cannot measure: every")
+            print("  c43 name would come back undeclared, the per-file counts would fall")
+            print("  to zero, and a downward-only ratchet treats a fall as a pass.")
+            return 1
+        print(f"check-harness-constant-copies: SKIP -- {what}")
+        return 0
+
     zig = shutil.which("zig")
     if not zig:
-        print("check-harness-constant-copies: SKIP -- zig not on PATH")
-        return 0
+        return missing("zig not on PATH")
+
+    # constantPointers.h is generated (`zig build constants`) and gitignored, so a
+    # fresh checkout has the include root but not the header.
+    generated_header = upstream_path(repo, "src/generated/constantPointers.h")
+    if not generated_header.is_file():
+        return missing(f"{generated_header.relative_to(repo).as_posix()} absent -- run `zig build constants`")
 
     headers = tracked_headers(repo)
     if not headers:
