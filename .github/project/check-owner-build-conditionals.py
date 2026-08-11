@@ -95,6 +95,7 @@ ALLOWED: dict[str, str] = {
     "library_fn_base": "the DMCP ROM function-table base, which moves with the XIP packaging",
     "wp34s_mod_small_buffers": "WP34S_MOD_SMALL_BUFFERS",
     "is_testsuite_build": "TESTSUITE_BUILD -- c43 uses it itself (random.c seeds 0xDeadBeef under it)",
+    "compile_date": "__DATE__ -- screen.c collapses it into versionDateStr, and the build supplies the stamp because Zig has no __DATE__",
     "strip_15": "!OPTION_DISTRIBUTIONS",
     "strip_16": "!OPTION_DIST_NORMAL",
     "strip_17": "!OPTION_DIST_C",
