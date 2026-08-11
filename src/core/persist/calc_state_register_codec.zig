@@ -9,6 +9,7 @@
 
 const std = @import("std");
 const abi = @import("abi");
+const build_options = @import("calc_state_build_options");
 const vector_shape = @import("vector_shape.zig"); // std-only matrix vector-shape
 const data_file_bytes = @import("data_file_bytes.zig"); // std-only data-file byte transforms
 const text = @import("calc_state_text.zig");
@@ -35,6 +36,17 @@ const amMultPi: u8 = 4;
 const amNone: u8 = 5;
 const amAngleMask: u32 = 15;
 const amPolar: u32 = 16;
+
+// OPTION_XFN_1000 wraps BOTH halves of the 1000-digit register form in
+// saveRestoreCalcState.c: the whole `if(isXFNRegister){...return;}` arm of
+// registerToSaveString and the whole `else if("RXFN")` branch of restoreRegister.
+// Each gate has to enclose its `return`/branch and nothing less, because the
+// behaviour without the option is that an XFN register FALLS THROUGH to the
+// standard getRegisterDataType() branch on save, and an "RXFN" type code falls
+// through to the unknown-type arm on restore. Gating only the helper the save arm
+// calls would leave the arm writing an empty type tag and an empty value over a
+// register that has one.
+const option_xfn_1000: bool = build_options.option_xfn_1000;
 
 const START_REGISTER_VALUE: usize = 860;
 const TMP_STR_LENGTH: i32 = 2560;
@@ -324,8 +336,9 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
     const trs = regValueBuf();
 
     // XFN 1000-digit registers: emit the full-precision plain value via the
-    // FMA output helper (OPTION_XFN_1000 path); other types fall through below.
-    if (isXFNRegister) {
+    // FMA output helper. Without OPTION_XFN_1000 the arm is gone and every
+    // register, XFN or not, takes the standard data-type branch below.
+    if (option_xfn_1000 and isXFNRegister) {
         if (registerFMAOutputPlainString(regist, "", trs)) {
             _ = strcpy(aim(), "RXFN");
             var am: c_int = 0;
@@ -624,13 +637,12 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         reallocateRegister(regist, dtReal34, 0, tag);
         if (dataFileMode) dataFileCommaToPeriod(value);
         _ = decQuadFromString(regReal34Data(regist), value, &ctxtReal34);
-    } else if (strcmpEq(type_str, "RXFN")) {
-        // OPTION_XFN_1000: the 1000-digit long-real form registerToSaveString
-        // writes above. FOUND MISSING by the differential -- z47 emitted "RXFN"
-        // on save and had no branch to read it back, so a long-real X survived a
-        // save and returned as the "to be coded!" bug screen. c43 has had this
-        // branch all along; the port dropped it when it inlined
-        // processResultantLongReal into doXfn (see xfn.zig).
+    } else if (option_xfn_1000 and strcmpEq(type_str, "RXFN")) {
+        // The 1000-digit long-real form registerToSaveString writes above. Only
+        // REGISTER_X can hold it, so any other register number is a file the
+        // calculator cannot honour. Without OPTION_XFN_1000 this branch is gone
+        // and an "RXFN" type code falls through to the closing arm of the chain,
+        // which raises the unknown-type bug screen.
         if (regist != REGISTER_X) {
             displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (EXTRA_INFO_ON_CALC_ERROR) {
