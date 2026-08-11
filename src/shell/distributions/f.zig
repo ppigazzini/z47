@@ -3,12 +3,12 @@
 // Zig owner for src/c47/distributions/f.c: the F (Fisher-Snedecor) distribution
 // commands (fnF_P/L/R/I) plus the WP34S math borrowings, including the shared
 // Newton-step solver WP34S_Qf_Newton used by the poisson/binomial/negBinom/hyper
-// quantiles. Part of the SAVE_SPACE_DM42_17 cluster (stripped on every DM42
-// package), so compiled only on host and DMCP5 and gated by strip_17.
+// quantiles. Part of the SAVE_SPACE_DM42_17 cluster (stripped on DM42 packages
+// 2-4), so compiled on host, on DMCP5 and on DM42 package 1, gated by strip_17.
 //
 // WP34S_Qf_Newton is exported with C linkage (shell.zig) so the other cluster
-// members link against it where the cluster is kept; on DM42 it collapses to an
-// empty stub. The solver dispatches to each distribution's CDF/PDF (the Zig
+// members link against it where the cluster is kept; on DM42 packages 2-4 it
+// collapses to an empty stub. The solver dispatches to each distribution's CDF/PDF (the Zig
 // owners' exports, bound through distribution_runtime.zig) and finishes
 // discrete searches via WP34S_qf_discrete_final. The testSuite drives every
 // branch via tests/f_{p,l,r,i}.txt.
@@ -24,7 +24,7 @@ const QF_NEWTON_BINOMIAL: u32 = 2;
 const QF_NEWTON_NEGBINOM: u32 = 4;
 const QF_NEWTON_HYPERGEOMETRIC: u32 = 5;
 
-fn checkParamF(x: *real_t, i: *real_t, j: *real_t) bool {
+fn checkParamF(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -55,7 +55,7 @@ fn checkParamF(x: *real_t, i: *real_t, j: *real_t) bool {
     return true;
 }
 
-pub fn fP(unused_but_mandatory_parameter: u16) void {
+pub fn fP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -67,7 +67,7 @@ pub fn fP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn fL(unused_but_mandatory_parameter: u16) void {
+pub fn fL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -79,7 +79,7 @@ pub fn fL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn fR(unused_but_mandatory_parameter: u16) void {
+pub fn fR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -91,7 +91,7 @@ pub fn fR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn fI(unused_but_mandatory_parameter: u16) void {
+pub fn fI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -120,7 +120,7 @@ pub fn fI(unused_but_mandatory_parameter: u16) void {
 // WP34S math borrowings (upstream comment: "borrowed from the WP34S project").
 // ---------------------------------------------------------------------------
 
-pub fn wp34sPdfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sPdfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -145,7 +145,7 @@ pub fn wp34sPdfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *r
     dr.realDivide(&p, x, res, ctx);
 }
 
-pub fn wp34sCdfuF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sCdfuF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -166,7 +166,7 @@ pub fn wp34sCdfuF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *
     dr.WP34S_betai(&r, &q, &p, res, ctx);
 }
 
-pub fn wp34sCdfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sCdfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -187,7 +187,7 @@ pub fn wp34sCdfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *r
     dr.WP34S_betai(&q, &r, &p, res, ctx);
 }
 
-fn wp34sQfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sQfF(x: *const real_t, d1: *const real_t, d2: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -246,7 +246,7 @@ pub fn wp34sQfNewton(
     p3: [*c]const real_t,
     res: *real_t,
     ctx: *realContext_t,
-) void {
+) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r_p: real_t = undefined;
@@ -274,7 +274,7 @@ pub fn wp34sQfNewton(
     dr.realCopy(&p, &r_maxstep);
 
     dr.setPlusInfinity(&r_high);
-    dr.realCopy(dr.const0(), &r_low); // f_nonnegative is always true here
+    dr.realCopy(if (f_nonnegative) dr.const0() else dr.constMinusInfinity(), &r_low);
 
     var converged: real_t = undefined;
     var done = false;

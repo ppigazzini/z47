@@ -2,8 +2,8 @@
 //
 // Zig owner for src/c47/distributions/poisson.c: the Poisson distribution
 // commands (fnPoissonP/L/R/I) and the WP34S math borrowings. Like the other
-// SAVE_SPACE_DM42_17 cluster members it is compiled only where that cluster is
-// kept (host and DMCP5) and stubbed on every DM42 package via strip_17.
+// SAVE_SPACE_DM42_17 cluster members it is compiled where that cluster is kept
+// (host, DMCP5 and DM42 package 1) and stubbed on DM42 packages 2-4 via strip_17.
 //
 // Three helpers are exported with C linkage because still-C cluster members
 // reach them where the cluster is present:
@@ -23,7 +23,7 @@ pub const realContext_t = dr.realContext_t;
 // WP34S_Qf_Newton distribution selector (defines.h).
 const QF_NEWTON_POISSON: u32 = 1;
 
-fn checkParamPoisson(x: *real_t, i: *real_t) bool {
+fn checkParamPoisson(x: *real_t, i: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -47,7 +47,7 @@ fn checkParamPoisson(x: *real_t, i: *real_t) bool {
     return true;
 }
 
-pub fn poissonP(unused_but_mandatory_parameter: u16) void {
+pub fn poissonP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -59,7 +59,7 @@ pub fn poissonP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn poissonL(unused_but_mandatory_parameter: u16) void {
+pub fn poissonL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -71,7 +71,7 @@ pub fn poissonL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn poissonR(unused_but_mandatory_parameter: u16) void {
+pub fn poissonR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -83,7 +83,7 @@ pub fn poissonR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn poissonI(unused_but_mandatory_parameter: u16) void {
+pub fn poissonI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -107,7 +107,7 @@ pub fn poissonI(unused_but_mandatory_parameter: u16) void {
 
 // Stack: probability in Z, variance in Y, mean in X; returns a normal
 // approximation. Shared by the binomial/hyper/negBinom quantiles.
-pub fn wp34sNormalMomentApprox(prob: *const real_t, variance: *const real_t, mean: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sNormalMomentApprox(prob: *const real_t, variance: *const real_t, mean: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
 
@@ -121,7 +121,7 @@ pub fn wp34sNormalMomentApprox(prob: *const real_t, variance: *const real_t, mea
     dr.realAdd(&p, mean, res, ctx);
 }
 
-pub fn wp34sPdfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sPdfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -139,7 +139,7 @@ pub fn wp34sPdfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ct
     dr.realExponential(&q, res, ctx);
 }
 
-fn wp34sCdfuPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sCdfuPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (dr.realCompareLessEqual(lambda, dr.const0())) {
@@ -158,7 +158,7 @@ fn wp34sCdfuPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: 
     dr.WP34S_GammaP(lambda, &p, res, ctx, false, true);
 }
 
-fn wp34sCdfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sCdfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (dr.realCompareLessEqual(lambda, dr.const0())) {
@@ -169,7 +169,7 @@ fn wp34sCdfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *
     wp34sCdfPoisson2(&p, lambda, res, ctx);
 }
 
-pub fn wp34sCdfPoisson2(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sCdfPoisson2(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (dr.realLessThan(x, dr.const0())) {
@@ -184,7 +184,7 @@ pub fn wp34sCdfPoisson2(x: *const real_t, lambda: *const real_t, res: *real_t, c
     dr.WP34S_GammaP(lambda, &p, res, ctx, true, true);
 }
 
-fn wp34sQfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sQfPoisson(x: *const real_t, lambda: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
 

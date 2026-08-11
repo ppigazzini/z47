@@ -26,20 +26,24 @@ pub const TimerState = struct {
 
 /// Correct the state for the wall clock wrapping past midnight (currTime dropped
 /// below startTime) or rolling over an hour since the last read.
+///
+/// Every operation here is uint32_t arithmetic in the source and is written
+/// modular for that reason: an accumulated value or total past 2^32 ms rolls over
+/// and the stopwatch keeps running with a wrong reading.
 pub fn antirewinder(state: TimerState, currTime: u32) TimerState {
     var s = state;
     if (currTime < s.startTime) {
-        s.value += MS_PER_DAY - s.startTime;
+        s.value +%= MS_PER_DAY -% s.startTime;
         if (s.totalTime > 0) {
-            s.totalTime += MS_PER_DAY - s.startTime;
+            s.totalTime +%= MS_PER_DAY -% s.startTime;
         }
         s.startTime = 0;
-    } else if (currTime >= s.startTime + MS_PER_HOUR) {
-        s.value += MS_PER_HOUR;
+    } else if (currTime >= s.startTime +% MS_PER_HOUR) {
+        s.value +%= MS_PER_HOUR;
         if (s.totalTime > 0) {
-            s.totalTime += MS_PER_HOUR;
+            s.totalTime +%= MS_PER_HOUR;
         }
-        s.startTime += MS_PER_HOUR;
+        s.startTime +%= MS_PER_HOUR;
     }
     return s;
 }
@@ -51,7 +55,7 @@ pub fn timerElapsed(state: TimerState, currTime: u32) struct { state: TimerState
         return .{ .state = state, .elapsed = state.value };
     }
     const s = antirewinder(state, currTime);
-    return .{ .state = s, .elapsed = currTime - s.startTime + s.value };
+    return .{ .state = s, .elapsed = currTime -% s.startTime +% s.value };
 }
 
 const testing = std.testing;
@@ -73,6 +77,19 @@ test "antirewinder advances an hour rollover" {
     try testing.expectEqual(@as(u32, 1000 + MS_PER_HOUR), s.startTime);
     try testing.expectEqual(@as(u32, 200 + MS_PER_HOUR), s.value);
     try testing.expectEqual(@as(u32, 0), s.totalTime); // totalTime==0 stays 0
+}
+
+test "accumulation past 2^32 ms rolls over instead of refusing the value" {
+    const s = antirewinder(.{ .startTime = 1000, .value = 0xFFFF_FFFF - 1000, .totalTime = 1 }, 1000 + MS_PER_HOUR);
+    try testing.expectEqual(@as(u32, MS_PER_HOUR -% 1001), s.value);
+    try testing.expectEqual(@as(u32, 1 + MS_PER_HOUR), s.totalTime);
+}
+
+test "a recalled value near 2^32 wraps the elapsed sum" {
+    // fnRecallTimerApp can set value from a register, so the final addition is
+    // not bounded by the wall clock.
+    const r = timerElapsed(.{ .startTime = 1000, .value = 0xFFFF_FFFF, .totalTime = 0 }, 2000);
+    try testing.expectEqual(@as(u32, 999), r.elapsed); // 2000 - 1000 + 0xFFFFFFFF
 }
 
 test "timerElapsed sums, and a stopped timer returns its held value" {

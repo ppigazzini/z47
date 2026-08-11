@@ -23,8 +23,6 @@ else if (builtin.target.os.tag == .macos)
 else
     ".text";
 
-const DECNUMUNITS = 25;
-
 const DECNEG: u8 = 0x80;
 const DECNAN: u8 = 0x20;
 const DECSNAN: u8 = 0x10;
@@ -33,7 +31,6 @@ const DECSPECIAL: u8 = 0x70;
 
 pub const calcRegister_t = i16;
 pub const angularMode_t = c_int;
-const rounding_t = c_int;
 
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Z: calcRegister_t = 102;
@@ -94,7 +91,6 @@ extern fn decNumberAdd(result: *real_t, lhs: *const real_t, rhs: *const real_t, 
 extern fn decNumberSubtract(result: *real_t, lhs: *const real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberCopy(result: *real_t, rhs: *const real_t) *real_t;
-extern fn decNumberFromUInt32(result: *real_t, rhs: u32) *real_t;
 extern fn decNumberFromInt32(result: *real_t, rhs: i32) *real_t;
 extern fn decNumberSquareRoot(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 extern fn decNumberCopyAbs(result: *real_t, rhs: *const real_t) *real_t;
@@ -157,6 +153,18 @@ pub extern fn displayDomainErrorMessage(error_code: u8, err_message_register_lin
 const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 pub inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void {
     if (comptime extra_info_on_calc_error) c_moreInfoOnError(msg1, msg2, msg3, msg4);
+}
+
+extern var errorMessage: [*c]u8;
+
+/// Stage a diagnostic in the shared errorMessage scratch buffer and yield a
+/// pointer to it, the way a `sprintf(errorMessage, text)` immediately before the
+/// hint call leaves the buffer. Compiled out with the hints themselves.
+pub inline fn stagedMessage(comptime text: [:0]const u8) [*:0]const u8 {
+    if (comptime !extra_info_on_calc_error) return text.ptr;
+    @memcpy(errorMessage[0..text.len], text);
+    errorMessage[text.len] = 0;
+    return errorMessage;
 }
 pub extern fn getSystemFlag(flag: i32) bool;
 
@@ -278,9 +286,6 @@ pub fn const1on2() *const real_t {
 }
 pub fn const39Pi() *const real_t {
     return z47_math_wrappers_const_pi();
-}
-pub fn constNaN() *const real_t {
-    return const_NaN;
 }
 
 pub fn const4() *const real_t {

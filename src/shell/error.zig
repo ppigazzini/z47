@@ -42,6 +42,7 @@ else
 const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const frontier_char_string = @import("display/text/char_string.zig");
+const frontier_debug = @import("debug.zig");
 const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const frontier_screen = @import("display/screen.zig");
 const real_t = abi.Real;
@@ -415,14 +416,12 @@ pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void
             if (getRegisterAngularMode(REGISTER_X) == amNone) {
                 real34Copy(reg34(REGISTER_X), &r);
             } else {
-                displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnErr("In function fnErrorMessage:", "data type cannot be used for this function!");
+                badDataType();
                 return;
             }
         },
         else => {
-            displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnErr("In function fnErrorMessage:", "data type cannot be used for this function!");
+            badDataType();
             return;
         },
     }
@@ -431,7 +430,20 @@ pub export fn fnErrorMessage(unusedButMandatoryParameter: u16) callconv(.c) void
         displayCalcErrorMessage(@truncate(real34ToUInt32(&r)), ERR_REGISTER_LINE, REGISTER_X);
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnErr("In function fnErrorMessage:", "the argument is not less than NUMBER_OF_ERROR_CODES or is negative!");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..512], "the argument is not less than {d} or is negative!", .{@as(c_uint, NUMBER_OF_ERROR_CODES)});
+            moreInfoOnErr("In function fnErrorMessage:", errorMessage);
+        }
+    }
+}
+
+// fnErrorMessage's X-register refusal: the diagnostic names the offending data
+// type, so it is composed per call rather than shared as a literal.
+fn badDataType() void {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    if (comptime extra_info) {
+        abi.fmtBufZ(errorMessage[0..512], "data type {s} cannot be used for this function!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(REGISTER_X, false, false))});
+        moreInfoOnErr("In function fnErrorMessage:", errorMessage);
     }
 }
 

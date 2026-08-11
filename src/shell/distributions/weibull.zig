@@ -27,7 +27,7 @@ fn checkParamWeibull(x: *real_t, shape: *real_t, scale: *real_t) linksection(dr.
         return false;
     } else if (dr.realIsZero(shape) or dr.realIsNegative(shape) or dr.realIsZero(scale) or dr.realIsNegative(scale)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
-        dr.moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b <= 0 or t <= 0", null, null);
+        dr.moreInfoOnError("In function checkParamWeibull:", "cannot calculate for b \xa2\x64 0 or t \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
     }

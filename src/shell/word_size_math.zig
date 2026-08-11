@@ -31,6 +31,30 @@ pub const WordSizeResult = struct {
     reduce: bool,
 };
 
+/// Value mask and sign bit belonging to a stored short-integer word size.
+pub const WordSizeMasks = struct {
+    /// Value mask: all ones at 64, else (1 << ws) - 1.
+    mask: u64,
+    /// Sign bit: 1 << (ws - 1).
+    sign_bit: u64,
+};
+
+/// Derive the masks from a *stored* word size, with no 0 -> 64 normalization.
+///
+/// This is updateShortIntegerMasks' arithmetic, which reads the stored size as
+/// it stands: a degenerate 0 yields mask 0 and sign bit 1 << 63, because the
+/// shift count is taken modulo the operand width on the C target. Only the
+/// interactive fnSetWordSize path turns a request of 0 into 64.
+pub fn masksForWordSize(word_size: u8) WordSizeMasks {
+    return .{
+        .mask = if (word_size == 64)
+            ~@as(u64, 0)
+        else
+            (@as(u64, 1) << @truncate(word_size)) - 1,
+        .sign_bit = @as(u64, 1) << @truncate(word_size -% 1),
+    };
+}
+
 /// Resolve a requested short-integer word size against the current size.
 ///
 /// Mirrors fnSetWordSize's arithmetic exactly: the "changed" test compares the
@@ -51,18 +75,13 @@ pub fn resolveWordSize(requested: u16, current_word_size: u8) WordSizeResult {
     // trapping.
     const word_size: u8 = @truncate(normalized);
 
-    const mask: u64 = if (word_size == 64)
-        ~@as(u64, 0)
-    else
-        (@as(u64, 1) << @truncate(word_size)) - 1;
-
-    const sign_bit: u64 = @as(u64, 1) << @truncate(word_size -% 1);
+    const masks = masksForWordSize(word_size);
 
     return .{
         .changed = changed,
         .word_size = word_size,
-        .mask = mask,
-        .sign_bit = sign_bit,
+        .mask = masks.mask,
+        .sign_bit = masks.sign_bit,
         .reduce = reduce,
     };
 }
@@ -99,6 +118,14 @@ test "changed compares the raw low 8 bits, not the normalized width" {
     // current size is already 0 the setting is reported unchanged even though
     // the resolved width becomes 64.
     try std.testing.expect(!resolveWordSize(0, 0).changed);
+}
+
+test "a stored word size of 0 is not normalized: mask 0, sign bit 1<<63" {
+    const m = masksForWordSize(0);
+    try std.testing.expectEqual(@as(u64, 0), m.mask);
+    try std.testing.expectEqual(@as(u64, 1) << 63, m.sign_bit);
+    // The interactive path does normalize, so the two disagree at 0 by design.
+    try std.testing.expectEqual(@as(u64, 0xFFFF_FFFF_FFFF_FFFF), resolveWordSize(0, 0).mask);
 }
 
 test "mask covers the full width sweep 1..64" {

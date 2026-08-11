@@ -22,7 +22,7 @@ fn checkParamCauchy(x: *real_t, x0: *real_t, gamma: *real_t) linksection(dr.code
 
     if (dr.realIsZero(gamma) or dr.realIsNegative(gamma)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
-        dr.moreInfoOnError("In function checkParamCauchy:", "cannot calculate for gamma <= 0", null, null);
+        dr.moreInfoOnError("In function checkParamCauchy:", "cannot calculate for \x83\xb3 \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
     }

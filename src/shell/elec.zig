@@ -18,6 +18,7 @@
 
 const frontier_build_options = @import("frontier_build_options");
 const option_elec: bool = frontier_build_options.option_elec;
+const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 // ---------------------------------------------------------------------------
 // Types -- shared ABI bindings. The hand-mirrored C-ABI layouts
@@ -87,6 +88,7 @@ const TripleRegZ3_98: calcRegister_t = 98;
 extern var ctxtReal39: realContext_t;
 extern var temporaryInformation: u8;
 
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
@@ -173,7 +175,12 @@ const Error = error{ArgExceedsDomain};
 
 fn reportError(e: Error) void {
     switch (e) {
-        error.ArgExceedsDomain => frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X),
+        error.ArgExceedsDomain => {
+            frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                moreInfoOnError("In elec transform:", "complex result and CPXRES is not set", null, null);
+            }
+        },
     }
 }
 

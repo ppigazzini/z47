@@ -2,8 +2,8 @@
 //
 // Zig owner for src/c47/distributions/hyper.c: the Hypergeometric distribution
 // commands (fnHypergeometricP/L/R/I) and the WP34S math borrowings. Part of the
-// SAVE_SPACE_DM42_17 cluster, gated by strip_17: present only on host and DMCP5,
-// stubbed on every DM42 package.
+// SAVE_SPACE_DM42_17 cluster, gated by strip_17: present on host, on DMCP5 and on
+// DM42 package 1, stubbed on DM42 packages 2-4.
 //
 // cdf_Hypergeometric2 and pdf_Hypergeometric are exported with C linkage because
 // still-C cluster members reach them where the cluster is kept (the geometric
@@ -21,7 +21,7 @@ pub const realContext_t = dr.realContext_t;
 const QF_NEWTON_HYPERGEOMETRIC: u32 = 5;
 
 // Parameters: x in X, K (k) in Q, n (j) in N, N (i) in M.
-fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) bool {
+fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) linksection(dr.code_section) bool {
     var xmin: real_t = undefined;
     var xmax: real_t = undefined;
 
@@ -33,7 +33,7 @@ fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) bool {
         !dr.getRegisterAsReal(dr.REGISTER_N, j) or !dr.getRegisterAsReal(dr.REGISTER_Q, k))
     {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DATA_TYPE_FOR_OP, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
-        dr.moreInfoOnError("In function checkParamHyper:", "Values in register X, I, J and K must be of the real or long integer type", null, null);
+        dr.moreInfoOnError("In function checkParamHyper:", dr.stagedMessage("Values in register X, I, J and K must be of the real or long integer type"), null, null);
         return false;
     }
 
@@ -62,7 +62,7 @@ fn checkParamHyper(x: *real_t, k: *real_t, j: *real_t, i: *real_t) bool {
     return true;
 }
 
-fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) void {
+fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) linksection(dr.code_section) void {
     if (dr.realIsNaN(ans)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
         dr.moreInfoOnError(where, "a parameter is invalid", null, null);
@@ -72,7 +72,7 @@ fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) void {
     dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
 }
 
-pub fn hypergeometricP(unused_but_mandatory_parameter: u16) void {
+pub fn hypergeometricP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -90,7 +90,7 @@ pub fn hypergeometricP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn hypergeometricL(unused_but_mandatory_parameter: u16) void {
+pub fn hypergeometricL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -104,7 +104,7 @@ pub fn hypergeometricL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn hypergeometricR(unused_but_mandatory_parameter: u16) void {
+pub fn hypergeometricR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -118,7 +118,7 @@ pub fn hypergeometricR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn hypergeometricI(unused_but_mandatory_parameter: u16) void {
+pub fn hypergeometricI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -150,7 +150,7 @@ pub fn hypergeometricI(unused_but_mandatory_parameter: u16) void {
 // ---------------------------------------------------------------------------
 
 // PDF(k; n, K, N) = (K C k) ((N-K) C (n-k)) / (N C n)
-pub fn pdfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn pdfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var a: real_t = undefined;
     var b: real_t = undefined;
     var c: real_t = undefined;
@@ -170,7 +170,7 @@ pub fn pdfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, 
     dr.realExponential(&q, res, ctx);
 }
 
-fn cdfHypergeometricCommon(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, complementary: bool, res: *real_t, ctx: *realContext_t) void {
+fn cdfHypergeometricCommon(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, complementary: bool, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var a: real_t = undefined;
     var b: real_t = undefined;
     var c: real_t = undefined;
@@ -278,7 +278,7 @@ fn cdfHypergeometricCommon(x: *const real_t, k0: *const real_t, n: *const real_t
     dr.realSetPositiveSign(res);
 }
 
-fn cdfuHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn cdfuHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.toIntegralValue(x, &p, dr.DEC_ROUND_CEILING, ctx);
@@ -290,14 +290,14 @@ fn cdfuHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0:
     cdfHypergeometricCommon(&p, k0, n, n0, true, res, ctx);
 }
 
-fn cdfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn cdfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     dr.toIntegralValue(x, &p, dr.DEC_ROUND_FLOOR, ctx);
     cdfHypergeometric2(&p, k0, n, n0, res, ctx);
 }
 
-fn modeHypergeometric(k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn modeHypergeometric(k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var a: real_t = undefined;
     var q: real_t = undefined;
 
@@ -313,7 +313,7 @@ fn modeHypergeometric(k0: *const real_t, n: *const real_t, n0: *const real_t, re
     dr.toIntegralValue(&q, res, dr.DEC_ROUND_FLOOR, ctx);
 }
 
-pub fn cdfHypergeometric2(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn cdfHypergeometric2(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var mode: real_t = undefined;
     var pdf: real_t = undefined;
     var i: real_t = undefined;
@@ -345,7 +345,7 @@ pub fn cdfHypergeometric2(x: *const real_t, k0: *const real_t, n: *const real_t,
     }
 }
 
-fn qfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn qfHypergeometric(x: *const real_t, k0: *const real_t, n: *const real_t, n0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var mean: real_t = undefined;
     var variance: real_t = undefined;
     var s: real_t = undefined;

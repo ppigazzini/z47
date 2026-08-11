@@ -6,12 +6,13 @@
 // distribution. Exported from shell.zig under the strip_17 guard.
 //
 // Upstream strips the SAVE_SPACE_DM42_17 cluster (poisson/hyper/binomial/
-// geometric/f) on every DM42 package, so this owner is compiled only where that
-// cluster is present: the host (PC) build and DMCP5. There it links against the
-// still-C discrete CDFs (WP34S_Cdf_Poisson2/Binomial2, cdf_Hypergeometric2,
-// cdf_NegBinomial2) which the shared dispatcher reaches; on DM42 strip_17 is set,
-// so the four entry points become empty stubs and the math is eliminated. No QSPI
-// linksection is needed (the owner is absent on the flash-constrained targets).
+// geometric/f) on DM42 packages 2-4, so this owner is compiled where that cluster
+// is present: the host (PC) build, DMCP5 and DM42 package 1. There it links
+// against the still-C discrete CDFs (WP34S_Cdf_Poisson2/Binomial2,
+// cdf_Hypergeometric2, cdf_NegBinomial2) which the shared dispatcher reaches; on
+// packages 2-4 strip_17 is set, so the four entry points become empty stubs and
+// the math is eliminated. Package 1 is an old_hw DM42, so the bodies carry
+// linksection(dr.code_section) and run from QSPI there.
 //
 // The testSuite exercises every branch directly (tests/geometric_{p,l,r,i}.txt),
 // so this owner is parity-gated by `zig build test`.
@@ -27,7 +28,7 @@ const QF_DISCRETE_CDF_GEOMETRIC: u16 = 2;
 const QF_DISCRETE_CDF_NEGBINOM: u16 = 3;
 const QF_DISCRETE_CDF_HYPERGEOMETRIC: u16 = 4;
 
-fn checkParamGeometric(x: *real_t, i: *real_t) bool {
+fn checkParamGeometric(x: *real_t, i: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -51,7 +52,7 @@ fn checkParamGeometric(x: *real_t, i: *real_t) bool {
     return true;
 }
 
-pub fn geometricP(unused_but_mandatory_parameter: u16) void {
+pub fn geometricP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -63,7 +64,7 @@ pub fn geometricP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn geometricL(unused_but_mandatory_parameter: u16) void {
+pub fn geometricL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -75,7 +76,7 @@ pub fn geometricL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn geometricR(unused_but_mandatory_parameter: u16) void {
+pub fn geometricR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -87,7 +88,7 @@ pub fn geometricR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn geometricI(unused_but_mandatory_parameter: u16) void {
+pub fn geometricI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -109,7 +110,7 @@ pub fn geometricI(unused_but_mandatory_parameter: u16) void {
 // WP34S math borrowings (upstream comment: "borrowed from the WP34S project").
 // ---------------------------------------------------------------------------
 
-fn wp34sPdfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sPdfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (dr.realIsNegative(x) or !dr.isAnInteger(x)) {
@@ -123,7 +124,7 @@ fn wp34sPdfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realCon
     dr.realMultiply(&p, p0, res, ctx);
 }
 
-fn wp34sCdfuGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sCdfuGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
 
@@ -140,7 +141,7 @@ fn wp34sCdfuGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realCo
     dr.realPow(&q, &p, res, ctx);
 }
 
-fn wp34sCdfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sCdfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
 
@@ -161,7 +162,7 @@ fn wp34sCdfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realCon
     dr.realChangeSign(res);
 }
 
-fn wp34sQfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sQfGeom(x: *const real_t, p0: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
 
@@ -190,7 +191,7 @@ pub fn wp34sQfDiscreteFinal(
     k: [*c]const real_t,
     res: *real_t,
     ctx: *realContext_t,
-) void {
+) linksection(dr.code_section) void {
     var q: real_t = undefined;
 
     switch (dist) {
