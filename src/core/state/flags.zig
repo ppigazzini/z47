@@ -126,6 +126,30 @@ fn isWriteProtectedSystemFlag(flag: u16) bool {
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern var errorMessage: [*c]u8;
+extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
+
+// The bug-screen formats are the shared commonBugScreenMessages rows, indexed by
+// commonBugScreenMessageCode_t; reading the row leaves the text with one owner.
+// Row 7 is "In function %s: %s %hd is not defined! Must be from 0 to %hu".
+const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
+const bugMsgNotDefinedMustBe: usize = 7;
+const commonBugScreenMessages = @extern([*c]const [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8, .{ .name = "commonBugScreenMessages" });
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
+
+/// A flag id inside the local band but past NUMBER_OF_LOCAL_FLAGS is a coding
+/// error, not a calculator error, so the four flag accessors report it on the
+/// bug screen rather than raising an error code.
+fn reportLocalFlagNotDefined(who: [*:0]const u8, local_flag: u16) void {
+    _ = sprintf(
+        errorMessage,
+        @ptrCast(&commonBugScreenMessages[bugMsgNotDefinedMustBe]),
+        who,
+        "local flag",
+        @as(c_int, local_flag),
+        @as(c_int, runtime.NUMBER_OF_LOCAL_FLAGS - 1),
+    );
+    displayBugScreen(errorMessage);
+}
 
 /// The refusal all three flag commands share, with the verb each one used.
 fn refuseWriteProtected(comptime who: [*:0]const u8, comptime verb: [*:0]const u8, flag: u16) void {
@@ -142,6 +166,11 @@ fn setUserFlag(flag: u16) void {
         } else {
             moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
         },
+        .local_out_of_range => |l| if (runtime.currentLocalFlags != null) {
+            reportLocalFlagNotDefined("fnSetFlag", l.local_flag);
+        } else {
+            moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
+        },
         .none => {},
     }
 }
@@ -154,6 +183,11 @@ fn clearUserFlag(flag: u16) void {
         } else {
             moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
         },
+        .local_out_of_range => |l| if (runtime.currentLocalFlags != null) {
+            reportLocalFlagNotDefined("fnClearFlag", l.local_flag);
+        } else {
+            moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
+        },
         .none => {},
     }
 }
@@ -163,6 +197,11 @@ fn flipUserFlag(flag: u16) void {
         .global, .extra => |g| runtime.globalFlags[g.index] ^= @as(u16, 1) << g.shift,
         .local => |l| if (runtime.currentLocalFlags != null) {
             runtime.currentLocalFlags[0] ^= @as(u32, 1) << l.shift;
+        } else {
+            moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
+        },
+        .local_out_of_range => |l| if (runtime.currentLocalFlags != null) {
+            reportLocalFlagNotDefined("fnFlipFlag", l.local_flag);
         } else {
             moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
         },
@@ -467,11 +506,9 @@ pub export fn forceSystemFlag(sf: u32, set: c_int) void {
     }
 }
 
+/// Reads any flag id: system, global, local, or the extra M..W global bank.
+/// Compiled the same way for every target — flags.c gates nothing here.
 pub export fn getFlag(flag: u16) bool {
-    if (builtin.target.os.tag == .freestanding) {
-        return false;
-    }
-
     if ((flag & 0x8000) != 0) {
         return getSystemFlag(@as(i32, @intCast(flag)));
     }
@@ -489,6 +526,7 @@ pub export fn getFlag(flag: u16) bool {
                 const shift: u5 = @intCast(local_flag);
                 return (runtime.currentLocalFlags[0] & (@as(u32, 1) << shift)) != 0;
             }
+            reportLocalFlagNotDefined("getFlag", local_flag);
         } else {
             moreInfoOnError("In function getFlag:", "no local flags defined!", "", "");
         }

@@ -1,6 +1,9 @@
 const keyboard_state_build_options = @import("keyboard_state_build_options");
 const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
     keyboard_state_build_options.state_old_hw;
+// CALCMODEL == USER_R47 for the firmware this object is linked into: the R47
+// firmware carries only the R47 layouts, so kbd_std selects among those alone.
+const built_for_r47: bool = keyboard_state_build_options.is_r47;
 const std = @import("std");
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const builtin = @import("builtin");
@@ -96,9 +99,19 @@ pub extern var kbd_std_R47f_g: [37]calcKey_t;
 pub extern var kbd_std_R47bk_fg: [37]calcKey_t;
 pub extern var kbd_std_R47fg_bk: [37]calcKey_t;
 pub extern var kbd_std_R47fg_g: [37]calcKey_t;
+// assign.c:95-274 defines these four only under PC_BUILD, so kbdStdAt may only
+// name them on the host.
+pub extern var kbd_std_E47: [37]calcKey_t;
+pub extern var kbd_std_D47: [37]calcKey_t;
+pub extern var kbd_std_V47: [37]calcKey_t;
+pub extern var kbd_std_N47: [37]calcKey_t;
 
+pub const USER_V47: u8 = 40;
+pub const USER_E47: u8 = 43;
 pub const USER_DM42: u8 = 45;
 pub const USER_C47: u8 = 46;
+pub const USER_D47: u8 = 47;
+pub const USER_N47: u8 = 51;
 const USER_R47f_g: u8 = 61;
 pub const USER_R47bk_fg: u8 = 62;
 pub const USER_R47fg_bk: u8 = 63;
@@ -129,16 +142,31 @@ extern fn z47_keyboard_state_fnKeyUp(unused_but_mandatory_parameter: u16) void;
 extern fn z47_keyboard_state_fnKeyDown(unused_but_mandatory_parameter: u16) void;
 extern fn z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter: u16) void;
 
+// The kbd_std macro (c47.h:257-267). Three different selectors, chosen by the
+// preprocessor: PC_BUILD walks every layout the simulator can be switched to;
+// a CALCMODEL == USER_R47 firmware only ever reaches the four R47 layouts and
+// falls back to R47f_g; every other firmware only ever reaches DM42 and C47.
+// fnKeysManagement lets the user set calcModel to a foreign model on any build,
+// and upstream answers with its own model's table, not the foreign one.
 pub inline fn kbdStdAt(index: usize) calcKey_t {
-    const selected: *[37]calcKey_t = switch (calcModel) {
+    const selected: *[37]calcKey_t = if (comptime !is_dmcp_build) switch (calcModel) {
         USER_C47 => &kbd_std_C47,
         USER_DM42 => &kbd_std_DM42,
         USER_R47f_g => &kbd_std_R47f_g,
         USER_R47bk_fg => &kbd_std_R47bk_fg,
         USER_R47fg_bk => &kbd_std_R47fg_bk,
         USER_R47fg_g => &kbd_std_R47fg_g,
+        USER_E47 => &kbd_std_E47,
+        USER_D47 => &kbd_std_D47,
+        USER_V47 => &kbd_std_V47,
+        USER_N47 => &kbd_std_N47,
         else => &kbd_std_C47,
-    };
+    } else if (comptime built_for_r47) switch (calcModel) {
+        USER_R47bk_fg => &kbd_std_R47bk_fg,
+        USER_R47fg_bk => &kbd_std_R47fg_bk,
+        USER_R47fg_g => &kbd_std_R47fg_g,
+        else => &kbd_std_R47f_g,
+    } else if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
     return selected[index];
 }
 
@@ -258,17 +286,22 @@ pub inline fn getRegisterAngularMode(regist: i16) u32 {
     return getRegisterTag(regist) & amAngleMask;
 }
 
-// commonBugScreenMessages[bugMsgCalcModeWhileProcKey] is the "calcMode while
-// processing key" bug format; SIZE_OF_EACH_BUG_SCREEN_MESSAGE = 100 (probed).
-// Shared by every fnKey* handler's default (unexpected-calcMode) branch.
+// The bug-screen formats are the shared commonBugScreenMessages rows, indexed by
+// commonBugScreenMessageCode_t; reading the row leaves the text with one owner.
+// Row 1 is "In function %s: unexpected calcMode value (%hhu) while processing
+// key %s!", shared by every fnKey* handler's default (unexpected-calcMode)
+// branch.
 pub extern var errorMessage: [*c]u8;
 pub extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 pub const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 const bugMsgCalcModeWhileProcKey: usize = 1;
-const commonBugScreenMessages = @extern([*c]const u8, .{ .name = "commonBugScreenMessages" });
+const commonBugScreenMessages = @extern([*c]const [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8, .{ .name = "commonBugScreenMessages" });
+fn bugFormat(row: usize) [*c]const u8 {
+    return @ptrCast(&commonBugScreenMessages[row]);
+}
 pub fn bugScreenWhileProcKey(func_name: [*:0]const u8, key_str: [*:0]const u8) void {
-    abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected calcMode value ({d}) while processing key {s}!", .{ func_name, @as(c_int, calcMode), key_str });
+    _ = sprintf(errorMessage, bugFormat(bugMsgCalcModeWhileProcKey), func_name, @as(c_int, calcMode), key_str);
     displayBugScreen(errorMessage);
 }
 
@@ -509,9 +542,11 @@ pub fn modulo(n: i32, d: i32) i32 {
     const r = @rem(n, d);
     return if (r < 0) r + d else r;
 }
+// Row 8: "In function %s: unexpected case while processing key %s! %hhu is an
+// unexpected value for rbrMode."
 const bugMsgRbrMode: usize = 8;
 pub fn bugScreenRbrMode(func_name: [*:0]const u8, key_str: [*:0]const u8, mode: u8) void {
-    abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected case while processing key {s}! {d} is an unexpected value for rbrMode.", .{ func_name, key_str, @as(c_int, mode) });
+    _ = sprintf(errorMessage, bugFormat(bugMsgRbrMode), func_name, key_str, @as(c_int, mode));
     displayBugScreen(errorMessage);
 }
 
@@ -1120,7 +1155,9 @@ pub const TIME_FN_12XX_TO_F: u32 = 476;
 pub const TIME_FN_DOUBLE_G_TO_NOP: u32 = 448;
 pub const TIME_FN_DOUBLE_RELEASE: u32 = 150;
 pub const FLAG_G_DOUBLETAP: i32 = 32861;
-pub const DEBUGSFN: bool = true; // defines.h:305 (#define DEBUGSFN true)
+// defines.h:356-362: DEBUG_SHOWNAME is defined and immediately #undef'd, so the
+// #else arm `#define DEBUGSFN false` is the live one in every configuration.
+pub const DEBUGSFN: bool = false;
 pub extern var FN_state: u8;
 pub extern var FN_key_pressed_last: i16;
 pub extern var FN_handle_timed_out_to_EXEC: bool_t;

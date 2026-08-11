@@ -1188,8 +1188,9 @@ pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
 
 // keyboardTweak.c btnFnPressed_StateMachine (729-866): function-key press
 // state machine (longpress / double-g detection). `data` is unused (the C
-// FN_key_pressed assignment is commented out).  DEBUGSFN is true, so the
-// dynmenu-label override is dead but kept for fidelity.
+// FN_key_pressed assignment is commented out). DEBUGSFN is false, so the
+// dynmenu-label override is live and the "SF:U"/"SF:V"/"SF:W" placeholders
+// only survive when no dynamic menu item is under the key.
 pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
     _ = unused;
     _ = data;
