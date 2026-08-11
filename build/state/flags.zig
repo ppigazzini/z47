@@ -18,6 +18,11 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // EXTRA_INFO_ON_CALC_ERROR. flags.c wraps every moreInfoOnError call, and the
+    // errorMessage formatting that feeds one of them, in `#if
+    // (EXTRA_INFO_ON_CALC_ERROR == 1)`; the macro is 0 on firmware and in the
+    // testSuite. Default true mirrors a host build.
+    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -49,6 +54,12 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    const build_options = b.addOptions();
+    // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
+    // firmware does; keep the owner's diagnostics out of both.
+    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    module.addOptions("flags_state_build_options", build_options);
 
     return b.addObject(.{
         .name = b.fmt("{s}-flags-state", .{name_prefix}),

@@ -96,6 +96,27 @@ pub const RuntimeObjectOptions = struct {
     // default and #undef's it for DMCP packages 1, 2 and 4; package 3, DMCP5 and
     // host keep it. Defaults true (host).
     option_eigen: bool = true,
+    // OPTION_XFN_1000 gates the 1000-digit XFN surface the frontier owners see:
+    // the menu_XFN softkeys, the matching items-table entries and the saved-state
+    // gate. Upstream enables it by default and #undef's it in the block
+    // common to DMCP packages 1-4, so no DM42 package has it; DMCP5 and host do.
+    // Defaults true (host).
+    option_xfn_1000: bool = true,
+    // OPTION_SLVP_POLY gates the SLVP softkey and its savedspace() strike-out.
+    // It sits in the same "common to packages 1-4" block as OPTION_XFN_1000, so
+    // it has the same per-target answer. Defaults true (host).
+    option_slvp_poly: bool = true,
+    // OPTION_INFSUMS gates the infinity-sum items; the plain programmable sum and
+    // product stay either way. Same block again, so the same per-target answer.
+    // Defaults true (host).
+    option_infsums: bool = true,
+    // OPTION_TVM_AMORT gates menu_AMORT and screen.c's amort temporary-information
+    // lines. Upstream defines it for every DMCP package as well as for DMCP5 and
+    // host; its only #undef is in the legacy single-file block, which needs
+    // neither TWO_FILE_PGM nor NEW_HW and so is unreachable for every target z47
+    // builds. It is therefore true everywhere, and exists as an option so the two
+    // owners read the fact instead of restating it.
+    option_tvm_amort: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -141,6 +162,37 @@ fn addRuntimeObject(
     });
     root_module.addImport("abi", abi_module);
 
+    addBuildOptions(b, root_module, name_prefix, options);
+
+    const runtime_obj = b.addObject(.{
+        .name = b.fmt("{s}-frontier-root", .{name_prefix}),
+        .root_module = root_module,
+    });
+    // One section per global so --gc-sections can drop what this build's feature
+    // stripping left unreferenced, and so LLVM's GlobalMerge stops padding
+    // unrelated globals into shared blobs. Worth ~570 bytes of .bss, which the
+    // DM42's 8Kb SRAM2 budget needs; the .rodata split it also causes costs
+    // flash, which only the DM42 is tight on and which stubbing newlib's stdio
+    // has since paid for.
+    runtime_obj.link_data_sections = true;
+    if (options.coverage) {
+        runtime_obj.use_llvm = true;
+        runtime_obj.sanitize_coverage_trace_pc_guard = true;
+    }
+    return runtime_obj;
+}
+
+/// Register `frontier_build_options` on a module rooted anywhere in the frontier
+/// owner tree. Every option the tree reads is added here unconditionally, so a
+/// module that compiles a subset of the owners (a parity harness) is given the
+/// same option set as the product object and an owner never has to cope with an
+/// option being absent.
+pub fn addBuildOptions(
+    b: *std.Build,
+    module: *std.Build.Module,
+    name_prefix: []const u8,
+    options: RuntimeObjectOptions,
+) void {
     const build_options = b.addOptions();
     build_options.addOption(bool, "strip_16", options.strip_16);
     build_options.addOption(bool, "strip_17", options.strip_17);
@@ -164,6 +216,10 @@ fn addRuntimeObject(
     build_options.addOption(bool, "option_vector", options.option_vector);
     build_options.addOption(bool, "option_samplepgms", options.option_samplepgms);
     build_options.addOption(bool, "option_eigen", options.option_eigen);
+    build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
+    build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
+    build_options.addOption(bool, "option_infsums", options.option_infsums);
+    build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);
     // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
     // that here so fnSNAP freezes the clock the date/time formatters read and a
     // stored capture hash does not move with the calendar. startsWith, not eql:
@@ -188,24 +244,7 @@ fn addRuntimeObject(
     build_options.addOption([]const u8, "version_str", version_str);
     build_options.addOption([]const u8, "version_str2", version_str2);
 
-    root_module.addOptions("frontier_build_options", build_options);
-
-    const runtime_obj = b.addObject(.{
-        .name = b.fmt("{s}-frontier-root", .{name_prefix}),
-        .root_module = root_module,
-    });
-    // One section per global so --gc-sections can drop what this build's feature
-    // stripping left unreferenced, and so LLVM's GlobalMerge stops padding
-    // unrelated globals into shared blobs. Worth ~570 bytes of .bss, which the
-    // DM42's 8Kb SRAM2 budget needs; the .rodata split it also causes costs
-    // flash, which only the DM42 is tight on and which stubbing newlib's stdio
-    // has since paid for.
-    runtime_obj.link_data_sections = true;
-    if (options.coverage) {
-        runtime_obj.use_llvm = true;
-        runtime_obj.sanitize_coverage_trace_pc_guard = true;
-    }
-    return runtime_obj;
+    module.addOptions("frontier_build_options", build_options);
 }
 
 pub fn addRuntimeObjects(

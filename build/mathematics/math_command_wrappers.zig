@@ -49,6 +49,46 @@ pub const RuntimeObjectOptions = struct {
     option_bessel: bool = true,
     option_ortho: bool = true,
     option_dist_normal: bool = true,
+    // OPTION_EIGEN gates the eigenvalue/eigenvector/QR/matrix-sqrt half of
+    // matrix.c (EIGVAL, EIGVEC, M.QR, MSQRT) and squareRoot.c's 159-digit
+    // helpers; LU, determinant and inverse stay either way. Upstream #undef's it
+    // for DMCP packages 1, 2 and 4; package 3, DMCP5 and host keep it.
+    option_eigen: bool = true,
+    // OPTION_VECTOR gates matrix.c's 2D/3D vector command surface and the
+    // rectangular <-> spherical/cylindrical/polar conversions in toRect.c and
+    // toPolar.c. Upstream #undef's it in the block common to DMCP packages 1-4,
+    // so no DM42 package has it; DMCP5 and host do.
+    option_vector: bool = true,
+    // OPTION_XFN_1000 gates the 1071-digit XFN math in xfn.c and wp34s.c. Its own
+    // defines.h comment says it "does not work on DM42, due to stack constraint";
+    // upstream #undef's it in the same "common to packages 1-4" block, so it is
+    // off for every DM42 package and on for DMCP5 and host.
+    option_xfn_1000: bool = true,
+    // OPTION_SLVP_POLY gates SLVP (every root of a polynomial, through the
+    // companion matrix and the QR eigensolver) in slvp.c and matrix.c. Same
+    // block, so the same per-target answer. defines.h also #undef's it whenever
+    // OPTION_EIGEN is out, which adds nothing: every target that drops EIGEN has
+    // already dropped SLVP with the block.
+    option_slvp_poly: bool = true,
+    // OPTION_CUBIC_159 and OPTION_EIGEN_159 raise the internal working precision
+    // of SLVC and of the eigen solver to 159 digits, which is what makes 34-digit
+    // input accurate; slvc.c, slvq.c, matrix.c, squareRoot.c, cubeRoot.c,
+    // division.c, multiplication.c and comparisonReals.c all carry 159-digit
+    // bodies behind them. Same block, so both are off for every DM42 package.
+    //
+    // Upstream writes several of those bodies as
+    // `OPTION_SQUARE_159 || OPTION_CUBIC_159 || OPTION_EIGEN_159`. There is no
+    // option_square_159 here because defines.h #undef's OPTION_SQUARE_159
+    // unconditionally at the top and never defines it again -- SLVQ's worst case
+    // is accurate at the standard 75 digits -- so the term is false in every
+    // configuration and the disjunction is the other two.
+    option_cubic_159: bool = true,
+    option_eigen_159: bool = true,
+    // Whether the owner exports its lnComplex under the plain C name. True for
+    // the product, sim and testSuite links, where mathematics/ln.c is filtered
+    // out and the owner is the only definition. The focused oracles set it false:
+    // each of them already links a C lnComplex, so a second one would clash.
+    export_public_ln_complex: bool = true,
 };
 
 fn addRuntimeObject(
@@ -76,10 +116,29 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     module.addImport("abi", abi_module);
+    addBuildOptions(b, module, name_prefix, options);
+
+    return b.addObject(.{
+        .name = b.fmt("{s}-math-command-wrappers", .{name_prefix}),
+        .root_module = module,
+    });
+}
+
+/// Register `math_command_wrappers_build_options` on a module rooted anywhere in
+/// the mathematics owner tree. Every option the tree reads is added here
+/// unconditionally, so a focused oracle that compiles a subset of the owners is
+/// given the same option set as the product object and an owner never has to
+/// cope with an option being absent.
+pub fn addBuildOptions(
+    b: *std.Build,
+    module: *std.Build.Module,
+    name_prefix: []const u8,
+    options: RuntimeObjectOptions,
+) void {
     const build_options = b.addOptions();
     build_options.addOption(bool, "use_fake_wp34s_model", std.mem.endsWith(u8, name_prefix, "parity"));
     build_options.addOption(bool, "use_fake_wp34s_harness_surface", std.mem.eql(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "random-parity"));
-    build_options.addOption(bool, "export_public_ln_complex", true);
+    build_options.addOption(bool, "export_public_ln_complex", options.export_public_ln_complex);
     // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
     // that here so the Zig random seed uses the deterministic test seed.
     // startsWith, not eql: the ASAN lane builds "testSuite-asan", which must use
@@ -94,35 +153,17 @@ fn addRuntimeObject(
     // from executable QSPI (XIP) to keep main FLASH free; same mechanism the
     // dateTime owner and the distribution owners use.
     build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
-    // OPTION_XFN_1000 gates the 1071-digit trig path. defines.h enables it by
-    // default and #undef's it for every DM42 build: TWO_FILE_PGM is defined for
-    // DMCP_BUILD and #undef'd again for NEW_HW, so both of the #undef sites
-    // (the !TWO_FILE_PGM && !NEW_HW block and the TWO_FILE_PGM block) reduce to
-    // "old hardware". Its own comment says it "does not work on DM42, due to
-    // stack constraint" and costs ~4850-5224 bytes of flash there. Host and
-    // DMCP5 keep it, so this is off for exactly the "dmcp" prefix.
-    build_options.addOption(bool, "option_xfn_1000", !std.mem.eql(u8, name_prefix, "dmcp"));
-    // OPTION_SLVP_POLY (SLVP, every root of a polynomial from its coefficient
-    // vector) sits in the same TWO_FILE #undef block as OPTION_XFN_1000 and
-    // costs 2024 bytes of flash, so it is off for exactly the "dmcp" prefix.
-    // softmenus.zig gates the ADV softkey and the savedspace strike-out on the
-    // same condition.
-    build_options.addOption(bool, "option_slvp_poly", !std.mem.eql(u8, name_prefix, "dmcp"));
-    // OPTION_CUBIC_159 and OPTION_EIGEN_159 sit in the same TWO_FILE #undef block
-    // as OPTION_XFN_1000, so they are off for exactly the "dmcp" prefix.
-    // OPTION_SQUARE_159 is not defined for any target, so SLVQ is always 75.
-    build_options.addOption(bool, "option_cubic_159", !std.mem.eql(u8, name_prefix, "dmcp"));
-    build_options.addOption(bool, "option_eigen_159", !std.mem.eql(u8, name_prefix, "dmcp"));
+    build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
+    build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
+    build_options.addOption(bool, "option_cubic_159", options.option_cubic_159);
+    build_options.addOption(bool, "option_eigen_159", options.option_eigen_159);
     build_options.addOption(bool, "option_elliptic", options.option_elliptic);
     build_options.addOption(bool, "option_bessel", options.option_bessel);
     build_options.addOption(bool, "option_ortho", options.option_ortho);
     build_options.addOption(bool, "option_dist_normal", options.option_dist_normal);
+    build_options.addOption(bool, "option_eigen", options.option_eigen);
+    build_options.addOption(bool, "option_vector", options.option_vector);
     module.addOptions("math_command_wrappers_build_options", build_options);
-
-    return b.addObject(.{
-        .name = b.fmt("{s}-math-command-wrappers", .{name_prefix}),
-        .root_module = module,
-    });
 }
 
 pub fn addRuntimeObjects(

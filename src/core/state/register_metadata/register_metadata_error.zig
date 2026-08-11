@@ -1,5 +1,5 @@
 const abi = @import("abi");
-const builtin = @import("builtin");
+const build_options = @import("register_metadata_build_options");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 
 pub const REGISTER_X = stack_runtime.REGISTER_X;
@@ -47,16 +47,17 @@ pub fn reportDataTypeUnknownBug(function_name: [*:0]const u8, data_type_name: [*
 }
 
 // The register accessors' "<kind> <n> is not defined!" hint. Unlike the bug
-// screens above it is an EXTRA_INFO_ON_CALC_ERROR diagnostic, so it is absent
-// from the firmware, where the hints are not compiled in at all: the `extra_info`
-// test keeps the two errorMessage writes off that target the way upstream's #if
-// does. The moreInfoOnError symbol carries its own gate, so the call itself needs
-// none.
+// screens above it is an EXTRA_INFO_ON_CALC_ERROR diagnostic, absent from the
+// firmware and from the testSuite, which upstream compiles with the macro forced
+// to 0: the `extra_info` test keeps the two errorMessage writes off both the way
+// upstream's #if does. The moreInfoOnError symbol carries its own gate, so the
+// call itself needs none. The build option is what distinguishes the testSuite
+// from the sim; they share a target.
 //
 // The message arrives in two pieces because that is how the popup lays it out:
 // the subject in the first half of errorMessage, the range in the second, and the
 // two halves are handed over as separate arguments alongside the literal middle.
-const extra_info: bool = builtin.target.os.tag != .freestanding;
+const extra_info: bool = build_options.extra_info_on_calc_error;
 const ERROR_MESSAGE_LENGTH: usize = 512;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;

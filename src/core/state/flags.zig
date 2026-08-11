@@ -1,6 +1,12 @@
 const abi = @import("abi");
 const builtin = @import("builtin");
+const build_options = @import("flags_state_build_options");
 const runtime = @import("flags/flags_runtime.zig");
+
+// EXTRA_INFO_ON_CALC_ERROR: 0 on firmware and in the testSuite, where flags.c
+// compiles its console hints, and the errorMessage formatting behind one of
+// them, out entirely.
+const extra_info: bool = build_options.extra_info_on_calc_error;
 const flag_classify = @import("flags/flag_classify.zig"); // std-only flag classification
 const flag_bits = @import("flags/flag_bits.zig"); // std-only user-flag bit location
 const SysFlagBit = struct { word: u1, shift: u6 };
@@ -124,9 +130,18 @@ fn isWriteProtectedSystemFlag(flag: u16) bool {
     return flag_classify.isWriteProtectedSystemFlag(flag);
 }
 
-extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern var errorMessage: [*c]u8;
 extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
+
+/// Every moreInfoOnError call in flags.c sits inside
+/// `#if (EXTRA_INFO_ON_CALC_ERROR == 1)`; the wrapper carries that guard so each
+/// call site stays the single line it is in C. refuseWriteProtected needs the
+/// test spelled out as well, because upstream's guard there also covers the
+/// errorMessage formatting that builds the hint's third argument.
+inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void {
+    if (comptime extra_info) c_moreInfoOnError(m1, m2, m3, m4);
+}
 
 // The bug-screen formats are the shared commonBugScreenMessages rows, indexed by
 // commonBugScreenMessageCode_t; reading the row leaves the text with one owner.
@@ -154,8 +169,10 @@ fn reportLocalFlagNotDefined(who: [*:0]const u8, local_flag: u16) void {
 /// The refusal all three flag commands share, with the verb each one used.
 fn refuseWriteProtected(comptime who: [*:0]const u8, comptime verb: [*:0]const u8, flag: u16) void {
     runtime.handleWriteProtectedFlag();
-    abi.fmtCStr(errorMessage, "protected system flag ({d})!", .{flag & 0x3fff});
-    moreInfoOnError(who, verb, errorMessage, null);
+    if (comptime extra_info) {
+        abi.fmtCStr(errorMessage, "protected system flag ({d})!", .{flag & 0x3fff});
+        moreInfoOnError(who, verb, errorMessage, null);
+    }
 }
 
 fn setUserFlag(flag: u16) void {
