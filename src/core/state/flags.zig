@@ -131,9 +131,6 @@ fn isWriteProtectedSystemFlag(flag: u16) bool {
 }
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
-extern var errorMessage: [*c]u8;
-extern var tmpString: [*c]u8;
-extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 
 /// Every moreInfoOnError call in flags.c sits inside
 /// `#if (EXTRA_INFO_ON_CALC_ERROR == 1)`; the wrapper carries that guard so each
@@ -156,23 +153,22 @@ const displayBugScreen = abi.host.showBugScreen; // routed through the host-call
 /// error, not a calculator error, so the four flag accessors report it on the
 /// bug screen rather than raising an error code.
 fn reportLocalFlagNotDefined(who: [*:0]const u8, local_flag: u16) void {
-    _ = sprintf(
-        errorMessage,
+    runtime.formatNotDefinedBugScreen(
         @ptrCast(&commonBugScreenMessages[bugMsgNotDefinedMustBe]),
         who,
         "local flag",
         @as(c_int, local_flag),
         @as(c_int, runtime.NUMBER_OF_LOCAL_FLAGS - 1),
     );
-    displayBugScreen(errorMessage);
+    displayBugScreen(runtime.errorMessage);
 }
 
 /// The refusal all three flag commands share, with the verb each one used.
 fn refuseWriteProtected(comptime who: [*:0]const u8, comptime verb: [*:0]const u8, flag: u16) void {
     runtime.handleWriteProtectedFlag();
     if (comptime extra_info) {
-        abi.fmtCStr(errorMessage, "protected system flag ({d})!", .{flag & 0x3fff});
-        moreInfoOnError(who, verb, errorMessage, null);
+        abi.fmtCStr(runtime.errorMessage, "protected system flag ({d})!", .{flag & 0x3fff});
+        moreInfoOnError(who, verb, runtime.errorMessage, null);
     }
 }
 
@@ -183,11 +179,11 @@ fn refuseWriteProtected(comptime who: [*:0]const u8, comptime verb: [*:0]const u
 fn reportNoSuchUserFlag(comptime who: [*:0]const u8, flag: u16) void {
     if (comptime !extra_info) return;
     if (flag < runtime.FLAG_M) {
-        abi.fmtCStr(tmpString, "there is no local flag above .31 ({d})", .{flag});
+        abi.fmtCStr(runtime.tmpString, "there is no local flag above .31 ({d})", .{flag});
     } else {
-        abi.fmtCStr(tmpString, "there is no flag beyond FLAG_W ({d})", .{flag});
+        abi.fmtCStr(runtime.tmpString, "there is no flag beyond FLAG_W ({d})", .{flag});
     }
-    moreInfoOnError(who, tmpString, "", "");
+    moreInfoOnError(who, runtime.tmpString, "", "");
 }
 
 fn setUserFlag(flag: u16) void {

@@ -96,6 +96,10 @@ pub extern var currentSolverVariable: u16;
 pub extern var graphVariabl1: calcRegister_t;
 // debug.c's data-type name, for the two bug screens that quote it.
 pub extern fn getDataTypeName(data_type: u16, with_article: bool, pad_with_blanks: bool) [*c]const u8;
+// The second line of an error screen, which every accessor here uses to say which
+// register frame was missing. m2..m4 are nullable: upstream passes NULL where it
+// has nothing to add and "" where it wants the blank line.
+pub extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
