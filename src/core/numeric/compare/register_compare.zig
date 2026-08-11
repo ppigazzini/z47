@@ -49,7 +49,6 @@ const COMPARE_MODE_GREATER_EQUAL: u8 = 0x6;
 
 // ---- Product externs not covered by the shared runtime ----
 extern var numberOfNamedVariables: u16;
-extern var errorMessage: [*c]u8;
 extern fn badTypeError(reg: calcRegister_t) void;
 extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
 extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *runtime.real_t) bool;

@@ -95,6 +95,15 @@ inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return runtime.getRegisterShortIntegerBase(reg);
 }
 
+// EXTRA_INFO_MESSAGE (defines.h): the macro prints three console lines -- the
+// fixed "In function " prefix, the function name, then the message -- and is
+// compiled out on the firmware and under the testSuite.
+fn extraInfoMessage(function_name: [*:0]const u8, message: [*:0]const u8) void {
+    if (runtime.extra_info_on_calc_error) {
+        runtime.moreInfoOnError("In function ", function_name, message, null);
+    }
+}
+
 pub export fn logCyxReal(y: *real_t, x: *real_t, result: *real_t, realContext: *realContext_t) callconv(.c) void {
     realSubtract(y, x, result, realContext);
     realAdd(result, const_1(), result, realContext);
@@ -281,7 +290,7 @@ fn cpyxLonI(combOrPerm: u16) void {
 
     if (longIntegerIsNegative(&x) or longIntegerIsNegative(&y) or longIntegerCompare(&y, &x) < 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function cpyxLonILonI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.", null, null);
+        extraInfoMessage("cpyxLonILonI:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
     } else {
         var t: mpz_struct = undefined;
         longIntegerInit(&t);
@@ -303,7 +312,7 @@ fn cpyxReal(combOrPerm: u16) void {
 
     if (realIsNegative(&x) or realIsNegative(&y) or math_comparison_reals.realCompareGreaterThan(&x, &y)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function cpyxRealReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.", null, null);
+        extraInfoMessage("cpyxRealReal:", "cannot calculate Cyx/Pyx, conditions: x>=0, y>=0, and x<=y.");
     } else {
         var t: real_t = undefined;
 
@@ -350,7 +359,7 @@ fn cpyxShoI(combOrPerm: u16) void {
 
     if (longIntegerIsNegative(&x) or longIntegerIsNegative(&y) or longIntegerCompare(&y, &x) < 0) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function cpyxShoI:", "cannot calculate Cyx/Pyx, y and x must be greater or equal than zero.", null, null);
+        extraInfoMessage("cpyxShoI:", "cannot calculate Cyx/Pyx, y and x must be greater or equal than zero.");
     } else {
         var t: mpz_struct = undefined;
 

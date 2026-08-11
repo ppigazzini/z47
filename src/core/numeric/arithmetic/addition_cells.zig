@@ -378,11 +378,17 @@ fn addString(string_to_append: [*c]const u8) void {
 
     if (y_glyphs + append_glyphs > MAX_NUMBER_OF_GLYPHS_IN_STRING) {
         runtime.displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        // Both lengths are measured again here, after the error is raised, as
+        // the C sprintf arguments are: every addStri* caller hands this
+        // function the shared tmpString, which the error path may have
+        // rewritten, so the figures the hint prints are the post-error ones.
+        const reported_y_glyphs = runtime.stringGlyphLength(registerStringData(runtime.REGISTER_Y));
+        const reported_append_glyphs = runtime.stringGlyphLength(string_to_append);
         var message_buffer: [160]u8 = undefined;
         const message = bufPrintZ(
             &message_buffer,
             "the resulting string would be {d} (Y {d} + X {d}) characters long. Maximum is {d}",
-            .{ y_glyphs + append_glyphs, y_glyphs, append_glyphs, MAX_NUMBER_OF_GLYPHS_IN_STRING },
+            .{ reported_y_glyphs + reported_append_glyphs, reported_y_glyphs, reported_append_glyphs, MAX_NUMBER_OF_GLYPHS_IN_STRING },
         ) catch "the resulting string would be too long";
         runtime.moreInfoOnError("In function _addString:", message, null, null);
     } else {

@@ -23,8 +23,9 @@ const const39_egamma = consts.const39_egamma;
 // asymptotic expansions, Abramowitz & Stegun recurrence, digamma, the series).
 // Faithful line-by-line translation preserving the exact order of every real_t
 // operation (bessel_j.txt / bessel_y.txt check results to the last ULP). The
-// static helpers stay private; fnBesselJ / fnBesselY / WP34S_BesselJ /
-// WP34S_BesselY keep C linkage. The EXTRA_INFO_ON_CALC_ERROR sprintf hints
+// static helpers stay private; fnBesselJ / fnBesselY keep C linkage, and
+// WP34S_BesselJ / WP34S_BesselY keep it where OPTION_BESSEL compiles them in.
+// The EXTRA_INFO_ON_CALC_ERROR sprintf hints
 // become fixed moreInfoOnError strings (no-op under TESTSUITE / DMCP). The
 // SAVE_SPACE_DM42_12BESSEL guard is dead on every z47 build.
 
@@ -718,10 +719,21 @@ fn bessel(alpha: *const real_t, x: *const real_t, neg: bool, res: *real_t, realC
 }
 
 // ===========================================================================
-// WP34S_BesselJ
+// WP34S_BesselJ / WP34S_BesselY
+//
+// Both live inside `#if defined(OPTION_BESSEL)`, so without the option the two
+// C symbols do not exist and any caller is a link error. The exports are gated
+// the same way rather than left as no-ops that would hand a caller back an
+// unwritten res.
 // ===========================================================================
-pub export fn WP34S_BesselJ(alpha: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
-    if (comptime !runtime.option_bessel) return;
+comptime {
+    if (runtime.option_bessel) {
+        @export(&WP34S_BesselJ, .{ .name = "WP34S_BesselJ", .linkage = .strong });
+        @export(&WP34S_BesselY, .{ .name = "WP34S_BesselY", .linkage = .strong });
+    }
+}
+
+fn WP34S_BesselJ(alpha: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     var a: real_t = undefined;
     var beta: real_t = undefined;
     var gamma: real_t = undefined;
@@ -872,11 +884,7 @@ fn bessel2_int_series(n_in: *const real_t, x: *const real_t, res: *real_t, realC
     }
 }
 
-// ===========================================================================
-// WP34S_BesselY
-// ===========================================================================
-pub export fn WP34S_BesselY(alpha: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
-    if (comptime !runtime.option_bessel) return;
+fn WP34S_BesselY(alpha: *const real_t, x: *const real_t, res: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     var a: real_t = undefined;
     var t: real_t = undefined;
     var u: real_t = undefined;

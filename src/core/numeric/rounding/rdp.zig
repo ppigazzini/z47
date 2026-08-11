@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const std = @import("std");
 const abi = @import("abi");
 const consts = abi.constants;
 const const_0 = consts.const_0;
@@ -24,6 +25,9 @@ const real_t = runtime.real_t;
 const real34_t = runtime.real34_t;
 const realContext_t = runtime.realContext_t;
 const calcRegister_t = runtime.calcRegister_t;
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this hint into the
+// shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
 const angularMode_t = runtime.angularMode_t;
 const rounding_t = runtime.rounding_t;
 
@@ -172,7 +176,12 @@ pub export fn roundToDecimalPlace(source: *const real_t, destination: *real_t, d
 pub export fn rdpError(unused_but_mandatory_parameter: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-    moreInfoOnError("In function rdpError:", "cannot calculate RDP for the data type in X", null, null);
+    if (runtime.extra_info_on_calc_error) {
+        var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+        const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+        const message = runtime.bufPrintZ(&buffer, "cannot calculate RDP for {s}", .{type_name}) catch "";
+        moreInfoOnError("In function rdpError:", message, null, null);
+    }
 }
 
 // Rdp[] dispatch table (NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS == 10).

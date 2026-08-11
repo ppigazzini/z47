@@ -1797,6 +1797,9 @@ pub export fn WP34S_InverseComplexW(xReal: *align(1) const real_t, xImag: *align
 // WP34S_OrthoPoly
 // ===========================================================================
 pub export fn WP34S_OrthoPoly(kind: u16, rX: *align(1) const real_t, rN: *align(1) const real_t, rParam: *align(1) const real_t, res: *align(1) real_t, realContext: *realContext_t) callconv(.c) void {
+    // The whole body is inside `#if defined(OPTION_ORTHO)`, so without the
+    // option the symbol survives as an empty function.
+    if (comptime !runtime.option_ortho) return;
     var a: real_t = undefined;
     var b: real_t = undefined;
     var c: real_t = undefined;

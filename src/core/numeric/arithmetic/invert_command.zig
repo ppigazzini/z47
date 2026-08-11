@@ -50,7 +50,7 @@ pub fn invert(unused_but_mandatory_parameter: u16) callconv(.c) void {
     const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
 
     if (register_data_type == runtime.dtReal34Matrix or register_data_type == runtime.dtComplex34Matrix) {
-        runtime.fnInvertMatrix(0);
+        runtime.fnInvertMatrix(runtime.NOPARAM);
         return;
     }
 

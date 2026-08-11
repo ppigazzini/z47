@@ -19,7 +19,6 @@ const const_1 = consts.const_1;
 //   lnX=8,lnY=11,1onX=17,1onY=20).
 // Real ops used: realDivide, realExp, realSquareRoot (all &ctxtReal39),
 //   realCompareLessThan, convertRealToReal34ResultRegister.
-// FLAG_ASLIFT == 0xc023 (real value; runtime's 0x8019 is stale).
 // TI_* values are the real defines.h values.
 
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -32,7 +31,7 @@ const REGISTER_X = runtime.REGISTER_X;
 const REGISTER_Y = runtime.REGISTER_Y;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 
-const FLAG_ASLIFT: i32 = 0xc023;
+const FLAG_ASLIFT = runtime.FLAG_ASLIFT;
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
 const ERROR_TOO_FEW_DATA: u8 = 15;
 

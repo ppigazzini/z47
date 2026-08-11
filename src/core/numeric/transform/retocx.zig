@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+const std = @import("std");
 const abi = @import("abi");
 const consts = abi.constants;
 //
@@ -95,6 +96,12 @@ extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegis
 
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
+
+const std_cross = "\x80\xd7"; // STD_CROSS
+
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
 
 inline fn REGISTER_REAL34_DATA(reg: calcRegister_t) *align(1) real34_t {
     return runtime.registerReal34Ptr(reg);
@@ -250,7 +257,16 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
             }
         } else {
             displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnReToCx:", "cannot Re->Cx matrices of mismatched dimensions", null, null);
+            if (runtime.extra_info_on_calc_error) {
+                var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+                const message = runtime.bufPrintZ(&buffer, "cannot Re->Cx {d}" ++ std_cross ++ "{d}-matrix and {d}" ++ std_cross ++ "{d} -matrix", .{
+                    rMat.header.matrixRows,
+                    rMat.header.matrixColumns,
+                    iMat.header.matrixRows,
+                    iMat.header.matrixColumns,
+                }) catch "";
+                moreInfoOnError("In function fnReToCx:", message, null, null);
+            }
         }
 
         runtime.realMatrixFree(&iMat);
@@ -260,6 +276,12 @@ pub export fn fnReToCx(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-        moreInfoOnError("In function fnReToCx:", "You cannot use Re->Cx with these data types in X and Y!", null, null);
+        if (runtime.extra_info_on_calc_error) {
+            var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+            const x_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+            const y_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
+            const message = runtime.bufPrintZ(&buffer, "You cannot use Re->Cx with {s} in X and {s} in Y!", .{ x_name, y_name }) catch "";
+            moreInfoOnError("In function fnReToCx:", message, null, null);
+        }
     }
 }

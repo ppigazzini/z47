@@ -11,6 +11,7 @@ const runtime = @import("runtime.zig");
 const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
 const std_infinity = "\xa2\x1e"; // STD_INFINITY
 const std_degree = "\x80\xb0"; // STD_DEGREE
+const std_sup_bold_x = "\x82\xE3"; // STD_SUP_BOLD_x
 
 fn reportDomainError(comptime message1: [*:0]const u8, comptime message2: ?[*:0]const u8, comptime message3: ?[*:0]const u8) linksection(runtime.code_section) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
@@ -80,7 +81,7 @@ pub export fn z47_math_wrappers_report_arctanh_real_domain_error() linksection(r
 }
 
 pub export fn z47_math_wrappers_report_int_pow_real_domain_error() linksection(runtime.code_section) callconv(.c) void {
-    reportDomainError("In function intPowReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of 10^x when flag SPCRES is not set", null);
+    reportDomainError("In function intPowReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of 10" ++ std_sup_bold_x ++ " when flag SPCRES is not set", null);
 }
 
 pub export fn z47_math_wrappers_report_eulers_formula_complex_domain_error() linksection(runtime.code_section) callconv(.c) void {

@@ -1,5 +1,38 @@
+const std = @import("std");
 const rectangular_to_polar_owned = @import("rectangular_to_polar.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
+
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
+
+// "You cannot use >R or >P with %s in X and %s in Y!", the shared refusal of
+// fnToPolar2 and fnToRect2. Both name the X and Y registers, whatever pair the
+// HPRP flag chose as real and imaginary.
+fn reportPairTypeError(function_name: [*:0]const u8) void {
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+    var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+    const x_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+    const y_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
+    const message = runtime.bufPrintZ(&buffer, "You cannot use >R or >P with {s} in X and {s} in Y!", .{ x_name, y_name }) catch "";
+    runtime.moreInfoOnError(function_name, message, null, null);
+}
+
+// fnToRect's own refusal, which names the two registers it was about to read
+// rather than X and Y. fnToPolar's twin is unreachable here: fnToPolar2's
+// stricter check, inlined above it, already rejects everything it would.
+fn reportToRectTypeError(radius_reg: runtime.calcRegister_t, angle_reg: runtime.calcRegister_t) void {
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+    var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+    const radius_name = std.mem.span(runtime.getRegisterDataTypeName(radius_reg, false, false));
+    const angle_name = std.mem.span(runtime.getRegisterDataTypeName(angle_reg, false, false));
+    const message = runtime.bufPrintZ(&buffer, "cannot convert ({s}, {s}) to rectangular coordinates!", .{ radius_name, angle_name }) catch "";
+    runtime.moreInfoOnError("In function fnToRect:", message, null, null);
+}
 
 fn loadToPolarNumericInput(reg: runtime.calcRegister_t, data_type: u32, value: *runtime.real_t) void {
     switch (data_type) {
@@ -18,19 +51,23 @@ fn tryToPolar2Real34Pair() bool {
         return true;
     }
 
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix) {
+    // toPolar.c wraps the whole real-matrix vector branch in
+    // `#if defined(OPTION_VECTOR)`. defines.h #undef's OPTION_VECTOR in the block
+    // common to packages 1-4, so no DM42 package carries the branch: there a
+    // real-matrix X falls straight through to the operand type check below.
+    if (runtime.option_vector and runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix) {
         if (runtime.isRegisterMatrix3dVector(runtime.REGISTER_X)) {
             const polar_mode = runtime.getVectorRegisterPolarMode(runtime.REGISTER_X);
             runtime.setVectorRegisterPolarMode(
                 runtime.REGISTER_X,
-                if (polar_mode == runtime.amNone)
+                if (polar_mode == 0)
                     runtime.amPolarSPH
                 else if (polar_mode == runtime.amPolarSPH)
                     runtime.amPolarCYL
                 else if (polar_mode == runtime.amPolarCYL)
                     runtime.amPolarSPH
                 else
-                    runtime.amNone,
+                    0,
             );
             runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
             return true;
@@ -60,6 +97,7 @@ fn tryToPolar2Real34Pair() bool {
 
     if (!x_valid or !y_valid) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        reportPairTypeError("In function fnToPolar2:");
         return true;
     }
 
@@ -94,8 +132,11 @@ fn tryToRect2Real34Pair() bool {
         return true;
     }
 
-    if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix and runtime.isRegisterMatrixVector(runtime.REGISTER_X)) {
-        runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, runtime.amNone);
+    // toRect.c wraps the whole real-matrix vector branch in
+    // `#if defined(OPTION_VECTOR)`, undefined on every DM42 package, where a
+    // real-matrix X therefore reaches the operand type check below instead.
+    if (runtime.option_vector and runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix and runtime.isRegisterMatrixVector(runtime.REGISTER_X)) {
+        runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, 0);
         runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.amNone);
         runtime.temporaryInformation = runtime.TI_VECTOR;
         return true;
@@ -131,6 +172,7 @@ fn tryToRect2Real34Pair() bool {
 
     if (!x_valid or !y_valid) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        reportPairTypeError("In function fnToRect2:");
         return true;
     }
 
@@ -143,6 +185,7 @@ fn tryToRect2Real34Pair() bool {
 
     if (!radius_valid or !angle_valid) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, radius_reg);
+        reportToRectTypeError(radius_reg, angle_reg);
         return true;
     }
 
@@ -200,7 +243,7 @@ fn tryToRectReal34Pair(angle_in_y: i8) bool {
 
     if (!radius_valid or !angle_valid) {
         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, radius_reg);
-        runtime.moreInfoOnError("In function fnToRect:", "cannot convert current X/Y pair to rectangular coordinates", null, null);
+        reportToRectTypeError(radius_reg, angle_reg);
         return true;
     }
 

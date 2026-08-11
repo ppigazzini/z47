@@ -6,11 +6,11 @@
 // math_command_wrappers.zig on !use_fake_wp34s_harness_surface) because the
 // parity fake runtime defines several of these symbols itself.
 //
-// Upstream compiles the realCompareAbs*/realIsAnInteger temporaries with
-// 159-digit buffers when OPTION_CUBIC_159/OPTION_EIGEN_159 is defined
-// (ALLOW_159) and 75-digit buffers otherwise.  This port always uses the
-// 159-digit buffers: capacity is a superset, and inputs wider than 75 digits
-// only exist in builds where ALLOW_159 is enabled, so behavior is identical.
+// The realCompareAbs*/realIsAnInteger temporaries are 159 digits wide when
+// either 159-digit option is compiled in (ALLOW_159) and 75 otherwise.  The
+// same switch sets the width the bug screen refuses above and the number it
+// prints, so the narrower builds -- every DMCP package, where defines.h
+// #undef's both options -- refuse a 76-digit operand instead of computing it.
 
 const std = @import("std");
 const abi = @import("abi");
@@ -45,6 +45,22 @@ extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // 159-digit decNumber storage (REAL_T_PTR(name, 159), 116 bytes); layout +
 // ptr/constPtr accessors centralized in abi (size asserted there).
 const Real159 = abi.Real159;
+
+// ALLOW_159 (comparisonReals.c).
+const allow_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
+const max_compare_digits: i32 = if (allow_159) 159 else 75;
+
+/// The `REAL_T_PTR(name, k)` scratch of the abs-compare bodies, k digits wide.
+const CompareScratch = extern struct {
+    storage: if (allow_159) Real159 else runtime.real_t,
+
+    inline fn ptr(self: *CompareScratch) *runtime.real_t {
+        return @ptrCast(&self.storage);
+    }
+    inline fn constPtr(self: *const CompareScratch) *const runtime.real_t {
+        return @ptrCast(&self.storage);
+    }
+};
 
 fn maxI32(lhs: i32, rhs: i32) i32 {
     return if (lhs > rhs) lhs else rhs;
@@ -178,12 +194,12 @@ pub export fn real34CompareLessThan(number1: *const runtime.real34_t, number2: *
 
 pub export fn realCompareAbsGreaterThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var c: runtime.realContext_t = runtime.ctxtReal75;
-    var num1: Real159 = undefined;
-    var num2: Real159 = undefined;
+    var num1: CompareScratch = undefined;
+    var num2: CompareScratch = undefined;
 
     c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    if (c.digits > 159) {
-        bugScreen("Exceed 159 digits :realCompareAbsGreaterThan");
+    if (c.digits > max_compare_digits) {
+        bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realCompareAbsGreaterThan", .{max_compare_digits}));
     }
     _ = decNumberCopyAbs(num1.ptr(), number1);
     _ = decNumberCopyAbs(num2.ptr(), number2);
@@ -193,12 +209,12 @@ pub export fn realCompareAbsGreaterThan(number1: *align(1) const runtime.real_t,
 
 pub export fn realCompareAbsLessThan(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var c: runtime.realContext_t = runtime.ctxtReal75;
-    var num1: Real159 = undefined;
-    var num2: Real159 = undefined;
+    var num1: CompareScratch = undefined;
+    var num2: CompareScratch = undefined;
 
     c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    if (c.digits > 159) {
-        bugScreen("Exceed 159 digits :realCompareAbsLessThan");
+    if (c.digits > max_compare_digits) {
+        bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realCompareAbsLessThan", .{max_compare_digits}));
     }
     _ = decNumberCopyAbs(num1.ptr(), number1);
     _ = decNumberCopyAbs(num2.ptr(), number2);
@@ -217,12 +233,12 @@ pub export fn realCompareEqual(number1: *align(1) const runtime.real_t, number2:
 
 pub export fn realCompareAbsEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
     var c: runtime.realContext_t = runtime.ctxtReal75;
-    var num1: Real159 = undefined;
-    var num2: Real159 = undefined;
+    var num1: CompareScratch = undefined;
+    var num2: CompareScratch = undefined;
 
     c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
-    if (c.digits > 159) {
-        bugScreen("Exceed 159 digits :realCompareAbsEqual");
+    if (c.digits > max_compare_digits) {
+        bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realCompareAbsEqual", .{max_compare_digits}));
     }
     _ = decNumberCopyAbs(num1.ptr(), number1);
     _ = decNumberCopyAbs(num2.ptr(), number2);
@@ -285,11 +301,11 @@ pub export fn real34IsAnInteger(x: *const runtime.real34_t) callconv(.c) bool {
 
 pub export fn realIsAnInteger(x: *const runtime.real_t) callconv(.c) bool {
     var c: runtime.realContext_t = runtime.ctxtReal75;
-    var y: Real159 = undefined;
+    var y: CompareScratch = undefined;
 
     c.digits = maxI32(75, x.digits);
-    if (c.digits > 159) {
-        bugScreen("Exceed 159 digits :realIsAnInteger");
+    if (c.digits > max_compare_digits) {
+        bugScreen(std.fmt.comptimePrint("Exceed {d} digits :realIsAnInteger", .{max_compare_digits}));
     }
     if (runtime.realIsNaN(x)) {
         return false;

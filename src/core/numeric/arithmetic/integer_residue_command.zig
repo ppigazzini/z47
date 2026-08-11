@@ -114,13 +114,16 @@ fn gcdInt() callconv(.c) void {
         y[0]._mp_size = -y[0]._mp_size;
     }
 
+    // _longIntegerGcd raises the domain error and returns without touching its
+    // result, so X still holds the operand and gcdInt writes it back: the
+    // register is reallocated as a long integer even on the refused pair.
     if (y[0]._mp_size == 0 and x[0]._mp_size == 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         runtime.moreInfoOnError("In function _longIntegerGcd:", "(0, 0) is not in the function domain.", null, null);
-        return;
+    } else {
+        runtime.__gmpz_gcd(&x[0], &y[0], &x[0]);
     }
 
-    runtime.__gmpz_gcd(&x[0], &y[0], &x[0]);
     runtime.convertLongIntegerToLongIntegerRegister(&x[0], runtime.REGISTER_X);
 }
 

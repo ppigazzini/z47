@@ -1,3 +1,4 @@
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const SpecialKind = enum {
@@ -20,9 +21,29 @@ const ITM_ISIMZQ: u16 = 2528;
 const ITM_ISRENZQ: u16 = 2529;
 const ITM_ISIMNZQ: u16 = 2530;
 
+// compareTypeErrorX (compare.c): TI_FALSE, then badTypeError on X. The error
+// line reports REGISTER_T while the message names the register that carried the
+// wrong type.
 fn typeErrorX() void {
     runtime.setTemporaryInformation(false);
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_T);
+    if (runtime.extra_info_on_calc_error) {
+        var message_buffer: [128]u8 = undefined;
+        const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+        const message = runtime.bufPrintZ(&message_buffer, "cannot convert Register {} from {s}", .{ runtime.REGISTER_X, type_name }) catch "cannot convert Register";
+        runtime.moreInfoOnError("In function badTypeError:", message, null, null);
+    }
+}
+
+// REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X), which is what zeroCheck reads
+// for a scalar dtComplex34 register: the register data pointer advanced by
+// sizeof(matrixHeader_t). The scalar value starts at offset 0, so the two
+// real34 halves read here are shifted four bytes into the block and the
+// "imaginary" half runs four bytes past its end. Reproduced because it decides
+// the answer of x=+0? / x=-0? on a complex X.
+fn registerComplex34MatrixElements(reg: runtime.calcRegister_t) *align(1) const runtime.complex34_t {
+    const bytes: [*]align(1) const u8 = @ptrCast(runtime.getRegisterDataPointer(reg).?);
+    return @ptrCast(bytes + @sizeOf(runtime.matrixHeader_t));
 }
 
 fn matchesRealSpecial(value: *align(1) const runtime.real34_t, comptime kind: SpecialKind) bool {
@@ -140,7 +161,7 @@ fn tryCheckSignedZero(comptime sign: ZeroSign) bool {
             return true;
         },
         runtime.dtComplex34 => {
-            const value = runtime.registerComplex34Ptr(runtime.REGISTER_X);
+            const value = registerComplex34MatrixElements(runtime.REGISTER_X);
             runtime.setTemporaryInformation(runtime.real34IsZero(&value.real) and runtime.real34IsZero(&value.imag) and (runtime.real34IsNegative(&value.real) == negative or runtime.real34IsNegative(&value.imag) == negative));
             return true;
         },
@@ -155,9 +176,6 @@ fn tryCheckSignedZero(comptime sign: ZeroSign) bool {
 // signedZeroCheck (checkValue.c): compare the SIGN bit (not zero-ness).
 //   neg = true  -> x <= -0?  true for negatives and -0
 //   neg = false -> x >= +0?  true for positives and +0
-// The invalid-type path uses compareTypeErrorX() upstream; typeErrorX() here is
-// behaviorally identical in the default build (the extra moreInfoOnError hint is
-// EXTRA_INFO_ON_CALC_ERROR-gated).
 fn signedZeroCheck(neg: bool) void {
     var check: bool = false;
     switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {

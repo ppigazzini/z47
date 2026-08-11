@@ -1,6 +1,27 @@
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
+
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
+
+// MAX_LONG_INTEGER_SIZE_IN_BITS (defines.h).
+const MAX_LONG_INTEGER_SIZE_IN_BITS: u16 = 3328;
+
+// The wrong-type refusals of fnUlp / mantError / roundiError, which name the
+// data type X actually holds. The three sentences differ, so the format string
+// travels with the call site.
+fn reportTypeError(function_name: [*:0]const u8, comptime format: []const u8) void {
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+    var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+    const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+    const message = runtime.bufPrintZ(&buffer, format, .{type_name}) catch "";
+    runtime.moreInfoOnError(function_name, message, null, null);
+}
 
 fn mantLonI() void {
     var x_value: runtime.real_t = undefined;
@@ -45,7 +66,13 @@ fn roundiReal() callconv(.c) void {
         else
             runtime.ERROR_OVERFLOW_MINUS_INF;
         runtime.displayCalcErrorMessage(error_code, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function roundiReal:", "real exponent exceeds long-integer range", null, null);
+        if (runtime.extra_info_on_calc_error) {
+            var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+            const message = runtime.bufPrintZ(&buffer, "Converting a real exponent of {d} would result in a value exceeding {d} bits!", .{ exponent, MAX_LONG_INTEGER_SIZE_IN_BITS }) catch "";
+            // Empty strings, not null, for m3/m4: upstream passes "", "", which
+            // is what selects moreInfoOnError's four-line branch.
+            runtime.moreInfoOnError("In function roundiReal:", message, "", "");
+        }
         // C roundiReal (roundi.c): NO return here — after the overflow error it still
         // falls through to convertReal34ToLongIntegerRegister (unlike NaN/Inf which return).
     }
@@ -95,7 +122,7 @@ pub fn fnUlp(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtReal34 => ulpReal(),
         else => {
             runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function fnUlp:", "cannot calculate ULP for current X type", null, null);
+            reportTypeError("In function fnUlp:", "cannot calculate ULP? with {s} in X");
             return;
         },
     }
@@ -115,7 +142,7 @@ pub fn fnMant(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtReal34 => mantReal(),
         else => {
             runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function mantError:", "cannot calculate MANT for current X type", null, null);
+            reportTypeError("In function mantError:", "cannot calculate MANT for {s}");
         },
     }
 
@@ -135,7 +162,7 @@ pub fn fnRoundi(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.dtReal34Matrix => runtime.elementwiseRema(&roundiReal),
         else => {
             runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("In function roundiError:", "cannot calculate ROUNDI for current X type", null, null);
+            reportTypeError("In function roundiError:", "cannot calculate ROUNDI for {s}");
         },
     }
 

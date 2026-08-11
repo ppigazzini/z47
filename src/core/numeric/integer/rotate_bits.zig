@@ -3,7 +3,9 @@ const shortint_core = @import("core.zig");
 
 fn getShiftInput(word: *u64, base: *u32) bool {
     if (!runtime.getRegisterAsRawShortInt(runtime.REGISTER_X, word, base)) {
-        runtime.invalidShortIntegerError(runtime.REGISTER_X);
+        // Every command in this file shares getShiftInput, and upstream's copy
+        // names fnAsr in the hint whichever of them called it.
+        runtime.invalidShortIntegerError("In function fnAsr:", runtime.REGISTER_X);
         return false;
     }
     if (!runtime.saveLastX()) {
@@ -176,7 +178,7 @@ pub export fn fnZip(unused_but_mandatory_parameter: u16) callconv(.c) void {
     var base: u32 = undefined;
 
     if (!runtime.getRegisterAsRawShortInt(runtime.REGISTER_Y, &y, &base)) {
-        runtime.invalidShortIntegerError(runtime.REGISTER_Y);
+        runtime.invalidShortIntegerError("In function fnZip:", runtime.REGISTER_Y);
         return;
     }
     if (!getShiftInput(&x, &base)) return;

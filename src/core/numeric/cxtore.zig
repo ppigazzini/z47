@@ -4,10 +4,9 @@
 // value into its two real parts, real/imag in rectangular mode or
 // magnitude/angle in polar mode), for both a single complex34 register and a
 // complex34 matrix. Faithful line-by-line translation preserving the exact order
-// of every real34 operation (cxToRe.txt). Exports fnCxToRe with C linkage. The
-// EXTRA_INFO_ON_CALC_ERROR sprintf hint becomes a fixed moreInfoOnError string
-// (no-op under TESTSUITE/DMCP).
+// of every real34 operation (cxToRe.txt). Exports fnCxToRe with C linkage.
 
+const std = @import("std");
 const runtime = @import("command_wrappers/runtime.zig");
 const math_transform_complex_helpers = @import("transform/transform_complex_helpers.zig");
 const real34_t = runtime.real34_t;
@@ -144,6 +143,13 @@ pub export fn fnCxToRe(unusedButMandatoryParameter: u16) callconv(.c) void {
         }
     } else {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-        moreInfoOnError("In function fnCxToRe:", "You cannot use Cx->Re with this data type in X!", null, null);
+        if (runtime.extra_info_on_calc_error) {
+            // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this
+            // hint into the shared errorMessage buffer of that size.
+            var buffer: [512]u8 = undefined;
+            const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+            const message = runtime.bufPrintZ(&buffer, "You cannot use Cx->Re with {s} in X!", .{type_name}) catch "";
+            moreInfoOnError("In function fnCxToRe:", message, null, null);
+        }
     }
 }

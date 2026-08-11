@@ -244,13 +244,11 @@ fn argComplexMatrix() void {
 }
 
 pub fn arg() void {
-    const register_data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-
     if (!runtime.saveLastX()) {
         return;
     }
 
-    switch (register_data_type) {
+    switch (runtime.getRegisterDataType(runtime.REGISTER_X)) {
         runtime.dtLongInteger, runtime.dtReal34, runtime.dtShortInteger => argReal(),
         runtime.dtComplex34 => argComplex(),
         runtime.dtReal34Matrix => argRealMatrix(),

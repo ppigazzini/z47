@@ -9,6 +9,29 @@ const dyadic_integer_multiply: u8 = 2;
 
 const shortIntegerData = abi.registerShortInteger;
 
+// The divide-by-zero hint of the idiv/idivr cell this fast path stands in for
+// (idiv.c, idivr.c). The label names the cell — idiv[r] then the Y type then the
+// X type — and the noun in the message follows the Y operand, which is how the
+// eight cells upstream are written.
+fn integerDivideByZeroInfo(with_remainder: bool, y_is_long: bool, x_is_long: bool) void {
+    const label: [*:0]const u8 = if (with_remainder)
+        if (y_is_long)
+            (if (x_is_long) "In function idivrLonILonI:" else "In function idivrLonIShoI:")
+        else
+            (if (x_is_long) "In function idivrShoILonI:" else "In function idivrShoIShoI:")
+    else if (y_is_long)
+        (if (x_is_long) "In function idivLonILonI:" else "In function idivLonIShoI:")
+    else
+        (if (x_is_long) "In function idivShoILonI:" else "In function idivShoIShoI:");
+
+    const message: [*:0]const u8 = if (with_remainder)
+        (if (y_is_long) "cannot IDIVR a long integer by 0" else "cannot IDIVR a short integer by 0")
+    else
+        (if (y_is_long) "cannot IDIV a long integer by 0" else "cannot IDIV a short integer by 0");
+
+    runtime.moreInfoOnError(label, message, null, null);
+}
+
 fn tryDyadicLongIntegerArithmetic(operation: u8) bool {
     const type_x = runtime.getRegisterDataType(runtime.REGISTER_X);
     const type_y = runtime.getRegisterDataType(runtime.REGISTER_Y);
@@ -94,12 +117,7 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
 
         if (divisor_magnitude == 0) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError(
-                if (with_remainder) "In function fnIDivR:" else "In function fnIDiv:",
-                "cannot divide current integer pair by 0",
-                null,
-                null,
-            );
+            integerDivideByZeroInfo(with_remainder, false, false);
         } else {
             const x_raw = shortIntegerData(runtime.REGISTER_X);
             const y_raw = shortIntegerData(runtime.REGISTER_Y);
@@ -132,12 +150,7 @@ fn tryDyadicLongIntegerDivide(with_remainder: bool) bool {
 
     if (x_value[0]._mp_size == 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError(
-            if (with_remainder) "In function fnIDivR:" else "In function fnIDiv:",
-            "cannot divide current integer pair by 0",
-            null,
-            null,
-        );
+        integerDivideByZeroInfo(with_remainder, y_is_long, x_is_long);
     } else if (with_remainder) {
         var quotient: runtime.longInteger_t = undefined;
         var remainder: runtime.longInteger_t = undefined;

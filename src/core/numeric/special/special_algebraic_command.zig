@@ -1,39 +1,11 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 const transcendental_command_owned = @import("transcendental_command.zig");
 
+const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
+const std_infinity = "\xa2\x1e"; // STD_INFINITY
+
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
-}
-
-fn sqrtComplexLocal(
-    real: *const runtime.real_t,
-    imag: *const runtime.real_t,
-    res_real: *runtime.real_t,
-    res_imag: *runtime.real_t,
-    real_context: *runtime.realContext_t,
-) void {
-    var a: runtime.real_t = undefined;
-    var b: runtime.real_t = undefined;
-
-    copyReal(&a, real);
-    copyReal(&b, imag);
-
-    if (runtime.realIsZero(&b)) {
-        if (runtime.realIsNegative(&a)) {
-            runtime.realChangeSign(&a);
-            runtime.realSquareRoot(&a, res_imag, real_context);
-            runtime.realSetZero(res_real);
-        } else {
-            runtime.realSquareRoot(&a, res_real, real_context);
-            runtime.realSetZero(res_imag);
-        }
-        return;
-    }
-
-    runtime.realRectangularToPolar(&a, &b, res_real, res_imag, real_context);
-    runtime.realSquareRoot(res_real, res_real, real_context);
-    runtime.realMultiply(res_imag, runtime.z47_math_wrappers_const_1on2(), res_imag, real_context);
-    runtime.realPolarToRectangular(res_real, res_imag, res_real, res_imag, real_context);
 }
 
 pub fn sqrt1Px2Complex(
@@ -70,7 +42,10 @@ pub fn sqrt1Px2Complex(
     runtime.realFMA(real, real, &x, &x, real_context);
     runtime.realMultiply(real, imag, &y, real_context);
     runtime.realAdd(&y, &y, &y, real_context);
-    sqrtComplexLocal(&x, &y, res_real, res_imag, real_context);
+    // The dispatching sqrtComplex, not an inlined copy of its <=75 arm: the
+    // dispatcher picks the 159-digit Newton-Raphson body above 75 digits and
+    // raises the bug screen above 159.
+    runtime.sqrtComplex(&x, &y, res_real, res_imag, real_context);
 }
 
 fn sqrt1Px2Real() callconv(.c) void {
@@ -82,6 +57,9 @@ fn sqrt1Px2Real() callconv(.c) void {
 
     if (runtime.realIsInfinite(&x) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError("In function sqrt1Px2Real:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of exp when flag SPCRES is not set", null, null);
+        }
         return;
     }
 

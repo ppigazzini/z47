@@ -5,10 +5,9 @@
 // the exact order of every real_t operation (beta.txt checks results to the
 // last ULP). Exports fnBeta with C linkage; the static realBeta/complexBeta/
 // betaReal/betaComplex helpers stay private. The SAVE_SPACE_DM42_12 gate is
-// dead on every z47 build, so the body is ported unconditionally. The
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings
-// (no-op under TESTSUITE/DMCP).
+// dead on every z47 build, so the body is ported unconditionally.
 
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_wp34s = @import("wp34s.zig");
@@ -39,6 +38,24 @@ inline fn const_0() *const real_t {
 const displayCalcErrorMessage = runtime.displayCalcErrorMessage;
 const moreInfoOnError = runtime.moreInfoOnError;
 
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
+
+// Every Beta refusal names both operands, Y first then X, and the sentence
+// that follows differs per arm (including upstream's missing parenthesis in
+// the two Re(y) ones).
+fn reportBetaError(function_name: [*:0]const u8, comptime tail: []const u8) void {
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+    var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+    const y_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_Y, true, false));
+    const x_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+    const message = runtime.bufPrintZ(&buffer, "cannot calculate Beta of ({s}, {s}" ++ tail, .{ y_name, x_name }) catch "";
+    moreInfoOnError(function_name, message, null, null);
+}
+
 fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) bool {
     // Beta(x, y) := Gamma(x) * Gamma(y) / Gamma(x+y)
     var tReal: real_t = undefined;
@@ -46,11 +63,11 @@ fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, r
 
     if (math_comparison_reals.realCompareLessEqual(xReal, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function complexBeta:", "cannot calculate Beta with Re(x)<=0", null, null);
+        reportBetaError("In function complexBeta:", ") with Re(x)<=0");
         return false;
     } else if (math_comparison_reals.realCompareLessEqual(yReal, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function complexBeta:", "cannot calculate Beta with Re(y)<=0", null, null);
+        reportBetaError("In function complexBeta:", " with Re(y)<=0");
         return false;
     }
 
@@ -67,7 +84,7 @@ fn complexBeta(xReal: *real_t, xImag: *real_t, yReal: *real_t, yImag: *real_t, r
 
     if (realIsNaN(rImag) or realIsNaN(rReal)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function complexBeta:", "cannot calculate Beta out of range", null, null);
+        reportBetaError("In function complexBeta:", ") out of range");
         return false;
     }
 
@@ -80,11 +97,11 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
 
     if (math_comparison_reals.realCompareLessEqual(x, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function realBeta:", "cannot calculate Beta with x<=0", null, null);
+        reportBetaError("In function realBeta:", ") with x<=0");
         return false;
     } else if (math_comparison_reals.realCompareLessEqual(y, const_0())) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function realBeta:", "cannot calculate Beta with Re(y)<=0", null, null);
+        reportBetaError("In function realBeta:", " with Re(y)<=0");
         return false;
     }
 
@@ -100,7 +117,7 @@ fn realBeta(x: *real_t, y: *real_t, r: *real_t, realContext: *realContext_t) boo
 
     if (realIsNaN(r)) {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function realBeta:", "cannot calculate Beta out of range", null, null);
+        reportBetaError("In function realBeta:", ") out of range");
         return false;
     }
 

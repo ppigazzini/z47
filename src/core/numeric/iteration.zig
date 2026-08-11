@@ -41,7 +41,7 @@ const consts = abi.constants;
 // SET_TI_TRUE_FALSE(cond): temporaryInformation = TI_FALSE + cond (TI_FALSE==12,
 //   TI_TRUE==13). TEMP_REGISTER_1==135, amNone==5, DEC_ROUND_DOWN==5,
 //   ERROR_INVALID_DATA_TYPE_FOR_OP==24. const34_1/100/1000 blob offsets
-//   15804/16044/16124. All verified against defines.h / generated
+//   16568/16808/16888. All verified against defines.h / generated
 //   constantPointers.h.
 // =====================================================================
 

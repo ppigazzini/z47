@@ -44,7 +44,17 @@ pub extern var shortIntegerSignBit: u64;
 pub extern var thereIsSomethingToUndo: bool;
 pub extern var temporaryInformation: u8;
 
+// EXTRA_INFO_ON_CALC_ERROR (defines.h), as far as this object can resolve it.
+// The three short-integer command objects are compiled once and linked into
+// both the simulator and the testSuite, so the TESTSUITE_BUILD half of the
+// macro is not a compile-time fact here. It does not have to be: the
+// moreInfoOnError symbol is a no-op stub on every build that compiles the hints
+// out, so this gate only keeps the message formatting off the firmware.
+pub const extra_info_on_calc_error = @import("builtin").target.os.tag != .freestanding;
+
 pub extern fn getRegisterDataType(regist: calcRegister_t) u32;
+pub extern fn getRegisterDataTypeName(regist: calcRegister_t, article: bool, abbreviated: bool) [*:0]const u8;
+pub extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 pub extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) bool;
 pub extern fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) bool;
 pub extern fn saveLastX() bool;
@@ -143,20 +153,48 @@ pub fn setTemporaryInformation(condition: bool) void {
     error_info_owned.setTemporaryInformation(&temporaryInformation, TI_FALSE, condition);
 }
 
-pub fn invalidShortIntegerError(regist: calcRegister_t) void {
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
+
+pub fn invalidShortIntegerError(function_name: [*:0]const u8, regist: calcRegister_t) void {
     error_info_owned.invalidShortIntegerError(
         displayCalcErrorMessage,
         ERROR_INVALID_DATA_TYPE_FOR_OP,
         ERR_REGISTER_LINE,
         regist,
     );
+    if (extra_info_on_calc_error) {
+        var message: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+        const type_name = std.mem.span(getRegisterDataTypeName(regist, true, false));
+        moreInfoOnError(function_name, bufPrintZ(&message, "cannot shift/rotate {s}", .{type_name}), null, null);
+    }
 }
 
-pub fn wordSizeError() void {
+pub fn wordSizeError(function_name: [*:0]const u8, operation_name: []const u8, requested_bits: u16) void {
     error_info_owned.wordSizeError(
         displayCalcErrorMessage,
         ERROR_WORD_SIZE_TOO_SMALL,
         ERR_REGISTER_LINE,
         REGISTER_X,
     );
+    if (extra_info_on_calc_error) {
+        var message: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+        moreInfoOnError(
+            function_name,
+            bufPrintZ(&message, "cannot calculate {s}({d}) word size is {d}", .{ operation_name, requested_bits, shortIntegerWordSize }),
+            null,
+            null,
+        );
+    }
+}
+
+// std.fmt.bufPrintZ was removed in Zig 0.17; std.fmt.bufPrint plus an explicit
+// sentinel works on both 0.16 and master. Every format below is bounded far
+// under ERROR_MESSAGE_LENGTH, so the truncating fallback is the empty string
+// rather than a second message the C never prints.
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [*:0]const u8 {
+    const text = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
+    buffer[text.len] = 0;
+    return @ptrCast(buffer.ptr);
 }

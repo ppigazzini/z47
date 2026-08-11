@@ -683,10 +683,6 @@ pub export fn chsShoI() callconv(.c) void {
     sign_command_owned.chsShoI();
 }
 
-fn chsLonI() callconv(.c) void {
-    sign_command_owned.chsLonI();
-}
-
 pub export fn fnRandom(unused_but_mandatory_parameter: u16) callconv(.c) void {
     random_real_owned.random(unused_but_mandatory_parameter);
 }

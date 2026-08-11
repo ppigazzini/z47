@@ -89,6 +89,18 @@ const RESULT_TYPE_UNKNOWN: i8 = 0;
 const RESULT_TYPE_REAL: i8 = 1;
 const RESULT_TYPE_COMPLEX: i8 = 2;
 
+const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
+const std_infinity = "\xa2\x1e"; // STD_INFINITY
+
+// EXTRA_INFO_MESSAGE (defines.h): the macro prints three console lines -- the
+// fixed "In function " prefix, the function name, then the message -- and is
+// compiled out on the firmware and under the testSuite.
+fn extraInfoMessage(function_name: [*:0]const u8, message: [*:0]const u8) void {
+    if (runtime.extra_info_on_calc_error) {
+        runtime.moreInfoOnError("In function ", function_name, message, null);
+    }
+}
+
 fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_t) bool {
     var result: bool = true;
     resultType.* = RESULT_TYPE_UNKNOWN;
@@ -96,7 +108,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
     if (realIsInfinite(xReal)) {
         if (!runtime.getSystemFlag(FLAG_SPCRES)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function _checkLnGammaArgs", "cannot use +-Infinity as X input of lnbeta when flag SPCRES is not set", null, null);
+            extraInfoMessage("_checkLnGammaArgs", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of lnbeta when flag SPCRES is not set");
         } else {
             math_runtime_helpers.realToReal34(if (realIsPositive(xReal)) const_plusInfinity() else const_NaN(), runtime.registerReal34Ptr(REGISTER_X));
         }
@@ -106,7 +118,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
         if (realIsAnInteger(xReal)) {
             if (!runtime.getSystemFlag(FLAG_SPCRES)) {
                 displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnError("In function _checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag SPCRES is not set", null, null);
+                extraInfoMessage("_checkLnGammaArgs", "cannot use a negative integer as X input of lnbeta when flag SPCRES is not set");
             } else {
                 reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
                 convertRealToReal34ResultRegister(const_NaN(), REGISTER_X);
@@ -126,7 +138,7 @@ fn _checkLnGammaArgs(resultType: *i8, xReal: *real_t, realContext: *realContext_
                     resultType.* = RESULT_TYPE_COMPLEX;
                 } else { // Domain error
                     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function _checkLnGammaArgs", "cannot use a as X input of lnbeta if gamma(X)<0 when flag I is not set", null, null);
+                    extraInfoMessage("_checkLnGammaArgs", "cannot use a as X input of lnbeta if gamma(X)<0 when flag I is not set");
                     result = false;
                 }
             }

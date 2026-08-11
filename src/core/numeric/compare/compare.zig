@@ -59,11 +59,7 @@ fn runCompare(parameter: u16, mode: Mode) void {
     compareScalarRegister(regist, mode);
 }
 
-pub fn isOwnedCompareRegister(regist: runtime.calcRegister_t) bool {
-    return isOwnedStackRegister(regist);
-}
-
-pub fn isOwnedAlmostEqualIntegerType(data_type: u32) bool {
+fn isOwnedAlmostEqualIntegerType(data_type: u32) bool {
     return data_type == runtime.dtLongInteger or data_type == runtime.dtShortInteger;
 }
 
@@ -161,7 +157,8 @@ fn getCompareInput(
             return true;
         },
         runtime.dtShortInteger => {
-            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal39);
+            // 34 digits, as getRegisterAsComplexOrAnyRealQuiet uses.
+            runtime.convertShortIntegerRegisterToReal(regist, real, &runtime.ctxtReal34);
             runtime.realSetZero(imag);
             return true;
         },
@@ -220,14 +217,11 @@ pub fn fnXNotEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
 }
 
 pub fn fnXAlmostEqual(unused_but_mandatory_parameter: u16) callconv(.c) void {
-    const regist: runtime.calcRegister_t = @intCast(unused_but_mandatory_parameter);
-    const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const regist_type = runtime.getRegisterDataType(regist);
-
-    if (!isOwnedCompareRegister(regist) or !isOwnedAlmostEqualIntegerType(x_type) or !isOwnedAlmostEqualIntegerType(regist_type)) {
-        legacy.fnXAlmostEqual(unused_but_mandatory_parameter);
-        return;
-    }
-
-    compareScalarRegister(regist, .equal);
+    // x~? has no owned fast path. Every type pair it accepts needs either the
+    // rounding snapshot of almostEqualScalar/almostEqualMatrix or, for an
+    // integer against an integer, the exact long-integer comparison of
+    // compareRegisters. Rounding an integer pair into a real instead would
+    // call two values equal as soon as they agree to the context's digit
+    // count, and a long integer carries far more digits than that.
+    legacy.fnXAlmostEqual(unused_but_mandatory_parameter);
 }

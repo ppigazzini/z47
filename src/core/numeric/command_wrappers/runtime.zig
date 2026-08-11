@@ -2,38 +2,50 @@ const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
 const use_fake_wp34s_harness_surface = @hasDecl(build_options, "use_fake_wp34s_harness_surface") and build_options.use_fake_wp34s_harness_surface;
 pub const harness_surface_is_fake = use_fake_wp34s_harness_surface;
-pub const is_testsuite_build = @hasDecl(build_options, "is_testsuite_build") and build_options.is_testsuite_build;
+pub const is_testsuite_build = build_options.is_testsuite_build;
 // Mirrors "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" in wp34s.c:
 // the DM42 firmware uses smaller fallback buffers and reduced precision in the
 // WP34S_Mod / WP34S_BigMod range reduction. Only the "dmcp" build sets it.
-pub const wp34s_mod_small_buffers = @hasDecl(build_options, "wp34s_mod_small_buffers") and build_options.wp34s_mod_small_buffers;
+pub const wp34s_mod_small_buffers = build_options.wp34s_mod_small_buffers;
 
 // Heavy/cold math owners run from executable QSPI (XIP) on the flash-limited
 // DM42 old_hw firmware to keep main FLASH free; host/dmcp5/macOS keep the
-// normal section (no-op there). Same mechanism as the dateTime owner.
-const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
+// normal section (no-op there). Same mechanism as the dateTime owner. This is a
+// placement choice only: it never stands in for an OPTION_* value, each of
+// which is carried by its own field below.
+const dm42_pkg_xip = build_options.dm42_pkg_xip;
 
 /// defines.h's OPTION_XFN_1000: the 1071-digit XFN math path. Enabled by
 /// default, #undef'd for every DM42 build ("does not work on DM42, due to stack
-/// constraint", ~5Kb of flash). Absent from a harness's options => on, matching
-/// the host default.
-pub const option_xfn_1000 = !@hasDecl(build_options, "option_xfn_1000") or build_options.option_xfn_1000;
+/// constraint", ~5Kb of flash).
+pub const option_xfn_1000 = build_options.option_xfn_1000;
 // Each of these empties the matching command bodies upstream, so a build
 // without one answers nothing rather than computing on a stubbed helper.
-pub const option_elliptic = !@hasDecl(build_options, "option_elliptic") or build_options.option_elliptic;
-pub const option_bessel = !@hasDecl(build_options, "option_bessel") or build_options.option_bessel;
-pub const option_ortho = !@hasDecl(build_options, "option_ortho") or build_options.option_ortho;
-pub const option_dist_normal = !@hasDecl(build_options, "option_dist_normal") or build_options.option_dist_normal;
-pub const option_cubic_159 = !@hasDecl(build_options, "option_cubic_159") or build_options.option_cubic_159;
-pub const option_eigen_159 = !@hasDecl(build_options, "option_eigen_159") or build_options.option_eigen_159;
+pub const option_elliptic = build_options.option_elliptic;
+pub const option_bessel = build_options.option_bessel;
+pub const option_ortho = build_options.option_ortho;
+pub const option_dist_normal = build_options.option_dist_normal;
+pub const option_cubic_159 = build_options.option_cubic_159;
+pub const option_eigen_159 = build_options.option_eigen_159;
+
+/// defines.h's OPTION_EIGEN: the eigenvalue/eigenvector/QR/matrix-square-root
+/// half of matrix.c, and squareRoot.c's matrix branch. #undef'd for DM42
+/// packages 1, 2 and 4 (17440 bytes of flash); package 3, DMCP5 and host keep
+/// it. LU, determinant and inverse are outside it and stay either way.
+pub const option_eigen = build_options.option_eigen;
+
+/// defines.h's OPTION_VECTOR: matrix.c's 2D/3D vector command surface and the
+/// rectangular <-> spherical/cylindrical/polar conversions reached from
+/// toRect.c and toPolar.c. #undef'd in the block common to DM42 packages 1-4,
+/// so no DM42 package carries it; DMCP5 and host do.
+pub const option_vector = build_options.option_vector;
 
 /// defines.h's OPTION_SLVP_POLY: the SLVP polynomial-root command. Enabled by
 /// default and #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000
 /// (2024 bytes of flash), so it is off for exactly the same builds. Its
 /// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP_POLY` dependency adds nothing:
-/// every target that drops OPTION_EIGEN is already one of those. Absent from a
-/// harness's options => on, matching the host default.
-pub const option_slvp_poly = !@hasDecl(build_options, "option_slvp_poly") or build_options.option_slvp_poly;
+/// every target that drops OPTION_EIGEN is already one of those.
+pub const option_slvp_poly = build_options.option_slvp_poly;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
@@ -137,7 +149,7 @@ pub const FLAG_PROPFR: i32 = 0x8008;
 pub const FLAG_CARRY: i32 = 0x800b;
 pub const FLAG_OVERFLOW: i32 = 0x800c;
 pub const FLAG_SPCRES: i32 = 0x8017;
-pub const FLAG_ASLIFT: i32 = 0xc023; // defines.h:853 (was 0x8019 = FLAG_QUIET)
+pub const FLAG_ASLIFT: i32 = 0xc023; // defines.h:935
 pub const FLAG_HPRP: i32 = 0x802b;
 
 pub const SIM_UNSIGN: u8 = 0;
@@ -287,8 +299,7 @@ pub extern fn fnRefreshState() void;
 // screen refresh, not a state refresh. On the firmware it is a DMCP ROM
 // jump-table call rather than a link symbol.
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
-const dm42_pkg_xip_refresh = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
-const refresh_library_fn_base: usize = if (dm42_pkg_xip_refresh) 0x08000201 else 0x08000301;
+const refresh_library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
 extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on the host
 pub inline fn refreshScreenNow() void {
     if (comptime is_dmcp_build) {
@@ -1201,9 +1212,13 @@ pub fn setVectorRegisterAngularMode(reg: calcRegister_t, mode: angularMode_t) vo
     setRegisterTag(reg, (@as(u32, @intCast(mode)) & amAngleMask) | (getRegisterTag(reg) & @as(u32, @intCast(amPolar))));
 }
 
+// The vector polar mode is one of {0, amPolar, amPolarCYL, amPolarSPH}, where
+// the "no polar mode" sentinel is a bare 0 and NOT amNone (which is 5): the
+// getter's three zero cases and the setter's clear branch all test the literal,
+// and getComplexRegisterPolarMode feeds the setter a raw `tag & amPolar`.
 pub fn getVectorRegisterPolarMode(reg: calcRegister_t) angularMode_t {
     if (getRegisterDataType(reg) != dtReal34Matrix or (getRegisterTag(reg) & amAngleMask) == @as(u32, @intCast(amNone))) {
-        return amNone;
+        return 0;
     }
 
     if (isRegisterMatrix3dVector(reg)) {
@@ -1214,12 +1229,12 @@ pub fn getVectorRegisterPolarMode(reg: calcRegister_t) angularMode_t {
         return @intCast(getRegisterTag(reg) & @as(u32, @intCast(amPolar)));
     }
 
-    return amNone;
+    return 0;
 }
 
 pub fn setVectorRegisterPolarMode(reg: calcRegister_t, mode: angularMode_t) void {
     const current_tag = getRegisterTag(reg);
-    const next_tag: u32 = if (mode == amNone)
+    const next_tag: u32 = if (mode == 0)
         (current_tag & ~(@as(u32, @intCast(amAngleMask | amPolar)))) + @as(u32, @intCast(amNone))
     else blk: {
         const with_polar = (current_tag & @as(u32, @intCast(amAngleMask | amPolar))) |

@@ -34,8 +34,16 @@ pub fn sdl(unused_but_mandatory_parameter: u16) callconv(.c) void {
         runtime.convertLongIntegerRegisterToLongInteger(runtime.REGISTER_X, &x_value[0]);
         defer runtime.__gmpz_clear(&x_value[0]);
 
+        var ten: runtime.longInteger_t = undefined;
+        runtime.__gmpz_init(&ten[0]);
+        defer runtime.__gmpz_clear(&ten[0]);
+        runtime.__gmpz_set_ui(&ten[0], 10);
+
+        // longIntegerMultiply, not a raw mpz_mul: each step has to face the
+        // MAX_LONG_INTEGER_SIZE_IN_BITS refusal and raise the overflow error
+        // rather than grow the value past the long-integer ceiling.
         for (0..unused_but_mandatory_parameter) |_| {
-            runtime.__gmpz_mul_ui(&x_value[0], &x_value[0], 10);
+            runtime.longIntegerMultiply(&ten[0], &x_value[0], &x_value[0]);
         }
 
         runtime.convertLongIntegerToLongIntegerRegister(&x_value[0], runtime.REGISTER_X);

@@ -38,12 +38,16 @@ fn complexMatrixImagPtr(matrix: *runtime.complex34Matrix_t, index: usize) *runti
 }
 
 fn unitVectorError() void {
-    var message_buffer: [128]u8 = undefined;
-    const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
-    const message = runtime.bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "cannot calculate the unit vector";
-
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-    runtime.moreInfoOnError("In function fnUnitVector:", message, null, null);
+    if (runtime.extra_info_on_calc_error) {
+        // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this hint
+        // into the shared errorMessage buffer of that size, so no data-type
+        // name can truncate it.
+        var message_buffer: [512]u8 = undefined;
+        const type_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+        const message = runtime.bufPrintZ(&message_buffer, "cannot calculate the unit vector of {s}", .{type_name}) catch "";
+        runtime.moreInfoOnError("In function fnUnitVector:", message, null, null);
+    }
 }
 
 fn unitVectorComplex() void {

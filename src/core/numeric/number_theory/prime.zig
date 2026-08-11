@@ -12,11 +12,7 @@ const const34_1 = consts.const34_1;
 // `zig build test` verifies the port.
 //
 // Faithful line-by-line translation of prime.c. C unsigned arithmetic that
-// wraps is written with the wrapping operators (+% -% *%). The host-only
-// progress/screen display (_showProgress and the progressHalfSecUpdate_Integer
-// status drawing) has no effect on the computed stack result; the underlying
-// progress/exit functions are still called (so programRunStop / flag side
-// effects are preserved) but _showProgress is reduced to a no-op. The
+// wraps is written with the wrapping operators (+% -% *%). The
 // MONITOR_FACTORS debug blocks are #undef'd in the C and are omitted here.
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings
 // (matching the sibling owners; under TESTSUITE/DMCP builds moreInfoOnError is
@@ -381,6 +377,23 @@ extern fn copySourceRegisterToDestRegister(source: calcRegister_t, dest: calcReg
 // Screen / progress (host-only; called for control-flow side effects)
 extern fn updateMatrixHeightCache() void;
 extern fn refreshRegisterLine(regist: calcRegister_t) void;
+
+// The progress panel _showProgress draws (defines.h / display.h geometry).
+const Y_POSITION_OF_REGISTER_Z_LINE: u32 = 60;
+const Y_POSITION_OF_REGISTER_Y_LINE: u32 = 96;
+const vmNormal: c_int = 0;
+const amNone: u32 = 5;
+const LIMITEXP: bool = true;
+const FRONTSPACE: bool = true;
+const NOIRFRAC: c_int = 0;
+const font_t = opaque {};
+extern var displayFormatDigits: u8;
+extern var tmpString: [*c]u8;
+extern const standardFont: font_t;
+extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBottom: bool) void;
+extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool, showEndingCols: bool) u32;
+extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
+extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn clearScreenOld(clearStatusBar: bool, clearRegisterLines: bool, clearSoftkeys: bool) void;
 extern fn force_refresh(mode: u8) void;
@@ -465,12 +478,33 @@ inline fn maxIter(self: *const pollard_t) c_int {
 }
 
 // ---------------------------------------------------------------------------
-// _showProgress: host-only display, no effect on the stack result. Reduced to
-// a no-op (the C clears register lines and draws strings only).
+// _showProgress: the "Last:" / "Test:" panel drawn over the Y and Z lines while
+// a factorization runs. displayFormatDigits is forced to 0 for the two
+// renderings so the panel shows every digit the value has, and restored after.
+// The two strings are laid down with their label and then overwritten from
+// offset 5 on, which is what leaves the five-character prefix visible.
 // ---------------------------------------------------------------------------
-fn _showProgress(ss: *const real34_t, nextp: *mpz_struct) void {
-    _ = ss;
-    _ = nextp;
+fn _showProgress(ss: *align(1) const real34_t, nextp: *mpz_struct) void {
+    var rr: real34_t = undefined;
+
+    clearRegisterLine(REGISTER_Z, true, true);
+    clearRegisterLine(REGISTER_Y, true, true);
+    clearRegisterLine(REGISTER_X, true, true);
+    const savedDisplayFormatDigits = displayFormatDigits;
+    displayFormatDigits = 0;
+
+    _ = strcpy(tmpString, "Last:   ");
+    real34ToDisplayString(ss, amNone, tmpString + 5, &standardFont, 400 - 6 * 18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+    _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+    convertLongIntegerToReal34(nextp, &rr);
+
+    _ = strcpy(tmpString, "Test:   ");
+    real34ToDisplayString(&rr, amNone, tmpString + 5, &standardFont, 400 - 6 * 18, 34, !LIMITEXP, FRONTSPACE, NOIRFRAC);
+    _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, true, true);
+
+    refreshRegisterLine(REGISTER_X);
+
+    displayFormatDigits = savedDisplayFormatDigits;
 }
 
 // ===========================================================================
@@ -1223,7 +1257,9 @@ fn longIntegerIsPerfectSquareCheckAndDo(n: *const mpz_struct, r: *mpz_struct) c_
 // ===========================================================================
 var loopp: i32 = 0;
 
-fn SQUFOF(result: *mpz_struct, N: *const mpz_struct, lastAdded: *const real34_t) void {
+// lastAdded arrives by value, as upstream declares it: the progress panel shows
+// the snapshot taken at entry, not whatever addFactor has written since.
+fn SQUFOF(result: *mpz_struct, N: *const mpz_struct, lastAdded: real34_t) void {
     var k: u32 = undefined;
     var BB: mpz_struct = undefined;
     var LL: mpz_struct = undefined;
@@ -1317,126 +1353,130 @@ fn SQUFOF(result: *mpz_struct, N: *const mpz_struct, lastAdded: *const real34_t)
             // Initialize i
             uInt32ToLongInteger(2, &ii);
 
-            while (longIntegerCompare(&ii, &BB) < 0) {
-                loopp += 1;
-                if (checkHalfSec()) {
-                    keepFileNameAlive();
-                    if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
-                        _showProgress(lastAdded, &n);
-                        force_refresh(halfSec_force);
+            // goto Broken: the Pollard interrupt below leaves both loops
+            // and the setup between them, landing on the Broken check.
+            broken: {
+                while (longIntegerCompare(&ii, &BB) < 0) {
+                    loopp += 1;
+                    if (checkHalfSec()) {
+                        keepFileNameAlive();
+                        if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+                            _showProgress(&lastAdded, &n);
+                            force_refresh(halfSec_force);
+                        }
                     }
-                }
-                if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
-                    _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                    programRunStop = PGM_WAITING;
-                    break;
+                    if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
+                        _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                        programRunStop = PGM_WAITING;
+                        break;
+                    }
+
+                    // Pollard simultaneous analysis - interject a few steps
+                    if (Factors_3_Pollard and (instruction == .FACTORS_ITERATE or instruction == .FACTORS_SETUP)) {
+                        PollardResult = pollard_step(&pollardData, &pollardFactor, instruction, 10);
+                        if (programRunStop == PGM_WAITING) {
+                            break :broken; // goto Broken
+                        }
+                        if (PollardResult.status == .FACTORS_DONE) {
+                            longIntegerCopy(&pollardFactor, result);
+                            break :cleanup;
+                        }
+                        instruction = PollardResult.status;
+                    }
+                    // Pollard end
+
+                    // b = (Po + P) / Q
+                    longIntegerAdd(&Po, &P, &temp1);
+                    longIntegerDivide(&temp1, &Q, &b);
+
+                    // P = b*Q - P
+                    longIntegerMultiply(&b, &Q, &temp1);
+                    longIntegerSubtract(&temp1, &P, &temp2);
+                    longIntegerCopy(&temp2, &P);
+                    // q = Q
+                    longIntegerCopy(&Q, &q);
+                    // Q = Qprev + b*(Pprev - P)
+                    longIntegerSubtract(&Pprev, &P, &temp1);
+                    longIntegerMultiply(&b, &temp1, &temp2);
+                    longIntegerAdd(&Qprev, &temp2, &Q);
+                    // r = sqrt(Q)
+                    longIntegerSquareRoot(&Q, &r);
+                    // Check if i is even and r*r == Q
+                    if (longIntegerIsEven(&ii) and longIntegerIsPerfectSquareCheckAndDo(&Q, &temp1) != 0) {
+                        break;
+                    }
+
+                    // Qprev = q; Pprev = P
+                    longIntegerCopy(&q, &Qprev);
+                    longIntegerCopy(&P, &Pprev);
+
+                    // Increment i
+                    longIntegerAddUInt(&ii, 1, &ii);
                 }
 
-                // Pollard simultaneous analysis - interject a few steps
-                if (Factors_3_Pollard and (instruction == .FACTORS_ITERATE or instruction == .FACTORS_SETUP)) {
-                    PollardResult = pollard_step(&pollardData, &pollardFactor, instruction, 10);
-                    if (programRunStop == PGM_WAITING) {
-                        break :kloop; // goto Broken
-                    }
-                    if (PollardResult.status == .FACTORS_DONE) {
-                        longIntegerCopy(&pollardFactor, result);
-                        break :cleanup;
-                    }
-                    instruction = PollardResult.status;
+                if (longIntegerCompare(&ii, &BB) >= 0) {
+                    continue;
                 }
-                // Pollard end
 
-                // b = (Po + P) / Q
-                longIntegerAdd(&Po, &P, &temp1);
-                longIntegerDivide(&temp1, &Q, &b);
+                // b = (Po - P) / r
+                longIntegerSubtract(&Po, &P, &temp1);
+                longIntegerDivide(&temp1, &r, &b);
 
-                // P = b*Q - P
-                longIntegerMultiply(&b, &Q, &temp1);
-                longIntegerSubtract(&temp1, &P, &temp2);
+                // Pprev = P = b*r + P
+                longIntegerMultiply(&b, &r, &temp1);
+                longIntegerAdd(&temp1, &P, &temp2);
+                longIntegerCopy(&temp2, &Pprev);
                 longIntegerCopy(&temp2, &P);
-                // q = Q
-                longIntegerCopy(&Q, &q);
-                // Q = Qprev + b*(Pprev - P)
-                longIntegerSubtract(&Pprev, &P, &temp1);
-                longIntegerMultiply(&b, &temp1, &temp2);
-                longIntegerAdd(&Qprev, &temp2, &Q);
-                // r = sqrt(Q)
-                longIntegerSquareRoot(&Q, &r);
-                // Check if i is even and r*r == Q
-                if (longIntegerIsEven(&ii) and longIntegerIsPerfectSquareCheckAndDo(&Q, &temp1) != 0) {
-                    break;
-                }
 
-                // Qprev = q; Pprev = P
-                longIntegerCopy(&q, &Qprev);
-                longIntegerCopy(&P, &Pprev);
+                // Qprev = r
+                longIntegerCopy(&r, &Qprev);
 
-                // Increment i
-                longIntegerAddUInt(&ii, 1, &ii);
-            }
+                // Q = (D - Pprev*Pprev) / Qprev
+                longIntegerMultiply(&Pprev, &Pprev, &temp1);
+                longIntegerSubtract(&D, &temp1, &temp2);
+                longIntegerDivide(&temp2, &Qprev, &Q);
 
-            if (longIntegerCompare(&ii, &BB) >= 0) {
-                continue;
-            }
-
-            // b = (Po - P) / r
-            longIntegerSubtract(&Po, &P, &temp1);
-            longIntegerDivide(&temp1, &r, &b);
-
-            // Pprev = P = b*r + P
-            longIntegerMultiply(&b, &r, &temp1);
-            longIntegerAdd(&temp1, &P, &temp2);
-            longIntegerCopy(&temp2, &Pprev);
-            longIntegerCopy(&temp2, &P);
-
-            // Qprev = r
-            longIntegerCopy(&r, &Qprev);
-
-            // Q = (D - Pprev*Pprev) / Qprev
-            longIntegerMultiply(&Pprev, &Pprev, &temp1);
-            longIntegerSubtract(&D, &temp1, &temp2);
-            longIntegerDivide(&temp2, &Qprev, &Q);
-
-            while (true) {
-                loopp += 1;
-                if (checkHalfSec()) {
-                    keepFileNameAlive();
-                    if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
-                        _showProgress(lastAdded, &n);
-                        force_refresh(halfSec_force);
+                while (true) {
+                    loopp += 1;
+                    if (checkHalfSec()) {
+                        keepFileNameAlive();
+                        if (progressHalfSecUpdate_Integer(halfSec_timed, "Factors: Shanks/Pollard n =", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
+                            _showProgress(&lastAdded, &n);
+                            force_refresh(halfSec_force);
+                        }
                     }
+                    if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
+                        _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+                        programRunStop = PGM_WAITING;
+                        break;
+                    }
+                    // b = (Po + P) / Q
+                    longIntegerAdd(&Po, &P, &temp1);
+                    longIntegerDivide(&temp1, &Q, &b);
+
+                    // Pprev = P
+                    longIntegerCopy(&P, &Pprev);
+
+                    // P = b*Q - P
+                    longIntegerMultiply(&b, &Q, &temp1);
+                    longIntegerSubtract(&temp1, &P, &P);
+
+                    // q = Q
+                    longIntegerCopy(&Q, &q);
+
+                    // Q = Qprev + b*(Pprev - P)
+                    longIntegerSubtract(&Pprev, &P, &temp1);
+                    longIntegerMultiply(&b, &temp1, &temp2);
+                    longIntegerAdd(&Qprev, &temp2, &Q);
+
+                    // Qprev = q
+                    longIntegerCopy(&q, &Qprev);
+
+                    if (longIntegerCompare(&P, &Pprev) == 0) break;
                 }
-                if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
-                    _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                    programRunStop = PGM_WAITING;
-                    break;
-                }
-                // b = (Po + P) / Q
-                longIntegerAdd(&Po, &P, &temp1);
-                longIntegerDivide(&temp1, &Q, &b);
-
-                // Pprev = P
-                longIntegerCopy(&P, &Pprev);
-
-                // P = b*Q - P
-                longIntegerMultiply(&b, &Q, &temp1);
-                longIntegerSubtract(&temp1, &P, &P);
-
-                // q = Q
-                longIntegerCopy(&Q, &q);
-
-                // Q = Qprev + b*(Pprev - P)
-                longIntegerSubtract(&Pprev, &P, &temp1);
-                longIntegerMultiply(&b, &temp1, &temp2);
-                longIntegerAdd(&Qprev, &temp2, &Q);
-
-                // Qprev = q
-                longIntegerCopy(&q, &Qprev);
-
-                if (longIntegerCompare(&P, &Pprev) == 0) break;
             }
 
-            // Broken: (also reached via the kloop break above)
+            // Broken:
             if (exitKeyWaiting() or programRunStop == PGM_WAITING) {
                 _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted: ", loopp, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                 programRunStop = PGM_WAITING;
@@ -1716,13 +1756,28 @@ fn addFactorReturnFalse() bool {
 }
 
 extern fn fnP_All_Regs(option: u16) void;
+extern fn create_filename(fn_arg: [*:0]const u8) void;
+extern fn fnStrtoReg(buffer: [*:0]const u8, regist: calcRegister_t) void;
 
+// FILENAMELEN (defines.h): a scripted capture name on the simulator may carry a
+// path, the hardware sizes DMCP DATA\ names for RAM.
+const FILENAMELEN: usize = if (@import("builtin").target.os.tag == .freestanding) 40 else 1024;
+extern var filename_csv: [FILENAMELEN]u8;
+
+// Three records open the factor TSV: the file name, the number being factored
+// and the "FACTORS:" title. cancelFilename is set before the first record so
+// the name that create_filename just made is the one the whole run appends to.
 fn printTitles(input: *mpz_struct) void {
     if (addFactorsToTSV) {
-        // Host-only TSV file output; never runs under the testSuite. The
-        // create_filename/fnStrtoReg/fnP_All_Regs path is omitted; only reachable
-        // when addFactorsToTSV is true, which is forced false in TESTSUITE_BUILD.
+        create_filename("");
+        fnStrtoReg(@ptrCast(&filename_csv), TEMP_REGISTER_1);
+        cancelFilename = true;
+        fnP_All_Regs(PRN_TMP);
+
         convertLongIntegerToLongIntegerRegister(input, TEMP_REGISTER_1);
+        fnP_All_Regs(PRN_TMP);
+
+        fnStrtoReg("FACTORS:", TEMP_REGISTER_1);
         fnP_All_Regs(PRN_TMP);
     }
 }
@@ -1927,7 +1982,7 @@ fn performPrimeFactorization(doSaveLastX: bool) bool {
                     }
 
                     // Attempt to find a factor using SQUFOF
-                    SQUFOF(&factor, &current, &lastAdded);
+                    SQUFOF(&factor, &current, lastAdded);
                     if (longIntegerCompareUInt(&factor, 0) == 0 or longIntegerCompare(&factor, &current) == 0) {
                         // SQUFOF failed; treat current as prime
                         if (!addFactor(&current, REGISTER_X, &lastAdded, &faddr)) {

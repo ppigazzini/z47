@@ -224,17 +224,16 @@ fn gammaCplx() callconv(.c) void {
 // below the ~pi decision margin, and for small |z| the divergent tail grows past pi
 // (~6000 at z = 0.1i) and corrupts the winding choice.
 fn complexLnGamma_Stirling(xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) void {
-    var zReal: real_t = undefined;
-    var zImag: real_t = undefined;
     var tReal: real_t = undefined;
-    realCopy(xReal, &zReal);
-    realCopy(xImag, &zImag);
-    math_ln_complex.lnComplex(&zReal, &zImag, rReal, rImag, realContext);
-    realSubtract(&zReal, const_1on2(), &tReal, realContext);
-    math_multiplication_cells.mulComplexComplex(&tReal, &zImag, rReal, rImag, rReal, rImag, realContext);
+    // The inputs are read again after lnComplex has written the outputs, as
+    // upstream reads them: the only caller passes its own locals, so x and r
+    // never alias.
+    math_ln_complex.lnComplex(xReal, xImag, rReal, rImag, realContext);
+    realSubtract(xReal, const_1on2(), &tReal, realContext);
+    math_multiplication_cells.mulComplexComplex(&tReal, xImag, rReal, rImag, rReal, rImag, realContext);
 
-    realSubtract(rReal, &zReal, rReal, realContext);
-    realSubtract(rImag, &zImag, rImag, realContext);
+    realSubtract(rReal, xReal, rReal, realContext);
+    realSubtract(rImag, xImag, rImag, realContext);
 
     realAddB(rReal, const39_ln2piOn2(), rReal, realContext);
 }

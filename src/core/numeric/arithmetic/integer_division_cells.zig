@@ -10,7 +10,7 @@ const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const support = @import("dispatch_cells_runtime.zig");
 
-const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
+const dm42_pkg_xip = build_options.dm42_pkg_xip;
 const table_section: ?[]const u8 = if (dm42_pkg_xip) ".qspi_data" else null;
 
 const CellFn = *const fn () callconv(.c) void;
@@ -22,8 +22,12 @@ const REGISTER_T = runtime.REGISTER_T;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const no_register = @as(runtime.calcRegister_t, -1);
 
+// std.fmt.bufPrintZ was removed in Zig 0.17; std.fmt.bufPrint plus an explicit
+// sentinel works on both 0.16 and master. Every format below is bounded well
+// under the buffer, so the unreachable overflow arm yields the empty string
+// rather than the buffer's uninitialised bytes.
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const u8 {
-    const slice = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0 .. buffer.len - 1];
+    const slice = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[slice.len] = 0;
     return buffer[0..slice.len :0];
 }
