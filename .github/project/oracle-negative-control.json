@@ -125,8 +125,8 @@
       "step": "tone_parity",
       "what": "a tone plays the wrong frequency",
       "file": "src/shell/audio/tone.zig",
-      "find": "const frequency = [10]u32{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 440000, 554365 };",
-      "replace": "const frequency = [10]u32{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 441000, 554365 };",
+      "find": "pub export const frequency: [10]u32 = .{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 440000, 554365 };",
+      "replace": "pub export const frequency: [10]u32 = .{ 164814, 220000, 246942, 277183, 293665, 329628, 369995, 415305, 441000, 554365 };",
       "why": "The frequency table is what this lane compares."
     },
     {
