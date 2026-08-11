@@ -639,9 +639,14 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
 
     numberOfLabels = 0;
     numberOfPrograms = 1;
+    // numberOfLabels and numberOfPrograms are uint16_t globals the C increments
+    // without a bound: a crafted program can carry more steps than they hold and
+    // C wraps modulo 65536. `+%=` keeps that, where a checked add trapped on a
+    // walk the state file controls -- the same reason freeProgramBytes below
+    // uses @truncate/-%.
     while (!isAtEndOfPrograms(step)) { // .END.
         if (step[0] == ITM_LBL) { // LBL
-            numberOfLabels += 1;
+            numberOfLabels +%= 1;
         }
         nextStep = frontier_next_step.findNextStep(step);
         if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
@@ -650,7 +655,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
         }
         if (isAtEndOfProgram(step)) { // END
             if (!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
-                numberOfPrograms += 1;
+                numberOfPrograms +%= 1;
             }
         }
         step = nextStep;
@@ -683,7 +688,7 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
             break;
         }
         if (checkOpCodeOfStep(step, ITM_LBL)) { // LBL
-            labelList[numberOfLabels].program = @intCast(numberOfPrograms);
+            labelList[numberOfLabels].program = @bitCast(numberOfPrograms);
             if (step[1] <= LAST_LOCAL_LABEL) { // Local label
                 labelList[numberOfLabels].step = -@as(i32, @intCast(stepNumber));
                 labelList[numberOfLabels].labelPointer = step + 1;
@@ -696,14 +701,14 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
             }
 
             labelList[numberOfLabels].instructionPointer = nextStep;
-            numberOfLabels += 1;
+            numberOfLabels +%= 1;
         }
 
         if (isAtEndOfProgram(step)) { // END
             if (!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
                 programList[numberOfPrograms].instructionPointer = step + 2;
                 programList[numberOfPrograms].step = @intCast(stepNumber + 1);
-                numberOfPrograms += 1;
+                numberOfPrograms +%= 1;
             }
         }
 
@@ -998,8 +1003,7 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
         screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         hourGlassIconEnabled = false;
         aimBuffer[0] = 0;
-        // currentInputVariable = INVALID_VARIABLE; (not referenced elsewhere here)
-        setCurrentInputVariableInvalid();
+        setCurrentInputVariableInvalid(); // currentInputVariable = INVALID_VARIABLE
         frontier_screen.refreshScreen(227);
         return;
     }
@@ -1926,7 +1930,7 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
         pemAlpha(func);
         pemCursorIsZerothStep = false;
         return;
-    } else if (func == ITM_REM or (tam.mode == 0 and getSystemFlag(FLAG_ALPHA))) {
+    } else if (func == ITM_REM) {
         if (aimBuffer[0] != 0 and !getSystemFlag(FLAG_ALPHA)) {
             pemCloseNumberInput();
             aimBuffer[0] = 0;
@@ -2177,7 +2181,11 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
                     _insertInProgram(tmpString, @intCast(nameLength + opBytes + 2));
                 } else if (tam.indirect) {
                     tmpString[opBytes] = INDIRECT_REGISTER;
-                    tmpString[opBytes + 1] = @intCast(tam.value + (if (tam.dot) FIRST_LOCAL_REGISTER else 0));
+                    // FIRST_LOCAL_REGISTER is 7000, so `.05` gives 7005: the C
+                    // adds in `int` and stores into a char, keeping the low byte
+                    // (0x5D). Widen before the add and truncate after it, or the
+                    // narrowing traps on every keyed-in indirect local register.
+                    tmpString[opBytes + 1] = @truncate(@as(u32, @bitCast(@as(i32, tam.value) + (if (tam.dot) @as(i32, FIRST_LOCAL_REGISTER) else 0))));
                     _insertInProgram(tmpString, @intCast(opBytes + 2));
                 } else {
                     tmpString[2] = @intCast(@as(u16, @bitCast(tam.value)) >> 8);

@@ -8,7 +8,10 @@ pub fn addSpaceAfterPrograms(size: u16) void {
         const new_program_size_in_blocks = pointer_owned.toBlocks(pointer_owned.toBytes(program_size_in_blocks) - runtime.freeProgramBytes + size);
         const grow_bytes = pointer_owned.toBytes(new_program_size_in_blocks - program_size_in_blocks);
 
-        runtime.freeProgramBytes +%= @intCast(grow_bytes);
+        // freeProgramBytes is a uint16_t: a 65536-byte growth adds 0 in the C by
+        // silent modular conversion, and fnLoadProgram admits a size that
+        // reaches exactly that. Truncate rather than trap on the narrowing too.
+        runtime.freeProgramBytes +%= @truncate(grow_bytes);
         runtime.resizeProgramMemory(new_program_size_in_blocks);
         const delta: isize = @intCast(@as(i64, @intCast(@intFromPtr(runtime.beginOfProgramMemory))) - @as(i64, @intCast(@intFromPtr(old_begin_of_program_memory))));
         runtime.currentStep = pointer_owned.offsetPointer(runtime.currentStep, delta);

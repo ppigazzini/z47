@@ -103,6 +103,12 @@ const scanLabelsAndProgramsC = @extern(*const fn () callconv(.c) void, .{ .name 
 extern fn goToGlobalStep(step: i32) void;
 extern fn fnGoto(label: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+// EXTRA_INFO_ON_CALC_ERROR: on wherever the console exists, i.e. off the
+// firmware. The hint is staged in errorMessage exactly as the C sprintf does.
+const extra_info: bool = !is_dmcp_build;
+extern var errorMessage: [*c]u8;
+extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: [*c]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
 extern fn readLine(line: [*c]u8, maxLen: usize) void;
 extern fn ioFileSeek(position: u32) void;
@@ -161,6 +167,10 @@ pub fn selectProgram(label: u16) void {
     }
 
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    if (comptime extra_info) {
+        _ = sprintf(errorMessage, "label %u is not a global label", @as(c_uint, label));
+        moreInfoOnError("In function fnSaveProgram/fnExportProgram (_selectProgram):", errorMessage, null, null);
+    }
 }
 
 pub fn openSaveProgram(path: c_int) c_int {
@@ -356,10 +366,12 @@ pub fn scanLabelsAndPrograms() void {
 }
 
 pub fn goToLastProgram() void {
-    if (numberOfPrograms > 0) {
-        const programs = programList orelse return;
-        goToGlobalStep(programs[numberOfPrograms - 1].step);
-    }
+    // programList[numberOfPrograms - 1]: the C does not bound the count, and it
+    // computes the index in `int`, so a load leaving numberOfPrograms == 0 reads
+    // the entry before the list and jumps there. Keep that -1 offset rather than
+    // silently doing nothing; scanLabelsAndPrograms always leaves one program.
+    const programs = programList orelse return;
+    goToGlobalStep((programs + numberOfPrograms - 1)[0].step);
 }
 
 pub fn getRamSizeInBlocks() u16 {

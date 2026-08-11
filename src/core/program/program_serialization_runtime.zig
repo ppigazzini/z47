@@ -33,11 +33,17 @@ pub extern fn findNamedLabel(labelName: [*c]const u8, labelType: u8) u16;
 pub const ioPathSaveProgram: c_int = 8;
 pub const ioPathSaveAllPrograms: c_int = 12;
 
-const END_OPCODE_HIGH: u8 = 0x85;
-const END_OPCODE_LOW: u8 = 0xB2;
+const ITM_END_HIGH: u8 = ITM_END >> 8;
+const ITM_END_LOW: u8 = ITM_END & 0xff;
 
+// isAtEndOfProgram(step) is checkOpCodeOfStep(step, ITM_END). Bit 7 of the
+// first byte marks a two-byte opcode and is not part of the code, so it is
+// masked off before the comparison, and a null step never matches.
 fn isAtEndOfProgramZ(step: [*c]const u8) bool {
-    return step[0] == END_OPCODE_HIGH and step[1] == END_OPCODE_LOW;
+    if (step == null) {
+        return false;
+    }
+    return (step[0] & 0x7f) == ITM_END_HIGH and step[1] == ITM_END_LOW;
 }
 
 pub inline fn checkPower() bool {

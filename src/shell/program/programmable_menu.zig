@@ -6,8 +6,9 @@
 // programmable softmenu captions from register X). This is a faithful,
 // line-by-line port of the C. The file-static helpers (_getStringLabelOrVariableName,
 // _indirectRegister, _indirectVariable, _get2ndParamOfKey, _setCaption) are
-// reproduced as private Zig fns; regKStoC is a static-inline reimplementation;
-// the EXTRA_INFO sprintf/moreInfoOnError diagnostics are gated on extra_info.
+// reproduced as private Zig fns; regKStoC forwards to the shared band remap in
+// ks_register_remap; the EXTRA_INFO sprintf/moreInfoOnError diagnostics are
+// gated on extra_info.
 //
 // programmableMenu.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
@@ -30,6 +31,7 @@ const frontier_lbl_gto_xeq = @import("lbl_gto_xeq.zig");
 const frontier_manage = @import("manage.zig");
 const frontier_next_step = @import("next_step.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
+const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const irfracOption_t = c_int;
@@ -155,11 +157,17 @@ inline fn getComplexRegisterAngularMode(reg: calcRegister_t) u32 {
 inline fn getComplexRegisterPolarMode(reg: calcRegister_t) u32 {
     return getRegisterTag(reg) & amPolar;
 }
-// regKStoC (static inline, defines.h).
+// regKStoC (static inline, defines.h): the band remap has one implementation,
+// in ks_register_remap, so a change to the KS band layout has one place to go.
 inline fn regKStoC(regKS: u8) i16 {
-    return @as(i16, @intCast(@as(i32, regKS) -
-        @as(i32, @intFromBool(FIRST_STAT_REGISTER_IN_KS_CODE <= regKS and regKS <= LAST_SPARE_REGISTERS_IN_KS_CODE)) * NUMBER_OF_LOCAL_REGISTERS +
-        @as(i32, @intFromBool(FIRST_LOCAL_REGISTER_IN_KS_CODE <= @as(i32, regKS) and @as(i32, regKS) <= @as(i32, LAST_LOCAL_REGISTER_IN_KS_CODE))) * (FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE)));
+    return ks_register_remap.regKStoC(regKS, .{
+        .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
+        .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+        .last_local_ks = LAST_LOCAL_REGISTER_IN_KS_CODE,
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+    });
 }
 // COPY_REGISTER_STRING_TO(dest, regist) (registers.h).
 inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
@@ -397,12 +405,22 @@ fn _setCaption(keyNum: u16) void {
 // ===========================================================================
 // keyGto / keyXeq
 // ===========================================================================
+// programmableMenu.itemParam[keyNum - 1]: neither keyGto nor keyXeq bounds
+// keyNum the way _setCaption does, and the C computes the index in `int`, so
+// key 0 addresses the element *before* itemParam -- the tail of itemName[17].
+// Pointer arithmetic keeps that -1 offset; a u16 index would instead wrap to
+// 65535 and address far past the struct.
+inline fn itemParamSlot(keyNum: u16) *u16 {
+    const base: [*]u16 = &programmableMenu.itemParam;
+    return &(base + keyNum - 1)[0];
+}
+
 pub export fn keyGto(keyNum: u16, label: u16) callconv(.c) void {
     _setCaption(keyNum);
-    programmableMenu.itemParam[keyNum - 1] = label & 0x7fff;
+    itemParamSlot(keyNum).* = label & 0x7fff;
 }
 
 pub export fn keyXeq(keyNum: u16, label: u16) callconv(.c) void {
     _setCaption(keyNum);
-    programmableMenu.itemParam[keyNum - 1] = label | 0x8000;
+    itemParamSlot(keyNum).* = label | 0x8000;
 }
