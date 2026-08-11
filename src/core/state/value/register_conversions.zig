@@ -16,7 +16,7 @@
 
 const abi = @import("abi");
 const std = @import("std");
-const builtin = @import("builtin");
+const core_state_build_options = @import("core_state_build_options");
 
 const real_t = abi.Real;
 const real34_t = abi.Real34;
@@ -83,7 +83,9 @@ const complex34_t = abi.Complex34;
 const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
 const complex34Matrix_t = abi.Complex34Matrix;
-const extra_info: bool = builtin.target.os.tag != .freestanding;
+// EXTRA_INFO_ON_CALC_ERROR: the hint text is compiled out on firmware and in
+// the testSuite, which the target alone cannot tell apart from the simulator.
+const extra_info: bool = core_state_build_options.extra_info_on_calc_error;
 extern fn realSetZero(r: *real_t) void;
 const const34_2p32 = consts.const34_2p32;
 const const6147_2pi = consts.const6147_2pi;
