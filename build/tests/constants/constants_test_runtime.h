@@ -16,11 +16,11 @@ typedef struct {
   uint32_t reallocate_register_tag;
 
   uint32_t real_to_real34_calls;
-  uint16_t real_to_real34_source_id;
+  uint16_t real_to_real34_source_offset;
   calcRegister_t real_to_real34_destination_reg;
 
   uint32_t convert_real_to_result_register_calls;
-  uint16_t convert_real_to_result_source_id;
+  uint16_t convert_real_to_result_source_offset;
   calcRegister_t convert_real_to_result_dest;
   int32_t convert_real_to_result_angle;
 
@@ -33,7 +33,8 @@ typedef struct {
   calcRegister_t adjust_result_op3;
 
   uint32_t set_lastinteger_base_to_zero_calls;
-  uint16_t register_x_real34_id;
+  // The blob offset of the constant that landed in X, 0xffff if none did.
+  uint16_t register_x_constant_offset;
 
   uint32_t more_info_calls;
   char more_info_line1[64];

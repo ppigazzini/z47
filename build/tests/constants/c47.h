@@ -12,11 +12,29 @@
 typedef bool bool_t;
 typedef int16_t calcRegister_t;
 
+// A placeholder for c43's decNumber. The lane links c43's own constant blob, so
+// a real_t inside it is a view onto bytes this mock cannot decode -- and does
+// not need to. What a case has to know is WHICH constant a call reached, so the
+// placeholder carries that constant's byte offset in the blob and nothing else.
 typedef struct {
-  uint16_t id;
+  uint16_t constant_offset;
 } real_t;
 
 typedef real_t real34_t;
+
+// c43 puts the generated tables in QSPI on the DMCP builds; a PC build leaves
+// the attribute empty. The generated sources this lane compiles carry it.
+#define TO_QSPI
+
+// c43's generated blob header. It declares `constants` and every const*_ macro
+// over it, const39_pi among them: pi is a macro at a fixed offset, not a link
+// symbol, and fnPi names it instead of indexing realtConstants. Including the
+// generated header means the offset is the generator's own and moves when the
+// blob is regenerated, which a `#define` written out here could not do.
+//
+// realtConstants is deliberately absent: c43's constants.c declares it and the
+// generated constantPointers2.c defines it.
+#include "constantPointers.h"
 
 typedef enum {
   dtLongInteger = 0,
@@ -33,20 +51,15 @@ typedef enum {
 } angularMode_t;
 
 #define REGISTER_X ((calcRegister_t)100)
+// NOUC also sizes the generated constantPointers2.c table this lane compiles.
+// That source is built with -Werror=excess-initializers, so a NOUC that has
+// fallen behind c43's fails the build instead of truncating the table.
 #define NOUC 84
 #define SOLVER_STATUS_READY_TO_EXECUTE 0x0001
 #define EXTRA_INFO_ON_CALC_ERROR 1
 
 extern uint16_t currentSolverStatus;
 extern char *errorMessage;
-extern const real_t *realtConstants[NOUC];
-
-// const39_pi is a macro over the generated constant blob, not a link symbol
-// (constantPointers.h:98). The fake supplies a blob just long enough to carry
-// the bytes that offset points at, so the oracle and the port reach pi the same
-// way the product does: by name, at a fixed offset.
-extern const uint8_t constants[];
-#define const39_pi ((const real_t *)(constants + 1848))
 
 real34_t *z47_constants_test_register_real34_data(calcRegister_t reg);
 
