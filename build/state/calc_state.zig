@@ -15,6 +15,24 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // CALCMODEL as the id typeDefinitions.h gives it: USER_C47 = 46,
+    // USER_R47 = 66. The owner stamps it into the save file's identity line
+    // ("C47_save_file_00" / "R47_save_file_00") and compares it against the line
+    // a loaded file carries to decide whether that file's user key assignments
+    // may be applied. It has to be passed in, not read off the object name: the
+    // R47 firmware links calc-state objects it shares with the C47 firmware, so
+    // their names carry no model. Defaults to USER_C47.
+    calc_model_user_id: u16 = 46,
+    // OPTION_XFN_1000 gates both halves of the XFN register form in
+    // saveRestoreCalcState.c: the isXFNRegister arm of registerToSaveString and
+    // the "RXFN" branch of restoreRegister. Upstream #undef's it in the block
+    // common to DMCP packages 1-4, so no DM42 package writes or reads that form;
+    // DMCP5 and host do. Defaults true to match a host build.
+    option_xfn_1000: bool = true,
+    // EXTRA_INFO_ON_CALC_ERROR, for the scalar-state owners this object carries
+    // through its core_state module. 0 on firmware and in the testSuite; default
+    // true mirrors a host build.
+    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -65,16 +83,23 @@ fn addRuntimeObject(
         .optimize = optimize,
     });
     core_state_module.addImport("abi", abi_module);
+    // The scalar-state owners format their out-of-domain and invalid-input
+    // subjects into the shared errorMessage buffer, which upstream compiles out
+    // with EXTRA_INFO_ON_CALC_ERROR: 0 on firmware and in the testSuite. Same
+    // derivation as the stack and register-metadata objects use.
+    const core_state_options = b.addOptions();
+    core_state_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    core_state_module.addOptions("core_state_build_options", core_state_options);
     module.addImport("core_state", core_state_module);
     const build_options = b.addOptions();
-    // R47 build variants ("r47", "dmcpr47") select USER_R47 (66); otherwise
-    // USER_C47 (46). Only allow_user_keys consumes this in the product path.
-    build_options.addOption(u16, "calc_model_user_id", if (std.mem.indexOf(u8, name_prefix, "r47") != null) 66 else 46);
+    build_options.addOption(u16, "calc_model_user_id", options.calc_model_user_id);
     // OLD_HW (DMCP / original DM42) uses RAM_SIZE_IN_BLOCKS_OLD_HW and the
     // OLD_HW program-relocation sign; DMCP5 / DM42n / host are NEW_HW. The
     // firmware names the OLD_HW calc-state object "dmcp"/"dmcpr47" and the NEW_HW
     // one "dmcp5"/"dmcp5r47"; host names are NEW_HW.
     build_options.addOption(bool, "state_old_hw", std.mem.indexOf(u8, name_prefix, "dmcp") != null and std.mem.indexOf(u8, name_prefix, "dmcp5") == null);
+    build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     module.addOptions("calc_state_build_options", build_options);
 
     return b.addObject(.{
@@ -127,8 +152,9 @@ pub fn addToModule(
     optimize: std.builtin.OptimizeMode,
     name_prefix: []const u8,
     c_flags: []const []const u8,
+    calc_model_user_id: u16,
 ) void {
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calc_model_user_id = calc_model_user_id });
 
     // The calc-state save/restore/load path is now fully Zig-owned; the former
     // calc_state_legacy.c bridge is gone. The DMCP ROM-macro shims it once needed

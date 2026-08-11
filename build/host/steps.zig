@@ -7,6 +7,7 @@ const shortint = @import("../shortint/shortint.zig");
 const calc_state = @import("../state/calc_state.zig");
 const constants = @import("../constants/constants.zig");
 const flags = @import("../state/flags.zig");
+const frontier = @import("../frontier/frontier.zig");
 const math_command_wrappers = @import("../mathematics/math_command_wrappers.zig");
 const keyboard_state = @import("../state/keyboard_state.zig");
 const memory = @import("../state/memory.zig");
@@ -127,10 +128,13 @@ fn addMathLnComplexOracle(
         .optimize = optimize,
     });
     math_ln_complex_module.addImport("abi", math_ln_complex_abi_module);
-    const math_ln_complex_build_options = b.addOptions();
-    math_ln_complex_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    math_ln_complex_build_options.addOption(bool, "export_public_ln_complex", false);
-    math_ln_complex_module.addOptions("math_command_wrappers_build_options", math_ln_complex_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, math_ln_complex_module, "math-ln-complex-oracle", .{ .export_public_ln_complex = false });
     const math_ln_complex_object = b.addObject(.{
         .name = "math-ln-complex-oracle-owned",
         .root_module = math_ln_complex_module,
@@ -205,10 +209,13 @@ fn addMathEigenOracle(
         .optimize = optimize,
     });
     eigen_module.addImport("abi", eigen_abi_module);
-    const eigen_build_options = b.addOptions();
-    eigen_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    eigen_build_options.addOption(bool, "export_public_ln_complex", false);
-    eigen_module.addOptions("math_command_wrappers_build_options", eigen_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, eigen_module, "math-eigen-oracle", .{ .export_public_ln_complex = false });
     const eigen_object = b.addObject(.{
         .name = "math-eigen-oracle-owned",
         .root_module = eigen_module,
@@ -272,10 +279,13 @@ fn addMathRealRectangularToPolarOracle(
         .optimize = optimize,
     });
     helper_module.addImport("abi", helper_abi_module);
-    const helper_build_options = b.addOptions();
-    helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    helper_build_options.addOption(bool, "export_public_ln_complex", false);
-    helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, helper_module, "math-real-rectangular-to-polar-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-real-rectangular-to-polar-oracle-owned",
         .root_module = helper_module,
@@ -339,10 +349,13 @@ fn addMathAtan2Oracle(
         .optimize = optimize,
     });
     helper_module.addImport("abi", helper_abi_module);
-    const helper_build_options = b.addOptions();
-    helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    helper_build_options.addOption(bool, "export_public_ln_complex", false);
-    helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, helper_module, "math-atan2-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-atan2-oracle-owned",
         .root_module = helper_module,
@@ -406,10 +419,13 @@ fn addMathAtanOracle(
         .optimize = optimize,
     });
     helper_module.addImport("abi", helper_abi_module);
-    const helper_build_options = b.addOptions();
-    helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    helper_build_options.addOption(bool, "export_public_ln_complex", false);
-    helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, helper_module, "math-atan-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-atan-oracle-owned",
         .root_module = helper_module,
@@ -473,10 +489,13 @@ fn addMathRealTrigPrimitivesOracle(
         .optimize = optimize,
     });
     helper_module.addImport("abi", helper_abi_module);
-    const helper_build_options = b.addOptions();
-    helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    helper_build_options.addOption(bool, "export_public_ln_complex", false);
-    helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, helper_module, "math-real-trig-primitives-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-real-trig-primitives-oracle-owned",
         .root_module = helper_module,
@@ -540,10 +559,13 @@ fn addMathCircularTrigOracle(
         .optimize = optimize,
     });
     helper_module.addImport("abi", helper_abi_module);
-    const helper_build_options = b.addOptions();
-    helper_build_options.addOption(bool, "use_fake_wp34s_model", false);
-    helper_build_options.addOption(bool, "export_public_ln_complex", false);
-    helper_module.addOptions("math_command_wrappers_build_options", helper_build_options);
+    // Give the focused oracle the whole mathematics option set at its host
+    // defaults, so the owners it compiles are the ones the sim compiles.
+    // export_public_ln_complex stays false: every one of these lanes already has a
+    // C lnComplex to link -- the ln-complex differential the real ln.c body under
+    // its own name, the others the weak stub in math_wrappers_eigen_link_stubs.c
+    // -- so an exported owner copy would be a second definition of the symbol.
+    math_command_wrappers.addBuildOptions(b, helper_module, "math-circular-trig-oracle", .{ .export_public_ln_complex = false });
     const helper_object = b.addObject(.{
         .name = "math-circular-trig-oracle-owned",
         .root_module = helper_module,
@@ -1360,17 +1382,12 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     });
     distribution_owners_module.addImport("abi", distribution_owners_abi_module);
     // The distribution owners (via frontier_distribution_runtime) expect the same
-    // frontier_build_options the product frontier object gets; the harness is a
-    // host-style link, so keep all distributions and the EXTRA_INFO hints.
-    const distribution_owners_options = b.addOptions();
-    distribution_owners_options.addOption(bool, "strip_17b", false);
-    distribution_owners_options.addOption(bool, "strip_17c", false);
-    distribution_owners_options.addOption(bool, "extra_info_on_calc_error", true);
-    // frontier_distribution_runtime derives code_section from these; the harness is
-    // a host link, so both are false (code_section resolves to .text / __TEXT).
-    distribution_owners_options.addOption(bool, "dmcp_build", false);
-    distribution_owners_options.addOption(bool, "old_hw", false);
-    distribution_owners_module.addOptions("frontier_build_options", distribution_owners_options);
+    // frontier_build_options the product frontier object gets, so they are given
+    // the whole set rather than the handful this subtree happens to read today.
+    // The harness is a host-style link, so every value is the host default: all
+    // distributions in, the EXTRA_INFO hints on, and dmcp_build/old_hw false, which
+    // is what resolves code_section to .text / __TEXT.
+    frontier.addBuildOptions(b, distribution_owners_module, "distribution-parity", .{});
     const distribution_parity = b.addExecutable(.{
         .name = "distribution-parity",
         .root_module = b.createModule(.{

@@ -20,6 +20,16 @@ pub const Board = enum {
     dmcp5,
 };
 
+// CALCMODEL as the ids typeDefinitions.h gives them. Every owner family that
+// needs to know which calculator this firmware is takes its value from here: the
+// frontier object seeds the calcModel global with it, and the calc-state object
+// stamps it into the save file's identity line and compares it against the line
+// a loaded file carries. It cannot be recovered from an object name, because the
+// C47 and R47 firmwares of one board share most of their objects and so share
+// those objects' names.
+const user_c47: u8 = 46;
+const user_r47: u8 = 66;
+
 pub const Outputs = struct {
     program: std.Build.LazyPath,
     qspi: std.Build.LazyPath,
@@ -167,16 +177,24 @@ const firmware_common_link_flags: []const []const u8 = &.{
     "-Wl,--cref",
 };
 
-// Apply the per-package distribution strip flags to a frontier build options
-// value. Mirrors the upstream defines.h TWO_FILE_PGM package blocks: the 17B
-// cluster (cauchy/weibull/logistic/exponential) is stripped on packages 2 and 4,
-// and the 17C cluster (pareto/uniform) on packages 2, 3 and 4. A null package
-// (e.g. DMCP5) keeps every distribution.
+// Apply the DM42 board and per-package OPTION_* to a frontier build options
+// value, mirroring the upstream defines.h TWO_FILE_PGM blocks. Only the DM42
+// (OLD_HW) objects go through here; DMCP5 is NEW_HW, never enters TWO_FILE_PGM,
+// and takes the host-shaped defaults unchanged. A null package applies the board
+// half alone, which is what a TWO_FILE_PGM build with no DMCP_PACKAGE would get.
 fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: ?u8) frontier.RuntimeObjectOptions {
     var opts = base;
     // The DMCP (DM42) family is OLD_HW, where freeMemoryRegions is a static
     // array rather than a pointer. DMCP5 (NEW_HW) keeps the pointer layout.
     opts.old_hw = true;
+    // The "common to all hardware packages 1-4" block of defines.h runs after the
+    // per-package blocks and settles these for every DM42 package alike, so they
+    // are a property of the board and not of the package number. DMCP5 is NEW_HW,
+    // which never enters the TWO_FILE_PGM block at all, and keeps them.
+    opts.option_vector = false; // !OPTION_VECTOR: no 2D/3D vector commands or TI
+    opts.option_xfn_1000 = false; // !OPTION_XFN_1000: no 1000-digit XFN entries
+    opts.option_slvp_poly = false; // !OPTION_SLVP_POLY: no SLVP softkey
+    opts.option_infsums = false; // !OPTION_INFSUMS: no infinity-sum items
     const pkg = dmcp_package orelse return opts;
     // Each strip_* below is the inverse of the matching upstream OPTION_*, which
     // is an include flag: defined means the feature is compiled in, and its
@@ -193,10 +211,8 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     // DIST all keeps every distribution; limB keeps normal plus DIST_B; limA
     // keeps normal alone; none keeps nothing.
     //
-    // Options the "common to all hardware packages 1-4" block settles AFTER the
-    // per-package blocks -- VECTOR, SAMPLEPGMS, XFN_1000, EDIT_X, EDIT_PEM,
-    // INFSUMS, SLVP_POLY and the three *_159 -- are the same for every package
-    // and belong with the board, not here.
+    // The options the "common to all hardware packages 1-4" block settles are set
+    // with the board above; only what the DMCP_PACKAGE1..4 blocks decide is here.
     opts.strip_16 = (pkg == 4); // !OPTION_DIST_NORMAL
     opts.strip_17b = (pkg == 3 or pkg == 4); // !OPTION_DIST_B
     opts.strip_17 = (pkg != 1); // !OPTION_DIST_C
@@ -212,9 +228,61 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.option_elec = (pkg == 1 or pkg == 3);
     opts.ir_printing = (pkg == 2 or pkg == 4);
     opts.option_eigen = (pkg == 3);
-    // OPTION_VECTOR is #undef'd in the block common to packages 1-4, which runs
-    // after the per-package blocks, so no DM42 package carries the vector code.
+    // OPTION_TVM_AMORT is defined by every one of the four package blocks as well
+    // as by the block common to them, so menu_AMORT and the amort TI lines stay.
+    opts.option_tvm_amort = true;
+    return opts;
+}
+
+// Apply the per-package OPTION_* to a mathematics build options value. The
+// mathematics owners are the port of upstream's src/c47/mathematics/, so the
+// options that gate bodies there are the ones set here. A null package (DMCP5,
+// which is NEW_HW and never enters the TWO_FILE_PGM block) keeps every feature.
+fn mathematicsPackageOptions(base: math_command_wrappers.RuntimeObjectOptions, dmcp_package: ?u8) math_command_wrappers.RuntimeObjectOptions {
+    var opts = base;
+    const pkg = dmcp_package orelse return opts;
+    // Settled by the block common to packages 1-4, so the same for all four.
     opts.option_vector = false;
+    opts.option_xfn_1000 = false;
+    opts.option_slvp_poly = false;
+    opts.option_cubic_159 = false;
+    opts.option_eigen_159 = false;
+    // Settled per package. ELLIPTIC survives in package 2 alone; BESSEL, ORTHO
+    // and DIST_NORMAL fall only in package 4; EIGEN survives in package 3 alone.
+    opts.option_elliptic = (pkg == 2);
+    opts.option_bessel = (pkg != 4);
+    opts.option_ortho = (pkg != 4);
+    opts.option_dist_normal = (pkg != 4);
+    opts.option_eigen = (pkg == 3);
+    return opts;
+}
+
+// Apply the DM42 board OPTION_* to a calc-state build options value. There is no
+// package parameter: every option this object reads is settled by the defines.h
+// block common to packages 1-4, which is why the four DM42 packages can share one
+// calc-state object. Only the DM42 (OLD_HW) object goes through here; DMCP5 is
+// NEW_HW, never enters TWO_FILE_PGM, and keeps the host-shaped defaults.
+fn calcStateBoardOptions(base: calc_state.RuntimeObjectOptions) calc_state.RuntimeObjectOptions {
+    var opts = base;
+    // !OPTION_XFN_1000: registerToSaveString falls through the XFN arm to the
+    // standard data-type branch, and restoreRegister offers no "RXFN" branch.
+    opts.option_xfn_1000 = false;
+    return opts;
+}
+
+// Apply the per-package OPTION_* to a solver build options value. A null package
+// (DMCP5) keeps every feature.
+fn solverPackageOptions(base: solve.RuntimeObjectOptions, dmcp_package: ?u8) solve.RuntimeObjectOptions {
+    var opts = base;
+    const pkg = dmcp_package orelse return opts;
+    // Settled by the block common to packages 1-4.
+    opts.option_infsums = false;
+    // TVM_FORMULAS and TVM_NEWTON are out of packages 2 and 4, which is what makes
+    // their FIN solver the slow, lower-precision brent-only path; AMORT stays in
+    // all four.
+    opts.option_tvm_formulas = (pkg == 1 or pkg == 3);
+    opts.option_tvm_newton = (pkg == 1 or pkg == 3);
+    opts.option_tvm_amort = true;
     return opts;
 }
 
@@ -244,6 +312,9 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     };
     const firmware_math_command_wrapper_options: math_command_wrappers.RuntimeObjectOptions = .{
         .strip = true,
@@ -284,7 +355,14 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        // The C47 firmwares; the r47 value below overrides it for the R47 ones.
+        .calc_model_user_id = user_c47,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     };
+    var firmware_r47_calc_state_options = firmware_calc_state_options;
+    firmware_r47_calc_state_options.calc_model_user_id = user_r47;
     const firmware_program_serialization_options: program_serialization.RuntimeObjectOptions = .{
         .strip = true,
         .unwind_tables = .none,
@@ -300,6 +378,9 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     };
     const firmware_stack_options: stack.RuntimeObjectOptions = .{
         .strip = true,
@@ -308,6 +389,9 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     };
     const firmware_frontier_options: frontier.RuntimeObjectOptions = .{
         .strip = true,
@@ -321,7 +405,7 @@ pub fn registerSteps(
         .extra_info_on_calc_error = false,
         // Only the r47 firmware targets are built with -DCALCMODEL=USER_R47; the
         // C47 ones take the defines.h default. The r47 objects below override it.
-        .calcmodel = 46,
+        .calcmodel = user_c47,
         // Firmware build: use backToSystem tails and drop the PC allocation
         // tracking. old_hw (static freeMemoryRegions array) is set per board by
         // frontierDistributionStrip for DMCP; DMCP5 keeps the default (pointer).
@@ -342,13 +426,9 @@ pub fn registerSteps(
     const dmcp5_shortint_objects = shortint.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_leaf_options);
     const dmcp_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_flags_options);
     const dmcp5_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_flags_options);
-    // Per package: OPTION_ELLIPTIC, _BESSEL, _ORTHO and _DIST_NORMAL each empty
-    // the matching command bodies upstream, so the object cannot be shared.
-    var dmcp_math_command_wrapper_options = firmware_math_command_wrapper_options;
-    dmcp_math_command_wrapper_options.option_elliptic = (dmcp_package == 2);
-    dmcp_math_command_wrapper_options.option_bessel = (dmcp_package != 4);
-    dmcp_math_command_wrapper_options.option_ortho = (dmcp_package != 4);
-    dmcp_math_command_wrapper_options.option_dist_normal = (dmcp_package != 4);
+    // Per package: OPTION_ELLIPTIC, _BESSEL, _ORTHO, _DIST_NORMAL and _EIGEN each
+    // empty the matching command bodies upstream, so the object cannot be shared.
+    const dmcp_math_command_wrapper_options = mathematicsPackageOptions(firmware_math_command_wrapper_options, dmcp_package);
     const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_math_command_wrapper_options);
     const dmcp5_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_math_command_wrapper_options);
     const dmcp_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_constants_options);
@@ -436,8 +516,14 @@ pub fn registerSteps(
     });
     const dmcp_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_memory_options);
     const dmcp5_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_memory_options);
-    const dmcp_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_calc_state_options);
+    // Four calc-state objects, not two: the object carries CALCMODEL, so the R47
+    // firmware of a board cannot share the C47 one. state_old_hw still comes off
+    // the name, and the r47 names keep it right ("dmcpr47" is OLD_HW, "dmcp5r47"
+    // is not).
+    const dmcp_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", calcStateBoardOptions(firmware_calc_state_options));
+    const dmcpr47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcpr47", calcStateBoardOptions(firmware_r47_calc_state_options));
     const dmcp5_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_calc_state_options);
+    const dmcp5r47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", firmware_r47_calc_state_options);
     var dmcp_program_serialization_options = firmware_program_serialization_options;
     dmcp_program_serialization_options.old_hw = true; // DM42: quarter-size pool
     const dmcp_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_program_serialization_options);
@@ -450,10 +536,12 @@ pub fn registerSteps(
     // USER_R47 (66) seeds calcModel to USER_R47f_g, which isR47FAM reads to pick
     // the R47 key remap and layout. Only the r47 targets get it.
     var firmware_r47_frontier_options = firmware_frontier_options;
-    firmware_r47_frontier_options.calcmodel = 66;
+    firmware_r47_frontier_options.calcmodel = user_r47;
     const dmcpr47_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcpr47-pkg{d}", .{dmcp_package}), frontierDistributionStrip(firmware_r47_frontier_options, dmcp_package));
     const dmcp5r47_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", firmware_r47_frontier_options);
-    const dmcp_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_solve_options);
+    // OPTION_TVM_FORMULAS and OPTION_TVM_NEWTON differ between the DM42 packages,
+    // so the solver object is per package the way the frontier one is.
+    const dmcp_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", solverPackageOptions(firmware_solve_options, dmcp_package));
     const dmcp5_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_solve_options);
     const dmcp_register_metadata_objects = register_metadata.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_register_metadata_options);
     const dmcp5_register_metadata_objects = register_metadata.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_register_metadata_options);
@@ -487,7 +575,7 @@ pub fn registerSteps(
         .pre_calcmodel_define = "USER_R47",
         .final_calcmodel_define = "USER_R47",
         .dmcp_package = dmcp_package,
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcpr47_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, dmcpr47_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, dmcp_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcpr47_keyboard_state_objects, dmcp_memory_state_objects, dmcpr47_calc_state_objects, dmcp_program_serialization_objects, dmcpr47_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp5 = addFirmwareBuild(b, .{
         .step_name = "dmcp5",
@@ -508,18 +596,14 @@ pub fn registerSteps(
         .generated_qspi_header_name = "generated_qspi_crc.h",
         .qspi_macro = "USE_GEN_QSPI_CRC",
         .final_calcmodel_define = "USER_R47",
-    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5r47_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5_calc_state_objects, dmcp5_program_serialization_objects, dmcp5r47_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
+    }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp5, dmcp5_shortint_objects, dmcp5_flags_state_objects, dmcp5_math_command_wrapper_objects, dmcp5_constants_objects, dmcp5_tone_objects, dmcp5_audio_runtime_object, dmcp5_print_ir_runtime_object, dmcp5_io_runtime_object, dmcp5r47_keyboard_state_objects, dmcp5_memory_state_objects, dmcp5r47_calc_state_objects, dmcp5_program_serialization_objects, dmcp5r47_frontier_objects, dmcp5_solve_objects, dmcp5_register_metadata_objects, dmcp5_stack_state_objects, forcecrc32, decnumber_fastmul);
 
     const dmcp_packages = [_]u8{ 1, 2, 3 };
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
     for (dmcp_packages, 0..) |package, index| {
         const variant_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-variant-pkg{d}", .{package}), frontierDistributionStrip(firmware_frontier_options, package));
-        var variant_math_options = firmware_math_command_wrapper_options;
-        variant_math_options.option_elliptic = (package == 2);
-        variant_math_options.option_bessel = (package != 4);
-        variant_math_options.option_ortho = (package != 4);
-        variant_math_options.option_dist_normal = (package != 4);
-        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", variant_math_options);
+        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", mathematicsPackageOptions(firmware_math_command_wrapper_options, package));
+        const variant_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", solverPackageOptions(firmware_solve_options, package));
         const variant_build = addFirmwareBuild(b, .{
             .step_name = b.fmt("dmcp_pkg{d}", .{package}),
             .description = b.fmt("Build the C47 DMCP firmware for package {d} without Make or Meson", .{package}),
@@ -529,7 +613,7 @@ pub fn registerSteps(
             .generated_qspi_header_name = "generated_qspi_crc.h",
             .qspi_macro = "USE_GEN_QSPI_CRC",
             .dmcp_package = package,
-        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, variant_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, variant_frontier_objects, dmcp_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
+        }, context.core_sources, context.version_headers_dir, context.generated, arm_gmp_dmcp, dmcp_shortint_objects, dmcp_flags_state_objects, variant_math_command_wrapper_objects, dmcp_constants_objects, dmcp_tone_objects, dmcp_audio_runtime_object, dmcp_print_ir_runtime_object, dmcp_io_runtime_object, dmcp_keyboard_state_objects, dmcp_memory_state_objects, dmcp_calc_state_objects, dmcp_program_serialization_objects, variant_frontier_objects, variant_solve_objects, dmcp_register_metadata_objects, dmcp_stack_state_objects, forcecrc32, decnumber_fastmul);
         dmcp_variants[index] = .{ .package = package, .build = variant_build };
     }
 

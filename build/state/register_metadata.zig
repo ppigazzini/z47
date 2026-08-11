@@ -16,6 +16,11 @@ pub const RuntimeObjectOptions = struct {
     stack_check: ?bool = null,
     omit_frame_pointer: ?bool = null,
     error_tracing: ?bool = null,
+    // EXTRA_INFO_ON_CALC_ERROR. The register-metadata owners format the
+    // "is not defined!" subject and range into the shared errorMessage buffer,
+    // which upstream compiles out with the hints; the macro is 0 on firmware and
+    // in the testSuite. Default true mirrors a host build.
+    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -49,7 +54,17 @@ fn addRuntimeObject(
     module.addImport("abi", abi_module);
     const stack_build_options = b.addOptions();
     stack_build_options.addOption(bool, "use_fake_stack_state_harness_surface", std.mem.endsWith(u8, name_prefix, "parity"));
+    // Same option set, and the same derivation, as the stack object builds under
+    // this name: the two objects share owner files, so a fact carried by one copy
+    // of the module and not the other makes one of the two read a default.
+    stack_build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
     module.addOptions("stack_state_build_options", stack_build_options);
+
+    const register_metadata_options = b.addOptions();
+    register_metadata_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
+    module.addOptions("register_metadata_build_options", register_metadata_options);
 
     const descriptor_storage_options = b.addOptions();
     descriptor_storage_options.addOption(bool, "use_array_backed_global_registers", std.mem.endsWith(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "dmcp"));

@@ -96,21 +96,26 @@ pub fn addSimulator(
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "dep"), .files = build_common.decnumber_sources, .flags = build_common.sanitizerVendorCFlags(host_target, sanitize_c) });
     std.debug.assert(core_sources.len == 0);
     exe.root_module.addCSourceFiles(.{ .root = build_common.upstreamPath(b, "src/c47-gtk"), .files = gtk_sources, .flags = build_common.common_gtk_c_flags });
-    gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags, if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46);
+    // CALCMODEL as the id typeDefinitions.h gives it: USER_C47 = 46,
+    // USER_R47 = 66. Derived once from this sim's compile-time -DCALCMODEL and
+    // handed to every owner family that needs the model, so the GTK shell, the
+    // save-file identity line and the calcModel global cannot disagree about
+    // which calculator this binary is.
+    const calc_model_id: u8 = if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46;
+    gtk_gui.addToModule(b, exe.root_module, host_target, optimize, artifact_name, build_common.common_gtk_c_flags, calc_model_id);
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, artifact_name);
     memory.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, calc_model_id);
     program_serialization.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     register_metadata.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     flags.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     math_command_wrappers.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     solve.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
-    // Seed the frontier calcModel from this sim's compile-time CALCMODEL so the
-    // R47 sim boots isR47FAM()=true (correct window title + keyboard layout) at
-    // startup, matching upstream's -DCALCMODEL static init of calcModel.
-    const frontier_calcmodel: u8 = if (std.mem.eql(u8, calc_model, "USER_R47")) 66 else 46;
-    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, frontier_calcmodel, false);
+    // The frontier calcModel seed makes the R47 sim boot isR47FAM()=true (correct
+    // window title + keyboard layout) at startup, matching upstream's -DCALCMODEL
+    // static init of calcModel.
+    frontier.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags, calc_model_id, false);
     constants.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     tone.addToModule(b, exe.root_module, host_target, optimize, artifact_name, core_c_flags);
     exe.root_module.addCSourceFile(.{ .file = generated.raster_fonts_data, .flags = core_c_flags });
@@ -272,7 +277,7 @@ pub fn addTestSuite(
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
     memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // testSuite is the C47 model
     program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
@@ -345,7 +350,7 @@ pub fn addFullCoreHarness(
     addManifestCSources(b, exe.root_module, state_bridge_sources_manifest, core_c_flags);
     abi_host.addToModule(b, exe.root_module, host_target, optimize, name);
     memory.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
-    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
+    calc_state.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags, 46); // testSuite is the C47 model
     program_serialization.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     register_metadata.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
     flags.addToModule(b, exe.root_module, host_target, optimize, name, core_c_flags);
