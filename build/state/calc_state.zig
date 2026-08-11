@@ -100,6 +100,12 @@ fn addRuntimeObject(
     // one "dmcp5"/"dmcp5r47"; host names are NEW_HW.
     build_options.addOption(bool, "state_old_hw", std.mem.indexOf(u8, name_prefix, "dmcp") != null and std.mem.indexOf(u8, name_prefix, "dmcp5") == null);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
+    // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object. defines.h
+    // forces it to 0 for DMCP_BUILD -- which DMCP5 defines as well as the DM42 --
+    // and again for TESTSUITE_BUILD; the testSuite shares the sim's target, so
+    // only the name_prefix can tell them apart.
+    build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
     module.addOptions("calc_state_build_options", build_options);
 
     return b.addObject(.{

@@ -232,11 +232,13 @@ extern var ctxtReal75: abi.RealContext;
 
 const REGISTER_X: i16 = 100;
 const ERROR_OUT_OF_RANGE: u8 = 8;
-const ERR_REGISTER_LINE: i16 = -1;
-// PC and DMCP5 builds set EXTRA_INFO_ON_CALC_ERROR to 1; the block it guards is
-// diagnostic only, so the constant is taken rather than the branch dropped -- the
-// alternative is a silent divergence in what an error reports.
-const EXTRA_INFO_ON_CALC_ERROR: bool = true;
+const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z: the line displayCalcErrorMessage writes the message on
+// EXTRA_INFO_ON_CALC_ERROR. defines.h forces it to 0 for DMCP_BUILD, which DMCP5
+// defines as well as the DM42, and again for TESTSUITE_BUILD; only a hosted
+// on-screen-keyboard simulator keeps it. The guarded block formats into the
+// shared errorMessage buffer, so the test has to gate the write and not just the
+// call.
+const EXTRA_INFO_ON_CALC_ERROR: bool = build_options.extra_info_on_calc_error;
 
 extern fn displayCalcErrorMessage(err: u8, errMessageRegisterLine: i16, errRegisterLine: i16) void;
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;

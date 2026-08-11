@@ -2,10 +2,7 @@ const builtin = @import("builtin");
 const backup_owned = @import("calc_state_backup.zig");
 const build_options = @import("calc_state_build_options");
 
-const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id"))
-    build_options.calc_model_user_id
-else
-    46; // USER_C47
+const calc_model_user_id: u16 = build_options.calc_model_user_id;
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
