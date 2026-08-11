@@ -383,7 +383,7 @@ pub fn implementation(comptime runtime: type) type {
                                                         item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                                                     } else {
                                                         runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                                                        if (comptime !runtime.is_dmcp_build) {
+                                                        if (comptime runtime.extra_info_on_calc_error) {
                                                             runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{@as([*:0]const u8, varCatalogItem)});
                                                             runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
                                                         }
@@ -397,7 +397,7 @@ pub fn implementation(comptime runtime: type) type {
                                                         item = @intCast(@as(i32, regist) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
                                                     } else {
                                                         runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                                                        if (comptime !runtime.is_dmcp_build) {
+                                                        if (comptime runtime.extra_info_on_calc_error) {
                                                             runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{@as([*:0]const u8, varCatalogItem)});
                                                             runtime.moreInfoOnError("In function executeFunction:", runtime.errorMessage, null, null);
                                                         }
@@ -527,7 +527,7 @@ pub fn implementation(comptime runtime: type) type {
                     },
                     else => {
                         runtime.displayCalcErrorMessage(runtime.ERROR_CANNOT_ASSIGN_HERE, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
-                        if (comptime !runtime.is_dmcp_build) {
+                        if (comptime runtime.extra_info_on_calc_error) {
                             runtime.moreInfoOnError("In function _assignToMenu:", "the menu", runtime.indexOfItemsCatalogName(-runtime.currentMenu()), "is write-protected.");
                         }
                         // C falls through into endReturnTrue.
@@ -1676,7 +1676,7 @@ pub fn implementation(comptime runtime: type) type {
                                                     item = @intCast(@as(i32, regist) - runtime.FIRST_LABEL + runtime.ASSIGN_LABELS);
                                                 } else {
                                                     runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                                                    if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
+                                                    if (comptime runtime.extra_info_on_calc_error) {
                                                         runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{runtime.sliceTo(@as([*c]const u8, &label), 0)});
                                                         runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
                                                     }
@@ -1689,7 +1689,7 @@ pub fn implementation(comptime runtime: type) type {
                                                     item = @intCast(@as(i32, regist) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
                                                 } else {
                                                     runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                                                    if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
+                                                    if (comptime runtime.extra_info_on_calc_error) {
                                                         runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{runtime.sliceTo(@as([*c]const u8, &varName), 0)});
                                                         runtime.moreInfoOnError("In function processKeyAction:", runtime.errorMessage, null, null);
                                                     }
@@ -2370,7 +2370,7 @@ pub fn implementation(comptime runtime: type) type {
                     } else {
                         runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
                     }
-                    if (comptime !runtime.is_dmcp_build) { // EXTRA_INFO_ON_CALC_ERROR
+                    if (comptime runtime.extra_info_on_calc_error) {
                         const dtnX = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_X)), true, false);
                         const dtnY = runtime.getDataTypeName(@intCast(runtime.getRegisterDataType(runtime.REGISTER_Y)), true, false);
                         if (!polarOk and runtime.getSystemFlag(runtime.FLAG_POLAR)) {
@@ -2551,10 +2551,6 @@ pub fn implementation(comptime runtime: type) type {
                     }
                     if (runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
                         runtime.pemAlpha(runtime.ITM_BACKSPACE);
-                        if (runtime.aimBuffer[0] == 0 and runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
-                            // close if no characters left
-                            runtime.pemAlpha(runtime.ITM_BACKSPACE);
-                        }
                         if (runtime.aimBuffer[0] == 0 and !runtime.getSystemFlag(runtime.FLAG_ALPHA)) {
                             if (runtime.currentLocalStepNumber > 1) {
                                 runtime.currentLocalStepNumber -= 1;
