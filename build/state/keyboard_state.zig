@@ -36,6 +36,12 @@ pub const RuntimeObjectOptions = struct {
     // for the dedicated coverage harness variant, never a product/test object,
     // because the sancov handler symbol is linked only into that binary.
     coverage: bool = false,
+    // EXTRA_INFO_ON_CALC_ERROR. Upstream sets it to 1, then forces 0 for
+    // DMCP_BUILD and inside TESTSUITE_BUILD, so the eight `sprintf(errorMessage,
+    // …)` / `moreInfoOnError(…)` blocks in keyboard.c are not compiled on those
+    // lanes and the shared errorMessage buffer is left untouched there. Default
+    // true mirrors a host build.
+    extra_info_on_calc_error: bool = true,
 };
 
 const replaced_core_sources = [_][]const u8{
@@ -97,6 +103,10 @@ fn addRuntimeObjectWithIncludeDir(
     const kb_build_options = b.addOptions();
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
     kb_build_options.addOption(bool, "state_old_hw", options.old_hw);
+    // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
+    // firmware does; keep the owner's diagnostics out of both.
+    kb_build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and
+        !std.mem.startsWith(u8, name_prefix, "testSuite"));
     module.addOptions("keyboard_state_build_options", kb_build_options);
 
     const object = b.addObject(.{

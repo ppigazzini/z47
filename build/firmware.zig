@@ -453,6 +453,9 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
         .old_hw = true, // DM42: quarter-size pool, read by leavePem
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     });
     const dmcp5_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", .{
         .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
@@ -471,6 +474,9 @@ pub fn registerSteps(
         .stack_check = false,
         .omit_frame_pointer = true,
         .error_tracing = false,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     });
     // R47 variants build the keyboard-state object with is_r47 = true so its DMCP
     // key ring buffer keyBuffer_pop applies convertKeyCode, matching the upstream
@@ -494,6 +500,9 @@ pub fn registerSteps(
         .error_tracing = false,
         .old_hw = true, // DM42: quarter-size pool, read by leavePem
         .is_r47 = true,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     });
     const dmcp5r47_keyboard_state_objects = keyboard_state.addFirmwareRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", .{
         .board_source_dir = build_common.upstreamPathString(b, firmwareBoardSourceDir(.dmcp5)),
@@ -513,6 +522,9 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
         .is_r47 = true,
+        // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
+        // hints out; match that to stay faithful.
+        .extra_info_on_calc_error = false,
     });
     const dmcp_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_memory_options);
     const dmcp5_memory_state_objects = memory.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_memory_options);

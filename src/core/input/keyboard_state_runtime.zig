@@ -4,6 +4,11 @@ const state_old_hw = @hasDecl(keyboard_state_build_options, "state_old_hw") and
 // CALCMODEL == USER_R47 for the firmware this object is linked into: the R47
 // firmware carries only the R47 layouts, so kbd_std selects among those alone.
 const built_for_r47: bool = keyboard_state_build_options.is_r47;
+// EXTRA_INFO_ON_CALC_ERROR: guards the console hints that accompany a
+// displayCalcErrorMessage. Upstream forces it to 0 for DMCP_BUILD and inside
+// TESTSUITE_BUILD, so on those lanes neither the sprintf into errorMessage nor
+// the moreInfoOnError call is compiled.
+pub const extra_info_on_calc_error: bool = keyboard_state_build_options.extra_info_on_calc_error;
 const std = @import("std");
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const builtin = @import("builtin");
@@ -209,29 +214,11 @@ pub fn keyDotDRetained(unused_but_mandatory_parameter: u16) void {
     z47_keyboard_state_fnKeyDotD(unused_but_mandatory_parameter);
 }
 
-fn clearStatusbarUpdateFlags(mode: u8) u8 {
-    return mode & ~(SCRUPD_MANUAL_STATUSBAR | SCRUPD_SKIP_STATUSBAR_ONE_TIME);
-}
-
-fn repairStopStatusbarMask(previous_program_run_stop: u8, previous_screen_updating_mode: u8) void {
-    if ((previous_program_run_stop == PGM_RUNNING or previous_program_run_stop == PGM_PAUSED) and
-        programRunStop == PGM_WAITING and
-        (lastKeyItemDetermined == ITM_RS or lastKeyItemDetermined == ITM_EXIT1) and
-        !getSystemFlag(FLAG_INTING) and
-        !getSystemFlag(FLAG_SOLVING))
-    {
-        screenUpdatingMode = clearStatusbarUpdateFlags(previous_screen_updating_mode);
-    }
-}
-
 pub fn btnClickedHostOverlay(not_used: ?*anyopaque, data: ?*anyopaque) void {
-    const previous_program_run_stop = programRunStop;
-    const previous_screen_updating_mode = screenUpdatingMode;
-
     // Resolves to the Zig host btnClicked export (keyboard_state.zig btnClickedHost),
     // which itself runs btnPressed + btnReleased on a synthetic left-click event.
+    // The release tail is the last writer of screenUpdatingMode, as in C.
     btnClicked(not_used, data);
-    repairStopStatusbarMask(previous_program_run_stop, previous_screen_updating_mode);
 }
 extern fn btnClicked(not_used: ?*anyopaque, data: ?*anyopaque) void;
 

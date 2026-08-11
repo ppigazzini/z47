@@ -638,6 +638,7 @@ extern var gapItemRight: u16;
 // ===========================================================================
 // Function externs (cross-owner / runtime / libc / decNumber / GMP).
 // ===========================================================================
+extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn getSystemFlag(sf: c_int) bool_t;
 extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, limitIrfrac: c_int) void;
 extern fn setSystemFlag(sf: c_uint) void;
@@ -1139,7 +1140,7 @@ fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv
     number = regShortInteger(regist).*;
 
     if (base <= 1 or base >= 17) {
-        abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "_shortIntegerToString", @as(c_int, base), "base" });
+        _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "_shortIntegerToString", @as(c_int, base), "base");
         frontier_error.displayBugScreen(errorMessage);
         base = 10;
     }
@@ -1159,7 +1160,7 @@ fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv
         } else if (shortIntegerMode == SIM_SIGNMT) {
             number &= ~shortIntegerSignBit;
         } else {
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "_shortIntegerToString", @as(c_int, shortIntegerMode), "shortIntegerMode");
             frontier_error.displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;
@@ -2261,7 +2262,7 @@ pub export fn fnTo_ms(unusedButMandatoryParameter: u16) callconv(.c) void {
         },
         CM_REGISTER_BROWSER, CM_ASN_BROWSER, CM_FLAG_BROWSER, CM_FONT_BROWSER, CM_PLOT_STAT, CM_LISTXY, CM_GRAPH => {},
         else => {
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}: unexpected calcMode value ({d}) while processing key {s}!", .{ "fnTo_ms", @as(c_int, calcMode), ".ms" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgCalcModeWhileProcKey]), "fnTo_ms", @as(c_uint, calcMode), ".ms");
             frontier_error.displayBugScreen(errorMessage);
         },
     }

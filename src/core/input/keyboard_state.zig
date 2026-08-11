@@ -289,13 +289,18 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
 // keyboard.c btnFnPressed (579-742) for the host lane (the large /* */ block in
 // the C is dead code).  A soft-function-key press; the actual buffering goes
 // through btnFnPressed_StateMachine to pick up long/double-press conditions.
-/// The underline bit for a function key. The C shifts by `FN_key_pressed - 38`
-/// in `int`, so a key number below 38 -- which FN_cancel leaves behind when it
-/// zeroes the key while the timeout flags stay set -- shifts by a negative
-/// amount. That is undefined in C but lands on a masked count in practice; the
-/// wrap here keeps it a mask rather than a trap.
+/// The underline bit for a function key: C's `1 << (FN_key_pressed - 38)`,
+/// evaluated in `int` and then narrowed to the `uint16_t` parameter of
+/// underline_softkey. A key number below 38 -- which FN_cancel leaves behind
+/// when it zeroes the key while the timeout flags stay set -- makes the shift
+/// count negative. Both hosts agree on what reaches the parameter: x86 masks a
+/// 32-bit shift count to its low 5 bits, so key 0 shifts by 26 and the high bit
+/// is cut off by the narrowing, and ARM's LSL by 218 yields 0 outright. The
+/// count is masked and the shift done in 32 bits so the result is that same 0
+/// rather than a bit that C never sets.
 inline fn softkeyUnderlineMask(key: i16) u16 {
-    return @as(u16, 1) << @truncate(@as(u16, @bitCast(key -% 38)));
+    const count: u5 = @truncate(@as(u32, @bitCast(@as(i32, key) - 38)));
+    return @truncate(@as(u32, 1) << count);
 }
 
 fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) callconv(.c) void {
@@ -579,8 +584,12 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                 runtime.showSoftmenu(item);
                 runtime.screenUpdatingMode &= ~runtime.SCRUPD_MANUAL_MENU;
             } else {
-                if (item == runtime.ITM_RS or item == runtime.ITM_XEQ) {
-                    mouse_key[0] = 0;
+                // PC_BUILD only: `key[3]` is the GTK mouse-drag latch, declared
+                // and cleared only in the host build.
+                if (comptime !is_dmcp_build) {
+                    if (item == runtime.ITM_RS or item == runtime.ITM_XEQ) {
+                        mouse_key[0] = 0;
+                    }
                 }
 
                 if (item != runtime.ITM_NOP and runtime.tam.alpha and !runtime.itemFuncIsAddItemToBuffer(item) and runtime.aimBuffer[0] == 0) {
@@ -612,7 +621,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                         }
                     } else {
                         runtime.displayCalcErrorMessage(runtime.ERROR_UNDEF_SOURCE_VAR, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                        if (comptime !runtime.is_dmcp_build) {
+                        if (comptime runtime.extra_info_on_calc_error) {
                             runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named variable", .{@as([*:0]const u8, funcParam)});
                             runtime.moreInfoOnError("In function btnReleased:", runtime.errorMessage, null, null);
                         }
@@ -627,7 +636,7 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
                         }
                     } else {
                         runtime.displayCalcErrorMessage(runtime.ERROR_LABEL_NOT_FOUND, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                        if (comptime !runtime.is_dmcp_build) {
+                        if (comptime runtime.extra_info_on_calc_error) {
                             runtime.fmtCStr(runtime.errorMessage, "string '{s}' is not a named label", .{@as([*:0]const u8, funcParam)});
                             runtime.moreInfoOnError("In function btnReleased:", runtime.errorMessage, null, null);
                         }
@@ -1261,7 +1270,7 @@ pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) 
                 varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
             }
             runtime.showFunctionName(Dyn, 0, varCatalogItem);
-            runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 0);
+            runtime.underline_softkey(softkeyUnderlineMask(runtime.FN_key_pressed), 0);
         } else if (runtime.shiftF and !runtime.shiftG) {
             var varCatalogItem: [*c]const u8 = "SF:V";
             const Dyn = nameFunction(runtime.FN_key_pressed - 37, runtime.shiftF, runtime.shiftG);
@@ -1269,7 +1278,7 @@ pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) 
                 varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
             }
             runtime.showFunctionName(Dyn, 0, varCatalogItem);
-            runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 1);
+            runtime.underline_softkey(softkeyUnderlineMask(runtime.FN_key_pressed), 1);
         } else if (!runtime.shiftF and runtime.shiftG) {
             var varCatalogItem: [*c]const u8 = "SF:W";
             const Dyn = nameFunction(runtime.FN_key_pressed - 37, runtime.shiftF, runtime.shiftG);
@@ -1277,7 +1286,7 @@ pub export fn btnFnPressed_StateMachine(unused: ?*anyopaque, data: ?*anyopaque) 
                 varCatalogItem = runtime.dynmenuGetLabel(runtime.dynamicMenuItem);
             }
             runtime.showFunctionName(Dyn, 0, varCatalogItem);
-            runtime.underline_softkey(@as(u16, 1) << @intCast(runtime.FN_key_pressed - 38), 2);
+            runtime.underline_softkey(softkeyUnderlineMask(runtime.FN_key_pressed), 2);
         }
     }
 }
