@@ -814,7 +814,8 @@ fn _tamProcessInput(item: u16) void {
             }
         } else if (tam.digitsSoFar > 0) {
             if (tam.function == ITM_GTOP and tam.digitsSoFar == 3) {
-                tam.max = @intCast(maxI(frontier_manage.getNumberOfSteps(), 99));
+                // int -> int16_t: a step count above 32767 wraps negative.
+                tam.max = @truncate(maxI(frontier_manage.getNumberOfSteps(), 99));
                 max2 = tam.max;
             }
             tam.digitsSoFar -= 1;
@@ -1077,14 +1078,20 @@ fn _tamProcessInput(item: u16) void {
         if (tam.digitsSoFar == 0 and (frontier_items.isFunctionOldParam16(@bitCast(tam.function)) == 0) and (tam.indirect or (tam.mode != TM_VALUE and tam.mode != TM_VALUE_CHB))) {
             if ((tam.mode == TM_LABEL or tam.mode == TM_LBLONLY or tam.mode == TM_SOLVE or (tam.mode == TM_KEY and tam.keyInputFinished)) and !tam.indirect) {
                 const param: i32 = @intCast(indexOfItems[item].param);
-                if (registerLookup[@intCast(param - FIRST_LETTERED_REGISTER)][1] == ALPHA_LABEL) {
+                // The enclosing condition also admits the named reserved variables
+                // (params 2031..2047), which index past the 26-entry table; the
+                // many-item pointer reproduces C's unchecked read of whatever
+                // follows the table instead of trapping on the bound.
+                const lookup: [*]const [2]i16 = &registerLookup;
+                const entry: usize = @intCast(param - FIRST_LETTERED_REGISTER);
+                if (lookup[entry][1] == ALPHA_LABEL) {
                     tam.colon = true; // Local named label
                     tam.alpha = true;
-                    aimBuffer[0] = @intCast(registerLookup[@intCast(param - FIRST_LETTERED_REGISTER)][0]);
+                    aimBuffer[0] = @truncate(@as(u16, @bitCast(lookup[entry][0])));
                     aimBuffer[1] = 0;
                     forceTry = true;
                 } else { // Local lettered label
-                    tam.value = FIRST_UC_LOCAL_LABEL - 'A' + registerLookup[@intCast(param - FIRST_LETTERED_REGISTER)][0];
+                    tam.value = @truncate(@as(i32, FIRST_UC_LOCAL_LABEL - 'A') + @as(i32, lookup[entry][0]));
                     forceTry = true;
                     tryOoR = true;
                 }
@@ -1116,20 +1123,24 @@ fn _tamProcessInput(item: u16) void {
         const digit: i16 = itm - ITM_0;
         var maxDigits: u8 = _tamMaxDigits(max2);
         if (tam.function == ITM_GTOP and tam.digitsSoFar == 2) {
-            tam.max = @intCast(frontier_manage.getNumberOfSteps());
+            // uint16_t -> int16_t: a step count above 32767 wraps negative.
+            tam.max = @bitCast(frontier_manage.getNumberOfSteps());
             max2 = tam.max;
             maxDigits = _tamMaxDigits(max2);
         }
-        if (!tam.alpha and (tam.value * 10 + digit) <= max2 and tam.digitsSoFar < maxDigits) {
-            if (tam.digitsSoFar != maxDigits - 1 or (tam.value * 10 + digit) >= min2) {
-                tam.value = tam.value * 10 + digit;
+        // C promotes both int16_t operands to int, so the product and the sum are
+        // exact at int width and only the store back into tam.value narrows.
+        const shifted: i32 = @as(i32, tam.value) * 10 + @as(i32, digit);
+        if (!tam.alpha and shifted <= max2 and tam.digitsSoFar < maxDigits) {
+            if (tam.digitsSoFar != maxDigits - 1 or shifted >= min2) {
+                tam.value = @truncate(shifted);
                 tam.digitsSoFar += 1;
                 if (tam.digitsSoFar == maxDigits) {
                     forceTry = true;
                 }
             }
         } else if (tam.function == ITM_GTOP) {
-            tam.max = @intCast(maxI(frontier_manage.getNumberOfSteps(), 99));
+            tam.max = @truncate(maxI(frontier_manage.getNumberOfSteps(), 99));
             max2 = tam.max;
             maxDigits = _tamMaxDigits(max2);
         }
@@ -1175,7 +1186,8 @@ fn _tamProcessInput(item: u16) void {
             if (tam.function == ITM_GTO or tam.function == ITM_XEQ) {
                 tam.function = ITM_GTOP;
                 tam.min = 0;
-                tam.max = @intCast(maxI(frontier_manage.getNumberOfSteps(), 99));
+                // int -> int16_t: a step count above 32767 wraps negative.
+                tam.max = @truncate(maxI(frontier_manage.getNumberOfSteps(), 99));
             } else if (tam.indirect and (currentNumberOfLocalRegisters() != 0 or calcMode == CM_PEM)) {
                 tam.dot = true;
             } else if (tam.mode != TM_VALUE and tam.mode != TM_VALUE_CHB and tam.mode != TM_LABEL and tam.mode != TM_LBLONLY and tam.mode != TM_MENU) {
@@ -1207,7 +1219,7 @@ fn _tamProcessInput(item: u16) void {
 
     // Fall-through evaluation.
     if (tam.mode == TM_KEY and !tam.keyInputFinished) {
-        if (tam.alpha or forcedVar != null or ((tryOoR or (min2 <= tam.value and tam.value <= max2)) and (forceTry or tam.value * 10 > max2))) {
+        if (tam.alpha or forcedVar != null or ((tryOoR or (min2 <= tam.value and tam.value <= max2)) and (forceTry or @as(i32, tam.value) * 10 > max2))) {
             tam.key = tam.value;
             tam.keyAlpha = tam.alpha;
             tam.keyDot = tam.dot;
@@ -1235,7 +1247,7 @@ fn _tamProcessInput(item: u16) void {
             max2 = pNorm_inf_RNORM + 1;
         }
 
-        if ((tryOoR or (min2 <= tam.value and tam.value <= max2)) and (forceTry or tam.value * 10 > max2) and ((tam.mode != TM_MENU) or tam.indirect)) {
+        if ((tryOoR or (min2 <= tam.value and tam.value <= max2)) and (forceTry or @as(i32, tam.value) * 10 > max2) and ((tam.mode != TM_MENU) or tam.indirect)) {
             var value: i16 = tam.value;
             const tryAllocate: bool_t = isFunctionAllowingNewVariable(@bitCast(tam.function));
             var run: bool_t = true;
@@ -1604,7 +1616,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
             screenUpdatingMode &= ~@as(u8, SCRUPD_MANUAL_MENU);
         },
         else => {
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "tamEnterMode", @as(c_int, @intCast(tam.mode)), "tam.mode");
             frontier_error.displayBugScreen(errorMessage);
             return;
         },
@@ -1656,13 +1668,16 @@ pub export fn leaveTamModeIfEnabled() callconv(.c) void {
     tam.mode = 0;
     clearSystemFlag(FLAG_ALPHA);
 
-    // `while(numberOfTamMenusToPop--)`: the post-decrement runs once more on the
-    // zero test, so the counter ends at -1 and that value is what gets persisted.
-    while (numberOfTamMenusToPop != 0) {
+    // A zero or negative counter is a complete no-op and keeps its value; the
+    // `while(numberOfTamMenusToPop--)` post-decrement runs once more on the zero
+    // test, so a positive counter ends at -1 and that value is what gets persisted.
+    if (numberOfTamMenusToPop > 0) {
+        while (numberOfTamMenusToPop != 0) {
+            numberOfTamMenusToPop -= 1;
+            frontier_softmenus.popSoftmenu();
+        }
         numberOfTamMenusToPop -= 1;
-        frontier_softmenus.popSoftmenu();
     }
-    numberOfTamMenusToPop -= 1;
 
     if (comptime !dmcp_build) {
         switch (calcMode) {

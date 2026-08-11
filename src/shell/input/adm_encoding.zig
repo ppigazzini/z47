@@ -21,8 +21,9 @@ pub const amDegree: u8 = 2;
 pub const amDMS: u8 = 3;
 pub const amMultPi: u8 = 4;
 
-// Indexed by angularMode_t -> external ADM value.
-const angularModeToAdm = [5]u8{ 2, 4, 0, 1, 3 };
+// Indexed by angularMode_t -> external ADM value. Non-static upstream and named by
+// config.h's admValue() macro, so it keeps its C linkage name.
+pub export const angularModeToAdm: [5]u8 = .{ 2, 4, 0, 1, 3 };
 // Indexed by the external ADM value -> angularMode_t.
 const admToAngularMode = [5]u8{ amDegree, amDMS, amRadian, amMultPi, amGrad };
 
