@@ -59,6 +59,7 @@ pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
         }
     } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_USES_FORMULA) == 0 and runtime.isNamedVariable(labelOrVariable) and runtime.currentSolverProgram >= runtime.numberOfLabels) {
         runtime.displayCalcErrorMessage(runtime.ERROR_NO_PROGRAM_SPECIFIED, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.infoLabelNotFound("In function fnMvarPlot:", labelOrVariable);
         runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
     } else if (runtime.isNamedVariable(labelOrVariable)) {
         // Execute: plot the program over labelOrVariable across [Y, X].
@@ -78,10 +79,12 @@ pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
             runtime.fnUndo(0);
         } else {
             runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
+            runtime.infoNotARealNumber("In function fnMvarPlot:", runtime.getRegisterDataType(runtime.REGISTER_X));
             runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
         }
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        runtime.infoUnexpectedParameter("In function fnMvarPlot:", labelOrVariable);
         runtime.adjustResult(runtime.REGISTER_X, false, false, runtime.REGISTER_X, -1, -1);
     }
 }

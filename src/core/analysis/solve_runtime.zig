@@ -1,3 +1,4 @@
+const std = @import("std");
 const solve_build_options = @import("solve_build_options");
 const abi = @import("abi");
 
@@ -12,6 +13,16 @@ const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_bui
 /// (400 bytes of flash), so it is off for exactly the same builds. Absent from a
 /// harness's options => on, matching the host default.
 pub const option_infsums = !@hasDecl(solve_build_options, "option_infsums") or solve_build_options.option_infsums;
+
+/// defines.h's OPTION_TVM_FORMULAS: tvm.c's analytical closed forms and the
+/// fnTvmVar arm that tries them before the iterative solver. #undef'd for DM42
+/// packages 2 and 4, whose FIN application is therefore solver-only.
+pub const option_tvm_formulas = solve_build_options.option_tvm_formulas;
+
+/// defines.h's OPTION_TVM_NEWTON: the Newton-Raphson method inside solve.c's
+/// solver() and the derivatives tvmEquation supplies it with. #undef'd for the
+/// same two packages, which makes their FIN solver brent-only.
+pub const option_tvm_newton = solve_build_options.option_tvm_newton;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
@@ -54,6 +65,7 @@ pub extern var numberOfLabels: u16;
 pub extern var screenUpdatingMode: u8;
 pub extern var lastErrorCode: u8;
 
+pub extern fn getRegisterDataType(reg: calcRegister_t) u32;
 pub extern fn getRegisterAsReal34Quiet(reg: calcRegister_t, val: *align(1) real34_t) bool;
 pub extern fn saveForUndo() void;
 pub extern fn fnUndo(unused_but_mandatory_parameter: u16) void;
@@ -106,24 +118,62 @@ pub inline fn labelToProgram(label: u16) u16 {
     return label_range.labelToProgram(labelBands(), label);
 }
 
+// Console diagnostics (EXTRA_INFO_ON_CALC_ERROR). The C sprintf()s each message
+// into the shared errorMessage scratch and hands it to moreInfoOnError, which
+// only prints it; the text is formatted into a caller-local buffer here so the
+// scratch is left alone.
+pub extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+
+pub fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0..slice.len :0];
+}
+
+pub fn infoNotANamedLabel(fnName: [*:0]const u8, buf: [*:0]const u8) void {
+    var buffer: [80]u8 = undefined;
+    const message = bufPrintZ(&buffer, "string '{s}' is not a named label", .{buf}) catch "string is not a named label";
+    moreInfoOnError(fnName, message, null, null);
+}
+
+pub fn infoUnexpectedParameter(fnName: [*:0]const u8, label: u16) void {
+    var buffer: [40]u8 = undefined;
+    const message = bufPrintZ(&buffer, "unexpected parameter {d}", .{label}) catch "unexpected parameter";
+    moreInfoOnError(fnName, message, null, null);
+}
+
+pub fn infoLabelNotFound(fnName: [*:0]const u8, labelOrVariable: u16) void {
+    var buffer: [40]u8 = undefined;
+    const message = bufPrintZ(&buffer, "label {d} not found", .{labelOrVariable}) catch "label not found";
+    moreInfoOnError(fnName, message, null, null);
+}
+
+/// The four-argument form: the trailing "" is an empty string, not NULL, so
+/// moreInfoOnError takes its four-part branch.
+pub fn infoNotARealNumber(fnName: [*:0]const u8, dataType: u32) void {
+    var buffer: [40]u8 = undefined;
+    const message = bufPrintZ(&buffer, "DataType {d}", .{dataType}) catch "DataType";
+    moreInfoOnError(fnName, message, "is not a real number.", "");
+}
+
 pub inline fn reportLabelNotFound(buf: [*:0]const u8) void {
-    _ = buf;
     displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    infoNotANamedLabel("In function fnPgmSlv:", buf);
 }
 
 pub inline fn reportOutOfRange(label: u16) void {
-    _ = label;
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    infoUnexpectedParameter("In function fnPgmSlv:", label);
 }
 
 pub inline fn reportLabelNotFoundPgmInt(buf: [*:0]const u8) void {
-    _ = buf;
     displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    infoNotANamedLabel("In function fnPgmInt:", buf);
 }
 
 pub inline fn reportOutOfRangePgmInt(label: u16) void {
-    _ = label;
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    infoUnexpectedParameter("In function fnPgmInt:", label);
 }
 
 pub inline fn clearUsesFormulaStatus() void {

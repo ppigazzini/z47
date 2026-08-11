@@ -11,8 +11,7 @@
 // _programmableiSumProd / _checkRegisters / _checkiArgument become private. The host-only _showProgress (ENABLE_SOLVER_PROGRESS == 1)
 // is reduced to a no-op (no effect on the computed result), matching the
 // prime / sumprod owner precedent. The VERBOSE_COUNTER debug blocks are #undef'd
-// and omitted; the EXTRA_INFO_ON_CALC_ERROR sprintf hints are stripped under
-// TESTSUITE/DMCP (EXTRA_INFO_ON_CALC_ERROR == 0) so they are omitted.
+// and omitted.
 
 const runtime = @import("solve_runtime.zig");
 const progress_panel = @import("progress_panel.zig");
@@ -178,6 +177,7 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
             (longIntegerCompare(&loopTo[0], &iCounter[0]) < 0 and longIntegerCompareUInt(&loopStep[0], 0) >= 0)))
     {
         displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.moreInfoOnError("In function _programmableiSumProd:", "Counter will not count to destination", null, null);
     } else {
         currentSolverNestingDepth += 1;
         setSystemFlag(FLAG_SOLVING);
@@ -231,6 +231,7 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
             convertLongIntegerToLongIntegerRegister(&resultLi[0], REGISTER_X);
         } else {
             displayCalcErrorMessage(lastErrorCode, ERR_REGISTER_LINE, REGISTER_X);
+            runtime.moreInfoOnError("In function _programmableiSumProd:", "Error while calculating", null, null);
         }
 
         longIntegerFree(&resultLi[0]);
@@ -257,12 +258,15 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
 fn _checkRegisters() linksection(runtime.code_section) bool_t {
     if (getRegisterDataType(REGISTER_X) != dtLongInteger) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.moreInfoOnError("In function _checkRegisters:", "Long integer expected", null, null);
         return true;
     } else if (getRegisterDataType(REGISTER_Y) != dtLongInteger) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+        runtime.moreInfoOnError("In function _checkRegisters:", "Long integer expected", null, null);
         return true;
     } else if (getRegisterDataType(REGISTER_Z) != dtLongInteger) {
         displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Z);
+        runtime.moreInfoOnError("In function _checkRegisters:", "Long integer expected", null, null);
         return true;
     }
     return false;
@@ -277,7 +281,7 @@ fn _checkiArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section
         if (!_checkRegisters()) {
             _programmableiSumProd(label, prod);
         }
-    } else if (REGISTER_X <= @as(calcRegister_t, @intCast(label)) and @as(calcRegister_t, @intCast(label)) <= REGISTER_T) {
+    } else if (runtime.isStackRegister(label)) {
         // Interactive mode
         var buf: [2]u8 = undefined;
         buf[0] = letteredRegisterName(@intCast(label));
@@ -285,6 +289,7 @@ fn _checkiArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section
         label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
         if (label == INVALID_VARIABLE) {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            runtime.infoNotANamedLabel("In function _checkiArgument:", @ptrCast(&buf[0]));
         } else {
             if (!_checkRegisters()) {
                 _programmableiSumProd(label, prod);
@@ -292,6 +297,7 @@ fn _checkiArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section
         }
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.infoUnexpectedParameter("In function _checkiArgument:", label);
     }
 }
 

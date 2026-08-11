@@ -90,7 +90,7 @@ const CM_EIM: u8 = 13;
 const NC_NORMAL: u8 = 0;
 const AC_LOWER: u8 = 1; // CAPS_EQN_DEFAULT
 const SCRUPD_AUTO: u8 = 0x00;
-const vmNormal: u8 = 0;
+const vmNormal: c_int = 0;
 
 const EQUATION_AIM_BUFFER: u16 = 0xffff;
 const EQUATION_NO_CURSOR: u16 = 0xffff;
@@ -317,7 +317,7 @@ const registerStringPtr = abi.registerString;
 const STR_LGINT_HEADER_SIZE: usize = 4;
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn clearRegister(regist: calcRegister_t) void;
 
 extern fn setSystemFlag(sf: c_uint) void;
@@ -355,7 +355,7 @@ extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparisonType: 
 extern fn compareChar(char1: [*c]const u8, char2: [*c]const u8) i32;
 extern fn stringGlyphLength(str: [*c]const u8) i32;
 extern fn stringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmptyRows: bool, withEndingEmptyRows: bool) i16;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: u8, showLeadingCols: bool, showEndingCols: bool) u32;
+extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool, showEndingCols: bool) u32;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
@@ -570,7 +570,9 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
         moreInfoOnError("In function setEquation:", "there is not enough memory for a new equation!", null, null);
         return;
     }
-    allFormulae[equationId].sizeInBlocks = @intCast(newSizeInBlocks);
+    // C assigns the 32-bit block count straight into the 8-bit field, so a
+    // formula of 1020 bytes or more keeps only the low byte of its size.
+    allFormulae[equationId].sizeInBlocks = @truncate(newSizeInBlocks);
     _ = xcopy(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), equationString, @intCast(stringByteLength(equationString) + 1));
 }
 
@@ -981,6 +983,13 @@ inline fn PARSER_LEFT_VALUE_IMAG(mvarBuffer: [*c]u8) *align(1) real34_t {
 inline fn PARSER_NUMERIC_STACK_POINTER(mvarBuffer: [*c]u8) [*]u8 {
     return mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * PARSER_NUMERIC_STACK_SIZE);
 }
+/// `&PARSER_NUMERIC_STACK[sp * 2 - back]`, where C's index is an `int` and goes
+/// negative on an empty numeric stack. The two real34 slots immediately below
+/// the stack base are PARSER_LEFT_VALUE_REAL (index -2) and
+/// PARSER_LEFT_VALUE_IMAG (index -1), so the address stays inside mvarBuffer.
+inline fn parserNumericSlot(mvarBuffer: [*c]u8, sp: u8, back: usize) *align(1) real34_t {
+    return @ptrCast(mvarBuffer + PARSER_OPERATOR_STACK_SIZE * 2 + REAL34_SIZE_IN_BYTES * (2 + 2 * @as(usize, sp) - back));
+}
 
 fn _operatorPriority(func: u16) linksection(runtime.code_section) u32 {
     switch (func) {
@@ -1199,18 +1208,20 @@ fn _processOperator(func: u16, mvarBuffer: [*c]u8) linksection(runtime.code_sect
                     setSystemFlag(FLAG_ASLIFT);
                     liftStack();
                     const sp = PARSER_NUMERIC_STACK_POINTER(mvarBuffer);
-                    const stack = PARSER_NUMERIC_STACK(mvarBuffer);
                     const leftReal = PARSER_LEFT_VALUE_REAL(mvarBuffer);
                     const leftImag = PARSER_LEFT_VALUE_IMAG(mvarBuffer);
-                    if ((real34IsZero(leftImag) or real34IsNaN(leftImag)) and (real34IsZero(&stack[@as(usize, sp[0]) * 2 - 1]) or real34IsNaN(&stack[@as(usize, sp[0]) * 2 - 1]))) {
+                    const topImag = parserNumericSlot(mvarBuffer, sp[0], 1);
+                    const topReal = parserNumericSlot(mvarBuffer, sp[0], 2);
+                    if ((real34IsZero(leftImag) or real34IsNaN(leftImag)) and (real34IsZero(topImag) or real34IsNaN(topImag))) {
                         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-                        real34Subtract(&stack[@as(usize, sp[0]) * 2 - 2], leftReal, registerReal34Ptr(REGISTER_X));
+                        real34Subtract(topReal, leftReal, registerReal34Ptr(REGISTER_X));
                     } else {
                         reallocateRegister(REGISTER_X, dtComplex34, 0, amNone);
-                        real34Subtract(&stack[@as(usize, sp[0]) * 2 - 2], leftReal, registerReal34Ptr(REGISTER_X));
-                        real34Subtract(&stack[@as(usize, sp[0]) * 2 - 1], leftImag, registerImag34Ptr(REGISTER_X));
+                        real34Subtract(topReal, leftReal, registerReal34Ptr(REGISTER_X));
+                        real34Subtract(topImag, leftImag, registerImag34Ptr(REGISTER_X));
                     }
-                    sp[0] -= 1;
+                    // C decrements a uint8_t, so an empty stack wraps to 255.
+                    sp[0] -%= 1;
                 },
             }
             return;
@@ -1263,6 +1274,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
     var tmpVal: u32 = 0;
     if (parserHint != PARSER_HINT_NUMERIC and stringGlyphLength(strPtr) > 7) {
         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function _parseWord:", strPtr, "token too long!", null);
         return;
     }
     if (strPtr[0] == 0) {
@@ -1321,6 +1333,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                         _ = xcopy(errorMessage, strPtr, @intCast(stringByteLength(strPtr) + 1));
                         screenUpdatingMode = SCRUPD_AUTO;
                         refreshRegisterLine(ERR_REGISTER_LINE);
+                        moreInfoOnError("In function _parseWord:", strPtr, "names a reserved variable!", null);
                     } else {
                         if (tmpVal == 3 and ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_INTEGRATE)) {
                             _menuItem(MNU_Sf_TOOL, bufPtr);
@@ -1346,7 +1359,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                     }
                 } else {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                    moreInfoOnError("In function parseEquation:", "attempt to call a number as a function!", null, null);
+                    moreInfoOnError("In function _parseWord 1:", strPtr, "is not a valid name!", null);
                 }
             }
         },
@@ -1386,7 +1399,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                     fnDrop(NOPARAM);
                 } else {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
-                    moreInfoOnError("In function parseEquation:", "= appears more than once", null, null);
+                    moreInfoOnError("In function _parseWord 2:", strPtr, "is not a valid name!", null);
                 }
             } else if (parserHint == PARSER_HINT_NUMERIC) {
                 var val: real34_t = undefined;
@@ -1456,6 +1469,7 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                     }
                 }
                 displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                moreInfoOnError("In function _parseWord:", strPtr, "is not recognized as a function", "or not for equations");
             }
         },
         else => {
@@ -1471,6 +1485,7 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
         buffer[0] = 0;
         mvarBuffer[0] = 0;
         displayCalcErrorMessage(ERROR_NO_EQUATION_DEFINED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function parseEquation:", "no equation defined", null, null);
         return;
     }
     var strPtr: [*c]const u8 = TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData);
@@ -1529,6 +1544,9 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
         sw: switch (strPtr[0]) {
             ';' => {
                 displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                // C sprintf()s the offending character with "%c" before printing it.
+                const offender = [_:0]u8{strPtr[0]};
+                moreInfoOnError("In function parseEquation:", &offender, "cannot be appeared in equations", null);
                 return;
             },
 
@@ -1539,6 +1557,7 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
                     strPtr += 1;
                     if (stringGlyphLength(buffer) == numericCount) {
                         displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                        moreInfoOnError("In function parseEquation:", "attempt to call a number as a function!", null, null);
                         return;
                     } else {
                         _parseWord(buffer, parseMode, PARSER_HINT_FUNCTION, mvarBuffer, pointerInFormula);
@@ -1560,6 +1579,7 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
             '=', '+', '-', '/', ')', '^', '!', ':', '|' => {
                 if (equalAppeared and (strPtr[0] == '=')) {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function parseEquation:", "= appears more than once", null, null);
                     return;
                 } else if ((bufPtr != buffer) and (strPtr[0] == '|')) {
                     bufPtr[0] = 0;
@@ -1666,6 +1686,7 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
                     exponentSignCanOccur = false;
                 } else {
                     displayCalcErrorMessage(ERROR_SYNTAX_ERROR_IN_EQUATION, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    moreInfoOnError("In function parseEquation:", buffer, "unexpected operator", null);
                     return;
                 }
 

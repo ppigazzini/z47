@@ -6,9 +6,11 @@
 // dispatch -- so they port 1:1 against the WP34S trig + real arithmetic the
 // runtime already exposes.
 //
-// The firmware math object is built once (package-agnostic, no SAVE_SPACE
-// defines), so OPTION_VECTOR is always on for the matrix bridge in every build;
-// these helpers are therefore unconditional, matching the existing C object.
+// matrix.c compiles all six with an empty `{;}` body in its `#else //OPTION_VECTOR`
+// arm. defines.h #undef's OPTION_VECTOR in the block common to packages 1-4, so
+// no DM42 package carries the conversion arithmetic: each function returns
+// leaving every output untouched. The math object is built per package, so the
+// option is a real per-build value here, not a constant.
 //
 // realCopy(src, dst) is decNumberCopy(dst, src), i.e. a real_t struct copy; the
 // matrix owners already express that as `dst.* = src.*` (math_matrix_insert,
@@ -28,6 +30,7 @@ const readElements = abi.matrixConstRealElems;
 const writeElements = abi.matrixRealElems;
 
 pub export fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, th2: *real_t, am: u8, ctxtRealDisplay: *realContext_t) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     var z: real_t = undefined;
@@ -60,6 +63,7 @@ pub export fn convert3DtoSPH(matrix: *const real34Matrix_t, r: *real_t, th1: *re
 }
 
 pub export fn convertSPHto3D(r: *real_t, th1: *real_t, th2: *real_t, am: u8, matrix: *real34Matrix_t, ctxtRealDisplay: *realContext_t) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     var z: real_t = undefined;
@@ -88,6 +92,7 @@ pub export fn convertSPHto3D(r: *real_t, th1: *real_t, th2: *real_t, am: u8, mat
 }
 
 pub export fn convert3DtoCYL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, z: *real_t, am: u8, ctxtRealDisplay: *realContext_t) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     var t: real_t = undefined;
@@ -110,6 +115,7 @@ pub export fn convert3DtoCYL(matrix: *const real34Matrix_t, r: *real_t, th1: *re
 }
 
 pub export fn convertCYLto3D(r: *real_t, th1: *real_t, z: *real_t, am: u8, matrix: *real34Matrix_t, ctxtRealDisplay: *realContext_t) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     var theta1: real_t = th1.*;
@@ -129,6 +135,7 @@ pub export fn convertCYLto3D(r: *real_t, th1: *real_t, z: *real_t, am: u8, matri
 }
 
 pub export fn convert2DtoPOL(matrix: *const real34Matrix_t, r: *real_t, th1: *real_t, am: u8, ctxtRealDisplay: *realContext_t) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     runtime._euclideanNormRealMatrix(matrix, 2, r, ctxtRealDisplay);
@@ -145,6 +152,7 @@ pub export fn convert2DtoPOL(matrix: *const real34Matrix_t, r: *real_t, th1: *re
 }
 
 pub export fn convertPOLto2D(r: *real_t, th1: *real_t, am: u8, matrix: *real34Matrix_t, ctxtRealDisplay: *realContext_t) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     var x: real_t = undefined;
     var y: real_t = undefined;
     var theta1: real_t = th1.*;

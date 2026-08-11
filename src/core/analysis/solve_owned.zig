@@ -2,7 +2,8 @@
 const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/solve.c: the central generic equation solver
-// (Brent + optional Newton, OPTION_TVM_FORMULAS / OPTION_TVM_NEWTON both ON).
+// (Brent, plus the Newton method OPTION_TVM_NEWTON adds; that option is out of
+// DM42 packages 2 and 4, which run the brent-only solver).
 // Transitively COVERED via tvm.txt / validate_tvm (solver() is exercised by the
 // TVM application). Faithful line-by-line translation preserving the exact order
 // of every real_t / real34_t operation.
@@ -24,6 +25,7 @@ const progress_panel = @import("progress_panel.zig");
 const solve_build_options = @import("solve_build_options");
 const dmcp_build: bool = solve_build_options.is_dmcp_build;
 const old_hw: bool = solve_build_options.is_old_hw;
+const option_tvm_newton: bool = runtime.option_tvm_newton;
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // shared ABI bindings
@@ -374,7 +376,7 @@ const registerStringPtr = abi.registerString;
 const STR_LGINT_HEADER_SIZE: usize = 4; // sizeof(strLgIntHeader_t)
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn clearRegister(regist: calcRegister_t) void;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
@@ -426,7 +428,7 @@ inline fn TO_BLOCKS(n: u32) u16 {
 // fnPgmSlv is owned by solve.zig (the dispatcher). We extern it here.
 
 pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) callconv(.c) void {
-    if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (REGISTER_X <= @as(calcRegister_t, @intCast(labelOrVariable)) and @as(calcRegister_t, @intCast(labelOrVariable)) <= REGISTER_T)) {
+    if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (runtime.isStackRegister(labelOrVariable))) {
         // Interactive mode
         solve.fnPgmSlv(labelOrVariable);
         if (lastErrorCode == ERROR_NONE) {
@@ -435,6 +437,7 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0 and (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) and currentSolverProgram >= numberOfLabels) {
         displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.infoLabelNotFound("In function fnSolve:", labelOrVariable);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else if (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) {
         // Execute
@@ -507,10 +510,12 @@ pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) ca
             adjustResult(REGISTER_X, false, false, REGISTER_X, REGISTER_Y, -1);
         } else {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+            runtime.infoNotARealNumber("In function fnSolve:", getRegisterDataType(REGISTER_X));
             adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
         }
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.infoUnexpectedParameter("In function fnSolve:", labelOrVariable);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     }
 }
@@ -709,21 +714,40 @@ pub export fn engineNestingRefused(isPlot: bool) linksection(runtime.code_sectio
 const SOLVER_METHOD_BRENT: u8 = 0;
 const SOLVER_METHOD_NEWTON: u8 = 1;
 
+// The OPTION_TVM_NEWTON working reals are allocated and null-checked together at
+// the head of solver(); with the option out none of them exists and nothing
+// reads the result.
+inline fn newtonReal(p: ?*real_t) *real_t {
+    return if (option_tvm_newton) p.? else undefined;
+}
+
 pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *align(1) const real34_t, resZ: *align(1) real34_t, resY: *align(1) real34_t, resX: *align(1) real34_t) linksection(runtime.code_section) callconv(.c) c_int {
     currentKeyCode = 255;
 
-    // The working reals come from the heap, not the frame: thirty-seven decNumbers
-    // at 60 bytes, and the frame stands for the whole solve while every evaluation of
-    // the user program or formula runs below it. Upstream measured the DM42 frame
-    // falling from 1952 bytes to 552. The reals that were declared inside the
-    // iteration loop are taken here as well, so the loop allocates nothing; each is
-    // still written before it is read on every pass. `defer` frees them on every
-    // exit, which is what upstream's `goto freeWork` does for each of its returns.
-    const newton_x_p = runtime.mallocReal();
-    const prev_fx_p = runtime.mallocReal();
-    const prev_x_p = runtime.mallocReal();
-    const brent_best_x_p = runtime.mallocReal();
-    const brent_best_fx_p = runtime.mallocReal();
+    // The working reals come from the heap, not the frame: twenty-five decNumbers
+    // at 60 bytes, and twelve more where OPTION_TVM_NEWTON is in. The frame stands
+    // for the whole solve while every evaluation of the user program or formula
+    // runs below it; upstream measured the DM42 frame falling from 1952 bytes to
+    // 552. The reals that were declared inside the iteration loop are taken here as
+    // well, so the loop allocates nothing; each is still written before it is read
+    // on every pass. `defer` frees them on every exit, which is what upstream's
+    // `goto freeWork` does for each of its returns.
+    //
+    // Without OPTION_TVM_NEWTON the twelve Newton reals are neither declared nor
+    // allocated upstream; `null` stands for "not taken" here, and every reader of
+    // them sits behind the same gate.
+    const newton_x_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const prev_fx_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const prev_x_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const brent_best_x_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const brent_best_fx_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const relativeWidth_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const fullBracket_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const newton_trial_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const newton_fx_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const newton_deriv_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const newton_step_p = if (option_tvm_newton) runtime.mallocReal() else null;
+    const tol_converged_p = if (option_tvm_newton) runtime.mallocReal() else null;
     const aa_p = runtime.mallocReal();
     const bb_p = runtime.mallocReal();
     const bb1_p = runtime.mallocReal();
@@ -746,22 +770,24 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
     const prevResX_p = runtime.mallocReal();
     const antiLevel_p = runtime.mallocReal();
     const bracketWidth_p = runtime.mallocReal();
-    const relativeWidth_p = runtime.mallocReal();
-    const fullBracket_p = runtime.mallocReal();
-    const newton_trial_p = runtime.mallocReal();
-    const newton_fx_p = runtime.mallocReal();
-    const newton_deriv_p = runtime.mallocReal();
-    const newton_step_p = runtime.mallocReal();
-    const tol_converged_p = runtime.mallocReal();
     const tol1_p = runtime.mallocReal();
     const resXr_p = runtime.mallocReal();
     const resZr_p = runtime.mallocReal();
-    defer {
+    defer if (option_tvm_newton) {
         runtime.freeReal(newton_x_p);
         runtime.freeReal(prev_fx_p);
         runtime.freeReal(prev_x_p);
         runtime.freeReal(brent_best_x_p);
         runtime.freeReal(brent_best_fx_p);
+        runtime.freeReal(relativeWidth_p);
+        runtime.freeReal(fullBracket_p);
+        runtime.freeReal(newton_trial_p);
+        runtime.freeReal(newton_fx_p);
+        runtime.freeReal(newton_deriv_p);
+        runtime.freeReal(newton_step_p);
+        runtime.freeReal(tol_converged_p);
+    };
+    defer {
         runtime.freeReal(aa_p);
         runtime.freeReal(bb_p);
         runtime.freeReal(bb1_p);
@@ -784,26 +810,20 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
         runtime.freeReal(prevResX_p);
         runtime.freeReal(antiLevel_p);
         runtime.freeReal(bracketWidth_p);
-        runtime.freeReal(relativeWidth_p);
-        runtime.freeReal(fullBracket_p);
-        runtime.freeReal(newton_trial_p);
-        runtime.freeReal(newton_fx_p);
-        runtime.freeReal(newton_deriv_p);
-        runtime.freeReal(newton_step_p);
-        runtime.freeReal(tol_converged_p);
         runtime.freeReal(tol1_p);
         runtime.freeReal(resXr_p);
         runtime.freeReal(resZr_p);
     }
-    if (newton_x_p == null or prev_fx_p == null or prev_x_p == null or brent_best_x_p == null or brent_best_fx_p == null or aa_p == null or bb_p == null or bb1_p == null or bb2_p == null or faa_p == null or fbb_p == null or fbb1_p == null or mm_p == null or ss_p == null or secantSlopeA_p == null or secantSlopeB_p == null or delta_p == null or deltaB_p == null or smb_p == null or tol_p == null or fbp1_p == null or tmp_p == null or tolAlmostZero_p == null or minBracketSpacing_p == null or prevResX_p == null or antiLevel_p == null or bracketWidth_p == null or relativeWidth_p == null or fullBracket_p == null or newton_trial_p == null or newton_fx_p == null or newton_deriv_p == null or newton_step_p == null or tol_converged_p == null or tol1_p == null or resXr_p == null or resZr_p == null) {
+    const newtonWorkMissing = option_tvm_newton and (newton_x_p == null or prev_fx_p == null or prev_x_p == null or brent_best_x_p == null or brent_best_fx_p == null or relativeWidth_p == null or fullBracket_p == null or newton_trial_p == null or newton_fx_p == null or newton_deriv_p == null or newton_step_p == null or tol_converged_p == null);
+    if (newtonWorkMissing or aa_p == null or bb_p == null or bb1_p == null or bb2_p == null or faa_p == null or fbb_p == null or fbb1_p == null or mm_p == null or ss_p == null or secantSlopeA_p == null or secantSlopeB_p == null or delta_p == null or deltaB_p == null or smb_p == null or tol_p == null or fbp1_p == null or tmp_p == null or tolAlmostZero_p == null or minBracketSpacing_p == null or prevResX_p == null or antiLevel_p == null or bracketWidth_p == null or tol1_p == null or resXr_p == null or resZr_p == null) {
         displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
         return SOLVER_RESULT_OTHER_FAILURE;
     }
-    const newton_x = newton_x_p.?;
-    const prev_fx = prev_fx_p.?;
-    const prev_x = prev_x_p.?;
-    const brent_best_x = brent_best_x_p.?;
-    const brent_best_fx = brent_best_fx_p.?;
+    const newton_x = newtonReal(newton_x_p);
+    const prev_fx = newtonReal(prev_fx_p);
+    const prev_x = newtonReal(prev_x_p);
+    const brent_best_x = newtonReal(brent_best_x_p);
+    const brent_best_fx = newtonReal(brent_best_fx_p);
     const aa = aa_p.?;
     const bb = bb_p.?;
     const bb1 = bb1_p.?;
@@ -826,27 +846,30 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
     const prevResX = prevResX_p.?;
     const antiLevel = antiLevel_p.?;
     const bracketWidth = bracketWidth_p.?;
-    const relativeWidth = relativeWidth_p.?;
-    const fullBracket = fullBracket_p.?;
-    const newton_trial = newton_trial_p.?;
-    const newton_fx = newton_fx_p.?;
-    const newton_deriv = newton_deriv_p.?;
-    const newton_step = newton_step_p.?;
-    const tol_converged = tol_converged_p.?;
+    const relativeWidth = newtonReal(relativeWidth_p);
+    const fullBracket = newtonReal(fullBracket_p);
+    const newton_trial = newtonReal(newton_trial_p);
+    const newton_fx = newtonReal(newton_fx_p);
+    const newton_deriv = newtonReal(newton_deriv_p);
+    const newton_step = newtonReal(newton_step_p);
+    const tol_converged = newtonReal(tol_converged_p);
     const tol1 = tol1_p.?;
     const resXr = resXr_p.?;
     const resZr = resZr_p.?;
 
     var currentMethod: u8 = SOLVER_METHOD_BRENT;
-    // OPTION_TVM_NEWTON state
+    // OPTION_TVM_NEWTON state; inert where the option is out, since every reader
+    // of it is behind the same gate and the method never leaves brent.
     var newton_polish_mode: bool_t = false;
     var newton_polish_count: c_int = 0;
     var first_newton_iter: bool_t = true;
     var stall_count: c_int = 0;
     var newton_iter_count: c_int = 0;
     var newtonDisabled: bool_t = false;
-    realSetNaN(brent_best_x);
-    realSetNaN(brent_best_fx);
+    if (option_tvm_newton) {
+        realSetNaN(brent_best_x);
+        realSetNaN(brent_best_fx);
+    }
     var newtonInitialized: bool_t = false;
 
     var antiLevel34: real34_t = undefined;
@@ -1011,7 +1034,9 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                 loop += 1;
                 if (checkHalfSec()) {
                     var ssbuf: [10]u8 = undefined;
-                    ssbuf[0..6].* = "Iter: ".*;
+                    // strcpy stores the six characters and the terminating NUL;
+                    // progressHalfSecUpdate_Integer takes a C string.
+                    ssbuf[0..7].* = "Iter: \x00".*;
                     ssbuf[4] = if (currentMethod == SOLVER_METHOD_BRENT) ':' else '=';
                     if (progressHalfSecUpdate_Integer(timed, @ptrCast(&ssbuf[0]), loop, halfSec_clearZ, halfSec_clearT, halfSec_disp)) {
                         var a34: real34_t = undefined;
@@ -1067,41 +1092,43 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                 }
 
                 // OPTION_TVM_NEWTON: method selection
-                if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0 and
-                    (variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_IPONA)) or
-                        variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_NPPER)) or
-                        variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_PV)) or
-                        variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_PMT)) or
-                        variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_FV))) and
-                    currentMethod != SOLVER_METHOD_NEWTON and loop >= 5)
-                {
-                    realSubtract(bb, aa, fullBracket, ctxtSolver());
-                    realSetPositiveSign(fullBracket);
-                    realDivide(fullBracket, bb, relativeWidth, ctxtSolver());
-                    realSetPositiveSign(relativeWidth);
+                if (option_tvm_newton) {
+                    if ((currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0 and
+                        (variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_IPONA)) or
+                            variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_NPPER)) or
+                            variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_PV)) or
+                            variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_PMT)) or
+                            variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_FV))) and
+                        currentMethod != SOLVER_METHOD_NEWTON and loop >= 5)
+                    {
+                        realSubtract(bb, aa, fullBracket, ctxtSolver());
+                        realSetPositiveSign(fullBracket);
+                        realDivide(fullBracket, bb, relativeWidth, ctxtSolver());
+                        realSetPositiveSign(relativeWidth);
 
-                    var handoff: bool_t = false;
-                    if (realGetExponentComp(bb) >= -25) {
-                        if (realGetExponentComp(relativeWidth) <= -2) {
-                            handoff = true;
-                        } else if (realGetExponentComp(relativeWidth) <= 1 and realGetExponentComp(fbb) <= -10) {
-                            handoff = true;
+                        var handoff: bool_t = false;
+                        if (realGetExponentComp(bb) >= -25) {
+                            if (realGetExponentComp(relativeWidth) <= -2) {
+                                handoff = true;
+                            } else if (realGetExponentComp(relativeWidth) <= 1 and realGetExponentComp(fbb) <= -10) {
+                                handoff = true;
+                            }
+                        } else {
+                            if (realGetExponentComp(bracketWidth) <= -35) {
+                                handoff = true;
+                            }
                         }
-                    } else {
-                        if (realGetExponentComp(bracketWidth) <= -35) {
-                            handoff = true;
-                        }
-                    }
 
-                    if (handoff and !newtonDisabled) {
-                        currentMethod = SOLVER_METHOD_NEWTON;
-                        realCopy(bb, newton_x);
-                        newtonInitialized = true;
+                        if (handoff and !newtonDisabled) {
+                            currentMethod = SOLVER_METHOD_NEWTON;
+                            realCopy(bb, newton_x);
+                            newtonInitialized = true;
+                        }
                     }
                 }
 
                 // next point - select based on current method
-                if (currentMethod == SOLVER_METHOD_NEWTON and newtonInitialized) {
+                if (option_tvm_newton and currentMethod == SOLVER_METHOD_NEWTON and newtonInitialized) {
                     // Newton step: x_new = x - f(x)/f'(x)
                     realCopy(newton_x, newton_trial);
                     _executeSolverReal(variable, newton_trial, newton_fx, newton_deriv);
@@ -1153,7 +1180,7 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                 _executeSolverReal(variable, bp1, fbp1, null);
 
                 // OPTION_TVM_NEWTON: convergence / divergence
-                if (currentMethod == SOLVER_METHOD_NEWTON and newtonInitialized) {
+                if (option_tvm_newton and currentMethod == SOLVER_METHOD_NEWTON and newtonInitialized) {
                     if (newton_polish_mode) {
                         newton_polish_count += 1;
                         if (newton_polish_count > 2) {
@@ -1333,7 +1360,11 @@ pub export fn solver(variable: calcRegister_t, y: *align(1) const real34_t, x: *
                     break;
                 }
                 if (!originallyLevel and ((!extendRange and bb_bb1_converged) or b_b1_Equal or fbIsAlmostZero)) {
-                    if (currentMethod == SOLVER_METHOD_BRENT and
+                    // OPTION_TVM_NEWTON: hand the converged brent bracket to one
+                    // Newton polish step; without the option the loop just ends.
+                    if (!option_tvm_newton) {
+                        break;
+                    } else if (currentMethod == SOLVER_METHOD_BRENT and
                         (currentSolverStatus & SOLVER_STATUS_TVM_APPLICATION) != 0 and
                         (variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_IPONA)) or
                             variable == @as(calcRegister_t, @bitCast(RESERVED_VARIABLE_NPPER)) or

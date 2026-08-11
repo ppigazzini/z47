@@ -7,9 +7,14 @@
 // once rather than in each of them.
 
 const abi = @import("abi");
+const consts = abi.constants;
 
 const real_t = abi.Real;
 const real34_t = abi.Real34;
+
+inline fn const34_0() *align(1) const real34_t {
+    return consts.q16200();
+}
 const calcRegister_t = i16;
 const font_t = opaque {};
 
@@ -26,7 +31,7 @@ const TMP_STR_LENGTH: i32 = 2560;
 const vmNormal: c_int = 0;
 const amNone: u32 = 5;
 const DF_ALL: u8 = 0;
-const FLAG_CPXj: c_int = 0x8009;
+const FLAG_CPXj: c_int = 0x8005;
 const STD_op_i = "\xa1\x48";
 const STD_op_j = "\xa1\x49";
 /// force_refresh's "force" mode (screen.h).
@@ -46,6 +51,7 @@ extern fn force_refresh(mode: u8) void;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn real34CompareGreaterThan(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
+extern fn real34CompareGreaterEqual(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
 extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
 extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
 extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
@@ -158,7 +164,9 @@ pub fn showRealPartial(a: *align(1) const real34_t, ai: *align(1) const real34_t
         showValueAt(a, Y_POSITION_OF_REGISTER_X_LINE + 6);
     } else {
         showValueAt(a, Y_POSITION_OF_REGISTER_Y_LINE + 6);
-        const sign_text: [*c]const u8 = if (!real34IsNegative(ai)) "+" else " ";
+        // A numeric comparison, not a sign-bit read: -0 takes the "+" branch and
+        // a NaN takes the blank one.
+        const sign_text: [*c]const u8 = if (real34CompareGreaterEqual(ai, const34_0())) "+" else " ";
         const x = showString(sign_text, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
         real34ToDisplayString(ai, amNone, tmpString, &standardFont, 9999, 34, false, true, 0);
         _ = strcat(tmpString, if (getSystemFlag(FLAG_CPXj)) STD_op_j else STD_op_i);

@@ -4,6 +4,36 @@ const runtime = @import("../command_wrappers/runtime.zig");
 const math_matrix_kinds = @import("kinds.zig"); // std-only matrix operand kinds + size validity
 pub const MatrixOperandKinds = math_matrix_kinds.MatrixOperandKinds;
 
+const STD_CROSS = "\x80\xd7"; // fonts.h
+
+// The two operand shapes a cross/dot matrix path names when it refuses them:
+// the X operand first, then Y, in the order upstream's sprintf takes them.
+pub const MatrixShapes = struct {
+    x_rows: u12,
+    x_columns: u12,
+    y_rows: u12,
+    y_columns: u12,
+};
+
+fn matrixMismatchError(function_name: [:0]const u8, comptime format: []const u8, shapes: MatrixShapes) void {
+    runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+    if (runtime.extra_info_on_calc_error) {
+        var message_buffer: [96]u8 = undefined;
+        const message = runtime.bufPrintZ(&message_buffer, format, .{ shapes.x_rows, shapes.x_columns, shapes.y_rows, shapes.y_columns }) catch "matrix dimension mismatch";
+        runtime.moreInfoOnError(function_name, message, null, null);
+    }
+}
+
+// CROSS between vectors whose element counts are zero or above three.
+pub fn crossMatrixMismatchError(function_name: [:0]const u8, shapes: MatrixShapes) void {
+    matrixMismatchError(function_name, "invalid numbers of elements of {d}" ++ STD_CROSS ++ "{d}-matrix to {d}" ++ STD_CROSS ++ "{d}-matrix", shapes);
+}
+
+// DOT between vectors whose element counts are zero or differ.
+pub fn dotMatrixMismatchError(function_name: [:0]const u8, shapes: MatrixShapes) void {
+    matrixMismatchError(function_name, "numbers of elements of {d}" ++ STD_CROSS ++ "{d}-matrix to {d}" ++ STD_CROSS ++ "{d}-matrix mismatch", shapes);
+}
+
 // The type-error diagnostic raised when cross/dot validation rejects the current
 // operands: reports "cannot raise <Y type> to <X type>" for the offending pair.
 pub fn crossDotMatrixTypeError(function_name: [:0]const u8) void {

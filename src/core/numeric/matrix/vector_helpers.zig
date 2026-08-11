@@ -7,6 +7,13 @@
 //   - fnComplexToVector converts X between a complex34 and a 2D-vector matrix.
 // All are consumed by the already-ported addons owner (the fnToSpherical /
 // fnToCylindrical / fnToPolar / fnVectorAngleMode / CPXexV commands).
+//
+// defines.h #undef's OPTION_VECTOR in the block common to packages 1-4, so no
+// DM42 package carries any of this. matrix.c's `#else //OPTION_VECTOR` arm
+// keeps VtoAngleMode as `{return false;}` and fnComplexToVector as `{;}`, and
+// drops V3err altogether -- it has no caller once the two V3Recto* commands are
+// stubs. z47 keeps V3err as a symbol, with nothing to do, because the link is
+// shared across packages.
 
 const std = @import("std");
 const abi = @import("abi");
@@ -32,6 +39,7 @@ fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
 }
 
 pub export fn V3err(err: c_int) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     runtime.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
     // EXTRA_INFO_ON_CALC_ERROR is comptime-off in the testSuite build, so this
     // mirrors the upstream #if guard exactly (the hint is host-only).
@@ -50,6 +58,9 @@ pub export fn V3err(err: c_int) callconv(.c) void {
 }
 
 pub export fn VtoAngleMode(angleMode: angularMode_t) callconv(.c) bool {
+    // `{return false;}` upstream without OPTION_VECTOR: the register is left
+    // untagged and the caller sees the refusal.
+    if (comptime !runtime.option_vector) return false;
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34Matrix) {
         if (runtime.isRegisterMatrixVector(runtime.REGISTER_X)) {
             runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, angleMode);
@@ -68,6 +79,9 @@ pub export fn VtoAngleMode(angleMode: angularMode_t) callconv(.c) bool {
 // exposes (and the Zig-owned initMatrixRegister). real34Copy is a real34_t
 // struct copy (`dst.* = src.*`).
 pub export fn fnComplexToVector(opType: u16) callconv(.c) void {
+    // `{;}` upstream without OPTION_VECTOR: CPXexV / CPX>V / V>CPX return
+    // without converting and without raising an error.
+    if (comptime !runtime.option_vector) return;
     var matrix: real34Matrix_t = undefined;
     if (runtime.isRegisterMatrix2dVector(runtime.REGISTER_X) and (opType == ITM_CPXexV or opType == ITM_VtoCPX)) {
         // MatrixVector2D ==> Complex

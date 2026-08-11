@@ -23,9 +23,11 @@ pub fn isLabel(b: Bands, label: u16) bool {
     return b.first_label <= label and label <= b.last_label;
 }
 
-/// Whether `label` is one of the X..T stack registers.
+/// Whether `label` is one of the X..T stack registers. The C compares the
+/// uint16_t label against int-typed bounds, so both promote to int and any
+/// label above the band -- including one past 32767 -- is simply outside it.
 pub fn isStackRegister(b: Bands, label: u16) bool {
-    const l: i16 = @intCast(label);
+    const l: i32 = label;
     return b.reg_x <= l and l <= b.reg_t;
 }
 
@@ -53,6 +55,7 @@ test "isStackRegister spans X..T" {
     try std.testing.expect(isStackRegister(test_bands, 103));
     try std.testing.expect(!isStackRegister(test_bands, 104));
     try std.testing.expect(!isStackRegister(test_bands, 99));
+    try std.testing.expect(!isStackRegister(test_bands, 40000));
 }
 
 test "isInvalidVariable matches the sentinel and labelToProgram shifts by base" {

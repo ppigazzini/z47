@@ -312,7 +312,7 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: u32) void;
 extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 
@@ -388,19 +388,21 @@ fn derivativeCommon(label_in: u16, order: u16, ti: u8) linksection(runtime.code_
     if (label >= FIRST_LABEL and label <= LAST_LABEL) {
         calcDerivOfOrder(label, order);
         temporaryInformation = ti;
-    } else if (REGISTER_X <= @as(calcRegister_t, @intCast(label)) and @as(calcRegister_t, @intCast(label)) <= REGISTER_T) {
+    } else if (runtime.isStackRegister(label)) {
         // Interactive mode
         buf[0] = letteredRegisterName(@intCast(label));
         buf[1] = 0;
         label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
         if (label == INVALID_VARIABLE) {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            runtime.infoNotANamedLabel("In function derivativeCommon:", @ptrCast(&buf[0]));
         } else {
             calcDerivOfOrder(label, order);
             temporaryInformation = ti;
         }
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.infoUnexpectedParameter("In function derivativeCommon:", label);
     }
     if (!solving) {
         clearSystemFlag(FLAG_SOLVING);

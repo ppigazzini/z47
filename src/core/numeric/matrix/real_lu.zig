@@ -43,7 +43,9 @@ fn reportRamFull(comptime info: [*:0]const u8) void {
     }
 }
 
-pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34Matrix_t, p: [*]u16) callconv(.c) void {
+// `p` is the caller's pivot vector, one entry per column; mathematics/matrix.h
+// declares it nullable and a caller that does not want the pivots passes NULL.
+pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34Matrix_t, p: ?[*]u16) callconv(.c) void {
     const m = matrix.header.matrixRows;
     const n = matrix.header.matrixColumns;
 
@@ -90,7 +92,9 @@ pub export fn WP34S_LU_decomposition(matrix: *const real34Matrix_t, lu: *real34M
                         pvt = j;
                     }
                 }
-                p[k] = @intCast(pvt);
+                if (p) |pivots| {
+                    pivots[k] = @intCast(pvt);
+                }
 
                 // Pivot if required.
                 if (pvt != k) {

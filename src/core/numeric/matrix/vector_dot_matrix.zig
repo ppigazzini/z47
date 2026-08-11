@@ -27,7 +27,12 @@ pub fn tryDotMatrices() bool {
         runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
 
         if (!validation_owned.isValidDotRealVectors(&x_matrix, &y_matrix)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            validation_owned.dotMatrixMismatchError("In function dotRemaRema:", .{
+                .x_rows = x_matrix.header.matrixRows,
+                .x_columns = x_matrix.header.matrixColumns,
+                .y_rows = y_matrix.header.matrixRows,
+                .y_columns = y_matrix.header.matrixColumns,
+            });
         } else {
             runtime.dotRealVectors(&y_matrix, &x_matrix, &result);
             runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
@@ -56,7 +61,12 @@ pub fn tryDotMatrices() bool {
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y_matrix);
 
     if (!validation_owned.isValidDotComplexVectors(&x_matrix, &y_matrix)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        validation_owned.dotMatrixMismatchError("In function dotCpmaCpma:", .{
+            .x_rows = x_matrix.header.matrixRows,
+            .x_columns = x_matrix.header.matrixColumns,
+            .y_rows = y_matrix.header.matrixRows,
+            .y_columns = y_matrix.header.matrixColumns,
+        });
     } else {
         runtime.dotComplexVectors(&y_matrix, &x_matrix, &result_real, &result_imag);
         runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtComplex34, 0, runtime.amNone);

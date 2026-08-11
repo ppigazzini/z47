@@ -84,7 +84,9 @@ fn columnMinMaxReal(matrix: *real34Matrix_t, calcMax: bool) bool {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         if (runtime.extra_info_on_calc_error) {
             var buf: [64]u8 = undefined;
-            const m = runtime.bufPrintZ(&buf, "rows {d} and/or {d} out of range.", .{ i, j }) catch "out of range";
+            // PRIu16 on an int16_t: a negative index, which is the branch this
+            // is, prints as its unsigned 16-bit image.
+            const m = runtime.bufPrintZ(&buf, "rows {d} and/or {d} out of range.", .{ @as(u16, @bitCast(i)), @as(u16, @bitCast(j)) }) catch "out of range";
             runtime.moreInfoOnError("In function columnMinMaxReal:", m, null, null);
         }
         return false;

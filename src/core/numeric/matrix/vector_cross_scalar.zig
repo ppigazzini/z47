@@ -4,7 +4,7 @@ fn crossReal() callconv(.c) void {
     runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_0(), runtime.REGISTER_X, runtime.amNone);
 }
 
-fn crossCplx() callconv(.c) void {
+pub export fn crossCplx() callconv(.c) void {
     var x_real: runtime.real_t = undefined;
     var x_imag: runtime.real_t = undefined;
     var y_real: runtime.real_t = undefined;
