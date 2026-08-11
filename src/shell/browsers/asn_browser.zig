@@ -2,14 +2,13 @@
 //
 // Zig owner for src/c47/browsers/asnBrowser.c: fnAsnViewer (the assign-browser
 // application entry) and its static renderer fnAsnDisplay. This is a faithful,
-// line-by-line port of the C. The SAVE_SPACE_DM42_8ASN guard compiled the
-// renderer (and the KEY_X_5 table) out of old-HW single-file DM42 builds; that
-// guard is never enabled for the packages z47 ships, so the code is always
-// present here. The kbd_std model-selection macro is reproduced inline (the
-// PC-only E47/D47/V47/N47 variants are gated on !dmcp_build to match the C
-// header, which only declares those symbols under PC_BUILD). lcd_fill_rect and
-// bitblt24 are DMCP-ROM fixed-address calls on firmware and linkable symbols on
-// host, trampolined like the sibling owners.
+// line-by-line port of the C. The OPTION_ASNBROWSER guard (asnBrowser.c:13/:141)
+// compiles the renderer (and the KEY_X_5 table) out of the old-HW single-file
+// DM42 build; it is defined for every package z47 ships (defines.h:260), so the
+// code is always present here. The kbd_std model-selection macro is reproduced
+// inline, with the same three arms the preprocessor picks between. lcd_fill_rect
+// and bitblt24 are DMCP-ROM fixed-address calls on firmware and linkable symbols
+// on host, trampolined like the sibling owners.
 //
 // asnBrowser.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
@@ -17,6 +16,9 @@
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
+// CALCMODEL == USER_R47 (66) for the firmware this object is linked into; the
+// C47 family is 46.
+const built_for_r47: bool = frontier_build_options.calcmodel == 66;
 
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 
@@ -176,23 +178,36 @@ inline fn showStr(str: [*:0]const u8, x: u32, y: u32, videoMode: videoMode_t, sh
     _ = frontier_screen.showString(str, &standardFont, x, y, videoMode, @intFromBool(showLeadingCols), @intFromBool(showEndingCols));
 }
 
-// kbd_std model-selection macro (c47.h). The E47/D47/V47/N47 variants are only
-// declared under PC_BUILD, so reference them only on the host build.
-inline fn kbdStd() [*]const calcKey_t {
-    if (calcModel == USER_C47) return &kbd_std_C47;
-    if (calcModel == USER_DM42) return &kbd_std_DM42;
-    if (calcModel == USER_R47f_g) return &kbd_std_R47f_g;
-    if (calcModel == USER_R47bk_fg) return &kbd_std_R47bk_fg;
-    if (calcModel == USER_R47fg_bk) return &kbd_std_R47fg_bk;
-    if (calcModel == USER_R47fg_g) return &kbd_std_R47fg_g;
-    if (comptime !dmcp_build) {
-        if (calcModel == USER_E47) return &kbd_std_E47;
-        if (calcModel == USER_D47) return &kbd_std_D47;
-        if (calcModel == USER_V47) return &kbd_std_V47;
-        if (calcModel == USER_N47) return &kbd_std_N47;
-        if (calcModel == USER_DM42) return &kbd_std_DM42;
-    }
-    return &kbd_std_C47;
+// The kbd_std macro (c47.h:257-267). Three different selectors, chosen by the
+// preprocessor: PC_BUILD walks every layout the simulator can be switched to,
+// including the four E47/D47/V47/N47 tables the header only declares there; a
+// CALCMODEL == USER_R47 firmware only ever reaches the four R47 layouts and
+// falls back to R47f_g; every other firmware only ever reaches DM42 and C47.
+// A firmware carries only its own personality's layouts — the backup writer
+// refuses to persist a foreign model and the state loader only applies one from
+// a matching file — so gating the selector is what lets the linker drop the
+// tables the build can never select.
+inline fn kbdStd() *const [37]calcKey_t {
+    if (comptime !dmcp_build) return switch (calcModel) {
+        USER_C47 => &kbd_std_C47,
+        USER_DM42 => &kbd_std_DM42,
+        USER_R47f_g => &kbd_std_R47f_g,
+        USER_R47bk_fg => &kbd_std_R47bk_fg,
+        USER_R47fg_bk => &kbd_std_R47fg_bk,
+        USER_R47fg_g => &kbd_std_R47fg_g,
+        USER_E47 => &kbd_std_E47,
+        USER_D47 => &kbd_std_D47,
+        USER_V47 => &kbd_std_V47,
+        USER_N47 => &kbd_std_N47,
+        else => &kbd_std_C47,
+    };
+    if (comptime built_for_r47) return switch (calcModel) {
+        USER_R47bk_fg => &kbd_std_R47bk_fg,
+        USER_R47fg_bk => &kbd_std_R47fg_bk,
+        USER_R47fg_g => &kbd_std_R47fg_g,
+        else => &kbd_std_R47f_g,
+    };
+    return if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
 }
 
 // Norm_Key_00_key (defines.h:554).

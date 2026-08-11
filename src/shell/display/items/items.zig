@@ -22,7 +22,8 @@
 //   - 1 XFCNS menu header (S18_MENU): status drops CAT_MENU (32) when off.
 //   - 1 CURVE row (conditionalPCURVE): USECURVES is #undef on every target -> it is
 //     always itemToBeCoded (no comptime needed).
-//   option_xfn_1000 == !(dmcp_build and old_hw), mirroring softmenus.c.
+//   option_xfn_1000 is read from the frontier build options, as in softmenus.c's
+//   owner: OPTION_XFN_1000 is off for the DM42 packages, on for host and DMCP5.
 //
 // fnNop is not owned here -- frontier.zig owns it; this module references it as an
 // extern.
@@ -37,6 +38,7 @@
 // telltale is host-only (gated on !dmcp_build). EXTRA_INFO_ON_CALC_ERROR
 // moreInfoOnError hints use the extra_info build option.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -44,12 +46,12 @@ const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 
-// OPTION_XFN_1000 is #undef'd for the flash-limited DMCP TWO_FILE packages
-// (dmcp_build and old_hw); host and DMCP5 keep it.
-const option_xfn_1000: bool = !(dmcp_build and old_hw);
+// OPTION_XFN_1000 is #undef'd for the flash-limited DMCP TWO_FILE packages;
+// host and DMCP5 keep it.
+const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
 // OPTION_INFSUMS sits in that same DM42 TWO_FILE #undef block, so item 2755 falls
 // back to itemToBeCoded / NOPARAM / CAT_NONE on exactly those builds.
-const option_infsums: bool = !(dmcp_build and old_hw);
+const option_infsums: bool = frontier_build_options.option_infsums;
 
 const code_data_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -93,6 +95,7 @@ const softmenu_t = abi.Softmenu;
 // ---------------------------------------------------------------------------
 const NOPARAM: i16 = 9876;
 const LAST_ITEM: i16 = 2870;
+const ERROR_MESSAGE_LENGTH: usize = 512;
 const ASSIGN_LABELS: i16 = 12000;
 const ASSIGN_RESERVED_VARIABLES: i16 = 11744;
 const ASSIGN_NAMED_VARIABLES: i16 = 10000;
@@ -372,6 +375,7 @@ extern var lastI: u16;
 extern var lastJ: u16;
 extern var timeLastOp0: u32;
 extern var errorMessage: [*c]u8;
+extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 const softmenu = @extern([*c]const softmenu_t, .{ .name = "softmenu" });
 const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" });
 extern var tam: tamState_t;
@@ -697,10 +701,16 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
         if (lastErrorCode == ERROR_RAM_FULL) {
             if ((indexOfItems[@intCast(func)].status & US_STATUS) == US_ENABLED or calcMode == CM_CONFIRMATION) {
                 frontier_error.displayCalcErrorMessage(@intCast(ERROR_RAM_FULL), ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                if (comptime extra_info) {
+                    moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", null, null);
+                }
                 return;
             } else {
                 lastErrorCode = @intCast(ERROR_NONE);
                 temporaryInformation = TI_UNDO_DISABLED;
+                if (comptime extra_info) {
+                    moreInfoOnError("In function reallyRunFunction:", "there is not enough memory to save for undo!", null, null);
+                }
             }
         }
     } else if (((indexOfItems[@intCast(func)].status & US_STATUS) == US_CANCEL) and calcMode != CM_NO_UNDO) {
@@ -783,6 +793,10 @@ pub export fn reallyRunFunction(func: i16, param: u16) callconv(.c) void {
             temporaryInformation = TI_NOT_AVAILABLE;
         } else if (itemERRTIVal(func) == _TO_ITM_ERR) {
             frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Not Available", .{});
+                moreInfoOnError("In function reallyRunFunction:", errorMessage, null, null);
+            }
         }
         screenUpdatingMode = @truncate(SCRUPD_AUTO);
     }
@@ -973,6 +987,13 @@ extern fn jm_show_comment(comment: [*c]u8) void;
 pub export fn runFunction(func: i16) callconv(.c) void {
     funcOK = 1;
 
+    if (comptime extra_info) {
+        if (func >= LAST_ITEM) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "item ({d}) must be below LAST_ITEM", .{func});
+            moreInfoOnError("In function runFunction:", errorMessage, null, null);
+        }
+    }
+
     if (programRunStop != PGM_RUNNING) {
         if (func == ITM_RCL and dynamicMenuItem > -1) {
             const varCatalogItem: [*c]u8 = frontier_softmenus.dynmenuGetLabel(dynamicMenuItem);
@@ -986,6 +1007,10 @@ pub export fn runFunction(func: i16) callconv(.c) void {
                     }
                 } else {
                     frontier_error.displayCalcErrorMessage(@intCast(ERROR_UNDEF_SOURCE_VAR), ERR_REGISTER_LINE, REGISTER_X);
+                    if (comptime extra_info) {
+                        abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "string '{s}' is not a named variable", .{std.mem.sliceTo(varCatalogItem, 0)});
+                        moreInfoOnError("In function runFunction:", errorMessage, null, null);
+                    }
                 }
                 return;
             }
@@ -1002,6 +1027,10 @@ pub export fn runFunction(func: i16) callconv(.c) void {
                     }
                 } else {
                     frontier_error.displayCalcErrorMessage(@intCast(ERROR_LABEL_NOT_FOUND), ERR_REGISTER_LINE, REGISTER_X);
+                    if (comptime extra_info) {
+                        abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "string '{s}' is not a named label", .{std.mem.sliceTo(varCatalogItem, 0)});
+                        moreInfoOnError("In function runFunction:", errorMessage, null, null);
+                    }
                 }
                 return;
             }
@@ -1015,6 +1044,10 @@ pub export fn runFunction(func: i16) callconv(.c) void {
                     temporaryInformation = TI_NOT_AVAILABLE;
                 } else if (itemERRTIVal(func) == _TO_ITM_ERR) {
                     frontier_error.displayCalcErrorMessage(@intCast(notAvail), ERR_REGISTER_LINE, REGISTER_X);
+                    if (comptime extra_info) {
+                        abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Not Available", .{});
+                        moreInfoOnError("In function runFunction:", errorMessage, null, null);
+                    }
                 }
                 screenUpdatingMode = @truncate(SCRUPD_AUTO);
             }
@@ -1053,6 +1086,10 @@ pub export fn runFunction(func: i16) callconv(.c) void {
 
     if (funcOK == 0) {
         frontier_error.displayCalcErrorMessage(@intCast(ERROR_ITEM_TO_BE_CODED), ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "{d} = {s}", .{ func, std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&indexOfItems[@intCast(func)].itemCatalogName)), 0) });
+            moreInfoOnError("In function runFunction:", "Item not implemented", errorMessage, "to be coded");
+        }
     }
 }
 

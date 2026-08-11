@@ -3,6 +3,9 @@
 // Zig owner for src/c47/browsers/fontBrowser.c: initFontBrowser (computes the
 // glyph-row table from the four fonts) and fontBrowser (the on-screen font
 // browser application). This is a faithful, line-by-line port of the C. The
+// OPTION_FONTBROWSER guard (fontBrowser.c:95/:243) compiles the browser body out
+// of the old-HW single-file DM42 build; it is defined for every package z47
+// ships (defines.h:257), so the code is always present here. The
 // font_t flexible-array glyph table is reached via a typed pointer at the
 // struct's glyphs offset; min()/max() are reproduced inline. The PC_BUILD
 // overflow self-check (printf + exit) is host-only, gated on !dmcp_build.

@@ -18,11 +18,12 @@
 //   CALCMODEL == USER_R47   <=> dmcp_build   (menu_HOME/EE/ASN_N/KEYS/XXFCNS/VECT)
 //   OPTION_VECTOR           <=> option_vector (menu_MATX/VECT, menu_HOME tail)
 //   OPTION_ELEC             <=> option_elec   (menu_HOME tail)
-//   OPTION_XFN_1000         <=> !(dmcp_build and old_hw)  (menu_XFN)
-//   OPTION_TVM_AMORT        <=> !(dmcp_build and old_hw)  (menu_AMORT)
+//   OPTION_XFN_1000         <=> option_xfn_1000 (menu_XFN)
 //   PC_BUILD                <=> !dmcp_build   (menu_PRINT, PAT)
-//   SAVE_SPACE_DM42_15      <=> strip_15      (menu_PROB, DDMENU; DMCP pkg 4)
-//   SAVE_SPACE_DM42_21_HP35 <=> strip_21_hp35 (menu_Dev; DMCP pkg 1)
+//   !OPTION_DISTRIBUTIONS   <=> strip_15      (menu_PROB's DDMENU; DMCP pkg 4)
+//   !OPTION_HP35            <=> strip_21_hp35 (menu_Dev slot 0, ITM_SetHP35)
+// OPTION_DEVPROFILES is defined for every target z47 builds, so menu_Dev always
+// takes the profile-shortcut arm and only its OPTION_HP35 slot varies.
 // INLINE_TEST is #undef'd unconditionally upstream, so its table/render branches
 // take the !INLINE_TEST path.
 //
@@ -58,16 +59,15 @@ const strip_17c: bool = frontier_build_options.strip_17c;
 const strip_ortho: bool = frontier_build_options.strip_ortho;
 const strip_bessel: bool = frontier_build_options.strip_bessel;
 const strip_elliptic: bool = frontier_build_options.strip_elliptic;
-// OPTION_XFN_1000 is #undef'd for the flash-limited DMCP TWO_FILE packages
-// (dmcp_build and old_hw); host and DMCP5 keep it. OPTION_TVM_AMORT is defined
-// for every package, DMCP5 and host alike.
-const option_xfn_1000: bool = !(dmcp_build and old_hw);
-const option_tvm_amort: bool = true;
-// OPTION_SLVP_POLY (SLVP polynomial roots) sits in the same TWO_FILE #undef block
-// as OPTION_XFN_1000, so it follows the same gate; defines.h's
+// OPTION_XFN_1000 is #undef'd for the flash-limited DMCP TWO_FILE packages;
+// host and DMCP5 keep it. OPTION_TVM_AMORT is defined for every package, DMCP5
+// and host alike. OPTION_SLVP_POLY (SLVP polynomial roots) sits in the same
+// TWO_FILE #undef block as OPTION_XFN_1000; defines.h's
 // `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP_POLY` adds nothing on top,
-// because every target that drops EIGEN has already dropped SLVP here.
-const option_slvp_poly: bool = !(dmcp_build and old_hw);
+// because every target that drops EIGEN has already dropped SLVP there.
+const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
+const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
+const option_slvp_poly: bool = frontier_build_options.option_slvp_poly;
 // OPTION_EIGEN blanks EIGVEC, EIGVAL, M.QR and MSQRT; LU stays. Package 3 is the
 // only DM42 package that keeps it.
 const option_eigen: bool = frontier_build_options.option_eigen;
@@ -838,7 +838,10 @@ const menu_ADV linksection(code_section) = [_]i16{ 1672, 1671, 1475, 2734, -1381
 const menu_AIMCATALOG linksection(code_section) = [_]i16{ -1350, -1377, -1375, -1378, -1374, 1958 };
 const menu_ALPHA linksection(code_section) = [_]i16{ -1377, -1375, -1378, -1374, 1952, 1953, -1350, 2420, 2419, 1411, 1954, 1955, 1858, 2029, 2191, 1729, 1926, 1928 };
 const menu_ALPHA_OMEGA linksection(code_section) = [_]i16{ 602, 603, 604, 605, 606, 1810, 607, 608, 609, 610, 612, 613, 614, 615, 616, 617, 618, 1809, 619, 620, 620, 621, 622, 624, 625, 626, 627, 1811, 0, 0, 0, 0, 0, 0, 0, 0, 611, 0, 0, 623, 0, 0 };
-const menu_AMORT linksection(code_section) = if ((!(dmcp_build and old_hw))) [_]i16{ 2716, 2717, 2718, 2719, 2720, 2721, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2052 } else [_]i16{};
+// softmenus.c:113 declares menu_AMORT unconditionally: OPTION_TVM_AMORT reaches
+// only savedspace()'s strike-out cluster, never the table itself, so every target
+// gets all 18 entries and softmenu[150].numItems is always 18.
+const menu_AMORT linksection(code_section) = [_]i16{ 2716, 2717, 2718, 2719, 2720, 2721, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2052 };
 const menu_ASN_N linksection(code_section) = [_]i16{ 1906, 1904, 1898, (if (dmcp_build) @as(i16, 1978) else 1918), (if (dmcp_build) @as(i16, 1979) else 1900), 1894, (if (dmcp_build) @as(i16, 1915) else 1975), (if (dmcp_build) @as(i16, 0) else 1977), (if (dmcp_build) @as(i16, 0) else 1976), (if (dmcp_build) @as(i16, 0) else 1974), 0, 1914 };
 const menu_AUDIO linksection(code_section) = [_]i16{ 1414, 1624, 2202, 2203, 2200, 2201, 0, 0, 0, 0, 0, 2198 };
 const menu_AngleConv_43S linksection(code_section) = [_]i16{ 115, 119, 117, 116, 118, -1367, 0, 0, 0, 0, 1741, 1910, 1445, 1557, 1480, 0, 0, 0 };
@@ -986,7 +989,7 @@ const menu_VARS linksection(code_section) = [_]i16{ -2230, -1324, -1360, -1314, 
 const menu_VECCONV linksection(code_section) = [_]i16{ 2475, 2477, 2702, 2703, 1966, 1967, 2495, 0, 2496, 0, 1968, 0, 2493, 2494, 2498, 2497, 2700, 2701 };
 const menu_VECT linksection(code_section) = [_]i16{ 1850, 2471, 2470, 2496, (if (option_vector) @as(i16, -2499) else 0), (if (dmcp_build) @as(i16, 1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 2479, 2480, 2481, 1850, 1849, 2492, 2495, (if (option_vector) @as(i16, -2499) else 0), (if (dmcp_build) @as(i16, 1428) else 1873), 2704, 1628, 2472, 1745, 1449, 1436, 115, 119, 118, 0, 2490, 2491 };
 const menu_Weibl linksection(code_section) = [_]i16{ 1268, 0, 1269, 1270, 0, 1271, 0, 0, 0, 0, 0, 0, 2331, 2332, 0, 0, 0, 0 };
-const menu_XFN linksection(code_section) = [_]i16{ 107, 33, 1477, 1472, 1408, 2083, 1670, 1703, 2385, 1816, 1679, 108, 1478, 1479, -2414, (if ((!(dmcp_build and old_hw))) @as(i16, -2596) else 0), 1416, 1417, 1662, 1663, 1488, 1489, 1664, 1508, 1635, 1636, 1637, 1487, 1661, 1507, -1397, -1352, 1492, 1665, 1466, 1467, 104, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+const menu_XFN linksection(code_section) = [_]i16{ 107, 33, 1477, 1472, 1408, 2083, 1670, 1703, 2385, 1816, 1679, 108, 1478, 1479, -2414, (if (option_xfn_1000) @as(i16, -2596) else 0), 1416, 1417, 1662, 1663, 1488, 1489, 1664, 1508, 1635, 1636, 1637, 1487, 1661, 1507, -1397, -1352, 1492, 1665, 1466, 1467, 104, 103, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const menu_XXFCNS linksection(code_section) = [_]i16{ 2554, 2555, 2573, 2574, 2575, 2576, 1445, 1557, 2561, 2558, 2559, 2560, 2579, 2582, 2563, 2564, 2565, 2566, (if (dmcp_build) @as(i16, 2583) else 2577), (if (dmcp_build) @as(i16, 2572) else 2562), (if (dmcp_build) @as(i16, 2562) else 2572), (if (dmcp_build) @as(i16, 2571) else 2568), (if (dmcp_build) @as(i16, 2568) else 2567), (if (dmcp_build) @as(i16, 2567) else 2556), (if (dmcp_build) @as(i16, 2580) else 2578), (if (dmcp_build) @as(i16, 2577) else 2571), (if (dmcp_build) @as(i16, 2578) else 2583), (if (dmcp_build) @as(i16, 2584) else 2570), (if (dmcp_build) @as(i16, 2570) else 2569), (if (dmcp_build) @as(i16, 2569) else 2557), 2579, (if (dmcp_build) @as(i16, 0) else 2584), 0, 0, (if (dmcp_build) @as(i16, 2556) else 0), (if (dmcp_build) @as(i16, 2557) else 2580), 2588, 2589, 2587, 2586, 2585, 0, 0, 0, 0, 0, 0, 0, 1865, 1899, 0, 0, 0, 0 };
 const menu_YESNO linksection(code_section) = [_]i16{ 0, 2245, 0, 0, 2246, 0 };
 const menu_alphaFN linksection(code_section) = [_]i16{ 1722, 1660, 2785, 1652, 1655, 1932, 1658, 1659, 1656, 1657, 2543, 2544, 2538, 2539, 2774, 2540, 2541, 2542 };
@@ -1234,6 +1237,7 @@ const FLAG_MULTx = 32795;
 const ITM_3x1TOSTK = 2041;
 const ITM_BITSp2 = 2553;
 const ITM_CLKp2 = 2500;
+const ITM_PLTf = 2734;
 const ITM_PLTFCNS = 2852;
 const ITM_CPXexV = 2492;
 const ITM_Ek = 1727;
@@ -1365,7 +1369,7 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
     if (softmenu[@intCast(i)].menuItem == 0) {
         frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
-            abi.fmtBufZ(errorMessage[0..512], "menuArg '{d}' is not a valid menuArg item", .{@as(i32, @intCast(menuArg))});
+            abi.fmtBufZ(errorMessage[0..512], "menu '{d}' is not a valid menu item", .{@as(i32, @intCast(menuArg))});
             moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
         }
         menuPageNumber = 1;
@@ -1396,13 +1400,13 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
         if (getSystemFlag(FLAG_IGN1ER) != 0) {
             clearSystemFlag(FLAG_IGN1ER);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menuArg {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
+                abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menu {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, "ignored since IGN1ER system flag was set", null);
             }
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menuArg {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
+                abi.fmtBufZ(errorMessage[0..512], "Page Number {d} is not a valid page for the menu {d}", .{ @as(c_uint, menuPageNumberU()), @as(c_uint, menuArg) });
                 moreInfoOnError("In function fnOpenMenu:", errorMessage, null, null);
             }
         }
@@ -1795,9 +1799,9 @@ fn initVariableSoftmenu(mIdx: i16) void {
             }
             if (numberOfGlobalLabels != 0) {
                 qsort(tmpString, @intCast(numberOfGlobalLabels), 15, &sortMenu);
-            }
-            if (tam.colon) { // Don't show duplicates for local named labels which use the scan forward search method
-                numberOfGlobalLabels = _removeDuplicateLabels(numberOfGlobalLabels);
+                if (tam.colon) { // Don't show duplicates for local named labels which use the scan forward search method
+                    numberOfGlobalLabels = _removeDuplicateLabels(numberOfGlobalLabels);
+                }
             }
             ptr = malloc(@intCast(numberOfBytes));
             dynamicSoftmenu[@intCast(mIdx)].menuContent = ptr;
@@ -2044,12 +2048,13 @@ fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1
     // the width the arrows leave behind. Only clip when the pair together
     // overflows, and let a short partner donate its slack so a long name
     // opposite it is kept whole.
+    // The whole string is copied, as the C does. The sole caller hands over
+    // label0[30] and label1[30], both NUL-terminated, so at most 30 bytes reach
+    // these 50-byte buffers.
     var lab0: [50]u8 = undefined;
     var lab1: [50]u8 = undefined;
-    _ = frontier_char_string.xcopy(&lab0, label0in, @intCast(@min(stringByteLength(label0in) + 1, @as(i32, lab0.len))));
-    _ = frontier_char_string.xcopy(&lab1, label1in, @intCast(@min(stringByteLength(label1in) + 1, @as(i32, lab1.len))));
-    lab0[lab0.len - 1] = 0;
-    lab1[lab1.len - 1] = 0;
+    _ = frontier_char_string.xcopy(&lab0, label0in, @intCast(stringByteLength(label0in) + 1));
+    _ = frontier_char_string.xcopy(&lab1, label1in, @intCast(stringByteLength(label1in) + 1));
     const arrowR: i16 = @intCast(frontier_screen.showStringEnhanced(STD_RIGHT_ARROW, &standardFont, 0, @intCast(y1 + YY), videoMode, 0, 0, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
     const arrowL: i16 = @intCast(frontier_screen.showStringEnhanced(STD_LEFT_ARROW, &standardFont, 0, @intCast(y1 + YY), videoMode, 0, 0, DO_compress, NO_raise, NO_Show, NO_Bold, NO_LF));
     const w0: i16 = @intCast(frontier_screen.stringWidthC47(&lab0, stdNoEnlarge, DO_compress, 0, 0));
@@ -2119,13 +2124,15 @@ fn showKey2(label0in: [*c]const u8, label1in: [*c]const u8, x1: i16, x2: i16, y1
     if (space0 < @as(f32, @floatFromInt(arrowSpace)) or space1 < @as(f32, @floatFromInt(arrowSpace))) {
         space = @as(f32, @floatFromInt((x2 - x1) - widths[0] - widths[1] - widths[2] - widths[3])) / 7.0;
         Text0 = @intFromFloat(@as(f32, @floatFromInt(x1)) + space);
-        midpoint = @intFromFloat(3.5 * space + @as(f32, @floatFromInt(widths[0] + widths[1])));
+        // 3.5 is a double literal in the C, so `space` is promoted and the whole
+        // sum is evaluated in double before the truncating store to int16_t.
+        midpoint = @intFromFloat(3.5 * @as(f64, space) + @as(f64, @floatFromInt(widths[0])) + @as(f64, @floatFromInt(widths[1])));
         if (getSystemFlag(FLAG_HPCONV) != 0) {
             Arr0 = x1 + midpoint - arrowSpace - widths[1];
             Arr1 = x1 + midpoint + arrowSpace;
         } else {
             Arr0 = @intFromFloat(@as(f32, @floatFromInt(x1)) + space + @as(f32, @floatFromInt(widths[0])) + space);
-            Arr1 = @intFromFloat(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[2] + widths[3])) - space);
+            Arr1 = @intFromFloat(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[2])) - @as(f32, @floatFromInt(widths[3])) - space);
         }
         Text1 = @intFromFloat(@as(f32, @floatFromInt(x2)) - space - @as(f32, @floatFromInt(widths[3])));
     }
@@ -2289,6 +2296,7 @@ pub export fn isFunctionItemAMenu(item: i16) callconv(.c) bool_t {
         item == ITM_GAP_RX or
         item == ITM_GAP_R or
         item == ITM_PLOT_STAT or
+        item == ITM_PLTf or
         item == ITM_EQ_NEW or
         item == ITM_SIM_EQ or
         item == ITM_DELITM or
@@ -2560,7 +2568,8 @@ fn changeSoftKey(menuNr: i16, itemNr: i16, itemName: [*c]u8, vm: *videoMode_t, s
                 }
             },
             ITM_DENMAX2 => {
-                showValue.* = @intCast(@as(i32, @bitCast(denMax)) & 0xFFFF);
+                // uint32_t -> int16_t, truncating mod 2^16 as the C assignment does
+                showValue.* = @bitCast(@as(u16, @truncate(denMax)));
                 if (denMax == 0) {
                     _ = strcpy(showText, concat3(STD_SUB_m, STD_SUB_a, STD_SUB_x));
                     showText[6] = 0;
@@ -2656,9 +2665,12 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
     // Each cluster of case labels is gated by its build option; an itemNr
     // matching an enabled cluster (or 9999) returns true. Mirrors the upstream
     // savedspace() #if-gated switch.
-    if (comptime (dmcp_build and old_hw)) {
+    // !OPTION_TVM_AMORT strikes out -MNU_AMORT together with the six AMORT items.
+    // The option is defined for the host, for DMCP5 and by the block common to
+    // DM42 packages 1-4, so this cluster is empty on every target z47 builds.
+    if (comptime !option_tvm_amort) {
         switch (itemNr) {
-            -2382 => return 1,
+            -2382, 2716, 2717, 2718, 2719, 2720, 2721 => return 1,
             else => {},
         }
     }
@@ -2668,14 +2680,16 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
             else => {},
         }
     }
-    // gate defined_SAVE_SPACE_DM42_20_TIMER_ never defined for any frontier build -> omitted
+    // !OPTION_STOPWATCH strikes out ITM_TIMER. OPTION_STOPWATCH is defined for
+    // every target z47 builds, so that cluster is empty and is omitted.
     if (comptime strip_bessel) {
         switch (itemNr) {
             1492, 1665 => return 1,
             else => {},
         }
     }
-    // gate defined_SAVE_SPACE_DM42_12PRIME_ never defined for any frontier build -> omitted
+    // !OPTION_PRIME strikes out ITM_NEXTP and ITM_PRIME. OPTION_PRIME is defined
+    // for every target z47 builds, so that cluster is empty and is omitted.
     if (comptime strip_elliptic) {
         switch (itemNr) {
             -1397, 1682, 1683, 1684, 1726, 1727, 1728, 1584, 1763, 1764, 1765, 2104, 2105, 2599, 2598, 2395 => return 1,
@@ -2713,7 +2727,8 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
             else => {},
         }
     }
-    if (comptime (dmcp_build and old_hw)) {
+    // !OPTION_XFN_1000: the fifteen 1000-digit X.FN items.
+    if (comptime !option_xfn_1000) {
         switch (itemNr) {
             2583, 2572, 2562, 2571, 2568, 2567, 2580, 2577, 2578, 2584, 2570, 2569, 2579, 2556, 2557 => return 1,
             else => {},
@@ -2818,6 +2833,21 @@ pub export fn fnStrikeThroughIfNA(itemNr: i16, x: i16, y: i16) callconv(.c) void
     var xStroke: i16 = undefined;
     if (frontier_items.itemNotAvail(itemNr) != 0) {
         strokeStrike(typeStrikeThrough, @intFromBool(itemNr > 0), &xStroke, &yStroke, x, y);
+    }
+}
+
+// Diagonal hatch drawn over an already-rendered softkey.
+pub export fn diagonalsOnTop(x1: i16, x2: i16, y1: i16, y2: i16, vm: videoMode_t) callconv(.c) void {
+    var line: i16 = y1 + 3;
+    while (line < y2 - 2) : (line += 1) {
+        var col: i16 = x1 + 3 + @as(i16, @intCast(@rem(@as(i32, line), 6)));
+        while (col < x2 - 2) : (col += 6) {
+            if (vm == vmNormal) {
+                setBlackPixel(@intCast(col), @intCast(line));
+            } else {
+                setWhitePixel(@intCast(col), @intCast(line));
+            }
+        }
     }
 }
 
@@ -3199,13 +3229,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                         var y2: i16 = undefined;
                         _ = initSoftkeyCoordinates(&tmpq, x, 2, &x1, &x2, &y1, &y2);
                         showKey(&tmpq, x1, x2, y1, y2, vmNormal, 0, 1, NOVAL, NOVAL, &tmpp);
-                        var line: i16 = y1 + 3;
-                        while (line < y2 - 2) : (line += 1) {
-                            var col: i16 = x1 + 3 + @as(i16, @intCast(@rem(@as(i32, line), 6)));
-                            while (col < x2 - 2) : (col += 6) {
-                                setBlackPixel(@intCast(col), @intCast(line));
-                            }
-                        }
+                        diagonalsOnTop(x1, x2, y1, y2, vmNormal);
                     }
 
                     fnStrikeOutIfNotCoded(@intCast(@rem(@as(i32, item), 10000)), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))));
@@ -3831,17 +3855,16 @@ pub export fn fnExitAllMenus(_: u16) callconv(.c) void {
 }
 
 // fnMenuDump / fnDumpMenus are entirely PC_BUILD (#if defined(PC_BUILD)); on
-// firmware the bodies compile to empty. They dump menu screenshots to BMP via
-// the GTK layer; debug-only, never exercised by the test suite.
+// firmware the bodies compile to empty. They render each menu and write the
+// 1bpp frame buffer out as a BMP, one pixel at a time through
+// lcd_buffer_pixel_on; debug-only, never exercised by the test suite. The
+// --dumpMenus* flags set headlessMode before any of this runs and return before
+// gtk_main(), so nothing here may touch the GTK main loop.
 const FILE = opaque {};
 extern fn fopen(path: [*c]const u8, mode: [*c]const u8) ?*FILE;
 extern fn fclose(f: ?*FILE) c_int;
 extern fn fwrite(ptr: ?*const anyopaque, size: usize, n: usize, f: ?*FILE) usize;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
-const c_gtk_widget_queue_draw = if (!dmcp_build) @extern(*const fn (?*anyopaque) callconv(.c) void, .{ .name = "gtk_widget_queue_draw" }) else {};
-const c_gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
-const c_gtk_main_iteration = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_main_iteration" }) else {};
-const screen_ptr = if (!dmcp_build) @extern(*?*anyopaque, .{ .name = "screen" }) else {};
 // lcd_buffer_pixel_on tests one pixel of the 1bpp frame buffer for the menu
 // dump; bound on non-firmware builds only, and its C bool_t return is a
 // one-byte 0/1 here.
@@ -3866,11 +3889,6 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         var uint32: u32 = undefined;
         var uint16: u16 = undefined;
         var uint8: u8 = 0;
-
-        c_gtk_widget_queue_draw(screen_ptr.*);
-        while (c_gtk_events_pending() != 0) {
-            _ = c_gtk_main_iteration();
-        }
 
         var asciiString: [448]u8 = undefined;
         var asciiMenuName: [448]u8 = undefined;

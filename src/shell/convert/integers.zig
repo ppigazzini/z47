@@ -9,9 +9,10 @@
 //
 // Faithful line-by-line translation of integers.c. C unsigned arithmetic wraps
 // (defined behavior); Zig's Debug build traps on overflow, so every wrapping C
-// operation is written with the wrapping operators (+% -% *%). The host-only
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints are reduced to fixed strings (matching the
-// sibling owners); the control flow is identical.
+// operation is written with the wrapping operators (+% -% *%). The
+// EXTRA_INFO_ON_CALC_ERROR hints are reproduced with their upstream text and
+// arguments, including the operand renderings the long-integer overflows pass in
+// argument slots 3 and 4.
 
 const frontier_build_options = @import("frontier_build_options");
 const abi = @import("abi");
@@ -95,15 +96,22 @@ inline fn intMode() arith.IntMode {
     };
 }
 
-const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+const moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
-// Provided by the registerValueConversions Zig owner.
+// The scratch buffers the diagnostics format into. Both are char* pointers in C.
+extern var errorMessage: [*c]u8;
+extern var tmpString: [*c]u8;
+const ERROR_MESSAGE_LENGTH: usize = 512;
+const TMP_STR_LENGTH: usize = 2560;
 
-// Defined in radioButtonCatalog.c.
+// fonts.h glyphs carried by the diagnostics.
+const STD_CROSS = "\x80\xd7";
+const STD_SUB_2 = "\xa0\x82";
+const STD_SUB_10 = "\xa4\x7d";
+const STD_LESS_EQUAL = "\xa2\x64";
 
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
-    if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
-}
+// Renders a long integer in base 10 into `str`, capped at `strLen` bytes.
+extern fn longIntegerToAllocatedString(lgInt: *const mpz_struct, str: [*c]u8, strLen: i32) void;
 
 // ===========================================================================
 // fnChangeBase
@@ -125,7 +133,10 @@ pub export fn fnChangeBase(base: u16) callconv(.c) void {
     // Single error on REGISTER_T (not X), so the report is inlined in the shim.
     fnChangeBaseCore(base) catch {
         frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_T);
-        moreInfoOnError("In function fnChangeBase:", "The base must be from 2 to 16.");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "base = {d}! The base must be fron 2 to 16.", .{base});
+            moreInfoOnError("In function fnChangeBase:", errorMessage, null, null);
+        }
     };
 }
 
@@ -137,7 +148,12 @@ pub export fn longIntegerMultiply(opY: *mpz_struct, opX: *mpz_struct, result: *m
         mpz_mul(result, opY, opX);
     } else {
         frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == longIntegerSign(opX)) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function longIntegerMultiply:", "the product would exceed the maximum long integer size!");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Multiplying this 2 values ({d} bits " ++ STD_CROSS ++ " {d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(opY)), @as(u64, longIntegerBits(opX)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
+            longIntegerToAllocatedString(opY, tmpString, TMP_STR_LENGTH / 2);
+            longIntegerToAllocatedString(opX, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
+            moreInfoOnError("In function longIntegerMultiply:", errorMessage, tmpString, tmpString + TMP_STR_LENGTH / 2);
+        }
     }
 }
 
@@ -146,7 +162,11 @@ pub export fn longIntegerSquare(op: *mpz_struct, result: *mpz_struct) callconv(.
         mpz_mul(result, op, op);
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_OVERFLOW_PLUS_INF, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function longIntegerSquare:", "the square would exceed the maximum long integer size!");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Squaring this value ({d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(op)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
+            longIntegerToAllocatedString(op, tmpString, TMP_STR_LENGTH);
+            moreInfoOnError("In function longIntegerSquare:", errorMessage, tmpString, null);
+        }
     }
 }
 
@@ -155,7 +175,12 @@ pub export fn longIntegerAdd(opY: *mpz_struct, opX: *mpz_struct, result: *mpz_st
         mpz_add(result, opY, opX);
     } else {
         frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function longIntegerAdd:", "the sum would exceed the maximum long integer size!");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Adding this 2 values ({d} bits " ++ STD_CROSS ++ " {d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(opY)), @as(u64, longIntegerBits(opX)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
+            longIntegerToAllocatedString(opY, tmpString, TMP_STR_LENGTH / 2);
+            longIntegerToAllocatedString(opX, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
+            moreInfoOnError("In function longIntegerAdd:", errorMessage, tmpString, tmpString + TMP_STR_LENGTH / 2);
+        }
     }
 }
 
@@ -164,7 +189,12 @@ pub export fn longIntegerSubtract(opY: *mpz_struct, opX: *mpz_struct, result: *m
         mpz_sub(result, opY, opX);
     } else {
         frontier_error.displayCalcErrorMessage(if (longIntegerSign(opY) == 0) ERROR_OVERFLOW_PLUS_INF else ERROR_OVERFLOW_MINUS_INF, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function longIntegerSubtract:", "the difference would exceed the maximum long integer size!");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Subtracting this 2 values ({d} bits " ++ STD_CROSS ++ " {d} bits) would result in a value exceeding {d} bits!", .{ @as(u64, longIntegerBits(opY)), @as(u64, longIntegerBits(opX)), @as(u16, MAX_LONG_INTEGER_SIZE_IN_BITS) });
+            longIntegerToAllocatedString(opY, tmpString, TMP_STR_LENGTH / 2);
+            longIntegerToAllocatedString(opX, tmpString + TMP_STR_LENGTH / 2, TMP_STR_LENGTH / 2);
+            moreInfoOnError("In function longIntegerSubtract:", errorMessage, tmpString, tmpString + TMP_STR_LENGTH / 2);
+        }
     }
 }
 
@@ -323,13 +353,13 @@ pub export fn WP34S_intDivide(y: u64, x: u64) callconv(.c) u64 {
     if (divisor == 0) {
         if (dividend == 0) {
             frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function WP34S_intDivide: cannot divide 0 by 0!", null);
+            moreInfoOnError("In function WP34S_intDivide: cannot divide 0 by 0!", null, null, null);
         } else if (dividendSign != 0) {
             frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function WP34S_intDivide: cannot divide a negative short integer by 0!", null);
+            moreInfoOnError("In function WP34S_intDivide: cannot divide a negative short integer by 0!", null, null, null);
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function WP34S_intDivide: cannot divide a positive short integer by 0!", null);
+            moreInfoOnError("In function WP34S_intDivide: cannot divide a positive short integer by 0!", null, null, null);
         }
         return 0;
     }
@@ -409,7 +439,7 @@ pub export fn WP34S_intSqrt(x: u64) callconv(.c) u64 {
 
     if (signValue != 0) {
         frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function WP34S_intSqrt: Cannot extract the square root of a negative short integer!", null);
+        moreInfoOnError("In function WP34S_intSqrt: Cannot extract the square root of a negative short integer!", null, null, null);
         return 0;
     }
     if (value == 0) {
@@ -471,7 +501,7 @@ pub export fn WP34S_intPower(b: u64, e: u64) callconv(.c) u64 {
 
     if (exponent == 0 and base == 0) {
         frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function WP34S_intPower: Cannot calculate 0^0!", null);
+        moreInfoOnError("In function WP34S_intPower: Cannot calculate 0^0!", null, null, null);
         setSystemFlag(FLAG_OVERFLOW);
         return 0;
     }
@@ -547,7 +577,9 @@ pub export fn WP34S_intLog2(x: u64) callconv(.c) u64 {
 
     if (value == 0 or signValue != 0) {
         frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function WP34S_intLog2: argument must be > 0!", null);
+        if (comptime extra_info) {
+            moreInfoOnError("In function WP34S_intLog2: Cannot calculate the log" ++ STD_SUB_2 ++ " of a number " ++ STD_LESS_EQUAL ++ " 0!", null, null, null);
+        }
         return 0;
     }
 
@@ -567,7 +599,9 @@ pub export fn WP34S_intLog10(x: u64) callconv(.c) u64 {
 
     if (value == 0 or signValue != 0) {
         frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function WP34S_intLog10: argument must be > 0!", null);
+        if (comptime extra_info) {
+            moreInfoOnError("In function WP34S_intLog10: Cannot calculate the log" ++ STD_SUB_10 ++ " of a number " ++ STD_LESS_EQUAL ++ " 0!", null, null, null);
+        }
         return 0;
     }
 
