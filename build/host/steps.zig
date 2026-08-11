@@ -1356,7 +1356,11 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     const math_random_parity_step = b.step("math_random_parity", "Run the math random and PCG parity suite");
     math_random_parity_step.dependOn(&run_math_random_parity.step);
 
-    const constants_parity = constants.addParityExecutable(b, context.host_target, optimize);
+    const constants_parity = constants.addParityExecutable(b, context.host_target, optimize, .{
+        .header = context.generated.constant_pointers_h,
+        .blob = context.generated.constant_pointers_c,
+        .table = context.generated.constant_pointers2_c,
+    });
     const run_constants_parity = b.addRunArtifact(constants_parity);
     run_constants_parity.setCwd(b.path("."));
     const constants_parity_step = b.step("constants_parity", "Run the constants-command parity suite");

@@ -107,10 +107,27 @@ pub fn addToModule(
     module.addObject(addRuntimeObject(b, target, optimize, name_prefix, .{}));
 }
 
+/// The three artefacts `generateConstants` emits, as the parity lane consumes
+/// them. The lane compiles c43's OWN generated blob and pointer table instead of
+/// standing up a fake one: an offset or a table position restated in the harness
+/// is a frozen copy of c43, and this lane exists to catch exactly the confusion
+/// such a copy would hide -- reaching a constant by position rather than by name.
+pub const GeneratedConstants = struct {
+    /// `constantPointers.h`. Its DIRECTORY goes on the include path, the way the
+    /// product build does it; the harness `c47.h` includes it by name.
+    header: std.Build.LazyPath,
+    /// `constantPointers.c` -- the `constants` byte blob every const*_ macro,
+    /// and the port's blob accessors, index into.
+    blob: std.Build.LazyPath,
+    /// `constantPointers2.c` -- the `realtConstants` table `fnConstant` indexes.
+    table: std.Build.LazyPath,
+};
+
 pub fn addParityExecutable(
     b: *std.Build,
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
+    generated: GeneratedConstants,
 ) *std.Build.Step.Compile {
     const runtime_object = addRuntimeObject(b, target, optimize, "parity", .{});
     const parity_driver = b.addObject(.{
@@ -133,7 +150,16 @@ pub fn addParityExecutable(
     });
     abi_host.addToModule(b, exe.root_module, target, optimize, "constants-parity");
 
+    // The harness `c47.h` first, so the generated sources resolve `c47.h` to the
+    // mock rather than to a core header they cannot pull in headless.
     exe.root_module.addIncludePath(b.path("build/tests/constants"));
+    exe.root_module.addIncludePath(generated.header.dirname());
+    exe.root_module.addCSourceFile(.{ .file = generated.blob, .flags = &.{} });
+    // The table is sized by the harness header's NOUC. Promote the truncation
+    // warning: a NOUC that has fallen behind c43's would otherwise drop the
+    // constants past it -- pi among them -- and leave the lane comparing two
+    // sides that agree about a table c43 no longer has.
+    exe.root_module.addCSourceFile(.{ .file = generated.table, .flags = &.{"-Werror=excess-initializers"} });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/constants/constants_fake_runtime.c"), .flags = &.{} });
     exe.root_module.addCSourceFile(.{ .file = b.path("build/tests/constants/constants_oracle.c"), .flags = &.{} });
     exe.root_module.addObject(parity_driver);

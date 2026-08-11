@@ -11,11 +11,11 @@ const constants_snapshot_t = extern struct {
     reallocate_register_tag: u32,
 
     real_to_real34_calls: u32,
-    real_to_real34_source_id: u16,
+    real_to_real34_source_offset: u16,
     real_to_real34_destination_reg: i16,
 
     convert_real_to_result_register_calls: u32,
-    convert_real_to_result_source_id: u16,
+    convert_real_to_result_source_offset: u16,
     convert_real_to_result_dest: i16,
     convert_real_to_result_angle: i32,
 
@@ -28,7 +28,7 @@ const constants_snapshot_t = extern struct {
     adjust_result_op3: i16,
 
     set_lastinteger_base_to_zero_calls: u32,
-    register_x_real34_id: u16,
+    register_x_constant_offset: u16,
 
     more_info_calls: u32,
     more_info_line1: [64]u8,

@@ -7,36 +7,21 @@
 #include "constants_test_runtime.h"
 
 static constants_snapshot_t snapshot;
-static bool_t constants_initialized = false;
-static real_t constant_values[NOUC];
 static real34_t register_x_real34;
-
-// The generated constant blob. Only the real_t the const39_pi macro points at
-// (offset 1848) is populated; its id is 314, the value the identity checks use.
-// Aligned to 4 because the port's typed blob accessors align-cast the offset.
-_Alignas(4) const uint8_t constants[1848 + 64] = {[1848] = 314 & 0xff, [1849] = 314 >> 8};
 
 uint16_t currentSolverStatus;
 static char errorMessage__stg[512];
 char *errorMessage = errorMessage__stg;
-const real_t *realtConstants[NOUC];
 
-static void ensureConstantsInitialized(void) {
-  if(constants_initialized) {
-    return;
-  }
-
-  for(uint16_t i = 0; i < NOUC; ++i) {
-    constant_values[i].id = i;
-    realtConstants[i] = &constant_values[i];
-  }
-
-  // The generated realtConstants table's last entry is const39_pi
-  // (constantPointers2.c:95). Mirror that here so a fnConstant(NOUC - 1) and a
-  // fnPi resolve to the same value.
-  realtConstants[NOUC - 1] = const39_pi;
-
-  constants_initialized = true;
+// Which constant a call reached, named the way c43's own blob names one: the
+// byte offset of the real_t inside the generated `constants` array. Both sides
+// of the lane resolve pi through the const39_pi macro and the constant table
+// through realtConstants, so the offset is exactly the thing they must agree
+// on. Reading an identity out of the decNumber itself would not do -- several
+// constants share a leading digit count, so const39_pi and const39_2pi would be
+// indistinguishable, which is the very confusion the lane exists to catch.
+static uint16_t constantOffset(const real_t *source) {
+  return (uint16_t)((const uint8_t *)source - constants);
 }
 
 static calcRegister_t regFromReal34Ptr(real34_t *destination) {
@@ -49,11 +34,10 @@ real34_t *z47_constants_test_register_real34_data(calcRegister_t reg) {
 }
 
 void constantsRuntimeReset(void) {
-  ensureConstantsInitialized();
   memset(&snapshot, 0, sizeof(snapshot));
   memset(errorMessage, 0, 512);
   currentSolverStatus = 0xffffu;
-  register_x_real34.id = 0xffffu;
+  register_x_real34.constant_offset = 0xffffu;
   snapshot.real_to_real34_destination_reg = -1;
   snapshot.convert_real_to_result_dest = -1;
   snapshot.adjust_result_res = -1;
@@ -64,7 +48,7 @@ void constantsRuntimeReset(void) {
 
 void constantsRuntimeCapture(constants_snapshot_t *out) {
   snapshot.current_solver_status = currentSolverStatus;
-  snapshot.register_x_real34_id = register_x_real34.id;
+  snapshot.register_x_constant_offset = register_x_real34.constant_offset;
   *out = snapshot;
 }
 
@@ -91,14 +75,14 @@ void reallocateRegister(calcRegister_t regist, uint32_t dataType, uint16_t dataS
 
 void realToReal34(const real_t *source, real34_t *destination) {
   snapshot.real_to_real34_calls++;
-  snapshot.real_to_real34_source_id = source->id;
+  snapshot.real_to_real34_source_offset = constantOffset(source);
   snapshot.real_to_real34_destination_reg = regFromReal34Ptr(destination);
-  destination->id = source->id;
+  destination->constant_offset = constantOffset(source);
 }
 
 void convertRealToResultRegister(const real_t *source, calcRegister_t dest, angularMode_t angle) {
   snapshot.convert_real_to_result_register_calls++;
-  snapshot.convert_real_to_result_source_id = source->id;
+  snapshot.convert_real_to_result_source_offset = constantOffset(source);
   snapshot.convert_real_to_result_dest = dest;
   snapshot.convert_real_to_result_angle = angle;
 
