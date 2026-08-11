@@ -21,7 +21,9 @@ const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
 const DECNUMUNITS = 25;
+const std = @import("std");
 const abi = @import("abi"); // shared ABI bindings
+const frontier_debug = @import("../debug.zig");
 const frontier_error = @import("../error.zig");
 const frontier_real_type = @import("../real_type.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
@@ -62,7 +64,7 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(reg: calcRegister_t) u32;
 extern fn setRegisterTag(reg: calcRegister_t, tag: u32) void;
 
-const c_moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+const moreInfoOnError = @extern(*const fn (msg1: [*:0]const u8, msg2: [*c]const u8, msg3: [*c]const u8, msg4: [*c]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn decimal128ToNumber(src: *const real34_t, dst: *real_t) *real_t;
 extern fn decimal128FromNumber(dst: *real34_t, src: *const real_t, ctx: *realContext_t) *real34_t;
@@ -76,9 +78,9 @@ extern fn decNumberSubtract(result: *real_t, lhs: *align(1) const real_t, rhs: *
 extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 extern fn realCompareEqual(a: *align(1) const real_t, b: *align(1) const real_t) bool;
 
-inline fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8) void {
-    if (comptime extra_info) c_moreInfoOnError(msg1, msg2, null, null);
-}
+// The scratch buffer the third argument is formatted into; a char* in C.
+extern var errorMessage: [*c]u8;
+const ERROR_MESSAGE_LENGTH: usize = 512;
 const cst = consts.cstR;
 const reg34 = abi.registerReal34Aligned;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
@@ -127,12 +129,14 @@ inline fn real34IsNegative(v: *const real34_t) bool {
     return (v.bytes[15] & 0x80) == 0x80;
 }
 
+// Both default arms report the same way: the error on the offending register,
+// then the hint plus a third argument naming the register's data type.
 fn cannotConvertError(reg: calcRegister_t, where: [*:0]const u8, hint: [*:0]const u8) void {
-    // The upstream EXTRA_INFO path also sprintf()s a getRegisterDataTypeName()
-    // line; that host-only console hint is dropped here (the testSuite checks
-    // computed values, not the hint text), matching the conversionUnits owner.
     frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, reg);
-    moreInfoOnError(where, hint);
+    if (comptime extra_info) {
+        abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "{s} cannot be converted to an angle!", .{std.mem.span(frontier_debug.getRegisterDataTypeName(reg, true, false))});
+        moreInfoOnError(where, hint, errorMessage, null);
+    }
 }
 
 pub export fn fnCvtToCurrentAngularMode(from_angular_mode: u16) callconv(.c) void {

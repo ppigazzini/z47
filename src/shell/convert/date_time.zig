@@ -23,6 +23,7 @@ const consts = abi.constants;
 
 const builtin = @import("builtin");
 const std = @import("std");
+const frontier_debug = @import("../debug.zig");
 const frontier_build_options = @import("frontier_build_options");
 
 // Cold date/time code (interactive, infrequent) runs from executable QSPI on
@@ -193,7 +194,9 @@ extern fn getRegisterDataType(regist: calcRegister_t) u32;
 extern fn getRegisterDataPointer(regist: calcRegister_t) *anyopaque;
 extern fn getRegisterTag(regist: calcRegister_t) u32;
 
-const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+// errorMessage (above) is the scratch buffer each diagnostic is sprintf'd into.
+const ERROR_MESSAGE_LENGTH: usize = 512;
 extern fn saveLastX() bool;
 extern fn liftStack() void;
 extern fn undo() void;
@@ -274,8 +277,14 @@ else
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+inline fn moreInfoOnError(m1: [*:0]const u8, m2: [*c]const u8) void {
     if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
+}
+// sprintf(errorMessage, fmt, getRegisterDataTypeName(regist, false, false)) —
+// every data-type diagnostic in this file names the register that carried the
+// wrong type.
+inline fn errorMessageWithDataTypeOf(comptime fmt: []const u8, regist: calcRegister_t) void {
+    abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], fmt, .{std.mem.span(frontier_debug.getRegisterDataTypeName(regist, false, false))});
 }
 const reg34 = abi.registerReal34;
 inline fn getRegisterAngularMode(reg: calcRegister_t) angularMode_t {
@@ -413,12 +422,18 @@ pub export fn checkDateArgument(regist: calcRegister_t, jd: *real34_t) linksecti
             }
             // fallthrough
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function checkDateArgument:", "data type cannot be converted to date!");
+            if (comptime extra_info) {
+                errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", REGISTER_X);
+                c_moreInfoOnError("In function checkDateArgument:", errorMessage, null, null);
+            }
             return false;
         },
         else => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function checkDateArgument:", "data type cannot be converted to date!");
+            if (comptime extra_info) {
+                errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", REGISTER_X);
+                c_moreInfoOnError("In function checkDateArgument:", errorMessage, null, null);
+            }
             return false;
         },
     }
@@ -836,7 +851,10 @@ pub export fn fnJulianToDateTime(unusedButMandatoryParameter: u16) linksection(c
     _ = unusedButMandatoryParameter;
     fnJulianToDateTimeCore() catch {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnJulianToDateTime:", "data type cannot be converted to date!");
+        if (comptime extra_info) {
+            errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", REGISTER_X);
+            c_moreInfoOnError("In function fnJulianToDateTime:", errorMessage, null, null);
+        }
     };
 }
 
@@ -923,10 +941,13 @@ fn fnSetFirstGregorianDayCore(param: u16) error{ SetFgdDisabled, SetFgdBadType }
 pub export fn fnSetFirstGregorianDay(param: u16) linksection(code_section) callconv(.c) void {
     fnSetFirstGregorianDayCore(param) catch |e| {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-        if (comptime extra_info) switch (e) {
-            error.SetFgdDisabled => c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type is disabled as input because of complicated Julian-Gregorian issue!", null, null),
-            error.SetFgdBadType => c_moreInfoOnError("In function fnSetFirstGregorianDay:", "data type cannot be interpreted as a date!", null, null),
-        };
+        if (comptime extra_info) {
+            switch (e) {
+                error.SetFgdDisabled => errorMessageWithDataTypeOf("data type {s} is disabled as input because of complicated Julian-Gregorian issue!", REGISTER_X),
+                error.SetFgdBadType => errorMessageWithDataTypeOf("data type {s} cannot be interpreted as a date!", REGISTER_X),
+            }
+            c_moreInfoOnError("In function fnSetFirstGregorianDay:", errorMessage, null, null);
+        }
     };
 }
 
@@ -980,7 +1001,10 @@ pub export fn fnXToDateRegister(regist: calcRegister_t) linksection(code_section
     // inlined in the shim rather than a shared reporter.
     fnXToDateRegisterCore(regist) catch {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, regist);
-        moreInfoOnError("In function fnXToDate:", "data type cannot be converted to date!");
+        if (comptime extra_info) {
+            errorMessageWithDataTypeOf("data type {s} cannot be converted to date!", regist);
+            c_moreInfoOnError("In function fnXToDate:", errorMessage, null, null);
+        }
     };
 }
 
@@ -1082,11 +1106,16 @@ pub export fn fnDateTo(unusedButMandatoryParameter: u16) linksection(code_sectio
 
 const DateError = error{ ToDateBadType, ToDateInvalidDate };
 
-fn reportDateError(e: DateError) void {
+// `badRegister` names the one of Z/Y/X that held the wrong type; C reads it
+// straight out of r[i] at the reporting site.
+fn reportDateError(e: DateError, badRegister: calcRegister_t) void {
     switch (e) {
         error.ToDateBadType => {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnToDate:", "data type cannot be converted to a real34!");
+            if (comptime extra_info) {
+                errorMessageWithDataTypeOf("data type {s} cannot be converted to a real34!", badRegister);
+                c_moreInfoOnError("In function fnToDate:", errorMessage, null, null);
+            }
         },
         error.ToDateInvalidDate => {
             frontier_error.displayCalcErrorMessage(ERROR_BAD_TIME_OR_DATE_INPUT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
@@ -1095,7 +1124,7 @@ fn reportDateError(e: DateError) void {
     }
 }
 
-fn fnToDateCore() DateError!void {
+fn fnToDateCore(badRegister: *calcRegister_t) DateError!void {
     var y: real34_t = undefined;
     var m: real34_t = undefined;
     var d: real34_t = undefined;
@@ -1133,10 +1162,14 @@ fn fnToDateCore() DateError!void {
                 if (getRegisterAngularMode(r[idx]) == amNone) {
                     real34ToIntegralValue(reg34(r[idx]), part[idx], DEC_ROUND_DOWN);
                 } else {
+                    badRegister.* = r[idx];
                     return error.ToDateBadType;
                 }
             },
-            else => return error.ToDateBadType,
+            else => {
+                badRegister.* = r[idx];
+                return error.ToDateBadType;
+            },
         }
     }
 
@@ -1165,22 +1198,33 @@ fn fnToDateCore() DateError!void {
 
 pub export fn fnToDate(unusedButMandatoryParameter: u16) linksection(code_section) callconv(.c) void {
     _ = unusedButMandatoryParameter;
-    fnToDateCore() catch |e| reportDateError(e);
+    var badRegister: calcRegister_t = REGISTER_X;
+    fnToDateCore(&badRegister) catch |e| reportDateError(e, badRegister);
 }
 
 // Error surface: the time-conversion command cores return
 // an invalid-data-type error instead of calling displayCalcErrorMessage inline;
-// reportTimeError maps each to its static message (all ERROR_INVALID_DATA_TYPE
+// reportTimeError maps each to its message (all ERROR_INVALID_DATA_TYPE
 // on REGISTER_X). The error paths return before the trailing range-check work,
 // so the split is behavior-identical.
 const TimeError = error{ ToHrBadType, HMStoTMBadType, HRtoTMBadType };
 
 fn reportTimeError(e: TimeError) void {
     frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    if (comptime !extra_info) return;
     switch (e) {
-        error.ToHrBadType => moreInfoOnError("In function fnToHr:", "data type cannot be converted to a real34!"),
-        error.HMStoTMBadType => moreInfoOnError("In function fnHMStoTM:", "data type cannot be converted to time!"),
-        error.HRtoTMBadType => moreInfoOnError("In function fnHRtoTM:", "data type cannot be converted to time!"),
+        error.ToHrBadType => {
+            errorMessageWithDataTypeOf("data type {s} cannot be converted to a real34!", REGISTER_X);
+            c_moreInfoOnError("In function fnToHr:", errorMessage, null, null);
+        },
+        error.HMStoTMBadType => {
+            errorMessageWithDataTypeOf("data type {s} cannot be converted to time!", REGISTER_X);
+            c_moreInfoOnError("In function fnHMStoTM:", errorMessage, null, null);
+        },
+        error.HRtoTMBadType => {
+            errorMessageWithDataTypeOf("data type {s} cannot be converted to time!", REGISTER_X);
+            c_moreInfoOnError("In function fnHRtoTM:", errorMessage, null, null);
+        },
     }
 }
 

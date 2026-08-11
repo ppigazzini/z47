@@ -2,13 +2,13 @@
 //
 // Zig owner for src/c47/browsers/flagBrowser.c: the flagBrowser application plus
 // the TO_QSPI letteredFlagDisplay[] table. This is a faithful, line-by-line port
-// of the C. The SAVE_SPACE_DM42_8FL guard compiled the body out of old-HW
-// single-file DM42 builds; that guard is never enabled for the packages z47
-// ships, so the code is always present here. lcd_fill_rect is a DMCP-ROM
-// fixed-address call on firmware (LIBRARY_FN_BASE+60) and a linkable symbol on
-// host, trampolined like the sibling owners. The static `line` is reproduced as a
-// module-level var. C integer promotion of int16_t arithmetic is reproduced with
-// explicit i32 math.
+// of the C. The OPTION_FLAGBROWSER guard (flagBrowser.c:58/:349) compiles the
+// body out of the old-HW single-file DM42 build; it is defined for every package
+// z47 ships (defines.h:259), so the code is always present here. lcd_fill_rect
+// is a DMCP-ROM fixed-address call on firmware (LIBRARY_FN_BASE+60) and a
+// linkable symbol on host, trampolined like the sibling owners. The static
+// `line` is reproduced as a module-level var. C integer promotion of int16_t
+// arithmetic is reproduced with explicit i32 math.
 //
 // flagBrowser.c is not reachable from the testSuite; verification is by
 // build/link across every target plus the boundary gates.
