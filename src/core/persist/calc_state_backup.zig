@@ -9,13 +9,13 @@ const std = @import("std");
 const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 const calc_state = @import("calc_state.zig");
-const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+const state_old_hw: bool = build_options.state_old_hw;
 // backup.cfg is the simulator's own state store: upstream wraps the whole file
 // in `#if defined(PC_BUILD)`, and its two entry points are reached only from the
 // GTK shell. Compiling the bodies out on firmware keeps several hundred bytes of
 // field-name strings and writer code out of a flash budget that has none to give.
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
-const calc_model_user_id: u16 = if (@hasDecl(build_options, "calc_model_user_id")) build_options.calc_model_user_id else 46;
+const calc_model_user_id: u16 = build_options.calc_model_user_id;
 
 const FILE_OK: c_int = 1;
 const ioPathBackup: c_int = 4;

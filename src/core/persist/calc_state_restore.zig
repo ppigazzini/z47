@@ -26,7 +26,7 @@ const text = @import("calc_state_text.zig");
 const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 
-const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+const state_old_hw: bool = build_options.state_old_hw;
 fn geometry() progmem.Geometry {
     return .{
         .ram_base = @intFromPtr(ram),
