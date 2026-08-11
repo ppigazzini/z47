@@ -163,6 +163,21 @@ pub inline fn const_24() *const Real {
 pub inline fn const_90() *const Real {
     return at(7800);
 }
+// Angular-mode quadrant bounds (wp34s.c reduceAngleToRange) and the tanh
+// saturation threshold (WP34S_Tanh, where |x| > 47 already equals 1 to 39
+// digits).
+pub inline fn const_200() *const Real {
+    return at(7704);
+}
+pub inline fn const_50() *const Real {
+    return at(7872);
+}
+pub inline fn const_45() *const Real {
+    return at(7884);
+}
+pub inline fn const_47() *const Real {
+    return at(5492);
+}
 pub inline fn const75_piOn2() *const Real {
     return at(7728);
 }

@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const atan_owned = @import("atan.zig");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
@@ -148,7 +149,6 @@ pub fn tanhReal(
 ) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
-    var threshold: runtime.real_t = undefined;
 
     if (build_options.use_fake_wp34s_model) {
         runtime.WP34S_Tanh(x, res, real_context);
@@ -160,8 +160,8 @@ pub fn tanhReal(
         return;
     }
 
-    runtime.uInt32ToReal(47, &threshold);
-    if (runtime.realCompareAbsGreaterThan(x, &threshold)) {
+    // Above |x| = 47 the result equals 1 to 39 digits.
+    if (runtime.realCompareAbsGreaterThan(x, abi.constants.const_47())) {
         copyReal(res, if (runtime.realIsNegative(x)) runtime.z47_math_wrappers_const_minus_1() else runtime.z47_math_wrappers_const_1());
         return;
     }

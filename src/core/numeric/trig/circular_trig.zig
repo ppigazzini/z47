@@ -46,12 +46,6 @@ fn isGreaterThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool {
     return !isLessEqual(lhs, rhs);
 }
 
-fn buildQuarter(result: *runtime.real_t, real_context: *runtime.realContext_t) void {
-    var four: runtime.real_t = undefined;
-    runtime.uInt32ToReal(4, &four);
-    runtime.realDivide(runtime.z47_math_wrappers_const_1(), &four, result, real_context);
-}
-
 fn roundToCallerPrecision(value: *runtime.real_t, real_context: *runtime.realContext_t) void {
     _ = runtime.decNumberPlus(value, value, real_context);
 }
@@ -76,28 +70,22 @@ fn reduceAngleToRange(
             runtime.mod2Pi(angle, angle, real_context);
         },
         runtime.amMultPi => {
-            buildQuarter(angle45, real_context);
+            copyReal(angle45, abi.constants.const_1on4());
             copyReal(angle90, runtime.z47_math_wrappers_const_1on2());
             copyReal(angle180, runtime.z47_math_wrappers_const_1());
             runtime.WP34S_Mod(angle, runtime.z47_math_wrappers_const_2(), angle, real_context);
         },
         runtime.amGrad => {
-            var four_hundred: runtime.real_t = undefined;
-
-            runtime.uInt32ToReal(50, angle45);
+            copyReal(angle45, abi.constants.const_50());
             copyReal(angle90, runtime.z47_math_wrappers_const_100());
-            runtime.realAdd(angle90, angle90, angle180, real_context);
-            runtime.realAdd(angle180, angle180, &four_hundred, real_context);
-            runtime.WP34S_Mod(angle, &four_hundred, angle, real_context);
+            copyReal(angle180, abi.constants.const_200());
+            runtime.WP34S_Mod(angle, abi.constants.const_400(), angle, real_context);
         },
         runtime.amDegree, runtime.amDMS => {
-            var three_sixty: runtime.real_t = undefined;
-
-            runtime.uInt32ToReal(45, angle45);
+            copyReal(angle45, abi.constants.const_45());
             copyReal(angle90, runtime.z47_math_wrappers_const_90());
             copyReal(angle180, runtime.z47_math_wrappers_const_180());
-            runtime.realAdd(angle180, angle180, &three_sixty, real_context);
-            runtime.WP34S_Mod(angle, &three_sixty, angle, real_context);
+            runtime.WP34S_Mod(angle, abi.constants.const_360(), angle, real_context);
             angular_mode.* = runtime.amDegree;
         },
         else => {},
