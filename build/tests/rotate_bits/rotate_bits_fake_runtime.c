@@ -214,18 +214,14 @@ void adjustResult(calcRegister_t res, bool_t dropY, bool_t setCpxRes, calcRegist
   }
 }
 
-void longIntegerInit(longInteger_t value) {
-  value[0] = 0;
-}
-
-void uInt32ToLongInteger(uint32_t source, longInteger_t dest) {
-  dest[0] = source;
-}
-
+// longIntegerInit, uInt32ToLongInteger and longIntegerFree are GMP macros in
+// c47.h now, exactly as upstream declares them, so only the register-facing
+// conversion is faked here. The shift count this lane stages always fits an
+// unsigned long, so mpz_get_ui reads it back whole.
 void convertLongIntegerToLongIntegerRegister(const longInteger_t value, calcRegister_t dest) {
   reallocateRegister(dest, dtLongInteger, 1, 0);
   if(registerWord(dest) != NULL) {
-    *registerWord(dest) = value[0];
+    *registerWord(dest) = mpz_get_ui(value);
   }
 }
 
@@ -234,10 +230,6 @@ void convertShortIntegerRegisterToLongIntegerRegister(calcRegister_t source, cal
   if(registerWord(source) != NULL && registerWord(dest) != NULL) {
     *registerWord(dest) = *registerWord(source);
   }
-}
-
-void longIntegerFree(longInteger_t value) {
-  (void)value;
 }
 
 // EXTRA_INFO_ON_CALC_ERROR is upstream's own 1 now, so c43's diagnostic branches
