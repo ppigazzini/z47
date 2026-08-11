@@ -120,7 +120,7 @@ inline fn doublingNumeric(font: *const font_t) u16 {
 }
 
 inline fn stringByteLength(s: [*c]const u8) i32 {
-    return @intCast(strlen(s));
+    return @truncate(@as(isize, @bitCast(strlen(s))));
 }
 
 // ---------------------------------------------------------------------------
@@ -831,7 +831,7 @@ pub export fn stringToRTF(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) voi
     var a2: u8 = undefined;
     var aa: [32]u8 = undefined;
 
-    const len: i16 = @intCast(stringGlyphLength(str));
+    const len: i16 = @truncate(stringGlyphLength(str));
 
     if (len == 0) {
         ascii[0] = 0;
@@ -904,7 +904,7 @@ pub export fn stringToASCII(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) v
     var a2: u8 = undefined;
     var aa: [32]u8 = undefined;
 
-    const len: i16 = @intCast(stringGlyphLength(str));
+    const len: i16 = @truncate(stringGlyphLength(str));
 
     if (len == 0) {
         ascii[0] = 0;

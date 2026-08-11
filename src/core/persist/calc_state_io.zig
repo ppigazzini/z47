@@ -43,8 +43,6 @@ const TO_KB_ACTV_MEDIUM: u32 = 6000;
 // defines.h: 129 rows of 45 bytes each (longest message is 44 bytes plus the
 // terminator). The stride is what indexes SAVING_STATE_FILE / LOADING_STATE_FILE
 // onto their rows, so it has to match the definition exactly.
-const NUMBER_OF_ERROR_CODES: usize = 129;
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
 
 const calcKey_t = abi.CalcKey;
 
@@ -59,7 +57,7 @@ comptime {
 extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
 extern var lastStateFileOpened: [32]u8;
 extern var fileNameSelected: [20]u8;
-extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
+extern fn errorMessageOf(errorCode: u8) callconv(.c) [*c]const u8;
 extern var screenUpdatingMode: u8;
 extern var calcModel: u8;
 extern var kbd_usr: [37]calcKey_t;
@@ -202,11 +200,11 @@ pub fn stampLastStateFileOpened() void {
 }
 
 pub fn showSavingStatus() void {
-    printStatus(0, &errorMessages[SAVING_STATE_FILE][0], force);
+    printStatus(0, errorMessageOf(SAVING_STATE_FILE), force);
 }
 
 pub fn showLoadingStatus() void {
-    printStatus(0, &errorMessages[LOADING_STATE_FILE][0], force);
+    printStatus(0, errorMessageOf(LOADING_STATE_FILE), force);
 }
 
 pub fn writeSaveSections() void {

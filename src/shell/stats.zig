@@ -144,8 +144,6 @@ const ITM_M_DIM: u16 = 1526;
 
 const PLOT_NOTHING: u16 = 5;
 const RECALC_SUMS = 105;
-const NUMBER_OF_ERROR_CODES = 129; // defines.h: 129 (errorMessages row count)
-const SIZE_OF_EACH_ERROR_MESSAGE = 45;
 
 // screen.h
 const timed: u8 = 0;
@@ -165,7 +163,7 @@ extern var statisticalSumsPointer: ?[*]real_t;
 extern var statisticalSumsUpdate: bool;
 extern var statMx: [8]u8;
 extern var errorMessage: [*c]u8;
-extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
+extern fn errorMessageOf(errorCode: u8) callconv(.c) [*c]const u8;
 extern var lastErrorCode: u8;
 extern var temporaryInformation: u8;
 extern var lrChosen: u16;
@@ -687,7 +685,7 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
         var aa: [100]u8 = undefined;
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
-            abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*c]const u8, @ptrCast(&errorMessages[RECALC_SUMS]))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });
+            abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*:0]const u8, @ptrCast(errorMessageOf(RECALC_SUMS)))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });
             frontier_graph_text.printStatus(0, &aa, timed);
             real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols]), &x);
             real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, i) * cols + 1]), &y);

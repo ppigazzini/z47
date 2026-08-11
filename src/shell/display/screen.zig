@@ -474,7 +474,7 @@ const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
 const ERROR_INVALID_TYPE_XFN: u8 = 62;
-const ERROR_TI_UNDO_FAILED: usize = 128; // defines.h 128; matches errorMessages[128] after the table was un-truncated
+const ERROR_TI_UNDO_FAILED: usize = 128; // defines.h 128; the last error code, so the message table must run to 128
 
 const PRN_STK: u16 = 1;
 const clrStatusBar: bool_t = 1;
@@ -483,8 +483,8 @@ const clrSoftkeys: bool_t = 1;
 const toDisplayVectorMatrix: bool_t = 1;
 const CMP_BINARY: i32 = 0;
 
-// errorMessages[] string-table indices used by screen.c (these are #define'd
-// indices into the errorMessages array; reproduce by their numeric values).
+// Error/status codes used by screen.c to name a message (these are #define'd
+// error codes handed to errorMessageOf; reproduce by their numeric values).
 const TI_All_data_prgms_cleared: usize = 118;
 const TI_All_user_prgms_deleted: usize = 121;
 const TI_All_user_flags_cleared: usize = 117;
@@ -492,8 +492,8 @@ const TI_All_user_menus_cleared: usize = 119;
 const TI_All_user_vars_cleared: usize = 120;
 const TI_All_user_menus_deleted: usize = 122;
 const TI_All_user_vars_deleted: usize = 123;
-const TI_Not_on_simulator: usize = 126; // defines.h 126 (errorMessages index)
-const TI_Only_on_simulator: usize = 127; // defines.h 127 (errorMessages index)
+const TI_Not_on_simulator: usize = 126; // defines.h 126
+const TI_Only_on_simulator: usize = 127; // defines.h 127
 const TI_Backup_restored: usize = 107;
 const TI_State_file_restored: usize = 108;
 const TI_Saved_programs_and_equations: usize = 109;
@@ -790,18 +790,17 @@ const KEY_X = @extern([*c]const c_int, .{ .name = "KEY_X" });
 const confirmationTI = @extern([*c]const confirmationTI_t, .{ .name = "confirmationTI" });
 const varDescr = @extern([*c]const reservedVariableDescStr_t, .{ .name = "varDescr" });
 const registerFlagLetters = @extern([*c]const u8, .{ .name = "registerFlagLetters" });
-// errorMessages is a 2D char array [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]
-// (48-byte rows); errorMessages[i] is the row address (a char*), NOT a pointer to
-// deref. Bind as rows and pass &errorMessages[i].
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
-const errorMessages = @extern([*c]const [SIZE_OF_EACH_ERROR_MESSAGE]u8, .{ .name = "errorMessages" });
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
 
-// A NUL-terminated view of an errorMessages row for std.fmt {s}. The row
-// pointer inherits `allowzero` from the [*c] blob base, which {s} rejects; one
-// localized cast here yields the plain [:0]const u8 the formatter wants.
+// A NUL-terminated view of an error message for std.fmt {s}. errorMessageOf
+// answers a [*c] pointer, which inherits `allowzero` and so is rejected by {s};
+// one localized cast here yields the plain [:0]const u8 the formatter wants.
 inline fn errMsgRow(idx: anytype) [:0]const u8 {
-    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(&errorMessages[idx])), 0);
+    return std.mem.sliceTo(@as([*:0]const u8, @ptrCast(errMsg(idx))), 0);
+}
+// errorMessageOf (error.c): the message for one error/status code.
+inline fn errMsg(idx: anytype) [*c]const u8 {
+    return frontier_error.errorMessageOf(@intCast(idx));
 }
 const baseDigits = @extern([*c]const u8, .{ .name = "baseDigits" });
 const kbd_usr = @extern([*c]const calcKey_t, .{ .name = "kbd_usr" });
@@ -860,12 +859,13 @@ const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3996)," ++ spc1 ++ "Ma
 const MODELTEXT = "C47";
 const disclaimerStr: [*:0]const u8 = "  " ++ MODELTEXT ++ " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
 
-// versionStr / versionStr2 embed VERSION_STRING (generated VCS id) and __DATE__,
-// which cannot be reproduced byte-faithfully in pure Zig; the residual C helper
-// (bridge/frontier/screen_snap_helpers.c) defines them. They are C arrays, so
-// bind to the byte address.
+// versionStr / versionStr2 / versionDateStr embed VERSION_STRING (the generated
+// VCS id) and the compile date, both build stamps; screen_snap.zig assembles
+// them from the build options. They are byte arrays, so bind to the byte
+// address.
 const versionStr = @extern([*c]const u8, .{ .name = "versionStr" });
 const versionStr2 = @extern([*c]const u8, .{ .name = "versionStr2" });
+const versionDateStr = @extern([*c]const u8, .{ .name = "versionDateStr" });
 
 // nameOfWday_en[8] : nstr { char itemName[30]; }. File-local in screen.c.
 const nstr = struct { itemName: [30]u8 };
@@ -911,6 +911,7 @@ extern var lastIntegerBase: u32;
 extern var screenUpdatingMode: u8;
 // c47.c: a program drew this screen and no refresh has repainted over it since.
 extern var screenHoldsDrawnPixels: bool;
+extern var snapSkipRefresh: bool; // c47.c global, set by the host --snapskiprefresh switch
 extern var refreshNIMdone: bool_t;
 extern var calcMode: u8;
 extern var graphToRemainOnScreen: bool_t;
@@ -3854,7 +3855,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
                 }
                 if (comptime extra_info) {
                     abi.fmtBufZ(errorMessage[0..512], "BestF is set, but will not work until REAL data points are used.", .{});
-                    moreInfoOnError("In function _refreshRegisterLine:", errorMessage, &errorMessages[ERROR_INVALID_DATA_TYPE_FOR_OP], null);
+                    moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errMsg(ERROR_INVALID_DATA_TYPE_FOR_OP), null);
                 }
                 w = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
                 _ = showString(tmpString, &standardFont, @intCast(@as(i32, SCREEN_WIDTH) - w), Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
@@ -3891,7 +3892,8 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             clearRegisterLine(REGISTER_Z, true, true);
             clearRegisterLine(REGISTER_Y, true, true);
             clearRegisterLine(REGISTER_X, true, true);
-            _ = showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+            abi.fmtBufZ(&prefix, "{s}{s}", .{ @as([*:0]const u8, versionStr2), @as([*:0]const u8, versionDateStr) });
+            _ = showStringEnhanced(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
             _ = showStringEnhanced(versionStr, &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
             _ = showStringEnhanced(disclaimerStr, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
         } else if (temporaryInformation == TI_DISP_JULIAN) {
@@ -3970,9 +3972,10 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             clearRegisterLine(REGISTER_Y, true, true);
             clearRegisterLine(REGISTER_Z, true, true);
             clearRegisterLine(REGISTER_T, true, true);
-            _ = showString(&errorMessages[TI_Backup_restored], &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, 1, 1);
+            _ = showString(errMsg(TI_Backup_restored), &standardFont, 1, Y_POSITION_OF_REGISTER_Z_LINE + 6, vmNormal, 1, 1);
             _ = showStringEnhanced(versionStr, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
-            _ = showStringEnhanced(versionStr2, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+            abi.fmtBufZ(&prefix, "{s}{s}", .{ @as([*:0]const u8, versionStr2), @as([*:0]const u8, versionDateStr) });
+            _ = showStringEnhanced(&prefix, &standardFont, 1, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
         } else if (temporaryInformation == TI_STATEFILE_RESTORED and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_State_file_restored)});
             displayTemporaryInformationOnX(&prefix);
@@ -4009,7 +4012,7 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Data_file_loaded)});
             displayTemporaryInformationOnX(&prefix);
         } else if (temporaryInformation == TI_UNDO_DISABLED and regist == REGISTER_X) {
-            _ = showString(&errorMessages[ERROR_TI_UNDO_FAILED], &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
+            _ = showString(errMsg(ERROR_TI_UNDO_FAILED), &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         }
         // NEW SHOW
         else if (temporaryInformation == TI_SHOW_REGISTER_SMALL or temporaryInformation == TI_SHOW_REGISTER) {
@@ -4275,17 +4278,17 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
     const regist = regist_p.*;
 
     if (lastErrorCode != 0 and regist == errorMessageRegisterLine) {
-        if (frontier_char_string.stringWidth(&errorMessages[lastErrorCode], &standardFont, true, true) <= SCREEN_WIDTH - 1) {
+        if (frontier_char_string.stringWidth(errMsg(lastErrorCode), &standardFont, true, true) <= SCREEN_WIDTH - 1) {
             if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
                 abi.fmtBufZ(tmpString[0..2560], "{s}: {s}", .{ errMsgRow(lastErrorCode), std.mem.span(@as([*:0]const u8, errorMessage)) });
                 _ = showString(tmpString, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
             } else {
-                _ = showString(&errorMessages[lastErrorCode], &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
+                _ = showString(errMsg(lastErrorCode), &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
             }
         } else {
             if (comptime extra_info) {
                 abi.fmtBufZ(errorMessage[0..512], "Error message {d} is too wide!", .{@as(u32, lastErrorCode)});
-                moreInfoOnError("In function _refreshRegisterLine:", errorMessage, &errorMessages[lastErrorCode], null);
+                moreInfoOnError("In function _refreshRegisterLine:", errorMessage, errMsg(lastErrorCode), null);
             }
             abi.fmtBufZ(tmpString[0..2560], "Error message {d} is too wide!", .{@as(u32, lastErrorCode)});
             w_p.* = frontier_char_string.stringWidth(tmpString, &standardFont, true, true);
@@ -6522,18 +6525,16 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (comptime testsuite_build) {
         frontier_date_time.testClockFrozen = true;
     }
-    // Upstream captures from a fully repainted screen: it resets the update mode
-    // to AUTO so this refresh redraws every band, whatever the plot left behind.
-    // (Its `if(!snapSkipRefresh)` guard reads a --snapskiprefresh command-line
-    // flag z47 does not carry, so this is that flag's default path.) Leaving a
-    // partial mode here also leaks past the capture: the next refresh, including
-    // the one runProgram runs when the program ends, then skips bands it should
-    // repaint.
+    // The capture is taken from a fully repainted screen: the update mode is
+    // reset to AUTO so this refresh redraws every band, whatever the plot left
+    // behind. Leaving a partial mode here also leaks past the capture: the next
+    // refresh, including the one runProgram runs when the program ends, then
+    // skips bands it should repaint.
     //
-    // Unless a program drew the screen itself: since the 6559a9c59 pin a screen
-    // CLLCD/PIXEL/POINT/AGRAPH painted is captured raw, because repainting it is
-    // exactly what destroys what the program drew.
-    if (!screenHoldsDrawnPixels) {
+    // Two things suppress the repaint, because repainting is exactly what
+    // destroys the graphic screen the capture wants: --snapskiprefresh, and a
+    // screen CLLCD/PIXEL/POINT/AGRAPH painted that nothing has refreshed over.
+    if (!snapSkipRefresh and !screenHoldsDrawnPixels) {
         screenUpdatingMode = SCRUPD_AUTO;
         refreshScreen(80);
     }

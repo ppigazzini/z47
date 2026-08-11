@@ -142,7 +142,7 @@ inline fn getStackTop() calcRegister_t {
     return if (getSystemFlag(FLAG_SSIZE8)) REGISTER_D else REGISTER_T;
 }
 inline fn stringByteLength(str: [*c]const u8) i32 {
-    return @intCast(strlen(str));
+    return @truncate(@as(isize, @bitCast(strlen(str))));
 }
 inline fn longIntegerInit(lg: *mpz_struct) void {
     __gmpz_init(lg);
@@ -469,7 +469,7 @@ pub export fn fnAlphaRR(regist: u16) callconv(.c) void {
         return;
     }
 
-    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
+    const stringGlyphLen: i16 = @truncate(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
         return; // nothing to rotate or shift, and nothing to complain about
     }
@@ -556,7 +556,7 @@ pub export fn fnAlphaRL(regist: u16) callconv(.c) void {
         return;
     }
 
-    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
+    const stringGlyphLen: i16 = @truncate(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
         return; // nothing to rotate or shift, and nothing to complain about
     }
@@ -631,7 +631,7 @@ pub export fn fnAlphaSR(regist: u16) callconv(.c) void {
         return;
     }
 
-    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
+    const stringGlyphLen: i16 = @truncate(frontier_char_string.stringGlyphLength(regString(@intCast(regist))));
     if (stringGlyphLen == 0) {
         return; // nothing to rotate or shift, and nothing to complain about
     }
@@ -704,7 +704,7 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
     }
 
     const ptr: [*c]u8 = regString(@intCast(regist));
-    const stringGlyphLen: i16 = @intCast(frontier_char_string.stringGlyphLength(ptr));
+    const stringGlyphLen: i16 = @truncate(frontier_char_string.stringGlyphLength(ptr));
     if (stringGlyphLen == 0) {
         return; // nothing to rotate or shift, and nothing to complain about
     }
@@ -770,11 +770,11 @@ extern var alphaRegister: u16;
 // Truncate the alpha register's string to the 42S 44-glyph maximum.
 pub export fn truncateAlphaRegisterTo44Char() callconv(.c) void {
     const ptr = regString(@intCast(alphaRegister));
-    const stringGlyphLen = frontier_char_string.stringGlyphLength(ptr);
+    const stringGlyphLen: i16 = @truncate(frontier_char_string.stringGlyphLength(ptr));
     if (stringGlyphLen <= 44) {
         return;
     }
-    var steps: i16 = @intCast(stringGlyphLen - 44);
+    var steps: i16 = stringGlyphLen - 44;
     var glyphPointer: i16 = 0;
     while (steps > 0) : (steps -= 1) {
         glyphPointer = frontier_char_string.stringNextGlyph(ptr, glyphPointer);
@@ -923,15 +923,18 @@ extern var aimBuffer: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 extern fn copySourceRegisterToDestRegister(source_register: calcRegister_t, dest_register: calcRegister_t) void;
 const LAST_TEMP_REGISTER: calcRegister_t = 136;
-inline fn TO_BLOCKS(n: u32) u16 {
-    return @intCast((n + 3) >> 2); // BYTES_PER_BLOCK = 4
+// TO_BLOCKS reinterprets its int32_t byte count as uint32_t, rounds up to the
+// next 4-byte block and hands the uint32_t result to reallocateRegister's
+// uint16_t block-count parameter, which keeps only the low 16 bits.
+inline fn TO_BLOCKS(n: i32) u16 {
+    return @truncate((@as(u32, @bitCast(n)) +% 3) >> 2); // BYTES_PER_BLOCK = 4
 }
 
 // 42ALPHA: store the alpha entry/label string into the alpha register.
 pub export fn fn42Alpha(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
-    reallocateRegister(@intCast(alphaRegister), dtString, TO_BLOCKS(@intCast(stringByteLength(alphaString) + 1)), amNone);
+    reallocateRegister(@intCast(alphaRegister), dtString, TO_BLOCKS(stringByteLength(alphaString) + 1), amNone);
     _ = frontier_char_string.xcopy(regString(@intCast(alphaRegister)), alphaString, @intCast(stringByteLength(alphaString) + 1));
 }
 
@@ -940,7 +943,7 @@ pub export fn fn42Append(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     const alphaString: [*c]u8 = if (programRunStop == PGM_RUNNING) tmpStringLabelOrVariableName else aimBuffer;
     copySourceRegisterToDestRegister(REGISTER_X, LAST_TEMP_REGISTER);
-    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(alphaString) + 1)), amNone);
+    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(alphaString) + 1), amNone);
     _ = frontier_char_string.xcopy(regString(REGISTER_X), alphaString, @intCast(stringByteLength(alphaString) + 1));
     frontier_store.fnStoreAdd(alphaRegister);
     truncateAlphaRegisterTo44Char();
@@ -1097,7 +1100,7 @@ fn _isSameGlyph(glyph: u16, ptrString: [*c]const u8) bool {
 }
 
 fn _toUpperOrLowerCase(ptrString: [*c]u8, toUpper: bool) void {
-    const lgString: i16 = @intCast(frontier_char_string.stringGlyphLength(ptrString));
+    const lgString: i16 = @truncate(frontier_char_string.stringGlyphLength(ptrString));
     glyph_case.toUpperOrLowerCase(ptrString, toUpper, lgString, &upperLowerTable);
 }
 
@@ -1135,7 +1138,7 @@ fn _alphaMid(ptrString: [*c]u8, start_arg: i32, len_arg: i32) void {
     // Extract the substring into the scratch buffer, then reallocate REGISTER_X
     // to hold it and copy it in. The clamp + glyph-walk copy is the pure core.
     _ = alpha_substring.alphaMid(tmpString, ptrString, start_arg, len_arg, lgString);
-    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(@intCast(stringByteLength(tmpString) + 1)), amNone);
+    reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(stringByteLength(tmpString) + 1), amNone);
     _ = frontier_char_string.xcopy(regString(REGISTER_X), tmpString, @intCast(stringByteLength(tmpString) + 1));
 }
 

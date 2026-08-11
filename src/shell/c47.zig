@@ -284,6 +284,9 @@ pub export var numLinesTinyFont: u8 = 0;
 // New upstream (real master) globals: headless/--dumpMenus + test-load flags,
 // bold numeric-font metrics, the alpha register and the 42S var-menu flag.
 pub export var headlessMode: bool_t = false;
+// --snapskiprefresh: SNAP captures the screen as it stands instead of forcing a
+// repaint first, so a scripted capture keeps the graphic screen it asked for.
+pub export var snapSkipRefresh: bool_t = false;
 // CLLCD, PIXEL, POINT or AGRAPH painted the screen and no refresh has repainted
 // over it since; SNAP keeps such a screen raw instead of redrawing the stack.
 pub export var screenHoldsDrawnPixels: bool_t = false;
