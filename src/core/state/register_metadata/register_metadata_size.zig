@@ -56,3 +56,11 @@ pub fn alignLongIntegerBlocks(size_in_blocks: u16) u16 {
 pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
     payload_bytes_owned.setMatrixRowsColumns(data_ptr, 1, 1);
 }
+
+// initMatrixRegister (matrix.c) writes the angular tag as well as the two
+// dimensions. reallocateRegister rewrites only rows and columns, so without this
+// a recycled pool block keeps whatever mtag its previous owner left in it.
+pub fn initializeMatrixRegisterHeader1x1(data_ptr: ?*anyopaque) void {
+    payload_bytes_owned.setMatrixRowsColumns(data_ptr, 1, 1);
+    payload_bytes_owned.setMatrixTag(data_ptr, @intCast(stack_runtime.amNone));
+}

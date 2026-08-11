@@ -1,4 +1,5 @@
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+extern fn getDataTypeName(data_type: u16, with_article: bool, pad_with_blanks: bool) [*c]const u8;
 const descriptor_owned = @import("register_metadata_descriptor.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
@@ -202,16 +203,26 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
     }
 
     if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
-        stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        if (reg > runtime.LAST_GLOBAL_REGISTER) {
+            moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no named variables defined!", null, null);
+        }
         return;
     }
 
     if (reg > runtime.LAST_LOCAL_REGISTER) {
-        stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+        runtime.reportRegisterAboveLastBug("setRegisterMaxDataLengthInBlocks", reg);
         return;
     }
 
     if (reg <= runtime.LAST_NAMED_VARIABLE and !runtime.tryGetNamedDescriptor(reg, &descriptor)) {
+        if (reg > runtime.LAST_GLOBAL_REGISTER) {
+            runtime.reportVariableNotDefinedBug(
+                "setRegisterMaxDataLengthInBlocks",
+                "named variable",
+                @bitCast(reg -% runtime.FIRST_NAMED_VARIABLE),
+                runtime.numberOfNamedVariables -% 1,
+            );
+        }
         return;
     }
 
@@ -236,18 +247,43 @@ pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
     var type_reg = reg;
 
     if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
+        var descriptor: runtime.register_descriptor_t = 0;
+
         if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            if (reg > runtime.LAST_GLOBAL_REGISTER) {
+                moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no named variables defined!", null, null);
+            }
             return 0;
         }
 
         if (reg > runtime.LAST_LOCAL_REGISTER) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportRegisterAboveLastBug("getRegisterMaxDataLengthInBlocks", reg);
             return 0;
         }
 
-        if (reg > runtime.LAST_RESERVED_VARIABLE and runtime.noLocalRegisterFrame()) {
-            moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no local registers defined!", "", "");
+        // A register id past the end of the named or local block is a coding
+        // error; a valid id whose data pointer happens to be null just yields 0.
+        if (reg > runtime.LAST_GLOBAL_REGISTER and reg <= runtime.LAST_NAMED_VARIABLE and !runtime.tryGetNamedDescriptor(reg, &descriptor)) {
+            runtime.reportVariableNotDefinedBug(
+                "getRegisterMaxDataLengthInBlocks",
+                "named variable",
+                @bitCast(reg -% runtime.FIRST_NAMED_VARIABLE),
+                runtime.numberOfNamedVariables -% 1,
+            );
+            return 0;
+        }
+
+        if (reg > runtime.LAST_RESERVED_VARIABLE) {
+            if (runtime.noLocalRegisterFrame()) {
+                moreInfoOnError("In function getRegisterMaxDataLengthInBlocks:", "no local registers defined!", null, null);
+            } else if (!runtime.tryGetLocalDescriptor(reg, &descriptor)) {
+                runtime.reportVariableNotDefinedBug(
+                    "getRegisterMaxDataLengthInBlocks",
+                    "local register",
+                    @bitCast(reg -% runtime.FIRST_LOCAL_REGISTER),
+                    stack_runtime.currentLocalRegisterCount() -% 1,
+                );
+            }
         }
 
         return 0;
@@ -273,7 +309,10 @@ pub fn getRegisterFullSizeInBlocks(reg: runtime.calcRegister_t) u16 {
         runtime.dtComplex34 => runtime.complex34SizeInBlocks(),
         runtime.dtConfig => runtime.configSizeInBlocks(),
         else => blk: {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportDataTypeUnknownBug(
+                "getRegisterFullSizeInBlocks",
+                getDataTypeName(@intCast(descriptor_owned.getRegisterDataType(reg)), false, false),
+            );
             break :blk 0;
         },
     };

@@ -197,8 +197,38 @@ pub fn initializeMatrixHeader1x1(data_ptr: ?*anyopaque) void {
     size_owned.initializeMatrixHeader1x1(data_ptr);
 }
 
+pub fn initializeMatrixRegisterHeader1x1(data_ptr: ?*anyopaque) void {
+    size_owned.initializeMatrixRegisterHeader1x1(data_ptr);
+}
+
 pub fn reportRamFull() void {
     error_owned.reportRamFull();
+}
+
+pub fn reportNoNamedVariablesBug(function_name: [*:0]const u8) void {
+    error_owned.reportNoNamedVariablesBug(function_name);
+}
+
+pub fn reportRegisterAboveLastBug(function_name: [*:0]const u8, reg: calcRegister_t) void {
+    error_owned.reportRegisterAboveLastBug(function_name, reg, LAST_RESERVED_VARIABLE + 1);
+}
+
+pub fn reportVariableNotDefinedBug(function_name: [*:0]const u8, variable_kind: [*:0]const u8, index: u16, last_index: u16) void {
+    error_owned.reportVariableNotDefinedBug(function_name, variable_kind, index, last_index);
+}
+
+pub fn reportDataTypeUnknownBug(function_name: [*:0]const u8, data_type_name: [*c]const u8) void {
+    error_owned.reportDataTypeUnknownBug(function_name, data_type_name);
+}
+
+// The accessors report the index inside the block, not the register id, and the
+// upper bound is one less than the number of entries the block currently holds.
+pub fn reportNamedVariableNotDefined(function_name: [*:0]const u8, reg: calcRegister_t) void {
+    error_owned.reportNamedVariableNotDefined(function_name, @bitCast(reg -% FIRST_NAMED_VARIABLE), numberOfNamedVariables -% 1);
+}
+
+pub fn reportLocalRegisterNotDefined(function_name: [*:0]const u8, reg: calcRegister_t) void {
+    error_owned.reportLocalRegisterNotDefined(function_name, @bitCast(reg -% FIRST_LOCAL_REGISTER), stack_runtime.currentLocalRegisterCount() -% 1);
 }
 
 pub fn reportReservedVariableRetype() void {

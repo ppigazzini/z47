@@ -86,12 +86,12 @@ fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
     }
 
     reallocate_owned.reallocateRegister(register, runtime.dtReal34Matrix, runtime.real34SizeInBlocks(), runtime.amNone);
-    if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
+    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
         return;
     }
 
     const data_ptr = descriptor_owned.getRegisterDataPointer(register);
-    runtime.initializeMatrixHeader1x1(data_ptr);
+    runtime.initializeMatrixRegisterHeader1x1(data_ptr);
     memory_owned.zeroReal34(firstMatrixElementPointer(data_ptr));
 }
 

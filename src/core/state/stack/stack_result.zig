@@ -20,6 +20,7 @@ const TI_FROM_HMS: u8 = 82;
 const TI_FROM_DATEX: u8 = 84;
 
 const abi = @import("abi"); // shared ABI bindings
+const real_t = abi.Real;
 const real34_t = abi.Real34;
 
 const complex34_t = abi.Complex34;
@@ -30,23 +31,25 @@ extern var temporaryInformation: u8;
 extern fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void;
 extern fn decQuadIsInfinite(value: *const real34_t) u32;
 extern fn decQuadIsZero(value: *const real34_t) u32;
+extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
 extern fn convertLongIntegerRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertShortIntegerRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertTimeRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
 extern fn convertDateRegisterToReal34Register(source: runtime.calcRegister_t, destination: runtime.calcRegister_t) void;
+extern fn convertRealToResultRegister(x: *const real_t, dest: runtime.calcRegister_t, angle: c_int) void;
+extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: runtime.calcRegister_t) void;
+extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: runtime.calcRegister_t) void;
 extern fn setLastintegerBasetoZero() void;
 extern fn checkTimeRange(time34: *const real34_t) void;
 extern fn checkDateRange(date34: *const real34_t) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
 extern fn fnSetFlag(flag: u16) void;
 extern fn fnRefreshState() void;
-extern fn rsdReal(digits: u16) void;
-extern fn rsdCplx(digits: u16) void;
 extern fn rsdRema(digits: u16) void;
 extern fn rsdCxma(digits: u16) void;
 
-fn constOpaque(ptr: ?*anyopaque) ?*const anyopaque {
-    return if (ptr) |value| @ptrCast(value) else null;
+fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+    _ = decimal128ToNumber(source, destination);
 }
 
 fn registerReal34Ptr(reg: runtime.calcRegister_t) *align(1) real34_t {
@@ -82,37 +85,6 @@ fn real34IsNegative(value: *const real34_t) bool {
 
 fn real34SetPositiveSign(value: *real34_t) void {
     real34_sign.setPositiveSign(value);
-}
-
-fn setRegisterRaw(reg: runtime.calcRegister_t, data_type: u32, tag: u32, data_ptr: ?*anyopaque) void {
-    runtime.setRegisterDataType(reg, @intCast(data_type), tag);
-    runtime.setRegisterDataPointer(reg, constOpaque(data_ptr));
-}
-
-fn withRegisterMappedToX(res: runtime.calcRegister_t, rounder: *const fn (u16) callconv(.c) void) void {
-    if (res == runtime.REGISTER_X) {
-        rounder(significantDigits);
-        return;
-    }
-
-    const x_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const x_tag = runtime.getRegisterTag(runtime.REGISTER_X);
-    const x_ptr = runtime.getRegisterDataPointer(runtime.REGISTER_X);
-
-    const res_type = runtime.getRegisterDataType(res);
-    const res_tag = runtime.getRegisterTag(res);
-    const res_ptr = runtime.getRegisterDataPointer(res);
-
-    setRegisterRaw(runtime.REGISTER_X, res_type, res_tag, res_ptr);
-    setRegisterRaw(res, x_type, x_tag, x_ptr);
-    rounder(significantDigits);
-
-    const rounded_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const rounded_tag = runtime.getRegisterTag(runtime.REGISTER_X);
-    const rounded_ptr = runtime.getRegisterDataPointer(runtime.REGISTER_X);
-
-    setRegisterRaw(res, rounded_type, rounded_tag, rounded_ptr);
-    setRegisterRaw(runtime.REGISTER_X, x_type, x_tag, x_ptr);
 }
 
 fn matrixPayloadOffsetBytes() usize {
@@ -164,14 +136,12 @@ fn tryToRealComplexZero() bool {
         return false;
     }
 
-    const source_bytes: [*]align(1) const u8 = abi.registerBytes(runtime.REGISTER_X);
-    var real_part: [@sizeOf(real34_t)]u8 = undefined;
-    @memcpy(real_part[0..], source_bytes[0..real_part.len]);
-
-    runtime.reallocateRegister(runtime.REGISTER_X, runtime.dtReal34, 0, runtime.amNone);
-
-    const dest_bytes: [*]align(1) u8 = abi.registerBytes(runtime.REGISTER_X);
-    @memcpy(dest_bytes[0..real_part.len], real_part[0..]);
+    // The real part is read out before the register is retyped, and written back
+    // through the result converter so the value carries the significant-digit
+    // rounding every other real result gets.
+    var b: real_t = undefined;
+    real34ToReal(registerReal34Ptr(runtime.REGISTER_X), &b);
+    convertRealToResultRegister(&b, runtime.REGISTER_X, @bitCast(runtime.amNone));
     return true;
 }
 
@@ -238,101 +208,56 @@ fn reportToRealInvalidType() void {
     displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
 }
 
-fn adjustResultScalarCore(res: runtime.calcRegister_t) bool {
-    const result_data_type = runtime.getRegisterDataType(res);
-
-    if (result_data_type != runtime.dtReal34 and result_data_type != runtime.dtTime and result_data_type != runtime.dtDate and result_data_type != runtime.dtComplex34) {
-        return false;
+// Check the result register for infinities and negative zeroes, one rectangular
+// component at a time.
+fn adjustRealRegisterComponents(res: runtime.calcRegister_t, result_data_type: u32) void {
+    switch (result_data_type) {
+        runtime.dtReal34, runtime.dtTime, runtime.dtDate => normalizeResultRealRegister(res, registerReal34Ptr(res)),
+        runtime.dtComplex34 => {
+            normalizeResultRealRegister(res, registerReal34Ptr(res));
+            normalizeResultRealRegister(res, registerImag34Ptr(res));
+        },
+        runtime.dtReal34Matrix => {
+            const elements = realMatrixElementsPtr(res);
+            for (0..realMatrixElementCount(res)) |index| {
+                normalizeResultRealRegister(res, &elements[index]);
+            }
+        },
+        runtime.dtComplex34Matrix => {
+            const elements = complexMatrixElementsPtr(res);
+            for (0..complexMatrixElementCount(res)) |index| {
+                normalizeResultRealRegister(res, &elements[index].real);
+                normalizeResultRealRegister(res, &elements[index].imag);
+            }
+        },
+        else => {},
     }
-
-    if (!runtime.getSystemFlag(runtime.FLAG_SPCRES) and runtime.lastErrorCode == runtime.ERROR_NONE) {
-        switch (result_data_type) {
-            runtime.dtReal34, runtime.dtTime, runtime.dtDate => normalizeResultRealRegister(res, registerReal34Ptr(res)),
-            runtime.dtComplex34 => {
-                normalizeResultRealRegister(res, registerReal34Ptr(res));
-                normalizeResultRealRegister(res, registerImag34Ptr(res));
-            },
-            else => unreachable,
-        }
-    }
-
-    if (runtime.lastErrorCode == runtime.ERROR_NONE) {
-        if (result_data_type == runtime.dtTime) {
-            checkTimeRange(registerReal34Ptr(res));
-        }
-        if (result_data_type == runtime.dtDate) {
-            checkDateRange(registerReal34Ptr(res));
-        }
-    }
-
-    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        undo_owned.undo();
-        return true;
-    }
-
-    if (significantDigits != 0 and significantDigits < 34) {
-        switch (result_data_type) {
-            runtime.dtReal34 => withRegisterMappedToX(res, rsdReal),
-            runtime.dtComplex34 => withRegisterMappedToX(res, rsdCplx),
-            else => {},
-        }
-    }
-
-    return true;
 }
 
-fn adjustResultRealMatrixCore(res: runtime.calcRegister_t) bool {
-    if (runtime.getRegisterDataType(res) != runtime.dtReal34Matrix) {
-        return false;
+// Round the result to the significant-digit setting. A scalar rounds its
+// rectangular components in place through the plain result converters; only the
+// two matrix types go through rsd*, which work on REGISTER_X.
+fn roundResultToSignificantDigits(res: runtime.calcRegister_t, result_data_type: u32) void {
+    if (significantDigits == 0 or significantDigits >= 34) {
+        return;
     }
 
-    if (!runtime.getSystemFlag(runtime.FLAG_SPCRES) and runtime.lastErrorCode == runtime.ERROR_NONE) {
-        const elements = realMatrixElementsPtr(res);
-        for (0..realMatrixElementCount(res)) |index| {
-            normalizeResultRealRegister(res, &elements[index]);
-        }
+    var tmp: real_t = undefined;
+    switch (result_data_type) {
+        runtime.dtReal34 => {
+            real34ToReal(registerReal34Ptr(res), &tmp);
+            convertRealToReal34ResultRegister(&tmp, res);
+        },
+        runtime.dtComplex34 => {
+            real34ToReal(registerReal34Ptr(res), &tmp);
+            convertRealToReal34ResultRegister(&tmp, res);
+            real34ToReal(registerImag34Ptr(res), &tmp);
+            convertRealToImag34ResultRegister(&tmp, res);
+        },
+        runtime.dtReal34Matrix => rsdRema(significantDigits),
+        runtime.dtComplex34Matrix => rsdCxma(significantDigits),
+        else => {},
     }
-
-    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        undo_owned.undo();
-        return true;
-    }
-
-    if (significantDigits != 0 and significantDigits < 34) {
-        withRegisterMappedToX(res, rsdRema);
-    }
-
-    return true;
-}
-
-fn adjustResultComplexMatrixCore(res: runtime.calcRegister_t) bool {
-    if (runtime.getRegisterDataType(res) != runtime.dtComplex34Matrix) {
-        return false;
-    }
-
-    if (!runtime.getSystemFlag(runtime.FLAG_SPCRES) and runtime.lastErrorCode == runtime.ERROR_NONE) {
-        const elements = complexMatrixElementsPtr(res);
-        for (0..complexMatrixElementCount(res)) |index| {
-            normalizeResultRealRegister(res, &elements[index].real);
-            normalizeResultRealRegister(res, &elements[index].imag);
-        }
-    }
-
-    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-        undo_owned.undo();
-        return true;
-    }
-
-    if (significantDigits != 0 and significantDigits < 34) {
-        withRegisterMappedToX(res, rsdCxma);
-    }
-
-    return true;
-}
-
-fn adjustResultSetCpxRes() void {
-    fnSetFlag(FLAG_CPXRES);
-    fnRefreshState();
 }
 
 fn adjustResultArgumentIsComplex(reg: runtime.calcRegister_t) bool {
@@ -435,18 +360,34 @@ pub fn adjustResult(
         return;
     }
 
-    if (adjustResultScalarCore(res) or adjustResultRealMatrixCore(res) or adjustResultComplexMatrixCore(res)) {
-        if (runtime.lastErrorCode != runtime.ERROR_NONE) {
-            return;
+    // The data type is read once, up front: the rounding below can retype the
+    // register, and every later test has to see the type the result came in with.
+    const result_data_type = runtime.getRegisterDataType(res);
+
+    if (!runtime.getSystemFlag(runtime.FLAG_SPCRES) and runtime.lastErrorCode == runtime.ERROR_NONE) {
+        adjustRealRegisterComponents(res, result_data_type);
+    }
+
+    if (runtime.lastErrorCode == runtime.ERROR_NONE) {
+        if (result_data_type == runtime.dtTime) {
+            checkTimeRange(registerReal34Ptr(res));
         }
-    } else if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+        if (result_data_type == runtime.dtDate) {
+            checkDateRange(registerReal34Ptr(res));
+        }
+    }
+
+    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
         undo_owned.undo();
         return;
     }
 
-    if (set_cpx_res and one_argument_is_complex and runtime.getRegisterDataType(res) != runtime.dtString) {
-        adjustResultSetCpxRes();
+    if (set_cpx_res and one_argument_is_complex and result_data_type != runtime.dtString) {
+        fnSetFlag(FLAG_CPXRES);
+        fnRefreshState();
     }
+
+    roundResultToSignificantDigits(res, result_data_type);
 
     if (drop_y) {
         mutation_owned.dropY();

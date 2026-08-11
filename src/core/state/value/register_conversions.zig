@@ -699,11 +699,24 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 oneTurn = 360;
             },
             amRadian => {
-                var reducedAngleTmpBuf: [REAL_2139_BYTES / 4]u32 align(4) = undefined;
-                var reducedAngleTmp2Buf: [REAL_2139_BYTES / 4]u32 align(4) = undefined;
-                const reducedAngleTmp: *real_t = @ptrCast(&reducedAngleTmpBuf);
-                const reducedAngleTmp2: *real_t = @ptrCast(&reducedAngleTmp2Buf);
+                // Incoming longInteger, converted via tmpString to a 2139-digit
+                // real, modulus 2pi, then back to real75. The two 2139-digit
+                // buffers are 1436 bytes each, 2872 of this function's 2936 byte
+                // frame; from the heap the frame falls to 64 bytes. 2139 cannot be
+                // raised to 6147: the type alone overruns the stack.
+                const reducedAngleBuf = mallocReal2139();
+                const reducedAngleBuf2 = mallocReal2139();
+                if (reducedAngleBuf == null or reducedAngleBuf2 == null) {
+                    free(reducedAngleBuf);
+                    free(reducedAngleBuf2);
+                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+                    return;
+                }
+                const reducedAngleTmp = reducedAngleBuf.?;
+                const reducedAngleTmp2 = reducedAngleBuf2.?;
                 var c: realContext_t = ctxtReal75;
+                // Cannot be increased further. 1071 works, 2139 is preferred as
+                // theoretically no case then fails; 6147 crashes.
                 c.digits = 2139;
                 convertLongIntegerRegisterToLongInteger(regist, &angle);
 
@@ -711,6 +724,8 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                     moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.");
                     mpz_clear(&angle);
+                    free(reducedAngleTmp);
+                    free(reducedAngleTmp2);
                     return;
                 }
 
@@ -719,6 +734,8 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 WP34S_Mod(reducedAngleTmp, const6147_2pi(), reducedAngleTmp2, &c);
                 realPlus(reducedAngleTmp2, reducedAngle, &ctxtReal75);
                 mpz_clear(&angle);
+                free(reducedAngleTmp);
+                free(reducedAngleTmp2);
                 return;
             },
             else => { // amNone
@@ -749,6 +766,16 @@ const REAL_2139_BYTES: usize = blk: {
     const maxd = ((2139 + 2) / 6) * 6 + 3;
     break :blk 10 + 2 * (maxd / 3);
 };
+
+// Heap for the 2139-digit working reals that REAL_T_ALLOC(name, 2139) keeps off
+// the frame. Bound at ?*real_t rather than an untyped C pointer because a C
+// void* converts to any object pointer, which keeps the call sites cast-free.
+extern fn malloc(size: usize) ?*real_t;
+extern fn free(ptr: ?*real_t) void;
+
+inline fn mallocReal2139() ?*real_t {
+    return malloc(REAL_2139_BYTES);
+}
 
 const c_lconv = extern struct { decimal_point: [*:0]const u8 };
 
@@ -1033,8 +1060,11 @@ pub export fn convertComplex34MatrixToComplex34MatrixRegister(matrix: *const com
 pub export fn convertReal34MatrixToComplex34Matrix(source: *const real34Matrix_t, destination: *complex34Matrix_t) callconv(.c) void {
     if (complexMatrixInit(destination, source.header.matrixRows, source.header.matrixColumns)) {
         if (destination.matrixElements) |delems| {
-            const count: u16 = source.header.matrixRows * source.header.matrixColumns;
-            var i: u16 = 0;
+            // matrixRows and matrixColumns are 12-bit fields: widen before the
+            // multiply, the way C's integer promotion does, or the product wraps
+            // past 4095 elements.
+            const count: u32 = @as(u32, source.header.matrixRows) * source.header.matrixColumns;
+            var i: u32 = 0;
             while (i < count) : (i += 1) {
                 real34Copy(&source.matrixElements.?[i], &delems[i].real);
                 real34SetZero(&delems[i].imag);
