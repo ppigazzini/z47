@@ -120,6 +120,15 @@ fn createDir(path: [*c]const u8) c_int {
     }
 }
 
+// hal/io.h:93 declares create_dir for every unit, and softmenus.c's menu dump
+// calls it by that name, so the HAL has to publish it and not just use it
+// internally. One mkdir level: 0 when the directory was created or already
+// existed, -1 otherwise, so a missing parent is an error rather than a
+// recursive create.
+pub export fn create_dir(dir: [*c]u8) callconv(.c) c_int {
+    return createDir(dir);
+}
+
 fn parentWindow() ?*anyopaque {
     return if (frmCalc) |window| @ptrCast(window) else null;
 }

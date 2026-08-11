@@ -20,6 +20,10 @@ const calcKeyboard_t = extern struct {
 pub export var modelString: [50]u8 = @splat(0);
 pub export var mockup: bool = false;
 pub export var dumpMenus: u16 = 0;
+pub export var dumpMenusAll: bool = false;
+// Borrowed argv slot naming the menu-dump output folder; null selects
+// fnMenuDump's built-in "menuDump" default.
+pub export var menuDumpPath: ?[*:0]u8 = null;
 pub export var writeExportAll: bool = false;
 pub export var config: u8 = 0;
 pub export var enableFunctionKeysDisplay: bool = false;
@@ -97,7 +101,11 @@ extern fn fnReset(confirmation: u16) void;
 extern fn fnSaveAllPrograms(param: u16) void;
 extern fn mockupSB() void;
 extern fn fnScreenDump(param: u16) void;
-extern fn fnDumpMenus(param: u16) void;
+extern fn fnDumpMenus(param: u16, path: ?[*:0]const u8) void;
+extern fn fnDumpMenusAll(param: u16, path: ?[*:0]const u8) void;
+// c47.c global. The menu dumps run before the GTK main loop is entered, so they
+// set it to keep the owners that pump or draw off a loop that does not exist.
+extern var headlessMode: bool;
 extern fn refreshScreen(source: u16) void;
 extern fn installCoreHostHooks() void;
 extern fn refreshFn(timerType: u16) void;
@@ -145,6 +153,25 @@ inline fn argEql(arg: [*:0]u8, lit: [:0]const u8) bool {
     return std.mem.eql(u8, std.mem.span(arg), lit);
 }
 
+// The three --dumpMenus* flags each take an optional [path] naming the output
+// folder. A following argument is taken as the path unless it starts with '-',
+// which keeps the next switch from being swallowed. Answers false when the path
+// is present but empty or too long for fnMenuDump's 512-byte buffer; main exits
+// with 1 there, doing no work.
+fn takeMenuDumpPath(argc: c_int, argv: [*][*:0]u8, arg: *usize, flag: [*:0]const u8) bool {
+    if (arg.* + 1 < @as(usize, @intCast(argc)) and argv[arg.* + 1][0] != '-') {
+        arg.* += 1;
+        const path = argv[arg.*];
+        menuDumpPath = path;
+        if (path[0] == 0 or std.mem.len(path) >= 500) {
+            _ = printf("Error: implausible %s path. No work done.\n", flag);
+            return false;
+        }
+        _ = printf("  menuDump path: %s\n", path);
+    }
+    return true;
+}
+
 fn printHelp() void {
     const cc: [*:0]const u8 = if (CALCMODEL == USER_R47) "r" else "c";
     const modeltext: [*:0]const u8 = if (CALCMODEL == USER_R47) "R47" else "C47";
@@ -174,8 +201,9 @@ fn printHelp() void {
     _ = printf("%s47 --deadkeys       : typewriter style dead keys\n", cc);
     _ = printf("%s47 --swapctrlcode   : ctrl fix for Swiss keyboards\n", cc);
     _ = printf("%s47 --mockup         : output demo status bar layout\n", cc);
-    _ = printf("%s47 --dumpMenus1     : output all static menus to drive; old file name format in the form 'Menu_140_p1_RIBBONS.bmp'\n", cc);
-    _ = printf("%s47 --dumpMenus2     : output all static menus to drive; new file name format in the form 'RIBBONS.1.bmp'\n", cc);
+    _ = printf("%s47 --dumpMenus1 [path]   : output all static menus to drive; old file name format 'Menu_140_p1_RIBBONS.bmp'; default folder 'menuDump' (auto headless mode)\n", cc);
+    _ = printf("%s47 --dumpMenus2 [path]   : output all static menus to drive; new file name format 'RIBBONS.1.bmp';           default folder 'menuDump' (auto headless mode)\n", cc);
+    _ = printf("%s47 --dumpMenusAll [path] : RefDB47 superset: every static menu incl. 1stDeriv/2ndDeriv/Sf/Solver/Grapher/SHOW; new file name format; default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
     _ = printf("%s47 --help           : list all SIM switches\n", cc);
     _ = printf("%s47 --h              : see --help\n", cc);
@@ -356,10 +384,21 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         if (argEql(argv[arg], "--dumpMenus1")) {
             _ = printf("Activated: %s\n", argv[arg]);
             dumpMenus = 1;
+            headlessMode = true;
+            if (!takeMenuDumpPath(argc, argv, &arg, "--dumpMenus1")) return 1;
         }
         if (argEql(argv[arg], "--dumpMenus2")) {
             _ = printf("Activated: %s\n", argv[arg]);
             dumpMenus = 2;
+            headlessMode = true;
+            if (!takeMenuDumpPath(argc, argv, &arg, "--dumpMenus2")) return 1;
+        }
+        if (argEql(argv[arg], "--dumpMenusAll")) {
+            _ = printf("Activated: %s\n", argv[arg]);
+            dumpMenus = 2; // use new filename format
+            dumpMenusAll = true;
+            headlessMode = true;
+            if (!takeMenuDumpPath(argc, argv, &arg, "--dumpMenusAll")) return 1;
         }
         if (argEql(argv[arg], "--help") or argEql(argv[arg], "--h") or argEql(argv[arg], "-h")) {
             printHelp();
@@ -438,7 +477,11 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
     if (dumpMenus > 0) {
         fnReset(CONFIRMED);
         clearScreen(121);
-        fnDumpMenus(dumpMenus);
+        if (dumpMenusAll) {
+            fnDumpMenusAll(dumpMenus, menuDumpPath);
+        } else {
+            fnDumpMenus(dumpMenus, menuDumpPath);
+        }
         _ = printf("\n\nOutput menus saved.\n");
         return 0;
     }

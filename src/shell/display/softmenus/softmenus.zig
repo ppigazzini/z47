@@ -3854,12 +3854,14 @@ pub export fn fnExitAllMenus(_: u16) callconv(.c) void {
     popSoftmenu();
 }
 
-// fnMenuDump / fnDumpMenus are entirely PC_BUILD (#if defined(PC_BUILD)); on
-// firmware the bodies compile to empty. They render each menu and write the
-// 1bpp frame buffer out as a BMP, one pixel at a time through
-// lcd_buffer_pixel_on; debug-only, never exercised by the test suite. The
-// --dumpMenus* flags set headlessMode before any of this runs and return before
-// gtk_main(), so nothing here may touch the GTK main loop.
+// fnMenuDump / fnDumpMenus / fnDumpMenusAll are entirely PC_BUILD
+// (#if defined(PC_BUILD)); on firmware the bodies compile to empty. They render
+// each menu and write the 1bpp frame buffer out as a BMP, one pixel at a time
+// through lcd_buffer_pixel_on; debug-only, never exercised by the test suite.
+// The --dumpMenus* flags set headlessMode before any of this runs and return
+// before gtk_main(), so nothing here may touch the GTK main loop.
+// The two Wrapper functions exist because indexOfItems holds void(uint16_t)
+// function pointers and cannot carry the output-path argument.
 const FILE = opaque {};
 extern fn fopen(path: [*c]const u8, mode: [*c]const u8) ?*FILE;
 extern fn fclose(f: ?*FILE) c_int;
@@ -3869,15 +3871,30 @@ extern fn printf(fmt: [*:0]const u8, ...) c_int;
 // dump; bound on non-firmware builds only, and its C bool_t return is a
 // one-byte 0/1 here.
 const c_lcd_buffer_pixel_on = if (!dmcp_build) @extern(*const fn (x: u32, y: u32) callconv(.c) u8, .{ .name = "lcd_buffer_pixel_on" }) else {};
+// hal/io.h:93. One mkdir level: 0 when the directory was created or already
+// existed, -1 otherwise (a missing parent is -1, not a recursive create).
+const c_create_dir = if (!dmcp_build) @extern(*const fn (dir: [*c]u8) callconv(.c) c_int, .{ .name = "create_dir" }) else {};
 
-pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callconv(.c) void {
+// distinctQuotes is propagated to stringToFileNameChars: 0 keeps the legacy
+// `"` -> `'` mapping used by --dumpMenus1/2; 1 maps `"` -> `''` so the "f'" and
+// "f\"" derivative menus get distinct filenames under --dumpMenusAll.
+pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16, pathIn: [*c]const u8, distinctQuotes: u8) callconv(.c) void {
     if (comptime dmcp_build) {
         _ = &menu_arg;
         _ = &item;
         _ = &newFilenameformat;
+        _ = &pathIn;
+        _ = &distinctQuotes;
         return;
     }
     if (comptime !dmcp_build) {
+        var menuDumpPath: [512]u8 = @splat(0);
+        _ = strcpy(&menuDumpPath, "menuDump"); // default output folder
+
+        if (pathIn != null and pathIn[0] != 0 and strlen(pathIn) < menuDumpPath.len) {
+            _ = strcpy(&menuDumpPath, pathIn);
+        }
+
         doRefreshSoftMenu = 1;
         showSoftmenu(softmenu[menu_arg].menuItem);
         softmenuStack[0].firstItem +%= @bitCast(item);
@@ -3890,25 +3907,32 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         var uint16: u16 = undefined;
         var uint8: u8 = 0;
 
+        if (c_create_dir(&menuDumpPath) != 0) {
+            _ = printf(">>> menuDump: cannot create folder %s\n", &menuDumpPath);
+            return;
+        }
+        _ = printf(">>> menuDump: output folder is %s\n", &menuDumpPath);
+
         var asciiString: [448]u8 = undefined;
         var asciiMenuName: [448]u8 = undefined;
 
+        // Both names fit bmpFileName whatever the caller passes: the folder is
+        // capped at 511 bytes above and the menu name at 447, leaving the longest
+        // possible "<folder>/Menu_%03d_p%d_<name>.bmp" under 1000.
         if (newFilenameformat == 2) {
             frontier_char_string.stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
-            frontier_char_string.stringToFileNameChars(&asciiMenuName, &asciiString, 0);
-            abi.fmtBufZ(&bmpFileName, "{s}.{d}.bmp", .{ std.mem.sliceTo(&asciiString, 0), @as(c_int, @intCast(@divTrunc(item, 18) + 1)) });
-            _ = printf(">>> filename:%s|\n", &bmpFileName);
+            frontier_char_string.stringToFileNameChars(&asciiMenuName, &asciiString, distinctQuotes);
+            abi.fmtBufZ(&bmpFileName, "{s}/{s}.{d}.bmp", .{ std.mem.sliceTo(&menuDumpPath, 0), std.mem.sliceTo(&asciiString, 0), @as(c_int, @intCast(@divTrunc(item, 18) + 1)) });
         } else if (newFilenameformat == 1) {
             frontier_char_string.stringToASCII(&indexOfItems[@intCast(-%softmenu[menu_arg].menuItem)].itemSoftmenuName, &asciiMenuName);
-            frontier_char_string.stringToFileNameChars(&asciiMenuName, &asciiString, 0);
-            abi.fmtBufZ(&bmpFileName, "Menu_{d:0>3}_p{d}_{s}.bmp", .{ @as(u32, @intCast(@as(c_int, menu_arg))), @as(c_int, @intCast(@divTrunc(item, 18) + 1)), std.mem.sliceTo(&asciiString, 0) });
-            _ = printf(">>> filename:%s|\n", &bmpFileName);
+            frontier_char_string.stringToFileNameChars(&asciiMenuName, &asciiString, distinctQuotes);
+            abi.fmtBufZ(&bmpFileName, "{s}/Menu_{d:0>3}_p{d}_{s}.bmp", .{ std.mem.sliceTo(&menuDumpPath, 0), @as(u32, @intCast(@as(c_int, menu_arg))), @as(c_int, @intCast(@divTrunc(item, 18) + 1)), std.mem.sliceTo(&asciiString, 0) });
         }
 
         const bmp = fopen(&bmpFileName, "wb") orelse {
             // Reachable: a filename-format argument outside the two known values
             // leaves bmpFileName unwritten.
-            _ = printf(">>> menuDump: cannot open %s\n", &bmpFileName);
+            _ = printf(">>> menuDump: cannot open %s for writing\n", &bmpFileName);
             return;
         };
 
@@ -3992,13 +4016,15 @@ pub export fn fnMenuDump(menu_arg: u16, item: u16, newFilenameformat: u16) callc
         }
 
         _ = fclose(bmp);
+        _ = printf(">>> menuDump: wrote %s\n", &bmpFileName);
         popSoftmenu();
     }
 }
 
-pub export fn fnDumpMenus(newFilenameformat: u16) callconv(.c) void {
+pub export fn fnDumpMenus(newFilenameformat: u16, path: [*c]const u8) callconv(.c) void {
     if (comptime dmcp_build) {
         _ = &newFilenameformat;
+        _ = &path;
         return;
     }
     if (comptime !dmcp_build) {
@@ -4015,7 +4041,7 @@ pub export fn fnDumpMenus(newFilenameformat: u16) callconv(.c) void {
                 switch (-%softmenu[@intCast(m)].menuItem) {
                     MNU_1STDERIV, MNU_2NDDERIV, MNU_Sf, MNU_Solver, MNU_Grapher, MNU_SHOW => {},
                     else => {
-                        fnMenuDump(@intCast(m), @intCast(n), newFilenameformat);
+                        fnMenuDump(@intCast(m), @intCast(n), newFilenameformat, path, 0);
                     },
                 }
                 n += 18;
@@ -4024,4 +4050,44 @@ pub export fn fnDumpMenus(newFilenameformat: u16) callconv(.c) void {
         }
         currentSolverStatus = @intCast(cc);
     }
+}
+
+pub export fn fnDumpMenusWrapper(newFilenameformat: u16) callconv(.c) void {
+    fnDumpMenus(newFilenameformat, null);
+}
+
+// Superset of fnDumpMenus: keeps the six menus it drops (1stDeriv, 2ndDeriv, Sf,
+// Solver, Grapher, SHOW). The five solver-aware menus carry NULL-only data arrays
+// and render as blank softkey rows; MNU_SHOW has numItems == 0, so the inner loop
+// skips it. Dynamic softmenus skip too, having no static content.
+// currentSolverStatus is masked exactly as fnDumpMenus masks it, so the two
+// functions emit byte-identical BMPs for the menus they share.
+pub export fn fnDumpMenusAll(newFilenameformat: u16, path: [*c]const u8) callconv(.c) void {
+    if (comptime dmcp_build) {
+        _ = &newFilenameformat;
+        _ = &path;
+        return;
+    }
+    if (comptime !dmcp_build) {
+        const cc: i32 = currentSolverStatus;
+        currentSolverStatus = currentSolverStatus & (SOLVER_STATUS_USES_FORMULA | SOLVER_STATUS_INTERACTIVE);
+        _ = printf("Dumping all menus (RefDB47 superset, no skip)\n");
+        var m: i16 = 0;
+        var n: i16 = undefined;
+        m = 0;
+        while (softmenu[@intCast(m)].menuItem != 0) {
+            n = 0;
+            while (n < softmenu[@intCast(m)].numItems and softmenu[@intCast(m)].numItems != 0) {
+                _ = printf("m=%d n=%d softmenu[%u].numItems=%u name:%s.%u\n", @as(c_int, m), @as(c_int, n), @as(c_uint, @intCast(m)), @as(c_uint, @intCast(softmenu[@intCast(m)].numItems)), &indexOfItems[@intCast(m)].itemCatalogName, @as(c_uint, @intCast(@rem(@as(i32, n), 18))));
+                fnMenuDump(@intCast(m), @intCast(n), newFilenameformat, path, 1);
+                n += 18;
+            }
+            m += 1;
+        }
+        currentSolverStatus = @intCast(cc);
+    }
+}
+
+pub export fn fnDumpMenusAllWrapper(newFilenameformat: u16) callconv(.c) void {
+    fnDumpMenusAll(newFilenameformat, null);
 }
