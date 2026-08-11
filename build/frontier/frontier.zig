@@ -21,6 +21,12 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
+    /// True where this executable's C sources are compiled with
+    /// TESTSUITE_BUILD, so the Zig owners answer the same question the C half
+    /// does: fnSNAP freezes the clock the date/time formatters read, and RESET
+    /// loads the sample programs. The testSuite and the full-core harnesses set
+    /// it; the product and the simulator leave it false.
+    is_testsuite_build: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -220,11 +226,13 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_infsums", options.option_infsums);
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);
-    // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
-    // that here so fnSNAP freezes the clock the date/time formatters read and a
-    // stored capture hash does not move with the calendar. startsWith, not eql:
-    // the ASAN lane builds "testSuite-asan" and needs the same frozen clock.
-    build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
+    // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
+    // owners and the C half of the same executable agree on which build this is:
+    // fnSNAP freezes the clock the date/time formatters read, and RESET loads the
+    // sample programs. Derived from the target NAME before, which silently left
+    // every full-core harness -- all of which define the macro for their C -- on
+    // the product's answer.
+    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
 
     // versionStr / versionStr2: assembled here the same way generated.zig builds
     // version.h, so the ported owner needs no C preprocessor stamp.
@@ -294,6 +302,7 @@ pub fn addToModule(
     c_flags: []const []const u8,
     calcmodel: u8,
     coverage: bool,
+    is_testsuite_build: bool,
 ) void {
     var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
     while (lines.next()) |line_raw| {
@@ -303,6 +312,6 @@ pub fn addToModule(
         }
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel, .coverage = coverage });
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .calcmodel = calcmodel, .coverage = coverage, .is_testsuite_build = is_testsuite_build });
     module.addObject(runtime_object);
 }

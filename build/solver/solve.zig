@@ -18,6 +18,12 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
+    /// True where this executable's C sources are compiled with
+    /// TESTSUITE_BUILD, so the Zig owners answer the same question the C half
+    /// does: fnSNAP freezes the clock the date/time formatters read, and RESET
+    /// loads the sample programs. The testSuite and the full-core harnesses set
+    /// it; the product and the simulator leave it false.
+    is_testsuite_build: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -87,13 +93,12 @@ fn addRuntimeObject(
     // runs the heavy/cold solver owners (tvm, sumprod) from executable QSPI
     // (XIP) to keep main FLASH free; same mechanism as the mathematics owners.
     build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
-    // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
-    // it here so the Zig solver owners (tvm.zig) take the testSuite code
-    // path (fnTvmVar's `testing` short-circuit).
-    // startsWith, not eql: the ASAN lane builds "testSuite-asan", which must take
-    // the same testSuite code paths (fnTvmVar's `testing` short-circuit) or the
-    // TVM tests fail there while passing on the plain testSuite.
-    build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
+    // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
+    // solver owners (tvm.zig) take the testSuite code path -- fnTvmVar's `testing`
+    // short-circuit -- in every executable whose C half is a testSuite build. That
+    // includes the ASAN lane and the full-core harnesses, which a test on the
+    // target name used to miss or catch only by accident.
+    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
     // DMCP firmware builds (both "dmcp" old_hw and "dmcp5") stub calcModeAimGui()
     // to a no-op (hal/gui.h: #if defined(DMCP_BUILD) ...); the on-screen-keyboard
     // sim/testSuite link the real function. equation.zig mirrors this.
@@ -154,6 +159,7 @@ pub fn addToModule(
     optimize: std.builtin.OptimizeMode,
     name_prefix: []const u8,
     c_flags: []const []const u8,
+    is_testsuite_build: bool,
 ) void {
     var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
     while (lines.next()) |line_raw| {
@@ -161,6 +167,6 @@ pub fn addToModule(
         if (source.len == 0 or source[0] == '#') continue;
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .is_testsuite_build = is_testsuite_build });
     module.addObject(runtime_object);
 }
