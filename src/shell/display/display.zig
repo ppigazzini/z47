@@ -11,14 +11,15 @@ const std = @import("std");
 // (the multi-font SHOW page builder), and _view/fnView/fnAview/fnPrompt.
 //
 // Notes on the build matrix (defines.h):
-//   * SAVE_SPACE_DM42_9 is #undef'd for every z47 build target (sim, dmcp pkg4,
-//     dmcp5): it is only set for the legacy single-file no-QSPI old_hw build.
-//     So the big `#if !defined(SAVE_SPACE_DM42_9)` block (RegName, SHOW_reset,
-//     printXSHOW, dispM and the full fnC47Show body) is LIVE on every target and
-//     is ported unconditionally; the SAVE_SPACE fallback `fnView(REGISTER_X)`
-//     is dead and omitted.
-//   * IR_PRINTING gates printViewAview / printInputPrompt (print.c). It is ON for
-//     host (sim/test) and DMCP5, OFF for every old_hw DMCP package. The frontier
+//   * OPTION_SHOW is defined for every z47 build target (sim, DMCP packages 1-4,
+//     DMCP5); the only #undef sits in the legacy single-file no-QSPI old_hw block
+//     z47 never builds. So the `#if defined(OPTION_SHOW)` block (RegName,
+//     SHOW_reset, printXSHOW, dispM and the full fnC47Show body) is LIVE on every
+//     target and is ported unconditionally; the `#else` fallback
+//     `fnView(REGISTER_X)` is dead and omitted.
+//   * OPTION_IR_PRINTING gates printViewAview / printInputPrompt (print.c). It is
+//     ON for host (sim/test), DMCP5 and DM42 packages 2 and 4, OFF for DM42
+//     packages 1 and 3. The frontier
 //     object is built once per (target, options); ir_printing is a build option
 //     wired per package, and the calls are guarded `if (comptime ir_printing)`.
 //     When off those symbols do not exist, so they must not be referenced.
@@ -349,6 +350,7 @@ extern const tinyFont: font_t;
 
 // indexOfItems is a C array -> bind by address.
 const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+extern fn sprintf(buf: [*c]u8, fmt: [*c]const u8, ...) c_int;
 // commonBugScreenMessages[N][SIZE]; bind by address (each row is a char[100]).
 const commonBugScreenMessages = @extern([*c]const [100]u8, .{ .name = "commonBugScreenMessages" });
 
@@ -608,19 +610,24 @@ fn itemStr(gapItem: u16) [*c]const u8 {
     }
     return &indexOfItems[gapItem].itemSoftmenuName;
 }
-// gapChar1Left/Right: applies when Lt[0]!=0 && Lt[1]==0 && Lt[2]==0
-fn gapChar1LR(gapItem: u16) [*c]const u8 {
+// gapChar1Left: applies when Lt[0]!=0 && Lt[1]==0 && Lt[2]==0
+fn gapChar1Left(gapItem: u16) [*c]const u8 {
     return gap_char_codec.gapChar1LR(itemStr(gapItem));
+}
+// gapChar1Right: the same ',' '.' '\'' '_' set as the left variant, but the
+// looser length test Rt[0]!=0 && (Rt[1]==0 || Rt[2]==0).
+fn gapChar1Right(gapItem: u16) [*c]const u8 {
+    return gap_char_codec.gapChar1RightFull(itemStr(gapItem));
 }
 // gapChar1Radix: applies when Rx[0]!=0 && (Rx[1]==0 || Rx[2]==0). Only ',' / '.'.
 fn gapChar1Radix(gapItem: u16) [*c]const u8 {
     return gap_char_codec.gapChar1Radix(itemStr(gapItem));
 }
 inline fn SEPARATOR_LEFT() [*c]const u8 {
-    return gapChar1LR(gapItemLeft);
+    return gapChar1Left(gapItemLeft);
 }
 inline fn SEPARATOR_RIGHT() [*c]const u8 {
-    return gapChar1LR(gapItemRight);
+    return gapChar1Right(gapItemRight);
 }
 // SEPARATOR_FRAC = gapItemFrac==0 ? "\1\1\0" : indexOfItems[gapItemFrac].itemSoftmenuName
 // gapItemFrac = gapItemLeft==0 ? 0 : ITM_SPACE_4_PER_EM
@@ -1105,7 +1112,7 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
             _ = strcat(displayString, "s");
         } else {
             _ = strcat(displayString, "?");
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "angle34ToDisplayString2", @as(c_int, mode), "mode" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "angle34ToDisplayString2", @as(c_int, mode), "mode");
             frontier_error.displayBugScreen(errorMessage);
         }
     }
@@ -1815,118 +1822,7 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
             digitsToDisplay = displayFormatDigits;
             digitToRound = @intCast(minI(firstDigit + @as(i16, displayFormatDigits), lastDigit));
         }
-        if (bcd[@intCast(digitToRound + 1)] >= 5) {
-            bcd[@intCast(digitToRound)] += 1;
-        }
-        while (bcd[@intCast(digitToRound)] == 10) {
-            bcd[@intCast(digitToRound)] = 0;
-            digitToRound -= 1;
-            numDigits -= 1;
-            bcd[@intCast(digitToRound)] += 1;
-        }
-        if (digitToRound < firstDigit) {
-            firstDigit -= 1;
-            numDigits = 1;
-            exponent += 1;
-        }
-
-        // SIG no-zero: clamp to the significant digits (ignore noise past numDigits),
-        // then drop trailing zeros left by the value or by rounding.
-        if (displayFormat == DF_SF and !forceSigZeroes) {
-            if (digitsToDisplay > numDigits - 1) {
-                digitsToDisplay = numDigits - 1;
-            }
-            while (digitsToDisplay > 0 and bcd[@intCast(firstDigit + digitsToDisplay)] == 0) {
-                digitsToDisplay -= 1;
-            }
-        }
-
-        if (sign != 0) {
-            displayString[charIndex] = '-';
-            charIndex += 1;
-            if (updateDisplayValueX != 0) {
-                displayValueX[valueIndex] = '-';
-                valueIndex += 1;
-            }
-        } else {
-            if (frontSpace != 0) {
-                displayString[charIndex] = ' ';
-                charIndex += 1;
-            }
-        }
-
-        displayString[charIndex] = '0' + bcd[@intCast(firstDigit)];
-        charIndex += 1;
-        if (updateDisplayValueX != 0) {
-            displayValueX[valueIndex] = '0' + bcd[@intCast(firstDigit)];
-            valueIndex += 1;
-        }
-
-        displayString[charIndex] = 0;
-        var tt: [4]u8 = undefined;
-        radixTT(&tt);
-        _ = strcat(displayString, &tt);
-        charIndex +%= @intCast(strlen(&tt));
-        if (updateDisplayValueX != 0) {
-            displayValueX[valueIndex] = '.';
-            valueIndex += 1;
-        }
-
-        digitCount = -1;
-        digitPointer = firstDigit + 1;
-        while (digitPointer < firstDigit + @as(i16, @intCast(minI(numDigits, digitsToDisplay + 1)))) : ({
-            digitPointer += 1;
-            digitCount -= 1;
-        }) {
-            if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
-                const sr = SEPARATOR_RIGHT();
-                const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
-                charIndex +%= @intCast(n);
-            } else {
-                firstDigitAfterPeriod = false;
-            }
-            displayString[charIndex] = '0' + bcd[@intCast(digitPointer)];
-            charIndex += 1;
-            if (updateDisplayValueX != 0) {
-                displayValueX[valueIndex] = '0' + bcd[@intCast(digitPointer)];
-                valueIndex += 1;
-            }
-        }
-
-        digitPointer = 0;
-        while (digitPointer <= digitsToDisplay - numDigits) : ({
-            digitPointer += 1;
-            digitCount -= 1;
-        }) {
-            if (!firstDigitAfterPeriod and !GROUPRIGHT_DISABLED() and modulo(digitCount, @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT()))))))) == @as(i32, @intCast(@as(u16, @bitCast(@as(i16, @intCast(GROUPWIDTH_RIGHT())))))) - 1) {
-                const sr = SEPARATOR_RIGHT();
-                const n: u32 = if (sr[0] != 1) (if (sr[1] != 1) 2 else 1) else 0;
-                _ = frontier_char_string.xcopy(displayString + charIndex, sr, n);
-                charIndex +%= @intCast(n);
-            } else {
-                firstDigitAfterPeriod = false;
-            }
-            displayString[charIndex] = '0';
-            charIndex += 1;
-            if (updateDisplayValueX != 0) {
-                displayValueX[valueIndex] = '0';
-                valueIndex += 1;
-            }
-        }
-
-        displayString[charIndex] = 0;
-        if (updateDisplayValueX != 0) {
-            displayValueX[valueIndex] = 0;
-        }
-
-        if (exponent != 0) {
-            if (updateDisplayValueX != 0) {
-                exponentToDisplayString(exponent, displayString + charIndex, @as([*c]u8, &displayValueX) + valueIndex, 0);
-            } else {
-                exponentToDisplayString(exponent, displayString + charIndex, null, 0);
-            }
-        }
+        emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intFromBool(sign != 0), digitToRound, digitsToDisplay, frontSpace, if (displayFormat == DF_SF and !forceSigZeroes) STRIP_TRAILING_ZEROS else KEEP_TRAILING_ZEROS, displayString);
         return;
     }
 
@@ -2312,7 +2208,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             abi.fmtCStr(displayString, "{c}" ++ STD_SPACE_PUNCTUATION ++ "<" ++ STD_SPACE_PUNCTUATION, .{@as(u8, @intCast(@as(c_int, xyzt[@intCast(regist - REGISTER_X)])))});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
             frontier_error.displayBugScreen(errorMessage);
         }
     } else if (prependFraction) {
@@ -2324,7 +2220,7 @@ pub export fn fractionToDisplayString(regist: calcRegister_t, displayString: [*c
             abi.fmtCStr(displayString, "<" ++ STD_SPACE_PUNCTUATION, .{});
         } else {
             _ = strcpy(displayString, "?" ++ STD_SPACE_PUNCTUATION);
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "fractionToDisplayString", @as(c_int, lessEqualGreater), "lessEqualGreater");
             frontier_error.displayBugScreen(errorMessage);
         }
     } else {
@@ -2510,7 +2406,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
     } else if (baseOverride == 0) {
         base = @intCast(getRegisterTag(regist));
         if (base <= 1 or base >= 17) {
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "shortIntegerToDisplayString", @as(c_int, base), "base" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "shortIntegerToDisplayString", @as(c_int, base), "base");
             frontier_error.displayBugScreen(errorMessage);
             base = 10;
         }
@@ -2533,7 +2429,7 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         } else if (shortIntegerMode == SIM_SIGNMT) {
             number &= ~shortIntegerSignBit;
         } else {
-            abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode" });
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgValueFor]), "shortIntegerToDisplayString", @as(c_int, shortIntegerMode), "shortIntegerMode");
             frontier_error.displayBugScreen(errorMessage);
         }
         number &= shortIntegerMask;
@@ -2875,10 +2771,16 @@ pub export fn longIntegerRegisterToDisplayString(regist: calcRegister_t, display
     longIntegerFree(&lgInt);
 }
 
-// emitSciDigits: the DF_SCI body lifted out (matches the inlined SCI path in
-// real34ToDisplayString2), fed from a digit-per-byte bcd[] (MSD first) so a long
-// real can supply up to digitsToDisplay digits. (display.c emitSciDigits)
-fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: i16, exponent_in: i32, sign: bool_t, digitToRound_in: i16, digitsToDisplay: i16, frontSpace: bool_t, displayString: [*c]u8) void {
+// Mantissa trailing-zero handling for emitSciDigits: pad to the full digit
+// count, or trim zeros to the digits actually carried. (display.c)
+const trailingZeros_t = u8;
+const KEEP_TRAILING_ZEROS: trailingZeros_t = 0;
+const STRIP_TRAILING_ZEROS: trailingZeros_t = 1;
+
+// emitSciDigits: the DF_SCI body lifted out, fed from a digit-per-byte bcd[]
+// (MSD first) so a long real can supply up to digitsToDisplay digits.
+// (display.c emitSciDigits)
+fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: i16, exponent_in: i32, sign: bool_t, digitToRound_in: i16, digitsToDisplay_in: i16, frontSpace: bool_t, stripTrailingZeros: trailingZeros_t, displayString: [*c]u8) void {
     _ = lastDigit;
     var charIndex: i32 = 0;
     var valueIndex: i32 = 0;
@@ -2890,6 +2792,7 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
     var numDigits = numDigits_in;
     var exponent = exponent_in;
     var digitToRound = digitToRound_in;
+    var digitsToDisplay = digitsToDisplay_in;
 
     // Round the displayed number
     if (bcd[@intCast(digitToRound + 1)] >= 5) {
@@ -2907,6 +2810,16 @@ fn emitSciDigits(bcd: [*c]u8, firstDigit_in: i16, lastDigit: i16, numDigits_in: 
         firstDigit -= 1;
         numDigits = 1;
         exponent += 1;
+    }
+    // SIG no-zero: clamp to the significant digits (ignore noise past numDigits),
+    // then drop trailing zeros left by the value or by rounding.
+    if (stripTrailingZeros == STRIP_TRAILING_ZEROS) {
+        if (digitsToDisplay > numDigits - 1) {
+            digitsToDisplay = numDigits - 1;
+        }
+        while (digitsToDisplay > 0 and bcd[@intCast(firstDigit + digitsToDisplay)] == 0) {
+            digitsToDisplay -= 1;
+        }
     }
     // Sign
     if (sign != 0) {
@@ -3048,7 +2961,7 @@ pub export fn realSCIToDisplayString(work: *const real_t, displayString: [*c]u8,
 
     digitToRound = @intCast(minI(firstDigit + digitsToDisplay, lastDigit));
 
-    emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intCast(sign), digitToRound, digitsToDisplay, frontSpace, displayString);
+    emitSciDigits(bcd, firstDigit, lastDigit, numDigits, exponent, @intCast(sign), digitToRound, digitsToDisplay, frontSpace, KEEP_TRAILING_ZEROS, displayString);
 }
 
 pub export fn longIntegerRegisterToRealDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, minimum: i32, removeTrailingRadix: bool_t) callconv(.c) void {
@@ -3123,7 +3036,9 @@ pub export fn longIntegerToDisplayString(lgInt: [*c]mpz_struct, displayString: [
     exponentStep1 = if (sl[0] == 1 and sl[1] == 1) 1 else @intCast(GROUPWIDTH_LEFT1());
 
     exponentShift = (exponentShift / @as(u32, @intCast(exponentStep)) + 1) * @as(u32, @intCast(exponentStep));
-    exponentShiftLimit = (@as(u32, @bitCast(@as(i32, maxExp - exponentStep1))) / @as(u32, @intCast(exponentStep)) + 1) * @as(u32, @intCast(exponentStep));
+    // C evaluates the whole expression in int -- a negative (maxExp - exponentStep1)
+    // truncates toward zero -- and converts to uint32_t only at the assignment.
+    exponentShiftLimit = @bitCast((@divTrunc(@as(i32, maxExp) - @as(i32, exponentStep1), @as(i32, exponentStep)) + 1) * @as(i32, exponentStep));
     if (exponentShift > exponentShiftLimit) {
         exponentShift -= exponentShiftLimit;
         var ix: i32 = @intCast(exponentShift);
@@ -3449,8 +3364,12 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
         tDigits += 1;
     }
 
-    tDigits += 1;
-    if ((ignoreTDisp == 0) and (timeDisplayFormatDigits == 1 or timeDisplayFormatDigits == 2 or (tDigits) > (if (isValid12hTime) @as(u32, 16) else 18))) {
+    // C's `(++tDigits)` sits behind two short-circuits: the increment fires only
+    // when ignoreTDisp is clear and the digit count is neither 1 nor 2.
+    if ((ignoreTDisp == 0) and (timeDisplayFormatDigits == 1 or timeDisplayFormatDigits == 2 or blk: {
+        tDigits += 1;
+        break :blk tDigits > (if (isValid12hTime) @as(u32, 16) else 18);
+    })) {
         m32 = frontier_real_type.realToUint32C47(&m, null);
         abi.fmtBufZ(&digitBuf, ":{d:0>2}", .{m32});
         _ = strcat(displayString, &digitBuf);
@@ -3653,7 +3572,7 @@ pub export fn mimShowElement() callconv(.c) void {
 }
 
 // ===========================================================================
-// SHOW machinery (#if !SAVE_SPACE_DM42_9 is LIVE on every z47 target)
+// SHOW machinery (#if defined(OPTION_SHOW) is LIVE on every z47 target)
 // ===========================================================================
 
 inline fn isXFNregisterValid3r(r: calcRegister_t) bool {
@@ -3777,7 +3696,6 @@ fn prepLongintIntoLines(last: *i16, src: *i16, dest: *i16, fontToUse: *const fon
         GRPWID = @intCast(GROUPWIDTH_RIGHT());
         GRP_DISABLED = GROUPRIGHT_DISABLED();
     }
-    _ = frontier_char_string.stringWidth(SEP, fontToUse, true, true); // Width_0 (unused beyond allowedWidth below)
     const Width_0: i16 = frontier_char_string.stringWidth(SEP, fontToUse, true, true);
 
     var d: i16 = undefined;
@@ -3892,7 +3810,7 @@ fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16,
 }
 
 // ===========================================================================
-// fnC47Show (SAVE_SPACE_DM42_9 is undef -> this full body is live everywhere)
+// fnC47Show (OPTION_SHOW is defined -> this full body is live everywhere)
 // ===========================================================================
 const dtXFN: i32 = 100;
 

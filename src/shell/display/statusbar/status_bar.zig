@@ -462,10 +462,10 @@ inline fn lowerUnderLine() i32 {
 pub export var SBlastIntegerBaseShown: u8 = 0xFF;
 pub export var SBAlphaModeLastShown: u16 = 0xFFFF;
 var SBbatteryLastShown: u16 = 0xFFFF; // drawn battery bar level, not the raw voltage
-pub export var SBhourglassShown: [2]u8 = undefined;
-pub export var alphaOutput: [3]u8 = undefined;
-// C file-scope .bss globals -> zero-initialized (false). `= undefined` left a
-// garbage bool that could read true before the first write.
+// C file-scope .bss globals -> zero-initialized. `= undefined` left garbage that
+// could read as a set flag before the first write.
+pub export var SBhourglassShown: [2]u8 = .{ 0, 0 };
+pub export var alphaOutput: [3]u8 = .{ 0, 0, 0 };
 pub export var reInstateIntegerModeDisplay: bool_t = false;
 pub export var reInstateOCModeDisplay: bool_t = false;
 
@@ -819,9 +819,12 @@ noinline fn showStringAndClearTail(x: u32, y: i32, dx: u32, dy: u32, xx: u32, ro
     if (xx < x +% dx) {
         lcd_fill_rect(xx, @intCast(maxI(0, y)), x +% dx -% xx, @intCast(maxI(@as(i32, @intCast(row)), @as(i32, @intCast(dy))) + minI(0, y)), LCD_SET_VALUE);
     }
-    if (y < 0) {
+    // A caller whose x1 sits left of x0 passes the negative width as a wrapped dx;
+    // C sums x + dx in 64 bits so the sum cannot wrap back onto the screen.
+    const onScreen = @as(u64, x) + @as(u64, dx) <= @as(u64, @intCast(SCREEN_WIDTH));
+    if (y < 0 and onScreen) {
         lcd_fill_rect(x, @bitCast(@as(i32, @intCast(row)) + y), dx, dx -% row, LCD_SET_VALUE);
-    } else if (y > 0) {
+    } else if (y > 0 and onScreen) {
         lcd_fill_rect(x, 0, dx, @bitCast(y - 0), LCD_SET_VALUE);
     }
 }

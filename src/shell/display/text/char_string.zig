@@ -8,10 +8,12 @@
 // stringToUtf8, utf8ToString, stringToRTF, stringToASCII, stringToFileNameChars,
 // xcopy, addChrBothSides, addStrBothSides, findTwoChars) plus the three TO_QSPI
 // tables (replacementTable, indexOfStringsASCII, indexOfStringsRTF) and the
-// file-static helpers (_calculateStringWidth, stringAppend, _getText, _getTextRTF).
+// file-static helpers (_calculateStringWidth, _getText, _getTextRTF); charString.c's
+// own stringAppend is the glyph-text lookup's appendCStr in core/text.
 // Faithful, line-by-line port.
 //
-// strReplace is host-only (#if !DMCP_BUILD). stringCopy is __MINGW64__-only and
+// strReplace (#if !DMCP_BUILD) and debug_utf8_string (#if PC_BUILD) are host-only
+// and carry no firmware symbol. stringCopy is __MINGW64__-only and
 // never compiled (z47 uses the stpcpy macro). The GENERATE_CATALOGS branches are
 // dead (never defined for any z47 build) and omitted; the commented-out
 // alternate stringToUtf8 / stringByteLength and the >0x00FFFF UTF-8 cases are dead
@@ -23,7 +25,6 @@
 // charString.c is not reachable from the testSuite; verification is build/link
 // across every target plus the boundary gates.
 
-const std = @import("std");
 const abi = @import("abi");
 fn hpRangeShift(char_code: u16, std_1: u16, std_9: u16, std_hp_1: u16, std_sup_1: u16, std_sup_9: u16) ?u16 {
     if (char_code >= std_1 and char_code <= std_9) return char_code - std_1 + std_hp_1;
@@ -56,13 +57,6 @@ else
 const bool_t = bool;
 const glyph_t = abi.Glyph;
 const font_t = abi.Font;
-// (8 on 64-bit hosts where the data pointer makes glyph_t 8-aligned, 4 on the
-// 32-bit firmware). Compute the offset from the alignment to match the C layout.
-const FONT_GLYPHS_OFFSET: usize = std.mem.alignForward(usize, 4, @alignOf(glyph_t));
-inline fn fontGlyphs(font: *const font_t) [*]const glyph_t {
-    const base: [*]const u8 = @ptrCast(font);
-    return @ptrCast(@alignCast(base + FONT_GLYPHS_OFFSET));
-}
 
 // ---------------------------------------------------------------------------
 // Constants (defines.h / typeDefinitions.h)
@@ -101,7 +95,6 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strstr(haystack: [*c]const u8, needle: [*c]const u8) [*c]u8;
-extern fn memcpy(dst: ?*anyopaque, src: ?*const anyopaque, n: usize) ?*anyopaque;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
 // host-only libc (referenced under !dmcp_build by strReplace and debug_utf8_string).
@@ -128,9 +121,6 @@ inline fn doublingNumeric(font: *const font_t) u16 {
 
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
-}
-inline fn minI(a: i32, b: i32) i32 {
-    return if (a < b) a else b;
 }
 
 // ---------------------------------------------------------------------------
@@ -307,7 +297,7 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
         if (charCode != 1) {
             glyphId = frontier_fonts.findGlyph(font, charCode);
             if (glyphId >= 0) {
-                glyph = &fontGlyphs(font)[@intCast(glyphId)];
+                glyph = &font.glyphsPtr()[@intCast(glyphId)];
             } else if (glyphId == -1) {
                 frontier_fonts.generateNotFoundGlyph(-1, charCode);
                 glyph = &glyphNotFound;
@@ -448,7 +438,15 @@ pub export fn utf8ToCodePoint(utf8: [*c]const u8, codePoint: *u32) callconv(.c) 
 // ---------------------------------------------------------------------------
 // debug_utf8_string
 // ---------------------------------------------------------------------------
-pub export fn debug_utf8_string(label: [*c]const u8, str: [*c]const u8, max_len: usize) callconv(.c) void {
+// charString.c compiles the body and declares the prototype only under PC_BUILD,
+// so the symbol exists on the host and not on the firmware.
+comptime {
+    if (!dmcp_build) {
+        @export(&debugUtf8String, .{ .name = "debug_utf8_string", .linkage = .strong });
+    }
+}
+
+fn debugUtf8String(label: [*c]const u8, str: [*c]const u8, max_len: usize) callconv(.c) void {
     _ = printf("%s:", label);
     _ = printf("  Hex:   ");
     var i: usize = 0;
@@ -801,17 +799,6 @@ const indexOfStringsRTF linksection(code_data_section) = [_]function_t2{
     .{ .item_in = STD_BINARY_ONE, .item_out = "1" },
     .{ .item_in = STD_BINARY_ZERO, .item_out = "0" },
 };
-
-// ---------------------------------------------------------------------------
-// stringAppend (static)
-// ---------------------------------------------------------------------------
-fn stringAppend(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    var l: usize = 0;
-    while (source[l] != 0) : (l += 1) {}
-    var i: usize = 0;
-    while (i <= l) : (i += 1) dest[i] = source[i];
-    return dest + l;
-}
 
 // ---------------------------------------------------------------------------
 // _getText / _getTextRTF (static)
