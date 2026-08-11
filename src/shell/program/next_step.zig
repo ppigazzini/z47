@@ -561,7 +561,11 @@ pub export fn fnCase(regist: u16) callconv(.c) void {
     } else if (real34CompareGreaterEqual(&arg, const34_65535())) {
         fnSkip(65534);
     } else {
-        fnSkip(@intCast(real34ToUInt32(&arg) - 1));
+        // A NaN passes both guards above and decodes to 0, so the C's unsigned
+        // `0 - 1` wraps to 0xFFFFFFFF and converts to the uint16_t parameter as
+        // 65535 -- a skip fnSkip's isAtEndOfProgram break terminates. Wrap and
+        // truncate here too rather than trapping on the safety-checked build.
+        fnSkip(@truncate(real34ToUInt32(&arg) -% 1));
     }
 }
 

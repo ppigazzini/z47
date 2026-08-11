@@ -16,8 +16,16 @@ const USER_R47fg_bk: u16 = 63;
 const USER_R47fg_g: u16 = 64;
 const USER_DM42: u16 = 45;
 
+const ITM_RIBBON_CPX: u16 = 2506;
+const ITM_RIBBON_FIN: u16 = 2507;
+const ITM_RIBBON_SAV: u16 = 2508;
 const ITM_RIBBON_C47: u16 = 2509;
+const ITM_RIBBON_C47PL: u16 = 2510;
 const ITM_RIBBON_R47: u16 = 2511;
+const ITM_RIBBON_R47PL: u16 = 2512;
+const ITM_RIBBON_ENG: u16 = 2513;
+const ITM_RIBBON_FIN2: u16 = 2514;
+const ITM_RIBBON_SAV2: u16 = 2515;
 
 const MNU_HOME: i16 = 1921;
 const MNU_PFN: i16 = 1403;
@@ -94,7 +102,19 @@ pub fn run(choice: u16) void {
         USER_PRESET => applyPReset(choice),
         USER_MRESET => applyMReset(choice),
         USER_ARESET => applyAReset(choice),
-        ITM_RIBBON_C47, ITM_RIBBON_R47 => applyRibbon(choice),
+        // All ten ribbons share one arm: fnRESET_MyM loads the ribbon into
+        // MyMenu, fnShowVersion names it, showSoftmenu opens it.
+        ITM_RIBBON_CPX,
+        ITM_RIBBON_FIN,
+        ITM_RIBBON_FIN2,
+        ITM_RIBBON_ENG,
+        ITM_RIBBON_SAV,
+        ITM_RIBBON_SAV2,
+        ITM_RIBBON_C47,
+        ITM_RIBBON_C47PL,
+        ITM_RIBBON_R47,
+        ITM_RIBBON_R47PL,
+        => applyRibbon(choice),
         else => {},
     }
 }

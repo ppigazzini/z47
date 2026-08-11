@@ -10,12 +10,13 @@
 // supDigit / baseChars / angleChars tables are exported (print.c and
 // manage.c index them) and live in QSPI on old_hw exactly like the C TO_QSPI.
 //
-// Faithful, line-by-line port of the C. The host-only listPrograms /
-// listLabelsAndPrograms debug dumps have NO callers anywhere in the tree
-// (only a commented-out reference in config.c) and are omitted. The sprintf
-// bug-path diagnostics and !DMCP_BUILD printf diagnostics carry no control
-// flow and are dropped, matching the sibling owners. Not reachable from the
-// testSuite; verified by build/link on every target plus the boundary gates.
+// Faithful, line-by-line port of the C. listPrograms / listLabelsAndPrograms
+// are host-only console dumps with no caller in the tree (only a commented-out
+// reference in config.c), exported on every non-DMCP build the way the C
+// declares them. The sprintf bug-path diagnostics and !DMCP_BUILD printf
+// diagnostics carry no control flow and are dropped, matching the sibling
+// owners. Not reachable from the testSuite; verified by build/link on every
+// target plus the boundary gates.
 
 const std = @import("std");
 const builtin = @import("builtin");
@@ -41,6 +42,7 @@ const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
 const abi = @import("abi"); // shared ABI bindings
 const numeral_decode = @import("numeral_decode.zig"); // std-only numeral -> display-string formatter
+const program_step_opcode = @import("program_step_opcode.zig"); // std-only program-step opcode/bound
 const gap_char_codec = @import("../../core/text/gap_char_codec.zig"); // std-only gap-char normalization
 const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_conversion_units = @import("../convert/conversion_units.zig");
@@ -52,6 +54,8 @@ const realContext_t = abi.RealContext;
 const font_t = abi.Font;
 
 const item_t = abi.Item;
+const labelList_t = abi.LabelList;
+const programList_t = abi.ProgramList;
 
 // ---------------------------------------------------------------------------
 // Constants / enum values (verified against defines.h / items.h / display.h)
@@ -1044,4 +1048,133 @@ pub export fn decodeOneStep_XPORT(step: [*c]u8) callconv(.c) void {
 
 pub export fn decodeOneStep_ALIAS(step: [*c]u8) callconv(.c) void {
     _decodeOneStep(step, MODE_ALIAS);
+}
+
+// ===========================================================================
+// listPrograms / listLabelsAndPrograms
+// ===========================================================================
+// Two console dumps of program memory, declared in decode.h and compiled only
+// off the firmware. Nothing in the tree calls them; the only reference is
+// commented out in config.c. They exist so that reference can be re-enabled.
+const ITM_LBL: u16 = 1;
+const ITM_END: u16 = 1458;
+
+extern var beginOfProgramMemory: [*c]u8;
+extern var labelList: [*c]labelList_t;
+extern var programList: [*c]programList_t;
+extern var numberOfLabels: u16;
+extern var numberOfPrograms: u16;
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
+extern fn fflush(f: ?*anyopaque) c_int;
+
+fn listProgramsImpl() callconv(.c) void {
+    var stepNumber: u16 = 0;
+    var programNumber: u16 = 0;
+
+    _ = printf("\nProgram listing");
+    var step: [*c]u8 = beginOfProgramMemory;
+    while (step != null) {
+        if (step == programList[programNumber].instructionPointer) {
+            programNumber += 1;
+            if (programNumber != 1) {
+                _ = printf("\n------------------------------------------------------------");
+            }
+            _ = printf("\nPgm Step   Bytes         OP");
+        }
+
+        const nextStep: [*c]u8 = frontier_next_step.findNextStep(step);
+        if (nextStep != null) {
+            const numberOfBytesInStep: u16 = @truncate(@intFromPtr(nextStep) -% @intFromPtr(step));
+            const lastByteIndex: i32 = @as(i32, numberOfBytesInStep) - 1; // C promotes the uint16_t before the -1
+            stepNumber += 1;
+            _ = printf("\n%02d  %4d  ", @as(c_int, programNumber), @as(c_int, stepNumber) - programList[programNumber - 1].step + 1);
+            _ = fflush(null);
+
+            var i: u16 = 0;
+            while (i < numberOfBytesInStep) : (i += 1) {
+                _ = printf(" %02x", @as(c_uint, step[i]));
+                _ = fflush(null);
+                if (i == 3 and numberOfBytesInStep > 4) {
+                    decodeOneStep(step);
+                    frontier_char_string.stringToUtf8(tmpString, tmpString + 2000);
+
+                    if (!program_step_opcode.checkOpCodeOfStep(step, ITM_LBL) and !program_step_opcode.checkOpCodeOfStep(step, ITM_END)) { // Not LBL and not END
+                        _ = printf("   ");
+                        _ = fflush(null);
+                    }
+
+                    _ = printf("   %s", tmpString + 2000);
+                    _ = fflush(null);
+                }
+
+                if (i % 4 == 3 and @as(i32, i) != lastByteIndex) {
+                    _ = printf("\n          ");
+                    _ = fflush(null);
+                }
+            }
+
+            if (numberOfBytesInStep <= 4) {
+                const padding: i32 = 4 - @rem(lastByteIndex, 4);
+                var pad: i32 = 1;
+                while (pad <= padding) : (pad += 1) {
+                    _ = printf("   ");
+                    _ = fflush(null);
+                }
+                decodeOneStep(step);
+                frontier_char_string.stringToUtf8(tmpString, tmpString + 2000);
+
+                if (!program_step_opcode.checkOpCodeOfStep(step, ITM_LBL) and !program_step_opcode.checkOpCodeOfStep(step, ITM_END)) { // Not LBL and not END
+                    _ = printf("   ");
+                    _ = fflush(null);
+                }
+
+                _ = printf("%s", tmpString + 2000);
+                _ = fflush(null);
+            }
+        }
+
+        step = nextStep;
+    }
+    _ = printf("\n");
+}
+
+fn listLabelsAndProgramsImpl() callconv(.c) void {
+    _ = printf("\nContent of labelList\n");
+    _ = printf("num program  step label\n");
+    var i: u16 = 0;
+    while (i < numberOfLabels) : (i += 1) {
+        _ = printf("%3d%8d%6d ", @as(c_int, i), @as(c_int, labelList[i].program), @as(c_int, labelList[i].step));
+        if (labelList[i].step < 0) { // Local label
+            const localLabel: u8 = labelList[i].labelPointer[0];
+            if (localLabel <= 99) { // Local label from 00 to 99
+                _ = printf("%02d\n", @as(c_int, localLabel));
+            } else if (localLabel <= LAST_UC_LOCAL_LABEL) { // Local label from A to L
+                _ = printf("%c\n", @as(c_int, localLabel) - 100 + 'A');
+            } else if (localLabel <= LAST_LOCAL_LABEL) { // Local label from a to l
+                _ = printf("%c\n", @as(c_int, localLabel) - FIRST_LC_LOCAL_LABEL + 'a');
+            }
+        } else { // Global label
+            const lblNameLen: u8 = program_step_opcode.boundProgramNameLength(labelList[i].labelPointer + 1, labelList[i].labelPointer[0], firstFreeProgramByte);
+            _ = frontier_char_string.xcopy(tmpString + 100, labelList[i].labelPointer + 1, lblNameLen);
+            tmpString[100 + @as(usize, lblNameLen)] = 0;
+            frontier_char_string.stringToUtf8(tmpString + 100, tmpString);
+            _ = printf("'%s'\n", tmpString);
+        }
+    }
+
+    _ = printf("\nContent of programList\n");
+    _ = printf("program  step OP\n");
+    var p: u16 = 0;
+    while (p < numberOfPrograms) : (p += 1) {
+        decodeOneStep(programList[p].instructionPointer);
+        frontier_char_string.stringToUtf8(tmpString, tmpString + 2000);
+        _ = printf("%7d %5d %s\n", @as(c_int, p), @as(c_int, programList[p].step), tmpString);
+    }
+}
+
+comptime {
+    if (!frontier_build_options.dmcp_build) {
+        @export(&listProgramsImpl, .{ .name = "listPrograms", .linkage = .strong });
+        @export(&listLabelsAndProgramsImpl, .{ .name = "listLabelsAndPrograms", .linkage = .strong });
+    }
 }

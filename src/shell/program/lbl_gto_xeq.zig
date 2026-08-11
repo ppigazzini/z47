@@ -11,11 +11,13 @@
 // Faithful, line-by-line port of the C. The IR_PRINTING and
 // PC_BUILD+DEBUG_EXECUTE blocks in executeOneStep are omitted (never defined for
 // any z47 build). The DMCP_BUILD key-poll block in runProgram is firmware-only
-// (gated on dmcp_build); the host uses refreshLcd. EXTRA_INFO sprintf hints are
-// reduced to fixed moreInfoOnError() strings as in the sibling owners; the
-// tmpString sprintf bug-paths are dropped (their control flow is a no-op). This
-// file is hot (executeOneStep runs per program step) so it stays in main .text.
+// (gated on dmcp_build); the host uses refreshLcd. The EXTRA_INFO hints build
+// their text into errorMessage and interpolate the same values the C sprintf
+// does; the tmpString sprintf bug-paths are dropped (their control flow is a
+// no-op). This file is hot (executeOneStep runs per program step) so it stays
+// in main .text.
 
+const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
@@ -36,6 +38,7 @@ const frontier_addons = @import("../extensions/addons.zig");
 const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_conversion_angles = @import("../convert/conversion_angles.zig");
 const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_manage = @import("manage.zig");
@@ -292,6 +295,7 @@ extern var currentLocalFlags: ?*localFlags_t;
 extern var currentLocalRegisters: ?[*]register_header_t;
 
 extern var tmpStringLabelOrVariableName: [*c]u8;
+extern var beginOfProgramMemory: [*c]u8;
 extern var firstFreeProgramByte: [*c]u8;
 extern var errorMessage: [*c]u8;
 
@@ -367,10 +371,6 @@ inline fn keyPop() c_int {
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
 // ---------------------------------------------------------------------------
-inline fn moreInfoOnError(where: [*:0]const u8, hint: [*:0]const u8) void {
-    if (comptime extra_info) c_moreInfoOnError(where, hint, null, null);
-}
-
 inline fn real34SetOne(destination: *real34_t) void {
     _ = decQuadFromInt32(destination, 1);
 }
@@ -501,18 +501,36 @@ pub export fn fnGoto(label: u16) callconv(.c) void {
             }
 
             frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnGoto:", "there is no local label in current program");
+            if (comptime extra_info) {
+                if (label < REGISTER_X_IN_KS_CODE) {
+                    abi.fmtBufZ(errorMessage[0..512], "there is no local label {d:0>2} in current program", .{label});
+                } else {
+                    // 100..111 name the labels A..L, 112..123 the labels a..l.
+                    const letter: u8 = if (label <= LAST_UC_LOCAL_LABEL)
+                        'A' + @as(u8, @intCast(label - REGISTER_X_IN_KS_CODE))
+                    else
+                        'a' + @as(u8, @intCast(label - FIRST_LC_LOCAL_LABEL));
+                    abi.fmtBufZ(errorMessage[0..512], "there is no local label {c} in current program", .{letter});
+                }
+                c_moreInfoOnError("In function fnGoto:", errorMessage, null, null);
+            }
         } else if (label >= FIRST_LABEL and label <= LAST_LABEL) { // Global or local named label
             if ((label - FIRST_LABEL) < numberOfLabels) {
-                goToGlobalStep(@intCast(absI32(labelList[label - FIRST_LABEL].step)));
+                goToGlobalStep(absI32(@as(i16, @truncate(labelList[label - FIRST_LABEL].step))));
                 return;
             } else {
                 frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                moreInfoOnError("In function fnGoto:", "label ID out of range");
+                if (comptime extra_info) {
+                    abi.fmtBufZ(errorMessage[0..512], "label ID {d} out of range", .{label - FIRST_LABEL});
+                    c_moreInfoOnError("In function fnGoto:", errorMessage, null, null);
+                }
             }
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnGoto:", "invalid parameter");
+            if (comptime extra_info) {
+                abi.fmtBufZ(errorMessage[0..512], "invalid parameter {d}", .{label});
+                c_moreInfoOnError("In function fnGoto:", errorMessage, null, null);
+            }
         }
     } else {
         frontier_manage.insertStepInProgram(@intCast(ITM_GTO));
@@ -543,8 +561,11 @@ pub export fn goToGlobalStep(step_arg: i32) callconv(.c) void {
         step = absI32(labelList[@as(u16, @intCast(lbl)) - FIRST_LABEL].step);
     }
 
-    frontier_manage.defineCurrentProgramFromGlobalStepNumber(@intCast(step));
-    currentLocalStepNumber = @intCast(absI32(step) - absI32(programList[currentProgramNumber - 1].step) + 1);
+    // defineCurrentProgramFromGlobalStepNumber takes an int16_t and
+    // currentLocalStepNumber is a uint16_t: C narrows both silently, so both
+    // narrowings here keep the low bits instead of trapping.
+    frontier_manage.defineCurrentProgramFromGlobalStepNumber(@truncate(step));
+    currentLocalStepNumber = @truncate(@as(u32, @bitCast(absI32(step) - absI32(programList[currentProgramNumber - 1].step) + 1)));
 
     var stepPointer: [*c]u8 = beginOfCurrentProgram;
     step = 1;
@@ -668,7 +689,7 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
             currentLocalStepNumber = cur().returnLocalStep + 1;
             frontier_next_step.defineCurrentStep();
         } else {
-            const returnGlobalStepNumber: u16 = @intCast(@as(i32, cur().returnLocalStep) + programList[@as(u16, @bitCast(cur().returnProgramNumber)) - 1].step); // the next step
+            const returnGlobalStepNumber: u16 = @truncate(@as(u32, @bitCast(@as(i32, cur().returnLocalStep) + programList[@as(u16, @bitCast(cur().returnProgramNumber)) - 1].step))); // the next step
             goToGlobalStep(returnGlobalStepNumber);
         }
 
@@ -692,8 +713,19 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
 
     // Not in a subroutine
     else {
-        goToPgmStep(currentProgramNumber, 1);
-        pemCursorIsZerothStep = 1;
+        // Rest one step past this RTN, staying inside the current main program.
+        if (isAtEndOfProgram(currentStep) != 0 or frontier_manage.isAtEndOfPrograms(currentStep) // ended via END (the main program terminator)
+        or isAtEndOfProgram(frontier_next_step.findNextStep(currentStep)) != 0 or frontier_manage.isAtEndOfPrograms(frontier_next_step.findNextStep(currentStep))) { // or the RTN's next step is that END
+            goToPgmStep(currentProgramNumber, 1); // wrap to the start of the active main program (never cross into the next one)
+            pemCursorIsZerothStep = 1;
+        } else {
+            var rtnGlobalStep: i32 = 1;
+            var stepScan: [*c]u8 = beginOfProgramMemory;
+            while (stepScan != null and @intFromPtr(stepScan) < @intFromPtr(currentStep)) : (stepScan = frontier_next_step.findNextStep(stepScan)) {
+                rtnGlobalStep += 1;
+            }
+            goToGlobalStep(rtnGlobalStep + 1); // rest on the instruction after the RTN (next routine in the same main program)
+        }
         cleanLocalFlagsAndRegisters();
     }
 }
@@ -777,7 +809,10 @@ fn _executeWithIndirectVariable(stringAddress: [*c]u8, op: u16) void {
         }
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function _executeWithIndirectVariable:", "string is not a named variable");
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(tmpStringLabelOrVariableName)});
+            c_moreInfoOnError("In function _executeWithIndirectVariable:", errorMessage, null, null);
+        }
     }
 }
 
@@ -802,7 +837,10 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(label));
                 } else {
                     frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function _executeOp:", "string is not a named label");
+                    if (comptime extra_info) {
+                        abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(tmpStringLabelOrVariableName)});
+                        c_moreInfoOnError("In function _executeOp:", errorMessage, null, null);
+                    }
                 }
             } else if (opParam == INDIRECT_REGISTER) {
                 _executeWithIndirectRegister(paramAddress, op);
@@ -891,7 +929,10 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(regist));
                 } else {
                     frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function _executeOp:", "string is not a named variable");
+                    if (comptime extra_info) {
+                        abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(tmpStringLabelOrVariableName)});
+                        c_moreInfoOnError("In function _executeOp:", errorMessage, null, null);
+                    }
                 }
             } else if (paramMode == PARAM_COMPARE and opParam == VALUE_0) {
                 reallocateRegister(TEMP_REGISTER_1, dtReal34, 0, @bitCast(amNone));
@@ -920,7 +961,10 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(menu_id));
                 } else {
                     frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function _executeOp:", "string is not a menu name");
+                    if (comptime extra_info) {
+                        abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a menu name", .{std.mem.span(tmpStringLabelOrVariableName)});
+                        c_moreInfoOnError("In function _executeOp:", errorMessage, null, null);
+                    }
                 }
             } else if (opParam == INDIRECT_REGISTER) {
                 _executeWithIndirectRegister(paramAddress, op);
@@ -1173,7 +1217,11 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
 
                 PTP_DISABLED => {
                     frontier_error.displayCalcErrorMessage(ERROR_NON_PROGRAMMABLE_COMMAND, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function executeOneStep:", "non-programmable function appeared in the program!");
+                    if (comptime extra_info) {
+                        // Four arguments: moreInfoOnError prints one line each,
+                        // so the operator sees the offending item's name.
+                        c_moreInfoOnError("In function executeOneStep:", "non-programmable function", @ptrCast(&indexOfItems[op].itemCatalogName), "appeared in the program!");
+                    }
                     return 0;
                 },
 
@@ -1196,7 +1244,10 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                         if (marker == STRING_LABEL_VARIABLE) {
                             if (getRegisterDataType(@bitCast(alphaRegister)) != dtString) {
                                 frontier_error.displayCalcErrorMessage(ERROR_NO_STRING_IN_ALPHA_REGISTER, ERR_REGISTER_LINE, REGISTER_T);
-                                moreInfoOnError("In function executeOneStep:", "cannot use 42append: alpha register is not a string");
+                                if (comptime extra_info) {
+                                    abi.fmtBufZ(errorMessage[0..512], "cannot use 42append on {s}", .{std.mem.span(frontier_debug.getRegisterDataTypeName(@bitCast(alphaRegister), true, false))});
+                                    c_moreInfoOnError("In function executeOneStep:", errorMessage, null, null);
+                                }
                                 return 0;
                             }
                             _getStringLabelOrVariableName(step);

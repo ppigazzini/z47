@@ -11,8 +11,10 @@ const const34_0 = consts.const34_0;
 //
 // Faithful, line-by-line port of the C. The sprintf(tmpString, ...) bug-path
 // diagnostics have no control-flow effect and are dropped, matching the
-// sibling owners. Not reachable from the testSuite; verified by build/link
-// on every target plus the boundary gates.
+// sibling owners; the _clearVar default arm is not one of those -- it raises a
+// bug screen, which does change control flow, so it is kept. Not reachable from
+// the testSuite; verified by build/link on every target plus the boundary
+// gates.
 
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
@@ -27,9 +29,11 @@ const angularMode_t = c_int;
 const abi = @import("abi"); // shared ABI bindings
 const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_date_time = @import("../convert/date_time.zig");
+const frontier_debug = @import("../debug.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_next_step = @import("next_step.zig");
+const ks_register_remap = @import("ks_register_remap.zig"); // std-only KS-code register remap
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const real34_t = abi.Real34;
 const complex34_t = abi.Complex34;
@@ -130,7 +134,13 @@ extern var tmpString: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
 extern var firstFreeProgramByte: [*c]u8;
 extern var beginOfCurrentProgram: [*c]u8;
+extern var errorMessage: [*c]u8;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
+
+// commonBugScreenMessages[N][SIZE]; bind by address (each row is a char[100]).
+const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
+const commonBugScreenMessages = @extern([*c]const [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8, .{ .name = "commonBugScreenMessages" });
+const bugMsgDataTypeUnknown: usize = 5; // commonBugScreenMessageCode_t
 
 // ---------------------------------------------------------------------------
 // Function externs
@@ -147,6 +157,7 @@ extern fn findOrAllocateNamedVariable(variableName: [*c]const u8) calcRegister_t
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 
 extern fn decQuadZero(r: *align(1) real34_t) *align(1) real34_t;
+extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 
 // ---------------------------------------------------------------------------
 // Inline wrappers (the C macros / static inlines)
@@ -159,11 +170,17 @@ inline fn real34SetZero(dst: *align(1) real34_t) void {
 }
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
+// regKStoC (static inline, defines.h): the band remap has one implementation,
+// in ks_register_remap, so a change to the KS band layout has one place to go.
 inline fn regKStoC(regKS: u8) i16 {
-    const k: i16 = @intCast(regKS);
-    const stat: i16 = if (FIRST_STAT_REGISTER_IN_KS_CODE <= k and regKS <= LAST_SPARE_REGISTERS_IN_KS_CODE) NUMBER_OF_LOCAL_REGISTERS else 0;
-    const local: i16 = if (FIRST_LOCAL_REGISTER_IN_KS_CODE <= k and k <= LAST_LOCAL_REGISTER_IN_KS_CODE_I) (FIRST_LOCAL_REGISTER - FIRST_LOCAL_REGISTER_IN_KS_CODE) else 0;
-    return k - stat + local;
+    return ks_register_remap.regKStoC(regKS, .{
+        .first_stat = FIRST_STAT_REGISTER_IN_KS_CODE,
+        .last_spare = LAST_SPARE_REGISTERS_IN_KS_CODE,
+        .first_local_ks = FIRST_LOCAL_REGISTER_IN_KS_CODE,
+        .last_local_ks = LAST_LOCAL_REGISTER_IN_KS_CODE_I,
+        .num_local = NUMBER_OF_LOCAL_REGISTERS,
+        .first_local = FIRST_LOCAL_REGISTER,
+    });
 }
 
 // ===========================================================================
@@ -224,8 +241,12 @@ fn _clearVar(regist: calcRegister_t) void {
         dtConfig => {},
 
         else => {
-            // printf("In function _clearVar, the data type ... is unknown!"):
-            // host-only diagnostic, no control-flow effect.
+            // A register whose data type no arm serves is a coding error, not a
+            // calculator error: displayBugScreen switches to CM_BUG_ON_SCREEN in
+            // every build, so this arm changes control flow and is not a
+            // droppable console diagnostic.
+            _ = sprintf(errorMessage, @ptrCast(&commonBugScreenMessages[bugMsgDataTypeUnknown]), "_clearVar", frontier_debug.getDataTypeName(@truncate(getRegisterDataType(regist)), false, false));
+            frontier_error.displayBugScreen(errorMessage);
         },
     }
 }
