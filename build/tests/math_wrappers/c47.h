@@ -372,7 +372,12 @@ extern uint64_t systemFlags1;
 #define realSetPlusInfinity(value) realCopy(const_plusInfinity, (value))
 #define realSetMinusInfinity(value) realCopy(const_minusInfinity, (value))
 #define real34ToReal(source, destination) decimal128ToNumber((const real34_t *)(source), (destination))
-#define realDivideRemainder(dividend, divisor, remainder, ctxt) WP34S_Mod((dividend), (divisor), (remainder), (ctxt))
+// realType.h:145 spells this decNumberRemainder, not WP34S_Mod, and the two
+// differ in the one property sinc reduces its argument for: WP34S_Mod normalises
+// the result non-negative, decNumberRemainder leaves the dividend's sign on it.
+// Mapping it to WP34S_Mod here put the oracle's sinc on the other function from
+// the owner's, so the differential compared two different reductions.
+#define realDivideRemainder(operand1, operand2, res, ctxt) decNumberRemainder((res), (operand1), (operand2), (ctxt))
 #define realCompareAbsLessThan(number1, number2) (!realCompareAbsEqual((number1), (number2)) && !realCompareAbsGreaterThan((number1), (number2)))
 // NOT macros. comparisonReals.c defines all three as FUNCTIONS built from a
 // sign-bit test on decNumberCompare's result, and rebuilding them out of
@@ -532,6 +537,7 @@ int32_t realToInt32C47(const real_t *source, bool_t *error);
 decNumber *decimal128ToNumber(const real34_t *source, decNumber *destination);
 decNumber *decNumberMultiply(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
+decNumber *decNumberRemainder(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberSquareRoot(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberExp(decNumber *result, const decNumber *rhs, decContext *real_context);
 decNumber *decNumberAdd(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *real_context);

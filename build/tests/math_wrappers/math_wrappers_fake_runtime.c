@@ -3050,6 +3050,17 @@ decNumber *decNumberDivide(decNumber *result, const decNumber *lhs, const decNum
   return result;
 }
 
+decNumber *decNumberRemainder(decNumber *result, const decNumber *lhs, const decNumber *rhs, decContext *realContext) {
+  const int32_t lhs_value = fakeRealValue(lhs);
+  const int32_t rhs_value = fakeRealValue(rhs);
+
+  (void)realContext;
+  // C's % already leaves the dividend's sign on the result, which is the whole
+  // difference from WP34S_Mod above -- so no normalising step here.
+  setFakeReal(result, rhs_value == 0 ? 0 : lhs_value % rhs_value, 0);
+  return result;
+}
+
 decNumber *decNumberSquareRoot(decNumber *result, const decNumber *rhs, decContext *realContext) {
   (void)realContext;
   setFakeReal(result, fakeRealValue(rhs) + 69, rhs->bits & 0x70);
