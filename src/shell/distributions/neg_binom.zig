@@ -2,8 +2,8 @@
 //
 // Zig owner for src/c47/distributions/negBinom.c: the Negative Binomial
 // distribution commands (fnNegBinomialP/L/R/I) and the WP34S math borrowings.
-// Part of the SAVE_SPACE_DM42_17 cluster, so compiled only on host and DMCP5 and
-// stubbed on every DM42 package via strip_17.
+// Part of the SAVE_SPACE_DM42_17 cluster, so compiled on host, on DMCP5 and on
+// DM42 package 1, and stubbed on DM42 packages 2-4 via strip_17.
 //
 // cdf_NegBinomial2 and pdf_NegBinomial are exported with C linkage because
 // still-C cluster members reach them where the cluster is kept (the geometric
@@ -21,7 +21,7 @@ pub const realContext_t = dr.realContext_t;
 // WP34S_Qf_Newton distribution selector (defines.h).
 const QF_NEWTON_NEGBINOM: u32 = 4;
 
-fn checkParamNegBinom(x: *real_t, i: *real_t, j: *real_t) bool {
+fn checkParamNegBinom(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -51,7 +51,7 @@ fn checkParamNegBinom(x: *real_t, i: *real_t, j: *real_t) bool {
 }
 
 // Tail shared by P/L/R: store the answer, or report an invalid parameter on NaN.
-fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) void {
+fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) linksection(dr.code_section) void {
     if (dr.realIsNaN(ans)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
         dr.moreInfoOnError(where, "a parameter is invalid", null, null);
@@ -61,7 +61,7 @@ fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) void {
     dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
 }
 
-pub fn negBinomialP(unused_but_mandatory_parameter: u16) void {
+pub fn negBinomialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -78,7 +78,7 @@ pub fn negBinomialP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn negBinomialL(unused_but_mandatory_parameter: u16) void {
+pub fn negBinomialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -91,7 +91,7 @@ pub fn negBinomialL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn negBinomialR(unused_but_mandatory_parameter: u16) void {
+pub fn negBinomialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -104,7 +104,7 @@ pub fn negBinomialR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn negBinomialI(unused_but_mandatory_parameter: u16) void {
+pub fn negBinomialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -134,7 +134,7 @@ pub fn negBinomialI(unused_but_mandatory_parameter: u16) void {
 // WP34S math borrowings (upstream comment: "borrowed from the WP34S project").
 // ---------------------------------------------------------------------------
 
-fn negBinomParam(r: *const real_t, res: *real_t) bool {
+fn negBinomParam(r: *const real_t, res: *real_t) linksection(dr.code_section) bool {
     if (dr.realIsSpecial(r)) {
         dr.setNaN(res);
         return false;
@@ -147,7 +147,7 @@ fn negBinomParam(r: *const real_t, res: *real_t) bool {
 }
 
 // PDF[NB(r, p)](k) = [(k + r - 1) C k] p^k (1 - p)^r
-pub fn pdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn pdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var xx: real_t = undefined;
@@ -179,7 +179,7 @@ pub fn pdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res
 }
 
 // I[p](k, r)
-fn cdfuNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn cdfuNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (!negBinomParam(r, res)) {
@@ -194,7 +194,7 @@ fn cdfuNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *
 }
 
 // 1 - I[p](k + 1, r)
-fn cdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn cdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (!negBinomParam(r, res)) {
@@ -204,7 +204,7 @@ fn cdfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *r
     cdfNegBinomial2(&p, p0, r, res, ctx);
 }
 
-pub fn cdfNegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn cdfNegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
 
@@ -218,7 +218,7 @@ pub fn cdfNegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, re
     dr.WP34S_betai(&q, r, &p, res, ctx);
 }
 
-fn qfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn qfNegBinomial(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p0c: real_t = undefined;
     var pr: real_t = undefined;
     var mean: real_t = undefined;

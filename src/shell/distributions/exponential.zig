@@ -27,7 +27,7 @@ fn checkParamExponential(x: *real_t, lambda: *real_t) linksection(dr.code_sectio
         return false;
     } else if (dr.realIsZero(lambda) or dr.realIsNegative(lambda)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
-        dr.moreInfoOnError("In function checkParamExponential:", "cannot calculate for lambda <= 0", null, null);
+        dr.moreInfoOnError("In function checkParamExponential:", "cannot calculate for \x83\xbb \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
     }

@@ -2,8 +2,8 @@
 //
 // Zig owner for src/c47/distributions/binomial.c: the Binomial distribution
 // commands (fnBinomialP/L/R/I) and the WP34S math borrowings. Part of the
-// SAVE_SPACE_DM42_17 cluster, so compiled only on host and DMCP5 and stubbed on
-// every DM42 package via strip_17.
+// SAVE_SPACE_DM42_17 cluster, so compiled on host, on DMCP5 and on DM42 package 1,
+// and stubbed on DM42 packages 2-4 via strip_17.
 //
 // WP34S_Cdf_Binomial2 and WP34S_Pdf_Binomial are exported with C linkage because
 // still-C cluster members reach them where the cluster is kept (the geometric
@@ -21,7 +21,7 @@ pub const realContext_t = dr.realContext_t;
 // WP34S_Qf_Newton distribution selector (defines.h).
 const QF_NEWTON_BINOMIAL: u32 = 2;
 
-fn checkParamBinomial(x: *real_t, i: *real_t, j: *real_t) bool {
+fn checkParamBinomial(x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -51,7 +51,7 @@ fn checkParamBinomial(x: *real_t, i: *real_t, j: *real_t) bool {
 }
 
 // Tail shared by P/L/R: store the answer, or report an invalid parameter on NaN.
-fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) void {
+fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) linksection(dr.code_section) void {
     if (dr.realIsNaN(ans)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
         dr.moreInfoOnError(where, "a parameter is invalid", null, null);
@@ -61,7 +61,7 @@ fn storeOrInvalid(ans: *const real_t, comptime where: [*:0]const u8) void {
     dr.adjustResult(dr.REGISTER_X, false, false, dr.REGISTER_X, -1, -1);
 }
 
-pub fn binomialP(unused_but_mandatory_parameter: u16) void {
+pub fn binomialP(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -78,7 +78,7 @@ pub fn binomialP(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn binomialL(unused_but_mandatory_parameter: u16) void {
+pub fn binomialL(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -91,7 +91,7 @@ pub fn binomialL(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn binomialR(unused_but_mandatory_parameter: u16) void {
+pub fn binomialR(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -104,7 +104,7 @@ pub fn binomialR(unused_but_mandatory_parameter: u16) void {
     }
 }
 
-pub fn binomialI(unused_but_mandatory_parameter: u16) void {
+pub fn binomialI(unused_but_mandatory_parameter: u16) linksection(dr.code_section) void {
     _ = unused_but_mandatory_parameter;
     var val: real_t = undefined;
     var ans: real_t = undefined;
@@ -134,7 +134,7 @@ pub fn binomialI(unused_but_mandatory_parameter: u16) void {
 // WP34S math borrowings (upstream comment: "borrowed from the WP34S project").
 // ---------------------------------------------------------------------------
 
-fn binomialParam(n: *const real_t, res: *real_t) bool {
+fn binomialParam(n: *const real_t, res: *real_t) linksection(dr.code_section) bool {
     if (dr.realIsSpecial(n)) {
         dr.setNaN(res);
         return false;
@@ -146,7 +146,7 @@ fn binomialParam(n: *const real_t, res: *real_t) bool {
     return true;
 }
 
-pub fn wp34sPdfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sPdfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var nn: real_t = undefined;
@@ -173,7 +173,7 @@ pub fn wp34sPdfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, r
     dr.realExponential(&p, res, ctx);
 }
 
-fn wp34sCdfuBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sCdfuBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -196,7 +196,7 @@ fn wp34sCdfuBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res:
     dr.WP34S_betai(&q, &r, p0, res, ctx);
 }
 
-fn wp34sCdfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sCdfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
 
     if (!binomialParam(n, res)) {
@@ -206,7 +206,7 @@ fn wp34sCdfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: 
     wp34sCdfBinomial2(&p, p0, n, res, ctx);
 }
 
-pub fn wp34sCdfBinomial2(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) void {
+pub fn wp34sCdfBinomial2(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -225,7 +225,7 @@ pub fn wp34sCdfBinomial2(x: *const real_t, p0: *const real_t, n: *const real_t, 
     dr.WP34S_betai(&r, &q, &p, res, ctx);
 }
 
-fn wp34sQfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) void {
+fn wp34sQfBinomial(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, ctx: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;

@@ -65,20 +65,23 @@ fn applySetGapChar(value: u16) void {
     }
 }
 
+// The four grouping setters and the five below store a uint16_t item parameter
+// into a uint8_t global: the item table's TAM maximum keeps every live value in
+// range, and anything wider truncates into the field as C's assignment does.
 fn applyGroupLeft(value: u16) void {
-    grpGroupingLeft = @as(u8, @intCast(value));
+    grpGroupingLeft = @truncate(value);
 }
 
 fn applyGroup1Lo(value: u16) void {
-    grpGroupingGr1LeftOverflow = @as(u8, @intCast(value));
+    grpGroupingGr1LeftOverflow = @truncate(value);
 }
 
 fn applyGroup1L(value: u16) void {
-    grpGroupingGr1Left = @as(u8, @intCast(value));
+    grpGroupingGr1Left = @truncate(value);
 }
 
 fn applyGroupRight(value: u16) void {
-    grpGroupingRight = @as(u8, @intCast(value));
+    grpGroupingRight = @truncate(value);
 }
 
 fn applyMenuGapL() void {
@@ -94,10 +97,12 @@ fn applyMenuGapR() void {
 }
 
 fn applyIntegerMode(value: u16) void {
-    if (shortIntegerMode != @as(u8, @intCast(value))) {
+    // The inequality is evaluated at int width, so a request whose low byte
+    // matches the stored mode still counts as a change.
+    if (@as(u16, shortIntegerMode) != value) {
         setSystemFlagChanged(SETTING_SINT_MODE);
     }
-    shortIntegerMode = @as(u8, @intCast(value));
+    shortIntegerMode = @truncate(value);
     frontier_radio_button_catalog.fnRefreshState();
 }
 
@@ -110,25 +115,25 @@ fn applyVersion() void {
 }
 
 fn applyRounding(value: u16) void {
-    roundingMode = @as(u8, @intCast(value));
+    roundingMode = @truncate(value);
 }
 
 fn applySignificantDigits(value: u16) void {
-    significantDigits = @as(u8, @intCast(value));
+    significantDigits = @truncate(value);
     if (significantDigits == 0) {
         significantDigits = 34;
     }
 }
 
 fn applyBaseNr(value: u16) void {
-    dispBase = @as(u8, @intCast(value));
+    dispBase = @truncate(value);
     if (dispBase == 1) {
         dispBase = 0;
     }
 }
 
 fn applyFractionDigits(value: u16) void {
-    fractionDigits = @as(u8, @intCast(value));
+    fractionDigits = @truncate(value);
     if (fractionDigits == 0) {
         fractionDigits = 34;
     }
@@ -176,14 +181,18 @@ fn applyFractionType() void {
 }
 
 fn applyRange(value: u16) void {
-    exponentLimit = @as(i16, @intCast(value));
+    // uint16_t into an int16_t global: the conversion is modular, so a request
+    // above 32767 lands negative and the clamp below raises it to the minimum.
+    exponentLimit = @bitCast(value);
     if (exponentLimit < DF_DMX_MIN) {
         exponentLimit = DF_DMX_MIN;
     }
 }
 
 fn applyHide(value: u16) void {
-    exponentHideLimit = @as(i16, @intCast(value));
+    // Modular into int16_t, as above; the clamp here only acts on positives, so
+    // a negative limit survives.
+    exponentHideLimit = @bitCast(value);
     if (exponentHideLimit > 0 and exponentHideLimit < DF_HIDE_MIN) {
         exponentHideLimit = DF_HIDE_MIN;
     }
@@ -206,12 +215,15 @@ fn applyConfirmationNo() void {
     }
 }
 
+// Both limits are int16_t and can be negative -- the state file restores them
+// raw and fnHide's clamp never removes a negative value. C sign-extends and
+// converts modularly to uint32_t, so -100 pushes 4294967196.
 fn applyGetRange() void {
-    frontier_config.z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentLimit)));
+    frontier_config.z47_frontier_push_u32_to_x(@bitCast(@as(i32, exponentLimit)));
 }
 
 fn applyGetHide() void {
-    frontier_config.z47_frontier_push_u32_to_x(@as(u32, @intCast(exponentHideLimit)));
+    frontier_config.z47_frontier_push_u32_to_x(@bitCast(@as(i32, exponentHideLimit)));
 }
 
 fn applyGetLastError() void {

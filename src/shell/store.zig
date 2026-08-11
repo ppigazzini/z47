@@ -403,7 +403,9 @@ fn storeIjReal(matrix: *real34Matrix_t) callconv(.c) bool {
         } else {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
             if (comptime extra_info) {
-                abi.fmtBufZ(errorMessage[0..512], "({d}, {d}) out of range", .{ rows, cols });
+                // The uint32_t values go through a PRIu16 conversion, which
+                // renders only their low 16 bits.
+                abi.fmtBufZ(errorMessage[0..512], "({d}, {d}) out of range", .{ @as(u16, @truncate(rows)), @as(u16, @truncate(cols)) });
                 moreInfoOnError("In function storeIjReal:", errorMessage, null);
             }
         }

@@ -642,13 +642,16 @@ pub export fn convertReal34RegisterToDateRegister(source: calcRegister_t, destin
         const thresholdYYHigh: i16 = @max(0, @as(i16, @bitCast(lastCenturyHighUsed & (YY_MASK_TRACKING - 1))) - 99);
         if (getSystemFlag(FLAG_YMD)) {
             if ((lastCenturyHighUsed & YY_MASK_OFF) == 0 and real34CompareLessThan(&part1, const34_100())) {
-                var yy: i16 = @intCast(real34ToInt32(&part1));
+                // part1 is only bounded above, so a large negative date truncates into
+                // int16_t exactly as C's cast does, and the century adjustment below is
+                // evaluated at int width and truncated back on assignment.
+                var yy: i16 = @truncate(real34ToInt32(&part1));
                 if (yy >= @rem(thresholdYYHigh, 100)) {
-                    yy += (thresholdYYHigh - @rem(thresholdYYHigh, 100));
+                    yy = @truncate(@as(i32, yy) + (thresholdYYHigh - @rem(thresholdYYHigh, 100)));
                 } else {
-                    yy += (thresholdYYHigh - @rem(thresholdYYHigh, 100)) + 100;
+                    yy = @truncate(@as(i32, yy) + (thresholdYYHigh - @rem(thresholdYYHigh, 100)) + 100);
                 }
-                int32ToReal34(@intCast(yy), &part1);
+                int32ToReal34(yy, &part1);
             }
         }
         // FLAG_MDY // FLAG_DMY

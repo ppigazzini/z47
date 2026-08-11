@@ -316,7 +316,10 @@ pub export fn getUptimeMs() callconv(.c) u32 {
     if (comptime dmcp_build) {
         return sys_current_ms();
     } else {
-        return @intCast(@divTrunc(g_get_monotonic_time(), 1000));
+        // Microseconds since boot; past ~49.7 days of host uptime the millisecond
+        // count no longer fits, and the conversion to uint32_t keeps the low 32
+        // bits rather than refusing the value.
+        return @truncate(@as(u64, @bitCast(@divTrunc(g_get_monotonic_time(), 1000))));
     }
 }
 
@@ -783,9 +786,11 @@ pub export fn fnStartStopTimerApp(unusedButMandatoryParameter: u16) callconv(.c)
 pub export fn fnStopTimerApp() callconv(.c) void {
     if (timerStartTime != TIMER_APP_STOPPED) {
         const msec: u32 = currentTime();
-        timerValue += msec - timerStartTime;
+        // uint32_t arithmetic: no _antirewinder runs here, so a stop taken across
+        // midnight leaves msec below timerStartTime and the difference wraps.
+        timerValue +%= msec -% timerStartTime;
         if (timerTotalTime > 0) {
-            timerTotalTime += msec - timerStartTime;
+            timerTotalTime +%= msec -% timerStartTime;
         }
         timerStartTime = TIMER_APP_STOPPED;
         fnTimerStop(TO_TIMER_APP);
@@ -814,7 +819,7 @@ pub export fn fnShowTimerApp() callconv(.c) void {
         tmpString[0] = 0;
 
         if (timerTotalTime > 0) {
-            const tmsec: u32 = msec - timerValue + timerTotalTime;
+            const tmsec: u32 = msec -% timerValue +% timerTotalTime;
 
             if (remainingMsecCountdown > 0) {
                 remainingMsec = @as(i64, remainingMsecCountdown) - @as(i64, tmsec);
@@ -908,7 +913,10 @@ pub export fn fnRegAddTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
     } else if (aimBuffer[AIM_BUFFER_LENGTH / 2] == 0) {
         rbr1stDigit = true;
     } else {
-        timerCraAndDeciseconds = (timerCraAndDeciseconds & 0x80) + @as(u8, @intCast(aimBuffer[AIM_BUFFER_LENGTH / 2] - '0'));
+        // The digit is taken from the shared aimBuffer, which needs hold nothing
+        // digit-like: C casts the difference to uint8_t and truncates the sum into
+        // the uint8_t field, so both steps are modular.
+        timerCraAndDeciseconds = (timerCraAndDeciseconds & 0x80) +% (aimBuffer[AIM_BUFFER_LENGTH / 2] -% '0');
         rbr1stDigit = true;
     }
 }
@@ -929,7 +937,7 @@ pub export fn fnRegAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c)
     fnUpTimerApp();
 
     if (timerTotalTime > 0) {
-        timerTotalTime += msec - timerValue;
+        timerTotalTime +%= msec -% timerValue;
     } else {
         timerTotalTime = msec;
     }
@@ -991,7 +999,7 @@ pub export fn fnAddLapTimerApp(unusedButMandatoryParameter: u16) callconv(.c) vo
     frontier_stats.fnSigmaAddRem(SIGMA_PLUS);
 
     if (timerTotalTime > 0) {
-        timerTotalTime += msec - timerValue;
+        timerTotalTime +%= msec -% timerValue;
     } else {
         timerTotalTime = msec;
     }
@@ -1033,11 +1041,14 @@ pub export fn fnDownTimerApp() callconv(.c) void {
 // ===========================================================================
 pub export fn fnDigitKeyTimerApp(digit: u16) callconv(.c) void {
     if (rbr1stDigit or aimBuffer[AIM_BUFFER_LENGTH / 2] == 0) {
-        aimBuffer[AIM_BUFFER_LENGTH / 2] = @intCast(digit + '0');
+        aimBuffer[AIM_BUFFER_LENGTH / 2] = @truncate(digit +% '0');
         aimBuffer[AIM_BUFFER_LENGTH / 2 + 1] = 0;
         rbr1stDigit = false;
     } else {
-        timerCraAndDeciseconds = (timerCraAndDeciseconds & 0x80) + @as(u8, @intCast(aimBuffer[AIM_BUFFER_LENGTH / 2] - '0')) * 10 + @as(u8, @intCast(digit));
+        // C casts the buffered byte's difference to uint8_t, then evaluates the
+        // tens/units sum at unsigned int width and truncates it into the field.
+        const tens: u8 = aimBuffer[AIM_BUFFER_LENGTH / 2] -% '0';
+        timerCraAndDeciseconds = @truncate(@as(u32, timerCraAndDeciseconds & 0x80) + @as(u32, tens) * 10 + @as(u32, digit));
         rbr1stDigit = true;
     }
 }

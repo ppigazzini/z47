@@ -2,9 +2,10 @@
 //
 // Zig owner for src/c47/distributions/normal.c: the Standard Normal, parametric
 // Normal and Log-Normal distribution commands plus the WP34S math borrowings.
-// The SAVE_SPACE_DM42_16 cluster is stripped on every DM42 package, so the owner
-// is compiled only on host and DMCP5 (no QSPI linksection needed) and gated by
-// strip_16. WP34S_qf_q_est (the signed Normal-quantile guess) and WP34S_Cdf_Q are
+// The SAVE_SPACE_DM42_16 cluster is stripped on DM42 package 4 alone, so the owner
+// is compiled on host, on DMCP5 and on DM42 packages 1-3, gated by strip_16 and
+// tagged linksection(dr.code_section) so the code runs from QSPI on the
+// flash-limited old_hw DM42. WP34S_qf_q_est (the signed Normal-quantile guess) and WP34S_Cdf_Q are
 // exported with C linkage because the poisson/chi2/hyper/f and t members reach
 // them where their clusters are kept; on DM42 they collapse to the upstream
 // stubs. The testSuite drives every branch via tests/{normal,stdnormal,
@@ -16,7 +17,7 @@ pub const realContext_t = dr.realContext_t;
 
 pub const NormalType = enum { std_normal, param_normal, log_normal };
 
-fn checkParamNormal(t: NormalType, x: *real_t, i: *real_t, j: *real_t) bool {
+fn checkParamNormal(t: NormalType, x: *real_t, i: *real_t, j: *real_t) linksection(dr.code_section) bool {
     if (!dr.saveLastX()) {
         return false;
     }
@@ -42,7 +43,7 @@ fn checkParamNormal(t: NormalType, x: *real_t, i: *real_t, j: *real_t) bool {
 
 const ctx = &dr.ctxtReal39;
 
-pub fn normalP(t: NormalType) void {
+pub fn normalP(t: NormalType) linksection(dr.code_section) void {
     var val: real_t = undefined;
     var alval: real_t = undefined;
     var mu: real_t = undefined;
@@ -79,7 +80,7 @@ pub fn normalP(t: NormalType) void {
     }
 }
 
-fn normalCdf(t: NormalType, comptime where: [*:0]const u8, upper: bool) void {
+fn normalCdf(t: NormalType, comptime where: [*:0]const u8, upper: bool) linksection(dr.code_section) void {
     var val: real_t = undefined;
     var mu: real_t = undefined;
     var sigma: real_t = undefined;
@@ -108,15 +109,15 @@ fn normalCdf(t: NormalType, comptime where: [*:0]const u8, upper: bool) void {
     }
 }
 
-pub fn normalL(t: NormalType) void {
+pub fn normalL(t: NormalType) linksection(dr.code_section) void {
     normalCdf(t, "In function normalL:", false);
 }
 
-pub fn normalR(t: NormalType) void {
+pub fn normalR(t: NormalType) linksection(dr.code_section) void {
     normalCdf(t, "In function normalR:", true);
 }
 
-pub fn normalI(t: NormalType) void {
+pub fn normalI(t: NormalType) linksection(dr.code_section) void {
     var val: real_t = undefined;
     var mu: real_t = undefined;
     var sigma: real_t = undefined;
@@ -148,7 +149,7 @@ pub fn normalI(t: NormalType) void {
 // WP34S math borrowings (upstream comment: "borrowed from the WP34S project").
 // ---------------------------------------------------------------------------
 
-fn cdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t, upper: bool) void {
+fn cdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t, upper: bool) linksection(dr.code_section) void {
     var p: real_t = undefined;
     // The upstream cross-jumps swap the tail for negative x: the "upper" block
     // runs when upper != (x < 0), otherwise the "lower" block runs.
@@ -170,7 +171,7 @@ fn cdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t, upper: boo
     }
 }
 
-fn wp34sPdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sPdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     dr.realMultiply(x, x, res, real_context);
     dr.realMultiply(res, dr.const1on2(), res, real_context);
@@ -180,16 +181,16 @@ fn wp34sPdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) void 
     dr.realDivide(res, &p, res, real_context);
 }
 
-fn wp34sCdfuQ(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sCdfuQ(x: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     cdfQ(x, res, real_context, true);
 }
 
-pub fn wp34sCdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+pub fn wp34sCdfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     cdfQ(x, res, real_context, false);
 }
 
 // Signed guess for the Normal quantile: any 0 < p < 1 -> signed estimate.
-pub fn wp34sQfQEst(x: *const real_t, res: *real_t, res_y: ?*real_t, real_context: *realContext_t) void {
+pub fn wp34sQfQEst(x: *const real_t, res: *real_t, res_y: ?*real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;
@@ -241,7 +242,7 @@ pub fn wp34sQfQEst(x: *const real_t, res: *real_t, res_y: ?*real_t, real_context
     }
 }
 
-fn wp34sQfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) void {
+fn wp34sQfQ(x: *const real_t, res: *real_t, real_context: *realContext_t) linksection(dr.code_section) void {
     var p: real_t = undefined;
     var q: real_t = undefined;
     var r: real_t = undefined;

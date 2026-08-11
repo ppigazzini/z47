@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0-only
-const cstR = consts.cstR;
 const consts = abi.constants;
 const const_1 = consts.const_1;
 const const_1on2 = consts.const_1on2;
@@ -26,14 +25,24 @@ const const_3 = consts.const_3;
 // stats.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.
 
+const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const std = @import("std");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
+// TO_QSPI: read-only data lives in QSPI flash on the old_hw two-file firmware.
+// Pointer-bearing const goes to __DATA_CONST on macOS, where a __TEXT placement
+// faults on relocation.
+const code_data_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
+    ".qspi_data"
+else if (builtin.target.os.tag == .macos)
+    "__DATA_CONST,__const"
+else
+    ".rodata";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-const DECNUMUNITS = 25;
 const abi = @import("abi"); // shared ABI bindings
 const frontier_error = @import("error.zig");
 const frontier_graph_text = @import("plot/graph_text.zig");
@@ -42,7 +51,6 @@ const frontier_register_value_conversions = @import("register_value_conversions.
 const real_t = abi.Real;
 const real34_t = abi.Real34;
 const realContext_t = abi.RealContext;
-const matrixHeader_t = abi.MatrixHeader;
 const real34Matrix_t = abi.Real34Matrix;
 const calcRegister_t = i16;
 const angularMode_t = c_int;
@@ -199,7 +207,6 @@ extern fn freeC47Blocks(pcMemPtr: ?*anyopaque, sizeInBlocks: usize) void;
 extern fn saveLastX() bool;
 extern fn liftStack() void;
 extern fn setSystemFlag(flag: c_uint) void;
-extern fn getSystemFlag(flag: c_int) bool;
 
 extern fn WP34S_Ln(x: *const real_t, res: *real_t, realContext: *realContext_t) void;
 
@@ -208,7 +215,6 @@ extern fn realCompareGreaterThan(number1: *align(1) const real_t, number2: *alig
 extern fn realCompareGreaterEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 extern fn realCompareLessEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
-extern fn real34CompareLessThan(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
 
 // decNumber / decQuad externs behind the real*/real34* macros.
 extern fn decNumberAdd(r: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
@@ -529,22 +535,26 @@ fn unaccumulate(sum: *real_t, x: *align(1) const real_t) bool {
     return true;
 }
 
+// One immutable instance of each dispatch table, built at link time and placed
+// in flash: addSigma/subSigma run once per data point through calcSigma.
+const addSigmaFuncs linksection(code_data_section) = accumulateFuncs_t{
+    .accumulate = &accumulate,
+    .minimum = &addMin,
+    .maximum = &addMax,
+};
+
+const subSigmaFuncs linksection(code_data_section) = accumulateFuncs_t{
+    .accumulate = &unaccumulate,
+    .minimum = &subMin,
+    .maximum = &subMax,
+};
+
 fn addSigma(x: *const real_t, y: *const real_t) void {
-    const acc = accumulateFuncs_t{
-        .accumulate = &accumulate,
-        .minimum = &addMin,
-        .maximum = &addMax,
-    };
-    accumulateToSigma(x, y, &acc);
+    accumulateToSigma(x, y, &addSigmaFuncs);
 }
 
 fn subSigma(x: *const real_t, y: *const real_t) void {
-    const deacc = accumulateFuncs_t{
-        .accumulate = &unaccumulate,
-        .minimum = &subMin,
-        .maximum = &subMax,
-    };
-    accumulateToSigma(x, y, &deacc);
+    accumulateToSigma(x, y, &subSigmaFuncs);
 }
 
 // ===========================================================================
@@ -690,6 +700,20 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
 // ===========================================================================
 // STATS matrix helpers (static in the C)
 // ===========================================================================
+
+// First element of the matrix's last row. C indexes matrixElements[(rows-1)*cols]
+// with the subtraction evaluated at int width. matrixRows is a 12-bit field, so
+// 4096 rows wrap to 0 and the index becomes -cols: the row immediately before the
+// element block. initHistoMatrix carries a guard for that case; the two sites
+// below do not, so the row address is derived the way C derives it rather than
+// letting a narrow subtraction turn a bounded access into a wild one.
+inline fn lastRowOfStats(elements: [*]real34_t, rows: u16, cols: u16) [*]real34_t {
+    if (rows == 0) {
+        return elements - @as(usize, cols);
+    }
+    return elements + (@as(usize, rows) - 1) * @as(usize, cols);
+}
+
 fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
     var rows: u16 = 0;
     var cols: u16 = undefined;
@@ -700,8 +724,9 @@ fn getLastRowStatsMatrix(x: *real_t, y: *real_t) void {
         linkToRealMatrixRegister(regStats, &stats);
         rows = stats.header.matrixRows;
         cols = stats.header.matrixColumns;
-        real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols]), x);
-        real34ToReal(@ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols + 1]), y);
+        const lastRow = lastRowOfStats(stats.matrixElements.?, rows, cols);
+        real34ToReal(@ptrCast(&lastRow[0]), x);
+        real34ToReal(@ptrCast(&lastRow[1]), y);
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {
@@ -731,8 +756,9 @@ fn AddtoStatsMatrix(x: *real_t, y: *real_t) bool {
         linkToRealMatrixRegister(regStats, &stats);
         rows = stats.header.matrixRows;
         cols = stats.header.matrixColumns;
-        realToReal34(x, @ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols]));
-        realToReal34(y, @ptrCast(&stats.matrixElements.?[@as(usize, rows - 1) * cols + 1]));
+        const lastRow = lastRowOfStats(stats.matrixElements.?, rows, cols);
+        realToReal34(x, @ptrCast(&lastRow[0]));
+        realToReal34(y, @ptrCast(&lastRow[1]));
     } else {
         frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
         if (comptime extra_info) {

@@ -22,7 +22,7 @@ fn checkParamLogistic(x: *real_t, mu: *real_t, s: *real_t) linksection(dr.code_s
 
     if (dr.realIsZero(s) or dr.realIsNegative(s)) {
         dr.displayDomainErrorMessage(dr.ERROR_INVALID_DISTRIBUTION_PARAM, dr.ERR_REGISTER_LINE, dr.REGISTER_X);
-        dr.moreInfoOnError("In function checkParamLogistic:", "cannot calculate for sigma <= 0", null, null);
+        dr.moreInfoOnError("In function checkParamLogistic:", "cannot calculate for \x83\xc3 \xa2\x64 0", null, null);
         dr.specialResultNaN();
         return false;
     }

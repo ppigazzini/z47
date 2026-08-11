@@ -56,7 +56,11 @@ const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const is_testsuite_build: bool = frontier_build_options.is_testsuite_build;
+const ir_printing: bool = frontier_build_options.ir_printing;
 const option_samplepgms: bool = frontier_build_options.option_samplepgms;
+// CALCMODEL == USER_R47 (66): the R47 personality, which selects among the four
+// R47 keyboard layouts instead of the C47/DM42 pair.
+const is_r47: bool = frontier_build_options.calcmodel == 66;
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -449,8 +453,7 @@ const Settings = [_]i32{
     3,    1,      49193,  -10001, -10001, -10001, -10001, -10001, 49193,
     124,  -10001, 1,      -10001, -10001, -10001, -10001, -10001, 1,
     125,  -10001, 12,     -10001, -10001, -10001, -10001, -10001, 12,
-    // FLAG_SIGZEROS (32874) / FLAG_BOLD (32873) preset rows (config.c) — these
-    // 4 rows were dropped in the port, so no profile configured BOLD/SIGZEROS.
+    // FLAG_SIGZEROS (32874) / FLAG_BOLD (32873): set/clear per profile.
     3,    1,      32874,  32874,  -10001, 32874,  32874,  -10001, -10001,
     3,    0,      -10001, -10001, 32874,  -10001, -10001, -10001, -10001,
     3,    0,      32873,  32873,  -10001, 32873,  32873,  -10001, -10001,
@@ -635,10 +638,13 @@ const kbd_usr = @extern([*c]calcKey_t, .{ .name = "kbd_usr" });
 // calcModel-dependent layout tables (kbd_std macro) — bound by address.
 const kbd_std_C47 = @extern([*c]const calcKey_t, .{ .name = "kbd_std_C47" });
 const kbd_std_DM42 = @extern([*c]const calcKey_t, .{ .name = "kbd_std_DM42" });
-const kbd_std_R47f_g = @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47f_g" });
-const kbd_std_R47bk_fg = @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47bk_fg" });
-const kbd_std_R47fg_bk = @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47fg_bk" });
-const kbd_std_R47fg_g = @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47fg_g" });
+// The four R47 layouts are reachable from the host selector and from an R47
+// firmware only; a C47 or DM42 firmware never names them, so nothing pulls them
+// into its image.
+const kbd_std_R47f_g = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47f_g" }) else {};
+const kbd_std_R47bk_fg = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47bk_fg" }) else {};
+const kbd_std_R47fg_bk = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47fg_bk" }) else {};
+const kbd_std_R47fg_g = if (!dmcp_build or is_r47) @extern([*c]const calcKey_t, .{ .name = "kbd_std_R47fg_g" }) else {};
 // PC_BUILD-only extra layouts referenced by the kbd_std macro on host.
 const kbd_std_E47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_E47" }) else {};
 const kbd_std_D47 = if (!dmcp_build) @extern([*c]const calcKey_t, .{ .name = "kbd_std_D47" }) else {};
@@ -831,6 +837,13 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 
+// moreInfoOnError, reached through the EXTRA_INFO_ON_CALC_ERROR gate upstream puts
+// around each of its call sites.
+const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
+inline fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8) void {
+    if (comptime extra_info) c_moreInfoOnError(m1, m2, null, null);
+}
+
 // decNumber primitives behind int32ToReal / realToReal34 / real34SetZero / realSetZero.
 extern fn decNumberFromInt32(result: *real_t, rhs: i32) *real_t;
 // realCopy(src,dst) macro -> decNumberCopy(dst, src) (used by doFnReset range init).
@@ -973,13 +986,35 @@ inline fn checkHP() bool_t {
     return significantDigits <= 16 and displayStack == 1 and exponentLimit == 99 and Input_Default == ID_DP_u8 and (calcMode == CM_NORMAL or calcMode == CM_NIM);
 }
 
-// kbd_std macro: select the layout table by calcModel.
+// kbd_std macro: select the layout table by calcModel. Three selectors, chosen
+// by the build: the host walks every layout the simulator can be switched to; an
+// R47 firmware only ever reaches the four R47 layouts and falls back to R47f_g;
+// every other firmware only ever reaches DM42 and C47.
 inline fn kbdStd() [*c]const calcKey_t {
     if (comptime !dmcp_build) {
-        return if (calcModel == USER_C47) kbd_std_C47 else if (calcModel == USER_DM42) kbd_std_DM42 else if (calcModel == USER_R47f_g) kbd_std_R47f_g else if (calcModel == USER_R47bk_fg) kbd_std_R47bk_fg else if (calcModel == USER_R47fg_bk) kbd_std_R47fg_bk else if (calcModel == USER_R47fg_g) kbd_std_R47fg_g else if (calcModel == USER_E47) kbd_std_E47 else if (calcModel == USER_D47) kbd_std_D47 else if (calcModel == USER_V47) kbd_std_V47 else if (calcModel == USER_N47) kbd_std_N47 else if (calcModel == USER_DM42) kbd_std_DM42 else kbd_std_C47;
-    } else {
-        return if (calcModel == USER_C47) kbd_std_C47 else if (calcModel == USER_DM42) kbd_std_DM42 else if (calcModel == USER_R47f_g) kbd_std_R47f_g else if (calcModel == USER_R47bk_fg) kbd_std_R47bk_fg else if (calcModel == USER_R47fg_bk) kbd_std_R47fg_bk else if (calcModel == USER_R47fg_g) kbd_std_R47fg_g else kbd_std_C47;
+        return switch (calcModel) {
+            USER_C47 => kbd_std_C47,
+            USER_DM42 => kbd_std_DM42,
+            USER_R47f_g => kbd_std_R47f_g,
+            USER_R47bk_fg => kbd_std_R47bk_fg,
+            USER_R47fg_bk => kbd_std_R47fg_bk,
+            USER_R47fg_g => kbd_std_R47fg_g,
+            USER_E47 => kbd_std_E47,
+            USER_D47 => kbd_std_D47,
+            USER_V47 => kbd_std_V47,
+            USER_N47 => kbd_std_N47,
+            else => kbd_std_C47,
+        };
     }
+    if (comptime is_r47) {
+        return switch (calcModel) {
+            USER_R47bk_fg => kbd_std_R47bk_fg,
+            USER_R47fg_bk => kbd_std_R47fg_bk,
+            USER_R47fg_g => kbd_std_R47fg_g,
+            else => kbd_std_R47f_g,
+        };
+    }
+    return if (calcModel == USER_DM42) kbd_std_DM42 else kbd_std_C47;
 }
 // Norm_Key_00_key macro
 inline fn normKey00Key() i32 {
@@ -1033,6 +1068,7 @@ pub fn z47_frontier_keys_to_user_case() void {
     } else {
         Norm_Key_00.used = false;
         frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function fnKeysManagement: TO_USER", "the NRM key is not available.");
     }
 }
 const FLAG_USER_u16: u16 = 32788;
@@ -1058,6 +1094,7 @@ pub fn z47_frontier_keys_from_user_case() void {
     } else {
         Norm_Key_00.used = false;
         frontier_error.displayCalcErrorMessage(ERROR_CANNOT_ASSIGN_HERE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+        moreInfoOnError("In function fnKeysManagement: FROM_USER", "the NRM key is not available.");
     }
 }
 
@@ -1074,17 +1111,20 @@ pub fn z47_frontier_keys_user_layout_reset_case() void {
 // isConfigCommon (public)
 // ===========================================================================
 pub export fn isConfigCommon(id: u16) callconv(.c) bool_t {
-    var idx: usize = 99;
-    switch (id) {
-        ITM_SETDFLT => idx = CFG_DFLT,
-        ITM_SETCHN => idx = CFG_CHINA,
-        ITM_SETEUR => idx = CFG_EUROPE,
-        ITM_SETIND => idx = CFG_INDIA,
-        ITM_SETJPN => idx = CFG_JAPAN,
-        ITM_SETUK => idx = CFG_UK,
-        ITM_SETUSA => idx = CFG_USA,
-        else => {},
-    }
+    // The seven ITM_SET* presets are the only ids that name a configSettings row.
+    // C seeds its index with 99 and compares against whatever lies that far past
+    // the seven-row table for anything else, which never matches; an unrecognised
+    // id is not a common configuration.
+    const idx: usize = switch (id) {
+        ITM_SETDFLT => CFG_DFLT,
+        ITM_SETCHN => CFG_CHINA,
+        ITM_SETEUR => CFG_EUROPE,
+        ITM_SETIND => CFG_INDIA,
+        ITM_SETJPN => CFG_JAPAN,
+        ITM_SETUK => CFG_UK,
+        ITM_SETUSA => CFG_USA,
+        else => return false,
+    };
     const cs = &configSettings[idx];
     const cmp1 = @as(i32, @intFromBool(getSystemFlag(FLAG_TDM24_i))) == @as(i32, @intCast(cs.tdm24));
     const cmp2 = @as(i32, @intFromBool(getSystemFlag(FLAG_DMY_i))) == @as(i32, @intCast(cs.dmy));
@@ -1206,6 +1246,11 @@ fn Sett(grp: i16) void {
                 else => {},
             }
         }
+    }
+    // Terminates the per-setting console trace above. Unlike those, this newline
+    // is not VERBOSE_LEVEL-gated, so it is emitted on every host call.
+    if (comptime !dmcp_build) {
+        _ = printf("\n");
     }
 }
 const xxx: i32 = -10001;
@@ -1403,9 +1448,11 @@ pub export fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8 {
 // assign shortIntegerWordSize directly (state-file/backup restore, RCLCFG) must call this too, since
 // neither mask is itself stored.
 pub export fn updateShortIntegerMasks() callconv(.c) void {
-    const resolved = word_size_math.resolveWordSize(shortIntegerWordSize, shortIntegerWordSize);
-    shortIntegerMask = resolved.mask;
-    shortIntegerSignBit = resolved.sign_bit;
+    // The stored size is read as it stands: unlike fnSetWordSize, this does not
+    // turn a 0 into 64, so a degenerate stored 0 yields mask 0.
+    const masks = word_size_math.masksForWordSize(shortIntegerWordSize);
+    shortIntegerMask = masks.mask;
+    shortIntegerSignBit = masks.sign_bit;
 }
 
 pub export fn fnGetWordSize(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1489,7 +1536,7 @@ pub export fn fnRoundingMode(RM: u16) callconv(.c) void {
         roundingMode = @intCast(RM);
         ctxtReal34.round = roundingModeTable[RM];
     } else {
-        abi.fmtBufZ(errorMessage[0..512], "Value {d} for RM is out of range. ", .{@as(u32, RM)});
+        abi.fmtBufZ(errorMessage[0..512], "In function {s}:{d} is an unexpected value for {s}!", .{ "fnRoundingMode", @as(c_int, RM), "RM" });
         _ = strcat(errorMessage, "Must be from 0 to 6");
         frontier_error.displayBugScreen(errorMessage);
     }
@@ -1501,8 +1548,9 @@ pub export fn fnGetADM(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetADM(regist: u16) callconv(.c) void {
+    // getRegisterAsLongInt initialises lgInt on every path it takes, including
+    // the ones it fails on, so the caller hands it an uninitialised value.
     var lgInt: mpz_struct = undefined;
-    mpz_init(&lgInt);
     if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
@@ -1520,8 +1568,9 @@ pub export fn fnGetIntegerSignMode(unusedButMandatoryParameter: u16) callconv(.c
 }
 
 pub export fn fnSetISM(regist: u16) callconv(.c) void {
+    // getRegisterAsLongInt initialises lgInt on every path it takes, including
+    // the ones it fails on, so the caller hands it an uninitialised value.
     var lgInt: mpz_struct = undefined;
-    mpz_init(&lgInt);
     if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
@@ -1544,8 +1593,9 @@ pub export fn fnGetDMX(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetDMX(regist: u16) callconv(.c) void {
+    // getRegisterAsLongInt initialises lgInt on every path it takes, including
+    // the ones it fails on, so the caller hands it an uninitialised value.
     var lgInt: mpz_struct = undefined;
-    mpz_init(&lgInt);
     if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
@@ -1561,8 +1611,9 @@ pub export fn fnGetREALDF(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetREALDF(regist: u16) callconv(.c) void {
+    // getRegisterAsLongInt initialises lgInt on every path it takes, including
+    // the ones it fails on, so the caller hands it an uninitialised value.
     var lgInt: mpz_struct = undefined;
-    mpz_init(&lgInt);
     if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
@@ -1580,8 +1631,9 @@ pub export fn fnGetNDEC(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetNDEC(regist: u16) callconv(.c) void {
+    // getRegisterAsLongInt initialises lgInt on every path it takes, including
+    // the ones it fails on, so the caller hands it an uninitialised value.
     var lgInt: mpz_struct = undefined;
-    mpz_init(&lgInt);
     if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
         mpz_clear(&lgInt);
         return;
@@ -2101,7 +2153,11 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         }
         _ = frontier_char_string.xcopy(glyphNotFound.data, &msg2[0].str2, 38);
 
-        _ = frontier_char_string.xcopy(kbd_usr, kbdStd(), SIZEOF_KBD_STD);
+        // Initialization of user key assignments. `sizeof(kbd_std)` measures the
+        // conditional expression the macro expands to, i.e. one `calcKey_t *`, so
+        // only the first pointer's worth of the layout is copied here; the
+        // USER_KRESET path below copies all 37 entries.
+        _ = frontier_char_string.xcopy(kbd_usr, kbdStd(), @sizeOf([*c]const calcKey_t));
 
         // 9 real34 reserved variables: ACC..PV
         {
@@ -2374,9 +2430,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             checkBatteryFw();
         }
 
-        // C guards this with if(loadTestData) — populating registers with test
-        // data (cubes/pi digits/primes) only when the host test-data option is on.
-        // The port ran it unconditionally, corrupting registers on every reset.
+        // Populate the registers with test data (cubes/pi digits/primes) only
+        // when the host test-data option is on.
         if (loadTestData) {
             const n: usize = indexOfStrings.len;
             var i: usize = 0;
@@ -2391,12 +2446,14 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             }
         }
 
-        // IR_PRINTING printer state init
-        printerState_print_on(false);
-        printerState_print_blank_line(0);
-        printerState_print_mode(PMODE_DEFAULT);
-        printerState_printer_model(PRINTER_HP);
-        printerState_delay(getLineDelay());
+        // Initialize Printer status
+        if (comptime ir_printing) {
+            printerState_print_on(false);
+            printerState_print_blank_line(0);
+            printerState_print_mode(PMODE_DEFAULT);
+            printerState_printer_model(PRINTER_HP);
+            printerState_delay(getLineDelay());
+        }
 
         frontier_items.runFunction(ITM_VERS);
 
@@ -2578,8 +2635,7 @@ comptime {
 var loopVar: i16 = 0;
 var loop2Var: i16 = 0;
 
-fn dmcpResetAutoOff_impl(unused: u16) callconv(.c) void {
-    _ = unused;
+fn dmcpResetAutoOff_impl() callconv(.c) void {
     if (romKeyEmpty() == 0 or !emptyKeyBuffer() or ((calcMode == CM_TIMER) and timerStartTime != TIMER_APP_STOPPED) or !getSystemFlag(FLAG_AUTOFF_i) or getSystemFlag(FLAG_RUNTIM_i) or programRunStop == PGM_RUNNING_v or (nextTimerRefresh != 0)) {
         romResetAutoOff();
     }
