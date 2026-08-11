@@ -13,8 +13,12 @@
 // nothing exported it -- the xfn port had inlined it into doXfn. The
 // factored it back out as a real export (saveRestoreCalcState.c's restoreRegister
 // needs it for the RXFN branch), so a stub here is now a duplicate symbol.
-// realSCIToDisplayString lives in the display owner, which this lane does not
-// link; registerFMAOutputString reaches it and nothing here drives that path.
+// Weak, for the same reason lnComplex below is: registerFMAOutputString reaches
+// realSCIToDisplayString and nothing here drives that path, but the oracles
+// divide over whether they link the display owner -- the ln-complex lane compiles
+// display.c, where this is a real function. Weak lets that definition win and
+// leaves the no-op for the lanes that filter display.c out.
+__attribute__((weak))
 void realSCIToDisplayString(const real_t *work, char *displayString, int16_t digitsToDisplay, bool_t frontSpace, uint8_t *bcd, int16_t maxDigits) {
   (void)work; (void)digitsToDisplay; (void)frontSpace; (void)bcd; (void)maxDigits;
   if(displayString != NULL) {
@@ -22,6 +26,9 @@ void realSCIToDisplayString(const real_t *work, char *displayString, int16_t dig
   }
 }
 
+// Weak for the reason given at the foot of this file: build/tests/testsuite_hal.zig
+// exports create_dir, and the lanes that link the HAL take that one.
+__attribute__((weak))
 int create_dir(char *dir) {
   (void)dir;
   return 0;

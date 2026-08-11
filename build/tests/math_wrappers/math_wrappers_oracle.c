@@ -547,12 +547,25 @@ void atan2LonIRema(void);
 #include "../../../upstream/src/c47/mathematics/parallel.c"
 #undef fnParallel
 
+// crossCplx and the three dot helpers are renamed alongside their commands: the
+// Zig owners export them under their own names now, so without this the oracle
+// object and the owner object define the same four symbols. Neither file is
+// called from outside itself, so the rename keeps every call inside the oracle
+// on the oracle's own bodies.
 #define fnCross oracle_fnCross
+#define crossCplx oracle_crossCplx
 #include "../../../upstream/src/c47/mathematics/cross.c"
+#undef crossCplx
 #undef fnCross
 
 #define fnDot oracle_fnDot
+#define dotCplx oracle_dotCplx
+#define doDotReal oracle_doDotReal
+#define doDotCplx oracle_doDotCplx
 #include "../../../upstream/src/c47/mathematics/dot.c"
+#undef doDotCplx
+#undef doDotReal
+#undef dotCplx
 #undef fnDot
 
 #define fnSdl oracle_fnSdl
