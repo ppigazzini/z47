@@ -87,6 +87,11 @@ HOST_LIB_FREE = {
         "CI instead: the linux-docs job runs it green while installing only doxygen "
         "and python3-pip, which IS the measurement, just not a local one"
     ),
+    "constants": (
+        "probed: passes with pkg-config intact AND with it unavailable. The constant "
+        "generator runs translate-c over c43's decNumber headers and links only the "
+        "vendored dep/decNumberICU, so it reaches no system library"
+    ),
 }
 
 ZIG_BUILD_RE = re.compile(r"\bzig build\b([^\n|&;#]*)")
