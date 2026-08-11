@@ -8,9 +8,12 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
-// luCpxMat, taken from its owner rather than through the runtime extern, so the
-// nullable pivot vector this function only forwards keeps its type.
-const luCpxMat = @import("complex_core.zig").luCpxMat;
+// The one complex LU worker, reached by its exported name rather than by
+// @import: complex_core sits above this owner in the module graph and importing
+// it closes a 38-file cycle through the command-wrapper dispatcher. The pivot
+// vector is declared nullable, as the worker's own definition takes it, so the
+// null this function only forwards keeps its meaning.
+extern fn luCpxMat(tmp_mat: [*]runtime.real_t, size: u16, p: ?[*]u16, real_context: *runtime.realContext_t) bool;
 
 const real_t = runtime.real_t;
 const complex34_t = runtime.complex34_t;
