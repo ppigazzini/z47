@@ -17,9 +17,9 @@ const frontier_screen_snap = @import("screen_snap.zig");
 // pixel/graph primitives (fnPixel/fnPoint/fnAGraph/fnClLcd), fnSNAP/fnScreenDump,
 // and the alpha-cursor inserter.
 //
-// Build matrix (computed locally; no new build options):
-//   * option_tvm_amort = !(dmcp_build and old_hw): the OPTION_TVM_AMORT amort-TI
-//     branches. ON for sim/dmcp5 + new_hw pkgs, OFF only for old_hw DMCP.
+// Build matrix (every OPTION_* below is read from the frontier build options):
+//   * option_tvm_amort: the OPTION_TVM_AMORT amort-TI branches. The option is
+//     defined for host, DMCP5 and every DM42 package, so they are always live.
 //   * LONGPRESS_CFG is ON for every target (always live).
 //   * STACK_X_STR_MED_FONT is #undef everywhere; only STACK_X_STR_LRG_FONT +
 //     STACK_STR_MED_FONT live. TEXT_MULTILINE_EDIT is ON everywhere.
@@ -58,9 +58,10 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const option_vector: bool = frontier_build_options.option_vector;
 const testsuite_build: bool = frontier_build_options.is_testsuite_build;
-// OPTION_TVM_AMORT is defined for every DMCP package as well as for DMCP5 and
-// host; the only #undef is in the legacy single-file block z47 never builds.
-const option_tvm_amort: bool = true;
+// OPTION_TVM_AMORT gates screen.c's amort temporary-information branches. It is
+// defined for every DM42 package as well as for DMCP5 and host; the only #undef
+// is in the legacy single-file block z47 never builds.
+const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1217,6 +1218,7 @@ extern fn memmove(d: ?*anyopaque, s: ?*const anyopaque, n: usize) ?*anyopaque;
 // GTK event-loop pumping (host only; referenced under !dmcp_build).
 const gtk_events_pending = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_events_pending" }) else {};
 const gtk_main_iteration = if (!dmcp_build) @extern(*const fn () callconv(.c) c_int, .{ .name = "gtk_main_iteration" }) else {};
+extern var headlessMode: bool; // c47.c global; in --dumpMenus there is no GTK loop to pump
 
 // stdio for fnScreenDump (host only).
 const FILE = opaque {};
@@ -2754,8 +2756,10 @@ pub export fn progressHalfSecUpdate_Integer(modeArg: u8, txt: [*c]u8, loop: i32,
 
 pub export fn checkHalfSec() callconv(.c) bool_t {
     if (comptime !dmcp_build) {
-        while (gtk_events_pending() != 0) {
-            _ = gtk_main_iteration();
+        if (!headlessMode) { // C guards the GTK pump with !headlessMode; --dumpMenus has no main loop
+            while (gtk_events_pending() != 0) {
+                _ = gtk_main_iteration();
+            }
         }
     }
     if (getSystemFlag(FLAG_MONIT) == 0) {

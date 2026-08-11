@@ -13,10 +13,13 @@ const std = @import("std");
 /// A word-bank index plus a bit shift (shared by the global and extra banks).
 pub const BankBit = struct { index: usize, shift: u4 };
 
-/// Where a user flag's bit lives.
+/// Where a user flag's bit lives. `local_out_of_range` is the local band's own
+/// failure -- flags.c reports it on the bug screen, where `none` (an id in no
+/// band at all) only reaches the console hint -- so the two stay distinct.
 pub const FlagLocation = union(enum) {
     global: BankBit,
     local: struct { shift: u5 },
+    local_out_of_range: struct { local_flag: u16 },
     extra: BankBit,
     none,
 };
@@ -31,7 +34,7 @@ pub fn flagLocation(flag: u16, flag_k: u16, last_local_flag: u16, num_global_fla
         if (local_flag < num_local_flags) {
             return .{ .local = .{ .shift = @intCast(local_flag) } };
         }
-        return .none;
+        return .{ .local_out_of_range = .{ .local_flag = local_flag } };
     }
     if (flag >= flag_m and flag <= flag_w) {
         const extra_flag = flag - 99;
@@ -54,6 +57,12 @@ test "local-bank flags and out-of-range" {
     // flag 112 -> local_flag 0.
     try std.testing.expectEqual(FlagLocation{ .local = .{ .shift = 0 } }, loc(112));
     try std.testing.expectEqual(FlagLocation{ .local = .{ .shift = 31 } }, loc(143));
+    // A narrower local bank than the band it is addressed by: local_flag 32 is
+    // past the 32 bits there are, and the id carries into the report.
+    try std.testing.expectEqual(
+        FlagLocation{ .local_out_of_range = .{ .local_flag = 32 } },
+        flagLocation(144, 99, 144, 112, 32, 211, 224),
+    );
 }
 
 test "extra M..W bank and gaps" {

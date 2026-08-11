@@ -465,6 +465,7 @@ inline fn screenData() [*c]u32 {
     return screenDataPtr.*;
 }
 
+extern var headlessMode: bool; // c47.c global; --dumpMenus and friends run with no GTK widget to draw
 extern fn cairo_image_surface_create_for_data(data: [*c]u8, format: c_int, width: c_int, height: c_int, stride: c_int) ?*anyopaque;
 extern fn cairo_set_source_surface(cr: ?*anyopaque, surface: ?*anyopaque, x: f64, y: f64) void;
 extern fn cairo_surface_mark_dirty(surface: ?*anyopaque) void;
@@ -492,6 +493,7 @@ pub export fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque
     // On firmware this UI helper is dead; reference cr (no discard, which the
     // lint would conflict with its host use below) and return FALSE.
     if (comptime dmcp_build) return @intFromBool(cr != cr);
+    if (headlessMode) return 0; // FALSE: C returns before touching cairo at all
     const imageSurface = cairo_image_surface_create_for_data(@ptrCast(screenData()), CAIRO_FORMAT_RGB24, SCREEN_WIDTH, SCREEN_HEIGHT, stride4());
     cairo_set_source_surface(cr, imageSurface, 0, 0);
     cairo_surface_mark_dirty(imageSurface);
