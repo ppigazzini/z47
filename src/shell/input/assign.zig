@@ -1239,9 +1239,13 @@ pub export fn assignToKey(data: [*c]const u8) callconv(.c) void {
     setUserKeyArgument(@intCast(keyCode * 6 + keyStateCode), &tmpMenuItem.argumentName);
 }
 
-// kbd_std is a #define selecting the active layout by calcModel. The PC_BUILD
-// macro adds the E47/D47/V47/N47 layouts; the firmware macro stops at the R47
-// variants. Reproduce both, gated on dmcp_build.
+// The kbd_std macro (c47.h:257-267). Three different selectors, chosen by the
+// preprocessor: the simulator walks every layout it can be switched to, including
+// the four PC-only ones; a CALCMODEL == USER_R47 firmware only ever reaches the
+// four R47 layouts and falls back to R47f_g; every other firmware only ever
+// reaches DM42 and C47. fnKeysManagement lets the user set calcModel to a foreign
+// model on any build, and upstream answers with its own build's table, not the
+// foreign one.
 const USER_DM42: u8 = 45;
 const USER_E47: u8 = 43;
 const USER_D47: u8 = 47;
@@ -1251,21 +1255,32 @@ const USER_R47f_g: u8 = 61;
 const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
+const USER_R47: u8 = 66;
+
+// CALCMODEL for the firmware this object is linked into.
+const built_for_r47: bool = frontier_build_options.calcmodel == USER_R47;
+
 inline fn kbdStd() *const [37]calcKey_t {
-    if (calcModel == USER_C47_v) return &kbd_std_C47;
-    if (calcModel == USER_DM42) return &kbd_std_DM42;
-    if (calcModel == USER_R47f_g) return &kbd_std_R47f_g;
-    if (calcModel == USER_R47bk_fg) return &kbd_std_R47bk_fg;
-    if (calcModel == USER_R47fg_bk) return &kbd_std_R47fg_bk;
-    if (calcModel == USER_R47fg_g) return &kbd_std_R47fg_g;
     if (comptime !dmcp_build) {
+        if (calcModel == USER_C47_v) return &kbd_std_C47;
+        if (calcModel == USER_DM42) return &kbd_std_DM42;
+        if (calcModel == USER_R47f_g) return &kbd_std_R47f_g;
+        if (calcModel == USER_R47bk_fg) return &kbd_std_R47bk_fg;
+        if (calcModel == USER_R47fg_bk) return &kbd_std_R47fg_bk;
+        if (calcModel == USER_R47fg_g) return &kbd_std_R47fg_g;
         if (calcModel == USER_E47) return &kbd_std_E47_data;
         if (calcModel == USER_D47) return &kbd_std_D47_data;
         if (calcModel == USER_V47) return &kbd_std_V47_data;
         if (calcModel == USER_N47) return &kbd_std_N47_data;
-        if (calcModel == USER_DM42) return &kbd_std_DM42;
+        return &kbd_std_C47;
     }
-    return &kbd_std_C47;
+    if (comptime built_for_r47) {
+        if (calcModel == USER_R47bk_fg) return &kbd_std_R47bk_fg;
+        if (calcModel == USER_R47fg_bk) return &kbd_std_R47fg_bk;
+        if (calcModel == USER_R47fg_g) return &kbd_std_R47fg_g;
+        return &kbd_std_R47f_g;
+    }
+    return if (calcModel == USER_DM42) &kbd_std_DM42 else &kbd_std_C47;
 }
 const USER_C47_v: u8 = 46;
 extern var calcModel: u8;
