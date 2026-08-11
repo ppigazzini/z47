@@ -2,6 +2,18 @@ const logxy_owned = @import("logxy.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 const transcendental_command_owned = @import("../special/transcendental_command.zig");
 
+const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
+const std_infinity = "\xa2\x1e"; // STD_INFINITY
+
+// EXTRA_INFO_MESSAGE (defines.h): the macro prints three console lines --
+// the fixed "In function " prefix, the function name, then the message --
+// and is compiled out on the firmware and under the testSuite.
+fn extraInfoMessage(function_name: [*:0]const u8, message: [*:0]const u8) void {
+    if (runtime.extra_info_on_calc_error) {
+        runtime.moreInfoOnError("In function ", function_name, message, null);
+    }
+}
+
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
@@ -31,7 +43,7 @@ fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_
             runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_plus_infinity(), runtime.REGISTER_X, runtime.amNone);
         } else {
             runtime.displayCalcErrorMessage(runtime.ERROR_OVERFLOW_PLUS_INF, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("checkArgs", "cannot calculate LogXY with x=0 and y=0", null, null);
+            extraInfoMessage("checkArgs", "cannot calculate LogXY with x=0 and y=0");
         }
         return true;
     }
@@ -41,7 +53,7 @@ fn logXYArgsHandled(x_real: *const runtime.real_t, x_imag: ?*const runtime.real_
             runtime.convertRealToResultRegister(runtime.z47_math_wrappers_const_minus_infinity(), runtime.REGISTER_X, runtime.amNone);
         } else {
             runtime.displayCalcErrorMessage(runtime.ERROR_OVERFLOW_MINUS_INF, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("checkArgs", "cannot calculate LogXY with x=0 and y!=0", null, null);
+            extraInfoMessage("checkArgs", "cannot calculate LogXY with x=0 and y!=0");
         }
         return true;
     }
@@ -79,7 +91,7 @@ fn logxyRealCore(x_real: *const runtime.real_t, y_real: *const runtime.real_t, r
                 runtime.realSetNaN(&result_real);
             } else {
                 runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-                runtime.moreInfoOnError("logxy", "cannot calculate LogXY with x<0 or y<0 when flag I is not set", null, null);
+                extraInfoMessage("logxy", "cannot calculate LogXY with x<0 or y<0 when flag I is not set");
                 return;
             }
         }
@@ -119,7 +131,7 @@ fn logXYShortInt() callconv(.c) void {
     if (runtime.getRegisterDataType(runtime.REGISTER_X) == runtime.dtReal34) {
         if (runtime.real34IsNaN(runtime.registerReal34Ptr(runtime.REGISTER_X)) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            runtime.moreInfoOnError("logxy", "cannot calculate LogXY with x=0", null, null);
+            extraInfoMessage("logxy", "cannot calculate LogXY with x=0");
             return;
         }
 
@@ -190,6 +202,9 @@ pub fn logxyReal(denom: *const runtime.real_t) callconv(.c) void {
     } else if (runtime.realIsInfinite(&a)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function logxyReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of log2 when flag SPCRES is not set", null, null);
+            }
             return;
         }
 

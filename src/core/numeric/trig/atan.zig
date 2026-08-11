@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 
@@ -27,8 +28,6 @@ pub fn arctanReal(
     var j: runtime.real_t = undefined;
     var z: runtime.real_t = undefined;
     var last: runtime.real_t = undefined;
-    var ten: runtime.real_t = undefined;
-    var one_tenth: runtime.real_t = undefined;
     var doubles: usize = 0;
     var invert = false;
     const neg = runtime.realIsNegative(x);
@@ -53,11 +52,8 @@ pub fn arctanReal(
         runtime.realDivide(runtime.z47_math_wrappers_const_1(), &a, &a, real_context);
     }
 
-    runtime.uInt32ToReal(10, &ten);
-    runtime.realDivide(runtime.z47_math_wrappers_const_1(), &ten, &one_tenth, real_context);
-
     var reduce_iteration: usize = 0;
-    while (reduce_iteration < taylor_iteration_max and !isLessEqual(&a, &one_tenth)) : (reduce_iteration += 1) {
+    while (reduce_iteration < taylor_iteration_max and !isLessEqual(&a, abi.constants.const_1on10())) : (reduce_iteration += 1) {
         doubles += 1;
         runtime.realMultiply(&a, &a, &b, real_context);
         runtime.realAdd(&b, runtime.z47_math_wrappers_const_1(), &b, real_context);
@@ -89,6 +85,9 @@ pub fn arctanReal(
 
         runtime.realAdd(&j, runtime.z47_math_wrappers_const_2(), &j, real_context);
         runtime.realSubtract(angle, &last, &b, real_context);
+        // realPlus, as the C convergence test does: it re-rounds the
+        // difference in the caller's context before the zero test.
+        _ = runtime.decNumberPlus(&b, &b, real_context);
         if (runtime.realIsZero(&b)) {
             break;
         }

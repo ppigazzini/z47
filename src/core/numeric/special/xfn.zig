@@ -24,14 +24,20 @@ const const2139_2pi = consts.const2139_2pi;
 // operation (the testSuite checks results to the last ULP). The 1071-digit
 // REAL_T_PTR scratch values become 4-byte-aligned stack byte buffers cast to
 // *real_t. The context digit count (maxContextDigits / maxAllowedDigits) follows
-// use1071: true under TESTSUITE_BUILD and on DM42n/PC (HIMEMORY), matching the C
-// `use1071 = HIMEMORY && user1071Flag`. The OPTION_XFN_1000 #else empty stubs
-// (DM42 old_hw) are NOT reproduced as no-ops; the full bodies are emitted for
-// every build and pushed to executable QSPI via linksection (the execute-in-place
+// use1071, which xfn.c declares as a plain `const bool_t use1071 = true`. Every
+// exported entry point in xfn.c's
+// `#if !defined(OPTION_XFN_1000)` stub block opens here with a comptime-false
+// early return, so with the option out the command answers nothing and the
+// 1071-digit body behind it is unreachable and dropped -- the same shape the
+// stub block gives upstream. fnXfnIndirect needs no guard of its own: it is
+// file-local here, as the real definition is static upstream, and every one of
+// its callers is guarded. registerFMAOutputPlainString is the one function
+// the stub block omits, because its only caller disappears with the option; it
+// answers false here so the symbol stays linkable across packages. What remains
+// is pushed to executable QSPI via linksection (the execute-in-place
 // mechanism), so the flash-limited firmware still fits. The DEBUG_XFN console
 // diagnostics and the unconditional getSingleParameter printf have no effect on
-// the computed result and are dropped. EXTRA_INFO sprintf hints become fixed
-// moreInfoOnError strings.
+// the computed result and are dropped.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_rdp = @import("../rounding/rdp.zig");
@@ -121,6 +127,10 @@ const FORCEANG: c_int = 201;
 // extended-precision engine, and a build that carries it carries it at full
 // width. Narrowing it on firmware computed at 75 digits and refused exponents
 // past 68 rather than 1000.
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
+
 const use1071: bool = true;
 const maxAllowedDigits: i32 = if (use1071) 1000 else 68;
 const maxContextDigits: i32 = if (use1071) 1071 else 75;
@@ -604,7 +614,6 @@ fn readThreeRegisters(registerNo: calcRegister_t, result: *align(1) real_t, temp
 // getCombinedParameter
 // ===========================================================================
 fn getCombinedParameter(param: c_int, registerNo: calcRegister_t, combined: *align(1) real_t, temporary: *align(1) real_t, angleMode: *angularMode_t, c: *realContext_t) linksection(runtime.code_section) bool {
-    _ = param;
     if (!getAngleModeForRegister3r(registerNo, angleMode) and getRegisterDataType(registerNo) != dtLongInteger) {
         displayCalcErrorMessage(ERROR_INPUT_DATA_TYPE_NOT_MATCHING, ERR_REGISTER_LINE, REGISTER_X);
         moreInfoOnError("In function fnXfn:getCombinedParameter:", "Invalid input registers: getAngleModeForRegister3r ", null, null);
@@ -617,7 +626,18 @@ fn getCombinedParameter(param: c_int, registerNo: calcRegister_t, combined: *ali
     }
     if (!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnXfn:getCombinedParameter:", "Total exceeds the maximum exponent", null, null);
+        if (runtime.extra_info_on_calc_error) {
+            var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+            const message = runtime.bufPrintZ(&buffer, "Total VAR{d} = r{d}*r{d}+r{d} exceeds the maximum exponent {d} > {d}", .{
+                param,
+                registerNo,
+                registerNo + 1,
+                registerNo + 2,
+                realGetExponent(combined),
+                maxAllowedDigits,
+            }) catch "";
+            moreInfoOnError("In function fnXfn:getCombinedParameter:", message, null, null);
+        }
         return false;
     }
     return true;
@@ -636,7 +656,15 @@ fn getSingleParameter(registerNo: calcRegister_t, combined: *align(1) real_t, an
     }
     if (!validateExponent(combined)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnXfn:getSingleParameter:", "Total VAR exceeds the maximum exponent", null, null);
+        if (runtime.extra_info_on_calc_error) {
+            var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+            const message = runtime.bufPrintZ(&buffer, "Total VAR = r{d} exceeds the maximum exponent {d} > {d}", .{
+                registerNo,
+                realGetExponent(combined),
+                maxAllowedDigits,
+            }) catch "";
+            moreInfoOnError("In function fnXfn:getSingleParameter:", message, null, null);
+        }
         return false;
     }
     return true;
@@ -670,6 +698,13 @@ pub export fn registerFMAOutputString(regist: calcRegister_t, prefix: [*:0]const
 // in a plain mantissa+"E±exp" form (trailing zeros dropped) for data-file export.
 // Faithful port of saveRestoreCalcState.c's helper of the same name.
 pub export fn registerFMAOutputPlainString(regist: calcRegister_t, prefix: [*:0]const u8, displayString: [*]u8) linksection(runtime.code_section) callconv(.c) bool {
+    // xfn.c defines this only inside `#else //OPTION_XFN_1000`; unlike its
+    // sibling registerFMAOutputString it has no entry in the stub block, because
+    // its one caller -- the RXFN arm of saveRestoreCalcState.c's
+    // registerToSaveString -- is itself inside `#if defined(OPTION_XFN_1000)`
+    // and disappears with it. z47 keeps the symbol for a shared link and
+    // answers the sibling stub's `false`.
+    if (comptime !runtime.option_xfn_1000) return false;
     var angle: angularMode_t = undefined;
     var tmp1_b = BigReal(1071){};
     var tmp2_b = BigReal(1071){};
@@ -749,7 +784,11 @@ fn fnXfnIndirect(registerNo: calcRegister_t, function: u16, functionParam: u16) 
         return;
     }
     displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
-    moreInfoOnError("In function fnXfnIndirect:", "Specified register numbers out of range", null, null);
+    if (runtime.extra_info_on_calc_error) {
+        var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+        const message = runtime.bufPrintZ(&buffer, "Specified register numbers out of range: {d}", .{registerNo}) catch "";
+        moreInfoOnError("In function fnXfnIndirect:", message, null, null);
+    }
 }
 
 // ===========================================================================
@@ -882,7 +921,7 @@ pub export fn fnXXfn_CHS(registerNo: u16) linksection(runtime.code_section) call
 fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, functionAngle: c_int, functionParam: u16, ErrorLocation: c_int) linksection(runtime.code_section) void {
     if (ErrorLocation != 0 or function == XFN_NOTFOUND or functionType == XFN_NOTFOUND) {
         // goto noFunction
-        noFunction();
+        noFunction(function, ErrorLocation);
         return;
     }
 
@@ -923,7 +962,7 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
             angleMode = currentAngularMode;
         }
     } else {
-        noFunction();
+        noFunction(function, 3);
         return;
     }
 
@@ -1068,7 +1107,7 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
                 convertAngleFromTo(paramX, amRadian, currentAngularMode, &c);
             },
             else => {
-                noFunction();
+                noFunction(function, 5);
                 return;
             },
         }
@@ -1196,7 +1235,13 @@ pub export fn processResultantLongReal(
     }
 }
 
-fn noFunction() linksection(runtime.code_section) void {
+// The location code is the only thing that tells the four `goto noFunction`
+// sites apart, so it travels with the call as it does upstream.
+fn noFunction(function: c_int, location: c_int) linksection(runtime.code_section) void {
     displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
-    moreInfoOnError("In function doXfn:", "Incorrect function code", null, null);
+    if (runtime.extra_info_on_calc_error) {
+        var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+        const message = runtime.bufPrintZ(&buffer, "Incorrect function code {d} (location {d})", .{ function, location }) catch "";
+        moreInfoOnError("In function doXfn:", message, null, null);
+    }
 }

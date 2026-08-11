@@ -1,7 +1,14 @@
+const std = @import("std");
 const atan2_owned = @import("atan2.zig");
 const abi = @import("abi");
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
+
+const std_cross = "\x80\xd7"; // STD_CROSS
+
+// ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats these hints into
+// the shared errorMessage buffer of that size.
+const ERROR_MESSAGE_LENGTH = 512;
 
 const no_register = @as(runtime.calcRegister_t, -1);
 
@@ -45,7 +52,16 @@ fn atan2RemaRema() void {
 
     if (y_matrix.header.matrixRows != x_matrix.header.matrixRows or y_matrix.header.matrixColumns != x_matrix.header.matrixColumns) {
         runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-        runtime.moreInfoOnError("In function atan2RemaRema:", "matrix size mismatch", null, null);
+        if (runtime.extra_info_on_calc_error) {
+            var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+            const message = runtime.bufPrintZ(&buffer, "cannot calculate atan2 with {d}" ++ std_cross ++ "{d}-matrix and {d}" ++ std_cross ++ "{d}-matrix", .{
+                x_matrix.header.matrixRows,
+                x_matrix.header.matrixColumns,
+                y_matrix.header.matrixRows,
+                y_matrix.header.matrixColumns,
+            }) catch "";
+            runtime.moreInfoOnError("In function atan2RemaRema:", message, null, null);
+        }
         return;
     }
 
@@ -111,7 +127,13 @@ fn atan2RealRema() void {
 
 fn atan2Error() void {
     runtime.displayCalcErrorMessage(runtime.ERROR_INVALID_DATA_TYPE_FOR_OP, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-    runtime.moreInfoOnError("In function fnAtan2:", "cannot calculate atan2 for current X and Y types", null, null);
+    if (runtime.extra_info_on_calc_error) {
+        var buffer: [ERROR_MESSAGE_LENGTH]u8 = undefined;
+        const y_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_Y, true, false));
+        const x_name = std.mem.span(runtime.getRegisterDataTypeName(runtime.REGISTER_X, true, false));
+        const message = runtime.bufPrintZ(&buffer, "cannot calculate atan2 for {s} and {s}", .{ y_name, x_name }) catch "";
+        runtime.moreInfoOnError("In function fnAtan2:", message, null, null);
+    }
 }
 
 fn atan2RealReal() callconv(.c) void {

@@ -27,6 +27,7 @@ const const_3Off = consts.const_3Off;
 // EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
 // The SAVE_SPACE_DM42_12ELLIP guard is dead on every z47 build.
 
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_agm = @import("agm.zig");
 const math_circular_trig_command = @import("../trig/circular_trig_command.zig");
@@ -1857,27 +1858,34 @@ fn reportEllipticError(e: EllipticError) void {
         },
         error.FphiNeedsCpxRes => {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticFphi:", "cannot return complex result without CPXRES set", null, null);
+            moreInfoOnError("In function fnEllipticFphi:", "F(φ|m) cannot return complex result without CPXRES set", null, null);
         },
         error.EphiNeedsCpxRes => {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticEphi:", "cannot return complex result without CPXRES set", null, null);
+            moreInfoOnError("In function fnEllipticEphi:", "E(φ|m) cannot return complex result without CPXRES set", null, null);
         },
         error.ZetaNeedsCpxRes => {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnJacobiZeta:", "cannot return complex result without CPXRES set", null, null);
+            moreInfoOnError("In function fnJacobiZeta:", "Ζ(φ|m) cannot return complex result without CPXRES set", null, null);
         },
         error.PiMOutOfRange => {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticPi:", "m is out of range (must in 0 <= m < 1)", null, null);
+            moreInfoOnError("In function fnEllipticPi:", "m is out of range (must in 0 ≤ m < 1)", null, null);
         },
         error.PiNeedsCpxRes => {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticPi:", "cannot return complex result without CPXRES set", null, null);
+            moreInfoOnError("In function fnEllipticPi:", "Π(n|m) cannot return complex result without CPXRES set", null, null);
         },
         error.PiComplexInX => {
             displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function fnEllipticPi:", "cannot calculate elliptic integral with complex in X", null, null);
+            if (runtime.extra_info_on_calc_error) {
+                // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats
+                // this hint into the shared errorMessage buffer of that size.
+                var buffer: [512]u8 = undefined;
+                const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, true, false));
+                const message = runtime.bufPrintZ(&buffer, "cannot calculate elliptic integral with {s} in X", .{type_name}) catch "";
+                moreInfoOnError("In function fnEllipticPi:", message, null, null);
+            }
         },
     }
 }

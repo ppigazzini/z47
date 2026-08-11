@@ -15,6 +15,15 @@ const runtime = @import("../command_wrappers/runtime.zig");
 const math_real_predicates = @import("../compare/real_predicates.zig");
 const wrappers = @import("../command_wrappers.zig");
 
+// squareRoot.c guards sqrtComplex159 and sqrtComplex's `digits <= 159` arm with
+// `OPTION_SQUARE_159 || OPTION_CUBIC_159 || OPTION_EIGEN_159`; cubeRoot.c guards
+// curtComplex159 and curtComplex's arm with `OPTION_CUBIC_159 ||
+// OPTION_EIGEN_159`. OPTION_SQUARE_159 is #undef'd at the top of defines.h and
+// never defined again in any configuration, so both conditions are the same two
+// terms. Without them, 76..159 digits falls past the arm to the bug screen, and
+// the 159-digit bodies leave the image.
+const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
+
 // Upstream realType.c functions (canonical symbols in the product link).
 extern fn realSetPlusInfinity(value: *runtime.real_t) void;
 extern fn realSetMinusInfinity(value: *runtime.real_t) void;
@@ -494,7 +503,7 @@ pub export fn sqrtComplex(
 ) callconv(.c) void {
     if (real_context.digits <= 75) {
         sqrtComplex75(real, imag, res_real, res_imag, real_context);
-    } else if (real_context.digits <= 159) {
+    } else if (arm_159 and real_context.digits <= 159) {
         sqrtComplex159(real, imag, res_real, res_imag, real_context);
     } else {
         var message_buffer: [64]u8 = undefined;
@@ -811,7 +820,7 @@ pub export fn curtComplex(
 ) callconv(.c) void {
     if (real_context.digits <= 75) {
         curtComplex75(z_real, z_imag, res_real, res_imag, real_context);
-    } else if (real_context.digits <= 159) {
+    } else if (arm_159 and real_context.digits <= 159) {
         curtComplex159(z_real, z_imag, res_real, res_imag, real_context);
     } else {
         var message_buffer: [64]u8 = undefined;

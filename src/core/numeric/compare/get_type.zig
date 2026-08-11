@@ -5,12 +5,12 @@ const abi = @import("abi"); // shared ABI bindings
 const consts = abi.constants; // typed constant-blob accessors; q16632 is const34_1000
 const real34_t = abi.Real34;
 
-fn pushIntegerOut(value: u32) void {
+fn pushIntegerOut(value: i32) void {
     var long_integer: runtime.longInteger_t = undefined;
 
     runtime.__gmpz_init(&long_integer[0]);
     defer runtime.__gmpz_clear(&long_integer[0]);
-    runtime.__gmpz_set_ui(&long_integer[0], value);
+    runtime.__gmpz_set_ui(&long_integer[0], @as(u32, @bitCast(value)));
 
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
     runtime.liftStack();
@@ -27,10 +27,13 @@ fn pushIntegerOut(value: u32) void {
 // digit narrowing pick a different exponent than decQuad's divide does. On a
 // calculator the cohort is the displayed trailing digits, so that is a visible
 // divergence and not a rounding detail.
-fn pushRealOut(value: u32) void {
+fn pushRealOut(value: i32) void {
     var real_output = std.mem.zeroes(real34_t);
 
-    runtime.uInt32ToReal34(value, &real_output);
+    // The report value is built in `int` and handed to uInt32ToReal34, which
+    // is the C conversion: a negative angle code arrives as its two's
+    // complement, not as a refusal.
+    runtime.uInt32ToReal34(@as(u32, @bitCast(value)), &real_output);
     runtime.real34Divide(&real_output, consts.q16632(), &real_output);
 
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
@@ -41,15 +44,15 @@ fn pushRealOut(value: u32) void {
     runtime.setSystemFlag(runtime.FLAG_ASLIFT);
 }
 
-fn matrixVectorShape(header: *align(1) runtime.matrixHeader_t) u32 {
+fn matrixVectorShape(header: *align(1) runtime.matrixHeader_t) i32 {
     return math_type_encode.matrixVectorShape(header.matrixRows, header.matrixColumns);
 }
 
-fn angleCode(angular_mode: u32) u32 {
+fn angleCode(angular_mode: i32) i32 {
     return math_type_encode.angleCode(angular_mode);
 }
 
-fn realMatrixVectorPolarCode() u32 {
+fn realMatrixVectorPolarCode() i32 {
     if (runtime.isRegisterMatrix2dVector(runtime.REGISTER_X)) {
         return 2;
     }
@@ -63,40 +66,43 @@ fn realMatrixVectorPolarCode() u32 {
 
 pub fn getType() void {
     const data_type = runtime.getRegisterDataType(runtime.REGISTER_X);
-    const angular_mode: u32 = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_X));
+    // dtp and dam are plain `int` in fnGetType, and every code below is formed
+    // in that width before the single conversion at the push.
+    const dtp: i32 = @intCast(data_type);
+    const angular_mode: i32 = @intCast(runtime.getRegisterAngularMode(runtime.REGISTER_X));
 
     switch (data_type) {
         runtime.dtLongInteger, runtime.dtTime, runtime.dtDate, runtime.dtString, runtime.dtReal34Matrix, runtime.dtConfig => {
             if (runtime.isRegisterMatrixVector(runtime.REGISTER_X)) {
                 const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
-                pushRealOut(data_type * 1000 + 100 * angleCode(angular_mode) + 10 * realMatrixVectorPolarCode() + matrixVectorShape(header));
+                pushRealOut(dtp * 1000 + 100 * angleCode(angular_mode) + 10 * realMatrixVectorPolarCode() + matrixVectorShape(header));
             } else if (data_type == runtime.dtReal34Matrix) {
                 const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
                 const shape = matrixVectorShape(header);
 
                 if (shape != 0) {
-                    pushRealOut(data_type * 1000 + shape);
+                    pushRealOut(dtp * 1000 + shape);
                 } else {
-                    pushIntegerOut(data_type);
+                    pushIntegerOut(dtp);
                 }
             } else {
-                pushIntegerOut(data_type);
+                pushIntegerOut(dtp);
             }
         },
         runtime.dtComplex34Matrix => {
             const header = runtime.registerMatrixHeaderPtr(runtime.REGISTER_X);
             const is_polar = runtime.getComplexRegisterPolarMode(runtime.REGISTER_X) != 0;
-            const angle: u32 = if (is_polar) angleCode(angular_mode) else 0;
-            const pol_rec: u32 = if (is_polar) 1 else 0;
+            const angle: i32 = if (is_polar) angleCode(angular_mode) else 0;
+            const pol_rec: i32 = if (is_polar) 1 else 0;
 
-            pushRealOut(data_type * 1000 + 100 * angle + 10 * pol_rec + matrixVectorShape(header));
+            pushRealOut(dtp * 1000 + 100 * angle + 10 * pol_rec + matrixVectorShape(header));
         },
         runtime.dtShortInteger, runtime.dtReal34, runtime.dtComplex34 => {
-            const short_bits: u32 = @intCast(angular_mode & 0x1f);
-            const value: u32 = if (data_type == runtime.dtShortInteger)
-                10 * (data_type * 100 + short_bits)
+            const short_bits: i32 = angular_mode & 0x1f;
+            const value: i32 = if (data_type == runtime.dtShortInteger)
+                10 * (dtp * 100 + short_bits)
             else
-                100 * (data_type * 10 + angleCode(angular_mode));
+                100 * (dtp * 10 + angleCode(angular_mode));
 
             pushRealOut(value);
         },

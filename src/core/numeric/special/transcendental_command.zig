@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const std = @import("std");
 const build_options = @import("math_command_wrappers_build_options");
 const circular_trig_owned = @import("../trig/circular_trig.zig");
@@ -5,6 +6,10 @@ const ln_complex_owned = @import("../ln_complex.zig");
 const rectangular_to_polar_owned = @import("../transform/rectangular_to_polar.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
+
+const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
+const std_infinity = "\xa2\x1e"; // STD_INFINITY
+
 fn copyReal(destination: *runtime.real_t, source: *const runtime.real_t) void {
     destination.* = source.*;
 }
@@ -117,7 +122,6 @@ pub fn lnRealValue(
     var v: runtime.real_t = undefined;
     var w: runtime.real_t = undefined;
     var e: runtime.real_t = undefined;
-    var root2on2: runtime.real_t = undefined;
     var exponent_adjust: i32 = 0;
 
     if (runtime.realIsSpecial(x_in)) {
@@ -149,10 +153,10 @@ pub fn lnRealValue(
         z.exponent = -z.digits;
     }
 
-    copyReal(&root2on2, runtime.z47_math_wrappers_const_1on2());
-    runtime.realSquareRoot(&root2on2, &root2on2, real_context);
-
-    while (realCompareLessEqual(&z, &root2on2)) {
+    // The blob constant, not a runtime sqrt(1/2): computing it at the caller's
+    // precision moves the threshold and lands an inexact status in the caller's
+    // context on every ln.
+    while (realCompareLessEqual(&z, abi.constants.const39_root2on2())) {
         runtime.realMultiply(&f, runtime.z47_math_wrappers_const_2(), &f, real_context);
         runtime.realSquareRoot(&z, &z, real_context);
     }
@@ -241,6 +245,9 @@ pub fn lnReal() callconv(.c) void {
     if (runtime.realIsZero(&x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function lnReal:", "cannot calculate Ln(0)", null, null);
+            }
             return;
         }
 
@@ -248,6 +255,9 @@ pub fn lnReal() callconv(.c) void {
     } else if (runtime.realIsInfinite(&x)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function lnReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X input of ln when flag SPCRES is not set", null, null);
+            }
             return;
         }
 
@@ -271,6 +281,9 @@ pub fn lnReal() callconv(.c) void {
         runtime.realSetNaN(&x);
     } else {
         runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError("In function lnReal:", "cannot calculate Ln of a negative number when CPXRES is not set!", null, null);
+        }
         return;
     }
 
@@ -288,6 +301,9 @@ pub fn lnCplx() callconv(.c) void {
     if (runtime.realIsZero(&x_real) and runtime.realIsZero(&x_imag)) {
         if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
             runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            if (runtime.extra_info_on_calc_error) {
+                runtime.moreInfoOnError("In function lnCplx:", "cannot calculate Ln(0)", null, null);
+            }
             return;
         }
 
@@ -308,7 +324,6 @@ pub fn lnP1Complex(
     real_context: *runtime.realContext_t,
 ) void {
     var magnitude: runtime.real_t = undefined;
-    var dummy: runtime.real_t = undefined;
     var trailing_sum: runtime.real_t = undefined;
     var threshold = std.mem.zeroes(runtime.real_t);
 
@@ -318,7 +333,10 @@ pub fn lnP1Complex(
     threshold.exponent = -6;
     threshold.lsu[0] = 1;
 
-    rectangular_to_polar_owned.rectangularToPolarReal(real, imag, &magnitude, &dummy, real_context);
+    // |z| through complexMagnitude: three operations and no angle. A
+    // rectangular-to-polar conversion would additionally run an arctangent
+    // that is thrown away, leaving its status in the caller's context.
+    runtime.complexMagnitude(real, imag, &magnitude, real_context);
     if (realAbsLessThan(&magnitude, &threshold)) {
         var term_real: runtime.real_t = undefined;
         var term_imag: runtime.real_t = undefined;

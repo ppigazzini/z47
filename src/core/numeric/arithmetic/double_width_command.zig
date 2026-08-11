@@ -103,7 +103,7 @@ fn dblMultiplyOwned() void {
     // and the high word is the exact quotient of what is left. A truncating
     // divide would hand back a negative low word for a negative product.
     runtime.__gmpz_mod(&y_value[0], &product[0], &scale[0]);
-    runtime.__gmpz_sub(&x_value[0], &product[0], &y_value[0]);
+    runtime.longIntegerSubtract(&product[0], &y_value[0], &x_value[0]);
     runtime.__gmpz_tdiv_q(&x_value[0], &x_value[0], &scale[0]);
 
     if (sim == runtime.SIM_SIGNMT) {
@@ -167,12 +167,16 @@ fn dblDivideOwned(remainder_mode: bool) void {
 
     var dividend_hi: runtime.longInteger_t = undefined;
     var dividend_lo: runtime.longInteger_t = undefined;
+    // SIM_UNSIGN covers only the two reads: the dividend halves are raw words,
+    // not signed values. The mode is back to the user's before anything writes
+    // a register, because convertLongIntegerToShortIntegerRegister negates
+    // through WP34S_intChs, which branches on it.
     runtime.shortIntegerMode = runtime.SIM_UNSIGN;
-    defer runtime.shortIntegerMode = sim;
     initShortIntegerRegisterAsLongInteger(runtime.REGISTER_Z, &dividend_lo);
     defer runtime.__gmpz_clear(&dividend_lo[0]);
     initShortIntegerRegisterAsLongInteger(runtime.REGISTER_Y, &dividend_hi);
     defer runtime.__gmpz_clear(&dividend_hi[0]);
+    runtime.shortIntegerMode = sim;
 
     const base = runtime.getRegisterTag(runtime.REGISTER_Y);
 

@@ -4,9 +4,9 @@
 // functions, real and complex. Faithful line-by-line translation preserving
 // the exact order of every real_t operation (gd.txt / invGd.txt check results
 // to the last ULP). Exports fnGd, fnInvGd and the four Gudermannian* entry
-// points with C linkage; the static helpers stay private. The
-// EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed moreInfoOnError strings.
+// points with C linkage; the static helpers stay private.
 
+const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const real_t = runtime.real_t;
@@ -74,10 +74,19 @@ const realIsPositive = math_real_predicates.realIsPositive;
 
 fn gdError(gd: bool, errorCode: u8) void {
     displayCalcErrorMessage(errorCode, ERR_REGISTER_LINE, REGISTER_X);
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+    // ERROR_MESSAGE_LENGTH is 512 (defines.h); upstream formats this hint into
+    // the shared errorMessage buffer of that size.
+    var buffer: [512]u8 = undefined;
+    const type_name = std.mem.span(runtime.getRegisterDataTypeName(REGISTER_X, false, false));
     if (gd) {
-        moreInfoOnError("In function fnGd:", "cannot calculate gd", null, null);
+        const message = runtime.bufPrintZ(&buffer, "cannot calculate gd({s})", .{type_name}) catch "";
+        moreInfoOnError("In function fnGd:", message, null, null);
     } else {
-        moreInfoOnError("In function fnInvGd:", "cannot calculate invGd", null, null);
+        const message = runtime.bufPrintZ(&buffer, "cannot calculate invGd({s})", .{type_name}) catch "";
+        moreInfoOnError("In function fnInvGd:", message, null, null);
     }
 }
 

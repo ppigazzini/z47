@@ -208,14 +208,40 @@ fn sinCosTanTaylorTemp75(
 ) void {
     var do_epsilon = false;
     var epsilon_digits: i32 = 39;
-    var work_angle: runtime.real_t = undefined;
-    var a2: runtime.real_t = undefined;
-    var t: runtime.real_t = undefined;
-    var j: runtime.real_t = undefined;
-    var z: runtime.real_t = undefined;
-    var sin_value: runtime.real_t = undefined;
-    var cos_value: runtime.real_t = undefined;
-    var epsilon_or_compare: runtime.real_t = undefined;
+
+    // The eight working reals come from the heap, not the frame: eight
+    // decNumbers at 60 bytes is 480 of this function's 672 byte frame, and it
+    // sits on the integrand path of a plotted integral. The 1071 digit twin is
+    // untouched. Mirrors upstream's REAL_T_ALLOC(name, 75) block --
+    // REAL_SIZE_IN_BYTES(75) is @sizeOf(real_t).
+    const work_angle_p = runtime.mallocReal();
+    const a2_p = runtime.mallocReal();
+    const t_p = runtime.mallocReal();
+    const j_p = runtime.mallocReal();
+    const z_p = runtime.mallocReal();
+    const sin_value_p = runtime.mallocReal();
+    const cos_value_p = runtime.mallocReal();
+    const epsilon_or_compare_p = runtime.mallocReal();
+    defer {
+        runtime.freeReal(work_angle_p);
+        runtime.freeReal(a2_p);
+        runtime.freeReal(t_p);
+        runtime.freeReal(j_p);
+        runtime.freeReal(z_p);
+        runtime.freeReal(sin_value_p);
+        runtime.freeReal(cos_value_p);
+        runtime.freeReal(epsilon_or_compare_p);
+    }
+    if (work_angle_p == null or a2_p == null or t_p == null or j_p == null or
+        z_p == null or sin_value_p == null or cos_value_p == null or epsilon_or_compare_p == null)
+    {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        return;
+    }
+    const work_angle = work_angle_p.?;
+    const sin_value = sin_value_p.?;
+    const cos_value = cos_value_p.?;
+
     const saved_context_digits = real_context.digits;
 
     if (real_context.digits > 51) {
@@ -228,16 +254,16 @@ fn sinCosTanTaylorTemp75(
 
     doTaylorIterations(
         angle,
-        &work_angle,
-        &a2,
-        &t,
-        &j,
-        &z,
-        &sin_value,
-        &cos_value,
+        work_angle,
+        a2_p.?,
+        t_p.?,
+        j_p.?,
+        z_p.?,
+        sin_value,
+        cos_value,
         sin_out,
         cos_out,
-        &epsilon_or_compare,
+        epsilon_or_compare_p.?,
         do_epsilon,
         epsilon_digits,
         real_context,
@@ -246,18 +272,18 @@ fn sinCosTanTaylorTemp75(
     real_context.digits = saved_context_digits;
 
     if (sin_out) |output| {
-        _ = runtime.decNumberPlus(output, &sin_value, real_context);
+        _ = runtime.decNumberPlus(output, sin_value, real_context);
     }
     if (cos_out) |output| {
-        _ = runtime.decNumberPlus(output, &cos_value, real_context);
+        _ = runtime.decNumberPlus(output, cos_value, real_context);
     }
     if (tan_out) |output| {
         if (sin_out == null or cos_out == null) {
             runtime.realSetNaN(output);
         } else if (swap) {
-            runtime.realDivide(&cos_value, &sin_value, output, real_context);
+            runtime.realDivide(cos_value, sin_value, output, real_context);
         } else {
-            runtime.realDivide(&sin_value, &cos_value, output, real_context);
+            runtime.realDivide(sin_value, cos_value, output, real_context);
         }
     }
 }

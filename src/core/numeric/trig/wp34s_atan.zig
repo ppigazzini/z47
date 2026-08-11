@@ -10,6 +10,13 @@
 // delegates; the four WP34S atan oracles gate byte-exactness. Transcription is
 // verbatim (only the four exported entry points drop their C-ABI qualifiers to
 // become the plain pub fns the owner's wrappers call).
+//
+// wp34s.c wraps each of the four 1071-digit helpers, and the `digits >= 1071`
+// arm of each dispatcher that reaches it, in `#if defined(OPTION_XFN_1000)`, so
+// without the option the four dispatchers are unconditional 75-digit calls.
+// defines.h #undef's OPTION_XFN_1000 for every DM42 build ("does not work on
+// DM42, due to stack constraint"), which is also what keeps the 1071-digit
+// bodies out of that image.
 
 const abi = @import("abi");
 const owner = @import("../special/wp34s.zig");
@@ -218,14 +225,31 @@ fn doAtan(
 // ===========================================================================
 fn WP34S_Atan_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
     var doEpsilon: bool = false;
-    var a: real_t = undefined;
-    var b: real_t = undefined;
-    var a2: real_t = undefined;
-    var t: real_t = undefined;
-    var j: real_t = undefined;
-    var z: real_t = undefined;
-    var last: real_t = undefined;
-    var epsilon: real_t = undefined;
+
+    // The eight working reals come from the heap, not the frame: eight
+    // decNumbers at 60 bytes is 480 of this function's 656 byte frame, and it
+    // sits on the integrand path of a plotted integral. The 1071 digit twin
+    // below keeps its stack buffers. Mirrors upstream's REAL_T_ALLOC(name, 75)
+    // block -- REAL_SIZE_IN_BYTES(75) is @sizeOf(real_t).
+    const a_p = runtime.mallocReal();
+    const b_p = runtime.mallocReal();
+    const a2_p = runtime.mallocReal();
+    const t_p = runtime.mallocReal();
+    const j_p = runtime.mallocReal();
+    const z_p = runtime.mallocReal();
+    const last_p = runtime.mallocReal();
+    const epsilon_p = runtime.mallocReal();
+    defer {
+        runtime.freeReal(a_p);
+        runtime.freeReal(b_p);
+        runtime.freeReal(a2_p);
+        runtime.freeReal(t_p);
+        runtime.freeReal(j_p);
+        runtime.freeReal(z_p);
+        runtime.freeReal(last_p);
+        runtime.freeReal(epsilon_p);
+    }
+
     var doubles: i32 = 0;
     var invert: c_int = undefined;
     var neg: c_int = undefined;
@@ -242,7 +266,15 @@ fn WP34S_Atan_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realCon
         doEpsilon = false;
     }
 
-    if (!doAtan(&a, angle, &a2, &t, &j, &z, x, &b, &epsilon, &last, doEpsilon, epsilonDigits, &doubles, &invert, &neg, realContext)) {
+    if (a_p == null or b_p == null or a2_p == null or t_p == null or
+        j_p == null or z_p == null or last_p == null or epsilon_p == null)
+    {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        realContext.digits = savedContextDigits;
+        return;
+    }
+
+    if (!doAtan(a_p.?, angle, a2_p.?, t_p.?, j_p.?, z_p.?, x, b_p.?, epsilon_p.?, last_p.?, doEpsilon, epsilonDigits, &doubles, &invert, &neg, realContext)) {
         realContext.digits = savedContextDigits;
         return; // NaN
     }
@@ -290,7 +322,7 @@ fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 // C47_WP34S_Atan
 // ===========================================================================
 pub fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    if (realContext.digits >= 1071) {
+    if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Atan_1071temp(x, angle, realContext);
     } else {
         WP34S_Atan_75temp(x, angle, realContext);
@@ -451,7 +483,7 @@ fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real
 }
 
 pub fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
-    if (realContext.digits >= 1071) {
+    if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Atan2_1071temp(y, x, atan, realContext);
     } else {
         WP34S_Atan2_75temp(y, x, atan, realContext);
@@ -514,7 +546,7 @@ fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 }
 
 pub fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    if (realContext.digits >= 1071) {
+    if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Asin_1071temp(x, angle, realContext);
     } else {
         WP34S_Asin_75temp(x, angle, realContext);
@@ -581,7 +613,7 @@ fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 }
 
 pub fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
-    if (realContext.digits >= 1071) {
+    if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Acos_1071temp(x, angle, realContext);
     } else {
         WP34S_Acos_75temp(x, angle, realContext);

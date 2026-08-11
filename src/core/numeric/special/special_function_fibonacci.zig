@@ -1,6 +1,41 @@
 const circular_trig_owned = @import("../trig/circular_trig.zig");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");
+
+// defines.h values.
+const ERROR_MESSAGE_LENGTH: i32 = 512; // defines.h:2501
+const TMP_STR_LENGTH: usize = 2560; // defines.h:2499
+const SCREEN_WIDTH: i16 = 400; // defines.h:1504
+
+// The global message buffers the EXTRA_INFO_ON_CALC_ERROR diagnostics format
+// into (extern char * globals in the C core).
+extern fn longIntegerRegisterToDisplayString(regist: runtime.calcRegister_t, display_string: [*]u8, str_lg: i32, max_width: i16, max_exp: i16, allow_largeli: bool) void;
+extern var errorMessage: [*c]u8;
+extern var tmpString: [*c]u8;
+
+// fibLonI's over-the-limit refusal: render X into errorMessage, then wrap it in
+// the sentence, exactly as the upstream sprintf pair does. Assembled by hand to
+// keep std.fmt out of the firmware image.
+fn reportFibonacciLimit() void {
+    if (!runtime.extra_info_on_calc_error) {
+        return;
+    }
+
+    longIntegerRegisterToDisplayString(runtime.REGISTER_X, errorMessage, ERROR_MESSAGE_LENGTH, SCREEN_WIDTH, 50, false);
+
+    const prefix = "cannot calculate fib(";
+    const suffix = "), the limit is 4791, it's to ensure that the 3328 bits limit is not exceeded";
+    @memcpy(tmpString[0..prefix.len], prefix);
+    var length: usize = prefix.len;
+    var i: usize = 0;
+    while (errorMessage[i] != 0 and length < TMP_STR_LENGTH - suffix.len - 1) : (i += 1) {
+        tmpString[length] = errorMessage[i];
+        length += 1;
+    }
+    @memcpy(tmpString[length .. length + suffix.len], suffix);
+    tmpString[length + suffix.len] = 0;
+    runtime.moreInfoOnError("In function fibLonI:", @ptrCast(tmpString), null, null);
+}
 fn fibonacciReal(n: *const runtime.real_t, res: *runtime.real_t, real_context: *runtime.realContext_t) void {
     var a: runtime.real_t = undefined;
     var b: runtime.real_t = undefined;
@@ -86,6 +121,7 @@ fn fibLonI() callconv(.c) void {
 
     if (runtime.__gmpz_cmp_ui(&value[0], 4791) > 0) {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        reportFibonacciLimit();
         return;
     }
 

@@ -6,8 +6,16 @@ const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 const support = @import("dispatch_cells_runtime.zig");
 
-const dm42_pkg_xip = @hasDecl(build_options, "dm42_pkg_xip") and build_options.dm42_pkg_xip;
+const dm42_pkg_xip = build_options.dm42_pkg_xip;
 const table_section: ?[]const u8 = if (dm42_pkg_xip) ".qspi_data" else null;
+
+// division.c guards divComplexComplex159 and the `digits <= 159` arm of
+// divComplexComplex with
+// `OPTION_CUBIC_159 || OPTION_SQUARE_159 || OPTION_EIGEN_159`. OPTION_SQUARE_159
+// is #undef'd at the top of defines.h and never defined again in any
+// configuration, so the disjunction is the other two terms. Without them,
+// 76..159 digits falls through to the bug screen.
+const arm_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 
 const CellFn = *const fn () callconv(.c) void;
 
@@ -17,8 +25,12 @@ const REGISTER_L = runtime.REGISTER_L;
 const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const no_register = @as(runtime.calcRegister_t, -1);
 
+// std.fmt.bufPrintZ was removed in Zig 0.17; std.fmt.bufPrint plus an explicit
+// sentinel works on both 0.16 and master. Every format below is bounded well
+// under the buffer, so the unreachable overflow arm yields the empty string
+// rather than the buffer's uninitialised bytes.
 fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) [:0]const u8 {
-    const slice = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0 .. buffer.len - 1];
+    const slice = std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args) catch buffer[0..0];
     buffer[slice.len] = 0;
     return buffer[0..slice.len :0];
 }
@@ -220,9 +232,7 @@ pub export fn divComplexComplex(
 ) linksection(runtime.code_section) callconv(.c) void {
     if (real_context.digits <= 75) {
         divComplexComplex75(numer_real, numer_imag, denom_real, denom_imag, quotient_real, quotient_imag, real_context);
-    } else if (!dm42_pkg_xip and real_context.digits <= 159) {
-        // OPTION_CUBIC_159/OPTION_EIGEN_159 are undefined for TWO_FILE_PGM
-        // (old-hardware DM42) builds, exactly like upstream defines.h.
+    } else if (arm_159 and real_context.digits <= 159) {
         divComplexComplex159(numer_real, numer_imag, denom_real, denom_imag, quotient_real, quotient_imag, real_context);
     } else {
         var message_buffer: [96]u8 = undefined;

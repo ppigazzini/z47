@@ -14,7 +14,7 @@ const const_1 = consts.const_1;
 //
 // statisticalSumsPointer is extern (real_t *). SIGMA_X = statisticalSumsPointer
 // + SUM_X (SUM_X == 1), strided by sizeof(real_t) == 60 bytes, verified against
-// defines.h. TI_PERC == 68 (real value; the runtime's TI_PERC is the fake one).
+// defines.h.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 
@@ -32,7 +32,7 @@ const dtReal34Matrix = runtime.dtReal34Matrix;
 const DECNEG = runtime.DECNEG;
 
 const ERROR_NO_SUMMATION_DATA: u8 = 28;
-const TI_PERC: u8 = 68;
+const TI_PERC = runtime.TI_PERC;
 
 const realIsZero = runtime.realIsZero;
 const realIsNegative = runtime.realIsNegative;

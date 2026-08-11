@@ -229,7 +229,9 @@ fn doWP34S_SinCosTanTaylor(
         realPlus(c, c, realContext);
     }
 
-    if (tanOut != null and cosOut != null and realIsZero(cosOut.?)) {
+    // No cosOut guard, as the C has none: realIsZero dereferences it whatever
+    // tanOut is, so a caller asking for a tangent without a cosine faults.
+    if (tanOut != null and realIsZero(cosOut.?)) {
         realSetPositiveSign(tanOut.?);
         realPlus(tanOut.?, tanOut.?, realContext);
     }
@@ -472,7 +474,11 @@ fn C47_WP34S_Cvt2RadSinCosTan_1071_helper(an: *align(1) const real_t, angularMod
 // C47_WP34S_Cvt2RadSinCosTan
 // ===========================================================================
 pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
-    if (realContext.digits >= 1071) {
+    // wp34s.c wraps the 1071-digit arm and the helper it calls in
+    // `#if defined(OPTION_XFN_1000)`, so without the option the dispatcher is an
+    // unconditional 75-digit call. defines.h #undef's OPTION_XFN_1000 for every
+    // DM42 build ("does not work on DM42, due to stack constraint").
+    if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47_WP34S_Cvt2RadSinCosTan_1071_helper(an, angularMode, sinOut, cosOut, tanOut, realContext);
     } else {
         C47_WP34S_Cvt2RadSinCosTan_75temp(an, angularMode, sinOut, cosOut, tanOut, realContext);

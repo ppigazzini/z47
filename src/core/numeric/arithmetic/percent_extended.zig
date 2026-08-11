@@ -1,4 +1,3 @@
-const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 
 const no_register = @as(runtime.calcRegister_t, -1);
@@ -146,7 +145,7 @@ pub fn percentT(unused_but_mandatory_parameter: u16) void {
 pub fn deltaPercent(unused_but_mandatory_parameter: u16) void {
     var x_value: runtime.real_t = undefined;
     var y_value: runtime.real_t = undefined;
-    var result = std.mem.zeroes(runtime.real_t);
+    var result: runtime.real_t = undefined;
 
     _ = unused_but_mandatory_parameter;
 
@@ -157,6 +156,11 @@ pub fn deltaPercent(unused_but_mandatory_parameter: u16) void {
     if (!runtime.saveLastX()) {
         return;
     }
+
+    // realSetZero, not a zero-filled decNumber: a decNumber with digits == 0 is
+    // out of contract, and deltaPercentReal's refusal paths leave this seed as
+    // the value the result register is written from.
+    runtime.realSetZero(&result);
 
     if (runtime.realIsZero(&x_value) and runtime.realCompareEqual(&x_value, &y_value)) {
         _ = setNaNOrDomainError(&result, "In function deltaPercentReal:", "cannot divide 0 by 0");

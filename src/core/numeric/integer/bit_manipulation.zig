@@ -24,7 +24,7 @@ pub export fn fnCountBits(unused_but_mandatory_parameter: u16) callconv(.c) void
 
 pub export fn fnMaskl(number_of_bits: u16) callconv(.c) void {
     if (number_of_bits > runtime.shortIntegerWordSize) {
-        runtime.wordSizeError();
+        runtime.wordSizeError("In function fnMaskl:", "MASKL", number_of_bits);
         return;
     }
 
@@ -35,7 +35,7 @@ pub export fn fnMaskl(number_of_bits: u16) callconv(.c) void {
 
 pub export fn fnMaskr(number_of_bits: u16) callconv(.c) void {
     if (number_of_bits > runtime.shortIntegerWordSize) {
-        runtime.wordSizeError();
+        runtime.wordSizeError("In function fnMaskr:", "MASKR", number_of_bits);
         return;
     }
 
@@ -44,9 +44,16 @@ pub export fn fnMaskr(number_of_bits: u16) callconv(.c) void {
     runtime.setRawShortIntegerRegister(runtime.REGISTER_X, 2, mask);
 }
 
-fn getBitOperand(bit: u16, base: ?*u32, word: *u64, require_save_last_x: bool) bool {
+fn getBitOperand(
+    function_name: [*:0]const u8,
+    operation_name: []const u8,
+    bit: u16,
+    base: ?*u32,
+    word: *u64,
+    require_save_last_x: bool,
+) bool {
     if (bit >= runtime.shortIntegerWordSize) {
-        runtime.wordSizeError();
+        runtime.wordSizeError(function_name, operation_name, bit);
         return false;
     }
 
@@ -62,7 +69,7 @@ fn getBitOperand(bit: u16, base: ?*u32, word: *u64, require_save_last_x: bool) b
 pub export fn fnCb(bit: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
-    if (!getBitOperand(bit, &base, &word, true)) return;
+    if (!getBitOperand("In function fnCb:", "CB", bit, &base, &word, true)) return;
 
     // Masked like the other logical ops: keeps the result inside the word and
     // cleanses out-of-range values inherited from older saved states.
@@ -72,7 +79,7 @@ pub export fn fnCb(bit: u16) callconv(.c) void {
 pub export fn fnSb(bit: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
-    if (!getBitOperand(bit, &base, &word, true)) return;
+    if (!getBitOperand("In function fnSb:", "SB", bit, &base, &word, true)) return;
 
     // Masked like the other logical ops: keeps the result inside the word and
     // cleanses out-of-range values inherited from older saved states.
@@ -82,7 +89,7 @@ pub export fn fnSb(bit: u16) callconv(.c) void {
 pub export fn fnFb(bit: u16) callconv(.c) void {
     var word: u64 = undefined;
     var base: u32 = undefined;
-    if (!getBitOperand(bit, &base, &word, true)) return;
+    if (!getBitOperand("In function fnFb:", "FB", bit, &base, &word, true)) return;
 
     // Masked like the other logical ops: keeps the result inside the word and
     // cleanses out-of-range values inherited from older saved states.
@@ -91,7 +98,7 @@ pub export fn fnFb(bit: u16) callconv(.c) void {
 
 pub export fn fnBc(bit: u16) callconv(.c) void {
     var word: u64 = undefined;
-    if (!getBitOperand(bit, null, &word, false)) return;
+    if (!getBitOperand("In function fnBc:", "BC?", bit, null, &word, false)) return;
 
     runtime.thereIsSomethingToUndo = false;
     runtime.setTemporaryInformation(core.isBitClear(word, bit));
@@ -99,7 +106,7 @@ pub export fn fnBc(bit: u16) callconv(.c) void {
 
 pub export fn fnBs(bit: u16) callconv(.c) void {
     var word: u64 = undefined;
-    if (!getBitOperand(bit, null, &word, false)) return;
+    if (!getBitOperand("In function fnBs:", "BS?", bit, null, &word, false)) return;
 
     runtime.thereIsSomethingToUndo = false;
     runtime.setTemporaryInformation(core.isBitSet(word, bit));

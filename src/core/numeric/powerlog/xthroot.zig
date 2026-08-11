@@ -14,6 +14,9 @@ const const_NaN = consts.const_NaN;
 // unconditionally.
 
 const runtime = @import("../command_wrappers/runtime.zig");
+
+const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
+const std_infinity = "\xa2\x1e"; // STD_INFINITY
 const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_division_cells = @import("../arithmetic/division_cells.zig");
@@ -446,7 +449,7 @@ fn doXthRootReal() linksection(runtime.code_section) callconv(.c) void {
 
     if ((realIsInfinite(&x) or realIsInfinite(&y)) and !getSystemFlag(FLAG_SPCRES)) {
         displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function doXthRootReal:", "cannot use +-Infinity as X or Y input of xthRoot when flag SPCRES is not set", null, null);
+        moreInfoOnError("In function doXthRootReal:", "cannot use " ++ std_plus_minus ++ std_infinity ++ " as X or Y input of xthRoot when flag SPCRES is not set", null, null);
         return;
     }
 
