@@ -90,7 +90,8 @@ pub fn isValidNumber(ss: [*]const u8, template: [*]const u8) bool {
     if (byteLen(ss) != byteLen(template)) {
         return false;
     }
-    var nn: u16 = @intCast(byteLen(ss));
+    // The C stores the length in a uint16_t, which truncates.
+    var nn: u16 = @truncate(@as(u32, @bitCast(byteLen(ss))));
     while (nn != 0) {
         if ((template[nn - 1] == '.' and !(ss[nn - 1] == '.' or ss[nn - 1] == ',')) or
             (template[nn - 1] == 'd' and !(ss[nn - 1] >= '0' and ss[nn - 1] <= '9')) or

@@ -277,6 +277,32 @@ pub fn main() !void {
         }
     }
 
+    // ---- Non-finite values. The fuzz loops above skip NaN and Inf because a
+    //      random bit pattern hits them constantly and drowns the signal; that
+    //      left the sign of a NaN unproven, and glibc prints it ("-nan"). Cover
+    //      all four explicitly, on both the %e and the %f formatter. ----
+    {
+        var cbuf: [64]u8 = undefined;
+        var zbuf: [64]u8 = undefined;
+        const nonfinite = [_]f64{
+            @bitCast(@as(u64, 0x7FF8000000000000)), // nan
+            @bitCast(@as(u64, 0xFFF8000000000000)), // -nan, what 0.0/0.0 yields on x86-64
+            std.math.inf(f64),
+            -std.math.inf(f64),
+        };
+        for ([_]usize{ 20, 16, 0 }) |p| {
+            for (nonfinite) |v| {
+                const ce = cFmtFloat(&cbuf, @intCast(p), v);
+                const ze = float_format.fmtExpBuf(&zbuf, p, v);
+                expectEqualStr("exp-nonfinite", "%.*e", "fmtExpBuf", ce, ze, "float-exact");
+
+                const cf = cFmtFixed(&cbuf, @intCast(p), v);
+                const zf = float_format.fmtFixedBuf(&zbuf, p, v);
+                expectEqualStr("fixed-nonfinite", "%.*f", "fmtFixedBuf", cf, zf, "float-fixed");
+            }
+        }
+    }
+
     // ---- Fixed-notation float: abi.fmtFixedBuf reproduces C `%.Pf` byte-exact
     //      (the save-file graph_dx/graph_dy `%f` == `%.6f` sites). Fuzz over the
     //      save precision (6) plus 0/2, edges + 4000 random f64 per precision.

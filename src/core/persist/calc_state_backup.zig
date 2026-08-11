@@ -1118,6 +1118,7 @@ pub fn restoreCalc() void {
     shortIntegerWordSize[0] = boundShortIntegerWordSize(shortIntegerWordSize[0]);
     updateShortIntegerMasks(); // rederive shortIntegerMask and shortIntegerSignBit from the word size just restored; the file copies (older backups) are ignored
     rv(&significantDigits[0], 1, "significantDigits", "uint8");
+    fractionDigits[0] = 34; // the default a backup that carries no fractionDigits entry restores to
     rv(&fractionDigits[0], 1, "fractionDigits", "uint8");
     rv(&shortIntegerMode[0], 1, "shortIntegerMode", "uint8");
     rv(&currentAngularMode[0], 4, "currentAngularMode", "uint32");
@@ -1151,8 +1152,9 @@ pub fn restoreCalc() void {
     rv(&displayStack[0], 1, "displayStack", "uint8");
     rv(&hexDigits[0], 1, "hexDigits", "uint8");
     rv(&errorMessageRegisterLine[0], 2, "errorMessageRegisterLine", "int16");
-    rv(&shortIntegerMask[0], 8, "shortIntegerMask", "uint64");
-    rv(&shortIntegerSignBit[0], 8, "shortIntegerSignBit", "uint64");
+    // No read-back of shortIntegerMask / shortIntegerSignBit here: both were
+    // rederived from the restored word size above, and the file copies are
+    // deliberately ignored.
     rv(&temporaryInformation[0], 1, "temporaryInformation", "uint8");
     rv(&funcOK[0], 1, "funcOK", "bool");
     rv(&screenChange[0], 1, "screenChange", "bool");

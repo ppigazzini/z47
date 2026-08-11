@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+// abi.Mpz mirrors GMP's __mpz_struct; gmp.h is a hard build dependency of the
+// product, so the oracle can reach the real declaration rather than a copy.
+#include <gmp.h>
 #include "defines.h"
 #include "decContext.h"
 #include "decNumber.h"

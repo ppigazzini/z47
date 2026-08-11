@@ -273,7 +273,17 @@ pub const FreeMemoryRegion = extern struct {
     sizeInBlocks: u16,
 };
 
-/// Broken-down calendar time (libc-style tm / Tm): 9 c_int fields.
+/// Broken-down calendar time: libc's `struct tm`. A pointer to one of these is
+/// handed to libc `strftime`, which is free to read any member its own ABI
+/// declares -- `%z`, `%Z`, `%c` and `%s` read the two members after the nine
+/// ints -- so the storage has to be the full struct and not just the nine.
+///
+/// `tm_gmtoff` / `tm_zone` are what glibc, musl and the BSDs (macOS included)
+/// declare there, and this layout reproduces theirs exactly on both LP64 and
+/// ILP32. The Windows CRT stops after `isdst`; there the two trailing members
+/// are simply never read, and an object larger than the callee's declaration is
+/// safe in a way that a smaller one is not. `c_long` is the correct width here
+/// precisely because this is a real libc ABI boundary.
 pub const Tm = extern struct {
     sec: c_int,
     min: c_int,
@@ -284,6 +294,8 @@ pub const Tm = extern struct {
     wday: c_int,
     yday: c_int,
     isdst: c_int,
+    gmtoff: c_long = 0,
+    zone: ?[*:0]const u8 = null,
 };
 
 /// Confirmation temporary-info entry (confirmationTI_t).

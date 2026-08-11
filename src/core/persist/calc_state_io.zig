@@ -43,8 +43,11 @@ const TIMER_IDX_REFRESH_SLEEP: c_int = 0;
 const TO_KB_ACTV: u16 = 10;
 const TO_KB_ACTV_MEDIUM: u32 = 6000;
 
-const ERROR_MESSAGE_COUNT: usize = 127;
-const ERROR_MESSAGE_SIZE: usize = 48;
+// defines.h: 129 rows of 45 bytes each (longest message is 44 bytes plus the
+// terminator). The stride is what indexes SAVING_STATE_FILE / LOADING_STATE_FILE
+// onto their rows, so it has to match the definition exactly.
+const NUMBER_OF_ERROR_CODES: usize = 129;
+const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
 
 const calcKey_t = abi.CalcKey;
 
@@ -59,7 +62,7 @@ comptime {
 extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
 extern var lastStateFileOpened: [32]u8;
 extern var fileNameSelected: [20]u8;
-extern const errorMessages: [ERROR_MESSAGE_COUNT][ERROR_MESSAGE_SIZE]u8;
+extern const errorMessages: [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8;
 extern var screenUpdatingMode: u8;
 extern var calcModel: u8;
 extern var kbd_usr: [37]calcKey_t;
@@ -75,6 +78,7 @@ extern fn fnReturn(skip: u16) void;
 extern fn getDateString(date_string: [*c]u8) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn fnClearFlag(flag: u16) void;
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 
 // power_check_screen / sys_timer_* are DMCP function-table macros, not link
@@ -125,7 +129,13 @@ pub fn closeFile() void {
     ioFileClose();
 }
 
+/// The state-save open failure: the simulator says so on stdout before the
+/// calculator error, the firmware only raises the error. The gate is the build
+/// alone, so every host lane -- testSuite included -- prints the line.
 pub fn displayWriteError() void {
+    if (comptime !is_dmcp_build) {
+        _ = printf("Cannot SAVE in file C47.sav!\n");
+    }
     displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
 }
 

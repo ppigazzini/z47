@@ -71,6 +71,10 @@ test "abi.Complex34 is two back-to-back C decQuads" {
 // [[extern-struct-fork-reconciliation]] documents); alignment is asserted only
 // where abi does not intentionally use an align-1 view. Each pair is
 // {C type, abi type, name} so a mismatch names the culprit struct.
+//
+// Size alone does not pin the layout: transposing two equal-width members leaves
+// sizeof untouched. Every field is therefore offset-checked as well, by name,
+// against the C struct -- see the offset test below.
 const SIZE_PAIRS = .{
     .{ c.calcKey_t, abi.CalcKey, "CalcKey" },
     .{ c.softmenu_t, abi.Softmenu, "Softmenu" },
@@ -103,6 +107,8 @@ const SIZE_PAIRS = .{
     .{ c.letteredFlagDisplay_t, abi.LetteredFlagDisplay, "LetteredFlagDisplay" },
     .{ c.upperLower_t, abi.UpperLower, "UpperLower" },
     .{ c.calcKeyboard_t, abi.CalcKeyboard, "CalcKeyboard" },
+    .{ c.cplx_t, abi.CmplxPair, "CmplxPair" },
+    .{ c.__mpz_struct, abi.Mpz, "Mpz" },
 };
 
 test "abi calc structs match upstream C size" {
@@ -111,6 +117,70 @@ test "abi calc structs match upstream C size" {
             std.debug.print("size mismatch on {s}: C={d} abi={d}\n", .{ pair[2], @sizeOf(pair[0]), @sizeOf(pair[1]) });
             return err;
         };
+    }
+}
+
+// The abi mirrors that deliberately rename a member. Each entry is
+// {C type, abi type, name, .{ .{c field, abi field}, ... }}; everything else is
+// matched by name in the test below.
+const RENAMED_FIELDS = .{
+    .{ c.cplx_t, abi.CmplxPair, "CmplxPair", .{ .{ "Real", "r" }, .{ "Imag", "i" } } },
+};
+
+// Fields the by-name sweep cannot look up on the C side, each with the reason.
+// A field may only be listed here because translate-c cannot represent it -- not
+// because it fails.
+const UNMATCHABLE_FIELDS = .{
+    // font_t's `glyph_t glyphs[]` is a flexible array member; translate-c emits
+    // no field for it. Its offset is oracled through the C companion below.
+    .{ abi.Font, "glyphs" },
+};
+
+fn skipsNameMatch(comptime Z: type, comptime field: []const u8) bool {
+    inline for (RENAMED_FIELDS) |entry| {
+        if (entry[1] != Z) continue;
+        inline for (entry[3]) |mapping| {
+            if (std.mem.eql(u8, mapping[1], field)) return true;
+        }
+    }
+    inline for (UNMATCHABLE_FIELDS) |entry| {
+        if (entry[0] == Z and std.mem.eql(u8, entry[1], field)) return true;
+    }
+    return false;
+}
+
+test "abi calc structs match upstream C field offsets" {
+    @setEvalBranchQuota(20000);
+    inline for (SIZE_PAIRS) |pair| {
+        inline for (@typeInfo(pair[1]).@"struct".fields) |field| {
+            if (comptime skipsNameMatch(pair[1], field.name)) continue;
+            testing.expectEqual(@offsetOf(pair[0], field.name), @offsetOf(pair[1], field.name)) catch |err| {
+                std.debug.print("offset mismatch on {s}.{s}: C={d} abi={d}\n", .{
+                    pair[2],
+                    field.name,
+                    @offsetOf(pair[0], field.name),
+                    @offsetOf(pair[1], field.name),
+                });
+                return err;
+            };
+        }
+    }
+}
+
+test "abi mirrors that rename a member still match the C offsets" {
+    inline for (RENAMED_FIELDS) |entry| {
+        inline for (entry[3]) |mapping| {
+            testing.expectEqual(@offsetOf(entry[0], mapping[0]), @offsetOf(entry[1], mapping[1])) catch |err| {
+                std.debug.print("offset mismatch on {s}.{s} (C {s}): C={d} abi={d}\n", .{
+                    entry[2],
+                    mapping[1],
+                    mapping[0],
+                    @offsetOf(entry[0], mapping[0]),
+                    @offsetOf(entry[1], mapping[1]),
+                });
+                return err;
+            };
+        }
     }
 }
 
@@ -142,6 +212,87 @@ test "abi.RegisterHeaderBits packs bit-identically to C registerHeader_t" {
             return err;
         };
     }
+}
+
+// The aggregates that embed one of those two bitfield words are opaque{} to
+// translate-c as well, so they cannot go in SIZE_PAIRS. The C companion hands
+// their layout over by index; the lists below must stay in step with its
+// switches.
+extern fn z47_bitfield_aggregate_size(which: c_int) usize;
+extern fn z47_bitfield_aggregate_align(which: c_int) usize;
+extern fn z47_bitfield_aggregate_field_offset(which: c_int) usize;
+
+const BITFIELD_AGGREGATES = .{
+    .{ abi.Real34Matrix, "Real34Matrix", 0 },
+    .{ abi.Complex34Matrix, "Complex34Matrix", 1 },
+    .{ abi.Any34Matrix, "Any34Matrix", 2 },
+    .{ abi.NamedVariableHeader, "NamedVariableHeader", 3 },
+    .{ abi.ReservedVariableHeader, "ReservedVariableHeader", 4 },
+};
+
+const BITFIELD_AGGREGATE_FIELDS = .{
+    .{ abi.Real34Matrix, "Real34Matrix", "header", 0 },
+    .{ abi.Real34Matrix, "Real34Matrix", "matrixElements", 1 },
+    .{ abi.Complex34Matrix, "Complex34Matrix", "header", 2 },
+    .{ abi.Complex34Matrix, "Complex34Matrix", "matrixElements", 3 },
+    .{ abi.NamedVariableHeader, "NamedVariableHeader", "header", 4 },
+    .{ abi.NamedVariableHeader, "NamedVariableHeader", "variableName", 5 },
+    .{ abi.ReservedVariableHeader, "ReservedVariableHeader", "header", 6 },
+    .{ abi.ReservedVariableHeader, "ReservedVariableHeader", "reservedVariableName", 7 },
+};
+
+test "abi bitfield-embedding aggregates match the C size and alignment" {
+    inline for (BITFIELD_AGGREGATES) |entry| {
+        const c_size = z47_bitfield_aggregate_size(entry[2]);
+        testing.expectEqual(c_size, @sizeOf(entry[0])) catch |err| {
+            std.debug.print("size mismatch on {s}: C={d} abi={d}\n", .{ entry[1], c_size, @sizeOf(entry[0]) });
+            return err;
+        };
+        const c_align = z47_bitfield_aggregate_align(entry[2]);
+        testing.expectEqual(c_align, @alignOf(entry[0])) catch |err| {
+            std.debug.print("align mismatch on {s}: C={d} abi={d}\n", .{ entry[1], c_align, @alignOf(entry[0]) });
+            return err;
+        };
+    }
+}
+
+test "abi bitfield-embedding aggregates match the C field offsets" {
+    inline for (BITFIELD_AGGREGATE_FIELDS) |entry| {
+        const c_offset = z47_bitfield_aggregate_field_offset(entry[3]);
+        const z_offset = @offsetOf(entry[0], entry[2]);
+        testing.expectEqual(c_offset, z_offset) catch |err| {
+            std.debug.print("offset mismatch on {s}.{s}: C={d} abi={d}\n", .{ entry[1], entry[2], c_offset, z_offset });
+            return err;
+        };
+    }
+}
+
+extern fn z47_flexible_array_member_offset(which: c_int) usize;
+
+test "abi.Font's glyphs array starts where font_t's flexible member does" {
+    const c_offset = z47_flexible_array_member_offset(0);
+    try testing.expectEqual(c_offset, @offsetOf(abi.Font, "glyphs"));
+}
+
+// dt_t / tm_t live in the DMCP SDK (dmcp.h), which is a git submodule the
+// firmware build needs and this host lane deliberately does not: making the
+// layout gate require it would break the lane on a clone without submodules.
+// The mirrors are pinned here against the SDK declaration instead, so a hand
+// edit to either mirror still fails a gate.
+test "abi.DateShort mirrors the SDK dt_t" {
+    try testing.expectEqual(@as(usize, 4), @sizeOf(abi.DateShort));
+    try testing.expectEqual(@as(usize, 0), @offsetOf(abi.DateShort, "year"));
+    try testing.expectEqual(@as(usize, 2), @offsetOf(abi.DateShort, "month"));
+    try testing.expectEqual(@as(usize, 3), @offsetOf(abi.DateShort, "day"));
+}
+
+test "abi.TimeShort mirrors the SDK tm_t" {
+    try testing.expectEqual(@as(usize, 5), @sizeOf(abi.TimeShort));
+    try testing.expectEqual(@as(usize, 0), @offsetOf(abi.TimeShort, "hour"));
+    try testing.expectEqual(@as(usize, 1), @offsetOf(abi.TimeShort, "min"));
+    try testing.expectEqual(@as(usize, 2), @offsetOf(abi.TimeShort, "sec"));
+    try testing.expectEqual(@as(usize, 3), @offsetOf(abi.TimeShort, "csec"));
+    try testing.expectEqual(@as(usize, 4), @offsetOf(abi.TimeShort, "dow"));
 }
 
 test "abi.MatrixHeader packs bit-identically to C matrixHeader_t" {

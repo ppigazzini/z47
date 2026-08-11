@@ -51,6 +51,13 @@ pub fn registerReal34Ptr(reg: calcRegister_t) *align(1) real34_t {
     return @ptrCast(ptr);
 }
 
+/// The out-of-range refusal. Upstream puts the whole check -- not just its
+/// message -- inside `#if (EXTRA_INFO_ON_CALC_ERROR == 1)`, so the firmware and
+/// testSuite configurations have no check at all and read `realtConstants` past
+/// its 84th entry. The port refuses on every build instead: reproducing the
+/// unchecked read would panic on the safety-checked lanes and load a garbage
+/// function pointer on `ReleaseSmall`, so the two builds would disagree and
+/// neither would match the C. Only the message text follows the macro.
 pub inline fn validateConstant(constant: u16) bool {
     if (constant >= NOUC) {
         if (build_options.extra_info_on_calc_error) {
@@ -73,7 +80,10 @@ pub inline fn storeConstantInX(constant: u16) void {
 }
 
 pub inline fn storePiInX() void {
-    convertRealToResultRegister(realtConstants[NOUC - 1], REGISTER_X, amNone);
+    // fnPi names const39_pi, it does not index realtConstants: the generated
+    // blob's order is not a contract, and inserting a constant ahead of pi would
+    // silently repoint an index into it.
+    convertRealToResultRegister(@ptrCast(abi.constants.const39_pi()), REGISTER_X, amNone);
 }
 
 pub inline fn setLastIntegerBaseToZero() void {

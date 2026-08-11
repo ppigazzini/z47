@@ -40,7 +40,13 @@ typedef enum {
 extern uint16_t currentSolverStatus;
 extern char *errorMessage;
 extern const real_t *realtConstants[NOUC];
-extern const real_t *const39_pi;
+
+// const39_pi is a macro over the generated constant blob, not a link symbol
+// (constantPointers.h:98). The fake supplies a blob just long enough to carry
+// the bytes that offset points at, so the oracle and the port reach pi the same
+// way the product does: by name, at a fixed offset.
+extern const uint8_t constants[];
+#define const39_pi ((const real_t *)(constants + 1848))
 
 real34_t *z47_constants_test_register_real34_data(calcRegister_t reg);
 
