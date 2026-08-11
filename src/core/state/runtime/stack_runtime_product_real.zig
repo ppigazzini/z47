@@ -3,7 +3,6 @@ const abi = @import("abi");
 const build_options = @import("stack_state_build_options");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
 
 pub const product_rounding_t = c_int;
@@ -60,6 +59,16 @@ pub fn productUInt32ToReal(source: u32, destination: *ProductReal) void {
 
 pub fn productRealIsNegative(value: *const ProductReal) bool {
     return (value.bits & product_real_negative_bit) != 0;
+}
+
+// decNumber's DECSPECIAL: the infinity and the two NaN bits together.
+const product_real_special_bits: u8 = 0x70;
+
+/// decNumberIsZero: a single zero digit and no special bits set. Decimal zero
+/// carries a sign, so this is true for -0 as well, which is what separates "the
+/// value is below zero" from "the sign bit is set".
+pub fn productRealIsZero(value: *const ProductReal) bool {
+    return value.lsu[0] == 0 and value.digits == 1 and (value.bits & product_real_special_bits) == 0;
 }
 
 pub fn productRealSetPositiveSign(value: *ProductReal) void {

@@ -86,7 +86,7 @@ mathematics/conjugate	core/numeric/command_wrappers;core/numeric/command_wrapper
 mathematics/cos	core/numeric/trig/circular_trig_command;core/numeric/trig/trig_complex_primitives	port	symbol
 mathematics/cosh	core/numeric/trig/circular_trig_command	port	symbol
 mathematics/cpyx	core/numeric/special/cpyx	port	symbol
-mathematics/cross	core/numeric/command_wrappers	port	symbol
+mathematics/cross	core/numeric/command_wrappers;core/numeric/matrix/vector_cross_scalar	port	symbol
 mathematics/cube	core/numeric/transform/transform_power_command	port	symbol
 mathematics/cubeRoot	core/numeric/transform/transform_complex_helpers;core/numeric/transform/transform_root_command	port	symbol
 mathematics/cxToRe	core/numeric/cxtore	port	symbol
@@ -96,11 +96,11 @@ mathematics/decomp	core/numeric/arithmetic/integer_division_cells;core/numeric/a
 mathematics/deltaPercent	core/numeric/arithmetic/percent_extended	port	symbol
 mathematics/deltaPercentXmean	core/numeric/statistics/deltaPercentXmean	port	symbol
 mathematics/division	core/numeric/arithmetic/dispatch_command;core/numeric/arithmetic/division_cells	port	symbol
-mathematics/dot	core/numeric/command_wrappers	port	symbol
+mathematics/dot	core/numeric/command_wrappers;core/numeric/matrix/vector_dot_scalar	port	symbol
 mathematics/elec	shell/elec;shell/extensions/jm	port	symbol
 mathematics/elliptic	core/numeric/special/elliptic	port	symbol
 mathematics/erf	core/numeric/special/special_function_erf	port	symbol
-mathematics/erfc	core/numeric/special/special_function_erf	port	symbol
+mathematics/erfc	core/numeric/command_wrappers;core/numeric/special/special_function_erf	port	symbol
 mathematics/eulersFormula	core/numeric/special/special_algebraic_command	port	symbol
 mathematics/exp	core/numeric/special/transcendental_command	port	symbol
 mathematics/expMOne	core/numeric/special/transcendental_command	port	symbol
@@ -203,11 +203,11 @@ programming/nextStep	shell/program/next_step;shell/program/program_step_width	po
 programming/programmableMenu	shell/program/programmable_menu	port	symbol
 realType	core/state/value/real_special_values;core/state/value/register_conversions	port	symbol
 recall	shell/recall	port	symbol
-registerValueConversions	core/state/value/register_conversions;shell/register_value_conversions	port	symbol
+registerValueConversions	abi/sci_format;core/state/value/register_conversions;shell/register_value_conversions	port	symbol
 registers	core/state/register_metadata;core/state/register_metadata/register_metadata_descriptor;core/state/register_metadata/register_metadata_local_registers;core/state/register_metadata/register_metadata_payload;core/state/register_metadata/register_metadata_reallocate;core/state/register_metadata/register_metadata_variables;core/state/register_metadata/registers_compat_exports;core/state/runtime/register_memory;core/state/stack;core/state/stack/stack_clear;core/state/stack/stack_mutation;core/state/stack/stack_register_commands;core/state/stack/stack_result	port	symbol
 saveRestoreBackup	core/persist/calc_state_backup	port	symbol
 saveRestoreCalcState	abi/complex_text;core/persist/calc_state;core/persist/calc_state_entrypoints;core/persist/calc_state_io_flow;core/persist/calc_state_load;core/persist/calc_state_register_codec;core/persist/calc_state_restore;core/persist/calc_state_save;core/persist/calc_state_text;shell/matrix_editor/matrix_lifecycle	port	symbol
-saveRestorePrograms	core/program/program_serialization	port	symbol
+saveRestorePrograms	core/program/program_serialization;core/program/program_serialization_export	port	symbol
 screen	abi/host;core/input/keyboard_state_runtime;shell/display/screen;shell/display/screen_snap	port	symbol
 softmenus	frontier;shell/display/softmenus/softmenus	port	symbol
 solver/differentiate	core/analysis/differentiate;core/analysis/solve	port	symbol
@@ -251,7 +251,6 @@ integers	abi/shortint_arith	port	comment
 printing/martelFonts	shell/generated/frontier_martel_fonts	port	comment
 printing/printerFont8	shell/generated/frontier_printer_font8	port	comment
 realType	shell/real_type	port	comment
-registerValueConversions	abi/sci_format	port	comment
 saveRestorePrograms	core/program/program_serialization_screen	port	comment
 solver/isumprod	core/analysis/isumprod	port	comment
 stringFuncs	abi/c47_string	port	comment

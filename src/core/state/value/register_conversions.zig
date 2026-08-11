@@ -42,6 +42,27 @@ extern var ctxtReal39: realContext_t;
 const mpz_struct = abi.Mpz;
 const longInteger_t = [1]mpz_struct;
 extern var errorMessage: [*c]u8;
+// The bug-screen formats are the shared commonBugScreenMessages rows, indexed by
+// commonBugScreenMessageCode_t; reading the row leaves the text with one owner.
+// Row 0 is "In function %s:%d is an unexpected value for %s!".
+const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
+const bugMsgValueFor: usize = 0;
+const commonBugScreenMessages = @extern([*c]const [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8, .{ .name = "commonBugScreenMessages" });
+extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
+
+/// The "%d is an unexpected value for shortIntegerMode" bug screen the two
+/// short-integer converters share: the row carries the offending mode, so the
+/// screen names it.
+fn reportBadShortIntegerMode(comptime who: [*:0]const u8) void {
+    _ = sprintf(
+        errorMessage,
+        @ptrCast(&commonBugScreenMessages[bugMsgValueFor]),
+        who,
+        @as(c_int, shortIntegerMode),
+        "shortIntegerMode",
+    );
+    abi.host.showBugScreen(errorMessage);
+}
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, nIn: u32) ?*anyopaque;
 const consts = abi.constants;
 const mp_limb_t = usize;
@@ -120,7 +141,10 @@ const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
 const COMPLEX34_SIZE_IN_BYTES: u32 = 32;
 const SHORT_INTEGER_SIZE_IN_BLOCKS: u16 = 2;
 const DECQUAD_Pmax: usize = 34;
-const DOUBLE_NOT_INIT: f64 = 3.402823466e+38;
+// registerValueConversions.h spells this `3.402823466e+38f`. The f suffix
+// rounds the literal to a float BEFORE it widens, so the sentinel is FLT_MAX,
+// which is 3.85e+29 above the double nearest the same decimal digits.
+const DOUBLE_NOT_INIT: f64 = @as(f32, 3.402823466e+38);
 const DECINF: u8 = 0x40;
 const DECNAN: u8 = 0x20;
 const DECSNAN: u8 = 0x10;
@@ -322,8 +346,11 @@ pub export fn longIntegerToAllocatedString(lgInt: [*c]const mpz_struct, str: [*c
 
 pub export fn badTypeError(reg: calcRegister_t) callconv(.c) void {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_T);
-    // the extra_info diagnostic enrichment (register type name) is a shell-side
-    // debug concern, routed through the host boundary; a no-op unless installed.
+    // The whole hint -- the sentence AND the sprintf into the shared errorMessage
+    // buffer -- belongs to the shell: it owns the register data-type name table.
+    // The hook writes the same "cannot convert Register %d from %s" into
+    // errorMessage that upstream does, and is a no-op when the core runs headless
+    // or the extra-info diagnostics are off.
     abi.host.reportBadTypeDetail(reg);
 }
 
@@ -424,7 +451,7 @@ pub export fn convertShortIntegerRegisterToUInt64(regist: calcRegister_t, sign: 
             } else if (shortIntegerMode == SIM_SIGNMT) {
                 value.* -%= shortIntegerSignBit;
             } else {
-                abi.host.showBugScreen("convertShortIntegerRegisterToUInt64: bad shortIntegerMode");
+                reportBadShortIntegerMode("convertShortIntegerRegisterToUInt64");
                 sign.* = 0;
                 value.* = 0;
             }
@@ -522,8 +549,11 @@ inline fn toBlocks(n: u32) u16 {
     return @intCast((n + 3) >> 2);
 }
 
+// longIntegerType.h returns uint32_t and every caller stores it in a uint16_t,
+// so C truncates. No register-sized long integer reaches 65536 bytes, but the
+// port must wrap where C wraps rather than trap on a value C accepts.
 inline fn longIntegerSizeInBytes(lg: *const mpz_struct) u16 {
-    return @intCast(absI(lg._mp_size) * @as(u32, LIMB_SIZE));
+    return @truncate(absI(lg._mp_size) * @as(u32, LIMB_SIZE));
 }
 
 inline fn longIntegerSignTag(lg: *const mpz_struct) u32 {
@@ -900,7 +930,7 @@ pub export fn convertUInt64ToShortIntegerRegister(sign: i16, value_arg: u64, bas
         } else if (shortIntegerMode == SIM_SIGNMT) {
             value +%= shortIntegerSignBit;
         } else {
-            abi.host.showBugScreen("convertUInt64ToShortIntegerRegister: bad shortIntegerMode");
+            reportBadShortIntegerMode("convertUInt64ToShortIntegerRegister");
             value = 0;
         }
     }
@@ -1146,7 +1176,13 @@ pub export fn realToDouble(vv: *const real_t, v: *f64) callconv(.c) void {
 pub export fn badDomainError(reg: calcRegister_t) callconv(.c) void {
     _ = reg;
     displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_T);
-    moreInfoOnError("In function badDomainError:", "The input value is outside of the domain.");
+    // Upstream builds the fixed sentence in errorMessage and hands the buffer
+    // over, so the buffer holds it afterwards; passing the literal straight
+    // through would leave whatever the previous writer put there.
+    if (comptime extra_info) {
+        abi.fmtCStr(errorMessage, "The input value is outside of the domain.", .{});
+        moreInfoOnError("In function badDomainError:", errorMessage);
+    }
 }
 
 pub export fn getRegisterAsComplex(reg: calcRegister_t, r: *real_t, i: *real_t) callconv(.c) bool {
@@ -1379,22 +1415,35 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
 // it. saveRegisterSnapshot takes the copy and restoreRegisterSnapshot writes it back and frees the long
 // integer it owns, so the pair is used once. Types outside the switch below are not captured, so screen the
 // register before taking a snapshot.
+//
+// The two real34 slots carry an explicit alignment because the ABI binding
+// cannot: real34_t is decQuad, a union over `uint64_t longs[2]`, so C aligns it
+// to 8 and lays the struct out t@0, r@8, i@24, li@40, siVal@56, siBase@64,
+// tag@68. abi.Real34 is a byte array with alignment 1, which would pack r@1 and
+// i@17 -- seven and seven bytes off, for a struct C translation units also
+// declare (mathematics/compare.c and solver/differentiate.c).
 pub const snap_t = extern struct {
     t: u8 = 0,
-    r: real34_t = undefined,
-    i: real34_t = undefined,
+    r: real34_t align(8) = undefined,
+    i: real34_t align(8) = undefined,
     li: mpz_struct = undefined,
     siVal: u64 = 0,
     siBase: u32 = 0,
     tag: u32 = 0,
 };
 
+comptime {
+    std.debug.assert(@offsetOf(snap_t, "r") == 8);
+    std.debug.assert(@offsetOf(snap_t, "i") == 24);
+    std.debug.assert(@offsetOf(snap_t, "li") == 40);
+}
+
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) bool;
 extern fn setRegisterDataType(regist: calcRegister_t, data_type: u32, tag: u32) void;
 
 pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
-    s.t = @intCast(getRegisterDataType(reg));
+    s.t = @truncate(getRegisterDataType(reg)); // dataType_t into snap_t's uint8_t, as C narrows it
     switch (@as(u32, s.t)) {
         dtComplex34 => {
             real34Copy(reg34(reg), &s.r);
@@ -1603,6 +1652,17 @@ pub export fn convertComplexToResultRegisterRPangle(real: *const real_t, imag: *
     convertRealToReal34ResultRegister(real, dest);
     convertRealToImag34ResultRegister(imag, dest);
     setComplexRegisterPolarMode(dest, polarTag);
+}
+
+/// "NaN", "+Inf" or "-Inf" for a special value, NULL for a normal finite one.
+/// registerValueConversions.h publishes this and c47Extensions/graphs.c reads it
+/// through the header at five sites, so the ported owner owes it a C-ABI symbol
+/// even while every current caller happens to be Zig. The three answers are
+/// string literals, which Zig stores NUL-terminated, so the slice's pointer is
+/// already a valid C string.
+pub export fn doubleSpecialLabel(value: f64) callconv(.c) [*c]const u8 {
+    const label = abi.sci_format.doubleSpecialLabel(value) orelse return null;
+    return label.ptr;
 }
 
 pub export fn sci_fmt(buf: [*c]u8, n: c_int, x_arg: f64) callconv(.c) void {

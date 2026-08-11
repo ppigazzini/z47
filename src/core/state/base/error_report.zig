@@ -38,6 +38,14 @@ pub export var lastErrorCode: u8 = 0;
 pub export var errorMessageRegisterLine: calcRegister_t = 0;
 extern var screenUpdatingMode: u8;
 
+// error.c ends the normal path with its OPTION_IR_PRINTING block: flush a
+// pending TAM command to the printer trace, then print the error text. That
+// block reads the TAM buffer, the printer state and the error-message table --
+// all shell-side -- and it is compiled per DMCP package, so the body stays with
+// error.c's shell port and this is the call error.c makes. It is a no-op
+// wherever the option is off, tmpString included.
+extern fn printErrorTrace(errorCode: u8) void;
+
 pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void {
     // disUsedCanBeRemoved (was errRegisterLine): dead since cb79577; the param is
     // kept because ~924 call sites still pass it.
@@ -52,5 +60,6 @@ pub export fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: cal
         lastErrorCode = errorCode;
         errorMessageRegisterLine = errMessageRegisterLine;
         screenUpdatingMode = SCRUPD_AUTO;
+        printErrorTrace(errorCode);
     }
 }

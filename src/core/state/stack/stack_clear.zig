@@ -1,6 +1,15 @@
 const runtime = @import("../runtime/stack_runtime.zig");
 const memory_owned = @import("../runtime/register_memory.zig");
 
+// clearRegister's two reallocating arms stop on ERROR_RAM_FULL where registers.c
+// zeroes a real34 through the register's data pointer regardless. That pointer
+// still addresses the register's OLD payload -- reallocateRegister raises
+// ERROR_RAM_FULL from its isMemoryBlockAvailable test, before it frees anything --
+// so upstream writes sixteen bytes into a block that may hold only two. The stop
+// is behaviour-identical whenever the allocation succeeds, which is every input
+// with room in the pool; it differs only on the RAM-full path, where upstream
+// corrupts the pool and the caller reads a register it never wrote.
+
 fn complexImagPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     const ptr = data_ptr orelse return null;
     const bytes: [*]align(1) u8 = @ptrCast(ptr);

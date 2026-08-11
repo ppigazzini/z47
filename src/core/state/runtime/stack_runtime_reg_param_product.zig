@@ -3,7 +3,6 @@ const product_real_owned = @import("stack_runtime_product_real.zig");
 const register_range_owned = @import("stack_runtime_register_range.zig");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
 
 const PRODUCT_DEC_ROUND_DOWN = product_real_owned.PRODUCT_DEC_ROUND_DOWN;
@@ -90,14 +89,17 @@ pub fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, de
     var integer_part: ProductReal = undefined;
     var thousand: ProductReal = undefined;
 
-    if (getRegisterDataType(REGISTER_X) != dtReal34) {
-        return ERROR_INVALID_DATA_TYPE_FOR_OP;
-    }
-
+    // Both arms of registers.c zero the out-parameters, the wrong-type arm
+    // included, so a caller that inspects them after a refusal sees zeroes rather
+    // than whatever the previous call left there.
     start.* = 0;
     count.* = 0;
     if (destination) |dest| {
         dest.* = 0;
+    }
+
+    if (getRegisterDataType(REGISTER_X) != dtReal34) {
+        return ERROR_INVALID_DATA_TYPE_FOR_OP;
     }
 
     productReal34ToReal(registerReal34Ptr(REGISTER_X), &x);
@@ -114,18 +116,18 @@ pub fn getRegParamProduct(load_into_memory: ?*bool, start: *u16, count: *u16, de
     productRealSetPositiveSign(&x);
 
     realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
-    start.* = @intCast(realToInt32C47(&integer_part, null));
+    start.* = @truncate(@as(u32, @bitCast(realToInt32C47(&integer_part, null))));
 
     productRealSubtract(&x, &integer_part, &x, product_real_owned.realContext39());
     x.exponent += 2;
     realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
-    count.* = @intCast(realToInt32C47(&integer_part, null));
+    count.* = @truncate(@as(u32, @bitCast(realToInt32C47(&integer_part, null))));
 
     if (destination) |dest| {
         productRealSubtract(&x, &integer_part, &x, product_real_owned.realContext39());
         x.exponent += 3;
         realToIntegralValue(&x, &integer_part, PRODUCT_DEC_ROUND_DOWN, product_real_owned.realContext39());
-        dest.* = @intCast(realToInt32C47(&integer_part, null));
+        dest.* = @truncate(@as(u32, @bitCast(realToInt32C47(&integer_part, null))));
     }
 
     const source_error = validateRegisterSourceRange(

@@ -120,9 +120,36 @@ extern fn __gmpz_cmp_ui(op: *const stack_runtime.longInteger_t, value: c_ulong) 
 extern fn __gmpz_get_ui(op: *const stack_runtime.longInteger_t) c_ulong;
 extern fn __gmpz_clear(op: *stack_runtime.longInteger_t) void;
 
+// EXTRA_INFO_ON_CALC_ERROR: indirectAddressing's nine console hints, and the
+// errorMessage / tmpString formatting that builds them, are compiled out on the
+// firmware and in the testSuite. The testSuite shares the simulator's target, so
+// only the build option can tell the two apart.
+const extra_info: bool = @import("register_metadata_build_options").extra_info_on_calc_error;
+const ERROR_MESSAGE_LENGTH: i32 = 512;
+const noBaseOverride: u8 = 0;
+
+extern var tmpString: [*c]u8;
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+extern fn shortIntegerToDisplayString(regist: stack_runtime.calcRegister_t, display_string: [*]u8, determine_font: bool, base_override: u8) void;
+
 fn indirectError(error_code: u8) i16 {
     stack_runtime.displayCalcErrorMessage(error_code, stack_runtime.ERR_REGISTER_LINE, stack_runtime.REGISTER_X);
     return FAILED_INDIRECTION;
+}
+
+/// Close one of the three register-value refusals. The renderer has just put the
+/// value's text into errorMessage; the sentence around it is the same whichever
+/// data type produced it, and it is built in tmpString because errorMessage is
+/// still holding the value.
+fn indirectValueHint(regist: stack_runtime.calcRegister_t) void {
+    _ = sprintf(tmpString, "register %d = %s:", @as(c_int, regist), errorMessage);
+    moreInfoOnError("In function indirectAddressing:", tmpString, "this value is negative or too big!", null);
+}
+
+/// The hints that are one already-formatted sentence in errorMessage, with
+/// nothing after it.
+fn indirectMessageHint() void {
+    moreInfoOnError("In function indirectAddressing:", errorMessage, null, null);
 }
 extern fn realCompareAbsLessThan(number1: *const product_real.ProductReal, number2: *const product_real.ProductReal) bool;
 extern fn realToIntegralValue(source: *const product_real.ProductReal, destination: *product_real.ProductReal, mode: product_real.product_rounding_t, real_context: *product_real.ProductRealContext) void;
@@ -190,7 +217,10 @@ fn parseRealRegisterToNonNegativeInt(reg: stack_runtime.calcRegister_t, max_valu
     if (!realCompareAbsLessThan(&x, &max_plus_one)) {
         return false;
     }
-    if (product_real.productRealIsNegative(&x)) {
+    // registers.c refuses on real34CompareLessThan(value, const34_0), a decimal
+    // comparison: -0 compares EQUAL to zero and is accepted, yielding index 0. The
+    // sign bit alone is set for -0 too, so it cannot stand in for the comparison.
+    if (product_real.productRealIsNegative(&x) and !product_real.productRealIsZero(&x)) {
         return false;
     }
 
@@ -351,17 +381,34 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         (regist < register_runtime.FIRST_NAMED_VARIABLE or
             regist >= register_runtime.FIRST_NAMED_VARIABLE + named_count))
     {
-        return indirectError(ERROR_OUT_OF_RANGE);
+        const code = indirectError(ERROR_OUT_OF_RANGE);
+        if (comptime extra_info) {
+            // registers.c subtracts in int, so a target below the local band is
+            // named with a negative number.
+            _ = sprintf(errorMessage, "local indirection register .%02d", @as(c_int, regist) - @as(c_int, stack_runtime.FIRST_LOCAL_REGISTER));
+            moreInfoOnError("In function indirectAddressing:", errorMessage, "is not defined!", null);
+        }
+        return code;
     } else if (data_type == dtReal34 and parameter_type != INDPM_MENU) {
         if (!parseRealRegisterToNonNegativeInt(regist, max_value, &value)) {
-            return indirectError(ERROR_OUT_OF_RANGE);
+            const code = indirectError(ERROR_OUT_OF_RANGE);
+            if (comptime extra_info) {
+                real34ToString(registerReal34Ptr(regist), errorMessage);
+                indirectValueHint(regist);
+            }
+            return code;
         }
     } else if (data_type == dtLongInteger and parameter_type != INDPM_MENU) {
         var long_value: stack_runtime.longInteger_t = undefined;
         convertLongIntegerRegisterToLongInteger(regist, &long_value);
         if (__gmpz_cmp_si(&long_value, 0) < 0 or __gmpz_cmp_ui(&long_value, @intCast(max_value)) > 0) {
+            const code = indirectError(ERROR_OUT_OF_RANGE);
+            if (comptime extra_info) {
+                longIntegerToAllocatedString(&long_value, errorMessage, ERROR_MESSAGE_LENGTH);
+                indirectValueHint(regist);
+            }
             __gmpz_clear(&long_value);
-            return indirectError(ERROR_OUT_OF_RANGE);
+            return code;
         }
         value = @intCast(__gmpz_get_ui(&long_value));
         __gmpz_clear(&long_value);
@@ -370,7 +417,12 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         var sign: i16 = undefined;
         convertShortIntegerRegisterToUInt64(regist, &sign, &raw_value);
         if (sign == 1 or raw_value > 180) {
-            return indirectError(ERROR_OUT_OF_RANGE);
+            const code = indirectError(ERROR_OUT_OF_RANGE);
+            if (comptime extra_info) {
+                shortIntegerToDisplayString(regist, errorMessage, false, noBaseOverride);
+                indirectValueHint(regist);
+            }
+            return code;
         }
         value = @intCast(raw_value);
     } else if (data_type == dtString and parameter_type == INDPM_REGISTER) {
@@ -380,7 +432,13 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
             register_metadata_variables.findNamedVariable(registerStringData(regist));
         is_valid_alpha = true;
         if (value == register_runtime.INVALID_VARIABLE and lastErrorCode != ERROR_ENTER_NEW_NAME) {
-            return indirectError(ERROR_UNDEF_SOURCE_VAR);
+            const code = indirectError(ERROR_UNDEF_SOURCE_VAR);
+            if (comptime extra_info) {
+                const allocate_text: [*:0]const u8 = if (try_allocate) "true" else "false";
+                _ = sprintf(errorMessage, "string '%s' is not a named variable - tryAllocate is %s", registerStringData(regist), allocate_text);
+                indirectMessageHint();
+            }
+            return code;
         }
     } else if (data_type == dtString and parameter_type == INDPM_LABEL) {
         value = findNamedLabel(registerStringData(regist), ALL_LABELS);
@@ -391,10 +449,20 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
         value = findMenu(registerStringData(regist));
         is_valid_alpha = true;
         if (value == INVALID_MENU) {
-            return indirectError(ERROR_UNDEF_MENU);
+            const code = indirectError(ERROR_UNDEF_MENU);
+            if (comptime extra_info) {
+                _ = sprintf(errorMessage, "string '%s' is not a menu name", registerStringData(regist));
+                indirectMessageHint();
+            }
+            return code;
         }
     } else {
-        return indirectError(ERROR_INVALID_DATA_TYPE_FOR_OP);
+        const code = indirectError(ERROR_INVALID_DATA_TYPE_FOR_OP);
+        if (comptime extra_info) {
+            _ = sprintf(errorMessage, "register %d is %s:", @as(c_int, regist), getRegisterDataTypeName(regist, true, false));
+            moreInfoOnError("In function indirectAddressing:", errorMessage, "not suited for indirect addressing!", null);
+        }
+        return code;
     }
 
     if (min_value <= value and (value <= max_value or is_valid_alpha)) {
@@ -403,12 +471,22 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
                 value = regKStoC(value);
             }
         } else if (parameter_type == INDPM_FLAG and value > LAST_LOCAL_FLAG and value < FLAG_M) {
-            return indirectError(ERROR_OUT_OF_RANGE);
+            const code = indirectError(ERROR_OUT_OF_RANGE);
+            if (comptime extra_info) {
+                _ = sprintf(errorMessage, "local flag value = %d! Should be from %d to %d", @as(c_int, value), @as(c_int, FIRST_LOCAL_FLAG), @as(c_int, LAST_LOCAL_FLAG));
+                indirectMessageHint();
+            }
+            return code;
         }
         return value;
     }
 
-    return indirectError(ERROR_OUT_OF_RANGE);
+    const code = indirectError(ERROR_OUT_OF_RANGE);
+    if (comptime extra_info) {
+        _ = sprintf(errorMessage, "value = %d! Should be from %d to %d.", @as(c_int, value), @as(c_int, min_value), @as(c_int, max_value));
+        indirectMessageHint();
+    }
+    return code;
 }
 
 // ---------------------------------------------------------------------------

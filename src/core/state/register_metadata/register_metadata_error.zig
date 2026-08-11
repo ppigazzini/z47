@@ -81,6 +81,50 @@ pub fn reportLocalRegisterNotDefined(function_name: [*:0]const u8, index: u16, l
     }
 }
 
+/// setRegisterMaxDataLengthInBlocks lays the same two facts out differently from
+/// the accessors: its subject already ends in "is not defined!", the range is the
+/// hint's THIRD argument, and there is no fourth.
+pub fn reportLocalRegisterNotDefinedTwoPart(function_name: [*:0]const u8, index: u16, last_index: u8) void {
+    if (comptime !extra_info) return;
+    const range = errorMessage + ERROR_MESSAGE_LENGTH / 2;
+    _ = sprintf(errorMessage, "local register %d is not defined!", @as(c_int, @as(i16, @bitCast(index))));
+    _ = sprintf(range, "Must be from 0 to %u", @as(c_uint, last_index));
+    moreInfoOnError(function_name, @ptrCast(errorMessage), @ptrCast(range), null);
+}
+
+/// allocateLocalRegisters' refusal names the count that was asked for; the legal
+/// maximum is in the sentence itself.
+pub fn reportTooManyLocalRegisters(requested: u16) void {
+    if (comptime !extra_info) return;
+    _ = sprintf(errorMessage, "You can allocate up to 99 registers, you requested %u", @as(c_uint, requested));
+    moreInfoOnError("In function allocateLocalRegisters:", @ptrCast(errorMessage), null, null);
+}
+
+/// allocateNamedVariable's three name refusals. Each puts the offending name in
+/// errorMessage and passes the rest of the sentence as literals, so the popup
+/// shows what was asked for as well as why it was refused.
+pub fn reportBadVariableName(variable_name: [*c]const u8, why: [*:0]const u8, why_continued: ?[*:0]const u8) void {
+    if (comptime !extra_info) return;
+    _ = sprintf(errorMessage, "the name %s", variable_name);
+    moreInfoOnError("In function allocateNamedVariable:", @ptrCast(errorMessage), why, why_continued);
+}
+
+/// allocateNamedVariable's "the table is full" refusal: the count goes into
+/// errorMessage and lands as the hint's THIRD argument, after the literal.
+pub fn reportNamedVariableTableFull(capacity: u16) void {
+    if (comptime !extra_info) return;
+    _ = sprintf(errorMessage, "%d named variables!", @as(c_int, capacity));
+    moreInfoOnError("In function allocateNamedVariable:", "you can allocate up to", @ptrCast(errorMessage), null);
+}
+
+/// reallocateRegister's refusal to retype a reserved variable names it, without
+/// the length byte its header carries in front of the text.
+pub fn reportReservedVariableRetypeDetail(reserved_variable_name: [*c]const u8) void {
+    if (comptime !extra_info) return;
+    _ = sprintf(errorMessage, "reserved variable %s", reserved_variable_name);
+    moreInfoOnError("In function reallocateRegister:", @ptrCast(errorMessage), "keeps the data type it was declared with!", null);
+}
+
 fn reportError(error_code: u8) void {
     displayCalcErrorMessage(
         error_code,
@@ -91,6 +135,24 @@ fn reportError(error_code: u8) void {
 
 pub fn reportRamFull() void {
     reportError(stack_runtime.ERROR_RAM_FULL);
+}
+
+// PC_BUILD: reallocateRegister traces a pool exhaustion to the console the
+// simulator and the testSuite share, naming the size it wanted and the register
+// it wanted it for. The firmware has no console, and DMCP_BUILD is exactly the
+// freestanding target.
+const console_build = @import("builtin").target.os.tag != .freestanding;
+extern fn printf(format: [*:0]const u8, ...) c_int;
+extern fn fflush(stream: ?*anyopaque) c_int;
+
+pub fn traceReallocateRamFull(payload_size_in_blocks: u16, reg: stack_runtime.calcRegister_t) void {
+    if (comptime !console_build) return;
+    _ = printf(
+        "In function reallocateRegister: required %u blocks for register #%d but no data blocks with enough size are available!\n",
+        @as(c_uint, payload_size_in_blocks),
+        @as(c_int, reg),
+    );
+    _ = fflush(null);
 }
 
 /// A reserved variable owns a fixed block named by a const header, so there is

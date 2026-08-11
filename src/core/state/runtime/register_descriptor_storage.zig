@@ -1,4 +1,16 @@
 const build_options = @import("state_descriptor_storage_build_options");
+
+/// Index of `reg` inside a band that starts at `first` and holds `count` entries,
+/// or null when the register is not one of them.
+///
+/// registers.c subtracts the band base and then tests only the upper bound
+/// (`regist -= FIRST_NAMED_VARIABLE; if(regist < numberOfNamedVariables)`).
+/// calcRegister_t is int16_t and both operands promote to int, so a register in
+/// the 137..255 gap or the 2048..6999 label band yields a NEGATIVE index that
+/// passes that test and reads or writes in front of the array. The `reg < first`
+/// test here is the only difference: for every register that is genuinely in the
+/// band the two agree exactly, and for the two gap bands z47 reports the register
+/// as absent instead of touching memory it does not own.
 fn resolveIndex(reg: i16, first: i16, count: u16) ?u16 {
     if (reg < first or count == 0) return null;
     const index: u16 = @intCast(reg - first);
@@ -15,10 +27,8 @@ pub const FIRST_LOCAL_REGISTER: calcRegister_t = 7000;
 
 const number_of_global_registers: usize = @intCast(LAST_GLOBAL_REGISTER + 1);
 const use_array_backed_global_registers =
-    @hasDecl(build_options, "use_array_backed_global_registers") and
     build_options.use_array_backed_global_registers;
 const use_fake_state_harness_surface =
-    @hasDecl(build_options, "use_fake_state_harness_surface") and
     build_options.use_fake_state_harness_surface;
 
 const register_header_t = abi.RegisterHeader;
@@ -84,16 +94,6 @@ pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descripto
     const headers = allNamedVariables orelse return false;
     headers[index].header.descriptor = descriptor;
     return true;
-}
-
-pub fn namedDescriptorUnchecked(index: u16) register_descriptor_t {
-    const headers = allNamedVariables orelse return 0;
-    return headers[index].header.descriptor;
-}
-
-pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t) void {
-    const headers = allNamedVariables orelse return;
-    headers[index].header.descriptor = descriptor;
 }
 
 /// True when no local-register frame exists at all, which is the one failure

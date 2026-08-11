@@ -43,7 +43,11 @@ pub fn swapN(number: u16) void {
     const count: u16 = @min(number, @as(u16, 4));
     var index: u16 = 0;
     while (index < count) : (index += 1) {
-        swapRegs(registerWithOffset(runtime.REGISTER_X, index), @intCast(registerWithOffset(runtime.REGISTER_X, number + index)));
+        // stack.c computes `REGISTER_X + number + n` in int and hands it to a
+        // uint16_t parameter, so a large count wraps there instead of trapping
+        // here. The source register is always X..T and needs no such care.
+        const target = @as(u16, @intCast(runtime.REGISTER_X)) +% number +% index;
+        swapRegs(registerWithOffset(runtime.REGISTER_X, index), target);
     }
 }
 

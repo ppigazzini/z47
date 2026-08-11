@@ -37,8 +37,16 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
     const source_full_size = payload_owned.getRegisterFullSizeInBlocks(normalized_source);
 
     if (descriptor_owned.getRegisterDataType(normalized_dest) != source_type or payload_owned.getRegisterFullSizeInBlocks(normalized_dest) != source_full_size) {
-        const payload_size = payload_owned.copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse {
-            return;
+        // A source descriptor holding a data type outside 0..9 is a coding error,
+        // and registers.c does not stop for it: it raises the bug screen, sizes the
+        // payload at zero, and carries on with the reallocate, the copy and the tag
+        // write, so the destination still ends up retyped.
+        const payload_size = payload_owned.copyPayloadSizeWithoutHeader(normalized_source, source_type) orelse blk: {
+            runtime.reportDataTypeUnknownBug(
+                "copySourceRegisterToDestRegister",
+                runtime.getDataTypeName(@truncate(source_type), false, false),
+            );
+            break :blk 0;
         };
 
         reallocateRegister(normalized_dest, source_type, payload_size, runtime.amNone);
@@ -68,22 +76,22 @@ pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size
         // fixed and named by a const header, so there is nothing here to free,
         // allocate or retype.
         if (runtime.FIRST_RESERVED_VARIABLE <= reg and reg <= runtime.LAST_RESERVED_VARIABLE) {
-            runtime.reportReservedVariableRetype();
+            runtime.reportReservedVariableRetype(reg);
             return;
         }
 
         if (!runtime.memoryBlockAvailable(allocated_size)) {
+            runtime.traceReallocateRamFull(normalized_payload_size, reg);
             runtime.reportRamFull();
             return;
         }
 
         memory_owned.freeRegisterData(reg);
+        // The pointer write is unconditional in registers.c, and it has to be: the
+        // block has just been freed, so stopping here would leave the descriptor
+        // pointing at memory the pool has taken back. A failed allocation stores the
+        // C47_NULL sentinel, and the data type is updated either way.
         const data_ptr = if (allocated_size == 0) null else stack_runtime.allocC47Blocks(allocated_size);
-        if (allocated_size != 0 and data_ptr == null) {
-            runtime.reportRamFull();
-            return;
-        }
-
         descriptor_owned.setRegisterDataPointer(reg, data_ptr);
         descriptor_owned.setRegisterDataType(reg, @intCast(data_type), tag);
 

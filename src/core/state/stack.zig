@@ -8,7 +8,6 @@ const runtime = @import("runtime/stack_runtime.zig");
 const build_options = @import("stack_state_build_options");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
 
 pub export fn fnClX(unused_but_mandatory_parameter: u16) void {
