@@ -9,10 +9,11 @@ const const_1 = consts.const_1;
 // z47_frontier_plot_* helpers.
 //
 // fnPlotStat and fnPlotRegressionLine are NOT ported here: the canonical owners
-// live elsewhere - frontier.zig exports `fnPlotStat` (frontier.zig:790) and
-// `fnPlotRegressionLine` (frontier.zig:960). No other code inside plotstat.c
-// calls them internally (graphDrawLRline/drawline call the curve-fit helpers,
-// not fnPlotStat), so they are simply omitted here.
+// live elsewhere - `fnPlotStat` is exported from frontier.zig as a shim over
+// plot_stat.zig's run(), and `fnPlotRegressionLine` is exported from
+// plot_regression.zig. No other code inside plotstat.c calls them internally
+// (graphDrawLRline/drawline call the curve-fit helpers, not fnPlotStat), so they
+// are simply omitted here.
 //
 // The 5 helpers (z47_frontier_plot_set_plotstatmx_stats /
 // _set_plotstatmx_histo / _set_statmx_histo / _has_source_data /
@@ -35,8 +36,10 @@ const const_1 = consts.const_1;
 //   * USEFLOATING == useFLOAT (0): both `if(USEFLOATING==useREAL4)` and
 //     `if(USEFLOATING==useREAL39)` branches in drawline are comptime-false; the
 //     dead frontier_register_value_conversions.convertDoubleToReal(...&XX...) calls are reproduced under comptime ifs.
-//   * The else-branch `#if defined(PC_BUILD) printf("Not plotted...")` debug is
-//     pure host diagnostics -> omitted.
+//   * PC_BUILD alone (no STATDEBUG) guards three console telltales, all live on
+//     every host build: graphPlotstat's else-branch "Not plotted point:",
+//     drawline's "Drawline: %u / 2000 iterations" and _screen_window_y_r's
+//     "Y NEGATIVE"/"Y EXCEEDED" range warnings.
 //
 // DMCP/PC split: the only direct ROM macros plotstat.c uses are lcd_fill_rect
 // (clearScreenPixels, graphAxisDraw) and setBlackPixel/setWhitePixel (static
@@ -71,7 +74,7 @@ const abi = @import("abi"); // shared ABI bindings
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_curve_fitting = @import("curve_fitting.zig");
-const plot_viewport = @import("plot_viewport.zig"); // std-only pure viewport math
+const plot_viewport = @import("plot_viewport.zig"); // std-only viewport clamping
 const frontier_debug = @import("../debug.zig");
 const frontier_display = @import("../display/display.zig");
 const frontier_error = @import("../error.zig");
@@ -419,28 +422,26 @@ fn screenWindowRatio(v_min: *align(1) const real_t, v: *align(1) const real_t, v
 }
 
 pub export fn screen_window_x_r(x_minp: *align(1) const real_t, xp: *align(1) const real_t, x_maxp: *align(1) const real_t) callconv(.c) i16 {
-    var temp: i16 = screenWindowRatio(x_minp, xp, x_maxp, SCREEN_HEIGHT_GRAPH - 1);
-    if (temp > SCREEN_HEIGHT_GRAPH - 1) {
-        temp = @intCast(SCREEN_HEIGHT_GRAPH - 1);
-    } else if (temp < 0) {
-        temp = 0;
-    }
-    return @intCast(@as(i32, temp) + SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH);
+    return plot_viewport.graphColumn(screenWindowRatio(x_minp, xp, x_maxp, SCREEN_HEIGHT_GRAPH - 1));
 }
 
 fn screenWindowYr(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t, nolimit: bool_t) i16 {
-    var temp: i16 = screenWindowRatio(y_minp, yp, y_maxp, SCREEN_HEIGHT_GRAPH - 1 - minn);
-    if (!nolimit) {
-        if (temp > SCREEN_HEIGHT_GRAPH - 1 - minn) {
-            temp = @intCast(SCREEN_HEIGHT_GRAPH - 1 - minn);
-        } else if (temp < 0) {
-            temp = 0;
+    const row: i32 = plot_viewport.graphRow(screenWindowRatio(y_minp, yp, y_maxp, SCREEN_HEIGHT_GRAPH - 1 - minn), nolimit);
+    if (comptime !dmcp_build) {
+        // Console telltale for a row outside the graph area. Guarded only by
+        // PC_BUILD upstream, so it runs on every host build; the nolimit caller
+        // deliberately skips the clamp, which is what makes it fire.
+        if (row < 0) {
+            _ = printf("In function screen_window_y Y NEGATIVE %6d; ", @as(c_int, @intCast(row)));
+        }
+        if (row > 239) {
+            _ = printf("In function screen_window_y Y EXCEEDED %6d; ", @as(c_int, @intCast(row)));
         }
     }
     // The C returns through an (int16_t) cast, which truncates. The nolimit
     // caller deliberately skips the clamp above, so the value can leave the
     // int16 range and must wrap rather than trap.
-    return @truncate(SCREEN_HEIGHT_GRAPH - 1 - @as(i32, temp));
+    return @truncate(row);
 }
 
 pub export fn screen_window_y_r(y_minp: *align(1) const real_t, yp: *align(1) const real_t, y_maxp: *align(1) const real_t) callconv(.c) i16 {
@@ -489,6 +490,12 @@ inline fn int32ToReal34(source: i32, destination: *align(1) real34_t) void {
 const REGISTER_REAL34_DATA = abi.registerReal34;
 
 // libc
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
+// A `%u` conversion of an int16_t operand: C integer-promotes it to int and
+// printf reinterprets those bits as unsigned.
+inline fn uArg(v: i16) c_uint {
+    return @bitCast(@as(c_int, v));
+}
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
@@ -651,19 +658,39 @@ pub export fn grf_y_r(i: c_int, v: *real_t) callconv(.c) void {
 // ===========================================================================
 // screen_window_x
 // ===========================================================================
+// The float entry points convert their three arguments to real_t in ctxtReal39
+// and delegate to the `_r` variants, so the ratio, the rounding and the
+// saturation all happen in decimal and a NaN ratio (v_max == v_min) is caught by
+// realToInt32C47's err flag rather than reaching a float-to-int conversion.
 pub export fn screen_window_x(x_minp: f32, x: f32, x_maxp: f32) callconv(.c) i16 {
-    return plot_viewport.screenWindowX(x_minp, x, x_maxp);
+    var x_min_r: real_t = undefined;
+    var x_r: real_t = undefined;
+    var x_max_r: real_t = undefined;
+    convertDoubleToReal(x_minp, &x_min_r, &ctxtReal39);
+    convertDoubleToReal(x, &x_r, &ctxtReal39);
+    convertDoubleToReal(x_maxp, &x_max_r, &ctxtReal39);
+    return screen_window_x_r(&x_min_r, &x_r, &x_max_r);
 }
 
 // ===========================================================================
 // _screen_window_y  (#define minn 0)
 // ===========================================================================
+fn _screen_window_y(y_minp: f32, y: f32, y_maxp: f32, nolimit: bool_t) i16 {
+    var y_min_r: real_t = undefined;
+    var y_r: real_t = undefined;
+    var y_max_r: real_t = undefined;
+    convertDoubleToReal(y_minp, &y_min_r, &ctxtReal39);
+    convertDoubleToReal(y, &y_r, &ctxtReal39);
+    convertDoubleToReal(y_maxp, &y_max_r, &ctxtReal39);
+    return screenWindowYr(&y_min_r, &y_r, &y_max_r, nolimit);
+}
+
 pub export fn screen_window_y_nolimit(y_minp: f32, y: f32, y_maxp: f32) callconv(.c) i16 {
-    return plot_viewport.screenWindowY(y_minp, y, y_maxp, true); // nolimit
+    return _screen_window_y(y_minp, y, y_maxp, true); // nolimit
 }
 
 pub export fn screen_window_y(y_minp: f32, y: f32, y_maxp: f32) callconv(.c) i16 {
-    return plot_viewport.screenWindowY(y_minp, y, y_maxp, false); // limit
+    return _screen_window_y(y_minp, y, y_maxp, false); // limit
 }
 
 // ===========================================================================
@@ -724,7 +751,8 @@ pub export fn plotrect(a: i16, b: i16, c: i16, d: i16) callconv(.c) void {
     plotline1(c, d, a, d);
 }
 
-// static (SAVE_SPACE_DM42_13GRF guard -> live here)
+// static, inside the OPTION_GRAPHICS block, which is defined for every build
+// this owner is compiled into -> live here.
 fn plotHisto_coln(x: i16, y: i16, y_minp: i16, y_wid: i16, colw: i16) void {
     plotrect(@intCast(maxI(i16w(@as(i32, x) - @as(i32, colw)), 0)), y_minp + y_wid, x + colw, y);
 }
@@ -1412,8 +1440,24 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
                         getSystemFlag(FLAG_PPLUS), // plus
                         getSystemFlag(@bitCast(FLAG_PLINE)) // line
                     );
+                } else if (comptime !dmcp_build) {
+                    // Console telltale for a rejected sample. Guarded only by
+                    // PC_BUILD upstream, so it runs on every host build. The
+                    // %u conversions reinterpret the promoted int16 operands.
+                    _ = printf("Not plotted point: (%u %u) ", uArg(xN), uArg(yN));
+                    if (xN >= SCREEN_WIDTH_GRAPH) {
+                        _ = printf("x>>%u ", uArg(SCREEN_WIDTH_GRAPH));
+                    } else if (xN < minN_x) {
+                        _ = printf("x<<%u ", uArg(minN_x));
+                    }
+
+                    if (yN >= SCREEN_HEIGHT_GRAPH) {
+                        _ = printf("y>>%u ", uArg(SCREEN_HEIGHT_GRAPH));
+                    } else if (yN < 1 + minN_y) {
+                        _ = printf("y<<%u ", uArg(1 + minN_y));
+                    }
+                    _ = printf("\n");
                 }
-                // else-branch is pure PC_BUILD diagnostics -> omitted.
                 if (frontier_addons.exitKeyWaiting() != 0) {
                     return;
                 }
@@ -1680,6 +1724,11 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
                     }
                 }
             }
+        }
+        if (comptime !dmcp_build) {
+            // The only signal that the fit walk hit its 2000-iteration cap.
+            // Guarded only by PC_BUILD upstream.
+            _ = printf("Drawline: %u / 2000 iterations\n", @as(c_uint, iterations));
         }
     }
 

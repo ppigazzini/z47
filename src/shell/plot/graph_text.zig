@@ -12,9 +12,12 @@ const std = @import("std");
 // The file has fully distinct DMCP_BUILD and PC_BUILD bodies for the file I/O
 // (DMCP uses the FatFs ROM layer, host uses stdio FILE*), both reproduced and
 // gated on dmcp_build. The DMCP-only public symbols open_text / close_text /
-// save_text and the static FatFs helpers (f_gets / f_getsline / putc_* / f_putc
-// / f_puts / export_append_string_to_file[_n] / export_append_line_short) exist
-// only on firmware. VERBOSE_LEVEL is -1 for every z47 build, so all the
+// save_text and the FatFs helpers (f_gets / f_getsline / putc_* / f_putc /
+// f_puts / export_append_string_to_file[_n] / export_append_line_short) exist
+// only on firmware. Upstream leaves f_gets, f_putc and f_puts non-static; no
+// caller anywhere references them, so they are file-private here and only
+// putc_bfd / putc_flush / mem_set / putc_init are static in the C as well.
+// VERBOSE_LEVEL is -1 for every z47 build, so all the
 // VERBOSE_LEVEL>=1/2 print_inlinestr/printf diagnostic blocks are dead and
 // omitted. The DMCP-ROM FatFs/sys/check_create_dir/make_date_filename calls are
 // fixed-address jump-table calls (LIBRARY_FN_BASE + verified offset); the host
@@ -444,6 +447,12 @@ pub export fn import_string_from_filename(line1: [*c]u8, dirname: [*c]u8, filena
         const limit: usize = @intCast(TMP_STR_LENGTH - 1);
         var overlong = false;
         while (fread(&onechar, 1, 1, infile.?) != 0) {
+            // Upstream appends each byte with strcat over a two-slot buffer whose
+            // second slot holds the terminator, so a NUL byte appends nothing and
+            // the bytes after it keep accumulating contiguously.
+            if (onechar[0] == 0) {
+                continue;
+            }
             if (used >= limit) {
                 overlong = true;
                 break;
@@ -544,10 +553,15 @@ pub export fn export_xy_to_file(x: f32, y: f32) callconv(.c) i16 {
         return 0;
     } else {
         var line: [200]u8 = undefined; // Line buffer
+        var xs: [24]u8 = undefined;
+        var ys: [24]u8 = undefined;
         create_filename(".STAT.TSV");
-        var xb: [64]u8 = undefined;
-        var yb: [64]u8 = undefined;
-        abi.fmtCStr(&line, "{s}\t{s}\n", .{ abi.fmtExpBuf(&xb, 16, @as(f64, x)), abi.fmtExpBuf(&yb, 16, @as(f64, y)) });
+        abi.sci_format.sciFmt(&xs, @as(f64, x));
+        abi.sci_format.sciFmt(&ys, @as(f64, y));
+        // Radix mark setting, as REGS.TSV does.
+        _ = frontier_plotstat.radixProcess(&xs, &xs);
+        _ = frontier_plotstat.radixProcess(&ys, &ys);
+        abi.fmtCStr(&line, "{s}\t{s}\n", .{ @as([*:0]const u8, @ptrCast(&xs)), @as([*:0]const u8, @ptrCast(&ys)) });
         _ = export_append_line(&line);
         return 0;
     }
@@ -657,6 +671,33 @@ const IOMsgs = [_]IOMsgsT{
     ioRow(100, "Msg List"),
 };
 
+// f_gets: like f_getsline but skipping CR and stopping after LF. Nothing in the
+// tree calls it -- upstream leaves it non-static and unused, and it is kept
+// file-private here, like the equally unused f_puts, so an unreferenced copy
+// costs no flash.
+fn f_gets(buff: [*c]TCHAR, lenIn: c_int, fp: *FIL) [*c]TCHAR {
+    var nc: c_int = 0;
+    var p: [*c]TCHAR = buff;
+    var s: [4]BYTE = undefined;
+    var rc: UINT = undefined;
+    var dc: DWORD = undefined;
+
+    // Byte-by-byte read without any conversion (ANSI/OEM API)
+    const len = lenIn - 1; // Make a room for the terminator
+    while (nc < len) {
+        _ = f_read(fp, &s, 1, &rc); // Get a byte
+        if (rc != 1) break; // EOF?
+        dc = s[0];
+        if (dc == '\r') continue;
+        p[0] = @intCast(dc);
+        p += 1;
+        nc += 1;
+        if (dc == '\n') break;
+    }
+    p[0] = 0; // Terminate the string
+    return if (nc != 0) buff else null; // No data read due to EOF or error
+}
+
 // f_getsline (static)
 fn f_getsline(buff: [*c]TCHAR, lenIn: c_int, fp: *FIL) [*c]TCHAR {
     var nc: c_int = 0;
@@ -725,6 +766,16 @@ fn putc_init(pb: *putbuff, fp: *FIL) void {
     mem_set(pb, 0, @sizeOf(putbuff));
     pb.fp = fp;
 }
+// f_putc: one buffered character with LF -> CRLF conversion. Unused in the tree
+// for the same reason as f_gets, and kept file-private for the same reason.
+fn f_putc(c: TCHAR, fp: *FIL) c_int {
+    var pb: putbuff = undefined;
+
+    putc_init(&pb, fp);
+    putc_bfd(&pb, c); // Put the character
+    return putc_flush(&pb);
+}
+
 fn f_puts(str_in: [*c]const TCHAR, fp: *FIL) c_int {
     var pb: putbuff = undefined;
     var str = str_in;

@@ -1,5 +1,7 @@
+const abi = @import("abi");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const plot_regression = @import("plot_regression.zig");
 const frontier_graphs = @import("graphs.zig");
 const frontier_curve_fitting = @import("curve_fitting.zig");
@@ -9,6 +11,12 @@ const frontier_screen = @import("../display/screen.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const frontier_stats = @import("../stats.zig");
 const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
+
+// The EXTRA_INFO console hint stages its text in the global errorMessage scratch
+// buffer first, as the C does, and reaches moreInfoOnError through the exported
+// C symbol.
+extern var errorMessage: [*c]u8;
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 const CM_NORMAL: u8 = 0;
 const CM_PLOT_STAT: u8 = 8;
@@ -195,7 +203,12 @@ fn updateRegressionLine(ctx: *PlotStatContext) void {
 fn finishFailure() void {
     calcMode = CM_NORMAL;
     frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
-    frontier_error.moreInfoOnErrorImpl("In function fnPlotStat:", "There is no statistical/plot data available!", null, null);
+    if (comptime extra_info) {
+        if (comptime !dmcp_build) {
+            abi.fmtBufZ(errorMessage[0..512], "There is no statistical/plot data available!", .{});
+            moreInfoOnError("In function fnPlotStat:", errorMessage, null, null);
+        }
+    }
 }
 
 pub fn run(plot_mode: u16) void {
