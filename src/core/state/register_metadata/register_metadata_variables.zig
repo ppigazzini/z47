@@ -1,4 +1,3 @@
-extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const std = @import("std");
 const name_glyph = @import("name_glyph.zig"); // std-only variable-name glyph decoding
 const abi = @import("abi");
@@ -52,31 +51,30 @@ fn validateNameGlyphCode(name: [*:0]const u8, offset: usize) u16 {
     return name_glyph.glyphCode(name, offset);
 }
 
-fn initializeSimEqMatrix(variable_name: [*:0]const u8) void {
+/// Allocate one of the three simultaneous-equation matrices and shape it 1x1.
+///
+/// The header is written through the register config.c names -- the first, second
+/// or third named variable, by position -- not through the variable the
+/// allocation happened to produce. The two coincide on the path that reaches
+/// here, which runs straight after every named variable has been deleted.
+fn initializeSimEqMatrix(variable_name: [*:0]const u8, position: runtime.calcRegister_t) void {
     allocateNamedVariable(variable_name, runtime.dtReal34Matrix, runtime.real34SizeInBlocks() + runtime.matrixHeaderSizeInBlocks());
-    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
-        return;
-    }
 
-    const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(runtime.numberOfNamedVariables - 1));
-    const data_ptr = descriptor_owned.getRegisterDataPointer(register);
+    // config.c writes through this pointer without testing it. It is null only
+    // when the allocation failed, which is where upstream faults; skipping the two
+    // writes is behaviour-identical for every allocation that succeeded.
+    const data_ptr = descriptor_owned.getRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE + position) orelse return;
 
     runtime.initializeMatrixHeader1x1(data_ptr);
     memory_owned.zeroReal34(firstMatrixElementPointer(data_ptr));
 }
 
+// All three are always attempted: config.c chains nothing between them, so a
+// Mat_A that could not be allocated must not cost Mat_B and Mat_X theirs.
 fn initSimEqMatABX() void {
-    initializeSimEqMatrix("Mat_A");
-    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
-        return;
-    }
-
-    initializeSimEqMatrix("Mat_B");
-    if (stack_runtime.lastErrorCode != stack_runtime.ERROR_NONE) {
-        return;
-    }
-
-    initializeSimEqMatrix("Mat_X");
+    initializeSimEqMatrix("Mat_A", 0);
+    initializeSimEqMatrix("Mat_B", 1);
+    initializeSimEqMatrix("Mat_X", 2);
 }
 
 fn refreshSimEqMatrix(variable_name: [*:0]const u8) void {
@@ -102,17 +100,11 @@ fn firstMatrixElementPointer(data_ptr: ?*anyopaque) ?*anyopaque {
     return @ptrCast(bytes + payload_offset);
 }
 
+// Each matrix is rebuilt on its own: registers.c guards only on the name failing
+// to resolve, and runs all three whatever the previous one did.
 fn refreshSimEqMatABX() void {
     refreshSimEqMatrix("Mat_A");
-    if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
-        return;
-    }
-
     refreshSimEqMatrix("Mat_B");
-    if (stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL) {
-        return;
-    }
-
     refreshSimEqMatrix("Mat_X");
 }
 
@@ -304,6 +296,11 @@ pub fn isUniqueMenuName(name: [*c]const u8) bool {
     return true;
 }
 
+/// data_type is registers.h's `dataType_t`, a plain C enum: `int` on the host and
+/// one byte on the firmware, which builds with the ARM EABI's default
+/// -fshort-enums. A word-wide parameter serves both, because AAPCS widens a
+/// narrow integer argument to a word at the call, and it is the width every
+/// sibling entry point in this API already declares.
 pub fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_data_size_in_blocks: u16) void {
     if (variable_name == null) {
         return;
@@ -312,17 +309,22 @@ pub fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_d
     const text: [*:0]const u8 = @ptrCast(variable_name);
     const glyph_length = validateNameGlyphLength(text);
 
+    // A name of the wrong length is refused with a console hint and NO error
+    // code; the two that follow raise ERROR_INVALID_NAME as well.
     if (glyph_length < 1 or glyph_length > validate_name_max_glyphs) {
+        runtime.reportBadVariableName(variable_name, "is incorrect! The length must be", "from 1 to 7 glyphs!");
         return;
     }
 
     if (findReservedVariableName(variable_name, @intCast(glyph_length)) != runtime.INVALID_VARIABLE) {
         runtime.reportInvalidName();
+        runtime.reportBadVariableName(variable_name, "clashes with a reserved variable!", null);
         return;
     }
 
     if (!validateName(variable_name)) {
         runtime.reportInvalidName();
+        runtime.reportBadVariableName(variable_name, "is incorrect! The name does not follow", "the naming convention!");
         return;
     }
 
@@ -333,16 +335,14 @@ pub fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_d
         }
 
         storeNamedVariableName(0, variable_name);
-        descriptor_owned.setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @intCast(data_type), runtime.amNone);
+        descriptor_owned.setRegisterDataType(runtime.FIRST_NAMED_VARIABLE, @truncate(data_type), runtime.amNone);
         descriptor_owned.setRegisterDataPointer(runtime.FIRST_NAMED_VARIABLE, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
         return;
     }
 
     if (runtime.numberOfNamedVariables == (runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE + 1)) {
         runtime.reportTooManyVariables();
-        var detail: [64]u8 = undefined;
-        const text_detail = std.fmt.bufPrintZ(&detail, "{d} named variables!", .{runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE + 1}) catch "named variables!";
-        moreInfoOnError("In function allocateNamedVariable:", "you can allocate up to", text_detail.ptr, null);
+        runtime.reportNamedVariableTableFull(runtime.LAST_NAMED_VARIABLE - runtime.FIRST_NAMED_VARIABLE + 1);
         return;
     }
 
@@ -355,7 +355,7 @@ pub fn allocateNamedVariable(variable_name: [*c]const u8, data_type: u32, full_d
     storeNamedVariableName(new_index, variable_name);
 
     const register = runtime.FIRST_NAMED_VARIABLE + @as(runtime.calcRegister_t, @intCast(new_index));
-    descriptor_owned.setRegisterDataType(register, @intCast(data_type), runtime.amNone);
+    descriptor_owned.setRegisterDataType(register, @truncate(data_type), runtime.amNone);
     descriptor_owned.setRegisterDataPointer(register, stack_runtime.allocC47Blocks(full_data_size_in_blocks));
 }
 

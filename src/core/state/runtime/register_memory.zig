@@ -2,7 +2,6 @@ const build_options = @import("stack_state_build_options");
 const runtime = @import("stack_runtime.zig");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
 
 // Upstream real34SetZero(dest) expands to decQuadZero(dest); a real34 zero is the

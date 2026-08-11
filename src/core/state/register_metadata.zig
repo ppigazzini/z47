@@ -35,9 +35,18 @@ pub export fn copySourceRegisterToDestRegister(source_register: runtime.calcRegi
 }
 
 pub export fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {
-    // Legacy callers may still issue malformed register IDs during migration.
+    // registers.c tests nothing here, and a register id in neither the global,
+    // named, reserved nor local band takes it through getRegisterDataType and
+    // freeRegisterData with an index computed before the array it addresses -- it
+    // reads a garbage block number and hands it back to the pool. That is
+    // reachable: mathematics/matrix.c calls reallocateRegister for
+    // initMatrixRegister BEFORE its own `regist == INVALID_VARIABLE` test.
+    //
+    // Doing nothing is what the caller then observes, error status included: the
+    // refusal raises no error code, so lastErrorCode reads exactly what it read in
+    // c43, and every id the four bands do contain takes the upstream path
+    // unchanged.
     if (!isValidRegisterId(reg, runtime.LAST_GLOBAL_REGISTER, runtime.FIRST_NAMED_VARIABLE, runtime.LAST_RESERVED_VARIABLE, runtime.FIRST_LOCAL_REGISTER, runtime.LAST_LOCAL_REGISTER)) {
-        runtime.reportUndefSourceVar();
         return;
     }
 

@@ -3,7 +3,6 @@ const descriptor_storage = @import("register_descriptor_storage.zig");
 const long_integer_owned = @import("stack_runtime_long_integer.zig");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
 
 pub const calcRegister_t = i16;

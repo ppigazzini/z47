@@ -94,6 +94,8 @@ pub extern var userMenus: [*c]userMenu_t;
 pub extern var numberOfUserMenus: u16;
 pub extern var currentSolverVariable: u16;
 pub extern var graphVariabl1: calcRegister_t;
+// debug.c's data-type name, for the two bug screens that quote it.
+pub extern fn getDataTypeName(data_type: u16, with_article: bool, pad_with_blanks: bool) [*c]const u8;
 
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
@@ -109,14 +111,6 @@ pub fn tryGetNamedDescriptor(reg: calcRegister_t, descriptor: *register_descript
 
 pub fn trySetNamedDescriptor(reg: calcRegister_t, descriptor: register_descriptor_t) bool {
     return descriptor_storage.trySetNamedDescriptor(reg, descriptor);
-}
-
-pub fn namedDescriptorUnchecked(index: u16) register_descriptor_t {
-    return descriptor_storage.namedDescriptorUnchecked(index);
-}
-
-pub fn setNamedDescriptorUnchecked(index: u16, descriptor: register_descriptor_t) void {
-    descriptor_storage.setNamedDescriptorUnchecked(index, descriptor);
 }
 
 pub fn noLocalRegisterFrame() bool {
@@ -137,10 +131,6 @@ pub fn reservedDescriptor(reg: calcRegister_t) register_descriptor_t {
 
 pub fn reservedDataTypeDescriptor(reg: calcRegister_t) register_descriptor_t {
     return tables_owned.reservedDataTypeDescriptor(reg);
-}
-
-pub fn reservedAllowsDataTypeWrite(reg: calcRegister_t) bool {
-    return tables_owned.reservedAllowsDataTypeWrite(reg);
 }
 
 pub fn dataMaxLengthInBlocks(data_ptr: ?*const anyopaque) u16 {
@@ -205,6 +195,10 @@ pub fn reportRamFull() void {
     error_owned.reportRamFull();
 }
 
+pub fn traceReallocateRamFull(payload_size_in_blocks: u16, reg: calcRegister_t) void {
+    error_owned.traceReallocateRamFull(payload_size_in_blocks, reg);
+}
+
 pub fn reportNoNamedVariablesBug(function_name: [*:0]const u8) void {
     error_owned.reportNoNamedVariablesBug(function_name);
 }
@@ -231,8 +225,25 @@ pub fn reportLocalRegisterNotDefined(function_name: [*:0]const u8, reg: calcRegi
     error_owned.reportLocalRegisterNotDefined(function_name, @bitCast(reg -% FIRST_LOCAL_REGISTER), stack_runtime.currentLocalRegisterCount() -% 1);
 }
 
-pub fn reportReservedVariableRetype() void {
+pub fn reportLocalRegisterNotDefinedTwoPart(function_name: [*:0]const u8, reg: calcRegister_t) void {
+    error_owned.reportLocalRegisterNotDefinedTwoPart(function_name, @bitCast(reg -% FIRST_LOCAL_REGISTER), stack_runtime.currentLocalRegisterCount() -% 1);
+}
+
+pub fn reportReservedVariableRetype(reg: calcRegister_t) void {
     error_owned.reportReservedVariableRetype();
+    error_owned.reportReservedVariableRetypeDetail(tables_owned.reservedVariableName(reg));
+}
+
+pub fn reportTooManyLocalRegisters(requested: u16) void {
+    error_owned.reportTooManyLocalRegisters(requested);
+}
+
+pub fn reportBadVariableName(variable_name: [*c]const u8, why: [*:0]const u8, why_continued: ?[*:0]const u8) void {
+    error_owned.reportBadVariableName(variable_name, why, why_continued);
+}
+
+pub fn reportNamedVariableTableFull(capacity: u16) void {
+    error_owned.reportNamedVariableTableFull(capacity);
 }
 
 pub fn toPcMemPtr(mem_ptr: u16) ?*anyopaque {
@@ -267,36 +278,8 @@ pub fn namedVariableName(index: u16) [*c]const u8 {
     return named_menu_owned.namedVariableName(index);
 }
 
-pub fn allocateFirstNamedVariableHeader() bool {
-    return tables_owned.allocateFirstNamedVariableHeader();
-}
-
-pub fn appendNamedVariableHeader(index: *u16) bool {
-    return tables_owned.appendNamedVariableHeader(index);
-}
-
-pub fn storeNamedVariableName(index: u16, variable_name: [*c]const u8) void {
-    tables_owned.storeNamedVariableName(index, variable_name);
-}
-
 pub fn removeNamedVariableRecallAssignment(index: u16) void {
     named_menu_owned.removeNamedVariableRecallAssignment(index);
-}
-
-pub fn clearNamedVariableSlot(index: u16) void {
-    tables_owned.clearNamedVariableSlot(index);
-}
-
-pub fn shrinkNamedVariableHeaderStorage() void {
-    tables_owned.shrinkNamedVariableHeaderStorage();
-}
-
-pub fn compareMenuNames(left: [*c]const u8, right: [*c]const u8) i32 {
-    return tables_owned.compareMenuNames(left, right);
-}
-
-pub fn findReservedVariableName(variable_name: [*c]const u8, glyph_length: u8) calcRegister_t {
-    return tables_owned.findReservedVariableName(variable_name, glyph_length);
 }
 
 pub fn reportInvalidName() void {

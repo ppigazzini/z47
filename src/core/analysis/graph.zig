@@ -213,7 +213,9 @@ const EQ_PLOT_LU: u16 = 5;
 const noInitDrwMx: u16 = 0;
 const initDrwMx: u16 = 1;
 
-const DOUBLE_NOT_INIT: f64 = 3.402823466e+38; // maximum float value
+// registerValueConversions.h: `3.402823466e+38f`. The f suffix rounds to a
+// float first, so the sentinel is FLT_MAX, not the double nearest the decimal.
+const DOUBLE_NOT_INIT: f64 = @as(f32, 3.402823466e+38); // maximum float value
 
 const SIGMA_NONE: i8 = 0;
 

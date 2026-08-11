@@ -4,6 +4,7 @@
     "fnTimerStartImpl",
     "installCoreHostHooks",
     "nprimes",
+    "printErrorTrace",
     "reportBadTypeDetail",
     "reportBugError",
     "z47HostCheckHalfSecHook",

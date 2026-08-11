@@ -1,7 +1,6 @@
 const build_options = @import("stack_state_build_options");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
 
 pub const calcRegister_t = i16;
@@ -43,11 +42,10 @@ pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
     z47_registers_sort_reg(range_start, range_end);
 }
 
+// registers.c reports every REGCLR / REGSWAP / REGCOPY / REGSORT failure on
+// ERR_REGISTER_LINE, which is Z. The harness surface used to pass X, so the
+// differential measured a build that annotated a different register line than
+// the C it was compared against -- the one place a divergence must never live.
 pub fn reportRegisterCommandError(error_code: u8) void {
-    if (use_fake_stack_state_harness_surface) {
-        displayCalcErrorMessage(error_code, REGISTER_X, REGISTER_X);
-        return;
-    }
-
     displayCalcErrorMessage(error_code, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
 }

@@ -132,6 +132,7 @@ fn isWriteProtectedSystemFlag(flag: u16) bool {
 
 const c_moreInfoOnError = @extern(*const fn (m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) callconv(.c) void, .{ .name = "moreInfoOnError" });
 extern var errorMessage: [*c]u8;
+extern var tmpString: [*c]u8;
 extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
 
 /// Every moreInfoOnError call in flags.c sits inside
@@ -175,6 +176,20 @@ fn refuseWriteProtected(comptime who: [*:0]const u8, comptime verb: [*:0]const u
     }
 }
 
+/// A flag id in no band at all -- past the local band but below FLAG_M, or above
+/// FLAG_W. Not an error: the three flag commands only name the end of the range
+/// the id fell off. Upstream builds the sentence in tmpString, so the shared
+/// buffer stays untouched wherever the hints are compiled out.
+fn reportNoSuchUserFlag(comptime who: [*:0]const u8, flag: u16) void {
+    if (comptime !extra_info) return;
+    if (flag < runtime.FLAG_M) {
+        abi.fmtCStr(tmpString, "there is no local flag above .31 ({d})", .{flag});
+    } else {
+        abi.fmtCStr(tmpString, "there is no flag beyond FLAG_W ({d})", .{flag});
+    }
+    moreInfoOnError(who, tmpString, "", "");
+}
+
 fn setUserFlag(flag: u16) void {
     switch (flag_bits.flagLocation(flag, runtime.FLAG_K, runtime.LAST_LOCAL_FLAG, runtime.NUMBER_OF_GLOBAL_FLAGS, runtime.NUMBER_OF_LOCAL_FLAGS, runtime.FLAG_M, runtime.FLAG_W)) {
         .global, .extra => |g| runtime.globalFlags[g.index] |= @as(u16, 1) << g.shift,
@@ -188,7 +203,7 @@ fn setUserFlag(flag: u16) void {
         } else {
             moreInfoOnError("In function fnSetFlag:", "no local flags defined!", "", "");
         },
-        .none => {},
+        .none => reportNoSuchUserFlag("In function fnSetFlag:", flag),
     }
 }
 
@@ -205,7 +220,7 @@ fn clearUserFlag(flag: u16) void {
         } else {
             moreInfoOnError("In function fnClearFlag:", "no local flags defined!", "", "");
         },
-        .none => {},
+        .none => reportNoSuchUserFlag("In function fnClearFlag:", flag),
     }
 }
 
@@ -222,7 +237,7 @@ fn flipUserFlag(flag: u16) void {
         } else {
             moreInfoOnError("In function fnFlipFlag:", "no local flags defined!", "", "");
         },
-        .none => {},
+        .none => reportNoSuchUserFlag("In function fnFlipFlag:", flag),
     }
 }
 

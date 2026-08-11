@@ -133,7 +133,9 @@ const SHORT_INTEGER_SIZE_IN_BLOCKS: u16 = 2;
 const DECQUAD_Pmax: usize = 34;
 const DECDPUN: i32 = 3;
 const TMP_STR_LENGTH: i32 = 2560;
-const DOUBLE_NOT_INIT: f64 = 3.402823466e+38;
+// registerValueConversions.h: `3.402823466e+38f`. The f suffix rounds to a
+// float first, so the sentinel is FLT_MAX, not the double nearest the decimal.
+const DOUBLE_NOT_INIT: f64 = @as(f32, 3.402823466e+38);
 
 // decNumber bits.
 const DECNEG: u8 = 0x80;

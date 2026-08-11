@@ -1,3 +1,4 @@
+const abi = @import("abi");
 const build_options = @import("stack_state_build_options");
 const command_control_owned = @import("stack_runtime_command_control.zig");
 const convert_owned = @import("stack_runtime_convert.zig");
@@ -10,10 +11,8 @@ const store_owned = @import("stack_runtime_store.zig");
 const swap_descriptor_owned = @import("stack_runtime_swap_descriptor.zig");
 
 const use_fake_stack_state_harness_surface =
-    @hasDecl(build_options, "use_fake_stack_state_harness_surface") and
     build_options.use_fake_stack_state_harness_surface;
-const extra_info: bool = @hasDecl(build_options, "extra_info_on_calc_error") and
-    build_options.extra_info_on_calc_error;
+const extra_info: bool = build_options.extra_info_on_calc_error;
 
 pub const calcRegister_t = i16;
 pub const register_descriptor_t = u32;
@@ -117,6 +116,10 @@ extern fn z47_stack_runtime_statistical_sums_bytes() u32;
 pub const longInteger_t = [1]longIntegerValue_t;
 
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
+// The shared error-hint buffer and the console hint printer, both reached only
+// from the EXTRA_INFO_ON_CALC_ERROR arms below.
+extern var errorMessage: [*c]u8;
+extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 extern fn convertRealToResultRegister(value: *const real_t, dest: calcRegister_t, angle: u32) void;
 extern fn convertLongIntegerToLongIntegerRegister(long_integer: *const longIntegerValue_t, regist: calcRegister_t) void;
 extern fn convertLongIntegerToShortIntegerRegister(long_integer: *const longIntegerValue_t, base: u32, regist: calcRegister_t) void;
@@ -248,11 +251,20 @@ pub fn trySetSwapTargetDescriptor(reg: u16, descriptor: register_descriptor_t) b
 }
 
 // The whole report sits inside EXTRA_INFO_ON_CALC_ERROR upstream, so on firmware
-// and in the testSuite an out-of-range swap target does nothing at all.
+// and in the testSuite an out-of-range swap target does nothing at all. Which of
+// the two sentences _swapRegs prints depends on the target: a local id past the
+// frame is named as an undefined local register, anything else as an unsupported
+// register number.
 pub fn reportInvalidSwapTarget(reg: u16) void {
-    _ = reg;
-    if (comptime extra_info) {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, REGISTER_Z, REGISTER_X);
+    if (comptime !extra_info) return;
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    if (@as(i32, reg) <= LAST_LOCAL_REGISTER) {
+        // stack.c subtracts in int, so a target below the local band prints negative.
+        abi.fmtCStr(errorMessage, "local register .{d:0>2}", .{@as(i32, reg) - FIRST_LOCAL_REGISTER});
+        moreInfoOnError("In function _swapRegs:", errorMessage, "is not defined!", null);
+    } else {
+        abi.fmtCStr(errorMessage, "register {d}", .{reg});
+        moreInfoOnError("In function _swapRegs:", errorMessage, "is unsupported!", null);
     }
 }
 

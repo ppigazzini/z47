@@ -226,8 +226,16 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
         return;
     }
 
+    // The reserved band writes through GLOBAL register 0..47, not through the
+    // reserved variable: registers.c decrements regist by FIRST_RESERVED_VARIABLE
+    // and then calls getRegisterDataPointer with the decremented value, which is a
+    // global-register id. The sibling getRegisterMaxDataLengthInBlocks indexes
+    // allReservedVariables with the same decremented value and so reads the
+    // reserved variable; only the setter turns it into a register id. Both are the
+    // pinned behaviour, and no caller reaches this arm -- reallocateRegister, the
+    // only one, refuses the reserved band first.
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
-        data_ptr = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
+        data_ptr = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg - runtime.FIRST_RESERVED_VARIABLE));
         if (data_ptr != null) {
             runtime.setDataMaxLengthInBlocks(data_ptr, max_data_len);
             return;
@@ -237,6 +245,8 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
     if (reg <= runtime.LAST_LOCAL_REGISTER and reg > runtime.LAST_RESERVED_VARIABLE and !runtime.tryGetLocalDescriptor(reg, &descriptor)) {
         if (runtime.noLocalRegisterFrame()) {
             moreInfoOnError("In function setRegisterMaxDataLengthInBlocks:", "no local registers defined!", "", "");
+        } else {
+            runtime.reportLocalRegisterNotDefinedTwoPart("In function setRegisterMaxDataLengthInBlocks:", reg);
         }
         return;
     }

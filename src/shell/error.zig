@@ -10,8 +10,9 @@ const consts = abi.constants;
 // behind errorMessageOf and the commonBugScreenMessages table (imported by other
 // C files as `extern const char [N][SIZE]`) live here too.
 //
-// Faithful, line-by-line port. The IR_PRINTING branch of displayCalcErrorMessage
-// is omitted (IR_PRINTING is never defined for any z47 build). moreInfoOnError is
+// Faithful, line-by-line port. The IR_PRINTING tail of displayCalcErrorMessage
+// lives here as printErrorTrace, which the engine's entry point calls once it
+// has recorded the error status. moreInfoOnError is
 // PC-only (gated on !dmcp_build); the EXTRA_INFO sprintf register-type hints in
 // fnErrorMessage are host-only and reduced to a fixed moreInfoOnError() string as
 // in the sibling owners. typeError is exported unconditionally: upstream defines
@@ -488,6 +489,45 @@ inline fn moreInfoOnErr(where: [*:0]const u8, hint: [*:0]const u8) void {
 // intra-core; the shell owners that call it (displayDomainErrorMessage below)
 // resolve it through this extern re-declaration.
 pub extern fn displayCalcErrorMessage(errorCode: u8, errMessageRegisterLine: calcRegister_t, disUsedCanBeRemoved: calcRegister_t) callconv(.c) void;
+
+// printErrorTrace: the OPTION_IR_PRINTING tail of displayCalcErrorMessage.
+//
+// error.c runs this straight after recording lastErrorCode: with a TAM command
+// still pending it first flushes that command to the trace, then prints the
+// error text -- prefixed with the offending name for a reserved-variable clash.
+// Everything it touches is shell state (the TAM buffer, the printer's trace_done
+// latch, the error-message table and the IR printer), so it stays with error.c's
+// port while the engine keeps the entry point and calls this once the status is
+// recorded.
+//
+// OPTION_IR_PRINTING is defined unconditionally at defines.h:72 and undefined
+// only by DMCP packages 1 and 3, so this is live on the simulator, in the
+// testSuite, on DMCP5 and on packages 2 and 4. With the option off nothing here
+// runs -- the tmpString write included, exactly as the #if leaves it.
+const ir_printing: bool = frontier_build_options.ir_printing;
+const ERROR_LABEL_NOT_FOUND: u8 = 6;
+const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
+
+extern var tam: abi.TamState;
+extern var printerState: abi.PrinterState;
+extern var tmpString: [*c]u8;
+extern fn printTrace(func: i16, param: u16) callconv(.c) void;
+extern fn printTraceError(errorString: [*c]u8) callconv(.c) void;
+
+pub export fn printErrorTrace(errorCode: u8) callconv(.c) void {
+    if (comptime !ir_printing) return;
+
+    if (tam.mode != 0 and errorCode != ERROR_LABEL_NOT_FOUND and !printerState.trace_done) {
+        printTrace(tam.function, @bitCast(tam.value));
+    }
+
+    if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+        _ = sprintf(tmpString, "%s: %s", errorMessageOf(lastErrorCode), errorMessage);
+    } else {
+        _ = sprintf(tmpString, "%s", errorMessageOf(lastErrorCode));
+    }
+    printTraceError(tmpString);
+}
 
 // reportBugError: the shell implementation of the host bug-report hook. It fires
 // only for an out-of-range error code or register line -- a programming error,
