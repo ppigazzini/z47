@@ -1,8 +1,14 @@
 const std = @import("std");
+const abi = @import("abi");
+const frontier_build_options = @import("frontier_build_options");
 const frontier_error = @import("../error.zig");
 const frontier_graph_text = @import("../plot/graph_text.zig");
 const frontier_print = @import("print.zig");
 const frontier_textfiles = @import("../extensions/textfiles.zig");
+
+const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const ERROR_MESSAGE_LENGTH: usize = 512;
+
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_PRTEN: u16 = 0x8067;
 
@@ -77,7 +83,16 @@ fn runAlpha(register_no: u16) void {
 
 fn runRegister(register_no: u16) void {
     if (printerActive()) {
-        var label: [32]u8 = std.mem.zeroes([32]u8);
+        // fnP_Regs wraps only its print-to-printer arm in
+        // `#if defined(OPTION_IR_PRINTING)`, so on the DM42 packages that drop
+        // the option the label is never built and nothing is printed; the
+        // print-to-file arm below stays live everywhere.
+        if (comptime !frontier_print.ir_printing) {
+            return;
+        }
+        // fnP_Regs declares char label[16]: the longest thing written into it is
+        // a named variable's name, at most 15 bytes plus the terminator.
+        var label: [16]u8 = std.mem.zeroes([16]u8);
         frontier_print.z47_frontier_format_register_label(register_no, &label, label.len);
         frontier_print.printReg(register_no, @ptrCast(&label), true, LINE_FULL, false);
         return;
@@ -92,12 +107,24 @@ fn runRegister(register_no: u16) void {
     frontier_textfiles.stackregister_csv_out(@as(i16, @intCast(register_no)), @as(i16, @intCast(register_no)), false);
 }
 
+// fnP_Sigma's printing-disabled hint is a `#if defined(PC_BUILD)` console line
+// built through the shared errorMessage buffer, host-only like the printf
+// traces in the print owner.
 fn reportPrintingDisabled() void {
     frontier_error.displayCalcErrorMessage(ERROR_PRINTING_DISABLED, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+    if (comptime !frontier_print.is_dmcp_build) {
+        abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "Printing is disabled", .{});
+        frontier_error.moreInfoOnErrorImpl("In function fnP_Sigma:", errorMessage, null, null);
+    }
 }
 
+// The no-summation-data hint is the EXTRA_INFO one, and it passes its text
+// straight to moreInfoOnError rather than through errorMessage.
 fn reportMissingSigmaData() void {
     frontier_error.displayCalcErrorMessage(ERROR_NO_SUMMATION_DATA, ERR_REGISTER_LINE, REGISTER_X);
+    if (comptime extra_info) {
+        frontier_error.moreInfoOnErrorImpl("In function fnP_Sigma:", "There is no statistical data available!", null, null);
+    }
 }
 
 fn runSigma() void {
@@ -109,6 +136,14 @@ fn runSigma() void {
     }
 
     if (!printerActive()) {
+        return;
+    }
+
+    // fnP_Sigma's print-to-printer arm -- the printing-disabled refusal included
+    // -- sits inside `#if defined(OPTION_IR_PRINTING)`, so the DM42 packages that
+    // drop the option reach the same empty body as the print-to-file arm. The
+    // no-summation-data error above is outside the guard and stays live.
+    if (comptime !frontier_print.ir_printing) {
         return;
     }
 
@@ -127,6 +162,7 @@ fn runSigma() void {
 }
 
 extern var calcMode: u8;
+extern var errorMessage: [*c]u8;
 extern var programRunStop: u8;
 extern var currentKeyCode: u8;
 extern var statisticalSumsPointer: ?*anyopaque;

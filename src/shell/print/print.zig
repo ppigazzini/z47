@@ -15,12 +15,16 @@ const print_register = @import("print_register.zig");
 // data tables, and the z47_frontier_* C-helper functions the print command
 // entry points call. Faithful, line-by-line port.
 //
-// IR_PRINTING gating: print.c's infrared path is `#if defined(IR_PRINTING)`.
-// IR_PRINTING is defined by default (defines.h:71) and stays defined for the
-// host (PC_BUILD) and the NEW_HW dmcp5 firmware, but is `#undef`'d inside the
-// old_hw DM42 package blocks (defines.h:194/214/234). So the IR path is LIVE on
-// host + dmcp5 and DEAD only on old_hw firmware:
-//     const ir_printing = !(dmcp_build and old_hw);
+// OPTION_IR_PRINTING gating: print.c's infrared engine is one
+// `#if defined(OPTION_IR_PRINTING)` block spanning print.c:7-1941, and each
+// fnP_* entry point below it repeats the guard around its own body. defines.h
+// defines the option by default (defines.h:72) and keeps it for the host
+// (PC_BUILD) and for the NEW_HW dmcp5 firmware; inside the TWO_FILE_PGM package
+// blocks it is `#undef`'d for DM42 packages 1 and 3 (defines.h:199, :231) and
+// `#define`'d again for packages 2 and 4 (defines.h:215, :252). The IR path is
+// therefore live on host, dmcp5 and DM42 packages 2 and 4, and dead only on DM42
+// packages 1 and 3 -- a per-package answer no target-shape expression can
+// restate, so it is read from the build option.
 // On the dead branch print.c's `#else` stubs are reproduced. The DMCP-ROM functions (printer_advance_buf / printer_busy_for /
 // sys_timer_* / sys_sleep / lcd_line_addr / start_buzzer_freq / stop_buzzer /
 // sys_delay) are fixed-address jump-table
@@ -42,8 +46,9 @@ pub const is_dmcp_build = dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 
-// IR printing is live everywhere except old_hw firmware.
-const ir_printing: bool = !(dmcp_build and old_hw);
+// OPTION_IR_PRINTING: on for host and dmcp5, on for DM42 packages 2 and 4, off
+// for DM42 packages 1 and 3.
+pub const ir_printing: bool = frontier_build_options.ir_printing;
 
 const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 
@@ -157,7 +162,7 @@ const FLAG_SSIZE8: c_int = 0x8018;
 const FLAG_2TO10: c_int = 0x803D;
 
 const TO_CL_DROP: u8 = 6;
-const JM_CLRDROP_TIMER: u32 = if (old_hw) 500 else 500; // ms; same for non-DM42 host path
+const JM_CLRDROP_TIMER: u32 = if (dmcp_build) 900 else 500; // defines.h: DMCP 900 / host 500
 const TMR_RUNNING: u8 = 2;
 
 const KEY_EXIT: c_int = 32; // host EXIT key code (currentKeyCode == 32)
@@ -433,6 +438,7 @@ extern fn getRegParam(f: ?*bool_t, s: *u16, n: *u16, d: ?*u16) u8;
 extern fn findNamedVariable(variableName: [*c]const u8) calcRegister_t;
 
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+extern fn longIntegerToAllocatedString(lgInt: *const mpz_struct, str: [*c]u8, strLen: i32) void;
 
 // isAtEndOfProgram is a static inline in manage.h: frontier_manage.checkOpCodeOfStep(step, ITM_END).
 const ITM_END: u16 = 1458;
@@ -1078,7 +1084,10 @@ fn printJustifiedImpl(buff: [*c]const u8) void {
         len = @truncate(@as(u32, @bitCast(room)));
     }
     if (len > 0) {
-        printTabImpl(paperWidth - len);
+        // C subtracts in int and narrows on the call: when the clamp above set
+        // len from a negative room, the difference comes back as printerColumn
+        // and printTab does nothing.
+        printTabImpl(paperWidth -% len);
     }
     printLineImpl(buff, 1);
 }
@@ -1097,7 +1106,10 @@ fn printJustifiedLeft(buff: [*c]const u8) void {
         len = @truncate(@as(u32, @bitCast(room)));
     }
     if (len > 0) {
-        printTabImpl(paperWidth - len);
+        // C subtracts in int and narrows on the call: when the clamp above set
+        // len from a negative room, the difference comes back as printerColumn
+        // and printTab does nothing.
+        printTabImpl(paperWidth -% len);
     }
     printLineImpl(buff, 0);
 }
@@ -1576,6 +1588,11 @@ fn _getUnicodeValue(regist: calcRegister_t) u16 {
         frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(regist, &lgInt[0]);
         if (longIntegerCompareUInt(&lgInt[0], 0) < 0 or longIntegerCompareUInt(&lgInt[0], 0x8000) >= 0) {
             frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime !dmcp_build) {
+                longIntegerToAllocatedString(&lgInt[0], errorMessage, @intCast(ERROR_MESSAGE_LENGTH));
+                abi.fmtBufZ(tmpString[0..2560], "register {d} = {s}:", .{ @as(i32, regist), std.mem.span(@as([*:0]const u8, errorMessage)) });
+                moreInfoOnError("In function _getPositionFromRegister:", tmpString, "this value is negative or too big!", null);
+            }
             longIntegerFree(&lgInt[0]);
             return @bitCast(@as(i16, -1));
         }
@@ -2115,7 +2132,10 @@ pub export fn fnP_GetDelay(unusedButMandatoryParameter: u16) callconv(.c) void {
         var delay: longInteger_t = undefined;
         liftStack();
         longIntegerInit(&delay[0]);
-        __gmpz_set_si(&delay[0], @intCast(getLineDelay()));
+        // int32ToLongInteger takes an int32_t: getLineDelay's uint32_t is
+        // reinterpreted, not range-checked, and only then widened to the long
+        // mpz_set_si wants.
+        __gmpz_set_si(&delay[0], @as(i32, @bitCast(getLineDelay())));
         frontier_register_value_conversions.convertLongIntegerToLongIntegerRegister(&delay[0], REGISTER_X);
         longIntegerFree(&delay[0]);
     }
@@ -2249,42 +2269,85 @@ pub fn z47_frontier_print_get_unicode_value(regist: calcRegister_t) u16 {
     return 0;
 }
 
-pub fn z47_frontier_x_real_matrix_rows() u16 {
+/// The `dtReal34Matrix` arm of fnP_All_Regs(PRN_XYr): one
+/// convertReal34MatrixRegisterToReal34Matrix feeds the dimension tests and every
+/// element read, so the whole keypress costs the single matrix copy the register
+/// conversion allocates. That single copy is also what keeps the element reads
+/// safe: when realMatrixInit cannot allocate it leaves the copy 0 x 0 with no
+/// elements, both dimension tests fail, and the size mismatch is reported
+/// instead of the elements being indexed.
+pub fn z47_frontier_print_xy_real_matrix() void {
+    if (comptime !ir_printing) return;
+
     var x: real34Matrix_t = undefined;
     frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
-    return x.header.matrixRows;
+
+    if (x.header.matrixColumns == 2) {
+        var i: u32 = 0;
+        while (i < x.header.matrixRows) : (i += 1) {
+            reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
+            real34Copy(&x.matrixElements.?[i * 2], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
+            real34Copy(&x.matrixElements.?[i * 2 + 1], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
+        }
+    } else if (x.header.matrixRows == 2) {
+        var i: u32 = 0;
+        while (i < x.header.matrixColumns) : (i += 1) {
+            reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
+            real34Copy(&x.matrixElements.?[i], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
+            real34Copy(&x.matrixElements.?[i + x.header.matrixColumns], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
+        }
+    } else {
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "cannot print xy when matrix size is {d} x {d}", .{
+                @as(c_int, x.header.matrixRows),
+                @as(c_int, x.header.matrixColumns),
+            });
+            moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, null, null);
+        }
+    }
 }
 
-pub fn z47_frontier_x_real_matrix_cols() u16 {
-    var x: real34Matrix_t = undefined;
-    frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
-    return x.header.matrixColumns;
-}
+/// The `dtComplex34Matrix` arm of fnP_All_Regs(PRN_XYr). Same single-conversion
+/// shape as the real arm.
+pub fn z47_frontier_print_xy_complex_matrix() void {
+    if (comptime !ir_printing) return;
 
-pub fn z47_frontier_x_complex_matrix_rows() u16 {
-    var x: complex34Matrix_t = undefined;
-    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-    return x.header.matrixRows;
-}
+    var xc: complex34Matrix_t = undefined;
+    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &xc);
 
-pub fn z47_frontier_x_complex_matrix_cols() u16 {
-    var x: complex34Matrix_t = undefined;
-    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-    return x.header.matrixColumns;
-}
-
-pub fn z47_frontier_x_real_matrix_element_to_temp1(index: u32) void {
-    var x: real34Matrix_t = undefined;
-    frontier_register_value_conversions.convertReal34MatrixRegisterToReal34Matrix(REGISTER_X, &x);
-    reallocateRegister(TEMP_REGISTER_1, dtReal34, @intCast(REAL34_SIZE_IN_BYTES), amNone);
-    real34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
-}
-
-pub fn z47_frontier_x_complex_matrix_element_to_temp1(index: u32) void {
-    var x: complex34Matrix_t = undefined;
-    frontier_register_value_conversions.convertComplex34MatrixRegisterToComplex34Matrix(REGISTER_X, &x);
-    reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
-    complex34Copy(&x.matrixElements.?[index], reg34(TEMP_REGISTER_1));
+    if (xc.header.matrixColumns == 2) {
+        var i: u32 = 0;
+        while (i < xc.header.matrixRows) : (i += 1) {
+            reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+            complex34Copy(&xc.matrixElements.?[i * 2], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
+            complex34Copy(&xc.matrixElements.?[i * 2 + 1], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
+        }
+    } else if (xc.header.matrixRows == 2) {
+        var i: u32 = 0;
+        while (i < xc.header.matrixColumns) : (i += 1) {
+            reallocateRegister(TEMP_REGISTER_1, dtComplex34, 0, amNone);
+            complex34Copy(&xc.matrixElements.?[i], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_LEFT, false);
+            complex34Copy(&xc.matrixElements.?[i + xc.header.matrixColumns], reg34(TEMP_REGISTER_1));
+            printRegImpl(@bitCast(TEMP_REGISTER_1), null, false, LINE_RIGHT, false);
+        }
+    } else {
+        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "cannot print xy when matrix size is {d} x {d}", .{
+                @as(c_int, xc.header.matrixRows),
+                @as(c_int, xc.header.matrixColumns),
+            });
+            moreInfoOnError("In function fnP_All_Regs(PRN_XYr):", errorMessage, null, null);
+        }
+    }
 }
 
 pub fn z47_frontier_named_variable_label(index: u16, buffer: [*c]u8, buffer_size: u16) bool_t {

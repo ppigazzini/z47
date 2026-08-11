@@ -75,7 +75,7 @@ fn handleAimEmpty(class: ItemClass, item: i16) void {
         },
         .backspace => frontier_matrix_editor.z47_frontier_matrix_zero_current_element(),
         .sign => frontier_matrix_editor.z47_frontier_matrix_change_sign_current_element(),
-        .imaginary_unit => frontier_matrix_editor.z47_frontier_matrix_make_j_element(),
+        .imaginary_unit => frontier_matrix_editor.z47_frontier_matrix_make_j_element(item),
         .pi => frontier_matrix_editor.z47_frontier_matrix_set_current_to_pi(),
         .unsupported => {},
     }

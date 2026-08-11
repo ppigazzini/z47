@@ -1,15 +1,21 @@
 const std = @import("std");
+const abi = @import("abi");
+const frontier_build_options = @import("frontier_build_options");
+const frontier_debug = @import("../debug.zig");
 const frontier_error = @import("../error.zig");
 const register_data_type = @import("../register_data_type.zig");
 const frontier_graph_text = @import("../plot/graph_text.zig");
 const frontier_print = @import("print.zig");
 const frontier_textfiles = @import("../extensions/textfiles.zig");
+
+const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const ERROR_MESSAGE_LENGTH: usize = 512;
+
 const CM_NORMAL: u8 = 0;
 const CM_NO_UNDO: u8 = 16;
 
 const ERROR_NONE: u8 = 0;
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
-const ERROR_MATRIX_MISMATCH: u8 = 21;
 
 const FLAG_PRTACT: c_uint = 0xc020;
 const FLAG_SSIZE8: c_int = 0x8018;
@@ -94,6 +100,19 @@ const PrintAllRegsTelemetry = struct {
     }
 };
 
+// fnP_All_Regs chirps 440/4400/440 on DMCP before bailing out of the
+// print-to-file path in the wrong calc mode -- the only feedback the user gets
+// that the key did nothing. Host builds have no buzzer, so this is
+// firmware-only, matching the `#if defined(DMCP_BUILD)` around the C.
+fn beepWrongCalcMode() void {
+    if (comptime !frontier_print.is_dmcp_build) {
+        return;
+    }
+    frontier_print.beep(440, 50);
+    frontier_print.beep(4400, 50);
+    frontier_print.beep(440, 50);
+}
+
 const PrintAllRegsContext = struct {
     option: u16,
     backend: PrintAllRegsBackend = .unsupported,
@@ -113,6 +132,7 @@ const PrintAllRegsContext = struct {
         }
 
         self.backend = .unsupported;
+        beepWrongCalcMode();
         return false;
     }
 
@@ -147,7 +167,15 @@ const PrintAllRegsContext = struct {
         }
     }
 
+    // fnP_All_Regs wraps only its print-to-printer arm in
+    // `#if defined(OPTION_IR_PRINTING)`, so on the DM42 packages that drop the
+    // option that whole option switch is gone: no register is printed and none
+    // of its ERROR_INVALID_DATA_TYPE_FOR_OP / ERROR_MATRIX_MISMATCH refusals is
+    // raised. The print-to-file arm is outside the guard and stays live.
     fn executePrinterOption(self: *PrintAllRegsContext) void {
+        if (comptime !frontier_print.ir_printing) {
+            return;
+        }
         switch (self.option) {
             PRN_ALL => self.printerOptionAll(),
             PRN_REGS => self.printerOptionRegs(),
@@ -202,6 +230,7 @@ const PrintAllRegsContext = struct {
         }
 
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        reportInvalidXYrDataType(REGISTER_X, "X");
     }
 
     fn executeCsvOption(self: *PrintAllRegsContext) void {
@@ -322,24 +351,22 @@ fn isPrintableScalarType(dt: u32) bool {
     return register_data_type.isPrintableScalarType(dt);
 }
 
-fn printAllRegsPrintRangeOrReturn(first: u16, last: u16) bool {
-    return frontier_print.z47_frontier_print_reg_range(first, last);
+// The two PRN_XYr scalar refusals name the register and the data type that was
+// refused; both are EXTRA_INFO console hints, compiled out on firmware and on
+// the testSuite.
+fn reportInvalidXYrDataType(regist: i16, register_letter: []const u8) void {
+    if (comptime !extra_info) {
+        return;
+    }
+    abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "invalid data type {s} for register {s}", .{
+        std.mem.span(frontier_debug.getRegisterDataTypeName(regist, true, false)),
+        register_letter,
+    });
+    frontier_error.moreInfoOnErrorImpl("In function fnP_All_Regs(PRN_XYr):", errorMessage, null, null);
 }
 
-fn printAllRegsPrinterEmitTemp1Pair(left_index: u32, right_index: u32, complex: bool) void {
-    if (complex) {
-        frontier_print.z47_frontier_x_complex_matrix_element_to_temp1(left_index);
-    } else {
-        frontier_print.z47_frontier_x_real_matrix_element_to_temp1(left_index);
-    }
-    frontier_print.printReg(TEMP_REGISTER_1, null, false, LINE_LEFT, false);
-
-    if (complex) {
-        frontier_print.z47_frontier_x_complex_matrix_element_to_temp1(right_index);
-    } else {
-        frontier_print.z47_frontier_x_real_matrix_element_to_temp1(right_index);
-    }
-    frontier_print.printReg(TEMP_REGISTER_1, null, false, LINE_RIGHT, false);
+fn printAllRegsPrintRangeOrReturn(first: u16, last: u16) bool {
+    return frontier_print.z47_frontier_print_reg_range(first, last);
 }
 
 fn printAllRegsPrinterXYrScalar() bool {
@@ -351,6 +378,7 @@ fn printAllRegsPrinterXYrScalar() bool {
     const y_type = getRegisterDataType(REGISTER_Y);
     if (!isPrintableScalarType(y_type)) {
         frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_Y);
+        reportInvalidXYrDataType(REGISTER_Y, "Y");
         return true;
     }
 
@@ -359,77 +387,18 @@ fn printAllRegsPrinterXYrScalar() bool {
     return true;
 }
 
-fn printAllRegsPrinterXYrRealMatrixCols2() bool {
-    const rows = frontier_print.z47_frontier_x_real_matrix_rows();
-    const cols = frontier_print.z47_frontier_x_real_matrix_cols();
-    if (cols != 2) {
-        return false;
-    }
-
-    var i: u32 = 0;
-    while (i < rows) : (i += 1) {
-        const left_index = i * 2;
-        printAllRegsPrinterEmitTemp1Pair(left_index, left_index + 1, false);
-    }
-    return true;
-}
-
-fn printAllRegsPrinterXYrRealMatrixRows2() bool {
-    const rows = frontier_print.z47_frontier_x_real_matrix_rows();
-    const cols = frontier_print.z47_frontier_x_real_matrix_cols();
-    if (rows != 2) {
-        return false;
-    }
-
-    var j: u32 = 0;
-    while (j < cols) : (j += 1) {
-        printAllRegsPrinterEmitTemp1Pair(j, j + cols, false);
-    }
-    return true;
-}
-
-fn printAllRegsPrinterXYrComplexMatrixCols2() bool {
-    const rows = frontier_print.z47_frontier_x_complex_matrix_rows();
-    const cols = frontier_print.z47_frontier_x_complex_matrix_cols();
-    if (cols != 2) {
-        return false;
-    }
-
-    var i: u32 = 0;
-    while (i < rows) : (i += 1) {
-        const left_index = i * 2;
-        printAllRegsPrinterEmitTemp1Pair(left_index, left_index + 1, true);
-    }
-    return true;
-}
-
-fn printAllRegsPrinterXYrComplexMatrixRows2() bool {
-    const rows = frontier_print.z47_frontier_x_complex_matrix_rows();
-    const cols = frontier_print.z47_frontier_x_complex_matrix_cols();
-    if (rows != 2) {
-        return false;
-    }
-
-    var j: u32 = 0;
-    while (j < cols) : (j += 1) {
-        printAllRegsPrinterEmitTemp1Pair(j, j + cols, true);
-    }
-    return true;
-}
-
+// Both matrix arms convert register X once and read the dimensions and every
+// element off that one copy; the dimension tests, the two loops and the size
+// mismatch refusal live with the conversion in the print owner.
 fn printAllRegsPrinterXYrMatrix() bool {
     const x_type = getRegisterDataType(REGISTER_X);
     if (x_type == dtReal34Matrix) {
-        if (printAllRegsPrinterXYrRealMatrixCols2()) return true;
-        if (printAllRegsPrinterXYrRealMatrixRows2()) return true;
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_print.z47_frontier_print_xy_real_matrix();
         return true;
     }
 
     if (x_type == dtComplex34Matrix) {
-        if (printAllRegsPrinterXYrComplexMatrixCols2()) return true;
-        if (printAllRegsPrinterXYrComplexMatrixRows2()) return true;
-        frontier_error.displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        frontier_print.z47_frontier_print_xy_complex_matrix();
         return true;
     }
 
@@ -452,6 +421,7 @@ pub fn run(option: u16) void {
 }
 
 extern var calcMode: u8;
+extern var errorMessage: [*c]u8;
 extern var lastErrorCode: u8;
 extern var numberOfNamedVariables: u16;
 
