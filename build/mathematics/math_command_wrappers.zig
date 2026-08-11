@@ -36,6 +36,12 @@ pub const RuntimeObjects = struct {
 };
 
 pub const RuntimeObjectOptions = struct {
+    /// True where this executable's C sources are compiled with
+    /// TESTSUITE_BUILD, so the Zig owners answer the same question the C half
+    /// does: fnSNAP freezes the clock the date/time formatters read, and RESET
+    /// loads the sample programs. The testSuite and the full-core harnesses set
+    /// it; the product and the simulator leave it false.
+    is_testsuite_build: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -139,11 +145,11 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "use_fake_wp34s_model", std.mem.endsWith(u8, name_prefix, "parity"));
     build_options.addOption(bool, "use_fake_wp34s_harness_surface", std.mem.eql(u8, name_prefix, "parity") or std.mem.eql(u8, name_prefix, "random-parity"));
     build_options.addOption(bool, "export_public_ln_complex", options.export_public_ln_complex);
-    // The testSuite executable defines TESTSUITE_BUILD for its C sources; mirror
-    // that here so the Zig random seed uses the deterministic test seed.
-    // startsWith, not eql: the ASAN lane builds "testSuite-asan", which must use
-    // the same deterministic test seed and testSuite code paths.
-    build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
+    // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
+    // random seed is the deterministic test seed in every executable whose C half
+    // is a testSuite build -- the ASAN lane and the full-core harnesses included,
+    // which a test on the target name used to miss or catch only by accident.
+    build_options.addOption(bool, "is_testsuite_build", options.is_testsuite_build);
     // Mirror "#if defined(DMCP_BUILD) && HARDWARE_MODEL == HWM_DM42" from wp34s.c:
     // only the DM42 firmware ("dmcp", not "dmcp5"/sim/testSuite) uses the small
     // fallback mod buffers / reduced mod precision.
@@ -208,6 +214,7 @@ pub fn addToModule(
     optimize: std.builtin.OptimizeMode,
     name_prefix: []const u8,
     c_flags: []const []const u8,
+    is_testsuite_build: bool,
 ) void {
     var lines = std.mem.tokenizeAny(u8, runtime_helper_sources_manifest, "\r\n");
     while (lines.next()) |line_raw| {
@@ -217,7 +224,7 @@ pub fn addToModule(
         }
         module.addCSourceFile(.{ .file = b.path(source), .flags = c_flags });
     }
-    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{});
+    const runtime_object = addRuntimeObject(b, target, optimize, name_prefix, .{ .is_testsuite_build = is_testsuite_build });
     module.addObject(runtime_object);
 }
 
