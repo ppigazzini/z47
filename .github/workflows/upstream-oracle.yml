@@ -337,6 +337,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: toolchain
+        name: Load pinned Zig metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          . ./.github/zig-toolchain.env
+          echo "version=$ZIG_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Install pinned Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
+        with:
+          version: ${{ steps.toolchain.outputs.version }}
+      - name: Generate the constant pointer sources the compiled gates need
+        shell: bash
+        run: |
+          set -euo pipefail
+          # constantPointers.h is generated and gitignored, so a bare checkout has
+          # the include root and not the header. Gates that decide by COMPILING
+          # against c43's headers cannot tell "absent" from "not copied": every
+          # name comes back undeclared and their counts fall to zero. Producing it
+          # here is what lets those gates measure rather than skip.
+          zig build constants
       - name: Enforce engine->shell import invariant + extern ratchet
         shell: bash
         run: |
@@ -417,8 +438,11 @@ jobs:
           # not, and it fails identically -- c43 renumbers, the copy stays put, and
           # the lane goes on agreeing with an unported owner. Compiled, not
           # regexed: only the compiler knows what an implicit enum member is worth.
-          python3 .github/project/check-harness-constant-copies.py --self-test
-          python3 .github/project/check-harness-constant-copies.py --repo-root .
+          # --require-tools turns "cannot measure" into a failure. Without it this
+          # step passed on every run: the job had no Zig, so the gate skipped and
+          # returned 0, and a ratchet nobody can run is not a ratchet.
+          python3 .github/project/check-harness-constant-copies.py --self-test --require-tools
+          python3 .github/project/check-harness-constant-copies.py --repo-root . --require-tools
       - name: Enforce the fixture table partitions the properties the owners branch on
         shell: bash
         run: |
