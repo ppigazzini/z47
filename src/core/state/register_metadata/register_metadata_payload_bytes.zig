@@ -3,8 +3,10 @@ const abi = @import("abi");
 
 pub const Z47_LOCAL_MATRIX_ROWS_MASK: u32 = 0x00000fff;
 pub const Z47_LOCAL_MATRIX_COLUMNS_MASK: u32 = 0x00fff000;
+pub const Z47_LOCAL_MATRIX_TAG_MASK: u32 = 0x3f000000;
 pub const Z47_LOCAL_MATRIX_ROWS_SHIFT: u5 = 0;
 pub const Z47_LOCAL_MATRIX_COLUMNS_SHIFT: u5 = 12;
+pub const Z47_LOCAL_MATRIX_TAG_SHIFT: u5 = 24;
 
 pub const strLgIntHeader_t = abi.StrLgIntHeader;
 
@@ -53,6 +55,13 @@ pub fn setMatrixRowsColumns(data_ptr: ?*anyopaque, rows: u16, columns: u16) void
     descriptor &= ~(Z47_LOCAL_MATRIX_ROWS_MASK | Z47_LOCAL_MATRIX_COLUMNS_MASK);
     descriptor |= (@as(u32, rows) & 0x0fff) << Z47_LOCAL_MATRIX_ROWS_SHIFT;
     descriptor |= (@as(u32, columns) & 0x0fff) << Z47_LOCAL_MATRIX_COLUMNS_SHIFT;
+    copyValueToBytes(u32, data_ptr, &descriptor);
+}
+
+pub fn setMatrixTag(data_ptr: ?*anyopaque, tag: u16) void {
+    var descriptor = readMatrixHeaderDescriptor(data_ptr);
+    descriptor &= ~Z47_LOCAL_MATRIX_TAG_MASK;
+    descriptor |= (@as(u32, tag) & 0x3f) << Z47_LOCAL_MATRIX_TAG_SHIFT;
     copyValueToBytes(u32, data_ptr, &descriptor);
 }
 

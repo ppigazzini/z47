@@ -75,14 +75,14 @@ fn clearLocalStorage() void {
     currentLocalRegisters = null;
 }
 
+// Reports a memory issue to allocateLocalRegisters, which is the only caller and
+// the only place that turns one into an error: lastErrorCode is left exactly as
+// this function found it. Only the two allocating branches can fail; the long
+// integer and integer-base branches always report success, so a RAM shortage
+// inside them does not unwind the frame.
 fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_NONE;
-
     if (stack_runtime.lastIntegerBase == 0 and (stack_runtime.inputDefault() == stack_runtime.ID_43S or stack_runtime.inputDefault() == stack_runtime.ID_DP)) {
-        const new_mem = stack_runtime.allocC47Blocks(runtime.real34SizeInBlocks()) orelse {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_RAM_FULL;
-            return true;
-        };
+        const new_mem = stack_runtime.allocC47Blocks(runtime.real34SizeInBlocks()) orelse return true;
 
         stack_runtime.setRegisterDataType(reg, @intCast(stack_runtime.dtReal34), stack_runtime.amNone);
         memory_owned.setRegisterDataPointer(reg, new_mem);
@@ -92,10 +92,7 @@ fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
 
     if (stack_runtime.lastIntegerBase == 0 and stack_runtime.inputDefault() == stack_runtime.ID_CPXDP) {
         const complex_tag = if (stack_runtime.getSystemFlag(stack_runtime.FLAG_POLAR)) stack_runtime.currentAngularMode | stack_runtime.amPolar else stack_runtime.amNone;
-        const new_mem = stack_runtime.allocC47Blocks(runtime.complex34SizeInBlocks()) orelse {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_RAM_FULL;
-            return true;
-        };
+        const new_mem = stack_runtime.allocC47Blocks(runtime.complex34SizeInBlocks()) orelse return true;
 
         stack_runtime.setRegisterDataType(reg, @intCast(stack_runtime.dtComplex34), complex_tag);
         memory_owned.setRegisterDataPointer(reg, new_mem);
@@ -106,12 +103,12 @@ fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
 
     if (stack_runtime.lastIntegerBase == 0 and stack_runtime.inputDefault() == stack_runtime.ID_LI) {
         stack_runtime.storeZeroLongInteger(reg);
-        return stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL;
+        return false;
     }
 
     if (stack_runtime.lastIntegerBase != 0) {
         stack_runtime.storeZeroShortInteger(reg, stack_runtime.lastIntegerBase);
-        return stack_runtime.lastErrorCode == stack_runtime.ERROR_RAM_FULL;
+        return false;
     }
 
     return false;

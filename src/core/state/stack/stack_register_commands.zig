@@ -1,25 +1,76 @@
 const runtime = @import("../runtime/stack_runtime.zig");
 const register_range_ops = @import("register_range_ops.zig"); // std-only register-range geometry
 
-// Port of registers.c sortReg: order the register descriptors across the range by
-// registerCmp (value comparison). A selection pass yields the same ordering as the
-// C merge sort without the scratch allocation; swapping the 32-bit descriptors
-// moves the register contents. A pair registerCmp cannot compare (returns false)
-// is left untouched, as in C. This is the full-build body behind z47_registers_
-// sort_reg (the parity harness supplies its own fake).
+// Port of registers.c sortReg: a recursive merge sort of the register descriptors
+// across the range, ordered by registerCmp (value comparison). Swapping the 32-bit
+// descriptors moves the register contents. The merge takes the left run on every
+// res <= 0, so registers that compare equal but are distinguishable -- a long
+// integer 1, a real34 1. and a short integer 1 in the same range -- keep their
+// input order. The scratch run is one block per register, taken from the register
+// pool: a range too large to buffer is refused, not sorted in place. A pair
+// registerCmp cannot compare (returns false) leaves the output slot holding
+// whatever the scratch block held. This is the full-build body behind
+// z47_registers_sort_reg (the parity harness supplies its own fake).
 pub fn sortRegisterRange(range_start: u16, range_end: u16) void {
-    var i: runtime.calcRegister_t = @intCast(range_start);
-    const last: runtime.calcRegister_t = @intCast(range_end);
-    while (i < last) : (i += 1) {
-        var j: runtime.calcRegister_t = i + 1;
-        while (j <= last) : (j += 1) {
-            var res: i8 = 0;
-            if (runtime.registerCmp(i, j, &res) and res > 0) {
-                const saved = runtime.globalDescriptor(i);
-                runtime.setGlobalDescriptor(i, runtime.globalDescriptor(j));
-                runtime.setGlobalDescriptor(j, saved);
+    var res: i8 = 0;
+
+    if (range_start == range_end) {
+        return;
+    }
+
+    if (@as(u32, range_start) + 1 == range_end) {
+        if (runtime.registerCmp(@intCast(range_start), @intCast(range_end), &res) and res > 0) {
+            const saved = runtime.globalDescriptor(@intCast(range_start));
+            runtime.setGlobalDescriptor(@intCast(range_start), runtime.globalDescriptor(@intCast(range_end)));
+            runtime.setGlobalDescriptor(@intCast(range_end), saved);
+        }
+        return;
+    }
+
+    const range_span: u16 = range_end - range_start;
+    const range_center: u16 = range_span / 2 + range_start;
+    var pos1: u16 = range_start;
+    var pos2: u16 = range_center + 1;
+    // TO_BLOCKS(sizeof(registerHeader_t)) is 1: the descriptor is a single block.
+    const scratch_blocks: usize = @as(usize, range_span) + 1;
+    const scratch = runtime.allocC47Blocks(scratch_blocks);
+    if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {
+        return;
+    }
+
+    if (scratch) |block| {
+        const sorted: [*]runtime.register_descriptor_t = @ptrCast(@alignCast(block));
+
+        sortRegisterRange(range_start, range_center);
+        sortRegisterRange(range_center + 1, range_end);
+
+        var i: u16 = 0;
+        while (i <= range_span) : (i += 1) {
+            if (runtime.registerCmp(@intCast(pos1), @intCast(pos2), &res)) {
+                if (pos2 > range_end) {
+                    sorted[i] = runtime.globalDescriptor(@intCast(pos1));
+                    pos1 += 1;
+                } else if (pos1 > range_center) {
+                    sorted[i] = runtime.globalDescriptor(@intCast(pos2));
+                    pos2 += 1;
+                } else if (res > 0) {
+                    sorted[i] = runtime.globalDescriptor(@intCast(pos2));
+                    pos2 += 1;
+                } else {
+                    sorted[i] = runtime.globalDescriptor(@intCast(pos1));
+                    pos1 += 1;
+                }
             }
         }
+
+        i = 0;
+        while (i <= range_span) : (i += 1) {
+            runtime.setGlobalDescriptor(@intCast(range_start + i), sorted[i]);
+        }
+
+        runtime.freeC47Blocks(block, scratch_blocks);
+    } else {
+        runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, runtime.ERR_REGISTER_LINE, runtime.NIM_REGISTER_LINE);
     }
 }
 

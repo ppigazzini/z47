@@ -1,10 +1,13 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const abi = @import("abi");
 const register_runtime = @import("register_metadata_runtime.zig");
 const reg_param_product = @import("../runtime/stack_runtime_reg_param_product.zig");
 const product_real = @import("../runtime/stack_runtime_product_real.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 const register_metadata_variables = @import("register_metadata_variables.zig");
+const payload_owned = @import("register_metadata_payload.zig");
+const codec = @import("register_descriptor_codec.zig"); // std-only descriptor bit-field codec
 
 // The parity harness links register_metadata_oracle.c, which defines its own
 // allReservedVariables fixture table. In that build the Zig owner must not also
@@ -408,26 +411,397 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
     return indirectError(ERROR_OUT_OF_RANGE);
 }
 
+// ---------------------------------------------------------------------------
+// The register-dump console diagnostics (registers.c, guarded by !DMCP_BUILD).
+// The testSuite's checkRegisterType prints "R5 = " and then hands the value to
+// printRegisterToConsole, so an empty body costs the oracle the one thing a
+// failing differential needs. The bodies compile away on the firmware, where
+// there is no console to write to.
+
+const console_build = builtin.target.os.tag != .freestanding;
+
+const dtComplex34 = stack_runtime.dtComplex34;
+const dtTime = stack_runtime.dtTime;
+const dtDate = stack_runtime.dtDate;
+const dtReal34Matrix = stack_runtime.dtReal34Matrix;
+const dtComplex34Matrix = stack_runtime.dtComplex34Matrix;
+const dtConfig = register_runtime.dtConfig;
+const amAngleMask: u32 = 15;
+
+const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
+extern var errorMessage: [*c]u8;
+
+fn real34IsNegative(value: *align(1) const real34_t) bool {
+    return (value.bytes[15] & 0x80) == 0x80;
+}
+
+const real_t = abi.Real;
+const real34_t = abi.Real34;
+const complex34_t = abi.Complex34;
+const real34Matrix_t = abi.Real34Matrix;
+const complex34Matrix_t = abi.Complex34Matrix;
+
+const DECDPUN: i32 = 3;
+const DECNAN: u8 = 0x20;
+const DECSNAN: u8 = 0x10;
+const DECINF: u8 = 0x40;
+const STR_LG_INT_HEADER_SIZE_IN_BYTES: u32 = 4; // sizeof(strLgIntHeader_t)
+const LIMB_SIZE: u64 = @sizeOf(usize);
+
+extern var ctxtReal4: abi.RealContext;
+
+extern fn printf(format: [*:0]const u8, ...) c_int;
+extern fn sprintf(buffer: [*c]u8, format: [*:0]const u8, ...) c_int;
+extern fn strstr(haystack: [*:0]const u8, needle: [*:0]const u8) ?[*:0]u8;
+extern fn strcpy(dest: [*]u8, src: [*:0]const u8) [*c]u8;
+extern fn decQuadToString(source: *align(1) const real34_t, destination: [*]u8) [*c]u8;
+extern fn decNumberToString(source: *const real_t, destination: [*]u8) [*c]u8;
+extern fn decNumberPlus(result: *real_t, operand: *const real_t, real_context: *abi.RealContext) *real_t;
+extern fn decimal128ToNumber(source: *align(1) const real34_t, destination: *real_t) *real_t;
+extern fn getAngularModeName(angular_mode: c_int) [*c]const u8;
+extern fn getDataTypeName(data_type: u16, with_article: bool, pad_with_blanks: bool) [*c]const u8;
+extern fn getRegisterDataTypeName(regist: stack_runtime.calcRegister_t, with_article: bool, pad_with_blanks: bool) [*c]const u8;
+extern fn stringToUtf8(str: [*:0]const u8, utf8: [*]u8) void;
+extern fn stringToASCII(str: [*:0]const u8, ascii: [*]u8) void;
+extern fn longIntegerToAllocatedString(lg_int: *const anyopaque, str: [*]u8, str_len: i32) void;
+extern fn linkToRealMatrixRegister(regist: stack_runtime.calcRegister_t, linked_matrix: *real34Matrix_t) void;
+extern fn linkToComplexMatrixRegister(regist: stack_runtime.calcRegister_t, linked_matrix: *complex34Matrix_t) void;
+
+fn real34ToString(source: *align(1) const real34_t, destination: [*]u8) void {
+    _ = decQuadToString(source, destination);
+}
+
+fn realToString(source: *const real_t, destination: [*]u8) void {
+    _ = decNumberToString(source, destination);
+}
+
+fn real34ToReal(source: *align(1) const real34_t, destination: *real_t) void {
+    _ = decimal128ToNumber(source, destination);
+}
+
+fn realIsInfinite(value: *const real_t) bool {
+    return (value.bits & DECINF) != 0;
+}
+
+fn realIsNegative(value: *const real_t) bool {
+    return (value.bits & 0x80) == 0x80;
+}
+
+fn realGetExponent(value: *const real_t) i32 {
+    return value.digits + value.exponent - 1;
+}
+
+fn registerImag34Ptr(reg: stack_runtime.calcRegister_t) *align(1) real34_t {
+    const ptr = stack_runtime.getRegisterDataPointer(reg) orelse unreachable;
+    const bytes: [*]align(1) u8 = @ptrCast(ptr);
+    return @ptrCast(bytes + @sizeOf(real34_t));
+}
+
+fn toBytes(blocks: u16) u32 {
+    return @as(u32, blocks) * 4;
+}
+
+// realToString writes decNumber's "Infinity"; the console form is the glyph.
+// Rewrites str in place, exactly as the C does with its two scratch buffers.
+fn rewriteInfinityGlyph(str: [*:0]u8, scratch: []u8) void {
+    if (strstr(str, "Infinity") == null) {
+        return;
+    }
+    _ = strcpy(scratch.ptr, str);
+    var p: [*:0]u8 = @ptrCast(scratch.ptr);
+    var q: [*]u8 = str;
+    while (strstr(p, "Infinity")) |hit| {
+        hit[0] = 0;
+        q += @intCast(sprintf(@ptrCast(q), "%s\u{221e}", scratch.ptr));
+        p = @ptrCast(hit + 8);
+        _ = strcpy(scratch.ptr, p);
+    }
+    _ = strcpy(q, @ptrCast(scratch.ptr));
+}
+
 pub export fn printStringToConsole(str: [*:0]const u8, before: [*:0]const u8, after: [*:0]const u8) void {
-    _ = str;
-    _ = before;
-    _ = after;
+    if (comptime console_build) {
+        var loop: u16 = 0;
+        _ = printf("%s", before);
+        var s2: [2000]u8 = undefined;
+
+        stringToASCII(str, &s2);
+        _ = printf("\"%s\"", &s2);
+
+        var ii: i16 = 0;
+        const ascii_len: i32 = @intCast(std.mem.len(@as([*:0]const u8, @ptrCast(&s2))));
+        while (ii < ascii_len and ii < 40) : (ii += 1) {
+            _ = printf(" ");
+        }
+        while (str[loop] != 0) {
+            if (str[loop] & 0x80 != 0) {
+                _ = printf(" %2x%2x", @as(c_int, str[loop]), @as(c_int, str[loop + 1]));
+                loop += 1;
+                loop += 1;
+            } else {
+                _ = printf("   %2x", @as(c_int, str[loop]));
+                loop += 1;
+            }
+        }
+        _ = printf("%s", after);
+    }
 }
 
-pub export fn printReal34ToConsole(value: *const product_real.ProductReal34, before: [*:0]const u8, after: [*:0]const u8) void {
-    _ = value;
-    _ = before;
-    _ = after;
+// A single byte below 0x80 is one ASCII character. A byte of 0x80 or more is the
+// first of a 2-byte character: mask off the high bit and the two bytes give the
+// Unicode code point as a 16-bit value. Example: 0xA1 0x92 -> 0x21 0x92 -> U+2192.
+pub export fn printC47ShortStringToConsole(s: [*:0]const u8, prefix: ?[*:0]const u8, suffix: ?[*:0]const u8) void {
+    if (comptime console_build) {
+        var p: [*]const u8 = s;
+        var cp: c_int = 0;
+        var text: [80]u8 = undefined;
+        var hex: [256]u8 = undefined;
+        var tx: usize = 0;
+        var hx: usize = 0;
+
+        // Readable representation: printable ASCII as-is, anything else as '.'
+        text[tx] = '"';
+        tx += 1;
+        while (p[0] != 0 and cp < 30) {
+            const b = p[0];
+            var n: usize = if (b & 0x80 != 0) 2 else 1;
+            if (n == 2 and p[1] == 0) {
+                n = 1;
+            }
+            text[tx] = if (n == 1 and b >= 0x20 and b < 0x7F) b else '.';
+            tx += 1;
+            var j: usize = 0;
+            while (j < n) : (j += 1) {
+                hx += @intCast(sprintf(@ptrCast(hex[hx..].ptr), "%02X", @as(c_int, p[j])));
+            }
+            hex[hx] = ' ';
+            hx += 1;
+            p += n;
+            cp += 1;
+        }
+        text[tx] = '"';
+        tx += 1;
+        text[tx] = 0;
+        hex[hx] = 0;
+
+        if (prefix) |value| {
+            _ = printf("%s", value);
+        }
+        _ = printf("%-20s  %-60s  (%2d cp, %2d bytes)", &text, &hex, cp, @as(c_int, @intCast(@intFromPtr(p) - @intFromPtr(s))));
+        if (suffix) |value| {
+            _ = printf("%s", value);
+        }
+    }
 }
 
-pub export fn printRealToConsole(value: *const stack_runtime.real_t, before: [*:0]const u8, after: [*:0]const u8) void {
-    _ = value;
-    _ = before;
-    _ = after;
+pub export fn printReal34ToConsole(value: *align(1) const real34_t, before: [*:0]const u8, after: [*:0]const u8) void {
+    if (comptime console_build) {
+        var str: [100]u8 = undefined;
+
+        real34ToString(value, &str);
+        _ = printf("%sreal34 %s%s", before, &str, after);
+    }
+}
+
+pub export fn printRealToConsole(value: *const real_t, before: [*:0]const u8, after: [*:0]const u8) void {
+    if (comptime console_build) {
+        var str: [1000]u8 = undefined;
+
+        realToString(value, &str);
+        _ = printf("%s(%d) %s%s", before, value.digits, &str, after);
+    }
+}
+
+pub export fn printRealInfoToConsole(value: *const real_t, name: [*:0]const u8) void {
+    if (comptime console_build) {
+        printRealToConsole(value, name, "\n");
+        _ = printf("  \u{251c}\u{2500} digits           = %i\n", value.digits);
+        _ = printf("  \u{251c}\u{2500} exponent         = %i\n", value.exponent);
+        _ = printf("  \u{251c}\u{2500} digits per unit  = %i\n", DECDPUN);
+        _ = printf("  \u{251c}\u{2500} sNaN             = %s\n", @as([*:0]const u8, if ((value.bits & DECSNAN) != 0) "yes" else "no"));
+        _ = printf("  \u{251c}\u{2500} NaN              = %s\n", @as([*:0]const u8, if ((value.bits & DECNAN) != 0) "yes" else "no"));
+        _ = printf("  \u{251c}\u{2500} infinite         = %s\n", @as([*:0]const u8, if (realIsInfinite(value)) "yes" else "no"));
+        _ = printf("  \u{251c}\u{2500} sign             = %c\n", @as(c_int, if (realIsNegative(value)) '-' else '+'));
+        _ = printf("  \u{2514}\u{2500} mantissa         =");
+
+        if (value.digits > 0) {
+            _ = printf(" %u", @as(c_uint, value.lsu[@intCast(@divTrunc(value.digits - 1, DECDPUN))]));
+            var i: i32 = @divTrunc(value.digits - 1, DECDPUN) - 1;
+            while (i >= 0) : (i -= 1) {
+                _ = printf(" %03u", @as(c_uint, value.lsu[@intCast(i)]));
+            }
+            _ = printf("\n");
+        }
+    }
+}
+
+pub export fn printComplex34ToConsole(value: *align(1) const complex34_t, before: [*:0]const u8, after: [*:0]const u8) void {
+    if (comptime console_build) {
+        var str: [100]u8 = undefined;
+
+        real34ToString(&value.real, &str);
+        _ = printf("%scomplex34 %s + ", before, &str);
+        real34ToString(&value.imag, &str);
+        _ = printf("%si%s", &str, after);
+    }
+}
+
+pub export fn printRegisterDescriptorToConsole(regist: stack_runtime.calcRegister_t) void {
+    if (comptime console_build) {
+        // `reg` follows upstream: the two variable branches turn the register id
+        // into an index inside its own block, and every later use is that index
+        // rather than the id the caller passed. When the block is empty the id is
+        // left alone, so which of the two the dump reports depends on the branch.
+        var reg = regist;
+        var descriptor: register_descriptor_t = 0xFFFFFFFF;
+
+        if (regist <= register_runtime.LAST_GLOBAL_REGISTER) {
+            descriptor = stack_runtime.globalDescriptor(regist);
+        } else if (regist <= register_runtime.LAST_NAMED_VARIABLE) {
+            if (register_runtime.numberOfNamedVariables > 0) {
+                reg -%= register_runtime.FIRST_NAMED_VARIABLE;
+                _ = register_runtime.tryGetNamedDescriptor(regist, &descriptor);
+            }
+        } else if (regist <= register_runtime.LAST_LOCAL_REGISTER) {
+            if (stack_runtime.currentLocalRegisterCount() > 0) {
+                reg -%= register_runtime.FIRST_LOCAL_REGISTER;
+                _ = register_runtime.tryGetLocalDescriptor(regist, &descriptor);
+            }
+        }
+
+        const data_type: u16 = @intCast(codec.dataType(descriptor));
+        const register_data_pointer = codec.pointer(descriptor);
+
+        _ = printf("Header informations of register %d\n", @as(c_int, reg));
+        _ = printf("    reg ptr   = %u\n", @as(c_uint, register_data_pointer));
+        _ = printf("    data type = %u = %s\n", @as(c_uint, data_type), getDataTypeName(data_type, false, false));
+        if (data_type == dtLongInteger or data_type == dtString) {
+            _ = printf("    data ptr  = %u\n", @as(c_uint, register_data_pointer) + 1);
+            // The size word comes from globalRegister indexed by `reg`, which in
+            // the two variable branches is a block index and therefore names an
+            // unrelated global register, not the one the header above describes.
+            const block = register_runtime.toPcMemPtr(codec.pointer(stack_runtime.globalDescriptor(reg))) orelse unreachable;
+            const data_size: *align(1) const u16 = @ptrCast(block);
+            _ = printf("    data size = %u\n", @as(c_uint, data_size.*));
+        }
+        _ = printf("    tag       = %u\n", @as(c_uint, codec.tag(descriptor)));
+    }
+}
+
+pub export fn printLongIntegerToConsole(value: *const abi.Mpz, before: [*:0]const u8, after: [*:0]const u8) void {
+    if (comptime console_build) {
+        var str: [3000]u8 = undefined;
+
+        longIntegerToAllocatedString(value, &str, str.len);
+        const header_bytes: u64 = @sizeOf(c_int) + @sizeOf(*anyopaque) + @sizeOf(c_int);
+        const size_in_bytes: u64 = @as(u64, @abs(value._mp_size)) * LIMB_SIZE;
+        const reserved_bytes: u64 = @as(u64, @intCast(value._mp_alloc)) * LIMB_SIZE;
+        _ = printf("%slong integer (%llu + %llu <%llu reserved> bytes) %s%s", before, header_bytes, size_in_bytes, reserved_bytes, &str, after);
+    }
 }
 
 pub export fn printRegisterToConsole(regist: stack_runtime.calcRegister_t, before: [*:0]const u8, after: [*:0]const u8) void {
-    _ = regist;
-    _ = before;
-    _ = after;
+    if (comptime console_build) {
+        var str: [3000]u8 = undefined;
+
+        if (stack_runtime.getRegisterDataType(regist) == dtReal34) {
+            real34ToString(registerReal34Ptr(regist), &str);
+            _ = printf("%s", before);
+            _ = printf("real34 %s %s", &str, getAngularModeName(@intCast(stack_runtime.getRegisterTag(regist) & amAngleMask)));
+        } else if (stack_runtime.getRegisterDataType(regist) == dtComplex34) {
+            real34ToString(registerReal34Ptr(regist), &str);
+            _ = printf("%s", before);
+            _ = printf("complex34 %s ", &str);
+
+            real34ToString(registerImag34Ptr(regist), &str);
+            if (real34IsNegative(registerImag34Ptr(regist))) {
+                _ = printf("%s", before);
+                _ = printf("- ix%s", @as([*]u8, &str) + 1);
+            } else {
+                _ = printf("%s", before);
+                _ = printf("+ ix%s", &str);
+            }
+        } else if (stack_runtime.getRegisterDataType(regist) == dtString) {
+            stringToUtf8(registerStringData(regist), &str);
+            _ = printf("%s", before);
+            _ = printf("string (%u + %u bytes) |%s|", STR_LG_INT_HEADER_SIZE_IN_BYTES, toBytes(payload_owned.getRegisterMaxDataLengthInBlocks(regist)), &str);
+        } else if (stack_runtime.getRegisterDataType(regist) == dtShortInteger) {
+            const value = abi.registerShortInteger(regist).*;
+            _ = printf("%s", before);
+            _ = printf("short integer %08x-%08x (base %u)", @as(c_uint, @truncate(value >> 32)), @as(c_uint, @truncate(value & 0xffffffff)), stack_runtime.getRegisterTag(regist));
+        } else if (stack_runtime.getRegisterDataType(regist) == dtConfig) {
+            _ = printf("%s", before);
+            _ = printf("Configuration data");
+        } else if (stack_runtime.getRegisterDataType(regist) == dtLongInteger) {
+            var lg_int: stack_runtime.longInteger_t = undefined;
+
+            convertLongIntegerRegisterToLongInteger(regist, &lg_int);
+            longIntegerToAllocatedString(&lg_int, &str, str.len);
+            __gmpz_clear(&lg_int);
+            _ = printf("%s", before);
+            _ = printf("long integer (%u + %u bytes) %s", STR_LG_INT_HEADER_SIZE_IN_BYTES, toBytes(payload_owned.getRegisterMaxDataLengthInBlocks(regist)), &str);
+        } else if (stack_runtime.getRegisterDataType(regist) == dtTime) {
+            real34ToString(registerReal34Ptr(regist), &str);
+            _ = printf("%s", before);
+            _ = printf("time %s", &str);
+        } else if (stack_runtime.getRegisterDataType(regist) == dtDate) {
+            real34ToString(registerReal34Ptr(regist), &str);
+            _ = printf("%s", before);
+            _ = printf("date %s", &str);
+        } else if (stack_runtime.getRegisterDataType(regist) == dtReal34Matrix) {
+            var mat: real34Matrix_t = undefined;
+            linkToRealMatrixRegister(regist, &mat);
+            var r: u16 = 0;
+            while (r < mat.header.matrixRows) : (r += 1) {
+                _ = printf("ReMa %s", before);
+                _ = printf("Row %3i: ", @as(c_int, r));
+                var c: u16 = 0;
+                while (c < mat.header.matrixColumns) : (c += 1) {
+                    real34ToString(&mat.matrixElements.?[@as(u32, r) * mat.header.matrixColumns + c], &str);
+                    _ = printf("%s ", &str);
+                }
+                _ = printf("\n");
+            }
+        } else if (stack_runtime.getRegisterDataType(regist) == dtComplex34Matrix) {
+            var mat: complex34Matrix_t = undefined;
+            linkToComplexMatrixRegister(regist, &mat);
+            var r: u16 = 0;
+            while (r < mat.header.matrixRows) : (r += 1) {
+                _ = printf("(compact CxMa): %s", before);
+                _ = printf("Row %3i: ", @as(c_int, r));
+                var c: u16 = 0;
+                while (c < mat.header.matrixColumns) : (c += 1) {
+                    var tmpr: real_t = undefined;
+                    var element_str: [100]u8 = undefined;
+                    var scratch: [256]u8 = undefined;
+                    const element = &mat.matrixElements.?[@as(u32, r) * mat.header.matrixColumns + c];
+                    real34ToReal(&element.real, &tmpr);
+                    _ = decNumberPlus(&tmpr, &tmpr, &ctxtReal4); // Real part
+                    if (realGetExponent(&tmpr) < -50) {
+                        _ = printf("[\u{2248}0 ");
+                    } else {
+                        realToString(&tmpr, &element_str);
+                        rewriteInfinityGlyph(@ptrCast(&element_str), &scratch);
+                        _ = printf("[%s", &element_str);
+                    }
+                    real34ToReal(&element.imag, &tmpr);
+                    _ = decNumberPlus(&tmpr, &tmpr, &ctxtReal4); // Imag part
+                    if (realGetExponent(&tmpr) < -50) {
+                        _ = printf(" i\u{2248}0] ");
+                    } else {
+                        realToString(&tmpr, &element_str);
+                        rewriteInfinityGlyph(@ptrCast(&element_str), &scratch);
+                        _ = printf(" i%s] ", &element_str);
+                    }
+                }
+                _ = printf("\n");
+            }
+        } else {
+            _ = printf("%s", before);
+            _ = sprintf(errorMessage, "In printRegisterToConsole: data type %s not supported", getRegisterDataTypeName(regist, false, false));
+            displayBugScreen(errorMessage);
+        }
+
+        _ = printf("%s", after);
+    }
 }

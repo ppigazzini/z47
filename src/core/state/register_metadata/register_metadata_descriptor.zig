@@ -1,6 +1,5 @@
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 const runtime = @import("register_metadata_runtime.zig");
-const stack_runtime = @import("../runtime/stack_runtime.zig");
 const codec = @import("register_descriptor_codec.zig"); // std-only descriptor bit-field codec
 
 const invalid_data_type: u32 = 31;
@@ -46,7 +45,9 @@ pub fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
         }
 
         if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportNoNamedVariablesBug("getRegisterDataType");
+        } else {
+            runtime.reportNamedVariableNotDefined("In function getRegisterDataType:", reg);
         }
 
         return invalid_data_type;
@@ -61,11 +62,13 @@ pub fn getRegisterDataType(reg: runtime.calcRegister_t) u32 {
             return descriptorDataType(descriptor);
         } else if (runtime.noLocalRegisterFrame()) {
             moreInfoOnError("In function getRegisterDataType:", "no local registers defined!", "", "");
+        } else {
+            runtime.reportLocalRegisterNotDefined("In function getRegisterDataType:", reg);
         }
         return invalid_data_type;
     }
 
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    runtime.reportRegisterAboveLastBug("getRegisterDataType", reg);
     return invalid_data_type;
 }
 
@@ -82,7 +85,9 @@ pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
         }
 
         if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportNoNamedVariablesBug("getRegisterDataPointer");
+        } else {
+            runtime.reportNamedVariableNotDefined("In function getRegisterDataPointer:", reg);
         }
 
         return null;
@@ -96,13 +101,15 @@ pub fn getRegisterDataPointer(reg: runtime.calcRegister_t) ?*anyopaque {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             return dataPointerFromDescriptor(descriptor);
         } else if (runtime.noLocalRegisterFrame()) {
-            moreInfoOnError("In function getRegisterDataPointer:", "no local registers defined!", "", "");
+            moreInfoOnError("In function getRegisterDataPointer:", "no local registers defined!", "", null);
+        } else {
+            runtime.reportLocalRegisterNotDefined("In function getRegisterDataPointer:", reg);
         }
 
         return null;
     }
 
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    runtime.reportRegisterAboveLastBug("getRegisterDataPointer", reg);
     return null;
 }
 
@@ -119,7 +126,9 @@ pub fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
         }
 
         if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportNoNamedVariablesBug("getRegisterTag");
+        } else {
+            runtime.reportNamedVariableNotDefined("In function getRegisterTag:", reg);
         }
 
         return 0;
@@ -134,12 +143,14 @@ pub fn getRegisterTag(reg: runtime.calcRegister_t) u32 {
             return descriptorTag(descriptor);
         } else if (runtime.noLocalRegisterFrame()) {
             moreInfoOnError("In function getRegisterTag:", "no local registers defined!", "", "");
+        } else {
+            runtime.reportLocalRegisterNotDefined("In function getRegisterTag:", reg);
         }
 
         return 0;
     }
 
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    runtime.reportRegisterAboveLastBug("getRegisterTag", reg);
     return 0;
 }
 
@@ -158,7 +169,9 @@ pub fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32
         }
 
         if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportNoNamedVariablesBug("setRegisterDataType");
+        } else {
+            runtime.reportNamedVariableNotDefined("In function setRegisterDataType:", reg);
         }
 
         return;
@@ -178,12 +191,14 @@ pub fn setRegisterDataType(reg: runtime.calcRegister_t, data_type: u16, tag: u32
             return;
         } else if (runtime.noLocalRegisterFrame()) {
             moreInfoOnError("In function setRegisterDataType:", "no local registers defined!", "", "");
+        } else {
+            runtime.reportLocalRegisterNotDefined("In function setRegisterDataType:", reg);
         }
 
         return;
     }
 
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    runtime.reportRegisterAboveLastBug("setRegisterDataType", reg);
 }
 
 pub fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyopaque) void {
@@ -201,6 +216,15 @@ pub fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyo
             return;
         }
 
+        if (runtime.numberOfNamedVariables == 0) {
+            // Upstream's text here names local registers; the branch is the
+            // named-variable one, and this is the only accessor whose empty-block
+            // case is a hint rather than a bug screen.
+            moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", null, null);
+        } else {
+            runtime.reportNamedVariableNotDefined("In function setRegisterDataPointer:", reg);
+        }
+
         return;
     }
 
@@ -214,12 +238,14 @@ pub fn setRegisterDataPointer(reg: runtime.calcRegister_t, mem_ptr: ?*const anyo
             return;
         } else if (runtime.noLocalRegisterFrame()) {
             moreInfoOnError("In function setRegisterDataPointer:", "no local registers defined!", "", "");
+        } else {
+            runtime.reportLocalRegisterNotDefined("In function setRegisterDataPointer:", reg);
         }
 
         return;
     }
 
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    runtime.reportRegisterAboveLastBug("setRegisterDataPointer", reg);
 }
 
 pub fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
@@ -237,7 +263,9 @@ pub fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
         }
 
         if (runtime.numberOfNamedVariables == 0) {
-            stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+            runtime.reportNoNamedVariablesBug("setRegisterTag");
+        } else {
+            runtime.reportNamedVariableNotDefined("In function setRegisterTag:", reg);
         }
 
         return;
@@ -253,10 +281,12 @@ pub fn setRegisterTag(reg: runtime.calcRegister_t, tag: u32) void {
             return;
         } else if (runtime.noLocalRegisterFrame()) {
             moreInfoOnError("In function setRegisterTag:", "no local registers defined!", "", "");
+        } else {
+            runtime.reportLocalRegisterNotDefined("In function setRegisterTag:", reg);
         }
 
         return;
     }
 
-    stack_runtime.lastErrorCode = stack_runtime.ERROR_OUT_OF_RANGE;
+    runtime.reportRegisterAboveLastBug("setRegisterTag", reg);
 }
