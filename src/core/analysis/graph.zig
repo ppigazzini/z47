@@ -12,9 +12,13 @@ const consts = abi.constants;
 // fnEqSolvGraph, plus the osc/DXR/DYR/DXI/DYI globals and the three
 // TO_QSPI asymptote offset tables.
 //
-// Faithful, line-by-line port of the C. SAVE_SPACE_DM42_13GRF is dead
-// (defined only in the obsolete !TWO_FILE_PGM && !NEW_HW single-file build),
-// so everything is ported unconditionally. The PC_BUILD-gated diagnostics
+// Faithful, line-by-line port of the C. graph_eqn, complexSolver,
+// fnComplexSolver, fnPlot, initialize_function and the body of fnEqSolvGraph sit
+// inside matrix.c's OPTION_GRAPHICS, and graph_plotmem plus plotarrow/plotdelta/
+// plotint inside OPTION_MOREGRAPHICS. Both options are on by default and
+// re-defined for DMCP packages 1-4; their only #undef is in the
+// !TWO_FILE_PGM && !NEW_HW block, which no target z47 builds reaches. So
+// everything here is ported unconditionally. The PC_BUILD-gated diagnostics
 // that carry SIDE EFFECTS (lastErrorCode resets in initialize_function /
 // execute_rpn_function) are reproduced under !is_dmcp_build; the
 // PC_BUILD-active console output (the kick/revert notices, printSolverResult)
@@ -46,17 +50,38 @@ const font_t = opaque {};
 
 const cplx_t = abi.Complex;
 
+// PLOT_DIGITS is the storage size of the graph's real_t buffers; it has to
+// exceed GRAPH_WORKING_DIGITS so every result fits. REAL_MAX_DIGITS rounds 16 up
+// to 21 digits, which decNumber holds in 24 bytes where a full real_t takes 60,
+// and that difference is what keeps graph_eqn's frame and its heap block inside
+// a 6 kB DM42 program stack.
+const PLOT_DIGITS = 16;
+const PLOT_REAL_MAX_DIGITS = ((PLOT_DIGITS + 2) / 6) * 6 + 3;
+// decNumberUnit is a u16 and DECDPUN is 3, as realType.h's REAL_SIZE_IN_BYTES.
+const PLOT_REAL_SIZE_IN_BYTES = 10 + @sizeOf(u16) * (PLOT_REAL_MAX_DIGITS / 3);
+
+/// REAL_T_PTR(name, PLOT_DIGITS): the storage is the short array, and every user
+/// takes a real_t pointer to it. Nothing writes more digits than
+/// ctxtGraphsLocal's, which is what keeps a value inside the array.
+const PlotReal = extern struct {
+    data: [PLOT_REAL_SIZE_IN_BYTES / 4]u32,
+
+    inline fn r(self: *PlotReal) *real_t {
+        return @ptrCast(self);
+    }
+};
+
 const PlotPoint = extern struct {
-    x: real_t, // x-coordinate
-    y: real_t, // y-coordinate
-    grad: real_t, // gradient at the point
+    x: PlotReal, // x-coordinate
+    y: PlotReal, // y-coordinate
+    grad: PlotReal, // gradient at the point
     stored: bool,
 };
 
 const AsymptoteInfo = extern struct {
-    x: real_t, // x-coordinate of asymptote
-    gapWidth: real_t, // width of the discontinuity gap
-    maxHeight: real_t, // standard maximum height for rendering
+    x: PlotReal, // x-coordinate of asymptote
+    gapWidth: PlotReal, // width of the discontinuity gap
+    maxHeight: PlotReal, // standard maximum height for rendering
     hasPositive: bool, // approaches +infinity
     hasNegative: bool, // approaches -infinity
 };
@@ -668,7 +693,9 @@ fn AddtoDrawMx() void {
         // next fnPlot repaints over it.
         calcMode = CM_NORMAL;
         displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X); // Invalid input data type for this operation
-        moreInfoOnError("In function AddtoDrawMx:", "additional matrix line not added", null, null);
+        var buffer: [64]u8 = undefined;
+        const message = runtime.bufPrintZ(&buffer, "additional matrix line not added; rows = {d}", .{rows}) catch "additional matrix line not added";
+        moreInfoOnError("In function AddtoDrawMx:", message, null, null);
     }
 }
 
@@ -812,7 +839,7 @@ pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int
     // Check continuity between consecutive fine points
     var i: c_int = 1;
     while (i < count) : (i += 1) {
-        realSubtract(&buffer[@intCast(i)].y, &buffer[@intCast(i - 1)].y, &diff, ctxtGraphs);
+        realSubtract(buffer[@intCast(i)].y.r(), buffer[@intCast(i - 1)].y.r(), &diff, ctxtGraphs);
         realCopyAbs(&diff, &jump);
         realAdd(&totalVariation, &jump, &totalVariation, ctxtGraphs);
         if (runtime.realCompareGreaterThan(&jump, &maxJump)) {
@@ -823,9 +850,9 @@ pub export fn validateDiscontinuityResolution(buffer: [*]PlotPoint, count: c_int
     // Also check connection to endpoints
     var startJump: real_t = undefined;
     var endJump: real_t = undefined;
-    realSubtract(&buffer[0].y, yBefore, &diff, ctxtGraphs);
+    realSubtract(buffer[0].y.r(), yBefore, &diff, ctxtGraphs);
     realCopyAbs(&diff, &startJump);
-    realSubtract(yAfter, &buffer[@intCast(count - 1)].y, &diff, ctxtGraphs);
+    realSubtract(yAfter, buffer[@intCast(count - 1)].y.r(), &diff, ctxtGraphs);
     realCopyAbs(&diff, &endJump);
 
     if (runtime.realCompareGreaterThan(&startJump, &maxJump)) {
@@ -897,7 +924,7 @@ pub export fn commitHighResPointsInOrder(buffer: [*]PlotPoint, count: c_int) cal
     var i: c_int = 0;
     while (i < count) : (i += 1) {
         if (!buffer[@intCast(i)].stored) {
-            convertRealToReal34RegisterPush(&buffer[@intCast(i)].x, REGISTER_X);
+            convertRealToReal34RegisterPush(buffer[@intCast(i)].x.r(), REGISTER_X);
             execute_rpn_function_graphAcc();
             reduceRegisterYToComponent();
             AddtoDrawMx();
@@ -1122,12 +1149,12 @@ pub export fn detectAndCharacterizeAsymptote(xLeft: *align(1) const real_t, yLef
 
     // Fill asymptote info
     var heightRatio: real_t = undefined;
-    realCopy(xGap, &asymptote.x);
-    realCopy(gapWidth, &asymptote.gapWidth);
+    realCopy(xGap, asymptote.x.r());
+    realCopy(gapWidth, asymptote.gapWidth.r());
     asymptote.hasPositive = leftGoesPositive or rightGoesPositive;
     asymptote.hasNegative = leftGoesNegative or rightGoesNegative;
     stringToReal("0.8", &heightRatio, ctxtGraphs); // _R_STR_OF(ASYMPTOTE_HEIGHT_RATIO)
-    realMultiply(&yRange, &heightRatio, &asymptote.maxHeight, ctxtGraphs);
+    realMultiply(&yRange, &heightRatio, asymptote.maxHeight.r(), ctxtGraphs);
 
     return true;
 }
@@ -1138,7 +1165,7 @@ pub export fn renderAsymptote(asymptote: *AsymptoteInfo) callconv(.c) void {
     var x: real_t = undefined;
     var y: real_t = undefined;
     var c10000: real_t = undefined;
-    realCopy(&asymptote.x, &xCenter);
+    realCopy(asymptote.x.r(), &xCenter);
     stringToReal("1e-3", &offset, ctxtGraphs); // Small x offset
     int32ToReal(10000, &c10000);
 
@@ -1224,39 +1251,39 @@ pub export fn detectTrueDiscontinuityWithAsymptote(y0: *align(1) const real_t, y
 // graph_eqn's working set, taken from the heap in one block so a nested plot
 // through PGMPLT gets its own and the frame stays small.
 const GraphWork = extern struct {
-    x: real_t,
-    x01: real_t,
-    y01: real_t,
-    y02: real_t,
-    y00: real_t,
-    dy: real_t,
-    dx0: real_t,
-    dx: real_t,
-    grad2: real_t,
-    grad1: real_t,
-    grad0: real_t,
-    prevDx: real_t,
-    yAvg: real_t,
-    x_min_r: real_t,
-    x_max_r: real_t,
-    y_min_r: real_t,
-    y_max_r: real_t,
-    jumpBackStartX: real_t,
-    jumpBackStartY: real_t,
-    jumpBackX: real_t,
-    jumpBackDx: real_t,
-    jbY: real_t,
-    discontinuityThreshold: real_t,
-    curvatureChange: real_t,
-    newDx: real_t,
-    improvementRatio: real_t,
-    highResStartX: real_t,
-    cumulativeCurvatureChange: real_t,
-    baselineCurvatureChange: real_t,
-    savedXBeforeHighres: real_t,
-    savedDxBeforeHighres: real_t,
-    tmpA: real_t,
-    tmpB: real_t,
+    x: PlotReal,
+    x01: PlotReal,
+    y01: PlotReal,
+    y02: PlotReal,
+    y00: PlotReal,
+    dy: PlotReal,
+    dx0: PlotReal,
+    dx: PlotReal,
+    grad2: PlotReal,
+    grad1: PlotReal,
+    grad0: PlotReal,
+    prevDx: PlotReal,
+    yAvg: PlotReal,
+    x_min_r: PlotReal,
+    x_max_r: PlotReal,
+    y_min_r: PlotReal,
+    y_max_r: PlotReal,
+    jumpBackStartX: PlotReal,
+    jumpBackStartY: PlotReal,
+    jumpBackX: PlotReal,
+    jumpBackDx: PlotReal,
+    jbY: PlotReal,
+    discontinuityThreshold: PlotReal,
+    curvatureChange: PlotReal,
+    newDx: PlotReal,
+    improvementRatio: PlotReal,
+    highResStartX: PlotReal,
+    cumulativeCurvatureChange: PlotReal,
+    baselineCurvatureChange: PlotReal,
+    savedXBeforeHighres: PlotReal,
+    savedDxBeforeHighres: PlotReal,
+    tmpA: PlotReal,
+    tmpB: PlotReal,
     asymptotes: [MAX_ASYMPTOTES]AsymptoteInfo,
 };
 fn allocGraphWork() ?*GraphWork {
@@ -1268,6 +1295,17 @@ fn freeGraphWork(w: *GraphWork) void {
 
 fn graph_eqn(mode: u16) void {
     var plotAborted: bool = false; // R/S/EXIT or a nested-engine abort: skip the draw and exit dead
+    // The working reals and the asymptote records come from the heap, not the
+    // frame: together they are around 1.6 kB on a 6 kB DM42 program stack. Taken
+    // per call, so a nested plot through PGMPLT gets its own set. The allocation
+    // comes first, so a RAM-full refusal is raised from CM_NORMAL, where the
+    // error line renders, and takes no undo snapshot.
+    const wk = allocGraphWork() orelse {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+    };
+    defer freeGraphWork(wk);
+
     currentKeyCode = 255;
     calcMode = CM_GRAPH;
     saveForUndo();
@@ -1285,47 +1323,39 @@ fn graph_eqn(mode: u16) void {
     var grad2IncreaseDetected: bool = false;
     var loop: c_int = 0;
     var jumpedBack: bool = false;
-    // The working reals and the asymptote records come from the heap, not the
-    // frame: together they are around 4 kB on a 6 kB DM42 program stack. Taken
-    // per call, so a nested plot through PGMPLT gets its own set.
-    const wk = allocGraphWork() orelse {
-        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
-        return;
-    };
-    defer freeGraphWork(wk);
-    const x = &wk.x;
-    const x01 = &wk.x01;
-    const y01 = &wk.y01;
-    const y02 = &wk.y02;
-    const y00 = &wk.y00;
-    const dy = &wk.dy;
-    const dx0 = &wk.dx0;
-    const dx = &wk.dx;
-    const grad2 = &wk.grad2;
-    const grad1 = &wk.grad1;
-    const grad0 = &wk.grad0;
-    const prevDx = &wk.prevDx;
-    const yAvg = &wk.yAvg;
-    const x_min_r = &wk.x_min_r;
-    const x_max_r = &wk.x_max_r;
-    const y_min_r = &wk.y_min_r;
-    const y_max_r = &wk.y_max_r;
-    const jumpBackStartX = &wk.jumpBackStartX;
-    const jumpBackStartY = &wk.jumpBackStartY;
-    const jumpBackX = &wk.jumpBackX;
-    const jumpBackDx = &wk.jumpBackDx;
-    const jbY = &wk.jbY;
-    const discontinuityThreshold = &wk.discontinuityThreshold;
-    const curvatureChange = &wk.curvatureChange;
-    const newDx = &wk.newDx;
-    const improvementRatio = &wk.improvementRatio;
-    const highResStartX = &wk.highResStartX;
-    const cumulativeCurvatureChange = &wk.cumulativeCurvatureChange;
-    const baselineCurvatureChange = &wk.baselineCurvatureChange;
-    const savedXBeforeHighres = &wk.savedXBeforeHighres;
-    const savedDxBeforeHighres = &wk.savedDxBeforeHighres;
-    const tmpA = &wk.tmpA;
-    const tmpB = &wk.tmpB;
+    const x = wk.x.r();
+    const x01 = wk.x01.r();
+    const y01 = wk.y01.r();
+    const y02 = wk.y02.r();
+    const y00 = wk.y00.r();
+    const dy = wk.dy.r();
+    const dx0 = wk.dx0.r();
+    const dx = wk.dx.r();
+    const grad2 = wk.grad2.r();
+    const grad1 = wk.grad1.r();
+    const grad0 = wk.grad0.r();
+    const prevDx = wk.prevDx.r();
+    const yAvg = wk.yAvg.r();
+    const x_min_r = wk.x_min_r.r();
+    const x_max_r = wk.x_max_r.r();
+    const y_min_r = wk.y_min_r.r();
+    const y_max_r = wk.y_max_r.r();
+    const jumpBackStartX = wk.jumpBackStartX.r();
+    const jumpBackStartY = wk.jumpBackStartY.r();
+    const jumpBackX = wk.jumpBackX.r();
+    const jumpBackDx = wk.jumpBackDx.r();
+    const jbY = wk.jbY.r();
+    const discontinuityThreshold = wk.discontinuityThreshold.r();
+    const curvatureChange = wk.curvatureChange.r();
+    const newDx = wk.newDx.r();
+    const improvementRatio = wk.improvementRatio.r();
+    const highResStartX = wk.highResStartX.r();
+    const cumulativeCurvatureChange = wk.cumulativeCurvatureChange.r();
+    const baselineCurvatureChange = wk.baselineCurvatureChange.r();
+    const savedXBeforeHighres = wk.savedXBeforeHighres.r();
+    const savedDxBeforeHighres = wk.savedDxBeforeHighres.r();
+    const tmpA = wk.tmpA.r();
+    const tmpB = wk.tmpB.r();
     const asymptotes = &wk.asymptotes;
     var asymptoteCount: c_int = 0;
 
@@ -1586,8 +1616,8 @@ fn graph_eqn(mode: u16) void {
                         convertRegisterToReal(REGISTER_Y, jbY);
 
                         jumpBackBuffer[@intCast(jumpBackCount)].stored = false;
-                        realCopy(jumpBackX, &jumpBackBuffer[@intCast(jumpBackCount)].x);
-                        realCopy(jbY, &jumpBackBuffer[@intCast(jumpBackCount)].y);
+                        realCopy(jumpBackX, jumpBackBuffer[@intCast(jumpBackCount)].x.r());
+                        realCopy(jbY, jumpBackBuffer[@intCast(jumpBackCount)].y.r());
                         jumpBackCount += 1;
                         realAdd(jumpBackX, jumpBackDx, jumpBackX, ctxtGraphs);
                     }
@@ -1621,12 +1651,12 @@ fn graph_eqn(mode: u16) void {
                                 var maxCurvD: f64 = 0;
                                 var i: c_int = 1;
                                 while (i < jumpBackCount - 1) : (i += 1) {
-                                    const xi: f64 = normCoord(&jumpBackBuffer[@intCast(i)].x, x01, &spanX);
-                                    const xim1: f64 = normCoord(&jumpBackBuffer[@intCast(i - 1)].x, x01, &spanX);
-                                    const xip1: f64 = normCoord(&jumpBackBuffer[@intCast(i + 1)].x, x01, &spanX);
-                                    const yi: f64 = normCoord(&jumpBackBuffer[@intCast(i)].y, y01, &spanY);
-                                    const yim1: f64 = normCoord(&jumpBackBuffer[@intCast(i - 1)].y, y01, &spanY);
-                                    const yip1: f64 = normCoord(&jumpBackBuffer[@intCast(i + 1)].y, y01, &spanY);
+                                    const xi: f64 = normCoord(jumpBackBuffer[@intCast(i)].x.r(), x01, &spanX);
+                                    const xim1: f64 = normCoord(jumpBackBuffer[@intCast(i - 1)].x.r(), x01, &spanX);
+                                    const xip1: f64 = normCoord(jumpBackBuffer[@intCast(i + 1)].x.r(), x01, &spanX);
+                                    const yi: f64 = normCoord(jumpBackBuffer[@intCast(i)].y.r(), y01, &spanY);
+                                    const yim1: f64 = normCoord(jumpBackBuffer[@intCast(i - 1)].y.r(), y01, &spanY);
+                                    const yip1: f64 = normCoord(jumpBackBuffer[@intCast(i + 1)].y.r(), y01, &spanY);
                                     const g1d: f64 = (yi - yim1) / (xi - xim1);
                                     const g2d: f64 = (yip1 - yi) / (xip1 - xi);
                                     const curvChangeD: f64 = fabs(g2d - g1d);
@@ -1643,8 +1673,8 @@ fn graph_eqn(mode: u16) void {
                                 var interpErrD: f64 = 0;
                                 var j: c_int = 0;
                                 while (j < jumpBackCount) : (j += 1) {
-                                    const xi: f64 = normCoord(&jumpBackBuffer[@intCast(j)].x, x01, &spanX);
-                                    const yi: f64 = normCoord(&jumpBackBuffer[@intCast(j)].y, y01, &spanY);
+                                    const xi: f64 = normCoord(jumpBackBuffer[@intCast(j)].x.r(), x01, &spanX);
+                                    const yi: f64 = normCoord(jumpBackBuffer[@intCast(j)].y.r(), y01, &spanY);
                                     const expectedYd: f64 = y01d + linearSlopeD * (xi - x01d);
                                     const errD: f64 = fabs(yi - expectedYd);
                                     if (errD > interpErrD) {
@@ -1661,7 +1691,7 @@ fn graph_eqn(mode: u16) void {
                     if (shouldCommitPoints) { // fine points
                         var i: c_int = 0;
                         while (i < jumpBackCount) : (i += 1) {
-                            convertRealToReal34RegisterPush(&jumpBackBuffer[@intCast(i)].x, REGISTER_X);
+                            convertRealToReal34RegisterPush(jumpBackBuffer[@intCast(i)].x.r(), REGISTER_X);
                             execute_rpn_function_graphAcc();
                             reduceRegisterYToComponent();
                             AddtoDrawMx();
@@ -1725,9 +1755,9 @@ fn graph_eqn(mode: u16) void {
                     realAdd(cumulativeCurvatureChange, curvatureChange, cumulativeCurvatureChange, ctxtGraphs);
 
                     if (highResCount < HIGH_RES_SAMPLE_COUNT) { // Buffer high-res points in order
-                        realCopy(x, &highResBuffer[@intCast(highResCount)].x);
-                        realCopy(y02, &highResBuffer[@intCast(highResCount)].y);
-                        realCopy(grad2, &highResBuffer[@intCast(highResCount)].grad);
+                        realCopy(x, highResBuffer[@intCast(highResCount)].x.r());
+                        realCopy(y02, highResBuffer[@intCast(highResCount)].y.r());
+                        realCopy(grad2, highResBuffer[@intCast(highResCount)].grad.r());
                         highResBuffer[@intCast(highResCount)].stored = false;
                         highResCount += 1;
                     } else {
@@ -2478,6 +2508,7 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
                     // graph_stat and fnPlotStat do.
                     calcMode = CM_NORMAL;
                     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+                    moreInfoOnError("In function fnEqSolvGraph:", "plot range limits must be finite and distinct", null, null);
                     return;
                 }
                 reallocateRegister(RESERVED_VARIABLE_UX, dtReal34, 0, amNoneU);
@@ -2508,7 +2539,11 @@ pub export fn fnEqSolvGraph(func: u16) callconv(.c) void {
         // Leave the graph screen so the error line renders.
         calcMode = CM_NORMAL;
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function fnEqSolvGraph:", "unexpected parameter", null, null);
+        var buffer: [48]u8 = undefined;
+        // C passes a calcRegister_t to "%u", so a negative variable number
+        // prints as the unsigned reinterpretation of the promoted int.
+        const message = runtime.bufPrintZ(&buffer, "unexpected parameter {d}", .{@as(c_uint, @bitCast(@as(c_int, graphVariabl1)))}) catch "unexpected parameter";
+        moreInfoOnError("In function fnEqSolvGraph:", message, null, null);
         return;
     }
 
@@ -2604,6 +2639,6 @@ pub export fn fnPlotf(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (lastErrorCode == ERROR_NONE) {
         // On a rejected range CM_NORMAL is already set; skip fnPlotSQ so it does
         // not force CM_GRAPH back and hide the error.
-        fnPlotSQ(0);
+        fnPlotSQ(NOPARAM);
     }
 }

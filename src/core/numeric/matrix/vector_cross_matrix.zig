@@ -27,7 +27,12 @@ pub fn tryCrossMatrices() bool {
         runtime.linkToRealMatrixRegister(runtime.REGISTER_Y, &y_matrix);
 
         if (!validation_owned.isValidCrossRealVectors(&x_matrix, &y_matrix)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+            validation_owned.crossMatrixMismatchError("In function crossRemaRema:", .{
+                .x_rows = x_matrix.header.matrixRows,
+                .x_columns = x_matrix.header.matrixColumns,
+                .y_rows = y_matrix.header.matrixRows,
+                .y_columns = y_matrix.header.matrixColumns,
+            });
         } else {
             runtime.crossRealVectors(&y_matrix, &x_matrix, &result);
             runtime.convertReal34MatrixToReal34MatrixRegister(&result, runtime.REGISTER_X);
@@ -55,7 +60,12 @@ pub fn tryCrossMatrices() bool {
     runtime.linkToComplexMatrixRegister(runtime.REGISTER_Y, &y_matrix);
 
     if (!validation_owned.isValidCrossComplexVectors(&x_matrix, &y_matrix)) {
-        runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        validation_owned.crossMatrixMismatchError("In function crossCpmaCpma:", .{
+            .x_rows = x_matrix.header.matrixRows,
+            .x_columns = x_matrix.header.matrixColumns,
+            .y_rows = y_matrix.header.matrixRows,
+            .y_columns = y_matrix.header.matrixColumns,
+        });
     } else {
         runtime.crossComplexVectors(&y_matrix, &x_matrix, &result);
         runtime.convertComplex34MatrixToComplex34MatrixRegister(&result, runtime.REGISTER_X);

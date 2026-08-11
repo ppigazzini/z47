@@ -81,6 +81,9 @@ const PGM_WAITING: u8 = 2;
 
 const solve_build_options = @import("solve_build_options");
 const dmcp_build: bool = solve_build_options.is_dmcp_build;
+// PC_BUILD: on for the host simulator and the testSuite, off on the firmware.
+const pc_build: bool = @import("builtin").target.os.tag != .freestanding;
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
 const old_hw: bool = solve_build_options.is_old_hw;
 // Total PLOT, INT and SOLVE engines that may run at once, in any combination, counted by
 // engineNestingDepth: OLD_HW (DM42) 2, NEW_HW (DM42n/DMCP5) 3, host 4.
@@ -275,7 +278,7 @@ extern fn getRegisterDataPointer(reg: calcRegister_t) ?*anyopaque;
 const registerReal34Ptr = abi.registerReal34;
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
 extern fn getSystemFlag(sf: i32) bool;
@@ -307,7 +310,7 @@ const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; //
 // _fnIntegrate
 // ===========================================================================
 fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_section) void {
-    if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (REGISTER_X <= @as(calcRegister_t, @intCast(labelOrVariable)) and @as(calcRegister_t, @intCast(labelOrVariable)) <= REGISTER_T)) {
+    if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (runtime.isStackRegister(labelOrVariable))) {
         // Interactive mode
         solve.fnPgmInt(labelOrVariable);
         if (lastErrorCode == ERROR_NONE) {
@@ -332,7 +335,7 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
         }
     } else if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0 and (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) and currentSolverProgram >= numberOfLabels) {
         displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
-        // adjustResult is omitted (the C calls it; mirrors via convertRealToReal34? No - the C calls adjustResult here)
+        runtime.infoLabelNotFound("In function _fnIntegrate:", labelOrVariable);
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else if (FIRST_NAMED_VARIABLE <= labelOrVariable and labelOrVariable <= LAST_NAMED_VARIABLE) {
         var acc: real_t = undefined;
@@ -378,6 +381,9 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
             digitsN = max_i32(min_i32(-realToInt32C47(&digits, null), 34 - 3), 1);
 
             if (digitsN == 6) {
+                if (pc_build) {
+                    _ = printf("Special accuracy test case: N=6 Reducing DEC to single precision and SDIGS digits to %i etc.\n", digitsN + 3);
+                }
                 significantDigits = @intCast(digitsN + 3);
                 ctxtReal4.digits = 7;
                 ctxtReal34.digits = digitsN + 3;
@@ -392,6 +398,9 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
                 ctxtReal51.digits = s51;
                 ctxtReal75.digits = s75;
             } else if (digitsN <= 10) {
+                if (pc_build) {
+                    _ = printf("Special accuracy test case: N<=10 Reducing SDIGS digits to %i etc.\n", digitsN + 3);
+                }
                 significantDigits = @intCast(digitsN + 3);
                 ctxtReal4.digits = digitsN + 3;
                 ctxtReal34.digits = digitsN + 3;
@@ -428,6 +437,7 @@ fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_secti
         adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.infoUnexpectedParameter("In function _fnIntegrate:", labelOrVariable);
     }
 }
 

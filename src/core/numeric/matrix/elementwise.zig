@@ -627,7 +627,9 @@ fn outOfRangeElement(i: i16, j: i16, fnName: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
-        const m = runtime.bufPrintZ(&buf, "Cannot execute: element ({d}, {d}) out of range", .{ i + 1, j + 1 }) catch "out of range";
+        // i + 1 promotes to int and the explicit (int16_t) cast truncates it
+        // back, so 32767 reports as -32768.
+        const m = runtime.bufPrintZ(&buf, "Cannot execute: element ({d}, {d}) out of range", .{ @as(i16, @truncate(@as(i32, i) + 1)), @as(i16, @truncate(@as(i32, j) + 1)) }) catch "out of range";
         runtime.moreInfoOnError(fnName, m, null, null);
     }
 }

@@ -12,10 +12,11 @@ const consts = abi.constants;
 // The static helpers (doubleExp, tvmRangeError, calculateEffectiveRate,
 // calculatePV/FV/PMT/NPPER/PPER/CPER, solveTvmVariable51, amort*) are private.
 //
-// OPTION_TVM_FORMULAS / OPTION_TVM_NEWTON / OPTION_TVM_AMORT are ported
-// unconditionally (the SAVE_SPACE_DM42 undefs are DEAD for the testSuite/sim/
-// dmcp5 builds). EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed
-// moreInfoOnError strings (no-op under TESTSUITE/DMCP).
+// OPTION_TVM_FORMULAS gates the analytical closed forms and the fnTvmVar arm
+// that tries them; OPTION_TVM_NEWTON gates the derivatives tvmEquation hands
+// the solver. Both are out of DM42 packages 2 and 4, whose FIN application is
+// therefore brent-only. OPTION_TVM_AMORT is defined for every target z47
+// builds, so AMORT is unconditional here.
 //
 // Build-target context selection mirrors the C
 //   #if defined(DMCP_BUILD) && (HARDWARE_MODEL == HWM_DM42)
@@ -26,6 +27,8 @@ const runtime = @import("solve_runtime.zig");
 const solve_build_options = @import("solve_build_options");
 
 const dmcp_dm42 = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+const option_tvm_formulas = runtime.option_tvm_formulas;
+const option_tvm_newton = runtime.option_tvm_newton;
 
 // DECNUMDIGITS=75, DECDPUN=3 => DECNUMUNITS=ceil(75/3)=25; decNumberUnit=u16.
 const abi = @import("abi"); // shared ABI bindings
@@ -340,7 +343,7 @@ inline fn registerReal34Ptr(reg: anytype) *align(1) real34_t {
     return abi.registerReal34(r);
 }
 
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
 extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
@@ -389,9 +392,32 @@ fn doubleExp(x: *const real_t, exp: *real_t, expm1: *real_t, realContext: *realC
 // ===========================================================================
 // OPTION_TVM_FORMULAS section
 // ===========================================================================
+// The ten refusals the analytical formulas can raise, indexed by the code
+// tvmRangeError is given and returns.
+const tvmErrorMessages = [_][*:0]const u8{
+    "TVM: Division by zero", // 0
+    "TVM: Invalid interest rate", // 1
+    "TVM: Invalid number of periods", // 2
+    "TVM: No solution exists", // 3
+    "TVM: Logarithm of non-positive number", // 4
+    "TVM: Payment frequency cannot be zero", // 5
+    "TVM: Compound frequency cannot be zero", // 6
+    "TVM: Present value cannot be zero", // 7
+    "TCM: Invalid variable requested", // 8
+    "TCM: Exit to proceed to old solver", // 9
+};
+
+// Every code this module produces names one of the ten; a code outside the
+// table names no message, so it falls back to the plain out-of-range text
+// rather than reading past the table.
+fn tvmErrorMessage(errorCode: c_int) [*:0]const u8 {
+    if (errorCode < 0 or errorCode >= tvmErrorMessages.len) return "TVM out of range error";
+    return tvmErrorMessages[@intCast(errorCode)];
+}
+
 fn tvmRangeError(errorCode: c_int) linksection(runtime.code_section) c_int {
     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    moreInfoOnError("In function tvmRangeError:", "TVM out of range error", " Out of range error", null);
+    moreInfoOnError("In function tvmRangeError:", tvmErrorMessage(errorCode), " Out of range error", null);
     return errorCode;
 }
 
@@ -887,7 +913,9 @@ fn solveTvmVariable51(variable: u16) linksection(runtime.code_section) c_int {
     }
 
     if (err != 0) {
-        moreInfoOnError("In function solveTvmVariable51:", "TVM error", " Cannot compute TVM equation with current parameters", null);
+        // Not stopping for an error, but letting it through to the old solver
+        // for erroring and/or solving.
+        moreInfoOnError("In function solveTvmVariable51:", tvmErrorMessage(err), " Cannot compute TVM equation with current parameters", null);
         return err;
     }
 
@@ -925,13 +953,19 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
                 liftStack();
                 tvmIKnown = false;
 
-                if (variable != RESERVED_VARIABLE_IPONA) {
-                    const errv = solveTvmVariable51(variable);
-                    if (errv == 0) {
-                        temporaryInformation = TI_SOLVER_VARIABLE;
-                        return;
-                    } else {
-                        lastErrorCode = 0;
+                if (option_tvm_formulas) {
+                    if (variable != RESERVED_VARIABLE_IPONA) {
+                        const errv = solveTvmVariable51(variable);
+                        if (errv == 0) {
+                            // Analytic solution found; nothing else to do.
+                            temporaryInformation = TI_SOLVER_VARIABLE;
+                            return;
+                        } else {
+                            // The analytical section failed and said so on the
+                            // console; clear the code and retry with the old
+                            // solver rather than erroring here.
+                            lastErrorCode = 0;
+                        }
                     }
                 }
 
@@ -1239,13 +1273,15 @@ pub export fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: 
         realFMA(&nPer, &pmt, &pv, &val, ctxtTvm());
         realSubtract(&val, &fv, &val, ctxtTvm());
         realCopy(&val, ioVal);
-        if (derivative) |deriv| {
-            switch (variableU) {
-                RESERVED_VARIABLE_PMT => realCopy(&nPer, deriv),
-                RESERVED_VARIABLE_PV => realSetOne(deriv),
-                RESERVED_VARIABLE_FV => realCopy(const__1(), deriv),
-                RESERVED_VARIABLE_NPPER => realCopy(&pmt, deriv),
-                else => realSetNaN(deriv),
+        if (option_tvm_newton) {
+            if (derivative) |deriv| {
+                switch (variableU) {
+                    RESERVED_VARIABLE_PMT => realCopy(&nPer, deriv), // df/dPMT = N
+                    RESERVED_VARIABLE_PV => realSetOne(deriv), // df/dPV = 1
+                    RESERVED_VARIABLE_FV => realCopy(const__1(), deriv), // df/dFV = -1
+                    RESERVED_VARIABLE_NPPER => realCopy(&pmt, deriv), // df/dN = PMT
+                    else => realSetNaN(deriv), // IPONA: NaN -> Brent fallback
+                }
             }
         }
         return;
@@ -1282,92 +1318,94 @@ pub export fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: 
     realCopy(&val, ioVal);
 
     // OPTION_TVM_NEWTON derivative blocks
-    if (derivative) |deriv| {
-        if (variableU == RESERVED_VARIABLE_IPONA) {
-            var one_plus_i: real_t = undefined;
-            var one_plus_i_neg_N: real_t = undefined;
-            var one_plus_i_neg_N_m1: real_t = undefined;
-            var term1: real_t = undefined;
-            var term2: real_t = undefined;
-            var factor_deriv: real_t = undefined;
-            var i_squared: real_t = undefined;
-            realAdd(const_1(), &tvm_i, &one_plus_i, ctxtTvm());
-            var temp: real_t = undefined;
-            var neg_nPer: real_t = undefined;
-            var one_minus: real_t = undefined;
-            realCopy(&nPer, &neg_nPer);
-            realChangeSign(&neg_nPer);
-            WP34S_Ln1P(&tvm_i, &temp, ctxtSolverTvmHi());
-            realMultiply(&temp, &neg_nPer, &temp, ctxtSolverTvmHi());
-            doubleExp(&temp, &one_plus_i_neg_N, &one_minus, ctxtSolverTvmHi());
-            realChangeSign(&one_minus);
-            realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, ctxtTvm());
-            realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, ctxtTvm());
-            realDivide(&term1, &tvm_i, &term1, ctxtSolverTvmInv());
-            realMultiply(&tvm_i, &tvm_i, &i_squared, ctxtSolverTvmInv());
-            realDivide(&one_minus, &i_squared, &term2, ctxtSolverTvmInv());
-            realSubtract(&term1, &term2, &factor_deriv, ctxtTvm());
-            if (!getSystemFlag(@bitCast(FLAG_ENDPMT))) {
-                realMultiply(&factor_deriv, &one_plus_i, &factor_deriv, ctxtTvm());
-                var extra: real_t = undefined;
-                realDivide(&one_minus, &tvm_i, &extra, ctxtSolverTvmInv());
-                realAdd(&factor_deriv, &extra, &factor_deriv, ctxtTvm());
+    if (option_tvm_newton) {
+        if (derivative) |deriv| {
+            if (variableU == RESERVED_VARIABLE_IPONA) {
+                var one_plus_i: real_t = undefined;
+                var one_plus_i_neg_N: real_t = undefined;
+                var one_plus_i_neg_N_m1: real_t = undefined;
+                var term1: real_t = undefined;
+                var term2: real_t = undefined;
+                var factor_deriv: real_t = undefined;
+                var i_squared: real_t = undefined;
+                realAdd(const_1(), &tvm_i, &one_plus_i, ctxtTvm());
+                var temp: real_t = undefined;
+                var neg_nPer: real_t = undefined;
+                var one_minus: real_t = undefined;
+                realCopy(&nPer, &neg_nPer);
+                realChangeSign(&neg_nPer);
+                WP34S_Ln1P(&tvm_i, &temp, ctxtSolverTvmHi());
+                realMultiply(&temp, &neg_nPer, &temp, ctxtSolverTvmHi());
+                doubleExp(&temp, &one_plus_i_neg_N, &one_minus, ctxtSolverTvmHi());
+                realChangeSign(&one_minus);
+                realDivide(&one_plus_i_neg_N, &one_plus_i, &one_plus_i_neg_N_m1, ctxtTvm());
+                realMultiply(&nPer, &one_plus_i_neg_N_m1, &term1, ctxtTvm());
+                realDivide(&term1, &tvm_i, &term1, ctxtSolverTvmInv());
+                realMultiply(&tvm_i, &tvm_i, &i_squared, ctxtSolverTvmInv());
+                realDivide(&one_minus, &i_squared, &term2, ctxtSolverTvmInv());
+                realSubtract(&term1, &term2, &factor_deriv, ctxtTvm());
+                if (!getSystemFlag(@bitCast(FLAG_ENDPMT))) {
+                    realMultiply(&factor_deriv, &one_plus_i, &factor_deriv, ctxtTvm());
+                    var extra: real_t = undefined;
+                    realDivide(&one_minus, &tvm_i, &extra, ctxtSolverTvmInv());
+                    realAdd(&factor_deriv, &extra, &factor_deriv, ctxtTvm());
+                }
+                realMultiply(&pmt, &factor_deriv, deriv, ctxtTvm());
+                var fv_term: real_t = undefined;
+                realMultiply(&nPer, &fv, &fv_term, ctxtTvm());
+                realChangeSign(&fv_term);
+                realFMA(&fv_term, &one_plus_i_neg_N_m1, deriv, deriv, ctxtTvm());
+                realDivide(deriv, const_100(), deriv, ctxtTvm());
+                realDivide(deriv, &pperA, deriv, ctxtTvm());
             }
-            realMultiply(&pmt, &factor_deriv, deriv, ctxtTvm());
-            var fv_term: real_t = undefined;
-            realMultiply(&nPer, &fv, &fv_term, ctxtTvm());
-            realChangeSign(&fv_term);
-            realFMA(&fv_term, &one_plus_i_neg_N_m1, deriv, deriv, ctxtTvm());
-            realDivide(deriv, const_100(), deriv, ctxtTvm());
-            realDivide(deriv, &pperA, deriv, ctxtTvm());
-        }
 
-        if (variableU == RESERVED_VARIABLE_NPPER) {
-            var one_plus_i_neg_N: real_t = undefined;
-            var ln1pi: real_t = undefined;
-            var pmt_term: real_t = undefined;
+            if (variableU == RESERVED_VARIABLE_NPPER) {
+                var one_plus_i_neg_N: real_t = undefined;
+                var ln1pi: real_t = undefined;
+                var pmt_term: real_t = undefined;
 
-            var temp: real_t = undefined;
-            var neg_nPer: real_t = undefined;
-            realCopy(&nPer, &neg_nPer);
-            realChangeSign(&neg_nPer);
-            WP34S_Ln1P(&tvm_i, &ln1pi, ctxtSolverTvmHi());
-            realMultiply(&ln1pi, &neg_nPer, &temp, ctxtSolverTvmHi());
-            realExp(&temp, &one_plus_i_neg_N, ctxtSolverTvmHi());
-            realDivide(&pmt, &tvm_i, &pmt_term, ctxtSolverTvmInv());
-            realChangeSign(&fv);
-            realFMA(&pmt_term, &k, &fv, &pmt_term, ctxtTvm());
-            realMultiply(&one_plus_i_neg_N, &ln1pi, deriv, ctxtTvm());
-            realMultiply(deriv, &pmt_term, deriv, ctxtTvm());
-        }
+                var temp: real_t = undefined;
+                var neg_nPer: real_t = undefined;
+                realCopy(&nPer, &neg_nPer);
+                realChangeSign(&neg_nPer);
+                WP34S_Ln1P(&tvm_i, &ln1pi, ctxtSolverTvmHi());
+                realMultiply(&ln1pi, &neg_nPer, &temp, ctxtSolverTvmHi());
+                realExp(&temp, &one_plus_i_neg_N, ctxtSolverTvmHi());
+                realDivide(&pmt, &tvm_i, &pmt_term, ctxtSolverTvmInv());
+                realChangeSign(&fv);
+                realFMA(&pmt_term, &k, &fv, &pmt_term, ctxtTvm());
+                realMultiply(&one_plus_i_neg_N, &ln1pi, deriv, ctxtTvm());
+                realMultiply(deriv, &pmt_term, deriv, ctxtTvm());
+            }
 
-        if (variableU == RESERVED_VARIABLE_PV) {
-            realSetOne(deriv);
-        }
+            if (variableU == RESERVED_VARIABLE_PV) {
+                realSetOne(deriv);
+            }
 
-        if (variableU == RESERVED_VARIABLE_PMT) {
-            var one_minus: real_t = undefined;
+            if (variableU == RESERVED_VARIABLE_PMT) {
+                var one_minus: real_t = undefined;
 
-            var temp: real_t = undefined;
-            var neg_nPer: real_t = undefined;
-            realCopy(&nPer, &neg_nPer);
-            realChangeSign(&neg_nPer);
-            WP34S_Ln1P(&tvm_i, &temp, ctxtSolverTvmHi());
-            realMultiply(&temp, &neg_nPer, &temp, ctxtSolverTvmHi());
-            WP34S_ExpM1(&temp, &one_minus, ctxtSolverTvmHi());
-            realChangeSign(&one_minus);
-            realDivide(&one_minus, &tvm_i, deriv, ctxtSolverTvmInv());
-            realMultiply(deriv, &k, deriv, ctxtTvm());
-        }
+                var temp: real_t = undefined;
+                var neg_nPer: real_t = undefined;
+                realCopy(&nPer, &neg_nPer);
+                realChangeSign(&neg_nPer);
+                WP34S_Ln1P(&tvm_i, &temp, ctxtSolverTvmHi());
+                realMultiply(&temp, &neg_nPer, &temp, ctxtSolverTvmHi());
+                WP34S_ExpM1(&temp, &one_minus, ctxtSolverTvmHi());
+                realChangeSign(&one_minus);
+                realDivide(&one_minus, &tvm_i, deriv, ctxtSolverTvmInv());
+                realMultiply(deriv, &k, deriv, ctxtTvm());
+            }
 
-        if (variableU == RESERVED_VARIABLE_FV) {
-            var temp: real_t = undefined;
-            var neg_nPer: real_t = undefined;
-            realCopy(&nPer, &neg_nPer);
-            realChangeSign(&neg_nPer);
-            WP34S_Ln1P(&tvm_i, &temp, ctxtSolverTvmHi());
-            realMultiply(&temp, &neg_nPer, &temp, ctxtSolverTvmHi());
-            realExp(&temp, deriv, ctxtSolverTvmHi());
+            if (variableU == RESERVED_VARIABLE_FV) {
+                var temp: real_t = undefined;
+                var neg_nPer: real_t = undefined;
+                realCopy(&nPer, &neg_nPer);
+                realChangeSign(&neg_nPer);
+                WP34S_Ln1P(&tvm_i, &temp, ctxtSolverTvmHi());
+                realMultiply(&temp, &neg_nPer, &temp, ctxtSolverTvmHi());
+                realExp(&temp, deriv, ctxtSolverTvmHi());
+            }
         }
     }
 }

@@ -8,6 +8,9 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
+// luCpxMat, taken from its owner rather than through the runtime extern, so the
+// nullable pivot vector this function only forwards keeps its type.
+const luCpxMat = @import("complex_core.zig").luCpxMat;
 
 const real_t = runtime.real_t;
 const complex34_t = runtime.complex34_t;
@@ -36,7 +39,10 @@ fn clearNonSquare(matrix: anytype, lu: anytype) void {
     }
 }
 
-pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *complex34Matrix_t, p: [*]u16) callconv(.c) void {
+// `p` is the caller's pivot vector, one entry per column; mathematics/matrix.h
+// declares it nullable and luCpxMat, which this only forwards it to, skips the
+// pivot store on NULL.
+pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *complex34Matrix_t, p: ?[*]u16) callconv(.c) void {
     const m = matrix.header.matrixRows;
     const n = matrix.header.matrixColumns;
 
@@ -61,7 +67,7 @@ pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *co
                 runtime.real34ToReal(&lu_elems[idx].imag, &tmp_mat[idx * 2 + 1]);
             }
 
-            if (runtime.luCpxMat(tmp_mat, n, p, &runtime.ctxtReal39)) {
+            if (luCpxMat(tmp_mat, n, p, &runtime.ctxtReal39)) {
                 idx = 0;
                 while (idx < nn) : (idx += 1) {
                     runtime.realToReal34(&tmp_mat[idx * 2], &lu_elems[idx].real);

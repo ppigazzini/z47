@@ -224,7 +224,7 @@ const registerReal34Ptr = abi.registerReal34;
 const registerImag34Ptr = abi.registerImag34;
 
 extern fn getRegisterDataType(reg: calcRegister_t) u32;
-extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u32, tag: u32) void;
+extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn convertRealToReal34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 extern fn convertRealToImag34ResultRegister(real: *const real_t, dest: calcRegister_t) void;
 
@@ -498,7 +498,7 @@ fn _checkArgument(label_in: u16, prod: bool_t, early: ?*EarlyAbort) linksection(
     var label = label_in;
     if (FIRST_LABEL <= label and label <= LAST_LABEL) {
         _programmableSumProd(label, prod, early);
-    } else if (REGISTER_X <= @as(calcRegister_t, @intCast(label)) and @as(calcRegister_t, @intCast(label)) <= REGISTER_T) {
+    } else if (runtime.isStackRegister(label)) {
         // Interactive mode
         var buf: [2]u8 = undefined;
         buf[0] = letteredRegisterName(@intCast(label));
@@ -506,13 +506,13 @@ fn _checkArgument(label_in: u16, prod: bool_t, early: ?*EarlyAbort) linksection(
         label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
         if (label == INVALID_VARIABLE) {
             displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function _checkArgument:", "string is not a named label", null, null);
+            runtime.infoNotANamedLabel("In function _checkArgument:", @ptrCast(&buf[0]));
         } else {
             _programmableSumProd(label, prod, early);
         }
     } else {
         displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        moreInfoOnError("In function _checkArgument:", "unexpected parameter", null, null);
+        runtime.infoUnexpectedParameter("In function _checkArgument:", label);
     }
 }
 

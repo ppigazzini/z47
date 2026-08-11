@@ -4,6 +4,13 @@
 // V3RectoToSph / V3RectoToCyl commands that convert a 3D rectangular vector to
 // spherical / cylindrical form. is_2D3D_Register_Ready is public (other units
 // call it); the V3Recto* commands are public too -> all three are exported.
+//
+// matrix.c keeps is_2D3D_Register_Ready outside the OPTION_VECTOR guard, so it
+// is compiled in every configuration. V3RectoToSph and V3RectoToCyl are inside
+// it and become `{;}` in the `#else` arm, which leaves the file-local
+// isStack3DReadyConvertIfNot with no caller -- upstream drops it there too.
+// defines.h #undef's OPTION_VECTOR in the block common to packages 1-4, so no
+// DM42 package converts: both commands return without touching the stack.
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_matrix_vector_helpers = @import("vector_helpers.zig");
@@ -118,6 +125,7 @@ fn isStack3DReadyConvertIfNot(mode: i16, constVector: u16) bool {
 }
 
 pub export fn V3RectoToSph(am: u16) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     if (runtime.getRegisterDataType(REGISTER_X) != dtReal34Matrix and isStack3DReadyConvertIfNot(_3DSPH, VECT_CR_zyx)) {
         fnConvertStkToMx(VECT_CR_zyx);
     } else {
@@ -137,6 +145,7 @@ pub export fn V3RectoToSph(am: u16) callconv(.c) void {
 }
 
 pub export fn V3RectoToCyl(am: u16) callconv(.c) void {
+    if (comptime !runtime.option_vector) return;
     if (runtime.getRegisterDataType(REGISTER_X) != dtReal34Matrix and isStack3DReadyConvertIfNot(_3DCYL, VECT_CR_zyx)) {
         fnConvertStkToMx(VECT_CR_zyx);
     } else {

@@ -50,11 +50,11 @@ pub export fn real_matrix_linear_eqn(a: *const real34Matrix_t, b: *const real34M
     const size: u16 = a.header.matrixColumns;
     const sz: usize = size;
     if (size != a.header.matrixRows) {
-        mismatch(a, r, "In function real_matrix_linear_eqn:", "not a square matrix");
+        mismatch(a, "In function real_matrix_linear_eqn:", "not a square matrix");
         return;
     }
     if (b.header.matrixRows != size or b.header.matrixColumns != 1) {
-        mismatch(a, r, "In function real_matrix_linear_eqn:", "not a column vector or size mismatch");
+        mismatch(b, "In function real_matrix_linear_eqn:", "not a column vector or size mismatch");
         return;
     }
     const aBlocks = sz * sz * REAL_SIZE_IN_BLOCKS_75 * 2;
@@ -105,11 +105,11 @@ pub export fn complex_matrix_linear_eqn(a: *const complex34Matrix_t, b: *const c
     const size: u16 = a.header.matrixColumns;
     const sz: usize = size;
     if (size != a.header.matrixRows) {
-        mismatchC(a, r, "In function complex_matrix_linear_eqn:", "not a square matrix");
+        mismatchC(a, "In function complex_matrix_linear_eqn:", "not a square matrix");
         return;
     }
     if (b.header.matrixRows != size or b.header.matrixColumns != 1) {
-        mismatchC(a, r, "In function complex_matrix_linear_eqn:", "not a column vector or size mismatch");
+        mismatchC(b, "In function complex_matrix_linear_eqn:", "not a column vector or size mismatch");
         return;
     }
     const aBlocks = sz * sz * REAL_SIZE_IN_BLOCKS_75 * 2;
@@ -177,26 +177,23 @@ fn ramFull(fnName: [*:0]const u8, tag: [*:0]const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) runtime.moreInfoOnError(fnName, tag, null, null);
 }
-fn mismatch(a: *const real34Matrix_t, r: *const real34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
-    _ = a;
+/// `m` is the operand that failed the test: the coefficient matrix for the
+/// square check, the right-hand side for the column-vector check. STD_CROSS is
+/// a C47 glyph pair.
+fn mismatch(m: *const real34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
-        // The dimensions reported are the right-hand side's, which is the one
-        // that failed the column-vector test. STD_CROSS is a C47 glyph pair.
-        const m = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, r.header.matrixRows, r.header.matrixColumns }) catch "mismatch";
-        runtime.moreInfoOnError(fnName, m, null, null);
+        const msg = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, m.header.matrixRows, m.header.matrixColumns }) catch "mismatch";
+        runtime.moreInfoOnError(fnName, msg, null, null);
     }
 }
-fn mismatchC(a: *const complex34Matrix_t, r: *const complex34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
-    _ = a;
+fn mismatchC(m: *const complex34Matrix_t, fnName: [*:0]const u8, what: []const u8) void {
     runtime.displayCalcErrorMessage(runtime.ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
     if (runtime.extra_info_on_calc_error) {
         var buf: [80]u8 = undefined;
-        // The dimensions reported are the right-hand side's, which is the one
-        // that failed the column-vector test. STD_CROSS is a C47 glyph pair.
-        const m = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, r.header.matrixRows, r.header.matrixColumns }) catch "mismatch";
-        runtime.moreInfoOnError(fnName, m, null, null);
+        const msg = runtime.bufPrintZ(&buf, "{s} ({d}\x80\xd7{d})", .{ what, m.header.matrixRows, m.header.matrixColumns }) catch "mismatch";
+        runtime.moreInfoOnError(fnName, msg, null, null);
     }
 }
 

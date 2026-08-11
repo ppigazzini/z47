@@ -42,7 +42,9 @@ fn reportRamFull(comptime info: [*:0]const u8) void {
 // In-place partial-pivoting LU of an interleaved-complex size*size matrix.
 // Exported so complex_LU_decomposition can reuse it; the upstream copy is a
 // file-local static, so the global Zig symbol does not clash with it.
-pub export fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *runtime.realContext_t) callconv(.c) bool {
+// `p` is the caller's pivot vector, one entry per column; a caller that does not
+// want the pivots passes NULL.
+pub export fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: ?[*]u16, real_context: *runtime.realContext_t) callconv(.c) bool {
     const n: usize = size;
     var max: real_t = undefined;
     var t: real_t = undefined;
@@ -61,7 +63,9 @@ pub export fn luCpxMat(tmp_mat: [*]real_t, size: u16, p: [*]u16, real_context: *
                 pvt = j;
             }
         }
-        p[k] = @intCast(pvt);
+        if (p) |pivots| {
+            pivots[k] = @intCast(pvt);
+        }
 
         if (pvt != k) {
             var i: usize = 0;

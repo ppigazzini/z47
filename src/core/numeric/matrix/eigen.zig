@@ -11,9 +11,14 @@ const const_1e_30 = consts.const_1e_30;
 const const_1e_34 = consts.const_1e_34;
 // Zig port of the eigenvalue/eigenvector engine of src/c47/mathematics/matrix.c
 // (the static numeric workers behind fnEigenvalues/fnEigenvectors/
-// fnMatrixSquareRoot). OPTION_EIGEN_159 is defined on every z47 build, so the
-// internal scratch runs at 159 decimal digits via BigReal(159) (the Zig
-// equivalent of upstream's REAL_T_PTR(name, 159) stack buffer).
+// fnMatrixSquareRoot). BigReal(n) is the Zig equivalent of upstream's
+// REAL_T_PTR(name, n) stack buffer; the 2x2/3x3 block solvers pick their
+// internal digit count from OPTION_EIGEN_159 (see eigen_block_digits).
+//
+// The whole engine, and the four commands it serves, sit inside matrix.c's
+// `#if defined(OPTION_EIGEN)`; the commands get empty bodies from the
+// `#if !defined(OPTION_EIGEN)` stub block above it. defines.h #undef's
+// OPTION_EIGEN on DM42 packages 1, 2 and 4.
 //
 // The workers are pub-exported so the file is fully analysed before the public
 // commands are wired (the upstream copies are file-static, so the global Zig
@@ -80,12 +85,21 @@ const exitKeyWaiting = abi.host.exitKeyWaiting;
 const checkHalfSec = abi.host.checkHalfSec;
 const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer;
 const timed: u8 = 0;
+const force: u8 = 1;
 const halfSec_clearZ: bool = true;
 const halfSec_clearT: bool = true;
 const halfSec_disp: bool = true;
+extern var ctxtReal4: realContext_t;
 extern var currentKeyCode: u8;
 extern var currentSolverNestingDepth: u16;
 extern var significantDigits: u8;
+
+// PC_BUILD: on for the host simulator and the testSuite, off on the firmware.
+const pc_build = @import("builtin").target.os.tag != .freestanding;
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
+// plotstat.h's double-width formatter, which renders the QR loop's tolerance
+// figure into the half-second progress line.
+extern fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemName: [*:0]const u8, success: *bool, actual_max_width: c_int, buf: [*]u8, digitswidthLimit: c_int) [*c]u8;
 
 inline fn realGetExponent(source: *align(1) const real_t) i32 {
     return source.digits + source.exponent - 1;
@@ -191,11 +205,17 @@ fn BigReal(comptime digits: u32) linksection(runtime.code_section) type {
     };
 }
 
+// Internal working precision of the 2x2 and 3x3 block solvers. matrix.c gives
+// each of them an `#if defined(OPTION_EIGEN_159)` / `#else` pair: 159 digits of
+// scratch plus a realPlus round-back through the caller's context with the
+// option, 75 digits written straight into the caller's outputs without it.
+// defines.h #undef's OPTION_EIGEN_159 in the block common to packages 1-4, so
+// package 3 -- the only DM42 package that keeps OPTION_EIGEN -- runs at 75.
+const eigen_block_digits: u32 = if (runtime.option_eigen_159) 159 else 75;
+
 // ===========================================================================
 // calculateEigenvalues22 -- eigenvalues of the bottom-right 2x2 sub-matrix of
-// the interleaved-complex real_t array `mat` (2 reals per element). Uses
-// 159-digit precision internally then rounds back into realContext, matching
-// upstream's OPTION_EIGEN_159 path.
+// the interleaved-complex real_t array `mat` (2 reals per element).
 // ===========================================================================
 pub export fn calculateEigenvalues22(
     mat: [*]align(1) const real_t,
@@ -208,14 +228,14 @@ pub export fn calculateEigenvalues22(
     realContext: *realContext_t,
 ) callconv(.c) void {
     var ctx159: realContext_t = runtime.ctxtReal75;
-    ctx159.digits = 159;
+    ctx159.digits = eigen_block_digits;
 
-    var trR_b = BigReal(159){};
-    var trI_b = BigReal(159){};
-    var detR_b = BigReal(159){};
-    var detI_b = BigReal(159){};
-    var discrR_b = BigReal(159){};
-    var discrI_b = BigReal(159){};
+    var trR_b = BigReal(eigen_block_digits){};
+    var trI_b = BigReal(eigen_block_digits){};
+    var detR_b = BigReal(eigen_block_digits){};
+    var detI_b = BigReal(eigen_block_digits){};
+    var discrR_b = BigReal(eigen_block_digits){};
+    var discrI_b = BigReal(eigen_block_digits){};
     const trR = trR_b.ptr();
     const trI = trI_b.ptr();
     const detR = detR_b.ptr();
@@ -260,23 +280,30 @@ pub export fn calculateEigenvalues22(
     realChangeSign(trI);
 
     blockMonitoring = true;
-    var t1rH_b = BigReal(159){};
-    var t1iH_b = BigReal(159){};
-    var t2rH_b = BigReal(159){};
-    var t2iH_b = BigReal(159){};
-    const t1rH = t1rH_b.ptr();
-    const t1iH = t1iH_b.ptr();
-    const t2rH = t2rH_b.ptr();
-    const t2iH = t2iH_b.ptr();
-    realSetZero(t1rH);
-    realSetZero(t1iH);
-    realSetZero(t2rH);
-    realSetZero(t2iH);
-    math_slvq.solveQuadraticEquation159(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1rH, t1iH, t2rH, t2iH, &ctx159);
-    realPlus(t1rH, t1r, realContext);
-    realPlus(t1iH, t1i, realContext);
-    realPlus(t2rH, t2r, realContext);
-    realPlus(t2iH, t2i, realContext);
+    if (runtime.option_eigen_159) {
+        var t1rH_b = BigReal(159){};
+        var t1iH_b = BigReal(159){};
+        var t2rH_b = BigReal(159){};
+        var t2iH_b = BigReal(159){};
+        const t1rH = t1rH_b.ptr();
+        const t1iH = t1iH_b.ptr();
+        const t2rH = t2rH_b.ptr();
+        const t2iH = t2iH_b.ptr();
+        realSetZero(t1rH);
+        realSetZero(t1iH);
+        realSetZero(t2rH);
+        realSetZero(t2iH);
+        math_slvq.solveQuadraticEquation159(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1rH, t1iH, t2rH, t2iH, &ctx159);
+        // Round the 159-digit roots back through the caller's context.
+        realPlus(t1rH, t1r, realContext);
+        realPlus(t1iH, t1i, realContext);
+        realPlus(t2rH, t2r, realContext);
+        realPlus(t2iH, t2i, realContext);
+    } else {
+        // No high-precision temporaries and no round-back: the 75-digit solver
+        // writes the caller's outputs directly.
+        math_slvq.solveQuadraticEquation(const_1(), const_0(), trR, trI, detR, detI, discrR, discrI, t1r, t1i, t2r, t2i, &ctx159);
+    }
     blockMonitoring = false;
 
     if (is_real_symmetric) {
@@ -495,8 +522,8 @@ pub export fn QR_decomposition_householder(
 
 // ===========================================================================
 // calculateEigenvalues33 -- closed-form eigenvalues of the bottom-right 3x3
-// sub-matrix via its characteristic cubic, solved at 159 digits by the
-// already-Zig-owned solveCubicEquation159 (math_slvc), then rounded back.
+// sub-matrix via its characteristic cubic (see eigen_block_digits for the
+// precision the configuration selects).
 // ===========================================================================
 pub export fn calculateEigenvalues33(
     mat: [*]align(1) const real_t,
@@ -511,28 +538,28 @@ pub export fn calculateEigenvalues33(
     realContext: *realContext_t,
 ) callconv(.c) void {
     var ctx159: realContext_t = runtime.ctxtReal75;
-    ctx159.digits = 159;
+    ctx159.digits = eigen_block_digits;
 
-    var aekr_b = BigReal(159){};
-    var aeki_b = BigReal(159){};
-    var bfgr_b = BigReal(159){};
-    var bfgi_b = BigReal(159){};
-    var cdhr_b = BigReal(159){};
-    var cdhi_b = BigReal(159){};
-    var cegr_b = BigReal(159){};
-    var cegi_b = BigReal(159){};
-    var bdkr_b = BigReal(159){};
-    var bdki_b = BigReal(159){};
-    var afhr_b = BigReal(159){};
-    var afhi_b = BigReal(159){};
-    var br_b = BigReal(159){};
-    var bi_b = BigReal(159){};
-    var cr_b = BigReal(159){};
-    var ci_b = BigReal(159){};
-    var dr_b = BigReal(159){};
-    var di_b = BigReal(159){};
-    var discrR_b = BigReal(159){};
-    var discrI_b = BigReal(159){};
+    var aekr_b = BigReal(eigen_block_digits){};
+    var aeki_b = BigReal(eigen_block_digits){};
+    var bfgr_b = BigReal(eigen_block_digits){};
+    var bfgi_b = BigReal(eigen_block_digits){};
+    var cdhr_b = BigReal(eigen_block_digits){};
+    var cdhi_b = BigReal(eigen_block_digits){};
+    var cegr_b = BigReal(eigen_block_digits){};
+    var cegi_b = BigReal(eigen_block_digits){};
+    var bdkr_b = BigReal(eigen_block_digits){};
+    var bdki_b = BigReal(eigen_block_digits){};
+    var afhr_b = BigReal(eigen_block_digits){};
+    var afhi_b = BigReal(eigen_block_digits){};
+    var br_b = BigReal(eigen_block_digits){};
+    var bi_b = BigReal(eigen_block_digits){};
+    var cr_b = BigReal(eigen_block_digits){};
+    var ci_b = BigReal(eigen_block_digits){};
+    var dr_b = BigReal(eigen_block_digits){};
+    var di_b = BigReal(eigen_block_digits){};
+    var discrR_b = BigReal(eigen_block_digits){};
+    var discrI_b = BigReal(eigen_block_digits){};
     const aekr = aekr_b.ptr();
     const aeki = aeki_b.ptr();
     const bfgr = bfgr_b.ptr();
@@ -636,33 +663,40 @@ pub export fn calculateEigenvalues33(
     realChangeSign(di);
 
     blockMonitoring = true;
-    var t1rH_b = BigReal(159){};
-    var t1iH_b = BigReal(159){};
-    var t2rH_b = BigReal(159){};
-    var t2iH_b = BigReal(159){};
-    var t3rH_b = BigReal(159){};
-    var t3iH_b = BigReal(159){};
-    const t1rH = t1rH_b.ptr();
-    const t1iH = t1iH_b.ptr();
-    const t2rH = t2rH_b.ptr();
-    const t2iH = t2iH_b.ptr();
-    const t3rH = t3rH_b.ptr();
-    const t3iH = t3iH_b.ptr();
-    realSetZero(t1rH);
-    realSetZero(t1iH);
-    realSetZero(t2rH);
-    realSetZero(t2iH);
-    realSetZero(t3rH);
-    realSetZero(t3iH);
+    if (runtime.option_eigen_159) {
+        var t1rH_b = BigReal(159){};
+        var t1iH_b = BigReal(159){};
+        var t2rH_b = BigReal(159){};
+        var t2iH_b = BigReal(159){};
+        var t3rH_b = BigReal(159){};
+        var t3iH_b = BigReal(159){};
+        const t1rH = t1rH_b.ptr();
+        const t1iH = t1iH_b.ptr();
+        const t2rH = t2rH_b.ptr();
+        const t2iH = t2iH_b.ptr();
+        const t3rH = t3rH_b.ptr();
+        const t3iH = t3iH_b.ptr();
+        realSetZero(t1rH);
+        realSetZero(t1iH);
+        realSetZero(t2rH);
+        realSetZero(t2iH);
+        realSetZero(t3rH);
+        realSetZero(t3iH);
 
-    math_slvc.solveCubicEquation159(br, bi, cr, ci, dr, di, discrR, discrI, t1rH, t1iH, t2rH, t2iH, t3rH, t3iH, &ctx159);
+        math_slvc.solveCubicEquation159(br, bi, cr, ci, dr, di, discrR, discrI, t1rH, t1iH, t2rH, t2iH, t3rH, t3iH, &ctx159);
 
-    realPlus(t1rH, t1r, realContext);
-    realPlus(t1iH, t1i, realContext);
-    realPlus(t2rH, t2r, realContext);
-    realPlus(t2iH, t2i, realContext);
-    realPlus(t3rH, t3r, realContext);
-    realPlus(t3iH, t3i, realContext);
+        // Round the 159-digit roots back through the caller's context.
+        realPlus(t1rH, t1r, realContext);
+        realPlus(t1iH, t1i, realContext);
+        realPlus(t2rH, t2r, realContext);
+        realPlus(t2iH, t2i, realContext);
+        realPlus(t3rH, t3r, realContext);
+        realPlus(t3iH, t3i, realContext);
+    } else {
+        // No high-precision temporaries and no round-back: the 75-digit solver
+        // writes the caller's outputs directly.
+        math_slvc.solveCubicEquation(br, bi, cr, ci, dr, di, discrR, discrI, t1r, t1i, t2r, t2i, t3r, t3i, &ctx159);
+    }
     blockMonitoring = false;
 
     if (is_real_symmetric) {
@@ -1072,11 +1106,11 @@ fn isProblematicMatrix(matrix: [*]align(1) const real_t, size: u16) linksection(
 // ===========================================================================
 // calculateEigenvalues -- the shifted QR-iteration driver. size 2/3 use the
 // closed-form solvers; size > 3 runs the Householder QR loop with deflation,
-// stagnation detection and final block solves. Upstream's half-second progress
-// text is omitted: this is the one package built with EIGEN and it has no flash
-// to spare for it. The checkHalfSec call it hangs off is kept, because that call
-// drains the GUI event queue on the host build, and without it a key press never
-// reaches currentKeyCode -- so the interrupt below could never fire.
+// stagnation detection and final block solves. The QR loop paints the
+// half-second progress line "<found>/<size> Tol: <indicator>/1E<-tol> Iter: ";
+// checkHalfSec is both its cadence and, on the host build, the call that drains
+// the GUI event queue, so without it a key press never reaches currentKeyCode
+// and the interrupt below could never fire.
 // ===========================================================================
 // SLVP feeds its companion matrix through here (upstream drops the `static` on
 // matrix.c's copy when OPTION_SLVP_POLY is on); slvp.zig shares this object, so the
@@ -1105,11 +1139,17 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
     var iteration: u16 = 0;
     var activeSize: u16 = size;
     var converged: bool = false;
+    // Progress metric for the user display only: the smallest subdiagonal
+    // magnitude left, recomputed at the end of every sweep.
+    var progress_indicator: real_t = undefined;
+    realSetZero(&progress_indicator);
 
     if (isProblematicMatrix(a, size)) {
         runtime.displayCalcErrorMessage(runtime.ERROR_OUT_OF_RANGE, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
         if (runtime.extra_info_on_calc_error) {
-            var buf: [96]u8 = undefined;
+            // 94 fixed characters, then up to the five digits of a uint16_t
+            // matrixIndex, then the terminator bufPrintZ reserves.
+            var buf: [100]u8 = undefined;
             const m = bufPrintZ(&buf, "Cannot execute: destination matrix is out of range, or the wrong type for the Householder QR: {d}", .{runtime.matrixIndex}) catch "QR out of range";
             runtime.moreInfoOnError("In function calculateEigenvalues:", m, null, null);
         }
@@ -1193,12 +1233,36 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
             iteration += 1;
 
             // checkHalfSec is not only the progress cadence: on the host build it
-            // drains the pending GUI events, which is how a key press reaches
+            // also drains the pending GUI events, which is how a key press reaches
             // currentKeyCode at all. exitKeyWaiting deliberately does not pump
             // them, so without this call the QR loop can never see the abort and
             // the window stays frozen for up to maxEigenIter sweeps.
-            _ = checkHalfSec();
+            if (checkHalfSec()) {
+                var c: realContext_t = ctxtReal4;
+
+                var outSubStr1: [32]u8 = undefined;
+                const eigenvalues_found: u16 = size - activeSize;
+                const found_text = bufPrintZ(&outSubStr1, "{d}/{d}", .{ eigenvalues_found, size }) catch "";
+
+                c.digits = 4;
+                var progress_indicator34: real34_t = undefined;
+                var boolNotUsed: bool = undefined;
+                // formatDoubleWidth writes the terminated text; the leading NUL
+                // is what it leaves behind if it renders nothing.
+                var outSubStr2: [32]u8 = undefined;
+                outSubStr2[0] = 0;
+                realPlus(&progress_indicator, &progress_indicator, &c);
+                runtime.realToReal34(&progress_indicator, &progress_indicator34);
+                _ = formatDoubleWidth(&progress_indicator34, 6, "", &boolNotUsed, 100, &outSubStr2, 80);
+
+                const tolerance_text: [*:0]const u8 = @ptrCast(&outSubStr2);
+
+                var outStr: [32 + 32 + 3 + 16 + 5]u8 = undefined; // 5 spare
+                const line = bufPrintZ(&outStr, "{s} Tol: {s}/1E{d} Iter: ", .{ found_text, tolerance_text, -(toleranceDigits - extraDigits) }) catch "Iter: ";
+                _ = progressHalfSecUpdate_Integer(timed, line, iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
+            }
             if (exitKeyWaiting()) {
+                _ = progressHalfSecUpdate_Integer(force + 1, "Interrupted Iter:", iteration, halfSec_clearZ, halfSec_clearT, halfSec_disp);
                 runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, runtime.REGISTER_T, runtime.REGISTER_X);
                 if (runtime.extra_info_on_calc_error) {
                     runtime.moreInfoOnError("In function calculateEigenvalues:", "Exit while calculating", null, null);
@@ -1353,6 +1417,21 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
                         } else {
                             realSetZero(&a[idx * 2 + 1]);
                         }
+                    }
+                }
+            }
+
+            // Progress metric for the user display: the smallest remaining
+            // subdiagonal magnitude, which is how much work is left.
+            realSetOne(&progress_indicator);
+            progress_indicator.exponent += 10;
+            {
+                var ii: usize = 1;
+                while (ii < activeSize) : (ii += 1) {
+                    var subdiag_mag: real_t = undefined;
+                    math_runtime_helpers.complexMagnitude(@alignCast(&eig[(ii * sz + (ii - 1)) * 2]), @alignCast(&eig[(ii * sz + (ii - 1)) * 2 + 1]), &subdiag_mag, realContext);
+                    if (math_comparison_reals.realCompareLessThan(&subdiag_mag, &progress_indicator)) {
+                        realCopy(&subdiag_mag, &progress_indicator);
                     }
                 }
             }
@@ -1515,6 +1594,9 @@ pub fn calculateEigenvalues(a: [*]align(1) real_t, q: [*]align(1) real_t, r: [*]
     if (currentSolverNestingDepth == 0) {
         runtime.clearSystemFlag(@intCast(FLAG_SOLVING));
     }
+    if (pc_build) {
+        _ = printf("End of EIGEN, %d iterations\n", @as(c_int, iteration));
+    }
 }
 
 // ===========================================================================
@@ -1620,6 +1702,10 @@ fn complexEigenvalues(matrix: *const complex34Matrix_t, res: *complex34Matrix_t)
 // ===========================================================================
 pub export fn fnEigenvalues(unusedParamButMandatory: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedParamButMandatory;
+    // Empty body upstream under `#if !defined(OPTION_EIGEN)`: EIGVAL returns
+    // without touching the stack and raises no error on the packages that drop
+    // the option.
+    if (comptime !runtime.option_eigen) return;
     var doneAdjusting = false;
     const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
     if (dt == runtime.dtReal34Matrix) {
@@ -2234,6 +2320,10 @@ fn createEigenVectorIf1x1(rows: u16, cols: u16, isComplex: bool) linksection(run
 // ===========================================================================
 pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedParamButMandatory;
+    // Empty body upstream under `#if !defined(OPTION_EIGEN)`: EIGVEC returns
+    // without touching the stack and raises no error on the packages that drop
+    // the option.
+    if (comptime !runtime.option_eigen) return;
     const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
     if (dt == runtime.dtReal34Matrix) {
         var x: real34Matrix_t = undefined;
@@ -2257,6 +2347,10 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
                 ires.header.matrixRows = 0;
                 ires.header.matrixColumns = 0;
                 ires.matrixElements = null;
+                // realEigenvectors leaves res untouched when its bulk
+                // allocation fails, so the NULL that reports "no result" has to
+                // be in place before the call.
+                res.matrixElements = null;
                 realEigenvectors(&x, &res, &ires);
                 if (res.matrixElements != null) {
                     // Success: lift the stack removed upstream; install the result.
@@ -2310,6 +2404,10 @@ pub export fn fnEigenvectors(unusedParamButMandatory: u16) linksection(runtime.c
             255 => return,
             else => {
                 var res: complex34Matrix_t = undefined;
+                // complexEigenvectors leaves res untouched when its bulk
+                // allocation fails, so the NULL that reports "no result" has to
+                // be in place before the call.
+                res.matrixElements = null;
                 complexEigenvectors(&x, &res);
                 if (res.matrixElements != null) {
                     // Success: lift the stack removed upstream; install the result.
@@ -2699,6 +2797,11 @@ fn sqrtNoConverge() linksection(runtime.code_section) void {
 // ===========================================================================
 pub export fn fnMatrixSquareRoot(unusedParamButMandatory: u16) linksection(runtime.code_section) callconv(.c) void {
     _ = unusedParamButMandatory;
+    // Empty body upstream under `#if !defined(OPTION_EIGEN)`: MSQRT returns
+    // without saving LastX and raises no error on the packages that drop the
+    // option. squareRoot.c's fnSquareRoot is the one that refuses the operand
+    // there, in its own #else arm, before it would reach this call.
+    if (comptime !runtime.option_eigen) return;
     if (!runtime.saveLastX()) return;
 
     const dt = runtime.getRegisterDataType(runtime.REGISTER_X);
