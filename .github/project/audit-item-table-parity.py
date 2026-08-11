@@ -111,9 +111,6 @@ KNOWN_FUNC_MAP = {
     # An items.c macro that resolves to itemToBeCoded whenever USECURVES is #undef
     # (true on every z47 target), which the mirror binds directly.
     "conditionalPCURVE": "&itemToBeCoded",
-    # z47 binds the underlying fnDumpMenus; the C row uses the fnDumpMenusWrapper
-    # indirection. Same dump entry -- see the deferred fnmenudump-stale-port note.
-    "fnDumpMenusWrapper": "ext_fnDumpMenus",
 }
 
 
