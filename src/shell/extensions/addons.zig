@@ -812,8 +812,10 @@ extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strncmp(a: [*c]const u8, b: [*c]const u8, n: usize) c_int;
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
-extern fn strtof(s: [*c]const u8, end: ?*[*c]u8) f32;
 extern fn abs(v: c_int) c_int;
+// PC_BUILD console telltales: printf plus the errorf/fflush pair (defines.h).
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
+extern fn fflush(stream: ?*anyopaque) c_int;
 
 // ===========================================================================
 // real34 / real arithmetic = decQuad/decNumber (libdecnumber).
@@ -849,6 +851,7 @@ inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void 
 inline fn realToString(r: *const real_t, str: [*c]u8) void {
     _ = decNumberToString(r, str);
 }
+extern fn printRealToConsole(value: *const real_t, before: [*:0]const u8, after: [*:0]const u8) void;
 inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
     _ = decNumberDivide(res, a, b, ctx);
 }
@@ -987,6 +990,24 @@ inline fn maxI(a: i32, b: i32) i32 {
     return if (a > b) a else b;
 }
 
+// defines.h errorf(a): a yellow "error:" line carrying the message, then the
+// emitting function, file and line in cyan. The escape sequences are
+// COLOR_YELLOW / COLOR_DEFAULT / COLOR_CYAN verbatim, and the location comes
+// from the call site's own `@src()`, which is what __FUNCTION__ / __FILE__ /
+// __LINE__ expand to. Written through printf and flushed with fflush(NULL)
+// rather than through `stderr`: `stderr` is not a plain linkable symbol on
+// every host target, and flushing every stream keeps the line in order with
+// the printf telltales around it.
+inline fn errorf(message: [*:0]const u8, src: std.builtin.SourceLocation) void {
+    _ = printf(
+        "\x1b[1;33merror:%s \x1b[0m \x1b[1;36m(%s %s:%d)\x1b[0m\n",
+        message,
+        src.fn_name.ptr,
+        src.file.ptr,
+        @as(c_int, @intCast(src.line)),
+    );
+}
+
 // register data accessors (REGISTER_*_DATA macros)
 const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
@@ -1079,8 +1100,18 @@ fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     tmpStringLabelOrVariableName[stringLength] = 0;
 }
 
-// !SAVE_SPACE_DM42_22_EDIT1
-pub export fn _fractionToString(regist: calcRegister_t, displayString: [*c]u8, lessEqualGreater: *i16) callconv(.c) void {
+// Both this and _shortIntegerToString sit inside the OPTION_EDIT_X block, so the
+// packages that strip it (dmcp_build and old_hw, the reduced fnEdit) emit no code
+// for them: the two call sites are already comptime-dead there, and the C symbol
+// is published only where upstream compiles the definition.
+comptime {
+    if (!save_space_edit) {
+        @export(&_fractionToString, .{ .name = "_fractionToString", .linkage = .strong });
+        @export(&_shortIntegerToString, .{ .name = "_shortIntegerToString", .linkage = .strong });
+    }
+}
+
+fn _fractionToString(regist: calcRegister_t, displayString: [*c]u8, lessEqualGreater: *i16) callconv(.c) void {
     var sign: i16 = undefined;
     var intPart: u64 = undefined;
     var numer: u64 = undefined;
@@ -1095,7 +1126,7 @@ pub export fn _fractionToString(regist: calcRegister_t, displayString: [*c]u8, l
     }
 }
 
-pub export fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
+fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv(.c) void {
     var i: i16 = undefined;
     var j: i16 = undefined;
     var k: i16 = undefined;
@@ -1826,7 +1857,12 @@ fn editPemNonLiteral(func_in: i16, opParam_in: u8, opParam2_in: u8, opParam3: u8
             } else if (((paramMode == PARAM_REGISTER) or (paramMode == PARAM_COMPARE) or tam.indirect) and (regNumber > LAST_GLOBAL_REGISTER)) {
                 tam.dot = true;
                 tam.digitsSoFar = @as(i16, maxDigits) - 1;
-                tam.value = @intCast((regNumber - FIRST_LOCAL_REGISTER) / 10);
+                // Both C operands are integer-promoted to int, so a regNumber
+                // between LAST_GLOBAL_REGISTER and FIRST_LOCAL_REGISTER (an
+                // opParam above LAST_SPARE_REGISTERS_IN_KS_CODE, which regKStoC
+                // leaves alone) yields a negative quotient that truncates into
+                // the int16 field. Compute in i32 and truncate the same way.
+                tam.value = @truncate(@divTrunc(@as(i32, regNumber) - @as(i32, FIRST_LOCAL_REGISTER), 10));
             } else if (((paramMode == PARAM_REGISTER) or (paramMode == PARAM_FLAG) or (paramMode == PARAM_COMPARE) or tam.indirect) and opParam >= REGISTER_X) {
                 tam.digitsSoFar = 0;
                 tam.value = 0;
@@ -2171,6 +2207,11 @@ fn fnFrom_msRegisterImpl(regist: i16) void {
         if (tmpString100_OUT[0] != 0) {
             reallocateRegister(regist, dtReal34, 0, amNone);
             stringToReal34(&tmpString100_OUT, reg34(regist));
+            if (comptime extra_info) {
+                if (comptime !dmcp_build) {
+                    _ = printf("\n ------- 003 >>>%s<<<\n", @as([*:0]const u8, @ptrCast(&tmpString100_OUT)));
+                }
+            }
         }
     }
 }
@@ -2834,6 +2875,9 @@ pub export fn fnJM_2SI(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     if (calcMode == CM_NIM) {
         if (((nimNumberPart == NP_INT_BASE and aimBuffer[strlen(aimBuffer) - 1] == '#') or (nimNumberPart == NP_INT_10 and lastIntegerBase > 0))) {
+            if (comptime !dmcp_build) {
+                _ = printf("Do not react when in NIM SI\n");
+            }
             return;
         }
     }
@@ -3234,7 +3278,10 @@ pub export fn convert_to_double(regist: calcRegister_t) callconv(.c) f64 {
         },
     }
     realToString(&tmpy, tmpString);
-    y = @floatCast(strtof(tmpString, null));
+    // (float)stringToDouble(...): parsed at double precision by the locale-free
+    // reader that accepts '.' or ',' as the radix, then narrowed to float and
+    // widened back for the double return.
+    y = @as(f32, @floatCast(frontier_register_value_conversions.stringToDouble(tmpString)));
     return y;
 }
 
@@ -3621,6 +3668,11 @@ pub export fn getSmallestDenom(val: *const real_t) callconv(.c) i32 {
             realCopy(const_10p9__1, &xx);
         }
         if (realIsSpecial(&xx) != 0) {
+            if (comptime !dmcp_build) {
+                errorf("Representation failure. Quitting fraction loop.", @src());
+                printRealToConsole(&xx, "xx:", "\n");
+                _ = fflush(null);
+            }
             dd = 1;
             return finishDenom(&m, dd);
         }
@@ -3813,7 +3865,14 @@ pub export fn checkForAndChange(displayString: [*c]u8, valueReal: *const real_t,
         changeToSub(@intCast(smallestDenom), &denomStr); // "/12"
     }
 
-    if ((resultingIntStr[@intCast(stringByteLength(&resultingIntStr) - 1)] == ' ' or resultingIntStr[@intCast(maxI(0, stringByteLength(&resultingIntStr) - 1))] == 0) and denomStr[0] == '/' and cStr[0] == 0) {
+    // Both operands index the last byte, clamped at 0. resultingIntStr is empty
+    // whenever the constant arm copies an empty wholePart (value == constant /
+    // denominator, e.g. pi/2 under FLAG_IRFRAC), and the disjunction is then true
+    // through its second operand, `resultingIntStr[0] == 0`, whatever the first
+    // one reads -- so clamping the first index changes nothing but the one-byte
+    // read below the array that an unclamped -1 would make.
+    const lastByte: usize = @intCast(maxI(0, stringByteLength(&resultingIntStr) - 1));
+    if ((resultingIntStr[lastByte] == ' ' or resultingIntStr[lastByte] == 0) and denomStr[0] == '/' and cStr[0] == 0) {
         abi.fmtBufZ(&tmpstr, STD_SUP_1 ++ "{s}", .{std.mem.sliceTo(denomStr[0..], 0)});
         _ = strcpy(&denomStr, &tmpstr);
     }

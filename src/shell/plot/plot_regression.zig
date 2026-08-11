@@ -20,7 +20,10 @@ fn initContext(plot_mode: u16) sel.Context {
 }
 
 fn finalize(ctx: sel.Context) void {
-    plotSelection = if (ctx.selection >= sel.SELECTION_OVERFLOW_LIMIT) 0 else ctx.selection;
+    // The >= 1024 clamp belongs to the NXT / REV / LR walks and applyCommand
+    // applies it there; PLOT_START, PLOT_NOTHING and an unknown command leave
+    // plotSelection exactly as they found it.
+    plotSelection = ctx.selection;
     if (ctx.command == .orthof) {
         lrChosen = ctx.chosen;
     }

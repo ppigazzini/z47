@@ -19,7 +19,8 @@ const std = @import("std");
 //
 // PUB EXPORT VARS (file-scope C globals defined in graphs.c):
 //   invalid_intg, invalid_diff, invalid_rms (bool_t), x_min, x_max, y_min, y_max
-//   (f32), PLOT_ZMY (i8). The two function-local statics become module-level
+//   (`real_t *const`, matching graphs.c's REAL_T_PTR(name, 34)), PLOT_ZMY (i8).
+//   The two function-local statics become module-level
 //   private vars: gt_outstr (graph_text's `static char outstr[bufLen]`) and
 //   gpm_prev_y_unclipped (graph_plotmem's `static int16_t prev_y_unclipped`).
 //
@@ -42,11 +43,12 @@ const std = @import("std");
 //     in graph_plotmem are LIVE (kept).
 //   * MONITOR_CLRSCR / STATDEBUG / STATDEBUG_VERBOSE are undef'd -> all those
 //     printf diagnostic blocks are DEAD and omitted.
-//   * EXTRA_INFO_ON_CALC_ERROR==1 only on host & not testsuite/dmcp: the
-//     graph_plotmem "no summation data" extra-info sprintf+moreInfoOnError is
-//     host-only (gated on extra_info && !dmcp_build), matching the sibling owners.
-//   * The else-branch `#if defined(PC_BUILD) printf("Not plotted...")` debug is
-//     host-only and reduced (it only prints diagnostics) -> omitted as pure debug.
+//   * EXTRA_INFO_ON_CALC_ERROR==1 only on host & not testsuite/dmcp: both of
+//     graph_plotmem's extra-info sprintf+moreInfoOnError hints ("no plottable
+//     sample in the plot range" and "There is no statistical data available!")
+//     are host-only (gated on extra_info && !dmcp_build), matching the siblings.
+//   * PC_BUILD alone (no STATDEBUG) guards graph_plotmem's else-branch
+//     "Not plotted:" console telltale, so it is live on every host build.
 //
 // graphs.c is partly reachable indirectly; verification is build/link across
 // every target plus the boundary gates.
@@ -306,6 +308,7 @@ extern fn __gmpz_clear(op: *mpz_struct) void; // longIntegerFree
 extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
 // libc
+extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
@@ -669,7 +672,8 @@ pub export fn fnComplexPlot(mode: u16) callconv(.c) void {
     } else if (mode == ITM_IMPLOT) {
         flipSystemFlag(FLAG_IMPLOT);
     }
-    frontier_radio_button_catalog.fnRefreshState();
+    // No fnRefreshState() here: CPXPLT and IMPLT go straight to the plot, unlike
+    // the sibling toggles fnScale / fnPx / fnPy / fnPlotReset / fnPMzoom.
     fnEqSolvGraph(EQ_PLOT_LU);
     if (lastErrorCode == ERROR_NONE) { // same guard as fnPlotf
         fnPlotSQ(0);
@@ -903,6 +907,20 @@ fn plotrms(xn: i16, yn: i16) void {
     }
 }
 
+// snprintf(tmpString, bufLen, ...): the composed string is hard-truncated to
+// bufLen-1 bytes plus the terminator before smallE/convertDigits expand it into
+// the bufLen-byte outstr, and convertDigits doubles most bytes. abi.fmtBufZ
+// refuses an over-long result instead of truncating it, so the truncation is
+// done here, on a staging buffer wide enough for any tick label formatCore can
+// return.
+fn fmtTmpStringCapped(comptime fmt: []const u8, args: anytype) void {
+    var stage: [256]u8 = undefined;
+    const s = std.fmt.bufPrint(&stage, fmt, args) catch unreachable;
+    const n = @min(s.len, bufLen - 1);
+    @memcpy(tmpString[0..n], s[0..n]);
+    tmpString[n] = 0;
+}
+
 // ===========================================================================
 // showGraphTickText1 (static)
 // ===========================================================================
@@ -913,13 +931,13 @@ fn showGraphTickText1(tick_int_x_: f64, tick_int_y_: f64, xoff: i32, yoff1: i32,
     // A tick interval of 0 means it underflowed double beyond 1e+-308, so no
     // ticks are drawn and there is nothing to label.
     if (tick_int_y_ > 0) {
-        abi.fmtBufZ(tmpString[0..2560], "  y {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
+        fmtTmpStringCapped("  y {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_y_), @intCast(acc), false, &tmpBuf, 50)))});
         frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
         _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff1), vmNormal, 1, 1);
     }
 
     if (tick_int_x_ > 0) {
-        abi.fmtBufZ(tmpString[0..2560], "  x {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
+        fmtTmpStringCapped("  x {s:>8}/tick  ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&buff, frontier_plotstat.formatCore(@as(f64, tick_int_x_), @intCast(acc), false, &tmpBuf, 50)))});
         frontier_char_string.convertDigits(frontier_plotstat.smallE(&buff, tmpString), &outstr);
         _ = frontier_screen.showString(&outstr, &standardFont, @intCast(xoff), @bitCast(yoff2), vmNormal, 1, 1);
     }
@@ -970,7 +988,7 @@ pub export fn graph_text() linksection(code_section) callconv(.c) void {
             abi.fmtBufZ(tmpString[0..bufLen], "  x-axis y 0", .{});
         },
         3 => {
-            abi.fmtBufZ(tmpString[0..2560], "  axis 0{s}0 ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&tmpbuf, "."))});
+            fmtTmpStringCapped("  axis 0{s}0 ", .{@as([*:0]const u8, frontier_plotstat.radixProcess(&tmpbuf, "."))});
         },
         else => {},
     }
@@ -1235,7 +1253,6 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
     var yN0: i16 = 0;
     var yN1: i16 = 0;
     var x: f32 = undefined;
-    var y: f32 = undefined;
     var xr: real_t = undefined; // real_t mirror of the sample x for the decimal range/mapping
     var yr: real_t = undefined;
     var sx: f32 = undefined;
@@ -1505,6 +1522,12 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             // so there is nothing to draw.
             calcMode = CM_NORMAL;
             frontier_error.displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                if (comptime !dmcp_build) {
+                    abi.fmtBufZ(errorMessage[0..512], "no plottable sample in the plot range", .{});
+                    moreInfoOnError("In function graph_plotmem:", errorMessage, null, null);
+                }
+            }
             return;
         }
 
@@ -1548,7 +1571,6 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
         while (ix < statnum) : (ix += 1) {
             if (plotmode != _VECT) {
                 x = 0;
-                y = 0;
 
                 if (ix != 0 and ((getSystemFlag(FLAG_PDIFF) and !invalid_diff) or (getSystemFlag(FLAG_PINTG) and !invalid_intg) or (getSystemFlag(FLAG_PRMS) and !invalid_rms))) {
                     ddx = frontier_plotstat.grf_x(@intCast(ix)) - frontier_plotstat.grf_x(@intCast(ix - 1));
@@ -1573,14 +1595,12 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                 }
 
                 x = frontier_plotstat.grf_x(@intCast(ix)); // float x stays for the overlay maths above
-                y = frontier_plotstat.grf_y(@intCast(ix));
                 frontier_plotstat.grf_x_r(@intCast(ix), &xr); // xr = grf_x(ix)
                 frontier_plotstat.grf_y_r(@intCast(ix), &yr); // yr = grf_y(ix)
             } else { // _VECT
                 sx = sx + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_x(@intCast(ix)) else frontier_plotstat.grf_y(@intCast(ix)));
                 sy = sy + (if (!getSystemFlag(FLAG_NVECT)) frontier_plotstat.grf_y(@intCast(ix)) else frontier_plotstat.grf_x(@intCast(ix)));
                 x = sx;
-                y = sy;
                 convertDoubleToReal(@as(f64, sx), &xr, &ctxtReal39);
                 convertDoubleToReal(@as(f64, sy), &yr, &ctxtReal39);
             }
@@ -1726,8 +1746,34 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                         frontier_plotstat.plotline2(xo, yo, xn, yn);
                     }
                 }
+            } else if (comptime !dmcp_build) {
+                // Console telltale for a rejected sample. Guarded only by
+                // PC_BUILD upstream, so it runs on every host build.
+                _ = printf("             Not plotted: ");
+                if (!(xN1 < SCREEN_WIDTH_GRAPH)) {
+                    _ = printf("NOT xN1 < SCREEN_WIDTH_GRAPH; ");
+                }
+                if (!(xN1 >= minN_x)) {
+                    _ = printf("NOT xN1 >= minN_x; ");
+                }
+                if (!(yN1 < SCREEN_HEIGHT_GRAPH)) {
+                    _ = printf("NOT yN1<SCREEN_HEIGHT_GRAPH");
+                }
+                if (!(yN1 >= minN_y)) {
+                    _ = printf("NOT yN1>=minN_y; ");
+                }
+                _ = printf(
+                    " : xN1=%d<SCREEN_WIDTH_GRAPH=%d && xN1=%d>=minN_x=%d && yN1=%d<SCREEN_HEIGHT_GRAPH=%d && yN1=%d>=minN_y=%d\n",
+                    @as(c_int, xN1),
+                    @as(c_int, SCREEN_WIDTH_GRAPH),
+                    @as(c_int, xN1),
+                    @as(c_int, minN_x),
+                    @as(c_int, yN1),
+                    @as(c_int, SCREEN_HEIGHT_GRAPH),
+                    @as(c_int, yN1),
+                    @as(c_int, minN_y),
+                );
             }
-            // else branch is PC_BUILD-only diagnostic printf -> omitted.
 
             if (frontier_addons.exitKeyWaiting() != 0) {
                 return;
@@ -1793,8 +1839,8 @@ pub export fn fnStatList() callconv(.c) void {
             ixx = statnum - ix - 1 + ListXYposition;
             var tmpBuf: [150]u8 = undefined;
 
-            abi.fmtBufZ(&tmpstr1, "[{d:>3}] x{s:>4}{s:>14}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, ""), @as([*:0]const u8, formatStatValue(@as(f64, frontier_plotstat.grf_x(@intCast(ixx))), &tmpBuf)) });
-            abi.fmtBufZ(&tmpstr2, "y{s:>4}{s:>14}, ", .{ @as([*:0]const u8, ""), @as([*:0]const u8, formatStatValue(@as(f64, frontier_plotstat.grf_y(@intCast(ixx))), &tmpBuf)) });
+            abi.fmtBufZ(&tmpstr1, "[{d:>3}] x{s:>4}{s:>14}, ", .{ @as(c_int, ixx + 1), @as([*:0]const u8, ""), precision32(formatStatValue(@as(f64, frontier_plotstat.grf_x(@intCast(ixx))), &tmpBuf)) });
+            abi.fmtBufZ(&tmpstr2, "y{s:>4}{s:>14}, ", .{ @as([*:0]const u8, ""), precision32(formatStatValue(@as(f64, frontier_plotstat.grf_y(@intCast(ixx))), &tmpBuf)) });
             _ = strcat(&tmpstr1, &tmpstr2);
 
             frontier_graph_text.print_numberstr(&tmpstr1, false);
@@ -1804,4 +1850,11 @@ pub export fn fnStatList() callconv(.c) void {
 // min(a,b) macro for i16 operands (fnStatList).
 inline fn minI(a: i16, b: i16) i16 {
     return if (a < b) a else b;
+}
+
+// The precision half of fnStatList's "%14.32s": at most 32 bytes of the value
+// reach the line, and the min-width 14 comes from the format spec.
+inline fn precision32(s: [*:0]const u8) []const u8 {
+    const span = std.mem.span(s);
+    return span[0..@min(span.len, 32)];
 }
