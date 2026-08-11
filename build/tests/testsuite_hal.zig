@@ -130,6 +130,14 @@ pub export fn lcd_buffer_pixel_on(x: u32, y: u32) callconv(.c) u8 {
     const bit_j: u3 = @intCast(bitIndex & 7);
     return (lcd_buffer[52 * y + 2 + byte_i] >> bit_j) & 1;
 }
+// The test HAL touches no filesystem, so every directory is treated as already
+// present. softmenus.c's menu dump is the caller that makes hal/io.h:93's
+// create_dir a symbol this lane has to publish.
+pub export fn create_dir(dir: [*c]u8) callconv(.c) c_int {
+    _ = dir;
+    return 0;
+}
+
 pub export fn _lcdRefresh() callconv(.c) void {}
 pub export fn _lcdSBRefresh() callconv(.c) void {}
 pub export fn _lcdBandRefresh(y: u32, dy: u32) callconv(.c) void {
