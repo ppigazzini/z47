@@ -7,6 +7,7 @@
 // once rather than in each of them.
 
 const abi = @import("abi");
+const runtime = @import("solve_runtime.zig");
 const consts = abi.constants;
 
 const real_t = abi.Real;
@@ -15,8 +16,7 @@ const real34_t = abi.Real34;
 inline fn const34_0() *align(1) const real34_t {
     return consts.q16200();
 }
-const calcRegister_t = i16;
-const font_t = opaque {};
+const calcRegister_t = runtime.calcRegister_t;
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
@@ -37,34 +37,14 @@ const STD_op_j = "\xa1\x49";
 /// force_refresh's "force" mode (screen.h).
 const force: u8 = 1;
 
-extern var displayFormat: u8;
-extern var displayFormatDigits: u8;
-extern var tmpString: [*c]u8;
-extern const standardFont: font_t;
-
-extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBottom: bool) void;
-extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: c_int, showLeadingCols: bool, showEndingCols: bool) u32;
-extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, displayString: [*c]u8, font: *const font_t, maxWidth: i16, displayHasNDigits: i16, limitExponent: bool, frontSpace: bool, limitIrfrac: c_int) void;
-extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, displayString: [*c]u8, strLg: i32, maxWidth: i16, maxExp: i16, allowLargeLI: bool) void;
-extern fn convertLongIntegerToLongIntegerRegister(op: *const abi.Mpz, destination: calcRegister_t) void;
-extern fn force_refresh(mode: u8) void;
-extern fn getSystemFlag(sf: c_int) bool;
-extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
-extern fn real34CompareGreaterThan(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
-extern fn real34CompareGreaterEqual(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
-extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
-extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
-extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
-extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
-
 /// decNumber sign bit, in the high byte of the decimal128 encoding.
 const REAL34_SIGN_BIT: u8 = 0x80;
 
 inline fn real34IsSpecial(v: *align(1) const real34_t) bool {
-    return decQuadIsNaN(v) != 0 or decQuadIsSignaling(v) != 0 or decQuadIsInfinite(v) != 0;
+    return runtime.decQuadIsNaN(v) != 0 or runtime.decQuadIsSignaling(v) != 0 or runtime.decQuadIsInfinite(v) != 0;
 }
 inline fn real34IsZero(v: *align(1) const real34_t) bool {
-    return decQuadIsZero(v) != 0;
+    return runtime.decQuadIsZero(v) != 0;
 }
 inline fn real34IsNegative(v: *align(1) const real34_t) bool {
     return (v.bytes[15] & REAL34_SIGN_BIT) != 0;
@@ -73,22 +53,22 @@ inline fn real34IsNegative(v: *align(1) const real34_t) bool {
 /// The digit count the panel renders with: everything the format allows, but no
 /// more than the 33 a stack line can hold.
 fn beginPanel() u8 {
-    const saved = displayFormatDigits;
-    clearRegisterLine(REGISTER_Z, true, true);
-    clearRegisterLine(REGISTER_Y, true, true);
-    clearRegisterLine(REGISTER_X, true, true);
-    displayFormatDigits = if (displayFormat == DF_ALL) 0 else 33;
+    const saved = runtime.displayFormatDigits;
+    runtime.clearRegisterLine(REGISTER_Z, true, true);
+    runtime.clearRegisterLine(REGISTER_Y, true, true);
+    runtime.clearRegisterLine(REGISTER_X, true, true);
+    runtime.displayFormatDigits = if (runtime.displayFormat == DF_ALL) 0 else 33;
     return saved;
 }
 
 fn endPanel(saved: u8) void {
-    displayFormatDigits = saved;
-    force_refresh(force);
+    runtime.displayFormatDigits = saved;
+    runtime.force_refresh(force);
 }
 
 fn showValueAt(value: *align(1) const real34_t, y: u32) void {
-    real34ToDisplayString(value, amNone, tmpString, &standardFont, 9999, 34, false, true, 0);
-    _ = showString(tmpString, &standardFont, 1, y, vmNormal, true, true);
+    runtime.real34ToDisplayString(value, amNone, runtime.tmpString, &runtime.standardFont, 9999, 34, false, true, 0);
+    _ = runtime.showString(runtime.tmpString, &runtime.standardFont, 1, y, vmNormal, true, true);
 }
 
 fn signMark(v: *align(1) const real34_t) [*c]const u8 {
@@ -104,7 +84,7 @@ pub fn showSolverBracket(a_in: *align(1) const real34_t, b_in: *align(1) const r
     var b = b_in;
     var fa = fa_in;
     var fb = fb_in;
-    if (real34CompareGreaterThan(a, b)) {
+    if (runtime.real34CompareGreaterThan(a, b)) {
         const t = a;
         a = b;
         b = t;
@@ -115,10 +95,10 @@ pub fn showSolverBracket(a_in: *align(1) const real34_t, b_in: *align(1) const r
 
     const saved = beginPanel();
     showValueAt(a, Y_POSITION_OF_REGISTER_Y_LINE + 6);
-    _ = showString(signMark(fa), &standardFont, SCREEN_WIDTH - 10, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
+    _ = runtime.showString(signMark(fa), &runtime.standardFont, SCREEN_WIDTH - 10, Y_POSITION_OF_REGISTER_Y_LINE + 6, vmNormal, true, true);
     showValueAt(b, Y_POSITION_OF_REGISTER_X_LINE + 6);
-    _ = showString(signMark(fb), &standardFont, SCREEN_WIDTH - 10, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-    displayFormatDigits = saved;
+    _ = runtime.showString(signMark(fb), &runtime.standardFont, SCREEN_WIDTH - 10, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+    runtime.displayFormatDigits = saved;
     lcdRefreshOnFirmware();
 }
 
@@ -142,7 +122,7 @@ pub fn showIntegralPartial(partial: *align(1) const real34_t, span: *align(1) co
     const saved = beginPanel();
     showValueAt(partial, Y_POSITION_OF_REGISTER_X_LINE + 6);
     showValueAt(span, Y_POSITION_OF_REGISTER_Y_LINE + 6);
-    displayFormatDigits = saved;
+    runtime.displayFormatDigits = saved;
     lcdRefreshOnFirmware();
 }
 
@@ -150,9 +130,9 @@ pub fn showIntegralPartial(partial: *align(1) const real34_t, span: *align(1) co
 /// because only a register can be rendered as a long integer.
 pub fn showLongIntegerPartial(a: *const abi.Mpz) void {
     const saved = beginPanel();
-    convertLongIntegerToLongIntegerRegister(a, TEMP_REGISTER_1);
-    longIntegerRegisterToDisplayString(TEMP_REGISTER_1, tmpString, TMP_STR_LENGTH, 400, 400, false); // allow LARGELI
-    _ = showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+    runtime.convertLongIntegerToLongIntegerRegister(a, TEMP_REGISTER_1);
+    runtime.longIntegerRegisterToDisplayString(TEMP_REGISTER_1, runtime.tmpString, TMP_STR_LENGTH, 400, 400, false); // allow LARGELI
+    _ = runtime.showString(runtime.tmpString, &runtime.standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
     endPanel(saved);
 }
 
@@ -166,11 +146,11 @@ pub fn showRealPartial(a: *align(1) const real34_t, ai: *align(1) const real34_t
         showValueAt(a, Y_POSITION_OF_REGISTER_Y_LINE + 6);
         // A numeric comparison, not a sign-bit read: -0 takes the "+" branch and
         // a NaN takes the blank one.
-        const sign_text: [*c]const u8 = if (real34CompareGreaterEqual(ai, const34_0())) "+" else " ";
-        const x = showString(sign_text, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
-        real34ToDisplayString(ai, amNone, tmpString, &standardFont, 9999, 34, false, true, 0);
-        _ = strcat(tmpString, if (getSystemFlag(FLAG_CPXj)) STD_op_j else STD_op_i);
-        _ = showString(tmpString, &standardFont, x, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+        const sign_text: [*c]const u8 = if (runtime.real34CompareGreaterEqual(ai, const34_0())) "+" else " ";
+        const x = runtime.showString(sign_text, &runtime.standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
+        runtime.real34ToDisplayString(ai, amNone, runtime.tmpString, &runtime.standardFont, 9999, 34, false, true, 0);
+        _ = runtime.strcat(runtime.tmpString, if (runtime.getSystemFlag(FLAG_CPXj)) STD_op_j else STD_op_i);
+        _ = runtime.showString(runtime.tmpString, &runtime.standardFont, x, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, true, true);
     }
     endPanel(saved);
 }

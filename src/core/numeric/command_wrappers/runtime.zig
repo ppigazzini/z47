@@ -349,6 +349,11 @@ pub extern fn complex_QR_decomposition(matrix: *const complex34Matrix_t, q: *com
 pub extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
 pub extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 
+/// The Taylor progress/abort surface (c47.c): set while a long Taylor series is
+/// running so the half-second tick may paint its iteration count, cleared when it
+/// finishes.
+pub extern var explicitTaylorIterVisibilitySelection: bool;
+
 // Heap for the working reals that upstream's REAL_T_ALLOC(name, 75) block takes
 // off the frame (wp34s.c's SinCosTanTaylor). Bound at ?*real_t rather than
 // ?*anyopaque because C's void* converts to any object pointer, which keeps the
@@ -793,6 +798,9 @@ pub extern fn decNumberCompare(result: *real_t, lhs: *align(1) const real_t, rhs
 pub extern fn decNumberFromString(result: *real_t, source: [*:0]const u8, real_context: *realContext_t) *real_t;
 pub extern fn decNumberPlus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
 pub extern fn decNumberMinus(result: *real_t, rhs: *const real_t, real_context: *realContext_t) *real_t;
+/// The IEEE 754 remainder, whose sign follows the dividend -- not decNumberDivide's
+/// quotient. sinc reduces its argument with it before the pi-multiple test.
+pub extern fn decNumberRemainder(result: *real_t, lhs: *align(1) const real_t, rhs: *align(1) const real_t, real_context: *realContext_t) *real_t;
 
 /// realType.h:157 -- `decNumberMinus(res, operand, ctxt)`, an ARITHMETIC negation
 /// (0 - x under the context's rules). NOT the same as realChangeSign, which is a
@@ -1090,6 +1098,10 @@ pub const font_t = opaque {};
 pub extern const standardFont: font_t;
 pub extern const numericFont: font_t;
 pub extern var tmpString: [*c]u8;
+/// The error line the display reads back, written by the callers of
+/// displayCalcErrorMessage that have something more specific to say than the
+/// error code alone.
+pub extern var errorMessage: [*c]u8;
 pub extern var roundingMode: u8;
 pub extern const roundingModeTable: [7]rounding_t;
 pub extern fn fnSwapXY(unused_but_mandatory_parameter: u16) void;

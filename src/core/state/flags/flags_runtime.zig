@@ -170,6 +170,28 @@ pub extern fn popSoftmenu() void;
 pub extern fn setConfirmationMode(handler: ConfirmationHandler) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
 
+// The two global message buffers the EXTRA_INFO_ON_CALC_ERROR diagnostics format
+// into, and the C formatter one of them still needs: the bug-screen sentence
+// takes its format string from a commonBugScreenMessages row at run time, and
+// abi.fmtCStr wants that format comptime.
+pub extern var errorMessage: [*c]u8;
+pub extern var tmpString: [*c]u8;
+extern fn sprintf(buffer: [*c]u8, format: [*c]const u8, ...) c_int;
+
+/// Fills errorMessage from a commonBugScreenMessages row, whose four conversions
+/// are `%s %s %hd %hu` in that order. The row is the format string, so the C
+/// formatter does the work; the short conversions take their arguments already
+/// promoted, as a variadic call passes them.
+pub fn formatNotDefinedBugScreen(
+    format: [*c]const u8,
+    who: [*:0]const u8,
+    what: [*:0]const u8,
+    value: c_int,
+    limit: c_int,
+) void {
+    _ = sprintf(errorMessage, format, who, what, value, limit);
+}
+
 // No harness fork here. The parity lane used to build this owner with
 // `use_fake_harness_surface`, which swapped these four bodies for counting stubs
 // -- so the lane compared an oracle against a build of the owner that skipped

@@ -4,13 +4,12 @@ const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
 const build_options = @import("math_command_wrappers_build_options");
 const runtime = @import("../command_wrappers/runtime.zig");
 
-// The Taylor progress/abort surface, declared here rather than imported from the
-// wp34s owner: that owner reaches command_wrappers.zig, which reaches this file.
-extern var explicitTaylorIterVisibilitySelection: bool;
+// The Taylor progress/abort surface comes from the runtime seam rather than from
+// the wp34s owner that also uses it: that owner reaches command_wrappers.zig,
+// which reaches this file.
 const checkHalfSec = abi.host.checkHalfSec; // routed through the host-callback boundary
 const exitKeyWaiting = abi.host.exitKeyWaiting;
 const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer;
-extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: runtime.calcRegister_t, err_register_line: runtime.calcRegister_t) void;
 const ERROR_SOLVER_ABORT: u8 = 60;
 const REGISTER_T: runtime.calcRegister_t = 103;
 const NIM_REGISTER_LINE: runtime.calcRegister_t = 100; // REGISTER_X
@@ -158,7 +157,7 @@ fn doTaylorIterations(
             end_sin = (!do_epsilon and runtime.realIsZero(epsilon_or_compare)) or (do_epsilon and runtime.realCompareLessThan(z, epsilon_or_compare));
         }
 
-        if (explicitTaylorIterVisibilitySelection and checkHalfSec()) {
+        if (runtime.explicitTaylorIterVisibilitySelection and checkHalfSec()) {
             var ss: [100]u8 = undefined;
             abi.fmtBufZ(&ss, "Taylor Iter: {d}/{d}; Dig: {d}/", .{ iteration, taylor_iteration_max, -@as(i16, @truncate(t_exp)) });
             ss[40] = 0; // hard limit to what the screen shows
@@ -168,7 +167,7 @@ fn doTaylorIterations(
         if (comptime is_dmcp_build) {
             if (exitKeyWaiting()) {
                 _ = progressHalfSecUpdate_Integer(halfSec_force + 1, "Interrupted Iter:", @intCast(iteration), halfSec_clearZ, halfSec_clearT, halfSec_disp);
-                displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
+                runtime.displayCalcErrorMessage(ERROR_SOLVER_ABORT, REGISTER_T, NIM_REGISTER_LINE);
                 break;
             }
         }
@@ -183,7 +182,7 @@ fn doTaylorIterations(
     runtime.realMultiply(sin_value, angle, sin_value, real_context);
     // One Taylor run consumes the request: whoever wants the iteration counter
     // shown next time has to ask again.
-    explicitTaylorIterVisibilitySelection = false;
+    runtime.explicitTaylorIterVisibilitySelection = false;
 }
 
 fn sinCosTanTaylorTemp75(

@@ -32,9 +32,12 @@ else
 
 pub const bool_t = bool;
 pub const calcRegister_t = i16;
-// decimal128 register value; fnMvarPlot only needs its address for the quiet
-// range read, so treat the 16 bytes opaquely.
-pub const real34_t = extern struct { bytes: [16]u8 };
+// decimal128 register value. The shared abi spelling, not a private 16-byte
+// struct, so the progress panel can hand the register values it reads straight
+// to the display entry points below.
+pub const real34_t = abi.Real34;
+/// The display's opaque font handle (fonts.h): owners only ever take its address.
+pub const font_t = opaque {};
 pub const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 pub const LAST_LABEL: u16 = 6999;
 pub const REGISTER_X: calcRegister_t = 100;
@@ -123,6 +126,30 @@ pub inline fn labelToProgram(label: u16) u16 {
 // only prints it; the text is formatted into a caller-local buffer here so the
 // scratch is left alone.
 pub extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
+
+// The display surface the solver, the integrator and the sum/product engines
+// paint their live value panel with (progress_panel.zig). displayFormatDigits is
+// saved and restored around each panel, so the panel's own 34-digit reading does
+// not outlive it.
+pub extern var displayFormat: u8;
+pub extern var displayFormatDigits: u8;
+pub extern var tmpString: [*c]u8;
+pub extern const standardFont: font_t;
+pub extern fn clearRegisterLine(regist: calcRegister_t, clear_top: bool, clear_bottom: bool) void;
+pub extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, video_mode: c_int, show_leading_cols: bool, show_ending_cols: bool) u32;
+pub extern fn real34ToDisplayString(real34: *align(1) const real34_t, tag: u32, display_string: [*c]u8, font: *const font_t, max_width: i16, display_has_n_digits: i16, limit_exponent: bool, front_space: bool, limit_irfrac: c_int) void;
+pub extern fn longIntegerRegisterToDisplayString(regist: calcRegister_t, display_string: [*c]u8, str_lg: i32, max_width: i16, max_exp: i16, allow_large_li: bool) void;
+pub extern fn convertLongIntegerToLongIntegerRegister(op: *const abi.Mpz, destination: calcRegister_t) void;
+pub extern fn force_refresh(mode: u8) void;
+pub extern fn getSystemFlag(sf: c_int) bool;
+pub extern fn strcat(dest: [*c]u8, src: [*c]const u8) [*c]u8;
+pub extern fn real34CompareGreaterThan(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
+pub extern fn real34CompareGreaterEqual(x: *align(1) const real34_t, y: *align(1) const real34_t) bool;
+// decQuad predicates return decNumber's 0/nonzero, not a bool.
+pub extern fn decQuadIsNaN(v: *align(1) const real34_t) u32;
+pub extern fn decQuadIsSignaling(v: *align(1) const real34_t) u32;
+pub extern fn decQuadIsInfinite(v: *align(1) const real34_t) u32;
+pub extern fn decQuadIsZero(v: *align(1) const real34_t) u32;
 
 pub fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
     const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);

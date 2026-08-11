@@ -8,12 +8,6 @@
 const runtime = @import("../command_wrappers/runtime.zig");
 const abi = @import("abi");
 const math_real_predicates = @import("../compare/real_predicates.zig");
-// The one complex LU worker, reached by its exported name rather than by
-// @import: complex_core sits above this owner in the module graph and importing
-// it closes a 38-file cycle through the command-wrapper dispatcher. The pivot
-// vector is declared nullable, as the worker's own definition takes it, so the
-// null this function only forwards keeps its meaning.
-extern fn luCpxMat(tmp_mat: [*]runtime.real_t, size: u16, p: ?[*]u16, real_context: *runtime.realContext_t) bool;
 
 const real_t = runtime.real_t;
 const complex34_t = runtime.complex34_t;
@@ -70,7 +64,7 @@ pub export fn complex_LU_decomposition(matrix: *const complex34Matrix_t, lu: *co
                 runtime.real34ToReal(&lu_elems[idx].imag, &tmp_mat[idx * 2 + 1]);
             }
 
-            if (luCpxMat(tmp_mat, n, p, &runtime.ctxtReal39)) {
+            if (runtime.luCpxMat(tmp_mat, n, p, &runtime.ctxtReal39)) {
                 idx = 0;
                 while (idx < nn) : (idx += 1) {
                     runtime.realToReal34(&tmp_mat[idx * 2], &lu_elems[idx].real);
