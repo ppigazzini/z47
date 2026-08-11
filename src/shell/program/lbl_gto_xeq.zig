@@ -480,8 +480,12 @@ pub export fn fnGoto(label: u16) callconv(.c) void {
                             firstLabel = lbl;
                             labelFound = true;
                         }
-                        const labelLocalStepNumber: i32 = (-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1;
-                        if (labelLocalStepNumber > @as(i32, currentLocalStepNumber)) {
+                        // C holds this in a uint16_t, so the step difference is
+                        // reduced mod 65536 before the comparison and both sides
+                        // of the test are 16-bit. Widening either one picks a
+                        // different duplicate label past step 65535.
+                        const labelLocalStepNumber: u16 = @truncate(@as(u32, @bitCast((-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1)));
+                        if (labelLocalStepNumber > currentLocalStepNumber) {
                             nextLabel = lbl; // First label occurence after the current program step
                             break;
                         }
@@ -492,7 +496,9 @@ pub export fn fnGoto(label: u16) callconv(.c) void {
             if (labelFound) { // If a local label found in the program
                 lbl = if (nextLabel != 0) nextLabel else firstLabel; // Will goto the first found label label after current program step or the first found label in teh program
                 if (programRunStop == PGM_RUNNING) {
-                    currentLocalStepNumber = @intCast((-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1);
+                    // Same narrowing as the search above: the assignment to a
+                    // uint16_t truncates in C.
+                    currentLocalStepNumber = @truncate(@as(u32, @bitCast((-labelList[lbl].step) - programList[currentProgramNumber - 1].step + 1)));
                     currentStep = labelList[lbl].labelPointer - 1;
                 } else {
                     goToGlobalStep(@intCast(-labelList[lbl].step));

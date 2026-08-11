@@ -770,7 +770,11 @@ pub extern fn __gmpz_mul_ui(result: *mpz_struct, lhs: *const mpz_struct, rhs: c_
 pub extern fn __gmpz_gcd(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_lcm(result: *mpz_struct, lhs: *const mpz_struct, rhs: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_qr(quotient: *mpz_struct, remainder: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
+pub extern fn __gmpz_tdiv_q(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_tdiv_r(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
+// Euclidean remainder: the sign follows the divisor, so the result stays in
+// [0, |divisor|). longIntegerModulo is this, not __gmpz_tdiv_r.
+pub extern fn __gmpz_mod(result: *mpz_struct, dividend: *const mpz_struct, divisor: *const mpz_struct) void;
 pub extern fn __gmpz_fdiv_q_ui(result: *mpz_struct, op: *const mpz_struct, divisor: c_ulong) c_ulong;
 pub extern fn __gmpz_rootrem(root: *mpz_struct, rem: *mpz_struct, op: *const mpz_struct, n: c_ulong) void;
 

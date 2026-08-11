@@ -12,7 +12,7 @@ const builtin = @import("builtin");
 
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 const build_options = @import("program_serialization_build_options");
-const state_old_hw = @hasDecl(build_options, "state_old_hw") and build_options.state_old_hw;
+const state_old_hw: bool = build_options.state_old_hw;
 
 const REGISTER_X: i16 = 100;
 const REGISTER_Z: i16 = 102;

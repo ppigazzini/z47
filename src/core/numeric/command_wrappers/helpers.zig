@@ -534,7 +534,14 @@ pub export fn z47_math_wrappers_fact_long_integer() linksection(runtime.code_sec
     runtime.__gmpz_clear(&x[0]);
 }
 
-// uint64 factorial kernel with C unsigned wraparound semantics.
+// uint64 factorial kernel with C unsigned wraparound semantics. The only
+// implementation of n! in the port: the sole caller screens value > 20 first, so
+// the wraparound is unreachable in practice, but `+%`/`*%` keep it modulo 2^64
+// the way fact_uint64's uint64_t arithmetic is rather than trapping.
+//
+// Multiplies the terms pairwise -- an accumulated multiplier m that starts at n
+// and grows by the remaining count each round -- which is an exact integer
+// rewrite of 1*2*...*n with half the multiplies.
 fn factorialUInt64(value_in: u64) linksection(runtime.code_section) u64 {
     var value = value_in;
 
