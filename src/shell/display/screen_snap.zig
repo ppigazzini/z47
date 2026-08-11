@@ -136,6 +136,21 @@ const version_str2_bytes = frontier_build_options.version_str2;
 pub export const versionStr: [version_str_bytes.len + 1:0]u8 = nullTerm(version_str_bytes);
 pub export const versionStr2: [version_str2_bytes.len + 1:0]u8 = nullTerm(version_str2_bytes);
 
+// versionDateStr closes versionStr2's trailing ", dd ". __DATE__ pads a
+// single-digit day to two columns; the single-digit arm shifts every later
+// column one place left so one space separates day from month and from year,
+// and the '.' lands one place early with the spare byte left NUL. The twelve
+// bytes plus the sentinel are the thirteen __DATE__ derives.
+fn versionDate(comptime d: []const u8) [12:0]u8 {
+    const padded = d[4] == ' ';
+    return .{
+        d[0],                       d[1],                        d[2],                       ' ',
+        if (padded) d[5] else d[4], if (padded) ' ' else d[5],   if (padded) d[7] else ' ',  if (padded) d[8] else d[7],
+        if (padded) d[9] else d[8], if (padded) d[10] else d[9], if (padded) '.' else d[10], if (padded) 0 else '.',
+    };
+}
+pub export const versionDateStr: [12:0]u8 = versionDate(frontier_build_options.compile_date);
+
 // ---------------------------------------------------------------------------
 // Globals / runtime / libc externs
 // ---------------------------------------------------------------------------
@@ -544,7 +559,13 @@ pub export fn copyStackRegistersToClipboard() callconv(.c) void {
     gtk_clipboard_set_text(clipboard, &clipboardString, -1);
 }
 
-// StatSumNames[NUMBER_OF_STATISTICAL_SUMS]: fixed-width 14-glyph-column labels.
+// StatSumNames[NUMBER_OF_STATISTICAL_SUMS]: fixed-width 14-glyph-column labels,
+// one per SUM_* index, so SRnn is labelled with the name of the sum it prints.
+// screen.c's copy of this table has no row for SUM_X2lnY (14) and so holds 27
+// labels for 28 sums: it names SR14..SR26 after the following sum and strcpy()s
+// the absent 28th pointer for SR27. The missing row is restored here -- a
+// deliberate divergence, because the C reads one past its own initialiser list.
+// The 28 rows and their order match summationRegisterName in the print owner.
 const StatSumNames = [_][]const u8{
     "n             ",
     STD_SIGMA ++ "(x)          ",
@@ -560,6 +581,7 @@ const StatSumNames = [_][]const u8{
     STD_SIGMA ++ "(ln(y))      ",
     STD_SIGMA ++ "(ln" ++ STD_SUP_2 ++ "(y))     ",
     STD_SIGMA ++ "(x ln(y))    ",
+    STD_SIGMA ++ "(x" ++ STD_SUP_2 ++ "ln(y))    ",
     STD_SIGMA ++ "(ln(y)/x)    ",
     STD_SIGMA ++ "(x" ++ STD_SUP_2 ++ "/y)       ",
     STD_SIGMA ++ "(1/x)        ",
@@ -574,6 +596,10 @@ const StatSumNames = [_][]const u8{
     "y min         ",
     "y max         ",
 };
+
+comptime {
+    std.debug.assert(StatSumNames.len == NUMBER_OF_STATISTICAL_SUMS);
+}
 
 pub export fn copyAllRegistersToClipboard() callconv(.c) void {
     if (comptime dmcp_build) return;

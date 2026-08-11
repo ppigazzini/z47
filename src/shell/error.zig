@@ -6,9 +6,9 @@ const consts = abi.constants;
 // is called by essentially every owner — it sets lastErrorCode (which the
 // testSuite asserts, e.g. arccos(String) -> Error24), errorMessageRegisterLine
 // and screenUpdatingMode. displayDomainErrorMessage, fnRaiseError, fnErrorMessage,
-// the bug-screen renderer (displayBugScreen) and the two big string tables
-// (errorMessages, commonBugScreenMessages — imported by other C files as
-// `extern const char [N][SIZE]`) live here too.
+// the bug-screen renderer (displayBugScreen), the packed error-message pool
+// behind errorMessageOf and the commonBugScreenMessages table (imported by other
+// C files as `extern const char [N][SIZE]`) live here too.
 //
 // Faithful, line-by-line port. The IR_PRINTING branch of displayCalcErrorMessage
 // is omitted (IR_PRINTING is never defined for any z47 build). moreInfoOnError is
@@ -58,7 +58,6 @@ const angularMode_t = c_int;
 // Constants / enum values (defines.h / typeDefinitions.h)
 // ---------------------------------------------------------------------------
 const NUMBER_OF_ERROR_CODES: u8 = 129; // defines.h: 129 (not 127); error 128 = ERROR_TI_UNDO_FAILED. The bounds check below rejected codes 127/128 when this was 127.
-const SIZE_OF_EACH_ERROR_MESSAGE: usize = 45;
 const NUMBER_OF_BUG_SCREEN_MESSAGES: usize = 10;
 const SIZE_OF_EACH_BUG_SCREEN_MESSAGE: usize = 100;
 
@@ -177,11 +176,6 @@ fn bugRow(comptime s: []const u8) [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8 {
     @memcpy(row[0..s.len], s);
     return row;
 }
-fn errRow(comptime s: []const u8) [SIZE_OF_EACH_ERROR_MESSAGE]u8 {
-    var row = std.mem.zeroes([SIZE_OF_EACH_ERROR_MESSAGE]u8);
-    @memcpy(row[0..s.len], s);
-    return row;
-}
 
 // STD_* macro byte sequences (src/c47/fonts.h).
 const STD_INFINITY = "\xa2\x1e";
@@ -203,145 +197,173 @@ pub export const commonBugScreenMessages linksection(code_section) = [NUMBER_OF_
     bugRow(""),
 };
 
-pub export const errorMessages linksection(code_section) = [NUMBER_OF_ERROR_CODES][SIZE_OF_EACH_ERROR_MESSAGE]u8{
-    errRow("No error"),
-    errRow("An argument exceeds the function domain"),
-    errRow("Bad time or date input"),
-    errRow("Undefined op-code"),
-    errRow("Overflow at +" ++ STD_INFINITY),
-    errRow("Overflow at -" ++ STD_INFINITY),
-    errRow("No such label found"),
-    errRow("No such function"),
-    errRow("Out of range"),
-    errRow("Illegal digit in integer input for this base"),
-    errRow("Input is too long"),
-    errRow("RAM is full"),
-    errRow("Stack clash"),
-    errRow("Operation is undefined in this mode"),
-    errRow("Word size is too small"),
-    errRow("Too few data points for this statistic"),
-    errRow("Distribution parameter out of valid range"),
-    errRow("I/O error"),
-    errRow("Invalid or corrupted data"),
-    errRow("Flash memory is write protected"),
-    errRow("No root found"),
-    errRow("Matrix mismatch"),
-    errRow("Singular matrix"),
-    errRow("Flash memory is full"),
-    errRow("Invalid input data type for this operation"),
-    errRow("No MVAR found in selected program"),
-    errRow("Please enter a NEW name"),
-    errRow("Cannot delete a predefined item"),
-    errRow("No statistic data present"),
-    errRow("Item to be coded"),
-    errRow("Function to be coded for that data type"),
-    errRow("Input data types do not match"),
-    errRow("This system flag is write protected"),
-    errRow("Output would exceed 508 characters"),
-    errRow("This does not work with an empty string"),
-    errRow("No backup data found"),
-    errRow("Undefined source variable"),
-    errRow("This variable is write protected"),
-    errRow("No matrix indexed"),
-    errRow("Not enough memory for such a matrix"),
-    errRow("No errors for selected model"),
-    errRow("Large " ++ STD_DELTA ++ " and opposite signs, may be a pole"),
-    errRow("Solver reached local extremum, no root"),
-    errRow(STD_GREATER_EQUAL ++ "1 initial guess lies out of the domain"),
-    errRow("The function values seem constant"),
-    errRow("Syntax error in this equation"),
-    errRow("This equation formula is too complex"),
-    errRow("This item cannot be assigned here"),
-    errRow("Invalid name"),
-    errRow("Too many variables"),
-    errRow("Non-programmable command, please remove"),
-    errRow("No global label in this program"),
-    errRow("Invalid input data type for polar/rect mode"),
-    errRow("Bad input"),
-    errRow("No program specified"),
-    errRow("Cannot write file "),
-    errRow("Function has changed, please replace"),
-    errRow("Variable required, please select variable"),
-    errRow("HEX/DEC/OCT/BIN not usable with iCPX"),
-    errRow("Undefined menu name"),
-    errRow("Operation aborted"),
-    errRow("Reserved variable name"),
-    errRow("Invalid register type/angle"),
-    errRow("Printing Is Disabled"),
-    errRow("No string in alpha register"), // 64  ERROR_NO_STRING_IN_ALPHA_REGISTER (42S alpha ops)
-    errRow("No equation defined"), // 65  ERROR_NO_EQUATION_DEFINED
-    errRow("Nesting too deep"), // 66  ERROR_NESTING_TOO_DEEP
-    errRow(""), // 67
-    errRow(""), // 68
-    errRow(""), // 69
-    errRow(""), // 70
-    errRow(""), // 71
-    errRow(""), // 72
-    errRow(""), // 73
-    errRow(""), // 74
-    errRow(""), // 75
-    errRow(""), // 76
-    errRow(""), // 77
-    errRow(""), // 78
-    errRow(""), // 79
-    errRow(""), // 80
-    errRow(""), // 81
-    errRow(""), // 82
-    errRow(""), // 83
-    errRow(""), // 84
-    errRow(""), // 85
-    errRow(""), // 86
-    errRow(""), // 87
-    errRow(""), // 88
-    errRow(""), // 89
-    errRow(""), // 90
-    errRow(""), // 91
-    errRow(""), // 92
-    errRow(""), // 93
-    errRow(""), // 94
-    errRow(""), // 95
-    errRow(""), // 96
-    errRow(""), // 97
-    errRow(""), // 98
-    errRow(""), // 99
-    errRow(" Loading state file ..."),
-    errRow(" Saving state file ..."),
-    errRow(" Loading stats ..."),
-    errRow(" Solving for real/complex root ..."),
-    errRow(" Calculating graph coordinates ..."),
-    errRow(" Re-calculating sums ... "),
-    errRow(" Solving for real root ..."),
-    errRow("Backup restored"),
-    errRow("State file loaded"),
-    errRow("Programs and equations loaded"),
-    errRow("appended"),
-    errRow("Global and local registers loaded"),
-    errRow("(w/ local flags)"),
-    errRow("System settings loaded"),
-    errRow("Statistical data loaded"),
-    errRow("User variables loaded"),
-    errRow("Program file loaded"),
-    errRow("All global user flags cleared"),
-    errRow("All data, programs and definitions cleared"),
-    errRow("All user menus cleared"),
-    errRow("All user variables cleared"),
-    errRow("All user programs deleted"),
-    errRow("All user menus deleted"),
-    errRow("All user variables deleted"),
-    errRow("Data file loaded"),
-    errRow("Data file saved"),
-    errRow("Not available on the simulator"),
-    errRow("Only available on the simulator"),
-    errRow("Undo failed: likely no memory"),
+// The error and status messages, one per error code. They are not stored as
+// fixed-width rows: errorMessagePool below packs them back to back, so a short
+// message costs its own length and not the width of the longest one.
+const errorMessageTexts = [NUMBER_OF_ERROR_CODES][]const u8{
+    "No error",
+    "An argument exceeds the function domain",
+    "Bad time or date input",
+    "Undefined op-code",
+    "Overflow at +" ++ STD_INFINITY,
+    "Overflow at -" ++ STD_INFINITY,
+    "No such label found",
+    "No such function",
+    "Out of range",
+    "Illegal digit in integer input for this base",
+    "Input is too long",
+    "RAM is full",
+    "Stack clash",
+    "Operation is undefined in this mode",
+    "Word size is too small",
+    "Too few data points for this statistic",
+    "Distribution parameter out of valid range",
+    "I/O error",
+    "Invalid or corrupted data",
+    "Flash memory is write protected",
+    "No root found",
+    "Matrix mismatch",
+    "Singular matrix",
+    "Flash memory is full",
+    "Invalid input data type for this operation",
+    "No MVAR found in selected program",
+    "Please enter a NEW name",
+    "Cannot delete a predefined item",
+    "No statistic data present",
+    "Item to be coded",
+    "Function to be coded for that data type",
+    "Input data types do not match",
+    "This system flag is write protected",
+    "Output would exceed 508 characters",
+    "This does not work with an empty string",
+    "No backup data found",
+    "Undefined source variable",
+    "This variable is write protected",
+    "No matrix indexed",
+    "Not enough memory for such a matrix",
+    "No errors for selected model",
+    "Large " ++ STD_DELTA ++ " and opposite signs, may be a pole",
+    "Solver reached local extremum, no root",
+    STD_GREATER_EQUAL ++ "1 initial guess lies out of the domain",
+    "The function values seem constant",
+    "Syntax error in this equation",
+    "This equation formula is too complex",
+    "This item cannot be assigned here",
+    "Invalid name",
+    "Too many variables",
+    "Non-programmable command, please remove",
+    "No global label in this program",
+    "Invalid input data type for polar/rect mode",
+    "Bad input",
+    "No program specified",
+    "Cannot write file ",
+    "Function has changed, please replace",
+    "Variable required, please select variable",
+    "HEX/DEC/OCT/BIN not usable with iCPX",
+    "Undefined menu name",
+    "Operation aborted",
+    "Reserved variable name",
+    "Invalid register type/angle",
+    "Printing Is Disabled",
+    "No string in alpha register", // 64  ERROR_NO_STRING_IN_ALPHA_REGISTER (42S alpha ops)
+    "No equation defined", // 65  ERROR_NO_EQUATION_DEFINED
+    "Nesting too deep", // 66  ERROR_NESTING_TOO_DEEP
+    "", // 67
+    "", // 68
+    "", // 69
+    "", // 70
+    "", // 71
+    "", // 72
+    "", // 73
+    "", // 74
+    "", // 75
+    "", // 76
+    "", // 77
+    "", // 78
+    "", // 79
+    "", // 80
+    "", // 81
+    "", // 82
+    "", // 83
+    "", // 84
+    "", // 85
+    "", // 86
+    "", // 87
+    "", // 88
+    "", // 89
+    "", // 90
+    "", // 91
+    "", // 92
+    "", // 93
+    "", // 94
+    "", // 95
+    "", // 96
+    "", // 97
+    "", // 98
+    "", // 99
+    " Loading state file ...",
+    " Saving state file ...",
+    " Loading stats ...",
+    " Solving for real/complex root ...",
+    " Calculating graph coordinates ...",
+    " Re-calculating sums ... ",
+    " Solving for real root ...",
+    "Backup restored",
+    "State file loaded",
+    "Programs and equations loaded",
+    "appended",
+    "Global and local registers loaded",
+    "(w/ local flags)",
+    "System settings loaded",
+    "Statistical data loaded",
+    "User variables loaded",
+    "Program file loaded",
+    "All global user flags cleared",
+    "All data, programs and definitions cleared",
+    "All user menus cleared",
+    "All user variables cleared",
+    "All user programs deleted",
+    "All user menus deleted",
+    "All user variables deleted",
+    "Data file loaded",
+    "Data file saved",
+    "Not available on the simulator",
+    "Only available on the simulator",
+    "Undo failed: likely no memory",
 };
 
-// Upstream (error.c) packed the fixed-width errorMessages[][] table into a static
-// pool reached through this accessor, dropping the global array symbol. z47 keeps
-// the 2D array as its owned storage (still consumed by the stats/screen owners) and
-// exposes the same public accessor over it, so callers get one message pointer per
-// error/status code exactly as the C does.
+// Every message, NUL terminator included, laid end to end in one blob with no
+// padding between them, plus a per-code byte offset into it. The pool and the
+// offsets are file-local: errorMessageOf is the only way to reach a message.
+const errorMessagePoolSize = blk: {
+    var size: usize = 0;
+    for (errorMessageTexts) |text| size += text.len + 1;
+    break :blk size;
+};
+
+const errorMessagePool linksection(code_section) = blk: {
+    var pool: [errorMessagePoolSize]u8 = undefined;
+    var at: usize = 0;
+    for (errorMessageTexts) |text| {
+        @memcpy(pool[at..][0..text.len], text);
+        pool[at + text.len] = 0;
+        at += text.len + 1;
+    }
+    break :blk pool;
+};
+
+const errorMessageOffset linksection(code_section) = blk: {
+    var offsets: [NUMBER_OF_ERROR_CODES]u16 = undefined;
+    var at: u16 = 0;
+    for (errorMessageTexts, 0..) |text, code| {
+        offsets[code] = at;
+        at += @intCast(text.len + 1);
+    }
+    break :blk offsets;
+};
+
 pub export fn errorMessageOf(errorCode: u8) linksection(code_section) callconv(.c) [*c]const u8 {
-    return &errorMessages[errorCode][0];
+    return @ptrCast(&errorMessagePool[errorMessageOffset[errorCode]]);
 }
 
 // ---------------------------------------------------------------------------

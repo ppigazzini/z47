@@ -106,6 +106,9 @@ extern fn fnDumpMenusAll(param: u16, path: ?[*:0]const u8) void;
 // c47.c global. The menu dumps run before the GTK main loop is entered, so they
 // set it to keep the owners that pump or draw off a loop that does not exist.
 extern var headlessMode: bool;
+// c47.c global. Read by fnSNAP, which then captures the screen as it stands
+// instead of forcing the repaint that would destroy a graphic screen.
+extern var snapSkipRefresh: bool;
 extern fn refreshScreen(source: u16) void;
 extern fn installCoreHostHooks() void;
 extern fn refreshFn(timerType: u16) void;
@@ -205,6 +208,7 @@ fn printHelp() void {
     _ = printf("%s47 --dumpMenus2 [path]   : output all static menus to drive; new file name format 'RIBBONS.1.bmp';           default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --dumpMenusAll [path] : RefDB47 superset: every static menu incl. 1stDeriv/2ndDeriv/Sf/Solver/Grapher/SHOW; new file name format; default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
+    _ = printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
     _ = printf("%s47 --help           : list all SIM switches\n", cc);
     _ = printf("%s47 --h              : see --help\n", cc);
 }
@@ -376,6 +380,10 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         if (argEql(argv[arg], "--writeexportall")) {
             _ = printf("Activated: %s\n", argv[arg]);
             writeExportAll = true;
+        }
+        if (argEql(argv[arg], "--snapskiprefresh")) {
+            snapSkipRefresh = true;
+            _ = printf("Activated: --snapskiprefresh\n");
         }
         if (argEql(argv[arg], "--mockup")) {
             _ = printf("Activated: %s\n", argv[arg]);

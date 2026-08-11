@@ -226,11 +226,13 @@ pub fn addBuildOptions(
     // the ASAN lane builds "testSuite-asan" and needs the same frozen clock.
     build_options.addOption(bool, "is_testsuite_build", std.mem.startsWith(u8, name_prefix, "testSuite"));
 
-    // versionStr / versionStr2 (was screen_snap_helpers.c): assembled here the
-    // same way generated.zig builds version.h, so the ported owner needs no C
-    // preprocessor stamp. STD_SPACE_3_PER_EM = "\xa0\x04" (fonts.h). VERSION1
-    // mirrors defines.h. versionStr2's __DATE__ is the C compile date in
-    // "Mmm dd yyyy" form (date %b %e %Y); QSPI on firmware, Sim on host.
+    // versionStr / versionStr2: assembled here the same way generated.zig builds
+    // version.h, so the ported owner needs no C preprocessor stamp.
+    // STD_SPACE_3_PER_EM = "\xa0\x04" (fonts.h). VERSION1 mirrors defines.h;
+    // QSPI on firmware, Sim on host. compile_date stands in for __DATE__ and so
+    // must keep its exact "Mmm dd yyyy" shape with the day space-padded to two
+    // columns (date %e, not %-d): the owner reproduces versionDateStr by
+    // indexing those eleven columns.
     const sp3 = "\xa0\x04";
     const modeltext = if (options.calcmodel == 66) "R47" else "C47";
     const version1 = "0.109.03.02b0";
@@ -240,9 +242,10 @@ pub fn addBuildOptions(
     const version_string = b.fmt("custom{s}build{s}{s}{s}{s}", .{ sp3, sp3, vcs, sp3, today });
     const version_str = b.fmt("  {s} {s}.", .{ modeltext, version_string });
     const sim_or_qspi = if (options.dmcp_build) "QSPI" else "Sim";
-    const version_str2 = b.fmt("  {s} {s} {s}, dated {s}.", .{ modeltext, sim_or_qspi, version1, cdate });
+    const version_str2 = b.fmt("  {s} {s} {s}, dd ", .{ modeltext, sim_or_qspi, version1 });
     build_options.addOption([]const u8, "version_str", version_str);
     build_options.addOption([]const u8, "version_str2", version_str2);
+    build_options.addOption([]const u8, "compile_date", cdate);
 
     module.addOptions("frontier_build_options", build_options);
 }
