@@ -413,11 +413,15 @@ fn indirectAddressingReal(regist: stack_runtime.calcRegister_t, parameter_type: 
 
 // ---------------------------------------------------------------------------
 // The register-dump console diagnostics (registers.c, guarded by !DMCP_BUILD).
-// The testSuite's checkRegisterType prints "R5 = " and then hands the value to
-// printRegisterToConsole, so an empty body costs the oracle the one thing a
-// failing differential needs. The bodies compile away on the firmware, where
-// there is no console to write to.
-
+//
+// That guard is NOT the EXTRA_INFO_ON_CALC_ERROR one the hint text above uses,
+// and the difference is the testSuite: defines.h undefines DMCP_BUILD for a
+// testSuite build while forcing EXTRA_INFO_ON_CALC_ERROR to 0, so the hints go
+// and these bodies stay. They have to stay -- checkRegisterType prints "R5 = "
+// and then hands the value to printRegisterToConsole, so an empty body costs the
+// oracle the one thing a failing differential needs. Only the firmware, which has
+// no console to write to, drops them, and DMCP_BUILD is exactly the freestanding
+// target.
 const console_build = builtin.target.os.tag != .freestanding;
 
 const dtComplex34 = stack_runtime.dtComplex34;
