@@ -1,4 +1,4 @@
-NOP ; FFX  extreme-scaled exponential e^(x*1E50 - 1), plot and solve stress test at tiny x magnitudes in the range of -10E-50 to 10E-50
+@ FFX  extreme-scaled exponential e^(x*1E50 - 1), plot and solve stress test at tiny x magnitudes in the range of -10E-50 to 10E-50
 LBL ‘FFX’
   # Jaco Mostert
   # Extreme-scaled exponential e^(x*1E50 - 1)

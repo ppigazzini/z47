@@ -472,6 +472,7 @@ matrix2_cov
 clcvar_cov
 named_variable_cov
 stats_register_cov
+polar_display_cov
 serialize_state_cov
 pgm_solve_cov
 mvarmenu_cov
@@ -479,6 +480,10 @@ mvarmenu_cov
 ; deriv_mvar_cov loads a program and creates the named variables x and p, so it
 ; belongs with pgm_solve_cov after programs.txt and before the resetting serialize_cov.
 deriv_mvar_cov
+
+; deriv_accuracy loads its own seven functions and their derivative wrappers, so it
+; belongs in the same place.
+deriv_accuracy
 
 histo_cov
 named_variable_cache_cov

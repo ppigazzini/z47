@@ -331,8 +331,57 @@ void resetKeytimers(void) {
   }
 
 
+/* KEY TIMING SYSTEMS, AND WHERE EACH ONE IS ARMED
+ *
+ * Six independent systems time a key, all of them off the shared timer pool configured in c47.c. They are listed here because the two functions below arm
+ * three of them, and because none of them may run while the SHOW softmenu is on screen.
+ *
+ * 1. Command preview. showFunctionName() in screen.c prints the item name over the T line while a key is held, and hides it again on release. It is armed
+ *    from Check_MultiPresses() below through JM_auto_longpress_enabled and the TO_CL_LONG timer, and painted from the timer service in screen.c. Note that
+ *    showFunctionName() clears temporaryInformation, so a preview that fires over a temporary screen takes that screen down with it.
+ * 2. Normal key long press. The same TO_CL_LONG timer and the longpressDelayedkey1/2/3 chain in Check_MultiPresses() below. The chain is what gives one key
+ *    up to three timed stages, each stage a different item.
+ * 3. Backspace double press to DROP. Its own branch, Setup_MultiPresses() below, on the TO_CL_DROP timer. Half of it lives with system 2 because the second
+ *    press is detected where the long press is set up, but the timing and the item are separate.
+ * 4. Function key long press and double press. btnFnPressed_StateMachine() further down this file, on TO_FN_LONG and TO_FN_EXEC. Not armed from here.
+ *    btnFnPressed() in keyboard.c already returns before that state machine while the SHOW softmenu is up, so a softkey cannot start it.
+ * 5. Shift key long press. commonShiftProcessing() in keyboard.c, on TO_FG_LONG, with TO_FG_TIMR for the four second shift hold and TO_3S_CTFF for the
+ *    three presses in a second cutoff. Not armed from here either, and NOT covered by the guard below. Detail in the section under this one.
+ * 6. Key auto repeat. execAutoRepeat() on TO_AUTO_REPEAT, armed in c47.c and in keyboard.c, and only where a scrolling softmenu or a browser mode wants a
+ *    held key to repeat. It never arms in CM_NORMAL without a scrolling softmenu, so a SHOW page cannot be repeated into. Not armed from here.
+ *
+ * The remaining timers in the c47.c configuration block are not key gestures: TO_KB_ACTV paces the refresh after a press and a release, TO_ASM_ACTIVE holds
+ * the alpha select indicator for three seconds, and TO_TIMER_APP belongs to the TIMER application.
+ *
+ * THE SHOW SOFTMENU RULE. MNU_SHOW is the blank menu: it carries no softkeys and no labels. It is put up by a real SHOW, by the WHO screen, and by a plot
+ * that a running program drew. With no softkeys on screen there is nothing for a long press to reach, and a preview firing under the finger repaints over
+ * the screen the user is reading. So both functions below return without arming anything while currentMenu() is -MNU_SHOW. The test is on that menu and
+ * not on GRAPHMODE, because an interactive plot is also GRAPHMODE and there the 3x2 softmenu is on screen and needs its long press.
+ */
+
+
+/* SYSTEM 5 IN DETAIL: THE SHIFT KEYS ON A TIMER. NONE OF IT IS ARMED OR STOPPED BY THE TWO FUNCTIONS BELOW
+ *
+ * Recorded here because it is a timed keyboard operation and belongs with the list above, but it lives entirely in commonShiftProcessing() in keyboard.c and
+ * in Shft_handler() in screen.c. The guard in the two functions below does not reach it. In a real SHOW it is already inert, because determineItem() sends f
+ * and fg to the key release and returns ITM_NOP before the shift processing runs; on the WHO screen and under a programmed plot it still arms.
+ *
+ * The combined fg key, C47. commonShiftProcessing() sets Shft_timeouts and starts TO_FG_LONG at JM_TO_FG_LONG, 580 ms. Each timeout in Shft_handler() steps
+ * the shift on and restarts the same timer, so holding the key walks no shift, f, g, and then resetShiftState() back to no shift. That is the wraparound.
+ * With FLAG_SHFT_4s set the same press also starts TO_FG_TIMR at JM_SHIFT_TIMER, 4000 ms, which is how long a shift survives without a following key.
+ * TO_3S_CTFF, JM_TO_3S_CTFF, 600 ms in the simulator and 900 ms on hardware, counts three shift presses inside one second and opens HOME or MyMenu.
+ *
+ * The standalone f key and g key, R47, added by Didier 2025-12-03 and built only under OPTION_LONGPRESS_CFG. A press of either sets Shft_LongPress_f_g and,
+ * only when FLAG_SH_LONGPRESS is set, starts TO_FG_LONG at 1.5 times, 870 ms. On timeout Shft_handler() runs the gShifted item of the key, kbd_usr[10] for f
+ * and kbd_usr[11] for g, then clears both shifts. It has its own branches for ASSIGN, where it stores a long press assignment, for NIM, where it closes the
+ * number first unless the item belongs in the number, for USER mode, and for TAM and alpha. It is disabled in EIM and MIM.
+ */
+
   void Setup_MultiPresses(int16_t result) {                            //Setup and start double press for DROP timer, and check for second press
     JM_auto_doublepress_autodrop_enabled = 0;                          //JM TIMER CLRDROP. Autodrop means double click normal key.
+    if(currentMenu() == -MNU_SHOW) {                                   //blank menu: SHOW, WHO or a programmed plot is on screen, so no key arms a timer
+      return;
+    }
     int16_t tmp = 0;
     if(calcMode == CM_NORMAL && result == ITM_BACKSPACE && tam.mode == 0 && !getSystemFlag(FLAG_CLX_DROP)) {             //Set up backspace double click to DROP
       tmp = ITM_DROP;
@@ -360,6 +409,9 @@ void resetKeytimers(void) {
     int16_t longpressDelayedkey1 = 0;                                   //To Setup the timer locally for the next timed stage
             longpressDelayedkey2 = 0;                                   //To Store the next timed stage
             longpressDelayedkey3 = 0;                                   //To Store the next timed stage
+    if(currentMenu() == -MNU_SHOW) {                                    //blank menu: SHOW, WHO or a programmed plot is on screen, so no key arms a timer
+      return;
+    }
 
 
     int16_t           tmpp_ = getSystemFlag(FLAG_USER) ? kbd_usr[key_no].primary  : kbd_std[key_no].primary;
@@ -666,7 +718,33 @@ void resetKeytimers(void) {
   }
 
 
-  //CONCEPT - actual timing was changed:
+  //CONCEPT - the diagrams below are the concept. The times they carry are the original ones; the times in force are listed here, all from defines.h.
+  //
+  //  Base:      JM_TO_FN_LONG = 400 * 0.7 = 280 ms, every stage below is a factor of it.  JM_FN_DOUBLE_TIMER = 150 ms.
+  //  Press 1:   TIME_FN_12XX_TO_F       = 476 ms, no shift to f.
+  //  Then:      TIME_FN_1234_F_TO_G     = 560 ms, f to g,      under LongPressF == RBX_F1234.
+  //             TIME_FN_1234_G_TO_NOP   = 504 ms, g to NOP,    under LongPressF == RBX_F1234.
+  //             TIME_FN_124_F_TO_NOP    = 560 ms, f to NOP,    under LongPressF == RBX_F124, which has no g stage.
+  //             LongPressF == RBX_F14 goes from no shift straight to NOP, so there is no ladder at all.
+  //  Double g:  TIME_FN_DOUBLE_G_TO_NOP = 448 ms, the single stage a double press lands in, g to NOP.
+  //  Dead time: TIME_FN_DOUBLE_RELEASE  = 150 ms, not the 75 ms the diagrams show. This is the window the release waits in.
+  //
+  //  The ladder itself is in FN_handler() in screen.c, one step per TO_FN_LONG timeout while the key stays down, each step restarting the timer with the
+  //  next time above. FN_handler_StepToF(), FN_handler_StepToG() and FN_handler_StepToNOP() do the shift, the underline and the preview name.
+  //
+  //  DELAYED EXECUTION ON RELEASE. With FLAG_G_DOUBLETAP set, btnFnReleased_StateMachine() does not execute on the release. It starts TO_FN_EXEC for
+  //  TIME_FN_DOUBLE_RELEASE with the key number plus 0, 6 or 12 for no shift, f or g, and execFnTimeout() runs the item when that expires. The item is
+  //  therefore chosen by the shift reached on the ladder and executed 150 ms after the finger leaves. BLOCK_DOUBLEPRESS_MENU() turns this off per menu and
+  //  per key, and with the flag clear the release executes at once.
+  //
+  //  DOUBLE PRESS TO g. A second press of the SAME key inside that 150 ms window is the double press: btnFnPressed_StateMachine() sets shiftG, marks
+  //  double_click_detected and restarts TO_FN_LONG at TIME_FN_DOUBLE_G_TO_NOP, so the key is already on g and one more hold takes it to NOP.
+  //
+  //  STATES. ST_0_INIT, ST_1_PRESS1, ST_2_REL1, ST_3_PRESS2, ST_4_REL2 in keyboard.h. A press moves 2 to 3, otherwise to 1; a release moves 3 to 4,
+  //  otherwise to 2. A press arriving in state 3 with TO_FN_EXEC no longer running is too late to be a double press and drops back to state 1.
+  //
+  //  THE SHIFT KEYS ARE A DIFFERENT SYSTEM. The f, g and fg keys have their own timers and their own wraparound, none of it in this state machine. It is
+  //  described in the second block above Setup_MultiPresses() in this file.
 
   /* Switching profile, to jump to g[FN]:
                     set g

@@ -2192,7 +2192,21 @@ int64_t stringToInt64(const char *str) {
       #endif // LOADDEBUG
 
       if(programsLoadMode == LM_ALL || programsLoadMode == LM_PROGRAMS) {
-        scanLabelsAndPrograms();
+        scanLabelsAndPrograms(); // selects the program around the restored step
+        // The step pointer comes from the file and not the step number. Create the step number by counting from the pointer. Set the listing to that step.
+        currentLocalStepNumber = 1;
+        if(currentStep >= beginOfCurrentProgram && currentStep < endOfCurrentProgram) {
+          for(uint8_t *step = beginOfCurrentProgram; step != NULL && step < currentStep; step = findNextStep(step)) {
+            currentLocalStepNumber++;
+          }
+        }
+        else { // the pointer is outside this program
+          currentStep = programList[0].instructionPointer;
+          defineCurrentProgramFromCurrentStep();
+        }
+        firstDisplayedLocalStepNumber = (currentLocalStepNumber >= 3) ? currentLocalStepNumber - 3 : 0;
+        defineFirstDisplayedStep();
+        pemCursorIsZerothStep = false; // the file does not carry it
       }
     }
 

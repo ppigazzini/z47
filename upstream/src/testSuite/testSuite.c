@@ -61,8 +61,11 @@ void covLoadStateLongLabel(uint16_t unusedButMandatoryParameter);
 void covIterationTi(uint16_t which);
 void covNamedVariableFold(uint16_t unusedButMandatoryParameter);
 void covStatsRegister(uint16_t unusedButMandatoryParameter);
+void covPolarDisplayCap(uint16_t unusedButMandatoryParameter);
 void covDerivPgm(uint16_t order);
 void covDerivMvarPgm(uint16_t which);
+void covDerivAccPgm(uint16_t which);
+void covDerivUi(uint16_t which);
 void covSolvePgm(uint16_t unusedButMandatoryParameter);
 void covMvarPageNoProgram(uint16_t unusedButMandatoryParameter);
 void covIntegrate(uint16_t which);
@@ -280,8 +283,11 @@ const funcTest_t funcTestNoParam[] = {
   {"fnIterationTiCov",       covIterationTi, 1 },
   {"fnNamedVarFoldCov",      covNamedVariableFold, 1 },
   {"fnStatsRegisterCov",     covStatsRegister, 1 },
+  {"fnPolarDisplayCapCov",   covPolarDisplayCap, 1 },
   {"fnDerivPgmCov",          covDerivPgm, 1 },
   {"fnDerivMvarPgmCov",      covDerivMvarPgm, 1 },
+  {"fnDerivAccPgm",          covDerivAccPgm, 1 },
+  {"fnDerivUiCov",           covDerivUi, 1 },
   {"fnSolvePgmCov",          covSolvePgm, 1 },
   {"fnIntegrateCov",         covIntegrate, 1 },
   {"fnIntegrateErrCov",      covIntegrateErr, 1 },
@@ -1137,13 +1143,13 @@ void covEqSolveDispatch(uint16_t which) {
 }
 
 void covDerivErr(uint16_t which) {
-  // Drive the error/dispatch branches of the program-based derivative entry (derivativeCommon in differentiate.c), which the formula path covDerivEq does not reach.
+  // Drive the error/dispatch branches of the program-based derivative entry (derivativeVariable in differentiate.c), which the formula path covDerivEq does not reach.
   // which=0: a stack register whose letter names no program label -> ERROR_LABEL_NOT_FOUND; otherwise an out-of-range parameter -> ERROR_OUT_OF_RANGE.
   if(which == 0) {
-    fn1stDeriv(REGISTER_T);            // letter 'T' names no program label
+    fn1stDerivVar(REGISTER_T);               // letter 'T' names no program label
   }
   else {
-    fn1stDeriv(FIRST_NAMED_VARIABLE);  // outside [FIRST_LABEL,LAST_LABEL] and [X,T]
+    fn1stDerivVar(FIRST_RESERVED_VARIABLE);  // outside [FIRST_LABEL,LAST_LABEL], [X,T] and the named variables
   }
 }
 
@@ -1357,6 +1363,48 @@ void covStatsRegister(uint16_t unusedButMandatoryParameter) {
     fnDeleteVariable(createdStats);
     if(namedVariableIsStats(createdStats) || findNamedVariable("STATS") != INVALID_VARIABLE) {
       printf("\nstats-cov: STATS still reported after delete (reg=%d)\n", (int)createdStats);
+      abortTest();
+      return;
+    }
+  }
+}
+
+void covPolarDisplayCap(uint16_t unusedButMandatoryParameter) {
+  // Gates POLAR_DISPLAY_COMPUTE_DIGITS, the fixed rect->polar compute width the polar stack display uses (complex34ToDisplayString2, MR !1615) instead of one scaled
+  // by the operand exponent. Each adversarial probe (wide exponent spread, near-axis, near-45deg, tiny, huge, zero angle) compares the capped magnitude and angle to a
+  // 75-digit reference at 17 figures, the count the polar line shows, so narrowing the cap fails here instead of silently changing the display. 17 is a literal on
+  // purpose: derived from the cap it would narrow with it and let the regression through.
+  static const char * const probes[][2] = {
+    {"3", "4"}, {"1", "1"}, {"1e20", "1"}, {"1", "1e-20"}, {"-1e15", "1"},
+    {"1", "-1e15"}, {"1.000000000000001", "1"}, {"1e300", "1e-300"},
+    {"1e-30", "1e-30"}, {"123456.789", "987654.321"}, {"0.35", "99999"}, {"7", "0"},
+  };
+  for(unsigned int i = 0; i < nbrOfElements(probes); i++) {
+    decContext cCap = ctxtReal39;
+    cCap.digits = POLAR_DISPLAY_COMPUTE_DIGITS;
+    decContext cRef = ctxtReal39;
+    cRef.digits = 75;                             // full-precision reference
+    decContext cDsp = ctxtReal39;
+    cDsp.digits = 17;                             // figures the polar line shows
+    real_t re, im, magCap, thCap, magRef, thRef, roundCap, roundRef;
+    stringToReal(probes[i][0], &re, &cRef);
+    stringToReal(probes[i][1], &im, &cRef);
+    realRectangularToPolar(&re, &im, &magCap, &thCap, &cCap);
+    realRectangularToPolar(&re, &im, &magRef, &thRef, &cRef);
+
+    realPlus(&magCap, &roundCap, &cDsp);
+    realPlus(&magRef, &roundRef, &cDsp);
+    const bool_t magOk = realCompareEqual(&roundCap, &roundRef);
+    realPlus(&thCap, &roundCap, &cDsp);
+    realPlus(&thRef, &roundRef, &cDsp);
+    const bool_t angOk = realCompareEqual(&roundCap, &roundRef);
+
+    if(!magOk || !angOk) {
+      char bc[240], br[240];
+      realToString(magOk ? &thCap : &magCap, bc);
+      realToString(magOk ? &thRef : &magRef, br);
+      printf("\npolar-cap probe %u (%s, %s): magOk=%d angOk=%d cap=%s ref=%s\n",
+             i, probes[i][0], probes[i][1], (int)magOk, (int)angOk, bc, br);
       abortTest();
       return;
     }
@@ -1741,8 +1789,9 @@ void covProgramFlow(uint16_t which) {
 }
 
 void covDerivPgm(uint16_t order) {
-  // Program-based derivative: differentiate the loaded program S (f(X)=X^2-4) at the point in X through derivativeCommon -> calcDeriv -> execProgram (differentiate.c)
-  // - the program branch covDerivEq (formula) does not reach. f'(X)=2X, so the first derivative at X=3 is 6.
+  // Program-based derivative: differentiate the loaded program S (f(X)=X^2-4) at the point in X through derivativeVariable -> calcDeriv -> execProgram
+  // (differentiate.c) - the program branch covDerivEq (formula) does not reach. PGMDRV names the program and the operand names the variable, as a program step
+  // does. f'(X)=2X, so the first derivative at X=3 is 6.
   const calcRegister_t label = findNamedLabel("S", GLOBAL_LABELS);
   if(label == INVALID_VARIABLE) {
     printf("\nUnknown global label: S\n");
@@ -1750,11 +1799,13 @@ void covDerivPgm(uint16_t order) {
     return;
   }
   currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
+  fnPgmDrv(label);
+  const calcRegister_t variable = findOrAllocateNamedVariable("zs");
   if(order == 2) {
-    fn2ndDeriv(label);
+    fn2ndDerivVar(variable);
   }
   else {
-    fn1stDeriv(label);
+    fn1stDerivVar(variable);
   }
 }
 
@@ -1792,10 +1843,26 @@ void covDerivMvarPgm(uint16_t which) {
     ITM_SUB,                                                      // x^2 - p*x - 2
     (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),  // END
   };
+  // D1 and D2 differentiate MD as a program step, which is the path a running program takes: PGMDRV names the program, the operand names the variable and the
+  // point comes off the stack. No menu can be opened there.
+  static const uint8_t pgmD1[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'D', '1',                  // LBL "D1"
+    (uint8_t)((ITM_PGMDRV >> 8) | 0x80), (uint8_t)(ITM_PGMDRV & 0xff), STRING_LABEL_VARIABLE, 2, 'M', 'D',  // PGMDRV "MD"
+    (uint8_t)((ITM_F1DRV >> 8) | 0x80), (uint8_t)(ITM_F1DRV & 0xff), STRING_LABEL_VARIABLE, 1, 'x',         // f' "x"
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),  // END
+  };
+  static const uint8_t pgmD2[] = {
+    ITM_LBL, STRING_LABEL_VARIABLE, 2, 'D', '2',                  // LBL "D2"
+    (uint8_t)((ITM_PGMDRV >> 8) | 0x80), (uint8_t)(ITM_PGMDRV & 0xff), STRING_LABEL_VARIABLE, 2, 'M', 'D',  // PGMDRV "MD"
+    (uint8_t)((ITM_F2DRV >> 8) | 0x80), (uint8_t)(ITM_F2DRV & 0xff), STRING_LABEL_VARIABLE, 1, 'x',         // f" "x"
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),  // END
+  };
   calcRegister_t label;
 
   if(which == 0) {
     covWriteAndLoadPgm(pgmM, sizeof(pgmM));
+    covWriteAndLoadPgm(pgmD1, sizeof(pgmD1));
+    covWriteAndLoadPgm(pgmD2, sizeof(pgmD2));
     covSeedMvarVariable("x", 5);
     covSeedMvarVariable("p", 0);
     return;
@@ -1824,17 +1891,112 @@ void covDerivMvarPgm(uint16_t which) {
     covSeedMvarVariable("p", 1);   // p leaves zero, so a wrong reading of p stops canceling and shows up in the derivative
   }
   currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
+  currentSolverProgram = label - FIRST_LABEL;
   switch(which) {
     case 4:  currentSolverVariable = findOrAllocateNamedVariable("p");    break;
-    case 5:  currentSolverVariable = INVALID_VARIABLE;                    break;   // nothing selected: the first declaration is the argument
-    case 8:  currentSolverVariable = findOrAllocateNamedVariable("zzz");  break;   // selected but not declared by M: falls back to the first declaration
     default: currentSolverVariable = findOrAllocateNamedVariable("x");    break;
   }
+
+  if(which == 12) {   // the menu route with nothing keyed in: the variable stands as it is, so the point is the value it holds and its type is what the sampling
+    fn1stDerivEq(NOPARAM);   // has to put back
+    return;
+  }
+
+  if(which >= 5) {   // as a program step: the point comes off the stack and the variable is only borrowed for the sampling
+    fnExecute(findNamedLabel(which == 11 ? "D2" : "D1", GLOBAL_LABELS));
+    programRunStop = PGM_STOPPED;
+    calcMode = CM_NORMAL;
+    return;
+  }
+
+  // Through the MVAR menu: its variable key stores the point in the variable and selects it, then the last softkey runs the derivative on the selected program.
+  reallyRunFunction(ITM_STO, currentSolverVariable);
   if(which == 2) {
-    fn2ndDeriv(label);
+    fn2ndDerivEq(NOPARAM);
   }
   else {
-    fn1stDeriv(label);
+    fn1stDerivEq(NOPARAM);
+  }
+}
+
+void covDerivAccPgm(uint16_t unusedButMandatoryParameter) {
+  // Load the fixtures the derivative accuracy tests differentiate. Seven functions, each reading its argument off the stack, and for each of them a first and a
+  // second derivative wrapper, so every case is an ordinary program run: Func fnExecute with PGM="Xa" and the point in X. The functions are chosen for what they
+  // do to the step: e^x is the smooth reference, ln and 1/x have exact rational derivatives at the points used, arcsin is taken beside the end of its domain
+  // where a wide stencil samples outside it, tan is taken near its pole, sin is taken 159 periods out where a step relative to x spans many of them, and the
+  // last is e^x lifted by 1E20, where the offset takes 21 of the 34 digits of every sample before they are differenced.
+  // Each wrapper is the programmed form of the derivative: park the point the caller left in X in the variable zz, name the function with PGMDRV, then take the
+  // derivative with respect to zz. Bytes: LBL name / function / RTN for each function, then LBL name / STO zz / PGMDRV name / f' zz / RTN, and one END for the file.
+  #define LBL2(a, b)   ITM_LBL, STRING_LABEL_VARIABLE, 2, (a), (b)
+  #define PGMD(a, b)   ITM_STO, STRING_LABEL_VARIABLE, 2, 'z', 'z',                                                                                                  \
+                       (uint8_t)((ITM_PGMDRV >> 8) | 0x80), (uint8_t)(ITM_PGMDRV & 0xff), STRING_LABEL_VARIABLE, 2, (a), (b)
+  #define DER1(a, b)   PGMD((a), (b)), (uint8_t)((ITM_F1DRV >> 8) | 0x80), (uint8_t)(ITM_F1DRV & 0xff), STRING_LABEL_VARIABLE, 2, 'z', 'z'
+  #define DER2(a, b)   PGMD((a), (b)), (uint8_t)((ITM_F2DRV >> 8) | 0x80), (uint8_t)(ITM_F2DRV & 0xff), STRING_LABEL_VARIABLE, 2, 'z', 'z'
+  static const uint8_t pgmK[] = {
+    LBL2('K', 'a'), ITM_EXP,    ITM_RTN,                                        // e^x
+    LBL2('K', 'b'), ITM_LN,     ITM_RTN,                                        // ln x
+    LBL2('K', 'c'), ITM_1ONX,   ITM_RTN,                                        // 1/x
+    LBL2('K', 'd'), ITM_arcsin, ITM_RTN,                                        // arcsin x
+    LBL2('K', 'e'), ITM_tan,    ITM_RTN,                                        // tan x
+    LBL2('K', 'f'), ITM_sin,    ITM_RTN,                                        // sin x
+    LBL2('K', 'g'), ITM_EXP, ITM_LITERAL, STRING_REAL34, 4, '1', 'E', '2', '0', ITM_ADD, ITM_RTN,   // e^x + 1E20
+    LBL2('K', 'm'), (uint8_t)((ITM_MVAR >> 8) | 0x80), (uint8_t)(ITM_MVAR & 0xff), STRING_LABEL_VARIABLE, 2, 'z', 'z',                                              \
+                    ITM_RCL, STRING_LABEL_VARIABLE, 2, 'z', 'z', ITM_ENTER, ITM_MULT, ITM_RTN,   // zz squared behind MVAR zz, the one fixture that declares one
+    LBL2('X', 'a'), DER1('K', 'a'), ITM_RTN,
+    LBL2('X', 'b'), DER1('K', 'b'), ITM_RTN,
+    LBL2('X', 'c'), DER1('K', 'c'), ITM_RTN,
+    LBL2('X', 'd'), DER1('K', 'd'), ITM_RTN,
+    LBL2('X', 'e'), DER1('K', 'e'), ITM_RTN,
+    LBL2('X', 'f'), DER1('K', 'f'), ITM_RTN,
+    LBL2('X', 'g'), DER1('K', 'g'), ITM_RTN,
+    LBL2('Y', 'a'), DER2('K', 'a'), ITM_RTN,
+    LBL2('Y', 'b'), DER2('K', 'b'), ITM_RTN,
+    LBL2('Y', 'c'), DER2('K', 'c'), ITM_RTN,
+    LBL2('Y', 'd'), DER2('K', 'd'), ITM_RTN,
+    LBL2('Y', 'e'), DER2('K', 'e'), ITM_RTN,
+    LBL2('Y', 'f'), DER2('K', 'f'), ITM_RTN,
+    LBL2('Y', 'g'), DER2('K', 'g'), ITM_RTN,
+    LBL2('X', 'm'), DER1('K', 'm'), ITM_RTN,
+    LBL2('Y', 'm'), DER2('K', 'm'), ITM_RTN,
+    (uint8_t)((ITM_END >> 8) | 0x80), (uint8_t)(ITM_END & 0xff),
+  };
+  #undef LBL2
+  #undef PGMD
+  #undef DER1
+  #undef DER2
+
+  covWriteAndLoadPgm(pgmK, sizeof(pgmK));
+}
+
+void covDerivUi(uint16_t which) {
+  // The keyboard route of the new f' and f": the operand is a program, which is named for the derivative and opens the MVAR menu on it. A program step cannot reach
+  // this, so it is driven here the way a key press would. which 1 and 2 are the two shapes of program, one that declares an MVAR and one that reads the stack; 3 is
+  // the action key the menu carries, which is what finishes either of them.
+  const calcRegister_t label = findNamedLabel(which == 2 ? "Ka" : "Km", GLOBAL_LABELS);
+
+  if(which == 3) {
+    fn1stDerivEq(NOPARAM);
+    return;
+  }
+  if(label == INVALID_VARIABLE) {
+    printf("\nUnknown global label: %s\n", which == 2 ? "Ka" : "Km");
+    abortTest();
+    return;
+  }
+  // A key press starts from an idle calculator. An earlier corpus can leave the solver status or either engine flag set, and the menu declines to open under any of
+  // them, which would leave the action key pointed at whatever program ran last. Assign rather than clear a bit, as covSolveRoot does for the same reason.
+  currentSolverStatus = 0;
+  clearSystemFlag(FLAG_SOLVING);
+  clearSystemFlag(FLAG_INTING);
+  fn1stDerivVar(label);
+  // The menu is open. Its variable key is what selects and stores the point, and no corpus can press it, so it is done here: the declaration for a program that has
+  // one, and nothing at all for a program that has none, which is the empty menu the action key then has to refuse.
+  if(which == 2) {
+    currentSolverVariable = INVALID_VARIABLE;
+  }
+  else {
+    currentSolverVariable = findOrAllocateNamedVariable("zz");
+    reallyRunFunction(ITM_STO, currentSolverVariable);
   }
 }
 

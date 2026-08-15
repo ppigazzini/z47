@@ -538,7 +538,9 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     // Update date and time
-    showDateTime();
+    if(!screenHoldsDrawnPixels) {                          // if not CLLCD, PIXEL, POINT or AGRAPH painted
+      showDateTime();
+    }
 
     lcd_refresh();
     refresh_gui();
@@ -576,7 +578,7 @@ char letteredRegisterName(calcRegister_t regist) {
     }
 
     // Update date and time
-    if(showDateTime()) {
+    if(!screenHoldsDrawnPixels && showDateTime()) {        // if not CLLCD, PIXEL, POINT or AGRAPH painted
       dmcpResetAutoOff();
       fnPollTimerApp();
     }
@@ -1558,24 +1560,15 @@ return res;
 
   void showBottomLine(void) {
     int yoff = 0;
-    if(!( (temporaryInformation == TI_SHOW_REGISTER_SMALL && tmpString[5*SHOWLineSize] != 0) ||
-          (temporaryInformation == TI_SHOW_REGISTER_TINY && tmpString[14*SHOWLineSize] != 0)      )    //The softmenu space is not used
-      || (overrideShowBottomLine > 0) ) {
-
-
-      if(overrideShowBottomLine > 0) {
-        yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*(overrideShowBottomLine)/10.0f;   // 40 means 4.0 registers from bottom
-      }
-      else {
-        yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*2;
-      }
+    if(overrideShowBottomLine > 0) {                                                 //only a page that prints alternative renderings below the line asks for one:
+                                                                                    //real34 sets 30, or 40 with an angular mode, and complex34 sets 20. A long
+                                                                                    //integer, an XFN sum and the rest print nothing below it and get no line.
+      yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT*(overrideShowBottomLine)/10.0f;    // 40 means 4.0 registers from bottom
 
       int offs = (temporaryInformation == TI_SHOW_REGISTER_BIG ? - 2 : temporaryInformation == TI_SHOW_REGISTER_SMALL ? 0 : temporaryInformation == TI_SHOW_REGISTER_TINY ? 0 : 0);
 
       drawSinglePixelFullWidthLine(yoff + offs); //HERE SHOW LINE SMALL & TINY
-
-      overrideShowBottomLine = 0;
-    }
+    }                                            //the override belongs to the page, not to one paint: fnC47Show clears it when it builds the next page
   }
 
 
@@ -2862,6 +2855,14 @@ void createSubstrings(uint8_t number) {
   void _displaySolverInput(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
     if(regist == REGISTER_X) {
       __displaySolver(regist, prefix, prefixWidth, -1);
+    }
+  }
+
+  // The derivative's step key. It stores into its own variable and leaves the selection alone, so the line names the step and not currentSolverVariable.
+  void _displayDerivStep(calcRegister_t regist, char *prefix, int16_t *prefixWidth) {
+    if(regist == REGISTER_X) {
+      strcpy(prefix, STD_delta STD_SUB_d " =");
+      *prefixWidth = stringWidth(prefix, &standardFont, true, true) + 1;
     }
   }
 
@@ -4557,6 +4558,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
           }
+          else if(temporaryInformation == TI_DERIV_STEP) {
+            _displayDerivStep(regist, prefix, &prefixWidth);
+          }
 
           else if(temporaryInformation == TI_ELLIPSE_K) {
             if(regist == REGISTER_X) {
@@ -4814,6 +4818,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           }
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_DERIV_STEP) {
+            _displayDerivStep(regist, prefix, &prefixWidth);
           }
           else if(temporaryInformation == TI_VIEW_REGISTER && origRegist == REGISTER_T) {
               viewRegName(prefix, &prefixWidth);
@@ -5087,6 +5094,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
           else if(temporaryInformation == TI_SOLVER_VARIABLE) {
             _displaySolverInput(regist, prefix, &prefixWidth);
+          }
+          else if(temporaryInformation == TI_DERIV_STEP) {
+            _displayDerivStep(regist, prefix, &prefixWidth);
           }
           else if((regist == REGISTER_X && (temporaryInformation == TI_MIJ || temporaryInformation == TI_MIJEQ)) || ((regist == REGISTER_X || regist == REGISTER_Y) && temporaryInformation == TI_IJ) || (regist == REGISTER_X && (temporaryInformation == TI_I || temporaryInformation == TI_J))) {
             _displayIJ(regist, prefix, &prefixWidth);
@@ -5687,10 +5697,10 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
           printf("   >>> _selectiveClearScreen: lcd_fill_rect SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME\n");
         #endif // PC_BUILD && MONITOR_CLRSCR
         lcd_fill_rect(  LeftGraphInfoX,    topLeftMenuInclBorderY,     widthGraphInfoBox,    menuHeightInclBorder, LCD_SET_VALUE);
-        if((!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) && currentMenu() != -MNU_SHOW) {                                                                                      // not in GRAPHMODE, clear the little triangle area indicating more menus
+        if((!GRAPHMODE || menu(0) == -MNU_PLOT_FUNC) && temporaryInformation != TI_WHO) {                                                                                  // not in GRAPHMODE, clear the little triangle area indicating more menus
           lcd_fill_rect(LeftGraphInfoX,    topLeftMenuInclBorderY - 3, 20,                   6,                    LCD_SET_VALUE);
         }
-        if(!GRAPHMODE && currentMenu() != -MNU_SHOW) {                                                                                                                   // in GRAPHMODE, protect the square graph area
+        if(!GRAPHMODE && temporaryInformation != TI_WHO) {                                                                                                               // in GRAPHMODE, protect the square graph area
           lcd_fill_rect(widthGraphInfoBox, topLeftMenuInclBorderY,     widthGraphInclBorder, menuHeightInclBorder, LCD_SET_VALUE);
         }
       }

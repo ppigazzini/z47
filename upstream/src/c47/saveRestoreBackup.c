@@ -435,6 +435,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
     saveStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
     saveStateValue(&currentSolverProgram,           sizeof(currentSolverProgram),                                "currentSolverProgram",           "uint16");
+    saveStateValue(&currentDerivProgram,            sizeof(currentDerivProgram),                                 "currentDerivProgram",            "uint16");
     saveStateValue(&currentSolverVariable,          sizeof(currentSolverVariable),                               "currentSolverVariable",          "uint16");
     saveStateValue(&numberOfFormulae,               sizeof(numberOfFormulae),                                    "numberOfFormulae",               "uint16");
     saveStateValue(&currentFormula,                 sizeof(currentFormula),                                      "currentFormula",                 "uint16");
@@ -1131,6 +1132,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&currentViewRegister,            sizeof(currentViewRegister),                                 "currentViewRegister",            "uint16");
     restoreStateValue(&currentSolverStatus,            sizeof(currentSolverStatus),                                 "currentSolverStatus",            "uint16");
     restoreStateValue(&currentSolverProgram,           sizeof(currentSolverProgram),                                "currentSolverProgram",           "uint16");
+    restoreStateValue(&currentDerivProgram,            sizeof(currentDerivProgram),                                 "currentDerivProgram",            "uint16");
     restoreStateValue(&currentSolverVariable,          sizeof(currentSolverVariable),                               "currentSolverVariable",          "uint16");
     restoreStateValue(&numberOfFormulae,               sizeof(numberOfFormulae),                                    "numberOfFormulae",               "uint16");
     restoreStateValue(&currentFormula,                 sizeof(currentFormula),                                      "currentFormula",                 "uint16");
@@ -1468,6 +1470,14 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
     if(temporaryInformation == TI_SHOW_REGISTER_BIG || temporaryInformation == TI_SHOW_REGISTER_SMALL || temporaryInformation == TI_SHOW_REGISTER_TINY || temporaryInformation==TI_SHOW_REGISTER) {
       temporaryInformation = TI_NO_INFO;
+    }
+
+    // Prior 0's occur in older cfg files. This repairs them to 1, without having a file version check
+    if(currentLocalStepNumber == 0) {
+      currentLocalStepNumber = 1;
+    }
+    if(currentProgramNumber == 0) {
+      currentProgramNumber = 1;
     }
 
     scanLabelsAndPrograms();

@@ -11,34 +11,10 @@
 #undef  INTEGRATEDEBUG
 
 void fnPgmInt(uint16_t label) {
-  if(FIRST_LABEL <= label && label <= LAST_LABEL) {
+  label = findProgramLabel(label, "In function fnPgmInt:");
+  if(label != INVALID_VARIABLE) {
     currentSolverProgram = label - FIRST_LABEL;
     currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
-  }
-  else if(REGISTER_X <= label && label <= REGISTER_T) {
-    // Interactive mode
-    char buf[2];
-    buf[0] = letteredRegisterName((calcRegister_t)label);
-    buf[1] = 0;
-    label = findNamedLabel(buf, GLOBAL_LABELS);
-    if(label == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "string '%s' is not a named label", buf);
-        moreInfoOnError("In function fnPgmInt:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      currentSolverProgram = label - FIRST_LABEL;
-      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
-    }
-  }
-  else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "unexpected parameter %u", label);
-      moreInfoOnError("In function fnPgmInt:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -80,7 +56,7 @@ void _fnIntegrate(uint16_t labelOrVariable, bool_t XY) {
   //  stringToASCII(yyy, yy1);
   //printf("currentSolverProgram %u = %s\n", currentSolverProgram, yy1);
 
-  if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
+  if((FIRST_UC_LOCAL_LABEL <= labelOrVariable && labelOrVariable <= LAST_LOCAL_LABEL) || (FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmInt(labelOrVariable);
     if(lastErrorCode == ERROR_NONE) {

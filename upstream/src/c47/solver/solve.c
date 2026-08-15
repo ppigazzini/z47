@@ -54,34 +54,10 @@ bool_t engineNestingRefused(bool_t isPlot) {
 
 
 void fnPgmSlv(uint16_t label) {
-  if(FIRST_LABEL <= label && label <= LAST_LABEL) {
+  label = findProgramLabel(label, "In function fnPgmSlv:");
+  if(label != INVALID_VARIABLE) {
     currentSolverProgram = label - FIRST_LABEL;
     currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
-  }
-  else if(REGISTER_X <= label && label <= REGISTER_T) {
-    // Interactive mode
-    char buf[2];
-    buf[0] = letteredRegisterName((calcRegister_t)label);
-    buf[1] = 0;
-    label = findNamedLabel(buf, GLOBAL_LABELS);
-    if(label == INVALID_VARIABLE) {
-      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "string '%s' is not a named label", buf);
-        moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-    }
-    else {
-      currentSolverProgram = label - FIRST_LABEL;
-      currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
-    }
-  }
-  else {
-    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-      sprintf(errorMessage, "unexpected parameter %u", label);
-      moreInfoOnError("In function fnPgmSlv:", errorMessage, NULL, NULL);
-    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
   }
 }
 
@@ -92,7 +68,7 @@ void fnPgmPlt(uint16_t label) {
 }
 
 void fnSolve(uint16_t labelOrVariable) {
-  if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
+  if((FIRST_UC_LOCAL_LABEL <= labelOrVariable && labelOrVariable <= LAST_LOCAL_LABEL) || (FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmSlv(labelOrVariable);
     if(lastErrorCode == ERROR_NONE) {
@@ -209,7 +185,7 @@ void fnSolve(uint16_t labelOrVariable) {
 // ====== === temporarily / permanently use the SOLVE's "currentSolverVariable" for plotting
 
 void fnMvarPlot(uint16_t labelOrVariable) {
-  if((FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
+  if((FIRST_UC_LOCAL_LABEL <= labelOrVariable && labelOrVariable <= LAST_LOCAL_LABEL) || (FIRST_LABEL <= labelOrVariable && labelOrVariable <= LAST_LABEL) || (REGISTER_X <= labelOrVariable && labelOrVariable <= REGISTER_T)) {
     // Interactive mode
     fnPgmSlv(labelOrVariable);
     if(lastErrorCode == ERROR_NONE) {
@@ -299,9 +275,34 @@ void fnSolveVar(uint16_t unusedButMandatoryParameter) {
       }
     }
     else if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE || (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
+      if(compareString(var, STD_delta STD_SUB_d, CMP_NAME) == 0) {   // the step key: it takes a value like any other, but it is not what the derivative is taken against
+        real_t given;
+
+        if(getRegisterAsRealQuiet(REGISTER_X, &given) && realIsInfinite(&given)) {
+          entryStatus &= 0xfe;
+          fnDeleteVariable(regist);   // an infinite step is no step: the variable goes, which is the only way to be rid of it, and the engine picks the step again
+        }
+        else if(entryStatus & 0x01) {
+          entryStatus &= 0xfe;
+          reallyRunFunction(ITM_STO, regist);
+        }
+        temporaryInformation = TI_DERIV_STEP;   // names the step itself: the selection is untouched, so TI_SOLVER_VARIABLE would name the variable last chosen
+        return;
+      }
       currentSolverVariable = regist;
-      reallyRunFunction(ITM_STO, regist);
-      temporaryInformation = TI_SOLVER_VARIABLE;
+      if(entryStatus & 0x01) { // MVAR menu key pressed after a user entry: save the value in the variable
+        entryStatus &= 0xfe;
+        reallyRunFunction(ITM_STO, regist);
+        temporaryInformation = TI_SOLVER_VARIABLE;
+      }
+      else { // MVAR menu key pressed without a user entry: the value stands, so differentiate with respect to this variable
+        if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
+          fn1stDerivEq(NOPARAM);
+        }
+        else {
+          fn2ndDerivEq(NOPARAM);
+        }
+      }
     }
     else if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) {
       if(currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) {

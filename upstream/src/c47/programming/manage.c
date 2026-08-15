@@ -69,25 +69,23 @@ bool_t isAtEndOfPrograms(const uint8_t *step) {
 
 
 
+// A two-byte op code carries 0x80 in its first byte; a one-byte op is below 128 and never carries it. The bit is part of the match, so the one-byte
+// steps ISE .66 (bytes 05 B2) and ISG 18 (bytes 06 12) do not match the two-byte END (1458) and REM (1554).
 bool_t checkOpCodeOfStep(const uint8_t *step, uint16_t op) {
   if(op < 128) {
     return step && *step == op;
   }
   else {
-    return step && (*step & 0x7f) == (op >> 8) && *(step + 1) == (op & 0xff);
+    return step && *step == ((op >> 8) | 0x80) && *(step + 1) == (op & 0xff);
   }
 }
 
 
 
-// A label or variable name stored in a program step is preceded by a one-byte
-// length that is taken from program memory on trust. A corrupt or crafted program
-// - a restored state file or imported program - can claim a name longer than the
-// bytes that remain. Clamp the claimed length to the span before
-// firstFreeProgramByte so a name read can never run past the program region.
-// When the name would start at or past firstFreeProgramByte there are no valid
-// bytes left (the scan can register a label in the gap up to the RAM end), so
-// return 0 rather than skipping the clamp and leaving the length unbounded.
+// A label or variable name in a program step is preceded by a one-byte length taken from program memory on trust, and a corrupt or crafted program, a restored
+// state file or an imported one, can claim more bytes than remain. The claimed length is clamped to the span before firstFreeProgramByte, so a name read stays
+// inside the program region. A name starting at or past firstFreeProgramByte has no valid bytes at all, the scan being able to register a label in the gap up to
+// the RAM end, and its length is zero.
 uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimedLength) {
   if(nameStart >= firstFreeProgramByte) {
     return 0;
@@ -394,6 +392,10 @@ void defineCurrentProgramFromGlobalStepNumber(int16_t globalStepNumber) {
     if(currentProgramNumber >= numberOfPrograms) {
       break;
     }
+  }
+
+  if(currentProgramNumber == 0) {   // 1 based; a step number under the first program's start leaves the while at 0
+    currentProgramNumber = 1;
   }
 
   if(currentProgramNumber == numberOfPrograms) {
@@ -1880,6 +1882,54 @@ void addStepInProgram(int16_t func) {
 
 calcRegister_t findNamedLabel(const char *labelName, uint8_t labelType) {
   return findNamedLabelWithDuplicate(labelName, 0, labelType);
+}
+
+
+
+// The label list index of the program a command names, for every command that keeps a program rather than jumping to it: PGMSLV, PGMINT, PGMPLT, PGMDRV, VARMNU,
+// the sums and products, and the interactive arm of SOLVE, the integral, PLT f and the derivatives. A local label 00 to 99 or A to l is searched in the running
+// program the way GTO and XEQ search it, a named label arrives already resolved, and a lettered register names a global label. INVALID_VARIABLE comes back with
+// the reason already reported, so every caller stores only on a good answer and none of them repeats the three cases. caller is the "In function x:" text.
+calcRegister_t findProgramLabel(uint16_t label, const char *caller) {
+  if(label <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
+    for(uint16_t lbl=0; lbl<numberOfLabels; lbl++) {
+      if(labelList[lbl].program > currentProgramNumber) { // After the current program
+        break;
+      }
+      if(labelList[lbl].program == currentProgramNumber && labelList[lbl].step < 0 && *(labelList[lbl].labelPointer) == label && *(labelList[lbl].labelPointer - 1) == ITM_LBL) {
+        return lbl + FIRST_LABEL;
+      }
+    }
+    displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "there is no local label %02u in current program", label);
+      moreInfoOnError(caller, errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return INVALID_VARIABLE;
+  }
+  if(FIRST_LABEL <= label && label <= LAST_LABEL) {
+    return label;
+  }
+  if(REGISTER_X <= label && label <= REGISTER_T) { // Interactive mode
+    char buf[2];
+    buf[0] = letteredRegisterName((calcRegister_t)label);
+    buf[1] = 0;
+    label = findNamedLabel(buf, GLOBAL_LABELS);
+    if(label == INVALID_VARIABLE) {
+      displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "string '%s' is not a named label", buf);
+        moreInfoOnError(caller, errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    return label;
+  }
+  displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+    sprintf(errorMessage, "unexpected parameter %u", label);
+    moreInfoOnError(caller, errorMessage, NULL, NULL);
+  #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+  return INVALID_VARIABLE;
 }
 
 

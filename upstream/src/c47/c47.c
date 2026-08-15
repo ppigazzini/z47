@@ -278,6 +278,7 @@ uint16_t               plotSelection;
 uint16_t               currentViewRegister;
 uint16_t               currentSolverStatus;
 uint16_t               currentSolverProgram;
+uint16_t               currentDerivProgram;
 uint16_t               currentSolverVariable;
 uint16_t               currentSolverNestingDepth;
 uint16_t               engineNestingDepth;

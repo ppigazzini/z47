@@ -12,6 +12,10 @@
  ******************************************************/
 
 
+#if !defined(PC_BUILD)
+  #undef CACHE_DEBUG
+  #undef CACHE_VERIFY
+#endif
 
 /****************************************************************************************************
  * Modified for direct handling of 1071 digit contexts.
@@ -190,7 +194,7 @@ static void doWP34S_SinCosTanTaylor(real_t* angle, bool* sinNeg, bool* cosNeg, b
 // Called directly 75 digits max, by by agm, sin, sinc, cos, tan, multiple elliptic functions, exp (complex), fib, gd, tanh, WP34S_Zeta
 //
 // Have to be careful here to ensure that every function we call can handle the increased size of the numbers we're using.
-static void C47_WP34S_Cvt2RadSinCosTan_75temp(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
+static void C47_WP34S_Cvt2RadSinCosTan_75_helper(const real_t *an, angularMode_t angularMode, real_t *sinOut, real_t *cosOut, real_t *tanOut, realContext_t *realContext) {
   bool_t sinNeg = false, cosNeg = false, swap = false;
   real_t angle;
 
@@ -432,7 +436,7 @@ void C47_WP34S_Cvt2RadSinCosTan(const real_t *an, angularMode_t angularMode, rea
     else
   #endif // OPTION_XFN_1000
   {
-    C47_WP34S_Cvt2RadSinCosTan_75temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
+    C47_WP34S_Cvt2RadSinCosTan_75_helper(an, angularMode, sinOut, cosOut, tanOut, realContext);
   }
 }
 
@@ -646,7 +650,138 @@ static bool_t doAtan(real_t *a, real_t *angle, real_t *a2, real_t *t, real_t *j,
 }
 
 
-static void WP34S_Atan_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
+// ---------------------------------------------------------------------------
+// Generic cache helpers for 1-input and 2-input trig wrappers
+//
+// Each cache is a single most-recent-call slot. The stored result is treated as
+// a pure function of the key: the input value(s), the effective compute
+// precision, and the rounding mode. Nothing else in realContext (emax/emin/
+// clamp) changes an angle result, whose magnitude is always O(1), and the
+// angular-mode conversion happens in the caller AFTER the cache, so the angular
+// mode is deliberately not part of the key.
+//
+// The caches are global single slots. cache*_call therefore writes the key and
+// the result together AFTER computing, never a bare key before: a reentrant
+// call (a display refresh computing another angle mid-computation, say) can only
+// leave its OWN complete, correct pair, which the outer call then overwrites
+// with its own - there is no window where a stale key and a fresh result coexist.
+// This ordering is the reason the wrappers are safe without any in-progress flag
+// or scheduling assumption; do not move cache_prepare before compute. Build with
+// CACHE_VERIFY to recompute on every hit and abort on any mismatch, which turns
+// the "key is complete" assumption into a checked one.
+// ---------------------------------------------------------------------------
+typedef struct { bool_t valid; int32_t digits; int32_t round; real_t x, result;    } cache1_t;
+typedef struct { bool_t valid; int32_t digits; int32_t round; real_t y, x, result; } cache2_t;
+
+typedef void (*trig1Compute_t)(const real_t *x, real_t *out, realContext_t *ctx);
+typedef void (*trig2Compute_t)(const real_t *y, const real_t *x, real_t *out, realContext_t *ctx);
+
+static void cache_commit(bool_t *valid, real_t *cacheResult, const real_t *result) {
+  if(!realIsSpecial(result)) { realCopy(result, cacheResult); *valid = true; }
+}
+
+// zero sign is part of the key
+static bool_t cacheKeyEqual(const real_t *a, const real_t *b) {
+  return realCompareIdentical(a, b);
+}
+
+#if defined(CACHE_VERIFY)
+  static void cacheVerifyFail(const char *which) {
+    // stderr is unbuffered: abort() would drop a buffered stdout line.
+    fprintf(stderr, "CACHE_VERIFY_MISMATCH in %s: a cache hit disagreed with a fresh recompute\n", which);
+    fflush(stderr);
+    abort();
+  }
+#endif // CACHE_VERIFY
+
+// digits is the effective compute precision, not the request
+static bool_t cache1_check(cache1_t *c, const real_t *x, real_t *result, int32_t digits, realContext_t *ctx) {
+  if(c->valid && digits == c->digits && (int32_t)ctx->round == c->round && cacheKeyEqual(&c->x, x)) {
+    realCopy(&c->result, result);
+    return true;
+  }
+  return false;
+}
+static void cache1_prepare(cache1_t *c, const real_t *x, int32_t digits, realContext_t *ctx) {
+  realCopy(x, &c->x);
+  c->digits = digits;
+  c->round  = (int32_t)ctx->round;
+  c->valid  = false;
+}
+
+static bool_t cache2_check(cache2_t *c, const real_t *y, const real_t *x, real_t *result, int32_t digits, realContext_t *ctx) {
+  if(c->valid && digits == c->digits && (int32_t)ctx->round == c->round && cacheKeyEqual(&c->y, y) && cacheKeyEqual(&c->x, x)) {
+    realCopy(&c->result, result);
+    return true;
+  }
+  return false;
+}
+static void cache2_prepare(cache2_t *c, const real_t *y, const real_t *x, int32_t digits, realContext_t *ctx) {
+  realCopy(y, &c->y);
+  realCopy(x, &c->x);
+  c->digits = digits;
+  c->round  = (int32_t)ctx->round;
+  c->valid  = false;
+}
+
+// One cached 1-input trig call. Copies the input first (so `compute` is safe even
+// when the caller aliases in==out), returns a hit, otherwise computes and stores
+// key+result together (see the ordering note above). Under CACHE_VERIFY every hit
+// is recomputed and compared, so an incomplete key aborts loudly instead of
+// returning a stale value.
+static void cache1_call(cache1_t *c, trig1Compute_t compute, const char *name, const real_t *x, real_t *out, int32_t effDigits, realContext_t *ctx) {
+  real_t localX;
+  realCopy(x, &localX);
+  if(cache1_check(c, &localX, out, effDigits, ctx)) {
+    #if defined(CACHE_DEBUG)
+      printf("   %s: quick return for repeated value\n", name);
+    #endif // CACHE_DEBUG
+    #if defined(CACHE_VERIFY)
+      real_t verify;
+      compute(&localX, &verify, ctx);
+      if(!cacheKeyEqual(&verify, out)) { cacheVerifyFail(name); }
+    #endif // CACHE_VERIFY
+    return;
+  }
+  #if defined(CACHE_DEBUG)
+    printf("%s: long process calc\n", name);
+  #endif // CACHE_DEBUG
+  compute(&localX, out, ctx);                 // compute first: any nested call leaves its own complete pair
+  cache1_prepare(c, &localX, effDigits, ctx); // then stamp this call's key
+  cache_commit(&c->valid, &c->result, out);   // and result, together
+  #if !defined(CACHE_DEBUG) && !defined(CACHE_VERIFY)
+    (void)name;
+  #endif
+}
+
+static void cache2_call(cache2_t *c, trig2Compute_t compute, const char *name, const real_t *y, const real_t *x, real_t *out, int32_t effDigits, realContext_t *ctx) {
+  real_t localY, localX;
+  realCopy(y, &localY);
+  realCopy(x, &localX);
+  if(cache2_check(c, &localY, &localX, out, effDigits, ctx)) {
+    #if defined(CACHE_DEBUG)
+      printf("   %s: quick return for repeated value\n", name);
+    #endif // CACHE_DEBUG
+    #if defined(CACHE_VERIFY)
+      real_t verify;
+      compute(&localY, &localX, &verify, ctx);
+      if(!cacheKeyEqual(&verify, out)) { cacheVerifyFail(name); }
+    #endif // CACHE_VERIFY
+    return;
+  }
+  #if defined(CACHE_DEBUG)
+    printf("%s: long process calc\n", name);
+  #endif // CACHE_DEBUG
+  compute(&localY, &localX, out, ctx);                 // compute first (see cache1_call)
+  cache2_prepare(c, &localY, &localX, effDigits, ctx); // then stamp key
+  cache_commit(&c->valid, &c->result, out);            // and result, together
+  #if !defined(CACHE_DEBUG) && !defined(CACHE_VERIFY)
+    (void)name;
+  #endif
+}
+
+
+static void WP34S_Atan_75_compute(const real_t *x, real_t *angle, realContext_t *realContext) {
   bool_t doEpsilon = false;
   // The eight working reals come from the heap, not the frame: 480 of this function's 656 bytes, on the integrand path of a plotted integral. The 1071 digit twin below
   // keeps its stack buffers untouched.
@@ -702,6 +837,18 @@ freeWork:
 }
 
 
+// Cached wrapper for WP34S_Atan. Returns the previous result when the input,
+// effective precision and rounding mode all match; see cache1_call.
+static cache1_t atanCache;
+static void WP34S_Atan_75_helper(const real_t *x, real_t *angle, realContext_t *realContext) {
+  #if defined(CACHE_DEBUG)
+    print_caller("WP34S_Atan");             // traced here, not in cache1_call: print_caller reports its own caller
+  #endif // CACHE_DEBUG
+  int32_t effDigits = (realContext->digits > 39) ? 75 : 39; // precision WP34S_Atan_75_compute forces, not the request
+  cache1_call(&atanCache, WP34S_Atan_75_compute, "WP34S_Atan", x, angle, effDigits, realContext);
+}
+
+
 #if defined(OPTION_XFN_1000)
 static void C47do_WP34S_Atan_1071_helper(const real_t *x, real_t *angle, realContext_t *realContext) {
   // The eight working reals come from the heap, not the frame: eight 1071 digit decNumbers at 724 bytes is 5792 of this function's 5864 byte frame, the largest frame in
@@ -746,7 +893,7 @@ void C47_WP34S_Atan(const real_t *x, real_t *angle, realContext_t *realContext) 
     else
   #endif // OPTION_XFN_1000
   {
-    WP34S_Atan_75temp(x, angle, realContext);
+    WP34S_Atan_75_helper(x, angle, realContext);
   }
 }
 
@@ -869,7 +1016,7 @@ static bool_t doAtan2(const real_t *y, const real_t *x, real_t *atan, real_t *r,
 }
 
 
-static void WP34S_Atan2_75temp(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+static void WP34S_Atan2_75_compute(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
   real_t r, t;
   int32_t savedContextDigits = realContext->digits;
   if(realContext->digits > 75) {
@@ -881,6 +1028,19 @@ static void WP34S_Atan2_75temp(const real_t *y, const real_t *x, real_t *atan, r
   }
   realContext->digits = savedContextDigits;
 }
+
+
+// Cached wrapper for WP34S_Atan2. Returns the previous result when both inputs,
+// the effective precision and rounding mode match; see cache2_call.
+static cache2_t atan2Cache;
+static void WP34S_Atan2_75_helper(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
+  #if defined(CACHE_DEBUG)
+    print_caller("WP34S_Atan2");            // traced here, not in cache2_call: print_caller reports its own caller
+  #endif // CACHE_DEBUG
+  int32_t effDigits = (realContext->digits > 75) ? 75 : realContext->digits; // precision WP34S_Atan2_75_compute computes at
+  cache2_call(&atan2Cache, WP34S_Atan2_75_compute, "WP34S_Atan2", y, x, atan, effDigits, realContext);
+}
+
 
 #if defined(OPTION_XFN_1000)
 static void C47do_WP34S_Atan2_1071_helper(const real_t *y, const real_t *x, real_t *atan, realContext_t *realContext) {
@@ -910,7 +1070,7 @@ void C47_WP34S_Atan2(const real_t *y, const real_t *x, real_t *atan, realContext
     else
   #endif // OPTION_XFN_1000
   {
-    WP34S_Atan2_75temp(y, x, atan, realContext);
+    WP34S_Atan2_75_helper(y, x, atan, realContext);
   }
 }
 
@@ -937,7 +1097,7 @@ static bool_t doAsin(const real_t *x, real_t *angle, real_t *abx, real_t *z, rea
 }
 
 
-static void WP34S_Asin_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void WP34S_Asin_75_compute(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
   int32_t savedContextDigits = realContext->digits;
   if(realContext->digits > 75) {
@@ -949,6 +1109,18 @@ static void WP34S_Asin_75temp(const real_t *x, real_t *angle, realContext_t *rea
   }
   realContext->digits = savedContextDigits;
 }
+
+
+// Cached wrapper for WP34S_Asin. See cache1_call.
+static cache1_t asinCache;
+static void WP34S_Asin_75_helper(const real_t *x, real_t *angle, realContext_t *realContext) {
+  #if defined(CACHE_DEBUG)
+    print_caller("WP34S_Asin");             // traced here, not in cache1_call: print_caller reports its own caller
+  #endif // CACHE_DEBUG
+  int32_t effDigits = (realContext->digits > 75) ? 75 : realContext->digits; // precision WP34S_Asin_75_compute computes at
+  cache1_call(&asinCache, WP34S_Asin_75_compute, "WP34S_Asin", x, angle, effDigits, realContext);
+}
+
 
 #if defined(OPTION_XFN_1000)
 static void C47do_WP34S_Asin_1071_helper(const real_t *x, real_t *angle, realContext_t *realContext) {
@@ -978,7 +1150,7 @@ void C47_WP34S_Asin(const real_t *x, real_t *angle, realContext_t *realContext) 
     else
   #endif // OPTION_XFN_1000
   {
-    WP34S_Asin_75temp(x, angle, realContext);
+    WP34S_Asin_75_helper(x, angle, realContext);
   }
 }
 
@@ -1011,7 +1183,7 @@ static bool_t doAcos(const real_t *x, real_t *angle, real_t *abx, real_t *z, rea
 }
 
 
-static void WP34S_Acos_75temp(const real_t *x, real_t *angle, realContext_t *realContext) {
+static void WP34S_Acos_75_compute(const real_t *x, real_t *angle, realContext_t *realContext) {
   real_t abx, z;
   int32_t savedContextDigits = realContext->digits;
   if(realContext->digits > 75) {
@@ -1023,6 +1195,18 @@ static void WP34S_Acos_75temp(const real_t *x, real_t *angle, realContext_t *rea
   }
   realContext->digits = savedContextDigits;
 }
+
+
+// Cached wrapper for WP34S_Acos. See cache1_call.
+static cache1_t acosCache;
+static void WP34S_Acos_75_helper(const real_t *x, real_t *angle, realContext_t *realContext) {
+  #if defined(CACHE_DEBUG)
+    print_caller("WP34S_Acos");             // traced here, not in cache1_call: print_caller reports its own caller
+  #endif // CACHE_DEBUG
+  int32_t effDigits = (realContext->digits > 75) ? 75 : realContext->digits; // precision WP34S_Acos_75_compute computes at
+  cache1_call(&acosCache, WP34S_Acos_75_compute, "WP34S_Acos", x, angle, effDigits, realContext);
+}
+
 
 #if defined(OPTION_XFN_1000)
 static void C47do_WP34S_Acos_1071_helper(const real_t *x, real_t *angle, realContext_t *realContext) {
@@ -1052,7 +1236,7 @@ void C47_WP34S_Acos(const real_t *x, real_t *angle, realContext_t *realContext) 
     else
   #endif // OPTION_XFN_1000
   {
-    WP34S_Acos_75temp(x, angle, realContext);
+    WP34S_Acos_75_helper(x, angle, realContext);
   }
 }
 
