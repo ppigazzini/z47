@@ -46,6 +46,9 @@ extern fn decQuadZero(result: *runtime.real34_t) *runtime.real34_t;
 // ptr/constPtr accessors centralized in abi (size asserted there).
 const Real159 = abi.Real159;
 
+// decNumber packs DECDPUN decimal digits into each decNumberUnit.
+const DECDPUN: i32 = 3;
+
 // ALLOW_159 (comparisonReals.c).
 const allow_159 = runtime.option_cubic_159 or runtime.option_eigen_159;
 const max_compare_digits: i32 = if (allow_159) 159 else 75;
@@ -229,6 +232,25 @@ pub export fn realCompareEqual(number1: *align(1) const runtime.real_t, number2:
     c.digits = maxI32(maxI32(75, number1.digits), number2.digits);
     realCompare(number1, number2, &compare, &c);
     return runtime.realIsZero(&compare);
+}
+
+// True when both real_t are identical: equal digits, exponent and bits, then equal units up to the digit count. A 39-digit
+// value tests 26 of its 36 bytes instead of 60. Faster than realCompareEqual, which subtracts. -0 and +0 differ, and 1 and
+// 1.0 return false: this is a byte compare, not a numeric one.
+pub export fn realCompareIdentical(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {
+    if (number1.digits != number2.digits or number1.exponent != number2.exponent or number1.bits != number2.bits) {
+        return false;
+    }
+    if (math_real_predicates.realIsSpecial(number1)) {
+        return true;
+    }
+    const units: usize = @intCast(@divTrunc(number1.digits + DECDPUN - 1, DECDPUN));
+    for (number1.lsu[0..units], number2.lsu[0..units]) |a, b| {
+        if (a != b) {
+            return false;
+        }
+    }
+    return true;
 }
 
 pub export fn realCompareAbsEqual(number1: *align(1) const runtime.real_t, number2: *align(1) const runtime.real_t) callconv(.c) bool {

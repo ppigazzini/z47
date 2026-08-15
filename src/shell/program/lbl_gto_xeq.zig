@@ -120,7 +120,7 @@ const TAM_MAX_BITS: u4 = 14;
 const TAM_MAX_MASK: u16 = 0x3fff;
 
 const INVALID_VARIABLE: calcRegister_t = 2199;
-const INVALID_MENU: i16 = 2870; // items.h: LAST_ITEM
+const INVALID_MENU: i16 = 2885; // items.h: LAST_ITEM
 const TEMP_REGISTER_1: calcRegister_t = 135;
 const NOPARAM: u16 = 9876;
 const REGISTER_X: calcRegister_t = 100;
@@ -254,7 +254,7 @@ extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;
 extern var labelList: [*c]labelList_t;
 extern var programList: [*c]programList_t;
-const LAST_ITEM: u32 = 2870;
+const LAST_ITEM: u32 = 2885;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 const SOFTMENU_STACK_SIZE: usize = 8;
 // softmenu[] and softmenuStack[] are real C arrays: the linker symbol address is
@@ -1421,6 +1421,7 @@ pub export fn execProgram(label: u16) callconv(.c) void {
     // the nested run repoints to the function's program; restore it too so the
     // caller (and the final return to the system) stays in the right program
     const origProgramNumber: u16 = currentProgramNumber;
+    const origSubroutineLevel: u16 = cur().subroutineLevel;
     const origStep: [*c]u8 = currentStep;
     fnExecute(label);
     // RPN_GRAPHER belongs in this condition: a program plot runs its function
@@ -1430,6 +1431,12 @@ pub export fn execProgram(label: u16) callconv(.c) void {
     // rendered the identity and, with FL_SPCRES clear, overflowed.
     if (programRunStop == PGM_RUNNING and (getSystemFlag(FLAG_INTING) or getSystemFlag(FLAG_SOLVING) or (currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) != 0)) {
         runProgram(0, INVALID_VARIABLE);
+        // fnExecute above pushed one subroutine level to run the body, which the body's own RTN pops. A level still
+        // standing here means that RTN was never reached, which is what an error does, so it is popped here: left standing
+        // it stops the calling program's own RTN from matching and that program then never ends.
+        while (cur().subroutineLevel > origSubroutineLevel) {
+            fnReturn(0);
+        }
         currentLocalStepNumber = origLocalStepNumber;
         currentProgramNumber = origProgramNumber;
         currentStep = origStep;

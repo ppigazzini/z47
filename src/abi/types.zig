@@ -60,6 +60,20 @@ pub const Real159 = extern struct {
 /// {Real, Imag} spelling used by the solver/addons owners.
 pub const CmplxPair = extern struct { r: Real, i: Real };
 
+/// toPolar.h `rectToPolarCache_t`: the caller-owned single slot behind
+/// `realRectangularToPolarCached`. The display owner creates one per rendering
+/// pass and the transform owner reads and writes it, so the layout crosses the
+/// C ABI and lives here rather than in either owner.
+pub const RectToPolarCache = extern struct {
+    valid: bool,
+    digits: i32,
+    round: i32,
+    real: Real,
+    imag: Real,
+    mag: Real,
+    theta: Real,
+};
+
 /// Subroutine-level header (run-time stack frame).
 pub const SubroutineLevelHeader = extern struct {
     returnProgramNumber: i16,

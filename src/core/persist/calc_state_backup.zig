@@ -219,6 +219,7 @@ extern var shadowJ: [2]u8;
 extern var currentViewRegister: [2]u8;
 extern var currentSolverStatus: [2]u8;
 extern var currentSolverProgram: [2]u8;
+extern var currentDerivProgram: [2]u8;
 extern var currentSolverVariable: [2]u8;
 extern var numberOfFormulae: [2]u8;
 extern var currentFormula: [2]u8;
@@ -585,6 +586,7 @@ pub fn saveCalc() void {
     sv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
     sv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
     sv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
+    sv(&currentDerivProgram[0], 2, "currentDerivProgram", "uint16");
     sv(&currentSolverVariable[0], 2, "currentSolverVariable", "uint16");
     sv(&numberOfFormulae[0], 2, "numberOfFormulae", "uint16");
     sv(&currentFormula[0], 2, "currentFormula", "uint16");
@@ -991,6 +993,10 @@ fn restoredPoolPointer(current: [*c]u8, valueName: [*c]const u8, offsetValueName
 fn rdU16(p: [*c]const u8) u16 {
     return @as(u16, p[0]) | (@as(u16, p[1]) << 8);
 }
+fn wrU16(p: [*c]u8, value: u16) void {
+    p[0] = @truncate(value);
+    p[1] = @truncate(value >> 8);
+}
 fn programStep(idx: u16) i32 {
     const base = programList + @as(usize, idx) * 16;
     return @as(*const i32, @ptrCast(@alignCast(base))).*;
@@ -1235,6 +1241,7 @@ pub fn restoreCalc() void {
     rv(&currentViewRegister[0], 2, "currentViewRegister", "uint16");
     rv(&currentSolverStatus[0], 2, "currentSolverStatus", "uint16");
     rv(&currentSolverProgram[0], 2, "currentSolverProgram", "uint16");
+    rv(&currentDerivProgram[0], 2, "currentDerivProgram", "uint16");
     rv(&currentSolverVariable[0], 2, "currentSolverVariable", "uint16");
     rv(&numberOfFormulae[0], 2, "numberOfFormulae", "uint16");
     rv(&currentFormula[0], 2, "currentFormula", "uint16");
@@ -1329,6 +1336,15 @@ pub fn restoreCalc() void {
         setSystemFlag(FLAG_IRFRAC);
     }
     backupFreeParams();
+
+    // Zeros occur in older cfg files; both are 1 based, so they are repaired here rather than through a version check.
+    if (rdU16(&currentLocalStepNumber[0]) == 0) {
+        wrU16(&currentLocalStepNumber[0], 1);
+    }
+    if (rdU16(&currentProgramNumber[0]) == 0) {
+        wrU16(&currentProgramNumber[0], 1);
+    }
+
     scanLabelsAndPrograms();
     {
         const cpn = rdU16(&currentProgramNumber[0]);

@@ -310,7 +310,7 @@ const progressHalfSecUpdate_Integer = abi.host.progressHalfSecUpdate_Integer; //
 // _fnIntegrate
 // ===========================================================================
 fn _fnIntegrate(labelOrVariable: u16, XY: bool_t) linksection(runtime.code_section) void {
-    if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (runtime.isStackRegister(labelOrVariable))) {
+    if (runtime.isLocalLabelOrLabelOrStackRegister(labelOrVariable)) {
         // Interactive mode
         solve.fnPgmInt(labelOrVariable);
         if (lastErrorCode == ERROR_NONE) {

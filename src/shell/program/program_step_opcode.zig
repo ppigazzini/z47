@@ -23,13 +23,16 @@ pub fn isAtEndOfPrograms(step: ?[*]const u8) bool {
 }
 
 /// Whether the opcode at `step` equals `op`: a single byte when `op < 128`,
-/// otherwise the 7-bit high byte plus the low byte. Null never matches.
+/// otherwise the two-byte marker 0x80 plus the high byte, then the low byte.
+/// Null never matches. The marker bit is part of the match, so the one-byte
+/// steps ISE .66 (bytes 05 B2) and ISG 18 (bytes 06 12) do not match the
+/// two-byte END (1458) and REM (1554).
 pub fn checkOpCodeOfStep(step: ?[*]const u8, op: u16) bool {
     const s = step orelse return false;
     if (op < 128) {
         return s[0] == op;
     }
-    return (s[0] & 0x7f) == (op >> 8) and s[1] == (op & 0xff);
+    return s[0] == ((op >> 8) | 0x80) and s[1] == (op & 0xff);
 }
 
 /// Clamp a trusted name length so a name read starting at `name_start` cannot

@@ -221,9 +221,98 @@ fn doAtan(
 }
 
 // ===========================================================================
-// WP34S_Atan_75temp (static)
+// Generic single-slot caches for the 1- and 2-input trig wrappers
 // ===========================================================================
-fn WP34S_Atan_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+// Each cache is a single most-recent-call slot. The stored result is treated as a pure function of the key: the input
+// value(s), the effective compute precision, and the rounding mode. Nothing else in realContext (emax/emin/clamp) changes
+// an angle result, whose magnitude is always O(1), and the angular-mode conversion happens in the caller AFTER the cache,
+// so the angular mode is deliberately not part of the key.
+//
+// The slots are global, so `call` writes the key and the result together AFTER computing, never a bare key before: a
+// reentrant call (a display refresh computing another angle mid-computation, say) can only leave its OWN complete, correct
+// pair, which the outer call then overwrites with its own -- there is no window where a stale key and a fresh result
+// coexist. That ordering is why the wrappers need no in-progress flag and no scheduling assumption; do not stamp the key
+// before the compute. A special result is never stored, so a hit is always a finite value.
+//
+// The zero sign is part of the key: realCompareIdentical is a byte compare, so -0 and +0 are different inputs, and 1 and
+// 1.0 are too.
+const Cache1 = struct {
+    valid: bool = false,
+    digits: i32 = 0,
+    round: i32 = 0,
+    x: real_t = undefined,
+    result: real_t = undefined,
+
+    fn call(
+        self: *Cache1,
+        comptime compute: fn (*align(1) const real_t, *align(1) real_t, *realContext_t) void,
+        x: *align(1) const real_t,
+        out: *align(1) real_t,
+        effDigits: i32,
+        ctx: *realContext_t,
+    ) void {
+        var localX: real_t = undefined; // copied first, so `compute` is safe even when the caller aliases in == out
+        realCopy(x, &localX);
+        if (self.valid and effDigits == self.digits and ctx.round == self.round and runtime.realCompareIdentical(&self.x, &localX)) {
+            realCopy(&self.result, out);
+            return;
+        }
+        compute(&localX, out, ctx); // compute first: any nested call leaves its own complete pair
+        realCopy(&localX, &self.x); // then stamp this call's key
+        self.digits = effDigits;
+        self.round = ctx.round;
+        self.valid = false;
+        if (!runtime.realIsSpecial(out)) { // and the result, together
+            realCopy(out, &self.result);
+            self.valid = true;
+        }
+    }
+};
+
+const Cache2 = struct {
+    valid: bool = false,
+    digits: i32 = 0,
+    round: i32 = 0,
+    y: real_t = undefined,
+    x: real_t = undefined,
+    result: real_t = undefined,
+
+    fn call(
+        self: *Cache2,
+        comptime compute: fn (*align(1) const real_t, *align(1) const real_t, *align(1) real_t, *realContext_t) void,
+        y: *align(1) const real_t,
+        x: *align(1) const real_t,
+        out: *align(1) real_t,
+        effDigits: i32,
+        ctx: *realContext_t,
+    ) void {
+        var localY: real_t = undefined;
+        var localX: real_t = undefined;
+        realCopy(y, &localY);
+        realCopy(x, &localX);
+        if (self.valid and effDigits == self.digits and ctx.round == self.round and
+            runtime.realCompareIdentical(&self.y, &localY) and runtime.realCompareIdentical(&self.x, &localX))
+        {
+            realCopy(&self.result, out);
+            return;
+        }
+        compute(&localY, &localX, out, ctx); // compute first (see Cache1.call)
+        realCopy(&localY, &self.y); // then stamp the key
+        realCopy(&localX, &self.x);
+        self.digits = effDigits;
+        self.round = ctx.round;
+        self.valid = false;
+        if (!runtime.realIsSpecial(out)) { // and the result, together
+            realCopy(out, &self.result);
+            self.valid = true;
+        }
+    }
+};
+
+// ===========================================================================
+// WP34S_Atan_75_compute (static)
+// ===========================================================================
+fn WP34S_Atan_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
     var doEpsilon: bool = false;
 
     // The eight working reals come from the heap, not the frame: eight
@@ -318,6 +407,14 @@ fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
     }
 }
 
+// Cached wrapper for WP34S_Atan. Returns the previous result when the input, the effective precision and the rounding mode
+// all match; see Cache1.call.
+var atanCache: Cache1 = .{};
+fn WP34S_Atan_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    const effDigits: i32 = if (realContext.digits > 39) 75 else 39; // the precision WP34S_Atan_75_compute forces, not the request
+    atanCache.call(WP34S_Atan_75_compute, x, angle, effDigits, realContext);
+}
+
 // ===========================================================================
 // C47_WP34S_Atan
 // ===========================================================================
@@ -325,7 +422,7 @@ pub fn C47_WP34S_Atan(x: *align(1) const real_t, angle: *align(1) real_t, realCo
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Atan_1071temp(x, angle, realContext);
     } else {
-        WP34S_Atan_75temp(x, angle, realContext);
+        WP34S_Atan_75_helper(x, angle, realContext);
     }
 }
 
@@ -448,9 +545,9 @@ fn doAtan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1)
 }
 
 // ===========================================================================
-// WP34S_Atan2_75temp / 1071temp (static) + dispatcher
+// WP34S_Atan2_75_compute / 1071temp (static) + dispatcher
 // ===========================================================================
-fn WP34S_Atan2_75temp(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Atan2_75_compute(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
     // These bodies work at real75; a wider caller context is narrowed for the
     // duration and put back on every exit.
     const savedContextDigits = realContext.digits;
@@ -482,11 +579,19 @@ fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real
     }
 }
 
+// Cached wrapper for WP34S_Atan2. Returns the previous result when both inputs, the effective precision and the rounding
+// mode match; see Cache2.call.
+var atan2Cache: Cache2 = .{};
+fn WP34S_Atan2_75_helper(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+    const effDigits: i32 = if (realContext.digits > 75) 75 else realContext.digits; // the precision WP34S_Atan2_75_compute computes at
+    atan2Cache.call(WP34S_Atan2_75_compute, y, x, atan, effDigits, realContext);
+}
+
 pub fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Atan2_1071temp(y, x, atan, realContext);
     } else {
-        WP34S_Atan2_75temp(y, x, atan, realContext);
+        WP34S_Atan2_75_helper(y, x, atan, realContext);
     }
 }
 
@@ -514,7 +619,7 @@ fn doAsin(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
     return true;
 }
 
-fn WP34S_Asin_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Asin_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
     // These bodies work at real75; a wider caller context is narrowed for the
     // duration and put back on every exit.
     const savedContextDigits = realContext.digits;
@@ -545,11 +650,18 @@ fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
     }
 }
 
+// Cached wrapper for WP34S_Asin. See Cache1.call.
+var asinCache: Cache1 = .{};
+fn WP34S_Asin_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    const effDigits: i32 = if (realContext.digits > 75) 75 else realContext.digits; // the precision WP34S_Asin_75_compute computes at
+    asinCache.call(WP34S_Asin_75_compute, x, angle, effDigits, realContext);
+}
+
 pub fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Asin_1071temp(x, angle, realContext);
     } else {
-        WP34S_Asin_75temp(x, angle, realContext);
+        WP34S_Asin_75_helper(x, angle, realContext);
     }
 }
 
@@ -581,7 +693,7 @@ fn doAcos(x: *align(1) const real_t, angle: *align(1) real_t, abx: *align(1) rea
     return true;
 }
 
-fn WP34S_Acos_75temp(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+fn WP34S_Acos_75_compute(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
     // These bodies work at real75; a wider caller context is narrowed for the
     // duration and put back on every exit.
     const savedContextDigits = realContext.digits;
@@ -612,10 +724,17 @@ fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
     }
 }
 
+// Cached wrapper for WP34S_Acos. See Cache1.call.
+var acosCache: Cache1 = .{};
+fn WP34S_Acos_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    const effDigits: i32 = if (realContext.digits > 75) 75 else realContext.digits; // the precision WP34S_Acos_75_compute computes at
+    acosCache.call(WP34S_Acos_75_compute, x, angle, effDigits, realContext);
+}
+
 pub fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47do_WP34S_Acos_1071temp(x, angle, realContext);
     } else {
-        WP34S_Acos_75temp(x, angle, realContext);
+        WP34S_Acos_75_helper(x, angle, realContext);
     }
 }

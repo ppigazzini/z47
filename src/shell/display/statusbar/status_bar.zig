@@ -1327,6 +1327,10 @@ pub export fn refreshStatusBar() callconv(.c) void {
         }
     }
 
+    if (screenHoldsDrawnPixels) { // CLLCD, PIXEL, POINT or AGRAPH painted: no status-bar activity over it
+        return;
+    }
+
     // DEBUG_INSTEAD_STATUS_BAR == 0 -> normal branch.
     if (graphMode()) {
         lcd_fill_rect(0, 0, 158, 20, LCD_SET_VALUE);

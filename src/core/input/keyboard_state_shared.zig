@@ -840,11 +840,11 @@ pub fn implementation(comptime runtime: type) type {
                     } else if (runtime.isEqn1stDer() and runtime.dynamicMenuItem == 5) {
                         item = runtime.ITM_FPHERE;
                     } else if (runtime.isEqn1stDer() and runtime.dynamicMenuItem == 4) {
-                        item = -runtime.MNU_GRAPHS;
+                        item = runtime.ITM_SOLVE_VAR; // the step key: parseEquation named that slot delta, and the MVAR key handler stores into it
                     } else if (runtime.isEqn2ndDer() and runtime.dynamicMenuItem == 5) {
                         item = runtime.ITM_FPPHERE;
                     } else if (runtime.isEqn2ndDer() and runtime.dynamicMenuItem == 4) {
-                        item = -runtime.MNU_GRAPHS;
+                        item = runtime.ITM_SOLVE_VAR; // the step key, as above
                     } else if (runtime.dynamicMenuItem >= numItems) {
                         item = runtime.ITM_NOP;
                     } else if ((runtime.currentSolverStatus & runtime.SOLVER_STATUS_INTERACTIVE) == 0) {

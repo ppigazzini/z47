@@ -107,7 +107,7 @@ fn clampOneShortIntegerRegister(regist: stack_runtime.calcRegister_t) void {
 // Indirect-addressing support: constants, runtime globals, and the long-integer
 // boundary used by the ported indirectAddressing resolver below.
 const FLAG_W: i16 = 224;
-const INVALID_MENU: i16 = 2870; // items.h: LAST_ITEM
+const INVALID_MENU: i16 = 2885; // items.h: LAST_ITEM
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_ENTER_NEW_NAME: u8 = 26;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;

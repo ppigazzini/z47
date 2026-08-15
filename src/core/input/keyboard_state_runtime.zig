@@ -956,6 +956,8 @@ pub extern fn fnAddTimerApp(unused: u16) void;
 pub extern fn fnAddLapTimerApp(unused: u16) void;
 // frmCalcMouseButton* / convertXYToKey dependencies (keyboard.c 1948-2009).
 pub const ITM_SOLVE: i16 = 1608;
+pub const ITM_F1DRV: i16 = 2883;
+pub const ITM_F2DRV: i16 = 2884;
 // calcKeyboard_t centralized in abi (oracle-verified == C; the C GtkWidget*
 // keyImage members are modelled as opaque pointers).
 pub const calcKeyboard_t = abi.CalcKeyboard;

@@ -3681,10 +3681,14 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                 if (nimNumberPart == NP_INT_10 or nimNumberPart == NP_REAL_FLOAT_PART or nimNumberPart == NP_REAL_EXPONENT) {
                     done = true;
                     closeNim();
-                    frontier_addons.fnAngularModeJM(amDMS);
-                    // IR_PRINTING
-                    frontier_print.printTrace(ITM_DMS2, NOPARAM);
-                    frontier_print.printTraceX(LINE_FULL_C);
+                    if (calcMode != CM_NIM and lastErrorCode == 0) {
+                        // it cannot be an angle at this point: a closed input is only a real or a long integer
+                        frontier_addons.fnAngularModeJM(amDMS);
+                        // IR_PRINTING
+                        frontier_print.printTrace(ITM_DMS2, NOPARAM);
+                        frontier_print.printTraceX(LINE_FULL_C);
+                        return;
+                    }
                 }
             },
 

@@ -114,7 +114,7 @@ var mouse_key: [3]u8 = .{ 0, 0, 0 };
 
 // keyboard.c convertXYToKey (1949-1978): map a click coordinate to a key string.
 fn convertXYToKey(x: c_int, y: c_int) void {
-    const key10_special = runtime.currentBezel == 2 and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or (runtime.tam.mode == runtime.TM_SOLVE and (runtime.tam.function != runtime.ITM_SOLVE or runtime.calcMode != runtime.CM_PEM)) or (runtime.tam.mode == runtime.TM_KEY and runtime.tam.keyInputFinished));
+    const key10_special = runtime.currentBezel == 2 and (runtime.tam.mode == runtime.TM_LABEL or runtime.tam.mode == runtime.TM_LBLONLY or (runtime.tam.mode == runtime.TM_SOLVE and ((runtime.tam.function != runtime.ITM_SOLVE and runtime.tam.function != runtime.ITM_F1DRV and runtime.tam.function != runtime.ITM_F2DRV) or runtime.calcMode != runtime.CM_PEM)) or (runtime.tam.mode == runtime.TM_KEY and runtime.tam.keyInputFinished));
     const hit = keyboard_hit_test.convertXYToKey(&runtime.calcKeyboard, x, y, runtime.currentBezel, key10_special);
     mouse_key[0] = hit.b0;
     mouse_key[1] = hit.b1;
@@ -167,7 +167,8 @@ fn btnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) 
     // This press closes a SHOW or WHO screen, which clears temporaryInformation
     // before the release handles EXIT; the release needs to know it happened so
     // EXIT only dismisses the screen and leaves the menu underneath.
-    runtime.showScreenDismissed = runtime.isShowMode() or runtime.currentMenu() == -runtime.MNU_SHOW;
+    // dismisses the WHO screen only; a real SHOW is handled in processKeyAction
+    runtime.showScreenDismissed = runtime.currentMenu() == -runtime.MNU_SHOW and !runtime.isShowMode();
     if (runtime.showScreenDismissed) {
         runtime.closeShowMenu();
     }
@@ -1177,10 +1178,27 @@ pub export fn Check_Norm_Key_00_Assigned(result: [*c]i16, tempkey: i16) callconv
     return 0;
 }
 
+// Six independent systems time a key, all off the shared timer pool configured in c47.zig. Three of them are armed by the
+// two functions here: the command preview (showFunctionName over the T line while a key is held, on TO_CL_LONG), the normal
+// key long press (the same timer plus the longpressDelayedkey1/2/3 chain, which is what gives one key up to three timed
+// stages), and the backspace double press to DROP (on TO_CL_DROP). The other three are armed elsewhere: the function-key
+// long/double press in btnFnPressed_StateMachine below (TO_FN_LONG, TO_FN_EXEC), the shift-key long press in
+// commonShiftProcessing (TO_FG_LONG, TO_FG_TIMR, TO_3S_CTFF), and key auto-repeat (TO_AUTO_REPEAT), which only arms for a
+// scrolling softmenu or a browser mode.
+//
+// THE SHOW SOFTMENU RULE. MNU_SHOW is the blank menu: no softkeys, no labels, put up by a real SHOW, by the WHO screen and
+// by a plot a running program drew. With no softkey on screen there is nothing for a long press to reach, and a preview
+// firing under the finger repaints over what the user is reading, so both functions below return without arming anything
+// while currentMenu() is -MNU_SHOW. The test is on that menu and not on GRAPHMODE, because an interactive plot is also
+// GRAPHMODE and there the 3x2 softmenu is up and needs its long press. The shift-key system is NOT covered by this guard.
+//
 // keyboardTweak.c Setup_MultiPresses (326-341): arm the backspace double-press
 // DROP timer and stop the long-press timers.
 pub export fn Setup_MultiPresses(result: i16) callconv(.c) void {
     runtime.JM_auto_doublepress_autodrop_enabled = 0;
+    if (runtime.currentMenu() == -runtime.MNU_SHOW) { // blank menu: SHOW, WHO or a programmed plot is on screen, so no key arms a timer
+        return;
+    }
     var tmp: i16 = 0;
     if (runtime.calcMode == runtime.CM_NORMAL and result == runtime.ITM_BACKSPACE and runtime.tam.mode == 0 and !runtime.getSystemFlag(runtime.FLAG_CLX_DROP)) {
         tmp = runtime.ITM_DROP;
@@ -1358,6 +1376,9 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
     var lp1: i16 = 0;
     runtime.longpressDelayedkey2 = 0;
     runtime.longpressDelayedkey3 = 0;
+    if (runtime.currentMenu() == -runtime.MNU_SHOW) { // blank menu: SHOW, WHO or a programmed plot is on screen, so no key arms a timer
+        return;
+    }
 
     const usr = runtime.getSystemFlag(runtime.FLAG_USER);
     const ki: usize = @intCast(key_no);

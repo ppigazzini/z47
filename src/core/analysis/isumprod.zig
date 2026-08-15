@@ -276,28 +276,11 @@ fn _checkRegisters() linksection(runtime.code_section) bool_t {
 // _checkiArgument
 // ===========================================================================
 fn _checkiArgument(label_in: u16, prod: bool_t) linksection(runtime.code_section) void {
-    var label = label_in;
-    if (FIRST_LABEL <= label and label <= LAST_LABEL) {
+    const label: u16 = @bitCast(runtime.findProgramLabel(label_in, "In function _checkiArgument:"));
+    if (label != INVALID_VARIABLE) {
         if (!_checkRegisters()) {
             _programmableiSumProd(label, prod);
         }
-    } else if (runtime.isStackRegister(label)) {
-        // Interactive mode
-        var buf: [2]u8 = undefined;
-        buf[0] = letteredRegisterName(@intCast(label));
-        buf[1] = 0;
-        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
-        if (label == INVALID_VARIABLE) {
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            runtime.infoNotANamedLabel("In function _checkiArgument:", @ptrCast(&buf[0]));
-        } else {
-            if (!_checkRegisters()) {
-                _programmableiSumProd(label, prod);
-            }
-        }
-    } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        runtime.infoUnexpectedParameter("In function _checkiArgument:", label);
     }
 }
 

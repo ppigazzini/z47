@@ -49,8 +49,7 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
         return;
     }
 
-    const saved_current_local_step_number = runtime.currentLocalStepNumber;
-    const saved_current_program_number = runtime.currentProgramNumber;
+    const saved_position = runtime.EditorPosition.save();
 
     // c43's `_selectProgram` is void: an out-of-range label raises the error and
     // the save CONTINUES with whatever program is current. Gating the save on it
@@ -62,10 +61,7 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
         if (ret != runtime.FILE_CANCEL) {
             runtime.displayWriteError();
         }
-        // No restore here, and none on the cancel path: c43 leaves the selected
-        // program current when the file cannot be opened, and only puts the
-        // saved numbers back after a completed write. A `defer` restoring on
-        // every path was the second divergence this lane could not see.
+        saved_position.restore();
         return;
     }
     defer runtime.closeFile();
@@ -93,7 +89,6 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
         runtime.writeU8Line(255);
     }
 
-    runtime.currentLocalStepNumber = saved_current_local_step_number;
-    runtime.currentProgramNumber = saved_current_program_number;
+    saved_position.restore();
     runtime.temporaryInformation = runtime.TI_SAVED;
 }

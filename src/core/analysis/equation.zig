@@ -102,7 +102,7 @@ const REAL34_SIZE_IN_BYTES: usize = 16;
 
 const FIRST_CONSTANT: u32 = 128; // CST_01
 const LAST_CONSTANT: u32 = 212; // CST_84
-const LAST_ITEM: u32 = 2870;
+const LAST_ITEM: u32 = 2885;
 const EIM_STATUS: u16 = 0x0100;
 const EIM_ENABLED: u16 = 1 << 8;
 
@@ -210,6 +210,8 @@ const STD_ELLIPSIS = "\xa0\x26";
 const STD_EulerE = "\xa1\x47";
 const STD_SPACE_PUNCTUATION = "\xa0\x08";
 const STD_SUB_0 = "\xa0\x80";
+const STD_SUB_d = "\xa4\x9f";
+const STD_delta = "\x83\xb4";
 const STD_SUB_10 = "\xa4\x7d";
 const STD_SUP_0 = "\xa1\x60";
 const STD_SUP_MINUS = "\xa1\x6b";
@@ -959,6 +961,14 @@ pub export fn showEquation(equationId: u16, startAt: u16, cursorAt: u16, dryRun:
 // ===========================================================================
 // _menuItem
 // ===========================================================================
+// The derivative's step key. It carries a name rather than an item because it is a named variable, which is what the MVAR
+// menu's own key handler stores into.
+fn _deltaMenuItem(bufPtr: [*c]u8) linksection(runtime.code_section) void {
+    const name = STD_delta ++ STD_SUB_d;
+    _ = xcopy(bufPtr, name.ptr, name.len + 1);
+    bufPtr[name.len + 1] = 0;
+}
+
 fn _menuItem(item: i16, bufPtr: [*c]u8) linksection(runtime.code_section) void {
     const name = &indexOfItems[@intCast(item)].itemSoftmenuName[0];
     _ = xcopy(bufPtr, name, @intCast(stringByteLength(name) + 1));
@@ -1348,11 +1358,11 @@ fn _parseWord(strPtr: [*c]u8, parseMode: u16, parserHint: u16, mvarBuffer: [*c]u
                             bufPtr += @as(usize, @intCast(stringByteLength(bufPtr) + 1));
                             _menuItem(ITM_CALC, bufPtr);
                         } else if (tmpVal == 3 and ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE)) {
-                            _menuItem(MNU_GRAPHS, bufPtr);
+                            _deltaMenuItem(bufPtr); // the step key, where the other engines put their tool menu
                             bufPtr += @as(usize, @intCast(stringByteLength(bufPtr) + 1));
                             _menuItem(ITM_FPHERE, bufPtr);
                         } else if (tmpVal == 3 and ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE)) {
-                            _menuItem(MNU_GRAPHS, bufPtr);
+                            _deltaMenuItem(bufPtr);
                             bufPtr += @as(usize, @intCast(stringByteLength(bufPtr) + 1));
                             _menuItem(ITM_FPPHERE, bufPtr);
                         }
@@ -1845,11 +1855,11 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
             }
             if (tmpVal == 4) {
                 if ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
-                    _menuItem(MNU_GRAPHS, bufPtr);
+                    _deltaMenuItem(bufPtr); // the step key, where the other engines put their tool menu
                     bufPtr += @as(usize, @intCast(stringByteLength(bufPtr) + 1));
                     _menuItem(ITM_FPHERE, bufPtr);
                 } else {
-                    _menuItem(MNU_GRAPHS, bufPtr);
+                    _deltaMenuItem(bufPtr);
                     bufPtr += @as(usize, @intCast(stringByteLength(bufPtr) + 1));
                     _menuItem(ITM_FPPHERE, bufPtr);
                 }

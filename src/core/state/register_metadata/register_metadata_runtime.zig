@@ -86,6 +86,8 @@ pub const ITM_Zex: u16 = 1651;
 pub const ITM_INTEGRAL: u16 = 1700;
 pub const ITM_INTEGRAL_YX: u16 = 1690;
 pub const ITM_PLTf: u16 = 2734;
+pub const ITM_F1DRV: u16 = 2883;
+pub const ITM_F2DRV: u16 = 2884;
 
 pub extern var currentAngularMode: u32;
 pub extern var numberOfNamedVariables: u16;

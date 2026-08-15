@@ -208,7 +208,7 @@ const FLAG_HPCONV = 32834;
 const FLAG_IGN1ER = 32804;
 const FLAG_US = 32853;
 const FLAG_VMDISP = 49191;
-const INVALID_MENU = 2870; // items.h: LAST_ITEM
+const INVALID_MENU = 2885; // items.h: LAST_ITEM
 const INVALID_VARIABLE = 2199;
 const ITM_10X_XFN = 2570;
 const ITM_1ONX_XFN = 2562;
@@ -396,7 +396,7 @@ const ITM_WEIBLU = 1270;
 const ITM_XTHROOT_XFN = 2584;
 const ITM_YYX = 1665;
 const ITM_YY_DFLT = 2550;
-const LAST_ITEM = 2870;
+const LAST_ITEM = 2885;
 const MB_FALSE = 4;
 const MB_TRUE = 5;
 const MNU_1STDERIV = 1335;
@@ -834,7 +834,7 @@ const menu_42 linksection(code_section) = [_]i16{ 2775, 2776, 2777, 2778, 2789, 
 // pushed SLVQ/SLVC along by one. ADV_SLVP is ITM_SLVP or ITM_NULL; ADV_SLVQ and
 // ADV_SLVC are unconditional here, since OPTION_SLVQ_SLVC is off only in the
 // no-QSPI old-hardware configuration that z47 does not build.
-const menu_ADV linksection(code_section) = [_]i16{ 1672, 1671, 1475, 2734, -1381, 1608, 1755, 1754, 1476, 2732, 1546, 1547, 2755, 1604, 1555, (if (option_slvp_poly) @as(i16, 1965) else 0), 0, 0 };
+const menu_ADV linksection(code_section) = [_]i16{ 1672, 1671, 2734, -1381, 1608, 2883, 1755, 1754, 2732, 1546, 1547, 2882, 2755, 1604, 1555, (if (option_slvp_poly) @as(i16, 1965) else 0), 0, 2884 };
 const menu_AIMCATALOG linksection(code_section) = [_]i16{ -1350, -1377, -1375, -1378, -1374, 1958 };
 const menu_ALPHA linksection(code_section) = [_]i16{ -1377, -1375, -1378, -1374, 1952, 1953, -1350, 2420, 2419, 1411, 1954, 1955, 1858, 2029, 2191, 1729, 1926, 1928 };
 const menu_ALPHA_OMEGA linksection(code_section) = [_]i16{ 602, 603, 604, 605, 606, 1810, 607, 608, 609, 610, 612, 613, 614, 615, 616, 617, 618, 1809, 619, 620, 620, 621, 622, 624, 625, 626, 627, 1811, 0, 0, 0, 0, 0, 0, 0, 0, 611, 0, 0, 623, 0, 0 };

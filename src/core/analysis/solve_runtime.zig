@@ -40,6 +40,8 @@ pub const real34_t = abi.Real34;
 pub const font_t = opaque {};
 pub const FIRST_LABEL: u16 = 2200; // INVALID_VARIABLE=2199 precedes FIRST_LABEL; the //2044 C comment is stale
 pub const LAST_LABEL: u16 = 6999;
+pub const FIRST_UC_LOCAL_LABEL: u16 = 100; // A, the first upper-case local label
+pub const LAST_LOCAL_LABEL: u16 = 123; // l, the last lower-case local label
 pub const REGISTER_X: calcRegister_t = 100;
 pub const REGISTER_Y: calcRegister_t = 101;
 pub const REGISTER_Z: calcRegister_t = 102;
@@ -83,6 +85,12 @@ pub inline fn isNamedVariable(v: u16) bool {
 pub inline fn isLabelOrStackRegister(v: u16) bool {
     return (v >= FIRST_LABEL and v <= LAST_LABEL) or (v >= REGISTER_X and v <= REGISTER_T);
 }
+// The operand band the interactive arm of SOLVE, the integral, PLT f and the derivatives accept: a local label A to l as
+// well as a global label or a lettered register. The local-label band starts at FIRST_UC_LOCAL_LABEL and already covers
+// REGISTER_X..REGISTER_T, which findProgramLabel resolves as local labels first.
+pub inline fn isLocalLabelOrLabelOrStackRegister(v: u16) bool {
+    return (v >= FIRST_UC_LOCAL_LABEL and v <= LAST_LOCAL_LABEL) or isLabelOrStackRegister(v);
+}
 
 pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
 // namedLabels_t label-scope selector (typeDefinitions.h): GLOBAL_LABELS ==
@@ -90,6 +98,9 @@ pub extern fn letteredRegisterName(regist: calcRegister_t) u8;
 // ALL_LABELS == 0.
 pub const GLOBAL_LABELS: u8 = 253;
 pub extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
+// manage.c findProgramLabel: resolves a local label, an already-resolved named label or a lettered register to a label
+// list index, reporting the reason itself. INVALID_VARIABLE means "already reported".
+pub extern fn findProgramLabel(label: u16, caller: [*:0]const u8) calcRegister_t;
 pub extern fn clearSystemFlag(flag: u32) void;
 pub extern fn setSystemFlag(flag: u32) void;
 pub extern fn displayCalcErrorMessage(error_code: u8, register_line: calcRegister_t, regist: calcRegister_t) void;
@@ -99,7 +110,6 @@ pub extern fn z47_solver_fnProgrammableSum(label: u16) void;
 pub extern fn z47_solver_fnProgrammableProduct(label: u16) void;
 pub extern fn z47_solver_fnProgrammableiSum(label: u16) void;
 pub extern fn z47_solver_fnProgrammableiProduct(label: u16) void;
-pub extern fn z47_solver_fn1stDeriv(label: u16) void;
 
 const label_range = @import("label_range.zig"); // std-only label/register band predicates
 inline fn labelBands() label_range.Bands {

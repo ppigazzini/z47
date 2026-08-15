@@ -27,23 +27,53 @@ pub extern var numberOfLabels: u16;
 pub extern var temporaryInformation: u8;
 
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
+pub extern fn defineCurrentProgramFromCurrentStep() void;
 pub const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
 pub extern fn findNamedLabel(labelName: [*c]const u8, labelType: u8) u16;
+
+// selectProgram() goes through fnGoto(), which moves the step, the step number, the program number, the displayed step
+// and its number, and the program bounds. WRITEP and XPORTP put all six back, not just the two step numbers.
+pub const EditorPosition = struct {
+    step: [*c]u8,
+    first_displayed: [*c]u8,
+    local_step_number: u16,
+    first_displayed_local_step_number: u16,
+    program_number: u16,
+
+    pub fn save() EditorPosition {
+        return .{
+            .step = currentStep,
+            .first_displayed = firstDisplayedStep,
+            .local_step_number = currentLocalStepNumber,
+            .first_displayed_local_step_number = firstDisplayedLocalStepNumber,
+            .program_number = currentProgramNumber,
+        };
+    }
+
+    pub fn restore(self: EditorPosition) void {
+        currentStep = self.step;
+        defineCurrentProgramFromCurrentStep(); // the program bounds follow the step
+        currentLocalStepNumber = self.local_step_number;
+        currentProgramNumber = self.program_number;
+        firstDisplayedStep = self.first_displayed;
+        firstDisplayedLocalStepNumber = self.first_displayed_local_step_number;
+    }
+};
 
 pub const ioPathSaveProgram: c_int = 8;
 pub const ioPathSaveAllPrograms: c_int = 12;
 
-const ITM_END_HIGH: u8 = ITM_END >> 8;
+const ITM_END_HIGH: u8 = (ITM_END >> 8) | 0x80;
 const ITM_END_LOW: u8 = ITM_END & 0xff;
 
-// isAtEndOfProgram(step) is checkOpCodeOfStep(step, ITM_END). Bit 7 of the
-// first byte marks a two-byte opcode and is not part of the code, so it is
-// masked off before the comparison, and a null step never matches.
+// isAtEndOfProgram(step) is checkOpCodeOfStep(step, ITM_END). Bit 7 of the first byte is the two-byte-opcode marker and
+// is part of the match, not masked off: without it the one-byte step ISE .66 (bytes 05 B2) reads as END. A null step
+// never matches.
 fn isAtEndOfProgramZ(step: [*c]const u8) bool {
     if (step == null) {
         return false;
     }
-    return (step[0] & 0x7f) == ITM_END_HIGH and step[1] == ITM_END_LOW;
+    return step[0] == ITM_END_HIGH and step[1] == ITM_END_LOW;
 }
 
 pub inline fn checkPower() bool {

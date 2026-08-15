@@ -258,8 +258,7 @@ fn exportProgramToPath(path: c_int) void {
 /// the printer active and PRPROG the invoking command, the listing goes to the
 /// IR printer instead of to a file.
 pub fn exportProgram(label: u16, path: c_int) void {
-    const saved_current_local_step_number = runtime.currentLocalStepNumber;
-    const saved_current_program_number = runtime.currentProgramNumber;
+    const saved_position = runtime.EditorPosition.save();
 
     if (runtime.checkPower()) {
         return;
@@ -274,6 +273,5 @@ pub fn exportProgram(label: u16, path: c_int) void {
         runtime.temporaryInformation = runtime.TI_SAVED;
     }
 
-    runtime.currentLocalStepNumber = saved_current_local_step_number;
-    runtime.currentProgramNumber = saved_current_program_number;
+    saved_position.restore();
 }
