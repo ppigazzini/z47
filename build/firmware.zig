@@ -238,6 +238,15 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
 // mathematics owners are the port of upstream's src/c47/mathematics/, so the
 // options that gate bodies there are the ones set here. A null package (DMCP5,
 // which is NEW_HW and never enters the TWO_FILE_PGM block) keeps every feature.
+// The DM42 board is OLD_HW. Marked at the two call sites that build for it,
+// rather than inferred from the object's name prefix: the name is a label, the
+// board is the fact.
+fn dm42MathOptions(base: math_command_wrappers.RuntimeObjectOptions) math_command_wrappers.RuntimeObjectOptions {
+    var opts = base;
+    opts.old_hw = true;
+    return opts;
+}
+
 fn mathematicsPackageOptions(base: math_command_wrappers.RuntimeObjectOptions, dmcp_package: ?u8) math_command_wrappers.RuntimeObjectOptions {
     var opts = base;
     const pkg = dmcp_package orelse return opts;
@@ -428,7 +437,7 @@ pub fn registerSteps(
     const dmcp5_flags_state_objects = flags.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_flags_options);
     // Per package: OPTION_ELLIPTIC, _BESSEL, _ORTHO, _DIST_NORMAL and _EIGEN each
     // empty the matching command bodies upstream, so the object cannot be shared.
-    const dmcp_math_command_wrapper_options = mathematicsPackageOptions(firmware_math_command_wrapper_options, dmcp_package);
+    const dmcp_math_command_wrapper_options = dm42MathOptions(mathematicsPackageOptions(firmware_math_command_wrapper_options, dmcp_package));
     const dmcp_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_math_command_wrapper_options);
     const dmcp5_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_math_command_wrapper_options);
     const dmcp_constants_objects = constants.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", firmware_constants_options);
@@ -614,7 +623,7 @@ pub fn registerSteps(
     var dmcp_variants: [dmcp_packages.len]VariantBuild = undefined;
     for (dmcp_packages, 0..) |package, index| {
         const variant_frontier_objects = frontier.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, b.fmt("dmcp-variant-pkg{d}", .{package}), frontierDistributionStrip(firmware_frontier_options, package));
-        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", mathematicsPackageOptions(firmware_math_command_wrapper_options, package));
+        const variant_math_command_wrapper_objects = math_command_wrappers.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dm42MathOptions(mathematicsPackageOptions(firmware_math_command_wrapper_options, package)));
         const variant_solve_objects = solve.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", solverPackageOptions(firmware_solve_options, package));
         const variant_build = addFirmwareBuild(b, .{
             .step_name = b.fmt("dmcp_pkg{d}", .{package}),

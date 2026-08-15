@@ -236,6 +236,11 @@ fn doAtan(
 //
 // The zero sign is part of the key: realCompareIdentical is a byte compare, so -0 and +0 are different inputs, and 1 and
 // 1.0 are too.
+// The DM42 (OLD_HW) firmware has no room for the four slots: its .bss ends exactly at the DMCP system data block and they
+// are 588 bytes past it. A hit returns what a recompute returns -- that is what upstream's CACHE_VERIFY build asserts --
+// so on that board every call computes and the answers are unchanged.
+const cache_slots_enabled = runtime.trig_result_cache;
+
 const Cache1 = struct {
     valid: bool = false,
     digits: i32 = 0,
@@ -407,12 +412,24 @@ fn C47do_WP34S_Atan_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
     }
 }
 
+// The slots themselves. Held in a comptime-selected container so the board that does without them carries no .bss for
+// them at all, rather than an unreachable branch over a live one.
+const slots = if (cache_slots_enabled) struct {
+    var atan: Cache1 = .{};
+    var atan2: Cache2 = .{};
+    var asin: Cache1 = .{};
+    var acos: Cache1 = .{};
+} else struct {};
+
 // Cached wrapper for WP34S_Atan. Returns the previous result when the input, the effective precision and the rounding mode
 // all match; see Cache1.call.
-var atanCache: Cache1 = .{};
 fn WP34S_Atan_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    if (comptime !cache_slots_enabled) {
+        WP34S_Atan_75_compute(x, angle, realContext);
+        return;
+    }
     const effDigits: i32 = if (realContext.digits > 39) 75 else 39; // the precision WP34S_Atan_75_compute forces, not the request
-    atanCache.call(WP34S_Atan_75_compute, x, angle, effDigits, realContext);
+    slots.atan.call(WP34S_Atan_75_compute, x, angle, effDigits, realContext);
 }
 
 // ===========================================================================
@@ -581,10 +598,13 @@ fn C47do_WP34S_Atan2_1071temp(y: *align(1) const real_t, x: *align(1) const real
 
 // Cached wrapper for WP34S_Atan2. Returns the previous result when both inputs, the effective precision and the rounding
 // mode match; see Cache2.call.
-var atan2Cache: Cache2 = .{};
 fn WP34S_Atan2_75_helper(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
+    if (comptime !cache_slots_enabled) {
+        WP34S_Atan2_75_compute(y, x, atan, realContext);
+        return;
+    }
     const effDigits: i32 = if (realContext.digits > 75) 75 else realContext.digits; // the precision WP34S_Atan2_75_compute computes at
-    atan2Cache.call(WP34S_Atan2_75_compute, y, x, atan, effDigits, realContext);
+    slots.atan2.call(WP34S_Atan2_75_compute, y, x, atan, effDigits, realContext);
 }
 
 pub fn C47_WP34S_Atan2(y: *align(1) const real_t, x: *align(1) const real_t, atan: *align(1) real_t, realContext: *realContext_t) void {
@@ -651,10 +671,13 @@ fn C47do_WP34S_Asin_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 }
 
 // Cached wrapper for WP34S_Asin. See Cache1.call.
-var asinCache: Cache1 = .{};
 fn WP34S_Asin_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    if (comptime !cache_slots_enabled) {
+        WP34S_Asin_75_compute(x, angle, realContext);
+        return;
+    }
     const effDigits: i32 = if (realContext.digits > 75) 75 else realContext.digits; // the precision WP34S_Asin_75_compute computes at
-    asinCache.call(WP34S_Asin_75_compute, x, angle, effDigits, realContext);
+    slots.asin.call(WP34S_Asin_75_compute, x, angle, effDigits, realContext);
 }
 
 pub fn C47_WP34S_Asin(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
@@ -725,10 +748,13 @@ fn C47do_WP34S_Acos_1071temp(x: *align(1) const real_t, angle: *align(1) real_t,
 }
 
 // Cached wrapper for WP34S_Acos. See Cache1.call.
-var acosCache: Cache1 = .{};
 fn WP34S_Acos_75_helper(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {
+    if (comptime !cache_slots_enabled) {
+        WP34S_Acos_75_compute(x, angle, realContext);
+        return;
+    }
     const effDigits: i32 = if (realContext.digits > 75) 75 else realContext.digits; // the precision WP34S_Acos_75_compute computes at
-    acosCache.call(WP34S_Acos_75_compute, x, angle, effDigits, realContext);
+    slots.acos.call(WP34S_Acos_75_compute, x, angle, effDigits, realContext);
 }
 
 pub fn C47_WP34S_Acos(x: *align(1) const real_t, angle: *align(1) real_t, realContext: *realContext_t) void {

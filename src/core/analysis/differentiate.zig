@@ -174,8 +174,8 @@ const DERIVATIVE_SECOND_CENTRAL: u16 = 1;
 // ---------------------------------------------------------------------------
 // defines.h values (verified)
 //   FIRST_LABEL=2044 LAST_LABEL=6999 INVALID_VARIABLE=2199
-//   REGISTER_X=100 T=103 L=108; TEMP_REGISTER_1=135; ERR_REGISTER_LINE=REGISTER_Z=102
-//   ERROR_NONE=0 ERROR_LABEL_NOT_FOUND=6 ERROR_OUT_OF_RANGE=8
+//   REGISTER_X=100 T=103; ERR_REGISTER_LINE=REGISTER_Z=102
+//   ERROR_NONE=0 ERROR_OUT_OF_RANGE=8 ERROR_NO_PROGRAM_SPECIFIED=54
 //   FLAG_SOLVING=0xc026; SOLVER_STATUS_USES_FORMULA=0x0100
 //   dtReal34=1; amNone=5; NOPARAM=9876
 //   TI_1ST_DERIVATIVE=57 TI_2ND_DERIVATIVE=58
@@ -187,11 +187,9 @@ const INVALID_VARIABLE: u16 = 2199;
 
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_T: calcRegister_t = 103;
-const TEMP_REGISTER_1: calcRegister_t = 135;
 const ERR_REGISTER_LINE: calcRegister_t = 102;
 
 const ERROR_NONE: u8 = 0;
-const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 
 const FLAG_SOLVING: u32 = 0xc026;
@@ -217,7 +215,6 @@ const LAST_LOCAL_LABEL: u16 = 123; // l, the last lower-case local label
 const ERROR_NO_PROGRAM_SPECIFIED: u8 = 54;
 const CMP_NAME: i32 = 3;
 const MNU_MVAR: i16 = 1398;
-const PGM_STOPPED: u8 = 0;
 const FLAG_INTING: u32 = 0xc025;
 const SOLVER_STATUS_INTERACTIVE: u16 = 0x0002;
 const SOLVER_STATUS_EQUATION_MODE: u16 = 0x200c;
@@ -265,11 +262,8 @@ extern var ctxtReal4: realContext_t;
 extern var ctxtReal39: realContext_t;
 
 // ---------------------------------------------------------------------------
-// Constants blob accessor: const_1on10
+// Constants blob accessor: const_1
 // ---------------------------------------------------------------------------
-inline fn const_1on10() *align(1) const real_t {
-    return consts.c4520();
-}
 inline fn const_1() *align(1) const real_t {
     return consts.c4856();
 }
@@ -351,7 +345,6 @@ extern fn getRegisterDataType(reg: calcRegister_t) u32;
 extern fn getRegisterAsReal(reg: calcRegister_t, val: *real_t) bool;
 extern fn reallocateRegister(regist: calcRegister_t, data_type: u32, data_len: u16, tag: u32) void;
 extern fn convertRealToResultRegister(x: *const real_t, dest: calcRegister_t, angle: u32) void;
-extern fn copySourceRegisterToDestRegister(rSource: calcRegister_t, rDest: calcRegister_t) void;
 
 extern fn getSystemFlag(sf: i32) bool;
 extern fn setSystemFlag(sf: c_uint) void;
@@ -359,17 +352,12 @@ extern fn clearSystemFlag(sf: c_uint) void;
 extern fn saveForUndo() void;
 extern fn undo() void;
 extern fn fnToReal(unused: u16) void;
-extern fn fnDrop(unused: u16) void;
 extern fn fnFillStack(unused: u16) void;
 extern fn execProgram(label: u16) void;
 extern fn reallyRunFunction(func: i16, param: u16) void;
 extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: calcRegister_t, err_register_line: calcRegister_t) void;
-const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
-const ALL_LABELS: u8 = 0; // namedLabels_t: search local then global
-extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
 extern fn findNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
 extern fn findProgramLabel(label: u16, caller: [*:0]const u8) calcRegister_t;
-extern fn letteredRegisterName(regist: calcRegister_t) u8;
 extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
 extern fn showSoftmenu(id: i16) void;
 

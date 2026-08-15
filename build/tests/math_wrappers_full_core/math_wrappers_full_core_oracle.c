@@ -104,12 +104,13 @@
 #define roundRema oracle_roundRema
 #define roundTime oracle_roundTime
 
-// --- toPolar.c (5 functions) ---
+// --- toPolar.c (6 functions) ---
 #define fnToPolar2 oracle_fnToPolar2
 #define fnToPolar_CX oracle_fnToPolar_CX
 #define fnToPolar_HP oracle_fnToPolar_HP
 #define real34RectangularToPolar oracle_real34RectangularToPolar
 #define realRectangularToPolar oracle_realRectangularToPolar
+#define realRectangularToPolarCached oracle_realRectangularToPolarCached
 
 // --- toRect.c (4 functions) ---
 #define fnToRect2 oracle_fnToRect2

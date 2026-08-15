@@ -42,6 +42,12 @@ pub const RuntimeObjectOptions = struct {
     /// loads the sample programs. The testSuite and the full-core harnesses set
     /// it; the product and the simulator leave it false.
     is_testsuite_build: bool = false,
+    /// The DM42 board (OLD_HW). Its SRAM2 .bss ends exactly at the DMCP system
+    /// data block, and the four inverse-trig result slots are 588 bytes it does
+    /// not have, so that board computes every call instead of caching it. Set by
+    /// the two firmware call sites that build for the board, not inferred from
+    /// the object name.
+    old_hw: bool = false,
     strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -159,6 +165,11 @@ pub fn addBuildOptions(
     // from executable QSPI (XIP) to keep main FLASH free; same mechanism the
     // dateTime owner and the distribution owners use.
     build_options.addOption(bool, "dm42_pkg_xip", std.mem.eql(u8, name_prefix, "dmcp"));
+    // The four inverse-trig result slots are 588 bytes of .bss, which the DM42
+    // does not have (its .bss ends exactly at the DMCP system data block). A hit
+    // returns what a recompute returns -- that is what upstream's CACHE_VERIFY
+    // build asserts -- so leaving them out costs the board speed and nothing else.
+    build_options.addOption(bool, "trig_result_cache", !options.old_hw);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_cubic_159", options.option_cubic_159);

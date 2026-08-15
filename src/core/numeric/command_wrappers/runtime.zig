@@ -18,6 +18,7 @@ const dm42_pkg_xip = build_options.dm42_pkg_xip;
 /// defines.h's OPTION_XFN_1000: the 1071-digit XFN math path. Enabled by
 /// default, #undef'd for every DM42 build ("does not work on DM42, due to stack
 /// constraint", ~5Kb of flash).
+pub const trig_result_cache = build_options.trig_result_cache;
 pub const option_xfn_1000 = build_options.option_xfn_1000;
 // Each of these empties the matching command bodies upstream, so a build
 // without one answers nothing rather than computing on a stubbed helper.
