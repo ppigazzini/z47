@@ -495,24 +495,9 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
 // _checkArgument
 // ===========================================================================
 fn _checkArgument(label_in: u16, prod: bool_t, early: ?*EarlyAbort) linksection(runtime.code_section) void {
-    var label = label_in;
-    if (FIRST_LABEL <= label and label <= LAST_LABEL) {
+    const label: u16 = @bitCast(runtime.findProgramLabel(label_in, "In function _checkArgument:"));
+    if (label != INVALID_VARIABLE) {
         _programmableSumProd(label, prod, early);
-    } else if (runtime.isStackRegister(label)) {
-        // Interactive mode
-        var buf: [2]u8 = undefined;
-        buf[0] = letteredRegisterName(@intCast(label));
-        buf[1] = 0;
-        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
-        if (label == INVALID_VARIABLE) {
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            runtime.infoNotANamedLabel("In function _checkArgument:", @ptrCast(&buf[0]));
-        } else {
-            _programmableSumProd(label, prod, early);
-        }
-    } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        runtime.infoUnexpectedParameter("In function _checkArgument:", label);
     }
 }
 

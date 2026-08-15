@@ -733,6 +733,7 @@ extern var blockMonitoring: bool_t;
 extern var cancelFilename: bool_t;
 extern var firstDisplayedLocalStepNumber: u16;
 extern var currentLocalStepNumber: u16;
+extern var currentProgramNumber: u16;
 extern var freeProgramBytes: u16;
 extern var numberOfNamedVariables: u16;
 extern fn invalidateNamedVariableCache() callconv(.c) void;
@@ -805,6 +806,7 @@ extern var numberOfFormulae: u16;
 extern var currentFormula: u16;
 extern var currentSolverStatus: u16;
 extern var currentSolverProgram: u16;
+extern var currentDerivProgram: u16;
 extern var currentSolverVariable: u16;
 extern var currentSolverNestingDepth: u16;
 extern var engineNestingDepth: u16;
@@ -1668,7 +1670,7 @@ fn strBuf(comptime s: []const u8) [30]u8 {
     return b;
 }
 
-const LAST_ITEM: u16 = 2870;
+const LAST_ITEM: u16 = 2885;
 
 pub export fn getConfirmationTiId() callconv(.c) u16 {
     var id: u16 = 0;
@@ -2138,6 +2140,8 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         firstFreeProgramByte = beginOfProgramMemory + 2;
         firstDisplayedStep = beginOfProgramMemory;
         firstDisplayedLocalStepNumber = 0;
+        currentLocalStepNumber = 1;
+        currentProgramNumber = 1;
         labelList = null;
         programList = null;
         beginOfProgramMemory[0] = @intCast((ITM_END >> 8) | 0x80);
@@ -2413,6 +2417,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
 
         currentSolverStatus = 0;
         currentSolverProgram = 0xffff;
+        currentDerivProgram = 0xffff;
         currentSolverVariable = INVALID_VARIABLE;
         currentSolverNestingDepth = 0;
         engineNestingDepth = 0;

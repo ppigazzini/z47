@@ -119,7 +119,7 @@ const FLAG_ALPHA = 32782;
 const FLAG_IGN1ER = 32804;
 const FLAG_M = 211;
 const FLAG_W = 224;
-const INVALID_MENU = 2870; // items.h: LAST_ITEM
+const INVALID_MENU = 2885; // items.h: LAST_ITEM
 const INVALID_VARIABLE = 2199;
 const ITM_0 = 540;
 const ITM_0P = 988;
@@ -199,6 +199,8 @@ const ITM_RNORM = 1574;
 const ITM_SKIP = 1603;
 const ITM_SOLVE = 1608;
 const ITM_PLTf = 2734;
+const ITM_F1DRV = 2883;
+const ITM_F2DRV = 2884;
 const ITM_STO = 44;
 const ITM_STOADD = 45;
 const ITM_STOCFG = 1611;
@@ -232,7 +234,7 @@ const ITM_dddVEL2 = 2648;
 const ITM_dddVEL3 = 2649;
 const ITM_l = 587;
 const ITM_toINT = 1687;
-const LAST_ITEM = 2870;
+const LAST_ITEM = 2885;
 const LAST_RESERVED_VARIABLE = 2047;
 const MNU_AMORT = 2382;
 const MNU_DYNAMIC = 1394;
@@ -860,7 +862,7 @@ fn _tamProcessInput(item: u16) void {
             } else if (tam.mode == TM_LBLONLY) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);
             } else if (tam.mode == TM_SOLVE) {
-                if ((tam.function == ITM_SOLVE or tam.function == ITM_PLTf) and calcMode == CM_PEM) {
+                if ((tam.function == ITM_SOLVE or tam.function == ITM_PLTf or tam.function == ITM_F1DRV or tam.function == ITM_F2DRV) and calcMode == CM_PEM) {
                     frontier_softmenus.showSoftmenu(-MNU_TAMVARONLY);
                 } else {
                     frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);
@@ -1145,7 +1147,7 @@ fn _tamProcessInput(item: u16) void {
             maxDigits = _tamMaxDigits(max2);
         }
     } else if (item == ITM_COLON) {
-        if ((tam.mode == TM_LABEL) or (tam.mode == TM_LBLONLY) or (tam.mode == TM_KEY) or ((tam.mode == TM_SOLVE) and (tam.function != ITM_SOLVE or calcMode != CM_PEM))) {
+        if ((tam.mode == TM_LABEL) or (tam.mode == TM_LBLONLY) or (tam.mode == TM_KEY) or ((tam.mode == TM_SOLVE) and ((tam.function != ITM_SOLVE and tam.function != ITM_F1DRV and tam.function != ITM_F2DRV) or calcMode != CM_PEM))) {
             if (!tam.colon) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLOCALLABEL);
             }
@@ -1593,7 +1595,7 @@ pub export fn tamEnterMode(funcIn: i16) callconv(.c) void {
             frontier_softmenus.showSoftmenu(-MNU_TAMMENU);
         },
         TM_SOLVE => {
-            if ((func == ITM_SOLVE or func == ITM_PLTf) and calcMode == CM_PEM) {
+            if ((func == ITM_SOLVE or func == ITM_PLTf or func == ITM_F1DRV or func == ITM_F2DRV) and calcMode == CM_PEM) {
                 frontier_softmenus.showSoftmenu(-MNU_TAMVARONLY);
             } else {
                 frontier_softmenus.showSoftmenu(-MNU_TAMLBLONLY);

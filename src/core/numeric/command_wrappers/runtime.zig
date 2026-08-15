@@ -812,6 +812,7 @@ pub inline fn realMinus(operand: *const real_t, result: *real_t, real_context: *
 }
 pub extern fn realToIntegralValue(source: *const real_t, destination: *real_t, mode: rounding_t, real_context: *realContext_t) void;
 pub extern fn realCompareEqual(number1: *const real_t, number2: *const real_t) bool;
+pub extern fn realCompareIdentical(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareLessThan(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsEqual(number1: *const real_t, number2: *const real_t) bool;
 pub extern fn realCompareAbsGreaterThan(number1: *const real_t, number2: *const real_t) bool;

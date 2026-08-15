@@ -348,7 +348,7 @@ const ITM_dotD: i16 = 1741;
 const ITM_HASH_JM: i16 = 1872;
 const ITM_toINT: i16 = 1687;
 const ITM_CLRMOD: i16 = 2005;
-const LAST_ITEM: i16 = 2870;
+const LAST_ITEM: i16 = 2885;
 const MNU_DYNAMIC: i16 = 1394;
 const FIRST_CONSTANT: i16 = 128;
 const LAST_CONSTANT: i16 = 212;
@@ -566,6 +566,7 @@ const TI_SA: u8 = 47;
 const TI_INACCURATE: u8 = 48;
 const TI_UNDO_DISABLED: u8 = 49;
 const TI_SOLVER_VARIABLE: u8 = 51;
+const TI_DERIV_STEP: u8 = 144;
 const TI_ACC: u8 = 53;
 const TI_ULIM: u8 = 54;
 const TI_LLIM: u8 = 55;
@@ -839,6 +840,8 @@ const whoStr1: [*:0]const u8 = "C47 & R47 Development since 2019" ++ spc ++ "by"
     "Walter" ++ spc ++ "DE.";
 
 const STD_o_DIARESIS = "\x80\xf6";
+const STD_delta = "\x83\xb4";
+const STD_SUB_d = "\xa4\x9f";
 const STD_e_ACUTE = "\x80\xe9";
 // The contributor roll under whoStr1, in the tiny font. Commit counts as of the
 // 02Aug2026 upstream snapshot this pin carries. Upstream states the recount
@@ -2441,22 +2444,16 @@ pub export fn drawSinglePixelFullWidthLine(y: c_int) callconv(.c) void {
     lcd_fill_rect(0, @intCast(y), SCREEN_WIDTH, 1, LCD_EMPTY_VALUE);
 }
 
+// Only a page that prints alternative renderings below the line asks for one: the real34 page sets 30, or 40 with an
+// angular mode, and complex34 sets 20. A long integer, an XFN sum and the rest print nothing below it and get no line.
+// The override belongs to the page and not to one paint, so it is fnC47Show that clears it when it builds the next page.
 pub export fn showBottomLine() callconv(.c) void {
-    var yoff: i32 = 0;
-    if (!((temporaryInformation == TI_SHOW_REGISTER_SMALL and tmpString[5 * @as(usize, @intCast(SHOWLineSize))] != 0) or
-        (temporaryInformation == TI_SHOW_REGISTER_TINY and tmpString[14 * @as(usize, @intCast(SHOWLineSize))] != 0)) or (overrideShowBottomLine > 0))
-    {
-        if (overrideShowBottomLine > 0) {
-            yoff = @intFromFloat(@as(f32, SCREEN_HEIGHT) - @as(f32, REGISTER_LINE_HEIGHT) * @as(f32, @floatFromInt(overrideShowBottomLine)) / 10.0);
-        } else {
-            yoff = SCREEN_HEIGHT - REGISTER_LINE_HEIGHT * 2;
-        }
-
+    if (overrideShowBottomLine > 0) {
+        // 40 means 4.0 registers up from the bottom
+        const yoff: i32 = @intFromFloat(@as(f32, SCREEN_HEIGHT) - @as(f32, REGISTER_LINE_HEIGHT) * @as(f32, @floatFromInt(overrideShowBottomLine)) / 10.0);
         const offs: i32 = if (temporaryInformation == TI_SHOW_REGISTER_BIG) -2 else 0;
 
         drawSinglePixelFullWidthLine(yoff + offs);
-
-        overrideShowBottomLine = 0;
     }
 }
 
@@ -3581,6 +3578,15 @@ pub export fn _displaySolverOutput(regist: calcRegister_t, prefix: [*c]u8, prefi
 pub export fn _displaySolverInput(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
     if (regist == REGISTER_X) {
         __displaySolver(regist, prefix, prefixWidth, -1);
+    }
+}
+
+// The derivative's step key. It stores into its own variable and leaves the selection alone, so the line names the step
+// and not currentSolverVariable.
+fn _displayDerivStep(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) void {
+    if (regist == REGISTER_X) {
+        _ = strcpy(prefix, STD_delta ++ STD_SUB_d ++ " =");
+        prefixWidth.* = frontier_char_string.stringWidth(prefix, &standardFont, true, true) + 1;
     }
 }
 
@@ -4916,6 +4922,8 @@ fn refreshReal34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i16,
         _displaySolverOutput(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE) {
         _displaySolverInput(regist, prefix, prefixWidth_p);
+    } else if (temporaryInformation == TI_DERIV_STEP) {
+        _displayDerivStep(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_ELLIPSE_K) {
         if (regist == REGISTER_X) {
             abi.fmtCStr(prefix, "eccentricity e=k=" ++ STD_SQUARE_ROOT ++ "m" ++ STD_SPACE_FIGURE ++ ":", .{});
@@ -5095,6 +5103,8 @@ fn refreshComplex34(regist: calcRegister_t, origRegist: calcRegister_t, baseY: i
         _displaySolverOutput(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE) {
         _displaySolverInput(regist, prefix, prefixWidth_p);
+    } else if (temporaryInformation == TI_DERIV_STEP) {
+        _displayDerivStep(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T) {
         viewRegName(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_VIEW_REGISTER) {
@@ -5295,6 +5305,8 @@ fn refreshLongInteger(regist: calcRegister_t, origRegist: calcRegister_t, baseY:
         _fnShowRecallTI(prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_SOLVER_VARIABLE) {
         _displaySolverInput(regist, prefix, prefixWidth_p);
+    } else if (temporaryInformation == TI_DERIV_STEP) {
+        _displayDerivStep(regist, prefix, prefixWidth_p);
     } else if ((regist == REGISTER_X and (temporaryInformation == TI_MIJ or temporaryInformation == TI_MIJEQ)) or ((regist == REGISTER_X or regist == REGISTER_Y) and temporaryInformation == TI_IJ) or (regist == REGISTER_X and (temporaryInformation == TI_I or temporaryInformation == TI_J))) {
         _displayIJ(regist, prefix, prefixWidth_p);
     } else if (temporaryInformation == TI_STORCL and regist == REGISTER_X) {
@@ -5703,13 +5715,14 @@ fn _selectiveClearScreen() void {
 
         if ((screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
             lcd_fill_rect(LeftGraphInfoX, topLeftMenuInclBorderY, widthGraphInfoBox, menuHeightInclBorder, LCD_SET_VALUE);
-            // The MNU_SHOW guards keep this clear off the area a SHOW/WHO screen owns:
-            // that screen paints the whole display and the blank menu under it must not
-            // erase part of it.
-            if ((!GRAPHMODE() or frontier_softmenus.menu(0) == -MNU_PLOT_FUNC) and frontier_softmenus.currentMenu() != -MNU_SHOW) {
+            // The TI_WHO guards keep this clear off the area the WHO screen owns: that
+            // screen paints the whole display and the blank menu under it must not erase
+            // part of it. A real SHOW shares the same blank menu but does its own preview
+            // clears, so the test is on the temporary information and not on the menu.
+            if ((!GRAPHMODE() or frontier_softmenus.menu(0) == -MNU_PLOT_FUNC) and temporaryInformation != TI_WHO) {
                 lcd_fill_rect(LeftGraphInfoX, topLeftMenuInclBorderY - 3, 20, 6, LCD_SET_VALUE);
             }
-            if (!GRAPHMODE() and frontier_softmenus.currentMenu() != -MNU_SHOW) {
+            if (!GRAPHMODE() and temporaryInformation != TI_WHO) {
                 lcd_fill_rect(widthGraphInfoBox, topLeftMenuInclBorderY, widthGraphInclBorder, menuHeightInclBorder, LCD_SET_VALUE);
             }
         }
@@ -6118,7 +6131,9 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
             }
         }
 
-        _ = frontier_status_bar.showDateTime();
+        if (!screenHoldsDrawnPixels) { // if not CLLCD, PIXEL, POINT or AGRAPH painted
+            _ = frontier_status_bar.showDateTime();
+        }
         lcd_refresh();
         refresh_gui();
         return 1; // TRUE
@@ -6148,7 +6163,7 @@ pub export fn refreshLcd(unusedData: ?*anyopaque) callconv(.c) c_int {
             }
         }
 
-        if (frontier_status_bar.showDateTime()) {
+        if (!screenHoldsDrawnPixels and frontier_status_bar.showDateTime()) { // if not CLLCD, PIXEL, POINT or AGRAPH painted
             dmcpResetAutoOff();
             frontier_timer.fnPollTimerApp();
         }

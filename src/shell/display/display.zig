@@ -144,6 +144,10 @@ const LIMITEXP: bool_t = 1;
 const FRONTSPACE: bool_t = 1;
 
 const NUMBER_OF_DISPLAY_DIGITS: c_int = 20;
+// rect->polar compute precision for the (non-SHOW) polar stack display: 17 significant display figures + 2 Taylor guard
+// digits. hypot/atan2 are well conditioned, so this fixed width reproduces the display exactly for every operand
+// magnitude; polar_display_cov gates any narrowing of it.
+const POLAR_DISPLAY_COMPUTE_DIGITS: c_int = 17 + 2;
 
 const TMP_STR_LENGTH: usize = 2560;
 const WRITE_BUFFER_LEN: i32 = 4096;
@@ -486,6 +490,7 @@ extern fn decNumberFromInt32(r: *real_t, v: i32) *real_t;
 extern fn decNumberGetBCD(dn: *const real_t, bcd: [*c]u8) [*c]u8;
 // real symbols (true functions, not macros).
 extern fn realRectangularToPolar(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t) void;
+extern fn realRectangularToPolarCached(real: *const real_t, imag: *const real_t, magnitude: *real_t, theta: *real_t, ctx: *realContext_t, cache: *abi.RectToPolarCache) void;
 // inline wrappers matching the realType.h macro call shapes.
 inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(r, str, ctx);
@@ -1048,6 +1053,7 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         realSubtract(&angleDms, &seconds, &angleDms, &ctxtReal39);
         angleDms.exponent += 2;
 
+        frontier_register_value_conversions.realToIntegralValue(&angleDms, &angleDms, DEC_ROUND_HALF_UP, &ctxtReal39);
         fs = frontier_real_type.realToUint32C47(&angleDms, null);
         s = frontier_real_type.realToUint32C47(&seconds, null);
         m = frontier_real_type.realToUint32C47(&minutes, null);
@@ -1447,6 +1453,8 @@ fn real34ToDisplayString2(real34_in: *align(1) const real34_t, displayString: [*
         lastDigit -= digitsToTruncate;
 
         if (bcd[@intCast(lastDigit + 1)] == 9) {
+            // Cleared so the "Round the displayed number" step below does not bump the same digit a second time.
+            bcd[@intCast(lastDigit + 1)] = 0;
             bcd[@intCast(lastDigit)] += 1;
             while (bcd[@intCast(lastDigit)] == 10) {
                 bcd[@intCast(lastDigit)] = 0;
@@ -2006,7 +2014,11 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
         displayValueX[0] = 0;
     }
 
-    complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
+    // One cache for the whole rendering pass: the overflow retry below re-renders the same complex value, and the polar
+    // form it asks for a second time is exactly the one already computed.
+    var cache: abi.RectToPolarCache = .{ .valid = false, .digits = 0, .round = 0, .real = undefined, .imag = undefined, .mag = undefined, .theta = undefined };
+
+    complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac, &cache);
     var noFix: bool = false;
     var overflow: i16 = frontier_char_string.stringWidth(displayString, font, true, true) - maxWidth;
     while (overflow > 0) {
@@ -2039,7 +2051,7 @@ pub export fn complex34ToDisplayString(complex34: *align(1) const complex34_t, d
             displayValueX[0] = 0;
         }
 
-        complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac);
+        complex34ToDisplayString2(complex34, displayString, displayHasNDigits, limitExponent, frontSpace, tagAngle, tagPolar, limitIrfrac, &cache);
         overflow = frontier_char_string.stringWidth(displayString, font, true, true) - maxWidth;
     }
 
@@ -2076,7 +2088,7 @@ pub export fn strPrepend(dest: [*c]u8, prefix: [*c]u8) callconv(.c) void {
     }
 }
 
-fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, limitIrfrac: irfracOption_t) void {
+fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayString: [*c]u8, displayHasNDigits: i16, limitExponent: bool_t, frontSpace: bool_t, tagAngle: u16, tagPolar: bool_t, limitIrfrac: irfracOption_t, cache: *abi.RectToPolarCache) void {
     const imagOffset: i16 = 100;
     var real34_: real34_t = undefined;
     var imag34: real34_t = undefined;
@@ -2089,10 +2101,12 @@ fn complex34ToDisplayString2(complex34: *align(1) const complex34_t, displayStri
         real34ToReal(varImag34(complex34), &imagIc);
 
         var c: realContext_t = ctxtReal39;
-        const maxExponent: c_int = maxI(real.exponent + real.digits, imagIc.exponent + imagIc.digits);
-        c.digits = if (showmode()) 39 else minI(75, maxI(0, maxExponent) + nbrDispRealCtxDigits() + 2);
-        realRectangularToPolar(&real, &imagIc, &real, &imagIc, &c);
-        c.digits = if (showmode()) 39 else 3 + nbrDispRealCtxDigits();
+        // Compute the polar form at a fixed display precision and not at one scaled by the operands' exponent: hypot and
+        // atan2 are well conditioned, so this reproduces the display exactly at every magnitude while the repeated-input
+        // calls hit the cache. SHOW keeps its full 39 digits. polar_display_cov gates any narrowing of the constant.
+        c.digits = minI(@as(i32, displayHasNDigits) + 2, if (showmode()) 39 else POLAR_DISPLAY_COMPUTE_DIGITS);
+        realRectangularToPolarCached(&real, &imagIc, &real, &imagIc, &c, cache);
+        // convertAngleFromTo runs at the same c.digits; radian->grad (x 200/pi) is its worst case and stays inside it.
         frontier_conversion_angles.convertAngleFromTo(&imagIc, amRadian, if (tagAngle == amNone) currentAngularMode else @intCast(tagAngle), &c);
 
         realToReal34(&real, &real34_);
@@ -3906,9 +3920,9 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
         else => {},
     }
 
-    frontier_screen.refreshScreen(153);
-
     SHOW_reset();
+    // The real34 page sets it again below; every other page keeps the standard line at two registers.
+    overrideShowBottomLine = 0;
 
     var selection: i32 = @intCast(getRegisterDataType(@intCast(showRegis)));
 
@@ -4257,6 +4271,9 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
     displayFormatDigits = savedDisplayFormatDigits;
     systemFlags0 = ssf0;
     systemFlags1 = ssf1;
+
+    // Painted once the page is built: a refresh taken before it left a preview's partial clear standing on the screen.
+    frontier_screen.refreshScreen(153);
 }
 
 // The dtLongInteger / XFN shared body (XFNentryPoint .. end of case dtLongInteger).

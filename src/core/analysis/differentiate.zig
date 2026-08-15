@@ -2,13 +2,11 @@
 const consts = abi.constants;
 //
 // Zig owner for src/c47/solver/differentiate.c: numerical first/second
-// derivative commands (finite differences, ported from WP34s). UNCOVERED by the
-// testSuite (no test gate) - verified by build only. Faithful line-by-line
-// translation preserving the exact order of every real_t operation.
+// derivative commands (finite differences, ported from WP34s). Faithful
+// line-by-line translation preserving the exact order of every real_t operation.
 //
-// fn1stDeriv is exported here as z47_solver_fn1stDeriv (the symbol solve.zig's
-// dispatcher calls). The other public commands (fn2ndDeriv, fn1stDerivEq,
-// fn2ndDerivEq) keep their real C names. The static helpers stay private.
+// The public commands (fnPgmDrv, fn1stDerivVar, fn2ndDerivVar, fn1stDerivEq,
+// fn2ndDerivEq) keep their C names. The static helpers stay private.
 //
 // The finite-difference stencil tables and fdValues array live as
 // `TO_QSPI static const` data in finite_differences.h (file-local, not
@@ -205,6 +203,26 @@ const NOPARAM: u16 = 9876;
 
 const TI_1ST_DERIVATIVE: u8 = 57;
 const TI_2ND_DERIVATIVE: u8 = 58;
+const TI_DERIV_STEP: u8 = 144;
+
+// h starts at x/10, the coarsest step a 15 point stencil is worth taking, and stops at x*1e-16, the step this engine used
+// for every stencil before the ladder. DERIV_TOLERANCE_DIGITS is the digits a sample carries less one for the coefficient
+// sum, which is what two estimates are compared against.
+const DERIV_FIRST_SHIFT: i32 = 1;
+const DERIV_LAST_SHIFT: i32 = 16;
+const DERIV_TOLERANCE_DIGITS: i32 = 32;
+
+const FIRST_UC_LOCAL_LABEL: u16 = 100; // A, the first upper-case local label
+const LAST_LOCAL_LABEL: u16 = 123; // l, the last lower-case local label
+const ERROR_NO_PROGRAM_SPECIFIED: u8 = 54;
+const CMP_NAME: i32 = 3;
+const MNU_MVAR: i16 = 1398;
+const PGM_STOPPED: u8 = 0;
+const FLAG_INTING: u32 = 0xc025;
+const SOLVER_STATUS_INTERACTIVE: u16 = 0x0002;
+const SOLVER_STATUS_EQUATION_MODE: u16 = 0x200c;
+const SOLVER_STATUS_EQUATION_1ST_DERIVATIVE: u16 = 0x0008;
+const SOLVER_STATUS_EQUATION_2ND_DERIVATIVE: u16 = 0x000C;
 
 const ITM_RCL: i16 = 51;
 const ITM_STO: i16 = 44;
@@ -217,12 +235,8 @@ const LAST_NAMED_VARIABLE: u16 = 1999;
 const ERROR_VARIABLE_NOT_SELECTED: u8 = 57;
 const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
 
-// STD_delta / STD_DELTA + "x"/"X" labels (fonts.h)
-const STD_delta_x: [*:0]const u8 = "\x83\xb4x";
-const STD_delta_X: [*:0]const u8 = "\x83\xb4X";
-const STD_DELTA_x: [*:0]const u8 = "\x83\x94x";
-const STD_DELTA_X: [*:0]const u8 = "\x83\x94X";
 const STD_delta_eq: [*:0]const u8 = "\x83\xb4="; // STD_delta "="
+const STD_delta_SUB_d: [*:0]const u8 = "\x83\xb4\xa4\x9f"; // STD_delta STD_SUB_d, the step variable's name
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -233,6 +247,17 @@ extern var dynamicMenuItem: i16;
 extern var currentSolverStatus: u16;
 extern var currentSolverVariable: u16;
 extern var currentFormula: u16;
+extern var currentSolverProgram: u16;
+extern var currentDerivProgram: u16;
+extern var currentMvarLabel: u16;
+extern var significantDigits: u8;
+// Set and cleared with the graph accuracy reduction in execute_rpn_function_graphAcc.
+extern var graphAccActive: bool;
+
+// defines.h: significantDigits == 0 ? 12 : significantDigits.
+inline fn significantDigitsForEqnGraphs() i32 {
+    return if (significantDigits == 0) 12 else significantDigits;
+}
 extern var tmpString: [*c]u8;
 extern var errorMessage: [*c]u8;
 
@@ -244,6 +269,9 @@ extern var ctxtReal39: realContext_t;
 // ---------------------------------------------------------------------------
 inline fn const_1on10() *align(1) const real_t {
     return consts.c4520();
+}
+inline fn const_1() *align(1) const real_t {
+    return consts.c4856();
 }
 
 // ---------------------------------------------------------------------------
@@ -257,6 +285,9 @@ extern fn decNumberPlus(res: *real_t, operand: *const real_t, ctxt: *realContext
 extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn decNumberFromUInt32(res: *real_t, source: u32) *real_t;
 extern fn decNumberToString(source: *const real_t, dest: [*c]u8) [*c]u8;
+extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
+extern fn decNumberSubtract(res: *real_t, op1: *const real_t, op2: *const real_t, ctxt: *realContext_t) *real_t;
+extern fn realCompareAbsLessThan(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
 
 inline fn realCopy(source: *align(1) const real_t, destination: *real_t) void {
     _ = decNumberCopy(destination, source);
@@ -272,6 +303,12 @@ inline fn realDivide(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt:
 }
 inline fn realPlus(operand: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberPlus(res, operand, ctxt);
+}
+inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+    _ = decNumberCopyAbs(destination, source);
+}
+inline fn realSubtract(op1: *const real_t, op2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
+    _ = decNumberSubtract(res, op1, op2, ctxt);
 }
 inline fn int32ToReal(source: i32, destination: *real_t) void {
     _ = decNumberFromInt32(destination, source);
@@ -330,7 +367,11 @@ extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: cal
 const GLOBAL_LABELS: u8 = 253; // namedLabels_t: STRING_LABEL_VARIABLE
 const ALL_LABELS: u8 = 0; // namedLabels_t: search local then global
 extern fn findNamedLabel(label_name: [*:0]const u8, label_type: u8) calcRegister_t;
+extern fn findNamedVariable(variable_name: [*:0]const u8) calcRegister_t;
+extern fn findProgramLabel(label: u16, caller: [*:0]const u8) calcRegister_t;
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
+extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
+extern fn showSoftmenu(id: i16) void;
 
 // deriv_pgm_variable / MVAR-aware sampling externs
 const PGM_WAITING: u8 = 2;
@@ -384,60 +425,105 @@ fn calcDerivOfOrder(label: u16, order: u16) linksection(runtime.code_section) vo
     calcDeriv(@bitCast(label), finite_difference_table[order]);
 }
 
-fn derivativeCommon(label_in: u16, order: u16, ti: u8) linksection(runtime.code_section) void {
-    var label = label_in;
-    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
-    const solving: bool_t = getSystemFlag(@bitCast(FLAG_SOLVING));
-    var buf: [2]u8 = undefined;
-
-    setSystemFlag(FLAG_SOLVING);
-    if (label >= FIRST_LABEL and label <= LAST_LABEL) {
-        calcDerivOfOrder(label, order);
-        temporaryInformation = ti;
-    } else if (runtime.isStackRegister(label)) {
-        // Interactive mode
-        buf[0] = letteredRegisterName(@intCast(label));
-        buf[1] = 0;
-        label = @bitCast(@as(i16, @truncate(findNamedLabel(@ptrCast(&buf[0]), GLOBAL_LABELS))));
-        if (label == INVALID_VARIABLE) {
-            displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-            runtime.infoNotANamedLabel("In function derivativeCommon:", @ptrCast(&buf[0]));
-        } else {
-            calcDerivOfOrder(label, order);
-            temporaryInformation = ti;
-        }
-    } else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        runtime.infoUnexpectedParameter("In function derivativeCommon:", label);
+// A program that declares MVARs has more than one thing it could be differentiated with respect to, and the answer depends
+// on which, so the MVAR menu is opened for the user to say, the way the solver and the integrator do. The variable key
+// stores the point and takes the selection, and f' on the last softkey runs it. Inside a running program, or under another
+// engine, there is nobody to press a key: the derivative is taken there and then, with respect to the selected variable.
+fn deriv_open_mvar_menu(label: u16, order: u16, solving: bool_t) linksection(runtime.code_section) bool_t {
+    if (programRunStop == PGM_RUNNING or solving or getSystemFlag(@bitCast(FLAG_INTING))) {
+        return false;
     }
+    currentSolverProgram = label - FIRST_LABEL;
+    currentMvarLabel = INVALID_VARIABLE; // the menu builds from currentSolverProgram, and its variable key acts for the solver rather than for VARMNU
+    currentSolverStatus &= ~SOLVER_STATUS_EQUATION_MODE;
+    currentSolverStatus |= if (order == DERIVATIVE_FIRST_CENTRAL) SOLVER_STATUS_EQUATION_1ST_DERIVATIVE else SOLVER_STATUS_EQUATION_2ND_DERIVATIVE;
+    currentSolverStatus |= SOLVER_STATUS_INTERACTIVE;
+    showSoftmenu(-MNU_MVAR);
+    return true;
+}
+
+// PGMDRV names the program f' and f" differentiate, the way PGMSLV names the solver's and PGMPLT the plotter's. It is a
+// slot of its own so that taking a derivative does not repoint what SOLVE, INT and PLOT will run next.
+pub export fn fnPgmDrv(label: u16) linksection(runtime.code_section) callconv(.c) void {
+    const resolved: u16 = @bitCast(findProgramLabel(label, "In function fnPgmDrv:"));
+    if (resolved != INVALID_VARIABLE) {
+        currentDerivProgram = resolved - FIRST_LABEL;
+    }
+}
+
+// f' and f" in the SOLVE form: from the keyboard the operand is a program and the MVAR menu opens on it, so the variable is
+// picked off a softkey. As a program step the operand is a variable, the program is the one PGMDRV named and the variable
+// is the parameter.
+fn derivativeVariable(variable: u16, order: u16, ti: u8) linksection(runtime.code_section) void {
+    var probeValue: real_t = undefined;
+    var savedRegister: snap_t = undefined;
+
+    if ((FIRST_UC_LOCAL_LABEL <= variable and variable <= LAST_LOCAL_LABEL) or
+        (FIRST_LABEL <= variable and variable <= LAST_LABEL) or
+        (REGISTER_X <= @as(i32, variable) and @as(i32, variable) <= REGISTER_T))
+    {
+        currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA; // a formula left in play would otherwise build the menu from its variables rather than the program's
+        fnPgmDrv(variable);
+        if (lastErrorCode == ERROR_NONE) {
+            _ = deriv_open_mvar_menu(currentDerivProgram + FIRST_LABEL, order, getSystemFlag(@bitCast(FLAG_SOLVING)));
+        }
+        return;
+    }
+    if (!(FIRST_NAMED_VARIABLE <= variable and variable <= LAST_NAMED_VARIABLE)) {
+        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.infoUnexpectedParameter("In function derivativeVariable:", variable);
+        return;
+    }
+    if (currentDerivProgram >= numberOfLabels) {
+        displayCalcErrorMessage(ERROR_NO_PROGRAM_SPECIFIED, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnError("In function derivativeVariable:", "no program named by PGMDRV", null, null);
+        return;
+    }
+
+    const solving = getSystemFlag(@bitCast(FLAG_SOLVING));
+    setSystemFlag(FLAG_SOLVING);
+    currentSolverStatus &= ~SOLVER_STATUS_USES_FORMULA;
+    currentSolverVariable = variable;
+    reallyRunFunction(ITM_STO, currentSolverVariable); // the point comes off the stack, as SOLVE takes its guesses, and calcDeriv reads it from X
+    // The sampling stores each point in the variable, so the given point is kept here and put back after, leaving the
+    // variable on the value it was differentiated at.
+    const restore = getRegisterAsRealQuiet(@bitCast(currentSolverVariable), &probeValue);
+    if (restore) {
+        saveRegisterSnapshot(@bitCast(currentSolverVariable), &savedRegister);
+    }
+    calcDerivOfOrder(currentDerivProgram + FIRST_LABEL, order);
+    if (restore) {
+        restoreRegisterSnapshot(@bitCast(currentSolverVariable), &savedRegister);
+    }
+    temporaryInformation = ti;
     if (!solving) {
         clearSystemFlag(FLAG_SOLVING);
     }
 }
 
-pub export fn z47_solver_fn1stDeriv(label: u16) linksection(runtime.code_section) callconv(.c) void {
-    derivativeCommon(label, DERIVATIVE_FIRST_CENTRAL, TI_1ST_DERIVATIVE);
+pub export fn fn1stDerivVar(variable: u16) linksection(runtime.code_section) callconv(.c) void {
+    derivativeVariable(variable, DERIVATIVE_FIRST_CENTRAL, TI_1ST_DERIVATIVE);
 }
 
-pub export fn fn2ndDeriv(label: u16) linksection(runtime.code_section) callconv(.c) void {
-    derivativeCommon(label, DERIVATIVE_SECOND_CENTRAL, TI_2ND_DERIVATIVE);
+pub export fn fn2ndDerivVar(variable: u16) linksection(runtime.code_section) callconv(.c) void {
+    derivativeVariable(variable, DERIVATIVE_SECOND_CENTRAL, TI_2ND_DERIVATIVE);
 }
 
 fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void {
     // FLAG_SOLVING suppresses the per-item undo snapshot, so the one calcDeriv takes before sampling
-    // survives to be restored, and it is what lets execProgram run a body at all, which a user delta-x
-    // label needs.
+    // survives to be restored, and it is what lets execProgram run a body at all.
     const solving = getSystemFlag(@bitCast(FLAG_SOLVING));
 
     setSystemFlag(FLAG_SOLVING);
     if (!(currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable <= LAST_NAMED_VARIABLE)) {
-        // No variable assigned, as after a programmed X.EDIT: auto-assign like
-        // fnEqSolvGraph does when the formula holds exactly one variable. The MVAR
-        // scratch area is the tail of tmpString, as in softmenus.c, to leave
-        // aimBuffer be.
-        equation.parseEquation(currentFormula, EQUATION_PARSER_MVAR, tmpString + TMP_STR_LENGTH - AIM_BUFFER_LENGTH, tmpString);
-        if (tmpString[0] != 0 and getNthString(tmpString, 1)[0] == 0) {
-            currentSolverVariable = @intCast(findOrAllocateNamedVariable(tmpString));
+        // Nothing selected. A formula with exactly one variable leaves no choice, so take it, as fnEqSolvGraph does. A
+        // program is excluded: its variables are its MVAR declarations, and a formula in the pool is not one of them.
+        // Parsed into the tail of tmpString, as softmenus.c does, to leave aimBuffer alone.
+        if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
+            equation.parseEquation(currentFormula, EQUATION_PARSER_MVAR, tmpString + TMP_STR_LENGTH - AIM_BUFFER_LENGTH, tmpString);
+            if (tmpString[0] != 0 and getNthString(tmpString, 1)[0] == 0) {
+                currentSolverVariable = @intCast(findOrAllocateNamedVariable(tmpString));
+            }
         }
         if (!(currentSolverVariable >= FIRST_NAMED_VARIABLE and currentSolverVariable <= LAST_NAMED_VARIABLE)) {
             if (!solving) {
@@ -450,12 +536,24 @@ fn derivativeEquation(order: u16, ti: u8) linksection(runtime.code_section) void
     }
     // new method to maintain solver variable
     reallyRunFunction(ITM_RCL, currentSolverVariable);
-    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-    currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
-    calcDerivOfOrder(INVALID_VARIABLE, order);
-    reallyRunFunction(ITM_RCL, TEMP_REGISTER_1);
-    reallyRunFunction(ITM_STO, currentSolverVariable);
-    fnDrop(NOPARAM);
+    // The sampling stores each point in the variable, so its own value is kept here and put back after. A register cannot
+    // hold it: for a program the user's code runs in between and reaches every temporary register, which is what used to
+    // hand the variable back holding a number out of that program.
+    var probeValue: real_t = undefined;
+    var savedRegister: snap_t = undefined;
+    const restore = currentSolverVariable != INVALID_VARIABLE and getRegisterAsRealQuiet(@bitCast(currentSolverVariable), &probeValue);
+    if (restore) {
+        saveRegisterSnapshot(@bitCast(currentSolverVariable), &savedRegister);
+    }
+    if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0 and currentSolverProgram < numberOfLabels) {
+        calcDerivOfOrder(currentSolverProgram + FIRST_LABEL, order); // the MVAR menu was opened on a program, so that is what this key differentiates
+    } else {
+        currentSolverStatus |= SOLVER_STATUS_USES_FORMULA;
+        calcDerivOfOrder(INVALID_VARIABLE, order);
+    }
+    if (restore) {
+        restoreRegisterSnapshot(@bitCast(currentSolverVariable), &savedRegister);
+    }
     temporaryInformation = ti;
     if (!solving) {
         clearSystemFlag(FLAG_SOLVING);
@@ -475,40 +573,65 @@ pub export fn fn2ndDerivEq(unusedButMandatoryParameter: u16) linksection(runtime
 // =========================================================================== //
 // The following routines are ported from WP34s.
 // =========================================================================== //
-fn deriv_found_lbl(deltaX: calcRegister_t, h: *real_t) linksection(runtime.code_section) void {
-    execProgram(@bitCast(deltaX));
-    fnToReal(NOPARAM);
-    if (getRegisterDataType(REGISTER_X) == dtReal34) {
-        real34ToReal(registerReal34Ptr(REGISTER_X), h);
-    } else {
-        lastErrorCode = ERROR_NONE;
-        realCopy(const_1on10(), h);
-    }
-}
-
-const deriv_lbls = [_][*:0]const u8{ STD_delta_x, STD_delta_X, STD_DELTA_x, STD_DELTA_X };
-
-fn deriv_default_h(h: *real_t) linksection(runtime.code_section) void {
-    saveForUndo();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    realToReal34(h, registerReal34Ptr(REGISTER_X));
-    fnFillStack(NOPARAM);
-
-    dynamicMenuItem = -1;
-    var i: usize = 0;
-    while (i < deriv_lbls.len) : (i += 1) {
-        const deltaX = findNamedLabel(deriv_lbls[i], ALL_LABELS);
-        if (@as(u16, @bitCast(@as(i16, @truncate(deltaX)))) != INVALID_VARIABLE) {
-            deriv_found_lbl(deltaX, h);
-            undo();
-            return;
+// Is the step variable one of the current formula's own variables? A function that uses it writes to it while it is being
+// sampled, so it cannot also be the step. The list searched here is the same parse the MVAR menu is built from. The program
+// side of the same question is answered by deriv_pgm_variable, which reports a declaration of the name while it is already
+// walking them.
+fn deriv_formula_uses_delta() linksection(runtime.code_section) bool_t {
+    equation.parseEquation(currentFormula, EQUATION_PARSER_MVAR, tmpString + TMP_STR_LENGTH - AIM_BUFFER_LENGTH, tmpString);
+    var i: i16 = 0;
+    while (getNthString(tmpString, i)[0] != 0) : (i += 1) {
+        if (compareString(getNthString(tmpString, i), STD_delta_SUB_d, CMP_NAME) == 0) {
+            return true;
         }
     }
-    undo();
-    if (realIsZero(h)) { // the step is relative to x, so at x=0 it collapses and the weighted sum is divided by zero
-        realSetOne(h);
+    return false;
+}
+
+// The step the user set, which is the step variable. It is taken as it stands and the ladder is not walked at all. False
+// means it was not there, h is left alone, and the caller scales it per pass. Asked once per derivative, since none of this
+// can change while the ladder runs.
+fn deriv_user_step(h: *real_t, usesDelta: bool_t) linksection(runtime.code_section) bool_t {
+    var given: real_t = undefined;
+
+    if (!usesDelta) {
+        const deltaX = findNamedVariable(STD_delta_SUB_d);
+        if (@as(u16, @bitCast(deltaX)) != INVALID_VARIABLE and getRegisterAsRealQuiet(deltaX, &given) and
+            !realIsZero(&given) and !realIsSpecial(&given))
+        {
+            realCopy(&given, h);
+            return true;
+        }
     }
-    h.exponent -= 16;
+    return false;
+}
+
+// Digits a sample is good for, and how far the step is worth shrinking. Normally 34. While a graph is drawn the calculator
+// works to the SDIGS setting instead, so two estimates can never match to 34 digits, the step shrinks all the way down and
+// the samples cancel to nothing. The solver reads the same setting for its own tolerance.
+fn deriv_tolerance_digits() linksection(runtime.code_section) i32 {
+    return if (graphAccActive) @max(significantDigitsForEqnGraphs() - 2, 4) else DERIV_TOLERANCE_DIGITS;
+}
+
+fn deriv_last_shift() linksection(runtime.code_section) i32 {
+    return if (graphAccActive) @divTrunc(deriv_tolerance_digits(), 2) else DERIV_LAST_SHIFT;
+}
+
+// Do two estimates of the same derivative, taken a factor of ten apart in h, agree to better than the cancellation the
+// finer one suffers? A sample carries 34 digits and the points are h apart, so differencing them loses the digits they
+// share and the error is about 1e-DERIV_TOLERANCE_DIGITS times ten to the shift, for each order of the derivative.
+// Agreement means the truncation of the coarser estimate is already below that, so the coarser one is the better of the
+// two. The gap between the pair is handed back for the caller to rank the pairs by, whether they agreed or not.
+fn deriv_agrees(coarse: *const real_t, fine: *const real_t, shift: i32, order: u8, difference: *real_t) linksection(runtime.code_section) bool_t {
+    var tolerance: real_t = undefined;
+
+    realSubtract(fine, coarse, difference, &ctxtReal39);
+    if (realIsZero(difference)) {
+        return true;
+    }
+    realCopyAbs(fine, &tolerance);
+    tolerance.exponent += shift * @as(i32, order) - deriv_tolerance_digits();
+    return realCompareAbsLessThan(difference, &tolerance);
 }
 
 // A program that declares MVARs takes its argument from named storage (RCL 'x'), not from the stack, so the
@@ -517,7 +640,7 @@ fn deriv_default_h(h: *real_t) linksection(runtime.code_section) void {
 // caller's selection wins whenever the program declares it, matching what the MVAR softmenu and the
 // equation derivative differentiate with respect to; otherwise the first declaration, which is the argument
 // by convention and the leftmost key of the MVAR menu.
-fn deriv_pgm_variable(label: calcRegister_t) linksection(runtime.code_section) calcRegister_t {
+fn deriv_pgm_variable(label: calcRegister_t, usesDelta: ?*bool_t) linksection(runtime.code_section) calcRegister_t {
     var first: calcRegister_t = @bitCast(INVALID_VARIABLE);
 
     if (label < @as(calcRegister_t, @bitCast(FIRST_LABEL)) or label > @as(calcRegister_t, @bitCast(LAST_LABEL)) or
@@ -542,6 +665,9 @@ fn deriv_pgm_variable(label: calcRegister_t) linksection(runtime.code_section) c
         var name: [MAX_LABEL_NAME_LENGTH + 1]u8 = undefined;
         _ = xcopy(&name, step + 4, nameLength);
         name[nameLength] = 0;
+        if (usesDelta != null and compareString(&name, STD_delta_SUB_d, CMP_NAME) == 0) { // the program declares the step variable, so it writes it and it is no step
+            usesDelta.?.* = true;
+        }
         const variable = findOrAllocateNamedVariable(@ptrCast(&name));
         if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
             if (@as(u16, @bitCast(variable)) == currentSolverVariable) {
@@ -573,10 +699,16 @@ fn _differentiatorIteration(label: calcRegister_t, variable: calcRegister_t, r0:
         fnToReal(NOPARAM);
     }
 
-    if (getRegisterDataType(REGISTER_X) == dtReal34) {
+    if (lastErrorCode == ERROR_NONE and getRegisterDataType(REGISTER_X) == dtReal34) {
         real34ToReal(registerReal34Ptr(REGISTER_X), r0);
     } else {
-        lastErrorCode = ERROR_NONE;
+        // The function is not defined at this point, maybe outside its domain, so the sample is made a NaN and the stencil
+        // that reads it is refused, which makes the ladder take its points closer in. The error must be cleared: left
+        // standing, the next sample's fnExecute takes it for its own goto having failed, steps the caller back onto this
+        // derivative and restarts it, endlessly.
+        if (lastErrorCode != ERROR_SOLVER_ABORT) { // an abort is the one error that stays: calcFuncValues reads it to stop the sampling and the caller to stop the run
+            lastErrorCode = ERROR_NONE;
+        }
         realSetNaN(r0);
     }
 }
@@ -645,20 +777,35 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
     var x: real_t = undefined;
     var h: real_t = undefined;
     var probeValue: real_t = undefined;
+    var estimate: real_t = undefined;
+    var coarse: real_t = undefined;
+    var gap: real_t = undefined;
+    var best: real_t = undefined;
+    var bestGap: real_t = undefined;
     var fx: [@intCast(MAX_F_EVAL)]real_t = undefined;
     var savedRegister: snap_t = undefined;
     var variable: calcRegister_t = @bitCast(INVALID_VARIABLE);
+    var userStep: bool_t = false;
+    var usesDelta: bool_t = false;
+    var coarseStencil: i32 = -1;
+    var coarseShift: i32 = 0;
+    var bestShift: i32 = 0;
+    const lastShift = deriv_last_shift();
 
     if (!getRegisterAsReal(REGISTER_X, &x)) {
         return;
     }
 
+    var haveResult = false;
+
     if (!realIsSpecial(&x)) {
-        if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) == 0) {
+        if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
+            usesDelta = deriv_formula_uses_delta();
+        } else {
             const probeError = lastErrorCode; // an MVAR name the variable allocator rejects raises here, before any sampling the caller asked for
 
             lastErrorCode = ERROR_NONE;
-            variable = deriv_pgm_variable(label);
+            variable = deriv_pgm_variable(label, &usesDelta);
             if (lastErrorCode != ERROR_NONE) { // no room for the MVAR: the user is told, rather than given the wrong answer a fall back to the stack would return
                 return;
             }
@@ -666,48 +813,119 @@ fn calcDeriv(label: calcRegister_t, finDiff: [*]const ?*const FINITE_DIFF_COEFF)
             if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE)) and !getRegisterAsRealQuiet(variable, &probeValue)) {
                 variable = @bitCast(INVALID_VARIABLE); // differentiate only with respect to something numeric
             }
+        }
+
+        userStep = deriv_user_step(&h, usesDelta);
+
+        // Walk the step down a decade at a time. Each step gives one estimate, and two estimates from the same stencil
+        // that agree say the coarser step's truncation is already lost in the noise, so the coarser one is taken: it is
+        // the one that threw away the fewest digits. A step the user set is taken as it stands, so the first pass is the
+        // only one.
+        var settled = false;
+        var shift: i32 = DERIV_FIRST_SHIFT;
+        while (shift <= lastShift) : (shift += 1) {
             if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
-                // Kept here rather than in a register: the user program runs between the save and the restore
-                // and every temporary register is scratch to something it can call, RCL of a stack register
-                // among them. The snapshot carries the type and the tag, so the value comes back as itself and
-                // not as the real34 the sampling stored. getRegisterAsRealQuiet above has already turned away
-                // everything the snapshot does not cover.
+                // Kept here rather than in a register: the user program runs between the save and the restore and every
+                // temporary register is scratch to something it can call, RCL of a stack register among them. The snapshot
+                // carries the type and the tag, so the value comes back as itself and not as the real34 the sampling
+                // stored. It is taken again for each step, because the restore hands back the long integer it holds.
+                // getRegisterAsRealQuiet has already turned away everything the snapshot does not cover.
                 saveRegisterSnapshot(variable, &savedRegister);
             }
-        }
-
-        realCopy(&x, &h); // Pass X into the h determination code to allow relative steps
-        deriv_default_h(&h);
-
-        // Compute the function at the finite difference points
-        saveForUndo();
-        calcFuncValues(label, variable, &x, &fx, &h, &ctxtReal39);
-        undo();
-        if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // undo() rolls back the stack only, so the sampled variable is put back here
-            restoreRegisterSnapshot(variable, &savedRegister);
-        }
-
-        // Try finite differences until we get a result
-        var i: usize = 0;
-        while (finDiff[i] != null) : (i += 1) {
-            if (calcOneDeriv(finDiff[i].?, &fx, &h, &x, &ctxtReal39)) {
-                // Add string, for display at TI
-                var c: realContext_t = ctxtReal4;
-                c.digits = 2;
-                var hh: real_t = undefined;
-                realPlus(&h, &hh, &c);
-                _ = strcpy(errorMessage, STD_delta_eq);
-                _ = decNumberToString(&hh, errorMessage + @as(usize, @intCast(stringByteLength(errorMessage))));
-                _ = strcat(errorMessage, "; ");
-                convertRealToResultRegister(&x, REGISTER_X, amNone);
-                return;
+            if (!userStep) {
+                realCopy(&x, &h); // the step is relative to x, and at x = 0 it collapses and the weighted sum would be divided by zero
+                if (realIsZero(&h)) {
+                    realCopy(const_1(), &h);
+                }
+                h.exponent -= shift;
             }
+
+            // Compute the function at the finite difference points
+            saveForUndo();
+            calcFuncValues(label, variable, &x, &fx, &h, &ctxtReal39);
+            undo();
+            if (variable != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) { // undo() rolls back the stack only, so the sampled variable is put back here
+                restoreRegisterSnapshot(variable, &savedRegister);
+            }
+            if (lastErrorCode == ERROR_SOLVER_ABORT) {
+                break;
+            }
+
+            // Try finite differences until we get a result
+            var stencil: i32 = -1;
+            var i: usize = 0;
+            while (finDiff[i] != null) : (i += 1) {
+                if (calcOneDeriv(finDiff[i].?, &fx, &h, &estimate, &ctxtReal39)) {
+                    stencil = @intCast(i);
+                    break;
+                }
+            }
+            if (stencil < 0) { // every stencil rejected this step's samples, so take the points closer in. A step the user set does not move, so there is nothing to retry
+                if (userStep) {
+                    break;
+                }
+                continue;
+            }
+            if (userStep) {
+                realCopy(&estimate, &x);
+                haveResult = true;
+                break;
+            }
+            if (stencil == coarseStencil) {
+                if (deriv_agrees(&coarse, &estimate, shift, finDiff[@intCast(stencil)].?.order, &gap)) {
+                    settled = true;
+                    break;
+                }
+                // The two are a decade apart, so the gap between them is smallest where the truncation of the coarser one
+                // and the cancellation of the finer one balance. The coarser member of the closest pair is therefore the
+                // best the ladder saw, and it is what the answer falls back to when no pair ever agrees.
+                if (bestShift == 0 or realCompareAbsLessThan(&gap, &bestGap)) {
+                    realCopy(&coarse, &best);
+                    realCopy(&gap, &bestGap);
+                    bestShift = coarseShift;
+                }
+            }
+            realCopy(&estimate, &coarse);
+            coarseStencil = stencil;
+            coarseShift = shift;
+        }
+
+        if (!haveResult) settle: {
+            if (!settled) {
+                if (coarseStencil < 0) { // no step gave a usable set of samples
+                    break :settle;
+                }
+                if (bestShift != 0) { // the ladder ran out without a pair ever agreeing, so the closest pair is as near as this function gets
+                    realCopy(&best, &coarse);
+                    coarseShift = bestShift;
+                }
+            }
+            // The coarser of the two estimates is the answer, and its own step is what the display reports.
+            realCopy(&x, &h);
+            if (realIsZero(&h)) {
+                realCopy(const_1(), &h);
+            }
+            h.exponent -= coarseShift;
+            realCopy(&coarse, &x);
+            haveResult = true;
         }
     }
-    // No estimate possible
-    realSetNaN(&x);
-    // Add string, for display at TI
-    errorMessage[0] = 0;
+
+    if (haveResult) {
+        // Add string, for display at TI
+        var c: realContext_t = ctxtReal4;
+        c.digits = 2;
+        var hh: real_t = undefined;
+        realPlus(&h, &hh, &c);
+        _ = strcpy(errorMessage, STD_delta_eq);
+        _ = decNumberToString(&hh, errorMessage + @as(usize, @intCast(stringByteLength(errorMessage))));
+        _ = strcat(errorMessage, "; ");
+    } else {
+        // No estimate possible
+        realSetNaN(&x);
+        // Add string, for display at TI
+        errorMessage[0] = 0;
+    }
 
     convertRealToResultRegister(&x, REGISTER_X, amNone);
 }

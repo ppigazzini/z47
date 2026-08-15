@@ -73,6 +73,7 @@ const frontier_lbl_gto_xeq = @import("lbl_gto_xeq.zig");
 const frontier_next_step = @import("next_step.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("../display/screen.zig");
+const frontier_screen_snap = @import("../display/screen_snap.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const frontier_sort = @import("../display/sort.zig");
 const frontier_status_bar = @import("../display/statusbar/status_bar.zig");
@@ -173,6 +174,7 @@ const dtReal34: u32 = 1;
 const amNone: u32 = 5;
 
 const ERROR_NONE: u8 = 0;
+const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_RAM_FULL: u8 = 11;
 const ERROR_UNDEFINED_OPCODE: u8 = 3;
@@ -182,6 +184,7 @@ const ERROR_UNDEFINED_OPCODE: u8 = 3;
 const MAX_LABEL_NAME_LENGTH: u8 = 14;
 const ERR_REGISTER_LINE: i16 = 102;
 const REGISTER_X: i16 = 100;
+const REGISTER_T: i16 = 103;
 
 const CONFIRMED: u16 = 9877;
 const NOT_CONFIRMED: u16 = 9878;
@@ -881,6 +884,10 @@ pub export fn defineCurrentProgramFromGlobalStepNumber(globalStepNumber: i16) ca
         if (currentProgramNumber >= numberOfPrograms) {
             break;
         }
+    }
+
+    if (currentProgramNumber == 0) { // 1 based; a step number under the first program's start leaves the loop at 0
+        currentProgramNumber = 1;
     }
 
     if (currentProgramNumber == numberOfPrograms) {
@@ -2323,6 +2330,58 @@ pub export fn addStepInProgram(func: i16) callconv(.c) void {
 // ===========================================================================
 pub export fn findNamedLabel(labelName: [*c]const u8, labelType: u8) callconv(.c) calcRegister_t {
     return findNamedLabelWithDuplicate(labelName, 0, labelType);
+}
+
+// ===========================================================================
+// findProgramLabel (public)
+// ===========================================================================
+// The label-list index of the program a command names, for every command that keeps a program rather than jumping to it:
+// PGMSLV, PGMINT, PGMPLT, PGMDRV, VARMNU, the sums and products, and the interactive arm of SOLVE, the integral, PLT f and
+// the derivatives. A local label 00 to 99 or A to l is searched in the running program the way GTO and XEQ search it, a
+// named label arrives already resolved, and a lettered register names a global label. INVALID_VARIABLE comes back with the
+// reason already reported, so every caller stores only on a good answer and none of them repeats the three cases. `caller`
+// is the "In function x:" text.
+pub export fn findProgramLabel(label: u16, caller: [*:0]const u8) callconv(.c) calcRegister_t {
+    if (label <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
+        var lbl: u16 = 0;
+        while (lbl < numberOfLabels) : (lbl += 1) {
+            if (labelList[lbl].program > currentProgramNumber) { // After the current program
+                break;
+            }
+            if (labelList[lbl].program == currentProgramNumber and labelList[lbl].step < 0 and
+                labelList[lbl].labelPointer[0] == label and (labelList[lbl].labelPointer - 1)[0] == ITM_LBL)
+            {
+                return @intCast(@as(i32, lbl) + FIRST_LABEL);
+            }
+        }
+        frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..512], "there is no local label {d:0>2} in current program", .{@as(u32, label)});
+            moreInfoErr(caller, errorMessage, null);
+        }
+        return INVALID_VARIABLE;
+    }
+    if (FIRST_LABEL <= label and label <= LAST_LABEL) {
+        return @intCast(label);
+    }
+    if (REGISTER_X <= @as(i32, label) and @as(i32, label) <= REGISTER_T) { // Interactive mode
+        var buf: [2]u8 = .{ frontier_screen_snap.letteredRegisterName(@intCast(label)), 0 };
+        const found = findNamedLabel(&buf, GLOBAL_LABELS);
+        if (found == INVALID_VARIABLE) {
+            frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{buf[0..1]});
+                moreInfoErr(caller, errorMessage, null);
+            }
+        }
+        return found;
+    }
+    frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    if (comptime extra_info) {
+        abi.fmtBufZ(errorMessage[0..512], "unexpected parameter {d}", .{@as(u32, label)});
+        moreInfoErr(caller, errorMessage, null);
+    }
+    return INVALID_VARIABLE;
 }
 
 // ===========================================================================

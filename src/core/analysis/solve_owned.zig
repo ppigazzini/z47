@@ -22,6 +22,7 @@ const consts = abi.constants;
 
 const runtime = @import("solve_runtime.zig");
 const progress_panel = @import("progress_panel.zig");
+const differentiate = @import("differentiate.zig");
 const solve_build_options = @import("solve_build_options");
 const dmcp_build: bool = solve_build_options.is_dmcp_build;
 const old_hw: bool = solve_build_options.is_old_hw;
@@ -115,6 +116,9 @@ const SOLVER_RESULT_OTHER_FAILURE: c_int = 5;
 const SOLVER_RESULT_ABORTED: c_int = 6;
 
 const TI_SOLVER_VARIABLE: u8 = 51;
+const TI_DERIV_STEP: u8 = 144;
+const CMP_NAME: i32 = 3;
+const STD_delta_SUB_d: [*:0]const u8 = "\x83\xb4\xa4\x9f"; // STD_delta STD_SUB_d, the derivative's step variable
 const TI_SOLVER_FAILED: u8 = 52;
 const TI_SOLVER_VARIABLE_RESULT: u8 = 110;
 
@@ -402,6 +406,9 @@ extern fn findOrAllocateNamedVariable(variableName: [*:0]const u8) calcRegister_
 extern fn letteredRegisterName(regist: calcRegister_t) u8;
 const refreshScreen = abi.host.requestRefresh; // routed through the host-callback boundary
 extern fn showSoftmenu(id: i16) void;
+extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
+extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
+extern fn fnDeleteVariable(regist: u16) void;
 extern fn printStatus(row: u8, line1: [*c]const u8, forced: u8) void;
 extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 // exitKeyWaiting now routes through the host-callback boundary (abi.host),
@@ -428,7 +435,7 @@ inline fn TO_BLOCKS(n: u32) u16 {
 // fnPgmSlv is owned by solve.zig (the dispatcher). We extern it here.
 
 pub export fn fnSolve(labelOrVariable: u16) linksection(runtime.code_section) callconv(.c) void {
-    if ((FIRST_LABEL <= labelOrVariable and labelOrVariable <= LAST_LABEL) or (runtime.isStackRegister(labelOrVariable))) {
+    if (runtime.isLocalLabelOrLabelOrStackRegister(labelOrVariable)) {
         // Interactive mode
         solve.fnPgmSlv(labelOrVariable);
         if (lastErrorCode == ERROR_NONE) {
@@ -554,9 +561,31 @@ pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.c
             }
         }
     } else if ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE or (currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE) {
+        if (compareString(variable_str, STD_delta_SUB_d, CMP_NAME) == 0) { // the step key: it takes a value like any other, but it is not what the derivative is taken against
+            var given: real_t = undefined;
+
+            if (getRegisterAsRealQuiet(REGISTER_X, &given) and realIsInfinite(&given)) {
+                entryStatus &= 0xfe;
+                fnDeleteVariable(regist); // an infinite step is no step: the variable goes, which is the only way to be rid of it, and the engine picks the step again
+            } else if ((entryStatus & 0x01) != 0) {
+                entryStatus &= 0xfe;
+                reallyRunFunction(ITM_STO, regist);
+            }
+            temporaryInformation = TI_DERIV_STEP; // names the step itself: the selection is untouched, so TI_SOLVER_VARIABLE would name the variable last chosen
+            return;
+        }
         currentSolverVariable = regist;
-        reallyRunFunction(ITM_STO, regist);
-        temporaryInformation = TI_SOLVER_VARIABLE;
+        if ((entryStatus & 0x01) != 0) { // MVAR menu key pressed after a user entry: save the value in the variable
+            entryStatus &= 0xfe;
+            reallyRunFunction(ITM_STO, regist);
+            temporaryInformation = TI_SOLVER_VARIABLE;
+        } else { // MVAR menu key pressed without a user entry: the value stands, so differentiate with respect to this variable
+            if ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
+                differentiate.fn1stDerivEq(NOPARAM);
+            } else {
+                differentiate.fn2ndDerivEq(NOPARAM);
+            }
+        }
     } else if ((currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) != 0) {
         reallyRunFunction(ITM_SOLVE, regist);
     } else {

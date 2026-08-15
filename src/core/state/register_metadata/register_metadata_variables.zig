@@ -582,6 +582,8 @@ pub fn isFunctionAllowingNewVariable(op: u16) bool {
         runtime.ITM_MVAR,
         runtime.ITM_SOLVE,
         runtime.ITM_PLTf,
+        runtime.ITM_F1DRV,
+        runtime.ITM_F2DRV,
         runtime.ITM_STOCFG,
         runtime.ITM_STOMAX,
         runtime.ITM_STOMIN,

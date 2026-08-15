@@ -299,7 +299,13 @@ extern var firstDisplayedStep: [*c]u8;
 extern var beginOfCurrentProgram: [*c]u8;
 extern var endOfCurrentProgram: [*c]u8;
 extern var currentProgramNumber: u16;
+extern var currentLocalStepNumber: u16;
+extern var firstDisplayedLocalStepNumber: u16;
+extern var pemCursorIsZerothStep: bool;
 extern var programList: [*c]programList_t;
+extern fn findNextStep(step: [*c]u8) [*c]u8;
+extern fn defineFirstDisplayedStep() void;
+extern fn defineCurrentProgramFromCurrentStep() void;
 extern var numberOfFormulae: u16;
 extern var currentFormula: u16;
 extern var allFormulae: [*c]formulaHeader_t;
@@ -1010,7 +1016,22 @@ fn restoreProgramsSection(load_mode: u16) void {
     }
 
     if (programsLoadMode == LM_ALL or programsLoadMode == LM_PROGRAMS) {
-        scanLabelsAndPrograms();
+        scanLabelsAndPrograms(); // selects the program around the restored step
+        // The step pointer comes from the file and not the step number, so the step number is counted from the pointer
+        // and the listing is set to that step.
+        currentLocalStepNumber = 1;
+        if (@intFromPtr(currentStep) >= @intFromPtr(beginOfCurrentProgram) and @intFromPtr(currentStep) < @intFromPtr(endOfCurrentProgram)) {
+            var step: [*c]u8 = beginOfCurrentProgram;
+            while (step != null and @intFromPtr(step) < @intFromPtr(currentStep)) : (step = findNextStep(step)) {
+                currentLocalStepNumber += 1;
+            }
+        } else { // the pointer is outside this program
+            currentStep = programList[0].instructionPointer;
+            defineCurrentProgramFromCurrentStep();
+        }
+        firstDisplayedLocalStepNumber = if (currentLocalStepNumber >= 3) currentLocalStepNumber - 3 else 0;
+        defineFirstDisplayedStep();
+        pemCursorIsZerothStep = false; // the file does not carry it
     }
 }
 

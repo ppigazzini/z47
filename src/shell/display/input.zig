@@ -85,6 +85,7 @@ const ERROR_NO_MVAR_FOUND: u8 = 25;
 const ITM_MVAR: u16 = 1524;
 const ITM_REM: u16 = 1554;
 const FIRST_LABEL: u16 = 2200;
+const INVALID_VARIABLE: i16 = 2199;
 const ERR_REGISTER_LINE: calcRegister_t = 102; // REGISTER_Z
 const REGISTER_X: calcRegister_t = 100;
 const amNone: u32 = 5;
@@ -149,6 +150,7 @@ extern fn liftStack() void;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 
 extern var labelList: [*c]align(4) labelList_t;
+extern var numberOfLabels: u16;
 
 // GMP.
 extern fn __gmpz_init(p: *mpz_struct) void;
@@ -297,6 +299,9 @@ pub export fn fnInput(regist: u16) callconv(.c) void {
 // fnVarMnu
 // ===========================================================================
 fn _isVarMenu(label: u16) bool_t {
+    if (label < FIRST_LABEL or (label - FIRST_LABEL) >= numberOfLabels) { // a label the list does not hold would index the array from outside it
+        return false;
+    }
     var step: [*c]u8 = labelList[@as(usize, label - FIRST_LABEL)].instructionPointer;
     while (frontier_manage.checkOpCodeOfStep(step, ITM_REM)) {
         step = frontier_next_step.findNextStep(step);
@@ -304,7 +309,12 @@ fn _isVarMenu(label: u16) bool_t {
     return frontier_manage.checkOpCodeOfStep(step, ITM_MVAR);
 }
 
-pub export fn fnVarMnu(label: u16) callconv(.c) void {
+pub export fn fnVarMnu(labelIn: u16) callconv(.c) void {
+    const resolved = frontier_manage.findProgramLabel(labelIn, "In function fnVarMnu:");
+    if (resolved == INVALID_VARIABLE) {
+        return;
+    }
+    const label: u16 = @intCast(resolved);
     if (!_isVarMenu(label)) {
         frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {
@@ -319,7 +329,12 @@ pub export fn fnVarMnu(label: u16) callconv(.c) void {
 }
 
 // fn42VarMnu (42S variable menu) — NEW upstream op (master fd83b4a4).
-pub export fn fn42VarMnu(label: u16) callconv(.c) void {
+pub export fn fn42VarMnu(labelIn: u16) callconv(.c) void {
+    const resolved = frontier_manage.findProgramLabel(labelIn, "In function fn42VarMnu:");
+    if (resolved == INVALID_VARIABLE) {
+        return;
+    }
+    const label: u16 = @intCast(resolved);
     if (!_isVarMenu(label)) {
         frontier_error.displayCalcErrorMessage(ERROR_NO_MVAR_FOUND, ERR_REGISTER_LINE, REGISTER_X);
         if (comptime extra_info) {

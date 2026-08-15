@@ -2122,12 +2122,12 @@
    "9876"
   ],
   "1475": [
-   "ext_fn1stDeriv",
-   "10018"
+   "ext_fnOldItemError",
+   "9876"
   ],
   "1476": [
-   "ext_fn2ndDeriv",
-   "10018"
+   "ext_fnOldItemError",
+   "9876"
   ],
   "1477": [
    "ext_fnPrimeFactors",
@@ -8325,9 +8325,69 @@
    "&itemToBeCoded",
    "9876"
   ],
+  "2871": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2872": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2873": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2874": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2875": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2876": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2877": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2878": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2879": [
+   "&itemToBeCoded",
+   "9876"
+  ],
   "288": [
    "ext_fnUnitConvert",
    "25"
+  ],
+  "2880": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2881": [
+   "&itemToBeCoded",
+   "9876"
+  ],
+  "2882": [
+   "ext_fnPgmDrv",
+   "10018"
+  ],
+  "2883": [
+   "ext_fn1stDerivVar",
+   "10010"
+  ],
+  "2884": [
+   "ext_fn2ndDerivVar",
+   "10010"
+  ],
+  "2885": [
+   "&itemToBeCoded",
+   "9876"
   ],
   "289": [
    "ext_fnUnitConvert",
@@ -11486,6 +11546,6 @@
    "999"
   ]
  },
- "rows_total": 2871,
+ "rows_total": 2886,
  "unparsed_rows": 0
 }

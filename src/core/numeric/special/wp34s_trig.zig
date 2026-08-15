@@ -238,9 +238,9 @@ fn doWP34S_SinCosTanTaylor(
 }
 
 // ===========================================================================
-// C47_WP34S_Cvt2RadSinCosTan_75temp (static)
+// C47_WP34S_Cvt2RadSinCosTan_75_helper (static)
 // ===========================================================================
-fn C47_WP34S_Cvt2RadSinCosTan_75temp(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
+fn C47_WP34S_Cvt2RadSinCosTan_75_helper(an: *align(1) const real_t, angularMode: angularMode_t, sinOut: ?*align(1) real_t, cosOut: ?*align(1) real_t, tanOut: ?*align(1) real_t, realContext: *realContext_t) void {
     var sinNeg: bool = false;
     var cosNeg: bool = false;
     var swap: bool = false;
@@ -481,7 +481,7 @@ pub fn C47_WP34S_Cvt2RadSinCosTan(an: *align(1) const real_t, angularMode: angul
     if (runtime.option_xfn_1000 and realContext.digits >= 1071) {
         C47_WP34S_Cvt2RadSinCosTan_1071_helper(an, angularMode, sinOut, cosOut, tanOut, realContext);
     } else {
-        C47_WP34S_Cvt2RadSinCosTan_75temp(an, angularMode, sinOut, cosOut, tanOut, realContext);
+        C47_WP34S_Cvt2RadSinCosTan_75_helper(an, angularMode, sinOut, cosOut, tanOut, realContext);
     }
 }
 

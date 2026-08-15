@@ -15,8 +15,9 @@ comptime {
 }
 
 pub export fn fnPgmSlv(label: u16) callconv(.c) void {
-    if (runtime.isLabel(label)) {
-        runtime.currentSolverProgram = runtime.labelToProgram(label);
+    const resolved: u16 = @bitCast(runtime.findProgramLabel(label, "In function fnPgmSlv:"));
+    if (resolved != runtime.INVALID_VARIABLE) {
+        runtime.currentSolverProgram = runtime.labelToProgram(resolved);
         // solve.c clears USES_FORMULA alongside every currentSolverProgram
         // assignment: naming a program is what switches the engine off the
         // formula. Without it a PGMSLV/PGMPLT that follows an equation plot
@@ -24,25 +25,7 @@ pub export fn fnPgmSlv(label: u16) callconv(.c) void {
         // instead of running the program -- the sample comes back equal to its
         // own input and the sweep plots the identity.
         runtime.clearUsesFormulaStatus();
-        return;
     }
-
-    if (runtime.isStackRegister(label)) {
-        var buf: [2]u8 = undefined;
-        buf[0] = runtime.letteredRegisterName(@intCast(label));
-        buf[1] = 0;
-
-        const named_label: u16 = @intCast(runtime.findNamedLabel(@ptrCast(&buf[0]), runtime.GLOBAL_LABELS));
-        if (runtime.isInvalidVariable(named_label)) {
-            runtime.reportLabelNotFound(@ptrCast(&buf[0]));
-        } else {
-            runtime.currentSolverProgram = runtime.labelToProgram(named_label);
-            runtime.clearUsesFormulaStatus();
-        }
-        return;
-    }
-
-    runtime.reportOutOfRange(label);
 }
 
 pub export fn fnPgmPlt(label: u16) callconv(.c) void {
@@ -51,7 +34,7 @@ pub export fn fnPgmPlt(label: u16) callconv(.c) void {
 }
 
 pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
-    if (runtime.isLabelOrStackRegister(labelOrVariable)) {
+    if (runtime.isLocalLabelOrLabelOrStackRegister(labelOrVariable)) {
         // Interactive mode: arm the RPN grapher over the selected program.
         fnPgmSlv(labelOrVariable);
         if (runtime.lastErrorCode == runtime.ERROR_NONE) {
@@ -90,28 +73,11 @@ pub export fn fnMvarPlot(labelOrVariable: u16) callconv(.c) void {
 }
 
 pub export fn fnPgmInt(label: u16) callconv(.c) void {
-    if (runtime.isLabel(label)) {
-        runtime.currentSolverProgram = runtime.labelToProgram(label);
+    const resolved: u16 = @bitCast(runtime.findProgramLabel(label, "In function fnPgmInt:"));
+    if (resolved != runtime.INVALID_VARIABLE) {
+        runtime.currentSolverProgram = runtime.labelToProgram(resolved);
         runtime.clearUsesFormulaStatus();
-        return;
     }
-
-    if (runtime.isStackRegister(label)) {
-        var buf: [2]u8 = undefined;
-        buf[0] = runtime.letteredRegisterName(@intCast(label));
-        buf[1] = 0;
-
-        const named_label: u16 = @intCast(runtime.findNamedLabel(@ptrCast(&buf[0]), runtime.GLOBAL_LABELS));
-        if (runtime.isInvalidVariable(named_label)) {
-            runtime.reportLabelNotFoundPgmInt(@ptrCast(&buf[0]));
-        } else {
-            runtime.currentSolverProgram = runtime.labelToProgram(named_label);
-            runtime.clearUsesFormulaStatus();
-        }
-        return;
-    }
-
-    runtime.reportOutOfRangePgmInt(label);
 }
 
 pub export fn fnIntegrate(label_or_variable: u16) callconv(.c) void {
@@ -150,8 +116,4 @@ pub export fn fnProgrammableiSum(label: u16) callconv(.c) void {
 
 pub export fn fnProgrammableiProduct(label: u16) callconv(.c) void {
     runtime.z47_solver_fnProgrammableiProduct(label);
-}
-
-pub export fn fn1stDeriv(label: u16) callconv(.c) void {
-    runtime.z47_solver_fn1stDeriv(label);
 }

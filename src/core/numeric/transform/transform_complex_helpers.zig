@@ -226,6 +226,50 @@ pub export fn realRectangularToPolar(
     rectangularToPolarReal(real, imag, magnitude, theta, real_context);
 }
 
+// The zero sign is part of the key, so this is an identical-bytes test and not a numeric one.
+fn rectKeyEqual(a: *const runtime.real_t, b: *const runtime.real_t) bool {
+    return runtime.realCompareIdentical(a, b);
+}
+
+// Cached wrapper for realRectangularToPolar. The cache is caller-owned and passed by pointer; the caller creates it as
+// `.{ .valid = false }` in a scope covering every call that shares it. The inputs are copied before the call so an
+// aliasing caller (in == out) is safe. A special magnitude or angle is never stored, so a hit is always a finite pair.
+pub export fn realRectangularToPolarCached(
+    real: *const runtime.real_t,
+    imag: *const runtime.real_t,
+    magnitude: *runtime.real_t,
+    theta: *runtime.real_t,
+    real_context: *runtime.realContext_t,
+    cache: *abi.RectToPolarCache,
+) callconv(.c) void {
+    var local_real: runtime.real_t = undefined;
+    var local_imag: runtime.real_t = undefined;
+    copyReal(&local_real, real);
+    copyReal(&local_imag, imag);
+
+    if (cache.valid and real_context.digits == cache.digits and real_context.round == cache.round and
+        rectKeyEqual(&cache.real, &local_real) and rectKeyEqual(&cache.imag, &local_imag))
+    {
+        copyReal(magnitude, &cache.mag);
+        copyReal(theta, &cache.theta);
+        return;
+    }
+
+    copyReal(&cache.real, &local_real);
+    copyReal(&cache.imag, &local_imag);
+    cache.digits = real_context.digits;
+    cache.round = real_context.round;
+    cache.valid = false;
+
+    rectangularToPolarReal(&local_real, &local_imag, magnitude, theta, real_context);
+
+    if (!math_real_predicates.realIsSpecial(magnitude) and !math_real_predicates.realIsSpecial(theta)) {
+        copyReal(&cache.mag, magnitude);
+        copyReal(&cache.theta, theta);
+        cache.valid = true;
+    }
+}
+
 // ----------------------------------------------------------------------------
 // toRect.c
 // ----------------------------------------------------------------------------

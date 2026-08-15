@@ -14,6 +14,8 @@ const INVALID_VARIABLE: u16 = 2199;
 pub export var currentSolverStatus: u16 = 0;
 pub export var currentSolverVariable: u16 = 0;
 pub export var currentSolverProgram: u16 = 0;
+// PGMDRV, the derivative's own program, so a derivative does not repoint what SOLVE, INT and PLOT run.
+pub export var currentDerivProgram: u16 = 0;
 pub export var currentSolverNestingDepth: u16 = 0;
 pub export var currentFormula: u16 = 0;
 pub export var numberOfFormulae: u16 = 0;
