@@ -25,8 +25,12 @@ pub export var dumpMenusAll: bool = false;
 // fnMenuDump's built-in "menuDump" default.
 pub export var menuDumpPath: ?[*:0]u8 = null;
 pub export var writeExportAll: bool = false;
-// c47.c owns it; the export lane sets it so fnReset stages the sample programs.
+// --reset: start from factory defaults with backup.cfg deliberately not read.
+pub export var factoryReset: bool = false;
+// c47.c owns both; --testPgms and the export lane stage the sample programs,
+// --testData fills R10..R38.
 extern var loadTestPrograms: bool;
+extern var loadTestData: bool;
 pub export var config: u8 = 0;
 pub export var enableFunctionKeysDisplay: bool = false;
 pub export var calcLandscape: bool = false;
@@ -145,6 +149,7 @@ extern fn allocGmp(size: usize) callconv(.c) ?*anyopaque;
 extern fn reallocGmp(ptr: ?*anyopaque, old_size: usize, new_size: usize) callconv(.c) ?*anyopaque;
 extern fn freeGmp(ptr: ?*anyopaque, size: usize) callconv(.c) void;
 extern fn printf(format: [*:0]const u8, ...) c_int;
+extern fn fflush(stream: ?*anyopaque) c_int;
 extern fn chdir(path: [*:0]const u8) c_int;
 extern fn access(path: [*:0]const u8, mode: c_int) c_int;
 
@@ -177,6 +182,59 @@ fn takeMenuDumpPath(argc: c_int, argv: [*][*:0]u8, arg: *usize, flag: [*:0]const
     return true;
 }
 
+// c47-gtk.c's consoleAttached + AttachConsole block + readyToExit(), all of it
+// Windows-only. The simulator links as a GUI-subsystem binary, so a headless run
+// starts with no console at all and every printf goes nowhere -- attaching the
+// parent's console is what makes --dumpMenus, --headless and the refusals below
+// produce visible output. Redirection is left alone: stdout is reopened on
+// CONOUT$ only when it is not already a real file or pipe.
+var consoleAttached: bool = false;
+
+const win_console = struct {
+    const ATTACH_PARENT_PROCESS: u32 = 0xFFFFFFFF;
+    const FILE_TYPE_UNKNOWN: u32 = 0x0000;
+    extern "kernel32" fn AttachConsole(dwProcessId: u32) callconv(.winapi) c_int;
+    extern "kernel32" fn FreeConsole() callconv(.winapi) c_int;
+    extern "kernel32" fn GetFileType(hFile: *anyopaque) callconv(.winapi) u32;
+    extern fn _fileno(stream: ?*anyopaque) c_int;
+    extern fn _get_osfhandle(fd: c_int) isize;
+    extern fn freopen(path: [*:0]const u8, mode: [*:0]const u8, stream: ?*anyopaque) ?*anyopaque;
+    // mingw-w64 resolves stdout/stderr through __acrt_iob_func(n). The FILE* is
+    // opaque here because nothing dereferences it.
+    extern fn __acrt_iob_func(index: c_uint) ?*anyopaque;
+    inline fn stdoutFile() ?*anyopaque {
+        return __acrt_iob_func(1);
+    }
+    inline fn stderrFile() ?*anyopaque {
+        return __acrt_iob_func(2);
+    }
+};
+
+fn attachParentConsole() void {
+    if (comptime builtin.os.tag != .windows) return;
+    if (!headlessMode) return;
+    if (win_console.AttachConsole(win_console.ATTACH_PARENT_PROCESS) == 0) return;
+
+    const fd = win_console._fileno(win_console.stdoutFile());
+    const already_redirected = fd >= 0 and
+        win_console.GetFileType(@ptrFromInt(@as(usize, @bitCast(win_console._get_osfhandle(fd))))) != win_console.FILE_TYPE_UNKNOWN;
+    if (already_redirected) return;
+
+    _ = win_console.freopen("CONOUT$", "w", win_console.stdoutFile());
+    _ = win_console.freopen("CONOUT$", "w", win_console.stderrFile());
+    consoleAttached = true;
+}
+
+fn readyToExit() void {
+    if (comptime builtin.os.tag != .windows) return;
+    if (consoleAttached) {
+        _ = printf("\nYou may need to press ENTER to return to the command prompt\n");
+    }
+    _ = fflush(win_console.stdoutFile());
+    _ = fflush(win_console.stderrFile());
+    _ = win_console.FreeConsole();
+}
+
 fn printHelp() void {
     const cc: [*:0]const u8 = if (CALCMODEL == USER_R47) "r" else "c";
     const modeltext: [*:0]const u8 = if (CALCMODEL == USER_R47) "R47" else "C47";
@@ -200,6 +258,7 @@ fn printHelp() void {
     _ = printf("%s47 --n47            : N47 layout (SIM only) (sunsetting)\n", cc);
     _ = printf("%s47 --v47            : V47 layout (SIM only) (sunsetting)\n", cc);
     _ = printf("%s47 --d47            : D47 layout (SIM only) (sunsetting)\n\n", cc);
+    _ = printf("%s47 --reset          : factory defaults, do not load backup.cfg\n\n", cc);
     _ = printf("%s47 --jm             : Setting profile: Jaco preferences\n", cc);
     _ = printf("%s47 --rj             : Setting profile: RJvM preferences\n", cc);
     _ = printf("%s47 --hp35           : Setting profile: HP-35 tribute\n\n", cc);
@@ -209,6 +268,9 @@ fn printHelp() void {
     _ = printf("%s47 --dumpMenus1 [path]   : output all static menus to drive; old file name format 'Menu_140_p1_RIBBONS.bmp'; default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --dumpMenus2 [path]   : output all static menus to drive; new file name format 'RIBBONS.1.bmp';           default folder 'menuDump' (auto headless mode)\n", cc);
     _ = printf("%s47 --dumpMenusAll [path] : RefDB47 superset: every static menu incl. 1stDeriv/2ndDeriv/Sf/Solver/Grapher/SHOW; new file name format; default folder 'menuDump' (auto headless mode)\n", cc);
+    _ = printf("%s47 --testPgms       : load the test programs testPgms.bin if present; reset calculator with testPgms and create new backup.cfg when exit\n", cc);
+    _ = printf("%s47 --testData       : load the test data in Reg 10 to Reg 38\n", cc);
+    _ = printf("%s47 --headless       : suppress GTK interface startup\n", cc);
     _ = printf("%s47 --writeexportall : output all PROGs (internal use)\n", cc);
     _ = printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
     _ = printf("%s47 --help           : list all SIM switches\n", cc);
@@ -359,6 +421,10 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             calcModelNew = USER_DM42;
             _ = printf("Activated: %s\n", argv[arg]);
         }
+        if (argEql(argv[arg], "--reset")) {
+            factoryReset = true;
+            _ = printf("Activated: %s\n", argv[arg]);
+        }
         if (argEql(argv[arg], "--jm")) {
             config = 1;
             _ = printf("Activated: %s\n", argv[arg]);
@@ -387,6 +453,10 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             // so the packaging step that consumes PROGRAMS/ALLPGMS has no input.
             loadTestPrograms = true;
         }
+        if (argEql(argv[arg], "--headless")) {
+            headlessMode = true;
+            _ = printf("Activated: --headless\n");
+        }
         if (argEql(argv[arg], "--snapskiprefresh")) {
             snapSkipRefresh = true;
             _ = printf("Activated: --snapskiprefresh\n");
@@ -414,12 +484,23 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             headlessMode = true;
             if (!takeMenuDumpPath(argc, argv, &arg, "--dumpMenusAll")) return 1;
         }
+        if (argEql(argv[arg], "--testPgms")) {
+            loadTestPrograms = true;
+            _ = printf("Activated: %s\n", argv[arg]);
+        }
+        if (argEql(argv[arg], "--testData")) {
+            loadTestData = true;
+            _ = printf("Activated: %s\n", argv[arg]);
+        }
+
         if (argEql(argv[arg], "--help") or argEql(argv[arg], "--h") or argEql(argv[arg], "-h")) {
             printHelp();
             _ = printf("Activated: %s\n\n", argv[arg]);
             return 0;
         }
     }
+
+    attachParentConsole();
 
     // Set the R47/C47 mode for initial startup; honour a command-line override.
     if (calcModel == USER_R47) {
@@ -432,7 +513,12 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
 
     z47_startup_init_ui(@constCast(&argc), @ptrCast(@constCast(&argv)));
 
-    restoreCalc();
+    if (factoryReset) { // --reset: factory defaults, backup.cfg deliberately not loaded
+        fnReset(CONFIRMED);
+        _ = printf("Factory reset: backup.cfg not loaded\n");
+    } else {
+        restoreCalc();
+    }
 
     if (calcModelNew != 255) {
         calcModel = calcModelNew;
@@ -476,6 +562,7 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
     if (writeExportAll) {
         fnReset(CONFIRMED);
         fnSaveAllPrograms(NOPARAM);
+        readyToExit();
         return 0;
     }
 
@@ -485,6 +572,7 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         mockupSB();
         fnScreenDump(NOPARAM);
         _ = printf("\n\nOutput file saved.\n\n");
+        readyToExit();
         return 0;
     }
 
@@ -497,6 +585,7 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
             fnDumpMenus(dumpMenus, menuDumpPath);
         }
         _ = printf("\n\nOutput menus saved.\n");
+        readyToExit();
         return 0;
     }
 

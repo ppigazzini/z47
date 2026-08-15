@@ -19,6 +19,8 @@ extern fn gtk_main() void;
 extern fn drawScreen(widget: ?*anyopaque, cr: ?*anyopaque, data: ?*anyopaque) c_int;
 // c47-gtk.c global: set for the headless `--writeexportall` lane.
 extern var writeExportAll: u8;
+// c47.c global: --headless and the menu-dump lanes run with no interface.
+extern var headlessMode: bool;
 extern fn btnPressed(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn btnReleased(widget: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque) void;
 extern fn gtk_events_pending() c_int;
@@ -51,7 +53,11 @@ pub export fn z47_setupUI_no_keyboard_shell() callconv(.c) void {
 pub export fn z47_startup_init_ui(argc: *c_int, argv: [*]?[*:0]u8) callconv(.c) void {
     gtk_init(argc, argv);
     setupUI();
-    settleUiModePass();
+    // c47-gtk.c guards the settle pass with !headlessMode: with no interface up
+    // there is nothing to align and no event loop to pump it through.
+    if (!headlessMode) {
+        settleUiModePass();
+    }
 }
 
 pub export fn z47_startup_enter_mainloop() callconv(.c) void {
