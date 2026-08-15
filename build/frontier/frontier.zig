@@ -243,7 +243,7 @@ pub fn addBuildOptions(
     // indexing those eleven columns.
     const sp3 = "\xa0\x04";
     const modeltext = if (options.calcmodel == 66) "R47" else "C47";
-    const version1 = "0.109.03.02b0";
+    const version1 = "00.109.04.00b0";
     const vcs = build_common.commandOutput(b, &.{ "git", "describe", "--match=NeVeRmAtCh", "--always", "--abbrev=8", "--dirty=-mod" }) orelse "unknown";
     const today = build_common.commandOutput(b, &.{ "date", "+%Y-%m-%d" }) orelse "1970-01-01";
     const cdate = build_common.commandOutput(b, &.{ "date", "+%b %e %Y" }) orelse "Jan  1 1970";

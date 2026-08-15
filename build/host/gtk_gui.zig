@@ -50,7 +50,7 @@ pub fn addToModule(
     const gtk_options = b.addOptions();
     gtk_options.addOption(u8, "calcmodel", calcmodel);
     gtk_options.addOption([]const u8, "vcs_commit_id", vcs);
-    gtk_options.addOption([]const u8, "version1", "0.109.03.02b0"); // mirrors defines.h VERSION1
+    gtk_options.addOption([]const u8, "version1", "00.109.04.00b0"); // mirrors defines.h VERSION1
     // res/ is an imported-upstream path, so in the dev layout it sits under
     // UPSTREAM_ROOT rather than beside build.zig. relocateToResourceDir() probes
     // this subdirectory as well when walking up from the executable; a packaged
