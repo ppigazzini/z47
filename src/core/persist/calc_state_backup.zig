@@ -901,6 +901,8 @@ extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 const ioModeRead: c_int = 0;
 const CONFIRMED: u16 = 9877;
 const loadAutoSav: bool = true;
+// c47.c global, set by the simulator's --testPgms and --writeexportall arms.
+extern var loadTestPrograms: bool;
 const FLAG_FRACT: c_uint = 32775;
 const FLAG_IRFRAC: c_uint = 32839;
 const MNU_HOME: i16 = 1921;
@@ -1005,6 +1007,10 @@ fn programStep(idx: u16) i32 {
 pub fn restoreCalc() void {
     if (comptime is_dmcp_build) return;
     doFnReset(CONFIRMED, loadAutoSav);
+    if (loadTestPrograms) { // the reset above staged the test programs; reading backup.cfg over them would undo that
+        refreshScreen(9100);
+        return;
+    }
     if (backupOpenParse() != FILE_OK) return;
     var backupVersion: u32 = 0;
     rv(&backupVersion, 4, "backupVersion", "uint32");

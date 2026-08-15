@@ -1199,6 +1199,8 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     abi_layout_c_bindings.defineCMacro(context.common.word_size_define, "1");
     abi_layout_c_bindings.addIncludePath(build_common.upstreamPath(b, "dep/decNumberICU"));
     abi_layout_c_bindings.addIncludePath(build_common.upstreamPath(b, "src/c47"));
+    // The root includes <gmp.h>, which only Linux puts on the default search path.
+    host_platform.configureGmpTranslateC(abi_layout_c_bindings);
     const abi_layout_module = b.createModule(.{
         .root_source_file = b.path("build/tests/abi_layout/abi_layout_oracle.zig"),
         .target = context.host_target,

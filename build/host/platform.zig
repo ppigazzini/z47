@@ -119,7 +119,7 @@ pub fn configureRasterFontsTranslateC(translate_c: *TranslateC, common: host_typ
         return;
     }
 
-    if (addWindowsPkgConfigCFlagsTranslateC(translate_c, "freetype2")) {
+    if (addPkgConfigCFlagsTranslateC(translate_c, "freetype2")) {
         return;
     }
 
@@ -129,6 +129,38 @@ pub fn configureRasterFontsTranslateC(translate_c: *TranslateC, common: host_typ
     }
 
     translate_c.linkSystemLibrary("freetype2", .{ .use_pkg_config = .force });
+}
+
+// The abi layout oracle's translate-c root includes <gmp.h> so the Mpz mirror is
+// checked against the real declaration. That header is on the default search
+// path only on Linux: Homebrew keeps it under its own prefix and MSYS2 under the
+// MSYSTEM one, so both hosts translated the root with no gmp visible at all and
+// the lane died on "'gmp.h' not found" -- on every commit, not just a resync.
+// pkg-config answers wherever gmp.pc is installed (Homebrew and MSYS2 both ship
+// it, and Debian's ships one whose Cflags are empty because /usr/include is
+// already searched), and the host prefix is added behind it as the fallback for
+// a host that has the header but not the .pc. On Linux neither environment
+// variable is set, so nothing is added and the lane keeps working as it does.
+pub fn configureGmpTranslateC(translate_c: *TranslateC) void {
+    const owner = translate_c.step.owner;
+
+    _ = addPkgConfigCFlagsTranslateC(translate_c, "gmp");
+
+    if (hostPrefixFromOwner(owner)) |prefix| {
+        translate_c.addSystemIncludePath(.{ .cwd_relative = owner.fmt("{s}/include", .{nativePath(owner, prefix)}) });
+    }
+}
+
+// MSYS2 gives MSYSTEM_PREFIX as a POSIX path (/ucrt64) that the native zig.exe
+// would resolve against the current drive instead. cygpath is what MSYS2 ships
+// to translate one; anywhere else it is absent and the prefix is already the
+// path the compiler wants.
+fn nativePath(owner: *std.Build, path: []const u8) []const u8 {
+    if (!std.mem.startsWith(u8, path, "/")) return path;
+
+    const converted = build_common.commandOutput(owner, &.{ "cygpath", "-m", path }) orelse return path;
+    const trimmed = std.mem.trim(u8, converted, " \t\r\n");
+    return if (trimmed.len == 0) path else trimmed;
 }
 
 pub fn linkGmp(module: *std.Build.Module, target: std.Build.ResolvedTarget) void {
@@ -195,7 +227,7 @@ fn linkWindowsPkgConfigPackage(module: *std.Build.Module, package: []const u8) b
     return pending == null;
 }
 
-fn addWindowsPkgConfigCFlagsTranslateC(translate_c: *TranslateC, package: []const u8) bool {
+fn addPkgConfigCFlagsTranslateC(translate_c: *TranslateC, package: []const u8) bool {
     const flags = build_common.commandOutput(translate_c.step.owner, &.{ "pkg-config", "--cflags", package }) orelse return false;
 
     var tokens = std.mem.tokenizeAny(u8, flags, " \t\r\n");
@@ -291,6 +323,13 @@ fn linkWindowsImportLibraryOrSystem(module: *std.Build.Module, name: []const u8)
 
 fn windowsHostPrefixFromOwner(owner: *std.Build) ?[]const u8 {
     return owner.graph.environ_map.get("MSYSTEM_PREFIX") orelse owner.graph.environ_map.get("MINGW_PREFIX");
+}
+
+// The prefix a non-system package manager installed under: MSYS2 on Windows,
+// Homebrew on macOS. Unset on Linux, where the distribution's own paths are
+// already searched.
+fn hostPrefixFromOwner(owner: *std.Build) ?[]const u8 {
+    return windowsHostPrefixFromOwner(owner) orelse owner.graph.environ_map.get("HOMEBREW_PREFIX");
 }
 
 fn windowsHostPrefix(module: *std.Build.Module) ?[]const u8 {
