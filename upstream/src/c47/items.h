@@ -2985,24 +2985,76 @@
 #define ITM_K100KtoMGEUK            2867
 #define ITM_MIKtoK100K              2868
 #define ITM_K100KtoMIK              2869
-#define ITM_2870                    2870 // CONV spares
-#define ITM_2871                    2871 // CONV spares
-#define ITM_2872                    2872 // CONV spares
-#define ITM_2873                    2873 // CONV spares
-#define ITM_2874                    2874 // CONV spares
-#define ITM_2875                    2875 // CONV spares
-#define ITM_2876                    2876 // CONV spares
-#define ITM_2877                    2877 // CONV spares
-#define ITM_2878                    2878 // CONV spares
-#define ITM_2879                    2879 // CONV spares
-#define ITM_2880                    2880 // CONV spares
-#define ITM_2881                    2881 // CONV spares
 
+// A spare spoken for by a project carries that project in brackets, as the entries below do.  Do not take a
+// marked spare: ask the project first, and mark your own block here when a project claims one.
+#define ITM_2870                    2870 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2871                    2871 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2872                    2872 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2873                    2873 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2874                    2874 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2875                    2875 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2876                    2876 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2877                    2877 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2878                    2878 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2879                    2879 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2880                    2880 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2881                    2881 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
 #define ITM_PGMDRV                  2882
-#define ITM_F1DRV                   2883 
-#define ITM_F2DRV                   2884 
+#define ITM_F1DRV                   2883
+#define ITM_F2DRV                   2884
+#define ITM_2885                    2885 // General items / any items spare (alpha 00.109.04.00a1: LAST_ITEM)
+#define ITM_2886                    2886 // General items / any items spare
+#define ITM_2887                    2887 // General items / any items spare
+#define ITM_2888                    2888 // General items / any items spare
+#define ITM_2889                    2889 // General items / any items spare
+#define ITM_2890                    2890 // General items / any items spare
+#define ITM_2891                    2891 // General items / any items spare
+#define ITM_2892                    2892 // General items / any items spare
+#define ITM_2893                    2893 // General items / any items spare
+#define ITM_2894                    2894 // General items / any items spare
+#define ITM_2895                    2895 // General items / any items spare
+#define ITM_2896                    2896 // General items / any items spare
+#define ITM_2897                    2897 // General items / any items spare
+#define ITM_2898                    2898 // General items / any items spare
+#define ITM_2899                    2899 // General items / any items spare
+#define ITM_2900                    2900 // General items / any items spare
+#define ITM_2901                    2901 // General items / any items spare
+#define ITM_2902                    2902 // General items / any items spare
+#define ITM_2903                    2903 // General items / any items spare
+#define ITM_2904                    2904 // General items / any items spare
+#define ITM_2905                    2905 // General items / any items spare
+#define ITM_2906                    2906 // General items / any items spare
+#define ITM_2907                    2907 // General items / any items spare
+#define ITM_2908                    2908 // General items / any items spare
+#define ITM_2909                    2909 // General items / any items spare
+#define ITM_2910                    2910 // General items / any items spare
+#define ITM_2911                    2911 // General items / any items spare
+#define ITM_2912                    2912 // General items / any items spare
+#define ITM_2913                    2913 // General items / any items spare
+#define ITM_2914                    2914 // General items / any items spare
+#define ITM_2915                    2915 // General items / any items spare
 
-#define LAST_ITEM                   2885
+#define ITM_2916                    2916 // General items / any items spare (reserved: Logic extension, test to SI)
+#define ITM_2917                    2917 // General items / any items spare (reserved: Logic extension, ANDbits)
+#define ITM_2918                    2918 // General items / any items spare (reserved: Logic extension, ORbits)
+#define ITM_2919                    2919 // General items / any items spare (reserved: Logic extension, XORbits)
+
+#define ITM_2920                    2920 // General items / any items spare (reserved: STRUCT, IF)
+#define ITM_2921                    2921 // General items / any items spare (reserved: STRUCT, ELSE)
+#define ITM_2922                    2922 // General items / any items spare (reserved: STRUCT, ENDIF)
+#define ITM_2923                    2923 // General items / any items spare (reserved: STRUCT, the STRUCT menu)
+#define ITM_2924                    2924 // General items / any items spare (reserved: STRUCT, DO)
+#define ITM_2925                    2925 // General items / any items spare (reserved: STRUCT, WHILE)
+#define ITM_2926                    2926 // General items / any items spare (reserved: STRUCT, ENDDO)
+#define ITM_2927                    2927 // General items / any items spare (reserved: STRUCT, FOR)
+#define ITM_2928                    2928 // General items / any items spare (reserved: STRUCT, NEXT)
+#define ITM_2929                    2929 // General items / any items spare (reserved: STRUCT, FORx)
+#define ITM_2930                    2930 // General items / any items spare (reserved: STRUCT, NEXTx)
+#define ITM_2931                    2931 // General items / any items spare (reserved: STRUCT, VALID)
+#define ITM_2932                    2932 // General items / any items spare (reserved: STRUCT, AUTOVALID)
+
+#define LAST_ITEM                   2933
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item
