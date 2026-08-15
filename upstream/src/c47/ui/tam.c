@@ -383,7 +383,7 @@
           showSoftmenu(-MNU_TAMLBLONLY);
         }
         else if(tam.mode == TM_SOLVE) {
-          if((tam.function == ITM_SOLVE || tam.function == ITM_PLTf) && calcMode == CM_PEM) {
+          if((tam.function == ITM_SOLVE || tam.function == ITM_PLTf || tam.function == ITM_F1DRV || tam.function == ITM_F2DRV) && calcMode == CM_PEM) {
             showSoftmenu(-MNU_TAMVARONLY);
           }
           else {
@@ -755,7 +755,7 @@ printf("tam.value: %d\n", tam.value);
       }
     }
     else if(item == ITM_COLON) {
-      if((tam.mode == TM_LABEL) || (tam.mode == TM_LBLONLY) || (tam.mode == TM_KEY) || ((tam.mode == TM_SOLVE) && (tam.function != ITM_SOLVE || calcMode != CM_PEM))) {
+      if((tam.mode == TM_LABEL) || (tam.mode == TM_LBLONLY) || (tam.mode == TM_KEY) || ((tam.mode == TM_SOLVE) && ((tam.function != ITM_SOLVE && tam.function != ITM_F1DRV && tam.function != ITM_F2DRV) || calcMode != CM_PEM))) {
         if(!tam.colon) {
           showSoftmenu(-MNU_TAMLOCALLABEL);
         }
@@ -1282,7 +1282,7 @@ printf("tam.value: %d\n", tam.value);
       }
 
       case TM_SOLVE: {
-        if((func == ITM_SOLVE || func == ITM_PLTf) && calcMode == CM_PEM) {
+        if((func == ITM_SOLVE || func == ITM_PLTf || func == ITM_F1DRV || func == ITM_F2DRV) && calcMode == CM_PEM) {
           showSoftmenu(-MNU_TAMVARONLY);
         }
         else {

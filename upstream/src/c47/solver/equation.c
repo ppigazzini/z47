@@ -669,6 +669,12 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
 
 
 
+// The derivative's step key. It carries a name rather than an item because it is a named variable, which is what the MVAR menu's own key handler stores into.
+static void _deltaMenuItem(char *bufPtr) {
+  xcopy(bufPtr, STD_delta STD_SUB_d, stringByteLength(STD_delta STD_SUB_d) + 1);
+  bufPtr[stringByteLength(STD_delta STD_SUB_d) + 1] = 0;
+}
+
 static void _menuItem(int16_t item, char *bufPtr) {
   xcopy(bufPtr, indexOfItems[item].itemSoftmenuName, stringByteLength(indexOfItems[item].itemSoftmenuName) + 1);
   bufPtr[stringByteLength(indexOfItems[item].itemSoftmenuName)+1]=0;
@@ -1120,12 +1126,12 @@ static void _parseWord(char *strPtr, uint16_t parseMode, uint16_t parserHint, ch
               _menuItem(ITM_CALC, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE)) {
-              _menuItem(MNU_GRAPHS, bufPtr);
+              _deltaMenuItem(bufPtr);   // the step key, where the other engines put their tool menu
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_FPHERE, bufPtr);
             }
             else if(tmpVal == 3 && ((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_2ND_DERIVATIVE)) {
-              _menuItem(MNU_GRAPHS, bufPtr);
+              _deltaMenuItem(bufPtr);
               bufPtr += stringByteLength(bufPtr) + 1;
               _menuItem(ITM_FPPHERE, bufPtr);
             }
@@ -1649,12 +1655,12 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
       }
       if(tmpVal == 4) {
         if((currentSolverStatus & SOLVER_STATUS_EQUATION_MODE) == SOLVER_STATUS_EQUATION_1ST_DERIVATIVE) {
-          _menuItem(MNU_GRAPHS, bufPtr);
+          _deltaMenuItem(bufPtr);   // the step key, where the other engines put their tool menu
           bufPtr += stringByteLength(bufPtr) + 1;
           _menuItem(ITM_FPHERE, bufPtr);
         }
         else {
-          _menuItem(MNU_GRAPHS, bufPtr);
+          _deltaMenuItem(bufPtr);
           bufPtr += stringByteLength(bufPtr) + 1;
           _menuItem(ITM_FPPHERE, bufPtr);
         }

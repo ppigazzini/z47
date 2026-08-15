@@ -1591,6 +1591,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     firstFreeProgramByte          = beginOfProgramMemory + 2;
     firstDisplayedStep            = beginOfProgramMemory;
     firstDisplayedLocalStepNumber = 0;
+    currentLocalStepNumber        = 1;
+    currentProgramNumber          = 1;
     labelList                     = NULL;
     programList                   = NULL;
     *(beginOfProgramMemory + 0) = (ITM_END >> 8) | 0x80;
@@ -1893,6 +1895,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
 
     currentSolverStatus = 0;
     currentSolverProgram = 0xffffu;
+    currentDerivProgram = 0xffffu;
     currentSolverVariable = INVALID_VARIABLE;
     currentSolverNestingDepth = 0;
     engineNestingDepth = 0;

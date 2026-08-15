@@ -1790,11 +1790,14 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         if(nimNumberPart == NP_INT_10 || nimNumberPart == NP_REAL_FLOAT_PART || nimNumberPart == NP_REAL_EXPONENT) {
           done = true;
           closeNim();
-          fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
-          #if defined(OPTION_IR_PRINTING)
-            printTrace(ITM_DMS2, NOPARAM);
-            printTraceX(LINE_FULL);
-          #endif //OPTION_IR_PRINTING
+          if(calcMode != CM_NIM && lastErrorCode == 0) {
+            fnAngularModeJM(amDMS); //it cannot be an angle at this point. If closed input, it is only real or longint
+            #if defined(OPTION_IR_PRINTING)
+              printTrace(ITM_DMS2, NOPARAM);
+              printTraceX(LINE_FULL);
+            #endif //OPTION_IR_PRINTING
+            return;
+          }
         }
         break;
       }

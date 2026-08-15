@@ -1,29 +1,26 @@
 ;******************************************************************************************************************************
 ;** Coverage: derivative of a program that declares MVARs. covDerivMvarPgm builds and loads MD (f(x,p) = x^2 - p*x - 2 with  **
-;** MVAR x and MVAR p) and differentiates it through fn1stDeriv / fn2ndDeriv. MD recalls its arguments from named storage,   **
-;** so unlike the stack-reading program S of pgm_solve_cov it only moves when the differentiator stores each stencil point   **
-;** in the variable it differentiates with respect to (differentiate.c). Without that the stencil samples are all equal and  **
-;** the stencil coefficients, which sum to zero, cancel it exactly.                                                          **
+;** MVAR x and MVAR p) and differentiates it both ways it can be reached. MD recalls its arguments from named storage, so    **
+;** unlike the stack-reading program S of pgm_solve_cov it only moves when the differentiator stores each stencil point in   **
+;** the variable it differentiates with respect to (differentiate.c). Without that the stencil samples are all equal and the **
+;** stencil coefficients, which sum to zero, cancel it exactly.                                                              **
 ;**                                                                                                                          **
-;** Also asserts the variable choice among several MVARs - the current solver variable when the program declares it, else    **
-;** the first declaration - and that sampling leaves both variables at the values they had on entry.                         **
+;** The two routes. Through the MVAR menu, which f' opens for a program: the variable key stores the point in the variable   **
+;** and selects it, and the last softkey runs the derivative. As a program step, where no menu can be opened: PGMDRV names   **
+;** the program, the operand names the variable and the point comes off the stack. D1 and D2 are those program steps. Also   **
+;** asserts that sampling leaves both variables where it found them, in value and in type.                                   **
 ;**                                                                                                                          **
-;** Adds a program to memory and creates the named variables x, p and zzz, so this runs after programs.txt, next to          **
+;** Adds programs to memory and creates the named variables x, p and zzz, so this runs after programs.txt, next to           **
 ;** pgm_solve_cov, and before the resetting serialize_cov.                                                                   **
 ;******************************************************************************************************************************
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 
-; build and load M, then seed x = 5 and p = 0
+; build and load MD, D1 and D2, then seed x = 5 and p = 0
 Func: fnDerivMvarPgmCov
 In:  FARG=0
 Out: EC=0
 
-; no solver variable selected: the first declaration, x, is the argument. d/dx = 2x - p, at x=2 with p=0 -> 4
-Func: fnDerivMvarPgmCov
-In:  FARG=5 RX=Real:"2"
-Out: EC=0 RX=Real:"4"
-
-; x selected explicitly: same derivative, at x=3 -> 6
+; menu route, x selected: the key stores the point 3 in x, d/dx = 2x - p = 6 with p = 0
 Func: fnDerivMvarPgmCov
 In:  FARG=1 RX=Real:"3"
 Out: EC=0 RX=Real:"6"
@@ -38,32 +35,39 @@ Func: fnDerivMvarPgmCov
 In:  FARG=3 RX=Real:"3"
 Out: EC=0 RX=Real:"5"
 
-; a solver variable MD does not declare falls back to the first declaration, x -> 2x - 1 = 5
-Func: fnDerivMvarPgmCov
-In:  FARG=8 RX=Real:"3"
-Out: EC=0 RX=Real:"5"
-
-; p selected: the caller's choice wins over the first declaration. d/dp = -x, with x = 5 -> -5
+; p selected: the caller's choice wins over the first declaration. d/dp = -x, and x holds the 3 the cases above stored
 Func: fnDerivMvarPgmCov
 In:  FARG=4 RX=Real:"1"
-Out: EC=0 RX=Real:"-5"
+Out: EC=0 RX=Real:"-3"
 
-; sampling perturbs the variables and must put them back: x is still its seeded 5 and p its assigned 1
+; as a program step: D1 names MD with PGMDRV and x as the variable, and the point comes off the stack -> 2x - 1 = 5
+Func: fnDerivMvarPgmCov
+In:  FARG=10 RX=Real:"3"
+Out: EC=0 RX=Real:"5"
+
+; the second derivative as a program step
+Func: fnDerivMvarPgmCov
+In:  FARG=11 RX=Real:"3"
+Out: EC=0 RX=Real:"2"
+
+; sampling perturbs the variables and must put them back: x is the 3 the menu route stored and p the 1 it was given
 Func: fnDerivMvarPgmCov
 In:  FARG=6
-Out: EC=0 RX=Real:"5"
+Out: EC=0 RX=Real:"3"
 Func: fnDerivMvarPgmCov
 In:  FARG=7
 Out: EC=0 RX=Real:"1"
 
 ; a long-integer input must come back a long integer: sampling stores a real34 into it, so the
-; restore has to carry the whole register and not a real read back through real34.
+; restore has to carry the whole register and not a real read back through real34. The menu route
+; with nothing keyed in is the one that leaves the variable's own type in place: x = 5 as a long
+; integer, so the derivative is 2x - p = 9 and x is a long integer again afterwards.
 Func: fnDerivMvarPgmCov
 In:  FARG=9
 Out: EC=0
 Func: fnDerivMvarPgmCov
-In:  FARG=1 RX=Real:"3"
-Out: EC=0 RX=Real:"5"
+In:  FARG=12
+Out: EC=0 RX=Real:"9"
 Func: fnDerivMvarPgmCov
 In:  FARG=6
 Out: EC=0 RX=LonI:"5"

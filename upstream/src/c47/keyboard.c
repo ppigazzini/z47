@@ -118,7 +118,7 @@ static void executeFunction(const char *data, int16_t item_);
           item = ITM_FPHERE;
         }
         else if(IS_EQN_1STDER && dynamicMenuItem == 4) {
-          item = -MNU_GRAPHS;
+          item = ITM_SOLVE_VAR;   // the step key: parseEquation named that slot delta, and the MVAR key handler stores into it
         }
 
 //f''
@@ -126,7 +126,7 @@ static void executeFunction(const char *data, int16_t item_);
           item = ITM_FPPHERE;
         }
         else if(IS_EQN_2NDDER && dynamicMenuItem == 4) {
-          item = -MNU_GRAPHS;
+          item = ITM_SOLVE_VAR;   // the step key, as above
         }
 
 
@@ -1805,7 +1805,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
   #if defined(DMCP_BUILD)
     void btnPressed(void *data) {
   #endif //DMCP_BUILD
-      showScreenDismissed = (SHOWMODE || currentMenu() == -MNU_SHOW);
+      showScreenDismissed = (currentMenu() == -MNU_SHOW && !SHOWMODE);   //dismisses the WHO screen only; a real SHOW handled in processKeyAction.
       if(showScreenDismissed) {
         closeShowMenu();
       }
@@ -1986,7 +1986,7 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
       for(int i=0; i<43; i++) {
         xMin = calcKeyboard[i].x;
         yMin = calcKeyboard[i].y;
-        if(i == 10 && currentBezel == 2 && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_SOLVE && (tam.function != ITM_SOLVE || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished))) {
+        if(i == 10 && currentBezel == 2 && (tam.mode == TM_LABEL || tam.mode == TM_LBLONLY || (tam.mode == TM_SOLVE && ((tam.function != ITM_SOLVE && tam.function != ITM_F1DRV && tam.function != ITM_F2DRV) || calcMode != CM_PEM)) || (tam.mode == TM_KEY && tam.keyInputFinished))) {
           xMax = xMin + calcKeyboard[10].width[3];
           yMax = yMin + calcKeyboard[10].height[3];
         }

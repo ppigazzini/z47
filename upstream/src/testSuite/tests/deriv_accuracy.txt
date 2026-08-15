@@ -1,0 +1,205 @@
+;*******************************************************************************************************************************
+;** Accuracy: the numerical derivative on functions that make the step matter. covDerivAccPgm loads seven functions, Ka to    **
+;** Kg, each reading its argument off the stack, and a first and second derivative wrapper for each, Xa to Xg and Ya to Yg,   **
+;** so every case below is an ordinary program run with the point in X.                                                      **
+;**                                                                                                                          **
+;** Each Out: is what the engine returns, digit for digit. The ;Accurate line under it is the true value to 55 digits, lined  **
+;** up so the digits sit under each other and the first wrong one shows at a glance, and it names the stencil and the step    **
+;** the engine settled on. The true values come from an independent computation to 120 digits, python decimal with no third   **
+;** party library: exp, ln and sqrt from decimal itself and the trigonometric ones from series, with their own self checks.   **
+;** The script is refs.py, beside this project's probes, and refs55.py prints the lines below.                                **
+;**                                                                                                                          **
+;** The margin is 34 digits and a numerical derivative does not reach it: differencing two nearby samples always costs        **
+;** digits, and how many depends on the function.                                                                            **
+;**                                                                                                                          **
+;** Loads programs, so this runs after programs.txt, next to pgm_solve_cov, and before the resetting serialize_cov.           **
+;*******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+; load Ka..Kg, Xa..Xg and Ya..Yg
+Func: fnDerivAccPgm
+In:  FARG=0
+Out: EC=0
+
+Func: fnExecute
+
+;=======================================================================================================================
+; e^x at x = 1. Value, first and second derivative are all e. The smooth reference.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 RX=Real:"1" PGM="Xa"
+Out: EC=0 RX=Real:"2.718281828459045235360287471352684"
+;Accurate          2.7182818284590452353602874713526624977572470936999595749669   15 points at x/100
+
+In:  FL_ASLIFT=1 RX=Real:"1" PGM="Ya"
+Out: EC=0 RX=Real:"2.718281828459045235360287471374701"
+;Accurate          2.7182818284590452353602874713526624977572470936999595749669   15 points at x/100
+
+;=======================================================================================================================
+; ln x at x = 0.3. f' = 1/x = 10/3 and f" = -1/x^2 = -100/9, both repeating, so every digit returned is checkable.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 RX=Real:"0.3" PGM="Xb"
+Out: EC=0 RX=Real:"3.333333333333333333333333333334402"
+;Accurate          3.3333333333333333333333333333333333333333333333333333333333   15 points at x/1000
+
+In:  FL_ASLIFT=1 RX=Real:"0.3" PGM="Yb"
+Out: EC=0 RX=Real:"-11.11111111111111111111111108811530"
+;Accurate          -11.11111111111111111111111111111111111111111111111111111111   15 points at x/1000
+
+;=======================================================================================================================
+; 1/x at x = 7. f' = -1/49 and f" = 2/343, again repeating decimals.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 RX=Real:"7" PGM="Xc"
+Out: EC=0 RX=Real:"-0.02040816326530612244897959183673215"
+;Accurate          -0.020408163265306122448979591836734693877551020408163265306   15 points at x/1000
+
+In:  FL_ASLIFT=1 RX=Real:"7" PGM="Yc"
+Out: EC=0 RX=Real:"0.005830903790087463556851311950966933"
+;Accurate          0.0058309037900874635568513119533527696793002915451895043731   15 points at x/1000
+
+;=======================================================================================================================
+; arcsin x at x = 0.5, radians. f' = 1/sqrt(1-x^2) and f" = x/(1-x^2)^1.5, both irrational, and the whole stencil stays
+; inside the domain at every step. The control for the domain edge case below.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0.5" PGM="Xd"
+Out: EC=0 RX=Real:"1.154700538379251529018297561004038"
+;Accurate          1.1547005383792515290182975610039149112952035025402537520372   15 points at x/1000
+
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0.5" PGM="Yd"
+Out: EC=0 RX=Real:"0.7698003589195010193455317075144158"
+;Accurate          0.7698003589195010193455317073359432741968023350268358346914   15 points at x/1000
+
+;=======================================================================================================================
+; arcsin x at x = 0.999, radians, one thousandth from the end of its domain. The first step, x/10, puts the widest
+; stencil past 1, so those samples are undefined and the stencil is refused; the ladder takes the points closer in
+; until they all land inside. The worst of the smooth cases and the reason the step is not fixed.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0.999" PGM="Xd"
+Out: EC=0 RX=Real:"22.36627204212922171066204252273301"
+;Accurate          22.366272042129221710662042522284984608062778440744330059753   15 points at x/10^6
+
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0.999" PGM="Yd"
+Out: EC=0 RX=Real:"11177.54165587148198546944777947235"
+;Accurate          11177.541655871481985468424452107403513484099881092339034363   15 points at x/10^5
+
+;=======================================================================================================================
+; tan x at x = 1.5 radians, a twentieth from the pole at pi/2, where the function climbs through 200 per unit and
+; bends hard.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"1.5" PGM="Xe"
+Out: EC=0 RX=Real:"199.8500445264924572055077063214392"
+;Accurate          199.85004452649245720550770632123505583196016056397278293633   15 points at x/10^4
+
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"1.5" PGM="Ye"
+Out: EC=0 RX=Real:"5636.338808658074066499844168996605"
+;Accurate          5636.3388086580740664998441696190550099188111689830778113935   15 points at x/10^4
+
+;=======================================================================================================================
+; sin x at x = 1000 radians, 159 periods out. The step is relative to x, so the first one spans sixteen whole periods
+; and nothing agrees until the ladder has walked well down.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"1000" PGM="Xf"
+Out: EC=0 RX=Real:"0.5623790762907029910782492266053969"
+;Accurate          0.5623790762907029910782492266053959687558118217381969177028   15 points at x/10^5
+
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"1000" PGM="Yf"
+Out: EC=0 RX=Real:"-0.8268795405320025602558874291063580"
+;Accurate          -0.826879540532002560255887429109218141212724967847788320908   15 points at x/10^5
+
+;=======================================================================================================================
+; e^x + 1E20 at x = 1. Adding a constant changes no derivative, so both are still e, but the offset takes 21 of the 34
+; digits of every sample before they are differenced. 13 digits is all this function has left to give. No two steps
+; ever agree here, so this is the case the closest pair fallback answers, and the step it names is the coarsest one.
+;=======================================================================================================================
+In:  FL_ASLIFT=1 RX=Real:"1" PGM="Xg"
+Out: EC=0 RX=Real:"2.718281828459351787101787101787102"
+;Accurate          2.7182818284590452353602874713526624977572470936999595749669   15 points at x/10
+
+In:  FL_ASLIFT=1 RX=Real:"1" PGM="Yg"
+Out: EC=0 RX=Real:"2.718281828458521983175554604126033"
+;Accurate          2.7182818284590452353602874713526624977572470936999595749669   15 points at x/10
+
+;=======================================================================================================================
+; Corner cases. The point itself is what is awkward here rather than the function.
+;=======================================================================================================================
+
+; x = 0. The step is relative, so it collapses and the engine falls back to h = 1 scaled by the pass. Samples run from
+; -7 to 7 and e^x over that range spans nine orders of magnitude.
+In:  FL_ASLIFT=1 RX=Real:"0" PGM="Xa"
+Out: EC=0 RX=Real:"1.000000000000000000000000000000007"
+;Accurate          1                                                              15 points at 1/100
+
+In:  FL_ASLIFT=1 RX=Real:"0" PGM="Ya"
+Out: EC=0 RX=Real:"1.000000000000000000000000000001172"
+;Accurate          1                                                              15 points at 1/100
+
+; a negative point, where the relative step is negative and the stencil runs backwards. f' = f" = 1/e.
+In:  FL_ASLIFT=1 RX=Real:"-1" PGM="Xa"
+Out: EC=0 RX=Real:"0.3678794411714423215955237701614612"
+;Accurate          0.3678794411714423215955237701614608674458111310317678345078   15 points at x/100
+
+In:  FL_ASLIFT=1 RX=Real:"-1" PGM="Ya"
+Out: EC=0 RX=Real:"0.3678794411714423215955237701607629"
+;Accurate          0.3678794411714423215955237701614608674458111310317678345078   15 points at x/100
+
+; a large point. e^100 is 2.688E43, so the step x/10^4 is a hundredth and the samples still span a decade of the value.
+In:  FL_ASLIFT=1 RX=Real:"100" PGM="Xa"
+Out: EC=0 RX=Real:"2.688117141816135448412625551580077E+43"
+;Accurate          2.6881171418161354484126255515800135873611118773741922415191E+43   15 points at x/10^4
+
+; a tiny point. h starts at 1E-31 and the answer, e^1E-30, differs from 1 only in its 31st digit. The engine returns
+; exactly 1, which is right to 30 digits and wrong in the 31st: the term the step cannot resolve.
+In:  FL_ASLIFT=1 RX=Real:"1E-30" PGM="Xa"
+Out: EC=0 RX=Real:"1"
+;Accurate          1.0000000000000000000000000000010000000000000000000000000000   15 points at x/10
+
+; sin at 0, where the relative step collapses again and the samples run over two whole periods. f" is exactly 0 and
+; comes back as 1.45E-39, an absolute miss of that size rather than a relative one, so it has no correct digit count.
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0" PGM="Xf"
+Out: EC=0 RX=Real:"0.9999999999999999999999999999999978"
+;Accurate          1                                                              15 points at 1/100
+
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"0" PGM="Yf"
+Out: EC=0 RX=Real:"1.453572882144310715739287167858596E-39"
+;Accurate          0                                                              15 points at 1/10
+
+; tan at 1.57 radians, four ten thousandths from the pole, where f' is 1.577E6 and f" is 3.96E9.
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"1.57" PGM="Xe"
+Out: EC=0 RX=Real:"1576948.220797081858921262372054096"
+;Accurate          1576948.2207970818589212623720537009652093556866449065062760   15 points at x/10^6
+
+In:  FL_ASLIFT=1 AM=RAD RX=Real:"1.57" PGM="Ye"
+Out: EC=0 RX=Real:"3960554630.510421453562233721431568"
+;Accurate          3960554630.5104214535622337208792578541457552341360740945271   15 points at x/10^6
+
+;=======================================================================================================================
+; The four routes into the new f' and f". Every case above is one of them, a program step on a function that declares no
+; MVAR, so the other three are here. Km is the one fixture that declares one, MVAR zz holding zz squared, and Xm and Ym
+; are its program-step wrappers. fnDerivUiCov drives the keyboard route, where the operand is a program rather than a
+; variable: FARG 1 and 2 hand f' a program, which names it for the derivative and opens the MVAR menu on it, and FARG 3
+; is the action key that menu carries.
+;=======================================================================================================================
+
+; a program step on a program that does declare an MVAR. d/dzz of zz squared at 5 is 10, and the second derivative is 2.
+In:  FL_ASLIFT=1 RX=Real:"5" PGM="Xm"
+Out: EC=0 RX=Real:"10"
+
+In:  FL_ASLIFT=1 RX=Real:"5" PGM="Ym"
+Out: EC=0 RX=Real:"2"
+
+Func: fnDerivUiCov
+
+; the keyboard route on a program that declares an MVAR: the menu opens on Km, the point in X goes into the declaration
+; the way the variable key would put it there, and the action key then differentiates with respect to it. 2 times 5.
+In:  FARG=1 RX=Real:"5"
+Out: EC=0
+
+In:  FARG=3
+Out: EC=0 RX=Real:"10"
+
+; the keyboard route on a program that declares none: the menu still opens, as SOLVE's does, but with no variable on it.
+; Pressing the action key then has nothing to differentiate against and says so, error 57.
+In:  FARG=2 RX=Real:"5"
+Out: EC=0
+
+In:  FARG=3
+Out: EC=57

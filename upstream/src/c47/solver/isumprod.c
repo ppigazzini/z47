@@ -181,37 +181,11 @@ static bool_t _checkRegisters(void) {
 
 
 static void _checkiArgument(uint16_t label, bool_t prod) {
-    if(FIRST_LABEL <= label && label <= LAST_LABEL) {
+    label = findProgramLabel(label, "In function _checkiArgument:");
+    if(label != INVALID_VARIABLE) {
       if(!_checkRegisters()) {
         _programmableiSumProd(label, prod);
       }
-    }
-    else if(REGISTER_X <= label && label <= REGISTER_T) {
-      // Interactive mode
-      char buf[2];
-      buf[0] = letteredRegisterName((calcRegister_t)label);
-      buf[1] = 0;
-      label = findNamedLabel(buf, GLOBAL_LABELS);
-      if(label == INVALID_VARIABLE) {
-        displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          sprintf(errorMessage, "string '%s' is not a named label", buf);
-          moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      }
-      else {
-        if(!_checkRegisters()) {
-          _programmableiSumProd(label, prod);
-        }
-      }
-
-    }
-    else {
-      displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "unexpected parameter %u", label);
-        moreInfoOnError("In function _checkiArgument:", errorMessage, NULL, NULL);
-      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
     }
   }
 

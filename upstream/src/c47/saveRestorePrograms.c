@@ -467,9 +467,37 @@ static void _selectProgram(uint16_t label) {
 }
 
 
+// _selectProgram() uses fnGoto(), which moves the step, the step number, the program number, the displayed step, its number,
+// and the program bounds. This restores it for WRITEP and XPORTP
+typedef struct {
+  uint8_t *step;
+  uint8_t *firstDisplayed;
+  uint16_t localStepNumber;
+  uint16_t firstDisplayedLocalStepNumber;
+  uint16_t programNumber;
+} editorPosition_t;
+
+static void _saveEditorPosition(editorPosition_t *position) {
+  position->step                          = currentStep;
+  position->firstDisplayed                = firstDisplayedStep;
+  position->localStepNumber               = currentLocalStepNumber;
+  position->firstDisplayedLocalStepNumber = firstDisplayedLocalStepNumber;
+  position->programNumber                 = currentProgramNumber;
+}
+
+static void _restoreEditorPosition(const editorPosition_t *position) {
+  currentStep = position->step;
+  defineCurrentProgramFromCurrentStep(); // the program bounds follow the step
+  currentLocalStepNumber        = position->localStepNumber;
+  currentProgramNumber          = position->programNumber;
+  firstDisplayedStep            = position->firstDisplayed;
+  firstDisplayedLocalStepNumber = position->firstDisplayedLocalStepNumber;
+}
+
+
 void _exportProgram(uint16_t label, ioFilePath_t path) {
-    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
-    uint16_t savedCurrentProgramNumber = currentProgramNumber;
+    editorPosition_t savedPosition;
+    _saveEditorPosition(&savedPosition);
 
     #if defined(DMCP_BUILD)
       // Don't pass through if the power is insufficient
@@ -490,8 +518,7 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
       temporaryInformation = TI_SAVED;
     }
 
-    currentLocalStepNumber = savedCurrentLocalStepNumber;
-    currentProgramNumber = savedCurrentProgramNumber;
+    _restoreEditorPosition(&savedPosition);
 }
 
 
@@ -517,8 +544,8 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
       }
     #endif // DMCP_BUILD
 
-    const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
-    uint16_t savedCurrentProgramNumber = currentProgramNumber;
+    editorPosition_t savedPosition;
+    _saveEditorPosition(&savedPosition);
 
     _selectProgram(label);
 
@@ -526,6 +553,7 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
 
     if(ret != FILE_OK ) {
       if(ret == FILE_CANCEL ) {
+        _restoreEditorPosition(&savedPosition);
         return;
       }
       else {
@@ -533,6 +561,7 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
           printf("Cannot save program!\n");
         #endif
         displayCalcErrorMessage(ERROR_CANNOT_WRITE_FILE, ERR_REGISTER_LINE, REGISTER_X);
+        _restoreEditorPosition(&savedPosition);
         return;
       }
     }
@@ -561,8 +590,7 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
 
     ioFileClose();
 
-    currentLocalStepNumber = savedCurrentLocalStepNumber;
-    currentProgramNumber = savedCurrentProgramNumber;
+    _restoreEditorPosition(&savedPosition);
 
     temporaryInformation = TI_SAVED;
 }

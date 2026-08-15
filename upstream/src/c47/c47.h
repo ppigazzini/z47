@@ -538,6 +538,7 @@
   extern uint16_t               currentViewRegister;
   extern uint16_t               currentSolverStatus;
   extern uint16_t               currentSolverProgram;
+  extern uint16_t               currentDerivProgram;             // PGMDRV, the derivative's own program, so a derivative does not repoint what SOLVE, INT and PLOT run
   extern uint16_t               currentSolverVariable;
   extern uint16_t               currentSolverNestingDepth;
   extern uint16_t               engineNestingDepth;              // PLOT, INT and SOLVE combined, capped at MAX_ENGINE_NESTING_DEPTH; PLOT only at level 1

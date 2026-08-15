@@ -813,6 +813,10 @@ void drawBattery(uint16_t voltage) {
       }
     }
 
+    if(screenHoldsDrawnPixels) {                           // return if CLLCD, PIXEL, POINT or AGRAPH painted, no statusBar activity
+      return;
+    }
+
     #if (DEBUG_INSTEAD_STATUS_BAR == 1)
       char statusMessage[100];
       char catalogstr[10];

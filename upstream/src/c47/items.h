@@ -2985,8 +2985,24 @@
 #define ITM_K100KtoMGEUK            2867
 #define ITM_MIKtoK100K              2868
 #define ITM_K100KtoMIK              2869
+#define ITM_2870                    2870 // CONV spares
+#define ITM_2871                    2871 // CONV spares
+#define ITM_2872                    2872 // CONV spares
+#define ITM_2873                    2873 // CONV spares
+#define ITM_2874                    2874 // CONV spares
+#define ITM_2875                    2875 // CONV spares
+#define ITM_2876                    2876 // CONV spares
+#define ITM_2877                    2877 // CONV spares
+#define ITM_2878                    2878 // CONV spares
+#define ITM_2879                    2879 // CONV spares
+#define ITM_2880                    2880 // CONV spares
+#define ITM_2881                    2881 // CONV spares
 
-#define LAST_ITEM                   2870
+#define ITM_PGMDRV                  2882
+#define ITM_F1DRV                   2883 
+#define ITM_F2DRV                   2884 
+
+#define LAST_ITEM                   2885
 
 #define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
 #define NOPARAM                       9876 // Item for function who don't need an item

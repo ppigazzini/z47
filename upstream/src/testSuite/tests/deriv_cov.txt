@@ -16,12 +16,12 @@ In:  FARG=1 RX=Real:"3"
 Out: EC=0 RX=Real:"27"
 Func: fnDerivEqCov
 In:  FARG=1 RX=Real:"5"
-Out: EC=0 RX=Real:"74.99999999999999999893939393939394"
-; second derivative of X^3 is 6*X; a finite-difference numerical result,
-; asserted at its deterministic value to lock the current behaviour
+Out: EC=0 RX=Real:"75"
+; second derivative of X^3 is 6*X, and exact here too: the stencil is exact for a
+; cubic and the step ladder settles where the cancellation is still invisible
 Func: fnDerivEqCov
 In:  FARG=2 RX=Real:"3"
-Out: EC=0 RX=Real:"18.00000058730217460376190534920694"
+Out: EC=0 RX=Real:"18"
 
 ; the step is relative (h = x scaled down), so at x=0 it collapses to zero and the
 ; weighted sum is divided by it. f'(0) of X^3 is 0 and must come back finite.
@@ -29,7 +29,7 @@ Func: fnDerivEqCov
 In:  FARG=1 RX=Real:"0"
 Out: EC=0 RX=Real:"0"
 
-; program-derivative entry error paths (derivativeCommon): unknown label letter
+; program-derivative entry error paths (derivativeVariable): unknown label letter
 ; -> LABEL_NOT_FOUND (6), out-of-range parameter -> OUT_OF_RANGE (8)
 Func: fnDerivErrCov
 In:  FARG=0 RX=Real:"2"

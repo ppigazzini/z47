@@ -30,6 +30,7 @@
 
   calcRegister_t findNamedLabel                (const char *labelName, uint8_t labelType);
   calcRegister_t findNamedLabelWithDuplicate   (const char *labelName, int16_t dupNum, uint8_t labelType);
+  calcRegister_t findProgramLabel              (uint16_t label, const char *caller);
   uint16_t       getNumberOfSteps              (void);
 
   bool_t         isAtEndOfPrograms             (const uint8_t *step); // check for .END.

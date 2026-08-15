@@ -1,3 +1,8 @@
+@ Plots the Binet function, which gives the Fibonacci numbers at whole arguments and a smooth curve between
+@ them. Binet sweeps 101 points, calls the term routine for each and collects the results in the statistics
+@ registers, then waits on R/S before drawing. The configuration and the stack are saved on entry and put
+@ back before the plot. The term routine returns the real part with the imaginary part behind it, because
+@ the formula is complex for negative arguments.
 LBL ‘Binet’
   # Plot the Binet function, V04.
   LocR 11
@@ -8,16 +13,16 @@ LBL ‘Binet’
   STO R.00
   STO R.01
 
-  LBL B
+  LBL :LOOP:
     RCL R.01
     RCL R.00
     -
     RCL R.01
-    XEQ A
+    XEQ :TERM:
     AVIEW R.00
     Σ+
     DSZ R.00
-      GTO B
+      GTO :LOOP:
     RCLS R.03
     RCLCFG R.02
     ‘PRESS R/S TO PLOT’
@@ -28,7 +33,7 @@ LBL ‘Binet’
     PLTFCNS
     RTN
 
-  LBL A
+  LBL :TERM:
     # CALC P1
     DECR X
     ÷

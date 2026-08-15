@@ -1,0 +1,12 @@
+;******************************************************************************************************************************
+;** Coverage: polar display compute cap (POLAR_DISPLAY_COMPUTE_DIGITS, complex34ToDisplayString2). The polar stack display   **
+;** computes rect->polar at a fixed width, not one scaled by the operand exponent. fnPolarDisplayCapCov compares the capped  **
+;** magnitude and angle with a 75-digit reference at 17 figures, the count the polar line shows, across adversarial operands **
+;** (wide exponent spread, near-axis, near-45deg, tiny, huge, zero angle), so narrowing the cap fails here instead of        **
+;** silently changing the display. Reads nothing back; self-contained.                                                       **
+;******************************************************************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+Func: fnPolarDisplayCapCov
+In:  FARG=0
+Out: EC=0
