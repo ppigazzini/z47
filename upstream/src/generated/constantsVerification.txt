@@ -1,6 +1,6 @@
 ** AUDIT CERTIFICATE of the C47/R47 conversion constants comprising INDEPENDENT sources and calculations.             **
-** Generated:   2026-08-06 (UTC date; the input hashes below pin the exact audited state)                             **
-** Commit:      b04ad1fbe73dbdbecdaddae1b5a7c90d3b5792f0 (working tree had uncommitted changes)                       **
+** Generated:   2026-08-03 (UTC date; the input hashes below pin the exact audited state)                             **
+** Commit:      989a0ccd2e070fd2b9da4b8e1c76b9bc4a8775bf                                                              **
 ** Note:        Regenerated at every testSuite run; re-written only when the parts between the ruled lines change.    **
 **              For a clean Commit line above: make test, commit, then make test again and re-commit the certificate. **
 ========================================================================================================================
@@ -9,14 +9,14 @@
 **              (note: the committed copy of this file is at least one commit ahead of the recorded hash; more        **
 **              when the certified content has been stable across multiple commits)                                   **
 ** Input:       src/generateConstants/generateConstants.c                                                             **
-**              SHA-256 e2b59e1f86faedea7c39ee60d4da25ea2a8a4f9533fbb3f5030a156a53f8bc02                              **
+**              SHA-256 610bdb41459304c33f1e547b8119589e34f3d29ab47884021e80f98c8570c5ed                              **
 ** Input:       src/c47/defines.h - only the defines consulted for #if branch selection (form "#if (NAME == n)"):     **
 **              MMHG_PA_133_3224 = 1                                                                                  **
 **              SHA-256 of the list above: b6120bb810c1e19b4cd94046ec907e1f38eef9ad01cbd689f759ff469396126d           **
 ** Input:       src/c47/conversionUnits.h                                                                             **
-**              SHA-256 51b4835cd7ca381238eb11124e0232fb9818eceb354adb39aa6b1f927468d6d4                              **
+**              SHA-256 4984c628eadce66edd914ddb8212b4144c48d8748ad74fa350e7a10d372c6ec8                              **
 ** Input:       src/c47/conversionUnits.c                                                                             **
-**              SHA-256 9055e549ef24cc907c0055d17656fda4bae64f9e885591d0a2aee7c1512a5e1c                              **
+**              SHA-256 fd6b93050231ce2337471aeb2d44b141b2676fdc277c9931eae3895c5a247c67                              **
 ** Input:       src/c47/items.c - only the 46 item rows naming the conversion items:                                  **
 **              SHA-256 of those lines: 3d3dfb057fa4b1a700b30b8e47d0ae8cf284c4285dcba43fc78c8e31503bcf92              **
 ** Generator:   src/generateTests/constantsCheck.py; regenerate with python3 src/generateTests/constantsCheck.py      **
@@ -136,7 +136,7 @@
 ** [23] ISO 80000-3 (Quantities and units - Space and time) / IEC 80000-13: level of a power quantity in dB uses the  **
 **      decade factor 10, level of a field (root-power) quantity the factor 20                                        **
 **                                                                                                                    **
-** 143 conversion constants checked; 0 open decision(s).                                                              **
+** 140 conversion constants checked; 0 open decision(s).                                                              **
 **                                                                                                                    **
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -270,10 +270,10 @@ const39_BlobInLbs
   C47        +386.08858267716535433070866141732283464566929133858267716535 // lbs per blob = 12 × g0 / ft (= SlinchToKg / LbToKg)         // uses g0, FtToM logic
   verdict    Correct to 59 verified digits
 
-const39_brdsToIn
+const_brdsToIn
   reference  3.93700787401574803149606299212598425196850393700787401574803E-7 beard-second / inch, assumption A5 [12][4]
-  C47        +3.937007874015748031496062992125984251968503937007874016e-07 // fff menu: beardsecond to inch = 1e-8 / 0.0254                               // repeating decimal
-  verdict    Correct to 55 verified digits
+  C47        +3.93700787401575e-07                                   // fff menu: Convert beardsecond to inch
+  verdict    Correct to 15 verified digits
 
 const_brdsTom
   reference  1E-8                                                    beard-second = 10 nm, assumption A5 [12]
@@ -355,10 +355,10 @@ const_firToLb
   C47        +90                                                     // fff menu: Convert firkin to pound; firkin = 90 lb exactly
   verdict    Correct to 2 verified digits
 
-const39_FlozukToIn3
+const_FlozukToIn3
   reference  1.73387145494763430471742833249446026451108020326276873026187 imperial floz in in^3 [5][4]
-  C47        +1.733871454947634304717428332494460264511080203262768730e+00 // in³    = flozuk × 4.54609e-3 / 160 × 1000000 / 2.54³                       // repeating decimal
-  verdict    Correct to 55 verified digits
+  C47        +1.73387145494763430471742833249446                     // in³    = flozuk × 4.54609e-3 / 160 × 1000000     / 2.54³
+  verdict    Correct to 33 verified digits
 
 const_FlozukToMl
   reference  28.4130625                                              imperial floz = gal/160 = 28.4130625 ml [5]
@@ -380,20 +380,20 @@ const_FoeToJ
   C47        +1e-44                                                  // joule  = 10^44
   verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
 
-const39_fpfToKph
+const_fpfToKph
   reference  0.000598714285714285714285714285714285714285714285714285714285714 furlong/fortnight in km/h [3][4][1]
-  C47        +5.987142857142857142857142857142857142857142857142857143e-04 // fff menu: furlong per fortnight to kilometer per hour = fpfToMps × 3.6      // repeating decimal
-  verdict    Correct to 55 verified digits
+  C47        +5.98714285714286e-04                                   // fff menu: Convert furlong per fortnight to kilometer per hour
+  verdict    Correct to 15 verified digits
 
 const39_fpfToMph
   reference  0.000372023809523809523809523809523809523809523809523809523809524 furlong/fortnight in mph = (201.168/1209600)/0.44704 [3][4][1]
   C47        +3.72023809523809523809523809523809523810e-04           // fff menu: Convert furlong per fortnight to mile per hour = (201.168/1209600)/0.44704
   verdict    Correct to 39 verified digits
 
-const39_fpfToMps
+const_fpfToMps
   reference  0.00016630952380952380952380952380952380952380952380952380952381 furlong/fortnight = 201.168/1209600 m/s [3][4][1]
-  C47        +1.663095238095238095238095238095238095238095238095238095e-04 // fff menu: furlong per fortnight to meter per second = 201.168 / 1209600     // repeating decimal
-  verdict    Correct to 55 verified digits
+  C47        +1.66309523809524e-04                                   // fff menu: Convert furlong per fortnight to meter per second
+  verdict    Correct to 15 verified digits
 
 const_fpsToKph
   reference  1.09728                                                 ft/s = 1.09728 km/h exactly [4]
@@ -425,10 +425,10 @@ const_Ft3L
   C47        +28.316846592                                           // defined          :  (ft × 12 × 2.54)^3 / 1000
   verdict    Correct to 11 verified digits
 
-const39_Ft3ToGalUS
+const_Ft3ToGalUS
   reference  7.48051948051948051948051948051948051948051948051948051948052 ft^3 per US gallon = 1728/231 [4][3]
-  C47        +7.480519480519480519480519480519480519480519480519480519e+00 // galus  = ft³ × 1728 / 231 = 576/77                                          // repeating decimal
-  verdict    Correct to 55 verified digits
+  C47        +7.48051948051948051948051948051948                     // galus  = feet3 * (1/(231 × 0.0254³ × 1000)) * (12*0.254)³
+  verdict    Correct to 33 verified digits
 
 const_ftnToS
   reference  1.2096E+6                                               fortnight = 14 d = 1209600 s [1]
@@ -632,30 +632,15 @@ const_LongtonToKg
   C47        +1016.0469088                                           // kg     =2240 × 0.4535923 39, EXACT,7
   verdict    Correct to 11 verified digits
 
-const39_LQtus
+const_LQtus
   reference  0.946352946                                             US liquid quart in L [3]
-  C47        +1.056688209432593661519599686436650031837064730815557687e+00 // defined us       : 1000 / 946.352946 (US gallon / 4)                         // repeating decimal
-  verdict    Correct to 55 verified digits as the RECIPROCAL (assumption A2)
+  C47        +1.05668820943259                                       // defined us       : 1000 / (GallonUK / 768 x 192) x
+  verdict    Correct to 15 verified digits as the RECIPROCAL (assumption A2)
 
 const_LyToM
   reference  9.4607304725808E+15                                     ly = c x Julian year [8]
   C47        +9.4607304725808e+15                                    // m      = ly × 299792458 × 3600 × 24 × 365.25
   verdict    Correct to 14 verified digits
-
-const39_MgeukToK100K
-  reference  2514.81426528533434306323515711807162680867555338103855345497 1 mpge UK in kWh/100km: the US figure scaled by the imperial gallon, reciprocal, assumption A9 [10][5][3][4]
-  C47        +2.514814265285334343063235157118071626808675553381038553e+03 // kWh/100km = MgeusToK100K × GalukToL / GalusToL
-  verdict    Correct to 55 verified digits
-
-const39_MgeusToK100K
-  reference  2094.02091783981547761075320130438240674461146902091783981548 1 mpge US in kWh/100km: 33.7 kWh per US gallon over 100 km, reciprocal, assumption A9 [10][4]
-  C47        +2.094020917839815477610753201304382406744611469020917840e+03 // kWh/100km = GaluseqE × 100 / mgeus / MiToKm
-  verdict    Correct to 55 verified digits
-
-const39_MikToK100K
-  reference  62.137119223733396961743418436331822158593812137119223733397 1 mi/kWh in kWh/100km = 100/1.609344, reciprocal [4]
-  C47        +6.213711922373339696174341843633182215859381213711922373e+01 // kWh/100km = 100 / (mi/kWh) / MiToKm
-  verdict    Correct to 55 verified digits
 
 const_MiSqToKmSq
   reference  2.589988110336                                          mi^2 in km^2 [4]
@@ -860,4 +845,4 @@ const_ZhangToM
   verdict    Correct to 1 verified digit as the RECIPROCAL (assumption A2)
 
 ========================================================================================================================
-END OF RECORD - 143 entries; SHA-256 of the lines between the ruled lines (both excluded, LF-joined, no trailing newline): cc1bf199e9db3ccdaf2b3c6de03da3c7d21c11edde730ffdd7d077d64e71e1f1
+END OF RECORD - 140 entries; SHA-256 of the lines between the ruled lines (both excluded, LF-joined, no trailing newline): cf247b2e90ae7bcd2e819ca4f3dc1e86e2ab979c6b155e13d4b6cf1d8c1c29b7
