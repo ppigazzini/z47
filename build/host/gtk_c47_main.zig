@@ -25,6 +25,8 @@ pub export var dumpMenusAll: bool = false;
 // fnMenuDump's built-in "menuDump" default.
 pub export var menuDumpPath: ?[*:0]u8 = null;
 pub export var writeExportAll: bool = false;
+// c47.c owns it; the export lane sets it so fnReset stages the sample programs.
+extern var loadTestPrograms: bool;
 pub export var config: u8 = 0;
 pub export var enableFunctionKeysDisplay: bool = false;
 pub export var calcLandscape: bool = false;
@@ -380,6 +382,10 @@ pub export fn main(argc: c_int, argv: [*][*:0]u8) callconv(.c) c_int {
         if (argEql(argv[arg], "--writeexportall")) {
             _ = printf("Activated: %s\n", argv[arg]);
             writeExportAll = true;
+            // c47-gtk.c sets both: the export walks program memory, and without
+            // the sample programs in it fnSaveAllPrograms writes nothing at all,
+            // so the packaging step that consumes PROGRAMS/ALLPGMS has no input.
+            loadTestPrograms = true;
         }
         if (argEql(argv[arg], "--snapskiprefresh")) {
             snapSkipRefresh = true;
