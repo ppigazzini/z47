@@ -268,6 +268,10 @@ uint16_t getNumberOfSteps(void) {
 void defineFirstDisplayedStep(void) {
 }
 
+// _restoreEditorPosition follows the step with this; the lane drives no program bounds, so it has nothing to recompute.
+void defineCurrentProgramFromCurrentStep(void) {
+}
+
 uint8_t *findNextStep(uint8_t *step) {
   return step;
 }

@@ -127,6 +127,7 @@ void *xcopy(void *dest, const void *source, uint32_t n);
 // here rather than silence.
 uint16_t getNumberOfSteps(void);
 void defineFirstDisplayedStep(void);
+void defineCurrentProgramFromCurrentStep(void);
 void decodeOneStep_XPORT(const uint8_t *step);
 uint32_t _getProgramSize(void);
 bool_t getSystemFlag(int32_t sf);

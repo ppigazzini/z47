@@ -71,6 +71,7 @@ ALLOWED: dict[str, str] = {
     "is_old_hw": "OLD_HW",
     "state_old_hw": "OLD_HW",
     "dm42_pkg_xip": "the DM42 QSPI XIP packaging split",
+    "trig_result_cache": "the DM42 SRAM2 budget -- upstream caches the four inverse trig results in 588 bytes of .bss the board does not have, and upstream's own DM42 build is over the line at that pin; a hit returns what a recompute returns, which is what upstream's CACHE_VERIFY build asserts, so the board computes every call and the answers are unchanged",
     "extra_info_on_calc_error": "EXTRA_INFO_ON_CALC_ERROR",
     "ir_printing": "PRINTER / IR printing block",
     "option_elec": "OPTION_ELEC",
