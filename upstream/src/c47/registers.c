@@ -512,7 +512,7 @@ void setRegisterTag(calcRegister_t regist, const uint32_t tag) {
 static bool_t initLocalRegisters(calcRegister_t r) {
   bool_t isMemIssue = false;
 
-  if(lastIntegerBase == 0 && (Input_Default == ID_43S || Input_Default == ID_DP)) {                 //JM defaults JMZERO
+  if(lastIntegerBase == 0 && (Input_Default == ID_43S || Input_Default == ID_DP)) {
     void *newMem = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
     if(newMem) {
       setRegisterDataType(r, dtReal34, amNone);
@@ -523,7 +523,7 @@ static bool_t initLocalRegisters(calcRegister_t r) {
       isMemIssue = true;
     }
   }
-  else if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {                //JM defaults vv
+  else if(lastIntegerBase == 0 && Input_Default == ID_CPXDP) {
     void *newMem = allocC47Blocks(COMPLEX34_SIZE_IN_BLOCKS);
     if(newMem) {
       setRegisterDataType(r, dtComplex34, amNone);
@@ -537,21 +537,37 @@ static bool_t initLocalRegisters(calcRegister_t r) {
     else {
       isMemIssue = true;
     }
-  }                                                   //JM defaults ^^
-  else if(lastIntegerBase == 0 && Input_Default == ID_LI) {                   //JM defaults vv
+  }
+  else if(lastIntegerBase == 0 && Input_Default == ID_LI) {
     longInteger_t lgInt;
-    longIntegerInit(lgInt);
-    uInt32ToLongInteger(0u, lgInt);
-    convertLongIntegerToLongIntegerRegister(lgInt, r);
-    longIntegerFree(lgInt);
-  }                                                   //JM defaults ^^
-  else if(lastIntegerBase !=0) {                   //JM defaults vv
+    void *newMem = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
+    if(newMem) {
+      setRegisterDataType(r, dtReal34, amNone);
+      setRegisterDataPointer(r, newMem);
+      longIntegerInit(lgInt);
+      uInt32ToLongInteger(0u, lgInt);
+      convertLongIntegerToLongIntegerRegister(lgInt, r);
+      longIntegerFree(lgInt);
+    }
+    else {
+      isMemIssue = true;
+    }
+  }
+  else {
     longInteger_t lgInt;
-    longIntegerInit(lgInt);
-    uInt32ToLongInteger(0u, lgInt);
-    convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, r);
-    longIntegerFree(lgInt);
-  }                                                   //JM defaults ^^
+    void *newMem = allocC47Blocks(REAL34_SIZE_IN_BLOCKS);
+    if(newMem) {
+      setRegisterDataType(r, dtReal34, amNone);
+      setRegisterDataPointer(r, newMem);
+      longIntegerInit(lgInt);
+      uInt32ToLongInteger(0u, lgInt);
+      convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, r);
+      longIntegerFree(lgInt);
+    }
+    else {
+      isMemIssue = true;
+    }
+  }
 
   return isMemIssue;
 }
@@ -574,7 +590,6 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
   if(currentLocalFlags == NULL) {
     // 1st allocation of local registers in this level of subroutine
 
-    //TOCHECK XXXX JM (old)
     if((currentSubroutineLevelData = reallocC47Blocks(currentSubroutineLevelData,
                                                       TO_BLOCKS(sizeof(subroutineLevelHeader_t)),
                                                       TO_BLOCKS(sizeof(subroutineLevelHeader_t) + sizeof(localFlags_t) + numberOfRegistersToAllocate*sizeof(registerHeader_t))))) {
@@ -605,7 +620,7 @@ void allocateLocalRegisters(uint16_t numberOfRegistersToAllocate) {
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
           return;
         }
-      }                                                   //JM defaults ^^
+      }
 
     #if defined(VERBOSE_REGISTERS)
       printStatus(0, " ", force);
@@ -1258,7 +1273,7 @@ uint16_t getRegisterFullSizeInBlocks(calcRegister_t regist) {
 
 
 void clearRegister(calcRegister_t regist) {
-  if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {                       //JM defaults JMZERO
+  if((lastIntegerBase == 0) && (Input_Default == ID_43S || Input_Default == ID_DP)) {
     if(getRegisterDataType(regist) == dtReal34) {
       real34SetZero(REGISTER_REAL34_DATA(regist));
       setRegisterTag(regist, amNone);
@@ -1267,8 +1282,8 @@ void clearRegister(calcRegister_t regist) {
       reallocateRegister(regist, dtReal34, 0, amNone);
       real34SetZero(REGISTER_REAL34_DATA(regist));
     }
-  }                                                                             //JM defaults ^^
-  else if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {                                          //JM defaults vv
+  }
+  else if((lastIntegerBase == 0) && (Input_Default == ID_CPXDP)) {
     if(getRegisterDataType(regist) == dtComplex34) {
       real34SetZero(REGISTER_REAL34_DATA(regist));
       real34SetZero(REGISTER_IMAG34_DATA(regist));
@@ -1289,8 +1304,8 @@ void clearRegister(calcRegister_t regist) {
       real34SetZero(REGISTER_REAL34_DATA(regist));
       real34SetZero(REGISTER_IMAG34_DATA(regist));
     }
-  }                                                                             //JM defaults ^^
-  else if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {                                             //JM defaults vv
+  }
+  else if((lastIntegerBase == 0) && (Input_Default == ID_LI)) {
     //JM comment: Not checking if already the correct type, just changing it. Wasting some steps.
     longInteger_t lgInt;
     longIntegerInit(lgInt);
@@ -1298,8 +1313,8 @@ void clearRegister(calcRegister_t regist) {
     uInt32ToLongInteger(val, lgInt);
     convertLongIntegerToLongIntegerRegister(lgInt, regist);
     longIntegerFree(lgInt);
-  }                                                                             //JM defaults ^^
-  else if(lastIntegerBase !=0) {                                             //JM defaults vv
+  }
+  else if(lastIntegerBase !=0) {
     //JM comment: Not checking if already the correct type, just changing it. Wasting some steps.
     longInteger_t lgInt;
     longIntegerInit(lgInt);
@@ -1307,7 +1322,7 @@ void clearRegister(calcRegister_t regist) {
     uInt32ToLongInteger(val, lgInt);
     convertLongIntegerToShortIntegerRegister(lgInt, lastIntegerBase == 0 ? 10 : lastIntegerBase, regist);
     longIntegerFree(lgInt);
-  }                                                                             //JM defaults ^^
+  }
 }
 
 

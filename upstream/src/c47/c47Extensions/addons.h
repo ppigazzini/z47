@@ -26,6 +26,7 @@ void fnDRG          (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseJM (uint16_t unusedButMandatoryParameter);
 void fnChangeBaseMNU(uint16_t unusedButMandatoryParameter);
 void fnInDefault    (uint16_t inputDefault);
+void set_def_Input_Default(void);
 void fnMinute       (uint16_t unusedButMandatoryParameter);
 void fnSecond       (uint16_t unusedButMandatoryParameter);
 void fnHrDeg        (uint16_t unusedButMandatoryParameter);

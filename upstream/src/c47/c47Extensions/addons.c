@@ -2455,6 +2455,14 @@ void fnInDefault(uint16_t inputDefault) {
 }
 
 
+// A restore takes this byte from a file unchecked, and a value outside the four reaches no branch of initLocalRegisters() and no case in closeNim().
+void set_def_Input_Default(void) {
+  if(Input_Default != ID_43S && Input_Default != ID_DP && Input_Default != ID_CPXDP && Input_Default != ID_LI) {
+    Input_Default = ID_43S;
+  }
+}
+
+
 void fnByteShortcutsS(uint16_t size) { //JM POC BASE2 vv
   fnSetWordSize(size);
   fnIntegerMode(SIM_2COMPL);
