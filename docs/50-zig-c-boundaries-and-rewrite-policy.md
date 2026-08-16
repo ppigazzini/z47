@@ -8,9 +8,10 @@ Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 assumes the ownership split and the "core fully in Zig, C retained for parity"
 framing are already clear.
 
-Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
-Memory-Safety Posture section below was re-audited against the live tree on that
-date; the supporting findings are in the maintainer working notes.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md). The Memory-Safety Posture
+section below was re-measured against the live tree on that date; the supporting
+findings are in the maintainer working notes.
 
 ## Implementation Modes
 
@@ -22,8 +23,8 @@ generated ABI seam, and narrow interop.
 | --- | --- | --- |
 | manual Zig owner | the implementation lives in idiomatic hand-written Zig and is parity-gated against the retained upstream C | the whole core under `src/` (`abi`, `constants`, `frontier`, `mathematics`, `shortint`, `solver`, `state`, `ui`) and the Zig host/firmware/testSuite HAL under `build/` |
 | generated ABI seam | contract-mandated C-ABI shapes derived from upstream C via `translate-c` and regenerated per pin advance; not hand-edited | `extern struct` layout mirrors, dispatch `callconv(.c)` signatures, and decNumber constant-blob offsets (see Seam-And-Core below) |
-| retained external C | a third-party library still compiled or linked as C | `dep/decNumberICU` (compiled by Zig); GTK 3, GMP, FreeType 2, optional PulseAudio (host); DMCP/DMCP5 SDKs (firmware) |
-| retained parity C | upstream C kept only to prove the Zig owner matches it | `src/**` under the parity oracles and the shared testSuite; the fake-runtime and oracle doubles under `build/tests/**` |
+| retained external C | a third-party library still compiled or linked as C | `upstream/dep/decNumberICU` (compiled by Zig); GTK 3, GMP, FreeType 2, optional PulseAudio (host); DMCP/DMCP5 SDKs (firmware) |
+| retained parity C | upstream C kept only to prove the Zig owner matches it | `upstream/src/**` compiled by the parity oracles and the shared testSuite; the fake-runtime and oracle doubles under `build/tests/**`, which is where every remaining first-party C file lives |
 | narrow interop boundary | an approved checked-in `translate-c` root or direct `extern` binding | the generator `translate-c` roots and the allowlisted `*_runtime.zig` / HAL seams (see below) |
 
 ## Retained C Surfaces
@@ -31,16 +32,18 @@ generated ABI seam, and narrow interop.
 The port is behavior-complete for the product; the C that remains is deliberate
 and explicit:
 
-- `dep/decNumberICU`: vendored decimal library, compiled by Zig into the product
-  simulator, the firmware, and the constant/catalog/testPgms generators.
+- `upstream/dep/decNumberICU`: vendored decimal library, compiled by Zig into the
+  product simulator, the firmware, and the constant/catalog/testPgms generators.
 - GTK 3, GMP, FreeType 2, optional PulseAudio: external host libraries linked from
   Zig. The GTK application layer itself is ported to Zig
   (`build/host/gtk_*.zig`); the upstream `src/c47-gtk` C files it replaces are
   filtered out of the build by `filterGtkSources`.
 - SwissMicros DMCP and DMCP5 SDKs: external firmware inputs linked from Zig.
-- Parity/oracle/test C: about 60 first-party C files (parity oracles, fake
-  runtimes, and the shared testSuite reference) kept only for verification.
-  `report-c-dependency-status.py` reports 0 of these in the active product build.
+- Parity/oracle/test C: the first-party C files under `build/tests/**` (parity
+  oracles, fake runtimes, and harnesses) kept only for verification.
+  `report-c-dependency-status.py` owns the count and reports 0 of them in the
+  active product build. None of it is under `src/`, which carries no `.c` or `.h`
+  at all.
 
 Do not imply the project is pure Zig. It is Zig-first with the retained C above.
 
@@ -157,7 +160,7 @@ closing a real hazard.
   `@setRuntimeSafety(true)` is a lexical per-function opt-in that works inside
   `ReleaseSmall`, so the device can be made to trap on exactly the untrusted-file
   path without building the whole binary `ReleaseSafe`. That was done: covering the
-  22-function parse surface cost **64 bytes** of DMCP flash in total, and the
+  parse surface cost **64 bytes** of DMCP flash in total, and the
   synthetic estimate it replaced (~12 bytes per function, from a benchmark of
   array-indexing functions) was an order of magnitude too high -- because the real
   path indexes through many-item C pointers, which carry no length and so admit no
@@ -174,12 +177,12 @@ closing a real hazard.
 
 | Rule | How this tree holds it | Gate |
 | --- | --- | --- |
-| **Confine `[*c]` to the C-ABI declaration surface on the load owners, and never let a helper take a pointer where the caller had a length.** A many-item pointer carries no length, so neither producer nor consumer can check one -- and a caller that writes `.ptr` is throwing away a bound it already held. | The four state-file owners (`calc_state_restore` / `_register_codec` / `_save` / `_backup`) carry 162 `[*c]` tokens; 96 are `extern` declarations of the C globals and libc functions they reach, 66 are body uses. `calc_state_load.zig`, `calc_state_policy.zig`, `calc_state_runtime.zig`, `calc_state_header.zig` and the `program_serialization` logic parts are `[*c]`-free; the header-line helpers take `[]const u8` and their walks are bounded by `std.mem.sliceTo` rather than by a NUL another function promises. | `check-idiom-ratchet.sh` (`cptr_files` ceiling), `zig build test:unit` |
-| **Bound every count the file names, at the write and not at the loop.** A parser must keep reading one line per claimed entry to stay aligned with the stream; what must be checked is the index before it reaches the array. | `31fb6f755` -- `kbd_usr[37]`, `userMenuItems[18]`, `userAlphaItems[18]`, `userMenus[].menuItem[18]` and the 28 statistical sums; plus an empty `readLine()` treated as end of file, so a lying count cannot make one section parse the next section's header as its data. | `zig build test` (12835 cases) -- **and nothing adversarial; see the gap below** |
+| **Confine `[*c]` to the C-ABI declaration surface on the load owners, and never let a helper take a pointer where the caller had a length.** A many-item pointer carries no length, so neither producer nor consumer can check one -- and a caller that writes `.ptr` is throwing away a bound it already held. | The four state-file owners (`calc_state_restore` / `_register_codec` / `_save` / `_backup`) carry 235 `[*c]` tokens (counted with `grep -c` over the four files); 148 are on `extern` declaration lines for the C globals and libc functions they reach, the rest are body uses. `calc_state_load.zig`, `calc_state_policy.zig`, `calc_state_runtime.zig`, `calc_state_header.zig` and the `program_serialization` logic parts are `[*c]`-free; the header-line helpers take `[]const u8` and their walks are bounded by `std.mem.sliceTo` rather than by a NUL another function promises. | `check-idiom-ratchet.sh` (`cptr_files` ceiling), `zig build test:unit` |
+| **Bound every count the file names, at the write and not at the loop.** A parser must keep reading one line per claimed entry to stay aligned with the stream; what must be checked is the index before it reaches the array. | `31fb6f755` -- `kbd_usr[37]`, `userMenuItems[18]`, `userAlphaItems[18]`, `userMenus[].menuItem[18]` and the 28 statistical sums; plus an empty `readLine()` treated as end of file, so a lying count cannot make one section parse the next section's header as its data. | `zig build test` -- the run prints its own case count; **and see the corpus note in [70](70-tests-and-verification.md)** |
 | **Bound what a file's dimensions IMPLY, in a width that cannot wrap.** A count the file states is not the hazard; the size it multiplies out to is. Do the capacity arithmetic wider than the field it will be stored in, or the product wraps before the test and the comparison is against a number the file never claimed. | `vector_shape.clampToRegisterCapacity` computes `rows * cols * element_blocks + header` in u64 and refuses anything past a u16 block count, which is what `reallocateRegister` takes. All three sites that turn file dimensions into a register go through it -- the `Rema` and `Cxma` branches of `restoreRegister` and `skipMatrixData` -- so the restore and skip sides cannot disagree on the element count. | `zig build test:unit` (the boundary is swept exhaustively for both element widths), `saveload_roundtrip` |
 | **A refused allocation is not a NULL to write through.** | `initUserKeyArgument`, `setUserKeyArgument`, `createMenu` and the EQUATIONS section check the result; `freeListAlloc` checks the region table's bound BEFORE the store, since past it the store is itself the overrun. | `zig build test`, `memory_parity` |
-| **Port C's implicit narrowing as `@truncate` and its unsigned arithmetic as `+%`/`-%`.** This is a PARITY rule before it is a safety rule: where upstream assigns a wider value into a `uint16_t`, C truncates and that is defined; `@intCast` is illegal behaviour on the same input -- a trap in a safe build, silent UB in `ReleaseSmall`. Use `@intCast` only where the value provably fits, and saturating `+|`/`*|` where the intent is that an absurd size stays absurd. | The M1 fuzz found exactly this class: `parseU32LineZ` u32 overflow on an oversized size string and `loadProgram` `@intCast` overflow on `program_size > 0xFFFF`, both fixed parity-safe (saturating parse, explicit reject) so valid files are unchanged. | `zig build pgm_load_fuzz`; **the 5628 `@intCast` sites are otherwise unsorted -- see gap 4** |
-| **Raise `@setRuntimeSafety(true)` over an untrusted parse, and price it before placing it.** The scope is lexical -- it does not follow calls, so it goes on each function -- and it works in `ReleaseSmall`, so it reaches the device. Keep it off the per-keystroke path, and off any loop where the cost is measured and the bound is already stated by the code itself. | 22 functions across the state-file and `.p47` parse surfaces (`calc_state_restore`, `calc_state_register_codec`, `calc_state_io_flow`, `program_serialization_header` / `_load_apply`). The two load-path object ROOTS install `abi.trap_panic.namespace`, so a firmware safety failure is a bare `udf` instead of dragging in Zig's message formatter; hosted targets keep the default handler and its stack trace. Measured: +64 bytes of flash, 4 trap sites emitted. | `zig build dmcp` size, `zig build test -Doptimize=ReleaseSmall`, `test:unit` |
+| **Port C's implicit narrowing as `@truncate` and its unsigned arithmetic as `+%`/`-%`.** This is a PARITY rule before it is a safety rule: where upstream assigns a wider value into a `uint16_t`, C truncates and that is defined; `@intCast` is illegal behaviour on the same input -- a trap in a safe build, silent UB in `ReleaseSmall`. Use `@intCast` only where the value provably fits, and saturating `+\|`/`*\|` where the intent is that an absurd size stays absurd. | The M1 fuzz found exactly this class: `parseU32LineZ` u32 overflow on an oversized size string and `loadProgram` `@intCast` overflow on `program_size > 0xFFFF`, both fixed parity-safe (saturating parse, explicit reject) so valid files are unchanged. | `zig build pgm_load_fuzz`; **every other `@intCast` site in the tree is unsorted -- see gap 4** |
+| **Raise `@setRuntimeSafety(true)` over an untrusted parse, and price it before placing it.** The scope is lexical -- it does not follow calls, so it goes on each function -- and it works in `ReleaseSmall`, so it reaches the device. Keep it off the per-keystroke path, and off any loop where the cost is measured and the bound is already stated by the code itself. | The state-file and `.p47` parse surfaces (`calc_state_restore`, `calc_state_register_codec`, `calc_state_io_flow`, `program_serialization_header` / `_load_apply`). `check-idiom-ratchet.sh` reports the live function count as `untrusted_fns` and holds it at a FLOOR, so it can only go up. The two load-path object ROOTS install `abi.trap_panic.namespace`, so a firmware safety failure is a bare `udf` instead of dragging in Zig's message formatter; hosted targets keep the default handler and its stack trace. Measured: +64 bytes of flash, 4 trap sites emitted. | `zig build dmcp` size, `zig build test -Doptimize=ReleaseSmall`, `test:unit` |
 | **Drive malformed input through the REAL path, not a unit stub -- and assert the OUTCOME, not just survival.** | STATE files: `build/tests/calc_state/malformed/` through the real `doLoad` (`zig build state_load_fuzz`), checked for crash, hang and Zig safety panic AND against a per-file expected `loadedVersion`. The second assertion is why the lane catches the version forgery, which never crashes. Both are verified to fire by reverting the fix each guards. **Held only weakly on the state side**: the corpus is five reproducers of already-fixed bugs, so it regression-tests rather than explores -- see the caveat in [70-tests-and-verification.md](70-tests-and-verification.md). PROGRAMS: `build/tests/pgm_run/malformed/` -- 27 `.p47` files (truncated at 12 offsets, corrupt magic, garbage/negative/overflowing size fields, all-zero and all-`0xFF` bodies) through the actual program-load code, UBSan-instrumented. A finding is a crash, a hang, a Zig safety panic or a sanitizer report. Note the harness name says ASan and means UBSan -- see [75-debugging.md](75-debugging.md). | `zig build pgm_load_fuzz` |
 | **Sanitize the retained C on a lane that actually runs.** | `zig build test_asan` runs the full shared testSuite under **UBSan**, which found that `common_c_flags`' `-fno-sanitize=undefined` had been cancelling `sanitize_c` and the lanes had never instrumented anything. Two checks are excluded, each individually justified in `../build/common.zig`, and a `comptime` block now fails the build if the blanket cancelling flag returns. There is still NO AddressSanitizer: Zig ships no runtime and cannot link one, so heap overflow and use-after-free remain undetected. See [75-debugging.md](75-debugging.md). | `test_asan`, `pgm_load_fuzz` |
 | **Keep `catch unreachable` to provable cases.** | All 6 sites are `bufPrint` into a fixed local buffer whose size dominates the formatted output. The other 19 are 11 `orelse unreachable` on `getRegisterDataPointer` for a register the caller has already established, and 8 exhaustive-switch `else` arms. | review |
@@ -199,7 +202,7 @@ surfaced something the one before it could not see -- so treat this list as live
 rather than closed.
 
 1. **Safety on the load path catches the integer class only, and cannot catch
-   more until the regions become slices.** The 22 covered functions emitted just
+   more until the regions become slices.** The covered functions emitted just
    **4 trap sites**, because almost every access on that path is through a
    many-item C pointer, which carries no length -- there is no bound for a check
    to test. What the device now traps on is overflowing arithmetic and
@@ -247,7 +250,8 @@ rather than closed.
    `report-narrowing-status.py` ranks the sites inside safety-raised functions
    and `check-idiom-ratchet.sh` holds the count, with a FLOOR on the number of
    safety-raised functions so the ceiling cannot be met by deleting a check. The
-   remaining ~5600 sites outside those owners are unclassified, and
+   several thousand sites outside those owners are unclassified
+   (`grep -ro '@intCast' src --include='*.zig' | wc -l` counts them), and
    `report-idiom-status.py`'s single total cannot tell a correct cast from a
    defect. Extending the analysis there needs the same per-site upstream reading;
    do not sweep it.
@@ -370,10 +374,11 @@ Naming policy is layer-specific, not one global rule.
 - semantic owner file: the domain name, for example
   `../src/core/persist/calc_state.zig`
 - direct legacy-boundary bindings: `*_runtime.zig`, for example
-  `../src/core/persist/calc_state_io.zig`
+  `../src/core/persist/calc_state_runtime.zig`
 - thin ABI-facing forwarders: `*_export.zig`; the implementation behind a paired
   export shim: `*_owned.zig`
-- legacy C helper files: `*_legacy.c` or `*_runtime_helpers.c`
+- harness C helper files: `*_runtime_helpers.c`, under `../build/tests/` -- the
+  only place first-party C still lives
 - inside owner files and coherent internal-only helper clusters, use Zig casing
   only when the full internal-only family can move together in one bounded slice:
   directories and files `snake_case`, types `TitleCase`, functions `camelCase`,

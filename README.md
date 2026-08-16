@@ -19,9 +19,10 @@ against.
 z47 is a *port*, so its claim is **function parity with upstream**, not "the tests
 pass". Two things enforce that, and both take upstream's source as the reference:
 
-- **Upstream's own test suite, run unmodified** — 12830 cases. z47 never adds cases
-  to it: the suite is the measuring instrument, so the pass count is only meaningful
-  while it is upstream's count.
+- **Upstream's own test suite, run unmodified.** z47 never adds cases to it: the
+  suite is the measuring instrument, so the pass count is only meaningful while it
+  is upstream's count, and it moves with every pin advance — read the total off the
+  run, not off a number written here.
 - **Per-owner parity oracles** that compile upstream's C beside the Zig owner and
   diff the two, so the reference moves whenever upstream does.
 

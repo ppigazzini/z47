@@ -4,12 +4,13 @@ This page defines the Zig-owned DMCP and DMCP5 firmware targets and the
 host-package/distribution surface. Both replace the upstream Make and Meson
 entrypoints. The firmware runs the ported Zig calculator core and a Zig HAL,
 while still linking retained C: the SwissMicros DMCP/DMCP5 SDKs, the vendored
-`dep/decNumberICU`, and a cross-built GMP.
+`../upstream/dep/decNumberICU`, and a cross-built GMP.
 
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 build-domain split is already clear.
 
-Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 The memory a firmware target actually has -- the arenas, which stack a running
 program uses, what one nested engine level costs, and why a simulator run cannot
@@ -30,10 +31,15 @@ Facts, verified from `../build/firmware.zig`:
   `mathematics` (math command wrappers), `state` (calc-state, flags,
   keyboard-state, memory, program-serialization, register-metadata, stack), and
   `ui` (tone).
-- The firmware HAL is ported to Zig and linked as three ARM objects built from
+- The firmware HAL is ported to Zig and linked as three separately-built ARM
+  objects, from
   `../build/firmware_audio_runtime.zig`,
   `../build/firmware_io_runtime.zig`, and
-  `../build/firmware_print_ir_runtime.zig`.
+  `../build/firmware_print_ir_runtime.zig`. A fourth HAL owner,
+  `../build/firmware_console_runtime.zig`, is carried into the link by the io
+  object rather than built separately: it defines the console entry points that
+  DMCP hardware does not have, which is what keeps newlib's buffered stdio -- and
+  the 316 bytes of SRAM2 its `FILE` array costs -- out of the image.
 - Retained C still compiled into the firmware: the vendored
   `../upstream/dep/decNumberICU` sources, the SwissMicros SDK `pgm_syscalls.c` and
   `startup_pgm.s`, the generated constant-pointer and raster-font C, and a
@@ -68,7 +74,7 @@ Each firmware build produces these output classes:
 - program image (`.pgm` or `.pg5`)
 - QSPI image
 - linker map file
-- ELF section-size report (via `arm-none-eabi-readelf` and `tools/size.py`)
+- ELF section-size report (via `arm-none-eabi-readelf` and `../build/tools/size.py`)
 
 ## Flash Budget And QSPI XIP
 
@@ -174,7 +180,8 @@ firmware artifact while keeping those checked-in build-surface names unchanged.
   launcher helpers, and import-checked DLLs in addition to the simulator
   executables.
 - The Linux and macOS package lanes publish ReleaseFast simulator bundles
-  together with the checked-out `res/` assets and generated notice metadata.
+  together with the checked-out `../upstream/res/` assets and generated notice
+  metadata.
 - The Linux CI lane also uploads a separate firmware artifact containing the C47
   SwissMicros package zips produced by `dist_dmcp`, `dist_dmcp_pkg1`,
   `dist_dmcp_pkg2`, `dist_dmcp_pkg3`, and `dist_dmcp5`.

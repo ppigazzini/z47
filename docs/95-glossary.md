@@ -10,11 +10,12 @@ tiers that must not be confused:
   `ratchet` and the rest name things the port invented. None of them appears in
   the upstream source, and upstream is not obliged to agree with any of them.
 
-A reader who cannot tell which tier a word is in will grep the imported `src/`
-tree for `owner` and not find it. That is the failure this split exists to
+A reader who cannot tell which tier a word is in will grep the imported tree
+(`upstream/src/`) for `owner` and not find it. That is the failure this split exists to
 prevent.
 
-Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## What This Page Does Not Cover
 
@@ -59,8 +60,8 @@ definition, the script wins.
 | **host hook** | one installable callback in `src/abi/host.zig` through which the headless core signals the shell (redraw, abort poll, progress line, bug screen) without linking it. Each slot is a single weakly-exported C-ABI symbol; the interactive entry points install the real implementations at startup and a headless link keeps the neutral default. See [75-debugging.md](75-debugging.md) for why an uninstalled hook is a false-pass hazard |
 | **the frontier** | `src/frontier.zig`, a module-root carrier that force-imports owners so they land in the build even when nothing references them by name. A carrier is not a layer -- it holds no logic |
 | **oracle**, **parity lane** | a focused test that compiles the retained upstream C for one owner and asserts the Zig produces the same bytes: `zig build <owner>_parity`. This is what lets the C leave the product without losing the proof |
-| **the corpus** | the upstream behavioural regression files under `src/testSuite/tests/`, replayed by `zig build test`, plus the `*_cov.txt` coverage extensions. Shared with upstream, so a corpus file is a statement about the calculator, not about the port |
-| **cov test**, **`*Cov` function** | a coverage case written in C inside `src/testSuite/testSuite.c` and driven from a corpus `.txt` file, for behaviour no keystroke sequence can reach |
+| **the corpus** | the upstream behavioural regression files under `upstream/src/testSuite/tests/`, replayed by `zig build test`, plus the `*_cov.txt` coverage extensions. Shared with upstream, so a corpus file is a statement about the calculator, not about the port |
+| **cov test**, **`*Cov` function** | a coverage case written in C inside `upstream/src/testSuite/testSuite.c` and driven from a corpus `.txt` file, for behaviour no keystroke sequence can reach |
 | **the gate** | `.github/project/run-local-gate.sh`, the one command that reproduces the Linux CI verdict locally. "Green" without an exit code is not green |
 | **guard** | one governance check inside the gate (`check-*.sh`, `check-*.py`). Distinct from a Zig safety check and from ordinary "guarded by" prose |
 | **ratchet** | a bound that may only move one way. The idiom ratchet (`.github/project/idiom-status-baseline.json`) caps transliteration anti-patterns; the coverage ratchet caps corpus shrinkage. Raising one is a deliberate act with a justification in the commit |
@@ -69,7 +70,7 @@ definition, the script wins.
 | **the ledger** | `.github/project/upstream-port-ledger.tsv`, one row per upstream commit range recording what was ported and what was deliberately not |
 | **resync**, **pin advance** | importing a newer upstream commit and re-porting what changed, per `.github/project/upstream-resync-runbook.md` |
 | **retained C** | upstream C still compiled somewhere. Three disjoint kinds, and conflating them misreads the port's status: **product** (none -- zero first-party C in the sim and firmware), **oracle** (compiled only by parity lanes), and **third-party** (decNumberICU, GMP, GTK, the SDKs) |
-| **the imported tree** | `src/`, `dep/`, `docs/`, `res/`, `LIBRARY/`, `PROGRAMS/` and the upstream build files: read-only audit input, never edited to make a z47 change pass. `.github/project/source-ownership.txt` is the authority on which root is which |
+| **the imported tree** | everything under `upstream/` -- its own `src/`, `dep/`, `docs/`, `res/`, `LIBRARY/` and build files: read-only audit input, never edited to make a z47 change pass. It is ONE tracked root, and `check-imported-tree-pin.py` holds it byte-identical to the pin; `imported-tree-divergences.txt` is the reviewed exception list, and `source-ownership.txt` is the authority on which root is which. Do not read a bare `src/` or `docs/` anywhere in this set as the imported tree -- those names are z47's |
 | **the differential** | running the same corpus against upstream's C build and z47's build and diffing an instrumented trace. The technique [75-debugging.md](75-debugging.md) is built around |
 | **drawer** | one build-object directory: the unit `check-file-cohesion.sh` grades. Carved by dependencies, not by file count |
 

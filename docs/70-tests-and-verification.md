@@ -6,44 +6,64 @@ the smallest rerun lane that should move with each kind of change.
 Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
 page assumes the build entrypoints and ownership split are already clear.
 
-Audit basis: 2026-08-03, upstream pin `b9e1cc0c1`, Zig `0.16.0` stable. The
-per-owner parity section was re-audited on that date, when the last
-hand-transliterated oracle FILE was converted. One lane still carries
-hand-written reference FUNCTIONS inside a compiled oracle — see the rule below.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## The One-Command Local Gate
 
 Before pushing anything non-trivial, run:
 
 ```bash
-bash .github/project/run-local-gate.sh
+PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh
 ```
 
 It runs the governance guards, then the host-parity build/test/oracle battery
 (`run-host-parity-battery.sh`, byte-identical to the CI step, which now calls the
 same script), then the firmware link for every DMCP package variant, then the
-tracked-generated-artifact diff. It fails fast on the first red, and takes about
-four minutes warm.
+tracked-generated-artifact diff. It fails fast on the first red.
+
+**Give it the project virtualenv.** The gate calls plain `python3`, and step
+`[10e/11]` self-tests `check-ci-build-prerequisites.py` through a `>/dev/null`.
+That self-test needs PyYAML, which is a declared dependency installed only into
+`.venv`; without it the step exits 2 with its explanation swallowed, and the gate
+aborts on a bare step banner with no error text at all. Redirect the run to a file
+and read `$?` rather than piping it through `tail`, which reports its own exit
+code and can turn a red gate green.
 
 Step `[10a/11]` runs both malformed-input corpora through the real load paths.
 They are the only adversarial coverage those paths have -- every other lane feeds
-them files the calculator itself just wrote -- and they cost about a second each
-once built. The state lane checks two things: that the restore path did not
-crash, hang or trip a Zig safety check, and that it produced the outcome the
-corpus states. The second is not redundant: the defect class includes SILENT
+them files the calculator itself just wrote. The state lane checks two things:
+that the restore path did not crash, hang or trip a Zig safety check, and, for the
+files that carry a pinned expectation, that it produced the outcome the corpus
+states. The second is not redundant: the defect class includes SILENT
 wrong-accepts, and a crash detector cannot see one. Both assertions are verified
 to fire by reverting the fixes they guard.
 
-**Know what the state corpus is before citing it.** It holds five files, and
-every one is a reproducer of a bug that was already found and fixed -- four from
-the matrix-dimension guard, one from the version forgery. It is a REGRESSION
-suite: it will prove those fixes have not come undone, and it will not find a
-sixth bug, because nothing in it explores input nobody has looked at. The
-truncation sweep, section-count mutations and structural mutations that would
-make it a real corpus are specified and unbuilt; the sibling `.p47` corpus has 27
-files by comparison, and found three real bugs the afternoon it was written. Do
-not read a green `state_load_fuzz` as "the restore path handles malformed input";
-read it as "these five known cases still behave".
+**Know what the state corpus is before citing it.** It is now a generated
+corpus, not the five hand-written reproducers it started as:
+`build/tests/calc_state/malformed/generate_corpus.py` emits it deterministically,
+and `zig build state_load_fuzz` drives every file through the real `doLoad` at
+each of four load modes -- the mode matters, because the version gate and the
+skip-the-matrix-data arm are both mode-gated. Count the files rather than trusting
+a number here:
+
+```bash
+ls build/tests/calc_state/malformed/*.sav | wc -l   # corpus size
+ls build/tests/pgm_run/malformed/*.p47   | wc -l   # the sibling program corpus
+```
+
+The mutation families it covers are a truncation sweep, per-section count
+mutations (0, 1, 32767, 65535, 2^32-1, 2^32, 2^64 against every counted section),
+overfill cases past each fixed array, program pointer/offset extremes, matrix
+dimension overflows, and the version-forgery set.
+
+**What it still holds only weakly is the OUTCOME assertion.** Every file is
+checked for crash, hang and Zig safety panic, but only the handful listed in
+`malformed/expectations.txt` is pinned to a specific `loadedVersion`. That second
+assertion is the one that catches SILENT wrong-accepts, which no crash detector
+sees -- so for any file outside `expectations.txt`, a green run means "did not
+crash", not "was rejected correctly". Adding a case is cheap; add its expectation
+with it.
 
 Step `[10b/11]` links **every DMCP package variant** (`zig build dmcp_pkgs_all`),
 and it is not redundant with `zig build dmcp` / `dmcp5`. The OLD_HW package-3
@@ -69,9 +89,10 @@ one class it cannot reproduce on Linux is the Windows LLP64 integer-width trap;
 Windows lane is the final adjudicator. See
 `.github/project/upstream-resync-runbook.md`.
 
-`zig build test` runs the shared upstream testSuite (12835 cases at the current
-pin; the run prints the total, so read it there rather than trusting this number) plus the Zig-owned suites. Confirm it exits 0, not
-just that it printed `0 TESTS FAILED` before any crash.
+`zig build test` runs the shared upstream testSuite plus the Zig-owned suites. The
+run prints its own case total; read it there, because the count moves with every
+pin advance and a number written on this page would be stale by the next one.
+Confirm it exits 0, not just that it printed `0 TESTS FAILED` before any crash.
 
 A green run is not proof a path executed. When the change routes a call through
 an installable host hook, or adds a corpus file, or depends on a display-side
@@ -137,7 +158,7 @@ is not.
 Concretely, when writing or touching an oracle:
 
 - `#include` the c43 `.c` under `oracle_*` renames. Where the file sits next to
-  `src/c47/c47.h`, the harness header must claim upstream's own `C47_H` guard — a
+  `upstream/src/c47/c47.h`, the harness header must claim upstream's own `C47_H` guard — a
   quoted `#include "c47.h"` searches the including file's directory first and no
   `-I` outranks that.
 - Do not hand-copy c43 constants into the harness header either; that is the same
@@ -151,8 +172,9 @@ Concretely, when writing or touching an oracle:
   today — the three conversions after it all went full-core — but the same four
   roots are exercised by `check-harness-constant-copies.py` on every gate run.) It puts `build/tests/common`
   (the stub `gtk`/`gdk` headers plus the six placeholder typedefs in
-  `c43_harness_prelude.h`), `dep/decNumberICU`, `src/generated` and `src/c47` on
-  the include path, with the same PC_BUILD/platform/word-size macros the product
+  `c43_harness_prelude.h`), `upstream/dep/decNumberICU`, `upstream/src/generated`
+  and `upstream/src/c47` on the include path (all three resolved through
+  `UPSTREAM_ROOT`, never hardcoded), with the same PC_BUILD/platform/word-size macros the product
   host build uses — a different macro set would make the oracle a different
   *configuration* of c43 rather than c43.
 - Stubs in the harness are fine and expected. They are the *environment*, shared by
@@ -360,10 +382,15 @@ split.
 ## Generated Artifact Diff Contract
 
 After `zig build generated`, compare only the tracked generated sources and
-generated test data refreshed by that step (the `run-local-gate.sh` final step
-does this). Regenerate `res/testPgms/testPgms.bin` after any item-table growth --
-a stale copy fails the diff. Do not use unrelated diffs as proof the
+generated test data refreshed by that step -- the list
+`workflow-imported-root-paths.sh generated-artifacts` prints, which is what the
+`run-local-gate.sh` final step diffs. Do not use unrelated diffs as proof the
 generated-artifact contract moved.
+
+Regenerate `build/generated/testPgms.bin` after any item-table growth -- a stale
+copy fails the diff. That one output is z47's own baseline under `build/`, NOT the
+imported `upstream/res/testPgms/testPgms.bin`, which stays byte-identical to the
+pin and is held there by `check-imported-tree-pin.py`.
 
 ## Verification Change Rules
 

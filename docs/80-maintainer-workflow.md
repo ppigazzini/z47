@@ -9,7 +9,8 @@ Use this page when a task changes the public maintainer contract documented in
 `docs/`, `CONTRIBUTING.md`, or `README.md`, or when advancing the
 imported upstream pin.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## Where The Port Stands
 
@@ -86,13 +87,16 @@ ty check
 
 **The rule that matters, and the reason this config is not a copy of the sibling
 repos': the hooks are scoped to what z47 authors.** Most of this tree is imported
-verbatim from upstream C47 — `src/`, `res/`, `docs/`, `tools/`, `dep/`, the
-`Makefile`, `tag2ver.py`, even `.gitignore` — and every resync diffs it against
-upstream's. A hook that strips a trailing space from an imported file turns a
-clean import into a permanent conflict on a file z47 has no opinion about. So:
+verbatim from upstream C47 — everything under `upstream/` (its own `src/`, `res/`,
+`docs/`, `tools/`, `dep/`, `Makefile` and `tag2ver.py`), plus the root
+`.gitattributes` and `.gitignore` that git honours only at the repo root — and
+every resync diffs it against upstream's. A hook that strips a trailing space from
+an imported file turns a clean import into a permanent conflict on a file z47 has
+no opinion about. So:
 
-- `pyproject.toml` carries `extend-exclude` for the imported directories, which
-  covers the eight imported `.py` files.
+- `pyproject.toml` carries a single `extend-exclude = ["upstream"]`, which covers
+  every imported `.py` file in one entry. Since the imported tree was nested, that
+  is the whole exclusion — there is no per-directory list to keep in sync.
 - `.pre-commit-config.yaml` gives the whitespace hooks an explicit allowlist of
   z47-owned paths, and excludes byte-exact data (`.p47`, `.sav`, `.tsv`, …)
   even inside them — those are test inputs compared verbatim.

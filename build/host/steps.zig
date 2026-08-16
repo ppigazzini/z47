@@ -1499,13 +1499,14 @@ pub fn registerSteps(b: *std.Build, context: host_types.Context, optimize: std.b
     catalogs_step.dependOn(&update_catalogs.step);
 
     const update_testpgms = b.addUpdateSourceFiles();
-    // WRITES INTO THE VENDORED TREE. Running this forks res/testPgms/testPgms.bin
-    // from the pin, and check-imported-tree-pin.py will then fail -- deliberately.
-    // z47 used to carry the regenerated blob (22179 bytes against upstream's 22205)
-    // as a tracked divergence for no reason anyone recorded: the full 12872-case
-    // suite passes identically on upstream's pristine copy, which was measured
-    // before reverting it. Regenerate only when upstream's own copy is genuinely
-    // stale for z47, and say so in imported-tree-divergences.txt when you do.
+    // Writes z47's OWN baseline, NOT the vendored copy: upstream's
+    // res/testPgms/testPgms.bin stays byte-identical to the pin, and
+    // check-imported-tree-pin.py holds it there. z47 used to carry a regenerated
+    // blob (22179 bytes against upstream's 22205) inside the imported tree as a
+    // tracked divergence for no reason anyone recorded; the full suite passes
+    // identically on upstream's pristine copy, which was measured before
+    // reverting it. If upstream's own copy is ever genuinely stale for z47, say
+    // so in imported-tree-divergences.txt rather than forking it silently.
     update_testpgms.addCopyFileToSource(context.generated.test_pgms_bin, "build/generated/testPgms.bin");
     const testpgms_step = b.step("testpgms", "Refresh the generated test program image");
     testpgms_step.dependOn(&update_testpgms.step);

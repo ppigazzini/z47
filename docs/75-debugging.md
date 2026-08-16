@@ -10,7 +10,8 @@ runnable**. Upstream C47 at the pinned commit answers any question about
 intended behaviour exactly, so the first move on a behavioural divergence is
 never to reason about the Zig -- it is to make the C say what it does.
 
-Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## What This Page Does Not Cover
 
@@ -28,12 +29,12 @@ Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable.
 | --- | --- | --- |
 | wrong value, right shape | the corpus (`zig build test`), with a value assertion | every sanitizer |
 | wrong value in one owner | that owner's parity lane, `zig build <owner>_parity` | the corpus, if no case reaches it |
-| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- 19 load-path functions do, nothing else does** |
+| out-of-bounds index, integer overflow, bad cast in Zig | Zig's own safety checks in a Debug build -- they panic with a stack trace | ASan, which never sees a checked access; **and the shipped `ReleaseSmall` firmware, where the same access is silent unless the function opts in with `@setRuntimeSafety(true)` -- only the load-path functions do, and `check-idiom-ratchet.sh` prints how many as `untrusted_fns`** |
 | C undefined behaviour in retained C (signed overflow, bad shift, bad cast, invalid enum) | `zig build test_asan` -- **UBSan** | the corpus, the parity lanes |
 | heap overflow / use-after-free in retained C | **nothing.** There is no AddressSanitizer here and Zig cannot link one -- see *What The Sanitizer Lanes Actually Run* below | every lane in this tree |
 | **one C47 block overrunning its neighbour inside `ram`** | **nothing.** No ASan exists here -- see below. The last known instance, an unported matrix-capacity guard, was found by reading the upstream C against the owner; `state_load_fuzz` now reproduces it, but only because the under-allocation trips a Zig safety check first | ASan, which sees `ram` as one allocation; Zig's checks, which never see `[*c]` pointer arithmetic |
 | malformed `.p47` program file | `zig build pgm_load_fuzz`, now genuinely UBSan-instrumented | the corpus, which only round-trips valid files |
-| malformed `.sav` / `.d47` state file | `zig build state_load_fuzz` -- the corpus through the real `doLoad`, checked for crash/hang/safety-panic AND against a per-file expected outcome. **But read the corpus caveat in [70](70-tests-and-verification.md): five files, all reproducers of already-fixed bugs, so it catches regressions and finds nothing new** | `saveload_roundtrip` and `saveload_golden`, which round-trip valid files only |
+| malformed `.sav` / `.d47` state file | `zig build state_load_fuzz` -- a generated corpus through the real `doLoad` at four load modes, checked for crash/hang/safety-panic. **Read the caveat in [70](70-tests-and-verification.md): only the files listed in `expectations.txt` are pinned to an expected outcome, so for the rest a green run means "did not crash", not "was rejected correctly"** | `saveload_roundtrip` and `saveload_golden`, which round-trip valid files only; and the silent wrong-accept, for any file with no pinned expectation |
 | ABI drift after a pin advance (struct layout, constant blob, item table) | `check-constant-offsets.py`, `audit-constant-parity.py`, `audit-item-table-parity.py`, `abi-layout-parity` | the corpus, which passes until the drift is reached |
 | the same constant given two values in two owners | a cross-owner consistency scan: extract the value from each owner and diff | every runtime lane, until one path is exercised |
 | the same global given two widths in two owners | `check-extern-var-widths.py` and `check-c-type-alias-widths.sh` | every runtime lane on ELF, where the overrun lands in padding |
@@ -88,8 +89,8 @@ blanket quietening. They live in `sanitizer_exclusions` and
 
 | exclusion | scope | why |
 | --- | --- | --- |
-| `-fno-sanitize=alignment` | all C | `abi.Real34` is `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C `decQuad` whose `_Alignof` is 4. Real defect; the fix means raising the type's alignment and propagating it through accessors that hand out `*align(1)` pointers, and 1051 sites reference that spelling |
-| `-fno-sanitize=shift` | vendored `dep/` only | decNumber's own `n = n<<1` signed-shift overflow in `decExpOp`. Third-party code z47 must not diverge from; the fix is an upstream report |
+| `-fno-sanitize=alignment` | all C | `abi.Real34` is `extern struct { bytes: [16]u8 }`, alignment 1, mirroring a C `decQuad` whose `_Alignof` is 4. Real defect; the fix means raising the type's alignment and propagating it through accessors that hand out `*align(1)` pointers, and a few thousand sites reference that spelling -- count them with `grep -ro` over `src` |
+| `-fno-sanitize=shift` | vendored `upstream/dep/` only | decNumber's own `n = n<<1` signed-shift overflow in `decExpOp`. Third-party code z47 must not diverge from; the fix is an upstream report |
 
 Removing either should turn a lane red with a genuine finding. If it does not,
 the exclusion has outlived its reason and should go.
@@ -117,7 +118,8 @@ model, not a gap in any lane, and it is worth knowing before anyone invests in
 getting a runtime linked.
 
 Registers, named variables, programs, formulae, menus and the GMP heap do not
-come from `malloc`. They come from `ram` -- one pointer (`src/c47/c47.c`) to a
+come from `malloc`. They come from `ram` -- one pointer
+(`upstream/src/c47/c47.c`) to a
 single block of `RAM_SIZE_IN_BLOCKS` 4-byte blocks, 65534 of them on new
 hardware and the host, carved up by the C47 block allocator in
 `../src/shell/free_list.zig` (`freeListAlloc` / `freeListRealloc` /
@@ -177,10 +179,12 @@ away; the z47 side gets instrumented too, and nothing should be committed from
 either.
 
 **2. Reproduce with the smallest list that still diverges.** Both binaries take
-a list file of corpus test names. Write it **inside `src/testSuite/tests/`** --
-the runner resolves the corpus and `../../c47/items.h` from the list's own
-directory, so a list in a scratch directory finds nothing and exits successfully
-having run almost nothing.
+a list file of corpus test names. Write it **inside that build's own
+`src/testSuite/tests/`** -- `upstream/src/testSuite/tests/` in this repo, and
+`src/testSuite/tests/` in the throwaway `../c43-pin` worktree. The runner resolves
+the corpus and `../../c47/items.h` from the list's own directory, so a list in a
+scratch directory finds nothing and exits successfully having run almost
+nothing.
 
 Shrink by bisecting the list, not by truncating it: a truncated prefix can drop
 the test that resets the state the failure depends on, so the C fails too and
@@ -193,9 +197,11 @@ the C in the throwaway worktree and to the Zig owner, with an identical format
 string, then diff the two streams. The first differing line is the bug. Work
 outward from it: state at entry, then per-iteration values, then per-step values.
 
-**4. Instrument in z47-owned surfaces only.** Never edit the imported `src/`
-tree in this repo to add a trace. The throwaway `../c43-pin` worktree is the
-place for C probes.
+**4. Instrument in z47-owned surfaces only.** Never edit the imported tree --
+`upstream/` in this repo -- to add a trace; it is the measuring instrument, and
+`check-imported-tree-pin.py` holds it byte-identical to the pin. z47's own `src/`
+is a z47-owned surface and is the right place for the Zig side of a probe. The
+throwaway `../c43-pin` worktree is the place for C probes.
 
 `gdb` cannot attach to a running process here (`ptrace_scope` is restricted), so
 a spin cannot be diagnosed by attaching. Print a counter from the suspect on
@@ -214,7 +220,7 @@ branch, not the term that took it. `graphPlotstat` gates every plot on three
 terms and reported only "There is no statistical data available!", which is
 equally consistent with lost statistics and with a lost matrix name. A coverage
 helper that reads each term back into `REGISTER_X` -- `fnPlotGuardCov` in
-`src/testSuite/testSuite.c`, pinned by `graphs_cov.txt` -- answered it in one
+`upstream/src/testSuite/testSuite.c`, pinned by `graphs_cov.txt` -- answered it in one
 round: `plotStatMx[0]` was `0`, the sums pointer was live, `SIGMA_N` was `5`. The
 data had never been lost. **Prefer a corpus assertion to a print**: it survives as
 regression coverage, it costs the same round, and it cannot be left behind.

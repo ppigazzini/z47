@@ -16,7 +16,7 @@ Audit basis: 2026-08-16, upstream pin `7d3a60f27`, Zig `0.16.0` stable.
   and DMCP/DMCP5 firmware) contain no first-party calculator C:
   `report-c-dependency-status.py` reports 0 active product-build first-party C
   files.
-- The upstream C tree (`src/`, `dep/`) is retained as a read-only audit input and
+- The upstream C tree (`upstream/src/`, `upstream/dep/`) is retained as a read-only audit input and
   the verification reference (the shared testSuite plus per-owner parity oracles).
   z47 never edits it during normal work.
 - The authoritative upstream source repository is
@@ -53,7 +53,7 @@ root, kept as audit and parity reference.
 - not a clean-room rewrite: the Zig owners are parity-gated against the imported
   upstream C, which stays in the tree as the oracle
 - not pure Zig at the dependency level: the build still compiles the vendored
-  `dep/decNumberICU` and links GTK 3, GMP, FreeType 2, optional PulseAudio, and
+  `upstream/dep/decNumberICU` and links GTK 3, GMP, FreeType 2, optional PulseAudio, and
   the SwissMicros SDKs (see the dependency table below)
 - not a license to treat `zig translate-c` or ad hoc `@cImport` as a migration
   path for owner logic: `translate-c` is confined to the generated ABI seam and a
@@ -103,21 +103,21 @@ page map in [90-official-references.md](90-official-references.md).
 | `bridge/` | z47 | near-retired legacy header shims (two headers) paired with a few owners |
 | `.github/` and `.github/project/` | z47 | CI workflows, toolchain pin, upstream pin, governance guards, boundary and ownership manifests, package helpers |
 | `docs/` | z47 | maintained developer documentation |
-| `src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `tools/` | imported upstream | original calculator C sources, assets, legacy build graph, and helper tools -- read-only audit and parity reference |
-| `dep/DMCP_SDK` and `dep/DMCP5_SDK` | imported SwissMicros SDKs | hardware build inputs used by the Zig-owned firmware flow |
+| everything under `upstream/` (`src/`, `dep/`, `res/`, `LIBRARY/`, `docs/`, `Makefile`, `meson.build`, `tools/`) | imported upstream | original calculator C sources, assets, legacy build graph, and helper tools -- read-only audit and parity reference |
+| `upstream/dep/DMCP_SDK` and `upstream/dep/DMCP5_SDK` | imported SwissMicros SDKs | hardware build inputs used by the Zig-owned firmware flow |
 
 ## Port Boundary Summary
 
 | Surface | Current state |
 | --- | --- |
-| calculator core (`src/c47/**` logic) | fully ported to Zig under `src/`; the upstream C is retained only as the parity oracle |
-| GTK host layer (`src/c47-gtk`) | ported to Zig under `build/host/gtk_*.zig`; the ported C files are filtered out of the build (`filterGtkSources`) |
-| DMCP/DMCP5 firmware HAL (`src/c47-dmcp*`) | audio, file-I/O, and print-IR HAL ported to Zig under `build/firmware_*_runtime.zig`; firmware core is the Zig owners |
-| testSuite HAL (`src/testSuite/hal/*.c`) | ported to Zig (`build/tests/testsuite_hal.zig`) and linked instead of the C HAL |
-| `dep/decNumberICU` | retained vendored C, compiled by Zig into the product and generators |
+| calculator core (`upstream/src/c47/**` logic) | fully ported to Zig under `src/`; the upstream C is retained only as the parity oracle |
+| GTK host layer (`upstream/src/c47-gtk`) | ported to Zig under `build/host/gtk_*.zig`; the ported C files are filtered out of the build (`filterGtkSources`) |
+| DMCP/DMCP5 firmware HAL (`upstream/src/c47-dmcp*`) | audio, file-I/O, print-IR, and console HAL ported to Zig under `build/firmware_*_runtime.zig`; firmware core is the Zig owners |
+| testSuite HAL (`upstream/src/testSuite/hal/*.c`) | ported to Zig (`build/tests/testsuite_hal.zig`) and linked instead of the C HAL |
+| `upstream/dep/decNumberICU` | retained vendored C, compiled by Zig into the product and generators |
 | GTK 3, GMP, FreeType 2, optional PulseAudio | retained external C libraries linked from Zig (host) |
 | SwissMicros DMCP/DMCP5 SDKs | retained external C inputs linked from Zig (firmware) |
-| first-party C remaining in the tree | the ~60 parity/oracle/fake-runtime/test files under `build/tests/**` and `src/**` used only for verification -- not in the product |
+| first-party C remaining in the tree | the parity/oracle/fake-runtime/test files under `build/tests/**` used only for verification -- not in the product, and none of it under `src/`, which is pure Zig. `report-c-dependency-status.py` prints the current count |
 
 ## Runtime And Build Boundary Rules
 
