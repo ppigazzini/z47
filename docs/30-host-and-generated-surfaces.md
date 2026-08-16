@@ -8,7 +8,8 @@ which are retained C.
 Read [20-zig-build-graph.md](20-zig-build-graph.md) first. This page assumes the
 domain split is already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## Host Surface At A Glance
 
@@ -36,7 +37,7 @@ libraries and compiles one vendored C library. Be honest about the split:
 | GTK simulator application layer | ported to Zig (`../build/host/gtk_*.zig`) |
 | calculator core | ported to Zig (the `../src/` owners) |
 | `../upstream/src/c47-gtk/*.c` (the C the Zig host replaces) | filtered out of the build |
-| `dep/decNumberICU` | retained vendored C, compiled by Zig |
+| `../upstream/dep/decNumberICU` | retained vendored C, compiled by Zig |
 | GTK 3 | retained external C library, linked from Zig |
 | GMP | retained external C library, linked from Zig |
 | FreeType 2 | retained external C library, linked by the fonts generator |
@@ -44,11 +45,11 @@ libraries and compiles one vendored C library. Be honest about the split:
 
 The presence of a Zig-owned host build graph does not make the host simulator a
 pure-Zig application: it still links GTK 3, GMP, and (optionally) PulseAudio, and
-it still compiles the vendored `dep/decNumberICU`.
+it still compiles the vendored `../upstream/dep/decNumberICU`.
 
 ## The GTK Filter Boundary
 
-`../build/host/context.zig` collects the upstream `../upstream/src/c47-gtk` C files,
+`../build/host/context.zig` collects the imported `../upstream/src/c47-gtk` C files,
 then `../build/host/gtk_gui.zig` `filterGtkSources` drops every path listed in
 `../build/host/gtk_gui_legacy_gtk_sources.txt`. That manifest currently lists
 all seven upstream GTK C files (`c47-gtk.c`, `gtkGui.c`, and the `hal/` set), so
@@ -75,12 +76,18 @@ parity reference; they are not compiled.
 
 The host build graph also registers the grouped regression lanes (`test`,
 `test_asan`, `repeattest`), the native Zig unit lane (`test:unit`), and the
-per-owner parity and oracle lanes. `test`, `test_asan`, and `repeattest` run both
-the upstream corpus at `../upstream/src/testSuite/tests/testSuiteList.txt` and the z47
-overlay list at `../build/tests/testSuiteList_z47.txt`, so z47 adds focused
-coverage without editing the imported upstream corpus. These lanes depend on the
-`testPgms` refresh, so the tracked test-program image is regenerated before they
-run.
+per-owner parity and oracle lanes.
+
+`test`, `test_asan`, and `repeattest` all run the imported upstream corpus list
+`../upstream/src/testSuite/tests/testSuiteList.txt` and nothing else. That is the
+point: the shared testSuite is the measuring instrument, so z47 runs it
+unmodified and never appends to it. z47's own focused coverage goes in its own
+lanes with their own lists -- `../build/tests/testSuiteList_logical_boolean_ops.txt`
+driving `logical_boolean_ops_suite` is the pattern -- and in the per-owner parity
+harnesses, never in the imported corpus.
+
+These lanes depend on the `testPgms` refresh, so the generated test-program image
+is rebuilt before they run.
 
 The full lane inventory, the smallest rerun per owner, and the parity-oracle
 model live in [70-tests-and-verification.md](70-tests-and-verification.md). Do not
@@ -99,11 +106,11 @@ Host simulator, generator, test, and host-package builds depend on:
   only when `pkg-config` finds it
 - `python3`
 
-The vendored `dep/decNumberICU` is compiled by Zig into the simulator and the
-generators; it is not a system dependency.
+The vendored `../upstream/dep/decNumberICU` is compiled by Zig into the simulator
+and the generators; it is not a system dependency.
 
 The fonts generator needs the catalog sorting order extracted from
-`res/fonts/sortingOrder.xlsx`. It prefers the `xlsxio_xlsx2csv` helper when it is
+`../upstream/res/fonts/sortingOrder.xlsx`. It prefers the `xlsxio_xlsx2csv` helper when it is
 on `PATH` (using `$HOME/.local/lib` as an extra library path) and otherwise falls
 back to the checked-in `../build/tools/xlsx_to_sorting_csv.py` Python
 converter, so the xlsxio helper is now optional rather than a hard runtime
@@ -116,13 +123,24 @@ runs a generator and copies its output over the tracked source-tree path.
 
 | Step | Generator | Tracked outputs |
 | --- | --- | --- |
-| `fonts` | `ttf2_raster_fonts.zig` | `src/generated/rasterFontsData.c` |
-| `constants` | `generate_constants.zig` | `src/generated/constantPointers.c`, `constantPointers.h`, `constantPointers2.c` |
-| `catalogs` | `generate_catalogs.zig` | `src/generated/softmenuCatalogs.h` |
-| `testPgms` (alias `testpgms`) | `generate_testpgms.zig` | `res/testPgms/testPgms.bin` |
+| `fonts` | `ttf2_raster_fonts.zig` | `upstream/src/generated/rasterFontsData.c` |
+| `constants` | `generate_constants.zig` | `upstream/src/generated/constantPointers.c`, `constantPointers.h`, `constantPointers2.c` |
+| `catalogs` | `generate_catalogs.zig` | `upstream/src/generated/softmenuCatalogs.h` |
+| `testPgms` (alias `testpgms`) | `generate_testpgms.zig` | `build/generated/testPgms.bin` |
 | `generated` | all of the above | every tracked output above |
 
-Regenerate `res/testPgms/testPgms.bin` (via `zig build testPgms` or
+`../.github/project/workflow-imported-root-paths.sh generated-artifacts` prints
+that list; it is the vocabulary CI and the local gate's final diff both consume,
+so read it from there rather than from this table.
+
+**The testPgms image is the one output that does NOT live in the imported tree.**
+It is z47's own baseline under `build/generated/`, deliberately outside
+`upstream/`: writing it to `upstream/res/testPgms/testPgms.bin` put a z47 build
+product inside the imported tree and kept that tree from ever matching its pin.
+Upstream's own copy stays byte-identical to the pin and
+`check-imported-tree-pin.py` holds it there.
+
+Regenerate `build/generated/testPgms.bin` (via `zig build testPgms` or
 `zig build generated`) after any item-table growth; a stale image fails the host
 regression lanes.
 
@@ -134,11 +152,11 @@ build-managed C boundaries rather than ad hoc `@cImport` blocks:
 - their narrow C interop enters through the checked-in `translate-c` root headers
   under `../build/tools/translate_c/` and the `Build.addTranslateC` wiring in
   `../build/host/generated.zig`
-- every generator compiles the vendored `dep/decNumberICU` sources
+- every generator compiles the vendored `../upstream/dep/decNumberICU` sources
 - the fonts generator links FreeType 2 (via its `translate-c` root and
   `linkRasterFontsFreetype`)
 - `generate_catalogs` and `generate_testpgms` additionally compile a subset of
-  upstream `../upstream/src/c47` sources and link GTK 3 and GMP
+  the imported `../upstream/src/c47` sources and link GTK 3 and GMP
 
 These boundaries are governed by the allowlist and guard described in
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
@@ -155,18 +173,18 @@ Current requirements:
   `../upstream/docs/code/requirements.txt`
 
 After verifying those tools and packages are present, the step runs
-`python3 -m sphinx -M html docs/code <install-prefix>/docs/code`.
+`python3 -m sphinx -M html upstream/docs/code zig-out/docs/code`.
 
-This lane documents the imported code surface under `docs/code`. It does not
-replace the maintainer-facing `docs/` set.
+This lane documents the imported code surface under `upstream/docs/code`. It does
+not replace the maintainer-facing `docs/` set, which is this directory.
 
 ## Platform Notes That Matter
 
 - `../build/host/platform.zig` is the central host-platform glue surface.
 - Windows host builds and packaging need explicit native-path and import-library
   handling for GTK and FreeType rather than generic `-lfoo` names.
-- The macOS smoke lane expects the checked-out `res/` asset tree to be visible
-  from the executable directory during startup.
+- The macOS smoke lane expects the checked-out `../upstream/res/` asset tree to be
+  visible from the executable directory during startup.
 
 ## Change Rules
 
@@ -174,7 +192,8 @@ replace the maintainer-facing `docs/` set.
 - Keep generated output ownership explicit through the public `zig build` refresh
   steps instead of standalone scripts.
 - Keep host dependency docs honest. Do not imply the host simulator is pure Zig
-  while it still links GTK 3, GMP, or PulseAudio and compiles `dep/decNumberICU`.
+  while it still links GTK 3, GMP, or PulseAudio and compiles
+  `../upstream/dep/decNumberICU`.
 - Route any new generator C interop through a checked-in `translate-c` root and
   the allowlist in
   [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md);

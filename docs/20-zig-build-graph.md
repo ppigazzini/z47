@@ -10,7 +10,8 @@ page assumes the entrypoints, pins, and output paths are already clear. For the
 flat list of maintainer entrypoints, see page 10 and the live
 `zig build --help`; this page does not repeat that list.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## Router Contract
 
@@ -27,11 +28,16 @@ Its current top-level responsibilities, in order, are:
    (`prepareContext`)
 5. register host steps (`host.zig` -> `host/steps.zig`)
 6. register firmware steps (`firmware.zig`)
-7. register distribution steps (`dist.zig`)
+7. register the `object-manifest` step, which declares each product target's
+   linked object set for the object-graph gate
+8. resolve the distribution version, then register distribution steps
+   (`dist.zig`)
 
-The `check-c-deps*` and `test:unit` steps are self-contained and are registered
-directly in `../build.zig`; every other public step is registered inside its
-domain module.
+`check-c-deps*`, `test:unit`, and `object-manifest` are self-contained and are
+registered directly in `../build.zig`; every other public step is registered
+inside its domain module. `object-manifest` has to live here because it asks the
+BUILD for each product's object set rather than inferring it from a cache glob or
+a name prefix, which is where every wrong object-set number came from.
 
 ## Domain Split
 
@@ -49,21 +55,21 @@ build-registration slices shared by the host and firmware domains.
 | `../build/host/builders.zig` | simulator and host test/parity executable builders |
 | `../build/host/steps.zig` | public host, generator, docs, clean, and verification steps |
 | `../build/host/platform.zig` | GTK, FreeType, Windows pkg-config, and system path glue |
-| `../build/host/gtk_*.zig` | Zig GTK 3 host layer that replaces the upstream `src/c47-gtk` C |
+| `../build/host/gtk_*.zig` | Zig GTK 3 host layer that replaces the imported `../upstream/src/c47-gtk` C |
 | `../build/firmware.zig` | firmware orchestration, SDK integration, CRC helper, cross-GMP bootstrap |
-| `../build/firmware_*_runtime.zig` | Zig DMCP/DMCP5 HAL (audio, file I/O, print IR) that replaces the upstream firmware C |
+| `../build/firmware_*_runtime.zig` | Zig DMCP/DMCP5 HAL (audio, file I/O, print IR, console) that replaces the upstream firmware C. The console sinks are not cosmetic: defining them is what keeps newlib's buffered stdio, and its 316 bytes of SRAM2, out of the firmware link |
 | `../build/dist.zig` | host and firmware distribution step registration |
 | `../build/zig_dist.py` | Python packaging helper used by the Zig distribution steps |
-| `../build/tools/` | Zig-owned deterministic generator entrypoints (constants, catalogs, testPgms, fonts, reserved-register lookup) plus `translate_c` seam headers |
-| `../build/tests/` | parity oracles, fake runtimes, harnesses, and `testsuite_hal.zig` (the Zig testSuite HAL that replaces `src/testSuite/hal/*.c`) |
+| `../build/tools/` | Zig-owned deterministic generator entrypoints (constants, catalogs, testPgms, fonts, reserved-register lookup, object-manifest writer) plus `translate_c` seam headers and the `size.py` / `xlsx_to_sorting_csv.py` helpers |
+| `../build/tests/` | parity oracles, fake runtimes, harnesses, and `testsuite_hal.zig` (the Zig testSuite HAL that replaces the imported `../upstream/src/testSuite/hal/*.c`). All of z47's remaining first-party C lives here |
 | `../build/{constants,shortint,state,mathematics,frontier,solver,ui}/` | per-owner build registration that wires the `src/` owners into both the host and firmware builds |
 | `../src/` | the ported calculator core (the live Zig owners) |
 | `../bridge/` | near-retired legacy header shims paired with a few owners |
 
 The Zig HAL replacements (`host/gtk_*.zig`, `firmware_*_runtime.zig`,
 `tests/testsuite_hal.zig`) are compiled and linked in place of the corresponding
-upstream C. The retained third-party C -- vendored `dep/decNumberICU` compiled by
-Zig, plus external GTK 3, GMP, FreeType 2, optional PulseAudio (host), and the
+upstream C. The retained third-party C -- vendored `upstream/dep/decNumberICU`
+compiled by Zig, plus external GTK 3, GMP, FreeType 2, optional PulseAudio (host), and the
 SwissMicros DMCP/DMCP5 SDKs (firmware) -- is still linked by these domains; see
 [00-project-and-upstream.md](00-project-and-upstream.md) and
 [50-zig-c-boundaries-and-rewrite-policy.md](50-zig-c-boundaries-and-rewrite-policy.md).
@@ -136,9 +142,11 @@ test-program data under explicit Zig build ownership instead of ad hoc scripts.
 
 ## Version And Packaging Metadata
 
-The distribution domain resolves the package version from the explicit
-`-Dci-commit-tag` option when present. Otherwise it falls back to
-`git describe --match=NeVeRmAtCh --always --abbrev=8 --dirty=-mod`.
+`../build.zig` resolves the package version from the explicit `-Dci-commit-tag`
+option when present and otherwise falls back to
+`git describe --match=NeVeRmAtCh --always --abbrev=8 --dirty=-mod`, then hands the
+result to `dist.zig`. `../build/host/generated.zig` derives the simulator's own
+version header from the same fallback.
 
 That fallback is a z47 packaging convenience. It does not replace the separate
 checked-in upstream pin under `../.github/project/upstream-pin.env`.

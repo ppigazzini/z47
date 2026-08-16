@@ -8,7 +8,8 @@ build outputs.
 Read [00-project-and-upstream.md](00-project-and-upstream.md) first. This page
 starts after the project and ownership boundary are already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md); this page does not repeat it.
 
 ## Build At A Glance
 
@@ -20,7 +21,7 @@ Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
 - `build/` is build-only Zig plus the Zig host/firmware/testSuite HAL
   replacements; the ported calculator core lives under `src/`; `bridge/`
   is near-retired and holds only two header shims.
-- Retained C is explicit: the vendored `dep/decNumberICU` is compiled by Zig,
+- Retained C is explicit: the vendored `upstream/dep/decNumberICU` is compiled by Zig,
   and the build links GTK 3, GMP, FreeType 2, and optional PulseAudio (host) plus
   the SwissMicros DMCP/DMCP5 SDKs (firmware). The remaining first-party C in the
   tree is parity/oracle/testSuite verification only, not in the product.
@@ -45,7 +46,7 @@ Lead with these. The full grouped set is in `../README.md`,
 | `zig build test:unit` | native Zig unit tests, no C oracle |
 | `zig build generated` | refresh all tracked generated host artifacts |
 | `zig build constants`, `zig build catalogs`, `zig build fonts`, `zig build testPgms` | individual generator lanes |
-| `zig build docs` | docs build for `docs/code` |
+| `zig build docs` | docs build for the imported `upstream/docs/code` tree |
 | `zig build dmcp`, `zig build dmcpr47`, `zig build dmcp5`, `zig build dmcp5r47` | firmware targets (DMCP and DMCP5, C47 and R47) |
 | `zig build dist_linux`, `zig build dist_macos`, `zig build dist_windows` | host-package build on the matching host OS |
 | `zig build clean` | clear derived build state |
@@ -65,11 +66,18 @@ Verification entrypoints:
 
 Use this compact map first when triaging where a change belongs.
 
-| Bucket | Root count | Canonical source | Action rule |
-| --- | ---: | --- | --- |
-| z47-owned control roots | 10 | `../.github/project/source-ownership.txt` (`[z47-owned]`) | Place new maintained build, runtime-Zig, CI, and docs logic here. |
-| imported upstream roots | 20 | `../.github/project/source-ownership.txt` (`[imported-upstream]`) | Treat as imported baseline; change only with an explicit reviewed exception. |
-| local environment and build-output roots | untracked | live worktree (`.zig-cache`, `zig-out`, and other ignored paths) | Keep untracked and out of policy claims; do not treat as owned source roots. |
+| Bucket | Canonical source | Action rule |
+| --- | --- | --- |
+| z47-owned control roots | `../.github/project/source-ownership.txt` (`[z47-owned]`) | Place new maintained build, runtime-Zig, CI, and docs logic here. |
+| imported upstream roots | `../.github/project/source-ownership.txt` (`[imported-upstream]`) -- a single root, `upstream/`, since the imported tree was nested | Treat as imported baseline; change only with an explicit reviewed exception. |
+| local environment and build-output roots | live worktree (`.zig-cache`, `zig-out`, and other ignored paths) | Keep untracked and out of policy claims; do not treat as owned source roots. |
+
+The guard prints the live counts, so read them from it rather than from this page:
+
+```bash
+bash .github/project/check-source-ownership.sh check
+# Tracked source ownership roots: z47=<n> imported=<n> approved-imported-additions=<n>
+```
 
 Root-clutter guardrails:
 
@@ -111,8 +119,10 @@ git ls-files 'build/**/*.zig' 'build/*.zig' | wc -l      # build-side files
 `build/` holds the host, firmware, distribution, generator, and test build
 registration plus the Zig host, firmware, and testSuite HAL replacements. Its top
 level includes `host.zig`, `firmware.zig`, `dist.zig`, `common.zig`,
-`object_manifest.zig`, `zig_dist.py`, the `firmware_*_runtime.zig` HAL files, and
-the `host/`, `firmware/`, `tools/`, `tests/`, and per-domain subdirectories.
+`abi_host.zig`, `object_manifest.zig`, `zig_dist.py`, the four
+`firmware_*_runtime.zig` HAL files (audio, io, print_ir, console), and the
+`host/`, `firmware/`, `tools/`, `tests/`, `generated/`, and per-domain
+subdirectories.
 
 `bridge/` is near-retired: it holds only `c47.h` and
 `state/keyboard_statusbar_mask.h`.
@@ -128,14 +138,18 @@ repo root
 |  |- host.zig
 |  |- firmware.zig
 |  |- dist.zig
+|  |- abi_host.zig
+|  |- object_manifest.zig
 |  |- firmware_audio_runtime.zig
 |  |- firmware_io_runtime.zig
 |  |- firmware_print_ir_runtime.zig
+|  |- firmware_console_runtime.zig
 |  |- zig_dist.py
 |  |- host/
 |  |- firmware/
 |  |- tools/
 |  |- tests/
+|  |- generated/          (z47's own testPgms baseline)
 |  |- constants/
 |  |- shortint/
 |  |- state/
@@ -262,8 +276,8 @@ contract, not in this layout page.
   `src/frontier.zig`, `src/core/persist/calc_state.zig`, and
   `src/shell/audio/tone.zig`
 - direct legacy-boundary Zig seams use `*_runtime.zig`, for example
-  `src/shell/display/items/items.zig` and
-  `src/core/persist/calc_state_io.zig`
+  `src/core/persist/calc_state_runtime.zig` and
+  `src/core/state/runtime/stack_runtime.zig`
 - pure ABI shim forwarders use `*_export.zig`, for example
   `src/core/text/glyph_export.zig`
 - internal implementation helpers that exist only behind a paired export shim use

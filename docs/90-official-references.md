@@ -5,8 +5,9 @@ maintainer docs and the checked-in z47 workflow.
 
 Prefer these exact surfaces over broad summaries or secondary writeups.
 
-Audit basis: 2026-08-01, upstream pin `6559a9c59`, Zig `0.16.0` stable. The
-Zig memory-safety reference set was reviewed against upstream Zig on that date.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
+The Zig memory-safety reference set was reviewed against upstream Zig on 2026-08-01.
 The test-oracle reference set was added and verified 2026-08-03: until then every
 reference here was about *writing* the program and none was about *knowing
 whether it is right*. It was extended from five sources to eight the same day,
@@ -118,8 +119,8 @@ Language and toolchain:
 - [Zig language reference -- Undefined Behavior](https://ziglang.org/documentation/master/#Undefined-Behavior):
   the canonical list of what is checked illegal behaviour (a panic in the safe
   modes) versus unchecked (silent in every mode). This is the authority for
-  which of z47's 5628 `@intCast` sites are a trap on the host and a silent
-  truncation on the device.
+  which of z47's several thousand `@intCast` sites are a trap on the host and a
+  silent truncation on the device.
 - [Zig 0.16.0 release notes](https://ziglang.org/download/0.16.0/release-notes.html):
   the pinned baseline. Safety-relevant changes: *forbid trivial local addresses
   returned from functions* (now a compile error, "returning address of expired
@@ -460,7 +461,7 @@ Zig-native replacement (see
   C input linked from Zig for DMCP5 firmware.
 - PulseAudio: retained optional external host audio dependency, linked from Zig
   when present; no separate canonical doc surface is pinned here.
-- The vendored `dep/decNumberICU` is compiled by Zig rather than linked as an
+- The vendored `upstream/dep/decNumberICU` is compiled by Zig rather than linked as an
   external library; there is no external canonical doc surface to pin for it.
 
 ## Generator And Packaging Helper References

@@ -7,7 +7,8 @@ publishes, and how to reproduce the same Linux verdict locally.
 Read [10-build-and-source-layout.md](10-build-and-source-layout.md) first. This
 page assumes the build entrypoints and output paths are already clear.
 
-Audit basis: 2026-07-10, upstream pin `0caee2adc`, Zig `0.16.0` stable.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated once, in
+[00-project-and-upstream.md](00-project-and-upstream.md).
 
 ## CI At A Glance
 
@@ -46,6 +47,8 @@ flowchart TD
     L[portable-int-width-guard]
     M[workflow-imported-root-guard]
     N[workflow-locality-guard]
+    O[correspondence-guard]
+    P2[core-shell-severance-guard]
   end
 
   A --> guards
@@ -68,9 +71,9 @@ it lists:
 | `windows-host-build` | same seven as `macos-host-build` |
 
 `zig-fmt-check`, `zig-native-unit-tests`, `idiom-ratchet-guard`,
-`portable-int-width-guard`, and `zig-master-compatibility` gate no platform job;
-they run purely as their own required checks (except the compatibility monitor,
-which is `continue-on-error`).
+`portable-int-width-guard`, `correspondence-guard`, `core-shell-severance-guard`,
+and `zig-master-compatibility` gate no platform job; they run purely as their own
+required checks (except the compatibility monitor, which is `continue-on-error`).
 
 ## Shared CI Inputs
 
@@ -120,8 +123,10 @@ maps to a committed script or generator so the same check runs locally.
 | `source-manifest` | Verify imported upstream pin and source manifest | confirm the pinned commit is still reachable from `upstream/master`, then upload the `upstream-source-index` manifest built from `source-ownership.txt` |
 | `source-ownership-guard` | Verify tracked source ownership | run `check-source-ownership.sh`; reject unapproved added files under imported upstream-shaped roots (fetches the upstream branch first to diff from the merge base) |
 | `upstream-port-ledger-guard` | Verify tracked upstream port ledger | run `check-upstream-port-ledger.py`; require a `pin-only` ledger row for the current `UPSTREAM_COMMIT` so a pin move cannot land without a ledger update |
+| `correspondence-guard` | Verify upstream<->owner correspondence manifest | run `check-upstream-correspondence.py`; fail when an upstream `src/c47` C file has no Zig owner in `upstream-correspondence.tsv` |
 | `zig-c-boundary-guard` | Verify curated Zig/C boundaries | run `check-zig-c-boundaries.sh`; fail if checked-in Zig boundary usage drifts from the approved allowlist |
 | `idiom-ratchet-guard` | Enforce idiomatic-Zig ratchet (no transliteration-debt regressions) | run `check-idiom-ratchet.sh` (monotonic idiom ratchet) and `generate-font-seams.py --check` (generated ABI seams still match upstream C) |
+| `core-shell-severance-guard` | Enforce headless-core severance (core must not reach into shell) | run `check-core-shell-severance.py`; `core/` may never `@import` a `shell/` source, and the extern-edge count is a frozen non-regression ceiling |
 | `c-dependency-policy` | Verify Phase I C dependency policy | run `check-c-dependency-phase-i-policy.sh .` |
 | `portable-int-width-guard` | Guard against the Windows LLP64 integer-width trap | run `check-portable-int-widths.sh`; reject value-carrying `c_long`/`c_ulong` that would change width under Windows LLP64 |
 | `workflow-imported-root-guard` | Verify workflow imported-root vocabulary | run `workflow-imported-root-paths.sh check-workflow`; keep direct repo-root imported-path literals in workflow YAML at zero |
@@ -136,17 +141,23 @@ committed `../.github/project/run-host-parity-battery.sh` script directly, so CI
 and the local gate execute byte-identical steps and cannot drift. That battery
 runs, in order:
 
-- the value parity oracles: `logical_shortint_parity`, `rotate_bits_parity`,
-  `logical_boolean_ops_suite`, `stack_state_parity`, `register_metadata_parity`
-  (retried once for cold-cache flakiness), `flags_parity`, `memory_parity`,
-  `program_serialization_parity`, `calc_state_parity`,
-  `math_command_wrappers_parity`, `math_random_parity`, `keyboard_state_parity`
-- the format-equivalence oracle `format_parity`
+- the value parity oracles, in order: the short-integer and boolean suites, the
+  state owners (`stack_state`, `register_metadata` -- retried once for cold-cache
+  flakiness -- `flags`, `memory`, `program_serialization`, `calc_state`), the
+  save/load round-trip, and the mathematics owners including the focused
+  `math_*_oracle` helpers and `eigen_parity`
+- the distribution and format-equivalence oracles
 - the header-constant audits: `constants` then `check-constant-offsets.py`,
   `audit-constant-parity.py`, `audit-item-table-parity.py`, and the
   `abi-layout-parity` struct-layout oracle
+- the keyboard, char-string, constants-command and tone lanes
 - `both` (both host simulators), then the non-blocking `simulator_smoke`, then
-  `testPgms`, `${XVFB} test` (the 10228-test shared testSuite), and `generated`
+  `testPgms`, `${XVFB} test` (the shared testSuite -- the run prints its own case
+  count), and `generated`
+
+Read the ordered lane list off the script itself, not off this page.
+`check-parity-lanes-gated.py` proves the script contains every parity lane the
+build declares, so the script cannot silently fall behind `zig build --help`.
 
 The job then runs the `*_asan` surface (`both_asan`, `test_asan`, and
 `pgm_load_fuzz` -- the malformed `.p47` load corpus driven through the real load
@@ -232,11 +243,17 @@ bash .github/project/run-local-gate.sh
 ```
 
 It runs the governance-check scripts CI runs as separate guard jobs (fmt,
-`test:unit`, source ownership, upstream/port ledger, Zig/C boundaries, idiom
-ratchet, Phase I C dependency, workflow locality, portable int widths), then the
-`run-host-parity-battery.sh` battery (byte-identical to the `linux-host-parity`
-build/test step), then the tracked generated-artifact diff. It fails fast on the
-first red. It cannot reproduce the macOS lane or the Windows LLP64 runtime
+`test:unit`, source ownership, upstream/port ledger, correspondence, Zig/C
+boundaries, idiom ratchet, core-shell severance, Phase I C dependency, workflow
+locality, portable int widths), then the `run-host-parity-battery.sh` battery
+(byte-identical to the `linux-host-parity` build/test step), then the firmware
+link for every DMCP package variant, then the tracked generated-artifact diff. It
+fails fast on the first red.
+
+Run it with the project virtualenv on `PATH`
+(`PATH="$PWD/.venv/bin:$PATH" bash .github/project/run-local-gate.sh`): one step
+self-tests through a `>/dev/null` and needs PyYAML, which lives only in `.venv`,
+so a bare `python3` makes the gate abort on a step banner with no error text. It cannot reproduce the macOS lane or the Windows LLP64 runtime
 adjudication; those stay CI-only.
 
 For a narrower rerun that matches a single workflow slice:
@@ -249,6 +266,8 @@ For a narrower rerun that matches a single workflow slice:
 | zig fmt guard | `bash .github/project/check-fmt.sh` |
 | native unit tests | `zig build test:unit` |
 | source manifest or upstream pin | `. ./.github/project/upstream-pin.env && git fetch --no-tags "$UPSTREAM_REPOSITORY_URL" "$UPSTREAM_BRANCH" && git merge-base --is-ancestor "$UPSTREAM_COMMIT" FETCH_HEAD && python3 .github/project/check-upstream-port-ledger.py --repo-root . && bash .github/project/check-source-ownership.sh` |
+| upstream<->owner correspondence | `python3 .github/project/check-upstream-correspondence.py --repo-root .` |
+| headless-core severance | `python3 .github/project/check-core-shell-severance.py --repo-root .` |
 | Zig/C boundary guard | `bash .github/project/check-zig-c-boundaries.sh` |
 | idiom ratchet guard | `bash .github/project/check-idiom-ratchet.sh` |
 | Phase I C dependency policy | `bash .github/project/check-c-dependency-phase-i-policy.sh .` |

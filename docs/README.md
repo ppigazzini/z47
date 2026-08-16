@@ -5,21 +5,21 @@ Zig-first port workspace.
 
 These pages are code-facing maintainer docs, not end-user usage docs.
 
-Audit basis: 2026-07-30, upstream pin `4697e526a`, Zig `0.16.0` stable. Update
-these stamps in [00-project-and-upstream.md](00-project-and-upstream.md) whenever
-the pin or toolchain advances.
+Last verified: 2026-08-16, Zig `0.16.0` stable. The upstream pin is stated in
+exactly one place, [00-project-and-upstream.md](00-project-and-upstream.md); no
+other page repeats its value. Each page carries its own "Last verified" date.
 
 ## Port Status In One Paragraph
 
 The calculator core is fully ported to Zig. The product builds (the GTK host
 simulator and the DMCP/DMCP5 firmware) contain zero first-party calculator C:
 `report-c-dependency-status.py` reports 0 active product-build first-party C
-files. The upstream C tree (`src/`, `dep/`) is retained only as verification
-reference -- the shared testSuite and per-owner parity oracles that prove the Zig
-behaves byte-for-byte like upstream. Retained third-party C is explicit and
-unchanged: the vendored `dep/decNumberICU` is compiled by Zig, and the build
-links GTK 3, GMP, FreeType 2, optional PulseAudio (host) and the SwissMicros
-DMCP/DMCP5 SDKs (firmware). Ongoing work is idiomatic-Zig refinement and periodic
+files. The upstream C tree (`upstream/src/`, `upstream/dep/`) is retained only as
+verification reference -- the shared testSuite and per-owner parity oracles that
+prove the Zig behaves byte-for-byte like upstream. Retained third-party C is
+explicit and unchanged: the vendored `upstream/dep/decNumberICU` is compiled by
+Zig, and the build links GTK 3, GMP, FreeType 2, optional PulseAudio (host) and
+the SwissMicros DMCP/DMCP5 SDKs (firmware). Ongoing work is idiomatic-Zig refinement and periodic
 upstream resync, not further core porting.
 
 These pages document tracked, maintained repo surfaces only. They do not define
@@ -133,13 +133,12 @@ Maintainer entrypoints (see [10](10-build-and-source-layout.md) and
 - `zig build` or `zig build sim`: canonical host build entrypoint
 - `zig build both`: build both host simulators (C47 and R47)
 - `zig build test`: canonical grouped host regression lane (the shared upstream
-  testSuite plus the Zig-owned suites; 12721 cases at the current pin -- the run
-  prints the total)
+  testSuite plus the Zig-owned suites; the run prints the case total)
 - `zig build test:unit`: native Zig unit tests with no C oracle
 - `zig build generated`: refresh all tracked generated host artifacts
 - `zig build constants`, `zig build catalogs`, `zig build fonts`,
   `zig build testPgms`: individual generator lanes
-- `zig build docs`: canonical docs build for `docs/code`
+- `zig build docs`: canonical docs build for the imported `upstream/docs/code`
 - `zig build dmcp` or `zig build dmcp5`: canonical firmware entrypoints
 - `zig build dist_linux`, `zig build dist_macos`, or `zig build dist_windows`:
   host-package entrypoints on the matching host OS

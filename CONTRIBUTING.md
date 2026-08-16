@@ -169,8 +169,8 @@ workflow evidence that was checked instead.
 The current maintained build still keeps these legacy C or vendor surfaces
 explicit:
 
-- imported upstream calculator sources under `src/`
-- `dep/decNumberICU`
+- imported upstream calculator sources under `upstream/src/`
+- `upstream/dep/decNumberICU`
 - GTK 3
 - FreeType 2
 - GMP
