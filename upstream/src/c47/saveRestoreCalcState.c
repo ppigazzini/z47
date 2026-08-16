@@ -2454,6 +2454,7 @@ int64_t stringToInt64(const char *str) {
 
           else if(strcmp(aimBuffer, "Input_Default") == 0) {
             Input_Default = toUint8(tmpString);
+            set_def_Input_Default();
           }
           else if(strcmp(aimBuffer, "jm_BASE_SCREEN") == 0) {        //Keep compatible by repeating
             if(loadedVersion < 10000022) {

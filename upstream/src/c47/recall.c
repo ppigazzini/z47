@@ -275,6 +275,7 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(    compatibility_byte00);   //spare
     recallFromDtConfigDescriptor(    compatibility_int1);     //spare
     recallFromDtConfigDescriptor(Input_Default);
+    set_def_Input_Default();
     recallFromDtConfigDescriptor(dispBase);
     recallFromDtConfigDescriptor(compatibility_byte31);
     recallFromDtConfigDescriptor(compatibility_byte26);
