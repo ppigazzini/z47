@@ -40,6 +40,7 @@ const codec = @import("calc_state_register_codec.zig");
 const FIRST_LOCAL_REGISTER: i16 = 7000;
 const LAST_GLOBAL_REGISTER: i16 = 136;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
+extern fn set_def_Input_Default() callconv(.c) void;
 // currentNumberOfLocalRegisters macro: currentSubroutineLevelData->numberOfLocalRegisters.
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
@@ -1182,6 +1183,7 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         }
     } else if (cmpName(ab, "Input_Default")) {
         Input_Default = text.toUint8(tmpString);
+        set_def_Input_Default();
     } else if (cmpName(ab, "jm_BASE_SCREEN")) {
         if (loaded_version < 10000022) forceSystemFlag(FLAG_BASE_MYM, @intFromBool(text.toUint8(tmpString) != 0));
     } else if (cmpName(ab, "BASE_MYM")) {

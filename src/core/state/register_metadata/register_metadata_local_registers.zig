@@ -77,9 +77,10 @@ fn clearLocalStorage() void {
 
 // Reports a memory issue to allocateLocalRegisters, which is the only caller and
 // the only place that turns one into an error: lastErrorCode is left exactly as
-// this function found it. Only the two allocating branches can fail; the long
-// integer and integer-base branches always report success, so a RAM shortage
-// inside them does not unwind the frame.
+// this function found it. Every branch allocates, including the two that end in a
+// conversion: the conversion reallocates the register, and reallocation frees the
+// data pointer the register already holds, so the register must own a real34
+// block first or the free reads a pointer that was never set.
 fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
     if (stack_runtime.lastIntegerBase == 0 and (stack_runtime.inputDefault() == stack_runtime.ID_43S or stack_runtime.inputDefault() == stack_runtime.ID_DP)) {
         const new_mem = stack_runtime.allocC47Blocks(runtime.real34SizeInBlocks()) orelse return true;
@@ -101,14 +102,17 @@ fn initializeLocalRegister(reg: runtime.calcRegister_t) bool {
         return false;
     }
 
+    // Everything left over -- the long integer default, any integer base, and an
+    // Input_Default outside the four -- converts a zero into the register.
+    const new_mem = stack_runtime.allocC47Blocks(runtime.real34SizeInBlocks()) orelse return true;
+
+    stack_runtime.setRegisterDataType(reg, @intCast(stack_runtime.dtReal34), stack_runtime.amNone);
+    memory_owned.setRegisterDataPointer(reg, new_mem);
+
     if (stack_runtime.lastIntegerBase == 0 and stack_runtime.inputDefault() == stack_runtime.ID_LI) {
         stack_runtime.storeZeroLongInteger(reg);
-        return false;
-    }
-
-    if (stack_runtime.lastIntegerBase != 0) {
-        stack_runtime.storeZeroShortInteger(reg, stack_runtime.lastIntegerBase);
-        return false;
+    } else {
+        stack_runtime.storeZeroShortInteger(reg, if (stack_runtime.lastIntegerBase == 0) 10 else stack_runtime.lastIntegerBase);
     }
 
     return false;

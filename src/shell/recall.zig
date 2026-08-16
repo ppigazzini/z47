@@ -137,6 +137,7 @@ extern var shortIntegerMode: u8;
 extern var shortIntegerWordSize: u8;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn updateShortIntegerMasks() callconv(.c) void;
+extern fn set_def_Input_Default() callconv(.c) void;
 extern var displayFormat: u8;
 extern var displayFormatDigits: u8;
 extern var gapItemLeft: u16;
@@ -524,6 +525,7 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         _ = configToRecall.compatibility_byte00; // spare
         _ = configToRecall.compatibility_int1; // spare
         Input_Default = configToRecall.Input_Default;
+        set_def_Input_Default();
         dispBase = @intFromBool(configToRecall.dispBase);
         _ = configToRecall.compatibility_byte31;
         _ = configToRecall.compatibility_byte26;

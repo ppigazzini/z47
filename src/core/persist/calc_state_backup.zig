@@ -113,6 +113,7 @@ extern var timeDisplayFormatDigits: [1]u8;
 extern var shortIntegerWordSize: [1]u8;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn updateShortIntegerMasks() callconv(.c) void;
+extern fn set_def_Input_Default() callconv(.c) void;
 extern var significantDigits: [1]u8;
 extern var fractionDigits: [1]u8;
 extern var shortIntegerMode: [1]u8;
@@ -1277,6 +1278,7 @@ pub fn restoreCalc() void {
     rv(&Norm_Key_00[2], 16, "Norm_Key_00.funcParam", "hexDump");
     rv(&Norm_Key_00[18], 1, "Norm_Key_00.used", "bool");
     rv(&Input_Default[0], 1, "Input_Default", "uint8");
+    set_def_Input_Default();
     rv(&T_cursorPos[0], 2, "T_cursorPos", "int16");
     rv(&multiEdLines[0], 1, "multiEdLines", "uint8");
     rv(&current_cursor_x[0], 2, "current_cursor_x", "uint16");
