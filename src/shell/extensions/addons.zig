@@ -463,8 +463,11 @@ const USER_R47bk_fg: u8 = 62;
 const USER_R47fg_bk: u8 = 63;
 const USER_R47fg_g: u8 = 64;
 
-// checkHP
+// Input_Default: the four modes checkHP and set_def_Input_Default recognise.
+const ID_43S: u8 = 0;
 const ID_DP: u8 = 2;
+const ID_CPXDP: u8 = 4;
+const ID_LI: u8 = 7;
 
 // DEC rounding modes (decContext.h enum).
 const DEC_ROUND_HALF_UP: c_int = 2;
@@ -3185,6 +3188,14 @@ pub export fn fnInDefault(inputDefault: u16) callconv(.c) void {
     Input_Default = @intCast(inputDefault);
     lastIntegerBase = 0;
     frontier_radio_button_catalog.fnRefreshState();
+}
+
+// A restore takes this byte from a file unchecked, and a value outside the four
+// reaches no branch of initLocalRegisters() and no case in closeNim().
+pub export fn set_def_Input_Default() callconv(.c) void {
+    if (Input_Default != ID_43S and Input_Default != ID_DP and Input_Default != ID_CPXDP and Input_Default != ID_LI) {
+        Input_Default = ID_43S;
+    }
 }
 
 pub export fn fnByteShortcutsS(size: u16) callconv(.c) void {
