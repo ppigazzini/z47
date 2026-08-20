@@ -18,6 +18,7 @@
 const std = @import("std");
 const text = @import("calc_state_text.zig");
 const codec = @import("calc_state_register_codec.zig");
+const calc_state = @import("calc_state.zig"); // intra-object Zig-to-Zig
 const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 
@@ -87,7 +88,7 @@ extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u1
 extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 
 // --- core state globals ---
-extern var aimBuffer1: [400]u8;
+extern var aimBuffer1: [calc_state.AIM_BUFFER_1_LENGTH]u8;
 extern var globalFlags: [8]u16;
 extern var currentSubroutineLevelData: ?*subroutineLevelHeader_t;
 extern var currentLocalRegisters: [*c]abi.RegisterHeader;

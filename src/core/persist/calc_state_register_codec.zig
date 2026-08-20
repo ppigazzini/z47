@@ -277,7 +277,7 @@ extern var errorMessage: [*c]u8;
 const REAL_SIZE_IN_BYTES: usize = 60; // sizeof(real_t)
 
 extern var tmpString: [*c]u8;
-extern var aimBuffer1: [400]u8;
+extern var aimBuffer1: [calc_state.AIM_BUFFER_1_LENGTH]u8;
 
 // The register value is serialized into the global tmpString at a fixed offset
 // (the C `tmpRegisterString = tmpString + START_REGISTER_VALUE`).
@@ -299,21 +299,34 @@ fn regStringData(regist: i16) [*c]u8 {
     return getRegisterDataPointer(regist) + STR_LG_INT_HEADER_SIZE;
 }
 
-// Append angle / polar markers to the type tag (textTag).
-pub fn textTag(str: [*c]u8, angle: u8, polmode: u8) void {
+// strncat(str, marker, size - strlen(str) - 1): append as much of the marker as
+// the buffer still holds, and keep the result NUL terminated.
+fn appendMarker(str: [*c]u8, size: usize, marker: []const u8) void {
+    const used = strlen(str);
+    if (used + 1 >= size) {
+        return;
+    }
+    const fits = @min(size - used - 1, marker.len);
+    @memcpy(str[used..][0..fits], marker[0..fits]);
+    str[used + fits] = 0;
+}
+
+// Append angle / polar markers to the type tag (textTag), bounded to size bytes
+// including the NUL.
+pub fn textTag(str: [*c]u8, size: usize, angle: u8, polmode: u8) void {
     if (angle != amNone) {
         switch (angle & @as(u8, @intCast(amAngleMask))) {
-            amDegree => _ = strcat(str, ":DEG"),
-            amDMS => _ = strcat(str, ":DMS"),
-            amRadian => _ = strcat(str, ":RAD"),
-            amMultPi => _ = strcat(str, ":MULTPI"),
-            amGrad => _ = strcat(str, ":GRAD"),
+            amDegree => appendMarker(str, size, ":DEG"),
+            amDMS => appendMarker(str, size, ":DMS"),
+            amRadian => appendMarker(str, size, ":RAD"),
+            amMultPi => appendMarker(str, size, ":MULTPI"),
+            amGrad => appendMarker(str, size, ":GRAD"),
             amNone => {},
             else => _ = strcpy(str, ":???"),
         }
     }
     if ((polmode & @as(u8, @intCast(amPolar))) == @as(u8, @intCast(amPolar))) {
-        _ = strcat(str, "p");
+        appendMarker(str, size, "p");
     }
 }
 
@@ -345,7 +358,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
             _ = strcpy(aim(), "RXFN");
             var am: c_int = 0;
             if (getAngleModeForRegister3r(regist, &am)) {
-                textTag(aim(), @intCast(am), 0);
+                textTag(aim(), aimBuffer1.len, @intCast(am), 0);
             }
         } else {
             aim()[0] = 0;
@@ -380,7 +393,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
         dtReal34 => {
             _ = decQuadToString(regReal34Data(regist), trs);
             _ = strcpy(aim(), "Real");
-            textTag(aim(), @intCast(getRegisterTag(regist) & amAngleMask), 0);
+            textTag(aim(), aimBuffer1.len, @intCast(getRegisterTag(regist) & amAngleMask), 0);
         },
         dtComplex34 => {
             if (dataFileMode) {
@@ -405,7 +418,7 @@ pub fn registerToSaveString(regist: i16, isXFNRegister: bool) void {
             }
             _ = strcpy(aim(), "Cplx");
             const tag = getRegisterTag(regist);
-            textTag(aim(), @intCast(tag & amAngleMask), @intCast(tag & amPolar));
+            textTag(aim(), aimBuffer1.len, @intCast(tag & amAngleMask), @intCast(tag & amPolar));
         },
         dtTime => {
             if (dataFileMode) {
@@ -456,12 +469,12 @@ fn matrixToSaveString(regist: i16, is_complex: bool) void {
         const is_vec = isRegisterMatrixVector(regist);
         const angle: u8 = if (is_vec) getVectorRegisterAngularMode(regist) else amNone;
         const pol: u8 = if (is_vec) getVectorRegisterPolarMode(regist) else 0;
-        textTag(aim(), angle, pol);
+        textTag(aim(), aimBuffer1.len, angle, pol);
     } else {
         _ = strcpy(aim(), "Cxma");
         const tag = getRegisterTag(regist);
         const angle: u8 = if ((tag & amPolar) == 0) amNone else @intCast(tag & amAngleMask);
-        textTag(aim(), angle, @intCast(tag & amPolar));
+        textTag(aim(), aimBuffer1.len, angle, @intCast(tag & amPolar));
     }
 }
 

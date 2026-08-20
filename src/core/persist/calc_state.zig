@@ -300,9 +300,15 @@ pub export fn convert001090400T001090500(parameter: u8, offset: u8) u8 {
     return if (parameter < 20) parameter +% offset else parameter;
 }
 
-// Scratch buffer shared with the (now Zig) register codec / save owner; was a
-// plain global in saveRestoreCalcState.c.
-pub export var aimBuffer1: [400]u8 = std.mem.zeroes([400]u8);
+// Holds a register's 4 character type tag plus the ":MULTPI" and "p" markers
+// textTag() appends, so 13 bytes at most. File-static in saveRestoreCalcState.c;
+// here it stays a symbol because z47 splits that file across the register codec
+// and save owners.
+pub const AIM_BUFFER_1_LENGTH = 16;
+comptime {
+    std.debug.assert(AIM_BUFFER_1_LENGTH >= "Cplx".len + ":MULTPI".len + "p".len + 1);
+}
+pub export var aimBuffer1: [AIM_BUFFER_1_LENGTH]u8 = std.mem.zeroes([AIM_BUFFER_1_LENGTH]u8);
 
 pub export fn fnDeleteBackup(confirmation: u16) void {
     _ = confirmation;

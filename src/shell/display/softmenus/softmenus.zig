@@ -148,6 +148,8 @@ const SOFTMENU_HEIGHT: i16 = 23;
 const SCREEN_WIDTH: i16 = 400;
 const SCREEN_HEIGHT: i16 = 240;
 const TMP_STR_LENGTH: usize = 2560;
+// Names a dynamic menu can stage in tmpString, which lays each one out in a fixed 15-byte slot.
+const MAX_DYNMENU_SLOTS: usize = TMP_STR_LENGTH / 15;
 const AIM_BUFFER_LENGTH: usize = 1024;
 const LCD_SET_VALUE: c_int = 0;
 const LCD_EMPTY_VALUE: c_int = 255;
@@ -576,6 +578,7 @@ const STD_GAUSS_WHITE_L: [*:0]const u8 = "\xa4\x32";
 const STD_GAUSS_WHITE_R: [*:0]const u8 = "\xa4\x31";
 const STD_LEFT_ARROW: [*:0]const u8 = "\xa1\x90";
 const STD_RIGHT_ARROW: [*:0]const u8 = "\xa1\x92";
+const STD_RIGHT_SHORT_ARROW: [*:0]const u8 = "\xa1\xc0";
 const STD_SIGMA: [*:0]const u8 = "\x83\xa3";
 const STD_SPACE_3_PER_EM: [*:0]const u8 = "\xa0\x04";
 const STD_SPACE_4_PER_EM: [*:0]const u8 = "\xa0\x05";
@@ -1609,7 +1612,7 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
     _ = memset(tmpString, 0, TMP_STR_LENGTH);
     {
         var i: i32 = 0;
-        while (i < @as(i32, numberOfNamedVariables)) : (i += 1) {
+        while (i < @as(i32, numberOfNamedVariables) and numberOfVars < MAX_DYNMENU_SLOTS) : (i += 1) {
             const regist: calcRegister_t = @intCast(i + FIRST_NAMED_VARIABLE);
             if (applyFilter == 0 or _filterDataType(regist, typeFilter, isAngular) != 0) {
                 const nv = &allNamedVariables[@intCast(i)];
@@ -1630,7 +1633,7 @@ fn _dynmenuConstructVars(mIdx: i16, applyFilter: bool_t, typeFilter: dataType_t,
     }
     if (softmenu[@intCast(softmenuStack[2].softmenuId)].menuItem != -%@as(i16, ITM_DELITM)) {
         var i: i32 = FIRST_NAMED_RESERVED_VARIABLE - FIRST_RESERVED_VARIABLE;
-        while (i < NUMBER_OF_RESERVED_VARIABLES) : (i += 1) {
+        while (i < NUMBER_OF_RESERVED_VARIABLES and numberOfVars < MAX_DYNMENU_SLOTS) : (i += 1) {
             const regist: calcRegister_t = @intCast(i + FIRST_RESERVED_VARIABLE);
             const rv = &allReservedVariables[@intCast(i)];
             if (rv.header.bits.notUsed != 0) {
@@ -1786,7 +1789,7 @@ fn initVariableSoftmenu(mIdx: i16) void {
             numberOfGlobalLabels = 0;
             _ = memset(tmpString, 0, TMP_STR_LENGTH);
             i = 0;
-            while (i < @as(i16, @bitCast(numberOfLabels))) : (i += 1) {
+            while (i < @as(i16, @bitCast(numberOfLabels)) and numberOfGlobalLabels < MAX_DYNMENU_SLOTS) : (i += 1) {
                 if ((!tam.colon and (labelList[@intCast(i)].step > 0)) or (tam.colon and labelList[@intCast(i)].program == @as(i16, @bitCast(currentProgramNumber)) and (labelList[@intCast(i)].labelPointer - 1)[0] == LOCAL_LABEL_VARIABLE)) { // Global label or local named label
                     var lblNameLen: u8 = labelList[@intCast(i)].labelPointer[0];
                     if (lblNameLen > 14) { // this menu lays each name out in a fixed 15-byte slot
@@ -1830,19 +1833,10 @@ fn initVariableSoftmenu(mIdx: i16) void {
             numberOfBytes = 1;
             numberOfGlobalLabels = 0;
             _ = memset(tmpString, 0, TMP_STR_LENGTH);
-            if (softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem != -%@as(i16, ITM_DELITM)) {
-                i = 0;
-                while (i < LAST_ITEM) : (i += 1) {
-                    if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_MENU and indexOfItems[@intCast(i)].itemCatalogName[0] != 0) {
-                        const len: i16 = @intCast(stringByteLength(&indexOfItems[@intCast(i)].itemCatalogName));
-                        _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &indexOfItems[@intCast(i)].itemCatalogName, @intCast(len));
-                        numberOfGlobalLabels += 1;
-                        numberOfBytes += 1 + len;
-                    }
-                }
-            }
+            // The user's own menus take slots first, so a full buffer costs a
+            // predefined name the catalog still reaches.
             i = 0;
-            while (i < @as(i16, @intCast(numberOfUserMenus))) : (i += 1) {
+            while (i < @as(i16, @intCast(numberOfUserMenus)) and numberOfGlobalLabels < MAX_DYNMENU_SLOTS) : (i += 1) {
                 const len: i16 = @intCast(stringByteLength(&userMenus[@intCast(i)].menuName));
                 if ((softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem != -%@as(i16, ITM_DELITM)) or
                     ((frontier_sort.compareString("HOME", &userMenus[@intCast(i)].menuName, CMP_NAME) != 0) and (frontier_sort.compareString("P.FN", &userMenus[@intCast(i)].menuName, CMP_NAME) != 0)))
@@ -1850,6 +1844,18 @@ fn initVariableSoftmenu(mIdx: i16) void {
                     _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &userMenus[@intCast(i)].menuName, @intCast(len));
                     numberOfGlobalLabels += 1;
                     numberOfBytes += 1 + len;
+                }
+            }
+
+            if (softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem != -%@as(i16, ITM_DELITM)) {
+                i = 0;
+                while (i < LAST_ITEM and numberOfGlobalLabels < MAX_DYNMENU_SLOTS) : (i += 1) {
+                    if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_MENU and indexOfItems[@intCast(i)].itemCatalogName[0] != 0) {
+                        const len: i16 = @intCast(stringByteLength(&indexOfItems[@intCast(i)].itemCatalogName));
+                        _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &indexOfItems[@intCast(i)].itemCatalogName, @intCast(len));
+                        numberOfGlobalLabels += 1;
+                        numberOfBytes += 1 + len;
+                    }
                 }
             }
             if (numberOfGlobalLabels != 0) {
@@ -2172,6 +2178,7 @@ fn trimSoftKeyName(lim: u16, l: [*c]u8, mode: c_int, comp: c_int, withLeadingEmp
             const a = l[@intCast(i)];
             const b = l[@intCast(i + 1)];
             if ((STD_RIGHT_ARROW[0] == a and STD_RIGHT_ARROW[1] == b) or
+                (STD_RIGHT_SHORT_ARROW[0] == a and STD_RIGHT_SHORT_ARROW[1] == b) or
                 (STD_LEFT_ARROW[0] == a and STD_LEFT_ARROW[1] == b))
             {
                 arrowEnd = i + 2;
@@ -2197,6 +2204,7 @@ fn trimSoftKeyNameFromLeft(lim: u16, l: [*c]u8, mode: c_int, comp: c_int, withLe
     var w: u32 = frontier_screen.stringWidthC47(l, mode, comp, withLeadingEmptyRows, withEndingEmptyRows);
     while (w >= lim and l[0] != 0 and l[1] != 0) {
         if ((STD_RIGHT_ARROW[0] == l[0] and STD_RIGHT_ARROW[1] == l[1]) or
+            (STD_RIGHT_SHORT_ARROW[0] == l[0] and STD_RIGHT_SHORT_ARROW[1] == l[1]) or
             (STD_LEFT_ARROW[0] == l[0] and STD_LEFT_ARROW[1] == l[1]))
         {
             break;
@@ -2215,11 +2223,38 @@ fn trimSoftKeyNameFromLeft(lim: u16, l: [*c]u8, mode: c_int, comp: c_int, withLe
     return w;
 }
 
+// Swap every long right arrow in a label for the short one, in place (both are
+// two bytes). Returns whether anything changed.
+fn shortenRightArrows(l: [*c]u8) bool {
+    var changed = false;
+    var i: i16 = 0;
+    while (l[@intCast(i)] != 0 and l[@intCast(i + 1)] != 0) : (i += 1) {
+        if (STD_RIGHT_ARROW[0] == l[@intCast(i)] and STD_RIGHT_ARROW[1] == l[@intCast(i + 1)]) {
+            l[@intCast(i)] = STD_RIGHT_SHORT_ARROW[0];
+            l[@intCast(i + 1)] = STD_RIGHT_SHORT_ARROW[1];
+            changed = true;
+            i += 1;
+        }
+    }
+    return changed;
+}
+
 // Trim the side the slot position calls for; if it still does not fit, trim the
-// other side too.
+// other side too. A label too wide for the slot first trades its long right
+// arrow for the short one (4 px each in the compressed standard font) and is
+// kept whole if that is enough.
 fn trimKey(itemName: [*c]u8, x: i16) u32 {
     const lim: u16 = if (x == 5) 65 else 66;
-    var w: u32 = undefined;
+    var w: u32 = frontier_screen.stringWidthC47(itemName, stdNoEnlarge, 1, 0, 0);
+    if (w < lim) {
+        return w;
+    }
+    if (shortenRightArrows(itemName)) {
+        w = frontier_screen.stringWidthC47(itemName, stdNoEnlarge, 1, 0, 0);
+        if (w < lim) {
+            return w;
+        }
+    }
     if ((x & 1) == 0) {
         w = trimSoftKeyName(lim, itemName, stdNoEnlarge, 1, 0, 0);
         if (w >= lim) {
@@ -2261,8 +2296,6 @@ pub export fn showKey(label: [*c]const u8, x1: i16, x2: i16, y1: i16, y2: i16, v
         // Clearly short enough, so no trimming was needed anyway.
         _ = frontier_screen.showString(&ll, &standardFont, @bitCast(@as(i32, @divTrunc(x1 + x2 - w, 2))), @intCast(y1 + 2), videoMode, 0, 0);
     }
-
-    // JM_LINE2_DRAW is not defined -> skipped.
 
     if (showCb >= 0) {
         if (videoMode == vmNormal) {

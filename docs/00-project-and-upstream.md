@@ -6,7 +6,7 @@ owns, and where the Zig port boundary now sits.
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
-Audit basis: 2026-08-16, upstream pin `7d3a60f27`, Zig `0.16.0` stable.
+Audit basis: 2026-08-20, upstream pin `aef442e4d`, Zig `0.16.0` stable.
 
 ## At A Glance
 
@@ -23,7 +23,7 @@ Audit basis: 2026-08-16, upstream pin `7d3a60f27`, Zig `0.16.0` stable.
   `https://gitlab.com/rpncalculators/c43.git`. The GitLab path still uses the
   historical `c43` name even though the project identifies itself as C47.
 - The imported upstream working tree is mounted under `upstream/`, pinned at
-  commit `7d3a60f27c41899a4b5ce564e63235a112c1edc8` (verified fact from
+  commit `aef442e4dce5098f5d4efe19af7cf5cf2863365b` (verified fact from
   `.github/project/upstream-pin.env`).
 - `build.zig` is the canonical maintained build entrypoint.
 
@@ -72,10 +72,10 @@ Current checked-in values:
 | `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
 | `UPSTREAM_REMOTE_NAME` | `upstream` |
 | `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `7d3a60f27c41899a4b5ce564e63235a112c1edc8` |
+| `UPSTREAM_COMMIT` | `aef442e4dce5098f5d4efe19af7cf5cf2863365b` |
 | `UPSTREAM_ROOT` | `upstream` |
 | `UPSTREAM_IMPORT_LAYOUT` | `nested-upstream` |
-| `UPSTREAM_PIN_UPDATED` | `2026-08-16` |
+| `UPSTREAM_PIN_UPDATED` | `2026-08-20` |
 
 `UPSTREAM_ROOT=upstream` means the imported upstream tree is mounted under
 `upstream/`, so z47's own owners can hold the canonical `src/` and `docs/` names.
