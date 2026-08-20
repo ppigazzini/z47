@@ -2475,17 +2475,6 @@ void fnByteShortcutsU(uint16_t size) {
 }
 
 
-void doubleToXRegisterReal34(double x) { //Convert from double to X register REAL34
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-  snprintf(tmpString, TMP_STR_LENGTH, "%.16e", x);
-  stringToReal34(tmpString, REGISTER_REAL34_DATA(REGISTER_X));
-  //adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
-  setSystemFlag(FLAG_ASLIFT);
-}
-
-
 void fnStrtoReg(const char buffer[], calcRegister_t regist) {                             //DONE
   int16_t mem = stringByteLength(buffer) + 1;
   reallocateRegister(regist, dtString, TO_BLOCKS(mem), amNone);
@@ -2548,25 +2537,6 @@ void fnRCL(int16_t inp) { //DONE
   else {
     fnRecall(inp);
   }
-}
-
-
-double convert_to_double(calcRegister_t regist) { //Convert from X register to double
-  double y;
-  real_t tmpy;
-  switch(getRegisterDataType(regist)) {
-    case dtLongInteger:
-      convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
-      break;
-    case dtReal34:
-      real34ToReal(REGISTER_REAL34_DATA(regist), &tmpy);
-      break;
-    default:
-      return 0;
-  }
-  realToString(&tmpy, tmpString);
-  y = (float)stringToDouble(tmpString);
-  return y;
 }
 
 

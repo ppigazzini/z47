@@ -144,28 +144,28 @@ static void registerNumberToString(calcRegister_t regist, char *name) {
 }
 #endif // OPTION_DATAFILE
 
-//Utility to add angle and polar markers
-static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
+//Utility to add angle and polar markers, bounded to size bytes including the NUL
+static void textTag(char *str, size_t size, const uint8_t angle, const uint8_t polmode) {
   if(angle != amNone) {
     switch(getTagAngularMode(angle)) {
       case amDegree: {
-        strcat(str, ":DEG");
+        strncat(str, ":DEG", size - strlen(str) - 1);
         break;
       }
       case amDMS: {
-        strcat(str, ":DMS");
+        strncat(str, ":DMS", size - strlen(str) - 1);
         break;
       }
       case amRadian: {
-        strcat(str, ":RAD");
+        strncat(str, ":RAD", size - strlen(str) - 1);
         break;
       }
       case amMultPi: {
-        strcat(str, ":MULTPI");
+        strncat(str, ":MULTPI", size - strlen(str) - 1);
         break;
       }
       case amGrad: {
-        strcat(str, ":GRAD");
+        strncat(str, ":GRAD", size - strlen(str) - 1);
         break;
       }
       case amNone: {
@@ -178,7 +178,7 @@ static void textTag(char *str, const uint8_t angle, const uint8_t polmode) {
     }
   }
   if((polmode & amPolar) == amPolar) {
-    strcat(str, "p");
+    strncat(str, "p", size - strlen(str) - 1);
   }
 }
 
@@ -234,9 +234,8 @@ void _updateConstantsInEquations(void) {
 //#endif
 
 #define isXFN true
-char aimBuffer1[400];             //The concurrent use of the global aimBuffer
-                                  //does not work. See tmpString.
-                                  //Temporary solution is to use a local variable of sufficient length for the target.
+static char aimBuffer1[16];       //Holds a register's 4 character type tag plus the ":MULTPI" and "p" markers textTag() appends, so 13 bytes at most.
+_Static_assert(sizeof(aimBuffer1) >= sizeof("Cplx" ":MULTPI" "p"), "aimBuffer1 too small for the longest type tag");
 
   static void UI64toString(uint64_t value, char * tmpRegisterString);
   static void registerToSaveString(calcRegister_t regist, bool_t isXFNRegister) {
@@ -256,7 +255,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
         strcpy(aimBuffer1, "RXFN");
         angularMode_t am;
         if(getAngleModeForRegister3r(regist, &am)) {
-          textTag(aimBuffer1, am, 0);
+          textTag(aimBuffer1, sizeof(aimBuffer1), am, 0);
         }
       } else {
         aimBuffer1[0] = 0;
@@ -302,7 +301,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       case dtReal34: {
         real34ToString(REGISTER_REAL34_DATA(regist), tmpRegisterString);
         strcpy(aimBuffer1, "Real");
-        textTag(aimBuffer1, getRegisterAngularMode(regist), 0);
+        textTag(aimBuffer1, sizeof(aimBuffer1), getRegisterAngularMode(regist), 0);
         break;
       }
 
@@ -328,7 +327,7 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
           real34ToString(REGISTER_IMAG34_DATA(regist), tmpRegisterString + strlen(tmpRegisterString));
         }
         strcpy(aimBuffer1, "Cplx");
-        textTag(aimBuffer1, getRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
+        textTag(aimBuffer1, sizeof(aimBuffer1), getRegisterAngularMode(regist), getComplexRegisterPolarMode(regist));
         break;
       }
 
@@ -371,14 +370,14 @@ char aimBuffer1[400];             //The concurrent use of the global aimBuffer
       case dtReal34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Rema");
-        textTag(aimBuffer1, isRegisterMatrixVector(regist) ? getVectorRegisterAngularMode(regist) : amNone, isRegisterMatrixVector(regist) ? getVectorRegisterPolarMode(regist) : 0);
+        textTag(aimBuffer1, sizeof(aimBuffer1), isRegisterMatrixVector(regist) ? getVectorRegisterAngularMode(regist) : amNone, isRegisterMatrixVector(regist) ? getVectorRegisterPolarMode(regist) : 0);
         break;
       }
 
       case dtComplex34Matrix: {
         sprintf(tmpRegisterString, "%" PRIu16 " %" PRIu16, REGISTER_MATRIX_HEADER(regist)->matrixRows, REGISTER_MATRIX_HEADER(regist)->matrixColumns);
         strcpy(aimBuffer1, "Cxma");
-        textTag(aimBuffer1, (getRegisterTag(regist) & amPolar) == 0 ? amNone : getRegisterAngularMode(regist), getRegisterTag(regist) & amPolar);
+        textTag(aimBuffer1, sizeof(aimBuffer1), (getRegisterTag(regist) & amPolar) == 0 ? amNone : getRegisterAngularMode(regist), getRegisterTag(regist) & amPolar);
         break;
       }
 
