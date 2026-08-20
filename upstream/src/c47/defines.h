@@ -2509,6 +2509,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define ignoreReturnedValue(function) (__extension__ ({ __typeof__ (function) __x = (function); (void) __x; }))
 
 #define TMP_STR_LENGTH         2560
+#define MAX_DYNMENU_SLOTS      (TMP_STR_LENGTH / 15)           // Names a dynamic menu can stage in tmpString, which lays each one out in a fixed 15-byte slot.
 #define WRITE_BUFFER_LEN       4096
 #define ERROR_MESSAGE_LENGTH    512
 #define DISPLAY_VALUE_LEN        80

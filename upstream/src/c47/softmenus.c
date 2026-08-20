@@ -1526,7 +1526,7 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
     numberOfBytes = 1;
     numberOfVars = 0;
     memset(tmpString, 0, TMP_STR_LENGTH);
-    for(int i=0; i<numberOfNamedVariables; i++) {
+    for(int i=0; i<numberOfNamedVariables && numberOfVars<MAX_DYNMENU_SLOTS; i++) {
       calcRegister_t regist = i+FIRST_NAMED_VARIABLE;
       if(!applyFilter || _filterDataType(regist, typeFilter, isAngular)) {
         xcopy(tmpString + 15 * numberOfVars, allNamedVariables[i].variableName + 1, allNamedVariables[i].variableName[0]);
@@ -1543,7 +1543,7 @@ void fnGetMenu(uint16_t funusedButMandatoryParameter) {
       }
     }
     if(softmenu[softmenuStack[2].softmenuId].menuItem != -ITM_DELITM) {            // Don't include reserved variables for DELITM
-      for(int i=FIRST_NAMED_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE; i<NUMBER_OF_RESERVED_VARIABLES; i++) {
+      for(int i=FIRST_NAMED_RESERVED_VARIABLE-FIRST_RESERVED_VARIABLE; i<NUMBER_OF_RESERVED_VARIABLES && numberOfVars<MAX_DYNMENU_SLOTS; i++) {
         calcRegister_t regist = i+FIRST_RESERVED_VARIABLE;
         if(allReservedVariables[i].header.notUsed) {
           continue;
@@ -1713,7 +1713,7 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
         numberOfBytes = 1;
         numberOfGlobalLabels = 0;
         memset(tmpString, 0, TMP_STR_LENGTH);
-        for(i=0; i<numberOfLabels; i++) {
+        for(i=0; i<numberOfLabels && numberOfGlobalLabels<MAX_DYNMENU_SLOTS; i++) {
           if((!tam.colon && (labelList[i].step > 0)) || (tam.colon && labelList[i].program == currentProgramNumber && (*(labelList[i].labelPointer-1) == LOCAL_LABEL_VARIABLE))) { // Global label or local named label
            uint8_t lblNameLen = labelList[i].labelPointer[0];
             if(lblNameLen > 14) { // this menu lays each name out in a fixed 15-byte slot
@@ -1814,24 +1814,24 @@ static void _dynmenuConstructMVarsFromPgm(uint16_t label, uint16_t *numberOfByte
         numberOfBytes = 1;
         numberOfGlobalLabels = 0;
         memset(tmpString, 0, TMP_STR_LENGTH);
-        if(softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) {     // Don't include predefined menus for DELITM
-          for(i=0; i<LAST_ITEM; i++) {
-            if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 /* && i != MNU_CATALOG && i != MNU_MENUS && i != MNU_MENU */) {
-              int16_t len = stringByteLength(indexOfItems[i].itemCatalogName);
-              xcopy(tmpString + 15 * numberOfGlobalLabels, indexOfItems[i].itemCatalogName, len);
-              numberOfGlobalLabels++;
-              numberOfBytes += 1 + len;
-            }
-          }
-        }
-
-        for(i=0; i<numberOfUserMenus; i++) {
+        for(i=0; i<numberOfUserMenus && numberOfGlobalLabels<MAX_DYNMENU_SLOTS; i++) {       // The user's own menus take slots first, so a full buffer costs a predefined name the catalog still reaches
           int16_t len = stringByteLength(userMenus[i].menuName);
           if((softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) ||              // Don't show HOME & P.FN in the menus to delete
              ((compareString("HOME", userMenus[i].menuName, CMP_NAME) != 0) && (compareString("P.FN", userMenus[i].menuName, CMP_NAME) != 0))) {
             xcopy(tmpString + 15 * numberOfGlobalLabels, userMenus[i].menuName, len);
             numberOfGlobalLabels++;
             numberOfBytes += 1 + len;
+          }
+        }
+
+        if(softmenu[softmenuStack[1].softmenuId].menuItem != -ITM_DELITM) {     // Don't include predefined menus for DELITM
+          for(i=0; i<LAST_ITEM && numberOfGlobalLabels<MAX_DYNMENU_SLOTS; i++) {
+            if((indexOfItems[i].status & CAT_STATUS) == CAT_MENU && indexOfItems[i].itemCatalogName[0] != 0 /* && i != MNU_CATALOG && i != MNU_MENUS && i != MNU_MENU */) {
+              int16_t len = stringByteLength(indexOfItems[i].itemCatalogName);
+              xcopy(tmpString + 15 * numberOfGlobalLabels, indexOfItems[i].itemCatalogName, len);
+              numberOfGlobalLabels++;
+              numberOfBytes += 1 + len;
+            }
           }
         }
 
@@ -2183,8 +2183,9 @@ static uint32_t trimSoftKeyName(uint16_t lim, char *l, int mode, int comp, bool_
   if(w >= lim) {                                                                   // fits already? leave alone
     int16_t arrowEnd = -1;                                                        // byte index just past first arrow, or -1 if none
     for(int16_t i = 0; l[i] != 0 && l[i+1] != 0; i++) {
-      if((STD_RIGHT_ARROW[0] == l[i] && STD_RIGHT_ARROW[1] == l[i+1]) ||
-         (STD_LEFT_ARROW[0]  == l[i] && STD_LEFT_ARROW[1]  == l[i+1])) {
+      if((STD_RIGHT_ARROW[0]       == l[i] && STD_RIGHT_ARROW[1]       == l[i+1]) ||
+         (STD_RIGHT_SHORT_ARROW[0] == l[i] && STD_RIGHT_SHORT_ARROW[1] == l[i+1]) ||
+         (STD_LEFT_ARROW[0]        == l[i] && STD_LEFT_ARROW[1]        == l[i+1])) {
         arrowEnd = i + 2;
         break;
       }
@@ -2209,8 +2210,9 @@ static uint32_t trimSoftKeyName(uint16_t lim, char *l, int mode, int comp, bool_
 static uint32_t trimSoftKeyNameFromLeft(uint16_t lim, char *l, int mode, int comp, bool_t withLeadingEmptyRows, bool_t withEndingEmptyRows) {
   uint32_t w = stringWidthC47(l, mode, comp, withLeadingEmptyRows, withEndingEmptyRows);
   while(w >= lim && l[0] != 0 && l[1] != 0) {
-    if((STD_RIGHT_ARROW[0] == l[0] && STD_RIGHT_ARROW[1] == l[1]) ||
-       (STD_LEFT_ARROW[0]  == l[0] && STD_LEFT_ARROW[1]  == l[1])) {
+    if((STD_RIGHT_ARROW[0]       == l[0] && STD_RIGHT_ARROW[1]       == l[1]) ||
+       (STD_RIGHT_SHORT_ARROW[0] == l[0] && STD_RIGHT_SHORT_ARROW[1] == l[1]) ||
+       (STD_LEFT_ARROW[0]        == l[0] && STD_LEFT_ARROW[1]        == l[1])) {
       break;
     }
     int16_t step = stringNextGlyph(l, 0);
@@ -2229,10 +2231,35 @@ static uint32_t trimSoftKeyNameFromLeft(uint16_t lim, char *l, int mode, int com
 }
 
 
-// Trim the correct side, depending if an odd or even softkey. Trim to the arrow, and if still too wide, trim from the other side as well.
+// Swap every long right arrow in a label for the short one, in place (both are two bytes). Returns whether anything changed.
+static bool_t shortenRightArrows(char *l) {
+  bool_t changed = false;
+  for(int16_t i = 0; l[i] != 0 && l[i+1] != 0; i++) {
+    if(STD_RIGHT_ARROW[0] == l[i] && STD_RIGHT_ARROW[1] == l[i+1]) {
+      l[i]   = STD_RIGHT_SHORT_ARROW[0];
+      l[i+1] = STD_RIGHT_SHORT_ARROW[1];
+      changed = true;
+      i++;
+    }
+  }
+  return changed;
+}
+
+
+// Trim the correct side, depending if an odd or even softkey. A label too wide for the slot first trades its long right arrow for the short one
+// (4 px each in the compressed standard font) and is kept whole if that is enough; otherwise trim to the arrow, and if still too wide, trim from the other side as well.
 static uint32_t trimKey(char* itemName, int x) {
   uint16_t lim = (x == 5) ? 65 : 66;
-  uint32_t w;
+  uint32_t w = stringWidthC47(itemName, stdNoEnlarge, 1, false, false);
+  if(w < lim) {
+    return w;
+  }
+  if(shortenRightArrows(itemName)) {
+    w = stringWidthC47(itemName, stdNoEnlarge, 1, false, false);
+    if(w < lim) {
+      return w;
+    }
+  }
   if((x & 1) == 0) { //even
     w = trimSoftKeyName(lim, itemName, stdNoEnlarge, 1, false, false);
     if(w >= lim) {
@@ -2277,14 +2304,6 @@ void showKey(const char *label, int16_t x1, int16_t x2, int16_t y1, int16_t y2, 
       //clearly short enough so no trimming was needed anyway
       showString(ll, &standardFont, (x1 + x2 - w)/2, y1 + 2, videoMode, false, false);
     }                                                                                              //JM & dr ^^
-
-    #if defined(JM_LINE2_DRAW)
-    if(showCb >= 0) {
-      if(videoMode == vmNormal) {
-        JM_LINE2(x2, y2);
-      }
-    }
-    #endif // JM_LINE2_DRAW
 
   //EXTRA DRAWINGS FOR RADIO_BUTTON AND CHECK_BOX
   if(showCb >= 0) {

@@ -587,12 +587,11 @@ void calculateNextPrime(longInteger_t currentNumber, longInteger_t nextPrime) {
       if(longIntegerIsPrime(nextPrime)) {
         return;
       }
-      longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
-
-      if(monitorExit(&loop, "Iter: ")) {
+      if(monitorExit(&loop, "Iter: ")) { // poll before the advance so an abort returns the last tested composite; NEXTP on that value resumes at the first untested candidate
         displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
         return;
       }
+      longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
     }
   }
 }
