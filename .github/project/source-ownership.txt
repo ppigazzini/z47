@@ -8,6 +8,8 @@
 # src/ and docs/ names.
 
 [z47-owned]
+AGENTS.md
+CLAUDE.md
 COPYING
 .gitattributes
 .github
