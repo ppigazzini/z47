@@ -682,12 +682,13 @@ fn calculateNextPrime(currentNumber: *mpz_struct, nextPrime: *mpz_struct) void {
             if (longIntegerIsPrime(nextPrime) != 0) {
                 return;
             }
-            longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
-
+            // poll before the advance so an abort returns the last tested composite;
+            // NEXTP on that value resumes at the first untested candidate
             if (monitorExit(&loop, "Iter: ")) {
                 displayCalcErrorMessage(ERROR_SOLVER_ABORT, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                 return;
             }
+            longIntegerAddUInt(nextPrime, offsets[o % 48], nextPrime);
         }
     }
 }

@@ -228,6 +228,9 @@ inline fn asnDisplayUSER() bool {
 // ===========================================================================
 // fnAsnDisplay (static in the C)
 // ===========================================================================
+// The longest itemSoftmenuName is 15 bytes and the +NRM key wraps it in brackets, so 18 are needed and the rest is margin.
+const ASN_KEY_NAME_LENGTH = 24;
+
 const KEY_X_5 = [6]c_int{ -1, 80, 160, 240, 320, 400 };
 
 fn fnAsnDisplay(page: u8) void {
@@ -236,7 +239,7 @@ fn fnAsnDisplay(page: u8) void {
     var yy: i16 = undefined;
     var kk: c_int = 0;
     var key: i16 = undefined;
-    var Name: [16]u8 = undefined;
+    var Name: [ASN_KEY_NAME_LENGTH]u8 = undefined;
     yy = 1;
     if (previousCalcMode == CM_AIM or previousCalcMode == CM_EIM or tam.alpha) {
         if (currentAsnScr < 4) {
@@ -320,7 +323,7 @@ fn fnAsnDisplay(page: u8) void {
             }
         }
 
-        var tmp3: [20]u8 = undefined;
+        var tmp3: [ASN_KEY_NAME_LENGTH]u8 = undefined;
         tmp3[0] = 0;
         if (Norm_Key_00_used) {
             _ = stringCopy(&tmp3, "[");

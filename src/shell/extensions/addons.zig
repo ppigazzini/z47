@@ -12,9 +12,9 @@
 //     vecCreate[] bitfield table + processDefaultVector), fnJM_2SI,
 //     exponentToUnitDisplayString, fnDisplayFormatCycle, fnAngularModeJM, DRG_cyc,
 //     fnDRG, shrinkNimBuffer, fnChangeBaseJM / fnChangeBaseMNU, fnInDefault,
-//     fnByteShortcutsS/U, doubleToXRegisterReal34, fnStrtoReg / fnStrtoX /
+//     fnByteShortcutsS/U, fnStrtoReg / fnStrtoX /
 //     fnStrInputReal34 / fnStrInputLongint / fnIntInputLongint, fnRCL,
-//     convert_to_double, timeToReal34, dms34ToReal34, notSexa, fnHrDeg / fnMinute /
+//     timeToReal34, dms34ToReal34, notSexa, fnHrDeg / fnMinute /
 //     fnSecond / fnTimeTo, fnToTime (+ toTimeParamReg), the IRFRAC
 //     engine (getSmallestDenom / changeToSup/Sub/WholeString / checkForAndChange),
 //     fnSafeReset, the MyMenu/MyAlpha reset machinery (assignToMyMenu_/assignToMyAlpha_,
@@ -841,7 +841,6 @@ extern var ctxtReal34: realContext_t;
 
 // real (decNumber) helpers / macros
 extern fn decNumberFromString(r: *real_t, str: [*c]const u8, ctx: *realContext_t) *real_t;
-extern fn decNumberToString(r: *const real_t, str: [*c]u8) [*c]u8;
 extern fn decNumberDivide(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberMultiply(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberAdd(res: *real_t, a: *const real_t, b: *const real_t, ctx: *realContext_t) *real_t;
@@ -851,9 +850,6 @@ extern fn decNumberCopy(dst: *real_t, src: *const real_t) *real_t;
 
 inline fn stringToReal(str: [*c]const u8, r: *real_t, ctx: *realContext_t) void {
     _ = decNumberFromString(r, str, ctx);
-}
-inline fn realToString(r: *const real_t, str: [*c]u8) void {
-    _ = decNumberToString(r, str);
 }
 extern fn printRealToConsole(value: *const real_t, before: [*:0]const u8, after: [*:0]const u8) void;
 inline fn realDivide(a: *const real_t, b: *const real_t, res: *real_t, ctx: *realContext_t) void {
@@ -3208,15 +3204,6 @@ pub export fn fnByteShortcutsU(size: u16) callconv(.c) void {
     frontend_settings.fnIntegerMode(SIM_UNSIGN);
 }
 
-pub export fn doubleToXRegisterReal34(x: f64) callconv(.c) void {
-    setSystemFlag(FLAG_ASLIFT);
-    liftStack();
-    reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
-    abi.fmtExpC(tmpString, 16, x);
-    stringToReal34(tmpString, reg34(REGISTER_X));
-    setSystemFlag(FLAG_ASLIFT);
-}
-
 pub export fn fnStrtoReg(buffer: [*c]const u8, regist: calcRegister_t) callconv(.c) void {
     const mem: i16 = @intCast(stringByteLength(buffer) + 1);
     reallocateRegister(regist, dtString, TO_BLOCKS(@intCast(mem)), amNone);
@@ -3273,28 +3260,6 @@ pub export fn fnRCL(inp: i16) callconv(.c) void {
     } else {
         frontier_recall.fnRecall(@intCast(inp));
     }
-}
-
-pub export fn convert_to_double(regist: calcRegister_t) callconv(.c) f64 {
-    var y: f64 = undefined;
-    var tmpy: real_t = undefined;
-    switch (getRegisterDataType(regist)) {
-        dtLongInteger => {
-            frontier_register_value_conversions.convertLongIntegerRegisterToReal(regist, &tmpy, &ctxtReal39);
-        },
-        dtReal34 => {
-            real34ToReal(reg34(regist), &tmpy);
-        },
-        else => {
-            return 0;
-        },
-    }
-    realToString(&tmpy, tmpString);
-    // (float)stringToDouble(...): parsed at double precision by the locale-free
-    // reader that accepts '.' or ',' as the radix, then narrowed to float and
-    // widened back for the double return.
-    y = @as(f32, @floatCast(frontier_register_value_conversions.stringToDouble(tmpString)));
-    return y;
 }
 
 // ===========================================================================
