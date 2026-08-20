@@ -8,6 +8,7 @@
 # src/ and docs/ names.
 
 [z47-owned]
+COPYING
 .gitattributes
 .github
 .gitignore
