@@ -83,10 +83,6 @@ tags
 /upstream/src/generated/constantPointers2.c
 /upstream/src/generated/rasterFontsData.c
 /upstream/src/generated/softmenuCatalogs.h
-AGENTS.md
-
-# Over_score testing agent coding
-AGENTS.md
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,windows,linux,codeblocks,valgrind,vscode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,windows,linux,codeblocks,valgrind,vscode
