@@ -94,7 +94,7 @@ const FLAG_W: i16 = 224;
 const FLAG_K: i16 = 111;
 const FLAG_M: i16 = 211;
 
-const NUMBER_OF_SYSTEM_FLAGS: i16 = 64 + 48; // defines.h (112)
+const NUMBER_OF_SYSTEM_FLAGS: i16 = 64 + 51; // defines.h (115)
 const NUMBER_OF_LOCAL_FLAGS: i16 = 32;
 const FIRST_LOCAL_FLAG: i16 = 112;
 
