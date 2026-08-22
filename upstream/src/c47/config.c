@@ -187,6 +187,8 @@ IPGRP1x,                             xxx,        0,                             
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRQ,           FLAG_IRFRQ,             xxx,             xxx,             xxx,
 3,                                   0,          xxx,                            FLAG_ERPN,       xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_ERPN,                      xxx,             FLAG_ERPN,            FLAG_ERPN,              FLAG_ERPN,       xxx,             xxx,
+3,                                   1,          FLAG_M_ALL,                     FLAG_M_ALL,      FLAG_M_ALL,           FLAG_M_ALL,             FLAG_M_ALL,      xxx,             xxx,
+3,                                   0,          FLAG_PL_2L,                     FLAG_PL_2L,      FLAG_PL_2L,           FLAG_PL_2L,             FLAG_PL_2L,      xxx,             xxx,
 3,                                   0,          FLAG_CPXMULT,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          FLAG_LARGELI,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
@@ -786,7 +788,23 @@ void fnBatteryVoltage(uint16_t unusedButMandatoryParameter) {
   #if defined(DMCP_BUILD)
 //    int32ToReal(get_vbat(), &value);
     int tmpVbat = get_vbat();
-    int32ToReal(tmpVbat < vbatVIntegrated ? tmpVbat : vbatVIntegrated, &value);
+    if(tmpVbat < vbatVIntegrated) {
+      vbatVIntegrated = tmpVbat;             // Use BATT# outside the sampling schedule to pull the intgrator down. Any opportunity to keep it down in addition to the schedule
+    }
+    int32ToReal(tmpVbat, &value);
+  #endif // DMCP_BUILD
+
+  value.exponent -= 3; // value = value / 1000
+  convertRealToResultRegister(&value, REGISTER_X, amNone);   // the actual reading, lifted to Y by the integrator push below
+  setSystemFlag(FLAG_ASLIFT);
+  liftStack();
+
+  #if defined(PC_BUILD)
+    int32ToReal(3100, &value);
+  #endif // PC_BUILD
+
+  #if defined(DMCP_BUILD)
+    int32ToReal(vbatVIntegrated, &value);    // after the pull-down above this equals the previous min(reading, integrator) result
   #endif // DMCP_BUILD
 
   temporaryInformation = TI_BATTV;

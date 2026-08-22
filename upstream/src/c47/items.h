@@ -948,7 +948,7 @@
 #define ITM_RING                     918
 #define ITM_BULLET                   919
 #define ITM_SQUARE_ROOT              920
-#define ITM_CUBEROOT_SIGN                921
+#define ITM_CUBEROOT_SIGN            921
 #define ITM_xTH_ROOT                 922
 #define ITM_PROPORTIONAL             923
 #define ITM_INFINITY                 924
@@ -1240,77 +1240,77 @@
 
 
 // Probability distributions
-#define MNU_BINOM                   1207
+#define ITM_1207                    1207 // General items / any items spare
 #define ITM_BINOMP                  1208
 #define ITM_BINOM                   1209
 #define ITM_BINOMU                  1210
 #define ITM_BINOMM1                 1211
-#define MNU_CAUCH                   1212
+#define ITM_1212                    1212 // General items / any items spare
 #define ITM_CAUCHP                  1213
 #define ITM_CAUCH                   1214
 #define ITM_CAUCHU                  1215
 #define ITM_CAUCHM1                 1216
-#define MNU_EXPON                   1217
+#define ITM_1217                    1217 // General items / any items spare
 #define ITM_EXPONP                  1218
 #define ITM_EXPON                   1219
 #define ITM_EXPONU                  1220
 #define ITM_EXPONM1                 1221
-#define MNU_F                       1222
+#define ITM_1222                    1222 // General items / any items spare
 #define ITM_FPX                     1223
 #define ITM_FX                      1224
 #define ITM_FUX                     1225
 #define ITM_FM1P                    1226
-#define MNU_GEOM                    1227
+#define ITM_1227                    1227 // General items / any items spare
 #define ITM_GEOMP                   1228
 #define ITM_GEOM                    1229
 #define ITM_GEOMU                   1230
 #define ITM_GEOMM1                  1231
-#define MNU_HYPER                   1232
+#define ITM_1232                    1232 // General items / any items spare
 #define ITM_HYPERP                  1233
 #define ITM_HYPER                   1234
 #define ITM_HYPERU                  1235
 #define ITM_HYPERM1                 1236
-#define MNU_DISTR                   1237
+#define ITM_1237                    1237 // General items / any items spare
 #define ITM_LGNRMP                  1238
 #define ITM_LGNRM                   1239
 #define ITM_LGNRMU                  1240
 #define ITM_LGNRMM1                 1241
-#define MNU_LOGIS                   1242
+#define ITM_1242                    1242 // General items / any items spare
 #define ITM_LOGISP                  1243
 #define ITM_LOGIS                   1244
 #define ITM_LOGISU                  1245
 #define ITM_LOGISM1                 1246
-#define MNU_GEV                     1247
+#define ITM_1247                    1247 // General items / any items spare
 #define ITM_NBINP                   1248
 #define ITM_NBIN                    1249
 #define ITM_NBINU                   1250
 #define ITM_NBINM1                  1251
-#define MNU_NORML                   1252
+#define ITM_1252                    1252 // General items / any items spare
 #define ITM_NORMLP                  1253
 #define ITM_NORML                   1254
 #define ITM_NORMLU                  1255
 #define ITM_NORMLM1                 1256
-#define MNU_POISS                   1257
+#define ITM_1257                    1257 // General items / any items spare
 #define ITM_POISSP                  1258
 #define ITM_POISS                   1259
 #define ITM_POISSU                  1260
 #define ITM_POISSM1                 1261
-#define MNU_T                       1262
+#define ITM_1262                    1262 // General items / any items spare
 #define ITM_TPX                     1263
 #define ITM_TX                      1264
 #define ITM_TUX                     1265
 #define ITM_TM1P                    1266
-#define MNU_WEIBL                   1267
+#define ITM_1267                    1267 // General items / any items spare
 #define ITM_WEIBLP                  1268
 #define ITM_WEIBL                   1269
 #define ITM_WEIBLU                  1270
 #define ITM_WEIBLM1                 1271
-#define MNU_CHI2                    1272
+#define ITM_1272                    1272 // General items / any items spare
 #define ITM_chi2Px                  1273
 #define ITM_chi2x                   1274
 #define ITM_chi2ux                  1275
 #define ITM_chi2M1                  1276
-#define MNU_STDNORML                1277
+#define ITM_1277                    1277 // General items / any items spare
 #define ITM_STDNORMLP               1278
 #define ITM_STDNORML                1279
 #define ITM_STDNORMLU               1280
@@ -1319,7 +1319,7 @@
 #define ITM_GEV                     1283
 #define ITM_GEVU                    1284
 #define ITM_GEVM1                   1285
-#define MNU_PARETO                  1286    // Pareto distributions
+#define ITM_1286                    1286 // General items / any items spare
 #define ITM_PARETOP                 1287
 #define ITM_PARETOL                 1288
 #define ITM_PARETOU                 1289
@@ -1329,10 +1329,7 @@
 #define ITM_PARETO2U                1293
 #define ITM_PARETO2M1               1294
 #define ITM_1295                    1295
-#define ITM_1296                    1296 //this ITM_1296 is marked and used as the end of this section. If this is used, go change the reference in the code
-
-#define PROBMENUSTART1 MNU_BINOM
-#define PROBMENUEND1   ITM_1296
+#define ITM_1296                    1296
 
 
 // Curve fitting
@@ -1355,97 +1352,97 @@
 
 
 // Menus
-#define MNU_ADV                     1313
-#define MNU_ANGLES                  1314
-#define MNU_PRINT                   1315
-#define MNU_CONVA                   1316
-#define MNU_BITS                    1317
-#define MNU_CATALOG                 1318
-#define MNU_CHARS                   1319
-#define MNU_CLK                     1320
-#define MNU_CLR                     1321
-#define MNU_CONST                   1322
-#define MNU_CPX                     1323
-#define MNU_CPXS                    1324
-#define MNU_DATES                   1325
-#define MNU_DISP                    1326
-#define MNU_EQN                     1327
-#define MNU_EXP                     1328
-#define MNU_CONVE                   1329
-#define MNU_FCNS                    1330
-#define MNU_FIN                     1331
-#define MNU_SINTS                   1332
-#define MNU_FLAGS                   1333
+#define ITM_1313                    1313 // General items / any items spare
+#define ITM_1314                    1314 // General items / any items spare
+#define ITM_1315                    1315 // General items / any items spare
+#define ITM_1316                    1316 // General items / any items spare
+#define ITM_1317                    1317 // General items / any items spare
+#define ITM_1318                    1318 // General items / any items spare
+#define ITM_1319                    1319 // General items / any items spare
+#define ITM_1320                    1320 // General items / any items spare
+#define ITM_1321                    1321 // General items / any items spare
+#define ITM_1322                    1322 // General items / any items spare
+#define ITM_1323                    1323 // General items / any items spare
+#define ITM_1324                    1324 // General items / any items spare
+#define ITM_1325                    1325 // General items / any items spare
+#define ITM_1326                    1326 // General items / any items spare
+#define ITM_1327                    1327 // General items / any items spare
+#define ITM_1328                    1328 // General items / any items spare
+#define ITM_1329                    1329 // General items / any items spare
+#define ITM_1330                    1330 // General items / any items spare
+#define ITM_1331                    1331 // General items / any items spare
+#define ITM_1332                    1332 // General items / any items spare
+#define ITM_1333                    1333 // General items / any items spare
 #define ITM_BASEMENU                1334
-#define MNU_1STDERIV                1335
-#define MNU_2NDDERIV                1336
-#define MNU_CONVFP                  1337
-#define MNU_LINTS                   1338
-#define MNU_INFO                    1339
-#define MNU_INTS                    1340
-#define MNU_IO                      1341
-#define MNU_LOOP                    1342
-#define MNU_MATRS                   1343
-#define MNU_MATX                    1344
-#define MNU_MENUS                   1345
-#define MNU_MODE                    1346
-#define MNU_SIMQ                    1347
-#define MNU_M_EDIT                  1348
-#define MNU_MyMenu                  1349
-#define MNU_MyAlpha                 1350
-#define MNU_CONVM                   1351
-#define MNU_ORTHOG                  1352
-#define MNU_PARTS                   1353
-#define MNU_PROB                    1354
-#define MNU_PROGS                   1355
-#define MNU_PFN_1                   1356
-#define MNU_PFN_2                   1357
-#define MNU_CONVP                   1358
-#define MNU_CONVHUM                 1359
-#define MNU_REALS                   1360
-#define MNU_Solver                  1361
-#define MNU_STAT                    1362
-#define MNU_STK                     1363
-#define MNU_STRINGS                 1364
-#define MNU_TEST                    1365
-#define MNU_TIMES                   1366
-#define MNU_TRI                     1367
-#define MNU_TVM                     1368
-#define MNU_UNITCONV                1369
-#define MNU_VARS                    1370
-#define MNU_CONVV                   1371
-#define MNU_XFN                     1372
-#define MNU_CONVX                   1373
-#define MNU_ALPHAINTL               1374
-#define MNU_ALPHAMATH               1375
-#define MNU_ALPHAFN                 1376
-#define MNU_ALPHA_OMEGA             1377
-#define MNU_ALPHAMISC               1378
-#define MNU_SYSFL                   1379
-#define MNU_Sf                      1380
-#define MNU_Sfdx                    1381      //INT
-#define MNU_ANGLECONV_43S           1382
-#define MNU_alpha_omega             1383
-#define MNU_ALPHAintl               1384
-#define MNU_TAM                     1385
-#define MNU_TAMCMP                  1386
-#define MNU_TAMSTO                  1387
-#define MNU_Grapher                 1388
-#define MNU_VAR                     1389
-#define MNU_TAMFLAG                 1390
-#define MNU_TAMSHUFFLE              1391
-#define MNU_PROG                    1392
-#define MNU_TAMLABEL                1393
-#define MNU_DYNAMIC                 1394
-#define MNU_PLOT_SCATR              1395
-#define MNU_PLOT_ASSESS             1396
-#define MNU_ELLIPT                  1397
-#define MNU_MVAR                    1398
-#define MNU_EQ_EDIT                 1399
-#define MNU_TIMERF                  1400
-#define MNU_HIST                    1401
-#define MNU_HPLOT                   1402
-#define MNU_PFN                     1403
+#define ITM_1335                    1335 // General items / any items spare
+#define ITM_1336                    1336 // General items / any items spare
+#define ITM_1337                    1337 // General items / any items spare
+#define ITM_1338                    1338 // General items / any items spare
+#define ITM_1339                    1339 // General items / any items spare
+#define ITM_1340                    1340 // General items / any items spare
+#define ITM_1341                    1341 // General items / any items spare
+#define ITM_1342                    1342 // General items / any items spare
+#define ITM_1343                    1343 // General items / any items spare
+#define ITM_1344                    1344 // General items / any items spare
+#define ITM_1345                    1345 // General items / any items spare
+#define ITM_1346                    1346 // General items / any items spare
+#define ITM_1347                    1347 // General items / any items spare
+#define ITM_1348                    1348 // General items / any items spare
+#define ITM_1349                    1349 // General items / any items spare
+#define ITM_1350                    1350 // General items / any items spare
+#define ITM_1351                    1351 // General items / any items spare
+#define ITM_1352                    1352 // General items / any items spare
+#define ITM_1353                    1353 // General items / any items spare
+#define ITM_1354                    1354 // General items / any items spare
+#define ITM_1355                    1355 // General items / any items spare
+#define ITM_1356                    1356 // General items / any items spare
+#define ITM_1357                    1357 // General items / any items spare
+#define ITM_1358                    1358 // General items / any items spare
+#define ITM_1359                    1359 // General items / any items spare
+#define ITM_1360                    1360 // General items / any items spare
+#define ITM_1361                    1361 // General items / any items spare
+#define ITM_1362                    1362 // General items / any items spare
+#define ITM_1363                    1363 // General items / any items spare
+#define ITM_1364                    1364 // General items / any items spare
+#define ITM_1365                    1365 // General items / any items spare
+#define ITM_1366                    1366 // General items / any items spare
+#define ITM_1367                    1367 // General items / any items spare
+#define ITM_1368                    1368 // General items / any items spare
+#define ITM_1369                    1369 // General items / any items spare
+#define ITM_1370                    1370 // General items / any items spare
+#define ITM_1371                    1371 // General items / any items spare
+#define ITM_1372                    1372 // General items / any items spare
+#define ITM_1373                    1373 // General items / any items spare
+#define ITM_1374                    1374 // General items / any items spare
+#define ITM_1375                    1375 // General items / any items spare
+#define ITM_1376                    1376 // General items / any items spare
+#define ITM_1377                    1377 // General items / any items spare
+#define ITM_1378                    1378 // General items / any items spare
+#define ITM_1379                    1379 // General items / any items spare
+#define ITM_1380                    1380 // General items / any items spare
+#define ITM_1381                    1381 // General items / any items spare
+#define ITM_1382                    1382 // General items / any items spare
+#define ITM_1383                    1383 // General items / any items spare
+#define ITM_1384                    1384 // General items / any items spare
+#define ITM_1385                    1385 // General items / any items spare
+#define ITM_1386                    1386 // General items / any items spare
+#define ITM_1387                    1387 // General items / any items spare
+#define ITM_1388                    1388 // General items / any items spare
+#define ITM_1389                    1389 // General items / any items spare
+#define ITM_1390                    1390 // General items / any items spare
+#define ITM_1391                    1391 // General items / any items spare
+#define ITM_1392                    1392 // General items / any items spare
+#define ITM_1393                    1393 // General items / any items spare
+#define ITM_1394                    1394 // General items / any items spare
+#define ITM_1395                    1395 // General items / any items spare
+#define ITM_1396                    1396 // General items / any items spare
+#define ITM_1397                    1397 // General items / any items spare
+#define ITM_1398                    1398 // General items / any items spare
+#define ITM_1399                    1399 // General items / any items spare
+#define ITM_1400                    1400 // General items / any items spare
+#define ITM_1401                    1401 // General items / any items spare
+#define ITM_1402                    1402 // General items / any items spare
+#define ITM_1403                    1403 // General items / any items spare
 
 
 #define ITM_1COMPL                  1404
@@ -1492,7 +1489,7 @@
 #define ITM_DEG                     1445
 #define ITM_LOADEDFILE              1446
 #define ITM_SA                      1447
-#define MNU_BLUE_C47                1448
+#define ITM_1448                    1448 // General items / any items spare
 #define ITM_DOT_PROD                1449
 #define ITM_DSTACK                  1450
 #define ITM_DMS                     1451
@@ -1910,7 +1907,7 @@
 #define ITM_CB_LEADING_ZERO         1857
 #define CHR_case                    1858
 #define ITM_BASE_HOME               1859
-#define MNU_MISC                    1860
+#define ITM_1860                    1860 // General items / any items spare
 #define ITM_MYMx3                   1861
 #define ITM_DTtoJ                   1862
 #define ITM_JtoDT                   1863
@@ -1931,9 +1928,9 @@
 #define CHR_caseUP                  1878
 #define CHR_caseDN                  1879
 #define ITM_LISTXY                  1880
-#define MNU_BITSET                  1881
+#define ITM_1881                    1881 // General items / any items spare
 #define ITM_SYS_FREE_RAM            1882
-#define MNU_INL_TST                 1883
+#define ITM_1883                    1883 // General items / any items spare
 #define ITM_TEST                    1884
 #define ITM_GET_TEST_BS             1885
 #define ITM_SET_TEST_BS             1886
@@ -1951,33 +1948,33 @@
 #define ITM_N_KEY_ALPHA             1898
 #define ITM_DREAL                   1899
 #define ITM_N_KEY_GSH               1900
-#define MNU_CONVCHEF                1901
+#define ITM_1901                    1901 // General items / any items spare
 #define ITM_GLUStoFZUS              1902
 #define ITM_FZUStoGLUS              1903
 #define ITM_N_KEY_USER              1904
 #define ITM_LASTERR                 1905
 #define ITM_N_KEY_SIGMA             1906
-#define MNU_PLOT_STAT               1907
+#define ITM_1907                    1907 // General items / any items spare
 #define ITM_N_KEY_FSH               1908
 #define ITM_ms                      1909
 #define ITM_msTo                    1910
 #define ITM_ymdTo                   1911
-#define MNU_TAMRCL                  1912
-#define MNU_TAMALPHA                1913
+#define ITM_1912                    1912 // General items / any items spare
+#define ITM_1913                    1913 // General items / any items spare
 #define ITM_TO_USER                 1914
 #define ITM_N_KEY_NIL               1915
 #define ITM_USER_DM42               1916
 #define ITM_HPRP                    1917
 #define ITM_N_KEY_FGSH              1918
 #define ITM_YY_OFF                  1919
-#define MNU_ASN_N                   1920
-#define MNU_HOME                    1921
-#define MNU_ALPHA                   1922
-#define MNU_BASE                    1923
+#define ITM_1920                    1920 // General items / any items spare
+#define ITM_1921                    1921 // General items / any items spare
+#define ITM_1922                    1922 // General items / any items spare
+#define ITM_1923                    1923 // General items / any items spare
 #define ITM_MNUp1                   1924
-#define MNU_EE                      1925
+#define ITM_1925                    1925 // General items / any items spare
 #define ITM_T_UP_ARROW              1926
-#define MNU_KEYS                    1927
+#define ITM_1927                    1927 // General items / any items spare
 #define ITM_T_DOWN_ARROW            1928
 #define ITM_T_HOME                  1929
 #define ITM_T_END                   1930
@@ -2078,7 +2075,7 @@
 #define ITM_DIFF                    2025
 #define ITM_RMS                     2026
 #define ITM_SHADE                   2027
-#define MNU_PLOT_FUNC               2028
+#define ITM_2028                    2028 // General items / any items spare
 #define CHR_num                     2029
 #define CHR_numL                    2030
 #define CHR_numU                    2031
@@ -2086,8 +2083,8 @@
 #define ITM_CLGRF                   2033
 #define ITM_MZOOMY                  2034
 #define ITM_PZOOMY                  2035
-#define MNU_TRG_R47                 2036
-#define MNU_PREF                    2037
+#define ITM_2036                    2036 // General items / any items spare
+#define ITM_2037                    2037 // General items / any items spare
 #define ITM_SAFERESET               2038
 #define ITM_SH_LONGPRESS            2039
 #define ITM_PLOT_STAT               2040
@@ -2095,9 +2092,9 @@
 #define ITM_PLOTRST                 2042
 #define ITM_SYSTEM2                 2043
 #define ITM_ACTUSB                  2044
-#define MNU_CONVS                   2045
-#define MNU_CONVANG                 2046
-#define MNU_CONVTEMP                2047
+#define ITM_2045                    2045 // General items / any items spare
+#define ITM_2046                    2046 // General items / any items spare
+#define ITM_2047                    2047 // General items / any items spare
 #define ITM_2048                    2048  //blank
 #define ITM_2049                    2049  //blank
 #define ITM_SIGZEROS                2050
@@ -2116,9 +2113,9 @@
 #define ITM_F14                     2063
 #define ITM_M14                     2064
 #define ITM_F124                    2065
-#define MNU_REG                     2066
-#define MNU_FLG                     2067
-#define MNU_TAMNONREG               2068
+#define ITM_2066                    2066 // General items / any items spare
+#define ITM_2067                    2067 // General items / any items spare
+#define ITM_2068                    2068 // General items / any items spare
 #define ITM_LG_SIGN                 2069
 #define ITM_LN_SIGN                 2070
 #define ITM_SIN_SIGN                2071
@@ -2130,8 +2127,8 @@
 #define ITM_MAD                     2077
 #define ITM_IQR                     2078
 #define ITM_SIGMARANGE              2079
-#define MNU_REGR                    2080
-#define MNU_MODEL                   2081
+#define ITM_2080                    2080 // General items / any items spare
+#define ITM_2081                    2081 // General items / any items spare
 #define ITM_PERCENTILE              2082
 #define ITM_LINPOL                  2083
 #define ITM_KNOTtoKMH               2084
@@ -2152,14 +2149,14 @@
 #define ITM_GRADtoDEG               2099
 #define ITM_GRADtoRAD               2100
 #define ITM_RADtoGRAD               2101
-#define MNU_TRG_C47                 2102
-#define MNU_TRG_C47_MORE            2103
+#define ITM_2102                    2102 // General items / any items spare
+#define ITM_2103                    2103 // General items / any items spare
 #define ITM_KtoM                    2104
 #define ITM_MtoK                    2105
-#define MNU_VECT                    2106
-#define MNU_PLOTTING                2107
-#define MNU_TAMINDIRECT             2108
-#define MNU_TAMNONREGMAX            2109
+#define ITM_2106                    2106 // General items / any items spare
+#define ITM_2107                    2107 // General items / any items spare
+#define ITM_2108                    2108 // General items / any items spare
+#define ITM_2109                    2109 // General items / any items spare
 #define ITM_TAMMAX                  2110
 #define ITM_GAPDOT_L                2111
 #define ITM_GAPWIDDOT_L             2112
@@ -2201,9 +2198,9 @@
 #define ITM_JUL_GREG_1752           2148
 #define ITM_JUL_GREG_1873           2149
 #define ITM_JUL_GREG_1949           2150
-#define MNU_GAP_L                   2151
-#define MNU_GAP_RX                  2152
-#define MNU_GAP_R                   2153
+#define ITM_2151                    2151 // General items / any items spare
+#define ITM_2152                    2152 // General items / any items spare
+#define ITM_2153                    2153 // General items / any items spare
 #define ITM_SETFDIGS                2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
@@ -2272,29 +2269,29 @@
 #define ITM_K100MtoMGEUK            2219
 #define ITM_K100MtoMIK              2220
 #define ITM_MIKtoK100M              2221
-#define MNU_CONVYMMV                2222
+#define ITM_2222                    2222 // General items / any items spare
 #define ITM_XEQP1                   2223
 #define ITM_RCLP1                   2224
-#define MNU_TAMVARONLY              2225
-#define MNU_TAMLBLONLY              2226
-#define MNU_EIMCATALOG              2227
-#define MNU_FCNS_EIM                2228
-#define MNU_PREFIX                  2229
-#define MNU_NUMBRS                  2230
-#define MNU_CONFIGS                 2231
-#define MNU_ALLVARS                 2232
-#define MNU_2233                    2233
-#define MNU_RESETS                  2234
-#define MNU_RIBBONS                 2235
+#define ITM_2225                    2225 // General items / any items spare
+#define ITM_2226                    2226 // General items / any items spare
+#define ITM_2227                    2227 // General items / any items spare
+#define ITM_2228                    2228 // General items / any items spare
+#define ITM_2229                    2229 // General items / any items spare
+#define ITM_2230                    2230 // General items / any items spare
+#define ITM_2231                    2231 // General items / any items spare
+#define ITM_2232                    2232 // General items / any items spare
+#define ITM_2233                    2233 // General items / any items spare
+#define ITM_2234                    2234 // General items / any items spare
+#define ITM_2235                    2235 // General items / any items spare
 #define ITM_YY_DFLT_OLD             2236
 #define ITM_YY_TRACK                2237
-#define MNU_TAMNONREGTRK            2238
+#define ITM_2238                    2238 // General items / any items spare
 #define ITM_CLMALL                  2239
 #define ITM_CLVALL                  2240
 #define ITM_DELMALL                 2241
 #define ITM_DELVALL                 2242
-#define MNU_DELETE                  2243
-#define MNU_YESNO                   2244
+#define ITM_2243                    2243 // General items / any items spare
+#define ITM_2244                    2244 // General items / any items spare
 #define ITM_YES                     2245
 #define ITM_NO                      2246
 #define ITM_RCLVEL_OLD              2247
@@ -2351,9 +2348,9 @@
 #define SFL_PDIFF                   2296
 #define SFL_PSHADE                  2297
 #define SFL_SBadm                   2298
-#define SFL_2299                    2299
-#define SFL_2300                    2300
-#define SFL_2301                    2301
+#define SFL_AUTOVALID               2299
+#define SFL_M_ALL                   2300
+#define SFL_PL_2L                   2301
 #define SFL_2302                    2302
 #define SFL_2303                    2303
 #define SFL_2304                    2304
@@ -2368,7 +2365,7 @@
 #define SFL_2313                    2313
 #define SFL_2314                    2314
 
-#define MNU_SHOW                    2315
+#define ITM_2315                    2315 // General items / any items spare
 
 #define ITM_STO_P_p                 2316
 #define ITM_STO_N1                  2317
@@ -2428,17 +2425,17 @@
 #define ITM_CPXSLV_LU               2371
 #define ITM_DRAW                    2372
 #define ITM_DRAW_LU                 2373
-#define MNU_GRAPHS                  2374
-#define MNU_Sf_TOOL                 2375
-#define MNU_Solver_TOOL             2376
+#define ITM_2374                    2374 // General items / any items spare
+#define ITM_2375                    2375 // General items / any items spare
+#define ITM_2376                    2376 // General items / any items spare
 #define ITM_FPHERE                  2377
 #define ITM_FPPHERE                 2378
 
 #define VAR_CPERonA                 2379
 #define ITM_RCL_CPERonA             2380
 
-#define MNU_CASHFL                  2381
-#define MNU_AMORT                   2382
+#define ITM_2381                    2381 // General items / any items spare
+#define ITM_2382                    2382 // General items / any items spare
 
 #define ITM_x_SIGN                  2383
 #define ITM_CPXPLOT                 2384
@@ -2448,7 +2445,7 @@
 #define ITM_SAVEST                  2387
 #define ITM_LOADST                  2388
 #define ITM_SAVEAUT                 2389
-#define MNU_AUDIO                   2390
+#define ITM_2390                    2390 // General items / any items spare
 
 #define ITM_USER_R47f_g             2391
 #define ITM_USER_R47bk_fg           2392
@@ -2464,18 +2461,18 @@
 #define ITM_TIMEQ                   2401
 #define ITM_TYPEQ                   2402
 
-#define MNU_PFN_3                   2403
+#define ITM_2403                    2403 // General items / any items spare
 #define ITM_EDIT                    2404
 #define ITM_OPEN_MENU               2405
-#define MNU_TAMMENU                 2406
-#define MNU_MENU                    2407
+#define ITM_2406                    2406 // General items / any items spare
+#define ITM_2407                    2407 // General items / any items spare
 #define ITM_MENUQ                   2408
 #define ITM_SIGMA0                  2409
 #define ITM_SIGMA1                  2410
 #define ITM_SIGMAk                  2411
 #define ITM_SIGMAp1                 2412
 #define ITM_SIGMApk                 2413
-#define MNU_NUMTHEORY               2414
+#define ITM_2414                    2414 // General items / any items spare
 #define ITM_INDIRECT_X              2415
 #define ITM_INDIRECT_Y              2416
 #define ITM_INDIRECT_Z              2417
@@ -2511,9 +2508,9 @@
 #define ITM_j_CIRC                  2445
 #define ITM_k_CIRC                  2446
 #define ITM_phi_m                   2447
-#define ITM_2448                    2448
-#define ITM_2449                    2449
-#define ITM_2450                    2450
+#define ITM_SUP_SLASH               2448
+#define ITM_SUP_DOT                 2449
+#define ITM_SUP_COMMA               2450
 #define ITM_2451                    2451
 #define ITM_2452                    2452
 #define ITM_2453                    2453
@@ -2568,7 +2565,7 @@
 #define ITM_stkexV3                 2496
 #define ITM_REGtoVEC                2497
 #define ITM_VECtoREG                2498
-#define MNU_VECCONV                 2499
+#define ITM_2499                    2499 // General items / any items spare
 
 #define ITM_CLKp2                   2500
 #define ITM_WOY_ISO                 2501
@@ -2626,7 +2623,7 @@
 #define ITM_RNG                     2549
 #define ITM_YY_DFLT                 2550
 #define ITM_DENMAX2                 2551
-#define MNU_AIMCATALOG              2552
+#define ITM_2552                    2552 // General items / any items spare
 
 #define ITM_BITSp2                  2553
 #define ITM_DEG2_XFN                2554
@@ -2676,17 +2673,17 @@
 #define ITM_4SWAP                   2595
 
 
-#define MNU_XXFCNS                  2596
-#define MNU_MULTSTK                 2597
+#define ITM_2596                    2596 // General items / any items spare
+#define ITM_2597                    2597 // General items / any items spare
 #define ITM_MtoTH                   2598
 #define ITM_THtoM                   2599
 
-#define MNU_UNIFORM                 2600    // Uniform distributions
+#define ITM_2600                    2600 // General items / any items spare
 #define ITM_UNIFORMP                2601
 #define ITM_UNIFORML                2602
 #define ITM_UNIFORMU                2603
 #define ITM_UNIFORMI                2604
-#define MNU_DISUNIFORM              2605
+#define ITM_2605                    2605 // General items / any items spare
 #define ITM_DISUNIFORMP             2606
 #define ITM_DISUNIFORML             2607
 #define ITM_DISUNIFORMU             2608
@@ -2700,14 +2697,11 @@
 #define ITM_2616                    2616
 #define ITM_2617                    2617
 #define ITM_2618                    2618
-#define ITM_2619                    2619 //this ITM_2619 is marked and used as the end of this section. If this is used, go change the reference in the code
+#define ITM_2619                    2619
 
 
 // Before adding more, leave a gap in case we add additional distributions
 // Each distribution consumes five items
-
-#define PROBMENUSTART2 MNU_UNIFORM
-#define PROBMENUEND2   ITM_2619
 
 #define ITM_NDUP                    2620
 #define ITM_NSWAP                   2621
@@ -2715,7 +2709,7 @@
 #define ITM_MATX_A_1                2623
 #define ITM_3R3P                    2624
 
-#define MNU_DEV                     2625
+#define ITM_2625                    2625 // General items / any items spare
 #define ITM_SetHP35                 2626
 #define ITM_SetC47                  2627
 #define ITM_SetJM                   2628
@@ -2728,8 +2722,8 @@
 #define ITM_2635                    2635
 #define ITM_2636                    2636
 #define ITM_2637                    2637
-#define MNU_TAMSTO_TVM              2638
-#define MNU_TAMRCL_TVM              2639
+#define ITM_2638                    2638 // General items / any items spare
+#define ITM_2639                    2639 // General items / any items spare
 #define ITM_STORCL_NPPER            2640
 #define ITM_STORCL_IPonA            2641
 #define ITM_STORCL_PV               2642
@@ -2775,7 +2769,7 @@
 #define ITM_2679                    2679
 #define ITM_2680                    2680 //spares for the temp menu
 
-#define MNU_PRINTER                 2681
+#define ITM_2681                    2681 // General items / any items spare
 #define ITM_PRINTERALPHA            2682
 #define ITM_PRINTERHP               2683
 #define ITM_PRINTERMARTEL           2684
@@ -2807,7 +2801,7 @@
 #define ITM_2708                    2708
 #define ITM_2709                    2709
 #define ITM_CSUM                    2710
-#define MNU_TAMNORM                 2711
+#define ITM_2711                    2711 // General items / any items spare
 #define ITM_M_CC                    2712
 #define ITM_M_CMAX                  2713
 #define ITM_M_CMIN                  2714
@@ -2828,15 +2822,15 @@
 #define ITM_M_SQRT                  2727
 #define ITM_RCLVEL                  2728
 #define ITM_STOVEL                  2729
-#define ITM_2730                    2730
-#define ITM_2731                    2731 //spares for Matrix/Vector
+#define ITM_M_ALL                   2730
+#define ITM_PL_2L                   2731
 #define ITM_PGMPLT                  2732
-#define MNU_2733                    2733
+#define ITM_2733                    2733 // General items / any items spare
 #define ITM_PLTf                    2734
 #define ITM_IMPLOT                  2735
-#define MNU_BASE2                   2736
+#define ITM_2736                    2736 // General items / any items spare
 #define ITM_M_DIMNQ                 2737
-#define MNU_42                      2738
+#define ITM_2738                    2738 // General items / any items spare
 #define ITM_M_CONCATR               2739
 #define ITM_2740                    2740
 #define ITM_2741                    2741
@@ -2949,12 +2943,12 @@
 #define ITM_2842                    2842 // CONV MENU Spares
 #define ITM_2843                    2843 // CONV MENU Spares
 
-#define MNU_CONV_SECTION            2844
-#define MNU_CONV_MATERL             2845
-#define MNU_CONV_F_LOAD             2846
-#define MNU_CONV_M_LOAD             2847
-#define MNU_CONV_P_LOAD             2848 
-#define MNU_STRUCT                  2849
+#define ITM_2844                    2844 // General items / any items spare
+#define ITM_2845                    2845 // General items / any items spare
+#define ITM_2846                    2846 // General items / any items spare
+#define ITM_2847                    2847 // General items / any items spare
+#define ITM_2848                    2848 // General items / any items spare
+#define ITM_2849                    2849 // General items / any items spare
 
 #define ITM_XGEP0                   2850
 #define ITM_XLEM0                   2851
@@ -2965,12 +2959,19 @@
 #define ITM_2856                    2856 // General items / any items spare
 #define ITM_2857                    2857 // General items / any items spare
 #define ITM_2858                    2858 // General items / any items spare
-#define MNU_TAMLOCALLABEL           2859
+#define ITM_2859                    2859 // General items / any items spare
 
 #define ITM_MPHtoKNOT               2860
 #define ITM_KNOTtoMPH               2861
 #define ITM_MPHtoFPS                2862
 #define ITM_FPStoMPH                2863
+#define ITM_MGEUStoK100K            2864
+#define ITM_K100KtoMGEUS            2865
+#define ITM_MGEUKtoK100K            2866
+#define ITM_K100KtoMGEUK            2867
+#define ITM_MIKtoK100K              2868
+#define ITM_K100KtoMIK              2869
+
 //==============================================================================
          // CONV step 4/6 of ADDING to CONV    [grep for "add conversion items to CONV menu"]
          // =================================================================================
@@ -2979,66 +2980,56 @@
          // It is best to only add CONV items incrementally, without re-using old available slots, to keep the tables sorted incrementally
          // Next Step: CONV step 5/6 in src/c47/items.c.
 //==============================================================================
-#define ITM_MGEUStoK100K            2864
-#define ITM_K100KtoMGEUS            2865
-#define ITM_MGEUKtoK100K            2866
-#define ITM_K100KtoMGEUK            2867
-#define ITM_MIKtoK100K              2868
-#define ITM_K100KtoMIK              2869
-
-// A spare spoken for by a project carries that project in brackets, as the entries below do.  Do not take a
-// marked spare: ask the project first, and mark your own block here when a project claims one.
-#define ITM_2870                    2870 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2871                    2871 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2872                    2872 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2873                    2873 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2874                    2874 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2875                    2875 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2876                    2876 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2877                    2877 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2878                    2878 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2879                    2879 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2880                    2880 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
-#define ITM_2881                    2881 // General items / any items spare (alpha 00.109.04.00a1: CONV spare)
+#define ITM_2870                    2870 // General items / any items spare (CONV spare)
+#define ITM_2871                    2871 // General items / any items spare (CONV spare)
+#define ITM_2872                    2872 // General items / any items spare (CONV spare)
+#define ITM_2873                    2873 // General items / any items spare (CONV spare)
+#define ITM_2874                    2874 // General items / any items spare (CONV spare)
+#define ITM_2875                    2875 // General items / any items spare (CONV spare)
+#define ITM_2876                    2876 // General items / any items spare (CONV spare)
+#define ITM_2877                    2877 // General items / any items spare (CONV spare)
+#define ITM_2878                    2878 // General items / any items spare (CONV spare)
+#define ITM_2879                    2879 // General items / any items spare (CONV spare)
+#define ITM_2880                    2880 // General items / any items spare (CONV spare)
+#define ITM_2881                    2881 // General items / any items spare (CONV spare)
 #define ITM_PGMDRV                  2882
 #define ITM_F1DRV                   2883
 #define ITM_F2DRV                   2884
-#define ITM_2885                    2885 // General items / any items spare (alpha 00.109.04.00a1: LAST_ITEM)
-#define ITM_2886                    2886 // General items / any items spare
-#define ITM_2887                    2887 // General items / any items spare
-#define ITM_2888                    2888 // General items / any items spare
-#define ITM_2889                    2889 // General items / any items spare
-#define ITM_2890                    2890 // General items / any items spare
-#define ITM_2891                    2891 // General items / any items spare
-#define ITM_2892                    2892 // General items / any items spare
-#define ITM_2893                    2893 // General items / any items spare
-#define ITM_2894                    2894 // General items / any items spare
-#define ITM_2895                    2895 // General items / any items spare
-#define ITM_2896                    2896 // General items / any items spare
-#define ITM_2897                    2897 // General items / any items spare
-#define ITM_2898                    2898 // General items / any items spare
-#define ITM_2899                    2899 // General items / any items spare
-#define ITM_2900                    2900 // General items / any items spare
-#define ITM_2901                    2901 // General items / any items spare
-#define ITM_2902                    2902 // General items / any items spare
-#define ITM_2903                    2903 // General items / any items spare
-#define ITM_2904                    2904 // General items / any items spare
-#define ITM_2905                    2905 // General items / any items spare
-#define ITM_2906                    2906 // General items / any items spare
-#define ITM_2907                    2907 // General items / any items spare
-#define ITM_2908                    2908 // General items / any items spare
-#define ITM_2909                    2909 // General items / any items spare
-#define ITM_2910                    2910 // General items / any items spare
-#define ITM_2911                    2911 // General items / any items spare
-#define ITM_2912                    2912 // General items / any items spare
-#define ITM_2913                    2913 // General items / any items spare
-#define ITM_2914                    2914 // General items / any items spare
-#define ITM_2915                    2915 // General items / any items spare
-
-#define ITM_2916                    2916 // General items / any items spare (reserved: Logic extension, test to SI)
-#define ITM_2917                    2917 // General items / any items spare (reserved: Logic extension, ANDbits)
-#define ITM_2918                    2918 // General items / any items spare (reserved: Logic extension, ORbits)
-#define ITM_2919                    2919 // General items / any items spare (reserved: Logic extension, XORbits)
+#define ITM_2885                    2885 // General items / any items spare (CONV spare)
+#define ITM_2886                    2886 // General items / any items spare (CONV spare)
+#define ITM_2887                    2887 // General items / any items spare (CONV spare)
+#define ITM_2888                    2888 // General items / any items spare (CONV spare)
+#define ITM_2889                    2889 // General items / any items spare (CONV spare)
+#define ITM_2890                    2890 // General items / any items spare (CONV spare)
+#define ITM_2891                    2891 // General items / any items spare (CONV spare)
+#define ITM_2892                    2892 // General items / any items spare (CONV spare)
+#define ITM_2893                    2893 // General items / any items spare (CONV spare)
+#define ITM_2894                    2894 // General items / any items spare (CONV spare)
+#define ITM_2895                    2895 // General items / any items spare (CONV spare)
+#define ITM_2896                    2896 // General items / any items spare (CONV spare)
+#define ITM_2897                    2897 // General items / any items spare (CONV spare)
+#define ITM_2898                    2898 // General items / any items spare (CONV spare)
+#define ITM_2899                    2899 // General items / any items spare (CONV spare)
+#define ITM_2900                    2900 // General items / any items spare (CONV spare)
+#define ITM_2901                    2901 // General items / any items spare (CONV spare)
+#define ITM_2902                    2902 // General items / any items spare (CONV spare)
+#define ITM_2903                    2903 // General items / any items spare (CONV spare)
+#define ITM_2904                    2904 // General items / any items spare (CONV spare)
+#define ITM_2905                    2905 // General items / any items spare (CONV spare)
+#define ITM_2906                    2906 // General items / any items spare (CONV spare)
+#define ITM_2907                    2907 // General items / any items spare (CONV spare)
+#define ITM_2908                    2908 // General items / any items spare (CONV spare)
+#define ITM_2909                    2909 // General items / any items spare (CONV spare)
+#define ITM_2910                    2910 // General items / any items spare (CONV spare)
+#define ITM_2911                    2911 // General items / any items spare (CONV spare)
+#define ITM_2912                    2912 // General items / any items spare (CONV spare)
+#define ITM_2913                    2913 // General items / any items spare (CONV spare)
+#define ITM_2914                    2914 // General items / any items spare (CONV spare)
+#define ITM_2915                    2915 // General items / any items spare (CONV spare)
+#define ITM_2916                    2916 // General items / any items spare (CONV spare)
+#define ITM_2917                    2917 // General items / any items spare (CONV spare)
+#define ITM_2918                    2918 // General items / any items spare (CONV spare)
+#define ITM_2919                    2919 // General items / any items spare (CONV spare)
 
 #define ITM_2920                    2920 // General items / any items spare (reserved: STRUCT, IF)
 #define ITM_2921                    2921 // General items / any items spare (reserved: STRUCT, ELSE)
@@ -3053,14 +3044,334 @@
 #define ITM_2930                    2930 // General items / any items spare (reserved: STRUCT, NEXTx)
 #define ITM_2931                    2931 // General items / any items spare (reserved: STRUCT, VALID)
 #define ITM_2932                    2932 // General items / any items spare (reserved: STRUCT, AUTOVALID)
+#define ITM_2933                    2933 // General items / any items spare (reserved: STRUCT, FORYX)
+#define ITM_2934                    2934 // General items / any items spare (reserved: STRUCT, FORYXx)
+#define ITM_2935                    2935 // General items / any items spare (reserved: STRUCT, REPEAT)
+#define ITM_2936                    2936 // General items / any items spare (reserved: STRUCT, UNTIL)
+#define ITM_2937                    2937 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2938                    2938 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2939                    2939 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2940                    2940 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2941                    2941 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2942                    2942 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2943                    2943 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_2944                    2944 // General items / any items spare (reserved: STRUCT, spare)
 
-#define LAST_ITEM                   2933
+#define MNU_TAM                     2945
+#define MNU_TAMALPHA                2946
+#define MNU_TAMCMP                  2947
+#define MNU_TAMFLAG                 2948
+#define MNU_TAMINDIRECT             2949
+#define MNU_TAMLABEL                2950
+#define MNU_TAMLBLONLY              2951
+#define MNU_TAMLOCALLABEL           2952
+#define MNU_TAMMENU                 2953
+#define MNU_TAMNONREG               2954
+#define MNU_TAMNONREGMAX            2955
+#define MNU_TAMNONREGTRK            2956
+#define MNU_TAMNORM                 2957
+#define MNU_TAMRCL                  2958
+#define MNU_TAMRCL_TVM              2959
+#define MNU_TAMSHUFFLE              2960
+#define MNU_TAMSTO                  2961
+#define MNU_TAMSTO_TVM              2962
+#define MNU_TAMVARONLY              2963
+#define ITM_2964                    2964 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2965                    2965 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2966                    2966 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2967                    2967 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2968                    2968 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2969                    2969 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2970                    2970 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2971                    2971 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2972                    2972 // General items / any items spare (reserved: Tam Menus)
+#define ITM_2973                    2973 // General items / any items spare (reserved: Tam Menus)
 
-#define SCREENDUMP                    9875 // Used to signal screen dump operated (not to be confused with SNAP)
-#define NOPARAM                       9876 // Item for function who don't need an item
-#define CONFIRMED                     9877 // Confirmation for RESET, CLPALL, CLALL
-#define NOT_CONFIRMED                 9878 // Confirmation for RESET, CLPALL, CLALL
-#define ITM_PROD_SIGN                 9999 // Multiplication sign × or ·
+// Distribution menus. One run, so that showingProbMenu is a single range test.
+#define MNU_BINOM                   2974
+#define MNU_CAUCH                   2975
+#define MNU_CHI2                    2976
+#define MNU_DISTR                   2977
+#define MNU_DISUNIFORM              2978
+#define MNU_EXPON                   2979
+#define MNU_F                       2980
+#define MNU_GEOM                    2981
+#define MNU_GEV                     2982
+#define MNU_HYPER                   2983
+#define MNU_LOGIS                   2984
+#define MNU_NORML                   2985
+#define MNU_PARETO                  2986
+#define MNU_POISS                   2987
+#define MNU_STDNORML                2988
+#define MNU_T                       2989
+#define MNU_UNIFORM                 2990
+#define MNU_WEIBL                   2991
+#define ITM_2992                    2992 // General items / any items spare (reserved: Distribution menus)
+#define ITM_2993                    2993 // General items / any items spare (reserved: Distribution menus)
+#define ITM_2994                    2994 // General items / any items spare (reserved: Distribution menus)
+#define ITM_2995                    2995 // General items / any items spare (reserved: Distribution menus)
+#define ITM_2996                    2996 // General items / any items spare (reserved: Distribution menus)
+
+#define PROBMENUSTART  MNU_BINOM
+#define PROBMENUEND    ITM_2996
+
+#define MNU_1STDERIV                2997
+#define MNU_2NDDERIV                2998
+#define MNU_42                      2999
+#define MNU_ADV                     3000
+#define MNU_AIMCATALOG              3001
+#define MNU_ALLVARS                 3002
+#define MNU_ALPHA                   3003
+#define MNU_ALPHA_OMEGA             3004
+#define MNU_alpha_omega             3005
+#define MNU_ALPHAFN                 3006
+#define MNU_ALPHAINTL               3007
+#define MNU_ALPHAintl               3008
+#define MNU_ALPHAMATH               3009
+#define MNU_ALPHAMISC               3010
+#define MNU_AMORT                   3011
+#define MNU_ANGLECONV_43S           3012
+#define MNU_ANGLES                  3013
+#define MNU_ASN_N                   3014
+#define MNU_AUDIO                   3015
+#define MNU_BASE                    3016
+#define MNU_BASE2                   3017
+#define MNU_BITS                    3018
+#define MNU_BITSET                  3019
+#define MNU_BLUE_C47                3020
+#define MNU_CASHFL                  3021
+#define MNU_CATALOG                 3022
+#define MNU_CHARS                   3023
+#define MNU_CLK                     3024
+#define MNU_CLR                     3025
+#define MNU_CONFIGS                 3026
+#define MNU_CONST                   3027
+#define MNU_CONV_F_LOAD             3028
+#define MNU_CONV_M_LOAD             3029
+#define MNU_CONV_MATERL             3030
+#define MNU_CONV_P_LOAD             3031
+#define MNU_CONV_SECTION            3032
+#define MNU_CONVA                   3033
+#define MNU_CONVANG                 3034
+#define MNU_CONVCHEF                3035
+#define MNU_CONVE                   3036
+#define MNU_CONVFP                  3037
+#define MNU_CONVHUM                 3038
+#define MNU_CONVM                   3039
+#define MNU_CONVP                   3040
+#define MNU_CONVS                   3041
+#define MNU_CONVTEMP                3042
+#define MNU_CONVV                   3043
+#define MNU_CONVX                   3044
+#define MNU_CONVYMMV                3045
+#define MNU_CPX                     3046
+#define MNU_CPXS                    3047
+#define MNU_DATES                   3048
+#define MNU_DELETE                  3049
+#define MNU_DEV                     3050
+#define MNU_DISP                    3051
+#define MNU_DYNAMIC                 3052
+#define MNU_EE                      3053
+#define MNU_EIMCATALOG              3054
+#define MNU_ELLIPT                  3055
+#define MNU_EQ_EDIT                 3056
+#define MNU_EQN                     3057
+#define MNU_EXP                     3058
+#define MNU_FCNS                    3059
+#define MNU_FCNS_EIM                3060
+#define MNU_FIN                     3061
+#define MNU_FLAGS                   3062
+#define MNU_FLG                     3063
+#define MNU_GAP_L                   3064
+#define MNU_GAP_R                   3065
+#define MNU_GAP_RX                  3066
+#define MNU_Grapher                 3067
+#define MNU_GRAPHS                  3068
+#define MNU_HIST                    3069
+#define MNU_HOME                    3070
+#define MNU_HPLOT                   3071
+#define MNU_INFO                    3072
+#define MNU_INL_TST                 3073
+#define MNU_INTS                    3074
+#define MNU_IO                      3075
+#define MNU_KEYS                    3076
+#define MNU_LINTS                   3077
+#define MNU_LOOP                    3078
+#define MNU_M_EDIT                  3079
+#define MNU_MATRS                   3080
+#define MNU_MATX                    3081
+#define MNU_MENU                    3082
+#define MNU_MENUS                   3083
+#define MNU_MISC                    3084
+#define MNU_MODE                    3085
+#define MNU_MODEL                   3086
+#define MNU_MULTSTK                 3087
+#define MNU_MVAR                    3088
+#define MNU_MyAlpha                 3089
+#define MNU_MyMenu                  3090
+#define MNU_NUMBRS                  3091
+#define MNU_NUMTHEORY               3092
+#define MNU_ORTHOG                  3093
+#define MNU_PARTS                   3094
+#define MNU_PFN                     3095
+#define MNU_PFN_1                   3096
+#define MNU_PFN_2                   3097
+#define MNU_PFN_3                   3098
+#define MNU_PLOT_ASSESS             3099
+#define MNU_PLOT_FUNC               3100
+#define MNU_PLOT_SCATR              3101
+#define MNU_PLOT_STAT               3102
+#define MNU_PLOTTING                3103
+#define MNU_PREF                    3104
+#define MNU_PREFIX                  3105
+#define MNU_PRINT                   3106
+#define MNU_PRINTER                 3107
+#define MNU_PROB                    3108
+#define MNU_PROG                    3109
+#define MNU_PROGS                   3110
+#define MNU_REALS                   3111
+#define MNU_REG                     3112
+#define MNU_REGR                    3113
+#define MNU_RESETS                  3114
+#define MNU_RIBBONS                 3115
+#define MNU_Sf                      3116
+#define MNU_Sf_TOOL                 3117
+#define MNU_Sfdx                    3118
+#define MNU_SHOW                    3119
+#define MNU_SIMQ                    3120
+#define MNU_SINTS                   3121
+#define MNU_Solver                  3122
+#define MNU_Solver_TOOL             3123
+#define MNU_STAT                    3124
+#define MNU_STK                     3125
+#define MNU_STRINGS                 3126
+#define MNU_STRUCT                  3127
+#define MNU_SYSFL                   3128
+#define MNU_TEST                    3129
+#define MNU_TIMERF                  3130
+#define MNU_TIMES                   3131
+#define MNU_TRG_C47                 3132
+#define MNU_TRG_C47_MORE            3133
+#define MNU_TRG_R47                 3134
+#define MNU_TRI                     3135
+#define MNU_TVM                     3136
+#define MNU_UNITCONV                3137
+#define MNU_VAR                     3138
+#define MNU_VARS                    3139
+#define MNU_VECCONV                 3140
+#define MNU_VECT                    3141
+#define MNU_XFN                     3142
+#define MNU_XXFCNS                  3143
+#define MNU_YESNO                   3144
+#define ITM_3145                    3145 // General items / any items spare (reserved: Menus)
+#define ITM_3146                    3146 // General items / any items spare (reserved: Menus)
+#define ITM_3147                    3147 // General items / any items spare (reserved: Menus)
+#define ITM_3148                    3148 // General items / any items spare (reserved: Menus)
+#define ITM_3149                    3149 // General items / any items spare (reserved: Menus)
+#define ITM_3150                    3150 // General items / any items spare (reserved: Menus)
+#define ITM_3151                    3151 // General items / any items spare (reserved: Menus)
+#define ITM_3152                    3152 // General items / any items spare (reserved: Menus)
+#define ITM_3153                    3153 // General items / any items spare (reserved: Menus)
+#define ITM_3154                    3154 // General items / any items spare (reserved: Menus)
+#define ITM_3155                    3155 // General items / any items spare (reserved: Menus)
+#define ITM_3156                    3156 // General items / any items spare (reserved: Menus)
+#define ITM_3157                    3157 // General items / any items spare (reserved: Menus)
+#define ITM_3158                    3158 // General items / any items spare (reserved: Menus)
+#define ITM_3159                    3159 // General items / any items spare (reserved: Menus)
+#define ITM_3160                    3160 // General items / any items spare (reserved: Menus)
+#define ITM_3161                    3161 // General items / any items spare (reserved: Menus)
+#define ITM_3162                    3162 // General items / any items spare (reserved: Menus)
+#define ITM_3163                    3163 // General items / any items spare (reserved: Menus)
+#define ITM_3164                    3164 // General items / any items spare (reserved: Menus)
+#define ITM_3165                    3165 // General items / any items spare (reserved: Menus)
+#define ITM_3166                    3166 // General items / any items spare (reserved: Menus)
+#define ITM_3167                    3167 // General items / any items spare (reserved: Menus)
+#define ITM_3168                    3168 // General items / any items spare (reserved: Menus)
+#define ITM_3169                    3169 // General items / any items spare (reserved: Menus)
+#define ITM_3170                    3170 // General items / any items spare (reserved: Menus)
+#define ITM_3171                    3171 // General items / any items spare (reserved: Menus)
+#define ITM_3172                    3172 // General items / any items spare (reserved: Menus)
+#define ITM_3173                    3173 // General items / any items spare (reserved: Menus)
+#define ITM_3174                    3174 // General items / any items spare (reserved: Menus)
+#define ITM_3175                    3175 // General items / any items spare (reserved: Menus)
+#define ITM_3176                    3176 // General items / any items spare (reserved: Menus)
+#define ITM_3177                    3177 // General items / any items spare (reserved: Menus)
+#define ITM_3178                    3178 // General items / any items spare (reserved: Menus)
+#define ITM_3179                    3179 // General items / any items spare (reserved: Menus)
+#define ITM_3180                    3180 // General items / any items spare (reserved: Menus)
+
+#define ITM_3181                    3181 // General items / any items spare (reserved: Units)
+#define ITM_3182                    3182 // General items / any items spare (reserved: Units)
+#define ITM_3183                    3183 // General items / any items spare (reserved: Units)
+#define ITM_3184                    3184 // General items / any items spare (reserved: Units)
+#define ITM_3185                    3185 // General items / any items spare (reserved: Units)
+#define ITM_3186                    3186 // General items / any items spare (reserved: Units)
+#define ITM_3187                    3187 // General items / any items spare (reserved: Units)
+#define ITM_3188                    3188 // General items / any items spare (reserved: Units)
+#define ITM_3189                    3189 // General items / any items spare (reserved: Units)
+#define ITM_3190                    3190 // General items / any items spare (reserved: Units)
+#define ITM_3191                    3191 // General items / any items spare (reserved: Units)
+#define ITM_3192                    3192 // General items / any items spare (reserved: Units)
+#define ITM_3193                    3193 // General items / any items spare (reserved: Units)
+#define ITM_3194                    3194 // General items / any items spare (reserved: Units)
+#define ITM_3195                    3195 // General items / any items spare (reserved: Units)
+#define ITM_3196                    3196 // General items / any items spare (reserved: Units)
+#define ITM_3197                    3197 // General items / any items spare (reserved: Units)
+#define ITM_3198                    3198 // General items / any items spare (reserved: Units)
+#define ITM_3199                    3199 // General items / any items spare (reserved: Units)
+#define ITM_3200                    3200 // General items / any items spare (reserved: Units)
+#define ITM_3201                    3201 // General items / any items spare (reserved: Units)
+#define ITM_3202                    3202 // General items / any items spare (reserved: Units)
+#define ITM_3203                    3203 // General items / any items spare (reserved: Units)
+#define ITM_3204                    3204 // General items / any items spare (reserved: Units)
+#define ITM_3205                    3205 // General items / any items spare (reserved: Units)
+#define ITM_3206                    3206 // General items / any items spare (reserved: Units)
+#define ITM_3207                    3207 // General items / any items spare (reserved: Units)
+#define ITM_3208                    3208 // General items / any items spare (reserved: Units)
+#define ITM_3209                    3209 // General items / any items spare (reserved: Units)
+#define ITM_3210                    3210 // General items / any items spare (reserved: Units)
+#define ITM_3211                    3211 // General items / any items spare (reserved: Units)
+#define ITM_3212                    3212 // General items / any items spare (reserved: Units)
+#define ITM_3213                    3213 // General items / any items spare (reserved: Units)
+#define ITM_3214                    3214 // General items / any items spare (reserved: Units)
+#define ITM_3215                    3215 // General items / any items spare (reserved: Units)
+#define ITM_3216                    3216 // General items / any items spare (reserved: Units)
+#define ITM_3217                    3217 // General items / any items spare (reserved: Units)
+#define ITM_3218                    3218 // General items / any items spare (reserved: Units)
+#define ITM_3219                    3219 // General items / any items spare (reserved: Units)
+#define ITM_3220                    3220 // General items / any items spare (reserved: Units)
+#define ITM_3221                    3221 // General items / any items spare (reserved: Units)
+#define ITM_3222                    3222 // General items / any items spare (reserved: Units)
+#define ITM_3223                    3223 // General items / any items spare (reserved: Units)
+#define ITM_3224                    3224 // General items / any items spare (reserved: Units)
+#define ITM_3225                    3225 // General items / any items spare (reserved: Units)
+#define ITM_3226                    3226 // General items / any items spare (reserved: Units)
+#define ITM_3227                    3227 // General items / any items spare (reserved: Units)
+#define ITM_3228                    3228 // General items / any items spare (reserved: Units)
+#define ITM_3229                    3229 // General items / any items spare (reserved: Units)
+#define ITM_3230                    3230 // General items / any items spare (reserved: Units)
+#define ITM_3231                    3231 // General items / any items spare (reserved: Units)
+
+#define ITM_3232                    3232 // General items / any items spare (reserved: Logic extension, test to SI)
+#define ITM_3233                    3233 // General items / any items spare (reserved: Logic extension, ANDbits)
+#define ITM_3234                    3234 // General items / any items spare (reserved: Logic extension, ORbits)
+#define ITM_3235                    3235 // General items / any items spare (reserved: Logic extension, XORbits)
+#define ITM_3236                    3236 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3237                    3237 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3238                    3238 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3239                    3239 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3240                    3240 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3241                    3241 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3242                    3242 // General items / any items spare (reserved: Logic extension, spare)
+#define ITM_3243                    3243 // General items / any items spare (reserved: Logic extension, spare)
+
+#define LAST_ITEM                   3244
+
+#define SCREENDUMP                  9875 // Used to signal screen dump operated (not to be confused with SNAP)
+#define NOPARAM                     9876 // Item for function who don't need an item
+#define CONFIRMED                   9877 // Confirmation for RESET, CLPALL, CLALL
+#define NOT_CONFIRMED               9878 // Confirmation for RESET, CLPALL, CLALL
+#define ITM_PROD_SIGN               9999 // Multiplication sign × or ·
 
 #define INVALID_MENU                LAST_ITEM
 

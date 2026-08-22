@@ -66,6 +66,7 @@ double  auto_tick          (double tick_int_f);
 void    plotPointGeneric   (int16_t xn, int16_t yn, int16_t xo, int16_t yo, bool_t PLOT_CROSS, bool_t PLOT_BOXFAT, bool_t PLOT_BOX, bool_t PLOT_PLUS, bool_t PLOT_LINE);
 
 //graph functions
+extern uint16_t plotXYn;
 float   grf_x(int i);
 float   grf_y(int i);
 void    grf_x_r(int i, real_t *v);

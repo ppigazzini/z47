@@ -129,6 +129,7 @@ void    *xcopy                 (void *dest, const void *source, uint32_t n);
 void     strReplace            (char *haystack, const char *needle, const char *newNeedle);
 void     addChrBothSides       (uint8_t t, char * str);
 void     addStrBothSides       (char * str, char * str_b, char * str_e);
+void     stripTrailingRadix    (char * str);
 
 bool_t   findTwoChars          (const char *tmpString, uint8_t char1, uint8_t char2, uint16_t *position);
 void     truncateAtString      (char *label, const char *search);

@@ -781,6 +781,176 @@ static void cache2_call(cache2_t *c, trig2Compute_t compute, const char *name, c
 }
 
 
+// The precision atan actually computes at. Requests above 39 go to the Taylor path at 75.
+// At or below 39 the table path honours the request plus a couple of guard digits: about a
+// dozen chained operations cost roughly one digit of accumulated rounding, measured as a
+// steady 0.8 to 1.0 digits at every precision from 3 up to 39, so computing two beyond the
+// request returns what the caller asked for with a digit to spare. The cap at 39 is why
+// atan has always returned 38 correct digits to a 39 digit caller, table path or not.
+//
+// No lower floor: the loss is proportional, not a cliff, so a caller asking for little
+// gets little quickly. Graph plotting narrows ctxtReal39 to significantDigits + 3, as low
+// as 4, and pays for 6 rather than for 39.
+//
+// Both compute functions and the cache wrapper must agree on this, or the cache could hand
+// a low precision result to a high precision request.
+#define ATAN_GUARD_DIGITS 2
+static int32_t atanEffectiveDigits(int32_t requestedDigits) {
+  if(requestedDigits > 39) {
+    return 75;
+  }
+  requestedDigits += ATAN_GUARD_DIGITS;
+  return (requestedDigits > 39) ? 39 : requestedDigits;
+}
+
+
+// atan(j/10) for j = 1..9; the ends are const_0 and const39_piOn4. The step must divide a
+// power of ten so that j/step is exact at every working precision: a tenth is, 1/12 is not,
+// and its rounding would break the identity the reduction rests on.
+#define ATAN_TABLE_STEP 10
+static const real_t * const atanTable[ATAN_TABLE_STEP + 1] = {
+  const_0,            const39_atan1on10,  const39_atan2on10,  const39_atan3on10,
+  const39_atan4on10,  const39_atan5on10,  const39_atan6on10,  const39_atan7on10,
+  const39_atan8on10,  const39_atan9on10,  const39_piOn4
+};
+
+// P(v) with v = u*u, magnitudes only (the loop below negates v instead of tracking signs).
+// Eight of the thirteen were constrained to the Taylor coefficients +-1/(2k+1) and only
+// atanP08..12 left free for the fit. Eight constraints still land at 2.9e-41 against a
+// 1e-40 budget, so they cost no extra term; a ninth would not fit. Holding the first at
+// exactly 1 is what makes atan(x) come out as exactly x for tiny x rather than merely
+// rounding to it.
+#define ATAN_COEFFICIENTS 13
+static const real_t * const atanPoly[ATAN_COEFFICIENTS] = {
+  const_1,          const39_1on3,     const_1on5,       const39_1on7,
+  const39_1on9,     const39_1on11,    const39_1on13,    const39_1on15,
+  const39_atanP08,  const39_atanP09,  const39_atanP10,  const39_atanP11,
+  const39_atanP12
+};
+
+
+/********************************************//**
+ * \brief atan for requests at or below 39 digits
+ *
+ * Reduces through the addition formula against a tenth spaced table
+ *
+ *     a = |x|, and a > 1 is inverted by atan(a) = pi/2 - atan(1/a)
+ *     j = round(10a),  c = j/10,  u = (a - c)/(1 + a*c)   so |u| <= 1/20
+ *     atan(a) = atanTable[j] + u * P(u*u)
+ *
+ * which costs one division where the Taylor path spent three square roots, and then
+ * finishes with a fixed length polynomial instead of a convergence loop. Horner starts
+ * below the top term once u is small enough that the leading terms cannot reach the
+ * requested precision, so small arguments stay cheap.
+ *
+ * Truncation error is 2.9e-41 as the coefficients are stored, an order of magnitude under
+ * the 5e-40 the 39 digit table constants contribute anyway, so the polynomial is not what
+ * limits the answer. At 39 digits this returns about 38 correct digits, a little better
+ * than the Taylor path it replaces.
+ ***********************************************/
+static void WP34S_Atan_table_compute(const real_t *x, real_t *angle, realContext_t *realContext) {
+  REAL_T_ALLOC(a, 39);   // also the accumulator further down
+  REAL_T_ALLOC(u, 39);
+  REAL_T_ALLOC(v, 39);
+  REAL_T_ALLOC(c, 39);
+  bool_t neg, invert;
+  int32_t j, k, top, exponent, savedContextDigits;
+
+  // The four 39 digit heap reals are smaller than the declared real_t. GCC's bounds checker gives warning; example fix from graph.c
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Warray-bounds"
+
+  if(a == NULL || u == NULL || v == NULL || c == NULL) {
+    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+    goto freeWork;
+  }
+
+  if(realIsNaN(x)) {
+    realSetNaN(angle);
+    goto freeWork;
+  }
+
+  savedContextDigits  = realContext->digits;
+  realContext->digits = atanEffectiveDigits(savedContextDigits);
+
+  neg = realIsNegative(x);                        // kept: the result is negated again at the end
+  realCopyAbs(x, a);
+
+  invert = realCompareGreaterThan(a, const_1);
+  if(invert) {
+    realDivide(const_1, a, a, realContext);   // 1/inf is 0, which lands on j = 0 and gives pi/2
+  }
+
+  // j = round(10a), always in [0, 10] and used directly as the index into atanTable. c is
+  // borrowed for the scaled copy here and holds the table centre from the next block on.
+  // Multiplying by ten in a decimal representation is nothing but a shift of the exponent,
+  // so the scaling is free and exact; the rounding is left to realToIntegralValue. a is |x|
+  // with anything above 1 inverted, and rounding 1/a can reach 1 but never pass it, so 10a
+  // stays inside [0, 10] and no clamp is needed. realToInt32C47 cannot break that either:
+  // every one of its failure paths returns 0.
+  realCopy(a, c);
+  c->exponent++;
+  realToIntegralValue(c, c, DEC_ROUND_HALF_UP, realContext);
+  j = realToInt32C47(c, NULL);
+
+  // c = j/10, exact for the same reason and for j = 0 too, since a zero stays a zero
+  int32ToReal(j, c);
+  c->exponent--;
+  realMultiply(a, c, v, realContext);
+  realAdd(v, const_1, v, realContext);
+  realSubtract(a, c, u, realContext);
+  realDivide(u, v, u, realContext);
+
+  realMultiply(u, u, v, realContext);        // v = u*u
+
+  // v^k drops below the last digit being computed once k * |log10 v| passes that many
+  // digits, so every coefficient above that index is dead weight. The + 6 keeps the cut a
+  // few digits clear of the rounding noise, at the cost of at most one extra term.
+  top = ATAN_COEFFICIENTS - 1;
+  if(realIsZero(v)) {
+    top = 0;
+  }
+  else {
+    exponent = -realGetExponent(v);
+    if(exponent > 0) {
+      int32_t needed = (realContext->digits + 6 + exponent - 1) / exponent;
+      if(needed < top) {
+        top = needed;
+      }
+    }
+  }
+
+  // The series alternates: c0 - c1*v + c2*v^2 - ... = c0 - v*(c1 - v*(c2 - ...)). Negating v
+  // turns every Horner step into the same acc*(-v) + c operation, so atanPoly can hold plain
+  // magnitudes and neither the loop nor its seed needs to track the sign.
+  realChangeSign(v);
+  realCopy(atanPoly[top], a);
+  for(k = top - 1; k >= 0; k--) {
+    realMultiply(a, v, a, realContext);
+    realAdd(a, atanPoly[k], a, realContext);
+  }
+  realMultiply(a, u, a, realContext);
+  realAdd(a, atanTable[j], angle, realContext);
+
+  if(invert) {
+    realSubtract(const39_piOn2, angle, angle, realContext);
+  }
+  if(neg) {
+    realChangeSign(angle);
+  }
+
+  realContext->digits = savedContextDigits;
+  #pragma GCC diagnostic pop
+
+freeWork:
+  REAL_T_FREE(a, 39);
+  REAL_T_FREE(u, 39);
+  REAL_T_FREE(v, 39);
+  REAL_T_FREE(c, 39);
+}
+
+
+// The Taylor series with sqrt halving, now reached only for requests above 39 digits.
 static void WP34S_Atan_75_compute(const real_t *x, real_t *angle, realContext_t *realContext) {
   bool_t doEpsilon = false;
   // The eight working reals come from the heap, not the frame: 480 of this function's 656 bytes, on the integrand path of a plotted integral. The 1071 digit twin below
@@ -844,8 +1014,10 @@ static void WP34S_Atan_75_helper(const real_t *x, real_t *angle, realContext_t *
   #if defined(CACHE_DEBUG)
     print_caller("WP34S_Atan");             // traced here, not in cache1_call: print_caller reports its own caller
   #endif // CACHE_DEBUG
-  int32_t effDigits = (realContext->digits > 39) ? 75 : 39; // precision WP34S_Atan_75_compute forces, not the request
-  cache1_call(&atanCache, WP34S_Atan_75_compute, "WP34S_Atan", x, angle, effDigits, realContext);
+  int32_t effDigits = atanEffectiveDigits(realContext->digits); // precision actually computed at, not the request
+  cache1_call(&atanCache,
+              (effDigits > 39) ? WP34S_Atan_75_compute : WP34S_Atan_table_compute,
+              "WP34S_Atan", x, angle, effDigits, realContext);
 }
 
 
@@ -2715,3 +2887,4 @@ void WP34S_OrthoPoly(uint16_t kind, const real_t *rX, const real_t *rN, const re
   realCopy(&rT1, res);
 #endif //defined(OPTION_ORTHO)
 }
+

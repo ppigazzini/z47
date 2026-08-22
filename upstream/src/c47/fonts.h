@@ -558,6 +558,7 @@
 #define STD_PRODUCT                   "\xa2\x0f"
 #define STD_SUM                       "\xa2\x11"
 #define STD_MINUS_PLUS                "\xa2\x13"
+#define STD_SUP_SLASH                 "\xa2\x15"
 #define STD_RING                      "\xa2\x18"
 #define STD_BULLET                    "\xa2\x19"
 #define STD_SQUARE_ROOT               "\xa2\x1a"
@@ -783,5 +784,7 @@
 #define STD_WHITE_RIGHTTRIANGLE       "\xa5\xb7"
 #define STD_BLACK_RIGHTSMALLTRIANGLE  "\xa5\xb8"
 #define STD_WHITE_RIGHTSMALLTRIANGLE  "\xa5\xb9"
+#define STD_SUP_DOT                   "\xae\x33"
+#define STD_SUP_COMMA                 "\xae\x34"
 
 #endif // !FONTS_H

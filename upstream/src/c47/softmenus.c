@@ -185,7 +185,7 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  -MNU_VECT,
                                              ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMNQ,           ITM_M_CONCATB,               ITM_M_CONCATR,
-                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_NULL,                    ITM_NULL,
+                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_NULL,                    ITM_M_ALL,
 
                                              ITM_M_INV,                     EIG_SQRT,                   ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   -MNU_VECT,
                                              ITM_PNORM,                     ITM_UNITV,                  ITM_M_TRANSP,             ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
@@ -1013,7 +1013,11 @@ TO_QSPI const int16_t menu_PLOT_STAT[]    = {
 
                                              ITM_DIFF,                  ITM_INTG,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
                                              ITM_RMS,                   ITM_SHADE,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
-                                             ITM_NVECT,                 ITM_VECT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL                  };
+                                             ITM_NVECT,                 ITM_VECT,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+
+                                             ITM_PL_2L,                 ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,
+                                             ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL,                  ITM_NULL                  };
 
 
 TO_QSPI const int16_t menu_ALPHA[]       = { -MNU_ALPHA_OMEGA,             -MNU_ALPHAMATH,             -MNU_ALPHAMISC,           -MNU_ALPHAINTL,         ITM_T_LEFT_ARROW,            ITM_T_RIGHT_ARROW,
@@ -4217,11 +4221,20 @@ void showSoftmenuCurrentPart(void) {
 
 // input param is (PageNumber << 14) +MenuNumber
 void fnPseudoMenu(uint16_t target) {
-  if(((int16_t)(target & 0x3fff)) == MNU_PLOT_FUNC && !(graphToRemainOnScreen || (calcMode == CM_GRAPH))) {
-    return;
+  uint16_t menu = (int16_t)(target & 0x3fff);
+  if(menu == MNU_PLOT_FUNC) {
+    if(!(graphToRemainOnScreen || (calcMode == CM_GRAPH))) {
+      return;                              // no graph on screen
+    }
+    if(plotStatMx[0] == 'S') {
+      menu = MNU_PLOT_STAT;
+    }
+    else if(plotStatMx[0] != 'D') {
+      return;                              // graph up, tag neither D nor S
+    }
   }
   menuPageNumber = target >> 14;
-  fnOpenMenu(((int16_t)(target & 0x3fff)));
+  fnOpenMenu(menu);
 }
 
 

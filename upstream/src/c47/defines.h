@@ -1015,8 +1015,11 @@
 #define FLAG_PDIFF                            0x806D
 #define FLAG_PSHADE                           0x806E //47
 #define FLAG_SBadm                            0x806F //48
+#define FLAG_AUTOVALID                        0x8070 //49
+#define FLAG_M_ALL                            0x8072 //50
+#define FLAG_PL_2L                            0x8073 //51
 
-#define NUMBER_OF_SYSTEM_FLAGS                 64+48 // We can have a maximum of 128 system flags
+#define NUMBER_OF_SYSTEM_FLAGS                 64+51 // We can have a maximum of 128 system flags
 
                                                      // only used as bit count for setting change detection
 #define SETTING_AMODE                         0x0080 // current angle mode
@@ -2095,7 +2098,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define SIGMA_YMAX   (statisticalSumsPointer + SUM_YMAX  ) // could be a real34. No, this must be old. SIGMA_** is a Real.
 
 #define MAX_NUMBER_OF_GLYPHS_IN_STRING           508 //WP=196: Change to 512 less 3, Also change error message 33, and AIM_BUFFER_LENGTH, and MAXLINES
-#define NUMBER_OF_GLYPH_ROWS                     268 //Used in the font browser application
+#define NUMBER_OF_GLYPH_ROWS                     284 //Used in the font browser application
 
 #define YY_OFF                                     2 // 2 is off and gets transferred to bit 15 (32768 + YY)
 #define YY_TRACKING                                1 // 1 gets transferred to bit 14 (16384 + YY)
@@ -2342,6 +2345,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define RADIX34_MARK_CHAR                    (gapChar1Radix[0] == ',' || (gapChar1Radix[0] == STD_WCOMMA[0] && gapChar1Radix[1] == STD_WCOMMA[1]) ? ',' : '.') //map comma and wide comma to comma, and dot and period and wdot and wperiod to period
 #define RADIX34_MARK_STRING                  (gapChar1Radix)
+#define RADIX34_MARK_SUPSTRING               (gapChar1Radix[0] == ',' || (gapChar1Radix[0] == STD_WCOMMA[0] && gapChar1Radix[1] == STD_WCOMMA[1]) ? STD_SUP_COMMA : STD_SUP_DOT) //map to 2 SUP characters
 #define RADIX34_MARK_DEC_ITM                 (RADIX34_MARK_CHAR == '.' ? ITM_PERIOD : ITM_COMMA)
 #define RADIX34_MARK_NOT_DEC_ITM             (RADIX34_MARK_CHAR == '.' ? ITM_COMMA : ITM_PERIOD)
 

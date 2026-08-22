@@ -390,60 +390,40 @@ int convertRegisterToString(calcRegister_t regist, char *buffer, size_t bufferSi
         break;
     }
     case dtTime: {
-      real34_t totalSecs;
-      int32_t hour, min, sec;
+      char timeStr[512], radix[4];
+      size_t src = 0, dst = 0, radixLen;
 
-      // Copy the register value (which includes 0.5 offset)
-      real34Copy(REGISTER_REAL34_DATA(regist), &totalSecs);
-      real34Subtract(&totalSecs, const34_1on2, &totalSecs);  // Remove 0.5 offset to get actual seconds
+      // The calculator's own formatter. ignoreTDisp gives every digit, as the register browser does.
+      timeToDisplayString(regist, timeStr, true);
 
-      // Convert total seconds to hours for extraction
-      real34_t totalHours;
-      real34Copy(&totalSecs, &totalHours);
-      real34Divide(&totalHours, const34_3600, &totalHours);
-
-      // Extract hours, minutes, seconds from the fractional hours
-      real34_t hPart, mPart, sPart;
-      real34Copy(&totalHours, &hPart);
-      real34ToIntegralValue(&hPart, &hPart, DEC_ROUND_DOWN);  // integer hours
-
-      // Get fractional part for minutes (after extracting hours)
-      real34Subtract(&totalHours, &hPart, &mPart);
-      real34Multiply(&mPart, const34_60, &mPart);  // convert to minutes
-      real34ToIntegralValue(&mPart, &mPart, DEC_ROUND_DOWN);  // integer minutes
-
-      // Get fractional part for seconds (after extracting hours and minutes)
-      real34Subtract(&totalHours, &hPart, &sPart);
-      real34Multiply(&sPart, const34_60, &sPart);  // convert to minutes first
-      real34Subtract(&sPart, &mPart, &sPart);  // subtract integer minutes
-      real34Multiply(&sPart, const34_60, &sPart);  // convert remaining fraction to seconds
-
-      // Round to nearest second using DEC_ROUND_HALF_UP
-      real34_t sRounded;
-      real34Copy(&sPart, &sRounded);
-      real34ToIntegralValue(&sRounded, &sRounded, DEC_ROUND_HALF_UP);
-
-      hour = real34ToInt32(&hPart);
-      min = real34ToInt32(&mPart);
-      sec = real34ToInt32(&sRounded);
-
-      // Handle overflow: if seconds == 60, carry to minutes
-      if(sec >= 60) {
-          sec -= 60;
-          min += 1;
+      if(RADIX34_MARK_STRING[1] != 1) {
+        strcpy(radix, RADIX34_MARK_STRING);
       }
-      // Handle minute overflow
-      if(min >= 60) {
-          min -= 60;
-          hour += 1;
+      else {
+        radix[0] = RADIX34_MARK_STRING[0];
+        radix[1] = 0;
       }
-      // Handle hour overflow (shouldn't happen with valid times)
-      if(hour >= 24) {
-          hour -= 24;
-      }
+      radixLen = strlen(radix);
 
-      // Display as HH:MM:SS without fractional seconds (C47 convention)
-      snprintf(buffer, bufferSize, "%02d:%02d:%02d", hour, min, sec);
+      // Digits, colons and a '.' radix only. The sign column and the group separators are display, not value.
+      while(timeStr[src] != 0) {
+        if(isdigit((unsigned char)timeStr[src]) || timeStr[src] == ':' || timeStr[src] == '-') {
+          buffer[dst++] = timeStr[src++];
+        }
+        else if(strncmp(timeStr + src, radix, radixLen) == 0) {
+          buffer[dst++] = '.';
+          src += radixLen;
+        }
+        else {
+          src++;
+        }
+      }
+      buffer[dst] = 0;
+
+      if(buffer[1] == ':') {  // pad a single digit hour, so the reading parses back as a time
+        memmove(buffer + 1, buffer, dst + 1);
+        buffer[0] = '0';
+      }
       break;
     }
     default: {
@@ -843,17 +823,16 @@ static int parseDateToTempRegister(Jim_Interp *interp, const char *valueArg) {
 }
 
 static int parseTimeToTempRegister(Jim_Interp *interp, const char *valueArg) {
-  char buffer[32];
+  char buffer[48];  // HH:MM:SS. and 34 digits of fraction, the most a register holds
   strncpy(buffer, valueArg, sizeof(buffer) - 1);
   buffer[sizeof(buffer) - 1] = '\0';
 
   real34_t h, m, s;
   int32_t hour, min, sec;
-  double fracSec = 0.0;
 
   // Parse HH:MM:SS format
   if(buffer[2] == ':' && buffer[5] == ':') {
-    char hourStr[8], minStr[8], secStr[16];
+    char hourStr[8], minStr[8], secStr[sizeof(buffer) - 6];  // whatever is left of buffer
 
     strncpy(hourStr, buffer, 2);
     hourStr[2] = '\0';
@@ -871,27 +850,6 @@ static int parseTimeToTempRegister(Jim_Interp *interp, const char *valueArg) {
     return JIM_ERR;
   }
 
-  // Handle fractional seconds if present
-  size_t len = strlen(buffer);
-  if(len > 8 && buffer[8] == '.') {
-    char fracBuffer[16];
-    strncpy(fracBuffer, buffer + 9, sizeof(fracBuffer) - 1);
-    fracBuffer[sizeof(fracBuffer) - 1] = '\0';
-
-    // Parse fractional seconds directly as double
-    if(strlen(fracBuffer) > 0) {
-      char *endPtr;
-      double fracVal = strtod(fracBuffer, &endPtr);
-
-      // Scale by number of digits to get proper fraction (e.g., "5" -> 0.5)
-      int fracDigits = strlen(fracBuffer);
-      for(int i = 0; i < fracDigits; i++) {
-        fracVal /= 10.0;
-      }
-      fracSec = fracVal;
-    }
-  }
-
   hour = real34ToInt32(&h);
   min = real34ToInt32(&m);
   sec = real34ToInt32(&s);
@@ -900,26 +858,12 @@ static int parseTimeToTempRegister(Jim_Interp *interp, const char *valueArg) {
     return JIM_ERR;
   }
 
-  // Convert to seconds (internal time representation)
-  double totalSeconds = (double)hour * 3600.0 + (double)min * 60.0 + (double)sec + fracSec;
-
-  // Convert integer part to real34
+  // Total seconds, real34 throughout. The seconds string carries its own fraction. A time register holds no half second offset.
   real34_t total;
-  uInt32ToReal34((uint32_t)totalSeconds, &total);
-
-  // Add fractional seconds if present
-  double intPart;
-  double frac = modf(totalSeconds, &intPart);
-  if(frac != 0.0) {
-    real34_t fracVal;
-    // Parse the fractional part as a string to avoid precision issues
-    char fracStr[32];
-    snprintf(fracStr, sizeof(fracStr), "%.15g", frac);
-    stringToReal34(fracStr, &fracVal);
-    real34Add(&total, &fracVal, &total);
-  }
-
-  real34Add(&total, const34_1on2, &total);  // Add 0.5 offset
+  real34Multiply(&h, const34_3600, &h);
+  real34Multiply(&m, const34_60, &m);
+  real34Add(&h, &m, &total);
+  real34Add(&total, &s, &total);
 
   reallocateRegister(TEMP_REGISTER_1, dtTime, 0, amNone);
   real34Copy(&total, REGISTER_REAL34_DATA(TEMP_REGISTER_1));

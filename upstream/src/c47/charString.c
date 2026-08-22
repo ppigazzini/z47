@@ -1239,6 +1239,18 @@ void addStrBothSides(char * str, char * str_b, char * str_e) {
 }
 
 
+void stripTrailingRadix(char * str) {
+  #if !defined(GENERATE_CATALOGS)
+    int32_t slen = (int32_t)strlen(str);
+    int32_t mlen = (Rx[0] & 0x80) ? (int32_t)strlen(RADIX34_MARK_STRING) : (int32_t)strlen(Rx);
+    const char *marker = (Rx[0] & 0x80) ? RADIX34_MARK_STRING : Rx;
+    if(slen >= mlen && strcmp(str + slen - mlen, marker) == 0) {
+      str[slen - mlen] = '\0';
+    }
+  #endif // !GENERATE_CATALOGS
+}
+
+
 #if defined(__MINGW64__)
   char *stringCopy(char *dest, const char *source) {
     const uint32_t l = stringByteLength(source);

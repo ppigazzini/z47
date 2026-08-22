@@ -2610,91 +2610,6 @@ void timeToReal34(uint16_t hms) { //always 24 hour time;
 }
 
 
-void dms34ToReal34(uint16_t dms) {
-  real34_t angle34;
-  calcRegister_t regist = REGISTER_X;
-  real34_t d34, m34, s34, fs34;
-  real34Copy(REGISTER_REAL34_DATA(regist), &angle34);
-
-  uint32_t m, s, fs;
-  int16_t sign;
-
-  real_t temp, degrees, minutes, seconds;
-
-  real34ToReal(&angle34, &temp);
-
-  sign = 1 - 2*realIsNegative(&temp);
-  realSetPositiveSign(&temp);
-
-  // Get the degrees
-  realToIntegralValue(&temp, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
-
-  // Get the minutes
-  realSubtract(&temp, &degrees, &temp, &ctxtReal39);
-  temp.exponent += 2; // temp = temp * 100
-  realToIntegralValue(&temp, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
-
-  // Get the seconds
-  realSubtract(&temp, &minutes, &temp, &ctxtReal39);
-  temp.exponent += 2; // temp = temp * 100
-  realToIntegralValue(&temp, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
-
-  // Get the fractional seconds
-  realSubtract(&temp, &seconds, &temp, &ctxtReal39);
-  temp.exponent += 2; // temp = temp * 100
-
-  fs = realToUint32C47(&temp, NULL);
-  s  = realToUint32C47(&seconds, NULL);
-  m  = realToUint32C47(&minutes, NULL);
-
-  if(fs >= 100) {
-    fs -= 100;
-    s++;
-  }
-
-  if(s >= 60) {
-    s -= 60;
-    m++;
-  }
-
-  if(m >= 60)  {
-    m -= 60;
-    realAdd(&degrees, const_1, &degrees, &ctxtReal39);
-  }
-
-  real34_t *ptr;
-  switch(dms)  {
-    case 0: //d
-      realToReal34(&degrees, &d34);
-      ptr = &d34;
-      break;
-
-    case 1: //m
-      int32ToReal34(m, &m34);
-      ptr = &m34;
-      break;
-
-    case 2: //s
-      int32ToReal34(fs, &fs34);
-      real34Divide(&fs34, const34_100, &fs34);
-
-      int32ToReal34(s, &s34);
-      real34Add(&s34, &fs34, &s34);
-
-      ptr = &s34;
-      break;
-
-    default: ptr = NULL; // cannot happen
-  }
-
-  if(sign == -1) {
-    real34ChangeSign(ptr);
-  }
-  reallocateRegister(regist, dtReal34, 0, amNone);
-  real34Copy(ptr, REGISTER_REAL34_DATA(regist));
-}
-
-
 void notSexa(void) {
   copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
   displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
@@ -2709,10 +2624,7 @@ void fnHrDeg(uint16_t unusedButMandatoryParameter) {
   if(!saveLastX()) {
     return;
   }
-  if(getRegisterAngularMode(REGISTER_X) == amDMS && getRegisterDataType(REGISTER_X) == dtReal34) {
-    dms34ToReal34(0);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtTime) {
+  if(getRegisterDataType(REGISTER_X) == dtTime) {
     timeToReal34(0);
   }
   else {
@@ -2726,7 +2638,9 @@ void fnMinute(uint16_t unusedButMandatoryParameter) {
     return;
   }
   if(getRegisterAngularMode(REGISTER_X) == amDMS && getRegisterDataType(REGISTER_X) == dtReal34) {
-    dms34ToReal34(1);
+    fnTo_ms(0);
+    timeToReal34(1);
+    temporaryInformation = TI_NO_INFO; // the conversion sets TI_FROM_DMS; the result is a plain real
   }
   else if(getRegisterDataType(REGISTER_X) == dtTime) {
     timeToReal34(1);
@@ -2742,7 +2656,9 @@ void fnSecond(uint16_t unusedButMandatoryParameter){
     return;
   }
   if(getRegisterAngularMode(REGISTER_X) == amDMS && getRegisterDataType(REGISTER_X) == dtReal34) {
-    dms34ToReal34(2);
+    fnTo_ms(0);
+    timeToReal34(2);
+    temporaryInformation = TI_NO_INFO; // the conversion sets TI_FROM_DMS; the result is a plain real
   }
   else if(getRegisterDataType(REGISTER_X) == dtTime) {
     timeToReal34(2);
@@ -2758,16 +2674,7 @@ void fnTimeTo(uint16_t unusedButMandatoryParameter) {
     return;
   }
 
-  if(getRegisterAngularMode(REGISTER_X) == amDMS && getRegisterDataType(REGISTER_X) == dtReal34) {
-    dms34ToReal34(0);
-    liftStack();
-    copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
-    dms34ToReal34(1);
-    liftStack();
-    copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
-    dms34ToReal34(2);
-  }
-  else if(getRegisterDataType(REGISTER_X) == dtTime) {
+  if(getRegisterDataType(REGISTER_X) == dtTime) {
     timeToReal34(0);
     liftStack();
     copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);

@@ -11,7 +11,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1017     // FLAG_SBadm
+#define BACKUP_VERSION                     1019     // Menu items renumbered into one block
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -22,6 +22,9 @@
 1010     // Change constant format in equation, adding a # prefix
 1011     // Added reserve variables UY, LY, UEST, LEST.
 1016     // Graph defaults changing from float to real
+1017     // FLAG_SBadm
+1018     // FLAG_M_ALL
+1019     // 2026-08-16 Menu items renumbered into one block; 1017 and 1018 are taken on release branch 4.00a2
 */
 
 #define backupFileName (CALCMODEL == USER_C47 ? "backup.cfg" : "backupR47.cfg")
@@ -571,7 +574,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
   }
 
 
-  // A memory region count read from backup.cfg is how many entries of freeMemoryRegions or allocatedMemoryRegions freeList.c walks, so a count outside
+  // A memory region count read from backup.cfg is how many entries of freeMemoryRegions or allocatedMemoryRegions freeList.c reads, so a count outside
   // 0..ceiling cannot describe the file's own tables. Report it and let the caller refuse the file, as it already does for a wrong RAM size. This is a
   // coherence check, not the bound on the restore: those writes are bounded by the destination.
   static bool_t restoredRegionCountIsUsable(int32_t count, int32_t ceiling, const char *valueName) {
@@ -755,7 +758,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
   // Restore one c47Ptr - a block index into ram - together with the byte offset saveCalc() stored beside it where the field has one, and build the pointer from
   // the two integers. TO_PCMEMPTR() is ram + p and has no range of its own, so the range test here is what stops a p the file chose forming a pointer outside
-  // the pool, before scanLabelsAndPrograms() or the register walk is handed it.
+  // the pool, before scanLabelsAndPrograms() or the register restore is handed it.
   //
   // `current` seeds both numbers, so a field whose parameter the file omits keeps its own value. restoreStateValue() writes nothing when it finds no match, so
   // one scratch variable shared across the fields would hand an omitted field whichever pointer was restored before it.
@@ -936,7 +939,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     currentStep                 = restoredPoolPointer(currentStep,                 "currentStep",                 "currentStepOffset",          &poolPointersInRange);
 
     // Every field above is restored before this is tested, so one file reports every pointer it got wrong rather than only the first. A file that describes
-    // pointers into some other pool is refused: nothing here can repair it, and the next thing to run is scanLabelsAndPrograms() walking program memory
+    // pointers into some other pool is refused: nothing here can repair it, and the next thing to run is scanLabelsAndPrograms() reading program memory
     // through exactly these pointers.
     //
     // Unlike the region-count check above, this one cannot simply return. By here ram holds the file's bytes, the region counts are the file's, every pointer
@@ -1263,6 +1266,14 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
     if(backupVersion < 1017) {
       setSystemFlag(FLAG_SBadm); //the angular mode annunciator is on per default
+    }
+    if(backupVersion < 1018) {
+      setSystemFlag(FLAG_M_ALL); // inclusive of this version, set the M.ALL
+    }
+    if(backupVersion < 1019) {                                                   // menu items renumbered into one block: move the stored menu links
+      convertOldMenuNumbers();
+      lastFunc = ITM_NOP;                                                        // lastFunc and param cleared when the menu items replaced during upgrade
+      lastParam = NOPARAM;
     }
     // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
     if(getSystemFlag(FLAG_FRACT)) {
