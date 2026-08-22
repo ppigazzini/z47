@@ -36,12 +36,29 @@ ZIG_SRC = ROOT / "src"
 
 # C-symbol naming conventions owners mirror. Anchored so we only pick up genuine
 # C #define/enum mirrors, not arbitrary Zig locals.
+#
+# TWO SHAPES THIS USED TO MISS, both found by audit and both stale for a whole
+# resync before anyone noticed:
+#
+#   - a mirror whose VALUE is an expression. `NUMBER_OF_SYSTEM_FLAGS: i16 = 64 + 48`
+#     is how the owner spells c43's `64+51`, and a value pattern that only accepted
+#     one literal walked straight past it. The emitted check is a _Static_assert, so
+#     an arithmetic value costs nothing -- the C compiler evaluates both sides.
+#   - a mirror whose NAME starts outside the prefix list. INVALID_MENU is
+#     `#define INVALID_MENU LAST_ITEM`, so it moves every time the item table grows,
+#     and it sat at the previous pin's LAST_ITEM in four owners at once.
+#
+# Widen this list rather than special-casing a name: the cost of one more prefix is
+# a few extra asserts, and the cost of a missing one is a silent divergence.
 NAME_RE = re.compile(
     r"\bconst ((?:ITM_|TM_|FLAG_|ERROR_|TI_|SETTING_|CM_|PGM_|MAX_|MIN_|"
     r"NUMBER_OF_|SIZE_OF_|LAST_|FIRST_|REGISTER_|RESERVED_VARIABLE_|"
     r"MNU_|CST_|CATALOG_|RB_|SCRUPD_|ORTHOPOLY_|PARSER_|INDPM_|COMPARE_|"
-    r"SOLVER_|PLOT_|SUM_|MATRIX_|dt[A-Z]|am[A-Z])[A-Za-z_0-9]*)"
-    r"\s*:?\s*[a-z0-9]*\s*=\s*(0?x?[0-9A-Fa-f]+)\s*;"
+    r"SOLVER_|PLOT_|SUM_|MATRIX_|INVALID_|NOPARAM|CONFIRMED|SCREENDUMP|"
+    r"dt[A-Z]|am[A-Z])[A-Za-z_0-9]*)"
+    r"\s*:?\s*[a-z0-9]*\s*=\s*"
+    # a literal, or an arithmetic expression over literals: the assert evaluates it
+    r"((?:0?x?[0-9A-Fa-f]+)(?:\s*[-+*]\s*(?:0?x?[0-9A-Fa-f]+))*)\s*;"
 )
 
 # Constants that resolve in C but legitimately differ from the owner value.
@@ -162,13 +179,35 @@ def check_string_mirrors(zig, tmp):
     return len(checks), bad
 
 
+def normalise_value(value: str) -> str:
+    """A mirror's value as a decimal literal, for the cross-owner conflict test.
+
+    Accepts the arithmetic forms owners use to echo a C macro's own spelling
+    (`64 + 51` for c43's `64+51`). Only literals and + - * appear, so this stays a
+    closed evaluation over ints -- the real comparison against C is still the
+    _Static_assert, which sees the expression as written.
+    """
+    term = value.replace(" ", "")
+    for op in "+-*":
+        term = term.replace(op, " " + op + " ")
+    out = 0
+    pending = "+"
+    for token in term.split():
+        if token in "+-*":
+            pending = token
+            continue
+        n = int(token, 0)
+        out = out + n if pending == "+" else out - n if pending == "-" else out * n
+    return str(out)
+
+
 def collect_mirrors():
     """Return {name: value_str}; report names that carry conflicting values."""
     mirrors = {}
     conflicts = []
     for path in ZIG_SRC.rglob("*.zig"):
         for name, value in NAME_RE.findall(path.read_text(errors="ignore")):
-            norm = str(int(value, 0))  # normalise hex/dec to a decimal literal
+            norm = normalise_value(value)
             if name in mirrors and mirrors[name] != norm:
                 conflicts.append((name, mirrors[name], norm, path.name))
             else:
