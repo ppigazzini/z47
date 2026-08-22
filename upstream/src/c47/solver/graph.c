@@ -1961,6 +1961,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
 void graph_stat(uint16_t unusedButMandatoryParameter) {
     saveForUndo();
     strcpy(plotStatMx, "STATS");
+    plotXYroute = true;   // plotXYn: PLSTAT is the only route allowed
 
     if(statMxN()) {
       lastPlotMode = PLOT_NOTHING;

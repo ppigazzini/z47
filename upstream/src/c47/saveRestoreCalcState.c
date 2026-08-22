@@ -13,7 +13,7 @@
 #endif // !OPTION_DATAFILE
 
 // This is used for the state files
-#define configFileVersion                  10000026 // FLAG_SBadm
+#define configFileVersion                  10000028 // Menu items renumbered into one block
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -44,6 +44,8 @@
 10000024 // 2026-06-21 FLAG_SIGIP
 10000025 // 2026-07-03 FLAG_PDIFF PINTG PRMS PSHADE
 10000026 // 2026-07-14 FLAG_SBadm
+10000027 // 2026-08-17 FLAG_M_ALL
+10000028 // 2026-08-16 Menu items renumbered into one block; 10000027 is taken on release branch 4.00a2
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -58,6 +60,264 @@ Current version defaults all non-loaded settings from previous version files cor
                                   //                 config string length is 1680 bytes (840 x 2) so tmpRegisterString should start at max at 880 (2560 - 1680)
                                   //                 THIS VALUE NEEDS TO BE RE-EVALUATED IF THE CONFIG DATA LENGTH IS INCREASED
 static uint32_t loadedVersion = 0;
+
+
+// 2026-08-16 Menu change-over. All existing menus were moved into one block. A stored (negative) menu link in the user keyboard, MyMenu, MyAlpha and in every user menu,
+// will be pointing to the old menu number and must be converted to the new one.
+static TO_QSPI const menuRenumber_t menuRenumberTable[185] = {
+  { 1207, 2974 },   // MNU_BINOM              Binom:
+  { 1212, 2975 },   // MNU_CAUCH              Cauch:
+  { 1217, 2979 },   // MNU_EXPON              Expon:
+  { 1222, 2980 },   // MNU_F                  F:
+  { 1227, 2981 },   // MNU_GEOM               Geom:
+  { 1232, 2983 },   // MNU_HYPER              Hyper:
+  { 1237, 2977 },   // MNU_DISTR              DISTR
+  { 1242, 2984 },   // MNU_LOGIS              Logis:
+  { 1247, 2982 },   // MNU_GEV                GEV:
+  { 1252, 2985 },   // MNU_NORML              Norml:
+  { 1257, 2987 },   // MNU_POISS              Poiss:
+  { 1262, 2989 },   // MNU_T                  t:
+  { 1267, 2991 },   // MNU_WEIBL              Weibl:
+  { 1272, 2976 },   // MNU_CHI2               
+  { 1277, 2988 },   // MNU_STDNORML           
+  { 1286, 2986 },   // MNU_PARETO             Pareto:
+  { 1313, 3000 },   // MNU_ADV                ADV
+  { 1314, 3013 },   // MNU_ANGLES             ANGLES
+  { 1315, 3106 },   // MNU_PRINT              PRINT
+  { 1316, 3033 },   // MNU_CONVA              Area:
+  { 1317, 3018 },   // MNU_BITS               BITS
+  { 1318, 3022 },   // MNU_CATALOG            CAT
+  { 1319, 3023 },   // MNU_CHARS              CHARS
+  { 1320, 3024 },   // MNU_CLK                CLK
+  { 1321, 3025 },   // MNU_CLR                CLR
+  { 1322, 3027 },   // MNU_CONST              CNST
+  { 1323, 3046 },   // MNU_CPX                CPX
+  { 1324, 3047 },   // MNU_CPXS               CPXS
+  { 1325, 3048 },   // MNU_DATES              DATES
+  { 1326, 3051 },   // MNU_DISP               DISP
+  { 1327, 3057 },   // MNU_EQN                EQN
+  { 1328, 3058 },   // MNU_EXP                EXP
+  { 1329, 3036 },   // MNU_CONVE              Energy:
+  { 1330, 3059 },   // MNU_FCNS               FCNS
+  { 1331, 3061 },   // MNU_FIN                FIN
+  { 1332, 3121 },   // MNU_SINTS              S.INTS
+  { 1333, 3062 },   // MNU_FLAGS              FLAG
+  { 1335, 2997 },   // MNU_1STDERIV           f'
+  { 1336, 2998 },   // MNU_2NDDERIV           f_
+  { 1337, 3037 },   // MNU_CONVFP             F&p:
+  { 1338, 3077 },   // MNU_LINTS              L.INTS
+  { 1339, 3072 },   // MNU_INFO               INFO
+  { 1340, 3074 },   // MNU_INTS               INTS
+  { 1341, 3075 },   // MNU_IO                 I/O
+  { 1342, 3078 },   // MNU_LOOP               LOOP
+  { 1343, 3080 },   // MNU_MATRS              MATRS
+  { 1344, 3081 },   // MNU_MATX               MATX
+  { 1345, 3083 },   // MNU_MENUS              MENUS
+  { 1346, 3085 },   // MNU_MODE               MODE
+  { 1347, 3120 },   // MNU_SIMQ               M_SIMQ
+  { 1348, 3079 },   // MNU_M_EDIT             M_EDIT
+  { 1349, 3090 },   // MNU_MyMenu             MyM
+  { 1350, 3089 },   // MNU_MyAlpha            
+  { 1351, 3039 },   // MNU_CONVM              Mass:
+  { 1352, 3093 },   // MNU_ORTHOG             Orthog
+  { 1353, 3094 },   // MNU_PARTS              REAL
+  { 1354, 3108 },   // MNU_PROB               PROB
+  { 1355, 3110 },   // MNU_PROGS              PROGS
+  { 1356, 3096 },   // MNU_PFN_1              P.FN1
+  { 1357, 3097 },   // MNU_PFN_2              P.FN2
+  { 1358, 3040 },   // MNU_CONVP              Power:
+  { 1359, 3038 },   // MNU_CONVHUM            FFF+:
+  { 1360, 3111 },   // MNU_REALS              REALS
+  { 1361, 3122 },   // MNU_Solver             f Solve
+  { 1362, 3124 },   // MNU_STAT               STAT
+  { 1363, 3125 },   // MNU_STK                STK
+  { 1364, 3126 },   // MNU_STRINGS            STRINGS
+  { 1365, 3129 },   // MNU_TEST               TEST
+  { 1366, 3131 },   // MNU_TIMES              TIMES
+  { 1367, 3135 },   // MNU_TRI                TRIG
+  { 1368, 3136 },   // MNU_TVM                TVM
+  { 1369, 3137 },   // MNU_UNITCONV           CONV
+  { 1370, 3139 },   // MNU_VARS               VARS
+  { 1371, 3043 },   // MNU_CONVV              Volume:
+  { 1372, 3142 },   // MNU_XFN                X.FN
+  { 1373, 3044 },   // MNU_CONVX              Length:
+  { 1374, 3007 },   // MNU_ALPHAINTL          
+  { 1375, 3009 },   // MNU_ALPHAMATH          
+  { 1376, 3006 },   // MNU_ALPHAFN            
+  { 1377, 3004 },   // MNU_ALPHA_OMEGA        
+  { 1378, 3010 },   // MNU_ALPHAMISC          
+  { 1379, 3128 },   // MNU_SYSFL              SYS.FL
+  { 1380, 3116 },   // MNU_Sf                 
+  { 1381, 3118 },   // MNU_Sfdx               
+  { 1382, 3012 },   // MNU_ANGLECONV_43S      
+  { 1383, 3005 },   // MNU_alpha_omega        
+  { 1384, 3008 },   // MNU_ALPHAintl          
+  { 1385, 2945 },   // MNU_TAM                Tam
+  { 1386, 2947 },   // MNU_TAMCMP             TamCmp
+  { 1387, 2961 },   // MNU_TAMSTO             TamSto
+  { 1388, 3067 },   // MNU_Grapher            f Graph
+  { 1389, 3138 },   // MNU_VAR                VAR
+  { 1390, 2948 },   // MNU_TAMFLAG            TamFlag
+  { 1391, 2960 },   // MNU_TAMSHUFFLE         TamShuffle
+  { 1392, 3109 },   // MNU_PROG               PROG
+  { 1393, 2950 },   // MNU_TAMLABEL           TamLabel
+  { 1394, 3052 },   // MNU_DYNAMIC            DYNMNU
+  { 1395, 3101 },   // MNU_PLOT_SCATR         SCATR
+  { 1396, 3099 },   // MNU_PLOT_ASSESS        ASSESS
+  { 1397, 3055 },   // MNU_ELLIPT             Ellipt
+  { 1398, 3088 },   // MNU_MVAR               MVAR
+  { 1399, 3056 },   // MNU_EQ_EDIT            EQ_EDIT
+  { 1400, 3130 },   // MNU_TIMERF             STOPW
+  { 1401, 3069 },   // MNU_HIST               HIST
+  { 1402, 3071 },   // MNU_HPLOT              HPLOT
+  { 1403, 3095 },   // MNU_PFN                P.FN
+  { 1448, 3020 },   // MNU_BLUE_C47           BLUE47
+  { 1860, 3084 },   // MNU_MISC               Misc:
+  { 1881, 3019 },   // MNU_BITSET             BITSET
+  { 1883, 3073 },   // MNU_INL_TST            Inl. Tst
+  { 1901, 3035 },   // MNU_CONVCHEF           Chef:
+  { 1907, 3102 },   // MNU_PLOT_STAT          PLSTAT
+  { 1912, 2958 },   // MNU_TAMRCL             TamRcl
+  { 1913, 2946 },   // MNU_TAMALPHA           TamAlpha
+  { 1920, 3014 },   // MNU_ASN_N              
+  { 1921, 3070 },   // MNU_HOME               HOME
+  { 1922, 3003 },   // MNU_ALPHA              ALPHA
+  { 1923, 3016 },   // MNU_BASE               BASE
+  { 1925, 3053 },   // MNU_EE                 ELEC
+  { 1927, 3076 },   // MNU_KEYS               KEYS
+  { 2028, 3100 },   // MNU_PLOT_FUNC          PLFUNC
+  { 2036, 3134 },   // MNU_TRG_R47            TRG
+  { 2037, 3104 },   // MNU_PREF               PREF
+  { 2045, 3041 },   // MNU_CONVS              Speed:
+  { 2046, 3034 },   // MNU_CONVANG            Angle:
+  { 2047, 3042 },   // MNU_CONVTEMP           Temp:
+  { 2066, 3112 },   // MNU_REG                REG
+  { 2067, 3063 },   // MNU_FLG                FLG
+  { 2068, 2954 },   // MNU_TAMNONREG          TamNonReg
+  { 2080, 3113 },   // MNU_REGR               REGR
+  { 2081, 3086 },   // MNU_MODEL              MODEL
+  { 2102, 3132 },   // MNU_TRG_C47            TRG
+  { 2103, 3133 },   // MNU_TRG_C47_MORE       
+  { 2106, 3141 },   // MNU_VECT               VECTOR
+  { 2107, 3103 },   // MNU_PLOTTING           PLOT
+  { 2108, 2949 },   // MNU_TAMINDIRECT        TamIndirect
+  { 2109, 2955 },   // MNU_TAMNONREGMAX       TamNonRegMax
+  { 2151, 3064 },   // MNU_GAP_L              IPART
+  { 2152, 3066 },   // MNU_GAP_RX             RADIX
+  { 2153, 3065 },   // MNU_GAP_R              FPART
+  { 2222, 3045 },   // MNU_CONVYMMV           Ymmv:
+  { 2225, 2963 },   // MNU_TAMVARONLY         TamVarOnly
+  { 2226, 2951 },   // MNU_TAMLBLONLY         TamLblOnly
+  { 2227, 3054 },   // MNU_EIMCATALOG         CAT
+  { 2228, 3060 },   // MNU_FCNS_EIM           FCNS
+  { 2229, 3105 },   // MNU_PREFIX             PFX
+  { 2230, 3091 },   // MNU_NUMBRS             NUMBRS
+  { 2231, 3026 },   // MNU_CONFIGS            CONFIGS
+  { 2232, 3002 },   // MNU_ALLVARS            ALL
+  { 2234, 3114 },   // MNU_RESETS             RESETS
+  { 2235, 3115 },   // MNU_RIBBONS            RIBBONS
+  { 2238, 2956 },   // MNU_TAMNONREGTRK       TamNonRegTrk
+  { 2243, 3049 },   // MNU_DELETE             DELETE
+  { 2244, 3144 },   // MNU_YESNO              YESNO
+  { 2315, 3119 },   // MNU_SHOW               SHOW
+  { 2374, 3068 },   // MNU_GRAPHS             Graphs
+  { 2375, 3117 },   // MNU_Sf_TOOL            
+  { 2376, 3123 },   // MNU_Solver_TOOL        ToolS
+  { 2381, 3021 },   // MNU_CASHFL             CASHFL
+  { 2382, 3011 },   // MNU_AMORT              AMORT
+  { 2390, 3015 },   // MNU_AUDIO              AUDIO
+  { 2403, 3098 },   // MNU_PFN_3              P.FN3
+  { 2406, 2953 },   // MNU_TAMMENU            TamMenu
+  { 2407, 3082 },   // MNU_MENU               MENU
+  { 2414, 3092 },   // MNU_NUMTHEORY          NumTh
+  { 2499, 3140 },   // MNU_VECCONV            
+  { 2552, 3001 },   // MNU_AIMCATALOG         
+  { 2596, 3143 },   // MNU_XXFCNS             XFCNS
+  { 2597, 3087 },   // MNU_MULTSTK            MULTSTK
+  { 2600, 2990 },   // MNU_UNIFORM            Uniform:
+  { 2605, 2978 },   // MNU_DISUNIFORM         DisUni:
+  { 2625, 3050 },   // MNU_DEV                DEV
+  { 2638, 2962 },   // MNU_TAMSTO_TVM         TamStoTvm
+  { 2639, 2959 },   // MNU_TAMRCL_TVM         TamStoTvm
+  { 2681, 3107 },   // MNU_PRINTER            
+  { 2711, 2957 },   // MNU_TAMNORM            TamNorm
+  { 2736, 3017 },   // MNU_BASE2              BASE2
+  { 2738, 2999 },   // MNU_42                 42
+  { 2844, 3032 },   // MNU_CONV_SECTION       SecPrp:
+  { 2845, 3030 },   // MNU_CONV_MATERL        MatPrp:
+  { 2846, 3028 },   // MNU_CONV_F_LOAD        FLoads:
+  { 2847, 3029 },   // MNU_CONV_M_LOAD        MLoads:
+  { 2848, 3031 },   // MNU_CONV_P_LOAD        PLoads:
+  { 2849, 3127 },   // MNU_STRUCT             Struct:
+  { 2859, 2952 },   // MNU_TAMLOCALLABEL      TamLocalLabel
+};
+
+
+static int16_t convertOldMenuLink(int16_t item) {
+  if(item < 0) {
+    uint16_t old = (uint16_t)(-item);
+    for(uint16_t i = 0; i < nbrOfElements(menuRenumberTable); i++) {
+      if(menuRenumberTable[i].from == old) {
+        return -(int16_t)menuRenumberTable[i].to;
+      }
+      if(menuRenumberTable[i].from > old) {
+        break;
+      }
+    }
+  }
+  return item;
+}
+
+
+static void convertOldMenuItems(userMenuItem_t *items, uint16_t numberOfItems) {
+  for(uint16_t i = 0; i < numberOfItems; i++) {
+    items[i].item = convertOldMenuLink(items[i].item);
+  }
+}
+
+
+static void convertOldMenuKeyboard(calcKey_t *keys, uint16_t numberOfKeys, int16_t *normFunc) {
+  int16_t *item = &keys[0].primary;                                             // calcKey_t is nine int16_t; keyId comes first and is a key number, never an item
+  for(uint16_t k = 0; k < numberOfKeys; k++, item += sizeof(calcKey_t) / sizeof(int16_t)) {
+    for(uint16_t f = 0; f < sizeof(calcKey_t) / sizeof(int16_t) - 1; f++) {
+      item[f] = convertOldMenuLink(item[f]);
+    }
+  }
+  *normFunc = convertOldMenuLink(*normFunc);                                    // the Norm key is written back into kbd_usr on the next TO_USER, so it converts too
+}
+
+
+static void convertOldMenuConfigRegister(calcRegister_t regist) {
+  if(getRegisterDataType(regist) == dtConfig) {                                 // STOCFG copied the whole user keyboard into the descriptor, and RCLCFG copies it back
+    dtConfigDescriptor_t *cfg = REGISTER_CONFIG_DATA(regist);
+    convertOldMenuKeyboard(cfg->kbd_usr, nbrOfElements(cfg->kbd_usr), &cfg->Norm_Key_00.func);
+  }
+}
+
+
+// Runs once after a file older than the renumbering has been read, so the menu links it stored reach the menus they name.
+void convertOldMenuNumbers(void) {
+  convertOldMenuKeyboard(kbd_usr, nbrOfElements(kbd_usr), &Norm_Key_00.func);
+  convertOldMenuItems(userMenuItems, nbrOfElements(userMenuItems));
+  convertOldMenuItems(userAlphaItems, nbrOfElements(userAlphaItems));
+  if(userMenus != NULL) {
+    uint16_t menusInPool = (uint16_t)((TO_BYTES(RAM_SIZE_IN_BLOCKS) - TO_BYTES(TO_C47MEMPTR(userMenus))) / sizeof(userMenu_t));   // numberOfUserMenus from backup file, count clamped to the space left after userMenus
+    uint16_t numberOfMenus = numberOfUserMenus < menusInPool ? numberOfUserMenus : menusInPool;
+    for(uint16_t m = 0; m < numberOfMenus; m++) {
+      convertOldMenuItems(userMenus[m].menuItem, nbrOfElements(userMenus[m].menuItem));
+    }
+  }
+  for(calcRegister_t regist = FIRST_GLOBAL_REGISTER; regist <= LAST_GLOBAL_REGISTER; regist++) {
+    convertOldMenuConfigRegister(regist);
+  }
+  for(uint16_t i = 0; i < currentNumberOfLocalRegisters; i++) {
+    convertOldMenuConfigRegister(FIRST_LOCAL_REGISTER + i);
+  }
+  for(uint16_t i = 0; i < numberOfNamedVariables; i++) {
+    convertOldMenuConfigRegister(FIRST_NAMED_VARIABLE + i);
+  }
+}
+
 static char *tmpRegisterString = NULL;
 
 // When true, complex & complex matrix are written/read in the "(3-i4)" form (data files)
@@ -1840,6 +2100,9 @@ int64_t stringToInt64(const char *str) {
         if(loadedVersion < 10000026) {
           setSystemFlag(FLAG_SBadm); //the angular mode annunciator is on per default
         }
+        if(loadedVersion < 10000027) { // inclusive of this version, set the M.ALL
+          setSystemFlag(FLAG_M_ALL);
+        }
 
         // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
         if(getSystemFlag(FLAG_FRACT)) {
@@ -1890,7 +2153,7 @@ int64_t stringToInt64(const char *str) {
         freeC47Blocks(userKeyLabel, TO_BLOCKS(userKeyLabelSize));
         userKeyLabelSize = 37/*keys*/ * 6/*states*/ * 1/*byte terminator*/ + 1/*byte sentinel*/;
         userKeyLabel = allocC47Blocks(TO_BLOCKS(userKeyLabelSize));
-        if(userKeyLabel == NULL) {                                              // the memset below writes through this pointer, and this section's entries then walk it
+        if(userKeyLabel == NULL) {                                              // the memset below writes through this pointer, and this section's entries then index it
           userKeyLabelSize = 0;
           displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
         }
@@ -1920,7 +2183,7 @@ int64_t stringToInt64(const char *str) {
           str = skip_to_space_newline(str);
           if(*str == ' ') {
             str = skip_space(str);
-            // 37*6 is the ceiling userKeyLabel is allocated to above, and the one setUserKeyArgument walks to; the key comes from the file.
+            // 37*6 is the ceiling userKeyLabel is allocated to above, and the one setUserKeyArgument indexes to; the key comes from the file.
             if((*str != '\n') && (*str != 0) && key < 37/*keys*/ * 6/*states*/) {
               utf8ToStringWithLength((uint8_t *)str, tmpString + TMP_STR_LENGTH / 2, sizeof(userMenuItems[0].argumentName));
               setUserKeyArgument(key, tmpString + TMP_STR_LENGTH / 2);
@@ -2636,6 +2899,10 @@ static void doLoadDataFile(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d
     restoreOneSection(loadMode, s, n, d, false);
   }
 
+  if(loadedVersion < 10000028) {                                                // menu items renumbered into one block: a data file is written with the Conf register descriptor
+    convertOldMenuNumbers();
+  }
+
   // Sanitise loaded short integers, as doLoad does. A normal data file carries no word size, so this is a no-op; but a hand-crafted file could include an
   // OTHER_CONFIGURATION_STUFF section that reassigns shortIntegerWordSize without rederiving the mask. Rederive the mask and sign bit from the current word
   // size, then clamp every short-integer register (whole global block, named variables, local registers) to it, so no out-of-range bits survive the import.
@@ -2780,6 +3047,10 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
     // restoreOneSection() only returns false at END_CONFIG, which a file that stops short - truncated, or with a count that swallowed its last section - never
     // reaches: every further call then reads an empty section name, matches nothing and returns true. Loop on ioEof() as well, as doLoadDataFile() does.
     while(!ioEof() && restoreOneSection(loadMode, s, n, d, allowUserKeys)) {
+    }
+
+    if(loadedVersion < 10000028) {                                              // menu items renumbered into one block: move the stored menu links. Incl. LOADR and LOADV which restore a Conf register
+      convertOldMenuNumbers();
     }
 
     // Set the user primary functions for the R47 yellow and blue shift keys to their standard default value

@@ -15,6 +15,8 @@
   #define manualSave 4
   #define stateSave  5
 
+  void     convertOldMenuNumbers(void);
+
   void     fnSave        (uint16_t unusedButMandatoryParameter);
   void     fnLoad        (uint16_t loadMode);
   void     fnSaveAuto    (uint16_t unusedButMandatoryParameter);

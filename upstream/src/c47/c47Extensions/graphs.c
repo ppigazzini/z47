@@ -9,6 +9,8 @@
 
 //#define STATDEBUG
 
+bool_t    plotXYroute = false;      // plotXY: set by graph_stat (PLSTAT) only, so no other route into graph_plotmem takes the plotXY form; the option itself is FLAG_PL_2L (2LINE)
+
 bool_t    invalid_intg = true;
 bool_t    invalid_diff = true;
 bool_t    invalid_rms  = true;
@@ -45,6 +47,7 @@ void graphResetCommon() {
   clearSystemFlag(FLAG_NVECT);
   setSystemFlag(FLAG_PLINE);
   setSystemFlag(FLAG_PBOX);
+  clearSystemFlag(FLAG_PL_2L);
   clearSystemFlag(FLAG_PCURVE);
   clearSystemFlag(FLAG_PCROS);
   clearSystemFlag(FLAG_PPLUS);
@@ -83,6 +86,12 @@ void fnClGrf(uint16_t unusedButMandatoryParameter) {
 
 void fnPline(uint16_t unusedButMandatoryParameter) {
   flipSystemFlag(FLAG_PLINE);
+  fnPlotSQ(0);
+}
+
+
+void fnP2line(uint16_t unusedButMandatoryParameter) {
+  flipSystemFlag(FLAG_PL_2L);
   fnPlotSQ(0);
 }
 
@@ -350,6 +359,7 @@ void fnListXY(uint16_t unusedButMandatoryParameter) {
   void fnPlotStatAdv(uint16_t unusedButMandatoryParameter) {
     lastPlotMode = PLOT_NOTHING;
     strcpy(plotStatMx, "STATS");
+    plotXYroute = false;
     setSystemFlag(FLAG_PLINE);
     fnPlotSQ(0);
   }
@@ -888,6 +898,8 @@ void graph_plotmem(void) {
 
       if(statnum >= 2) {
         //GRAPH SETUP
+        plotXYn = (getSystemFlag(FLAG_PL_2L) && plotXYroute && plotStatMx[0] == 'S') ? statnum : 0;    // plotXYn: count-vs-value: read N rows as 2N points
+        statnum += plotXYn;                                                         // so scaling and drawing cover both series; reset to 0 at plotmemExit
 
         roundedTicks = true;
         graph_axis();                        //Draw the axis on any uncontrolled scale to start. Maybe optimize by remembering if there is an image on screen Otherwise double axis draw.
@@ -1303,15 +1315,19 @@ void graph_plotmem(void) {
           yN1 = screen_window_y_nolimit_r(y_min, &yr, y_max);
           int16_t current_y_unclipped = yN1;
 
-          if(ix == 0) {
+          if(ix == 0 || ix == plotXYn) {   // plotXYn: first point: ix == plotXYn starts the second (y column) line
+            if(plotInCurves && ix != 0) {
+              plotline3(0, 0, 0, 0, false, true);  //clear the first series' last curve segment
+              plotline3(0, 0, 0, 0, true, false);  //reset for the second series
+            }
             xo = xN1;
             yo = yN1;
             yN0 = yN1;
             prev_y_unclipped = yN1;  // Initialize for next iteration
             if(plotmode != _VECT && xN1 < SCREEN_WIDTH_GRAPH && xN1 >= (SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH) && yN1 < SCREEN_HEIGHT_GRAPH && yN1 >= 0) {
               plotPointGeneric(xN1, yN1, xN1, yN1,   // draw the first point's marker; no line (no previous point)
-                                 getSystemFlag(FLAG_PCROS), false, getSystemFlag(FLAG_PBOX),
-                                 getSystemFlag(FLAG_PPLUS), false);
+                                 (plotXYn && ix < plotXYn) ? (getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PPLUS)) : getSystemFlag(FLAG_PCROS), false, (plotXYn && ix < plotXYn) ? getSystemFlag(FLAG_PCROS) : getSystemFlag(FLAG_PBOX),
+                                 (plotXYn && ix < plotXYn) ? false : getSystemFlag(FLAG_PPLUS), false);   // plotXYn: the x line takes the other marker, a cross for BOX or PLUS, a box for CROSS
             }
             continue;  // Skip clipping/line for first point (no previous point)
           }
@@ -1414,10 +1430,10 @@ void graph_plotmem(void) {
               #endif // STATDEBUG
 
               plotPointGeneric(xn, yn, xo, yo,
-                                 getSystemFlag(FLAG_PCROS) /*cross*/ ,
-                                 false                     /*fatbox*/,
-                                 getSystemFlag(FLAG_PBOX)  /*box*/   ,
-                                 getSystemFlag(FLAG_PPLUS) /*plus*/  ,
+                                 (plotXYn && ix < plotXYn) ? (getSystemFlag(FLAG_PBOX) || getSystemFlag(FLAG_PPLUS)) : getSystemFlag(FLAG_PCROS) /*cross*/ ,   // plotXYn: the x line takes the other marker,
+                                 false                     /*fatbox*/,                                                                                        //   a cross for BOX or PLUS, a box for CROSS
+                                 (plotXYn && ix < plotXYn) ? getSystemFlag(FLAG_PCROS) : getSystemFlag(FLAG_PBOX)  /*box*/   ,
+                                 (plotXYn && ix < plotXYn) ? false : getSystemFlag(FLAG_PPLUS) /*plus*/  ,
                                  false                     /*line*/   );
 
 
@@ -1544,6 +1560,7 @@ void graph_plotmem(void) {
       }
 
 plotmemExit: ;
+      plotXYn = 0;
       #if defined(LOW_GRAPH_ACC)
         //Change to normal operation for graphs;
         ctxtReal34.digits = s34;

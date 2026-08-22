@@ -493,3 +493,28 @@ Added QRNZ to NUM font
      U+2404   ␄          HP42S EOT picture
   MOVE to
      U+2592   ▒           HP42S checkered block
+
+
+2026-08-17
+  Change in STD font the U+242E US glyph one pixel wider to not jump when exchanging with UK
+  Add to Std & Num & NumBold font:
+     U+2215   ∕           Superscript Slash
+     U+2E33   ⸳            Superscript dot
+     U+2E34   ⸴            Superscript comma
+
+2026-08-18
+  Add to Num & NumBold font (draft glyphs built from each font's own base letters, for the units on the X line):
+     U+00E0   à           Latin small a with grave        (zhàng)
+     U+00F9   ù           Latin small u with grave        (cùn)
+     U+0103   ă           Latin small a with breve        (liăng)
+     U+016D   ŭ           Latin small u with breve        (mŭ)
+     U+0113   ē           Latin small e with macron       (fēn)
+     U+012D   ĭ           Latin small i with breve        (lĭ, chĭ, yĭn; the i loses its dot as î does)
+     U+012B   ī           Latin small i with macron       (jīn)
+     U+2004               Three-per-em space, empty glyph, advance 160 = em/3 on the 32 grid   (tr oz)
+     U+00C5   Å           Latin capital A with ring       (ångström; the A body shortened to rows 8-27 / 9-29 to fit the ring)      
+  Accents sit in rows 4-9 above the x-height like the existing î; grave = the î right arm, breve a shallow bowl
+  ending level with it, macron one row higher; 3 px strokes in Num, 4 px in NumBold. Nothing else in either font changed.
+
+2026-08-18
+  Re-ordered the new glyphs above (same date) to be in Unicode sequence in fonts

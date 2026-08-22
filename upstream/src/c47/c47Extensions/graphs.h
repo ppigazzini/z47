@@ -23,6 +23,7 @@
 void    graph_reset        (void);
 void    fnClGrf            (uint16_t unusedButMandatoryParameter);
 void    fnPline            (uint16_t unusedButMandatoryParameter);
+void    fnP2line           (uint16_t unusedButMandatoryParameter);
 void    fnPcros            (uint16_t unusedButMandatoryParameter);
 void    fnPplus            (uint16_t unusedButMandatoryParameter);
 void    fnPbox             (uint16_t unusedButMandatoryParameter);
@@ -55,5 +56,6 @@ extern  real_t *const x_max;
 extern  real_t *const y_min;
 extern  real_t *const y_max;
 extern  int8_t   PLOT_ZMY;
+extern  bool_t   plotXYroute;
 
 #endif // !GRAPHS_H

@@ -126,6 +126,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_PRTACT,           FLAG_PRTACT ,           CB_JC},  // SFL_PRTACT
 //  {ITM_TRACE,            FLAG_TRACE ,            CB_JC},  // SFL_TRACE
   {ITM_ERPN,             FLAG_ERPN   ,           CB_JC},  //SetSetting
+  {ITM_M_ALL,            FLAG_M_ALL  ,           CB_JC},  //SetSetting
   {ITM_CARRY,            FLAG_CARRY  ,           CB_JC},  //SetSetting
   {ITM_OVERFLOW,         FLAG_OVERFLOW,          CB_JC},  //SetSetting
   {ITM_FRCYC,            FLAG_FRCYC  ,           CB_JC},
@@ -147,6 +148,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_INTG,             FLAG_PINTG  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_DIFF,             FLAG_PDIFF  ,           CB_JC},  // graph EQN & PLSTAT options
   {ITM_SHADE,            FLAG_PSHADE ,           CB_JC},  // graph EQN & PLSTAT options
+  {ITM_PL_2L,            FLAG_PL_2L  ,           CB_JC},  // graph PLSTAT option
   {CHR_num,              FLAG_NUMLOCK     ,      CB_JC},  //
   {ITM_USERMODE,         FLAG_USER        ,      CB_JC},  //
   {ITM_SH_LONGPRESS,     FLAG_SH_LONGPRESS,      CB_JC},  //
@@ -269,6 +271,7 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_FRACT,
   FLAG_PRTACT,
   FLAG_ERPN,
+  FLAG_M_ALL,
   FLAG_CARRY,
   FLAG_OVERFLOW,
   FLAG_FRCYC,
@@ -290,6 +293,7 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_PINTG,
   FLAG_PDIFF,
   FLAG_PSHADE,
+  FLAG_PL_2L,
   FLAG_NUMLOCK,
   FLAG_USER,
   FLAG_SH_LONGPRESS,

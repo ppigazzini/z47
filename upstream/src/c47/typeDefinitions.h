@@ -636,6 +636,16 @@ typedef struct {
 
 
 /**
+ * \struct menuRenumber_t
+ * One menu item number as it was written by an older file, and the number it has now.
+ */
+typedef struct {
+  uint16_t from;                ///< Item number in a file older than the renumbering
+  uint16_t to;                  ///< Item number now
+} menuRenumber_t;
+
+
+/**
  * \struct programmableMenu_t
  * Structure keeping the information for programmable menu.
  */

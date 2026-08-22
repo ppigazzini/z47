@@ -54,6 +54,9 @@ uint16_t convertItemToSubOrSup(uint16_t item, int16_t subOrSup) {
           case ITM_PLUS:     return ITM_SUP_PLUS;
           case ITM_MINUS:    return ITM_SUP_MINUS;
           case ITM_pi:       return ITM_SUP_pi;
+          case ITM_SLASH:    return ITM_SUP_SLASH;
+          case ITM_PERIOD:   return ITM_SUP_DOT;
+          case ITM_COMMA:    return ITM_SUP_COMMA;
           default:           return item;
         }
       }
@@ -205,6 +208,14 @@ TO_QSPI const fInMim_t MimFunctionsType1[] =
 
 TO_QSPI const fInMim_t MimFunctionsType2[] =
   {   //function
+    {ITM_ADD        },
+    {ITM_SUB        },
+    {ITM_MULT       },
+    {ITM_DIV        },
+    {ITM_PC         },
+    {ITM_DELTAPC    },
+    {ITM_YX         },
+    {ITM_XTHROOT    },
     {ITM_SQUARE     },
     {ITM_CUBE       },
     {ITM_SQUAREROOTX},
@@ -604,22 +615,10 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               ix++;
             }
             T_cursorPos = in;
-            char ixaa[AIM_BUFFER_LENGTH];                           //prepare temporary aimBuffer
-            xcopy(ixaa, aimBuffer, in);                             //copy everything up to the cursor position
-            ixaa[in]=0;                                             //stop new buffer at cursor position to be able to insert new character
-
-            //          strcat(ixaa, indexOfItems[item].itemSoftmenuName);       //add new character
             uint16_t nq = stringByteLength(indexOfItems[item].itemSoftmenuName);
-            xcopy(ixaa + in, indexOfItems[item].itemSoftmenuName, nq+1);
-            ixaa[in + nq]=0;
-
-            //          strcat(ixaa, aimBuffer + in);                            //copy rest of the aimbuffer
             uint16_t nr = stringByteLength(aimBuffer + in);
-            xcopy(ixaa + in + nq, aimBuffer + in, nr+1);
-            ixaa[in + nq + nr]=0;
-
-            //          strcpy(aimBuffer, ixaa);                                 //return temporary string to aimBuffer
-            xcopy(aimBuffer, ixaa, stringByteLength(ixaa)+1);
+            xcopy(aimBuffer + in + nq, aimBuffer + in, nr + 1);      //shift the tail, its terminator included
+            xcopy(aimBuffer + in, indexOfItems[item].itemSoftmenuName, nq);
 
             T_cursorPos = stringNextGlyph(aimBuffer, T_cursorPos);  //place the cursor at the next glyph boundary
             //JMCURSOR ^^ REPLACES THE FOLLOWING XCOPY, WHICH NORMALLY JUST ADDS A CHARACTER TO THE END OF THE STRING

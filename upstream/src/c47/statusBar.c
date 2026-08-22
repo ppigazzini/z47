@@ -263,7 +263,9 @@ void drawBattery(uint16_t voltage);
     bool_t dd = didSystemFlagChange(SETTING_DMX);
     bool_t ee = didSystemFlagChange(FLAG_DENFIX);
     bool_t ff = didSystemFlagChange(FLAG_DENANY);
-    if(aa || bb || cc || dd || ee || ff) {
+    bool_t gg = (SBlastIntegerBaseShown != lastIntegerBase);  // base mode #BASE / #KEY A-F
+    SBlastIntegerBaseShown = lastIntegerBase;
+    if(aa || bb || cc || dd || ee || ff || gg) {
       char statusMessage[20];
       uint32_t x = X_FRAC_MODE;
 

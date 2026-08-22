@@ -371,7 +371,10 @@ void hmmssInRegisterToSeconds(calcRegister_t regist) {
   real34Copy(REGISTER_REAL34_DATA(regist), &real34);
   reallocateRegister(regist, dtTime, 0, amNone);
   hmmssToSeconds(&real34, REGISTER_REAL34_DATA(regist));
-  checkTimeRange(REGISTER_REAL34_DATA(regist));
+  // The range compare reads a NaN as too large. A NaN passes through.
+  if(!real34IsNaN(REGISTER_REAL34_DATA(regist))) {
+    checkTimeRange(REGISTER_REAL34_DATA(regist));
+  }
 }
 
 void checkTimeRange(const real34_t *time34) {
@@ -919,9 +922,12 @@ void fnHRtoTM(uint16_t unusedButMandatoryParameter) {
           }
       }
   #pragma GCC diagnostic pop
-  checkTimeRange(REGISTER_REAL34_DATA(REGISTER_X));
-  if(lastErrorCode != 0) {
-    undo();
+  // The range compare reads a NaN as too large. A NaN passes through.
+  if(!real34IsNaN(REGISTER_REAL34_DATA(REGISTER_X))) {
+    checkTimeRange(REGISTER_REAL34_DATA(REGISTER_X));
+    if(lastErrorCode != 0) {
+      undo();
+    }
   }
 }
 

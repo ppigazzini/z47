@@ -398,7 +398,13 @@ void generateAllConstants(void) {
          generateConstant("1e_16",          1, EXACT,  "+1e-16"                                                       );
          generateConstant("1e_12",          1, EXACT,  "+1e-12"                                                       );
          generateConstant("1e_6",           1, EXACT,  "+1e-06"                                                       );
+         generateConstant("1on15",         39, APPROX, "+6.666666666666666666666666666666666666666666666666666667e-02");
+         generateConstant("1on13",         39, APPROX, "+7.692307692307692307692307692307692307692307692307692308e-02");
+         generateConstant("1on11",         39, APPROX, "+9.090909090909090909090909090909090909090909090909090909e-02");
          generateConstant("1on10",          1, EXACT,  "+1e-01"                                                       );
+         generateConstant("1on9",          39, APPROX, "+1.111111111111111111111111111111111111111111111111111111e-01");
+         generateConstant("1on7",          39, APPROX, "+1.428571428571428571428571428571428571428571428571428571e-01");
+         generateConstant("1on5",           1, EXACT,  "+0.2"                                                         );
          generateConstant("1on4",           2, EXACT,  "+0.25"                                                        );
          generateConstant("1on3",          39, APPROX, "+3.333333333333333333333333333333333333333333333333333333e-01");
          generateConstant("1on2",           1, EXACT,  "+0.5"                                                         );
@@ -820,6 +826,23 @@ void generateAllConstants(void) {
                                                           //"4077130781982095518828264308656881250060360551433930164192854696829391452795768512016906242813187161" // 20101
                          );
 
+
+         // atan at 39 digits and below: see WP34S_Atan_table_compute in mathematics/wp34s.c.
+         generateConstant("atan1on10",     39, APPROX, "+9.96686524911620273784461198780205902432783225e-02"          );
+         generateConstant("atan2on10",     39, APPROX, "+1.97395559849880758370049765194790293447585104e-01"          );
+         generateConstant("atan3on10",     39, APPROX, "+2.91456794477867091995604621432891193503167599e-01"          );
+         generateConstant("atan4on10",     39, APPROX, "+3.80506377112364886303587916810433104497405714e-01"          );
+         generateConstant("atan5on10",     39, APPROX, "+4.63647609000806116214256231461214402028537054e-01"          );
+         generateConstant("atan6on10",     39, APPROX, "+5.40419500270584155443578364608599910135148251e-01"          );
+         generateConstant("atan7on10",     39, APPROX, "+6.10725964389208616543758876490236093818503066e-01"          );
+         generateConstant("atan8on10",     39, APPROX, "+6.74740942223552663056520973609813615074006255e-01"          );
+         generateConstant("atan9on10",     39, APPROX, "+7.32815101786506591640792072734280251985755679e-01"          );
+         // Not 1/(2k+1): the free coefficients of a minimax fit over |u| <= 1/20 at 39 digits.
+         generateConstant("atanP08",       39, APPROX, "+5.88235294117635483734738191199420912622753155e-02"          ); // ~ 1/17
+         generateConstant("atanP09",       39, APPROX, "+5.26315789443942758667128543544940282091645887e-02"          ); // ~ 1/19
+         generateConstant("atanP10",       39, APPROX, "+4.76190446023476911807542251871257726274481032e-02"          ); // ~ 1/21
+         generateConstant("atanP11",       39, APPROX, "+4.34767486097412251055138336790895484367719034e-02"          ); // ~ 1/23
+         generateConstant("atanP12",       39, APPROX, "+3.96246778934737269592105123305741380722977897e-02"          ); // ~ 1/25
 
          generateConstant34("0",           "+0.000000000000000000000000000000000e+00"); // 0 must be the 1st const34 constant
          generateConstant34("_4712",       "-4.712000000000000000000000000000000e+03");

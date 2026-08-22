@@ -24,6 +24,7 @@ double    tick_int_x;
 double    tick_int_y;
 uint32_t  xzero;
 uint32_t  yzero;
+uint16_t  plotXYn = 0;      // plotXYn: Counter, also boolean enabler;
 
 
 
@@ -53,6 +54,9 @@ void statGraphReset(void){
     float xf=0;
     real_t xr;
 
+    if(plotXYn) {
+      return (float)(i % plotXYn);                     // count-vs-value: x is the sample index
+    }
     calcRegister_t regStats = regStatsXY;
     if(regStats != INVALID_VARIABLE) {
       real34Matrix_t stats;
@@ -69,6 +73,10 @@ void statGraphReset(void){
 
 
   void grf_x_r(int i, real_t *v) {                   // real_t reader of the stat/draw matrix; the float grf_x stays for float-precision consumers
+    if(plotXYn) {
+      int32ToReal(i % plotXYn, v);                   // count-vs-value: x is the sample index
+      return;
+    }
     calcRegister_t regStats = regStatsXY;
     if(regStats != INVALID_VARIABLE) {
       real34Matrix_t stats;
@@ -88,7 +96,7 @@ void statGraphReset(void){
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
       const uint16_t cols = stats.header.matrixColumns;
-      real34ToReal(&stats.matrixElements[i * cols + 1], v);
+      real34ToReal(&stats.matrixElements[plotXYn ? (i % plotXYn) * cols + i / plotXYn : i * cols + 1], v);   // count-vs-value: the x column for i < N, the y column after
     }
     else {
       realSetZero(v);
@@ -114,7 +122,7 @@ void statGraphReset(void){
       real34Matrix_t stats;
       linkToRealMatrixRegister(regStats, &stats);
       const uint16_t cols = stats.header.matrixColumns;
-      real34ToReal(&stats.matrixElements[i * cols + 1], &yr);
+      real34ToReal(&stats.matrixElements[plotXYn ? (i % plotXYn) * cols + i / plotXYn : i * cols + 1], &yr);   // count-vs-value: the x column for i < N, the y column after
       realToFloat(&yr, &yf);
     }
     else {

@@ -247,8 +247,8 @@
    * \param[in] prefixWidth
    */
   #define regXp true
-  #define toDisplayVectorMatrix true
-  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t toDisplay, bool_t regXposition);
+  void     showRealMatrix                 (const real34Matrix_t *matrix, int16_t prefixWidth, bool_t regXposition, char *dest);
+  void     getRealMatrixIntegerColumns    (const real34Matrix_t *matrix, uint16_t dispFormat, uint16_t cols, uint16_t sRow, uint16_t sCol, uint16_t maxRows, uint16_t maxCols, bool_t *allElementsInColAreIntegers);
 
   /**
    * Calculates width of columns of a real matrix.
