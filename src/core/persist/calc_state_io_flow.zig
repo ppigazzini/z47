@@ -4,6 +4,7 @@ const header_owned = @import("calc_state_header.zig");
 const policy_owned = @import("calc_state_policy.zig");
 const runtime = @import("calc_state_runtime.zig");
 const codec = @import("calc_state_register_codec.zig");
+const restore_owned = @import("calc_state_restore.zig");
 
 // --- Data-file (register import) primitives ---
 extern fn ioFileOpen(path: c_int, mode: c_int) c_int;
@@ -95,6 +96,11 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         // never reaches: every further call then reads an empty section name, matches
         // nothing and returns true. Loop on ioEof() as well, as doLoadDataFile() does.
         while (runtime.ioEof() == 0 and runtime.restoreOneSection(load_mode, s, n, d, allow_user_keys)) {}
+
+        // Menu items renumbered into one block: move the stored menu links. This
+        // covers LOADR and LOADV too, which restore a Conf register.
+        if (header.loaded_version < 10000028) restore_owned.convertOldMenuNumbers();
+
         runtime.fixupR47ShiftKeys();
 
         // The register section precedes shortIntegerWordSize in the file and the
@@ -179,6 +185,10 @@ pub fn doLoadDataFile(load_mode: u16, s: u16, n: u16, d: u16) void {
     while (runtime.ioEof() == 0) {
         _ = runtime.restoreOneSection(load_mode, s, n, d, false);
     }
+
+    // Menu items renumbered into one block: a data file is written with the Conf
+    // register descriptor, so its stored menu links move too.
+    if (runtime.getLoadedVersion() < 10000028) restore_owned.convertOldMenuNumbers();
 
     // Sanitise loaded short integers, as doLoad does. A normal data file carries
     // no word size, so this is a no-op; but a hand-crafted file could include an

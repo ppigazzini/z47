@@ -443,6 +443,7 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1744, .param = 32775, .radioButton = 142 },
     .{ .itemNr = 1948, .param = 49184, .radioButton = 142 },
     .{ .itemNr = 1853, .param = 32837, .radioButton = 142 },
+    .{ .itemNr = 2730, .param = 32882, .radioButton = 142 }, // ITM_M_ALL FLAG_M_ALL
     .{ .itemNr = 1851, .param = 32779, .radioButton = 142 },
     .{ .itemNr = 1852, .param = 32780, .radioButton = 142 },
     .{ .itemNr = 1896, .param = 32833, .radioButton = 142 },
@@ -464,6 +465,7 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 2024, .param = 32876, .radioButton = 142 }, // ITM_INTG  FLAG_PINTG
     .{ .itemNr = 2025, .param = 32877, .radioButton = 142 }, // ITM_DIFF  FLAG_PDIFF
     .{ .itemNr = 2027, .param = 32878, .radioButton = 142 }, // ITM_SHADE FLAG_PSHADE
+    .{ .itemNr = 2731, .param = 32883, .radioButton = 142 }, // ITM_PL_2L FLAG_PL_2L
     .{ .itemNr = 2029, .param = 32835, .radioButton = 142 },
     .{ .itemNr = 1729, .param = 32788, .radioButton = 142 },
     .{ .itemNr = 2039, .param = 32830, .radioButton = 142 },
@@ -572,6 +574,7 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32775, // FLAG_FRACT
     49184, // FLAG_PRTACT
     32837, // FLAG_ERPN
+    32882, // FLAG_M_ALL
     32779, // FLAG_CARRY
     32780, // FLAG_OVERFLOW
     32833, // FLAG_FRCYC
@@ -593,6 +596,7 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32876, // FLAG_PINTG
     32877, // FLAG_PDIFF
     32878, // FLAG_PSHADE
+    32883, // FLAG_PL_2L
     32835, // FLAG_NUMLOCK
     32788, // FLAG_USER
     32830, // FLAG_SH_LONGPRESS

@@ -14,7 +14,7 @@
 //     fnDRG, shrinkNimBuffer, fnChangeBaseJM / fnChangeBaseMNU, fnInDefault,
 //     fnByteShortcutsS/U, fnStrtoReg / fnStrtoX /
 //     fnStrInputReal34 / fnStrInputLongint / fnIntInputLongint, fnRCL,
-//     timeToReal34, dms34ToReal34, notSexa, fnHrDeg / fnMinute /
+//     timeToReal34, notSexa, fnHrDeg / fnMinute /
 //     fnSecond / fnTimeTo, fnToTime (+ toTimeParamReg), the IRFRAC
 //     engine (getSmallestDenom / changeToSup/Sub/WholeString / checkForAndChange),
 //     fnSafeReset, the MyMenu/MyAlpha reset machinery (assignToMyMenu_/assignToMyAlpha_,
@@ -304,18 +304,18 @@ const ITM_stkexV4: u16 = 1968;
 const ITM_MATX_A_1: u16 = 2623;
 const ITM_SPACE_4_PER_EM: i16 = 870;
 
-const MNU_EQN: i16 = 1327;
-const MNU_Sfdx: i16 = 1381;
-const MNU_Solver_TOOL: i16 = 2376;
-const MNU_Sf_TOOL: i16 = 2375;
-const MNU_GRAPHS: i16 = 2374;
-const MNU_MVAR: i16 = 1398;
-const MNU_ALPHA: i16 = 1922;
-const MNU_TAM: i16 = 1385;
-const MNU_SYSFL: i16 = 1379;
-const MNU_PREFIX: i16 = 2229;
-const MNU_PFN: i16 = 1403;
-const MNU_HOME: i16 = 1921;
+const MNU_EQN: i16 = 3057;
+const MNU_Sfdx: i16 = 3118;
+const MNU_Solver_TOOL: i16 = 3123;
+const MNU_Sf_TOOL: i16 = 3117;
+const MNU_GRAPHS: i16 = 3068;
+const MNU_MVAR: i16 = 3088;
+const MNU_ALPHA: i16 = 3003;
+const MNU_TAM: i16 = 2945;
+const MNU_SYSFL: i16 = 3128;
+const MNU_PREFIX: i16 = 3105;
+const MNU_PFN: i16 = 3095;
+const MNU_HOME: i16 = 3070;
 
 const SOLVER_STATUS_USES_FORMULA: u16 = 256;
 const SOLVER_STATUS_INTERACTIVE: u16 = 2;
@@ -422,12 +422,12 @@ const ITM_RIBBON_R47PL: i16 = 2512;
 const ASSIGN_CLEAR: i16 = -32768;
 
 // ribbon body item/menu ids
-const MNU_CPX: i16 = 1323;
-const MNU_MATX: i16 = 1344;
+const MNU_CPX: i16 = 3046;
+const MNU_MATX: i16 = 3081;
 const ITM_CONSTpi: i16 = 109;
 const ITM_EXP: i16 = 65;
-const MNU_TRG_C47: i16 = 2102;
-const MNU_TRG_R47: i16 = 2036;
+const MNU_TRG_C47: i16 = 3132;
+const MNU_TRG_R47: i16 = 3134;
 const ITM_SYSTEM2: i16 = 2043;
 const ITM_ACTUSB: i16 = 2044;
 const ITM_SAVE: i16 = 1586;
@@ -441,18 +441,18 @@ const ITM_DELTAPC: i16 = 1666;
 const ITM_YX: i16 = 60;
 const ITM_SQUARE: i16 = 58;
 const ITM_10x: i16 = 67;
-const MNU_FIN: i16 = 1331;
+const MNU_FIN: i16 = 3061;
 const ITM_PCPMG: i16 = 1699;
 const ITM_PCT: i16 = 1697;
-const MNU_TVM: i16 = 1368;
+const MNU_TVM: i16 = 3136;
 const ITM_DRG: i16 = 1873;
 const ITM_EE_EXP_TH: i16 = 1816;
 const ITM_DSP: i16 = 1573;
 const ITM_DREAL: i16 = 1899;
 const ITM_Rup: i16 = 39;
 const ITM_TIMER: i16 = 1622;
-const MNU_LOOP: i16 = 1342;
-const MNU_TEST: i16 = 1365;
+const MNU_LOOP: i16 = 3078;
+const MNU_TEST: i16 = 3129;
 const ITM_XTHROOT: i16 = 63;
 const ITM_XFACT: i16 = 108;
 
@@ -543,21 +543,21 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
-const const_1 = constR(5112);
-const const_1on2 = constR(4836);
-const const_1on4 = constR(4788);
-const const39_root3on2 = constR(5028);
-const const39_rt3 = constR(5976);
+const const_1 = constR(5304);
+const const_1on2 = constR(5028);
+const const_1on4 = constR(4980);
+const const39_root3on2 = constR(5220);
+const const39_rt3 = constR(6168);
 const const_1e_16 = constR(4740);
 const const_1e_24 = constR(4728);
-const const_10p9__1 = constR(5856);
+const const_10p9__1 = constR(6048);
 const const39_pi = constR(1848);
-const const34_10 = constR34(16680);
-const const34_60 = constR34(16792);
-const const34_100 = constR34(16808);
-const const34_3600 = constR34(16936);
-const const34_0 = constR34(16456);
-const const34_24 = constR34(16728);
+const const34_10 = constR34(17376);
+const const34_60 = constR34(17488);
+const const34_100 = constR34(17504);
+const const34_3600 = constR34(17632);
+const const34_0 = constR34(17152);
+const const34_24 = constR34(17424);
 
 // ===========================================================================
 // C-arrays bound by address (NOT pointer-typed externs).
@@ -3348,95 +3348,6 @@ pub export fn timeToReal34(hms: u16) callconv(.c) void {
     }
 }
 
-pub export fn dms34ToReal34(dms: u16) callconv(.c) void {
-    var angle34: real34_t = undefined;
-    const regist: calcRegister_t = REGISTER_X;
-    var d34: real34_t = undefined;
-    var m34: real34_t = undefined;
-    var s34: real34_t = undefined;
-    var fs34: real34_t = undefined;
-    real34Copy(reg34(regist), &angle34);
-
-    var m: u32 = undefined;
-    var s: u32 = undefined;
-    var fs: u32 = undefined;
-    var sign: i16 = undefined;
-
-    var temp: real_t = undefined;
-    var degrees: real_t = undefined;
-    var minutes: real_t = undefined;
-    var seconds: real_t = undefined;
-
-    real34ToReal(&angle34, &temp);
-
-    sign = 1 - 2 * @as(i16, @intFromBool(realIsNegative(&temp) != 0));
-    realSetPositiveSign(&temp);
-
-    // Get the degrees
-    frontier_register_value_conversions.realToIntegralValue(&temp, &degrees, DEC_ROUND_DOWN, &ctxtReal39);
-
-    // Get the minutes
-    realSubtract(&temp, &degrees, &temp, &ctxtReal39);
-    temp.exponent += 2; // temp = temp * 100
-    frontier_register_value_conversions.realToIntegralValue(&temp, &minutes, DEC_ROUND_DOWN, &ctxtReal39);
-
-    // Get the seconds
-    realSubtract(&temp, &minutes, &temp, &ctxtReal39);
-    temp.exponent += 2;
-    frontier_register_value_conversions.realToIntegralValue(&temp, &seconds, DEC_ROUND_DOWN, &ctxtReal39);
-
-    // Get the fractional seconds
-    realSubtract(&temp, &seconds, &temp, &ctxtReal39);
-    temp.exponent += 2;
-
-    fs = frontier_real_type.realToUint32C47(&temp, null);
-    s = frontier_real_type.realToUint32C47(&seconds, null);
-    m = frontier_real_type.realToUint32C47(&minutes, null);
-
-    if (fs >= 100) {
-        fs -= 100;
-        s += 1;
-    }
-
-    if (s >= 60) {
-        s -= 60;
-        m += 1;
-    }
-
-    if (m >= 60) {
-        m -= 60;
-        realAdd(&degrees, const_1, &degrees, &ctxtReal39);
-    }
-
-    var ptr: ?*align(1) real34_t = null;
-    switch (dms) {
-        0 => { // d
-            realToReal34(&degrees, &d34);
-            ptr = &d34;
-        },
-        1 => { // m
-            int32ToReal34(@intCast(m), &m34);
-            ptr = &m34;
-        },
-        2 => { // s
-            int32ToReal34(@intCast(fs), &fs34);
-            real34Divide(&fs34, const34_100, &fs34);
-
-            int32ToReal34(@intCast(s), &s34);
-            real34Add(&s34, &fs34, &s34);
-
-            ptr = &s34;
-        },
-        else => ptr = null,
-    }
-
-    if (sign == -1) {
-        real34ChangeSign(ptr.?);
-    }
-    reallocateRegister(regist, dtReal34, 0, amNone);
-    real34Copy(ptr.?, reg34(regist));
-}
-
 pub export fn notSexa() callconv(.c) void {
     copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
     frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
@@ -3453,9 +3364,7 @@ pub export fn fnHrDeg(unusedButMandatoryParameter: u16) callconv(.c) void {
     if (saveLastX() == 0) {
         return;
     }
-    if (getRegisterAngularMode(REGISTER_X) == amDMS and getRegisterDataType(REGISTER_X) == dtReal34) {
-        dms34ToReal34(0);
-    } else if (getRegisterDataType(REGISTER_X) == dtTime) {
+    if (getRegisterDataType(REGISTER_X) == dtTime) {
         timeToReal34(0);
     } else {
         notSexa();
@@ -3468,7 +3377,9 @@ pub export fn fnMinute(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
     if (getRegisterAngularMode(REGISTER_X) == amDMS and getRegisterDataType(REGISTER_X) == dtReal34) {
-        dms34ToReal34(1);
+        fnTo_ms(0);
+        timeToReal34(1);
+        temporaryInformation = TI_NO_INFO; // the conversion sets TI_FROM_DMS; the result is a plain real
     } else if (getRegisterDataType(REGISTER_X) == dtTime) {
         timeToReal34(1);
     } else {
@@ -3482,7 +3393,9 @@ pub export fn fnSecond(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
     if (getRegisterAngularMode(REGISTER_X) == amDMS and getRegisterDataType(REGISTER_X) == dtReal34) {
-        dms34ToReal34(2);
+        fnTo_ms(0);
+        timeToReal34(2);
+        temporaryInformation = TI_NO_INFO; // the conversion sets TI_FROM_DMS; the result is a plain real
     } else if (getRegisterDataType(REGISTER_X) == dtTime) {
         timeToReal34(2);
     } else {
@@ -3496,15 +3409,7 @@ pub export fn fnTimeTo(unusedButMandatoryParameter: u16) callconv(.c) void {
         return;
     }
 
-    if (getRegisterAngularMode(REGISTER_X) == amDMS and getRegisterDataType(REGISTER_X) == dtReal34) {
-        dms34ToReal34(0);
-        liftStack();
-        copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
-        dms34ToReal34(1);
-        liftStack();
-        copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);
-        dms34ToReal34(2);
-    } else if (getRegisterDataType(REGISTER_X) == dtTime) {
+    if (getRegisterDataType(REGISTER_X) == dtTime) {
         timeToReal34(0);
         liftStack();
         copySourceRegisterToDestRegister(REGISTER_L, REGISTER_X);

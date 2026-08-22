@@ -187,8 +187,8 @@ const ITM_UP1: u16 = 1733;
 const ITM_DOWN1: u16 = 1735;
 const ITM_AVIEW: u16 = 2018;
 const ITM_PROMPT: u16 = 2020;
-const MNU_SHOW: i16 = 2315;
-const MNU_XXFCNS: i16 = 2596;
+const MNU_SHOW: i16 = 3119;
+const MNU_XXFCNS: i16 = 3143;
 
 const clrStatusBar: bool_t = 1;
 const clrRegisterLines: bool_t = 1;
@@ -196,7 +196,6 @@ const clrSoftkeys: bool_t = 1;
 const stdnumEnlarge: c_int = 2;
 const nocompress: c_int = 0;
 const regXp: bool_t = 1;
-const toDisplayVectorMatrix: bool_t = 1;
 
 const TI_NO_INFO: u8 = 0;
 const TI_SHOW_REGISTER: u8 = 14;
@@ -209,6 +208,8 @@ const TI_SHOWNOTHING: u8 = 93;
 
 const PGM_RUNNING: u8 = 1;
 const SCRUPD_MANUAL_STATUSBAR: u8 = 0x01;
+const SCRUPD_MANUAL_STACK: u8 = 0x02;
+const SCRUPD_MANUAL_MENU: u8 = 0x04;
 const SCRUPD_SKIP_STATUSBAR_ONE_TIME: u8 = 0x10;
 
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
@@ -315,35 +316,35 @@ const oneOverE = "(" ++ STD_EulerE ++ STD_SUP_MINUS ++ STD_SUP_1 ++ STD_SPACE_HA
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1 = constR(5112);
-const const_1000 = constR(5636);
-const const_1024 = constR(5648);
-const const_60 = constR(5552);
-const const_3600 = constR(5704);
-const const_86400 = constR(5780);
-const const_100 = constR(7788);
-const const_24 = constR(5424);
-const const_12 = constR(5400);
-const const39_ln2 = constR(4884);
-const const39_root2 = constR(4920);
+const const_1 = constR(5304);
+const const_1000 = constR(5828);
+const const_1024 = constR(5840);
+const const_60 = constR(5744);
+const const_3600 = constR(5896);
+const const_86400 = constR(5972);
+const const_100 = constR(7980);
+const const_24 = constR(5616);
+const const_12 = constR(5592);
+const const39_ln2 = constR(5076);
+const const39_root2 = constR(5112);
 const const39_pi = constR(1848);
 const const39_eE = constR(176);
 const const39_PHI = constR(1596);
-const const39_rt3 = constR(5976);
-const const39_rt5 = constR(6012);
-const const39_rt7 = constR(6048);
-const const39_rtpi = constR(6108);
-const const39_1onpi = constR(6144);
+const const39_rt3 = constR(6168);
+const const39_rt5 = constR(6204);
+const const39_rt7 = constR(6240);
+const const39_rtpi = constR(6300);
+const const39_1onpi = constR(6336);
 const const39_1oneE = constR(4644);
-const const39_pisq = constR(6180);
-const const39_eEsq = constR(6216);
-const const39_1onpisq = constR(6252);
-const const39_1oneEsq = constR(6288);
+const const39_pisq = constR(6372);
+const const39_eEsq = constR(6408);
+const const39_1onpisq = constR(6444);
+const const39_1oneEsq = constR(6480);
 const const_plusInfinity = constR(1696);
 const const_minusInfinity = constR(1684);
 const const_1e_24 = constR(4728);
-const const34_1e_24 = constR34(16504);
-const const34_2p32 = constR34(17144);
+const const34_1e_24 = constR34(17200);
+const const34_2p32 = constR34(17840);
 
 // ---------------------------------------------------------------------------
 // font tables: real extern const structs (taken by &name).
@@ -390,6 +391,8 @@ extern var overrideShowBottomLine: u8;
 extern var currentViewRegister: u16;
 extern var programRunStop: u8;
 extern var screenUpdatingMode: u8;
+extern var hourGlassIconEnabled: bool;
+extern fn showHideHourGlass() void;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var numberOfNamedVariables: u16;
@@ -1084,15 +1087,10 @@ pub export fn angle34ToDisplayString2(angle34: *align(1) const real34_t, modeIn:
         displayFormatDigits = savedDisplayFormatDigits;
         displayFormat = savedDisplayFormat;
 
-        const slen: i32 = @intCast(strlen(&degStr));
-        const rx = Rx();
-        const radix = RADIX34_MARK_STRING();
-        const mlen: i32 = if ((rx[0] & 0x80) != 0) @intCast(strlen(radix)) else @intCast(strlen(rx));
-        const marker: [*c]const u8 = if ((rx[0] & 0x80) != 0) radix else rx;
-        if (slen >= mlen and strcmp(@as([*c]const u8, &degStr) + @as(usize, @intCast(slen - mlen)), marker) == 0) {
-            degStr[@intCast(slen - mlen)] = 0;
-        }
+        // remove the '.' radix indicating it is a real
+        frontier_char_string.stripTrailingRadix(&degStr);
 
+        const radix = RADIX34_MARK_STRING();
         var tt: [4]u8 = undefined;
         if (radix[1] != 1) {
             _ = strcpy(&tt, radix);
@@ -3237,6 +3235,13 @@ pub export fn timeToDisplayString(regist: calcRegister_t, displayString: [*c]u8,
     const savedDisplayFormat = displayFormat;
     const savedDisplayFormatDigits = displayFormatDigits;
 
+    // The fraction loop below never ends on a NaN, and under ignoreTDisp there is
+    // no digit cap to stop it.
+    if (real34IsNaN(reg34(regist))) {
+        real34ToString(reg34(regist), displayString);
+        return;
+    }
+
     real34ToReal(reg34(regist), &real);
     sign = @intFromBool(realIsNegative(&real));
 
@@ -3506,9 +3511,9 @@ pub export fn vectorToDisplayString(regist: calcRegister_t, displayString: [*c]u
         if ((r == 1 and c == 3) or (r == 3 and c == 1) or (r == 1 and c == 2) or (r == 2 and c == 1)) {
             var matrix: real34Matrix_t = undefined;
             linkToRealMatrixRegister(regist, &matrix);
-            frontier_matrix_editor.showRealMatrix(&matrix, 0, (toDisplayVectorMatrix == 0), regXp != 0);
-            abi.fmtCStr(displayString, "{s}", .{@as([*:0]const u8, errorMessage)});
-            return 1;
+            frontier_matrix_editor.showRealMatrix(&matrix, 0, regXp != 0, displayString);
+            // An empty result means showRealMatrix refused; the caller then shows [n<*>n Matrix].
+            return @intFromBool(displayString[0] != 0);
         }
     }
     return 0;
@@ -3672,7 +3677,7 @@ fn dispM(regist: u16, prefix: [*c]u8) void {
     if (getRegisterDataType(@intCast(regist)) == dtReal34Matrix) {
         var matrix: real34Matrix_t = undefined;
         linkToRealMatrixRegister(@intCast(regist), &matrix);
-        frontier_matrix_editor.showRealMatrix(&matrix, @intCast(prefixWidth), toDisplayVectorMatrix != 0, (regXp == 0));
+        frontier_matrix_editor.showRealMatrix(&matrix, @intCast(prefixWidth), (regXp == 0), null);
         if (lastErrorCode != 0) {
             frontier_screen.refreshRegisterLine(errorMessageRegisterLine);
         }
@@ -4247,6 +4252,10 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             frontier_screen.clearScreenOld(@intFromBool(clrStatusBar == 0), clrRegisterLines, clrSoftkeys);
             dispM(showRegis, tmpString + 2100);
             frontier_screen.drawSinglePixelFullWidthLine(Y_POSITION_OF_REGISTER_T_LINE - 4);
+            hourGlassIconEnabled = false; // the refresh below is skipped, so clear the hourglass here
+            showHideHourGlass();
+            // the matrix is drawn here; leave the stack and the menu to the refresh
+            screenUpdatingMode |= (SCRUPD_MANUAL_MENU | SCRUPD_MANUAL_STACK);
             temporaryInformation = TI_SHOWNOTHING;
             if (programRunStop == PGM_RUNNING) {
                 frontier_screen.refreshScreen(150);

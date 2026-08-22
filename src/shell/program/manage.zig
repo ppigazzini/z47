@@ -313,16 +313,16 @@ const VAR_UY: u16 = 2547;
 const VAR_LY: u16 = 2548;
 
 // MNU_* (for _closeAlphaMenus)
-const MNU_CATALOG: i16 = 1318;
-const MNU_MyAlpha: i16 = 1350;
-const MNU_ALPHAINTL: i16 = 1374;
-const MNU_ALPHAMATH: i16 = 1375;
-const MNU_ALPHA_OMEGA: i16 = 1377;
-const MNU_alpha_omega: i16 = 1383;
-const MNU_ALPHAintl: i16 = 1384;
-const MNU_DYNAMIC: u16 = 1394;
-const MNU_PFN: i16 = 1403;
-const MNU_ALPHA: i16 = 1922;
+const MNU_CATALOG: i16 = 3022;
+const MNU_MyAlpha: i16 = 3089;
+const MNU_ALPHAINTL: i16 = 3007;
+const MNU_ALPHAMATH: i16 = 3009;
+const MNU_ALPHA_OMEGA: i16 = 3004;
+const MNU_alpha_omega: i16 = 3005;
+const MNU_ALPHAintl: i16 = 3008;
+const MNU_DYNAMIC: u16 = 3052;
+const MNU_PFN: i16 = 3095;
+const MNU_ALPHA: i16 = 3003;
 
 // videoMode_t
 const vmNormal: c_int = 0;

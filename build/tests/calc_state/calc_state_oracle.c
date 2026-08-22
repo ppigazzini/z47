@@ -57,6 +57,7 @@
 #define fnLoadedFile oracle_fnLoadedFile
 #define fnDeleteBackup oracle_fnDeleteBackup
 #define doLoad oracle_doLoad
+#define convertOldMenuNumbers oracle_convertOldMenuNumbers
 
 #define fnSaveStackRegisters oracle_fnSaveStackRegisters
 #define fnSaveXFNRegister oracle_fnSaveXFNRegister

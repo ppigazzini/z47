@@ -27,9 +27,9 @@ const ITM_RIBBON_ENG: u16 = 2513;
 const ITM_RIBBON_FIN2: u16 = 2514;
 const ITM_RIBBON_SAV2: u16 = 2515;
 
-const MNU_HOME: i16 = 1921;
-const MNU_PFN: i16 = 1403;
-const MNU_MyMenu: i16 = 1349;
+const MNU_HOME: i16 = 3070;
+const MNU_PFN: i16 = 3095;
+const MNU_MyMenu: i16 = 3090;
 
 const FLAG_USER: u16 = 0x8014;
 const FLAG_MYM_TRIPLE: u16 = 0x805f;

@@ -102,7 +102,7 @@ const REAL34_SIZE_IN_BYTES: usize = 16;
 
 const FIRST_CONSTANT: u32 = 128; // CST_01
 const LAST_CONSTANT: u32 = 212; // CST_84
-const LAST_ITEM: u32 = 2933;
+const LAST_ITEM: u32 = 3244;
 const EIM_STATUS: u16 = 0x0100;
 const EIM_ENABLED: u16 = 1 << 8;
 
@@ -179,9 +179,9 @@ const ITM_FPHERE: u16 = 2377;
 const ITM_FPPHERE: u16 = 2378;
 const ITM_INTEGRAL_YX: u16 = 1690;
 
-const MNU_GRAPHS: u16 = 2374;
-const MNU_Sf_TOOL: u16 = 2375;
-const MNU_Solver_TOOL: u16 = 2376;
+const MNU_GRAPHS: u16 = 3068;
+const MNU_Sf_TOOL: u16 = 3117;
+const MNU_Solver_TOOL: u16 = 3123;
 
 // PARSER_OPERATOR_ITM_* (equation.c #defines)
 const PARSER_OPERATOR_ITM_PARENTHESIS_LEFT: u16 = 5000;

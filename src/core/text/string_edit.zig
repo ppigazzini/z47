@@ -72,6 +72,17 @@ pub fn findTwoChars(str: [*]const u8, char1: u8, char2: u8, position: *u16) bool
     return false;
 }
 
+/// stripTrailingRadix: drop `marker` from the end of `str` when it is the last
+/// thing in the buffer, leaving the string untouched otherwise. The caller picks
+/// the marker, which is the radix glyph the display is currently set to.
+pub fn stripTrailingRadix(str: [*]u8, marker: [*]const u8) void {
+    const len = byteLen(str);
+    const marker_len = byteLen(marker);
+    if (len < marker_len) return;
+    if (!std.mem.eql(u8, str[len - marker_len ..][0..marker_len], marker[0..marker_len])) return;
+    str[len - marker_len] = 0;
+}
+
 const testing = std.testing;
 
 fn cstr(comptime in: []const u8, buf: []u8) [*]u8 {
@@ -127,4 +138,32 @@ test "findTwoChars returns false when the pair is absent" {
 test "findTwoChars needs the two chars adjacent, not merely present" {
     var pos: u16 = 0;
     try testing.expect(!findTwoChars("XaY", 'X', 'Y', &pos));
+}
+
+test "stripTrailingRadix drops the marker only at the very end" {
+    var buf: [16]u8 = undefined;
+    var mk: [4]u8 = undefined;
+    const marker = cstr(".", &mk);
+
+    var s = cstr("12.", &buf);
+    stripTrailingRadix(s, marker);
+    try testing.expectEqualStrings("12", std.mem.sliceTo(s, 0));
+
+    s = cstr("1.2", &buf);
+    stripTrailingRadix(s, marker);
+    try testing.expectEqualStrings("1.2", std.mem.sliceTo(s, 0));
+}
+
+test "stripTrailingRadix handles a multi-byte marker and a too-short string" {
+    var buf: [16]u8 = undefined;
+    var mk: [4]u8 = undefined;
+    const marker = cstr("\xa0\x2c", &mk);
+
+    var s = cstr("7\xa0\x2c", &buf);
+    stripTrailingRadix(s, marker);
+    try testing.expectEqualStrings("7", std.mem.sliceTo(s, 0));
+
+    s = cstr("\x2c", &buf);
+    stripTrailingRadix(s, marker);
+    try testing.expectEqualStrings("\x2c", std.mem.sliceTo(s, 0));
 }

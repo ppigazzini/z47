@@ -27,7 +27,7 @@ const NUMBER_OF_RESERVED_VARIABLES: usize = 48;
 const NUMBER_OF_LETTERED_VARIABLES: calcRegister_t = 31;
 const REGISTER_X: calcRegister_t = 100;
 const C47_NULL: u32 = 65535;
-const LAST_ITEM: u32 = 2933;
+const LAST_ITEM: u32 = 3244;
 const CAT_STATUS: u16 = 0x00f0;
 const CAT_MENU: u16 = 2 << 4;
 

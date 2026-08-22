@@ -238,9 +238,9 @@
       "step": "math_atan_oracle",
       "what": "atan skips its 1/x range reduction",
       "file": "src/core/numeric/trig/wp34s_atan.zig",
-      "find": "    invert.* = @intFromBool(math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_1())));",
-      "replace": "    invert.* = 0;",
-      "why": "Every case in this lane runs at ctxtReal39, so the 1071-digit selector is unreachable from it and a mutant there SURVIVED as an equivalent. This one is on the 39-digit path the lane actually drives. NOTE: no lane in this tree drives the 1071-digit atan or atan2 implementations at all."
+      "find": "    const invert = math_comparison_reals.realCompareGreaterThan(@alignCast(a), @alignCast(const_1()));",
+      "replace": "    const invert = false;",
+      "why": "Every case in this lane runs at ctxtReal39, and at the 9af328a87 pin that precision reduces against a tenth-spaced table rather than through the Taylor series -- so a mutant in the Taylor kernel is unreachable from here and this one moved to the table path's own reduction. Without it an argument above one lands outside the table and the lane's 2, 10 and 1E100 cases all move. NOTE: no lane in this tree drives the Taylor path or the 1071-digit implementations at all."
     },
     {
       "lane": "math_atan2",

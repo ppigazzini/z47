@@ -735,7 +735,10 @@ pub export fn hmmssInRegisterToSeconds(regist: calcRegister_t) linksection(code_
     real34Copy(reg34(regist), &real34);
     reallocateRegister(regist, dtTime, 0, amNoneU);
     hmmssToSeconds(&real34, reg34(regist));
-    checkTimeRange(reg34(regist));
+    // The range compare reads a NaN as too large. A NaN passes through.
+    if (!real34IsNaN(reg34(regist))) {
+        checkTimeRange(reg34(regist));
+    }
 }
 
 pub export fn checkTimeRange(time34: *const real34_t) linksection(code_section) callconv(.c) void {
@@ -1303,9 +1306,12 @@ fn fnHRtoTMCore() TimeError!void {
         },
         else => return error.HRtoTMBadType,
     }
-    checkTimeRange(reg34(REGISTER_X));
-    if (lastErrorCode != 0) {
-        undo();
+    // The range compare reads a NaN as too large. A NaN passes through.
+    if (!real34IsNaN(reg34(REGISTER_X))) {
+        checkTimeRange(reg34(REGISTER_X));
+        if (lastErrorCode != 0) {
+            undo();
+        }
     }
 }
 

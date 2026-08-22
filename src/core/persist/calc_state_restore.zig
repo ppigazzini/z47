@@ -48,6 +48,10 @@ inline fn currentNumberOfLocalRegisters() u8 {
     return currentSubroutineLevelData[0].numberOfLocalRegisters;
 }
 const FIRST_NAMED_VARIABLE: i16 = 256;
+const FIRST_GLOBAL_REGISTER: i16 = 0;
+const dtConfig: u32 = 9;
+extern fn getRegisterDataType(regist: i16) u32;
+extern var numberOfNamedVariables: u16;
 const REGISTER_X: i16 = 100; // == FIRST_LETTERED_REGISTER
 const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
 const ERROR_RAM_FULL: u8 = 11;
@@ -108,8 +112,8 @@ const built_for_r47: bool = build_options.calc_model_user_id == USER_R47;
 const is_dmcp_build = builtin.target.os.tag == .freestanding;
 
 const ITM_END: i32 = 1458;
-const MNU_HOME: i16 = 1921;
-const MNU_MyMenu: i16 = 1349;
+const MNU_HOME: i16 = 3070;
+const MNU_MyMenu: i16 = 3090;
 const CMP_NAME: i32 = 3;
 const CFG_DFLT: u16 = 0;
 
@@ -142,6 +146,7 @@ const FLAG_BCD: c_uint = 32857;
 const FLAG_TOPHEX: c_uint = 32856;
 const FLAG_LARGELI: c_uint = 32838;
 const FLAG_ERPN: c_uint = 32837;
+const FLAG_M_ALL: c_uint = 32882;
 const FLAG_CPXMULT: c_uint = 32836;
 const FLAG_PFX_ALL: c_uint = 32841;
 
@@ -316,6 +321,263 @@ extern var pcg32_global: pcg32_random_t;
 extern var calcModel: u8;
 extern var hourGlassIconEnabled: bool;
 extern var cancelFilename: bool;
+
+// ---------------------------------------------------------------------------
+// Menu change-over (2026-08-16). Every existing menu moved into one block, so a
+// stored (negative) menu link -- in the user keyboard, in MyMenu, in MyAlpha and
+// in every user menu -- still names the old number and has to be converted.
+// ---------------------------------------------------------------------------
+const MenuRenumber = struct { from: u16, to: u16 };
+
+const menuRenumberTable = [_]MenuRenumber{
+    .{ .from = 1207, .to = 2974 }, // MNU_BINOM              Binom:
+    .{ .from = 1212, .to = 2975 }, // MNU_CAUCH              Cauch:
+    .{ .from = 1217, .to = 2979 }, // MNU_EXPON              Expon:
+    .{ .from = 1222, .to = 2980 }, // MNU_F                  F:
+    .{ .from = 1227, .to = 2981 }, // MNU_GEOM               Geom:
+    .{ .from = 1232, .to = 2983 }, // MNU_HYPER              Hyper:
+    .{ .from = 1237, .to = 2977 }, // MNU_DISTR              DISTR
+    .{ .from = 1242, .to = 2984 }, // MNU_LOGIS              Logis:
+    .{ .from = 1247, .to = 2982 }, // MNU_GEV                GEV:
+    .{ .from = 1252, .to = 2985 }, // MNU_NORML              Norml:
+    .{ .from = 1257, .to = 2987 }, // MNU_POISS              Poiss:
+    .{ .from = 1262, .to = 2989 }, // MNU_T                  t:
+    .{ .from = 1267, .to = 2991 }, // MNU_WEIBL              Weibl:
+    .{ .from = 1272, .to = 2976 }, // MNU_CHI2
+    .{ .from = 1277, .to = 2988 }, // MNU_STDNORML
+    .{ .from = 1286, .to = 2986 }, // MNU_PARETO             Pareto:
+    .{ .from = 1313, .to = 3000 }, // MNU_ADV                ADV
+    .{ .from = 1314, .to = 3013 }, // MNU_ANGLES             ANGLES
+    .{ .from = 1315, .to = 3106 }, // MNU_PRINT              PRINT
+    .{ .from = 1316, .to = 3033 }, // MNU_CONVA              Area:
+    .{ .from = 1317, .to = 3018 }, // MNU_BITS               BITS
+    .{ .from = 1318, .to = 3022 }, // MNU_CATALOG            CAT
+    .{ .from = 1319, .to = 3023 }, // MNU_CHARS              CHARS
+    .{ .from = 1320, .to = 3024 }, // MNU_CLK                CLK
+    .{ .from = 1321, .to = 3025 }, // MNU_CLR                CLR
+    .{ .from = 1322, .to = 3027 }, // MNU_CONST              CNST
+    .{ .from = 1323, .to = 3046 }, // MNU_CPX                CPX
+    .{ .from = 1324, .to = 3047 }, // MNU_CPXS               CPXS
+    .{ .from = 1325, .to = 3048 }, // MNU_DATES              DATES
+    .{ .from = 1326, .to = 3051 }, // MNU_DISP               DISP
+    .{ .from = 1327, .to = 3057 }, // MNU_EQN                EQN
+    .{ .from = 1328, .to = 3058 }, // MNU_EXP                EXP
+    .{ .from = 1329, .to = 3036 }, // MNU_CONVE              Energy:
+    .{ .from = 1330, .to = 3059 }, // MNU_FCNS               FCNS
+    .{ .from = 1331, .to = 3061 }, // MNU_FIN                FIN
+    .{ .from = 1332, .to = 3121 }, // MNU_SINTS              S.INTS
+    .{ .from = 1333, .to = 3062 }, // MNU_FLAGS              FLAG
+    .{ .from = 1335, .to = 2997 }, // MNU_1STDERIV           f'
+    .{ .from = 1336, .to = 2998 }, // MNU_2NDDERIV           f_
+    .{ .from = 1337, .to = 3037 }, // MNU_CONVFP             F&p:
+    .{ .from = 1338, .to = 3077 }, // MNU_LINTS              L.INTS
+    .{ .from = 1339, .to = 3072 }, // MNU_INFO               INFO
+    .{ .from = 1340, .to = 3074 }, // MNU_INTS               INTS
+    .{ .from = 1341, .to = 3075 }, // MNU_IO                 I/O
+    .{ .from = 1342, .to = 3078 }, // MNU_LOOP               LOOP
+    .{ .from = 1343, .to = 3080 }, // MNU_MATRS              MATRS
+    .{ .from = 1344, .to = 3081 }, // MNU_MATX               MATX
+    .{ .from = 1345, .to = 3083 }, // MNU_MENUS              MENUS
+    .{ .from = 1346, .to = 3085 }, // MNU_MODE               MODE
+    .{ .from = 1347, .to = 3120 }, // MNU_SIMQ               M_SIMQ
+    .{ .from = 1348, .to = 3079 }, // MNU_M_EDIT             M_EDIT
+    .{ .from = 1349, .to = 3090 }, // MNU_MyMenu             MyM
+    .{ .from = 1350, .to = 3089 }, // MNU_MyAlpha
+    .{ .from = 1351, .to = 3039 }, // MNU_CONVM              Mass:
+    .{ .from = 1352, .to = 3093 }, // MNU_ORTHOG             Orthog
+    .{ .from = 1353, .to = 3094 }, // MNU_PARTS              REAL
+    .{ .from = 1354, .to = 3108 }, // MNU_PROB               PROB
+    .{ .from = 1355, .to = 3110 }, // MNU_PROGS              PROGS
+    .{ .from = 1356, .to = 3096 }, // MNU_PFN_1              P.FN1
+    .{ .from = 1357, .to = 3097 }, // MNU_PFN_2              P.FN2
+    .{ .from = 1358, .to = 3040 }, // MNU_CONVP              Power:
+    .{ .from = 1359, .to = 3038 }, // MNU_CONVHUM            FFF+:
+    .{ .from = 1360, .to = 3111 }, // MNU_REALS              REALS
+    .{ .from = 1361, .to = 3122 }, // MNU_Solver             f Solve
+    .{ .from = 1362, .to = 3124 }, // MNU_STAT               STAT
+    .{ .from = 1363, .to = 3125 }, // MNU_STK                STK
+    .{ .from = 1364, .to = 3126 }, // MNU_STRINGS            STRINGS
+    .{ .from = 1365, .to = 3129 }, // MNU_TEST               TEST
+    .{ .from = 1366, .to = 3131 }, // MNU_TIMES              TIMES
+    .{ .from = 1367, .to = 3135 }, // MNU_TRI                TRIG
+    .{ .from = 1368, .to = 3136 }, // MNU_TVM                TVM
+    .{ .from = 1369, .to = 3137 }, // MNU_UNITCONV           CONV
+    .{ .from = 1370, .to = 3139 }, // MNU_VARS               VARS
+    .{ .from = 1371, .to = 3043 }, // MNU_CONVV              Volume:
+    .{ .from = 1372, .to = 3142 }, // MNU_XFN                X.FN
+    .{ .from = 1373, .to = 3044 }, // MNU_CONVX              Length:
+    .{ .from = 1374, .to = 3007 }, // MNU_ALPHAINTL
+    .{ .from = 1375, .to = 3009 }, // MNU_ALPHAMATH
+    .{ .from = 1376, .to = 3006 }, // MNU_ALPHAFN
+    .{ .from = 1377, .to = 3004 }, // MNU_ALPHA_OMEGA
+    .{ .from = 1378, .to = 3010 }, // MNU_ALPHAMISC
+    .{ .from = 1379, .to = 3128 }, // MNU_SYSFL              SYS.FL
+    .{ .from = 1380, .to = 3116 }, // MNU_Sf
+    .{ .from = 1381, .to = 3118 }, // MNU_Sfdx
+    .{ .from = 1382, .to = 3012 }, // MNU_ANGLECONV_43S
+    .{ .from = 1383, .to = 3005 }, // MNU_alpha_omega
+    .{ .from = 1384, .to = 3008 }, // MNU_ALPHAintl
+    .{ .from = 1385, .to = 2945 }, // MNU_TAM                Tam
+    .{ .from = 1386, .to = 2947 }, // MNU_TAMCMP             TamCmp
+    .{ .from = 1387, .to = 2961 }, // MNU_TAMSTO             TamSto
+    .{ .from = 1388, .to = 3067 }, // MNU_Grapher            f Graph
+    .{ .from = 1389, .to = 3138 }, // MNU_VAR                VAR
+    .{ .from = 1390, .to = 2948 }, // MNU_TAMFLAG            TamFlag
+    .{ .from = 1391, .to = 2960 }, // MNU_TAMSHUFFLE         TamShuffle
+    .{ .from = 1392, .to = 3109 }, // MNU_PROG               PROG
+    .{ .from = 1393, .to = 2950 }, // MNU_TAMLABEL           TamLabel
+    .{ .from = 1394, .to = 3052 }, // MNU_DYNAMIC            DYNMNU
+    .{ .from = 1395, .to = 3101 }, // MNU_PLOT_SCATR         SCATR
+    .{ .from = 1396, .to = 3099 }, // MNU_PLOT_ASSESS        ASSESS
+    .{ .from = 1397, .to = 3055 }, // MNU_ELLIPT             Ellipt
+    .{ .from = 1398, .to = 3088 }, // MNU_MVAR               MVAR
+    .{ .from = 1399, .to = 3056 }, // MNU_EQ_EDIT            EQ_EDIT
+    .{ .from = 1400, .to = 3130 }, // MNU_TIMERF             STOPW
+    .{ .from = 1401, .to = 3069 }, // MNU_HIST               HIST
+    .{ .from = 1402, .to = 3071 }, // MNU_HPLOT              HPLOT
+    .{ .from = 1403, .to = 3095 }, // MNU_PFN                P.FN
+    .{ .from = 1448, .to = 3020 }, // MNU_BLUE_C47           BLUE47
+    .{ .from = 1860, .to = 3084 }, // MNU_MISC               Misc:
+    .{ .from = 1881, .to = 3019 }, // MNU_BITSET             BITSET
+    .{ .from = 1883, .to = 3073 }, // MNU_INL_TST            Inl. Tst
+    .{ .from = 1901, .to = 3035 }, // MNU_CONVCHEF           Chef:
+    .{ .from = 1907, .to = 3102 }, // MNU_PLOT_STAT          PLSTAT
+    .{ .from = 1912, .to = 2958 }, // MNU_TAMRCL             TamRcl
+    .{ .from = 1913, .to = 2946 }, // MNU_TAMALPHA           TamAlpha
+    .{ .from = 1920, .to = 3014 }, // MNU_ASN_N
+    .{ .from = 1921, .to = 3070 }, // MNU_HOME               HOME
+    .{ .from = 1922, .to = 3003 }, // MNU_ALPHA              ALPHA
+    .{ .from = 1923, .to = 3016 }, // MNU_BASE               BASE
+    .{ .from = 1925, .to = 3053 }, // MNU_EE                 ELEC
+    .{ .from = 1927, .to = 3076 }, // MNU_KEYS               KEYS
+    .{ .from = 2028, .to = 3100 }, // MNU_PLOT_FUNC          PLFUNC
+    .{ .from = 2036, .to = 3134 }, // MNU_TRG_R47            TRG
+    .{ .from = 2037, .to = 3104 }, // MNU_PREF               PREF
+    .{ .from = 2045, .to = 3041 }, // MNU_CONVS              Speed:
+    .{ .from = 2046, .to = 3034 }, // MNU_CONVANG            Angle:
+    .{ .from = 2047, .to = 3042 }, // MNU_CONVTEMP           Temp:
+    .{ .from = 2066, .to = 3112 }, // MNU_REG                REG
+    .{ .from = 2067, .to = 3063 }, // MNU_FLG                FLG
+    .{ .from = 2068, .to = 2954 }, // MNU_TAMNONREG          TamNonReg
+    .{ .from = 2080, .to = 3113 }, // MNU_REGR               REGR
+    .{ .from = 2081, .to = 3086 }, // MNU_MODEL              MODEL
+    .{ .from = 2102, .to = 3132 }, // MNU_TRG_C47            TRG
+    .{ .from = 2103, .to = 3133 }, // MNU_TRG_C47_MORE
+    .{ .from = 2106, .to = 3141 }, // MNU_VECT               VECTOR
+    .{ .from = 2107, .to = 3103 }, // MNU_PLOTTING           PLOT
+    .{ .from = 2108, .to = 2949 }, // MNU_TAMINDIRECT        TamIndirect
+    .{ .from = 2109, .to = 2955 }, // MNU_TAMNONREGMAX       TamNonRegMax
+    .{ .from = 2151, .to = 3064 }, // MNU_GAP_L              IPART
+    .{ .from = 2152, .to = 3066 }, // MNU_GAP_RX             RADIX
+    .{ .from = 2153, .to = 3065 }, // MNU_GAP_R              FPART
+    .{ .from = 2222, .to = 3045 }, // MNU_CONVYMMV           Ymmv:
+    .{ .from = 2225, .to = 2963 }, // MNU_TAMVARONLY         TamVarOnly
+    .{ .from = 2226, .to = 2951 }, // MNU_TAMLBLONLY         TamLblOnly
+    .{ .from = 2227, .to = 3054 }, // MNU_EIMCATALOG         CAT
+    .{ .from = 2228, .to = 3060 }, // MNU_FCNS_EIM           FCNS
+    .{ .from = 2229, .to = 3105 }, // MNU_PREFIX             PFX
+    .{ .from = 2230, .to = 3091 }, // MNU_NUMBRS             NUMBRS
+    .{ .from = 2231, .to = 3026 }, // MNU_CONFIGS            CONFIGS
+    .{ .from = 2232, .to = 3002 }, // MNU_ALLVARS            ALL
+    .{ .from = 2234, .to = 3114 }, // MNU_RESETS             RESETS
+    .{ .from = 2235, .to = 3115 }, // MNU_RIBBONS            RIBBONS
+    .{ .from = 2238, .to = 2956 }, // MNU_TAMNONREGTRK       TamNonRegTrk
+    .{ .from = 2243, .to = 3049 }, // MNU_DELETE             DELETE
+    .{ .from = 2244, .to = 3144 }, // MNU_YESNO              YESNO
+    .{ .from = 2315, .to = 3119 }, // MNU_SHOW               SHOW
+    .{ .from = 2374, .to = 3068 }, // MNU_GRAPHS             Graphs
+    .{ .from = 2375, .to = 3117 }, // MNU_Sf_TOOL
+    .{ .from = 2376, .to = 3123 }, // MNU_Solver_TOOL        ToolS
+    .{ .from = 2381, .to = 3021 }, // MNU_CASHFL             CASHFL
+    .{ .from = 2382, .to = 3011 }, // MNU_AMORT              AMORT
+    .{ .from = 2390, .to = 3015 }, // MNU_AUDIO              AUDIO
+    .{ .from = 2403, .to = 3098 }, // MNU_PFN_3              P.FN3
+    .{ .from = 2406, .to = 2953 }, // MNU_TAMMENU            TamMenu
+    .{ .from = 2407, .to = 3082 }, // MNU_MENU               MENU
+    .{ .from = 2414, .to = 3092 }, // MNU_NUMTHEORY          NumTh
+    .{ .from = 2499, .to = 3140 }, // MNU_VECCONV
+    .{ .from = 2552, .to = 3001 }, // MNU_AIMCATALOG
+    .{ .from = 2596, .to = 3143 }, // MNU_XXFCNS             XFCNS
+    .{ .from = 2597, .to = 3087 }, // MNU_MULTSTK            MULTSTK
+    .{ .from = 2600, .to = 2990 }, // MNU_UNIFORM            Uniform:
+    .{ .from = 2605, .to = 2978 }, // MNU_DISUNIFORM         DisUni:
+    .{ .from = 2625, .to = 3050 }, // MNU_DEV                DEV
+    .{ .from = 2638, .to = 2962 }, // MNU_TAMSTO_TVM         TamStoTvm
+    .{ .from = 2639, .to = 2959 }, // MNU_TAMRCL_TVM         TamStoTvm
+    .{ .from = 2681, .to = 3107 }, // MNU_PRINTER
+    .{ .from = 2711, .to = 2957 }, // MNU_TAMNORM            TamNorm
+    .{ .from = 2736, .to = 3017 }, // MNU_BASE2              BASE2
+    .{ .from = 2738, .to = 2999 }, // MNU_42                 42
+    .{ .from = 2844, .to = 3032 }, // MNU_CONV_SECTION       SecPrp:
+    .{ .from = 2845, .to = 3030 }, // MNU_CONV_MATERL        MatPrp:
+    .{ .from = 2846, .to = 3028 }, // MNU_CONV_F_LOAD        FLoads:
+    .{ .from = 2847, .to = 3029 }, // MNU_CONV_M_LOAD        MLoads:
+    .{ .from = 2848, .to = 3031 }, // MNU_CONV_P_LOAD        PLoads:
+    .{ .from = 2849, .to = 3127 }, // MNU_STRUCT             Struct:
+    .{ .from = 2859, .to = 2952 }, // MNU_TAMLOCALLABEL      TamLocalLabel
+};
+
+fn convertOldMenuLink(item: i16) i16 {
+    if (item < 0) {
+        const old: u16 = @intCast(-item);
+        for (menuRenumberTable) |row| {
+            if (row.from == old) return -@as(i16, @intCast(row.to));
+            if (row.from > old) break; // the table is in ascending `from` order
+        }
+    }
+    return item;
+}
+
+fn convertOldMenuItems(items: []userMenuItem_t) void {
+    for (items) |*it| it.item = convertOldMenuLink(it.item);
+}
+
+fn convertOldMenuKeyboard(keys: []calcKey_t, norm_func: *i16) void {
+    for (keys) |*key| {
+        // keyId comes first and is a key number, never an item.
+        const fields: *[8]i16 = @ptrCast(&key.primary);
+        for (fields) |*field| field.* = convertOldMenuLink(field.*);
+    }
+    // The Norm key is written back into kbd_usr on the next TO_USER, so it converts too.
+    norm_func.* = convertOldMenuLink(norm_func.*);
+}
+
+fn convertOldMenuConfigRegister(regist: i16) void {
+    // STOCFG copied the whole user keyboard into the descriptor, and RCLCFG copies it back.
+    if (getRegisterDataType(regist) != dtConfig) return;
+    const cfg = abi.registerConfig(regist);
+    convertOldMenuKeyboard(cfg.kbd_usr[0..], &cfg.Norm_Key_00.func);
+}
+
+/// Runs once after a file older than the renumbering has been read, so the menu
+/// links it stored reach the menus they name.
+pub export fn convertOldMenuNumbers() callconv(.c) void {
+    convertOldMenuKeyboard(kbd_usr[0..], &Norm_Key_00.func);
+    convertOldMenuItems(userMenuItems[0..]);
+    convertOldMenuItems(userAlphaItems[0..]);
+    if (userMenus != null) {
+        // numberOfUserMenus comes from the file; clamp it to the space left after userMenus.
+        const g = geometry();
+        const menus_in_pool: u16 = @intCast((TO_BYTES(g.ram_size_in_blocks) - TO_BYTES(progmem.toC47memptr(g, @intFromPtr(userMenus)))) / @sizeOf(userMenu_t));
+        const count = @min(numberOfUserMenus, menus_in_pool);
+        var m: u16 = 0;
+        while (m < count) : (m += 1) {
+            convertOldMenuItems(userMenus[m].menuItem[0..]);
+        }
+    }
+    var regist: i16 = FIRST_GLOBAL_REGISTER;
+    while (regist <= LAST_GLOBAL_REGISTER) : (regist += 1) {
+        convertOldMenuConfigRegister(regist);
+    }
+    var i: u16 = 0;
+    while (i < currentNumberOfLocalRegisters()) : (i += 1) {
+        convertOldMenuConfigRegister(FIRST_LOCAL_REGISTER + @as(i16, @intCast(i)));
+    }
+    i = 0;
+    while (i < numberOfNamedVariables) : (i += 1) {
+        convertOldMenuConfigRegister(FIRST_NAMED_VARIABLE + @as(i16, @intCast(i)));
+    }
+}
 
 // --- OTHER_CONFIGURATION_STUFF scalars ---
 extern var firstGregorianDay: u32;
@@ -620,6 +882,8 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             if (loaded_version < 10000024) setSystemFlag(FLAG_SIGZEROS); // C saveRestoreCalcState.c:1738-1740
             // The angular mode annunciator is on per default.
             if (loaded_version < 10000026) setSystemFlag(FLAG_SBadm); // C saveRestoreCalcState.c:1741-1743
+            // Inclusive of this version, set the M.ALL.
+            if (loaded_version < 10000027) setSystemFlag(FLAG_M_ALL);
             if (getSystemFlag(@intCast(FLAG_FRACT))) {
                 setSystemFlag(FLAG_FRACT);
             } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {

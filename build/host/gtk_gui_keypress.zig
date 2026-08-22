@@ -77,18 +77,18 @@ const TI_SHOW_REGISTER_BIG = 75;
 const TI_SHOW_REGISTER_SMALL = 76;
 const TI_SHOW_REGISTER_TINY = 77;
 const TI_SHOWNOTHING = 93;
-const MNU_ALPHA = 1922;
-const MNU_M_EDIT = 1348;
-const MNU_EQ_EDIT = 1399;
-const MNU_SYSFL = 1379;
-const MNU_VAR = 1389;
-const MNU_PROG = 1392;
-const MNU_ALPHA_OMEGA = 1377;
-const MNU_alpha_omega = 1383;
-const MNU_ALPHAMISC = 1378;
-const MNU_ALPHAMATH = 1375;
-const MNU_ALPHAINTL = 1374;
-const MNU_ALPHAintl = 1384;
+const MNU_ALPHA = 3003;
+const MNU_M_EDIT = 3079;
+const MNU_EQ_EDIT = 3056;
+const MNU_SYSFL = 3128;
+const MNU_VAR = 3138;
+const MNU_PROG = 3109;
+const MNU_ALPHA_OMEGA = 3004;
+const MNU_alpha_omega = 3005;
+const MNU_ALPHAMISC = 3010;
+const MNU_ALPHAMATH = 3009;
+const MNU_ALPHAINTL = 3007;
+const MNU_ALPHAintl = 3008;
 const GDK_KEY_Shift_L = 65505;
 const GDK_KEY_Shift_R = 65506;
 const GDK_KEY_Alt_R = 65514;
@@ -281,15 +281,15 @@ const ITM_tan = 79;
 const ITM_toPOL2 = 1849;
 const ITM_toREC2 = 1850;
 const KEY_COMPLEX = 1848;
-const MNU_DISP = 1326;
-const MNU_EXP = 1328;
-const MNU_HOME = 1921;
-const MNU_MODE = 1346;
-const MNU_MVAR = 1398;
-const MNU_MyMenu = 1349;
-const MNU_PREF = 2037;
-const MNU_PREFIX = 2229;
-const MNU_STK = 1363;
+const MNU_DISP = 3051;
+const MNU_EXP = 3058;
+const MNU_HOME = 3070;
+const MNU_MODE = 3085;
+const MNU_MVAR = 3088;
+const MNU_MyMenu = 3090;
+const MNU_PREF = 3104;
+const MNU_PREFIX = 3105;
+const MNU_STK = 3125;
 const NOPARAM = 9876;
 const SCRUPD_AUTO = 0;
 const TM_FLAGR = 10004;
@@ -458,7 +458,11 @@ pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopa
             if ((CTRL_State != 65536 or allow_altgr) and
                 (catalog == 0 or (catalog != 0 and currentMenu() == -MNU_MVAR)) and
                 (!(tamArrowsMacro() or tam.mode == TM_STORCL or tam.mode == TM_MENU) or @as(u8, @truncate(event.keyval)) == GDK_KEY_apostrophe) and
-                (calcMode == CM_NORMAL or calcMode == CM_NIM or calcMode == CM_PEM or calcMode == CM_TIMER or (calcMode == CM_ASSIGN and itemToBeAssigned == 0)) and
+                (calcMode == CM_NORMAL or calcMode == CM_NIM or calcMode == CM_PEM or calcMode == CM_TIMER or
+                    // matrix editor: the STO and RCL shortcuts are allowed
+                    (calcMode == CM_MIM and (eventKeyStripCapslock(event) == GDK_KEY_m or eventKeyStripCapslock(event) == GDK_KEY_r)) or
+                    // ASN TO is not included: assigning needs a KEY or a SOFTKEY under the mouse
+                    (calcMode == CM_ASSIGN and itemToBeAssigned == 0)) and
                 !getSystemFlag(FLAG_ALPHA))
             {
                 event_key_command = eventKeyStripCapslock(event);
@@ -480,8 +484,8 @@ pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopa
                 if (shortCutCommand(w, ekc, GDK_KEY_o, shortcutProfile == USER_C47, true, tam.mode != 0, "", "03", 0b01101, -1, ITM_LOG10)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_l, shortcutProfile == USER_C47, true, tam.mode != 0, "", "04", 0b01101, -1, ITM_LN)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_x, shortcutProfile == USER_C47, false, false, "", "05", 0b01101, -1, ITM_XEQ)) break :body;
-                if (shortCutCommand(w, ekc, GDK_KEY_m, shortcutProfile == USER_C47, true, tam.mode != 0, "", "06", 0b01101, -1, ITM_STO)) break :body;
-                if (shortCutCommand(w, ekc, GDK_KEY_r, shortcutProfile == USER_C47, true, tam.mode != 0, "", "07", 0b01101, -1, ITM_RCL)) break :body;
+                if (shortCutCommand(w, ekc, GDK_KEY_m, shortcutProfile == USER_C47, true, tam.mode != 0, "", "06", 0b1000000001101, -1, ITM_STO)) break :body;
+                if (shortCutCommand(w, ekc, GDK_KEY_r, shortcutProfile == USER_C47, true, tam.mode != 0, "", "07", 0b1000000001101, -1, ITM_RCL)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_d, shortcutProfile == USER_C47, true, tam.mode != 0, "", "08", 0b01101, -1, ITM_Rdown)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_s, shortcutProfile == USER_C47, true, tam.mode != 0, "", "09", 0b01101, -1, ITM_sin)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_i, shortcutProfile == USER_C47, false, tam.mode != 0, "g", "09", 0b11101, -1, ITM_op_j)) break :body;
@@ -559,8 +563,8 @@ pub fn keyPressedCImpl(w: ?*anyopaque, event_opaque: ?*anyopaque, data: ?*anyopa
                 if (shortCutCommand(w, ekc, GDK_KEY_asciicircum, shortcutProfile == USER_R47, true, tam.mode != 0, "", "03", 0b01101, -1, ITM_YX)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_o, shortcutProfile == USER_R47, true, tam.mode != 0, "", "04", 0b01101, -1, ITM_LOG10)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_l, shortcutProfile == USER_R47, true, tam.mode != 0, "", "05", 0b01101, -1, ITM_LN)) break :body;
-                if (shortCutCommand(w, ekc, GDK_KEY_m, shortcutProfile == USER_R47, true, tam.mode != 0, "", "06", 0b01101, -1, ITM_STO)) break :body;
-                if (shortCutCommand(w, ekc, GDK_KEY_r, shortcutProfile == USER_R47, true, tam.mode != 0, "", "07", 0b01101, -1, ITM_RCL)) break :body;
+                if (shortCutCommand(w, ekc, GDK_KEY_m, shortcutProfile == USER_R47, true, tam.mode != 0, "", "06", 0b1000000001101, -1, ITM_STO)) break :body;
+                if (shortCutCommand(w, ekc, GDK_KEY_r, shortcutProfile == USER_R47, true, tam.mode != 0, "", "07", 0b1000000001101, -1, ITM_RCL)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_d, shortcutProfile == USER_R47, true, tam.mode != 0, "", "08", 0b01101, -1, ITM_Rdown)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_greater, shortcutProfile == USER_R47, true, tam.mode != 0, "", "09", 0b01101, -1, ITM_DRG)) break :body;
                 if (shortCutCommand(w, ekc, GDK_KEY_f, false, false, tam.mode != 0, "", "10", 0b01101, -1, ITM_SHIFTf)) break :body;

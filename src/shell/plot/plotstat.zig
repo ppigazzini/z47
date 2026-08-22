@@ -171,7 +171,7 @@ const NO_LF: bool_t = false;
 // items
 const ITM_CLSIGMA: i16 = 1429;
 const ITM_SIGMAPLUS: i16 = 433;
-const MNU_PLOT_SCATR: i16 = 1395;
+const MNU_PLOT_SCATR: i16 = 3101;
 
 // register data type
 const dtReal34: u32 = 1; // typeDefinitions.h:200 (was 0 = dtLongInteger) // reallocateRegister(REGISTER_X, dtReal34, 0, amNone)
@@ -244,6 +244,9 @@ pub export var tick_int_x: f64 = 0;
 pub export var tick_int_y: f64 = 0;
 pub export var xzero: u32 = 0;
 pub export var yzero: u32 = 0;
+// plotXYn: the sample count when a stat plot is drawn as count-vs-value, and a
+// boolean enabler in that same value. graph_plotmem sets it and clears it again.
+pub export var plotXYn: u16 = 0;
 
 // ---------------------------------------------------------------------------
 // Externs - globals
@@ -600,6 +603,9 @@ pub export fn grf_x(i: c_int) callconv(.c) f32 {
     var xf: f32 = 0;
     var xr: real_t = undefined;
 
+    if (plotXYn != 0) {
+        return @floatFromInt(@mod(i, @as(c_int, plotXYn))); // count-vs-value: x is the sample index
+    }
     const regStats: calcRegister_t = regStatsXY;
     if (regStats != INVALID_VARIABLE) {
         var stats: real34Matrix_t = undefined;
@@ -622,7 +628,7 @@ pub export fn grf_y(i: c_int) callconv(.c) f32 {
         var stats: real34Matrix_t = undefined;
         linkToRealMatrixRegister(regStats, &stats);
         const cols: u16 = stats.header.matrixColumns;
-        real34ToReal(&stats.matrixElements.?[@intCast(i * @as(c_int, cols) + 1)], &yr);
+        real34ToReal(&stats.matrixElements.?[@intCast(plotXYRowOffset(i, cols))], &yr);
         frontier_register_value_conversions.realToFloat(&yr, &yf);
     } else {
         yf = 0;
@@ -630,9 +636,23 @@ pub export fn grf_y(i: c_int) callconv(.c) f32 {
     return yf;
 }
 
+// count-vs-value: element i of the value series is the x column while i is below
+// the sample count, and the y column of row i - N after it. Without plotXYn it is
+// the plain y column of row i.
+fn plotXYRowOffset(i: c_int, cols: u16) c_int {
+    const c: c_int = @intCast(cols);
+    if (plotXYn == 0) return i * c + 1;
+    const n: c_int = @intCast(plotXYn);
+    return @mod(i, n) * c + @divTrunc(i, n);
+}
+
 // real_t readers of the stat/draw matrix; the float grf_x/grf_y stay for the
 // float-precision overlay consumers.
 pub export fn grf_x_r(i: c_int, v: *real_t) callconv(.c) void {
+    if (plotXYn != 0) {
+        int32ToReal(@mod(i, @as(c_int, plotXYn)), v); // count-vs-value: x is the sample index
+        return;
+    }
     const regStats: calcRegister_t = regStatsXY;
     if (regStats != INVALID_VARIABLE) {
         var stats: real34Matrix_t = undefined;
@@ -649,7 +669,7 @@ pub export fn grf_y_r(i: c_int, v: *real_t) callconv(.c) void {
         var stats: real34Matrix_t = undefined;
         linkToRealMatrixRegister(regStats, &stats);
         const cols: u16 = stats.header.matrixColumns;
-        real34ToReal(&stats.matrixElements.?[@intCast(i * @as(c_int, cols) + 1)], v);
+        real34ToReal(&stats.matrixElements.?[@intCast(plotXYRowOffset(i, cols))], v);
     } else {
         realSetZero(v);
     }

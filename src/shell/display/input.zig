@@ -66,7 +66,7 @@ const PGM_KEY_PRESSED_WHILE_PAUSED: u8 = 4;
 
 const TI_TRUE: u8 = 13;
 const TI_FALSE: u8 = 12;
-const MNU_MVAR: i16 = 1398;
+const MNU_MVAR: i16 = 3088;
 
 const TO_KB_ACTV: u8 = 10;
 const PROGRAM_KB_ACTV: u32 = 60000;

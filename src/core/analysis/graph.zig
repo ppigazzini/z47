@@ -293,6 +293,7 @@ extern var allFormulae: [*c]formulaHeader_t;
 extern var graphVariabl1: calcRegister_t;
 extern var regStatsXY: calcRegister_t;
 extern var plotStatMx: [8]u8;
+extern var plotXYroute: bool;
 extern var PLOT_ZOOM: i8;
 extern var x_min: *real_t;
 extern var x_max: *real_t;
@@ -1885,6 +1886,7 @@ pub export fn graph_stat(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     saveForUndo();
     _ = strcpy(&plotStatMx, "STATS");
+    plotXYroute = true; // plotXYn: PLSTAT is the only route allowed
 
     if (statMxN() != 0) {
         lastPlotMode = PLOT_NOTHING;

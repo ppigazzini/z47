@@ -167,11 +167,12 @@ const FLAG_PRMS = 0x806B;
 const FLAG_PINTG = 0x806C;
 const FLAG_PDIFF = 0x806D;
 const FLAG_PSHADE = 0x806E;
+const FLAG_PL_2L = 0x8073;
 
 // menus / equations
-const MNU_PLOT_STAT: i16 = 1907;
-const MNU_PLOT_FUNC: i16 = 2028;
-const MNU_SHOW: i16 = 2315;
+const MNU_PLOT_STAT: i16 = 3102;
+const MNU_PLOT_FUNC: i16 = 3100;
+const MNU_SHOW: i16 = 3119;
 const PGM_RUNNING: u8 = 1;
 const PGM_PAUSED: u8 = 3;
 const EQ_PLOT_LU: u16 = 5;
@@ -451,6 +452,10 @@ inline fn fmaxf(a: f32, b: f32) f32 {
     return if (a > b) a else b;
 }
 
+// plotXY: set by graph_stat (PLSTAT) alone, so no other route into graph_plotmem
+// takes the plotXY form; the option itself is FLAG_PL_2L (2LINE).
+pub export var plotXYroute: bool_t = false;
+
 // ===========================================================================
 // graphResetCommon / graph_reset
 // ===========================================================================
@@ -472,6 +477,7 @@ pub export fn graphResetCommon() callconv(.c) void {
     clearSystemFlag(FLAG_NVECT);
     setSystemFlag(FLAG_PLINE);
     setSystemFlag(FLAG_PBOX);
+    clearSystemFlag(FLAG_PL_2L);
     clearSystemFlag(FLAG_PCURVE);
     clearSystemFlag(FLAG_PCROS);
     clearSystemFlag(FLAG_PPLUS);
@@ -513,6 +519,12 @@ pub export fn fnClGrf(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnPline(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     flipSystemFlag(FLAG_PLINE);
+    fnPlotSQ(0);
+}
+
+pub export fn fnP2line(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    flipSystemFlag(FLAG_PL_2L);
     fnPlotSQ(0);
 }
 
@@ -761,6 +773,7 @@ pub export fn fnPlotStatAdv(unusedButMandatoryParameter: u16) callconv(.c) void 
     _ = unusedButMandatoryParameter;
     lastPlotMode = PLOT_NOTHING;
     _ = strcpy(&plotStatMx, "STATS");
+    plotXYroute = false;
     setSystemFlag(FLAG_PLINE);
     fnPlotSQ(0);
 }
@@ -1235,6 +1248,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
     // mid-plot; leaving graph accuracy in place would narrow every later
     // calculation for the rest of the session.
     defer {
+        frontier_plotstat.plotXYn = 0;
         ctxtReal34.digits = s34;
         ctxtReal39.digits = s39;
         ctxtReal51.digits = s51;
@@ -1276,6 +1290,11 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
 
     if (statnum >= 2) {
         // GRAPH SETUP
+        // plotXYn: count-vs-value reads the N rows as 2N points, so scaling and
+        // drawing both cover the two series. Reset to 0 at plotmemExit.
+        frontier_plotstat.plotXYn = if (getSystemFlag(FLAG_PL_2L) and plotXYroute and plotStatMx[0] == 'S') statnum else 0;
+        statnum += frontier_plotstat.plotXYn;
+
         roundedTicks = true;
         frontier_plotstat.graph_axis(); // Draw the axis on any uncontrolled scale to start.
         if (PLOT_AXIS) {
@@ -1612,14 +1631,32 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             yN1 = frontier_plotstat.screen_window_y_nolimit_r(y_min, &yr, y_max);
             const current_y_unclipped: i16 = yN1;
 
-            if (ix == 0) {
+            // plotXYn: ix == plotXYn starts the second (y column) line
+            if (ix == 0 or ix == frontier_plotstat.plotXYn) {
+                if (plotInCurves and ix != 0) {
+                    frontier_plotstat.plotline3(0, 0, 0, 0, false, true); // clear the first series' last curve segment
+                    frontier_plotstat.plotline3(0, 0, 0, 0, true, false); // reset for the second series
+                }
                 xo = xN1;
                 yo = yN1;
                 yN0 = yN1;
                 gpm_prev_y_unclipped = yN1; // Initialize for next iteration
                 if (plotmode != _VECT and xN1 < SCREEN_WIDTH_GRAPH and xN1 >= (SCREEN_WIDTH - SCREEN_HEIGHT_GRAPH) and yN1 < SCREEN_HEIGHT_GRAPH and yN1 >= 0) {
-                    // draw the first point's marker; no line (no previous point)
-                    frontier_plotstat.plotPointGeneric(xN1, yN1, xN1, yN1, getSystemFlag(FLAG_PCROS), false, getSystemFlag(FLAG_PBOX), getSystemFlag(FLAG_PPLUS), false);
+                    // draw the first point's marker; no line (no previous point).
+                    // plotXYn: the x line takes the other marker, a cross for BOX or
+                    // PLUS, a box for CROSS.
+                    const onXLine = frontier_plotstat.plotXYn != 0 and ix < frontier_plotstat.plotXYn;
+                    frontier_plotstat.plotPointGeneric(
+                        xN1,
+                        yN1,
+                        xN1,
+                        yN1,
+                        if (onXLine) (getSystemFlag(FLAG_PBOX) or getSystemFlag(FLAG_PPLUS)) else getSystemFlag(FLAG_PCROS),
+                        false,
+                        if (onXLine) getSystemFlag(FLAG_PCROS) else getSystemFlag(FLAG_PBOX),
+                        if (onXLine) false else getSystemFlag(FLAG_PPLUS),
+                        false,
+                    );
                 }
                 continue; // Skip clipping for first point
             }
@@ -1686,11 +1723,19 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                 xn = xN1;
 
                 if (plotmode != _VECT) {
-                    frontier_plotstat.plotPointGeneric(xn, yn, xo, yo, getSystemFlag(FLAG_PCROS), // cross
+                    // plotXYn: the x line takes the other marker, a cross for BOX or
+                    // PLUS, a box for CROSS.
+                    const onXLine = frontier_plotstat.plotXYn != 0 and ix < frontier_plotstat.plotXYn;
+                    frontier_plotstat.plotPointGeneric(
+                        xn,
+                        yn,
+                        xo,
+                        yo,
+                        if (onXLine) (getSystemFlag(FLAG_PBOX) or getSystemFlag(FLAG_PPLUS)) else getSystemFlag(FLAG_PCROS), // cross
                         false, // fatbox
-                        getSystemFlag(FLAG_PBOX), // box
-                        getSystemFlag(FLAG_PPLUS), // plus
-                        false // line
+                        if (onXLine) getSystemFlag(FLAG_PCROS) else getSystemFlag(FLAG_PBOX), // box
+                        if (onXLine) false else getSystemFlag(FLAG_PPLUS), // plus
+                        false, // line
                     );
 
                     if (getSystemFlag(FLAG_PDIFF) and !invalid_diff and ix != 0) {

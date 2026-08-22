@@ -17,9 +17,9 @@ const CM_CONFIRMATION: u8 = 11;
 
 const CONFIRMED: u16 = 9877;
 
-const MNU_GAP_L: i16 = 2151;
-const MNU_GAP_RX: i16 = 2152;
-const MNU_GAP_R: i16 = 2153;
+const MNU_GAP_L: i16 = 3064;
+const MNU_GAP_RX: i16 = 3066;
+const MNU_GAP_R: i16 = 3065;
 
 const DF_DMX_MIN: i16 = 99;
 const DF_HIDE_MIN: i16 = 12;
