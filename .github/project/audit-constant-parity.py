@@ -32,7 +32,17 @@ import tempfile
 from upstream_paths import upstream_path
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-ZIG_SRC = ROOT / "src"
+# Owners live under src/, but the host GUI and the firmware runtimes under build/
+# are Zig owners too and mirror the same C headers. gtk_c47_main.zig held the DMCP
+# screen-refresh period in a file that ports a PC_BUILD-only source, and a gate
+# scanning src/ alone could not see it. Both roots, one gate.
+ZIG_ROOTS = (ROOT / "src", ROOT / "build")
+
+
+def zig_files():
+    for root in ZIG_ROOTS:
+        yield from root.rglob("*.zig")
+
 
 # C-symbol naming conventions owners mirror. Anchored so we only pick up genuine
 # C #define/enum mirrors, not arbitrary Zig locals.
@@ -54,9 +64,12 @@ NAME_RE = re.compile(
     r"\bconst ((?:ITM_|TM_|FLAG_|ERROR_|TI_|SETTING_|CM_|PGM_|MAX_|MIN_|"
     r"NUMBER_OF_|SIZE_OF_|LAST_|FIRST_|REGISTER_|RESERVED_VARIABLE_|"
     r"MNU_|CST_|CATALOG_|RB_|SCRUPD_|ORTHOPOLY_|PARSER_|INDPM_|COMPARE_|"
-    r"SOLVER_|PLOT_|SUM_|MATRIX_|INVALID_|NOPARAM|CONFIRMED|SCREENDUMP|"
+    r"SOLVER_|PLOT_|SUM_|MATRIX_|INVALID_|NOPARAM|CONFIRMED|SCREENDUMP|SCREEN_|"
     r"dt[A-Z]|am[A-Z])[A-Za-z_0-9]*)"
-    r"\s*:?\s*[a-z0-9]*\s*=\s*"
+    # The type slot must admit an underscore: `c_int`, `c_uint`, `c_ulong` and the
+    # calcRegister_t/dataType_t aliases are how owners spell a C-ABI width, and a
+    # lowercase-only class walked past 295 mirrors that were never once checked.
+    r"\s*:?\s*[A-Za-z_0-9]*\s*=\s*"
     # a literal, or an arithmetic expression over literals: the assert evaluates it
     r"((?:0?x?[0-9A-Fa-f]+)(?:\s*[-+*]\s*(?:0?x?[0-9A-Fa-f]+))*)\s*;"
 )
@@ -123,7 +136,7 @@ def collect_string_mirrors():
     """Return {c_macro: {value_literal: owner}} for STD_* and renamed glyph aliases.
     Keyed by the C macro each owner literal must equal."""
     mirrors = {}
-    for path in ZIG_SRC.rglob("*.zig"):
+    for path in zig_files():
         text = path.read_text(errors="ignore")
         for name, literal in STRING_RE.findall(text):
             mirrors.setdefault(name, {}).setdefault(literal, path.name)
@@ -205,7 +218,7 @@ def collect_mirrors():
     """Return {name: value_str}; report names that carry conflicting values."""
     mirrors = {}
     conflicts = []
-    for path in ZIG_SRC.rglob("*.zig"):
+    for path in zig_files():
         for name, value in NAME_RE.findall(path.read_text(errors="ignore")):
             norm = normalise_value(value)
             if name in mirrors and mirrors[name] != norm:
