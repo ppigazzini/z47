@@ -200,9 +200,9 @@ const SCRUPD_MANUAL_STATUSBAR: u8 = 1;
 const CATALOG_MVAR: i16 = 18;
 
 // menu IDs used by showTvmMode.
-const MNU_TVM_v: i16 = 1368;
-const MNU_FIN_v: i16 = 1331;
-const MNU_AMORT_v: i16 = 2382;
+const MNU_TVM_v: i16 = 3136;
+const MNU_FIN_v: i16 = 3061;
+const MNU_AMORT_v: i16 = 3011;
 
 // STD_* byte sequences (fonts.h).
 const STD_SPACE_3_PER_EM = "\xa0\x04";
@@ -714,7 +714,9 @@ pub export fn showFracMode() callconv(.c) void {
     const dmx = didSystemFlagChange(SETTING_DMX);
     const denfix = didSystemFlagChange(FLAG_DENFIX);
     const denany = didSystemFlagChange(FLAG_DENANY);
-    if (fract or irfrac or propfr or dmx or denfix or denany) {
+    const baseShown = (@as(u32, SBlastIntegerBaseShown) != lastIntegerBase); // base mode #BASE / #KEY A-F
+    SBlastIntegerBaseShown = @truncate(lastIntegerBase);
+    if (fract or irfrac or propfr or dmx or denfix or denany or baseShown) {
         var statusMessage: [20]u8 = undefined;
         var x: i32 = X_FRAC_MODE;
 

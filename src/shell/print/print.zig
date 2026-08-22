@@ -217,7 +217,7 @@ const ITM_PRINTERADV: i32 = 1708;
 const ITM_PRINTERX: i32 = 1676;
 const ITM_BACKSPACE: i32 = 1738;
 const ITM_EXIT1: i32 = 1737; // items.h:1786
-const MNU_DYNAMIC: i32 = 1394;
+const MNU_DYNAMIC: i32 = 3052;
 
 const TM_VALUE: u16 = 10001;
 const TM_SHUFFLE: u16 = 10008;
@@ -698,7 +698,7 @@ const ITM_SHUFFLE: u16 = 1694;
 const ITM_RS: u16 = 1725;
 const ITM_SQRT1PX2: u16 = 1794;
 const ITM_EE_EXP_TH: u16 = 1816;
-const LAST_ITEM: u16 = 2933;
+const LAST_ITEM: u16 = 3244;
 
 const STD_SQUARE_ROOT = "\xa2\x1a";
 const STD_SUP_3 = "\xa1\x63";

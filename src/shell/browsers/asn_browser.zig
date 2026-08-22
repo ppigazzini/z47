@@ -57,7 +57,7 @@ const vmReverse: videoMode_t = 1;
 
 const NOVAL: i8 = -126; // radioButtonCatalog.h
 
-const MNU_DYNAMIC: i16 = 1394;
+const MNU_DYNAMIC: i16 = 3052;
 const ITM_XEQ: i16 = 3;
 const ITM_RCL: i16 = 51;
 

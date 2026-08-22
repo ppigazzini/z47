@@ -41,7 +41,7 @@ const FIRST_LOCAL_REGISTER: i16 = 7000;
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const NUMBER_OF_STATISTICAL_SUMS: u16 = 28;
 const C47_NULL: u16 = 65535;
-const configFileVersion: u32 = 10000026; // C saveRestoreCalcState.c:7 (FLAG_SBadm bump)
+const configFileVersion: u32 = 10000028; // C saveRestoreCalcState.c:7 (menu items renumbered into one block)
 
 // --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
 const abi = @import("abi"); // shared ABI bindings
@@ -83,7 +83,7 @@ extern fn getNthString(ptr: [*c]u8, n: i16) [*c]u8;
 
 // --- save-serialization leaf externs (canonical core C symbols) ---
 const runtime = @import("calc_state_runtime.zig");
-const MNU_HOME: i16 = 1921;
+const MNU_HOME: i16 = 3070;
 extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u16}
 extern fn setLongPressFg(calc_model0: c_int, menu_item: i16) void;
 

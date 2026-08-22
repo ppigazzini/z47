@@ -38,6 +38,7 @@ const display_string_transform = @import("../../../core/text/display_string_tran
 const glyph_export = @import("../../../core/text/glyph_export.zig");
 const glyph_text_lookup = @import("../../../core/text/glyph_text_lookup.zig");
 const string_edit = @import("../../../core/text/string_edit.zig");
+const gap_char_codec = @import("../../../core/text/gap_char_codec.zig");
 const frontier_error = @import("../../error.zig");
 const frontier_fonts = @import("../../../core/text/fonts.zig");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
@@ -1005,6 +1006,27 @@ pub export fn addChrBothSides(t: u8, str: [*c]u8) callconv(.c) void {
 // ---------------------------------------------------------------------------
 pub export fn addStrBothSides(str: [*c]u8, str_b: [*c]u8, str_e: [*c]u8) callconv(.c) void {
     string_edit.addStrBothSides(str, str_b, str_e);
+}
+
+// ---------------------------------------------------------------------------
+// stripTrailingRadix
+// ---------------------------------------------------------------------------
+// `indexOfItems` is a C ARRAY (const item_t indexOfItems[]); bind its address
+// with @extern so indexing reads element data.
+const item_t = abi.Item;
+const indexOfItems = @extern([*c]const item_t, .{ .name = "indexOfItems" });
+extern var gapItemRadix: u16;
+
+// Rx is the raw softmenu name of the radix item; its high bit says the display
+// carries a wide glyph, in which case the marker to look for is the normalized
+// RADIX34_MARK_STRING rather than Rx itself.
+fn radixMarker() [*]const u8 {
+    const rx: [*]const u8 = @ptrCast(&indexOfItems[gapItemRadix].itemSoftmenuName);
+    return if ((rx[0] & 0x80) != 0) @ptrCast(gap_char_codec.gapChar1Radix(rx)) else rx;
+}
+
+pub export fn stripTrailingRadix(str: [*c]u8) callconv(.c) void {
+    string_edit.stripTrailingRadix(str, radixMarker());
 }
 
 // ---------------------------------------------------------------------------

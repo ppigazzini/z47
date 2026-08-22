@@ -9,6 +9,7 @@ const std = @import("std");
 const progmem = @import("calc_state_progmem.zig");
 const build_options = @import("calc_state_build_options");
 const calc_state = @import("calc_state.zig");
+const calc_state_restore = @import("calc_state_restore.zig");
 const state_old_hw: bool = build_options.state_old_hw;
 // backup.cfg is the simulator's own state store: upstream wraps the whole file
 // in `#if defined(PC_BUILD)`, and its two entry points are reached only from the
@@ -20,7 +21,9 @@ const calc_model_user_id: u16 = build_options.calc_model_user_id;
 const FILE_OK: c_int = 1;
 const ioPathBackup: c_int = 4;
 const ioModeWrite: c_int = 1;
-const BACKUP_VERSION: u32 = 1017; // C saveRestoreBackup.c:14 (FLAG_SBadm)
+const ITM_NOP: u16 = 1542;
+const NOPARAM: u16 = 9876;
+const BACKUP_VERSION: u32 = 1019; // C saveRestoreBackup.c:14 (menu items renumbered into one block)
 const INVALID_VARIABLE: i16 = 2199;
 const CM_CONFIRMATION: u8 = 11;
 const USER_C47: u16 = 46;
@@ -906,9 +909,10 @@ const loadAutoSav: bool = true;
 extern var loadTestPrograms: bool;
 const FLAG_FRACT: c_uint = 32775;
 const FLAG_IRFRAC: c_uint = 32839;
-const MNU_HOME: i16 = 1921;
+const MNU_HOME: i16 = 3070;
 const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 const FLAG_SBadm: c_uint = 32879; // 0x806F
+const FLAG_M_ALL: c_uint = 32882; // 0x8072
 const FLAG_BASE_MYM: c_uint = 0x805C;
 const FLAG_G_DOUBLETAP: c_uint = 0x805D;
 const FLAG_BASE_HOME: c_uint = 0x805E;
@@ -1338,6 +1342,13 @@ pub fn restoreCalc() void {
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
     if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // SIGZEROS is on per default
     if (backupVersion < 1017) setSystemFlag(FLAG_SBadm); // the angular mode annunciator is on per default
+    if (backupVersion < 1018) setSystemFlag(FLAG_M_ALL); // inclusive of this version, set the M.ALL
+    if (backupVersion < 1019) { // menu items renumbered into one block: move the stored menu links
+        calc_state_restore.convertOldMenuNumbers();
+        // lastFunc and its param are cleared where the menu items were replaced.
+        wrU16(&lastFunc[0], ITM_NOP);
+        wrU16(&lastParam[0], NOPARAM);
+    }
     if (getSystemFlag(@intCast(FLAG_FRACT))) {
         setSystemFlag(FLAG_FRACT);
     } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {

@@ -231,10 +231,10 @@ const ITM_op_j_pol: i16 = 1795;
 const ITM_op_j: i16 = 1830;
 const ITM_END: u16 = 1458;
 const ITM_FF: u16 = 112;
-const MNU_SYSFL: i16 = 1379;
-const MNU_HOME: i16 = 1921;
-const MNU_PFN: i16 = 1403;
-const MNU_MyMenu: i16 = 1349;
+const MNU_SYSFL: i16 = 3128;
+const MNU_HOME: i16 = 3070;
+const MNU_PFN: i16 = 3095;
+const MNU_MyMenu: i16 = 3090;
 
 const FIRST_GLOBAL_REGISTER: u16 = 0;
 const LAST_GLOBAL_REGISTER: u16 = 136; // = TEMP_REGISTER_2_SAVED_STATS (was 125 = LAST_SPARE_REGISTER)
@@ -293,12 +293,12 @@ const LINE_FULL: c_int = 0;
 const LINE_LEFT: c_int = 1;
 const LINE_RIGHT: c_int = 2;
 
-const MNU_GAP_L: i16 = 2151;
-const MNU_GAP_RX: i16 = 2152;
-const MNU_GAP_R: i16 = 2153;
-const MNU_PLOT_SCATR: i16 = 1395;
-const MNU_PLOT_ASSESS: i16 = 1396;
-const MNU_HPLOT: i16 = 1402;
+const MNU_GAP_L: i16 = 3064;
+const MNU_GAP_RX: i16 = 3066;
+const MNU_GAP_R: i16 = 3065;
+const MNU_PLOT_SCATR: i16 = 3101;
+const MNU_PLOT_ASSESS: i16 = 3099;
+const MNU_HPLOT: i16 = 3071;
 
 const PROFF: u16 = 0;
 const PRON: u16 = 1;

@@ -15,7 +15,7 @@ const runtime = @import("program_serialization_runtime.zig");
 
 const item_t = abi.Item;
 
-const LAST_ITEM: u32 = 2933;
+const LAST_ITEM: u32 = 3244;
 const ITM_KEY: u16 = 1497;
 const ITM_42KEY: u16 = 2794;
 // Longest label name the calculator can produce (defines.h MAX_LABEL_NAME_LENGTH).

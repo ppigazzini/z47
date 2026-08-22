@@ -52,7 +52,7 @@ pub const amMultPi = runtime.amMultPi;
 const cstR = consts.cstR;
 
 // Offsets extracted from the generated constantPointers.h.
-const OFF_const51_gammaC01: u32 = 6368;
+const OFF_const51_gammaC01: u32 = 6560;
 
 // REAL_SIZE_IN_BYTES(51) for indexing const51_gammaC01[k].
 const REAL_SIZE_51: u32 = 44;
@@ -171,8 +171,68 @@ inline fn const39_egamma() *align(1) const real_t {
 inline fn const39_eE() *align(1) const real_t {
     return consts.c176();
 }
-inline fn const39_1on3() *align(1) const real_t {
+pub inline fn const39_1on3() *align(1) const real_t {
     return consts.c4544();
+}
+pub inline fn const_1on5() *align(1) const real_t {
+    return consts.const_1on5();
+}
+pub inline fn const39_1on7() *align(1) const real_t {
+    return consts.const39_1on7();
+}
+pub inline fn const39_1on9() *align(1) const real_t {
+    return consts.const39_1on9();
+}
+pub inline fn const39_1on11() *align(1) const real_t {
+    return consts.const39_1on11();
+}
+pub inline fn const39_1on13() *align(1) const real_t {
+    return consts.const39_1on13();
+}
+pub inline fn const39_1on15() *align(1) const real_t {
+    return consts.const39_1on15();
+}
+pub inline fn const39_atan1on10() *align(1) const real_t {
+    return consts.const39_atan1on10();
+}
+pub inline fn const39_atan2on10() *align(1) const real_t {
+    return consts.const39_atan2on10();
+}
+pub inline fn const39_atan3on10() *align(1) const real_t {
+    return consts.const39_atan3on10();
+}
+pub inline fn const39_atan4on10() *align(1) const real_t {
+    return consts.const39_atan4on10();
+}
+pub inline fn const39_atan5on10() *align(1) const real_t {
+    return consts.const39_atan5on10();
+}
+pub inline fn const39_atan6on10() *align(1) const real_t {
+    return consts.const39_atan6on10();
+}
+pub inline fn const39_atan7on10() *align(1) const real_t {
+    return consts.const39_atan7on10();
+}
+pub inline fn const39_atan8on10() *align(1) const real_t {
+    return consts.const39_atan8on10();
+}
+pub inline fn const39_atan9on10() *align(1) const real_t {
+    return consts.const39_atan9on10();
+}
+pub inline fn const39_atanP08() *align(1) const real_t {
+    return consts.const39_atanP08();
+}
+pub inline fn const39_atanP09() *align(1) const real_t {
+    return consts.const39_atanP09();
+}
+pub inline fn const39_atanP10() *align(1) const real_t {
+    return consts.const39_atanP10();
+}
+pub inline fn const39_atanP11() *align(1) const real_t {
+    return consts.const39_atanP11();
+}
+pub inline fn const39_atanP12() *align(1) const real_t {
+    return consts.const39_atanP12();
 }
 pub inline fn const75_pi() *align(1) const real_t {
     return consts.c7388();

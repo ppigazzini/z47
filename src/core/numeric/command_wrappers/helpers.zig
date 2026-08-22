@@ -73,28 +73,28 @@ const consts = abi.constants;
 const constantPointer = consts.cstR;
 
 // Byte offsets from the generated constantPointers.h.
-const offset_const_1 = 5112; // const_1
-const offset_const_2 = 5184; // const_2
-const offset_const_3 = 5268; // const_3
-const offset_const_5 = 5328; // const_5
-const offset_const_1on2 = 4836; // const_1on2
-const offset_const39_1on3 = 4800; // const39_1on3
+const offset_const_1 = 5304; // const_1
+const offset_const_2 = 5376; // const_2
+const offset_const_3 = 5460; // const_3
+const offset_const_5 = 5520; // const_5
+const offset_const_1on2 = 5028; // const_1on2
+const offset_const39_1on3 = 4992; // const39_1on3
 const offset_const39_1oneE = 4644; // const39_1oneE
-const offset_const_90 = 7800; // const_90
-const offset_const_100 = 7788; // const_100
-const offset_const_180 = 7716; // const_180
-const offset_const39_ln2 = 4884; // const39_ln2
-const offset_const39_ln10 = 5196; // const39_ln10
+const offset_const_90 = 7992; // const_90
+const offset_const_100 = 7980; // const_100
+const offset_const_180 = 7908; // const_180
+const offset_const39_ln2 = 5076; // const39_ln2
+const offset_const39_ln10 = 5388; // const39_ln10
 const offset_const39_PHI = 1596; // const39_PHI
 const offset_const39_pi = 1848; // const39_pi
-const offset_const39_piOn4 = 4992; // const39_piOn4
-const offset_const39_piOn2 = 5136; // const39_piOn2
-const offset_const39_3piOn4 = 5232; // const39_3piOn4
-const offset_const39_3piOn2 = 5292; // const39_3piOn2
-const offset_const75_pi = 7644; // const75_pi
-const offset_const75_piOn2 = 7728; // const75_piOn2
-const offset_const75_piOn4 = 7812; // const75_piOn4
-const offset_const_3600 = 5704; // const_3600
+const offset_const39_piOn4 = 5184; // const39_piOn4
+const offset_const39_piOn2 = 5328; // const39_piOn2
+const offset_const39_3piOn4 = 5424; // const39_3piOn4
+const offset_const39_3piOn2 = 5484; // const39_3piOn2
+const offset_const75_pi = 7836; // const75_pi
+const offset_const75_piOn2 = 7920; // const75_piOn2
+const offset_const75_piOn4 = 8004; // const75_piOn4
+const offset_const_3600 = 5896; // const_3600
 
 // Constants synthesized locally rather than read from the constants blob; here
 // they are comptime real_t values with fixed bit patterns.

@@ -163,6 +163,7 @@ const ITM_SETJPN: u16 = 1595;
 const ITM_SETUK: u16 = 1598;
 const ITM_SETUSA: u16 = 1599;
 
+const FLAG_ASLIFT: c_uint = 0xc023;
 const FLAG_TDM24: c_uint = 32768;
 const FLAG_DMY: c_uint = 49154;
 const FLAG_MDY: c_uint = 49155;
@@ -319,12 +320,12 @@ const ITM_CLVALL: i16 = 2240;
 const ITM_DELMALL: i16 = 2241;
 const ITM_DELVALL: i16 = 2242;
 
-const MNU_EE: i16 = 1925;
-const MNU_RIBBONS: i16 = 2235;
-const MNU_DEV: i16 = 2625;
-const MNU_YESNO: i16 = 2244;
-const MNU_HOME: i16 = 1921;
-const MNU_MyMenu: i16 = 1349;
+const MNU_EE: i16 = 3053;
+const MNU_RIBBONS: i16 = 3115;
+const MNU_DEV: i16 = 3050;
+const MNU_YESNO: i16 = 3144;
+const MNU_HOME: i16 = 3070;
+const MNU_MyMenu: i16 = 3090;
 
 const USER_C47: u8 = 46;
 const USER_DM42: u8 = 45;
@@ -431,6 +432,9 @@ const Settings = [_]i32{
     3,    1,      -10001, -10001, 49224,  49224,  -10001, -10001, -10001,
     3,    0,      -10001, 32837,  -10001, -10001, -10001, -10001, -10001,
     3,    1,      32837,  -10001, 32837,  32837,  32837,  -10001, -10001,
+    // FLAG_M_ALL (32882) set on every profile, FLAG_PL_2L (32883) cleared on every one.
+    3,    1,      32882,  32882,  32882,  32882,  32882,  -10001, -10001,
+    3,    0,      32883,  32883,  32883,  32883,  32883,  -10001, -10001,
     3,    0,      32836,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    1,      32838,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    0,      32841,  -10001, -10001, -10001, -10001, -10001, -10001,
@@ -1077,7 +1081,7 @@ const FLAG_USER_u16: u16 = 32788;
 const ERROR_CANNOT_ASSIGN_HERE: u8 = 47;
 const ERR_REGISTER_LINE: i16 = 102;
 const NIM_REGISTER_LINE: i16 = 100;
-const MNU_DYNAMIC: i16 = 1394;
+const MNU_DYNAMIC: i16 = 3052;
 const ITM_XEQ: i16 = 3;
 const ITM_RCL: i16 = 51;
 
@@ -1511,7 +1515,25 @@ pub export fn fnBatteryVoltage(unusedButMandatoryParameter: u16) callconv(.c) vo
         int32ToReal(3100, &value);
     } else {
         const tmpVbat = romGetVbat();
-        int32ToReal(if (tmpVbat < vbatVIntegrated) tmpVbat else vbatVIntegrated, &value);
+        if (tmpVbat < vbatVIntegrated) {
+            // BATT# read outside the sampling schedule pulls the integrator down;
+            // every opportunity to keep it down counts, not just the schedule.
+            vbatVIntegrated = tmpVbat;
+        }
+        int32ToReal(tmpVbat, &value);
+    }
+
+    value.exponent -= 3; // value = value / 1000
+    // the actual reading, lifted to Y by the integrator push below
+    frontier_register_value_conversions.convertRealToResultRegister(&value, REGISTER_X, amNone);
+    setSystemFlag(FLAG_ASLIFT);
+    liftStack();
+
+    if (comptime !dmcp_build) {
+        int32ToReal(3100, &value);
+    } else {
+        // after the pull-down above this is the previous min(reading, integrator)
+        int32ToReal(vbatVIntegrated, &value);
     }
 
     temporaryInformation = TI_BATTV;
@@ -1670,7 +1692,7 @@ fn strBuf(comptime s: []const u8) [30]u8 {
     return b;
 }
 
-const LAST_ITEM: u16 = 2933;
+const LAST_ITEM: u16 = 3244;
 
 pub export fn getConfirmationTiId() callconv(.c) u16 {
     var id: u16 = 0;

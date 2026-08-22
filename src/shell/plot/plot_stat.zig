@@ -38,9 +38,9 @@ const H_NORM: u16 = 8;
 
 const CF_GAUSS_FITTING: u16 = 256;
 
-const MNU_PLOT_SCATR: i16 = 1395;
-const MNU_PLOT_ASSESS: i16 = 1396;
-const MNU_HPLOT: i16 = 1402;
+const MNU_PLOT_SCATR: i16 = 3101;
+const MNU_PLOT_ASSESS: i16 = 3099;
+const MNU_HPLOT: i16 = 3071;
 
 const PlotStatModeClass = enum {
     regression,

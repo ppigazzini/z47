@@ -113,7 +113,7 @@ const LOCAL_LABEL_VARIABLE: u8 = 249;
 const INDIRECT_REGISTER: u8 = 254;
 const INDIRECT_VARIABLE: u8 = 255;
 const ITM_LBL: u8 = 1;
-const MNU_TAMLOCALLABEL: i16 = 2859;
+const MNU_TAMLOCALLABEL: i16 = 2952;
 const FAILED_INDIRECTION: i16 = 9999;
 
 const TAM_MAX_BITS: u4 = 14;
@@ -231,8 +231,8 @@ const FLAG_SOLVING: c_int = 0xc026;
 const SOLVER_STATUS_USES_FORMULA: u16 = 0x0100;
 const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
 
-const MNU_PROG: i16 = 1392;
-const MNU_PROGS: i16 = 1355;
+const MNU_PROG: i16 = 3109;
+const MNU_PROGS: i16 = 3110;
 
 const REGISTER_Z: calcRegister_t = 102;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
@@ -254,7 +254,7 @@ extern var dynamicMenuItem: i16;
 extern var numberOfLabels: u16;
 extern var labelList: [*c]labelList_t;
 extern var programList: [*c]programList_t;
-const LAST_ITEM: u32 = 2933;
+const LAST_ITEM: u32 = 3244;
 extern const indexOfItems: [LAST_ITEM + 1]item_t;
 const SOFTMENU_STACK_SIZE: usize = 8;
 // softmenu[] and softmenuStack[] are real C arrays: the linker symbol address is

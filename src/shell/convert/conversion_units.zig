@@ -91,23 +91,23 @@ inline fn setRegisterAngularMode(reg: i16, am: u32) void {
 const OFF_const_minusInfinity = 1684;
 const OFF_const_plusInfinity = 1696;
 const OFF_const_0 = 1708;
-const OFF_const_1 = 5112;
-const OFF_const_9on5 = 5172;
-const OFF_const_32 = 5480;
+const OFF_const_1 = 5304;
+const OFF_const_9on5 = 5364;
+const OFF_const_32 = 5672;
 const OFF_const_273p15 = 4172;
 const OFF_const_459p67 = 4188;
 const OFF_const39_kBeVK = 4204;
-const OFF_const_9on10 = 5064;
-const OFF_const39_180onPi = 5516;
-const OFF_const39_200onPi = 5564;
-const OFF_const_10 = 5388;
-const OFF_const_20 = 5412;
+const OFF_const_9on10 = 5256;
+const OFF_const39_180onPi = 5708;
+const OFF_const39_200onPi = 5756;
+const OFF_const_10 = 5580;
+const OFF_const_20 = 5604;
 
 // conversionFactors[constFactorEND]: offset into `constants`, or null.
 const conversionFactorOffsets = [_]?u32{
     1948, // 0 constFactorFt2Hectare = const_Ft2ToHa
     1964, // 1 constFactorFt2M2 = const_Ft2ToM2
-    7788, // 2 constFactorHectareKm2 = const_100
+    7980, // 2 constFactorHectareKm2 = const_100
     2444, // 3 constFactorAcreHa = const_AccreToHa
     2464, // 4 constFactorAcreusHa = const39_AccreusToHa
     3356, // 5 constFactorAtmPa = const_AtmToPa
@@ -138,7 +138,7 @@ const conversionFactorOffsets = [_]?u32{
     2772, // 30 constFactorStoneKg = const_StoneToKg
     2824, // 31 constFactorShorttonKg = const_ShorttonToKg
     2840, // 32 constFactorTonKg = const_LongtonToKg
-    5412, // 33 constFactorLiangKg = const_20
+    5604, // 33 constFactorLiangKg = const_20
     2740, // 34 constFactorTrozG = const_TrozToG
     3220, // 35 constFactorLbfN = const_LbfToN
     2172, // 36 constFactorLyM = const_LyToM
@@ -153,15 +153,15 @@ const conversionFactorOffsets = [_]?u32{
     3240, // 45 constFactorTorrPa = const39_TorrToPa
     3424, // 46 constFactorYearS = const_YearToS
     2708, // 47 constFactorCaratG = const_CaratToG
-    5184, // 48 constFactorJinKg = const_2
+    5376, // 48 constFactorJinKg = const_2
     2672, // 49 constFactorQuartL = const_QuartToL
     2032, // 50 constFactorFathomM = const_FathomToM
     2328, // 51 constFactorNMiM = const_NmiToM
     2688, // 52 constFactorBarrelM3 = const_BarrelToM3
-    5768, // 53 constFactorHectareM2 = const_10000
+    5960, // 53 constFactorHectareM2 = const_10000
     2500, // 54 constFactorMuM2 = const_MuToM2
     2228, // 55 constFactorLiM = const_LiToM
-    5268, // 56 constFactorChiM = const_3
+    5460, // 56 constFactorChiM = const_3
     2264, // 57 constFactorYinM = const_YinToM
     2276, // 58 constFactorCunM = const_CunToM
     2288, // 59 constFactorZhangM = const_ZhangToM
@@ -185,15 +185,15 @@ const conversionFactorOffsets = [_]?u32{
     3644, // 77 constFactorFpftomph = const39_fpfToMph
     3680, // 78 constFactorFpstokph = const_fpsToKph
     3696, // 79 constFactorFpstomps = const_fpsToMps
-    7788, // 80 constFactorL100Tokml = const_100
+    7980, // 80 constFactorL100Tokml = const_100
     null, // 81 constFactorKmletok100K (no factor)
-    7788, // 82 constFactorK100Ktokmk = const_100
+    7980, // 82 constFactorK100Ktokmk = const_100
     null, // 83 constFactorL100Tomgus (no factor)
     null, // 84 constFactorMgeustok100M (no factor)
     2048, // 85 constFactorK100Ktok100M = const_MiToKm
     null, // 86 constFactorL100Tomguk (no factor)
     null, // 87 constFactorMgeuktok100M (no factor)
-    7788, // 88 constFactorK100Mtomik = const_100
+    7980, // 88 constFactorK100Mtomik = const_100
     3712, // 89 constFactorCupcFzus = const_CupcFzus
     3724, // 90 constFactorCupcMl = const_CupcMl
     3744, // 91 constFactorCupukFzuk = const_CupukFzuk
@@ -247,11 +247,11 @@ const conversionFactorOffsets = [_]?u32{
     3196, // 139 constFactorErgJ = const_ErgToJ
     3208, // 140 constFactorFoeJ = const_FoeToJ
     2860, // 141 constFactorKnotMps = const39_KnotToMps
-    5516, // 142 constFactor180onPi = const39_180onPi
+    5708, // 142 constFactor180onPi = const39_180onPi
     2968, // 143 constFactorSlugKg = const39_SlugToKg
     3004, // 144 constFactorSlinchKg = const39_SlinchToKg
     3004, // 145 constFactorBlobKg = const39_SlinchToKg
-    5636, // 146 constFactorTonneKg = const_1000
+    5828, // 146 constFactorTonneKg = const_1000
     4316, // 147 constFactorLbsft2Pa = const39_Lbsft2ToPa
     4292, // 148 constFactorInlbsNm = const_InlbsToNm
     2968, // 149 constFactorLbsftNpm = const39_SlugToKg
@@ -903,8 +903,8 @@ const softmenuStack = @extern([*c]softmenuStack_t, .{ .name = "softmenuStack" })
 const userMenuItems = @extern([*c]userMenuItem_t, .{ .name = "userMenuItems" });
 extern var userMenus: [*c]userMenu_t;
 extern var currentUserMenu: u16;
-const MNU_MyMenu: i16 = 1349;
-const MNU_DYNAMIC: i16 = 1394;
+const MNU_MyMenu: i16 = 3090;
+const MNU_DYNAMIC: i16 = 3052;
 const FLAG_HPCONV: i32 = 0x8042;
 
 pub export fn executionConversionPartner(item: i16, itemNrPair: ?*i16, pairName: [*c]u8) callconv(.c) void {

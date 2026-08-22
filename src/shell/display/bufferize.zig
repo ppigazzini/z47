@@ -732,6 +732,10 @@ const ITM_SUP_MINUS = 1004;
 const ITM_SUP_PLUS = 1003;
 const ITM_SUP_a = 1044;
 const ITM_SUP_pi = 1143;
+const ITM_SLASH = 821;
+const ITM_SUP_SLASH = 2448;
+const ITM_SUP_DOT = 2449;
+const ITM_SUP_COMMA = 2450;
 const ITM_SW = 1617;
 const ITM_SXY = 1618;
 const ITM_StoFTN = 2172;
@@ -761,6 +765,12 @@ const ITM_WtoHPE = 279;
 const ITM_WtoHPM = 281;
 const ITM_WtoHPUK = 283;
 const ITM_XFACT = 108;
+const ITM_ADD = 95;
+const ITM_SUB = 96;
+const ITM_MULT = 98;
+const ITM_DIV = 99;
+const ITM_PC = 1695;
+const ITM_DELTAPC = 1666;
 const ITM_XTHROOT = 63;
 const ITM_XW = 1642;
 const ITM_YDtoM = 341;
@@ -802,9 +812,9 @@ const ITM_z = 601;
 const ITM_zetaX = 1670;
 const LAST_CONSTANT = 212;
 const MAXLINES = 5;
-const MNU_BASE = 1923;
-const MNU_BITS = 1317;
-const MNU_INTS = 1340;
+const MNU_BASE = 3016;
+const MNU_BITS = 3018;
+const MNU_INTS = 3074;
 const NC_NORMAL = 0;
 const NC_SUBSCRIPT = 1;
 const NC_SUPERSCRIPT = 2;
@@ -1273,6 +1283,14 @@ const MimFunctionsType1 = [_]fInMim_t{
     .{ .itemNr = ITM_RAD },
 };
 const MimFunctionsType2 = [_]fInMim_t{
+    .{ .itemNr = ITM_ADD },
+    .{ .itemNr = ITM_SUB },
+    .{ .itemNr = ITM_MULT },
+    .{ .itemNr = ITM_DIV },
+    .{ .itemNr = ITM_PC },
+    .{ .itemNr = ITM_DELTAPC },
+    .{ .itemNr = ITM_YX },
+    .{ .itemNr = ITM_XTHROOT },
     .{ .itemNr = ITM_SQUARE },
     .{ .itemNr = ITM_CUBE },
     .{ .itemNr = ITM_SQUAREROOTX },
@@ -1871,6 +1889,9 @@ pub export fn convertItemToSubOrSup(item: u16, subOrSup: i16) callconv(.c) u16 {
                 ITM_PLUS => ITM_SUP_PLUS,
                 ITM_MINUS => ITM_SUP_MINUS,
                 ITM_pi => ITM_SUP_pi,
+                ITM_SLASH => ITM_SUP_SLASH,
+                ITM_PERIOD => ITM_SUP_DOT,
+                ITM_COMMA => ITM_SUP_COMMA,
                 else => item,
             };
         }
@@ -2837,19 +2858,10 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                     ix += 1;
                 }
                 T_cursorPos = @bitCast(in);
-                var ixaa: [AIM_BUFFER_LENGTH]u8 = undefined;
-                _ = frontier_char_string.xcopy(&ixaa, aimBuffer, in);
-                ixaa[in] = 0;
-
                 const nq: u16 = @intCast(stringByteLength(&indexOfItems[item].itemSoftmenuName));
-                _ = frontier_char_string.xcopy(@as([*c]u8, &ixaa) + in, &indexOfItems[item].itemSoftmenuName, nq + 1);
-                ixaa[in + nq] = 0;
-
                 const nr: u16 = @intCast(stringByteLength(aimBuffer + in));
-                _ = frontier_char_string.xcopy(@as([*c]u8, &ixaa) + in + nq, aimBuffer + in, nr + 1);
-                ixaa[in + nq + nr] = 0;
-
-                _ = frontier_char_string.xcopy(aimBuffer, &ixaa, @intCast(stringByteLength(&ixaa) + 1));
+                _ = frontier_char_string.xcopy(aimBuffer + in + nq, aimBuffer + in, nr + 1); // shift the tail, its terminator included
+                _ = frontier_char_string.xcopy(aimBuffer + in, &indexOfItems[item].itemSoftmenuName, nq);
 
                 T_cursorPos = frontier_char_string.stringNextGlyph(aimBuffer, T_cursorPos);
                 switch (item) {

@@ -8,6 +8,23 @@ const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 
 const REGISTER_X: u16 = 100;
 
+// The dyadic functions the editor stages a second operand for.
+const ITM_YX: i16 = 60;
+const ITM_XTHROOT: i16 = 63;
+const ITM_ADD: i16 = 95;
+const ITM_SUB: i16 = 96;
+const ITM_MULT: i16 = 98;
+const ITM_DIV: i16 = 99;
+const ITM_DELTAPC: i16 = 1666;
+const ITM_PC: i16 = 1695;
+
+fn isDyadic(func: i16) bool {
+    return switch (func) {
+        ITM_ADD, ITM_SUB, ITM_MULT, ITM_DIV, ITM_PC, ITM_DELTAPC, ITM_YX, ITM_XTHROOT => true,
+        else => false,
+    };
+}
+
 const dtLongInteger: u32 = 0;
 const dtReal34: u32 = 1;
 const dtComplex34: u32 = 2;
@@ -25,7 +42,12 @@ pub fn run(func: i16, param: u16) void {
     };
 
     prepareExecution();
+    const dyadic = isDyadic(func);
+    stageDyadicOperand(dyadic);
     execute(func, param);
+    if (dyadic) {
+        frontier_matrix_editor.z47_frontier_matrix_restore_stack_above_x();
+    }
     normalizeRegisterXType();
     ctx.converted = applyResultIfValid();
     restoreLinkedXIfNeeded(ctx.converted);
@@ -36,9 +58,19 @@ pub fn run(func: i16, param: u16) void {
 fn prepareExecution() void {
     frontier_matrix_editor.z47_frontier_matrix_capture_selected_before();
     matrix_lifecycle.mimEnter(true);
+    frontier_matrix_editor.z47_frontier_matrix_recheck_open_is_complex();
     clearSystemFlag(FLAG_ASLIFT);
     lastErrorCode = ERROR_NONE;
     frontier_matrix_editor.z47_frontier_matrix_load_selected_into_register_x();
+}
+
+// An error in the editor destroys the undo buffer, so the stack is saved before
+// the operation runs and Y upwards is put back from it afterwards.
+fn stageDyadicOperand(dyadic: bool) void {
+    saveForUndo();
+    if (dyadic) {
+        frontier_matrix_editor.z47_frontier_matrix_stage_dyadic_operand_in_y();
+    }
 }
 
 fn execute(func: i16, param: u16) void {
@@ -85,3 +117,4 @@ extern var matrixIndex: u16;
 extern fn getSystemFlag(sf: c_int) bool;
 extern fn clearSystemFlag(sf: c_uint) void;
 extern fn setSystemFlag(sf: c_uint) void;
+extern fn saveForUndo() void;

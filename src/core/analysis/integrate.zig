@@ -119,8 +119,8 @@ const halfSec_clearT: bool = true;
 const halfSec_disp: bool = true;
 
 // MNU_Sfdx / MNU_Sf_TOOL (items.h)
-const MNU_Sfdx: i16 = 1381;
-const MNU_Sf_TOOL: i16 = 2375;
+const MNU_Sfdx: i16 = 3118;
+const MNU_Sf_TOOL: i16 = 3117;
 
 const maxlevel: c_int = 7;
 

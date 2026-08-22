@@ -169,8 +169,8 @@ const LCD_SET_VALUE: c_int = 0;
 const LCD_EMPTY_VALUE: c_int = 255;
 const TEMPORARY_INFO_OFFSET: i16 = 6;
 const MATRIX_LINE_WIDTH: i16 = 380;
-const MATRIX_MAX_COLUMNS: usize = 11;
-const MATRIX_MAX_ROWS: usize = 5;
+const MATRIX_MAX_COLUMNS: usize = 14;
+const MATRIX_MAX_ROWS: usize = 9;
 const SHOWLineSize: i16 = 120;
 const TMP_STR_LENGTH: usize = 2560;
 const ERROR_MESSAGE_LENGTH: usize = 512;
@@ -348,53 +348,51 @@ const ITM_dotD: i16 = 1741;
 const ITM_HASH_JM: i16 = 1872;
 const ITM_toINT: i16 = 1687;
 const ITM_CLRMOD: i16 = 2005;
-const LAST_ITEM: i16 = 2933;
-const MNU_DYNAMIC: i16 = 1394;
+const LAST_ITEM: i16 = 3244;
+const MNU_DYNAMIC: i16 = 3052;
 const FIRST_CONSTANT: i16 = 128;
 const LAST_CONSTANT: i16 = 212;
 const VAR_UEST: i16 = 2545;
 const VAR_LEST: i16 = 2546;
 
 // menus
-const MNU_Solver_TOOL: i16 = 2376;
-const MNU_PARETO: i16 = 1286;
-const MNU_GEV: i16 = 1247;
-const MNU_BINOM: i16 = 1207;
-const MNU_CAUCH: i16 = 1212;
-const MNU_WEIBL: i16 = 1267;
-const MNU_CHI2: i16 = 1272;
-const MNU_T: i16 = 1262;
-const MNU_EXPON: i16 = 1217;
-const MNU_POISS: i16 = 1257;
-const MNU_F: i16 = 1222;
-const MNU_GEOM: i16 = 1227;
-const MNU_HYPER: i16 = 1232;
-const MNU_LOGIS: i16 = 1242;
-const MNU_NORML: i16 = 1252;
-const MNU_UNIFORM: i16 = 2600;
-const MNU_DISUNIFORM: i16 = 2605;
-const MNU_SHOW: i16 = 2315;
-const MNU_MVAR: i16 = 1398;
-const MNU_EQ_EDIT: i16 = 1399;
-const MNU_Sf: i16 = 1380;
-const MNU_Solver: i16 = 1361;
-const MNU_PLOT_FUNC: i16 = 2028;
-const MNU_HPLOT: i16 = 1402;
-const MNU_PLOT_ASSESS: i16 = 1396;
-const MNU_PLOT_SCATR: i16 = 1395;
-const MNU_ALPHA: i16 = 1922;
-const MNU_HOME: i16 = 1921;
-const MNU_TAMALPHA: i16 = 1913;
-const MNU_MyAlpha: i16 = 1350;
-const MNU_AIMCATALOG: i16 = 2552;
-const MNU_MyMenu: i16 = 1349;
-const MNU_XXFCNS: i16 = 2596;
-const MNU_BASE: i16 = 1923; // -MNU_BASE used in BASEMODEACTIVE
+const MNU_Solver_TOOL: i16 = 3123;
+const MNU_PARETO: i16 = 2986;
+const MNU_GEV: i16 = 2982;
+const MNU_BINOM: i16 = 2974;
+const MNU_CAUCH: i16 = 2975;
+const MNU_WEIBL: i16 = 2991;
+const MNU_CHI2: i16 = 2976;
+const MNU_T: i16 = 2989;
+const MNU_EXPON: i16 = 2979;
+const MNU_POISS: i16 = 2987;
+const MNU_F: i16 = 2980;
+const MNU_GEOM: i16 = 2981;
+const MNU_HYPER: i16 = 2983;
+const MNU_LOGIS: i16 = 2984;
+const MNU_NORML: i16 = 2985;
+const MNU_UNIFORM: i16 = 2990;
+const MNU_DISUNIFORM: i16 = 2978;
+const MNU_SHOW: i16 = 3119;
+const MNU_MVAR: i16 = 3088;
+const MNU_EQ_EDIT: i16 = 3056;
+const MNU_Sf: i16 = 3116;
+const MNU_Solver: i16 = 3122;
+const MNU_PLOT_FUNC: i16 = 3100;
+const MNU_HPLOT: i16 = 3071;
+const MNU_PLOT_ASSESS: i16 = 3099;
+const MNU_PLOT_SCATR: i16 = 3101;
+const MNU_ALPHA: i16 = 3003;
+const MNU_HOME: i16 = 3070;
+const MNU_TAMALPHA: i16 = 2946;
+const MNU_MyAlpha: i16 = 3089;
+const MNU_AIMCATALOG: i16 = 3001;
+const MNU_MyMenu: i16 = 3090;
+const MNU_XXFCNS: i16 = 3143;
+const MNU_BASE: i16 = 3016; // -MNU_BASE used in BASEMODEACTIVE
 
-const PROBMENUSTART1: i16 = 1207;
-const PROBMENUEND1: i16 = 1296;
-const PROBMENUSTART2: i16 = 2600;
-const PROBMENUEND2: i16 = 2619;
+const PROBMENUSTART: i16 = 2974;
+const PROBMENUEND: i16 = 2996;
 
 const SOFTMENU_STACK_SIZE: usize = 8;
 const SOLVER_STATUS_INTERACTIVE: u16 = 2;
@@ -480,7 +478,6 @@ const PRN_STK: u16 = 1;
 const clrStatusBar: bool_t = 1;
 const clrRegisterLines: bool_t = 1;
 const clrSoftkeys: bool_t = 1;
-const toDisplayVectorMatrix: bool_t = 1;
 const CMP_BINARY: i32 = 0;
 
 // Error/status codes used by screen.c to name a message (these are #define'd
@@ -760,10 +757,10 @@ const STD_NOCHAR: u8 = 1;
 // ---------------------------------------------------------------------------
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
-const const_1000 = constR(5636);
+const const_1000 = constR(5828);
 // const34_0 / const34_1e6 : real34 constants. (offsets via constantPointers.h)
-const const34_0 = constR34(16456);
-const const34_1e6 = constR34(17112);
+const const34_0 = constR34(17152);
+const const34_1e6 = constR34(17808);
 
 // ---------------------------------------------------------------------------
 // font tables (real extern const structs, taken by &name).
@@ -2888,8 +2885,7 @@ pub export fn pickValidItemFromItems(item: i16, priority: bool_t) callconv(.c) [
 
 pub export fn showingProbMenu() callconv(.c) bool_t {
     const cur: c_int = -softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem;
-    return @intFromBool((cur >= PROBMENUSTART1 and cur <= PROBMENUEND1) or
-        (cur >= PROBMENUSTART2 and cur <= PROBMENUEND2));
+    return @intFromBool(cur >= PROBMENUSTART and cur <= PROBMENUEND);
 }
 
 // DEBUG_SHOWNAME undef -> the #else branch of showFunctionName.
@@ -3226,19 +3222,9 @@ pub export fn updateMatrixHeightCache() callconv(.c) void {
         var dummyVal: [MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1]i16 = std.mem.zeroes([MATRIX_MAX_COLUMNS * (MATRIX_MAX_ROWS + 1) + 1]i16);
 
         var allElementsInColAreIntegers: [MATRIX_MAX_COLUMNS]bool_t = std.mem.zeroes([MATRIX_MAX_COLUMNS]bool_t);
-        {
-            var j: usize = 0;
-            while (j < @min(cols, MATRIX_MAX_COLUMNS)) : (j += 1) {
-                allElementsInColAreIntegers[j] = 1;
-                var i: usize = 0;
-                while (i < rows) : (i += 1) {
-                    if (real34IsAnInteger(&matrix.matrixElements.?[i * cols + j]) == 0) {
-                        allElementsInColAreIntegers[j] = 0;
-                        break;
-                    }
-                }
-            }
-        }
+        // The same rule showRealMatrix applies, or the height cache reserves stack
+        // lines for a width the viewer does not draw.
+        frontier_matrix_editor.getRealMatrixIntegerColumns(&matrix, displayFormat, @intCast(cols), 0, 0, @intCast(rows), @intCast(@min(cols, MATRIX_MAX_COLUMNS)), @ptrCast(&allElementsInColAreIntegers));
 
         const mtxWidth = frontier_matrix_editor.getRealMatrixColumnWidths(&matrix, prefixWidth, &numericFont, &dummyVal, dummyVal[MATRIX_MAX_COLUMNS..].ptr, &dummyVal[(MATRIX_MAX_ROWS + 1) * MATRIX_MAX_COLUMNS], if (cols > MATRIX_MAX_COLUMNS) MATRIX_MAX_COLUMNS else cols, @ptrCast(&allElementsInColAreIntegers));
         if (absI(mtxWidth) > MATRIX_LINE_WIDTH) {
@@ -5439,7 +5425,7 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
             tiVector(regist, prefix, prefixWidth_p, @intFromBool(temporaryInformation != TI_VECTOR));
         }
 
-        frontier_matrix_editor.showRealMatrix(&matrix, prefixWidth_p.*, toDisplayVectorMatrix != 0, (!(temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)));
+        frontier_matrix_editor.showRealMatrix(&matrix, prefixWidth_p.*, (!(temporaryInformation == TI_VIEW_REGISTER and origRegist == REGISTER_T)), null);
         if (lastErrorCode != 0) {
             refreshRegisterLine(errorMessageRegisterLine);
         }
@@ -5457,14 +5443,11 @@ fn refreshRealMatrix(regist: calcRegister_t, origRegist: calcRegister_t, baseY: 
             _ = showString(prefix, &standardFont, 1, @intCast(@as(i32, baseY) + TEMPORARY_INFO_OFFSET), vmNormal, prefixPre, prefixPost);
         }
 
-        var preserveErrorMessage: [ERROR_MESSAGE_LENGTH]u8 = undefined;
-        _ = frontier_char_string.xcopy(&preserveErrorMessage, errorMessage, ERROR_MESSAGE_LENGTH);
         if ((regist == REGISTER_Z or regist == REGISTER_T) and !runningOnSimOrUSB()) {
             frontier_display.real34MatrixToDisplayString(regist, tmpString);
         } else if (frontier_display.vectorToDisplayString(regist, tmpString) == 0) {
             frontier_display.real34MatrixToDisplayString(regist, tmpString);
         }
-        _ = frontier_char_string.xcopy(errorMessage, &preserveErrorMessage, ERROR_MESSAGE_LENGTH);
 
         w_p.* = frontier_char_string.stringWidth(tmpString, &numericFont, false, true);
         lineWidth_p.* = @intCast(w_p.*);
@@ -5632,21 +5615,32 @@ inline fn displayG() [*c]const u8 {
     return if (useSmallShifts()) STD_g else STD_MODE_G;
 }
 
+var shiftGlyphOnScreen: bool = false;
+
 pub export fn clearShiftState() callconv(.c) void {
     var fcol: u32 = undefined;
     var frow: u32 = undefined;
     var gcol: u32 = undefined;
     var grow: u32 = undefined;
+    if (!shiftGlyphOnScreen) { // no shift was drawn, so no clear is needed
+        return;
+    }
+    shiftGlyphOnScreen = false;
     getGlyphBounds(displayF(), null, &standardFont, &fcol, &frow);
     getGlyphBounds(displayG(), null, &standardFont, &gcol, &grow);
-    lcd_fill_rect(@intCast(X_SHIFT()), @intCast(Y_SHIFT()), if (fcol > gcol) fcol else gcol, if (frow > grow) frow else grow, LCD_SET_VALUE);
+    lcd_fill_rect(@intCast(X_SHIFT()), @intCast(Y_SHIFT()), if (fcol > gcol) fcol else gcol, if (frow > grow) frow else grow, LCD_SET_VALUE); // clear the shift glyph area
+    if (calcMode == CM_MIM and matrixIndex != INVALID_VARIABLE and Y_SHIFT() != 0) { // in the matrix editor the top left border goes with it
+        matrix_editor_refresh.showMatrixEditor();
+    }
 }
 
 pub export fn showShiftStateF() callconv(.c) void {
+    shiftGlyphOnScreen = true;
     _ = showGlyph(displayF(), &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
 }
 
 pub export fn showShiftStateG() callconv(.c) void {
+    shiftGlyphOnScreen = true;
     _ = showGlyph(displayG(), &standardFont, @intCast(X_SHIFT()), @intCast(Y_SHIFT()), vmNormal, 1, 1, 0);
 }
 

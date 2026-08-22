@@ -21,8 +21,8 @@ const ERR_REGISTER_LINE = runtime.ERR_REGISTER_LINE;
 const dtReal34Matrix = runtime.dtReal34Matrix;
 const dtComplex34Matrix = runtime.dtComplex34Matrix;
 
-const MNU_SIMQ: i16 = 1347;
-const MNU_TAM: i16 = 1385;
+const MNU_SIMQ: i16 = 3120;
+const MNU_TAM: i16 = 2945;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 
 extern fn allocC47Blocks(size_in_blocks: usize) ?[*]align(4) real_t;

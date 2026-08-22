@@ -55,7 +55,7 @@ const TMP_STR_LENGTH: usize = 2560;
 const FLAG_ERPN: c_uint = 0x8045;
 const FLAG_ASLIFT: c_uint = 0xc023;
 
-const MNU_ALPHA: i16 = 1922;
+const MNU_ALPHA: i16 = 3003;
 
 const NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS = 10;
 
