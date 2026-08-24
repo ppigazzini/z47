@@ -231,8 +231,6 @@ var lr_aa2: real_t = undefined;
 var lr_sa0: real_t = undefined;
 var lr_sa1: real_t = undefined;
 
-pub export var graph_dx: f64 = 0;
-pub export var graph_dy: f64 = 0;
 pub export var roundedTicks: bool_t = false;
 pub export var PLOT_AXIS: bool_t = false;
 pub export var PLOT_ZOOM: i8 = 0;
@@ -1059,23 +1057,12 @@ pub export fn auto_tick(tick_int_f_in: f64) callconv(.c) f64 {
 // graph_axis
 // ===========================================================================
 pub export fn graph_axis() callconv(.c) void {
-    graph_dx = 0;
-    graph_dy = 0;
-
     var w: real_t = undefined;
-    if (graph_dx == 0) {
-        realSubtract(x_max, x_min, &w, &ctxtReal39); // w = x_max - x_min
-        tick_int_x = auto_tick(realToDoubleVal(&w) / 20.0);
-    } else {
-        tick_int_x = graph_dx;
-    }
+    realSubtract(x_max, x_min, &w, &ctxtReal39); // w = x_max - x_min
+    tick_int_x = auto_tick(realToDoubleVal(&w) / 20.0);
 
-    if (graph_dy == 0) {
-        realSubtract(y_max, y_min, &w, &ctxtReal39); // w = y_max - y_min
-        tick_int_y = auto_tick(realToDoubleVal(&w) / 20.0);
-    } else {
-        tick_int_y = graph_dy;
-    }
+    realSubtract(y_max, y_min, &w, &ctxtReal39); // w = y_max - y_min
+    tick_int_y = auto_tick(realToDoubleVal(&w) / 20.0);
 
     graphAxisDraw();
 }

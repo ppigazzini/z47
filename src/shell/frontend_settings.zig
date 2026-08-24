@@ -32,6 +32,8 @@ pub const Command = enum {
     set_group_1lo,
     set_group_1l,
     set_group_right,
+    set_group_hex,
+    set_group_bin,
     menu_gap_l,
     menu_gap_rx,
     menu_gap_r,
@@ -82,6 +84,16 @@ fn applyGroup1L(value: u16) void {
 
 fn applyGroupRight(value: u16) void {
     grpGroupingRight = @truncate(value);
+}
+
+fn applyGroupHex(value: u16) void {
+    grpGroupingHex = @truncate(value);
+}
+
+fn applyGroupBin(value: u16) void {
+    // The TAM minimum field is two bits wide, so 3 is an accepted entry; the
+    // binary group is lifted to 4 rather than refused.
+    grpGroupingBin = if (value < 4) 4 else @truncate(value);
 }
 
 fn applyMenuGapL() void {
@@ -237,6 +249,8 @@ pub fn run(command: Command, value: u16) void {
         .set_group_1lo => applyGroup1Lo(value),
         .set_group_1l => applyGroup1L(value),
         .set_group_right => applyGroupRight(value),
+        .set_group_hex => applyGroupHex(value),
+        .set_group_bin => applyGroupBin(value),
         .menu_gap_l => applyMenuGapL(),
         .menu_gap_rx => applyMenuGapRx(),
         .menu_gap_r => applyMenuGapR(),
@@ -266,6 +280,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var shortIntegerMode: u8;
 extern var temporaryInformation: u8;
 extern var roundingMode: u8;

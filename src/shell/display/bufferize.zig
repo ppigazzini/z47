@@ -940,6 +940,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var fnKeyInCatalog: bool_t;
 extern var funcOK: bool_t;
 extern var keyActionProcessed: bool_t;
@@ -2187,16 +2189,16 @@ pub export fn nimBufferToDisplayBuffer(buffer_in: [*c]const u8, displayBuffer_in
         NP_INT_10, NP_INT_BASE => {
             switch (lastIntegerBase) {
                 0 => grpGroupingLeft = GROUPWIDTH_LEFTM,
-                2 => grpGroupingLeft = 4,
+                2 => grpGroupingLeft = grpGroupingBin,
                 3 => grpGroupingLeft = 3,
                 4 => grpGroupingLeft = 2,
                 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 => grpGroupingLeft = 3,
-                16 => grpGroupingLeft = 2,
+                16 => grpGroupingLeft = grpGroupingHex,
                 else => {},
             }
         },
         NP_INT_16 => {
-            grpGroupingLeft = 2;
+            grpGroupingLeft = grpGroupingHex;
         },
         else => {},
     }
@@ -2499,11 +2501,14 @@ pub export fn closeNim() callconv(.c) void {
                 }
                 const is_i: bool = nimNumberPart == NP_COMPLEX_INT_PART and aimBuffer[@intCast(lastChar)] == 'i';
                 const is_theta: bool = nimNumberPart == NP_COMPLEX_INT_PART and (@as(i32, aimBuffer[@intCast(lastChar - 1)]) * 256 + @as(i32, aimBuffer[@intCast(lastChar)]) * 256) == 0xa221;
-                if ((is_i or is_theta) and getSystemFlag(FLAG_POLAR) == 0) { // complex i
+                // The mode the entry is IN, not the mode the flag alone names: a
+                // temporary rect or polar tag typed on this number decides it.
+                const polarEntry = (getSystemFlag(FLAG_POLAR) != 0 and temporaryFlagRect == 0) or temporaryFlagPolar != 0;
+                if ((is_i or is_theta) and !polarEntry) { // i: nothing typed after it, so the imaginary part is 1
                     lastChar += 1;
                     aimBuffer[@intCast(lastChar)] = '1';
                     aimBuffer[@intCast(lastChar + 1)] = 0;
-                } else if ((is_i or is_theta) and getSystemFlag(FLAG_POLAR) != 0) { // complex measured angle
+                } else if ((is_i or is_theta) and polarEntry) { // i_pol: nothing typed after it, so the angle is 0
                     lastChar += 1;
                     aimBuffer[@intCast(lastChar)] = '0';
                     aimBuffer[@intCast(lastChar + 1)] = 0;
@@ -2749,7 +2754,9 @@ pub export fn closeNim() callconv(.c) void {
         }
     } // closeNim_exit
 
-    nimNumberPart = NP_EMPTY; // Ensure insertStepInProgram sees the correct value.
+    if (calcMode != CM_NIM) { // a refused close keeps NIM open
+        nimNumberPart = NP_EMPTY; // Ensure insertStepInProgram sees the correct value.
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -3464,6 +3471,9 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                         if (aimBuffer[@intCast(lastChar)] == 'i') {
                             nimNumberPart = nimRealPart;
                             lastChar -= 1;
+                            if (nimNumberPart == NP_INT_10 and aimBuffer[@intCast(lastChar - 1)] == '.') {
+                                lastChar -= 1;
+                            }
                         }
                     },
                     NP_COMPLEX_FLOAT_PART => {
@@ -3660,9 +3670,13 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                         }
                         return;
                     }
-                } else {
-                    done = true;
+                } else if (nimNumberPart == NP_INT_10 and lastIntegerBase == 0) {
+                    nimNumberPart = NP_REAL_FLOAT_PART;
                     closeNim();
+                    return;
+                } else if (nimNumberPart == NP_REAL_EXPONENT) {
+                    closeNim();
+                    return;
                 }
             },
 
@@ -3851,6 +3865,11 @@ pub export fn addItemToNimBuffer(item: i16) callconv(.c) void {
                     else => {
                         screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
                         closeNim();
+                        if (calcMode == CM_NIM and item > 0) {
+                            // Close refused, NIM stays open: a function does
+                            // nothing more, a menu still opens.
+                            keyActionProcessed = 1;
+                        }
                     },
                 }
             }

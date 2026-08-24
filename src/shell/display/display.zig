@@ -413,6 +413,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var gapItemLeft: u16;
 extern var gapItemRight: u16;
 extern var gapItemRadix: u16;
@@ -2481,8 +2483,10 @@ pub export fn shortIntegerToDisplayString(regist: calcRegister_t, displayString:
         gap = 0;
     } else {
         if (base == 2) {
-            gap = 4;
-        } else if (base == 4 or base == 16) {
+            gap = grpGroupingBin;
+        } else if (base == 16) {
+            gap = grpGroupingHex;
+        } else if (base == 4) {
             gap = 2;
         } else if (base == 8) {
             gap = 3;

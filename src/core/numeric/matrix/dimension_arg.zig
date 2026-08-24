@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Zig port of the matrix dimension helpers of src/c47/mathematics/matrix.c:
 // getMatrixDims reads a register matrix's dimensions, and getDimensionArg (with
-// its static worker getSingleDimension) reads a rows/columns argument pair from
+// getSingleDimension, which store.c also calls) reads a rows/columns pair from
 // the X and Y registers as bounded long integers. These feed the matrix
 // creation / redimension commands.
 
@@ -55,7 +55,7 @@ const DimensionError = error{ NotALongInteger, OutOfRange };
 // GMP integer is always released via defer. `d.*` is written only on success.
 const MAX_DIMENSION: u32 = 4096;
 
-fn getSingleDimension(reg: calcRegister_t, d: *u32) DimensionError!void {
+fn singleDimension(reg: calcRegister_t, d: *u32) DimensionError!void {
     var tmp: runtime.longInteger_t = undefined;
 
     if (!runtime.getRegisterAsLongInt(reg, &tmp[0], null)) {
@@ -86,11 +86,19 @@ fn getSingleDimension(reg: calcRegister_t, d: *u32) DimensionError!void {
     d.* = @intCast(runtime.__gmpz_get_ui(&tmp[0]));
 }
 
+// matrix.c drops the `static` from getSingleDimension so that store.c's
+// R_x nn -> V can size its vector from the single count in X. The error-returning
+// form stays the one getDimensionArg uses; this is the C-ABI face of it.
+pub export fn getSingleDimension(reg: calcRegister_t, d: *u32) callconv(.c) bool {
+    singleDimension(reg, d) catch return false;
+    return true;
+}
+
 pub export fn getDimensionArg(rows: *u32, cols: *u32) callconv(.c) bool {
     // Get Size or I&J for STOIJ from REGISTER_X and REGISTER_Y. Adapt the error
     // set back to the C-ABI bool at this boundary; the short-circuit matches the
     // former `&&` (Y is not read if X fails).
-    getSingleDimension(runtime.REGISTER_X, cols) catch return false;
-    getSingleDimension(runtime.REGISTER_Y, rows) catch return false;
+    singleDimension(runtime.REGISTER_X, cols) catch return false;
+    singleDimension(runtime.REGISTER_Y, rows) catch return false;
     return true;
 }

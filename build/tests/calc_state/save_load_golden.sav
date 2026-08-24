@@ -6321,6 +6321,10 @@ grpGroupingGr1Left
 0
 grpGroupingRight
 3
+grpGroupingHex
+2
+grpGroupingBin
+4
 roundingMode
 1
 displayStack
@@ -6365,10 +6369,6 @@ amortP2
 12
 lrChosen
 0
-graph_dx
-0.00000000000000e+00
-graph_dy
-0.00000000000000e+00
 roundedTicks
 0
 PLOT_AXIS

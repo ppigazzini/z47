@@ -235,8 +235,6 @@ var gpm_prev_y_unclipped: i16 = 0; // graph_plotmem's static int16_t prev_y_uncl
 // Cross-owner / cross-file extern globals
 // ---------------------------------------------------------------------------
 // plotstat.h
-extern var graph_dx: f64;
-extern var graph_dy: f64;
 extern var lastErrorCode: u8;
 extern var roundedTicks: bool_t;
 extern var PLOT_AXIS: bool_t;
@@ -460,9 +458,6 @@ pub export var plotXYroute: bool_t = false;
 // graphResetCommon / graph_reset
 // ===========================================================================
 pub export fn graphResetCommon() callconv(.c) void {
-    graph_dx = 0;
-    graph_dy = 0;
-
     // Reset the plot window to upstream's 0..1 default. Without this every plot
     // entered autoscale carrying the previous plot's range.
     realSetZero(x_min);

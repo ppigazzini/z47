@@ -50,6 +50,11 @@ pub const RuntimeObjectOptions = struct {
     // the block common to DMCP packages 1-4, so no DM42 package has it; DMCP5 and
     // host do.
     option_infsums: bool = true,
+    // OPTION_SLVP_POLY is the general polynomial-roots command and, with it,
+    // equation.c's V->EQ rendering of a coefficient vector. Upstream #undef's it
+    // in the block common to DMCP packages 1-4, so no DM42 package has it; DMCP5
+    // and host do.
+    option_slvp_poly: bool = true,
 };
 
 fn manifestContainsPath(manifest: []const u8, needle: []const u8) bool {
@@ -107,6 +112,7 @@ fn addRuntimeObject(
     // (MAX_ENGINE_NESTING_DEPTH / PLOT_NESTING_ALLOWED) is hardware-tier-specific.
     build_options.addOption(bool, "is_old_hw", std.mem.eql(u8, name_prefix, "dmcp"));
     build_options.addOption(bool, "option_infsums", options.option_infsums);
+    build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_tvm_formulas", options.option_tvm_formulas);
     build_options.addOption(bool, "option_tvm_newton", options.option_tvm_newton);
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);

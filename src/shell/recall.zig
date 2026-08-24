@@ -138,6 +138,7 @@ extern var shortIntegerWordSize: u8;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn updateShortIntegerMasks() callconv(.c) void;
 extern fn set_def_Input_Default() callconv(.c) void;
+extern fn grpGroupingHexBinDefault() callconv(.c) void;
 extern var displayFormat: u8;
 extern var displayFormatDigits: u8;
 extern var gapItemLeft: u16;
@@ -147,6 +148,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -229,6 +232,10 @@ inline fn getStackTop() calcRegister_t {
 inline fn currentNumberOfLocalRegisters() u16 {
     return currentSubroutineLevelData.?.numberOfLocalRegisters;
 }
+// TO_BLOCKS(sizeof(real34_t) = 16) and TO_BLOCKS(sizeof(complex34_t) = 32).
+const REAL34_SIZE_IN_BLOCKS: u16 = 4;
+const COMPLEX34_SIZE_IN_BLOCKS: u16 = 8;
+
 inline fn real34Copy(src: *align(1) const real34_t, dst: *align(1) real34_t) void {
     dst.* = src.*;
 }
@@ -555,8 +562,9 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
             field[cut] = 0;
         }
         Norm_Key_00.used = configToRecall.Norm_Key_00.used;
-        _ = configToRecall.compatibility_byte2;
-        _ = configToRecall.compatibility_byte3;
+        grpGroupingHex = configToRecall.grpGroupingHex;
+        grpGroupingBin = configToRecall.grpGroupingBin;
+        grpGroupingHexBinDefault();
         _ = configToRecall.compatibility_byte4;
         _ = configToRecall.compatibility_byte5;
         _ = configToRecall.compatibility_byte6;
@@ -657,38 +665,44 @@ pub export fn fnRecallVElement(ix: u16) callconv(.c) void {
     }
 }
 
-pub export fn fnRecallVector(regist_arg: u16) callconv(.c) void {
-    var regist = regist_arg;
+// Element `ix` of the vector in X into register `r`. The element is copied out
+// first: reallocating `r` can move the pool block the matrix lives in.
+fn elementToRegister(ix: u16, r: calcRegister_t) void {
+    const idx: usize = @as(usize, ix) - 1;
+    if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+        var c: complex34_t = undefined;
+        complex34Copy(&abi.registerComplex34MatrixElements(REGISTER_X)[idx], &c);
+        reallocateRegister(r, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+        complex34Copy(&c, regComplex34(r));
+    } else {
+        var v: real34_t = undefined;
+        real34Copy(&abi.registerReal34MatrixElements(REGISTER_X)[idx], &v);
+        reallocateRegister(r, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+        real34Copy(&v, reg34(r));
+    }
+}
+
+pub export fn fnRecallVector(regist: u16) callconv(.c) void {
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_X, "In function fnRecallVector:", &rows, &cols)) {
         return;
     }
-    var bak: frontier_matrix_editor.MatrixIndexState = undefined;
-    frontier_matrix_editor.saveMatrixIndexState(&bak);
-    matrixIndex = @intCast(REGISTER_X);
-    var ix: u16 = 1;
-    while (@as(u32, ix) <= @as(u32, rows) * @as(u32, cols) and lastErrorCode == 0) : (ix +%= 1) { // for 5x5, from 1 to 25
-        const rc = linearToRowCol(@as(i32, ix), @as(i32, cols));
-        frontier_matrix_editor.setIRegisterAsInt(false, @intCast(rc.row));
-        frontier_matrix_editor.setJRegisterAsInt(false, @intCast(rc.col));
-        _fnRecallElement(false);
-        if (lastErrorCode != 0) {
-            break;
-        }
-        if (regist > @as(u16, @intCast(REGISTER_X)) and regist < @as(u16, @intCast(getStackTop()))) {
-            frontier_store.fnStore(1 +% regist);
-            regist +%= 1;
-        } else {
-            frontier_store.fnStore(regist);
-            regist +%= 1;
-        }
-        if (lastErrorCode != 0) {
-            break;
-        }
-        fnDrop(NOPARAM);
+    // A stack target is written top down, the order the stack is shown in; X, if
+    // in the span, comes last.
+    const stack = regist >= @as(u16, @intCast(REGISTER_X)) and regist <= @as(u16, @intCast(REGISTER_D));
+    const n: u16 = @intCast(@as(u32, rows) * @as(u32, cols));
+    if (!frontier_store.vectorSpanOk(regist, n, "In function fnRecallVector:")) {
+        return;
     }
-    frontier_matrix_editor.restoreMatrixIndexState(&bak);
+    var ix: u16 = 1;
+    while (ix <= n) : (ix += 1) { // for 5x5, from 1 to 25
+        const r: calcRegister_t = @intCast(if (stack) regist + n - ix else regist + ix - 1);
+        if (!frontier_store.regInRange(@intCast(r))) {
+            return;
+        }
+        elementToRegister(ix, r);
+    }
 }
 
 pub export fn fnRecallElementPlus(unusedButMandatoryParameter: u16) callconv(.c) void {

@@ -65,6 +65,7 @@ const dtLongInteger: u32 = 0;
 const dtReal34: u32 = 1;
 const dtComplex34: u32 = 2;
 const dtReal34Matrix: u32 = 6;
+const dtComplex34Matrix: u32 = 7;
 const dtShortInteger: u32 = 8;
 const dtConfig: u32 = 9;
 const dtString: u32 = 5;
@@ -78,6 +79,7 @@ const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
 const ERROR_WRITE_PROTECTED_VAR: u8 = 37;
 const ERROR_NO_MATRIX_INDEXED: u8 = 38;
+const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 const ERROR_NO_STRING_IN_ALPHA_REGISTER: u8 = 64;
 
 const REGISTER_X: calcRegister_t = 100;
@@ -112,6 +114,9 @@ const FIRST_LOCAL_REGISTER: u16 = 7000;
 const INVALID_VARIABLE: u16 = 2199;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
 const NIM_REGISTER_LINE: calcRegister_t = REGISTER_X;
+
+// fonts.h glyph string.
+const STD_CROSS = "\x80\xd7";
 
 const FLAG_ASLIFT: c_uint = 0xc023;
 const FLAG_SSIZE8: c_int = 0x8018;
@@ -156,6 +161,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -218,6 +225,11 @@ extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn __gmpz_clear(p: *mpz_struct) void;
 extern fn __gmpz_cmp_si(op: *const mpz_struct, c: c_long) c_int;
 extern fn decQuadZero(r: *real34_t) *real34_t;
+extern fn realToReal34(source: *const real_t, destination: *align(1) real34_t) void;
+extern fn realSetZero(value: *real_t) void;
+extern fn saveLastX() bool;
+extern fn initMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, complex: bool) bool;
+extern fn getSingleDimension(reg: calcRegister_t, d: *u32) bool;
 
 // stats.c owner exports.
 
@@ -699,8 +711,6 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_int1: i16 = 0;
     const compatibility_byte00: bool = false;
     const compatibility_byte1: u8 = 0;
-    const compatibility_byte2: bool = false;
-    const compatibility_byte3: bool = false;
     const compatibility_byte4: bool = false;
     const compatibility_byte5: bool = false;
     const compatibility_byte6: bool = false;
@@ -780,8 +790,8 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.Norm_Key_00.func = Norm_Key_00.func;
     _ = frontier_char_string.xcopy(@ptrCast(&configToStore.Norm_Key_00.funcParam), @ptrCast(&Norm_Key_00.funcParam), @sizeOf(@TypeOf(Norm_Key_00.funcParam)));
     configToStore.Norm_Key_00.used = Norm_Key_00.used;
-    configToStore.compatibility_byte2 = compatibility_byte2;
-    configToStore.compatibility_byte3 = compatibility_byte3;
+    configToStore.grpGroupingHex = grpGroupingHex;
+    configToStore.grpGroupingBin = grpGroupingBin;
     configToStore.compatibility_byte4 = compatibility_byte4;
     configToStore.compatibility_byte5 = compatibility_byte5;
     configToStore.compatibility_byte6 = compatibility_byte6;
@@ -874,40 +884,114 @@ pub export fn fnStoreVElement(ix: u16) callconv(.c) void {
     frontier_matrix_editor.restoreMatrixIndexState(&bak);
 }
 
-pub export fn fnStoreVector(regist_arg: u16) callconv(.c) void {
-    var regist = regist_arg;
+// A span stays inside its block: R00..R99, the stack X..D, or the lettered
+// L..W. A local span has no block bound, so it is checked register by register
+// instead (regInRange, in the element writer).
+pub export fn vectorSpanOk(regist: u16, n: u16, funcName: [*:0]const u8) callconv(.c) bool {
+    const last: u16 = if (regist < FIRST_LETTERED_REGISTER)
+        99
+    else if (regist <= @as(u16, @intCast(REGISTER_D)))
+        @intCast(REGISTER_D)
+    else if (regist <= LAST_SPARE_REGISTER)
+        LAST_SPARE_REGISTER
+    else
+        0;
+    if (last != 0 and @as(u32, regist) + n > @as(u32, last) + 1) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            if (regist < FIRST_LETTERED_REGISTER) {
+                abi.fmtBufZ(errorMessage[0..512], "a span of {d} registers from R{d:0>2} runs past R99", .{ n, regist });
+            } else {
+                const letters = "XYZTABCDLIJKMNPQRSEFGHOUVW";
+                abi.fmtBufZ(errorMessage[0..512], "a span of {d} registers from {c} runs past {c}", .{
+                    n,
+                    letters[regist - FIRST_LETTERED_REGISTER],
+                    @as(u8, if (last == @as(u16, @intCast(REGISTER_D))) 'D' else 'W'),
+                });
+            }
+            c_moreInfoOnError(funcName, errorMessage, null, null);
+        }
+        return false;
+    }
+    return true;
+}
+
+// Register `r` into element `ix` of the vector in X; a complex register turns
+// the whole vector complex before the element is written.
+fn registerToElement(r: calcRegister_t, ix: u16) bool {
+    var re: real_t = undefined;
+    var im: real_t = undefined;
+    if (!regInRange(@intCast(r))) {
+        return false;
+    }
+    if (!frontier_register_value_conversions.getRegisterAsComplex(r, &re, &im)) {
+        if (!frontier_register_value_conversions.getRegisterAsReal(r, &re)) {
+            frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+            if (comptime extra_info) {
+                abi.fmtBufZ(errorMessage[0..512], "register {d} holds {s}", .{
+                    @as(u16, @intCast(r)),
+                    std.mem.span(frontier_debug.getRegisterDataTypeName(r, true, false)),
+                });
+                c_moreInfoOnError("In function fnStoreVector:", errorMessage, "not a real, integer or complex", null);
+            }
+            return false;
+        }
+        realSetZero(&im);
+    } else if (getRegisterDataType(r) == dtComplex34 and getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+        frontier_register_value_conversions.convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+    }
+    const idx: usize = @as(usize, ix) - 1;
+    if (getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+        // VARIABLE_REAL34_DATA / VARIABLE_IMAG34_DATA: the two real34 halves of
+        // the complex element.
+        const halves: [*]align(1) real34_t = @ptrCast(&abi.registerComplex34MatrixElements(REGISTER_X)[idx]);
+        realToReal34(&re, &halves[0]);
+        realToReal34(&im, &halves[1]);
+    } else {
+        realToReal34(&re, &abi.registerReal34MatrixElements(REGISTER_X)[idx]);
+    }
+    return true;
+}
+
+pub export fn fnStoreVector(regist: u16) callconv(.c) void {
     var rows: u16 = undefined;
     var cols: u16 = undefined;
     if (!getMatrixDims(REGISTER_X, "In function fnStoreVector:", &rows, &cols)) {
         return;
     }
-    var bak: frontier_matrix_editor.MatrixIndexState = undefined;
-    frontier_matrix_editor.saveMatrixIndexState(&bak);
-    copySourceRegisterToDestRegister(getStackTop(), TEMP_REGISTER_1);
-    setSystemFlag(FLAG_ASLIFT);
-    liftStack();
-    matrixIndex = @intCast(REGISTER_Y);
+    // A stack source is read top down, the order the stack is shown in.
+    const stack = regist >= @as(u16, @intCast(REGISTER_X)) and regist <= @as(u16, @intCast(REGISTER_D));
+    const n: u16 = @intCast(@as(u32, rows) * @as(u32, cols));
+    if (!vectorSpanOk(regist, n, "In function fnStoreVector:")) {
+        return;
+    }
     var ix: u16 = 1;
-    while (@as(u32, ix) <= @as(u32, rows) * @as(u32, cols) and lastErrorCode == 0) : (ix +%= 1) { // for 5x5, from 1 to 25
-        frontier_matrix_editor.setIRegisterAsInt(false, @intCast((ix - 1) / cols + 1));
-        frontier_matrix_editor.setJRegisterAsInt(false, @intCast((ix - 1) % cols + 1));
-        fnDrop(NOPARAM);
-        frontier_recall.fnRecall(regist);
-        regist +%= 1;
-        if (getRegisterDataType(REGISTER_X) != dtComplex34) {
-            fnToReal(NOPARAM);
-        }
-        if (lastErrorCode != 0) {
-            break;
-        }
-        _fnStoreElement(false);
-        if (lastErrorCode != 0) {
-            break;
+    while (ix <= n) : (ix += 1) { // for 5x5, from 1 to 25
+        const r: calcRegister_t = @intCast(if (stack) regist + n - ix else regist + ix - 1);
+        if (!registerToElement(r, ix)) {
+            return;
         }
     }
-    frontier_matrix_editor.restoreMatrixIndexState(&bak);
-    fnDrop(NOPARAM);
-    copySourceRegisterToDestRegister(TEMP_REGISTER_1, getStackTop());
+    setSystemFlag(FLAG_ASLIFT);
+}
+
+pub export fn fnStoreVectorX(regist: u16) callconv(.c) void {
+    var cols: u32 = undefined;
+    if (!getSingleDimension(REGISTER_X, &cols)) { // the count in X sizes the vector: 1 to 4096
+        return;
+    }
+    if (!saveLastX()) {
+        return;
+    }
+    if (!initMatrixRegister(REGISTER_X, 1, @intCast(cols), false)) { // X becomes the 1 x cols real vector Rnn->V fills
+        frontier_error.displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+        if (comptime extra_info) {
+            abi.fmtBufZ(errorMessage[0..512], "Not enough memory for a 1" ++ STD_CROSS ++ "{d} vector", .{cols});
+            moreInfoOnError("In function fnStoreVectorX:", errorMessage, null);
+        }
+        return;
+    }
+    fnStoreVector(regist);
 }
 
 pub export fn fnStoreElementPlus(unusedButMandatoryParameter: u16) callconv(.c) void {

@@ -41,6 +41,7 @@ const FIRST_LOCAL_REGISTER: i16 = 7000;
 const LAST_GLOBAL_REGISTER: i16 = 136;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn set_def_Input_Default() callconv(.c) void;
+extern fn grpGroupingHexBinDefault() callconv(.c) void;
 // currentNumberOfLocalRegisters macro: currentSubroutineLevelData->numberOfLocalRegisters.
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
 extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
@@ -599,6 +600,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var roundingMode: u8;
 extern var displayStack: u8;
 extern var exponentLimit: i16;
@@ -616,8 +619,6 @@ extern var lastIntegerBase: u32;
 extern var amortP1: u16;
 extern var amortP2: u16;
 extern var lrChosen: u16;
-extern var graph_dx: f64;
-extern var graph_dy: f64;
 extern var roundedTicks: u8;
 extern var PLOT_AXIS: u8;
 extern var PLOT_ZMY: i8;
@@ -1368,6 +1369,12 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         grpGroupingGr1Left = text.toUint8(tmpString);
     } else if (text.strcmp2(ab, @constCast("grpGroupingRight")) == 0) {
         grpGroupingRight = text.toUint8(tmpString);
+    } else if (cmpName(ab, "grpGroupingHex")) {
+        grpGroupingHex = text.toUint8(tmpString);
+        grpGroupingHexBinDefault();
+    } else if (cmpName(ab, "grpGroupingBin")) {
+        grpGroupingBin = text.toUint8(tmpString);
+        grpGroupingHexBinDefault();
     } else if (matchU8("roundingMode", &roundingMode)) {} else if (matchU8("displayStack", &displayStack)) {} else if (cmpName(ab, "rngState")) {
         pcg32_global.state = calc_state.stringToUint64(tmpString);
         const w = text.nextWord(tmpString);
@@ -1474,10 +1481,6 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         amortP2 = text.toUint16(tmpString);
     } else if (cmpName(ab, "lrChosen")) {
         lrChosen = text.toUint16(tmpString);
-    } else if (cmpName(ab, "graph_dx")) {
-        graph_dx = calc_state.stringToFloat(tmpString);
-    } else if (cmpName(ab, "graph_dy")) {
-        graph_dy = calc_state.stringToFloat(tmpString);
     } else if (cmpName(ab, "roundedTicks")) {
         roundedTicks = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_INTG")) {
