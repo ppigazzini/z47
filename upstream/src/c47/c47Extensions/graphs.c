@@ -32,9 +32,6 @@ int8_t    PLOT_ZMY = 0;
 
 
 void graphResetCommon() {
-  graph_dx      = 0;
-  graph_dy      = 0;
-
   realSetZero(x_min);
   realCopy(const_1, x_max);
   realSetZero(y_min);

@@ -2088,9 +2088,12 @@ void shortIntegerToDisplayString(calcRegister_t regist, char *displayString, boo
   }
   else {
     if(base == 2) {
-      gap = 4;
+      gap = grpGroupingBin;
     }
-    else if(base == 4 || base == 16) {
+    else if(base == 16) {
+      gap = grpGroupingHex;
+    }
+    else if(base == 4) {
       gap = 2;
     }
     else if(base == 8) {

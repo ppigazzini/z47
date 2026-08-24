@@ -11,6 +11,8 @@
 #define _gprr   3
 #define _gapr   ITM_SPACE_PUNCTUATION
 #define _gaprx  ITM_PERIOD
+#define _gprhex 2
+#define _gprbin 4
 
 TO_QSPI static const struct {
     unsigned tdm24 : 1;
@@ -141,6 +143,8 @@ void configCommon(uint16_t idx) {
 #define FPGRP                 113    // config_grpGroupingRight
 #define IPGRP1                114    // config_grpGroupingGr1Left
 #define IPGRP1x               115    // config_grpGroupingGr1LeftOverflow
+#define HEXGRP                116    // config_grpGroupingHex
+#define BINGRP                117    // config_grpGroupingBin
 #define HIDE                  118    // config_exponentHideLimit
 
 #define DenMaX                120    // config_denmax
@@ -180,6 +184,8 @@ IPGRP,                               xxx,        3,                             
 FPGRP,                               xxx,        3,                              3,               _gprr,                3,                      _gprr,           xxx,             xxx,
 IPGRP1,                              xxx,        0,                              0,               _gpr1,                0,                      _gpr1,           xxx,             xxx,
 IPGRP1x,                             xxx,        0,                              0,               _gpr1x,               1,                      _gpr1x,          xxx,             xxx,
+HEXGRP,                              xxx,        _gprhex,                        _gprhex,         _gprhex,              _gprhex,                _gprhex,         xxx,             xxx,
+BINGRP,                              xxx,        _gprbin,                        _gprbin,         _gprbin,              _gprbin,                _gprbin,         xxx,             xxx,
 
 3,                                   0,          FLAG_IRFRAC,                    xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_IRFRAC,          FLAG_IRFRAC,            xxx,             xxx,             xxx,
@@ -348,6 +354,8 @@ void Sett(int16_t grp) {
         case FPGRP                : grpGroupingRight           =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // FPGRP
         case IPGRP1               : grpGroupingGr1Left         =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // IPGRP1
         case IPGRP1x              : grpGroupingGr1LeftOverflow =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // IPGRP1x
+        case HEXGRP               : grpGroupingHex             =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // HEXGRP
+        case BINGRP               : grpGroupingBin             =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // BINGRP
         case DenMaX               : denMax                     =  Settings[ptr*(_numberOfGrps+2) + 1 + grp];       break; // DenMaX
         case TVMIKnown            : tvmIKnown                  = (Settings[ptr*(_numberOfGrps+2) + 1 + grp] == 1); break; // TVMIKnown
         case TVMIChanges          : tvmIChanges                = (Settings[ptr*(_numberOfGrps+2) + 1 + grp] == 1); break; // TVMIChanges
@@ -610,6 +618,23 @@ void fnSettingsDispFormatGrp1L  (uint16_t param) {
 
 void fnSettingsDispFormatGrpR   (uint16_t param) {
   grpGroupingRight = param;
+}
+
+void fnSettingsDispFormatGrpHex (uint16_t param) {
+  grpGroupingHex = param;
+}
+
+void fnSettingsDispFormatGrpBin (uint16_t param) {
+  grpGroupingBin = param < 4 ? 4 : param;            // TAM minimum field is 2 bits, so 3 is accepted and lifted to 4
+}
+
+void grpGroupingHexBinDefault(void) {         // a restored 0 (older file or Conf register without the fields) takes the default
+  if(grpGroupingHex == 0) {
+    grpGroupingHex = _gprhex;
+  }
+  if(grpGroupingBin == 0) {
+    grpGroupingBin = _gprbin;
+  }
 }
 
 void fnMenuGapL (uint16_t unusedButMandatoryParameter) {

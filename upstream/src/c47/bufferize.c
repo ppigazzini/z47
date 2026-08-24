@@ -1488,6 +1488,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
               nimNumberPart = nimRealPart;
               //debugNIM();
               lastChar--;
+              if(nimNumberPart == NP_INT_10 && aimBuffer[lastChar - 1] == '.') {
+                lastChar--;
+              }
             }
             break;
           }
@@ -1546,7 +1549,6 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         }
 
         aimBuffer[lastChar--] = 0;
-
         if((calcMode != CM_MIM) && (lastChar == -1 || (lastChar == 0 && aimBuffer[0] == '+'))) {
           screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
           calcModeNormal();
@@ -1745,9 +1747,14 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
             return;
           }
         }
-        else {                      //JM
-          done = true;              //JM
+        else if(nimNumberPart == NP_INT_10 && lastIntegerBase == 0) {
+          nimNumberPart = NP_REAL_FLOAT_PART;
           closeNim();               //JM
+          return;
+        }
+        else if(nimNumberPart == NP_REAL_EXPONENT) {
+          closeNim();
+          return;
         }
         break;
       }
@@ -1984,6 +1991,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           default:
             screenUpdatingMode &= ~SCRUPD_SKIP_STACK_ONE_TIME;
             closeNim();
+            if(calcMode == CM_NIM && item > 0) {    // close refused, NIM stays open: a function does nothing more, a menu still opens
+              keyActionProcessed = true;
+            }
         }
       }
       if(calcMode != CM_NIM) {
@@ -2086,7 +2096,7 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
       case NP_INT_BASE:                  // +123AB#16.    ; Change GROUPWIDTH_LEFT from user selection to this table, for entry
         switch(lastIntegerBase) {
           case  0: GROUPWIDTH_LEFT = GROUPWIDTH_LEFTM; break;
-          case  2: GROUPWIDTH_LEFT = 4; break;
+          case  2: GROUPWIDTH_LEFT = grpGroupingBin; break;
           case  3: GROUPWIDTH_LEFT = 3; break;
           case  4: GROUPWIDTH_LEFT = 2; break;
           case  5:
@@ -2100,12 +2110,12 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
           case 13:
           case 14:
           case 15: GROUPWIDTH_LEFT = 3; break;
-          case 16: GROUPWIDTH_LEFT = 2; break;
+          case 16: GROUPWIDTH_LEFT = grpGroupingHex; break;
           default: ;
         }
         break;
-      case NP_INT_16:                    // +123AB.       ; Change to 2 for hex.
-        GROUPWIDTH_LEFT = 2;
+      case NP_INT_16:                    // +123AB.       ; Change to HEXGRP for hex.
+        GROUPWIDTH_LEFT = grpGroupingHex;
         break;
       default: ;
     }                                                         //JMGAP ^^
@@ -2406,12 +2416,12 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
         }
         bool_t is_i     = nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[lastChar] == 'i';
         bool_t is_theta = nimNumberPart == NP_COMPLEX_INT_PART && aimBuffer[lastChar-1]*256 + aimBuffer[lastChar]*256 == 0xa221;
-        if((is_i || is_theta) && !getSystemFlag(FLAG_POLAR)) { // complex i
-          aimBuffer[++lastChar] = '1';                                                   //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
-          aimBuffer[lastChar + 1] = 0;                                                   //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
+        if((is_i || is_theta) && !((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar)) { //  i          //JM 2026-08-22 nothing typed after ix: the imaginary part becomes 1, in POLAR mode too
+          aimBuffer[++lastChar] = '1';                                                                                        //JM 2020-06-22 CHANGED FROM "1" to "0". DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
+          aimBuffer[lastChar + 1] = 0;                                                                                        //JM 2023-09-18 reverted partially (for RECT) from "0" to "1", specifically for a blank i
         }
-        else if((is_i || is_theta) && getSystemFlag(FLAG_POLAR)) { // complex measured angle
-          aimBuffer[++lastChar] = '0';                                                   //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
+        else if((is_i || is_theta) && ((getSystemFlag(FLAG_POLAR) && !temporaryFlagRect) || temporaryFlagPolar)) { // i_pol   //JM 2026-08-22 nothing typed after i_pol: the angle becomes 0, in RECT mode too
+          aimBuffer[++lastChar] = '0';                                                                                        //JM 2020-06-22 CHANGED FROM "1" to '0'. DEFAULTING TO 0+0xi WHEN ABORTING CC ENTRY. #6072aee
           aimBuffer[lastChar + 1] = 0;
         }
 
@@ -2688,7 +2698,9 @@ TO_QSPI static const numStr NumMsg[] = { { "^0" }, { "^1" }, { "^2" }, { "^3" },
     #endif //OPTION_IR_PRINTING
 
     closeNim_exit:
-    nimNumberPart = NP_EMPTY;   //Added to ensure test for nimNumberPart in insertStepInProgram() will have the correct value
+    if(calcMode != CM_NIM) {      // a refused close keeps NIM open
+      nimNumberPart = NP_EMPTY;   //Added to ensure test for nimNumberPart in insertStepInProgram() will have the correct value
+    }
   }
 
 

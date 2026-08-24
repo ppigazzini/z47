@@ -19,6 +19,7 @@ extern const int16_t menu_alpha_intl[];
 extern const int16_t menu_REGIST[];
 extern const softmenu_t softmenu[];
 const char *_ioFileNameFromFilePath(ioFilePath_t path); // the suite's own HAL (hal/io.c); no public header declares it
+static uint32_t parseComplexLiteral(char *r, char *real, char *imag, char *angMod, bool_t *polarLiteral); // the In: and Out: Cplx literal, rectangular or polar
 char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathName[2000], registerExpectedAndValue[2400], realString[2400];
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
@@ -85,6 +86,7 @@ void covAmort(uint16_t which);
 void covAmortNext(uint16_t which);
 void covEqSet(uint16_t which);
 void covEqClear(uint16_t unusedButMandatoryParameter);
+void covVecToEqnRoundTrip(uint16_t unusedButMandatoryParameter);
 void covLoadGraphPgms(uint16_t unusedButMandatoryParameter);
 void covLoadNestedPgms(uint16_t unusedButMandatoryParameter);
 void covBmpName(uint16_t which);
@@ -99,622 +101,627 @@ static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 #endif
 const funcTest_t funcTestNoParam[] = {
   // Save / restore calc state (serializers; file I/O).
-  {"fnSaveRegister",         fnSaveRegister        },
-  {"fnSaveStackRegisters",   fnSaveStackRegisters  },
-  {"fnSave",                 fnSave                },
-  {"fnSaveAllPrograms",      fnSaveAllPrograms     },
-  {"fnSaveProgram",          fnSaveProgram         },
-  {"fnExportProgram",        fnExportProgram       },
+  {"fnSaveRegister",             fnSaveRegister                 },
+  {"fnSaveStackRegisters",       fnSaveStackRegisters           },
+  {"fnSave",                     fnSave                         },
+  {"fnSaveAllPrograms",          fnSaveAllPrograms              },
+  {"fnSaveProgram",              fnSaveProgram                  },
+  {"fnExportProgram",            fnExportProgram                },
   // Error raising / message display.
-  {"fnRaiseError",           fnRaiseError          },
-  {"fnErrorMessage",         fnErrorMessage        },
+  {"fnRaiseError",               fnRaiseError                   },
+  {"fnErrorMessage",             fnErrorMessage                 },
   // Curve fitting / linear regression (operate on accumulated sigma data).
-  {"fnCurveFitting",         fnCurveFitting        },
-  {"fnCurveFittingReset",    fnCurveFittingReset   },
-  {"fnCurveFittingLR",       fnCurveFittingLR      },
-  {"fnProcessLR",            fnProcessLR           },
-  {"fnYIsFnx",               fnYIsFnx              },
-  {"fnXIsFny",               fnXIsFny              },
+  {"fnCurveFitting",             fnCurveFitting                 },
+  {"fnCurveFittingReset",        fnCurveFittingReset            },
+  {"fnCurveFittingLR",           fnCurveFittingLR               },
+  {"fnProcessLR",                fnProcessLR                    },
+  {"fnYIsFnx",                   fnYIsFnx                       },
+  {"fnXIsFny",                   fnXIsFny                       },
   // Distributions: GEV, Pareto, Uniform (params in M/S/Q or M/N, input in X).
-  {"fnGEVP",                 fnGEVP                },
-  {"fnGEVL",                 fnGEVL                },
-  {"fnGEVR",                 fnGEVR                },
-  {"fnGEVI",                 fnGEVI                },
-  {"fnParetoP",              fnParetoP             },
-  {"fnParetoL",              fnParetoL             },
-  {"fnParetoU",              fnParetoU             },
-  {"fnParetoI",              fnParetoI             },
-  {"fnPareto2P",             fnPareto2P            },
-  {"fnPareto2L",             fnPareto2L            },
-  {"fnPareto2U",             fnPareto2U            },
-  {"fnPareto2I",             fnPareto2I            },
-  {"fnUniformP",             fnUniformP            },
-  {"fnUniformL",             fnUniformL            },
-  {"fnUniformU",             fnUniformU            },
-  {"fnUniformI",             fnUniformI            },
+  {"fnGEVP",                     fnGEVP                         },
+  {"fnGEVL",                     fnGEVL                         },
+  {"fnGEVR",                     fnGEVR                         },
+  {"fnGEVI",                     fnGEVI                         },
+  {"fnParetoP",                  fnParetoP                      },
+  {"fnParetoL",                  fnParetoL                      },
+  {"fnParetoU",                  fnParetoU                      },
+  {"fnParetoI",                  fnParetoI                      },
+  {"fnPareto2P",                 fnPareto2P                     },
+  {"fnPareto2L",                 fnPareto2L                     },
+  {"fnPareto2U",                 fnPareto2U                     },
+  {"fnPareto2I",                 fnPareto2I                     },
+  {"fnUniformP",                 fnUniformP                     },
+  {"fnUniformL",                 fnUniformL                     },
+  {"fnUniformU",                 fnUniformU                     },
+  {"fnUniformI",                 fnUniformI                     },
   // Comparisons (X vs Y) and angle conversions (operate on X).
-  {"fnXLessThan",            fnXLessThan           },
-  {"fnXLessEqual",           fnXLessEqual          },
-  {"fnXGreaterThan",         fnXGreaterThan        },
-  {"fnXGreaterEqual",        fnXGreaterEqual       },
-  {"fnXEqualsTo",            fnXEqualsTo           },
-  {"fnXNotEqual",            fnXNotEqual           },
-  {"fnXAlmostEqual",         fnXAlmostEqual        },
+  {"fnXLessThan",                fnXLessThan                    },
+  {"fnXLessEqual",               fnXLessEqual                   },
+  {"fnXGreaterThan",             fnXGreaterThan                 },
+  {"fnXGreaterEqual",            fnXGreaterEqual                },
+  {"fnXEqualsTo",                fnXEqualsTo                    },
+  {"fnXNotEqual",                fnXNotEqual                    },
+  {"fnXAlmostEqual",             fnXAlmostEqual                 },
   // Store / recall (FARG = register number; operate on X, and Y/Z for 2/3 variants).
-  {"fnStore",                fnStore               },
-  {"fnRecall",               fnRecall              },
-  {"fnStoreAdd",             fnStoreAdd            },
-  {"fnStoreSub",             fnStoreSub            },
-  {"fnStoreMult",            fnStoreMult           },
-  {"fnStoreDiv",             fnStoreDiv            },
-  {"fnStoreMax",             fnStoreMax            },
-  {"fnStoreMin",             fnStoreMin            },
-  {"fnRecallAdd",            fnRecallAdd           },
-  {"fnRecallSub",            fnRecallSub           },
-  {"fnRecallMult",           fnRecallMult          },
-  {"fnRecallDiv",            fnRecallDiv           },
-  {"fnRecallMax",            fnRecallMax           },
-  {"fnRecallMin",            fnRecallMin           },
-  {"fnStoreConfig",          fnStoreConfig         },
-  {"fnRecallConfig",         fnRecallConfig        },
-  {"fn2Sto",                 fn2Sto                },
-  {"fn3Sto",                 fn3Sto                },
-  {"fn2Rcl",                 fn2Rcl                },
-  {"fn3Rcl",                 fn3Rcl                },
-  {"fnLastX",                fnLastX               },
-  {"fnStoreStack",           fnStoreStack          },
-  {"fnRecallStack",          fnRecallStack         },
+  {"fnStore",                    fnStore                        },
+  {"fnRecall",                   fnRecall                       },
+  {"fnStoreAdd",                 fnStoreAdd                     },
+  {"fnStoreSub",                 fnStoreSub                     },
+  {"fnStoreMult",                fnStoreMult                    },
+  {"fnStoreDiv",                 fnStoreDiv                     },
+  {"fnStoreMax",                 fnStoreMax                     },
+  {"fnStoreMin",                 fnStoreMin                     },
+  {"fnRecallAdd",                fnRecallAdd                    },
+  {"fnRecallSub",                fnRecallSub                    },
+  {"fnRecallMult",               fnRecallMult                   },
+  {"fnRecallDiv",                fnRecallDiv                    },
+  {"fnRecallMax",                fnRecallMax                    },
+  {"fnRecallMin",                fnRecallMin                    },
+  {"fnStoreConfig",              fnStoreConfig                  },
+  {"fnRecallConfig",             fnRecallConfig                 },
+  {"fn2Sto",                     fn2Sto                         },
+  {"fn3Sto",                     fn3Sto                         },
+  {"fn2Rcl",                     fn2Rcl                         },
+  {"fn3Rcl",                     fn3Rcl                         },
+  {"fnLastX",                    fnLastX                        },
+  {"fnStoreStack",               fnStoreStack                   },
+  {"fnRecallStack",              fnRecallStack                  },
   // Vector store / recall. These index the matrix themselves - STOVEL/RCLVEL from the linear element number in FARG,
   // Rnn>V / V>Rnn walking the whole matrix from the register in FARG - and park the walking index in the shadow row and
   // column, so they need no INDEX and leave I, J and the indexed matrix as they found them.
-  {"fnStoreVElement",        fnStoreVElement       },
-  {"fnRecallVElement",       fnRecallVElement      },
-  {"fnStoreVector",          fnStoreVector         },
-  {"fnRecallVector",         fnRecallVector        },
+  {"fnStoreVElement",            fnStoreVElement                },
+  {"fnRecallVElement",           fnRecallVElement               },
+  {"fnStoreVector",              fnStoreVector                  },
+  {"fnStoreVectorX",             fnStoreVectorX                 },
+  {"fnRecallVector",             fnRecallVector                 },
   // Matrix creation and dimensions (FARG = register number where one is taken).
-  {"fnNewMatrix",            fnNewMatrix           },
-  {"fnGetMatrixDimensions",  fnGetMatrixDimensions },
-  {"fnGetMatrixDimensions42", fnGetMatrixDimensions42},
-  {"fnSetMatrixDimensionsGr", fnSetMatrixDimensionsGr},
+  {"fnNewMatrix",                fnNewMatrix                    },
+  {"fnGetMatrixDimensions",      fnGetMatrixDimensions          },
+  {"fnGetMatrixDimensions42",    fnGetMatrixDimensions42        },
+  {"fnSetMatrixDimensionsGr",    fnSetMatrixDimensionsGr        },
   // M.GROW and M.WRAP are this one function, the flag arriving as the parameter: ON from M.GROW, OFF from M.WRAP.
-  {"fnSetGrowMode",          fnSetGrowMode         },
+  {"fnSetGrowMode",              fnSetGrowMode                  },
   // The two editor entries whose only corpus-reachable arm is the mode guard: both work in CM_MIM and refuse elsewhere, and the corpus is always elsewhere.
-  {"fnOldMatrix",            fnOldMatrix           },
-  {"fnGoToElement",          fnGoToElement         },
+  {"fnOldMatrix",                fnOldMatrix                    },
+  {"fnGoToElement",              fnGoToElement                  },
   // The row and column operations, reached without the editor driver so the corpus takes the arm each one runs outside CM_MIM. fnGoToRow and fnGoToColumn take
   // the line number in FARG.
-  {"fnInsRow",               fnInsRow              },
-  {"fnAddRow",               fnAddRow              },
-  {"fnInsCol",               fnInsCol              },
-  {"fnAddCol",               fnAddCol              },
-  {"fnDelRow",               fnDelRow              },
-  {"fnDelCol",               fnDelCol              },
-  {"fnGoToRow",              fnGoToRow             },
-  {"fnGoToColumn",           fnGoToColumn          },
+  {"fnInsRow",                   fnInsRow                       },
+  {"fnAddRow",                   fnAddRow                       },
+  {"fnInsCol",                   fnInsCol                       },
+  {"fnAddCol",                   fnAddCol                       },
+  {"fnDelRow",                   fnDelRow                       },
+  {"fnDelCol",                   fnDelCol                       },
+  {"fnGoToRow",                  fnGoToRow                      },
+  {"fnGoToColumn",               fnGoToColumn                   },
   // Value/type predicates and small math ops.
-  {"fnCheckType",            fnCheckType           },
-  {"fnIse",                  fnIse                 },
-  {"fnIsg",                  fnIsg                 },
-  {"fnIsz",                  fnIsz                 },
-  {"fnDse",                  fnDse                 },
-  {"fnDsl",                  fnDsl                 },
-  {"fnDsz",                  fnDsz                 },
-  {"fnCheckNumber",          fnCheckNumber         },
-  {"fnCheckAngle",           fnCheckAngle          },
-  {"fnCheckMatrix",          fnCheckMatrix         },
-  {"fnCheckMatrixSquare",    fnCheckMatrixSquare   },
-  {"fnCheckForZero",         fnCheckForZero        },
-  {"fnCheckNaN",             fnCheckNaN            },
-  {"fnCheckInfinite",        fnCheckInfinite       },
-  {"fnCheckSpecial",         fnCheckSpecial        },
-  {"fnCheckPlusZero",        fnCheckPlusZero       },
-  {"fnCheckMinusZero",       fnCheckMinusZero      },
-  {"fnGetType",              fnGetType             },
-  {"fnCheckInteger",         fnCheckInteger        },
-  {"fnRdp",                  fnRdp                 },
-  {"fnRsd",                  fnRsd                 },
-  {"fnInc",                  fnInc                 },
-  {"fnSdl",                  fnSdl                 },
-  {"fnSdr",                  fnSdr                 },
-  {"fnRandom",               fnRandom              },
-  {"fnRandomI",              fnRandomI             },
-  {"fnSeed",                 fnSeed                },
+  {"fnCheckType",                fnCheckType                    },
+  {"fnIse",                      fnIse                          },
+  {"fnIsg",                      fnIsg                          },
+  {"fnIsz",                      fnIsz                          },
+  {"fnDse",                      fnDse                          },
+  {"fnDsl",                      fnDsl                          },
+  {"fnDsz",                      fnDsz                          },
+  {"fnCheckNumber",              fnCheckNumber                  },
+  {"fnCheckAngle",               fnCheckAngle                   },
+  {"fnCheckMatrix",              fnCheckMatrix                  },
+  {"fnCheckMatrixSquare",        fnCheckMatrixSquare            },
+  {"fnCheckForZero",             fnCheckForZero                 },
+  {"fnCheckNaN",                 fnCheckNaN                     },
+  {"fnCheckInfinite",            fnCheckInfinite                },
+  {"fnCheckSpecial",             fnCheckSpecial                 },
+  {"fnCheckPlusZero",            fnCheckPlusZero                },
+  {"fnCheckMinusZero",           fnCheckMinusZero               },
+  {"fnGetType",                  fnGetType                      },
+  {"fnCheckInteger",             fnCheckInteger                 },
+  {"fnRdp",                      fnRdp                          },
+  {"fnRsd",                      fnRsd                          },
+  {"fnInc",                      fnInc                          },
+  {"fnSdl",                      fnSdl                          },
+  {"fnSdr",                      fnSdr                          },
+  {"fnRandom",                   fnRandom                       },
+  {"fnRandomI",                  fnRandomI                      },
+  {"fnSeed",                     fnSeed                         },
   // Alpha register / string ops (build ALPHA with fnClearAlpha + fnXToAlpha).
-  {"fnClearAlpha",           fnClearAlpha          },
-  {"fnXToAlpha",             fnXToAlpha            },
-  {"fnXToAlphaOld",          fnXToAlphaOld         },
-  {"fnAlphaToX",             fnAlphaToX            },
-  {"fnAlphaLeng",            fnAlphaLeng           },
-  {"fnAlphaPos",             fnAlphaPos            },
-  {"fnAlphaIP",             fnAlphaIP             },
-  {"fnAlphaRL",              fnAlphaRL             },
-  {"fnAlphaRR",              fnAlphaRR             },
-  {"fnAlphaSL",              fnAlphaSL             },
-  {"fnAlphaSR",              fnAlphaSR             },
-  {"fnAlphaLeft",            fnAlphaLeft           },
-  {"fnAlphaRight",           fnAlphaRight          },
-  {"fnAlphaMid",             fnAlphaMid            },
-  {"fnAlphaUpper",           fnAlphaUpper          },
-  {"fnAlphaLower",           fnAlphaLower          },
-  {"fnAlphaRev",             fnAlphaRev            },
-  {"fnAlphaTrim",            fnAlphaTrim           },
+  {"fnClearAlpha",               fnClearAlpha                   },
+  {"fnXToAlpha",                 fnXToAlpha                     },
+  {"fnXToAlphaOld",              fnXToAlphaOld                  },
+  {"fnAlphaToX",                 fnAlphaToX                     },
+  {"fnAlphaLeng",                fnAlphaLeng                    },
+  {"fnAlphaPos",                 fnAlphaPos                     },
+  {"fnAlphaIP",                  fnAlphaIP                      },
+  {"fnAlphaRL",                  fnAlphaRL                      },
+  {"fnAlphaRR",                  fnAlphaRR                      },
+  {"fnAlphaSL",                  fnAlphaSL                      },
+  {"fnAlphaSR",                  fnAlphaSR                      },
+  {"fnAlphaLeft",                fnAlphaLeft                    },
+  {"fnAlphaRight",               fnAlphaRight                   },
+  {"fnAlphaMid",                 fnAlphaMid                     },
+  {"fnAlphaUpper",               fnAlphaUpper                   },
+  {"fnAlphaLower",               fnAlphaLower                   },
+  {"fnAlphaRev",                 fnAlphaRev                     },
+  {"fnAlphaTrim",                fnAlphaTrim                    },
   // HP-42S ALPHA ops on the alpha register (REGISTER_K): thin wrappers over the fnAlpha* family.
-  {"fn42Cla",                fn42Cla               },
-  {"fn42Xtoa",               fn42Xtoa              },
-  {"fn42Atox",               fn42Atox              },
-  {"fn42Aleng",              fn42Aleng             },
-  {"fn42Posa",               fn42Posa              },
-  {"fn42Aip",                fn42Aip               },
-  {"fn42AlphaRotate",        fn42AlphaRotate       },
-  {"fn42AlphaShift",         fn42AlphaShift        },
-  {"fn42Alpha",              fn42Alpha             },
+  {"fn42Cla",                    fn42Cla                        },
+  {"fn42Xtoa",                   fn42Xtoa                       },
+  {"fn42Atox",                   fn42Atox                       },
+  {"fn42Aleng",                  fn42Aleng                      },
+  {"fn42Posa",                   fn42Posa                       },
+  {"fn42Aip",                    fn42Aip                        },
+  {"fn42AlphaRotate",            fn42AlphaRotate                },
+  {"fn42AlphaShift",             fn42AlphaShift                 },
+  {"fn42Alpha",                  fn42Alpha                      },
   // Program engine: navigate to a global step (selects the current program) and clear the local variables of the current program (walks the loaded program steps;
   // needs res/testPgms/testPgms.bin staged in the CWD).
-  {"fnGotoDot",              fnGotoDot             },
-  {"fnClCVar",               fnClCVar              },
+  {"fnGotoDot",                  fnGotoDot                      },
+  {"fnClCVar",                   fnClCVar                       },
   // Backup serializer round-trip: save the whole calculator state to backup.cfg and restore it. Exercises both directions of saveRestoreBackup.c.
   // Resets the calculator, so its corpus test must run last.
-  {"fnBackupRoundtrip",      covBackupRoundtrip, 1 },
-  {"fnBackupBadRegionCount", covBackupCorruptRegionCount, 1 },
-  {"covConvToSI",            covConvToSI, 1 },
-  {"covConvFromSI",          covConvFromSI, 1 },
-  {"fnPlotReset",            fnPlotReset           },
-  {"fnEqSetCov",             covEqSet, 1 },
-  {"fnEqClearCov",           covEqClear, 1 },
-  {"fnLoadGraphPgmsCov",     covLoadGraphPgms, 1 },
-  {"fnLoadNestedPgmsCov",    covLoadNestedPgms, 1 },
-  {"fnBmpNameCov",           covBmpName, 1 },
-  {"fnHashBmpCov",           covHashBmp, 1 },
-  {"fnStateRoundtrip",       covStateRoundtrip, 1 },
-  {"fnShortIntWSRestoreCov", covShortIntWordSizeRestore, 1 },
-  {"fnEqCalcCov",            covEqCalc, 1 },
-  {"fnDerivEqCov",           covDerivEq, 1 },
-  {"fnSolveRootCov",         covSolveRoot, 1 },
-  {"fnCpxSolveRootCov",      covCpxSolveRoot, 1 },
-  {"fnEqSolveDispatchCov",   covEqSolveDispatch, 1 },
-  {"fnMimRowColCov",         covMimRowCol, 1 },
-  {"fnIndexedElementCov",    covIndexedElement, 1 },
-  {"fnDerivErrCov",          covDerivErr, 1 },
-  {"fnSolveErrCov",          covSolveErr, 1 },
-  {"fnLoadPgmCov",           covLoadPgm, 1 },
-  {"fnMvarPageNoPgmCov",     covMvarPageNoProgram, 1 },
-  {"fnLoadPgmLongLabelCov",  covLoadPgmLongLabel, 1 },
-  {"fnLoadStateLongLabelCov", covLoadStateLongLabel, 1 },
-  {"fnIterationTiCov",       covIterationTi, 1 },
-  {"fnNamedVarFoldCov",      covNamedVariableFold, 1 },
-  {"fnStatsRegisterCov",     covStatsRegister, 1 },
-  {"fnPolarDisplayCapCov",   covPolarDisplayCap, 1 },
-  {"fnDerivPgmCov",          covDerivPgm, 1 },
-  {"fnDerivMvarPgmCov",      covDerivMvarPgm, 1 },
-  {"fnDerivAccPgm",          covDerivAccPgm, 1 },
-  {"fnDerivUiCov",           covDerivUi, 1 },
-  {"fnSolvePgmCov",          covSolvePgm, 1 },
-  {"fnIntegrateCov",         covIntegrate, 1 },
-  {"fnIntegrateErrCov",      covIntegrateErr, 1 },
-  {"fnMvarKeyCov",           covMvarKey, 1 },
-  {"fnMatEditScrollCov",     covMatrixEditorScroll, 1 },
-  {"fnIntegratePgmCov",      covIntegratePgm, 1 },
-  {"fnNamedVarCacheCov",     covNamedVariableCache, 1 },
-  {"fnSumProdCov",           covSumProd, 1 },
-  {"fnISumProdCov",          covISumProd, 1 },
-  {"fnProgramFlowCov",       covProgramFlow, 1 },
-  {"fnTvmCov",               covTvm, 1 },
-  {"fnTvmPmtCov",            covTvmPmt, 1 },
-  {"fnEffCov",               covEff, 1 },
-  {"fnEffToICov",            covEffToI, 1 },
-  {"fnAmortCov",             covAmort, 1 },
-  {"fnAmortNextCov",         covAmortNext, 1 },
+  {"fnBackupRoundtrip",          covBackupRoundtrip,          1 },
+  {"fnBackupBadRegionCount",     covBackupCorruptRegionCount, 1 },
+  {"covConvToSI",                covConvToSI,                 1 },
+  {"covConvFromSI",              covConvFromSI,               1 },
+  {"fnPlotReset",                fnPlotReset                    },
+  {"fnEqSetCov",                 covEqSet,                    1 },
+  {"fnEqClearCov",               covEqClear,                  1 },
+  {"fnLoadGraphPgmsCov",         covLoadGraphPgms,            1 },
+  {"fnLoadNestedPgmsCov",        covLoadNestedPgms,           1 },
+  {"fnBmpNameCov",               covBmpName,                  1 },
+  {"fnHashBmpCov",               covHashBmp,                  1 },
+  {"fnStateRoundtrip",           covStateRoundtrip,           1 },
+  {"fnShortIntWSRestoreCov",     covShortIntWordSizeRestore,  1 },
+  {"fnEqCalcCov",                covEqCalc,                   1 },
+  {"fnVecToEqnRtCov",            covVecToEqnRoundTrip,        1 },
+  {"fnDerivEqCov",               covDerivEq,                  1 },
+  {"fnSolveRootCov",             covSolveRoot,                1 },
+  {"fnCpxSolveRootCov",          covCpxSolveRoot,             1 },
+  {"fnEqSolveDispatchCov",       covEqSolveDispatch,          1 },
+  {"fnMimRowColCov",             covMimRowCol,                1 },
+  {"fnIndexedElementCov",        covIndexedElement,           1 },
+  {"fnDerivErrCov",              covDerivErr,                 1 },
+  {"fnSolveErrCov",              covSolveErr,                 1 },
+  {"fnLoadPgmCov",               covLoadPgm,                  1 },
+  {"fnMvarPageNoPgmCov",         covMvarPageNoProgram,        1 },
+  {"fnLoadPgmLongLabelCov",      covLoadPgmLongLabel,         1 },
+  {"fnLoadStateLongLabelCov",    covLoadStateLongLabel,       1 },
+  {"fnIterationTiCov",           covIterationTi,              1 },
+  {"fnNamedVarFoldCov",          covNamedVariableFold,        1 },
+  {"fnStatsRegisterCov",         covStatsRegister,            1 },
+  {"fnPolarDisplayCapCov",       covPolarDisplayCap,          1 },
+  {"fnDerivPgmCov",              covDerivPgm,                 1 },
+  {"fnDerivMvarPgmCov",          covDerivMvarPgm,             1 },
+  {"fnDerivAccPgm",              covDerivAccPgm,              1 },
+  {"fnDerivUiCov",               covDerivUi,                  1 },
+  {"fnSolvePgmCov",              covSolvePgm,                 1 },
+  {"fnIntegrateCov",             covIntegrate,                1 },
+  {"fnIntegrateErrCov",          covIntegrateErr,             1 },
+  {"fnMvarKeyCov",               covMvarKey,                  1 },
+  {"fnMatEditScrollCov",         covMatrixEditorScroll,       1 },
+  {"fnIntegratePgmCov",          covIntegratePgm,             1 },
+  {"fnNamedVarCacheCov",         covNamedVariableCache,       1 },
+  {"fnSumProdCov",               covSumProd,                  1 },
+  {"fnISumProdCov",              covISumProd,                 1 },
+  {"fnProgramFlowCov",           covProgramFlow,              1 },
+  {"fnTvmCov",                   covTvm,                      1 },
+  {"fnTvmPmtCov",                covTvmPmt,                   1 },
+  {"fnEffCov",                   covEff,                      1 },
+  {"fnEffToICov",                covEffToI,                   1 },
+  {"fnAmortCov",                 covAmort,                    1 },
+  {"fnAmortNextCov",             covAmortNext,                1 },
   // Statistics (use FARG=1 with fnSigmaAddRem to accumulate a (Y,X) data point).
-  {"fnSigmaAddRem",          fnSigmaAddRem         },
-  {"fnMeanX",                fnMeanX               },
-  {"fnMeanXY",               fnMeanXY              },
-  {"fnGeometricMeanXY",      fnGeometricMeanXY     },
-  {"fnHarmonicMeanXY",       fnHarmonicMeanXY      },
-  {"fnRMSMeanXY",            fnRMSMeanXY           },
-  {"fnWeightedMeanX",        fnWeightedMeanX       },
-  {"fnMedianXY",             fnMedianXY            },
-  {"fnSampleStdDev",         fnSampleStdDev        },
-  {"fnPopulationStdDev",     fnPopulationStdDev    },
-  {"fnStandardError",        fnStandardError       },
-  {"fnSampleCovariance",     fnSampleCovariance    },
-  {"fnPopulationCovariance", fnPopulationCovariance},
-  {"fnLowerQuartileXY",      fnLowerQuartileXY     },
-  {"fnUpperQuartileXY",      fnUpperQuartileXY     },
-  {"fnIQRXY",                fnIQRXY               },
-  {"fnDeltaPercentXmean",    fnDeltaPercentXmean   },
-  {"fnPcSigmaDeltaPcXmean",  fnPcSigmaDeltaPcXmean },
-  {"fnGeometricSampleStdDev", fnGeometricSampleStdDev},
-  {"fnGeometricStandardError", fnGeometricStandardError},
-  {"fnWeightedSampleStdDev", fnWeightedSampleStdDev},
-  {"fnWeightedStandardError", fnWeightedStandardError},
-  {"fnPercentileXY",         fnPercentileXY        },
-  {"fnCoeffDetermination",   fnCoefficientDetermination},
-  {"fnAmortP",               fnAmortP              },
-  {"fnAmortInt",             fnAmortInt            },
-  {"fnAmortPrn",             fnAmortPrn            },
-  {"fnAmortBal",             fnAmortBal            },
-  {"fn10Pow",                fn10Pow               },
-  {"fn2Pow",                 fn2Pow                },
-  {"fnAdd",                  fnAdd                 },
-  {"fnAim",                  fnAim                 },
-  {"fnAgm",                  fnAgm                 },
-  {"fnArccos",               fnArccos              },
-  {"fnArccosh",              fnArccosh             },
-  {"fnArcsin",               fnArcsin              },
-  {"fnArcsinh",              fnArcsinh             },
-  {"fnArctan",               fnArctan              },
-  {"fnArctanh",              fnArctanh             },
-  {"fnArg",                  fnArg                 },
-  {"fnAsr",                  fnAsr                 },
-  {"fnAtan2",                fnAtan2               },
-  {"fnBatteryVoltage",       fnBatteryVoltage      },
-  {"fnBesselJ",              fnBesselJ             },
-  {"fnBesselY",              fnBesselY             },
-  {"fnBinomialI",            fnBinomialI           },
-  {"fnBinomialL",            fnBinomialL           },
-  {"fnBinomialP",            fnBinomialP           },
-  {"fnBinomialR",            fnBinomialR           },
-  {"fnBn",                   fnBn                  },
-  {"fnBnStar",               fnBnStar              },
-  {"fnCauchyI",              fnCauchyI             },
-  {"fnCauchyL",              fnCauchyL             },
-  {"fnCauchyP",              fnCauchyP             },
-  {"fnCauchyR",              fnCauchyR             },
-  {"fnCb",                   fnCb                  },
-  {"fnCeil",                 fnCeil                },
-  {"fnChangeSign",           fnChangeSign          },
-  {"fnChebyshevT",           fnChebyshevT          },
-  {"fnChebyshevU",           fnChebyshevU          },
-  {"fnChi2I",                fnChi2I               },
-  {"fnChi2L",                fnChi2L               },
-  {"fnChi2P",                fnChi2P               },
-  {"fnChi2R",                fnChi2R               },
-  {"fnClearRegisters",       fnClearRegisters      },
-  {"fnClearStack",           fnClearStack          },
-  {"fnClFAll",               fnClFAll              },
-  {"fnClSigma",              fnClSigma             },
-  {"fnClX",                  fnClX                 },
-  {"fnConjugate",            fnConjugate           },
-  {"fnConstant",             fnConstant            },
-  {"fnCos",                  fnCos                 },
-  {"fnCosh",                 fnCosh                },
-  {"fnCountBits",            fnCountBits           },
-  {"fnCross",                fnCross               },
-  {"fnCube",                 fnCube                },
-  {"fnCubeRoot",             fnCubeRoot            },
-  {"fnCvtDbRatio",           fnCvtDbRatio          },
-  {"fnCvtDegGrad",           fnCvtDegGrad          },
-  {"fnCvtDegRad",            fnCvtDegRad           },
-  {"fnCvtGradRad",           fnCvtGradRad          },
-  {"fnCvtHMSHR",             fnCvtHMSHR            },
-  {"fnCvtRatioDb",           fnCvtRatioDb          },
-  {"fnCvtTemp",              fnCvtTemp             },
-  {"fnCxToRe",               fnCxToRe              },
-  {"fnCyx",                  fnCyx                 },
-  {"fnDateTo",               fnDateTo              },
-  {"fnDateToJulian",         fnDateToJulian        },
-  {"fnDateTimeToJulian",     fnDateTimeToJulian    },
-  {"fnDay",                  fnDay                 },
-  {"fnDblDivide",            fnDblDivide           },
-  {"fnDblDivideRemainder",   fnDblDivideRemainder  },
-  {"fnDblMultiply",          fnDblMultiply         },
-  {"fnDec",                  fnDec                 },
-  {"fnDecomp",               fnDecomp              },
-  {"fnDeltaPercent",         fnDeltaPercent        },
-  {"fnDenMax",               fnDenMax              },
-  {"fnDeterminant",          fnDeterminant         },
-  {"fnVectorDist",           fnVectorDist          },
-  {"fnSwapRows",             fnSwapRows            },
-  {"fnSwapColumns",          fnSwapColumns         },
-  {"fnColumnMin",            fnColumnMin           },
-  {"fnColumnMax",            fnColumnMax           },
-  {"fnSetMatrixDimensions",  fnSetMatrixDimensions },
-  {"fnIndexMatrix",          fnIndexMatrix         },
-  {"fnDivide",               fnDivide              },
-  {"fnDot",                  fnDot                 },
-  {"fnDrop",                 fnDrop                },
-  {"fnDropY",                fnDropY               },
-  {"fnConvertMxToStk",       fnConvertMxToStk      },
-  {"fnConvertStkToMx",       fnConvertStkToMx      },
-  {"fnEigenvalues",          fnEigenvalues         },
-  {"fnEigenvectors",         fnEigenvectors        },
-  {"fnExchangeStkToMx",      fnExchangeStkToMx     },
-  {"fnEllipticE",            fnEllipticE           },
-  {"fnEllipticEphi",         fnEllipticEphi        },
-  {"fnEllipticFphi",         fnEllipticFphi        },
-  {"fnEllipticK",            fnEllipticK           },
-  {"fnEllipticPi",           fnEllipticPi          },
-  {"fnErf",                  fnErf                 },
-  {"fnErfc",                 fnErfc                },
-  {"fnPNorm",                fnPNorm               },
-  {"fnEulersFormula",        fnEulersFormula       },
-  {"fnExp",                  fnExp                 },
-  {"fnExpM1",                fnExpM1               },
-  {"fnExpMod",               fnExpMod              },
-  {"fnExponentialI",         fnExponentialI        },
-  {"fnExponentialL",         fnExponentialL        },
-  {"fnExponentialP",         fnExponentialP        },
-  {"fnExponentialR",         fnExponentialR        },
-  {"fnExpt",                 fnExpt                },
-  {"fnFactorial",            fnFactorial           },
-  {"fnFib",                  fnFib                 },
-  {"fnFillStack",            fnFillStack           },
-  {"fnFloor",                fnFloor               },
-  {"fnFp",                   fnFp                  },
-  {"fnFreeFlashMemory",      fnFreeFlashMemory     },
-  {"fnFreeMemory",           fnFreeMemory          },
-  {"fnF_I",                  fnF_I                 },
-  {"fnF_L",                  fnF_L                 },
-  {"fnF_P",                  fnF_P                 },
-  {"fnF_R",                  fnF_R                 },
-  {"fnGamma",                fnGamma               },
-  {"fnGammaX",               fnGammaX              },
-  {"fnGcd",                  fnGcd                 },
-  {"fnGd",                   fnGd                  },
-  {"fnGeometricI",           fnGeometricI          },
-  {"fnGeometricL",           fnGeometricL          },
-  {"fnGeometricP",           fnGeometricP          },
-  {"fnGeometricR",           fnGeometricR          },
-  {"fnGetIntegerSignMode",   fnGetIntegerSignMode  },
-  {"fnGetLocR",              fnGetLocR             },
-  {"fnGetRoundingMode",      fnGetRoundingMode     },
-  {"fnGetSignificantDigits", fnGetSignificantDigits},
-  {"fnGetStackSize",         fnGetStackSize        },
-  {"fnGetWordSize",          fnGetWordSize         },
-  {"fnHermite",              fnHermite             },
-  {"fnHermiteP",             fnHermiteP            },
-  {"fnHypergeometricI",      fnHypergeometricI     },
-  {"fnHypergeometricL",      fnHypergeometricL     },
-  {"fnHypergeometricP",      fnHypergeometricP     },
-  {"fnHypergeometricR",      fnHypergeometricR     },
-  {"fnIDiv",                 fnIDiv                },
-  {"fnIDivR",                fnIDivR               },
-  {"fnImaginaryPart",        fnImaginaryPart       },
-  {"fnInvert",               fnInvert              },
-  {"fnInvertMatrix",         fnInvertMatrix        },
-  {"fnInvGd",                fnInvGd               },
-  {"fnIp",                   fnIp                  },
-  {"fnLint",                 fnLint                },
-  {"fnSint",                 fnSint                },
-  {"fnIsPrime",              fnIsPrime             },
-  {"fnNextPrime",            fnNextPrime           },
-  {"fnPrimeFactors",         fnPrimeFactors        },
-  {"fnEvPFacts",             fnEvPFacts            },
-  {"fnIxyz",                 fnIxyz                },
-  {"fnJacobiAmplitude",      fnJacobiAmplitude     },
-  {"fnJacobiCn",             fnJacobiCn            },
-  {"fnJacobiDn",             fnJacobiDn            },
-  {"fnJacobiSn",             fnJacobiSn            },
-  {"fnJacobiZeta",           fnJacobiZeta          },
-  {"fnJulianToDateTime",     fnJulianToDateTime    },
-  {"fnKmletok100K",          fnKmletok100K         },
-  {"fnL100Tomgus",           fnL100Tomgus          },
-  {"fnL100Tomguk",           fnL100Tomguk          },
-  {"fnLaguerre",             fnLaguerre            },
-  {"fnLaguerreAlpha",        fnLaguerreAlpha       },
-  {"fnLcm",                  fnLcm                 },
-  {"fnLegendre",             fnLegendre            },
-  {"fnLINPOL",               fnLINPOL              },
-  {"fnLn",                   fnLn                  },
-  {"fnLnP1",                 fnLnP1                },
-  {"fnLnGamma",              fnLnGamma             },
-  {"fnLog10",                fnLog10               },
-  {"fnLog2",                 fnLog2                },
-  {"fnLogisticI",            fnLogisticI           },
-  {"fnLogisticL",            fnLogisticL           },
-  {"fnLogisticP",            fnLogisticP           },
-  {"fnLogisticR",            fnLogisticR           },
-  {"fnLogNormalI",           fnLogNormalI          },
-  {"fnLogNormalL",           fnLogNormalL          },
-  {"fnLogNormalP",           fnLogNormalP          },
-  {"fnLogNormalR",           fnLogNormalR          },
-  {"fnStdNormalI",           fnStdNormalI          },
-  {"fnStdNormalL",           fnStdNormalL          },
-  {"fnStdNormalP",           fnStdNormalP          },
-  {"fnStdNormalR",           fnStdNormalR          },
-  {"fnLogXY",                fnLogXY               },
-  {"fnLnBeta",               fnLnBeta              },
-  {"fnBeta",                 fnBeta                },
-  {"fnLj",                   fnLj                  },
-  {"fnLogicalAnd",           fnLogicalAnd          },
-  {"fnLogicalNand",          fnLogicalNand         },
-  {"fnLogicalNor",           fnLogicalNor          },
-  {"fnLogicalNot",           fnLogicalNot          },
-  {"fnLogicalOr",            fnLogicalOr           },
-  {"fnLogicalXnor",          fnLogicalXnor         },
-  {"fnLogicalXor",           fnLogicalXor          },
-  {"fnLuDecomposition",      fnLuDecomposition     },
-  {"fnM1Pow",                fnM1Pow               },
-  {"fnMagnitude",            fnMagnitude           },
-  {"fnMant",                 fnMant                },
-  {"fnMaskl",                fnMaskl               },
-  {"fnMaskr",                fnMaskr               },
-  {"fnMatrixIdentity",       fnMatrixIdentity      },
-  {"fnMatrixSquareRoot",     fnMatrixSquareRoot    },
-  {"fnMax",                  fnMax                 },
-  {"fnMgeuktok100M",         fnMgeuktok100M        },
-  {"fnMgeustok100M",         fnMgeustok100M        },
-  {"fnMin",                  fnMin                 },
-  {"fnMirror",               fnMirror              },
-  {"fnMod",                  fnMod                 },
-  {"fnMonth",                fnMonth               },
-  {"fnMulMod",               fnMulMod              },
-  {"fnMultiply",             fnMultiply            },
-  {"fnNegBinomialI",         fnNegBinomialI        },
-  {"fnNegBinomialL",         fnNegBinomialL        },
-  {"fnNegBinomialP",         fnNegBinomialP        },
-  {"fnNegBinomialR",         fnNegBinomialR        },
-  {"fnNeighb",               fnNeighb              },
-  {"fnNop",                  fnNop                 },
-  {"fnNormalI",              fnNormalI             },
-  {"fnNormalL",              fnNormalL             },
-  {"fnNormalP",              fnNormalP             },
-  {"fnNormalR",              fnNormalR             },
-  {"fnParallel",             fnParallel            },
-  {"fnPi",                   fnPi                  },
-  {"fnPercent",              fnPercent             },
-  {"fnPercentMRR",           fnPercentMRR          },
-  {"fnPercentT",             fnPercentT            },
-  {"fnPercentPlusMG",        fnPercentPlusMG       },
-  {"fnPercentSigma",         fnPercentSigma        },
-  {"fnPoissonI",             fnPoissonI            },
-  {"fnPoissonL",             fnPoissonL            },
-  {"fnPoissonP",             fnPoissonP            },
-  {"fnPoissonR",             fnPoissonR            },
-  {"fnPower",                fnPower               },
-  {"fnPyx",                  fnPyx                 },
-  {"fnQrDecomposition",      fnQrDecomposition     },
-  {"fnRealPart",             fnRealPart            },
-  {"fnRecallIJ",             fnRecallIJ            },
-  {"fnReToCx",               fnReToCx              },
-  {"fnRj",                   fnRj                  },
-  {"fnRL",                   fnRl                  },
-  {"fnRLC",                  fnRlc                 },
-  {"fnRmd",                  fnRmd                 },
-  {"fnRollDown",             fnRollDown            },
-  {"fnRollUp",               fnRollUp              },
-  {"fnRound",                fnRound               },
-  {"fnRoundi",               fnRoundi              },
-  {"fnRowColSum",            fnRowColSum           },
-  {"fnRR",                   fnRr                  },
-  {"fnRRC",                  fnRrc                 },
-  {"fnSign",                 fnSign                },
-  {"fnSin",                  fnSin                 },
-  {"fnSinc",                 fnSinc                },
-  {"fnSincpi",               fnSincpi              },
-  {"fnSinh",                 fnSinh                },
-  {"fnSl",                   fnSl                  },
-  {"fnSlvc",                 fnSlvc                },
-  {"fnSlvp",                 fnSlvp                },
-  {"fnSlvq",                 fnSlvq                },
-  {"fnSquare",               fnSquare              },
-  {"fnSr",                   fnSr                  },
-  {"fnStoreIJ",              fnStoreIJ             },
-  {"fnSqrt1Px2",             fnSqrt1Px2            },
-  {"fnSquareRoot",           fnSquareRoot          },
-  {"fnSubtract",             fnSubtract            },
-  {"fnSumXY",                fnSumXY               },
-  {"fnSwapRealImaginary",    fnSwapRealImaginary   },
-  {"fnSwapXY",               fnSwapXY              },
-  {"fnTan",                  fnTan                 },
-  {"fnTanh",                 fnTanh                },
-  {"fnToDate",               fnToDate              },
-  {"fnHRtoTM",               fnHRtoTM              },
-  {"fnHMStoTM",              fnHMStoTM             },
-  {"fnToReal",               fnToReal              },
-  {"fnToPolar2",             fnToPolar2            },
-  {"fnToRect2",              fnToRect2             },
-  {"fnTranspose",            fnTranspose           },
-  {"fnXXfn",                 fnXXfn                },
-  {"fnXXfn_RSD",             fnXXfn_RSD            },
-  {"fnXXfn_RDP",             fnXXfn_RDP            },
-  {"fnEffToI",               fnEffToI              },
-  {"fnEff",                  fnEff                 },
-  {"fnTvmVar",               fnTvmVar              },
-  {"fnT_I",                  fnT_I                 },
-  {"fnT_L",                  fnT_L                 },
-  {"fnT_P",                  fnT_P                 },
-  {"fnT_R",                  fnT_R                 },
-  {"fnUlp",                  fnUlp                 },
-  {"fnUnitConvert",          fnUnitConvert         },
-  {"fnUnitVector",           fnUnitVector          },
-  {"fnUnzip",                fnUnzip               },
-  {"fnVectorAngle",          fnVectorAngle         },
-  {"fnWday",                 fnWday                },
-  {"fnWeibullI",             fnWeibullI            },
-  {"fnWeibullL",             fnWeibullL            },
-  {"fnWeibullP",             fnWeibullP            },
-  {"fnWeibullR",             fnWeibullR            },
-  {"fnWinverse",             fnWinverse            },
-  {"fnWnegative",            fnWnegative           },
-  {"fnWpositive",            fnWpositive           },
-  {"fnXthRoot",              fnXthRoot             },
-  {"fnXToDate",              fnXToDate             },
-  {"fnXAlmostEqual",         fnXAlmostEqual        },
-  {"fnYear",                 fnYear                },
-  {"fnZeta",                 fnZeta                },
-  {"fnZip",                  fnZip                 },
-  {"fnDeltaToStar",          fnDeltaToStar         },
-  {"fnStarToDelta",          fnStarToDelta         },
-  {"fnSymToAbc",             fnSymToAbc            },
-  {"fnAbcToSym",             fnAbcToSym            },
-  {"fnCopyXtoAbc",           fnCopyXtoAbc          },
-  {"fnTripleZfromVI",        fnTripleZfromVI       },
-  {"fnTripleVfromIZ",        fnTripleVfromIZ       },
-  {"fnTripleIfromVZ",        fnTripleIfromVZ       },
-  {"fnTripleFlipPolar",      fnTripleFlipPolar     },
+  {"fnSigmaAddRem",              fnSigmaAddRem                  },
+  {"fnMeanX",                    fnMeanX                        },
+  {"fnMeanXY",                   fnMeanXY                       },
+  {"fnGeometricMeanXY",          fnGeometricMeanXY              },
+  {"fnHarmonicMeanXY",           fnHarmonicMeanXY               },
+  {"fnRMSMeanXY",                fnRMSMeanXY                    },
+  {"fnWeightedMeanX",            fnWeightedMeanX                },
+  {"fnMedianXY",                 fnMedianXY                     },
+  {"fnSampleStdDev",             fnSampleStdDev                 },
+  {"fnPopulationStdDev",         fnPopulationStdDev             },
+  {"fnStandardError",            fnStandardError                },
+  {"fnSampleCovariance",         fnSampleCovariance             },
+  {"fnPopulationCovariance",     fnPopulationCovariance         },
+  {"fnLowerQuartileXY",          fnLowerQuartileXY              },
+  {"fnUpperQuartileXY",          fnUpperQuartileXY              },
+  {"fnIQRXY",                    fnIQRXY                        },
+  {"fnDeltaPercentXmean",        fnDeltaPercentXmean            },
+  {"fnPcSigmaDeltaPcXmean",      fnPcSigmaDeltaPcXmean          },
+  {"fnGeometricSampleStdDev",    fnGeometricSampleStdDev        },
+  {"fnGeometricStandardError",   fnGeometricStandardError       },
+  {"fnWeightedSampleStdDev",     fnWeightedSampleStdDev         },
+  {"fnWeightedStandardError",    fnWeightedStandardError        },
+  {"fnPercentileXY",             fnPercentileXY                 },
+  {"fnCoeffDetermination",       fnCoefficientDetermination     },
+  {"fnAmortP",                   fnAmortP                       },
+  {"fnAmortInt",                 fnAmortInt                     },
+  {"fnAmortPrn",                 fnAmortPrn                     },
+  {"fnAmortBal",                 fnAmortBal                     },
+  {"fn10Pow",                    fn10Pow                        },
+  {"fn2Pow",                     fn2Pow                         },
+  {"fnAdd",                      fnAdd                          },
+  {"fnAim",                      fnAim                          },
+  {"fnAgm",                      fnAgm                          },
+  {"fnArccos",                   fnArccos                       },
+  {"fnArccosh",                  fnArccosh                      },
+  {"fnArcsin",                   fnArcsin                       },
+  {"fnArcsinh",                  fnArcsinh                      },
+  {"fnArctan",                   fnArctan                       },
+  {"fnArctanh",                  fnArctanh                      },
+  {"fnArg",                      fnArg                          },
+  {"fnAsr",                      fnAsr                          },
+  {"fnAtan2",                    fnAtan2                        },
+  {"fnBatteryVoltage",           fnBatteryVoltage               },
+  {"fnBesselJ",                  fnBesselJ                      },
+  {"fnBesselY",                  fnBesselY                      },
+  {"fnBinomialI",                fnBinomialI                    },
+  {"fnBinomialL",                fnBinomialL                    },
+  {"fnBinomialP",                fnBinomialP                    },
+  {"fnBinomialR",                fnBinomialR                    },
+  {"fnBn",                       fnBn                           },
+  {"fnBnStar",                   fnBnStar                       },
+  {"fnCauchyI",                  fnCauchyI                      },
+  {"fnCauchyL",                  fnCauchyL                      },
+  {"fnCauchyP",                  fnCauchyP                      },
+  {"fnCauchyR",                  fnCauchyR                      },
+  {"fnCb",                       fnCb                           },
+  {"fnCeil",                     fnCeil                         },
+  {"fnChangeSign",               fnChangeSign                   },
+  {"fnChebyshevT",               fnChebyshevT                   },
+  {"fnChebyshevU",               fnChebyshevU                   },
+  {"fnChi2I",                    fnChi2I                        },
+  {"fnChi2L",                    fnChi2L                        },
+  {"fnChi2P",                    fnChi2P                        },
+  {"fnChi2R",                    fnChi2R                        },
+  {"fnClearRegisters",           fnClearRegisters               },
+  {"fnClearStack",               fnClearStack                   },
+  {"fnClFAll",                   fnClFAll                       },
+  {"fnClSigma",                  fnClSigma                      },
+  {"fnClX",                      fnClX                          },
+  {"fnConjugate",                fnConjugate                    },
+  {"fnConstant",                 fnConstant                     },
+  {"fnCos",                      fnCos                          },
+  {"fnCosh",                     fnCosh                         },
+  {"fnCountBits",                fnCountBits                    },
+  {"fnCross",                    fnCross                        },
+  {"fnCube",                     fnCube                         },
+  {"fnCubeRoot",                 fnCubeRoot                     },
+  {"fnCvtDbRatio",               fnCvtDbRatio                   },
+  {"fnCvtDegGrad",               fnCvtDegGrad                   },
+  {"fnCvtDegRad",                fnCvtDegRad                    },
+  {"fnCvtGradRad",               fnCvtGradRad                   },
+  {"fnCvtHMSHR",                 fnCvtHMSHR                     },
+  {"fnCvtRatioDb",               fnCvtRatioDb                   },
+  {"fnCvtTemp",                  fnCvtTemp                      },
+  {"fnCxToRe",                   fnCxToRe                       },
+  {"fnCyx",                      fnCyx                          },
+  {"fnDateTo",                   fnDateTo                       },
+  {"fnDateToJulian",             fnDateToJulian                 },
+  {"fnDateTimeToJulian",         fnDateTimeToJulian             },
+  {"fnDay",                      fnDay                          },
+  {"fnDblDivide",                fnDblDivide                    },
+  {"fnDblDivideRemainder",       fnDblDivideRemainder           },
+  {"fnDblMultiply",              fnDblMultiply                  },
+  {"fnDec",                      fnDec                          },
+  {"fnDecomp",                   fnDecomp                       },
+  {"fnDeltaPercent",             fnDeltaPercent                 },
+  {"fnDenMax",                   fnDenMax                       },
+  {"fnDeterminant",              fnDeterminant                  },
+  {"fnVectorDist",               fnVectorDist                   },
+  {"fnSwapRows",                 fnSwapRows                     },
+  {"fnSwapColumns",              fnSwapColumns                  },
+  {"fnColumnMin",                fnColumnMin                    },
+  {"fnColumnMax",                fnColumnMax                    },
+  {"fnSetMatrixDimensions",      fnSetMatrixDimensions          },
+  {"fnIndexMatrix",              fnIndexMatrix                  },
+  {"fnDivide",                   fnDivide                       },
+  {"fnDot",                      fnDot                          },
+  {"fnDrop",                     fnDrop                         },
+  {"fnDropY",                    fnDropY                        },
+  {"fnConvertMxToStk",           fnConvertMxToStk               },
+  {"fnConvertStkToMx",           fnConvertStkToMx               },
+  {"fnEigenvalues",              fnEigenvalues                  },
+  {"fnEigenvectors",             fnEigenvectors                 },
+  {"fnExchangeStkToMx",          fnExchangeStkToMx              },
+  {"fnEllipticE",                fnEllipticE                    },
+  {"fnEllipticEphi",             fnEllipticEphi                 },
+  {"fnEllipticFphi",             fnEllipticFphi                 },
+  {"fnEllipticK",                fnEllipticK                    },
+  {"fnEllipticPi",               fnEllipticPi                   },
+  {"fnErf",                      fnErf                          },
+  {"fnErfc",                     fnErfc                         },
+  {"fnPNorm",                    fnPNorm                        },
+  {"fnEulersFormula",            fnEulersFormula                },
+  {"fnExp",                      fnExp                          },
+  {"fnExpM1",                    fnExpM1                        },
+  {"fnExpMod",                   fnExpMod                       },
+  {"fnExponentialI",             fnExponentialI                 },
+  {"fnExponentialL",             fnExponentialL                 },
+  {"fnExponentialP",             fnExponentialP                 },
+  {"fnExponentialR",             fnExponentialR                 },
+  {"fnExpt",                     fnExpt                         },
+  {"fnFactorial",                fnFactorial                    },
+  {"fnFib",                      fnFib                          },
+  {"fnFillStack",                fnFillStack                    },
+  {"fnFloor",                    fnFloor                        },
+  {"fnFp",                       fnFp                           },
+  {"fnFreeFlashMemory",          fnFreeFlashMemory              },
+  {"fnFreeMemory",               fnFreeMemory                   },
+  {"fnF_I",                      fnF_I                          },
+  {"fnF_L",                      fnF_L                          },
+  {"fnF_P",                      fnF_P                          },
+  {"fnF_R",                      fnF_R                          },
+  {"fnGamma",                    fnGamma                        },
+  {"fnGammaX",                   fnGammaX                       },
+  {"fnGcd",                      fnGcd                          },
+  {"fnGd",                       fnGd                           },
+  {"fnGeometricI",               fnGeometricI                   },
+  {"fnGeometricL",               fnGeometricL                   },
+  {"fnGeometricP",               fnGeometricP                   },
+  {"fnGeometricR",               fnGeometricR                   },
+  {"fnGetIntegerSignMode",       fnGetIntegerSignMode           },
+  {"fnGetLocR",                  fnGetLocR                      },
+  {"fnGetRoundingMode",          fnGetRoundingMode              },
+  {"fnGetSignificantDigits",     fnGetSignificantDigits         },
+  {"fnGetStackSize",             fnGetStackSize                 },
+  {"fnGetWordSize",              fnGetWordSize                  },
+  {"fnHermite",                  fnHermite                      },
+  {"fnHermiteP",                 fnHermiteP                     },
+  {"fnHypergeometricI",          fnHypergeometricI              },
+  {"fnHypergeometricL",          fnHypergeometricL              },
+  {"fnHypergeometricP",          fnHypergeometricP              },
+  {"fnHypergeometricR",          fnHypergeometricR              },
+  {"fnIDiv",                     fnIDiv                         },
+  {"fnIDivR",                    fnIDivR                        },
+  {"fnImaginaryPart",            fnImaginaryPart                },
+  {"fnInvert",                   fnInvert                       },
+  {"fnInvertMatrix",             fnInvertMatrix                 },
+  {"fnInvGd",                    fnInvGd                        },
+  {"fnIp",                       fnIp                           },
+  {"fnLint",                     fnLint                         },
+  {"fnSint",                     fnSint                         },
+  {"fnIsPrime",                  fnIsPrime                      },
+  {"fnNextPrime",                fnNextPrime                    },
+  {"fnPrimeFactors",             fnPrimeFactors                 },
+  {"fnEvPFacts",                 fnEvPFacts                     },
+  {"fnIxyz",                     fnIxyz                         },
+  {"fnJacobiAmplitude",          fnJacobiAmplitude              },
+  {"fnJacobiCn",                 fnJacobiCn                     },
+  {"fnJacobiDn",                 fnJacobiDn                     },
+  {"fnJacobiSn",                 fnJacobiSn                     },
+  {"fnJacobiZeta",               fnJacobiZeta                   },
+  {"fnJulianToDateTime",         fnJulianToDateTime             },
+  {"fnKmletok100K",              fnKmletok100K                  },
+  {"fnL100Tomgus",               fnL100Tomgus                   },
+  {"fnL100Tomguk",               fnL100Tomguk                   },
+  {"fnLaguerre",                 fnLaguerre                     },
+  {"fnLaguerreAlpha",            fnLaguerreAlpha                },
+  {"fnLcm",                      fnLcm                          },
+  {"fnLegendre",                 fnLegendre                     },
+  {"fnLINPOL",                   fnLINPOL                       },
+  {"fnLn",                       fnLn                           },
+  {"fnLnP1",                     fnLnP1                         },
+  {"fnLnGamma",                  fnLnGamma                      },
+  {"fnLog10",                    fnLog10                        },
+  {"fnLog2",                     fnLog2                         },
+  {"fnLogisticI",                fnLogisticI                    },
+  {"fnLogisticL",                fnLogisticL                    },
+  {"fnLogisticP",                fnLogisticP                    },
+  {"fnLogisticR",                fnLogisticR                    },
+  {"fnLogNormalI",               fnLogNormalI                   },
+  {"fnLogNormalL",               fnLogNormalL                   },
+  {"fnLogNormalP",               fnLogNormalP                   },
+  {"fnLogNormalR",               fnLogNormalR                   },
+  {"fnStdNormalI",               fnStdNormalI                   },
+  {"fnStdNormalL",               fnStdNormalL                   },
+  {"fnStdNormalP",               fnStdNormalP                   },
+  {"fnStdNormalR",               fnStdNormalR                   },
+  {"fnLogXY",                    fnLogXY                        },
+  {"fnLnBeta",                   fnLnBeta                       },
+  {"fnBeta",                     fnBeta                         },
+  {"fnLj",                       fnLj                           },
+  {"fnLogicalAnd",               fnLogicalAnd                   },
+  {"fnLogicalNand",              fnLogicalNand                  },
+  {"fnLogicalNor",               fnLogicalNor                   },
+  {"fnLogicalNot",               fnLogicalNot                   },
+  {"fnLogicalOr",                fnLogicalOr                    },
+  {"fnLogicalXnor",              fnLogicalXnor                  },
+  {"fnLogicalXor",               fnLogicalXor                   },
+  {"fnLuDecomposition",          fnLuDecomposition              },
+  {"fnM1Pow",                    fnM1Pow                        },
+  {"fnMagnitude",                fnMagnitude                    },
+  {"fnMant",                     fnMant                         },
+  {"fnMaskl",                    fnMaskl                        },
+  {"fnMaskr",                    fnMaskr                        },
+  {"fnMatrixIdentity",           fnMatrixIdentity               },
+  {"fnMatrixSquareRoot",         fnMatrixSquareRoot             },
+  {"fnMax",                      fnMax                          },
+  {"fnMgeuktok100M",             fnMgeuktok100M                 },
+  {"fnMgeustok100M",             fnMgeustok100M                 },
+  {"fnMin",                      fnMin                          },
+  {"fnMirror",                   fnMirror                       },
+  {"fnMod",                      fnMod                          },
+  {"fnMonth",                    fnMonth                        },
+  {"fnMulMod",                   fnMulMod                       },
+  {"fnMultiply",                 fnMultiply                     },
+  {"fnNegBinomialI",             fnNegBinomialI                 },
+  {"fnNegBinomialL",             fnNegBinomialL                 },
+  {"fnNegBinomialP",             fnNegBinomialP                 },
+  {"fnNegBinomialR",             fnNegBinomialR                 },
+  {"fnNeighb",                   fnNeighb                       },
+  {"fnNop",                      fnNop                          },
+  {"fnNormalI",                  fnNormalI                      },
+  {"fnNormalL",                  fnNormalL                      },
+  {"fnNormalP",                  fnNormalP                      },
+  {"fnNormalR",                  fnNormalR                      },
+  {"fnParallel",                 fnParallel                     },
+  {"fnPi",                       fnPi                           },
+  {"fnPercent",                  fnPercent                      },
+  {"fnPercentMRR",               fnPercentMRR                   },
+  {"fnPercentT",                 fnPercentT                     },
+  {"fnPercentPlusMG",            fnPercentPlusMG                },
+  {"fnPercentSigma",             fnPercentSigma                 },
+  {"fnPoissonI",                 fnPoissonI                     },
+  {"fnPoissonL",                 fnPoissonL                     },
+  {"fnPoissonP",                 fnPoissonP                     },
+  {"fnPoissonR",                 fnPoissonR                     },
+  {"fnPower",                    fnPower                        },
+  {"fnPyx",                      fnPyx                          },
+  {"fnQrDecomposition",          fnQrDecomposition              },
+  {"fnRealPart",                 fnRealPart                     },
+  {"fnRecallIJ",                 fnRecallIJ                     },
+  {"fnReToCx",                   fnReToCx                       },
+  {"fnRj",                       fnRj                           },
+  {"fnRL",                       fnRl                           },
+  {"fnRLC",                      fnRlc                          },
+  {"fnRmd",                      fnRmd                          },
+  {"fnRollDown",                 fnRollDown                     },
+  {"fnRollUp",                   fnRollUp                       },
+  {"fnRound",                    fnRound                        },
+  {"fnRoundi",                   fnRoundi                       },
+  {"fnRowColSum",                fnRowColSum                    },
+  {"fnRR",                       fnRr                           },
+  {"fnRRC",                      fnRrc                          },
+  {"fnSign",                     fnSign                         },
+  {"fnSin",                      fnSin                          },
+  {"fnSinc",                     fnSinc                         },
+  {"fnSincpi",                   fnSincpi                       },
+  {"fnSinh",                     fnSinh                         },
+  {"fnSl",                       fnSl                           },
+  {"fnSlvc",                     fnSlvc                         },
+  {"fnSlvp",                     fnSlvp                         },
+  {"fnSlvq",                     fnSlvq                         },
+  {"fnVecToEqn",                 fnVecToEqn                     },
+  {"fnSquare",                   fnSquare                       },
+  {"fnSr",                       fnSr                           },
+  {"fnStoreIJ",                  fnStoreIJ                      },
+  {"fnSqrt1Px2",                 fnSqrt1Px2                     },
+  {"fnSquareRoot",               fnSquareRoot                   },
+  {"fnSubtract",                 fnSubtract                     },
+  {"fnSumXY",                    fnSumXY                        },
+  {"fnSwapRealImaginary",        fnSwapRealImaginary            },
+  {"fnSwapXY",                   fnSwapXY                       },
+  {"fnTan",                      fnTan                          },
+  {"fnTanh",                     fnTanh                         },
+  {"fnToDate",                   fnToDate                       },
+  {"fnHRtoTM",                   fnHRtoTM                       },
+  {"fnHMStoTM",                  fnHMStoTM                      },
+  {"fnToReal",                   fnToReal                       },
+  {"fnToPolar2",                 fnToPolar2                     },
+  {"fnToRect2",                  fnToRect2                      },
+  {"fnTranspose",                fnTranspose                    },
+  {"fnXXfn",                     fnXXfn                         },
+  {"fnXXfn_RSD",                 fnXXfn_RSD                     },
+  {"fnXXfn_RDP",                 fnXXfn_RDP                     },
+  {"fnEffToI",                   fnEffToI                       },
+  {"fnEff",                      fnEff                          },
+  {"fnTvmVar",                   fnTvmVar                       },
+  {"fnT_I",                      fnT_I                          },
+  {"fnT_L",                      fnT_L                          },
+  {"fnT_P",                      fnT_P                          },
+  {"fnT_R",                      fnT_R                          },
+  {"fnUlp",                      fnUlp                          },
+  {"fnUnitConvert",              fnUnitConvert                  },
+  {"fnUnitVector",               fnUnitVector                   },
+  {"fnUnzip",                    fnUnzip                        },
+  {"fnVectorAngle",              fnVectorAngle                  },
+  {"fnWday",                     fnWday                         },
+  {"fnWeibullI",                 fnWeibullI                     },
+  {"fnWeibullL",                 fnWeibullL                     },
+  {"fnWeibullP",                 fnWeibullP                     },
+  {"fnWeibullR",                 fnWeibullR                     },
+  {"fnWinverse",                 fnWinverse                     },
+  {"fnWnegative",                fnWnegative                    },
+  {"fnWpositive",                fnWpositive                    },
+  {"fnXthRoot",                  fnXthRoot                      },
+  {"fnXToDate",                  fnXToDate                      },
+  {"fnXAlmostEqual",             fnXAlmostEqual                 },
+  {"fnYear",                     fnYear                         },
+  {"fnZeta",                     fnZeta                         },
+  {"fnZip",                      fnZip                          },
+  {"fnDeltaToStar",              fnDeltaToStar                  },
+  {"fnStarToDelta",              fnStarToDelta                  },
+  {"fnSymToAbc",                 fnSymToAbc                     },
+  {"fnAbcToSym",                 fnAbcToSym                     },
+  {"fnCopyXtoAbc",               fnCopyXtoAbc                   },
+  {"fnTripleZfromVI",            fnTripleZfromVI                },
+  {"fnTripleVfromIZ",            fnTripleVfromIZ                },
+  {"fnTripleIfromVZ",            fnTripleIfromVZ                },
+  {"fnTripleFlipPolar",          fnTripleFlipPolar              },
   // Bit set/flip on X and the bit-set/clear tests (FARG = bit number).
-  {"fnSb",                   fnSb                  },
-  {"fnBs",                   fnBs                  },
-  {"fnBc",                   fnBc                  },
-  {"fnFb",                   fnFb                  },
+  {"fnSb",                       fnSb                           },
+  {"fnBs",                       fnBs                           },
+  {"fnBc",                       fnBc                           },
+  {"fnFb",                       fnFb                           },
   // Flag test and test-and-modify (FARG = flag number).
-  {"fnIsFlagSet",            fnIsFlagSet           },
-  {"fnIsFlagSetSet",         fnIsFlagSetSet        },
-  {"fnIsFlagSetClear",       fnIsFlagSetClear      },
-  {"fnIsFlagSetFlip",        fnIsFlagSetFlip       },
-  {"fnIsFlagClearSet",       fnIsFlagClearSet      },
-  {"fnIsFlagClearClear",     fnIsFlagClearClear    },
-  {"fnIsFlagClearFlip",      fnIsFlagClearFlip     },
-  {"fnFlipFlag",             fnFlipFlag            },
-  {"fnGetSystemFlag",        fnGetSystemFlag       },
+  {"fnIsFlagSet",                fnIsFlagSet                    },
+  {"fnIsFlagSetSet",             fnIsFlagSetSet                 },
+  {"fnIsFlagSetClear",           fnIsFlagSetClear               },
+  {"fnIsFlagSetFlip",            fnIsFlagSetFlip                },
+  {"fnIsFlagClearSet",           fnIsFlagClearSet               },
+  {"fnIsFlagClearClear",         fnIsFlagClearClear             },
+  {"fnIsFlagClearFlip",          fnIsFlagClearFlip              },
+  {"fnFlipFlag",                 fnFlipFlag                     },
+  {"fnGetSystemFlag",            fnGetSystemFlag                },
   // Clear / delete all named variables (FARG = confirmation).
-  {"fnClearAllVariables",    fnClearAllVariables   },
-  {"fnDeleteAllVariables",   fnDeleteAllVariables  },
+  {"fnClearAllVariables",        fnClearAllVariables            },
+  {"fnDeleteAllVariables",       fnDeleteAllVariables           },
   // Register range management (range packed in X as s.NNDDD).
-  {"fnRegSort",              fnRegSort             },
-  {"fnRegSwap",              fnRegSwap             },
-  {"fnRegCopy",              fnRegCopy             },
-  {"fnRegClr",               fnRegClr              },
+  {"fnRegSort",                  fnRegSort                      },
+  {"fnRegSwap",                  fnRegSwap                      },
+  {"fnRegCopy",                  fnRegCopy                      },
+  {"fnRegClr",                   fnRegClr                       },
   // Statistics readouts (need accumulated sigma data; FARG selects the sum).
-  {"fnXmin",                 fnXmin                },
-  {"fnXmax",                 fnXmax                },
-  {"fnRangeXY",              fnRangeXY             },
-  {"fnStatSum",              fnStatSum             },
+  {"fnXmin",                     fnXmin                         },
+  {"fnXmax",                     fnXmax                         },
+  {"fnRangeXY",                  fnRangeXY                      },
+  {"fnStatSum",                  fnStatSum                      },
   // Histogram setup (fnConvertStatsToHisto arms it; FARG = ITM_X / ITM_Y).
-  {"fnSetNBins",             fnSetNBins            },
-  {"fnSetLoBin",             fnSetLoBin            },
-  {"fnSetHiBin",             fnSetHiBin            },
-  {"fnConvertStatsToHisto",  fnConvertStatsToHisto },
+  {"fnSetNBins",                 fnSetNBins                     },
+  {"fnSetLoBin",                 fnSetLoBin                     },
+  {"fnSetHiBin",                 fnSetHiBin                     },
+  {"fnConvertStatsToHisto",      fnConvertStatsToHisto          },
   // Configuration: modes, display settings, getters (config.c).
-  {"fnAngularMode",          fnAngularMode         },
-  {"fnIntegerMode",          fnIntegerMode         },
-  {"fnFractionType",         fnFractionType        },
-  {"fnRange",                fnRange               },
-  {"fnHide",                 fnHide                },
-  {"fnResetTVM",             fnResetTVM            },
-  {"fnSetADM",               fnSetADM              },
-  {"fnSetDMX",               fnSetDMX              },
-  {"fnSetWordSize",          fnSetWordSize         },
-  {"fnSetISM",               fnSetISM              },
-  {"fnSetNDEC",              fnSetNDEC             },
-  {"fnSetBaseNr",            fnSetBaseNr           },
-  {"fnSetC47",               fnSetC47              },
-  {"fnSetRJ",                fnSetRJ               },
-  {"fnSetJM",                fnSetJM               },
-  {"fnSetHP35",              fnSetHP35             },
-  {"fnSetREALDF",            fnSetREALDF           },
-  {"fnSetFractionDigits",    fnSetFractionDigits   },
-  {"fnSetSignificantDigits", fnSetSignificantDigits},
-  {"fnSetRoundingMode",      fnSetRoundingMode     },
-  {"fnGetADM",               fnGetADM              },
-  {"fnGetDMX",               fnGetDMX              },
-  {"fnGetRange",             fnGetRange            },
-  {"fnGetHide",              fnGetHide             },
-  {"fnGetNDEC",              fnGetNDEC             },
-  {"fnGetREALDF",            fnGetREALDF           },
-  {"fnGetFractionDigits",    fnGetFractionDigits   },
-  {"fnGetLastErr",           fnGetLastErr          },
-  {"fnMenuGapL",             fnMenuGapL            },
-  {"fnMenuGapR",             fnMenuGapR            },
-  {"fnMenuGapRX",            fnMenuGapRX           },
-  {"fnSettingsDispFormatGrpL", fnSettingsDispFormatGrpL},
-  {"fnSettingsDispFormatGrpR", fnSettingsDispFormatGrpR},
-  {"fnClAll",                fnClAll               },
-  {"fnWho",                  fnWho                 },
+  {"fnAngularMode",              fnAngularMode                  },
+  {"fnIntegerMode",              fnIntegerMode                  },
+  {"fnFractionType",             fnFractionType                 },
+  {"fnRange",                    fnRange                        },
+  {"fnHide",                     fnHide                         },
+  {"fnResetTVM",                 fnResetTVM                     },
+  {"fnSetADM",                   fnSetADM                       },
+  {"fnSetDMX",                   fnSetDMX                       },
+  {"fnSetWordSize",              fnSetWordSize                  },
+  {"fnSetISM",                   fnSetISM                       },
+  {"fnSetNDEC",                  fnSetNDEC                      },
+  {"fnSetBaseNr",                fnSetBaseNr                    },
+  {"fnSetC47",                   fnSetC47                       },
+  {"fnSetRJ",                    fnSetRJ                        },
+  {"fnSetJM",                    fnSetJM                        },
+  {"fnSetHP35",                  fnSetHP35                      },
+  {"fnSetREALDF",                fnSetREALDF                    },
+  {"fnSetFractionDigits",        fnSetFractionDigits            },
+  {"fnSetSignificantDigits",     fnSetSignificantDigits         },
+  {"fnSetRoundingMode",          fnSetRoundingMode              },
+  {"fnGetADM",                   fnGetADM                       },
+  {"fnGetDMX",                   fnGetDMX                       },
+  {"fnGetRange",                 fnGetRange                     },
+  {"fnGetHide",                  fnGetHide                      },
+  {"fnGetNDEC",                  fnGetNDEC                      },
+  {"fnGetREALDF",                fnGetREALDF                    },
+  {"fnGetFractionDigits",        fnGetFractionDigits            },
+  {"fnGetLastErr",               fnGetLastErr                   },
+  {"fnMenuGapL",                 fnMenuGapL                     },
+  {"fnMenuGapR",                 fnMenuGapR                     },
+  {"fnMenuGapRX",                fnMenuGapRX                    },
+  {"fnSettingsDispFormatGrpL",   fnSettingsDispFormatGrpL       },
+  {"fnSettingsDispFormatGrpHex", fnSettingsDispFormatGrpHex     },
+  {"fnSettingsDispFormatGrpBin", fnSettingsDispFormatGrpBin     },
+  {"fnSettingsDispFormatGrpR",   fnSettingsDispFormatGrpR       },
+  {"fnClAll",                    fnClAll                        },
+  {"fnWho",                      fnWho                          },
 
-  {"fnExecute",              runPgm                },
-  {"",                       NULL                  }
+  {"fnExecute",                  runPgm                         },
+  {"",                           NULL                           }
 };
 #if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 6) > 4) || (defined __clang__ && __clang_major__ >= 3)
 #pragma GCC diagnostic pop
@@ -967,6 +974,26 @@ void covEqCalc(uint16_t formulaIndex) {
   // Store the corpus input (X) into the named variable A so a formula can reference it; this exercises the variable-resolution path in the parser.
   reallyRunFunction(ITM_STO, findOrAllocateNamedVariable("A"));
   setEquation(currentFormula, covFormulae[formulaIndex]);
+  fnEqCalc(NOPARAM);
+}
+
+void covVecToEqnRoundTrip(uint16_t unusedButMandatoryParameter) {
+  // Full loop for V->EQ: the coefficient vector in X becomes polynomial text (fnVecToEqn), the text is posted into the formula store by the true programmed
+  // X.SWAP branch (an editor buffer only exists interactively, so programRunStop is forced to PGM_RUNNING around the call), and fnEqCalc evaluates the stored
+  // formula at the eval point from Y, bound to the named variable X. Proves the rendered text re-parses through the equation engine, E notation included.
+  const uint8_t savedRunStop = programRunStop;
+  if(numberOfFormulae == 0) {
+    fnEqNew(NOPARAM);
+  }
+  fnVecToEqn(NOPARAM);                                           // X: vector -> polynomial text, L: the vector
+  if(lastErrorCode != ERROR_NONE) {
+    return;
+  }
+  programRunStop = PGM_RUNNING;
+  fnXSWAP(0);                                                    // the programmed swap: the text goes into the store, the previous formula text lands in X
+  programRunStop = savedRunStop;
+  fnDrop(NOPARAM);                                               // drop the swapped-out text: the eval point from Y is in X now
+  reallyRunFunction(ITM_STO, findOrAllocateNamedVariable("X"));
   fnEqCalc(NOPARAM);
 }
 
@@ -3733,58 +3760,9 @@ var1:
       strToShortInteger(r, regist);
     }
     else if(strcmp(l, "CPLX") == 0) {
-      // remove beginning and ending " and removing leading spaces
-      xcopy(r, r + 1, strlen(r));
-      while(r[0] == ' ') {
-        xcopy(r, r + 1, strlen(r));
-      }
-      r[strlen(r) - 1] = 0;
-
-      // find the i separating the real and imagynary part
-      i = 0;
-      while(r[i] != 'i' && r[i] != 0) {
-        i++;
-      }
-      if(r[i] == 0) {
-        printf("\nMalformed register complex34 value. Missing i between real and imaginary part.\n");
-        abortTest();
-      }
-
-      // separate real and imaginary part
-      r[i] = 0;
-      strcpy(real, r);
-      strcpy(imag, r + i + 1);
-
-      // remove leading spaces
-      while(imag[0] == ' ') {
-        xcopy(imag, imag + 1, strlen(imag));
-      }
-
-      // removing trailing spaces from real part
-      while(real[strlen(real) - 1] == ' ') {
-        real[strlen(real) - 1] = 0;
-      }
-
-      // removing trailing spaces from imaginary part
-      while(imag[strlen(imag) - 1] == ' ') {
-        imag[strlen(imag) - 1] = 0;
-      }
-
-      // replace , with . in the real part
-      for(i=0; i<(int)strlen(real); i++) {
-        if(real[i] == ',') {
-          real[i] = '.';
-        }
-      }
-
-      // replace , with . in the imaginary part
-      for(i=0; i<(int)strlen(imag); i++) {
-        if(imag[i] == ',') {
-          imag[i] = '.';
-        }
-      }
-
-      reallocateRegister(regist, dtComplex34, 0, amNone);
+      bool_t polarLiteral;
+      am = parseComplexLiteral(r, real, imag, angMod, &polarLiteral);
+      reallocateRegister(regist, dtComplex34, 0, am);
       stringToReal34(real, REGISTER_REAL34_DATA(regist));
       stringToReal34(imag, REGISTER_IMAG34_DATA(regist));
     }
@@ -3939,12 +3917,44 @@ var1:
       }
     }
     else if(strcmp(l, "CXMA") == 0) {
-      // remove beginning and ending " and removing leading spaces
+      // an optional :∠DEG after the closing quote tags the whole matrix polar in that angular mode, the state →POLAR leaves on a complex matrix
+      am = amNone;
+      i = 0;
+      while(r[i] != ':' && r[i] != 0) {
+        i++;
+      }
+      if(r[i] == ':' && strncmp(r + i + 1, "\xe2\x88\xa0", 3) == 0) {
+        r[i] = 0;
+        strcpy(angMod, r + i + 4);
+        if(strcmp(angMod, "DEG"   ) == 0) {
+          am = amDegree | amPolar;
+        }
+        else if(strcmp(angMod, "DMS"   ) == 0) {
+          am = amDMS | amPolar;
+        }
+        else if(strcmp(angMod, "RAD"   ) == 0) {
+          am = amRadian | amPolar;
+        }
+        else if(strcmp(angMod, "MULTPI") == 0) {
+          am = amMultPi | amPolar;
+        }
+        else if(strcmp(angMod, "GRAD"  ) == 0) {
+          am = amGrad | amPolar;
+        }
+        else {
+          printf("\nMalformed register complex34 matrix angular mode. Unknown angular mode after the matrix.\n");
+          abortTest();
+        }
+      }
+
+      // remove beginning and ending " and removing leading spaces; the closing quote stays on the value when a tag follows it
       xcopy(r, r + 1, strlen(r));
       while(r[0] == ' ') {
         xcopy(r, r + 1, strlen(r));
       }
-      r[strlen(r) - 1] = 0;
+      if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+        r[strlen(r) - 1] = 0;
+      }
 
       // 'M'
       if(r[0] == 'M') {
@@ -4021,6 +4031,9 @@ var1:
               while(r[0] == ' ') {
                 xcopy(r, r + 1, strlen(r));
               }
+            }
+            if(am != amNone) {
+              setRegisterTag(regist, am);
             }
           }
           else {
@@ -4112,6 +4125,133 @@ void inParameters(char *token) {
   }
 }
 
+
+
+// A complex literal is either "re i im", rectangular and untagged, or "magnitude ∠ angle" (ang also accepted) with the angular mode after the
+// closing quote, "3 ∠ 60":DEG. The polar form is converted the way the NIM close does in bufferize.c and tagged mode | amPolar. r arrives as
+// the quoted value with the optional :MODE after it and leaves as the real part text; real and imag leave as rectangular text.
+static uint32_t parseComplexLiteral(char *r, char *real, char *imag, char *angMod, bool_t *polarLiteral) {
+  uint32_t am = amNone;
+  int32_t i, separatorLength = 1;
+
+  *polarLiteral = false;
+  i = 0;
+  while(r[i] != ':' && r[i] != 0) {
+    i++;
+  }
+  if(r[i] == ':') {
+    r[i] = 0;
+    strcpy(angMod, r + i + 1);
+    if(strcmp(angMod, "DEG"   ) == 0) {
+      am = amDegree;
+    }
+    else if(strcmp(angMod, "DMS"   ) == 0) {
+      am = amDMS;
+    }
+    else if(strcmp(angMod, "RAD"   ) == 0) {
+      am = amRadian;
+    }
+    else if(strcmp(angMod, "MULTPI") == 0) {
+      am = amMultPi;
+    }
+    else if(strcmp(angMod, "GRAD"  ) == 0) {
+      am = amGrad;
+    }
+    else {
+      printf("\nMalformed register complex34 angular mode. Unknown angular mode after complex value.\n");
+      abortTest();
+    }
+  }
+
+  // remove beginning and ending " and removing leading spaces; the closing quote stays on the value when a tag follows it
+  xcopy(r, r + 1, strlen(r));
+  while(r[0] == ' ') {
+    xcopy(r, r + 1, strlen(r));
+  }
+  if(r[0] != 0 && r[strlen(r) - 1] == '"') {
+    r[strlen(r) - 1] = 0;
+  }
+
+  // find the ∠ or ang separating magnitude and angle, else the i separating the real and imagynary part
+  i = 0;
+  while(strncmp(r + i, "\xe2\x88\xa0", 3) != 0 && strncmp(r + i, "ang", 3) != 0 && r[i] != 0) {
+    i++;
+  }
+  if(r[i] != 0) {
+    *polarLiteral = true;
+    separatorLength = 3;
+  }
+  else {
+    i = 0;
+    while(r[i] != 'i' && r[i] != 0) {
+      i++;
+    }
+  }
+  if(r[i] == 0) {
+    printf("\nMalformed register complex34 value. Missing i between real and imaginary part.\n");
+    abortTest();
+  }
+  if(*polarLiteral != (am != amNone)) {
+    printf("\nMalformed register complex34 value. A polar literal takes an angular mode after the closing quote and a rectangular one takes none.\n");
+    abortTest();
+  }
+
+  // separate real and imaginary part
+  r[i] = 0;
+  strcpy(real, r);
+  strcpy(imag, r + i + separatorLength);
+
+  // remove leading spaces
+  while(imag[0] == ' ') {
+    xcopy(imag, imag + 1, strlen(imag));
+  }
+
+  // removing trailing spaces from real part
+  while(real[strlen(real) - 1] == ' ') {
+    real[strlen(real) - 1] = 0;
+  }
+
+  // removing trailing spaces from imaginary part
+  while(imag[strlen(imag) - 1] == ' ') {
+    imag[strlen(imag) - 1] = 0;
+  }
+
+  // replace , with . in the real part
+  for(i=0; i<(int)strlen(real); i++) {
+    if(real[i] == ',') {
+      real[i] = '.';
+    }
+  }
+
+  // replace , with . in the imaginary part
+  for(i=0; i<(int)strlen(imag); i++) {
+    if(imag[i] == ',') {
+      imag[i] = '.';
+    }
+  }
+
+  if(*polarLiteral) {
+    real_t magnitude, theta;
+    real34_t re34, im34;
+    stringToReal34(real, &re34);
+    stringToReal34(imag, &im34);
+    real34ToReal(&re34, &magnitude);
+    real34ToReal(&im34, &theta);
+    convertAngleFromTo(&theta, am, amRadian, &ctxtReal39);
+    if(realCompareLessThan(&magnitude, const_0)) {
+      realSetPositiveSign(&magnitude);
+      realAdd(&theta, const39_pi, &theta, &ctxtReal39);
+    }
+    realPolarToRectangular(&magnitude, &theta, &magnitude, &theta, &ctxtReal39); // theta in radian
+    realToReal34(&magnitude, &re34);
+    realToReal34(&theta,     &im34);
+    real34ToString(&re34, real);
+    real34ToString(&im34, imag);
+    strcpy(r, real);
+    am |= amPolar;
+  }
+  return am;
+}
 
 
 void checkRegisterType(calcRegister_t regist, char letter, uint32_t expectedDataType, uint32_t expectedTag) {
@@ -5008,57 +5148,20 @@ var2:
       }
     }
     else if(strcmp(l, "CPLX") == 0) {
+      bool_t polarLiteral;
+      uint32_t expectedTag = parseComplexLiteral(r, real, imag, angMod, &polarLiteral);
       checkRegisterType(regist, letter, dtComplex34, amNone);
-
-      // remove beginning and ending " and removing leading spaces
-      xcopy(r, r + 1, strlen(r));
-      while(r[0] == ' ') {
-        xcopy(r, r + 1, strlen(r));
-      }
-      r[strlen(r) - 1] = 0;
-
-      // find the i separating the real and imagynary part
-      i = 0;
-      while(r[i] != 'i' && r[i] != 0) {
-        i++;
-      }
-      if(r[i] == 0) {
-        printf("\nMalformed register complex34 value. Missing i between real and imaginary part.\n");
+      if(polarLiteral && getRegisterTag(regist) != expectedTag) {               // only a polar literal asserts the tag, an untagged one never did
+        if(letter == 0) {
+          printf("\nRegister %d should be a complex tagged polar %s but its tag is %u!\n", regist, angMod, getRegisterTag(regist));
+          printf("R%d = ", regist);
+        }
+        else {
+          printf("\nRegister %c should be a complex tagged polar %s but its tag is %u!\n", letter, angMod, getRegisterTag(regist));
+          printf("R%c = ", letter);
+        }
+        printRegisterToConsole(regist, "", "\n");
         abortTest();
-      }
-
-      // separate real and imaginary part
-      r[i] = 0;
-      strcpy(real, r);
-      strcpy(imag, r + i + 1);
-
-      // remove leading spaces
-      while(imag[0] == ' ') {
-        xcopy(imag, imag + 1, strlen(imag));
-      }
-
-      // removing trailing spaces from real part
-      while(real[strlen(real) - 1] == ' ') {
-        real[strlen(real) - 1] = 0;
-      }
-
-      // removing trailing spaces from imaginary part
-      while(imag[strlen(imag) - 1] == ' ') {
-        imag[strlen(imag) - 1] = 0;
-      }
-
-      // replace , with . in the real part
-      for(i=0; i<(int)strlen(real); i++) {
-        if(real[i] == ',') {
-          real[i] = '.';
-        }
-      }
-
-      // replace , with . in the imaginary part
-      for(i=0; i<(int)strlen(imag); i++) {
-        if(imag[i] == ',') {
-          imag[i] = '.';
-        }
       }
 
       stringToReal34(real, &expectedReal34);

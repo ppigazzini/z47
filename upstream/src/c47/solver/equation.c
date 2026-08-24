@@ -258,6 +258,114 @@ void deleteEquation(uint16_t equationId) {
 
 
 
+void fnVecToEqn(uint16_t unusedButMandatoryParameter) {
+#if defined(OPTION_SLVP_POLY)
+  real34Matrix_t x;
+  real34_t absC;
+  uint16_t rows, cols;
+  uint32_t m, lead, j, k, len, termLen;
+  char term[80], *p = tmpString;
+  bool_t firstTerm = true, negative, unitCoef;
+
+  if(getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
+    displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      moreInfoOnError("In function fnVecToEqn:", "V" STD_RIGHT_ARROW "EQ expects a real coefficient vector in X; complex coefficients have no equation rendering", NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  linkToRealMatrixRegister(REGISTER_X, &x);
+  rows = x.header.matrixRows;
+  cols = x.header.matrixColumns;
+  if(rows != 1 && cols != 1) {
+    displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "V" STD_RIGHT_ARROW "EQ needs a coefficient vector, not (%d" STD_CROSS "%d)", rows, cols);
+      moreInfoOnError("In function fnVecToEqn:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  m = (uint32_t)rows * cols;
+
+  for(j = 0; j < m; j++) {
+    if(real34IsNaN(x.matrixElements + j) || real34IsInfinite(x.matrixElements + j)) {
+      displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnVecToEqn:", "a NaN or infinite coefficient has no equation text", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+  }
+
+  lead = 0;                                                              // a leading zero coefficient carries no degree: drop it silently, the SLVC/SLVP precedent
+  while(lead < m && real34IsZero(x.matrixElements + lead)) {
+    lead++;
+  }
+
+  for(j = lead; j < m; j++) {
+    const real34_t *c = x.matrixElements + j;
+    char *t = term;
+    if(real34IsZero(c)) {                                                // a zero coefficient contributes no term
+      continue;
+    }
+    k = m - 1 - j;                                                       // the degree of this term
+    negative = real34IsNegative(c);
+    real34Copy(c, &absC);
+    real34SetPositiveSign(&absC);
+    // |c| = 1 drops the coefficient glyphs, except on a negative leading term: -1×X^k parses the same under a unary or a binary reading of the minus, -X^k need not
+    unitCoef = (k > 0) && real34CompareEqual(&absC, const34_1) && !(firstTerm && negative);
+    if(firstTerm) {
+      if(negative) {
+        *t++ = '-';
+      }
+    }
+    else {
+      *t++ = negative ? '-' : '+';
+    }
+    if(!unitCoef) {
+      real34ToString(&absC, t);                                          // exact decQuad text: plain or E notation, both re-parse through stringToReal34
+      t += strlen(t);
+    }
+    if(k > 0) {
+      if(!unitCoef) {
+        *t++ = STD_CROSS[0];
+        *t++ = STD_CROSS[1];
+      }
+      *t++ = 'X';
+      if(k > 1) {
+        t += sprintf(t, "^%u", (unsigned int)k);
+      }
+    }
+    *t = 0;
+    termLen = (uint32_t)(t - term);
+    if((uint32_t)(p - tmpString) + termLen >= AIM_BUFFER_LENGTH) {       // the text is headed for the equation buffer: what cannot fit there is refused whole
+      displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        moreInfoOnError("In function fnVecToEqn:", "the polynomial text does not fit the equation buffer", NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return;
+    }
+    xcopy(p, term, termLen + 1);
+    p += termLen;
+    firstTerm = false;
+  }
+  if(firstTerm) {                                                        // every coefficient is zero: the zero polynomial still renders
+    *p++ = '0';
+    *p = 0;
+  }
+
+  len = (uint32_t)(p - tmpString) + 1;
+  if(!saveLastX()) {
+    return;
+  }
+  reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(len), amNone);      // x dangles from here: the linked matrix memory is gone
+  xcopy(REGISTER_STRING_DATA(REGISTER_X), tmpString, len);
+  adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+#endif // OPTION_SLVP_POLY
+}
+
+
+
   static void _showExponent(char **bufPtr, const char **strPtr, int16_t *strWidth) {
     switch(*(++(*strPtr))) {
       //case '1': {

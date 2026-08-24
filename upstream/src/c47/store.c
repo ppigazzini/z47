@@ -368,8 +368,6 @@ void fnStoreConfig(uint16_t regist) {
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
   uint8_t compatibility_byte1 = 0;               //defaults to use when settings are removed
-  bool_t compatibility_byte2  = false;           //defaults to use when settings are removed
-  bool_t compatibility_byte3  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte4  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte5  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte6  = false;           //defaults to use when settings are removed
@@ -445,8 +443,8 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(Norm_Key_00.func);
   xcopy(configToStore->Norm_Key_00.funcParam, Norm_Key_00.funcParam, sizeof(Norm_Key_00.funcParam));
   storeToDtConfigDescriptor(Norm_Key_00.used);
-  storeToDtConfigDescriptor(    compatibility_byte2);
-  storeToDtConfigDescriptor(    compatibility_byte3);
+  storeToDtConfigDescriptor(grpGroupingHex);
+  storeToDtConfigDescriptor(grpGroupingBin);
   storeToDtConfigDescriptor(    compatibility_byte4);
   storeToDtConfigDescriptor(    compatibility_byte5);
   storeToDtConfigDescriptor(    compatibility_byte6);
@@ -537,36 +535,87 @@ void fnStoreVElement(uint16_t ix) {
   restoreMatrixIndexState(&bak);
 }
 
+bool_t vectorSpanOk(uint16_t regist, uint16_t n, const char *funcName) {   // a span stays in its block: R00..R99, the stack X..D, or L..W; a local span is checked per register
+  uint16_t last = regist < FIRST_LETTERED_REGISTER ? 99 : regist <= REGISTER_D ? REGISTER_D : regist <= LAST_SPARE_REGISTER ? LAST_SPARE_REGISTER : 0;
+  if(last != 0 && regist + n - 1 > last) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      if(regist < FIRST_LETTERED_REGISTER) {
+        sprintf(errorMessage, "a span of %" PRIu16 " registers from R%02" PRIu16 " runs past R99", n, regist);
+      }
+      else {
+        sprintf(errorMessage, "a span of %" PRIu16 " registers from %c runs past %c", n, "XYZTABCDLIJKMNPQRSEFGHOUVW"[regist - FIRST_LETTERED_REGISTER], last == REGISTER_D ? 'D' : 'W');
+      }
+      moreInfoOnError(funcName, errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return false;
+  }
+  return true;
+}
+
+static bool_t _registerToElement(calcRegister_t r, uint16_t ix) {               // register r into element ix of the vector in X; a complex register turns the vector complex
+  real_t re, im;
+  if(!regInRange(r)) {
+    return false;
+  }
+  if(!getRegisterAsComplex(r, &re, &im)) {
+    if(!getRegisterAsReal(r, &re)) {
+      displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "register %" PRIu16 " holds %s", r, getRegisterDataTypeName(r, true, false));
+        moreInfoOnError("In function fnStoreVector:", errorMessage, "not a real, integer or complex", NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      return false;
+    }
+    realSetZero(&im);
+  }
+  else if(getRegisterDataType(r) == dtComplex34 && getRegisterDataType(REGISTER_X) == dtReal34Matrix) {
+    convertReal34MatrixRegisterToComplex34MatrixRegister(REGISTER_X, REGISTER_X);
+  }
+  if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    realToReal34(&re, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + ix - 1));
+    realToReal34(&im, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + ix - 1));
+  }
+  else {
+    realToReal34(&re, REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + ix - 1);
+  }
+  return true;
+}
+
 void fnStoreVector(uint16_t regist) {
   uint16_t rows, cols;
   if(!getMatrixDims(REGISTER_X, "In function fnStoreVector:", &rows, &cols)) {
     return;
   }
-  matrixIndexState_t bak;
-  saveMatrixIndexState(&bak);
-  copySourceRegisterToDestRegister(getStackTop(), TEMP_REGISTER_1);
-  setSystemFlag(FLAG_ASLIFT);
-  liftStack();
-  matrixIndex = REGISTER_Y;
-  for(uint16_t ix = 1; ix <= rows * cols && lastErrorCode == 0; ix++) {  //for 5x5, from 1 to 25
-    setIRegisterAsInt(false, (ix-1) / cols + 1);
-    setJRegisterAsInt(false, (ix-1) % cols + 1);
-    fnDrop(NOPARAM);
-    fnRecall(regist++);
-    if(getRegisterDataType(REGISTER_X) != dtComplex34) {
-      fnToReal(NOPARAM);
-    }
-    if(lastErrorCode != 0) {
-      break;
-    }
-    _fnStoreElement(false);
-    if(lastErrorCode != 0) {
-      break;
+  bool_t stack = (regist >= REGISTER_X && regist <= REGISTER_D);             // a stack source is read top down, the order the stack is shown in
+  if(!vectorSpanOk(regist, rows * cols, "In function fnStoreVector:")) {
+    return;
+  }
+  for(uint16_t ix = 1; ix <= rows * cols; ix++) {  //for 5x5, from 1 to 25
+    if(!_registerToElement(stack ? regist + rows * cols - ix : regist + ix - 1, ix)) {
+      return;
     }
   }
-  restoreMatrixIndexState(&bak);
-  fnDrop(NOPARAM);
-  copySourceRegisterToDestRegister(TEMP_REGISTER_1, getStackTop());
+  setSystemFlag(FLAG_ASLIFT);
+}
+
+void fnStoreVectorX(uint16_t regist) {
+  uint32_t cols;
+  if(!getSingleDimension(REGISTER_X, &cols)) {                            // the count in X sizes the vector: 1 to 4096
+    return;
+  }
+  if(!saveLastX()) {
+    return;
+  }
+  if(!initMatrixRegister(REGISTER_X, 1, cols, false)) {                   // X becomes the 1 x cols real vector that Rnn->V fills
+    displayCalcErrorMessage(ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX, ERR_REGISTER_LINE, REGISTER_X);
+    #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+      sprintf(errorMessage, "Not enough memory for a 1" STD_CROSS "%" PRIu32 " vector", cols);
+      moreInfoOnError("In function fnStoreVectorX:", errorMessage, NULL, NULL);
+    #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    return;
+  }
+  fnStoreVector(regist);
 }
 
 void fnStoreElementPlus(uint16_t unusedButMandatoryParameter) {

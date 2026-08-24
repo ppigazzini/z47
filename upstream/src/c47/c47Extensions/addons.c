@@ -1774,7 +1774,12 @@ void fnConvertStkToMx(uint16_t constVector1) {
   uint32_t ang2Dx, ang2Dy, ang3Dx, ang3Dy, ang3Dz;
   bool_t validPolarInput, valid2DRInput, validSPHInput, validCYLInput, valid3DRInput;
 
-  if(!is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector)) {
+  if(complexCoefs) {                                   // a complex is a value, never a vector angle: its polar tag does not make a SPH or CYL input
+    ang2Dx = ang2Dy = ang3Dx = ang3Dy = ang3Dz = amNone;
+    validPolarInput = valid2DRInput = validSPHInput = validCYLInput = false;
+    valid3DRInput = true;
+  }
+  else if(!is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector)) {
     displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
     #if (EXTRA_INFO_ON_CALC_ERROR == 1)
       sprintf(errorMessage, "No valid coordinates for 2D/3D Rect/Polar/Spherical/Cylindrical");
@@ -1885,6 +1890,19 @@ void fnConvertStkToMx(uint16_t constVector1) {
       else {
         realToReal34(&x[elements-1-i].r, &matrix.matrixElements[i]);
       }
+    }
+  }
+
+  if(constVector1 == M_CR_zyx) {                       // ELEC M is the 3x1 column, the transpose of the vector row
+    if(complexCoefs) {
+      transposeComplexMatrix(&matrixC, &matrixC);
+      REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows    = matrixC.header.matrixRows;
+      REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns = matrixC.header.matrixColumns;
+    }
+    else {
+      transposeRealMatrix(&matrix, &matrix);
+      REGISTER_MATRIX_HEADER(REGISTER_X)->matrixRows    = matrix.header.matrixRows;
+      REGISTER_MATRIX_HEADER(REGISTER_X)->matrixColumns = matrix.header.matrixColumns;
     }
   }
 
@@ -2075,7 +2093,9 @@ void fnConvertMxToStk(uint16_t param1) { //first try the vector type in lower ni
     temporaryInformation = TI_VECTORCOMP_3DCYL;
   }
   else if((constVector == VECT_CR_zyx || constVector == VECT_CR_zxy) && ang3Dy == amNone && ang3Dx == amNone) { //RECT
-    setRegisterAngularMode(REGISTER_Y, ang3Dy);
+    if(getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {     // a complex element keeps the polar tag copied from the matrix
+      setRegisterAngularMode(REGISTER_Y, ang3Dy);
+    }
     temporaryInformation = TI_VECTORCOMP_3DRECT;
   }
 #endif //OPTION_VECTOR || OPTION_ELEC
