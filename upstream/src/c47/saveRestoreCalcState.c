@@ -1179,6 +1179,8 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "grpGroupingGr1LeftOverflow\n%" PRIu8  "\n",     grpGroupingGr1LeftOverflow);   save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingGr1Left\n%"         PRIu8  "\n",     grpGroupingGr1Left);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "grpGroupingRight\n%"           PRIu8  "\n",     grpGroupingRight);             save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "grpGroupingHex\n%"             PRIu8  "\n",     grpGroupingHex);               save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "grpGroupingBin\n%"             PRIu8  "\n",     grpGroupingBin);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "roundingMode\n%"               PRIu8  "\n",     roundingMode);                 save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayStack\n%"               PRIu8  "\n",     displayStack);                 save(tmpString, strlen(tmpString));
         UI64toString(pcg32_global.state, yy1);
@@ -1204,11 +1206,6 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "amortP1\n%"                    PRIu16 "\n",     amortP1);                      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "amortP2\n%"                    PRIu16 "\n",     amortP2);                      save(tmpString, strlen(tmpString));
         sprintf(tmpString, "lrChosen\n%"                   PRIu16 "\n",     lrChosen);                     save(tmpString, strlen(tmpString));
-        char floatString[32];
-        sci_fmt(floatString, sizeof(floatString), graph_dx);
-        sprintf(tmpString, "graph_dx\n"                    "%s"   "\n",     floatString);                  save(tmpString, strlen(tmpString));
-        sci_fmt(floatString, sizeof(floatString), graph_dy);
-        sprintf(tmpString, "graph_dy\n"                    "%s"   "\n",     floatString);                  save(tmpString, strlen(tmpString));
         sprintf(tmpString, "roundedTicks\n%"               PRIu8  "\n",     (uint8_t)roundedTicks);        save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_AXIS\n%"                  PRIu8  "\n",     (uint8_t)PLOT_AXIS);           save(tmpString, strlen(tmpString));
         sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
@@ -2613,6 +2610,12 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp2(aimBuffer, "grpGroupingGr1LeftOverflow" ) == 0) { grpGroupingGr1LeftOverflow = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "grpGroupingGr1Left"         ) == 0) { grpGroupingGr1Left         = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
           else if(strcmp2(aimBuffer, "grpGroupingRight"           ) == 0) { grpGroupingRight           = toUint8(tmpString);  } // This is to correct a bug in version 00000005-6, to be compatible to the old files
+          else if(strcmp(aimBuffer, "grpGroupingHex"              ) == 0) { grpGroupingHex             = toUint8(tmpString);
+            grpGroupingHexBinDefault();
+          }
+          else if(strcmp(aimBuffer, "grpGroupingBin"              ) == 0) { grpGroupingBin             = toUint8(tmpString);
+            grpGroupingHexBinDefault();
+          }
           else if(strcmp(aimBuffer, "roundingMode"                ) == 0) { roundingMode               = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "displayStack"                ) == 0) { displayStack               = toUint8(tmpString);  }
           else if(strcmp(aimBuffer, "rngState"                    ) == 0) {
@@ -2756,8 +2759,6 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "amortP1"                     ) == 0) { amortP1               = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "amortP2"                     ) == 0) { amortP2               = toUint16(tmpString);}
           else if(strcmp(aimBuffer, "lrChosen"                    ) == 0) { lrChosen              = toUint16(tmpString);}
-          else if(strcmp(aimBuffer, "graph_dx"                    ) == 0) { graph_dx              = stringToFloat(tmpString); }
-          else if(strcmp(aimBuffer, "graph_dy"                    ) == 0) { graph_dy              = stringToFloat(tmpString); }
           else if(strcmp(aimBuffer, "roundedTicks"                ) == 0) { roundedTicks          = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_AXIS"                   ) == 0) { PLOT_AXIS             = toUint8(tmpString) != 0; }
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = toUint8(tmpString); }

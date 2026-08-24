@@ -21,8 +21,6 @@
 
 
 //Graph options
-extern  double   graph_dx;
-extern  double   graph_dy;
 extern  bool_t   roundedTicks;
 extern  bool_t   PLOT_AXIS;
 extern  int8_t   PLOT_ZOOM;

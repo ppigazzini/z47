@@ -2016,8 +2016,8 @@
 #define ITM_STKtoV4                 1966
 #define ITM_V4toSTK                 1967
 #define ITM_stkexV4                 1968
-#define ITM_1969                    1969
-#define ITM_1970                    1970
+#define ITM_VtoEQ                   1969
+#define ITM_RXtoVEC                 1970
 #define ITM_1971                    1971
 #define ITM_1972                    1972
 #define ITM_1973                    1973
@@ -2199,8 +2199,8 @@
 #define ITM_JUL_GREG_1873           2149
 #define ITM_JUL_GREG_1949           2150
 #define ITM_2151                    2151 // General items / any items spare
-#define ITM_2152                    2152 // General items / any items spare
-#define ITM_2153                    2153 // General items / any items spare
+#define ITM_GRP_HEX                 2152
+#define ITM_GRP_BIN                 2153
 #define ITM_SETFDIGS                2154
 #define ITM_GRP_L                   2155
 #define ITM_GRP1_L_OF               2156
@@ -3263,7 +3263,7 @@
 #define MNU_XFN                     3142
 #define MNU_XXFCNS                  3143
 #define MNU_YESNO                   3144
-#define ITM_3145                    3145 // General items / any items spare (reserved: Menus)
+#define MNU_POLY                    3145
 #define ITM_3146                    3146 // General items / any items spare (reserved: Menus)
 #define ITM_3147                    3147 // General items / any items spare (reserved: Menus)
 #define ITM_3148                    3148 // General items / any items spare (reserved: Menus)

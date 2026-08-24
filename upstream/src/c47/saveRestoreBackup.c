@@ -416,8 +416,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&lrChosenUndo,                   sizeof(lrChosenUndo),                                        "lrChosenUndo",                   "uint16");
     saveStateValue(&lastPlotMode,                   sizeof(lastPlotMode),                                        "lastPlotMode",                   "uint16");
     saveStateValue(&plotSelection,                  sizeof(plotSelection),                                       "plotSelection",                  "uint16");
-    saveStateValue(&graph_dx,                       sizeof(graph_dx),                                            "graph_dx",                       "double");
-    saveStateValue(&graph_dy,                       sizeof(graph_dy),                                            "graph_dy",                       "double");
     saveStateValue(&roundedTicks,                   sizeof(roundedTicks),                                        "roundedTicks",                   "bool");
     saveStateValue(&PLOT_AXIS,                      sizeof(PLOT_AXIS),                                           "PLOT_AXIS",                      "bool");
     saveStateValue(&PLOT_ZMY,                       sizeof(PLOT_ZMY),                                            "PLOT_ZMY",                       "int8");
@@ -498,6 +496,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
     saveStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
     saveStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
+    saveStateValue(&grpGroupingHex,                 sizeof(grpGroupingHex),                                      "grpGroupingHex",                 "uint8");
+    saveStateValue(&grpGroupingBin,                 sizeof(grpGroupingBin),                                      "grpGroupingBin",                 "uint8");
     saveStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     saveStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     saveStateValue(&dispBase,                       sizeof(dispBase),                                            "dispBase",                       "uint8");   //JM
@@ -1107,8 +1107,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&PLOT_ZOOM,                      sizeof(PLOT_ZOOM),                                           "PLOT_ZOOM",                      "uint8");
     restoreStateValue(&plotmode,                       sizeof(plotmode),                                            "plotmode",                       "int8");
     if(backupVersion >= 1016) {
-      restoreStateValue(&graph_dx,                     sizeof(graph_dx),                                            "graph_dx",                       "double");
-      restoreStateValue(&graph_dy,                     sizeof(graph_dy),                                            "graph_dy",                       "double");
       restoreStateValue(&tick_int_x,                   sizeof(tick_int_x),                                          "tick_int_x",                     "double");
       restoreStateValue(&tick_int_y,                   sizeof(tick_int_y),                                          "tick_int_y",                     "double");
       restoreStateValue(x_min,                         REAL_SIZE_IN_BYTES(34),                                      "x_min",                          "real");
@@ -1117,8 +1115,6 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       restoreStateValue(y_max,                         REAL_SIZE_IN_BYTES(34),                                      "y_max",                          "real");
     }
     else { //pre-1016 backups stored the graph settings as float: convert each once; the next save writes the new types
-      migrateFloatValue(&graph_dx,                     "graph_dx",                       "double");
-      migrateFloatValue(&graph_dy,                     "graph_dy",                       "double");
       migrateFloatValue(&tick_int_x,                   "tick_int_x",                     "double");
       migrateFloatValue(&tick_int_y,                   "tick_int_y",                     "double");
       migrateFloatValue(x_min,                         "x_min",                          "real");
@@ -1241,6 +1237,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&grpGroupingGr1LeftOverflow,     sizeof(grpGroupingGr1LeftOverflow),                          "grpGroupingGr1LeftOverflow",     "uint8");   //JM
     restoreStateValue(&grpGroupingGr1Left,             sizeof(grpGroupingGr1Left),                                  "grpGroupingGr1Left",             "uint8");   //JM
     restoreStateValue(&grpGroupingRight,               sizeof(grpGroupingRight),                                    "grpGroupingRight",               "uint8");   //JM
+    restoreStateValue(&grpGroupingHex,                 sizeof(grpGroupingHex),                                      "grpGroupingHex",                 "uint8");
+    restoreStateValue(&grpGroupingBin,                 sizeof(grpGroupingBin),                                      "grpGroupingBin",                 "uint8");
+    grpGroupingHexBinDefault();
     restoreStateValue(&firstDayOfWeek,                 sizeof(firstDayOfWeek),                                      "firstDayOfWeek",                 "uint8");
     restoreStateValue(&firstWeekOfYearDay,             sizeof(firstWeekOfYearDay),                                  "firstWeekOfYearDay",             "uint8");
     dispBase = 0;

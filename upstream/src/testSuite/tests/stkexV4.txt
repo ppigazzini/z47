@@ -95,3 +95,30 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RT=LonI:"8" RZ=LonI:"9" RY
 ; the wrong size refuses
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
 Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,3[1,2,3]"
+
+
+;=======================================================================================================================
+; polar-tagged complexes: a tag on a complex is a display mode, not a vector angle, so v3 and v2 pack the values as they are.
+; The polar literal is "3 ∠ 60":DEG, magnitude and angle. The real-angle rows are the CYL and polar controls.
+;=======================================================================================================================
+In: CM=POLAR AM=DEG
+
+Item: ITM_STKtoV3
+
+; three polar-tagged complexes pack unchanged (refused before the fix)
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=Cplx:"2 ∠ 0":DEG RY=Cplx:"3 ∠ 60":DEG RX=Cplx:"4 ∠ 30":DEG
+Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,3[2i0,1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]"
+
+; control: real CYL input, rho=5 in Z, theta=0 degrees in Y, z=2 in X, converts to rect x=5cos0=5, y=5sin0=0, z=2
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RZ=LonI:"5" RY=Real:"0":DEG RX=LonI:"2"
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,3[5,0,2]"
+
+Item: ITM_STKtoV2
+
+; two polar-tagged complexes pack unchanged
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RY=Cplx:"3 ∠ 60":DEG RX=Cplx:"4 ∠ 30":DEG
+Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,2[1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]"
+
+; control: real polar input, r=5 in Y, theta=0 degrees in X, converts to rect x=5, y=0
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RY=LonI:"5" RX=Real:"0":DEG
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M1,2[5,0]"

@@ -13,7 +13,7 @@
 
 
 typedef struct {
-  char     name[25];
+  char     name[27];
   void     (*func)(uint16_t);
   uint8_t  coverageDriver; // 1: testSuite-local coverage driver, dispatched as ITM_NOP
 } funcTest_t;

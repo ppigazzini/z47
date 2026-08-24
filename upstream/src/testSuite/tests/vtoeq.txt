@@ -1,0 +1,96 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                         vtoeq                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+Func: fnVecToEqn
+
+;=======================================================================================================================
+; Error case: invalid type (V->EQ renders a real coefficient vector; complex coefficients have no equation rendering yet)
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=Real:"2"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=Real:"2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=Stri:"This is a string"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=Stri:"This is a string"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=LonI:"7"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=LonI:"7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=CxMa:"M1,3[1i1,2i0,3i0]"
+Out: EC=24 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=CxMa:"M1,3[1i1,2i0,3i0]"
+
+;=======================================================================================================================
+; Error case: not a vector
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+Out: EC=21 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M2,3[1,2,3,4,5,6]"
+
+;=======================================================================================================================
+; Error case: a NaN or infinite coefficient has no equation text (X stays put; NaN cannot be asserted back, it never compares equal)
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[NaN,1]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[1,inf]"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,2[1,inf]"
+
+;=======================================================================================================================
+; Renders: highest degree first, zero terms skipped, unit coefficients elided, the sign folded into the separator.
+; The negative leading unit stays explicit: -1\x80\xd7X^k parses the same under a unary or a binary minus, -X^k need not.
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=ReMa:"M1,3[1,-2,-4]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,-2,-4]" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=Stri:"X^2-2\x80\xd7X-4"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[-1,0,5]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[-1,0,5]" RX=Stri:"-1\x80\xd7X^2+5"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,0]" RX=Stri:"X^2"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[2,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RX=Stri:"2\x80\xd7X+1"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[2,-1,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[2,-1,0]" RX=Stri:"2\x80\xd7X^2-X"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[0.5,-2.5E-13,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[0.5,-2.5E-13,1]" RX=Stri:"0.5\x80\xd7X^2-2.5E-13\x80\xd7X+1"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[0,0]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[0,0]" RX=Stri:"0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,1[7]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[7]" RX=Stri:"7"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M3,1[1,2,3]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[1,2,3]" RX=Stri:"X^2+2\x80\xd7X+3"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[0,3,1]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[0,3,1]" RX=Stri:"3\x80\xd7X+1"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1E+2,0,-0.04]"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1E+2,0,-0.04]" RX=Stri:"1E+2\x80\xd7X^2-0.04"
+
+;=======================================================================================================================
+; Error case: the text must fit the equation buffer (26 full-precision coefficients render past AIM_BUFFER_LENGTH)
+;=======================================================================================================================
+In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,26[0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111]"
+Out: EC=33 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,26[0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111,0.1111111111111111111111111111111111]"
+
+;=======================================================================================================================
+; Round trip: render, post through the true programmed X.SWAP, evaluate the stored formula at the point from Y.
+; Proves the rendered text re-parses through the equation engine, E notation included.
+;=======================================================================================================================
+Func: fnVecToEqnRtCov
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"3" RX=ReMa:"M1,3[1,-2,-4]"
+Out: EC=0 RX=Real:"-1"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"5" RX=ReMa:"M1,3[1E+2,0,-0.04]"
+Out: EC=0 RX=Real:"2499.96"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Real:"2" RX=ReMa:"M1,4[1,0,0,-8]"
+Out: EC=0 RX=Real:"0"

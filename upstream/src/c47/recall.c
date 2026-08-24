@@ -208,8 +208,6 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte00;    //for use in spare slots below
     __attribute__((unused)) uint8_t compatibility_byte1;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_byte2 ;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_byte3 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte4 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte5 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte6 ;    //for use in spare slots below
@@ -295,8 +293,9 @@ void fnRecallConfig(uint16_t regist) {
       Norm_Key_00.funcParam[cut] = 0;                                         // a descriptor that carries its own terminator inside the field is unchanged
     }
     recallFromDtConfigDescriptor(Norm_Key_00.used);
-    recallFromDtConfigDescriptor(    compatibility_byte2);
-    recallFromDtConfigDescriptor(    compatibility_byte3);
+    recallFromDtConfigDescriptor(grpGroupingHex);
+    recallFromDtConfigDescriptor(grpGroupingBin);
+    grpGroupingHexBinDefault();
     recallFromDtConfigDescriptor(    compatibility_byte4);
     recallFromDtConfigDescriptor(    compatibility_byte5);
     recallFromDtConfigDescriptor(    compatibility_byte6);
@@ -397,32 +396,37 @@ void fnRecallVElement(uint16_t ix) {
   }
 }
 
+static void _elementToRegister(uint16_t ix, calcRegister_t r) {               // element ix of the vector in X into register r, copied out before r is reallocated
+  if(getRegisterDataType(REGISTER_X) == dtComplex34Matrix) {
+    complex34_t c;
+    complex34Copy(REGISTER_COMPLEX34_MATRIX_ELEMENTS(REGISTER_X) + ix - 1, &c);
+    reallocateRegister(r, dtComplex34, COMPLEX34_SIZE_IN_BLOCKS, amNone);
+    complex34Copy(&c, REGISTER_COMPLEX34_DATA(r));
+  }
+  else {
+    real34_t v;
+    real34Copy(REGISTER_REAL34_MATRIX_ELEMENTS(REGISTER_X) + ix - 1, &v);
+    reallocateRegister(r, dtReal34, REAL34_SIZE_IN_BLOCKS, amNone);
+    real34Copy(&v, REGISTER_REAL34_DATA(r));
+  }
+}
+
 void fnRecallVector(uint16_t   regist) {
   uint16_t rows, cols;
   if(!getMatrixDims(REGISTER_X, "In function fnRecallVector:", &rows, &cols)) {
     return;
   }
-  matrixIndexState_t bak;
-  saveMatrixIndexState(&bak);
-  matrixIndex = REGISTER_X;
-  for(uint16_t ix = 1; ix <= rows * cols && lastErrorCode == 0; ix++) {  //for 5x5, from 1 to 25
-    setIRegisterAsInt(false, (ix-1) / cols + 1);
-    setJRegisterAsInt(false, (ix-1) % cols + 1);
-    _fnRecallElement(false);
-    if(lastErrorCode != 0) {
-      break;
-    }
-    if(regist > REGISTER_X && regist < getStackTop()) {
-      fnStore(1 + regist++);
-    } else {
-      fnStore(regist++);
-    }
-    if(lastErrorCode != 0) {
-      break;
-    }
-    fnDrop(NOPARAM);
+  bool_t stack = (regist >= REGISTER_X && regist <= REGISTER_D);             // a stack target is written top down, the order the stack is shown in; X, if in the span, comes last
+  if(!vectorSpanOk(regist, rows * cols, "In function fnRecallVector:")) {
+    return;
   }
-  restoreMatrixIndexState(&bak);
+  for(uint16_t ix = 1; ix <= rows * cols; ix++) {  //for 5x5, from 1 to 25
+    calcRegister_t r = stack ? regist + rows * cols - ix : regist + ix - 1;
+    if(!regInRange(r)) {
+      return;
+    }
+    _elementToRegister(ix, r);
+  }
 }
 
 void fnRecallElementPlus(uint16_t unusedButMandatoryParameter) {

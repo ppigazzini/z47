@@ -185,7 +185,7 @@ TO_QSPI const int16_t menu_LOOP[]        = { ITM_DSE,                       ITM_
 TO_QSPI const int16_t menu_MATX[]        = {
                                              ITM_M_NEW,                     ITM_M_TRANSP,               ITM_M_EDI,                ITM_M_EDIN,            ITM_SIM_EQ,                  -MNU_VECT,
                                              ITM_MIDENT,                    ITM_M_DIM,                  ITM_M_DIM_GR,             ITM_M_DIMNQ,           ITM_M_CONCATB,               ITM_M_CONCATR,
-                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_NULL,                    ITM_M_ALL,
+                                             ITM_REGtoVEC,                  ITM_VECtoREG,               ITM_STOVEL,               ITM_RCLVEL,            ITM_RXtoVEC,                 ITM_M_ALL,
 
                                              ITM_M_INV,                     EIG_SQRT,                   ITM_RSUM,                 ITM_CSUM,              ITM_M_DET,                   -MNU_VECT,
                                              ITM_PNORM,                     ITM_UNITV,                  ITM_M_TRANSP,             ITM_VANGLE,            ITM_DOT_PROD,                ITM_CROSS_PROD,
@@ -733,7 +733,11 @@ TO_QSPI const int16_t menu_EQN[]         = { ITM_EQ_NEW,                    ITM_
 
 TO_QSPI const int16_t menu_ADV[]         = { ITM_SIGMAn,                    ITM_PIn,                       ITM_PLTf,                   -MNU_Sfdx,                     ITM_SOLVE,                    ITM_F1DRV,
                                              ITM_iSIGMAn,                   ITM_iPIn,                      ITM_PGMPLT,                  ITM_PGMINT,                   ITM_PGMSLV,                   ITM_PGMDRV,
-                                             ITM_SIGMAnINF,                 ADV_SLVQ,                      ADV_SLVC,                    ADV_SLVP,                     ITM_NULL,                     ITM_F2DRV                 };
+                                             ITM_SIGMAnINF,                 ADV_SLVQ,                      ADV_SLVC,                   -MNU_POLY,                    ITM_NULL,                      ITM_F2DRV                 };
+
+TO_QSPI const int16_t menu_POLY[]        = { ADV_SLVQ,                      ADV_SLVC,                     ADV_SLVP,                     ITM_VtoEQ,                    ITM_stkexV3,                  ITM_stkexV4,
+                                             ITM_NULL,                      ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,                     ITM_NULL,
+                                             ITM_STKtoV3,                   ITM_V3toSTK,                  ITM_STKtoV4,                  ITM_V4toSTK,                  ITM_RXtoVEC,                  ITM_VECtoREG              };
 
 TO_QSPI const int16_t menu_1stDeriv[]    = { ITM_NULL,                      ITM_NULL,                     ITM_NULL,                     ITM_NULL,                    -MNU_GRAPHS,                   ITM_FPHERE                };
 //note: the items in here are dynamically assigned, including the static ones
@@ -1025,9 +1029,9 @@ TO_QSPI const int16_t menu_ALPHA[]       = { -MNU_ALPHA_OMEGA,             -MNU_
                                              CHR_case,                      CHR_num,                    ITM_SCR,                  ITM_USERMODE,          ITM_T_UP_ARROW,              ITM_T_DOWN_ARROW                 };   //DL
 
 
-TO_QSPI const int16_t menu_GAP_L[]       = { ITM_GAPPER_L,                  ITM_GAPCOM_L,               ITM_GAPDOT_L,             ITM_GAPNARAPO_L,       ITM_GAPSPC_L,                ITM_GAPNIL_L,
-                                             ITM_GAPWIDPER_L,               ITM_GAPWIDCOM_L,            ITM_GAPWIDDOT_L,          ITM_GAPAPO_L,          ITM_GAPDBLSPC_L,             ITM_GAPUND_L,
-                                             ITM_GRP_L,                     ITM_GRP1_L,                 ITM_GRP1_L_OF,            ITM_NULL,              ITM_GAPNARSPC_L,             ITM_NULL                         };
+TO_QSPI const int16_t menu_GAP_L[]       = { ITM_GAPPER_L,                  ITM_GAPCOM_L,               ITM_GAPDOT_L,             ITM_GAPNARAPO_L,       ITM_GAPNIL_L,                ITM_GAPSPC_L,                
+                                             ITM_GAPWIDPER_L,               ITM_GAPWIDCOM_L,            ITM_GAPWIDDOT_L,          ITM_GAPAPO_L,          ITM_GAPUND_L,                ITM_GAPDBLSPC_L,             
+                                             ITM_GRP_L,                     ITM_GRP1_L,                 ITM_GRP1_L_OF,            ITM_GRP_HEX,           ITM_GRP_BIN,                 ITM_GAPNARSPC_L                  };
 
 TO_QSPI const int16_t menu_GAP_RX[]      = { ITM_GAPPER_RX,                 ITM_GAPCOM_RX,              ITM_GAPDOT_RX,            ITM_GAPWIDPER_RX,      ITM_GAPWIDCOM_RX,            ITM_GAPWIDDOT_RX };
 
@@ -1230,8 +1234,9 @@ TO_QSPI const softmenu_t softmenu[] = {
 /* 183 */  {.menuItem = -MNU_CONV_M_LOAD,   .numItems = sizeof(menu_CONV_MLoad    )/sizeof(int16_t), .softkeyItem = menu_CONV_MLoad     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 184 */  {.menuItem = -MNU_CONV_P_LOAD,   .numItems = sizeof(menu_CONV_PLoad    )/sizeof(int16_t), .softkeyItem = menu_CONV_PLoad     },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 /* 185 */  {.menuItem = -MNU_TAMLOCALLABEL, .numItems = sizeof(menu_TamLocalLabel )/sizeof(int16_t), .softkeyItem = menu_TamLocalLabel  },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
+/* 186 */  {.menuItem = -MNU_POLY,          .numItems = sizeof(menu_POLY          )/sizeof(int16_t), .softkeyItem = menu_POLY           },       // NOTE !! do not add menus here, add them at the end. The menu numbers are fixed for the Wiki references. 2024-02-21 jm
 
-/* 186 */  {.menuItem =  0,                 .numItems = 0,                                           .softkeyItem = NULL                }
+/* 187 */  {.menuItem =  0,                 .numItems = 0,                                           .softkeyItem = NULL                }
 
 
 };
@@ -2704,6 +2709,10 @@ static void changeSoftKey(int16_t itemNr, char * itemName, videoMode_t * vm, int
                         break;
       case ITM_GRP_R  : *showValue = grpGroupingRight;
                         break;
+      case ITM_GRP_HEX: *showValue = grpGroupingHex;
+                        break;
+      case ITM_GRP_BIN: *showValue = grpGroupingBin;
+                        break;
       default: ;
       }
 
@@ -2821,6 +2830,7 @@ bool_t savedspace(int16_t itemNr) {  //strike out all SAVED_SPACE items
 
     #if !defined(OPTION_SLVP_POLY)
       case ITM_SLVP:
+      case ITM_VtoEQ:
     #endif // !OPTION_SLVP
 
     #if !defined(OPTION_ELLIPTIC)

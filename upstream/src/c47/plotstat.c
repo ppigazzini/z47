@@ -11,8 +11,6 @@ static real_t RR, SMI, aa0, aa1, aa2, sa0, sa1; //L.R. variables
 static void drawline(uint16_t selection, real_t *RR, real_t *SMI, real_t *aa0, real_t *aa1, real_t *aa2, real_t *sa0, real_t *sa1);
 
 
-double    graph_dx;
-double    graph_dy;
 bool_t    roundedTicks;
 bool_t    PLOT_AXIS;
 int8_t    PLOT_ZOOM;
@@ -838,28 +836,15 @@ return tick_int_f;
 
 void graph_axis (void){
 #if defined(OPTION_GRAPHICS)
-    graph_dx = 0; //XXX override manual setting from GRAPH to auto, temporarily. Can program these to fixed values.
-    graph_dy = 0;
-
     real_t w;
     double wd;
-    if(graph_dx == 0) {
-      realSubtract(x_max, x_min, &w, &ctxtReal39);   // w = x_max - x_min
-      realToDouble(&w, &wd);
-      tick_int_x = auto_tick(wd/20.0);               // tick_int_x = auto_tick((x_max - x_min) / 20)
-    }
-    else {
-      tick_int_x = graph_dx;
-    }
+    realSubtract(x_max, x_min, &w, &ctxtReal39);   // w = x_max - x_min
+    realToDouble(&w, &wd);
+    tick_int_x = auto_tick(wd/20.0);               // tick_int_x = auto_tick((x_max - x_min) / 20)
 
-    if(graph_dy == 0) {
-      realSubtract(y_max, y_min, &w, &ctxtReal39);   // w = y_max - y_min
-      realToDouble(&w, &wd);
-      tick_int_y = auto_tick(wd/20.0);               // tick_int_y = auto_tick((y_max - y_min) / 20)
-    }
-    else {
-      tick_int_y = graph_dy;
-    }
+    realSubtract(y_max, y_min, &w, &ctxtReal39);   // w = y_max - y_min
+    realToDouble(&w, &wd);
+    tick_int_y = auto_tick(wd/20.0);               // tick_int_y = auto_tick((y_max - y_min) / 20)
 
     #if defined(STATDEBUG)
      printf("TICKS X=%f Y=%f\n", tick_int_x, tick_int_y);

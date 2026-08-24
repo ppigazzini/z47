@@ -385,3 +385,56 @@ Func: fnTripleFlipPolar
 ;=======================================
 In:  FL_ASLIFT=1 FL_CPXRES=1 RX=Cplx:"3 i +4" RY=Cplx:"1 i +1" RZ=Cplx:"0 i +2" CM=RECT
 Out: EC=0 FL_CPXRES=1 RX=Cplx:"3 i +4" RY=Cplx:"1 i +1" RZ=Cplx:"0 i +2"
+
+;------------------------------------------------------------
+; zyx->M SET: the ELEC complex 3x1 packer, a column, the transpose of the vector row. In POLAR mode every complex on the stack is tagged polar,
+; and a tag on a complex is not a vector angle: the packer takes the values as they are and never refuses.
+; The polar literal is "3 ∠ 60":DEG, magnitude and angle; 3 ∠ 60 is 1.5 + i 3 sin 60 and 4 ∠ 30 is 4 cos 30 + i 2, both exact to 34 digits.
+;------------------------------------------------------------
+In: SS=4 CM=POLAR AM=DEG
+
+
+Item: ITM_STKTO3x1
+;=======================================
+; three polar-tagged complexes pack, values untouched, no error (refused before the fix: "No valid coordinates")
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"2 ∠ 0":DEG RY=Cplx:"3 ∠ 60":DEG RX=Cplx:"4 ∠ 30":DEG
+Out: EC=0 RX=CxMa:"M3,1[2i0,1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]"
+
+;=======================================
+; one polar-tagged complex among rect ones packs (refused before the fix: "No angles allowed for ELEC M")
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"2 i 0" RY=Cplx:"3 ∠ 60":DEG RX=Cplx:"3.464101615137754587054892683011745 i 2"
+Out: EC=0 RX=CxMa:"M3,1[2i0,1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]"
+
+;=======================================
+; rect complex literals under POLAR mode pack the same (refused before the fix as well, EC=52)
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=Cplx:"2 i 0" RY=Cplx:"1.5 i 2.598076211353315940291169512258809" RX=Cplx:"3.464101615137754587054892683011745 i 2"
+Out: EC=0 RX=CxMa:"M3,1[2i0,1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]"
+
+;=======================================
+; control: mixed real and polar complex packs as a complex matrix
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=LonI:"7" RY=Real:"1.5" RX=Cplx:"4 ∠ 30":DEG
+Out: EC=0 RX=CxMa:"M3,1[7i0,1.5i0,3.464101615137754587054892683011745i2]"
+
+;=======================================
+; control: a real angle on the ELEC packer is still refused, the gate is for reals only
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RZ=LonI:"7" RY=Real:"90":DEG RX=LonI:"2"
+Out: EC=24 RZ=LonI:"7" RY=Real:"90":DEG RX=LonI:"2"
+
+
+Item: ITM_3x1TOSTK
+;=======================================
+; the complex matrix unpacks to three complexes
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M1,3[2i0,1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]"
+Out: EC=0 RZ=Cplx:"2 i 0" RY=Cplx:"1.5 i 2.598076211353315940291169512258809" RX=Cplx:"3.464101615137754587054892683011745 i 2"
+
+;=======================================
+; a polar-tagged 3x1 column (what →POLAR leaves after zyx->M) unpacks to three polar-tagged complexes; Y lost its tag before the fix
+;=======================================
+In:  FL_ASLIFT=0 FL_CPXRES=1 RX=CxMa:"M3,1[2i0,1.5i2.598076211353315940291169512258809,3.464101615137754587054892683011745i2]":∠DEG
+Out: EC=0 RZ=Cplx:"2 ∠ 0":DEG RY=Cplx:"3 ∠ 60":DEG RX=Cplx:"4 ∠ 30":DEG

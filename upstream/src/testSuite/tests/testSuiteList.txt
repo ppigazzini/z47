@@ -258,6 +258,8 @@ slvc
 slvp
 slvq
 stkexV4
+vtoeq
+vecreg
 agm
 
 decomp

@@ -1,0 +1,148 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                        vecreg                           **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+;=======================================================================================================================
+; Round trip through global registers: V->Rnn writes R10 up, Rnn->V reads them back into a zero vector in the same order.
+; Destination registers are seeded away from every value written.
+;=======================================================================================================================
+Func: fnRecallVector
+In:  FL_ASLIFT=0 R10=Real:"-1" R11=Real:"-1" R12=Real:"-1" R13=Real:"-1" R14=Real:"-1" FARG=10 RX=ReMa:"M1,4[11,22,33,44]"
+Out: EC=0 R10=Real:"11" R11=Real:"22" R12=Real:"33" R13=Real:"44" R14=Real:"-1" RX=ReMa:"M1,4[11,22,33,44]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 R10=Real:"11" R11=Real:"22" R12=Real:"33" R13=Real:"44" R14=Real:"-1" RY=Real:"9" FARG=10 RX=ReMa:"M1,4[0,0,0,0]"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"9" RX=ReMa:"M1,4[11,22,33,44]"
+
+; a complex vector writes complex registers, and complex registers turn the zero real vector complex
+Func: fnRecallVector
+In:  FL_ASLIFT=0 R10=Real:"-1" R11=Real:"-1" FARG=10 RX=CxMa:"M1,2[3i0,1i2]"
+Out: EC=0 R10=Cplx:"3i0" R11=Cplx:"1i2" RX=CxMa:"M1,2[3i0,1i2]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 R10=Real:"3" R11=Cplx:"1i2" FARG=10 RX=ReMa:"M1,2[0,0]"
+Out: EC=0 FL_ASLIFT=1 RX=CxMa:"M1,2[3i0,1i2]"
+
+; a 2x3 matrix is six registers in row order
+Func: fnRecallVector
+In:  FL_ASLIFT=0 R20=Real:"-1" R21=Real:"-1" R22=Real:"-1" R23=Real:"-1" R24=Real:"-1" R25=Real:"-1" FARG=20 RX=ReMa:"M2,3[5,6,7,8,9,10]"
+Out: EC=0 R20=Real:"5" R21=Real:"6" R22=Real:"7" R23=Real:"8" R24=Real:"9" R25=Real:"10" RX=ReMa:"M2,3[5,6,7,8,9,10]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 R20=Real:"5" R21=Real:"6" R22=Real:"7" R23=Real:"8" R24=Real:"9" R25=Real:"10" FARG=20 RX=ReMa:"M2,3[0,0,0,0,0,0]"
+Out: EC=0 FL_ASLIFT=1 RX=ReMa:"M2,3[5,6,7,8,9,10]"
+
+;=======================================================================================================================
+; Lettered registers: the order is the stack's, top down. Y as the start writes T Z Y; the stack registers are not lifted.
+;=======================================================================================================================
+Func: fnRecallVector
+In:  FL_ASLIFT=0 RY=Real:"-1" RZ=Real:"-1" RT=Real:"-1" RA=Real:"-1" FARG=101 RX=ReMa:"M1,3[11,22,33]"
+Out: EC=0 RY=Real:"33" RZ=Real:"22" RT=Real:"11" RA=Real:"-1" RX=ReMa:"M1,3[11,22,33]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RY=Real:"33" RZ=Real:"22" RT=Real:"11" RA=Real:"-1" FARG=101 RX=ReMa:"M1,3[0,0,0]"
+Out: EC=0 FL_ASLIFT=1 RY=Real:"33" RZ=Real:"22" RT=Real:"11" RA=Real:"-1" RX=ReMa:"M1,3[11,22,33]"
+
+; X in the span: the vector itself is overwritten last, so the element for X lands
+Func: fnRecallVector
+In:  FL_ASLIFT=0 RY=Real:"-1" RZ=Real:"-1" FARG=100 RX=ReMa:"M1,2[11,22]"
+Out: EC=0 RY=Real:"11" RZ=Real:"-1" RX=Real:"22"
+
+; A to D are outside the 4-level stack and are read and written in place
+Func: fnRecallVector
+In:  FL_ASLIFT=0 RA=Real:"-1" RB=Real:"-1" RC=Real:"-1" RD=Real:"-1" RT=Real:"7" FARG=104 RX=ReMa:"M1,3[11,22,33]"
+Out: EC=0 RA=Real:"33" RB=Real:"22" RC=Real:"11" RD=Real:"-1" RT=Real:"7" RX=ReMa:"M1,3[11,22,33]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RA=Real:"41" RB=Real:"42" RC=Real:"43" RD=Real:"44" RT=Real:"7" FARG=104 RX=ReMa:"M1,3[0,0,0]"
+Out: EC=0 FL_ASLIFT=1 RA=Real:"41" RB=Real:"42" RC=Real:"43" RD=Real:"44" RT=Real:"7" RX=ReMa:"M1,3[43,42,41]"
+
+; L to W are one ascending block, not flipped: L I J K M in order, both ways
+Func: fnRecallVector
+In:  FL_ASLIFT=0 RL=Real:"-1" RI=Real:"-1" RJ=Real:"-1" RK=Real:"-1" RM=Real:"-1" FARG=108 RX=ReMa:"M1,5[11,22,33,44,55]"
+Out: EC=0 RL=Real:"11" RI=Real:"22" RJ=Real:"33" RK=Real:"44" RM=Real:"55" RX=ReMa:"M1,5[11,22,33,44,55]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RL=Real:"45" RI=Real:"46" RJ=Real:"47" RK=Real:"48" RM=Real:"49" FARG=108 RX=ReMa:"M1,5[0,0,0,0,0]"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"45" RI=Real:"46" RJ=Real:"47" RK=Real:"48" RM=Real:"49" RX=ReMa:"M1,5[45,46,47,48,49]"
+
+; complex through lettered registers
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RY=Cplx:"1i2" RZ=Real:"3" FARG=101 RX=ReMa:"M1,2[0,0]"
+Out: EC=0 FL_ASLIFT=1 RY=Cplx:"1i2" RZ=Real:"3" RX=CxMa:"M1,2[3i0,1i2]"
+
+;=======================================================================================================================
+; Refused spans: the stack span past D (8 registers at most), the L..W span past W, the global span past R99.
+; Nothing is written.
+;=======================================================================================================================
+Func: fnRecallVector
+In:  FL_ASLIFT=0 RD=Real:"-1" RL=Real:"-1" FARG=107 RX=ReMa:"M1,2[11,22]"
+Out: EC=8 RD=Real:"-1" RL=Real:"-1" RX=ReMa:"M1,2[11,22]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RD=Real:"44" RL=Real:"45" FARG=107 RX=ReMa:"M1,2[0,0]"
+Out: EC=8 FL_ASLIFT=0 RD=Real:"44" RL=Real:"45" RX=ReMa:"M1,2[0,0]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RX=ReMa:"M1,9[0,0,0,0,0,0,0,0,0]" FARG=100
+Out: EC=8 FL_ASLIFT=0 RX=ReMa:"M1,9[0,0,0,0,0,0,0,0,0]"
+
+Func: fnRecallVector
+In:  FL_ASLIFT=0 RV=Real:"-1" RW=Real:"-1" FARG=124 RX=ReMa:"M1,3[11,22,33]"
+Out: EC=8 RV=Real:"-1" RW=Real:"-1" RX=ReMa:"M1,3[11,22,33]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 RW=Real:"55" FARG=125 RX=ReMa:"M1,2[0,0]"
+Out: EC=8 FL_ASLIFT=0 RW=Real:"55" RX=ReMa:"M1,2[0,0]"
+
+Func: fnStoreVector
+In:  FL_ASLIFT=0 R98=Real:"1" R99=Real:"2" FARG=98 RX=ReMa:"M1,3[0,0,0]"
+Out: EC=8 FL_ASLIFT=0 R98=Real:"1" R99=Real:"2" RX=ReMa:"M1,3[0,0,0]"
+
+Func: fnRecallVector
+In:  FL_ASLIFT=0 R98=Real:"-1" R99=Real:"-1" FARG=99 RX=ReMa:"M1,2[11,22]"
+Out: EC=8 R98=Real:"-1" R99=Real:"-1" RX=ReMa:"M1,2[11,22]"
+
+; a register that is not a number stops the fill at that element
+Func: fnStoreVector
+In:  FL_ASLIFT=0 R10=Real:"61" R11=Stri:"ab" R12=Real:"63" FARG=10 RX=ReMa:"M1,3[0,0,0]"
+Out: EC=24 RX=ReMa:"M1,3[61,0,0]"
+
+;=======================================================================================================================
+; Rxnn->V: the count in X sizes a 1 x n vector that takes the place of X, then the registers fill it as Rnn->V does.
+; L keeps the count. From Y the span is the stack above the count, read top down, without any lift.
+;=======================================================================================================================
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 R10=Real:"11" R11=Real:"22" R12=Real:"33" R13=Real:"44" R14=Real:"-1" RL=LonI:"852" RY=Real:"9" FARG=10 RX=LonI:"4"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"4" RY=Real:"9" RX=ReMa:"M1,4[11,22,33,44]"
+
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 RL=LonI:"852" RY=Real:"9" RZ=Real:"8" RT=Real:"7" FARG=101 RX=LonI:"3"
+Out: EC=0 FL_ASLIFT=1 RL=LonI:"3" RY=Real:"9" RZ=Real:"8" RT=Real:"7" RX=ReMa:"M1,3[7,8,9]"
+
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 RL=LonI:"852" R10=Real:"11" R11=Real:"22" FARG=10 RX=Real:"2"
+Out: EC=0 FL_ASLIFT=1 RL=Real:"2" RX=ReMa:"M1,2[11,22]"
+
+; a count of zero, a negative count, and a string are refused with X untouched
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 RL=LonI:"852" FARG=10 RX=LonI:"0"
+Out: EC=1 FL_ASLIFT=0 RL=LonI:"852" RX=LonI:"0"
+
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 RL=LonI:"852" FARG=10 RX=LonI:"-3"
+Out: EC=1 FL_ASLIFT=0 RL=LonI:"852" RX=LonI:"-3"
+
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 RL=LonI:"852" FARG=10 RX=Stri:"abc"
+Out: EC=24 FL_ASLIFT=0 RL=LonI:"852" RX=Stri:"abc"
+
+; a span the count pushes past R99 is refused after X was sized: X is the zero vector, L the count
+Func: fnStoreVectorX
+In:  FL_ASLIFT=0 RL=LonI:"852" R98=Real:"1" R99=Real:"2" FARG=98 RX=LonI:"3"
+Out: EC=8 RL=LonI:"3" R98=Real:"1" R99=Real:"2" RX=ReMa:"M1,3[0,0,0]"
