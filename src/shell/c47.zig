@@ -270,6 +270,8 @@ pub export var grpGroupingLeft: u8 = 0;
 pub export var grpGroupingGr1LeftOverflow: u8 = 0;
 pub export var grpGroupingGr1Left: u8 = 0;
 pub export var grpGroupingRight: u8 = 0;
+pub export var grpGroupingHex: u8 = 0;
+pub export var grpGroupingBin: u8 = 0;
 // roundingMode (decimal rounding mode) moved to kernel/decimal_context.zig
 // calcMode moved to the base kernel (engine/kernel/calc_globals.zig);
 // the firmware event loop reaches it through this extern re-declaration.

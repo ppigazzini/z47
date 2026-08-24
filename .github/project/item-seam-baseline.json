@@ -4314,7 +4314,7 @@
    "1968"
   ],
   "1969": [
-   "&itemToBeCoded",
+   "ext_fnVecToEqn",
    "9876"
   ],
   "197": [
@@ -4322,8 +4322,8 @@
    "69"
   ],
   "1970": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnStoreVectorX",
+   "10003"
   ],
   "1971": [
    "&itemToBeCoded",
@@ -5134,12 +5134,12 @@
    "9876"
   ],
   "2152": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSettingsDispFormatGrpHex",
+   "10001"
   ],
   "2153": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSettingsDispFormatGrpBin",
+   "10001"
   ],
   "2154": [
    "ext_fnSetFractionDigits",

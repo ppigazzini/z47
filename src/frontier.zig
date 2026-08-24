@@ -531,6 +531,14 @@ pub export fn fnSettingsDispFormatGrpR(param: u16) callconv(.c) void {
     frontend_settings.run(.set_group_right, param);
 }
 
+pub export fn fnSettingsDispFormatGrpHex(param: u16) callconv(.c) void {
+    frontend_settings.run(.set_group_hex, param);
+}
+
+pub export fn fnSettingsDispFormatGrpBin(param: u16) callconv(.c) void {
+    frontend_settings.run(.set_group_bin, param);
+}
+
 pub export fn fnMenuGapL(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
     frontend_settings.run(.menu_gap_l, 0);

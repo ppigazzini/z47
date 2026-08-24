@@ -286,6 +286,7 @@ fn solverPackageOptions(base: solve.RuntimeObjectOptions, dmcp_package: ?u8) sol
     const pkg = dmcp_package orelse return opts;
     // Settled by the block common to packages 1-4.
     opts.option_infsums = false;
+    opts.option_slvp_poly = false;
     // TVM_FORMULAS and TVM_NEWTON are out of packages 2 and 4, which is what makes
     // their FIN solver the slow, lower-precision brent-only path; AMORT stays in
     // all four.

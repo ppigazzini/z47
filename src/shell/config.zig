@@ -395,6 +395,12 @@ const _gprr: u32 = 3;
 const _gapr: u32 = ITM_SPACE_PUNCTUATION;
 const _gaprx: u32 = ITM_PERIOD;
 
+// The hex and binary group widths are not part of a configSettings profile row:
+// they take one default each, seeded into the Settings[] preset table and used
+// again by grpGroupingHexBinDefault().
+const _gprhex: u8 = 2;
+const _gprbin: u8 = 4;
+
 const configSettings = [7]ConfigSetting{
     .{ .tdm24 = 1, .dmy = 0, .mdy = 0, .ymd = 1, .gregorianDay = 2361222, .gapl = _gapl, .gprl = _gprl, .gpr1x = _gpr1x, .gpr1 = _gpr1, .gprr = _gprr, .gapr = _gapr, .gaprx = _gaprx, .us = 0, .woy = ITM_WOY_ISO },
     .{ .tdm24 = 1, .dmy = 0, .mdy = 0, .ymd = 1, .gregorianDay = 2433191, .gapl = ITM_COMMA, .gprl = 4, .gpr1x = 0, .gpr1 = 0, .gprr = 4, .gapr = ITM_COMMA, .gaprx = ITM_PERIOD, .us = 0, .woy = ITM_WOY_ISO },
@@ -426,6 +432,8 @@ const Settings = [_]i32{
     113,  -10001, 3,      3,      3,      3,      3,      -10001, -10001,
     114,  -10001, 0,      0,      0,      0,      0,      -10001, -10001,
     115,  -10001, 0,      0,      0,      1,      0,      -10001, -10001,
+    116,  -10001, 2,      2,      2,      2,      2,      -10001, -10001,
+    117,  -10001, 4,      4,      4,      4,      4,      -10001, -10001,
     3,    0,      32839,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    1,      -10001, -10001, 32839,  32839,  -10001, -10001, -10001,
     3,    0,      49224,  -10001, -10001, -10001, -10001, -10001, -10001,
@@ -558,6 +566,8 @@ const op_IPGRP: i32 = 112;
 const op_FPGRP: i32 = 113;
 const op_IPGRP1: i32 = 114;
 const op_IPGRP1x: i32 = 115;
+const op_HEXGRP: i32 = 116;
+const op_BINGRP: i32 = 117;
 const op_HIDE: i32 = 118;
 const op_DenMaX: i32 = 120;
 const op_TVMIKnown: i32 = 121;
@@ -693,6 +703,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var displayFormat: u8;
 extern var displayFormatDigits: u8;
 extern var timeDisplayFormatDigits: u8;
@@ -1185,6 +1197,17 @@ pub export fn configCommon(idx: u16) callconv(.c) void {
     forceSystemFlag(FLAG_US, @intCast(cs.us));
 }
 
+// A restored 0 -- an older file, or a Conf register written before the two fields
+// existed -- takes the default rather than a group width of zero.
+pub export fn grpGroupingHexBinDefault() callconv(.c) void {
+    if (grpGroupingHex == 0) {
+        grpGroupingHex = _gprhex;
+    }
+    if (grpGroupingBin == 0) {
+        grpGroupingBin = _gprbin;
+    }
+}
+
 extern var tvmIKnown: bool_t;
 extern var tvmIChanges: bool_t;
 extern var amortP1: u16;
@@ -1223,6 +1246,8 @@ fn Sett(grp: i16) void {
                 op_FPGRP => grpGroupingRight = @intCast(value),
                 op_IPGRP1 => grpGroupingGr1Left = @intCast(value),
                 op_IPGRP1x => grpGroupingGr1LeftOverflow = @intCast(value),
+                op_HEXGRP => grpGroupingHex = @intCast(value),
+                op_BINGRP => grpGroupingBin = @intCast(value),
                 op_DenMaX => denMax = @intCast(value),
                 op_TVMIKnown => tvmIKnown = (value == 1),
                 op_TVMIChanges => tvmIChanges = (value == 1),

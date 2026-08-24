@@ -17,12 +17,17 @@ const consts = abi.constants;
 // a public command; the glyph layout has no effect on register results but the
 // cursorShown/rightEllipsis out-params and tmpString contents are preserved).
 
+const std = @import("std");
 const runtime = @import("solve_runtime.zig");
 const solve_build_options = @import("solve_build_options");
 
 // hal/gui.h: calcModeAimGui() is a no-op macro on DMCP builds (and when the sim
 // has no on-screen keyboard); only the on-screen-keyboard host links the real fn.
 const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_build_options.is_dmcp_build;
+
+// defines.h's OPTION_SLVP_POLY: the polynomial-roots family. It gates V->EQ here
+// exactly as it gates SLVP itself; the DM42 packages drop both.
+const option_slvp_poly = solve_build_options.option_slvp_poly;
 
 const real34_t = abi.Real34;
 const abi = @import("abi"); // shared ABI bindings
@@ -63,6 +68,10 @@ const ERROR_EQUATION_TOO_COMPLEX: u8 = 46;
 const ERROR_RESERVED_VARIABLE_NAME: u8 = 61;
 const ERROR_NONE: u8 = 0;
 const ERROR_NO_EQUATION_DEFINED: u8 = 65;
+const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
+const ERROR_MATRIX_MISMATCH: u8 = 21;
+const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
+const ERROR_STRING_WOULD_BE_TOO_LONG: u8 = 33;
 
 const FLAG_SOLVING: u32 = 0xc026;
 const FLAG_ASLIFT: u32 = 0xc023;
@@ -73,6 +82,7 @@ const FLAG_MULTx: i32 = 0x801b;
 const dtReal34: u32 = 1;
 const dtComplex34: u32 = 2;
 const dtString: u32 = 5;
+const dtReal34Matrix: u32 = 6;
 const amNone: u32 = 5;
 const NOPARAM: u16 = 9876;
 
@@ -203,6 +213,7 @@ const PARSER_NUMERIC_STACK_SIZE: u32 = PARSER_OPERATOR_STACK_SIZE;
 
 // STD_* glyph strings (fonts.h)
 const STD_CROSS = "\x80\xd7";
+const STD_RIGHT_ARROW = "\xa1\x92";
 const STD_DOT = "\x80\xb7";
 const STD_DIVIDE = "\x80\xf7";
 const STD_CURSOR = "\xa4\x27";
@@ -283,6 +294,9 @@ extern fn decQuadZero(dest: *align(1) real34_t) *align(1) real34_t;
 extern fn decQuadIsZero(source: *align(1) const real34_t) bool;
 extern fn decQuadIsNaN(source: *align(1) const real34_t) bool;
 extern fn decQuadFromString(dest: *align(1) real34_t, str: [*:0]const u8, ctxt: *realContext_t) *align(1) real34_t;
+extern fn decQuadIsInfinite(source: *align(1) const real34_t) bool;
+extern fn decQuadToString(source: *align(1) const real34_t, destination: [*]u8) [*c]u8;
+extern fn real34CompareEqual(number1: *align(1) const real34_t, number2: *align(1) const real34_t) bool;
 
 inline fn realToReal34(source: *align(1) const real_t, destination: *align(1) real34_t) void {
     _ = decimal128FromNumber(destination, source, &ctxtReal34);
@@ -304,6 +318,20 @@ inline fn real34IsZero(source: *align(1) const real34_t) bool {
 }
 inline fn real34IsNaN(source: *align(1) const real34_t) bool {
     return decQuadIsNaN(source);
+}
+inline fn real34IsInfinite(source: *align(1) const real34_t) bool {
+    return decQuadIsInfinite(source);
+}
+// realType.h reads and clears the sign bit in place rather than going through
+// decQuad: byte 15 bit 7 is the decimal128 sign.
+inline fn real34IsNegative(source: *align(1) const real34_t) bool {
+    return (source.bytes[15] & 0x80) == 0x80;
+}
+inline fn real34SetPositiveSign(operand: *align(1) real34_t) void {
+    operand.bytes[15] &= 0x7f;
+}
+inline fn real34ToString(source: *align(1) const real34_t, destination: [*]u8) void {
+    _ = decQuadToString(source, destination);
 }
 inline fn stringToReal34(source: [*:0]const u8, destination: *align(1) real34_t) void {
     _ = decQuadFromString(destination, source, &ctxtReal34);
@@ -361,6 +389,9 @@ extern fn showString(str: [*c]const u8, font: *const font_t, x: u32, y: u32, vid
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strcpy(dest: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn xcopy(dest: ?*anyopaque, source: ?*const anyopaque, n: u32) ?*anyopaque;
+const real34Matrix_t = abi.Real34Matrix;
+extern fn linkToRealMatrixRegister(regist: calcRegister_t, linkedMatrix: *real34Matrix_t) void;
+extern fn saveLastX() bool;
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
 }
@@ -576,6 +607,133 @@ pub export fn setEquation(equationId: u16, equationString: [*c]const u8) linksec
     // formula of 1020 bytes or more keeps only the low byte of its size.
     allFormulae[equationId].sizeInBlocks = @truncate(newSizeInBlocks);
     _ = xcopy(TO_PCMEMPTR(allFormulae[equationId].pointerToFormulaData), equationString, @intCast(stringByteLength(equationString) + 1));
+}
+
+// Format into a caller-local buffer and NUL-terminate, so the shared errorMessage
+// scratch the C sprintf()s into is left alone.
+fn bufPrintZ(buffer: []u8, comptime format: []const u8, args: anytype) ![:0]u8 {
+    const slice = try std.fmt.bufPrint(buffer[0 .. buffer.len - 1], format, args);
+    buffer[slice.len] = 0;
+    return buffer[0..slice.len :0];
+}
+
+// ===========================================================================
+// fnVecToEqn -- the real coefficient vector in X, highest degree first, rendered
+// as equation text: a string in X the equation parser accepts, ready for X.SWAP
+// to post.
+// ===========================================================================
+pub export fn fnVecToEqn(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (comptime !option_slvp_poly) return;
+
+    var x: real34Matrix_t = undefined;
+    var absC: real34_t = undefined;
+    var term: [80]u8 = undefined;
+    var firstTerm = true;
+
+    if (getRegisterDataType(REGISTER_X) != dtReal34Matrix) {
+        displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_OP, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnError("In function fnVecToEqn:", "V" ++ STD_RIGHT_ARROW ++ "EQ expects a real coefficient vector in X; complex coefficients have no equation rendering", null, null);
+        return;
+    }
+    linkToRealMatrixRegister(REGISTER_X, &x);
+    const rows = x.header.matrixRows;
+    const cols = x.header.matrixColumns;
+    if (rows != 1 and cols != 1) {
+        displayCalcErrorMessage(ERROR_MATRIX_MISMATCH, ERR_REGISTER_LINE, REGISTER_X);
+        var buf: [128]u8 = undefined;
+        const message = bufPrintZ(&buf, "V" ++ STD_RIGHT_ARROW ++ "EQ needs a coefficient vector, not ({d}" ++ STD_CROSS ++ "{d})", .{ rows, cols }) catch "not a coefficient vector";
+        moreInfoOnError("In function fnVecToEqn:", message, null, null);
+        return;
+    }
+    const m: u32 = @as(u32, rows) * cols;
+    const elems = x.matrixElements.?;
+
+    var j: u32 = 0;
+    while (j < m) : (j += 1) {
+        if (real34IsNaN(&elems[j]) or real34IsInfinite(&elems[j])) {
+            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnVecToEqn:", "a NaN or infinite coefficient has no equation text", null, null);
+            return;
+        }
+    }
+
+    // A leading zero coefficient carries no degree: drop it silently, the
+    // SLVC/SLVP precedent.
+    var lead: u32 = 0;
+    while (lead < m and real34IsZero(&elems[lead])) : (lead += 1) {}
+
+    var p: [*c]u8 = tmpString;
+    j = lead;
+    while (j < m) : (j += 1) {
+        const c = &elems[j];
+        if (real34IsZero(c)) { // a zero coefficient contributes no term
+            continue;
+        }
+        const k: u32 = m - 1 - j; // the degree of this term
+        const negative = real34IsNegative(c);
+        real34Copy(c, &absC);
+        real34SetPositiveSign(&absC);
+        // |c| = 1 drops the coefficient glyphs, except on a negative leading
+        // term: -1xX^k parses the same under a unary or a binary reading of the
+        // minus, -X^k need not.
+        const unitCoef = (k > 0) and real34CompareEqual(&absC, const34_1()) and !(firstTerm and negative);
+
+        var t: usize = 0;
+        if (firstTerm) {
+            if (negative) {
+                term[t] = '-';
+                t += 1;
+            }
+        } else {
+            term[t] = if (negative) '-' else '+';
+            t += 1;
+        }
+        if (!unitCoef) {
+            // Exact decQuad text: plain or E notation, both re-parse through
+            // stringToReal34.
+            real34ToString(&absC, term[t..].ptr);
+            t += @intCast(stringByteLength(term[t..].ptr));
+        }
+        if (k > 0) {
+            if (!unitCoef) {
+                term[t] = STD_CROSS[0];
+                term[t + 1] = STD_CROSS[1];
+                t += 2;
+            }
+            term[t] = 'X';
+            t += 1;
+            if (k > 1) {
+                t += abi.fmtCStrN(term[t..].ptr, "^{d}", .{k});
+            }
+        }
+        term[t] = 0;
+
+        // The text is headed for the equation buffer: what cannot fit there is
+        // refused whole.
+        if (@intFromPtr(p) - @intFromPtr(tmpString) + t >= AIM_BUFFER_LENGTH) {
+            displayCalcErrorMessage(ERROR_STRING_WOULD_BE_TOO_LONG, ERR_REGISTER_LINE, REGISTER_X);
+            moreInfoOnError("In function fnVecToEqn:", "the polynomial text does not fit the equation buffer", null, null);
+            return;
+        }
+        _ = xcopy(p, &term, @intCast(t + 1));
+        p += t;
+        firstTerm = false;
+    }
+    if (firstTerm) { // every coefficient is zero: the zero polynomial still renders
+        p[0] = '0';
+        p[1] = 0;
+        p += 1;
+    }
+
+    const len: u32 = @intCast(@intFromPtr(p) - @intFromPtr(tmpString) + 1);
+    if (!saveLastX()) {
+        return;
+    }
+    // x dangles from here: the linked matrix memory is gone.
+    reallocateRegister(REGISTER_X, dtString, @intCast(TO_BLOCKS(len)), amNone);
+    _ = xcopy(registerStringPtr(REGISTER_X), tmpString, len);
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
 }
 
 pub export fn deleteEquation(equationId: u16) linksection(runtime.code_section) callconv(.c) void {

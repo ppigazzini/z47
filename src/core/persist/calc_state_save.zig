@@ -136,6 +136,8 @@ extern var grpGroupingLeft: u8;
 extern var grpGroupingGr1LeftOverflow: u8;
 extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
+extern var grpGroupingHex: u8;
+extern var grpGroupingBin: u8;
 extern var roundingMode: u8;
 extern var displayStack: u8;
 extern var exponentLimit: i16;
@@ -154,8 +156,6 @@ extern var lastIntegerBase: u32; // saved as uint8_t
 extern var amortP1: u16;
 extern var amortP2: u16;
 extern var lrChosen: u16;
-extern var graph_dx: f64;
-extern var graph_dy: f64;
 extern var roundedTicks: u8;
 extern var PLOT_AXIS: u8;
 extern var PLOT_ZMY: i8;
@@ -466,6 +466,8 @@ pub fn writeSaveSections() void {
     saveField("grpGroupingGr1LeftOverflow", "%u\n", .{cu(grpGroupingGr1LeftOverflow)});
     saveField("grpGroupingGr1Left", "%u\n", .{cu(grpGroupingGr1Left)});
     saveField("grpGroupingRight", "%u\n", .{cu(grpGroupingRight)});
+    saveField("grpGroupingHex", "%u\n", .{cu(grpGroupingHex)});
+    saveField("grpGroupingBin", "%u\n", .{cu(grpGroupingBin)});
     saveField("roundingMode", "%u\n", .{cu(roundingMode)});
     saveField("displayStack", "%u\n", .{cu(displayStack)});
 
@@ -497,8 +499,6 @@ pub fn writeSaveSections() void {
     saveField("amortP1", "%u\n", .{cu(amortP1)});
     saveField("amortP2", "%u\n", .{cu(amortP2)});
     saveField("lrChosen", "%u\n", .{cu(lrChosen)});
-    saveFloatField("graph_dx", graph_dx);
-    saveFloatField("graph_dy", graph_dy);
     saveField("roundedTicks", "%u\n", .{cu(roundedTicks)});
     saveField("PLOT_AXIS", "%u\n", .{cu(PLOT_AXIS)});
     saveField("PLOT_ZMY", "%u\n", .{cu(@as(u8, @bitCast(PLOT_ZMY)))});
@@ -521,33 +521,13 @@ pub fn writeSaveSections() void {
 // arguments matching it.
 fn saveField(comptime name: []const u8, comptime value_format: []const u8, args: anytype) void {
     // The only value formats in use are "%u\n"/"%d\n" (plain decimal; args
-    // pre-cast via cu()/ci() to the right signedness, so both -> "{d}\n"). The
-    // two double-valued fields go through saveFloatField instead. A new spec
-    // trips the @compileError rather than silently mis-formatting the save.
+    // pre-cast via cu()/ci() to the right signedness, so both -> "{d}\n"). A new
+    // spec trips the @compileError rather than silently mis-formatting the save.
     const zfmt = comptime if (std.mem.eql(u8, value_format, "%u\n") or std.mem.eql(u8, value_format, "%d\n"))
         "{d}\n"
     else
         @compileError("saveField: unhandled value_format \"" ++ value_format ++ "\"");
     abi.fmtCStr(b(), name ++ "\n" ++ zfmt, args);
-    save(b());
-}
-
-// Emit one `name\n<value>` config line whose value is a double.
-//
-// c43 formats these with registerValueConversions.c's `sci_fmt` into a 32-byte
-// buffer, NOT with printf: sci_fmt is a hand-rolled locale-independent
-// "d.dddddddddddddddde+dd" writer, deliberately not `%.16e`, because a locale
-// that renders the radix point as a comma would make the state file unreadable.
-//
-// z47 wrote "%f" here -- six decimals, no exponent -- until the
-// c43 differential compared the two files byte for byte. That is a `.sav` FORMAT
-// divergence in both directions: z47's file lost every digit past the sixth
-// decimal of a plot delta, and a file written by a real C47 came back through a
-// reader that never saw the form c43 writes.
-fn saveFloatField(comptime name: []const u8, value: f64) void {
-    var floatString: [32]u8 = undefined; // c43: char floatString[32]
-    abi.sci_format.sciFmt(&floatString, value);
-    abi.fmtCStr(b(), name ++ "\n{s}\n", .{@as([*:0]const u8, @ptrCast(&floatString))});
     save(b());
 }
 

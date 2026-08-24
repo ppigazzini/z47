@@ -741,6 +741,8 @@ extern fn conjCplx() void;
 extern fn initMatrixRegister(regist: calcRegister_t, rows: u16, cols: u16, complex: bool_t) bool_t;
 extern fn linkToRealMatrixRegister(regist: calcRegister_t, matrix: *real34Matrix_t) void;
 extern fn linkToComplexMatrixRegister(regist: calcRegister_t, matrix: *complex34Matrix_t) void;
+extern fn transposeRealMatrix(matrix: *const real34Matrix_t, res: *real34Matrix_t) void;
+extern fn transposeComplexMatrix(matrix: *const complex34Matrix_t, res: *complex34Matrix_t) void;
 extern fn is_2D3D_Register_Ready(ang2Dx: *u32, ang2Dy: *u32, ang3Dx: *u32, ang3Dy: *u32, ang3Dz: *u32, validPolarInput: *bool_t, valid2DRInput: *bool_t, validSPHInput: *bool_t, validCYLInput: *bool_t, valid3DRInput: *bool_t, constVector: u16) bool_t;
 extern fn convertPOLto2D(r: *real_t, th1: *real_t, am: u8, matrix: *real34Matrix_t, ctx: *realContext_t) void;
 extern fn convertSPHto3D(r: *real_t, th1: *real_t, th2: *real_t, am: u8, matrix: *real34Matrix_t, ctx: *realContext_t) void;
@@ -2588,7 +2590,11 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
     var valid3DRInput: bool_t = 0;
 
     if (comptime vector_or_elec) {
-        if (is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector) == 0) {
+        if (complexCoefs != 0) {
+            // A complex is a value, never a vector angle: its polar tag does not
+            // make a SPH or CYL input, so the reading stays plain rectangular.
+            valid3DRInput = 1;
+        } else if (is_2D3D_Register_Ready(&ang2Dx, &ang2Dy, &ang3Dx, &ang3Dy, &ang3Dz, &validPolarInput, &valid2DRInput, &validSPHInput, &validCYLInput, &valid3DRInput, constVector) == 0) {
             frontier_error.displayCalcErrorMessage(ERROR_INVALID_DATA_TYPE_FOR_POLAR_RECT, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnErr("In function fnConvertStkToMx:", "No valid coordinates for 2D/3D Rect/Polar/Spherical/Cylindrical");
             return;
@@ -2671,6 +2677,20 @@ pub export fn fnConvertStkToMx(constVector1: u16) callconv(.c) void {
             } else {
                 realToReal34(&x[elements - 1 - i].r, mxRe34(matrix.matrixElements, i));
             }
+        }
+    }
+
+    if (constVector1 == M_CR_zyx) {
+        // ELEC M is the 3x1 column, the transpose of the vector row.
+        const h = regMatrixHeader(REGISTER_X);
+        if (complexCoefs != 0) {
+            transposeComplexMatrix(&matrixC, &matrixC);
+            h.matrixRows = matrixC.header.matrixRows;
+            h.matrixColumns = matrixC.header.matrixColumns;
+        } else {
+            transposeRealMatrix(&matrix, &matrix);
+            h.matrixRows = matrix.header.matrixRows;
+            h.matrixColumns = matrix.header.matrixColumns;
         }
     }
 
@@ -2861,7 +2881,11 @@ pub export fn fnConvertMxToStk(param1: u16) callconv(.c) void {
             setRegisterAngularMode(REGISTER_Y, @intCast(ang3Dy));
             temporaryInformation = TI_VECTORCOMP_3DCYL;
         } else if ((constVector == VECT_CR_zyx or constVector == VECT_CR_zxy) and ang3Dy == amNone and ang3Dx == amNone) { // RECT
-            setRegisterAngularMode(REGISTER_Y, @intCast(ang3Dy));
+            if (getRegisterDataType(TEMP_REGISTER_1) == dtReal34Matrix) {
+                // A complex element keeps the polar tag it was copied out of the
+                // matrix with; only a real matrix hands Y the vector's own mode.
+                setRegisterAngularMode(REGISTER_Y, @intCast(ang3Dy));
+            }
             temporaryInformation = TI_VECTORCOMP_3DRECT;
         }
     }

@@ -117,6 +117,7 @@ extern var shortIntegerWordSize: [1]u8;
 extern fn boundShortIntegerWordSize(word_size: u8) callconv(.c) u8;
 extern fn updateShortIntegerMasks() callconv(.c) void;
 extern fn set_def_Input_Default() callconv(.c) void;
+extern fn grpGroupingHexBinDefault() callconv(.c) void;
 extern var significantDigits: [1]u8;
 extern var fractionDigits: [1]u8;
 extern var shortIntegerMode: [1]u8;
@@ -199,8 +200,6 @@ extern var lrChosen: [2]u8;
 extern var lrChosenUndo: [2]u8;
 extern var lastPlotMode: [2]u8;
 extern var plotSelection: [2]u8;
-extern var graph_dx: [8]u8;
-extern var graph_dy: [8]u8;
 extern var roundedTicks: [1]u8;
 extern var PLOT_AXIS: [1]u8;
 extern var PLOT_ZMY: [1]u8;
@@ -277,6 +276,8 @@ extern var grpGroupingLeft: [1]u8;
 extern var grpGroupingGr1LeftOverflow: [1]u8;
 extern var grpGroupingGr1Left: [1]u8;
 extern var grpGroupingRight: [1]u8;
+extern var grpGroupingHex: [1]u8;
+extern var grpGroupingBin: [1]u8;
 extern var firstDayOfWeek: [1]u8;
 extern var firstWeekOfYearDay: [1]u8;
 extern var dispBase: [1]u8;
@@ -568,8 +569,6 @@ pub fn saveCalc() void {
     sv(&lrChosenUndo[0], 2, "lrChosenUndo", "uint16");
     sv(&lastPlotMode[0], 2, "lastPlotMode", "uint16");
     sv(&plotSelection[0], 2, "plotSelection", "uint16");
-    sv(&graph_dx[0], 8, "graph_dx", "double");
-    sv(&graph_dy[0], 8, "graph_dy", "double");
     sv(&roundedTicks[0], 1, "roundedTicks", "bool");
     sv(&PLOT_AXIS[0], 1, "PLOT_AXIS", "bool");
     sv(&PLOT_ZMY[0], 1, "PLOT_ZMY", "int8");
@@ -646,6 +645,8 @@ pub fn saveCalc() void {
     sv(&grpGroupingGr1LeftOverflow[0], 1, "grpGroupingGr1LeftOverflow", "uint8");
     sv(&grpGroupingGr1Left[0], 1, "grpGroupingGr1Left", "uint8");
     sv(&grpGroupingRight[0], 1, "grpGroupingRight", "uint8");
+    sv(&grpGroupingHex[0], 1, "grpGroupingHex", "uint8");
+    sv(&grpGroupingBin[0], 1, "grpGroupingBin", "uint8");
     sv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
     sv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
     sv(&dispBase[0], 1, "dispBase", "uint8");
@@ -1222,22 +1223,22 @@ pub fn restoreCalc() void {
     rv(&lrChosenUndo[0], 2, "lrChosenUndo", "uint16");
     rv(&lastPlotMode[0], 2, "lastPlotMode", "uint16");
     rv(&plotSelection[0], 2, "plotSelection", "uint16");
-    rv(&graph_dx[0], 8, "graph_dx", "double");
-    rv(&graph_dy[0], 8, "graph_dy", "double");
     rv(&roundedTicks[0], 1, "roundedTicks", "bool");
     rv(&PLOT_AXIS[0], 1, "PLOT_AXIS", "bool");
     rv(&PLOT_ZMY[0], 1, "PLOT_ZMY", "int8");
     rv(&PLOT_ZOOM[0], 1, "PLOT_ZOOM", "uint8");
     rv(&plotmode[0], 1, "plotmode", "int8");
-    rv(&tick_int_x[0], 8, "tick_int_x", "double");
-    rv(&tick_int_y[0], 8, "tick_int_y", "double");
     if (backupVersion >= 1016) {
+        rv(&tick_int_x[0], 8, "tick_int_x", "double");
+        rv(&tick_int_y[0], 8, "tick_int_y", "double");
         rv(x_min, REAL_SIZE_IN_BYTES_34, "x_min", "real");
         rv(x_max, REAL_SIZE_IN_BYTES_34, "x_max", "real");
         rv(y_min, REAL_SIZE_IN_BYTES_34, "y_min", "real");
         rv(y_max, REAL_SIZE_IN_BYTES_34, "y_max", "real");
     } else {
-        // pre-1016 backups stored the ranges as float: convert each once; the next save writes "real".
+        // pre-1016 backups stored the graph settings as float: convert each once; the next save writes the new types.
+        migrateFloatValue(&tick_int_x[0], "tick_int_x", "double");
+        migrateFloatValue(&tick_int_y[0], "tick_int_y", "double");
         migrateFloatValue(x_min, "x_min", "real");
         migrateFloatValue(x_max, "x_max", "real");
         migrateFloatValue(y_min, "y_min", "real");
@@ -1309,6 +1310,9 @@ pub fn restoreCalc() void {
     rv(&grpGroupingGr1LeftOverflow[0], 1, "grpGroupingGr1LeftOverflow", "uint8");
     rv(&grpGroupingGr1Left[0], 1, "grpGroupingGr1Left", "uint8");
     rv(&grpGroupingRight[0], 1, "grpGroupingRight", "uint8");
+    rv(&grpGroupingHex[0], 1, "grpGroupingHex", "uint8");
+    rv(&grpGroupingBin[0], 1, "grpGroupingBin", "uint8");
+    grpGroupingHexBinDefault();
     rv(&firstDayOfWeek[0], 1, "firstDayOfWeek", "uint8");
     rv(&firstWeekOfYearDay[0], 1, "firstWeekOfYearDay", "uint8");
     rv(&dispBase[0], 1, "dispBase", "uint8");

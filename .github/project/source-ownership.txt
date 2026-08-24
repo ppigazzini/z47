@@ -147,4 +147,6 @@ src/testSuite/tests/tvm_cov.txt
 src/testSuite/tests/unitConversion.txt
 src/testSuite/tests/validate_tvm.py
 src/testSuite/tests/validate_tvm.txt
+src/testSuite/tests/vecreg.txt
+src/testSuite/tests/vtoeq.txt
 tools/create items spreadsheet.py
