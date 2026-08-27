@@ -393,7 +393,9 @@ pub export fn registerBrowser(unusedButMandatoryParameter: u16) callconv(.c) voi
                     regist += @as(i16, FIRST_RESERVED_VARIABLE) + @as(i16, NUMBER_OF_LETTERED_VARIABLES);
                 }
 
-                if (regist <= LAST_RESERVED_VARIABLE) { // Named variables
+                // Named variables; a retired slot has no name and no data, so it
+                // is skipped rather than shown as an empty row over a null pointer.
+                if (regist <= LAST_RESERVED_VARIABLE and allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName[0] != 0) {
                     abi.fmtBufZ(tmpString[0..2560], "{s}:", .{std.mem.span(@as([*c]const u8, @ptrCast(&allReservedVariables[@intCast(@as(c_int, regist) - FIRST_RESERVED_VARIABLE)].reservedVariableName)) + 1)});
 
                     registerNameWidth = @truncate(@as(i32, @bitCast(frontier_screen.showString(tmpString, &standardFont, 1, @intCast(219 - 22 * row), vmNormal, 1, 1))));
