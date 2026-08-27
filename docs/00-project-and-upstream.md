@@ -6,7 +6,7 @@ owns, and where the Zig port boundary now sits.
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
-Audit basis: 2026-08-27, upstream pin `e9a15bd89`, Zig `0.16.0` stable.
+Audit basis: 2026-08-27, upstream pin `d9f9304be`, Zig `0.16.0` stable.
 
 ## At A Glance
 
