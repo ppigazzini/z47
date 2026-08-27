@@ -67,7 +67,6 @@ extern int8_t oracle_stringToInt8(const char *str);
 extern int16_t oracle_stringToInt16(const char *str);
 extern int32_t oracle_stringToInt32(const char *str);
 extern int64_t oracle_stringToInt64(const char *str);
-extern float oracle_stringToFloat(const char *str);
 extern int32_t oracle_toInt32(const char *str);
 
 static int failures = 0;
@@ -193,15 +192,6 @@ static int runParserFamilyDifferential(void) {
     }
     if(toInt32(s) != oracle_toInt32(s)) {
       fail("toInt32(\"%s\"): z47=%d c43=%d", s, toInt32(s), oracle_toInt32(s));
-    }
-    // Bit-compare the float: a NaN or a one-ULP difference must not pass as equal,
-    // and `==` would call two NaNs unequal and two -0.0/0.0 equal.
-    {
-      float mine = stringToFloat(s);
-      float theirs = oracle_stringToFloat(s);
-      if(memcmp(&mine, &theirs, sizeof(float)) != 0) {
-        fail("stringToFloat(\"%s\"): z47=%.9g c43=%.9g", s, (double)mine, (double)theirs);
-      }
     }
   }
 

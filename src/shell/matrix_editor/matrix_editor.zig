@@ -938,6 +938,10 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
             } else if (!regXposition and prefixWidth > 0) {
                 // Blank the area behind the matrix.
                 lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1)) * fontHeight), @intCast(frontier_char_string.stringWidth("[", font, true, true) + baseWidth + frontier_char_string.stringWidth(&endChar, font, true, true)), @intCast(if (font == &numericFont) @as(i16, @intCast(maxRows - 1)) * fontHeight + NUMERIC_FONT_HEIGHT else @as(i16, @intCast(maxRows - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
+            } else {
+                // The stack position: a partial refresh leaves stale register text
+                // in the band the matrix covers.
+                lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1)) * fontHeight), @intCast(frontier_char_string.stringWidth("[", font, true, true) + baseWidth + frontier_char_string.stringWidth(&endChar, font, true, true)), @intCast(if (font == &numericFont) @as(i16, @intCast(maxRows - 1)) * fontHeight + NUMERIC_FONT_HEIGHT_ else @as(i16, @intCast(maxRows - 1)) * fontHeight + STANDARD_FONT_HEIGHT_), LCD_SET_VALUE);
             }
         }
         const displayFormat1: u16 = displayFormat;
@@ -1357,6 +1361,10 @@ pub export fn showComplexMatrix(matrix: *const complex34Matrix_t, prefixWidth: i
             if (rows == 4 and font != &standardFont) {
                 frontier_screen.clearRegisterLine(REGISTER_X, true, true);
             }
+        } else {
+            // The stack position: a partial refresh leaves stale register text in
+            // the band the matrix covers.
+            lcdFillRect(screenPos(X_POS), screenPos(Y_POS - @as(i16, @intCast(maxRows - 1)) * fontHeight), @intCast((if (colVector) frontier_char_string.stringWidth("[]" ++ STD_SUP_BOLD_T, font, true, true) else frontier_char_string.stringWidth("[]", font, true, true)) + baseWidth), @intCast(if (font == &numericFont) @as(i16, @intCast(maxRows - 1)) * fontHeight + NUMERIC_FONT_HEIGHT else @as(i16, @intCast(maxRows - 1)) * fontHeight + STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
         }
 
         var i: usize = 0;

@@ -83,7 +83,6 @@
 #define stringToInt16 oracle_stringToInt16
 #define stringToInt32 oracle_stringToInt32
 #define stringToInt64 oracle_stringToInt64
-#define stringToFloat oracle_stringToFloat
 
 // File-scope state the file owns. Renamed too, so the oracle keeps its own copy
 // rather than sharing the owner's -- both are private to saveRestoreCalcState.c

@@ -1,7 +1,7 @@
 SAVE_FILE_REVISION
 0
 C47_save_file_00
-10000028
+10000029
 GLOBAL_REGISTERS
 137
 R000
@@ -647,7 +647,7 @@ HOME
 -3053
 1949
 1946
-UMENU
+UMENU1
 18
 95
 42 X
@@ -6287,6 +6287,8 @@ firstGregorianDay
 2299161
 denMax
 64
+graMod
+0
 lastDenominator
 4
 displayFormat

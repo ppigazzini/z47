@@ -6,7 +6,7 @@ owns, and where the Zig port boundary now sits.
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
-Audit basis: 2026-08-24, upstream pin `2640d570a`, Zig `0.16.0` stable.
+Audit basis: 2026-08-27, upstream pin `e9a15bd89`, Zig `0.16.0` stable.
 
 ## At A Glance
 
@@ -63,19 +63,16 @@ root, kept as audit and parity reference.
 ## Imported Upstream Baseline
 
 The imported upstream pin is recorded in `../.github/project/upstream-pin.env`.
+That file is the only place the values live; read them from it rather than from a
+copy here, which is wrong from the next pin advance onward:
 
-Current checked-in values:
+```bash
+cat .github/project/upstream-pin.env
+```
 
-| Field | Value |
-| --- | --- |
-| `UPSTREAM_PROJECT_NAME` | `C47` |
-| `UPSTREAM_REPOSITORY_URL` | `https://gitlab.com/rpncalculators/c43.git` |
-| `UPSTREAM_REMOTE_NAME` | `upstream` |
-| `UPSTREAM_BRANCH` | `master` |
-| `UPSTREAM_COMMIT` | `2640d570ac8ed459bbdb2fd8661f3d5b847a08f0` |
-| `UPSTREAM_ROOT` | `upstream` |
-| `UPSTREAM_IMPORT_LAYOUT` | `nested-upstream` |
-| `UPSTREAM_PIN_UPDATED` | `2026-08-24` |
+Every field is checked. `check-imported-tree-pin.py` diffs the imported tree
+against the `UPSTREAM_COMMIT` it names, so the pin is a verified statement about
+the tree rather than a claim beside it.
 
 `UPSTREAM_ROOT=upstream` means the imported upstream tree is mounted under
 `upstream/`, so z47's own owners can hold the canonical `src/` and `docs/` names.

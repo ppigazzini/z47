@@ -45,7 +45,6 @@ const dtLongInteger = stack_runtime.dtLongInteger;
 const dtReal34 = stack_runtime.dtReal34;
 const dtString = stack_runtime.dtString;
 const dtShortInteger = stack_runtime.dtShortInteger;
-const LI_POSITIVE: u8 = 2;
 
 const ERROR_NONE = stack_runtime.ERROR_NONE;
 const ERROR_OUT_OF_RANGE = stack_runtime.ERROR_OUT_OF_RANGE;
@@ -340,7 +339,7 @@ pub const allReservedVariables: [reserved_variable_count]reserved_variable_heade
     makeReserved(24, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(6, 'P', 'P', 'E', 'R', '/', 'a', 0)),
     makeReserved(28, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 'P', 'M', 'T', 0, 0, 0, 0)),
     makeReserved(32, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(2, 'P', 'V', 0, 0, 0, 0, 0)),
-    makeReserved(36, @intCast(dtLongInteger), LI_POSITIVE, 0, 0, regName(6, 'G', 'R', 'A', 'M', 'O', 'D', 0)),
+    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)), // VAR_NO_SPARE6: GRAMOD removed, slot spare
     makeReserved(40, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 161, 145, 'X', 0, 0, 0, 0)),
     makeReserved(44, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 161, 147, 'X', 0, 0, 0, 0)),
     makeReserved(48, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(6, 'C', 'P', 'E', 'R', '/', 'a', 0)),

@@ -124,7 +124,7 @@ pub const DtConfigDescriptor = extern struct {
     Norm_Key_00: NormKey,
     grpGroupingHex: u8,
     grpGroupingBin: u8,
-    compatibility_byte4: bool,
+    graMod: u8,
     compatibility_byte5: bool,
     compatibility_byte6: bool,
     compatibility_byte7: bool,

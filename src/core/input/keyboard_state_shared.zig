@@ -179,7 +179,7 @@ pub fn implementation(comptime runtime: type) type {
                             runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
                             return;
                         } else if (item < 0) { // softmenu
-                            if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0 and runtime.currentMenu() == -runtime.MNU_MENUS) {
+                            if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned == 0 and (runtime.currentMenu() == -runtime.MNU_MENUS or runtime.currentMenu() == -runtime.MNU_USRMENUS)) {
                                 runtime.itemToBeAssigned = item;
                                 runtime.leaveAsmMode();
                                 runtime.popSoftmenu();
@@ -187,7 +187,7 @@ pub fn implementation(comptime runtime: type) type {
                                 runtime.itemToBeAssigned = item;
                                 runtime.leaveAsmMode();
                                 runtime.showSoftmenu(item);
-                            } else if ((runtime.tam.mode == runtime.TM_MENU) and (item != -runtime.MNU_MENU) and !runtime.tam.alpha) {
+                            } else if ((runtime.tam.mode == runtime.TM_MENU) and (item != -runtime.MNU_MENU) and (item != -runtime.MNU_USRMENU) and !runtime.tam.alpha) {
                                 if ((runtime.currentMenu() == -runtime.MNU_TAMINDIRECT) and ((item == -runtime.MNU_VAR) or (item == -runtime.MNU_REG))) {
                                     runtime.showSoftmenu(item);
                                 } else {
@@ -469,7 +469,8 @@ pub fn implementation(comptime runtime: type) type {
         const catalog_menus = [_]i16{
             runtime.MNU_ALPHA_OMEGA, runtime.MNU_ALPHAMISC, runtime.MNU_ALPHA,
             runtime.MNU_FCNS,        runtime.MNU_CONST,     runtime.MNU_CHARS,
-            runtime.MNU_PROGS,       runtime.MNU_VARS,      runtime.MNU_MENUS,
+            runtime.MNU_PROGS,       runtime.MNU_VARS,      runtime.MNU_MENU,
+            runtime.MNU_MENUS,       runtime.MNU_USRMENU,   runtime.MNU_USRMENUS,
             runtime.MNU_CONFIGS,     runtime.MNU_MATRS,     runtime.MNU_DATES,
             runtime.MNU_TIMES,       runtime.MNU_SINTS,     runtime.MNU_STRINGS,
             runtime.MNU_NUMBRS,      runtime.MNU_CPXS,      runtime.MNU_REALS,
@@ -521,7 +522,7 @@ pub fn implementation(comptime runtime: type) type {
                         runtime.assignToUserMenu(position);
                         break :end_true;
                     },
-                    runtime.MNU_CATALOG, runtime.MNU_ALPHA, runtime.MNU_CHARS, runtime.MNU_PROGS, runtime.MNU_VARS, runtime.MNU_MENUS => {
+                    runtime.MNU_CATALOG, runtime.MNU_ALPHA, runtime.MNU_CHARS, runtime.MNU_PROGS, runtime.MNU_VARS, runtime.MNU_USRMENUS => {
                         runtime.screenUpdatingMode &= ~runtime.SCRUPD_ONE_TIME_FLAGS;
                         return false;
                     },
@@ -867,7 +868,7 @@ pub fn implementation(comptime runtime: type) type {
                     runtime.dynamicMenuItem = firstItem + itemShift + fn_;
                     item = if (runtime.dynamicMenuItem >= runtime.dynamicSoftmenu[@intCast(menuId)].numItems) runtime.ITM_NOP else if (runtime.tam.mode == runtime.TM_DELITM) runtime.MNU_DYNAMIC else runtime.ITM_XEQ;
                 },
-                runtime.MNU_MENU, runtime.MNU_MENUS => {
+                runtime.MNU_USRMENU, runtime.MNU_USRMENUS => {
                     runtime.dynamicMenuItem = firstItem + itemShift + fn_;
                     item = runtime.ITM_NOP;
                     if (runtime.dynamicMenuItem < runtime.dynamicSoftmenu[@intCast(menuId)].numItems) {
@@ -920,7 +921,7 @@ pub fn implementation(comptime runtime: type) type {
                     runtime.MNU_VAR, runtime.MNU_CONFIGS, runtime.MNU_MATRS, runtime.MNU_DATES, runtime.MNU_TIMES, runtime.MNU_SINTS, runtime.MNU_STRINGS, runtime.MNU_NUMBRS, runtime.MNU_CPXS, runtime.MNU_REALS, runtime.MNU_ANGLES, runtime.MNU_LINTS, runtime.MNU_ALLVARS => {
                         return @intCast(@as(i32, runtime.findNamedVariable(runtime.getNthString(runtime.dynamicSoftmenu[@intCast(menuId)].menuContent, runtime.dynamicMenuItem))) - runtime.FIRST_NAMED_VARIABLE + runtime.ASSIGN_NAMED_VARIABLES);
                     },
-                    runtime.MNU_MENUS => {
+                    runtime.MNU_USRMENU, runtime.MNU_USRMENUS => {
                         if (item == -runtime.MNU_DYNAMIC) {
                             var i: i32 = 0;
                             while (i < runtime.numberOfUserMenus) : (i += 1) {

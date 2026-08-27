@@ -21,8 +21,8 @@ infile = sys.argv[-1]
 # Initialise
 mem = {
     "flash": 1024 * (1408 if dmcp5 else 704),
-    # Both boards carry 16 KiB; upstream still writes it as a conditional.
-    "ram": 1024 * 16,
+    # The DM42 board reports 8 KiB of RAM to the firmware, the DM42n 16 KiB.
+    "ram": 1024 * (16 if dmcp5 else 8),
     "qspi": 1024 * (2048 if dmcp5 else 2048 - 12),
 }
 mode = 0

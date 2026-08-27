@@ -145,8 +145,6 @@ extern fn decQuadFromUInt32(r: *real34_t, v: u32) *real34_t;
 extern fn decQuadToUInt32(r: *align(1) const real34_t, ctx: *realContext_t, round: c_int) u32;
 
 // libc.
-extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
-extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
@@ -182,7 +180,6 @@ fn bugRow(comptime s: []const u8) [SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8 {
 const STD_INFINITY = "\xa2\x1e";
 const STD_DELTA = "\x83\x94";
 const STD_GREATER_EQUAL = "\xa2\x65";
-const STD_SPACE_PUNCTUATION = "\xa0\x08";
 
 // PRIu8 -> u, PRId16 -> d, PRIu32 -> u, PRIu16 -> u (preprocessor expansion).
 pub export const commonBugScreenMessages linksection(code_section) = [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8{
@@ -563,20 +560,77 @@ pub export fn displayDomainErrorMessage(errorCode: u8, errMessageRegisterLine: c
 // ---------------------------------------------------------------------------
 // nextWord (file-static helper)
 // ---------------------------------------------------------------------------
-fn nextWord(str: [*c]const u8, pos: *i16, word: [*c]u8) void {
-    var i: i16 = 0;
+/// Copies the next word of a NULL terminated list of strings, walked as one flow,
+/// into word. Separators, part boundaries and a broken trailing lead byte are
+/// skipped on the way in. A lead byte with no partner byte can only be the string's
+/// own NUL terminator, since a genuine second byte of value 0 would end the C
+/// string there too -- so it unambiguously marks a message truncated mid glyph, and
+/// the orphan is dropped rather than read as part of a word.
+///
+/// Words are stepped a whole glyph at a time, never a byte: the second byte of a
+/// two byte glyph is free to be anything, including the 0x20 of a separator, so a
+/// byte comparison would split such a glyph and leave a lead byte with no partner
+/// for the font scan to read past.
+///
+/// A word too long for word is stopped on a glyph boundary and its remainder is
+/// left for the next call, which returns it as a word of its own.
+///
+/// part is the strings, NULL terminated; p is which string is being read, moved on
+/// past exhausted parts; pos is the offset into that string, left just past the
+/// word; word receives the word, NUL terminated. Returns true if a word was
+/// copied, false when the list is exhausted.
+fn nextWord(part: []const ?[*:0]const u8, p: *i16, pos: *i16, word: []u8) bool {
+    const maxLen: i16 = @intCast(word.len - 1);
+    var str: [*:0]const u8 = undefined;
+
+    while (true) {
+        const candidate = part[@intCast(p.*)];
+
+        if (candidate == null) {
+            return false;
+        }
+        str = candidate.?;
+
+        if (str[@intCast(pos.*)] == 0) {
+            p.* += 1;
+            pos.* = 0;
+            continue;
+        }
+
+        if (str[@intCast(pos.*)] == ' ') {
+            pos.* += 1;
+            continue;
+        }
+
+        if ((str[@intCast(pos.*)] & 0x80) != 0 and str[@intCast(pos.* + 1)] == 0) {
+            p.* += 1;
+            pos.* = 0;
+            continue;
+        }
+
+        break;
+    }
+
+    const start = pos.*;
 
     while (str[@intCast(pos.*)] != 0 and str[@intCast(pos.*)] != ' ') {
-        word[@intCast(i)] = str[@intCast(pos.*)];
-        i += 1;
-        pos.* += 1;
+        const step: i16 = if ((str[@intCast(pos.*)] & 0x80) != 0) 2 else 1;
+
+        if (step == 2 and str[@intCast(pos.* + 1)] == 0) {
+            break;
+        }
+
+        if (pos.* - start + step > maxLen) {
+            break;
+        }
+
+        pos.* += step;
     }
 
-    word[@intCast(i)] = 0;
-
-    while (str[@intCast(pos.*)] == ' ') {
-        pos.* += 1;
-    }
+    const len: usize = @intCast(pos.* - start);
+    _ = frontier_char_string.xcopy(word.ptr, str + @as(usize, @intCast(start)), @intCast(len));
+    word[len] = 0;
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -584,12 +638,11 @@ fn nextWord(str: [*c]const u8, pos: *i16, word: [*c]u8) void {
 // ---------------------------------------------------------------------------
 pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
     if (calcMode != CM_BUG_ON_SCREEN) {
-        var y: i16 = undefined;
-        var pos: i16 = undefined;
-        var line: [100]u8 = undefined;
-        var word: [50]u8 = undefined;
-        var message: [1000]u8 = undefined;
-        var firstWordOfLine: bool = undefined;
+        const bugScreenTail: [*:0]const u8 = "Try to reproduce this and report a bug. Press EXIT to leave.";
+        // The width of STD_SPACE_PUNCTUATION in standardFont.
+        const SEP_WIDTH: i16 = 4;
+        var part: [3]?[*:0]const u8 = undefined;
+        var word: [100]u8 = undefined;
 
         previousCalcMode = calcMode;
         calcMode = CM_BUG_ON_SCREEN;
@@ -597,44 +650,37 @@ pub export fn displayBugScreen(msg: [*:0]const u8) callconv(.c) void {
         frontier_screen.hideCursor();
         cursorEnabled = 0;
 
-        const lineZ: [*:0]const u8 = @ptrCast(&line);
-        const wordZ: [*:0]const u8 = @ptrCast(&word);
-
         lcdFillRect(0, 20, @intCast(SCREEN_WIDTH), 220, LCD_SET_VALUE);
 
-        y = 20;
+        var y: i16 = 20;
         _ = frontier_screen.showString("This is most likely a bug in the firmware!", &standardFont, 1, @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
         y += 20;
 
-        _ = strcpy(&message, msg);
-        _ = strcat(&message, " Try to reproduce this and report a bug. Press EXIT to leave.");
+        part[0] = msg;
+        part[1] = bugScreenTail;
+        part[2] = null;
 
-        pos = 0;
-        line[0] = 0;
-        firstWordOfLine = true;
+        // One word at a time, drawn where it lands: only the word is ever buffered,
+        // so the line exists as an x position rather than as a string. The gap
+        // between words is the separator's width added to x, so no separator is
+        // ever stored or measured.
+        var p: i16 = 0;
+        var pos: i16 = 0;
+        var x: i16 = 1;
 
-        nextWord(&message, &pos, &word);
-        while (word[0] != 0) {
-            if (@as(c_int, frontier_char_string.stringWidth(lineZ, &standardFont, true, true)) + (if (firstWordOfLine) @as(c_int, 0) else @as(c_int, 4)) + @as(c_int, frontier_char_string.stringWidth(wordZ, &standardFont, true, true)) >= SCREEN_WIDTH) { // 4 is the width of STD_SPACE_PUNCTUATION
-                _ = frontier_screen.showString(lineZ, &standardFont, 1, @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
+        const wordZ: [*:0]const u8 = @ptrCast(&word);
+        while (nextWord(&part, &p, &pos, &word)) {
+            const w: i16 = frontier_char_string.stringWidth(wordZ, &standardFont, true, true);
+
+            // The first word of a line is kept however wide it is: the next line is
+            // no wider.
+            if (x != 1 and @as(c_int, x) + @as(c_int, w) >= SCREEN_WIDTH) {
                 y += 20;
-                line[0] = 0;
-                firstWordOfLine = true;
+                x = 1;
             }
 
-            if (firstWordOfLine) {
-                _ = strcpy(&line, &word);
-                firstWordOfLine = false;
-            } else {
-                _ = strcat(&line, STD_SPACE_PUNCTUATION);
-                _ = strcat(&line, &word);
-            }
-
-            nextWord(&message, &pos, &word);
-        }
-
-        if (line[0] != 0) {
-            _ = frontier_screen.showString(lineZ, &standardFont, 1, @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
+            _ = frontier_screen.showString(wordZ, &standardFont, @intCast(x), @intCast(y), vmNormal, @intFromBool(true), @intFromBool(false));
+            x += w + SEP_WIDTH;
         }
     }
 }

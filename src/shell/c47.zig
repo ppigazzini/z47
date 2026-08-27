@@ -33,7 +33,7 @@ const NUMBER_OF_GLOBAL_REGISTERS = 137;
 // sizing it 200 there costs 600 bytes of a .bss budget the DM42 does not have.
 const MAX_FREE_REGIONS = if (dmcp_build and old_hw) 50 else 200;
 const MAX_ALLOCATED_REGIONS = 5000;
-const NUMBER_OF_CATALOGS = 23;
+const NUMBER_OF_CATALOGS = 24;
 const NUMBER_OF_GLYPH_ROWS = 284; // defines.h: 268. Sizes the exported glyphRow[] global that C declares as glyphRow[NUMBER_OF_GLYPH_ROWS].
 const SOFTMENU_STACK_SIZE = 8;
 const DISPLAY_VALUE_LEN = 80;
@@ -145,6 +145,7 @@ pub export var funcOK: bool_t = false;
 pub export var keyActionProcessed: bool_t = false;
 pub export var fnKeyInCatalog: bool_t = false;
 pub export var hourGlassIconEnabled: bool_t = false;
+pub export var graMod: u8 = 0; // AGRAPH plotting mode, 0..3; a plain byte since the GRAMOD reserved variable was retired
 pub export var graphAccActive: bool_t = false; // graph-eqn precision reduction is active (read by a nested SOLVE)
 pub export var graphToRemainOnScreen: bool_t = false; // a graph is the on-screen content and must survive the next halt
 pub export var watchIconEnabled: bool_t = false;

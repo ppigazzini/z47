@@ -103,7 +103,6 @@ const FIRST_TEMP_REGISTER: u16 = 135;
 const LAST_TEMP_REGISTER: u16 = 136;
 const FIRST_NAMED_VARIABLE: u16 = 256;
 const FIRST_RESERVED_VARIABLE: u16 = 2000;
-const RESERVED_VARIABLE_GRAMOD: u16 = 2040;
 const RESERVED_VARIABLE_UX: u16 = 2041;
 const RESERVED_VARIABLE_LX: u16 = 2042;
 const RESERVED_VARIABLE_UY: u16 = 2046;
@@ -163,6 +162,7 @@ extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
+extern var graMod: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -452,24 +452,7 @@ inline fn isPlotRangeVariable(regist: u16) bool {
         regist == RESERVED_VARIABLE_UY or regist == RESERVED_VARIABLE_LY;
 }
 fn _storeValue(regist: u16) void {
-    if (regist == RESERVED_VARIABLE_GRAMOD) {
-        copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-        fnLint(NOPARAM);
-        if (lastErrorCode == ERROR_NONE) {
-            var x: longInteger_t = undefined;
-            frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(REGISTER_X, &x[0]);
-            if (longIntegerCompareInt(&x[0], 0) >= 0 and longIntegerCompareInt(&x[0], 3) <= 0) {
-                copySourceRegisterToDestRegister(REGISTER_X, @intCast(regist));
-                copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
-            } else {
-                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-                if (comptime extra_info) {
-                    moreInfoOnError("In function _storeValue:", "Invalid value for GRAMOD", null);
-                }
-            }
-            __gmpz_clear(&x[0]); // longIntegerFree
-        }
-    } else if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.dataType == dtReal34) {
+    if (FIRST_RESERVED_VARIABLE <= regist and regist <= LAST_RESERVED_VARIABLE and allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.bits.dataType == dtReal34) {
         copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
         fnToReal(NOPARAM);
         if (lastErrorCode == ERROR_NONE) {
@@ -711,7 +694,6 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     const compatibility_int1: i16 = 0;
     const compatibility_byte00: bool = false;
     const compatibility_byte1: u8 = 0;
-    const compatibility_byte4: bool = false;
     const compatibility_byte5: bool = false;
     const compatibility_byte6: bool = false;
     const compatibility_byte7: bool = false;
@@ -792,7 +774,7 @@ pub export fn fnStoreConfig(regist: u16) callconv(.c) void {
     configToStore.Norm_Key_00.used = Norm_Key_00.used;
     configToStore.grpGroupingHex = grpGroupingHex;
     configToStore.grpGroupingBin = grpGroupingBin;
-    configToStore.compatibility_byte4 = compatibility_byte4;
+    configToStore.graMod = graMod;
     configToStore.compatibility_byte5 = compatibility_byte5;
     configToStore.compatibility_byte6 = compatibility_byte6;
     configToStore.compatibility_byte7 = compatibility_byte7;
