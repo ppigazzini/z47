@@ -7750,12 +7750,12 @@
    "9876"
   ],
   "2741": [
-   "&itemToBeCoded",
+   "ext_fnGetGRAMOD",
    "9876"
   ],
   "2742": [
-   "&itemToBeCoded",
-   "9876"
+   "ext_fnSetGRAMOD",
+   "100"
   ],
   "2743": [
    "ext_fnUnitConvert",

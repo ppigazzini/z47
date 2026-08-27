@@ -21,7 +21,6 @@ const names = [_]NameEntry{
     .{ .name = .{ 6, 'P', 'P', 'E', 'R', '/', 'a' }, .reg = "RESERVED_VARIABLE_PPERONA" },
     .{ .name = .{ 3, 'P', 'M', 'T', 0, 0, 0 }, .reg = "RESERVED_VARIABLE_PMT" },
     .{ .name = .{ 2, 'P', 'V', 0, 0, 0, 0 }, .reg = "RESERVED_VARIABLE_PV" },
-    .{ .name = .{ 6, 'G', 'R', 'A', 'M', 'O', 'D' }, .reg = "RESERVED_VARIABLE_GRAMOD" },
     .{ .name = .{ 3, 161, 145, 'X', 0, 0, 0 }, .reg = "RESERVED_VARIABLE_UX" },
     .{ .name = .{ 3, 161, 147, 'X', 0, 0, 0 }, .reg = "RESERVED_VARIABLE_LX" },
     .{ .name = .{ 6, 'C', 'P', 'E', 'R', '/', 'a' }, .reg = "RESERVED_VARIABLE_CPERONA" },

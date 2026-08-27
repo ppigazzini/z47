@@ -697,11 +697,12 @@ pub export fn fnVecToEqn(unusedButMandatoryParameter: u16) linksection(runtime.c
         }
         if (k > 0) {
             if (!unitCoef) {
-                term[t] = STD_CROSS[0];
-                term[t + 1] = STD_CROSS[1];
+                const productSign = PRODUCT_SIGN();
+                term[t] = productSign[0];
+                term[t + 1] = productSign[1];
                 t += 2;
             }
-            term[t] = 'X';
+            term[t] = 'x';
             t += 1;
             if (k > 1) {
                 t += abi.fmtCStrN(term[t..].ptr, "^{d}", .{k});

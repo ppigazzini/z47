@@ -85,7 +85,10 @@ GENERATED_CATALOGS = {
     "menu_alpha_intl",
 }
 
-C_MENU_RE = re.compile(r"\b(menu_\w+)\[\]\s*=\s*\{(.*?)\}\s*;", re.S)
+# The whitespace before [] is not cosmetic: menu_TamMenu is declared `menu_TamMenu []`
+# upstream, and a pattern that demanded `menu_TamMenu[]` dropped it from the comparison
+# set entirely -- a table absent from BOTH sides reports as neither drift nor absence.
+C_MENU_RE = re.compile(r"\b(menu_\w+)\s*\[\]\s*=\s*\{(.*?)\}\s*;", re.S)
 ZIG_MENU_RE = re.compile(r"const (menu_\w+) linksection\(code_\w+\) = \[_\]i16\{(.*?)\};", re.S)
 # A whole table can be gated too: `= if (COND) [_]i16{...} else [_]i16{...};`.
 ZIG_WHOLE_GATED_RE = re.compile(

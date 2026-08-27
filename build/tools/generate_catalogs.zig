@@ -127,6 +127,7 @@ pub fn main(init: std.process.Init) !void {
     try emitMenu(file, "SYSFL", cat_syfl, .both);
     try emitMenu(file, "alpha_INTL", cat_aint_upper, .both);
     try emitMenu(file, "alpha_intl", cat_aint_lower, .both);
+    try emitMenu(file, "MENUS", cat_menu, .both);
 
     try writeAll(file, "#endif // !SOFTMENUCATALOGS_H\n");
 }
@@ -146,7 +147,9 @@ fn emitMenu(file: *c.FILE, menu_name: []const u8, catalog_type: u16, generation_
         const entry_name = cString(&entry.itemCatalogName);
 
         if ((entry.status & cat_status) != catalog_type) continue;
-        if (std.mem.eql(u8, entry_name, "CATALOG") or std.mem.eql(u8, entry_name, "MENUS")) continue;
+        // CATALOG, MENU and MENUS are not in another catalog: they are the way in.
+        if (std.mem.eql(u8, entry_name, "CATALOG") or std.mem.eql(u8, entry_name, "MENU") or
+            std.mem.eql(u8, entry_name, "MENUS")) continue;
         if (only_eim and (entry.status & eim_status) != eim_enabled) continue;
 
         if (number_of_items == max_number_of_items) return error.TooManyItems;

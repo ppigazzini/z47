@@ -38,9 +38,6 @@ const display_format = @import("display/display_format.zig");
 // (TO_PCMEMPTR / allocC47Blocks), so real34/strLgIntHeader casts of those pointers
 // use align(4) to avoid Zig's @alignCast safety panic on the 64-bit host.
 //
-// OS32BIT/OS64BIT: doFnReset's GRAMOD long-integer init differs by host pointer
-// width; reproduced with `if (@bitSizeOf(usize) == 64)`.
-//
 // Firmware-only (DMCP_BUILD) code is gated on comptime dmcp_build; DMCP ROM
 // functions are reached through @ptrFromInt(LIBRARY_FN_BASE + offset) trampolines
 // (offsets from dep/DMCP_SDK/dmcp/lft_ifc.h). SET_ST(STAT_PGM_END) writes the
@@ -122,7 +119,6 @@ const consts = abi.constants; // decNumber constant pool (const_1, ...)
 
 const registerHeader_t = abi.RegisterHeader;
 const reservedVariableHeader_t = abi.ReservedVariableHeader;
-const strLgIntHeader_t = abi.StrLgIntHeader;
 const freeMemoryRegion_t = abi.FreeMemoryRegion;
 const matrixHeader_t = abi.MatrixHeader;
 const subroutineLevelHeader_t = abi.SubroutineLevelHeader;
@@ -256,7 +252,6 @@ const LAST_RESERVED_VARIABLE: u16 = 2047;
 
 const VAR_NO_ACC: usize = 31;
 const VAR_NO_PV: usize = 39;
-const VAR_NO_GRAMOD: usize = 40;
 const VAR_NO_UX: usize = 41;
 const VAR_NO_LY: usize = 47;
 
@@ -351,7 +346,7 @@ const PGM_RUNNING: u8 = 1;
 const PGM_STOPPED: u8 = 0;
 const PGM_WAITING: u8 = 2;
 
-const NUMBER_OF_CATALOGS: usize = 23;
+const NUMBER_OF_CATALOGS: usize = 24;
 const CATALOG_NONE: i16 = 0;
 const SOFTMENU_STACK_SIZE: usize = 8;
 
@@ -717,6 +712,7 @@ extern var significantDigits: u8;
 extern var fractionDigits: u8;
 extern var dispBase: u8;
 extern var denMax: u32;
+extern var graMod: u8;
 extern var currentAngularMode: c_int;
 extern var displayStack: u8;
 extern var cachedDisplayStack: u8;
@@ -978,10 +974,6 @@ inline fn reservedReal34(varNo: usize) *align(4) real34_t {
     const blk = allReservedVariables[varNo].header.descriptor & 0xFFFF;
     return @ptrCast(@alignCast(toPcMemPtr(blk).?));
 }
-inline fn reservedStrLgHdr(varNo: usize) [*c]align(4) strLgIntHeader_t {
-    const blk = allReservedVariables[varNo].header.descriptor & 0xFFFF;
-    return @ptrCast(@alignCast(toPcMemPtr(blk).?));
-}
 // getStackTop(): FLAG_SSIZE8 ? REGISTER_D : REGISTER_T
 const FLAG_SSIZE8: i32 = 32792;
 const REGISTER_D: calcRegister_t = 107;
@@ -1091,6 +1083,8 @@ pub fn z47_frontier_keys_to_user_case() void {
 }
 const FLAG_USER_u16: u16 = 32788;
 const ERROR_CANNOT_ASSIGN_HERE: u8 = 47;
+const ERROR_NONE: u8 = 0;
+const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERR_REGISTER_LINE: i16 = 102;
 const NIM_REGISTER_LINE: i16 = 100;
 const MNU_DYNAMIC: i16 = 3052;
@@ -1597,18 +1591,26 @@ pub export fn fnGetADM(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetADM(regist: u16) callconv(.c) void {
-    // getRegisterAsLongInt initialises lgInt on every path it takes, including
-    // the ones it fails on, so the caller hands it an uninitialised value.
-    var lgInt: mpz_struct = undefined;
-    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
-        mpz_clear(&lgInt);
-        return;
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
+        if (adm_encoding.angularModeFromAdm(value)) |angularMode| {
+            frontend_settings.fnAngularMode(angularMode);
+        }
     }
-    const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    if (adm_encoding.angularModeFromAdm(value)) |angularMode| {
-        frontend_settings.fnAngularMode(angularMode);
+}
+
+pub export fn fnGetGRAMOD(unusedButMandatoryParameter: u16) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    frontier_addons.fnIntInputLongint(@intCast(graMod));
+}
+
+pub export fn fnSetGRAMOD(regist: u16) callconv(.c) void {
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= 3) {
+        graMod = @intCast(value);
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     }
-    mpz_clear(&lgInt);
 }
 
 pub export fn fnGetIntegerSignMode(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1617,23 +1619,15 @@ pub export fn fnGetIntegerSignMode(unusedButMandatoryParameter: u16) callconv(.c
 }
 
 pub export fn fnSetISM(regist: u16) callconv(.c) void {
-    // getRegisterAsLongInt initialises lgInt on every path it takes, including
-    // the ones it fails on, so the caller hands it an uninitialised value.
-    var lgInt: mpz_struct = undefined;
-    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
-        mpz_clear(&lgInt);
-        return;
+    var value: i32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsInt32Param(regist, &value)) {
+        switch (value) {
+            2 => shortIntegerMode = SIM_2COMPL,
+            1 => shortIntegerMode = SIM_1COMPL,
+            0 => shortIntegerMode = SIM_UNSIGN,
+            else => shortIntegerMode = SIM_SIGNMT,
+        }
     }
-    // The C assigns a long into an int32_t, which truncates; on a 64-bit host an
-    // unmasked cast would refuse the same value instead.
-    const value: i32 = @truncate(mpz_get_si(&lgInt));
-    switch (value) {
-        2 => shortIntegerMode = SIM_2COMPL,
-        1 => shortIntegerMode = SIM_1COMPL,
-        0 => shortIntegerMode = SIM_UNSIGN,
-        else => shortIntegerMode = SIM_SIGNMT,
-    }
-    mpz_clear(&lgInt);
 }
 
 pub export fn fnGetDMX(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1642,16 +1636,10 @@ pub export fn fnGetDMX(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetDMX(regist: u16) callconv(.c) void {
-    // getRegisterAsLongInt initialises lgInt on every path it takes, including
-    // the ones it fails on, so the caller hands it an uninitialised value.
-    var lgInt: mpz_struct = undefined;
-    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
-        mpz_clear(&lgInt);
-        return;
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
+        frontier_fractions.fnDenMax(@intCast(value & 0xFFFF));
     }
-    const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    frontier_fractions.fnDenMax(@intCast(value & 0xFFFF));
-    mpz_clear(&lgInt);
 }
 
 pub export fn fnGetREALDF(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1660,18 +1648,10 @@ pub export fn fnGetREALDF(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetREALDF(regist: u16) callconv(.c) void {
-    // getRegisterAsLongInt initialises lgInt on every path it takes, including
-    // the ones it fails on, so the caller hands it an uninitialised value.
-    var lgInt: mpz_struct = undefined;
-    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
-        mpz_clear(&lgInt);
-        return;
-    }
-    const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    if (value <= DF_UN) {
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= DF_UN) {
         displayFormat = @intCast(value);
     }
-    mpz_clear(&lgInt);
 }
 
 pub export fn fnGetNDEC(unusedButMandatoryParameter: u16) callconv(.c) void {
@@ -1680,16 +1660,10 @@ pub export fn fnGetNDEC(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 pub export fn fnSetNDEC(regist: u16) callconv(.c) void {
-    // getRegisterAsLongInt initialises lgInt on every path it takes, including
-    // the ones it fails on, so the caller hands it an uninitialised value.
-    var lgInt: mpz_struct = undefined;
-    if (!frontier_register_value_conversions.getRegisterAsLongInt(@intCast(regist), &lgInt, null)) {
-        mpz_clear(&lgInt);
-        return;
+    var value: u32 = undefined;
+    if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
+        display_format.fnDisplayFormatDsp(@intCast(value & 0xFFFF));
     }
-    const value: u32 = @intCast(mpz_get_ui(&lgInt) & 0xFFFFFFFF);
-    display_format.fnDisplayFormatDsp(@intCast(value & 0xFFFF));
-    mpz_clear(&lgInt);
 }
 
 // ===========================================================================
@@ -1951,6 +1925,7 @@ pub export fn resetOtherConfigurationStuff(allowUserKeys: bool_t) callconv(.c) v
     LongPressF = RBX_F124;
     lastIntegerBase = 0;
     decodedIntegerBase = 0;
+    graMod = 0;
     timeLastOp = 0;
     timeLastOp0 = 0;
     timeLastOp1 = 0;
@@ -2215,20 +2190,6 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
             var i: usize = VAR_NO_ACC;
             while (i <= VAR_NO_PV) : (i += 1) {
                 real34SetZero(reservedReal34(i));
-            }
-        }
-
-        // 1 long integer reserved variable: GRAMOD
-        {
-            const hdr = reservedStrLgHdr(VAR_NO_GRAMOD);
-            if (@bitSizeOf(usize) == 64) {
-                hdr[0].dataMaxLengthInBlocks = @intCast(toBlocks(8));
-                const p: *align(4) i64 = @ptrCast(@alignCast(hdr + 1));
-                p.* = 0;
-            } else {
-                hdr[0].dataMaxLengthInBlocks = @intCast(toBlocks(4));
-                const p: *align(4) i32 = @ptrCast(@alignCast(hdr + 1));
-                p.* = 0;
             }
         }
 

@@ -253,7 +253,6 @@ const TEMP_REGISTER_1: calcRegister_t = 135;
 const INVALID_VARIABLE = 2199; // untyped: coerces in i16/u16 comparisons
 const RESERVED_VARIABLE_UEST: calcRegister_t = 2044;
 const RESERVED_VARIABLE_LEST: calcRegister_t = 2045;
-const RESERVED_VARIABLE_GRAMOD: calcRegister_t = 2040;
 const NIM_REGISTER_LINE: calcRegister_t = 100;
 const AIM_REGISTER_LINE: calcRegister_t = 100;
 const TRUE_FALSE_REGISTER_LINE: calcRegister_t = 102;
@@ -919,6 +918,7 @@ extern var temporaryInformation: u8;
 extern var lastErrorCode: u8;
 extern var displayStack: u8;
 extern var dispBase: u8;
+extern var graMod: u8;
 extern var currentInputVariable: u16;
 extern var currentViewRegister: u16;
 extern var showRegis: u16;
@@ -5959,8 +5959,12 @@ fn _refreshNormalScreen() void {
     if ((screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
         frontier_softmenus.showSoftmenuCurrentPart();
         if (comptime dmcp_build) {
-            lcd_refresh_dma();
+            lcd_refresh_dma(); // If this is not here, menu generation is not reliable, and presses are missed.
         }
+    } else {
+        // The stack clear and the X line take the top rows of the menu, so draw
+        // them again when the menu itself is not drawn.
+        frontier_softmenus.showMenuTopLine();
     }
     if (programRunStop == PGM_STOPPED or programRunStop == PGM_WAITING) {
         hourGlassIconEnabled = 0;
@@ -6420,14 +6424,10 @@ pub export fn fnPoint(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnAGraph(regist: u16) callconv(.c) void {
     var x: i32 = undefined;
     var y: i32 = undefined;
-    var gramod: u32 = undefined;
-    var liGramod: longInteger_t = undefined;
+    const gramod: u32 = graMod;
     getPixelPos(&x, &y);
     x = absI(x);
     y = absI(y);
-    frontier_register_value_conversions.convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, &liGramod[0]);
-    longIntegerToUInt32(&liGramod, &gramod);
-    longIntegerFree(&liGramod);
     if (lastErrorCode == ERROR_NONE) {
         if (getRegisterDataType(@intCast(regist)) == dtShortInteger) {
             var val: u64 = undefined;

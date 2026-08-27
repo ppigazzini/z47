@@ -107,6 +107,9 @@ const complex34Matrix_t = abi.Complex34Matrix;
 // EXTRA_INFO_ON_CALC_ERROR: the hint text is compiled out on firmware and in
 // the testSuite, which the target alone cannot tell apart from the simulator.
 const extra_info: bool = core_state_build_options.extra_info_on_calc_error;
+// PC_BUILD vs DMCP_BUILD: the firmware targets are the freestanding ones, the
+// simulator and testSuite hosted ones. Same derivation the backup owner uses.
+const dmcp_build: bool = @import("builtin").target.os.tag == .freestanding;
 extern fn realSetZero(r: *real_t) void;
 const const34_2p32 = consts.const34_2p32;
 const const6147_2pi = consts.const6147_2pi;
@@ -685,8 +688,46 @@ const exps = [_]f32{
     1.e35,  1.e36,  1.e37,  1.e38,
 };
 
+// d * 10^e without libm. 10^0..10^22 are exact in double, so one multiply or
+// divide rounds once; larger exponents step by 10^22 and saturate to 0 or +Inf on
+// the way, as strtod of the same decimal does. The clamp is exact rather than
+// defensive: d is under 10^19, so |e| past 400 saturates whatever d holds.
+fn scaleByPowerOfTen(d_in: f64, e_in: i32) f64 {
+    var d = d_in;
+    var e = e_in;
+
+    if (e > 400) {
+        e = 400;
+    } else if (e < -400) {
+        e = -400;
+    }
+    const divide = e < 0;
+    var k: u32 = @intCast(if (divide) -e else e);
+    while (k > 22) {
+        d = if (divide) d / 1e22 else d * 1e22;
+        k -= 22;
+        if (d == 0.0 or d > std.math.floatMax(f64)) {
+            return d;
+        }
+    }
+    return if (divide) d / pow10[k] else d * pow10[k];
+}
+
+const pow10 = [_]f64{
+    1e0,  1e1,  1e2,  1e3,  1e4,  1e5,  1e6,  1e7,  1e8,  1e9,  1e10,
+    1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21,
+    1e22,
+};
+
+// real_t to double without the string round trip: coefficient units into a u64,
+// one conversion, then scaleByPowerOfTen(). Units are taken while the mantissa is
+// below 10^16, so it ends under 10^19: every digit of a coefficient up to 19
+// digits, the top 17 to 19 of a longer one; e counts the units left below it. The
+// unit walk is fnRealToFloat()'s. Specials and zero pass their sign through.
 fn fnRealToDouble(r: *const real_t) f64 {
-    var buffer: [100]u8 = undefined;
+    const unitCap: u64 = 10000000000000000; // 10^16
+    var mant: u64 = 0;
+
     if (realIsSpecial(r)) {
         if (realIsNaN(r)) {
             return std.math.nan(f64);
@@ -696,11 +737,22 @@ fn fnRealToDouble(r: *const real_t) f64 {
     if (realIsZero(r)) {
         return if (realIsPositive(r)) @as(f64, 0.0) else -@as(f64, 0.0);
     }
-    _ = decNumberToString(r, &buffer);
-    // decNumberToString always emits '.', so the parse has to go through the
-    // locale-normalising reader; a bare strtod stops at the separator under a
-    // comma-decimal locale and keeps only the integer part.
-    return stringToDouble(&buffer);
+    var j: i32 = @divTrunc(r.digits + DECDPUN - 1, DECDPUN);
+    while (j > 0) {
+        j -= 1;
+        mant = @intCast(r.lsu[@intCast(j)]);
+        if (mant != 0) {
+            break;
+        }
+    }
+    while (true) {
+        j -= 1;
+        if (!(j >= 0 and mant < unitCap)) break;
+        mant = mant * 1000 + @as(u64, @intCast(r.lsu[@intCast(j)]));
+    }
+    const e = r.exponent + (j + 1) * DECDPUN;
+    const d = scaleByPowerOfTen(@floatFromInt(mant), e);
+    return if (realIsNegative(r)) -d else d;
 }
 
 fn typeIsNumber(t: u32, cmplx: ?*bool) bool {
@@ -1158,7 +1210,16 @@ pub export fn realToFloat(vv: *const real_t, v: *f32) callconv(.c) void {
     v.* = fnRealToFloat(vv);
 }
 
-pub export fn stringToDouble(str: [*c]const u8) callconv(.c) f64 {
+// Locale-free parse for the simulator's backup file: accepts '.' or ',' whatever
+// the locale, so a file written under one region setting loads under another. The
+// device parses no floating-point text, so this stays off DMCP -- and with it the
+// newlib strtod the firmware would otherwise link.
+comptime {
+    if (!dmcp_build) {
+        @export(&stringToDouble, .{ .name = "stringToDouble", .linkage = .strong });
+    }
+}
+fn stringToDouble(str: [*c]const u8) callconv(.c) f64 {
     var buf: [120]u8 = undefined;
     const radix: u8 = localeconv().decimal_point[0];
     var i: usize = 0;
@@ -1371,6 +1432,38 @@ pub export fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fracti
     }
     return err == ERROR_NONE;
 }
+
+// A setter's non-negative long-integer argument, handed back as a uint32. The
+// register is read once and the long integer is released on every path, so the
+// callers are a single `if` instead of the goto-and-free ladder each one carried.
+pub export fn getRegisterAsUint32Param(regist: u16, value: *u32) callconv(.c) bool {
+    // getRegisterAsLongInt initialises lgInt on every path it takes, including
+    // the ones it fails on, so the caller hands it an uninitialised value.
+    var lgInt: mpz_struct = undefined;
+    var ok = getRegisterAsLongInt(@intCast(regist), &lgInt, null);
+    if (ok) {
+        ok = __gmpz_cmp_si(&lgInt, 0) >= 0;
+        value.* = @truncate(__gmpz_get_ui(&lgInt));
+    }
+    mpz_clear(&lgInt);
+    return ok;
+}
+
+// Signed variant of getRegisterAsUint32Param. The C assigns a long into an
+// int32_t, which truncates; an unmasked cast would refuse the same value.
+pub export fn getRegisterAsInt32Param(regist: u16, value: *i32) callconv(.c) bool {
+    var lgInt: mpz_struct = undefined;
+    const ok = getRegisterAsLongInt(@intCast(regist), &lgInt, null);
+    if (ok) {
+        value.* = @truncate(__gmpz_get_si(&lgInt));
+    }
+    mpz_clear(&lgInt);
+    return ok;
+}
+
+extern fn __gmpz_get_ui(p: *const mpz_struct) c_ulong;
+extern fn __gmpz_get_si(p: *const mpz_struct) c_long;
+extern fn __gmpz_cmp_si(p: *const mpz_struct, v: c_long) c_int;
 
 pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngularMode: *angularMode_t, reduceLongintegerAngle: bool) callconv(.c) bool {
     switch (getRegisterDataType(reg)) {

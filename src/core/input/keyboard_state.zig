@@ -376,7 +376,7 @@ fn btnFnPressedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque
     if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and !(runtime.tam.alpha and runtime.tam.mode != runtime.TM_NEWMENU)) {
         var item = shared.determineFunctionKeyItem_C47(dat, runtime.shiftF, runtime.shiftG);
         switch (-runtime.currentMenu()) {
-            runtime.MNU_MENUS => {
+            runtime.MNU_MENUS, runtime.MNU_USRMENUS => {
                 if (item <= runtime.ASSIGN_USER_MENU) {
                     runtime.currentUserMenu = @intCast(@as(i32, runtime.ASSIGN_USER_MENU) - @as(i32, item));
                     item = -runtime.MNU_DYNAMIC;

@@ -255,16 +255,13 @@ pub export fn read2Lines(line1: [*c]u8, maxLen1: usize, line2: [*c]u8, maxLen2: 
 }
 
 // Canonical string→number leaf helpers (saveRestoreCalcState.c), base 0 like the
-// C strtol/strtoul/strtoll/strtoull/strtof originals. The int16/int32/uint8/
+// C strtol/strtoul/strtoll/strtoull originals. The int16/int32/uint8/
 // uint32 members of the same two macro families are exported above; until
 // this comment once claimed base 0 for them while they parsed base 10.
 extern fn strtoll(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_longlong;
 extern fn strtoull(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulonglong;
 extern fn strtol(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_long;
 extern fn strtoul(s: [*c]const u8, endptr: ?*[*c]u8, base: c_int) c_ulong;
-extern fn strtof(s: [*c]const u8, endptr: ?*[*c]u8) f32;
-const c_lconv = extern struct { decimal_point: [*:0]const u8 };
-extern fn localeconv() *c_lconv;
 // WIDTH-CONTRACT: no-width-question -- `long long` is 64-bit on every target.
 pub export fn stringToInt64(str: [*:0]const u8) i64 {
     return @intCast(strtoll(str, null, 0));
@@ -282,19 +279,6 @@ pub export fn stringToInt8(str: [*:0]const u8) i8 {
 pub export fn stringToUint16(str: [*:0]const u8) u16 {
     return @truncate(strtoul(str, null, 0));
 }
-// Accepts '.' or ',' in the file whatever the locale, so a config written under
-// one regional setting loads under another.
-pub export fn stringToFloat(str: [*:0]const u8) f32 {
-    var buf: [48]u8 = undefined;
-    const radix: u8 = localeconv().decimal_point[0];
-    var i: usize = 0;
-    while (str[i] != 0 and i < buf.len - 1) : (i += 1) {
-        buf[i] = if (str[i] == '.' or str[i] == ',') radix else str[i];
-    }
-    buf[i] = 0;
-    return strtof(@ptrCast(&buf), null);
-}
-
 // Pre-001090500 reverse-blue-key parameter migration (saveRestoreCalcState.c).
 pub export fn convert001090400T001090500(parameter: u8, offset: u8) u8 {
     return if (parameter < 20) parameter +% offset else parameter;

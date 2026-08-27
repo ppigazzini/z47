@@ -872,6 +872,11 @@ pub extern fn getRegisterAsLongIntQuiet(reg: calcRegister_t, val: *mpz_struct, f
 // getRegisterAsLongInt moved to engine/kernel/register_convert_bulk.zig.
 pub extern fn getRegisterAsLongInt(reg: calcRegister_t, val: *mpz_struct, fractional: ?*bool) callconv(.c) bool;
 
+// A setter's non-negative long-integer argument as a uint32, and its signed twin.
+// Both live in the core owner beside getRegisterAsLongInt.
+pub extern fn getRegisterAsUint32Param(regist: u16, value: *u32) callconv(.c) bool;
+pub extern fn getRegisterAsInt32Param(regist: u16, value: *i32) callconv(.c) bool;
+
 // longIntegerAngleReduction moved to engine/kernel/register_convert_bulk.zig.
 
 // longIntegerBase10Digits moved to engine/kernel/register_convert_bulk.zig.

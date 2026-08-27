@@ -206,6 +206,7 @@ const ITM_DSPCYCLE: u16 = 1864;
 const ITM_SCR: u16 = 2191;
 const ITM_DSP: u16 = 1573;
 const ITM_SET_ADM: u16 = 2764;
+const ITM_SET_GRAMOD: u16 = 2742;
 const ITM_SET_ISM: u16 = 2765;
 const ITM_SET_REALDF: u16 = 2767;
 const ITM_SET_DMX: u16 = 2770;
@@ -259,6 +260,7 @@ extern var displayStack: u8;
 extern var timeDisplayFormatDigits: u8;
 extern var displayStackSHOIDISP: u8;
 extern var displayFormatDigits: u8;
+extern var graMod: u8;
 extern var exponentLimit: i16;
 extern var dispBase: u8;
 extern var significantDigits: u8;
@@ -821,6 +823,7 @@ pub export fn fnItemShowValue(item: i16) callconv(.c) i16 {
         ITM_SCR => result = @as(i16, scrLock & 0x03) | @as(i16, nextChar & 0x03),
         ITM_DSP => result = displayFormatDigits,
         ITM_SET_ADM => result = @intCast(frontier_config.admValue()),
+        ITM_SET_GRAMOD => result = graMod,
         ITM_SET_ISM => result = shortIntegerModeValue(),
         ITM_SET_REALDF => result = displayFormat,
         ITM_SET_DMX => result = @intCast(denMax),

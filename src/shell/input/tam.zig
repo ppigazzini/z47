@@ -240,6 +240,8 @@ const MNU_AMORT = 3011;
 const MNU_DYNAMIC = 3052;
 const MNU_MENU = 3082;
 const MNU_MENUS = 3083;
+const MNU_USRMENU = 3146;
+const MNU_USRMENUS = 3147;
 const MNU_MVAR = 3088;
 const MNU_PROGS = 3110;
 const MNU_TAM = 2945;
@@ -500,7 +502,7 @@ const RclOperations linksection(code_section) = [_][2]i16{
 };
 const DelitmOperations linksection(code_section) = [_][2]i16{
     .{ MNU_PROGS, ITM_DELITM_PROG },
-    .{ MNU_MENUS, ITM_DELITM_MENU },
+    .{ MNU_USRMENUS, ITM_DELITM_MENU },
 };
 
 // ===========================================================================
@@ -1213,7 +1215,7 @@ fn _tamProcessInput(item: u16) void {
         tam.value = @intCast(indexOfItems[item].param);
         tryOoR = true;
         forceTry = true;
-    } else if (tam.mode == TM_MENU and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_MENU) {
+    } else if (tam.mode == TM_MENU and (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_MENU or softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_USRMENU)) {
         tam.value = itm;
     } else {
         return;
@@ -1294,7 +1296,7 @@ fn _tamProcessInput(item: u16) void {
             } else {
                 leaveTamModeIfEnabled();
             }
-        } else if (tam.mode == TM_MENU and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_MENU) {
+        } else if (tam.mode == TM_MENU and (softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_MENU or softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_USRMENU)) {
             const value: i16 = tam.value;
             if (calcMode == CM_PEM) {
                 frontier_manage.addStepInProgram(tamOperation());
@@ -1380,7 +1382,7 @@ fn _tamProcessInput(item: u16) void {
                 leaveTamModeIfEnabled();
                 return;
             }
-        } else if (tam.mode == TM_DELITM and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_MENUS) {
+        } else if (tam.mode == TM_DELITM and softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem == -MNU_USRMENUS) {
             value = tam.value;
         } else if (tryAllocate and !tam.indirect) {
             value = findOrAllocateNamedVariable(buffer);

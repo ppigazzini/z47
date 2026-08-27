@@ -91,6 +91,8 @@ const MNU_FCNS_EIM: i16 = 3060;
 const MNU_CONST: i16 = 3027;
 const MNU_MENU: i16 = 3082;
 const MNU_MENUS: i16 = 3083;
+const MNU_USRMENU: i16 = 3146;
+const MNU_USRMENUS: i16 = 3147;
 const MNU_SYSFL: i16 = 3128;
 const MNU_ALPHAINTL: i16 = 3007;
 const MNU_ALPHAintl: i16 = 3008;
@@ -140,6 +142,7 @@ const CATALOG_CONFIGS: i16 = 19;
 const CATALOG_ALLVARS: i16 = 20;
 const CATALOG_NUMBRS: i16 = 21;
 const CATALOG_FCNS_EIM: i16 = 22;
+const CATALOG_USRMENU: i16 = 23;
 
 const STAT_PGM_END: u32 = 1 << 9;
 
@@ -343,6 +346,7 @@ pub export fn enterAsmModeIfMenuIsACatalog(id: i16) callconv(.c) void {
         MNU_FCNS_EIM => catalog = CATALOG_FCNS_EIM,
         MNU_CONST => catalog = CATALOG_CNST,
         MNU_MENU, MNU_MENUS => catalog = CATALOG_MENU,
+        MNU_USRMENU, MNU_USRMENUS => catalog = CATALOG_USRMENU,
         MNU_SYSFL => catalog = CATALOG_SYFL,
         MNU_ALPHAINTL => catalog = CATALOG_AINT,
         MNU_ALPHAintl => catalog = CATALOG_aint,

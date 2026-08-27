@@ -150,6 +150,7 @@ extern var grpGroupingGr1Left: u8;
 extern var grpGroupingRight: u8;
 extern var grpGroupingHex: u8;
 extern var grpGroupingBin: u8;
+extern var graMod: u8;
 extern var currentAngularMode: angularMode_t;
 extern var lrSelection: u16;
 extern var lrChosen: u16;
@@ -565,7 +566,10 @@ pub export fn fnRecallConfig(regist: u16) callconv(.c) void {
         grpGroupingHex = configToRecall.grpGroupingHex;
         grpGroupingBin = configToRecall.grpGroupingBin;
         grpGroupingHexBinDefault();
-        _ = configToRecall.compatibility_byte4;
+        graMod = configToRecall.graMod;
+        if (graMod > 3) {
+            graMod = 0;
+        }
         _ = configToRecall.compatibility_byte5;
         _ = configToRecall.compatibility_byte6;
         _ = configToRecall.compatibility_byte7;

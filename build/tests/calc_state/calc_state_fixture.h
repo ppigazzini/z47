@@ -189,8 +189,12 @@ static void buildState(void) {
   strcpy(userAlphaItems[0].argumentName, "Av");
   userAlphaItems[0].item = 100;
 
-  // A user menu with items (the USER_MENUS section, otherwise empty).
-  createMenu("UMENU");
+  // A user menu with items (the USER_MENUS section, otherwise empty). The name
+  // has to be one no predefined menu holds -- createMenu refuses a name already in
+  // the item table, and it refuses SILENTLY as far as this fixture is concerned,
+  // leaving the section empty and the round-trip passing over it. "UMENU" was
+  // exactly that until upstream took the name for MNU_USRMENU.
+  createMenu("UMENU1");
   if(numberOfUserMenus > 0) {
     userMenus[numberOfUserMenus - 1].menuItem[0].item = ITM_ADD;
     strcpy(userMenus[numberOfUserMenus - 1].menuItem[1].argumentName, "X");

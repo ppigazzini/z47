@@ -23,7 +23,9 @@ const ioPathBackup: c_int = 4;
 const ioModeWrite: c_int = 1;
 const ITM_NOP: u16 = 1542;
 const NOPARAM: u16 = 9876;
-const BACKUP_VERSION: u32 = 1019; // C saveRestoreBackup.c:14 (menu items renumbered into one block)
+const StrLgIntHeader = abi.StrLgIntHeader;
+const REAL34_SIZE_IN_BYTES: usize = 16;
+const BACKUP_VERSION: u32 = 1020; // C saveRestoreBackup.c:14 (GRAMOD moved from the reserved variable table to the graMod global)
 const INVALID_VARIABLE: i16 = 2199;
 const CM_CONFIRMATION: u8 = 11;
 const USER_C47: u16 = 46;
@@ -74,6 +76,7 @@ extern var numberOfFreeMemoryRegions: i32;
 extern var numberOfAllocatedMemoryRegions: i32;
 extern var globalRegister: ?*anyopaque; // pointer on host (NEW_HW)
 extern var ram: [*c]u32;
+extern var graMod: u8;
 extern var globalFlags: [16]u8;
 // These four are `char *` POINTERS in c47.h (errorMessage/aimBuffer/nimBufferDisplay/
 // tamBuffer), not arrays. They must be declared as pointers so that `&X[0]` in the
@@ -737,6 +740,8 @@ pub fn saveCalc() void {
         sv(&v, 4, "currentStepOffset", "uint32");
     }
     sv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+
+    sv(&graMod, 1, "graMod", "uint8");
     ioFileClose();
 }
 
@@ -1048,6 +1053,18 @@ pub fn restoreCalc() void {
     numberOfAllocatedMemoryRegions = restoredAllocatedRegions;
 
     rv(@ptrCast(ram), (geometry().ram_size_in_blocks) << 2, "ram", "hexDump");
+
+    graMod = 0;
+    if (backupVersion >= 1020) {
+        rv(&graMod, 1, "graMod", "uint8");
+    } else {
+        // Pre-1020 backups: GRAMOD as a long integer reserved variable in the ram
+        // image, block 36. Take its value over, convert, then clear the slot.
+        const gramodSlot = progmem.toPcmemptr(geometry(), 36);
+        const oldGramod: u32 = @as(*align(4) const u32, @ptrFromInt(gramodSlot + @sizeOf(StrLgIntHeader))).*;
+        graMod = if (oldGramod <= 3) @intCast(oldGramod) else 0;
+        @memset(@as([*]u8, @ptrFromInt(gramodSlot))[0..REAL34_SIZE_IN_BYTES], 0);
+    }
     // The size argument is what stops the reader writing off the end, so it is the room the destination
     // has, the way every other call here passes a sizeof(). These writes cannot leave their table whatever
     // count the file carries.

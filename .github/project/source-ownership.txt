@@ -110,9 +110,9 @@ src/testSuite/tests/mateditscroll_cov.txt
 src/testSuite/tests/mathmisc_cov.txt
 src/testSuite/tests/mathspecial_cov.txt
 src/testSuite/tests/matrix2_cov.txt
+src/testSuite/tests/matrix_cov.txt
 src/testSuite/tests/matrixedit_cov.txt
 src/testSuite/tests/matrixelem_cov.txt
-src/testSuite/tests/matrix_cov.txt
 src/testSuite/tests/matrixops_cov.txt
 src/testSuite/tests/mvarmenu_cov.txt
 src/testSuite/tests/named_variable_cache_cov.txt
@@ -126,6 +126,7 @@ src/testSuite/tests/prime.txt
 src/testSuite/tests/prime_cov.txt
 src/testSuite/tests/program_flow_cov.txt
 src/testSuite/tests/readp_cov.txt
+src/testSuite/tests/realtodouble_cov.txt
 src/testSuite/tests/regmgmt_cov.txt
 src/testSuite/tests/round_cov.txt
 src/testSuite/tests/saverestore_cov.txt

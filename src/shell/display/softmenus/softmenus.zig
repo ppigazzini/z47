@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/softmenus.c: the master softmenu table (softmenu[],
-// 181 entries), the mutable dynamicSoftmenu[] (22 entries), the ~150 per-menu
+// row-for-row with the C), the mutable dynamicSoftmenu[], the per-menu
 // int16 softkey arrays (menu_X[]), and the softmenu rendering / stack / dynamic
 // menu machinery (showSoftmenuCurrentPart, showKey, changeSoftKey, pushSoftmenu,
 // popSoftmenu, showSoftmenu, fnOpenMenu, findMenu, initVariableSoftmenu, ...).
@@ -461,6 +461,8 @@ const MNU_LOGIS = 2984;
 const MNU_MATRS = 3080;
 const MNU_MENU = 3082;
 const MNU_MENUS = 3083;
+const MNU_USRMENU = 3146;
+const MNU_USRMENUS = 3147;
 const MNU_MISC = 3084;
 const MNU_MODE = 3085;
 const MNU_MVAR = 3088;
@@ -865,7 +867,7 @@ const menu_BLUE_C47 linksection(code_section) = [_]i16{ 105, -3046, -3125, -3132
 const menu_Base2 linksection(code_section) = [_]i16{ 550, 551, 552, 553, 554, 555, 124, 125, 126, 123, 100, 102, -3016, 414, 415, 1831, 1833, 1834, 550, 551, 552, 553, 554, 555, 1857, 1852, 1851, 0, 0, 2553, -3016, 422, 408, 407, 405, -3019 };
 const menu_Binom linksection(code_section) = [_]i16{ 1208, 0, 1209, 1210, 0, 1211, 1248, 0, 1249, 1250, 0, 1251, 2316, 2317, 0, 0, 0, 0 };
 const menu_CASHFL linksection(code_section) = [_]i16{};
-const menu_CATALOG linksection(code_section) = [_]i16{ -3059, -3027, -3023, -3110, -3139, -3083, 0, 0, 0, 0, 0, 1958 };
+const menu_CATALOG linksection(code_section) = [_]i16{ -3059, -3027, -3023, -3110, -3139, -3083, 0, 0, 0, 0, 1958, -3147 };
 const menu_CHARS linksection(code_section) = [_]i16{ -3089, -3004, -3009, -3010, -3007, 0 };
 const menu_CLK linksection(code_section) = [_]i16{ 1438, 1454, 1621, 1862, 1863, 1622, 1439, 1911, 1843, 1910, 1741, 1504, 1681, 1644, 1842, 1688, 1686, 2550, 1942, 1943, 1619, 1453, 1528, 1649, 1592, 1597, 1633, 1440, 1521, 1647, 1438, 1621, 2505, 1841, 1840, 1839, 1471, 1495, 2147, 2148, 2149, 2150, 2504, 0, 0, 2501, 2502, 2503 };
 const menu_CLR linksection(code_section) = [_]i16{ 1429, 1424, 1420, 2773, 41, 1428, 1421, 2239, 2240, 2771, 2772, 1427, 1568, 2005, 1452, 2033, 0, -3049 };
@@ -892,7 +894,7 @@ const menu_ConvV linksection(code_section) = [_]i16{ 237, 235, 265, 264, 255, 25
 const menu_ConvX linksection(code_section) = [_]i16{ 328, 329, 341, 340, 333, 332, 331, 330, 258, 259, 322, 323, 2167, 2168, 288, 289, 244, 245, 374, 375, 378, 379, 0, 0, 0, 0, 382, 384, 380, 381, 0, 0, 376, 377, 386, 387, 336, 339, 260, 263, 337, 334, 360, 363, 358, 361, 0, 0, 0, 0, 2163, 2164, 0, 0 };
 const menu_ConvYmmv linksection(code_section) = [_]i16{ 2204, 2205, 2210, 2211, 2216, 2217, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2868, 2869, 2221, 2220, 2209, 2208, 2864, 2865, 2212, 2213, 2206, 2207, 2866, 2867, 2218, 2219, 2215, 2214 };
 const menu_DELETE linksection(code_section) = [_]i16{ 1419, 2241, 2242, 1426, 1425, 1780, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1455 };
-const menu_DELITM linksection(code_section) = [_]i16{ 0, 0, 0, -3110, -3139, -3083 };
+const menu_DELITM linksection(code_section) = [_]i16{ 0, 0, 0, -3110, -3139, -3147 };
 const menu_DISP linksection(code_section) = [_]i16{ 1473, 1587, 1460, 1867, 1866, 1410, 1744, 2056, 1888, 2551, 1876, 1877, 2159, 2160, 2161, 2154, 1896, 1619, 1865, 1899, 1450, 2006, 1689, 2500, 1936, 1937, 0, 1798, 1944, 1945, 1950, 1951, 2050, 0, 2549, 2195, 1591, 1593, 1594, 1595, 1598, 1599, 0, 0, 0, 0, 0, 1596, 0, 0, 0, 0, 0, 0 };
 const menu_DISTR linksection(code_section) = [_]i16{ -2985, -2976, -2989, -2980, -2979, -2991, -2988, -2990, -2975, -2986, -2984, -2982, 0, -2978, -2981, -2983, -2987, -2974 };
 const menu_Dev linksection(code_section) = [_]i16{ (if (strip_21_hp35) @as(i16, 0) else 2626), 2627, 2628, 2629, 0, 0 };
@@ -905,7 +907,7 @@ const menu_Eim linksection(code_section) = [_]i16{ 999, 2383, 832, 1000, 995, 99
 const menu_Ellipt linksection(code_section) = [_]i16{ 1682, 1683, 1684, 1726, 1727, 1728, 2104, 2105, 1584, 1763, 1764, 1765, 2599, 2598, 2395, 115, 116, 119 };
 const menu_Expon linksection(code_section) = [_]i16{ 1218, 0, 1219, 1220, 0, 1221, 0, 0, 0, 0, 0, 0, 2321, 0, 0, 0, 0, 0 };
 const menu_F linksection(code_section) = [_]i16{ 1223, 0, 1224, 1225, 0, 1226, 0, 0, 0, 0, 0, 0, 2322, 2323, 0, 0, 0, 0 };
-pub export const menu_FCNS linksection(code_section) = [_]i16{ 2053, 1987, 67, 1836, 1404, 73, 1406, 2594, 2593, 64, 1837, 2587, 2585, 2589, 1822, 1820, 1818, 2624, 2588, 1821, 1819, 1817, 2586, 62, 2786, 2787, 2777, 2779, 2780, 2778, 2788, 2789, 2790, 1527, 2795, 2796, 2791, 2792, 2798, 2776, 2797, 2793, 2775, 2595, 1838, 2683, 1835, 1986, 2044, 2764, 2763, 1408, 1409, 1410, 1308, 1584, 124, 2396, 81, 82, 83, 85, 84, 86, 416, 1411, 1775, 1814, 2018, 2395, 1412, 2720, 1895, 1413, 1985, 1988, 406, 1414, 1415, 1310, 1435, 1831, 1208, 1209, 1210, 1211, 1416, 2153, 2051, 1734, 405, 2202, 1417, 2004, 1767, 2377, 2378, 1851, 1418, 1304, 1213, 1214, 1215, 1216, 407, 1730, 87, 1756, 110, 97, 1420, 2771, 1421, 2033, 1942, 1943, 2772, 1423, 2239, 1424, 1427, 2005, 1428, 1452, 2240, 41, 2773, 1429, 2525, 2706, 207, 1683, 49, 1848, 2526, 1431, 56, 1433, 74, 75, 1434, 1936, 1937, 1798, 1856, 2371, 2370, 1436, 2710, 26, 2493, 1437, 2492, 1438, 1440, 1689, 1441, 1442, 1443, 1833, 1444, 91, 1445, 1419, 1780, 1455, 2241, 1425, 1426, 2242, 1876, 1877, 2767, 2766, 1474, 2606, 2607, 2608, 2609, 1865, 2043, 2551, 2110, 2770, 1558, 1453, 1684, 1449, 2373, 2372, 1873, 37, 1544, 8, 2006, 9, 1573, 1450, 10, 1862, 1899, 1451, 2397, 1454, 1911, 1439, 2404, 1776, 1456, 1457, 1816, 1458, 1459, 1460, 1951, 1461, 35, 57, 1463, 1464, 1465, 1466, 1467, 1853, 1468, 22, 65, 1469, 1298, 2758, 2760, 1218, 1219, 1220, 1221, 2761, 2759, 1470, 2757, 1575, 1727, 1764, 1731, 1477, 409, 1722, 2128, 20, 396, 398, 397, 2154, 1481, 2124, 112, 2059, 1897, 2058, 1472, 42, 1473, 1935, 88, 2136, 2133, 94, 2126, 2158, 1223, 24, 1744, 1896, 1864, 2132, 21, 399, 401, 400, 2131, 2135, 2129, 2125, 2127, 2134, 2130, 1763, 1224, 1225, 1226, 1893, 2883, 2884, 1732, 1303, 89, 1478, 1479, 1228, 1229, 1230, 1231, 1282, 1283, 1284, 1285, 1480, 2, 1797, 1834, 2195, 1766, 1790, 1791, 1483, 1793, 1484, 1859, 1854, 1839, 2052, 1792, 2152, 1233, 1234, 1235, 1236, 1306, 1688, 1686, 1889, 1891, 1890, 1887, 2115, 100, 1632, 2111, 1485, 2762, 2528, 2530, 92, 1486, 2123, 43, 2120, 25, 93, 2113, 2155, 2157, 2156, 2056, 5, 6, 2765, 1606, 2119, 7, 2118, 2122, 2116, 2112, 2114, 2121, 2117, 1487, 1488, 1489, 1754, 1755, 1490, 1491, 1781, 1825, 2147, 2148, 2149, 2150, 1492, 1493, 1494, 1495, 1471, 1863, 2008, 1498, 1958, 1499, 2039, 77, 1501, 1726, 2104, 1677, 1502, 68, 1, 1503, 90, 1857, 1504, 1238, 1239, 1240, 1241, 1299, 2083, 120, 2398, 417, 1505, 1506, 69, 1507, 1508, 1614, 1509, 1510, 1511, 1512, 2388, 1552, 1513, 1514, 1515, 71, 1300, 1243, 1244, 1245, 1246, 72, 2662, 2663, 2664, 1905, 1516, 2689, 1517, 2684, 419, 420, 27, 1518, 103, 1528, 1519, 1520, 2408, 104, 1840, 421, 1924, 102, 1521, 1496, 1944, 1945, 1523, 1524, 1796, 1861, 2730, 2509, 2510, 2713, 2714, 2478, 2739, 2367, 2506, 2712, 2365, 1525, 1526, 1739, 2737, 1529, 1530, 2513, 2385, 2507, 2715, 2514, 1531, 1532, 1533, 2726, 2364, 1534, 1535, 1536, 1537, 1538, 1646, 2511, 2512, 2366, 1539, 2508, 2515, 2727, 113, 1541, 2105, 2041, 2598, 402, 28, 1248, 1249, 1250, 1251, 2769, 2768, 2622, 2620, 106, 107, 2705, 1542, 403, 2690, 1253, 1254, 1255, 1256, 123, 2621, 2399, 2721, 435, 1832, 23, 1543, 2405, 1827, 1828, 1829, 2623, 1830, 1795, 125, 1301, 1852, 2716, 2717, 1305, 38, 50, 2882, 1546, 2732, 1547, 1548, 2203, 2040, 2734, 2852, 2042, 1550, 1551, 1258, 1259, 1260, 1261, 1946, 1553, 1302, 33, 1948, 2020, 1888, 1291, 1292, 1293, 1294, 1287, 1288, 1289, 1290, 1556, 1557, 1675, 1559, 51, 1561, 1562, 1563, 1564, 2249, 2728, 2482, 2483, 2484, 52, 53, 54, 2224, 55, 1432, 1462, 2141, 2137, 1565, 1566, 1567, 2369, 2368, 1949, 1560, 1554, 1568, 1309, 1570, 2527, 2529, 418, 2001, 1956, 411, 410, 2524, 122, 121, 2019, 2549, 1678, 2497, 1574, 1307, 1868, 1869, 2139, 1917, 2002, 1957, 413, 412, 1577, 1578, 4, 1579, 2142, 2138, 2140, 1970, 1580, 1581, 1582, 1583, 29, 1569, 39, 40, 1585, 1586, 2389, 2387, 408, 1549, 1587, 1950, 2197, 1588, 423, 424, 1841, 1589, 1592, 1597, 111, 1742, 1855, 1866, 2050, 1600, 1601, 1602, 76, 1500, 1540, 78, 66, 2400, 1603, 1999, 414, 1555, 1965, 1604, 1605, 1758, 1607, 1405, 1682, 1608, 1940, 30, 2000, 2038, 415, 1938, 1939, 1609, 1736, 1446, 1610, 44, 1611, 1612, 1613, 70, 1622, 1615, 2250, 2729, 2485, 2486, 2487, 45, 46, 47, 48, 1430, 1545, 2692, 31, 1617, 1618, 1815, 1447, 1591, 1596, 1593, 1594, 1595, 1598, 1599, 79, 80, 1619, 1620, 1621, 1623, 1624, 34, 1263, 2691, 2402, 1966, 1968, 1264, 1265, 1266, 2401, 1843, 1625, 1626, 1627, 1723, 2601, 2602, 2603, 2604, 1867, 1628, 1629, 426, 1969, 2477, 2491, 2490, 2494, 2703, 2476, 2489, 2481, 2480, 2479, 1967, 1630, 2531, 2532, 1631, 101, 2198, 2200, 2201, 2199, 2498, 1824, 1633, 1268, 1269, 1270, 1271, 1634, 1635, 2505, 2501, 2503, 2502, 2504, 1636, 1590, 1933, 1638, 1639, 1637, 2003, 1643, 1640, 1826, 1743, 2570, 2562, 58, 59, 2565, 2573, 2564, 2566, 2563, 2580, 2559, 2576, 2582, 3, 2223, 2569, 1641, 1746, 2078, 2567, 2568, 2077, 1653, 2074, 1654, 2577, 2578, 2575, 404, 126, 1576, 2571, 2075, 2076, 2079, 2556, 1747, 2557, 2558, 2583, 2572, 2574, 1616, 2560, 1642, 2584, 63, 2561, 2420, 2419, 108, 1644, 2554, 2555, 2579, 2785, 127, 36, 16, 17, 11, 15, 12, 18, 19, 13, 2851, 2850, 14, 2082, 1648, 1812, 1647, 1649, 60, 2475, 2495, 2550, 1919, 2237, 1665, 1650, 425, 1762, 2702, 2474, 2488, 1681, 1931, 1842, 2496, 1651, 1823, 2774, 2541, 1652, 2543, 2540, 1932, 1655, 2539, 2542, 1656, 1657, 1658, 1659, 2538, 2544, 1660, 1661, 1663, 1662, 1664, 1813, 1666, 1693, 1667, 1668, 1669, 1670, 1765, 2599, 1671, 1728, 1673, 2409, 2410, 2412, 2718, 2411, 2413, 444, 447, 443, 442, 446, 1672, 2719, 1674, 436, 438, 439, 451, 449, 457, 458, 441, 454, 452, 450, 453, 448, 437, 440, 455, 456, 445, 433, 434, 2386, 1278, 1279, 1280, 1281, 1273, 1274, 1275, 1276, 1679, 1704, 1705, 95, 32, 96, 98, 1680, 1701, 1909, 1910, 99, 2470, 115, 116, 117, 1871, 1872, 118, 1849, 1983, 1981, 119, 1691, 1850, 1984, 1982, 2471, 1789, 1788, 1694, 1703, 1702, 105, 2704, 2472, 1695, 1696, 1697, 1698, 1692, 1699, 61, 1794, 2755, 1700, 1690, 1706, 1745, 1708, 1799, 2695, 1710, 1711, 2693, 1712, 2688, 2687, 1713, 1714, 1715, 1716, 2696, 1718, 1719, 1676, 2694, 1707, 2682, 1720, 2697, 422 };
+pub export const menu_FCNS linksection(code_section) = [_]i16{ 2053, 1987, 67, 1836, 1404, 73, 1406, 2594, 2593, 64, 1837, 2587, 2585, 2589, 1822, 1820, 1818, 2624, 2588, 1821, 1819, 1817, 2586, 62, 2786, 2787, 2777, 2779, 2780, 2778, 2788, 2789, 2790, 1527, 2795, 2796, 2791, 2792, 2798, 2776, 2797, 2793, 2775, 2595, 1838, 2683, 1835, 1986, 2044, 2764, 2763, 1408, 1409, 1410, 1308, 1584, 124, 2396, 81, 82, 83, 85, 84, 86, 416, 1411, 1775, 1814, 2018, 2395, 1412, 2720, 1895, 1413, 1985, 1988, 406, 1414, 1415, 1310, 1435, 1831, 1208, 1209, 1210, 1211, 1416, 2153, 2051, 1734, 405, 2202, 1417, 2004, 1767, 2377, 2378, 1851, 1418, 1304, 1213, 1214, 1215, 1216, 407, 1730, 87, 1756, 110, 97, 1420, 2771, 1421, 2033, 1942, 1943, 2772, 1423, 2239, 1424, 1427, 2005, 1428, 1452, 2240, 41, 2773, 1429, 2525, 2706, 207, 1683, 49, 1848, 2526, 1431, 56, 1433, 74, 75, 1434, 1936, 1937, 1798, 1856, 2371, 2370, 1436, 2710, 26, 2493, 1437, 2492, 1438, 1440, 1689, 1441, 1442, 1443, 1833, 1444, 91, 1445, 1419, 1780, 1455, 2241, 1425, 1426, 2242, 1876, 1877, 2767, 2766, 1474, 2606, 2607, 2608, 2609, 1865, 2043, 2551, 2110, 2770, 1558, 1453, 1684, 1449, 2373, 2372, 1873, 37, 1544, 8, 2006, 9, 1573, 1450, 10, 1862, 1899, 1451, 2397, 1454, 1911, 1439, 2404, 1776, 1456, 1457, 1816, 1458, 1459, 1460, 1951, 1461, 35, 57, 1463, 1464, 1465, 1466, 1467, 1853, 1468, 22, 65, 1469, 1298, 2758, 2760, 1218, 1219, 1220, 1221, 2761, 2759, 1470, 2757, 1575, 1727, 1764, 1731, 1477, 409, 1722, 2128, 20, 396, 398, 397, 2154, 1481, 2124, 112, 2059, 1897, 2058, 1472, 42, 1473, 1935, 88, 2136, 2133, 94, 2126, 2158, 1223, 24, 1744, 1896, 1864, 2132, 21, 399, 401, 400, 2131, 2135, 2129, 2125, 2127, 2134, 2130, 1763, 1224, 1225, 1226, 1893, 2883, 2884, 1732, 1303, 89, 1478, 1479, 1228, 1229, 1230, 1231, 1282, 1283, 1284, 1285, 1480, 2742, 2741, 2, 1797, 1834, 2195, 1766, 1790, 1791, 1483, 1793, 1484, 1859, 1854, 1839, 2052, 1792, 2152, 1233, 1234, 1235, 1236, 1306, 1688, 1686, 1889, 1891, 1890, 1887, 2115, 100, 1632, 2111, 1485, 2762, 2528, 2530, 92, 1486, 2123, 43, 2120, 25, 93, 2113, 2155, 2157, 2156, 2056, 5, 6, 2765, 1606, 2119, 7, 2118, 2122, 2116, 2112, 2114, 2121, 2117, 1487, 1488, 1489, 1754, 1755, 1490, 1491, 1781, 1825, 2147, 2148, 2149, 2150, 1492, 1493, 1494, 1495, 1471, 1863, 2008, 1498, 1958, 1499, 2039, 77, 1501, 1726, 2104, 1677, 1502, 68, 1, 1503, 90, 1857, 1504, 1238, 1239, 1240, 1241, 1299, 2083, 120, 2398, 417, 1505, 1506, 69, 1507, 1508, 1614, 1509, 1510, 1511, 1512, 2388, 1552, 1513, 1514, 1515, 71, 1300, 1243, 1244, 1245, 1246, 72, 2662, 2663, 2664, 1905, 1516, 2689, 1517, 2684, 419, 420, 27, 1518, 103, 1528, 1519, 2408, 104, 1840, 421, 1924, 102, 1521, 1496, 1944, 1945, 1523, 1524, 1796, 1861, 2730, 2509, 2510, 2713, 2714, 2478, 2739, 2367, 2506, 2712, 2365, 1525, 1526, 1739, 2737, 1529, 1530, 2513, 2385, 2507, 2715, 2514, 1531, 1532, 1533, 2726, 2364, 1534, 1535, 1536, 1537, 1538, 1646, 2511, 2512, 2366, 1539, 2508, 2515, 2727, 113, 1541, 2105, 2041, 2598, 402, 28, 1248, 1249, 1250, 1251, 2769, 2768, 2622, 2620, 106, 107, 2705, 1542, 403, 2690, 1253, 1254, 1255, 1256, 123, 2621, 2399, 2721, 435, 1832, 23, 1543, 2405, 1827, 1828, 1829, 2623, 1830, 1795, 125, 1301, 1852, 2716, 2717, 1305, 38, 50, 2882, 1546, 2732, 1547, 1548, 2203, 2040, 2734, 2852, 2042, 1550, 1551, 1258, 1259, 1260, 1261, 1946, 1553, 1302, 33, 1948, 2020, 1888, 1291, 1292, 1293, 1294, 1287, 1288, 1289, 1290, 1556, 1557, 1675, 1559, 51, 1561, 1562, 1563, 1564, 2249, 2728, 2482, 2483, 2484, 52, 53, 54, 2224, 55, 1432, 1462, 2141, 2137, 1565, 1566, 1567, 2369, 2368, 1949, 1560, 1554, 1568, 1309, 1570, 2527, 2529, 418, 2001, 1956, 411, 410, 2524, 122, 121, 2019, 2549, 1678, 2497, 1574, 1307, 1868, 1869, 2139, 1917, 2002, 1957, 413, 412, 1577, 1578, 4, 1579, 2142, 2138, 2140, 1970, 1580, 1581, 1582, 1583, 29, 1569, 39, 40, 1585, 1586, 2389, 2387, 408, 1549, 1587, 1950, 2197, 1588, 423, 424, 1841, 1589, 1592, 1597, 111, 1742, 1855, 1866, 2050, 1600, 1601, 1602, 76, 1500, 1540, 78, 66, 2400, 1603, 1999, 414, 1555, 1965, 1604, 1605, 1758, 1607, 1405, 1682, 1608, 1940, 30, 2000, 2038, 415, 1938, 1939, 1609, 1736, 1446, 1610, 44, 1611, 1612, 1613, 70, 1622, 1615, 2250, 2729, 2485, 2486, 2487, 45, 46, 47, 48, 1430, 1545, 2692, 31, 1617, 1618, 1815, 1447, 1591, 1596, 1593, 1594, 1595, 1598, 1599, 79, 80, 1619, 1620, 1621, 1623, 1624, 34, 1263, 2691, 2402, 1966, 1968, 1264, 1265, 1266, 2401, 1843, 1625, 1626, 1627, 1723, 2601, 2602, 2603, 2604, 1867, 1628, 1629, 426, 1969, 2477, 2491, 2490, 2494, 2703, 2476, 2489, 2481, 2480, 2479, 1967, 1630, 2531, 2532, 1631, 101, 2198, 2200, 2201, 2199, 2498, 1824, 1633, 1268, 1269, 1270, 1271, 1634, 1635, 2505, 2501, 2503, 2502, 2504, 1636, 1590, 1933, 1638, 1639, 1637, 2003, 1643, 1640, 1826, 1743, 2570, 2562, 58, 59, 2565, 2573, 2564, 2566, 2563, 2580, 2559, 2576, 2582, 3, 2223, 2569, 1641, 1746, 2078, 2567, 2568, 2077, 1653, 2074, 1654, 2577, 2578, 2575, 404, 126, 1576, 2571, 2075, 2076, 2079, 2556, 1747, 2557, 2558, 2583, 2572, 2574, 1616, 2560, 1642, 2584, 63, 2561, 2420, 2419, 108, 1644, 2554, 2555, 2579, 2785, 127, 36, 16, 17, 11, 15, 12, 18, 19, 13, 2851, 2850, 14, 2082, 1648, 1812, 1647, 1649, 60, 2475, 2495, 2550, 1919, 2237, 1665, 1650, 425, 1762, 2702, 2474, 2488, 1681, 1931, 1842, 2496, 1651, 1823, 2774, 2541, 1652, 2543, 2540, 1932, 1655, 2539, 2542, 1656, 1657, 1658, 1659, 2538, 2544, 1660, 1661, 1663, 1662, 1664, 1813, 1666, 1693, 1667, 1668, 1669, 1670, 1765, 2599, 1671, 1728, 1673, 2409, 2410, 2412, 2718, 2411, 2413, 444, 447, 443, 442, 446, 1672, 2719, 1674, 436, 438, 439, 451, 449, 457, 458, 441, 454, 452, 450, 453, 448, 437, 440, 455, 456, 445, 433, 434, 2386, 1278, 1279, 1280, 1281, 1273, 1274, 1275, 1276, 1679, 1704, 1705, 95, 32, 96, 98, 1680, 1701, 1909, 1910, 99, 2470, 115, 116, 117, 1871, 1872, 118, 1849, 1983, 1981, 119, 1691, 1850, 1984, 1982, 2471, 1789, 1788, 1694, 1703, 1702, 105, 2704, 2472, 1695, 1696, 1697, 1698, 1692, 1699, 61, 1794, 2755, 1700, 1690, 1706, 1745, 1708, 1799, 2695, 1710, 1711, 2693, 1712, 2688, 2687, 1713, 1714, 1715, 1716, 2696, 1718, 1719, 1676, 2694, 1707, 2682, 1720, 2697, 422 };
 const menu_FCNS_EIM linksection(code_section) = [_]i16{ 62, 81, 82, 83, 85, 84, 86, 1775, 1416, 1417, 87, 49, 1431, 74, 75, 1466, 1467, 65, 1472, 88, 1478, 1479, 1483, 1484, 100, 1485, 68, 1505, 1506, 69, 1508, 71, 72, 103, 104, 102, 50, 1550, 1566, 122, 76, 1500, 1540, 78, 79, 80, 1623, 1627, 1635, 1636, 1637, 63, 108, 1664, 1670, 105, 61, 1706 };
 const menu_FIN linksection(code_section) = [_]i16{ 433, 1697, 1695, 1666, 1699, 1696, 434, 436, 435, 1743, 0, 0, 1429, 1698, 1692, 1693, -3021, -3136 };
 const menu_FLAGS linksection(code_section) = [_]i16{ 111, 21, 112, 1610, 20, 110, 400, 399, 401, 398, 397, 396, 0, 0, 0, 0, 0, 1421 };
@@ -920,7 +922,7 @@ const menu_Grapher linksection(code_section) = [_]i16{ 0, 0, 0, 0, 0, 0 };
 const menu_HIST linksection(code_section) = [_]i16{ 1790, 1791, 1788, 1787, 1789, 1792, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const menu_HPLOT linksection(code_section) = [_]i16{ 1793, 2034, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const menu_Hyper linksection(code_section) = [_]i16{ 1233, 0, 1234, 1235, 0, 1236, 0, 0, 0, 0, 0, 0, 2324, 2317, 2325, 0, 0, 0 };
-const menu_INFO linksection(code_section) = [_]i16{ 1631, 1905, 1677, 1501, 1515, 1519, 1634, 1413, 1474, 2199, 2686, 1446, 0, 0, 0, 0, 0, 2408, 2402, 2737, 106, 1626, 1609, 2019, 1678, 1766, 1588, 1481, 1435, 1639, 1471, 2504, 0, 0, 0, 0, 2763, 1606, 2766, 2768, 1558, 0, 2764, 2765, 2767, 2769, 2770, 0 };
+const menu_INFO linksection(code_section) = [_]i16{ 1631, 1905, 1677, 1501, 1515, 1519, 1634, 1413, 1474, 2199, 2686, 1446, 0, 0, 0, 0, 0, 2408, 2402, 2737, 106, 1626, 1609, 2019, 1678, 1766, 1588, 1481, 1435, 1639, 1471, 2504, 0, 0, 0, 0, 2763, 1606, 2766, 2768, 1558, 2741, 2764, 2765, 2767, 2769, 2770, 2742 };
 const menu_INTS linksection(code_section) = [_]i16{ 550, 551, 552, 553, 554, 555, 100, 122, 102, 1680, 120, 90, 1443, 1441, 1442, 1701, 66, 89 };
 const menu_IO linksection(code_section) = [_]i16{ 1590, 2387, 1586, 1510, 1511, 1552, 1567, 2388, 1509, 1513, 1512, -3106, 1576, 1933, 2389, 0, 1405, -3015, 2761, 2759, 2758, 2760, 2757, 2762 };
 const menu_Inl_Tst linksection(code_section) = [_]i16{ 1884, 0, 0, 1882, 1885, 1886 };
@@ -928,6 +930,7 @@ const menu_KEYS linksection(code_section) = [_]i16{ -3014, -3115, -3114, 1411, 1
 const menu_LOOP linksection(code_section) = [_]i16{ 8, 10, 9, 5, 7, 6, 91, 0, 0, 0, 0, 92 };
 const menu_Logis linksection(code_section) = [_]i16{ 1243, 0, 1244, 1245, 0, 1246, 0, 0, 0, 0, 0, 0, 2326, 2328, 0, 0, 0, 0 };
 const menu_MATX linksection(code_section) = [_]i16{ 1536, 1704, 1529, 1530, 1602, -3141, 2726, 1526, 1739, 2737, 2478, 2739, 2497, 2498, 2729, 2728, 1970, 2730, 1705, (if (option_eigen) @as(i16, 2727) else 0), 1578, 2710, 1702, -3141, 2704, 1628, 1704, 1745, 1449, 1436, 0, 0, (if (option_eigen) @as(i16, 1457) else 0), (if (option_eigen) @as(i16, 1456) else 0), 1535, (if (option_eigen) @as(i16, 1646) else 0), 1490, 1491, 1613, 1563, 1494, 1493, 2714, 2713, 1539, 2712, 2715, 1486, 1538, 1531, 1612, 1562, 2250, 2249 };
+pub export const menu_MENUS linksection(code_section) = [_]i16{ -2999, -3000, -3002, -3003, -3011, -3013, -3034, -3033, -3015, -3016, -3017, -2974, -3018, -3019, -3020, -3021, -3054, -3001, -2975, -3023, -3035, -3024, -3025, -3027, -3026, -3137, -3046, -3047, -3048, -3049, -3051, -2977, -2978, -3053, -3055, -3036, -3057, -3058, -2979, -3067, -3122, -3059, -3060, -3038, -3061, -3062, -3028, -3065, -2980, -2997, -2998, -3037, -2981, -2982, -3068, -3069, -3071, -2983, -3072, -3074, -3064, -3075, -3076, -3044, -2984, -3078, -3077, -3039, -3030, -3080, -3081, -3084, -3029, -3085, -3086, -3087, -3090, -3089, -3079, -3120, -2985, -3091, -3092, -3093, -2986, -3031, -3103, -2987, -3145, -3040, -3104, -3105, -3106, -3108, -3109, -3110, -3096, -3097, -3098, -3066, -3094, -3111, -3113, -3114, -3115, -3032, -3041, -3124, -3125, -3126, -3127, -3128, -3121, -3042, -3129, -3131, -3123, -3117, -3132, -3133, -3134, -3136, -2989, -3146, -3147, -2990, -3138, -3139, -3141, -3043, -3140, -2991, -3143, -3142, -3045, -3007, -3008, -3009, -3010, -3006, -3004, -3005, -2988, -2976, -3116, -3118, -3107, -3014 };
 const menu_MODE linksection(code_section) = [_]i16{ 1445, 1557, 1480, 2197, 1949, 1946, 2043, 2044, 0, 1853, 1917, 1941, 0, 0, 0, 0, 0, 0, 1938, 1939, 1856, 1940, 1949, 1946, 1890, 1887, 1889, 1891, 121, 1941, 0, 0, 0, 0, 0, 0, 2038, 1797, 1855, 1897, 2058, 2059, 2064, 2060, 2062, 1924, 1796, 1859, 2063, 2065, 2061, 2039, 1861, 1854 };
 const menu_MODEL linksection(code_section) = [_]i16{ 1299, 1298, 1300, 1302, 1516, 1759, 1307, 1306, 1305, 1304, 1303, 0, 1309, 1308, 1310, 1435, 0, 1301 };
 const menu_MULTSTK linksection(code_section) = [_]i16{ 2588, 2589, 2587, 2585, 2586, 2595, 2593, 2594, 2622, 2620, 2621, 0 };
@@ -981,7 +984,7 @@ const menu_TamIndirect linksection(code_section) = [_]i16{ 0, -3138, 527, 528, 5
 const menu_TamLabel linksection(code_section) = [_]i16{ 539, -3109, 822, 534, 2342, 2343, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587 };
 const menu_TamLocalLabel linksection(code_section) = [_]i16{ 0, -3109, 628, 0, 0, 0 }; // { ITM_NULL, -MNU_PROG, ITM_alpha, ITM_NULL x3 }
 const menu_TamLabelOnly linksection(code_section) = [_]i16{ 539, -3109, 822, 0, 0, 0 };
-const menu_TamMenu linksection(code_section) = [_]i16{ 539, -3082, 2415, 2416, 2417, 2418 };
+const menu_TamMenu linksection(code_section) = [_]i16{ 539, -3082, 2415, 2416, 2417, 2418, 0, -3146, 0, 0, 0, 0 };
 const menu_TamNonReg linksection(code_section) = [_]i16{ 539, 0, 2415, 2416, 2417, 2418 };
 const menu_TamNonRegMax linksection(code_section) = [_]i16{ 539, 2110, 2415, 2416, 2417, 2418 };
 const menu_TamNonRegTrk linksection(code_section) = [_]i16{ 539, 2237, 2415, 2416, 2417, 2418, 0, 1919, 0, 0, 0, 0 };
@@ -1032,10 +1035,10 @@ pub export const softmenu linksection(code_data_section) = [_]softmenu_t{
     .{ .menuItem = -3026, .numItems = 0, .softkeyItem = null },
     .{ .menuItem = -3002, .numItems = 0, .softkeyItem = null },
     .{ .menuItem = -3088, .numItems = 0, .softkeyItem = null },
-    .{ .menuItem = -3083, .numItems = 0, .softkeyItem = null },
+    .{ .menuItem = -3147, .numItems = 0, .softkeyItem = null },
     .{ .menuItem = -3052, .numItems = 0, .softkeyItem = null },
     .{ .menuItem = -1520, .numItems = 0, .softkeyItem = null },
-    .{ .menuItem = -3082, .numItems = 0, .softkeyItem = null },
+    .{ .menuItem = -3146, .numItems = 0, .softkeyItem = null },
     .{ .menuItem = -2948, .numItems = @as(i16, @intCast(menu_TamFlag.len)), .softkeyItem = &menu_TamFlag },
     .{ .menuItem = -3128, .numItems = @as(i16, @intCast(menu_SYSFL.len)), .softkeyItem = &menu_SYSFL },
     .{ .menuItem = -3007, .numItems = @as(i16, @intCast(menu_alpha_INTL.len)), .softkeyItem = &menu_alpha_INTL },
@@ -1201,6 +1204,8 @@ pub export const softmenu linksection(code_data_section) = [_]softmenu_t{
     .{ .menuItem = -3031, .numItems = @as(i16, @intCast(menu_CONV_PLoad.len)), .softkeyItem = &menu_CONV_PLoad },
     .{ .menuItem = -2952, .numItems = @as(i16, @intCast(menu_TamLocalLabel.len)), .softkeyItem = &menu_TamLocalLabel },
     .{ .menuItem = -3145, .numItems = @as(i16, @intCast(menu_POLY.len)), .softkeyItem = &menu_POLY },
+    .{ .menuItem = -3082, .numItems = @as(i16, @intCast(menu_MENUS.len)), .softkeyItem = &menu_MENUS },
+    .{ .menuItem = -3083, .numItems = @as(i16, @intCast(menu_MENUS.len)), .softkeyItem = &menu_MENUS },
     .{ .menuItem = 0, .numItems = 0, .softkeyItem = null },
 };
 // dynamicSoftmenu is a MUTABLE RAM global in C (softmenus.c:1164, written at
@@ -1227,10 +1232,10 @@ pub export var dynamicSoftmenu = [_]dynamicSoftmenu_t{
     .{ .menuItem = -3026, .numItems = 0, .menuContent = null },
     .{ .menuItem = -3002, .numItems = 0, .menuContent = null },
     .{ .menuItem = -3088, .numItems = 0, .menuContent = null },
-    .{ .menuItem = -3083, .numItems = 0, .menuContent = null },
+    .{ .menuItem = -3147, .numItems = 0, .menuContent = null },
     .{ .menuItem = -3052, .numItems = 0, .menuContent = null },
     .{ .menuItem = -1520, .numItems = 0, .menuContent = null },
-    .{ .menuItem = -3082, .numItems = 0, .menuContent = null },
+    .{ .menuItem = -3146, .numItems = 0, .menuContent = null },
 };
 
 // Additional probe-resolved constants for function bodies.
@@ -1840,12 +1845,10 @@ fn initVariableSoftmenu(mIdx: i16) void {
         MNU_CONFIGS => _dynmenuConstructVars(mIdx, 1, dtConfig, 0),
         MNU_ALLVARS => _dynmenuConstructVars(mIdx, 0, 0, 0),
         MNU_MVAR => _dynmenuConstructMVars(mIdx),
-        MNU_MENU, MNU_MENUS => {
+        MNU_USRMENU, MNU_USRMENUS => {
             numberOfBytes = 1;
             numberOfGlobalLabels = 0;
             _ = memset(tmpString, 0, TMP_STR_LENGTH);
-            // The user's own menus take slots first, so a full buffer costs a
-            // predefined name the catalog still reaches.
             i = 0;
             while (i < @as(i16, @intCast(numberOfUserMenus)) and numberOfGlobalLabels < MAX_DYNMENU_SLOTS) : (i += 1) {
                 const len: i16 = @intCast(stringByteLength(&userMenus[@intCast(i)].menuName));
@@ -1855,18 +1858,6 @@ fn initVariableSoftmenu(mIdx: i16) void {
                     _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &userMenus[@intCast(i)].menuName, @intCast(len));
                     numberOfGlobalLabels += 1;
                     numberOfBytes += 1 + len;
-                }
-            }
-
-            if (softmenu[@intCast(softmenuStack[1].softmenuId)].menuItem != -%@as(i16, ITM_DELITM)) {
-                i = 0;
-                while (i < LAST_ITEM and numberOfGlobalLabels < MAX_DYNMENU_SLOTS) : (i += 1) {
-                    if ((indexOfItems[@intCast(i)].status & CAT_STATUS) == CAT_MENU and indexOfItems[@intCast(i)].itemCatalogName[0] != 0) {
-                        const len: i16 = @intCast(stringByteLength(&indexOfItems[@intCast(i)].itemCatalogName));
-                        _ = frontier_char_string.xcopy(&tmpString[15 * @as(usize, @intCast(numberOfGlobalLabels))], &indexOfItems[@intCast(i)].itemCatalogName, @intCast(len));
-                        numberOfGlobalLabels += 1;
-                        numberOfBytes += 1 + len;
-                    }
                 }
             }
             if (numberOfGlobalLabels != 0) {
@@ -2924,7 +2915,46 @@ fn setScreenUpdateFromMenu(id: i16, op: menuOps_t) void {
 
 pub export var BASE_OVERRIDEONCE: bool_t = 0;
 
+var menuTopLineY: i16 = 0; // the row the menu top line and its triangles are drawn on
+var menuTopLineShown: bool_t = 0; // false while the open menu has no top line
+
+pub export fn showMenuTopLine() callconv(.c) void {
+    if (menuTopLineShown == 0) {
+        return;
+    }
+
+    var x: i16 = 0;
+    while (x < (if (GRAPHMODE()) @divTrunc(SCREEN_WIDTH, 3) else SCREEN_WIDTH)) : (x += 1) {
+        if (@rem(@as(i32, x), 8) < 4) {
+            setBlackPixel(@intCast(x), @intCast(menuTopLineY));
+        } else {
+            setWhitePixel(@intCast(x), @intCast(menuTopLineY));
+        }
+    }
+
+    // Triangles indicating more menus, drawn around the top line's centre point.
+    const t: f32 = 5;
+    const t_o: f32 = 1.6 * t; // offset
+    const tt_o: f32 = 2; // total offset
+    lcd_fill_rect(0, @intCast(@as(i32, menuTopLineY) - @as(i32, @intFromFloat(t))), 20, @intFromFloat(t + 1), 0); // (see screen.zig: _selectiveClearScreen)
+    var xx: i16 = 0;
+    while (xx <= @as(i16, @intFromFloat(t))) : (xx += 1) {
+        if (catalog == 0) {
+            lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - xx + @as(i32, @intFromFloat(t))), @intCast(2 * (@as(i32, @intFromFloat(t)) - xx)), 1, 1);
+            lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o))), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), @intCast(2 * (@as(i32, @intFromFloat(t)) - xx)), 1, 1);
+        } else {
+            if (xx != @as(i16, @intFromFloat(t))) {
+                lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
+                lcd_fill_rect(@intCast(xx + 2 * (@as(i16, @intFromFloat(t)) - xx) - 1), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
+                lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o))), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
+                lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o)) + 2 * (@as(i16, @intFromFloat(t)) - xx) - 1), @intCast(@as(i32, @intFromFloat(tt_o - t)) + menuTopLineY - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
+            }
+        }
+    }
+}
+
 pub export fn showSoftmenuCurrentPart() callconv(.c) void {
+    menuTopLineShown = 0;
     if (currentMenu() == -%@as(i16, MNU_HOME)) {
         changeToHOME();
     } else if (currentMenu() == -%@as(i16, MNU_PFN)) {
@@ -3052,7 +3082,7 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                                 var itemNr: i16 = userMenuItems[@intCast(x + 6 * y)].item;
                                 _ = stringCopy(&itemName, ptr);
                                 switch (-%softmenu[@intCast(m)].menuItem) {
-                                    MNU_MENU, MNU_MENUS => {
+                                    MNU_USRMENU, MNU_USRMENUS => {
                                         vm = vmReverse;
                                     },
                                     MNU_MyMenu => {
@@ -3205,6 +3235,8 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                             showSoftkey(concat2(STD_BOX, " KEY"), x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
                         } else if (item == -%@as(i16, MNU_HOME) or item == -%@as(i16, MNU_PFN)) {
                             showSoftkey(&indexOfItems[@intCast(-%item)].itemSoftmenuName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
+                        } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENU) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_MENUS)) {
+                            showSoftkey(&indexOfItems[@intCast(-%item)].itemCatalogName, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmReverse, 1, 1, NOVAL, NOVAL, NOTEXT);
                         } else if (softmenu[@intCast(menuLocal)].menuItem == 0) {
                             abi.fmtBufZ(errorMessage[0..512], "In function showSoftmenuCurrentPart: softmenu ID {d} not found!", .{@as(i32, item)});
                             frontier_error.displayBugScreen(errorMessage);
@@ -3329,33 +3361,9 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
             yDotted = 217 - SOFTMENU_HEIGHT * yDotted;
 
             if (dottedTopLine != 0 and (!GRAPHMODE() or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_PLOT_FUNC))) {
-                x = 0;
-                while (x < (if (GRAPHMODE()) @divTrunc(SCREEN_WIDTH, 3) else SCREEN_WIDTH)) : (x += 1) {
-                    if (@rem(@as(i32, x), 8) < 4) {
-                        setBlackPixel(@intCast(x), @intCast(yDotted));
-                    } else {
-                        setWhitePixel(@intCast(x), @intCast(yDotted));
-                    }
-                }
-
-                const t: f32 = 5;
-                const t_o: f32 = 1.6 * t;
-                const tt_o: f32 = 2;
-                lcd_fill_rect(0, @intCast(@as(i32, yDotted) - @as(i32, @intFromFloat(t))), 20, @intFromFloat(t + 1), 0);
-                var xx: i16 = 0;
-                while (xx <= @as(i16, @intFromFloat(t))) : (xx += 1) {
-                    if (catalog == 0) {
-                        lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @intFromFloat(tt_o - t)) + yDotted - xx + @as(i32, @intFromFloat(t))), @intCast(2 * (@as(i32, @intFromFloat(t)) - xx)), 1, 1);
-                        lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o))), @intCast(@as(i32, @intFromFloat(tt_o - t)) + yDotted - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), @intCast(2 * (@as(i32, @intFromFloat(t)) - xx)), 1, 1);
-                    } else {
-                        if (xx != @as(i16, @intFromFloat(t))) {
-                            lcd_fill_rect(@intCast(xx), @intCast(@as(i32, @intFromFloat(tt_o - t)) + yDotted - xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                            lcd_fill_rect(@intCast(xx + 2 * (@as(i16, @intFromFloat(t)) - xx) - 1), @intCast(@as(i32, @intFromFloat(tt_o - t)) + yDotted - xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                            lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o))), @intCast(@as(i32, @intFromFloat(tt_o - t)) + yDotted - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                            lcd_fill_rect(@intCast(xx + @as(i16, @intFromFloat(t_o)) + 2 * (@as(i16, @intFromFloat(t)) - xx) - 1), @intCast(@as(i32, @intFromFloat(tt_o - t)) + yDotted - @as(i32, @intFromFloat(t)) + xx + @as(i32, @intFromFloat(t))), 2, 1, 1);
-                        }
-                    }
-                }
+                menuTopLineY = yDotted;
+                menuTopLineShown = 1;
+                showMenuTopLine();
             }
         }
         showShiftState();
@@ -3410,7 +3418,7 @@ fn pushSoftmenu(softmenuId: i16) void {
 
     if ((softmenu[@intCast(softmenuId)].menuItem == -%@as(i16, MNU_CONVCHEF) or softmenu[@intCast(softmenuId)].menuItem == -%@as(i16, MNU_CONVV)) and
         ((menu(1) == -%@as(i16, MNU_UNITCONV)) or
-            (menu(1) == -%@as(i16, MNU_MENUS) and menu(2) == -%@as(i16, MNU_CATALOG))))
+            ((menu(1) == -%@as(i16, MNU_MENUS) or menu(1) == -%@as(i16, MNU_USRMENUS)) and menu(2) == -%@as(i16, MNU_CATALOG))))
     {
         softmenuStack[0].firstItem = if (getSystemFlag(FLAG_US) != 0) 18 else 0;
     }

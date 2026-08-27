@@ -41,7 +41,7 @@ const FIRST_LOCAL_REGISTER: i16 = 7000;
 const FIRST_NAMED_VARIABLE: i16 = 256;
 const NUMBER_OF_STATISTICAL_SUMS: u16 = 28;
 const C47_NULL: u16 = 65535;
-const configFileVersion: u32 = 10000028; // C saveRestoreCalcState.c:7 (menu items renumbered into one block)
+const configFileVersion: u32 = 10000029; // C saveRestoreCalcState.c:7 (GRAMOD moved from the reserved variable table to the graMod global)
 
 // --- Struct models (sizes/offsets asserted at comptime against the C ABI) ---
 const abi = @import("abi"); // shared ABI bindings
@@ -118,6 +118,7 @@ extern var pcg32_global: pcg32_random_t;
 
 // --- OTHER_CONFIGURATION_STUFF scalars ---
 extern var firstGregorianDay: u32;
+extern var graMod: u8;
 extern var denMax: u32;
 extern var lastDenominator: u32;
 extern var displayFormat: u8;
@@ -449,6 +450,7 @@ pub fn writeSaveSections() void {
 
     saveField("firstGregorianDay", "%u\n", .{cu(firstGregorianDay)});
     saveField("denMax", "%u\n", .{cu(denMax)});
+    saveField("graMod", "%u\n", .{cu(graMod)});
     saveField("lastDenominator", "%u\n", .{cu(lastDenominator)});
     saveField("displayFormat", "%u\n", .{cu(displayFormat)});
     saveField("displayFormatDigits", "%u\n", .{cu(displayFormatDigits)});
