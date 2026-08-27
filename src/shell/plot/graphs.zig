@@ -1234,7 +1234,8 @@ inline fn isSpecialSample(i: u16) bool {
 
 pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
     currentKeyCode = 255;
-    // SAVE_SPACE_DM42_13GRF_JM is NOT defined -> this whole body is LIVE.
+    // OPTION_MOREGRAPHICS is defined for every target built here, so this whole
+    // body is live.
 
     if (!reDraw) {
         frontier_screen.clearScreenGraphs(1, @intFromBool(clrTextArea), @intFromBool(!clrGraphArea));

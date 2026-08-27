@@ -27,7 +27,10 @@ const const39_egamma = consts.const39_egamma;
 // WP34S_BesselJ / WP34S_BesselY keep it where OPTION_BESSEL compiles them in.
 // The EXTRA_INFO_ON_CALC_ERROR sprintf hints
 // become fixed moreInfoOnError strings (no-op under TESTSUITE / DMCP). The
-// SAVE_SPACE_DM42_12BESSEL guard is dead on every z47 build.
+// OPTION_BESSEL is LIVE: upstream keeps it for DMCP packages 1-3 and drops it for
+// package 4, where it empties fnBesselJ/fnBesselY rather than removing them. The
+// two commands below return immediately when option_bessel is false, which is
+// that empty body. Do not read the gate as dead code.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_command_wrappers = @import("../command_wrappers.zig");

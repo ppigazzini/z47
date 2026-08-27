@@ -39,20 +39,23 @@ pub const RuntimeObjectOptions = struct {
     // dedicated `coverage` harness sets this; every product/test build keeps it
     // false, so the owner object is unchanged there.
     coverage: bool = false,
-    // Distribution clusters to compile out of the frontier object, matching the
-    // upstream SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/exponential) and
-    // SAVE_SPACE_DM42_17C (pareto/uniform) guards for flash-limited packages.
+    // Distribution clusters to compile out of the frontier object. Each is the
+    // INVERSE of an upstream option: strip_16 of OPTION_DIST_NORMAL, strip_17 of
+    // OPTION_DIST_C (binomial/f/geometric/hyper/negBinom/poisson), strip_17b of
+    // OPTION_DIST_B (cauchy/chi2/expo/logistic/t/weibull) and strip_17c of
+    // OPTION_DIST_D (gev/pareto/uniform). build/firmware.zig maps each to the
+    // packages whose defines.h block undefines it.
     strip_16: bool = false,
     strip_17: bool = false,
     strip_17b: bool = false,
     strip_17c: bool = false,
-    // SAVE_SPACE_DM42_15 (all distributions) gates the DISTR submenu entry in
-    // softmenus.c's menu_PROB (DDMENU). Upstream defines it only for DMCP package
-    // 4. Defaults false (host / other packages keep the DISTR menu).
+    // The inverse of OPTION_DISTRIBUTIONS, which carries the DISTR submenu entry
+    // in softmenus.c's menu_PROB (DDMENU). Upstream undefines it for DMCP package
+    // 4 alone. Defaults false (host / other packages keep the DISTR menu).
     strip_15: bool = false,
-    // SAVE_SPACE_DM42_21_HP35 gates the SetHP35 dev-profile shortcut in
-    // softmenus.c's menu_Dev. Upstream defines it only for DMCP package 1.
-    // Defaults false (host / other packages keep the HP35 profile shortcut).
+    // The inverse of OPTION_HP35, which carries the SetHP35 dev-profile shortcut
+    // in softmenus.c's menu_Dev. Upstream defines it for host and for every DMCP
+    // package, so nothing sets this today; it defaults false, keeping the shortcut.
     strip_21_hp35: bool = false,
     // The inverses of upstream's OPTION_ORTHO, OPTION_BESSEL and OPTION_ELLIPTIC,
     // which gate the matching case labels in softmenus.c's savedspace()

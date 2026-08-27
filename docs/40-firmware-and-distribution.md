@@ -49,8 +49,9 @@ Facts, verified from `../build/firmware.zig`:
   without editing the imported tree.
 - Per-package flash trims are computed in the Zig frontier build
   (`frontierDistributionStrip` in `../build/firmware.zig`) as build options
-  that mirror the upstream `defines.h` `SAVE_SPACE_DM42_*` and `OPTION_*`
-  package blocks, not by editing imported C.
+  that mirror the upstream `defines.h` `OPTION_*` package blocks, not by editing
+  imported C. Read the option names out of `defines.h` rather than from prose:
+  upstream renames them, and the `SAVE_SPACE_DM42_*` family they replaced is gone.
 - Package creation is still more than compilation: each firmware build also
   emits a QSPI image, a linker map, and a size report.
 
@@ -78,7 +79,7 @@ Each firmware build produces these output classes:
 
 ## Flash Budget And QSPI XIP
 
-Fact: DMCP flash is tight. The per-package `SAVE_SPACE_DM42_*` strips exist
+Fact: DMCP flash is tight. The per-package `OPTION_*` strips exist
 precisely because the DM42 packages must fit a bounded flash budget, and the DM42
 family is compiled `OLD_HW` (static `freeMemoryRegions` array) while DMCP5 keeps
 the newer pointer layout.

@@ -2,7 +2,7 @@
 //
 // Zig owner for src/c47/distributions/negBinom.c: the Negative Binomial
 // distribution commands (fnNegBinomialP/L/R/I) and the WP34S math borrowings.
-// Part of the SAVE_SPACE_DM42_17 cluster, so compiled on host, on DMCP5 and on
+// Part of the OPTION_DIST_C cluster, so compiled on host, on DMCP5 and on
 // DM42 package 1, and stubbed on DM42 packages 2-4 via strip_17.
 //
 // cdf_NegBinomial2 and pdf_NegBinomial are exported with C linkage because

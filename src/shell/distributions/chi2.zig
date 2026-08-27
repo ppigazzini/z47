@@ -2,7 +2,7 @@
 //
 // Zig owner for src/c47/distributions/chi2.c: the Chi-squared distribution
 // commands (fnChi2P/L/R/I) and the WP34S math borrowings. Part of the
-// SAVE_SPACE_DM42_17B cluster (cauchy/chi/expo/logis/t/weibull), which is kept on
+// OPTION_DIST_B cluster (cauchy/chi2/expo/logis/t/weibull), which is kept on
 // DM42 packages 1 and 2 and on host/DMCP5; gated by strip_17b and tagged
 // linksection(dr.code_section) so the code runs from QSPI on the flash-limited
 // old_hw DM42. Self-contained: the quantile is a Halley refinement (no shared

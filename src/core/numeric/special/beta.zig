@@ -4,8 +4,9 @@
 // Gamma(x+y), real and complex. Faithful line-by-line translation preserving
 // the exact order of every real_t operation (beta.txt checks results to the
 // last ULP). Exports fnBeta with C linkage; the static realBeta/complexBeta/
-// betaReal/betaComplex helpers stay private. The SAVE_SPACE_DM42_12 gate is
-// dead on every z47 build, so the body is ported unconditionally.
+// betaReal/betaComplex helpers stay private. OPTION_ZETA_BETA is defined for
+// every target built here, so the body is unconditional -- the C's
+// !OPTION_ZETA_BETA arm, an empty fnBeta, is the one that is never taken.
 
 const std = @import("std");
 const runtime = @import("../command_wrappers/runtime.zig");

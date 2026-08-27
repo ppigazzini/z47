@@ -24,8 +24,9 @@ const const_2916 = consts.const_2916;
 // OPTION_CUBIC_159 and OPTION_EIGEN_159 are defined on every z47 build, so
 // fnSlvc uses the 159-digit solveCubicEquation159; the standard 75-digit
 // solveCubicEquation is still exported (matrix.c calls it). The qsort root
-// ordering uses libc qsort with the exact cmplxSortCompare comparator. The dead
-// SAVE_SPACE_DM42_12 guard and the #undef'd DISCRIMINANT blocks are omitted.
+// ordering uses libc qsort with the exact cmplxSortCompare comparator. The
+// OPTION_SLVQ_SLVC guard is live but defined for every target built here, so the
+// body is unconditional; the #undef'd DISCRIMINANT blocks are omitted.
 
 const runtime = @import("command_wrappers/runtime.zig");
 const math_addition_cells = @import("arithmetic/addition_cells.zig");

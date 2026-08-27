@@ -10,8 +10,7 @@ const const_NaN = consts.const_NaN;
 // public xthRootReal helper; the static xthRootComplex / doXthRoot* helpers
 // stay private. The EXTRA_INFO_ON_CALC_ERROR sprintf hints become fixed
 // moreInfoOnError strings (no-op under TESTSUITE / DMCP). The
-// SAVE_SPACE_DM42_12 guard is dead on every z47 build, so the body is ported
-// unconditionally.
+// C carries no build-option guard on this file, so the body is unconditional.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 
