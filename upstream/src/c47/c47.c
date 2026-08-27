@@ -308,6 +308,7 @@ calcRegister_t         graphVariabl1;
 
 uint32_t               firstGregorianDay;
 uint32_t               denMax;
+uint8_t                graMod;
 uint32_t               lastDenominator = 4;
 uint32_t               lastIntegerBase;
 uint32_t               decodedIntegerBase;

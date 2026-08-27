@@ -1358,6 +1358,9 @@ if(toDisplay) {
   else if(!regXposition && prefixWidth > 0) {
     lcd_fill_rect(X_POS, Y_POS - (maxRows - 1) * fontHeight, stringWidth("[", font, true, true) + baseWidth + stringWidth(endChar, font, true, true), (maxRows - 1) * fontHeight + (font == &numericFont ? NUMERIC_FONT_HEIGHT : STANDARD_FONT_HEIGHT), LCD_SET_VALUE); //blank the area behind the matrix
   }
+  else {   // the stack position: a partial refresh leaves stale register text in the band the matrix covers
+    lcd_fill_rect(X_POS, Y_POS - (maxRows - 1) * fontHeight, stringWidth("[", font, true, true) + baseWidth + stringWidth(endChar, font, true, true), (maxRows - 1) * fontHeight + (font == &numericFont ? NUMERIC_FONT_HEIGHT_ : STANDARD_FONT_HEIGHT_), LCD_SET_VALUE);
+  }
 }
   const uint16_t displayFormat1 = displayFormat;
   const uint8_t displayFormatDigits1 = displayFormatDigits;
@@ -1747,6 +1750,9 @@ smallFont:
       if(rows == 4 && font != &standardFont) {
         clearRegisterLine(REGISTER_X, true, true);
       }
+  }
+  else {   // the stack position: a partial refresh leaves stale register text in the band the matrix covers
+    lcd_fill_rect(X_POS, Y_POS - (maxRows - 1) * fontHeight, (colVector ? stringWidth("[]" STD_SUP_BOLD_T, font, true, true) : stringWidth("[]", font, true, true)) + baseWidth, (maxRows - 1) * fontHeight + (font == &numericFont ? NUMERIC_FONT_HEIGHT : STANDARD_FONT_HEIGHT), LCD_SET_VALUE);
   }
 
   for(int i = 0; i < maxRows; i++) {

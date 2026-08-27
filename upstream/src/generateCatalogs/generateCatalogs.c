@@ -40,7 +40,7 @@ void sortOneCatalog(const char *menuName, int catalogType, int16_t generationTyp
 
   numberOfItems = 0;
   for(item=1; item<LAST_ITEM; item++) {
-    if((indexOfItems[item].status & CAT_STATUS) == catalogType && strcmp(indexOfItems[item].itemCatalogName, "CATALOG") && strcmp(indexOfItems[item].itemCatalogName, "MENUS")) { // CATALOG and MENUS are not in another catalog
+    if((indexOfItems[item].status & CAT_STATUS) == catalogType && strcmp(indexOfItems[item].itemCatalogName, "CATALOG")  && strcmp(indexOfItems[item].itemCatalogName, "MENU") && strcmp(indexOfItems[item].itemCatalogName, "MENUS")) { // CATALOG, MENU and MENUS are not in another catalog
       if(   generationType == GENERATION_FOR_DMCP
          || generationType == GENERATION_FOR_BOTH
          || (generationType == GENERATION_FOR_PC )) {
@@ -125,6 +125,7 @@ int main(int argc, char* argv[]) {
   sortOneCatalog("SYSFL",      CAT_SYFL, GENERATION_FOR_BOTH);
   sortOneCatalog("alpha_INTL", CAT_AINT, GENERATION_FOR_BOTH);
   sortOneCatalog("alpha_intl", CAT_aint, GENERATION_FOR_BOTH);
+  sortOneCatalog("MENUS",      CAT_MENU, GENERATION_FOR_BOTH);
 
   fprintf(catalogFile, "#endif // !SOFTMENUCATALOGS_H\n");
 

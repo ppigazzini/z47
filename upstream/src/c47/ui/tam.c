@@ -39,8 +39,8 @@
     };
 
     TO_QSPI const int16_t DelitmOperations[][2] = {
-      {MNU_PROGS,    ITM_DELITM_PROG},
-      {MNU_MENUS,    ITM_DELITM_MENU}
+      {MNU_PROGS,      ITM_DELITM_PROG},
+      {MNU_USRMENUS,   ITM_DELITM_MENU}
     };
 
   int16_t tamOperation(void) {
@@ -828,7 +828,7 @@ printf("tam.value: %d\n", tam.value);
       tryOoR = true;
       forceTry = true;
     }
-    else if(tam.mode == TM_MENU && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU) {
+    else if(tam.mode == TM_MENU && (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_USRMENU)) {
         tam.value = item;
     }
     else {
@@ -923,7 +923,7 @@ printf("tam.value: %d\n", tam.value);
           leaveTamModeIfEnabled();
         }
       }
-      else if(tam.mode == TM_MENU && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU) {
+      else if(tam.mode == TM_MENU && (softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENU || softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_USRMENU)) {
         int16_t value = tam.value;
         if(calcMode == CM_PEM) {
           addStepInProgram(tamOperation());
@@ -1031,7 +1031,7 @@ printf("tam.value: %d\n", tam.value);
           return;
         }
       }
-      else if(tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_MENUS) {
+      else if(tam.mode == TM_DELITM && softmenu[softmenuStack[0].softmenuId].menuItem == -MNU_USRMENUS) {
         value = tam.value;
       }
       else if(tryAllocate && !tam.indirect) {

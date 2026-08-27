@@ -328,10 +328,10 @@ void fnVecToEqn(uint16_t unusedButMandatoryParameter) {
     }
     if(k > 0) {
       if(!unitCoef) {
-        *t++ = STD_CROSS[0];
-        *t++ = STD_CROSS[1];
+        *t++ = PRODUCT_SIGN[0];
+        *t++ = PRODUCT_SIGN[1];
       }
-      *t++ = 'X';
+      *t++ = 'x';
       if(k > 1) {
         t += sprintf(t, "^%u", (unsigned int)k);
       }

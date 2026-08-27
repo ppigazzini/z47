@@ -91,6 +91,7 @@ void covLoadGraphPgms(uint16_t unusedButMandatoryParameter);
 void covLoadNestedPgms(uint16_t unusedButMandatoryParameter);
 void covBmpName(uint16_t which);
 void covHashBmp(uint16_t which);
+void covRealToDouble(uint16_t unusedButMandatoryParameter);
 
 static const char regNames[] = "XYZTABCDLIJKMNPQRSEFGHOUVW";
 
@@ -268,6 +269,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnLoadNestedPgmsCov",        covLoadNestedPgms,           1 },
   {"fnBmpNameCov",               covBmpName,                  1 },
   {"fnHashBmpCov",               covHashBmp,                  1 },
+  {"fnRealToDoubleCov",          covRealToDouble,             1 },
   {"fnStateRoundtrip",           covStateRoundtrip,           1 },
   {"fnShortIntWSRestoreCov",     covShortIntWordSizeRestore,  1 },
   {"fnEqCalcCov",                covEqCalc,                   1 },
@@ -980,7 +982,7 @@ void covEqCalc(uint16_t formulaIndex) {
 void covVecToEqnRoundTrip(uint16_t unusedButMandatoryParameter) {
   // Full loop for V->EQ: the coefficient vector in X becomes polynomial text (fnVecToEqn), the text is posted into the formula store by the true programmed
   // X.SWAP branch (an editor buffer only exists interactively, so programRunStop is forced to PGM_RUNNING around the call), and fnEqCalc evaluates the stored
-  // formula at the eval point from Y, bound to the named variable X. Proves the rendered text re-parses through the equation engine, E notation included.
+  // formula at the eval point from Y, bound to the named variable x. Proves the rendered text re-parses through the equation engine, E notation included.
   const uint8_t savedRunStop = programRunStop;
   if(numberOfFormulae == 0) {
     fnEqNew(NOPARAM);
@@ -993,7 +995,7 @@ void covVecToEqnRoundTrip(uint16_t unusedButMandatoryParameter) {
   fnXSWAP(0);                                                    // the programmed swap: the text goes into the store, the previous formula text lands in X
   programRunStop = savedRunStop;
   fnDrop(NOPARAM);                                               // drop the swapped-out text: the eval point from Y is in X now
-  reallyRunFunction(ITM_STO, findOrAllocateNamedVariable("X"));
+  reallyRunFunction(ITM_STO, findOrAllocateNamedVariable("x"));
   fnEqCalc(NOPARAM);
 }
 
@@ -2660,6 +2662,106 @@ void covLoadGraphPgms(uint16_t unusedButMandatoryParameter) {
   covWriteAndLoadPgm(pgmG7, sizeof(pgmG7));
   covWriteAndLoadPgm(pgmG8, sizeof(pgmG8));
   covWriteAndLoadPgm(pgmG9, sizeof(pgmG9));
+}
+
+// In-suite pin for realToDouble() (fnRealToDouble in registerValueConversions.c), the graph engine's real_t to double conversion. Up to 19 coefficient
+// digits go into a uint64_t and one exact power of ten scales them, so a real of 15 digits or fewer whose scaling exponent stays within +-22 is a
+// single rounding and must match the host's correctly rounded strtod of the same decimal bit for bit; that host path, decNumberToString then strtod,
+// is what the device ran before. Past the envelope the pin is a ulp distance: 1 for 16 to 19 digits, 2 for a truncated coefficient, 7 on the 10^22
+// stepping path, the bounds a 21 M-vector fuzz against MPFR established. The count of failing vectors lands in X.
+static uint64_t _dblBits(double d) {
+  uint64_t u;
+  memcpy(&u, &d, sizeof(u));
+  return u;
+}
+
+static int64_t _dblOrdered(double d) {
+  uint64_t u = _dblBits(d);
+  return (u & 0x8000000000000000ULL) ? (int64_t)(0x8000000000000000ULL - u) : (int64_t)u;
+}
+
+static bool_t _ulpWithin(double a, double b, int64_t n) {
+  int64_t d = _dblOrdered(a) - _dblOrdered(b);
+  return (d < 0 ? -d : d) <= n;
+}
+
+static double _realToDoubleOf(const char *str, double *host) {    // the conversion under test, and the host reference for the same decimal
+  real_t r;
+  char buf[128];
+  double d;
+  stringToReal(str, &r, &ctxtReal39);
+  decNumberToString((decNumber *)&r, buf);
+  *host = strtod(buf, NULL);
+  realToDouble(&r, &d);
+  return d;
+}
+
+void covRealToDouble(uint16_t unusedButMandatoryParameter) {
+  static const struct { const char *str; int64_t ulp; } vec[] = {
+    // 15 digits or fewer, scaling exponent within +-22: a single rounding, bit-identical to host strtod
+    {"1",                                       0 },
+    {"-1",                                      0 },
+    {"3.5",                                     0 },
+    {"0.1",                                     0 },
+    {"50.000838",                               0 },
+    {"3.14159265358979",                        0 },
+    {"-2.5E10",                                 0 },
+    {"6.674E-11",                               0 },
+    {"1E22",                                    0 },  // the last exact power in the table
+    {"1E-22",                                   0 },
+    {"123456789012345",                         0 },
+    {"1.23456789012345E-8",                     0 },
+    // 16 to 19 digits: every digit reaches the uint64_t, the first rounding is the conversion off it
+    {"9007199254740993",                        1 },  // 2^53 + 1
+    {"3.1415926535897931",                      1 },
+    {"1234567890123456789",                     1 },
+    // longer coefficients are truncated to 17..19 digits
+    {"2.718281828459045235360287471352662",     2 },  // 34 digits, a graph range register's worth
+    {"1.2345678901234567890123456789012345678", 2 },  // 38 digits
+    // the 10^22 stepping path
+    {"1E300",                                   7 },
+    {"2.5E-300",                                7 },
+    {"1.7976931348623157E308",                  7 },  // DBL_MAX
+    {"2.2250738585072014E-308",                 7 },  // DBL_MIN
+    {"4.9E-324",                                7 },  // the subnormal floor
+  };
+  static const struct { const char *str; bool_t inf; bool_t neg; } edge[] = {   // specials, signed zeros and the real_t exponent range
+    {"NaN",       false, false },
+    {"Infinity",  true,  false },
+    {"-Infinity", true,  true  },
+    {"0",         false, false },
+    {"-0",        false, true  },
+    {"1E6144",    true,  false },
+    {"-1E6144",   true,  true  },
+    {"1E-6143",   false, false },
+    {"-1E-6143",  false, true  },
+  };
+  uint32_t fails = 0;
+
+  for(uint32_t i = 0; i < sizeof(vec) / sizeof(vec[0]); i++) {
+    double host;
+    double got = _realToDoubleOf(vec[i].str, &host);
+    if(vec[i].ulp == 0 ? _dblBits(got) != _dblBits(host) : !_ulpWithin(got, host, vec[i].ulp)) {
+      printf("\nrealToDouble(%s) = %.17e, host strtod %.17e, allowed %lld ulp\n", vec[i].str, got, host, (long long)vec[i].ulp);
+      fails++;
+    }
+  }
+  for(uint32_t i = 0; i < sizeof(edge) / sizeof(edge[0]); i++) {
+    real_t r;
+    double d;
+    stringToReal(edge[i].str, &r, &ctxtReal39);
+    realToDouble(&r, &d);
+    if(i == 0 ? !isnan(d) : ((isinf(d) != 0) != edge[i].inf || (!isinf(d) && d != 0) || (signbit(d) != 0) != edge[i].neg)) {   // glibc's isinf is -1 for -inf
+      printf("\nrealToDouble(%s) = %.17e\n", edge[i].str, d);
+      fails++;
+    }
+  }
+
+  longInteger_t li;
+  longIntegerInit(li);
+  uInt32ToLongInteger(fails, li);
+  convertLongIntegerToLongIntegerRegister(li, REGISTER_X);
+  longIntegerFree(li);
 }
 
 // The on-disk name of graph <which>'s bitmap. covBmpName points the SNAP capture at it and covHashBmp reads it back; one builder keeps the two from drifting.
@@ -5585,7 +5687,7 @@ var2:
                   }
 
                   if(!real34AreEqual(VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &expectedReal34)) {
-                    char str[404];
+                    char str[4006]; // large enough for "%s %cix %s" with real[2000] and imag[2000]
                     sprintf(str, "%s %cix %s", real, imag[0] == '-' ? '-' : '+', imag + (imag[0] == '-' ? 1 : 0));
                     expectedAndShouldBeValueForElement(regist, letter, element / cols + 1, element % cols + 1, str, registerExpectedAndValue);
                     if(relativeErrorReal34(&expectedReal34, VARIABLE_REAL34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), "real", regist, letter) == RE_INACCURATE) {
@@ -5593,7 +5695,7 @@ var2:
                     }
                   }
                   else if(!real34AreEqual(VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), &expectedImag34)) {
-                    char str[404];
+                    char str[4006]; // large enough for "%s %cix %s" with real[2000] and imag[2000]
                     sprintf(str, "%s %cix %s", real, imag[0] == '-' ? '-' : '+', imag + (imag[0] == '-' ? 1 : 0));
                     expectedAndShouldBeValueForElement(regist, letter, element / cols + 1, element % cols + 1, str, registerExpectedAndValue);
                     if(relativeErrorReal34(&expectedImag34, VARIABLE_IMAG34_DATA(REGISTER_COMPLEX34_MATRIX_ELEMENTS(regist) + element), "imaginary", regist, letter) == RE_INACCURATE) {

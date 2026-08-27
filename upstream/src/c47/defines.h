@@ -1235,7 +1235,7 @@
 #define VAR_NO_PPERONA 37
 #define VAR_NO_PMT     38
 #define VAR_NO_PV      39
-#define VAR_NO_GRAMOD  40
+#define VAR_NO_SPARE6  40 // removed
 #define VAR_NO_UX      41
 #define VAR_NO_LX      42
 #define VAR_NO_CPERONA 43
@@ -1380,7 +1380,7 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_PPERONA,                             //2037
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
-  RESERVED_VARIABLE_GRAMOD,                              //2040
+  RESERVED_VARIABLE_SPARE6,                              //2040
   RESERVED_VARIABLE_UX,                                  //2041
   RESERVED_VARIABLE_LX,                                  //2042
   RESERVED_VARIABLE_CPERONA,                             //2043
@@ -1970,7 +1970,8 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_ALLVARS                           20
 #define CATALOG_NUMBRS                            21
 #define CATALOG_FCNS_EIM                          22
-#define NUMBER_OF_CATALOGS                        23
+#define CATALOG_USRMENU                           23
+#define NUMBER_OF_CATALOGS                        24
 
 // String comparison type
 #define CMP_BINARY                                 0

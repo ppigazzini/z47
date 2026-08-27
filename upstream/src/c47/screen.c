@@ -6011,6 +6011,9 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
             lcd_refresh_dma();             //If this is not here, menu generation is not reliable, and presses are missed. Not sure why.
           #endif //DMCP_BUILD
         }
+        else {
+          showMenuTopLine();               //the stack clear and the X line take the top rows of the menu, so draw them again when the menu itself is not drawn
+        }
         if(programRunStop == PGM_STOPPED || programRunStop == PGM_WAITING) {
           hourGlassIconEnabled = false;
         }
@@ -6618,14 +6621,10 @@ void fnPoint(uint16_t unusedButMandatoryParameter) {
 
 void fnAGraph(uint16_t regist) {
     int32_t x, y;
-    uint32_t gramod;
-    longInteger_t liGramod;
+    uint32_t gramod = graMod;
     getPixelPos(&x, &y);
     x= abs(x);
     y= abs(y);
-    convertLongIntegerRegisterToLongInteger(RESERVED_VARIABLE_GRAMOD, liGramod);
-    longIntegerToUInt32(liGramod, gramod);
-    longIntegerFree(liGramod);
     if(lastErrorCode == ERROR_NONE) {
       if(getRegisterDataType(regist) == dtShortInteger) {
         uint64_t val;

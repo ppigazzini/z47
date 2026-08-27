@@ -11,7 +11,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1019     // Menu items renumbered into one block
+#define BACKUP_VERSION                     1020     // GRAMOD moved from the reserved variable table to the graMod global
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -566,6 +566,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
 
     saveStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
 
+    saveStateValue(&graMod,                         sizeof(graMod),                                              "graMod",                         "uint8");
+
     // If you create a new parameter, proceed as following:
     //saveStateValue(&newParam,                       sizeof(newParam),                                            "newParam",                       "parameterType");
 
@@ -915,6 +917,17 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     numberOfAllocatedMemoryRegions = restoredAllocatedRegions;
 
     restoreStateValue(ram,                             TO_BYTES(RAM_SIZE_IN_BLOCKS),                                "ram",                            "hexDump");
+
+    graMod = 0;
+    if(backupVersion >= 1020) {
+      restoreStateValue(&graMod,                         sizeof(graMod),                                              "graMod",                         "uint8");
+    }
+    else { // pre-1020 backups: GRAMOD as a long integer reserved variable in the ram image, offset 36: take its value over, convert, then clear
+      strLgIntHeader_t *ptr = TO_PCMEMPTR(36);
+      uint32_t oldGramod = *(uint32_t *)(ptr + 1);
+      graMod = (oldGramod <= 3) ? oldGramod : 0;
+      memset(TO_PCMEMPTR(36), 0, REAL34_SIZE_IN_BYTES);
+    }
     // The size argument is what stops the reader writing off the end, so it is the room the destination has, the way every other call here passes a sizeof().
     // These writes cannot leave their table whatever count the file carries.
     restoreStateValue(freeMemoryRegions,               sizeof(*freeMemoryRegions) * MAX_FREE_REGIONS,               "freeMemoryRegions",              "hexDump"); // as config.c allocates it
