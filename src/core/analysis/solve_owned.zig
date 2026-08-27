@@ -106,6 +106,7 @@ const SOLVER_STATUS_EQUATION_1ST_DERIVATIVE: u16 = 0x0008;
 const SOLVER_STATUS_EQUATION_2ND_DERIVATIVE: u16 = 0x000C;
 const SOLVER_STATUS_USES_FORMULA: u16 = 0x0100;
 const SOLVER_STATUS_TVM_APPLICATION: u16 = 0x1000;
+const SOLVER_STATUS_RPN_GRAPHER: u16 = 0x4000;
 
 const SOLVER_RESULT_NORMAL: c_int = 0;
 const SOLVER_RESULT_SIGN_REVERSAL: c_int = 1;
@@ -124,6 +125,7 @@ const TI_SOLVER_VARIABLE_RESULT: u8 = 110;
 
 const ITM_STO: i16 = 44;
 const ITM_SOLVE: i16 = 1608;
+const ITM_PLTf: i16 = 2734;
 
 const REAL_SOLVER: u8 = 106; // status-message code passed to errorMessageOf
 
@@ -587,7 +589,15 @@ pub export fn fnSolveVar(unusedButMandatoryParameter: u16) linksection(runtime.c
             }
         }
     } else if ((currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) != 0) {
-        reallyRunFunction(ITM_SOLVE, regist);
+        // The armed engine decides what the second press of an MVAR key runs:
+        // with the RPN grapher armed it is PLOTf over the chosen variable, and
+        // only otherwise the solver. Running SOLVE unconditionally makes a
+        // PLOT session solve for a root instead of drawing the sweep.
+        if ((currentSolverStatus & SOLVER_STATUS_RPN_GRAPHER) != 0) {
+            reallyRunFunction(ITM_PLTf, regist);
+        } else {
+            reallyRunFunction(ITM_SOLVE, regist);
+        }
     } else {
         currentSolverVariable = regist;
         reallyRunFunction(ITM_STO, regist);

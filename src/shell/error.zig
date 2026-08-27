@@ -122,12 +122,16 @@ extern fn getSystemFlag(flag: c_int) bool;
 extern fn clearSystemFlag(flag: c_uint) void;
 
 // lcd_fill_rect is a DMCP SDK fixed-address library call on firmware
-// (LIBRARY_FN_BASE+60); on host it is a real symbol from the GTK layer.
+// (LIBRARY_FN_BASE+60); on host it is a real symbol from the GTK layer. The jump
+// table sits at a different address on each board -- 0x08000201 on the DM42 and
+// 0x08000301 on the DM42n, per each SDK's lft_ifc.h -- so the base is selected,
+// never assumed. Hardcoding the DM42 one sends the DMCP5 image to the wrong entry.
+const LIBRARY_FN_BASE: usize = if (frontier_build_options.old_hw) 0x08000201 else 0x08000301;
 const LcdFillRectFn = *const fn (x: u32, y: u32, dx: u32, dy: u32, val: c_int) callconv(.c) void;
 const c_lcd_fill_rect = @extern(LcdFillRectFn, .{ .name = "lcd_fill_rect" });
 inline fn lcdFillRect(x: u32, y: u32, dx: u32, dy: u32, val: c_int) void {
     if (comptime dmcp_build) {
-        const f: LcdFillRectFn = @ptrFromInt(0x08000201 + 60);
+        const f: LcdFillRectFn = @ptrFromInt(LIBRARY_FN_BASE + 60);
         f(x, y, dx, dy, val);
     } else {
         c_lcd_fill_rect(x, y, dx, dy, val);

@@ -26,7 +26,7 @@ const consts = abi.constants;
 const runtime = @import("solve_runtime.zig");
 const solve_build_options = @import("solve_build_options");
 
-const dmcp_dm42 = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+const dmcp_dm42 = solve_build_options.dm42_pkg_xip;
 const option_tvm_formulas = runtime.option_tvm_formulas;
 const option_tvm_newton = runtime.option_tvm_newton;
 
@@ -93,7 +93,7 @@ const NOPARAM: u16 = 9876;
 
 const DEC_ROUND_HALF_UP: u32 = 2; // 0.5 rounds up
 
-const testing: bool = @hasDecl(solve_build_options, "is_testsuite_build") and solve_build_options.is_testsuite_build;
+const testing: bool = solve_build_options.is_testsuite_build;
 
 // ---------------------------------------------------------------------------
 // Globals
@@ -1195,7 +1195,10 @@ pub export fn fnEffToI(unusedButMandatoryParameter: u16) linksection(runtime.cod
 // ===========================================================================
 // tvmEquation (solver callback)
 // ===========================================================================
-var tvm_i: real_t = undefined; // 'static real_t i' in C
+// tvm.c's `static real_t i`: it survives between calls, which is what tvmIKnown
+// caches. Zero-initialised because a C static is, and a config file can restore
+// TVMIKnown set, which lets the first call read it before anything writes it.
+var tvm_i: real_t = std.mem.zeroes(real_t);
 
 pub export fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: ?*real_t) linksection(runtime.code_section) callconv(.c) void {
     const variableU: u16 = @bitCast(variable);

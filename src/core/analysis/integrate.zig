@@ -76,6 +76,7 @@ const ERROR_NONE: u8 = 0;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_NO_PROGRAM_SPECIFIED: u8 = 54;
+const ERROR_RAM_FULL: u8 = 11;
 const ERROR_SOLVER_ABORT: u8 = 60;
 const PGM_WAITING: u8 = 2;
 
@@ -585,19 +586,50 @@ inline fn IS_FINITE(x: *const real_t) bool {
 // ===========================================================================
 fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align(1) const real_t, d: *real_t, realContext: *realContext_t) linksection(runtime.code_section) *real_t {
     _ = eps;
-    var fl: real_t = undefined;
-    var fr: real_t = undefined;
-    var h2: real_t = undefined;
-    var r: real_t = undefined;
-    var h: real_t = undefined;
-    var lfl: real_t = undefined;
-    var lfr: real_t = undefined;
-    var lr: real_t = undefined;
-    var s: real_t = undefined;
+    // The ten working reals come from the heap, not the frame: ten decNumbers at
+    // 60 bytes is 600 bytes of a frame that sits under a plotted integral, where
+    // the DM42's stack grant is already all but spent. Taken per call, and freed
+    // on both exits.
+    const fl_p = runtime.mallocReal();
+    const fr_p = runtime.mallocReal();
+    const h2_p = runtime.mallocReal();
+    const r_p = runtime.mallocReal();
+    const h_p = runtime.mallocReal();
+    const lfl_p = runtime.mallocReal();
+    const lfr_p = runtime.mallocReal();
+    const lr_p = runtime.mallocReal();
+    const s_p = runtime.mallocReal();
+    const s1_p = runtime.mallocReal(); // scratch variable
+    defer {
+        runtime.freeReal(fl_p);
+        runtime.freeReal(fr_p);
+        runtime.freeReal(h2_p);
+        runtime.freeReal(r_p);
+        runtime.freeReal(h_p);
+        runtime.freeReal(lfl_p);
+        runtime.freeReal(lfr_p);
+        runtime.freeReal(lr_p);
+        runtime.freeReal(s_p);
+        runtime.freeReal(s1_p);
+    }
+    if (fl_p == null or fr_p == null or h2_p == null or r_p == null or h_p == null or lfl_p == null or lfr_p == null or lr_p == null or s_p == null or s1_p == null) {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        return d;
+    }
+    const fl = fl_p.?;
+    const fr = fr_p.?;
+    const h2 = h2_p.?;
+    const r = r_p.?;
+    const h = h_p.?;
+    const lfl = lfl_p.?;
+    const lfr = lfr_p.?;
+    const lr = lr_p.?;
+    const s = s_p.?;
+    const s1 = s1_p.?;
 
-    DEI_xeq_user_adr(regist, a, d, const_2(), &fl, &fr, &h2, realContext);
+    DEI_xeq_user_adr(regist, a, d, const_2(), fl, fr, h2, realContext);
 
-    if (IS_INFINITE(&h2) or (realIsZero(&fl) and realIsZero(&fr))) {
+    if (IS_INFINITE(h2) or (realIsZero(fl) and realIsZero(fr))) {
         return d;
     }
     // function undefined or zero - don't bother.
@@ -605,50 +637,49 @@ fn exp_sinh_opt_d(regist: calcRegister_t, a: *align(1) const real_t, eps: *align
     var i: u16 = 1;
     var j: u16 = 32; // j=32 is optimal to find r
 
-    realSetZero(&s);
-    realCopy(const_2(), &lr);
+    realSetZero(s);
+    realCopy(const_2(), lr);
     while (true) { // find max j such that fl and fr are both finite
         j /= 2;
-        uInt32ToReal(@as(u32, 1) << @intCast(i + j), &r);
-        DEI_xeq_user_adr(regist, a, d, &r, &fl, &fr, &h, realContext);
-        if (!(j > 1 and IS_INFINITE(&h))) break;
+        uInt32ToReal(@as(u32, 1) << @intCast(i + j), r);
+        DEI_xeq_user_adr(regist, a, d, r, fl, fr, h, realContext);
+        if (!(j > 1 and IS_INFINITE(h))) break;
     }
 
-    if (j > 1 and IS_FINITE(&h) and (realGetSign(&h) != realGetSign(&h2))) {
-        realCopy(&fl, &lfl);
-        realCopy(&fr, &lfr);
+    if (j > 1 and IS_FINITE(h) and (realGetSign(h) != realGetSign(h2))) {
+        realCopy(fl, lfl);
+        realCopy(fr, lfr);
 
         while (true) { // bisect in 4 iterations
             j /= 2;
-            uInt32ToReal(@as(u32, 1) << @intCast(i + j), &r);
-            DEI_xeq_user_adr(regist, a, d, &r, &fl, &fr, &h, realContext);
-            if (IS_FINITE(&h)) {
-                var s1b: real_t = undefined;
-                _ = realCopyAbs(&h, &s1b);
-                _ = realAdd(&s, &s1b, &s, realContext); // sum |h| to remove noisy cases
-                if (realGetSign(&h) == realGetSign(&h2)) {
+            uInt32ToReal(@as(u32, 1) << @intCast(i + j), r);
+            DEI_xeq_user_adr(regist, a, d, r, fl, fr, h, realContext);
+            if (IS_FINITE(h)) {
+                _ = realCopyAbs(h, s1);
+                _ = realAdd(s, s1, s, realContext); // sum |h| to remove noisy cases
+                if (realGetSign(h) == realGetSign(h2)) {
                     i += j; // search right half
                 } else { // search left half
-                    realCopy(&fl, &lfl);
-                    realCopy(&fr, &lfr);
-                    realCopy(&r, &lr);
+                    realCopy(fl, lfl);
+                    realCopy(fr, lfr);
+                    realCopy(r, lr);
                 }
             }
             if (!(j > 1)) break;
         }
 
-        if (runtime.realCompareGreaterThan(&s, const_1e_32())) { // if sum of |h| > small ...
-            _ = realSubtract(&lfl, &lfr, &h, realContext);
-            realCopy(&lr, &r);
-            if (!realIsZero(&h)) { // if last diff != 0, back up r by one step
-                _ = realMultiply(&r, const_1on2(), &r, realContext);
+        if (runtime.realCompareGreaterThan(s, const_1e_32())) { // if sum of |h| > small ...
+            _ = realSubtract(lfl, lfr, h, realContext);
+            realCopy(lr, r);
+            if (!realIsZero(h)) { // if last diff != 0, back up r by one step
+                _ = realMultiply(r, const_1on2(), r, realContext);
             }
-            realSetPositiveSign(&lfl);
-            realSetPositiveSign(&lfr);
-            if (runtime.realCompareLessThan(&lfl, &lfr)) {
-                _ = realDivide(d, &r, d, realContext); // move d closer to the finite endpoint
+            realSetPositiveSign(lfl);
+            realSetPositiveSign(lfr);
+            if (runtime.realCompareLessThan(lfl, lfr)) {
+                _ = realDivide(d, r, d, realContext); // move d closer to the finite endpoint
             } else {
-                _ = realMultiply(d, &r, d, realContext); // move d closer to the infinite endpoint
+                _ = realMultiply(d, r, d, realContext); // move d closer to the infinite endpoint
             }
         }
     }
@@ -664,16 +695,68 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
     currentKeyCode = 255;
     var exitSignalled: bool_t = false;
 
-    var c: real_t = undefined;
-    var d: real_t = undefined;
-    var s: real_t = undefined;
-    var v: real_t = undefined;
-    var h: real_t = undefined;
-    var y: real_t = undefined;
-    var eps: real_t = undefined;
-    var s1: real_t = undefined;
-    var s2: real_t = undefined;
-    var s3: real_t = undefined;
+    // The sixteen working reals come from the heap, not the frame: sixteen
+    // decNumbers at 60 bytes is 960 bytes, and this function sits at the bottom of
+    // a plotted integral where the DM42's stack grant is already all but spent. The
+    // six from the outer loop are hoisted here so the loop allocates nothing; each
+    // is still written before it is read on every pass, so the reset at the top of
+    // the loop still does its work. Freed on every exit.
+    const c_p = runtime.mallocReal();
+    const d_p = runtime.mallocReal();
+    const s_p = runtime.mallocReal();
+    const v_p = runtime.mallocReal();
+    const h_p = runtime.mallocReal();
+    const y_p = runtime.mallocReal();
+    const eps_p = runtime.mallocReal();
+    const s1_p = runtime.mallocReal(); // scratch variables
+    const s2_p = runtime.mallocReal();
+    const s3_p = runtime.mallocReal();
+    const p_p = runtime.mallocReal();
+    const q_p = runtime.mallocReal();
+    const fp_p = runtime.mallocReal();
+    const fm_p = runtime.mallocReal();
+    const t_p = runtime.mallocReal();
+    const eh_p = runtime.mallocReal();
+    defer {
+        runtime.freeReal(c_p);
+        runtime.freeReal(d_p);
+        runtime.freeReal(s_p);
+        runtime.freeReal(v_p);
+        runtime.freeReal(h_p);
+        runtime.freeReal(y_p);
+        runtime.freeReal(eps_p);
+        runtime.freeReal(s1_p);
+        runtime.freeReal(s2_p);
+        runtime.freeReal(s3_p);
+        runtime.freeReal(p_p);
+        runtime.freeReal(q_p);
+        runtime.freeReal(fp_p);
+        runtime.freeReal(fm_p);
+        runtime.freeReal(t_p);
+        runtime.freeReal(eh_p);
+    }
+    if (c_p == null or d_p == null or s_p == null or v_p == null or h_p == null or y_p == null or eps_p == null or s1_p == null or s2_p == null or s3_p == null or
+        p_p == null or q_p == null or fp_p == null or fm_p == null or t_p == null or eh_p == null)
+    {
+        displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
+        return;
+    }
+    const c = c_p.?;
+    const d = d_p.?;
+    const s = s_p.?;
+    const v = v_p.?;
+    const h = h_p.?;
+    const y = y_p.?;
+    const eps = eps_p.?;
+    const s1 = s1_p.?;
+    const s2 = s2_p.?;
+    const s3 = s3_p.?;
+    const p = p_p.?;
+    const q = q_p.?;
+    const fp = fp_p.?;
+    const fm = fm_p.?;
+    const t = t_p.?;
+    const eh = eh_p.?;
 
     var sign: c_int = sign_in;
     var k: c_int = 0;
@@ -681,11 +764,11 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
 
     var loop: c_int = 0;
 
-    realCopy(errorp, &eps);
+    realCopy(errorp, eps);
 
-    realSetZero(&c);
-    realSetOne(&d);
-    realCopy(const_2(), &h);
+    realSetZero(c);
+    realSetOne(d);
+    realCopy(const_2(), h);
 
     if (realIsNaN(a) or realIsNaN(b)) { // check for invalid limits
         realSetNaN(result);
@@ -703,53 +786,47 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
     realSetZero(result); // initial result is zero
 
     if ((!realIsInfinite(a)) and (!realIsInfinite(b))) {
-        _ = realAdd(a, b, &c, realContext);
-        _ = realMultiply(&c, const_1on2(), &c, realContext);
+        _ = realAdd(a, b, c, realContext);
+        _ = realMultiply(c, const_1on2(), c, realContext);
 
-        _ = realSubtract(b, a, &d, realContext);
-        _ = realMultiply(&d, const_1on2(), &d, realContext);
+        _ = realSubtract(b, a, d, realContext);
+        _ = realMultiply(d, const_1on2(), d, realContext);
 
-        realCopy(&c, &v);
+        realCopy(c, v);
     } else if (!realIsInfinite(a)) { // int from a to infinity
         mode = 1; // Exp-Sinh
-        realCopy(a, &c); // c = a
+        realCopy(a, c); // c = a
         // USE_NEW_DEI_INTEGRATION_CODE == 2: optimise d
-        realCopy(exp_sinh_opt_d(regist, a, &eps, &d, realContext), &d);
-        _ = realAdd(a, &d, &v, realContext); // v = a + d
+        realCopy(exp_sinh_opt_d(regist, a, eps, d, realContext), d);
+        _ = realAdd(a, d, v, realContext); // v = a + d
     } else if (!realIsInfinite(b)) { // int from -infinity to b
         mode = 1; // Exp-Sinh
-        realCopy(b, &c); // c = b
+        realCopy(b, c); // c = b
         sign = -sign;
 
-        realMinus(&d, &d, realContext); // d = -1
+        realMinus(d, d, realContext); // d = -1
         // USE_NEW_DEI_INTEGRATION_CODE == 2: optimise d
-        realCopy(exp_sinh_opt_d(regist, b, &eps, &d, realContext), &d);
-        _ = realAdd(b, &d, &v, realContext); // v = b + d
+        realCopy(exp_sinh_opt_d(regist, b, eps, d, realContext), d);
+        _ = realAdd(b, d, v, realContext); // v = b + d
     } else {
         mode = 2; // Sinh-Sinh
-        realSetZero(&v);
+        realSetZero(v);
     }
 
-    DEI_xeq_user(regist, &v, &s, realContext);
+    DEI_xeq_user(regist, v, s, realContext);
 
     // Now a, b, c, d, v, and mode have the correct values.
     while (true) {
-        var p: real_t = undefined;
-        var q: real_t = undefined;
-        var fp: real_t = undefined;
-        var fm: real_t = undefined;
-        var t: real_t = undefined;
-        var eh: real_t = undefined;
-        realSetZero(&p);
-        realSetZero(&fp);
-        realSetZero(&fm);
+        realSetZero(p);
+        realSetZero(fp);
+        realSetZero(fm);
 
-        _ = realMultiply(&h, const_1on2(), &h, realContext);
-        realExp(&h, &eh, realContext);
-        realCopy(&eh, &t);
+        _ = realMultiply(h, const_1on2(), h, realContext);
+        realExp(h, eh, realContext);
+        realCopy(eh, t);
 
         if (k > 0) {
-            _ = realMultiply(&eh, &eh, &eh, realContext);
+            _ = realMultiply(eh, eh, eh, realContext);
         }
 
         if (mode == 0) { // Tanh-Sinh
@@ -785,47 +862,47 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                     }
                 }
 
-                _ = realDivide(const_1(), &t, &s1, realContext); // s1 stores 1/t
-                _ = realSubtract(&s1, &t, &u, realContext);
+                _ = realDivide(const_1(), t, s1, realContext); // s1 stores 1/t
+                _ = realSubtract(s1, t, &u, realContext);
                 realExp(&u, &u, realContext); // u = exp(1/t-t)
 
                 _ = realAdd(&u, const_1(), &r, realContext);
                 _ = realDivide(&u, &r, &r, realContext);
                 _ = realMultiply(&r, const_2(), &r, realContext); // r = 2*u/(1+u);
 
-                _ = realAdd(&t, &s1, &s2, realContext);
-                _ = realMultiply(&r, &s2, &w, realContext);
-                _ = realAdd(&u, const_1(), &s2, realContext);
-                _ = realDivide(&w, &s2, &w, realContext); // w = (t+1/t)*r/(1+u);
+                _ = realAdd(t, s1, s2, realContext);
+                _ = realMultiply(&r, s2, &w, realContext);
+                _ = realAdd(&u, const_1(), s2, realContext);
+                _ = realDivide(&w, s2, &w, realContext); // w = (t+1/t)*r/(1+u);
 
-                _ = realMultiply(&d, &r, &xx, realContext); // x = d*r;
+                _ = realMultiply(d, &r, &xx, realContext); // x = d*r;
 
-                _ = realAdd(a, &xx, &s1, realContext);
-                if (runtime.realCompareGreaterThan(&s1, a)) { // if too close to a then reuse previous fp
-                    DEI_xeq_user(regist, &s1, &y, realContext);
-                    if (!realIsInfinite(&y)) {
-                        realCopy(&y, &fp);
+                _ = realAdd(a, &xx, s1, realContext);
+                if (runtime.realCompareGreaterThan(s1, a)) { // if too close to a then reuse previous fp
+                    DEI_xeq_user(regist, s1, y, realContext);
+                    if (!realIsInfinite(y)) {
+                        realCopy(y, fp);
                     }
                 }
 
-                _ = realSubtract(b, &xx, &s1, realContext);
-                if (runtime.realCompareLessThan(&s1, b)) {
-                    DEI_xeq_user(regist, &s1, &y, realContext);
-                    if (!realIsInfinite(&y)) {
-                        realCopy(&y, &fm);
+                _ = realSubtract(b, &xx, s1, realContext);
+                if (runtime.realCompareLessThan(s1, b)) {
+                    DEI_xeq_user(regist, s1, y, realContext);
+                    if (!realIsInfinite(y)) {
+                        realCopy(y, fm);
                     }
                 }
 
-                _ = realAdd(&fp, &fm, &s1, realContext);
-                _ = realMultiply(&s1, &w, &q, realContext); // q = w*(fp+fm)
-                _ = realAdd(&p, &q, &p, realContext); // p += q
-                _ = realMultiply(&t, &eh, &t, realContext); // t *= eh
+                _ = realAdd(fp, fm, s1, realContext);
+                _ = realMultiply(s1, &w, q, realContext); // q = w*(fp+fm)
+                _ = realAdd(p, q, p, realContext); // p += q
+                _ = realMultiply(t, eh, t, realContext); // t *= eh
 
-                _ = realMultiply(&eps, realCopyAbs(&p, &s1), &s2, realContext); // s2 = eps*abs(p)
-                if (!runtime.realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)) break; // while abs(q) > eps*abs(p)
+                _ = realMultiply(eps, realCopyAbs(p, s1), s2, realContext); // s2 = eps*abs(p)
+                if (!runtime.realCompareGreaterThan(realCopyAbs(q, s1), s2)) break; // while abs(q) > eps*abs(p)
             }
         } else {
-            _ = realMultiply(&t, const_1on2(), &t, realContext);
+            _ = realMultiply(t, const_1on2(), t, realContext);
             while (true) {
                 var r: real_t = undefined;
                 var w: real_t = undefined;
@@ -856,70 +933,70 @@ fn dbl_exp_int_new(regist: calcRegister_t, a: *align(1) const real_t, b: *align(
                     }
                 }
 
-                _ = realMultiply(&t, const_4(), &s1, realContext); // s1 = 4t
-                _ = realDivide(const_1(), &s1, &s1, realContext); // s1 = 0.25/t
-                _ = realSubtract(&t, &s1, &s1, realContext); // s1 = t - 0.25/t
-                realExp(&s1, &r, realContext); // r = exp(t-0.25/t)
+                _ = realMultiply(t, const_4(), s1, realContext); // s1 = 4t
+                _ = realDivide(const_1(), s1, s1, realContext); // s1 = 0.25/t
+                _ = realSubtract(t, s1, s1, realContext); // s1 = t - 0.25/t
+                realExp(s1, &r, realContext); // r = exp(t-0.25/t)
 
                 realCopy(&r, &w);
 
-                realSetZero(&q);
+                realSetZero(q);
 
                 if (mode == 1) { // Exp-Sinh
-                    _ = realAdd(&c, realDivide(&d, &r, &s1, realContext), &xx, realContext); // x = c+d/r;
-                    if (realCompareEqual(&xx, &c)) {
+                    _ = realAdd(c, realDivide(d, &r, s1, realContext), &xx, realContext); // x = c+d/r;
+                    if (realCompareEqual(&xx, c)) {
                         break;
                     }
-                    DEI_xeq_user(regist, &xx, &y, realContext);
-                    if (!realIsInfinite(&y)) {
-                        _ = realAdd(&q, realDivide(&y, &w, &s1, realContext), &q, realContext);
+                    DEI_xeq_user(regist, &xx, y, realContext);
+                    if (!realIsInfinite(y)) {
+                        _ = realAdd(q, realDivide(y, &w, s1, realContext), q, realContext);
                     }
                 } else { // Sinh-Sinh
-                    _ = realSubtract(&r, realDivide(const_1(), &r, &s2, realContext), &s1, realContext);
-                    _ = realMultiply(&s1, const_1on2(), &r, realContext); // r = (r-1/r)/2
+                    _ = realSubtract(&r, realDivide(const_1(), &r, s2, realContext), s1, realContext);
+                    _ = realMultiply(s1, const_1on2(), &r, realContext); // r = (r-1/r)/2
 
-                    _ = realAdd(&w, realDivide(const_1(), &w, &s2, realContext), &s1, realContext);
-                    _ = realMultiply(&s1, const_1on2(), &w, realContext); // w = (w+1/w)/2
+                    _ = realAdd(&w, realDivide(const_1(), &w, s2, realContext), s1, realContext);
+                    _ = realMultiply(s1, const_1on2(), &w, realContext); // w = (w+1/w)/2
 
-                    _ = realSubtract(&c, realMultiply(&d, &r, &s1, realContext), &xx, realContext); // x = c-d*r;
-                    DEI_xeq_user(regist, &xx, &y, realContext);
-                    if (!realIsInfinite(&y)) {
-                        _ = realAdd(&q, realMultiply(&y, &w, &s1, realContext), &q, realContext);
+                    _ = realSubtract(c, realMultiply(d, &r, s1, realContext), &xx, realContext); // x = c-d*r;
+                    DEI_xeq_user(regist, &xx, y, realContext);
+                    if (!realIsInfinite(y)) {
+                        _ = realAdd(q, realMultiply(y, &w, s1, realContext), q, realContext);
                     }
                 }
 
-                _ = realAdd(&c, realMultiply(&d, &r, &s1, realContext), &xx, realContext); // x = c+d*r;
-                DEI_xeq_user(regist, &xx, &y, realContext);
+                _ = realAdd(c, realMultiply(d, &r, s1, realContext), &xx, realContext); // x = c+d*r;
+                DEI_xeq_user(regist, &xx, y, realContext);
 
-                if (!realIsInfinite(&y)) {
-                    _ = realAdd(&q, realMultiply(&y, &w, &s1, realContext), &q, realContext);
+                if (!realIsInfinite(y)) {
+                    _ = realAdd(q, realMultiply(y, &w, s1, realContext), q, realContext);
                 }
 
-                _ = realDivide(const_1(), realMultiply(&t, const_4(), &s2, realContext), &s1, realContext); // s1 = 1/(4t)
-                _ = realMultiply(&q, realAdd(&t, &s1, &s2, realContext), &q, realContext); // q = q * (t + 1/4t)
-                _ = realAdd(&p, &q, &p, realContext); // p += q;
-                _ = realMultiply(&t, &eh, &t, realContext); // t *= eh;
-                _ = realMultiply(&eps, realCopyAbs(&p, &s1), &s2, realContext); // s2 = eps*abs(p)
-                if (!runtime.realCompareGreaterThan(realCopyAbs(&q, &s1), &s2)) break; // while abs(q) > eps*abs(p)
+                _ = realDivide(const_1(), realMultiply(t, const_4(), s2, realContext), s1, realContext); // s1 = 1/(4t)
+                _ = realMultiply(q, realAdd(t, s1, s2, realContext), q, realContext); // q = q * (t + 1/4t)
+                _ = realAdd(p, q, p, realContext); // p += q;
+                _ = realMultiply(t, eh, t, realContext); // t *= eh;
+                _ = realMultiply(eps, realCopyAbs(p, s1), s2, realContext); // s2 = eps*abs(p)
+                if (!runtime.realCompareGreaterThan(realCopyAbs(q, s1), s2)) break; // while abs(q) > eps*abs(p)
             }
         }
 
-        _ = realSubtract(&s, &p, &v, realContext); // v = s - p
-        _ = realAdd(&s, &p, &s, realContext); // s+=p
+        _ = realSubtract(s, p, v, realContext); // v = s - p
+        _ = realAdd(s, p, s, realContext); // s+=p
 
-        _ = realCopyAbs(&s, &s1); // s1 = abs(s)
-        _ = realCopyAbs(&v, &s2); // s2 = abs(v)
+        _ = realCopyAbs(s, s1); // s1 = abs(s)
+        _ = realCopyAbs(v, s2); // s2 = abs(v)
         k += 1;
         // estimate of the integral here = sign*s*h*d.
-        _ = realMultiply(&d, realMultiply(&s, &h, &s3, realContext), result, realContext);
+        _ = realMultiply(d, realMultiply(s, h, s3, realContext), result, realContext);
         if (sign == -1) {
             realMinus(result, result, realContext); // result = sign*s*h*d
         }
-        _ = realDivide(&s2, realAdd(&s1, &s2, &s3, realContext), errorp, realContext); // error = abs(v)/(abs(s)+abs(v))
+        _ = realDivide(s2, realAdd(s1, s2, s3, realContext), errorp, realContext); // error = abs(v)/(abs(s)+abs(v))
         if (realIsNaN(errorp)) {
             realSetOne(errorp); // only happens when v, s both zero
         }
-        if (!(runtime.realCompareGreaterThan(&s2, realMultiply(const_10(), realMultiply(&eps, &s1, &s3, realContext), &s3, realContext)) and k <= maxlevel)) break; // while abs(v) > 10*eps*abs(s)
+        if (!(runtime.realCompareGreaterThan(s2, realMultiply(const_10(), realMultiply(eps, s1, s3, realContext), s3, realContext)) and k <= maxlevel)) break; // while abs(v) > 10*eps*abs(s)
     }
     return;
 }

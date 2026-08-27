@@ -107,7 +107,7 @@ pub fn showSolverBracket(a_in: *align(1) const real34_t, b_in: *align(1) const r
 /// jump-table call there, not a link symbol.
 const solve_build_options = @import("solve_build_options");
 const is_dmcp_build = @import("builtin").target.os.tag == .freestanding;
-const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+const dm42_pkg_xip = solve_build_options.dm42_pkg_xip;
 const library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
 fn lcdRefreshOnFirmware() void {
     if (comptime is_dmcp_build) {

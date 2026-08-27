@@ -8,10 +8,10 @@
 // fnProgrammableiSum and fnProgrammableiProduct are exported here as
 // z47_solver_fnProgrammableiSum and z47_solver_fnProgrammableiProduct; those
 // are the symbols solve.zig's dispatcher calls. The static _showProgress /
-// _programmableiSumProd / _checkRegisters / _checkiArgument become private. The host-only _showProgress (ENABLE_SOLVER_PROGRESS == 1)
-// is reduced to a no-op (no effect on the computed result), matching the
-// prime / sumprod owner precedent. The VERBOSE_COUNTER debug blocks are #undef'd
-// and omitted.
+// _programmableiSumProd / _checkRegisters / _checkiArgument become private.
+// _showProgress (ENABLE_SOLVER_PROGRESS == 1) paints through the shared
+// progress-panel owner, which holds the register-line geometry the four engines
+// share. The VERBOSE_COUNTER debug blocks are #undef'd and omitted.
 
 const runtime = @import("solve_runtime.zig");
 const progress_panel = @import("progress_panel.zig");
