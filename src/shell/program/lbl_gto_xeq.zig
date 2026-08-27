@@ -25,6 +25,7 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const ir_printing: bool = frontier_build_options.ir_printing;
 const frontier_print = @import("../print/print.zig");
+const frontier_decode = @import("decode.zig");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -781,19 +782,6 @@ pub export fn fnStopProgram(unusedButMandatoryParameter: u16) callconv(.c) void 
     //  refreshStatusBar();
 }
 
-// ===========================================================================
-// Static helpers
-// ===========================================================================
-// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
-// this local copy carries the same clamp so a corrupt step's length byte cannot
-// read past the program region.
-fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    const nameStart: [*c]u8 = stringAddress + 1;
-    const stringLength = program_step_opcode.boundProgramNameLength(nameStart, stringAddress[0], firstFreeProgramByte);
-    _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
-    tmpStringLabelOrVariableName[stringLength] = 0;
-}
-
 fn _executeWithIndirectRegister(paramAddress: [*c]u8, op: u16) void {
     const opParam: u8 = paramAddress[0];
     const tryAllocate: bool_t = isFunctionAllowingNewVariable(op);
@@ -809,7 +797,7 @@ fn _executeWithIndirectRegister(paramAddress: [*c]u8, op: u16) void {
 
 fn _executeWithIndirectVariable(stringAddress: [*c]u8, op: u16) void {
     const tryAllocate: bool_t = isFunctionAllowingNewVariable(op);
-    _getStringLabelOrVariableName(stringAddress);
+    frontier_decode.getStringLabelOrVariableName(stringAddress);
     const regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
     if (regist != INVALID_VARIABLE) {
         const realParam: i16 = indirectAddressing(regist, frontier_items.indirectionType(op), @intCast(indexOfItems[op].tamMinMax >> TAM_MAX_BITS), @intCast(indexOfItems[op].tamMinMax & TAM_MAX_MASK), tryAllocate);
@@ -840,7 +828,7 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
             if (opParam <= LAST_LOCAL_LABEL) { // Local label from 00 to 99 or from A to l
                 frontier_items.reallyRunFunction(@bitCast(op), opParam);
             } else if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
-                _getStringLabelOrVariableName(paramAddress);
+                frontier_decode.getStringLabelOrVariableName(paramAddress);
                 const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName, opParam);
                 if (label != INVALID_VARIABLE or op == ITM_LBLQ) {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(label));
@@ -926,7 +914,7 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(regKStoC(opParam)));
                 }
             } else if (opParam == STRING_LABEL_VARIABLE) {
-                _getStringLabelOrVariableName(paramAddress);
+                frontier_decode.getStringLabelOrVariableName(paramAddress);
                 var regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
                 if (tryAllocate != 0) {
                     // Reuses the regist from findNamedVariable above; on a failed allocation regist stays INVALID_VARIABLE and is passed on.
@@ -962,7 +950,7 @@ fn _executeOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
 
         PARAM_MENU => {
             if (opParam == STRING_LABEL_VARIABLE) {
-                _getStringLabelOrVariableName(paramAddress);
+                frontier_decode.getStringLabelOrVariableName(paramAddress);
                 const menu_id: i16 = frontier_softmenus.findMenu(tmpStringLabelOrVariableName);
                 if (tryAllocate != 0) {
                     frontier_items.reallyRunFunction(@bitCast(op), @bitCast(findOrAllocateNamedVariable(tmpStringLabelOrVariableName)));
@@ -1031,7 +1019,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             var val: mpz_struct = undefined;
             mpz_init(&val);
 
-            _getStringLabelOrVariableName(literalAddress + 1);
+            frontier_decode.getStringLabelOrVariableName(literalAddress + 1);
             _ = stringToLongInteger(tmpStringLabelOrVariableName, base, &val);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
@@ -1044,7 +1032,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
             var val: mpz_struct = undefined;
             mpz_init(&val);
 
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             _ = stringToLongInteger(tmpStringLabelOrVariableName, 10, &val);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
@@ -1054,7 +1042,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         },
 
         STRING_REAL34 => {
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
@@ -1062,7 +1050,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         },
 
         STRING_ANGLE_RADIAN, STRING_ANGLE_GRAD, STRING_ANGLE_DEGREE, STRING_ANGLE_MULTPI => {
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
@@ -1079,7 +1067,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
 
         STRING_COMPLEX34 => {
             var imag: [*c]u8 = tmpStringLabelOrVariableName;
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             while (imag[0] != 'i' and imag[0] != 0) {
                 imag += 1;
             }
@@ -1103,7 +1091,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         },
 
         STRING_LABEL_VARIABLE => {
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtString, toBlocks(@as(u32, @intCast(stringByteLength(tmpStringLabelOrVariableName) + 1))), @bitCast(amNone));
@@ -1111,7 +1099,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         },
 
         STRING_DATE => {
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtDate, 0, @bitCast(amNone));
@@ -1120,7 +1108,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         },
 
         STRING_TIME => {
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amNone));
@@ -1129,7 +1117,7 @@ fn _putLiteral(literalAddress_arg: [*c]u8) void {
         },
 
         STRING_ANGLE_DMS => {
-            _getStringLabelOrVariableName(literalAddress);
+            frontier_decode.getStringLabelOrVariableName(literalAddress);
             liftStack();
             setSystemFlag(FLAG_ASLIFT);
             reallocateRegister(REGISTER_X, dtReal34, 0, @bitCast(amDMS));
@@ -1246,7 +1234,7 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                         const marker = step[0];
                         step += 1;
                         if (marker == STRING_LABEL_VARIABLE) {
-                            _getStringLabelOrVariableName(step);
+                            frontier_decode.getStringLabelOrVariableName(step);
                             frontier_string_funcs.fn42Alpha(NOPARAM);
                         }
                     } else if (op == ITM_42APPEND) {
@@ -1261,7 +1249,7 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                                 }
                                 return 0;
                             }
-                            _getStringLabelOrVariableName(step);
+                            frontier_decode.getStringLabelOrVariableName(step);
                             frontier_string_funcs.fn42Append(NOPARAM);
                         }
                     } else {

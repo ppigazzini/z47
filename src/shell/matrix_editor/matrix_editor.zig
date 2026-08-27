@@ -1904,6 +1904,14 @@ pub fn z47_frontier_matrix_make_j_element(item: i16) void {
             realCopy(const39_piOn2, &theta);
             frontier_conversion_angles.convertAngleFromTo(&theta, amRadian, currentAngularMode, &ctxtReal39);
             real34SetOne(&elm.real);
+            // realToReal34, where the C reaches for real34Copy. That macro copies
+            // sixteen raw bytes, and theta is a real_t -- a decNumber whose first
+            // sixteen bytes are its digit count, exponent and flags, not a
+            // decimal128 -- so the C stores the struct header into the imaginary
+            // part and the new element's angle is whatever those fields encode.
+            // A deliberate divergence: converting is what the surrounding code
+            // means, and reproducing the copy would write a value no reader of
+            // this matrix can interpret.
             realToReal34(&theta, &elm.imag);
         } else {
             real34SetZero(&elm.real);
