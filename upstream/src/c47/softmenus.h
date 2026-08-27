@@ -37,6 +37,7 @@ void      showKey                (const char *label, int16_t x1, int16_t x2, int
  * Displays the current part of the displayed softmenu.
  */
 void      showSoftmenuCurrentPart(void);
+void      showMenuTopLine(void);
 
 /**
  * Displays a softmenu.

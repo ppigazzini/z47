@@ -40,25 +40,25 @@ Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RL=LonI:"852" RX=ReMa:"M1,2[1,inf]"
 
 ;=======================================================================================================================
 ; Renders: highest degree first, zero terms skipped, unit coefficients elided, the sign folded into the separator.
-; The negative leading unit stays explicit: -1\x80\xd7X^k parses the same under a unary or a binary minus, -X^k need not.
+; The negative leading unit stays explicit: -1\x80\xd7x^k parses the same under a unary or a binary minus, -x^k need not.
 ;=======================================================================================================================
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=ReMa:"M1,3[1,-2,-4]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,-2,-4]" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=Stri:"X^2-2\x80\xd7X-4"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,-2,-4]" RT=LonI:"11" RZ=LonI:"12" RY=LonI:"13" RX=Stri:"x^2-2\x80\xd7x-4"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[-1,0,5]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[-1,0,5]" RX=Stri:"-1\x80\xd7X^2+5"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[-1,0,5]" RX=Stri:"-1\x80\xd7x^2+5"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1,0,0]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,0]" RX=Stri:"X^2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1,0,0]" RX=Stri:"x^2"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[2,1]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RX=Stri:"2\x80\xd7X+1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[2,1]" RX=Stri:"2\x80\xd7x+1"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[2,-1,0]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[2,-1,0]" RX=Stri:"2\x80\xd7X^2-X"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[2,-1,0]" RX=Stri:"2\x80\xd7x^2-x"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[0.5,-2.5E-13,1]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[0.5,-2.5E-13,1]" RX=Stri:"0.5\x80\xd7X^2-2.5E-13\x80\xd7X+1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[0.5,-2.5E-13,1]" RX=Stri:"0.5\x80\xd7x^2-2.5E-13\x80\xd7x+1"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,2[0,0]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,2[0,0]" RX=Stri:"0"
@@ -67,13 +67,13 @@ In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,1[7]"
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,1[7]" RX=Stri:"7"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M3,1[1,2,3]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[1,2,3]" RX=Stri:"X^2+2\x80\xd7X+3"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M3,1[1,2,3]" RX=Stri:"x^2+2\x80\xd7x+3"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[0,3,1]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[0,3,1]" RX=Stri:"3\x80\xd7X+1"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[0,3,1]" RX=Stri:"3\x80\xd7x+1"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RL=LonI:"852" RX=ReMa:"M1,3[1E+2,0,-0.04]"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1E+2,0,-0.04]" RX=Stri:"1E+2\x80\xd7X^2-0.04"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=ReMa:"M1,3[1E+2,0,-0.04]" RX=Stri:"1E+2\x80\xd7x^2-0.04"
 
 ;=======================================================================================================================
 ; Error case: the text must fit the equation buffer (26 full-precision coefficients render past AIM_BUFFER_LENGTH)

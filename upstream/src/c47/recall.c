@@ -208,7 +208,6 @@ void fnRecallConfig(uint16_t regist) {
     __attribute__((unused)) int16_t compatibility_int1;     //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte00;    //for use in spare slots below
     __attribute__((unused)) uint8_t compatibility_byte1;    //for use in spare slots below
-    __attribute__((unused)) bool_t compatibility_byte4 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte5 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte6 ;    //for use in spare slots below
     __attribute__((unused)) bool_t compatibility_byte7 ;    //for use in spare slots below
@@ -296,7 +295,10 @@ void fnRecallConfig(uint16_t regist) {
     recallFromDtConfigDescriptor(grpGroupingHex);
     recallFromDtConfigDescriptor(grpGroupingBin);
     grpGroupingHexBinDefault();
-    recallFromDtConfigDescriptor(    compatibility_byte4);
+    recallFromDtConfigDescriptor(graMod);
+    if(graMod > 3) {
+      graMod = 0;
+    }
     recallFromDtConfigDescriptor(    compatibility_byte5);
     recallFromDtConfigDescriptor(    compatibility_byte6);
     recallFromDtConfigDescriptor(    compatibility_byte7);

@@ -170,26 +170,7 @@ static bool_t _checkReadOnlyVariable(uint16_t regist) {
 
 
 static void _storeValue(uint16_t regist) {
-  if(regist == RESERVED_VARIABLE_GRAMOD) {
-    copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
-    fnLint(NOPARAM);
-    if(lastErrorCode == ERROR_NONE) {
-      longInteger_t x;
-      convertLongIntegerRegisterToLongInteger(REGISTER_X, x);
-      if(longIntegerCompareInt(x, 0) >= 0 && longIntegerCompareInt(x, 3) <= 0) {
-        copySourceRegisterToDestRegister(REGISTER_X, regist);
-        copySourceRegisterToDestRegister(TEMP_REGISTER_1, REGISTER_X);
-      }
-      else {
-        displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
-        #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-          moreInfoOnError("In function _storeValue:", "Invalid value for GRAMOD", NULL, NULL);
-        #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
-      }
-      longIntegerFree(x);
-    }
-  }
-  else if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.dataType == dtReal34) {
+  if(FIRST_RESERVED_VARIABLE <= regist && regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].header.dataType == dtReal34) {
     copySourceRegisterToDestRegister(REGISTER_X, TEMP_REGISTER_1);
     fnToReal(NOPARAM);
     if(lastErrorCode == ERROR_NONE) {
@@ -368,7 +349,6 @@ void fnStoreConfig(uint16_t regist) {
   int16_t compatibility_int1  = 0;               //defaults to use when settings are removed
   bool_t compatibility_byte00 = false;           //defaults to use when settings are removed
   uint8_t compatibility_byte1 = 0;               //defaults to use when settings are removed
-  bool_t compatibility_byte4  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte5  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte6  = false;           //defaults to use when settings are removed
   bool_t compatibility_byte7  = false;           //defaults to use when settings are removed
@@ -445,7 +425,7 @@ void fnStoreConfig(uint16_t regist) {
   storeToDtConfigDescriptor(Norm_Key_00.used);
   storeToDtConfigDescriptor(grpGroupingHex);
   storeToDtConfigDescriptor(grpGroupingBin);
-  storeToDtConfigDescriptor(    compatibility_byte4);
+  storeToDtConfigDescriptor(graMod);
   storeToDtConfigDescriptor(    compatibility_byte5);
   storeToDtConfigDescriptor(    compatibility_byte6);
   storeToDtConfigDescriptor(    compatibility_byte7);

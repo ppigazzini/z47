@@ -49,8 +49,6 @@
 
     #endif // PC_BUILD
 
-    #include <locale.h>
-
     #if defined(DMCP_BUILD)
       #define DBG_PRINT
 
@@ -568,6 +566,7 @@
 
   extern uint32_t               firstGregorianDay;
   extern uint32_t               denMax;
+  extern uint8_t                graMod;
   extern uint32_t               lastDenominator;
   extern uint32_t               lastIntegerBase;
   extern uint32_t               decodedIntegerBase;

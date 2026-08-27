@@ -575,6 +575,7 @@ int16_t fnItemShowValue(int16_t item) {
     case ITM_DSP:       result = displayFormatDigits;                               break;
 //    case ITM_GET_ADM:
     case ITM_SET_ADM:   result = admValue();                                        break;
+    case ITM_SET_GRAMOD: result = graMod;                                          break;
 //    case ITM_GET_ISM:
     case ITM_SET_ISM:   result = shortIntegerModeValue();                           break;
 //    case ITM_GET_REALDF:

@@ -89,7 +89,9 @@
   //Section to convert doubles and floats
   const char *doubleSpecialLabel                             (double value);
   void    sci_fmt                                            (char *buf, int n, double x);       //Scientific notation without printf float support; replaces snprintf(buf, n, "%.16e", x)
-  double  stringToDouble                                     (const char *str);                  //Locale-free strtod: accepts '.' or ',' regardless of the region setting
+  #if defined(PC_BUILD)
+    double  stringToDouble                                   (const char *str);                  //Locale-free strtod for the simulator's backup file: accepts '.' or ',' regardless of the region setting
+  #endif // PC_BUILD
   void    convertDoubleToString                              (double x, int16_t n, char *buff);  //Reformatting double/float strings that are formatted according to different locale settings
   void    convertDoubleToReal                                (double x, real_t *destination, realContext_t *ctxt);
   void    convertDoubleToReal34Register                      (double x, calcRegister_t destination);
@@ -115,6 +117,8 @@
   #define ifLongIntegerDoAngleReduction true
   bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xAngularMode, bool_t reduceLongintegerAngle);
   bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fractional);
+  bool_t getRegisterAsUint32Param(uint16_t regist, uint32_t *value);
+  bool_t getRegisterAsInt32Param(uint16_t regist, int32_t *value);
   bool_t getRegisterAsShortInt(calcRegister_t reg, bool_t *sign, uint64_t *val, bool_t *overflow, bool_t *fractional);
   bool_t getRegisterAsRawShortInt(calcRegister_t reg, uint64_t *val, uint32_t *base);
 

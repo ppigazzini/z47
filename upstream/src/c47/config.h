@@ -203,6 +203,8 @@ void     initSimEqMatABX              (void);
 
 void     fnGetADM                     (uint16_t unusedButMandatoryParameter);
 void     fnSetADM                     (uint16_t unusedButMandatoryParameter);
+void     fnGetGRAMOD                  (uint16_t unusedButMandatoryParameter);
+void     fnSetGRAMOD                  (uint16_t unusedButMandatoryParameter);
 void     fnSetISM                     (uint16_t unusedButMandatoryParameter);
 void     fnGetREALDF                  (uint16_t unusedButMandatoryParameter);
 void     fnSetREALDF                  (uint16_t unusedButMandatoryParameter);

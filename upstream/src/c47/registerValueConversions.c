@@ -3,7 +3,9 @@
 
 #include "c47.h"
 #include <float.h>
-#include <locale.h>
+#if defined(PC_BUILD)
+  #include <locale.h>
+#endif // PC_BUILD
 
 static float fnRealToFloat(const real_t *r);
 
@@ -901,22 +903,62 @@ void realToFloat(const real_t *vv, float *v) {
 }
 
 
-// Locale-free parse: accepts '.' or ',' regardless of the locale, so decNumber output (always '.') and files written under any region setting parse correctly. Buffer sized for a full 75-digit real string with exponent.
-double stringToDouble(const char *str) {
-  char buf[120];
-  const char radix = *localeconv()->decimal_point;
-  uint32_t i = 0;
-  while(str[i] != 0 && i < sizeof(buf) - 1) {
-    buf[i] = (str[i] == '.' || str[i] == ',') ? radix : str[i];
-    i++;
+// d * 10^e without libm. 10^0..10^22 are exact in double, so one multiply or divide rounds once; larger
+// exponents step by 10^22 and saturate to 0 or +Inf on the way, as strtod of the same decimal does.
+// The clamp is exact rather than defensive: d is under 10^19, so |e| past 400 saturates whatever d holds.
+static double scaleByPowerOfTen(double d, int32_t e) {
+  TO_QSPI static const double pow10[] = {
+    1e0,  1e1,  1e2,  1e3,  1e4,  1e5,  1e6,  1e7,  1e8,  1e9,  1e10,
+    1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21, 1e22
+  };
+  bool_t divide;
+  uint32_t k;
+
+  if(e > 400) {
+    e = 400;
   }
-  buf[i] = 0;
-  return strtod(buf, NULL);
+  else if(e < -400) {
+    e = -400;
+  }
+  divide = (e < 0);
+  k = (uint32_t)(divide ? -e : e);
+  while(k > 22) {
+    d = divide ? d / 1e22 : d * 1e22;
+    k -= 22;
+    if(d == 0.0 || d > DBL_MAX) {
+      return d;
+    }
+  }
+  return divide ? d / pow10[k] : d * pow10[k];
 }
 
 
+#if defined(PC_BUILD)
+  // Locale-free parse for the simulator's backup file: accepts '.' or ',' regardless of the locale, so a file written under one region setting loads
+  // under another. Buffer sized for a full 75-digit real string with exponent. The device parses no floating-point text, so this stays off DMCP.
+  double stringToDouble(const char *str) {
+    char buf[120];
+    const char radix = *localeconv()->decimal_point;
+    uint32_t i = 0;
+    while(str[i] != 0 && i < sizeof(buf) - 1) {
+      buf[i] = (str[i] == '.' || str[i] == ',') ? radix : str[i];
+      i++;
+    }
+    buf[i] = 0;
+    return strtod(buf, NULL);
+  }
+#endif // PC_BUILD
+
+
+// real_t to double without the string round trip: coefficient units into a uint64_t, one conversion, then scaleByPowerOfTen(). Units are taken
+// while the mantissa is below 10^16, so it ends under 10^19: every digit of a coefficient up to 19 digits, the top 17 to 19 of a longer one; e counts
+// the units left below it. The unit walk is fnRealToFloat()'s. Specials and zero pass their sign through.
 static double fnRealToDouble(const real_t *r) {
-  char buffer[100];
+  const uint64_t unitCap = 10000000000000000ULL;   // 10^16
+  uint64_t mant = 0;
+  int32_t j, e;
+  double d;
+
   if(realIsSpecial(r)) {
     if(realIsNaN(r)) {
       return 0.0 / 0.0;
@@ -926,8 +968,18 @@ static double fnRealToDouble(const real_t *r) {
   if(realIsZero(r)) {
     return realIsPositive(r) ? 0.0 : -0.0;
   }
-  decNumberToString((decNumber*)r, buffer);
-  return stringToDouble(buffer);
+  j = (r->digits + DECDPUN - 1) / DECDPUN;
+  while(j > 0) {
+    if((mant = r->lsu[--j]) != 0) {
+      break;
+    }
+  }
+  while(--j >= 0 && mant < unitCap) {
+    mant = mant * 1000 + r->lsu[j];
+  }
+  e = r->exponent + (j + 1) * DECDPUN;
+  d = scaleByPowerOfTen((double)mant, e);
+  return realIsNegative(r) ? -d : d;
 }
 
 
@@ -1299,6 +1351,27 @@ bool_t getRegisterAsLongInt(calcRegister_t reg, longInteger_t val, bool_t *fract
   }
 
   return err == ERROR_NONE;
+}
+
+bool_t getRegisterAsUint32Param(uint16_t regist, uint32_t *value) {   // For setters' non-negative long integer, returned as uint32
+  longInteger_t lgInt;
+  bool_t ok = getRegisterAsLongInt(regist, lgInt, NULL);
+  if(ok) {
+    ok = longIntegerCompareInt(lgInt, 0) >= 0;
+    longIntegerToUInt32(lgInt, *value);
+  }
+  longIntegerFree(lgInt);
+  return ok;
+}
+
+bool_t getRegisterAsInt32Param(uint16_t regist, int32_t *value) {     // signed variant of getRegisterAsUint32Param
+  longInteger_t lgInt;
+  bool_t ok = getRegisterAsLongInt(regist, lgInt, NULL);
+  if(ok) {
+    longIntegerToInt32(lgInt, *value);
+  }
+  longIntegerFree(lgInt);
+  return ok;
 }
 
 static void longIntegerAngleReduction(calcRegister_t regist, angularMode_t angularMode, real_t *reducedAngle, bool_t reduceLongintegerAngle) {

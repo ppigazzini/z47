@@ -1,0 +1,17 @@
+;*************************************************************
+;*************************************************************
+;**                                                         **
+;**                    realtodouble_cov                     **
+;**                                                         **
+;*************************************************************
+;*************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
+
+;=======================================================================================================================
+; realToDouble(), the graph engine's real_t to double conversion, pinned in-suite: the driver runs the vector table and
+; leaves the count of failing vectors in X. Bit-identity to host strtod inside the single-rounding envelope, ulp bounds
+; past it, the specials, signed zeros, and saturation at the real_t exponent range.
+;=======================================================================================================================
+Func: fnRealToDoubleCov
+In:  FL_ASLIFT=0
+Out: EC=0 RX=LonI:"0"

@@ -182,8 +182,8 @@ static void executeFunction(const char *data, int16_t item_);
         break;
       }
 
-      case MNU_MENU:
-      case MNU_MENUS: {
+      case MNU_USRMENU:
+      case MNU_USRMENUS: {
         dynamicMenuItem = firstItem + itemShift + fn;
         item = ITM_NOP;
         if(dynamicMenuItem < dynamicSoftmenu[menuId].numItems) {
@@ -293,7 +293,8 @@ static void executeFunction(const char *data, int16_t item_);
          {
           return findNamedVariable((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem)) - FIRST_NAMED_VARIABLE + ASSIGN_NAMED_VARIABLES;
         }
-        case MNU_MENUS: {
+        case MNU_USRMENU:
+        case MNU_USRMENUS: {
           if(item == -MNU_DYNAMIC) {
             for(int32_t i = 0; i < numberOfUserMenus; ++i) {
               if(compareString((char *)getNthString(dynamicSoftmenu[menuId].menuContent, dynamicMenuItem), userMenus[i].menuName, CMP_NAME) == 0) {
@@ -406,7 +407,10 @@ static void executeFunction(const char *data, int16_t item_);
       MNU_CHARS,
       MNU_PROGS,
       MNU_VARS,
+      MNU_MENU,
       MNU_MENUS,
+      MNU_USRMENU,
+      MNU_USRMENUS,
       //VARS MENU
       MNU_CONFIGS,
       MNU_MATRS,
@@ -666,7 +670,8 @@ static void executeFunction(const char *data, int16_t item_);
       #pragma GCC diagnostic push
       #pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
         switch(-currentMenu()) {
-        case MNU_MENUS: {
+        case MNU_MENUS:
+        case MNU_USRMENUS: {
             if(item <= ASSIGN_USER_MENU) {
               currentUserMenu = ASSIGN_USER_MENU - item;
               item = -MNU_DYNAMIC;
@@ -788,7 +793,7 @@ static void executeFunction(const char *data, int16_t item_);
       case MNU_CHARS:
       case MNU_PROGS:
       case MNU_VARS:
-      case MNU_MENUS: {
+      case MNU_USRMENUS: {
         screenUpdatingMode &= ~SCRUPD_ONE_TIME_FLAGS;
         return false;
       }
@@ -1041,7 +1046,7 @@ endReturnTrue:
             return;
           }
           else if(item < 0) { // softmenu
-            if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && currentMenu() == -MNU_MENUS) {
+            if(calcMode == CM_ASSIGN && itemToBeAssigned == 0 && (currentMenu() == -MNU_MENUS || currentMenu() == -MNU_USRMENUS)) {
               itemToBeAssigned = item;
               leaveAsmMode();
               popSoftmenu();
@@ -1051,7 +1056,7 @@ endReturnTrue:
               leaveAsmMode();
               showSoftmenu(item);
             }
-            else if((tam.mode == TM_MENU) && (item != -MNU_MENU) && !tam.alpha) {
+            else if((tam.mode == TM_MENU) && (item != -MNU_MENU) && (item != -MNU_USRMENU) && !tam.alpha) {
               if((currentMenu() ==  -MNU_TAMINDIRECT) && ((item == -MNU_VAR) || (item == -MNU_REG))) {
                 showSoftmenu(item);
               }

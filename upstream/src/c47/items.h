@@ -1231,7 +1231,7 @@
 #define VAR_PPERonA                 1198
 #define VAR_PMT                     1199
 #define VAR_PV                      1200
-#define VAR_GRAMOD                  1201
+#define VAR_1201                    1201
 #define VAR_MATA                    1202
 #define VAR_MATB                    1203
 #define VAR_MATX                    1204
@@ -2833,8 +2833,8 @@
 #define ITM_2738                    2738 // General items / any items spare
 #define ITM_M_CONCATR               2739
 #define ITM_2740                    2740
-#define ITM_2741                    2741
-#define ITM_2742                    2742
+#define ITM_GET_GRAMOD              2741
+#define ITM_SET_GRAMOD              2742
 #define ITM_KNOTtoMPS               2743
 #define ITM_MPStoKNOT               2744
 #define ITM_DEGPStoRADPS            2745
@@ -3264,8 +3264,8 @@
 #define MNU_XXFCNS                  3143
 #define MNU_YESNO                   3144
 #define MNU_POLY                    3145
-#define ITM_3146                    3146 // General items / any items spare (reserved: Menus)
-#define ITM_3147                    3147 // General items / any items spare (reserved: Menus)
+#define MNU_USRMENU                 3146
+#define MNU_USRMENUS                3147
 #define ITM_3148                    3148 // General items / any items spare (reserved: Menus)
 #define ITM_3149                    3149 // General items / any items spare (reserved: Menus)
 #define ITM_3150                    3150 // General items / any items spare (reserved: Menus)
@@ -3371,6 +3371,7 @@
 #define NOPARAM                     9876 // Item for function who don't need an item
 #define CONFIRMED                   9877 // Confirmation for RESET, CLPALL, CLALL
 #define NOT_CONFIRMED               9878 // Confirmation for RESET, CLPALL, CLALL
+
 #define ITM_PROD_SIGN               9999 // Multiplication sign × or ·
 
 #define INVALID_MENU                LAST_ITEM

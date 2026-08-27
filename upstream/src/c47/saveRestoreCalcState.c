@@ -13,7 +13,7 @@
 #endif // !OPTION_DATAFILE
 
 // This is used for the state files
-#define configFileVersion                  10000028 // Menu items renumbered into one block
+#define configFileVersion                  10000029 // GRAMOD moved from the reserved variable table to the graMod global
 #define VersionAllowed                     10000005 // This code will not autoload versions earlier than this
 /*
 10000001 // arbitrary starting point version 10 000 001
@@ -46,6 +46,7 @@
 10000026 // 2026-07-14 FLAG_SBadm
 10000027 // 2026-08-17 FLAG_M_ALL
 10000028 // 2026-08-16 Menu items renumbered into one block; 10000027 is taken on release branch 4.00a2
+10000029 // 2026-08-25 GRAMOD moved from the reserved variable table to the graMod global
 
 Current version defaults all non-loaded settings from previous version files correctly
 */
@@ -360,19 +361,6 @@ static uint16_t toUint16(const char *str) {
 
 static uint32_t toUint32(const char *str) {
   return strtoul(str, NULL, 10);
-}
-
-// Floating point conversion function: accepts '.' or ',' in the file regardless of the locale, so config files written under one region setting load correctly under another
-float stringToFloat(const char *str) {
-  char buf[48];
-  const char radix = *localeconv()->decimal_point;
-  uint32_t i = 0;
-  while(str[i] != 0 && i < sizeof(buf) - 1) {
-    buf[i] = (str[i] == '.' || str[i] == ',') ? radix : str[i];
-    i++;
-  }
-  buf[i] = 0;
-  return strtof(buf, NULL);
 }
 
 // Lettered-register names for registers FIRST_LETTERED_REGISTER..LAST_SPARE_REGISTER (100..125), in register-number order:
@@ -1162,6 +1150,7 @@ void doSave(uint16_t saveType) {
 
         sprintf(tmpString, "firstGregorianDay\n%"          PRIu32 "\n",     firstGregorianDay);            save(tmpString, strlen(tmpString));
         sprintf(tmpString, "denMax\n%"                     PRIu32 "\n",     denMax);                       save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "graMod\n%"                     PRIu8  "\n",     graMod);                       save(tmpString, strlen(tmpString));
         sprintf(tmpString, "lastDenominator\n%"            PRIu32 "\n",     lastDenominator);              save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayFormat\n%"              PRIu8  "\n",     displayFormat);                save(tmpString, strlen(tmpString));
         sprintf(tmpString, "displayFormatDigits\n%"        PRIu8  "\n",     displayFormatDigits);          save(tmpString, strlen(tmpString));
@@ -2576,6 +2565,12 @@ int64_t stringToInt64(const char *str) {
 
           if(strcmp(aimBuffer, "firstGregorianDay") == 0) {
             firstGregorianDay = toUint32(tmpString);
+          }
+          else if(strcmp(aimBuffer, "graMod") == 0) {
+            graMod = toUint8(tmpString);
+            if(graMod > 3) {
+              graMod = 0;
+            }
           }
           else if(strcmp(aimBuffer, "denMax") == 0) {
             denMax = toUint32(tmpString);

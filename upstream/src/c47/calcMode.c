@@ -116,6 +116,11 @@
         catalog = CATALOG_MENU;
         break;
       }
+      case MNU_USRMENU:
+      case MNU_USRMENUS: {
+        catalog = CATALOG_USRMENU;
+        break;
+      }
       case MNU_SYSFL: {
         catalog = CATALOG_SYFL;
         break;

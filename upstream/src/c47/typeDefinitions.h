@@ -364,7 +364,7 @@ typedef struct {
   normKey_t      Norm_Key_00;                                              //  BlankKey Config
   uint8_t        grpGroupingHex;                                           //  HEXGRP
   uint8_t        grpGroupingBin;                                           //  BINGRP
-  bool_t         compatibility_byte4;               //Spare Byte           //
+  uint8_t        graMod;                                                   //  GRAMOD
   bool_t         compatibility_byte5;               //Spare Byte           //
   bool_t         compatibility_byte6;               //Spare Byte           //
   bool_t         compatibility_byte7;               //Spare Byte           //

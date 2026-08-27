@@ -326,20 +326,81 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
 }
 
 
-  void nextWord(const char *str, int16_t *pos, char *word) {
-    int16_t i = 0;
+  /********************************************//**
+   * \brief Copies the next word of a NULL terminated list of strings, walked as one flow,
+   *        into word. Separators, part boundaries and a broken trailing lead byte are
+   *        skipped on the way in. A lead byte with no partner byte can only be the string's
+   *        own NUL terminator, since a genuine second byte of value 0 would end the C
+   *        string there too - so it unambiguously marks a message truncated mid glyph, and
+   *        the orphan is dropped rather than read as part of a word.
+   *
+   *        Words are stepped a whole glyph at a time, never a byte: the second byte of a
+   *        two byte glyph is free to be anything, including the 0x20 of a separator, so a
+   *        byte comparison would split such a glyph and leave a lead byte with no partner
+   *        for the font scan to read past.
+   *
+   *        A word too long for word is stopped on a glyph boundary and its remainder is
+   *        left for the next call, which returns it as a word of its own.
+   *
+   * \param[in] part const char* const* The strings, NULL terminated
+   * \param[in,out] p int16_t* Which string is being read, moved on past exhausted parts
+   * \param[in,out] pos int16_t* Offset into that string, left just past the word
+   * \param[out] word char* Receives the word, NUL terminated
+   * \param[in] wordSize int16_t Size of word, terminator included
+   * \return bool_t true if a word was copied, false when the list is exhausted
+   ***********************************************/
+  static bool_t nextWord(const char *const *part, int16_t *p, int16_t *pos, char *word, int16_t wordSize) {
+    const int16_t maxLen = wordSize - 1;
+    const char *str;
+    int16_t start;
+
+    for(;;) {
+      str = part[*p];
+
+      if(str == NULL) {
+        return false;
+      }
+
+      if(str[*pos] == 0) {
+        (*p)++;
+        *pos = 0;
+        continue;
+      }
+
+      if(str[*pos] == ' ') {
+        (*pos)++;
+        continue;
+      }
+
+      if((str[*pos] & 0x80) && str[*pos + 1] == 0) {
+        (*p)++;
+        *pos = 0;
+        continue;
+      }
+
+      break;
+    }
+
+    start = *pos;
 
     while(str[*pos] != 0 && str[*pos] != ' ') {
-      word[i++] = str[(*pos)++];
+      const int16_t step = (str[*pos] & 0x80) ? 2 : 1;
+
+      if(step == 2 && str[*pos + 1] == 0) {
+        break;
+      }
+
+      if(*pos - start + step > maxLen) {
+        break;
+      }
+
+      *pos += step;
     }
 
-    word[i] = 0;
-
-    while(str[*pos] == ' ') {
-      (*pos)++;
-    }
+    xcopy(word, str + start, *pos - start);
+    word[*pos - start] = 0;
+    return true;
   }
-
 
 
   /********************************************//**
@@ -351,9 +412,10 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
    ***********************************************/
   void displayBugScreen(const char *msg) {
     if(calcMode != CM_BUG_ON_SCREEN) {
-      int16_t y, pos;
-      char line[100], word[50], message[1000];
-      bool_t firstWordOfLine;
+      static const char *const bugScreenTail = "Try to reproduce this and report a bug. Press EXIT to leave.";
+      const char *part[3];
+      int16_t y, pos, p, x;
+      char word[100];
 
       previousCalcMode = calcMode;
       calcMode = CM_BUG_ON_SCREEN;
@@ -367,37 +429,33 @@ void displayDomainErrorMessage(uint8_t errorCode, calcRegister_t errMessageRegis
       showString("This is most likely a bug in the firmware!", &standardFont, 1, y, vmNormal, true, false);
       y += 20;
 
-      strcpy(message, msg);
-      strcat(message, " Try to reproduce this and report a bug. Press EXIT to leave." );
+      part[0] = msg;
+      part[1] = bugScreenTail;
+      part[2] = NULL;
 
+      // One word at a time, drawn where it lands: only the word is ever buffered, so the
+      // line exists as an x position rather than as a string. The gap between words is the
+      // separator's width added to x, so no separator is ever stored or measured.
+      #define SEP_WIDTH 4   // the width of STD_SPACE_PUNCTUATION in standardFont
+
+      p = 0;
       pos = 0;
-      line[0] = 0;
-      firstWordOfLine = true;
+      x = 1;
 
-      nextWord(message, &pos, word);
-      while(word[0] != 0) {
-        if(stringWidth(line, &standardFont, true, true) + (firstWordOfLine ? 0 : 4) + stringWidth(word, &standardFont, true, true) >= SCREEN_WIDTH) { // 4 is the width of STD_SPACE_PUNCTUATION
-          showString(line, &standardFont, 1, y, vmNormal, true, false);
+      while(nextWord(part, &p, &pos, word, (int16_t)sizeof(word))) {
+        const int16_t w = stringWidth(word, &standardFont, true, true);
+
+        // The first word of a line is kept however wide it is: the next line is no wider.
+        if(x != 1 && x + w >= SCREEN_WIDTH) {
           y += 20;
-          line[0] = 0;
-          firstWordOfLine = true;
+          x = 1;
         }
 
-        if(firstWordOfLine) {
-          strcpy(line, word);
-          firstWordOfLine = false;
-        }
-        else {
-          strcat(line, STD_SPACE_PUNCTUATION);
-          strcat(line, word);
-        }
-
-        nextWord(message, &pos, word);
+        showString(word, &standardFont, x, y, vmNormal, true, false);
+        x += w + SEP_WIDTH;
       }
 
-      if(line[0] != 0) {
-        showString(line, &standardFont, 1, y, vmNormal, true, false);
-      }
+      #undef SEP_WIDTH
     }
   }
 

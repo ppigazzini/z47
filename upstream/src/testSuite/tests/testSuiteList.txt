@@ -505,6 +505,8 @@ serialize_cov
 
 graphs_cov
 
+realtodouble_cov
+
 nested_cov
 
 config_cov

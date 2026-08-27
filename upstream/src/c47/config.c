@@ -921,17 +921,28 @@ void fnGetADM(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetADM(uint16_t regist) {
-  longInteger_t lgInt;
-  if(!getRegisterAsLongInt(regist, lgInt, NULL)) {
-    goto end;
-  }
   uint32_t value;
-  longIntegerToUInt32(lgInt, value);
-  if(value < nbrOfElements(admToAngularMode)) {
+  if(getRegisterAsUint32Param(regist, &value) && value < nbrOfElements(admToAngularMode)) {
     fnAngularMode(admToAngularMode[value]);
   }
-end:
-  longIntegerFree(lgInt);
+}
+
+
+
+void fnGetGRAMOD(uint16_t unusedButMandatoryParameter) {
+  fnIntInputLongint(graMod);
+}
+
+
+
+void fnSetGRAMOD(uint16_t regist) {
+  uint32_t value;
+  if(getRegisterAsUint32Param(regist, &value) && value <= 3) {
+    graMod = value;
+  }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  }
 }
 
 
@@ -943,20 +954,15 @@ void fnGetIntegerSignMode(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetISM(uint16_t regist) {
-  longInteger_t lgInt;
-  if(!getRegisterAsLongInt(regist, lgInt, NULL)) {
-    goto end;
-  }
   int32_t value;
-  longIntegerToInt32(lgInt, value);
-  switch(value) {
-    case 2:  shortIntegerMode = SIM_2COMPL; break;
-    case 1:  shortIntegerMode = SIM_1COMPL; break;
-    case 0:  shortIntegerMode = SIM_UNSIGN; break;
-    default: shortIntegerMode = SIM_SIGNMT; break;
+  if(getRegisterAsInt32Param(regist, &value)) {
+    switch(value) {
+      case 2:  shortIntegerMode = SIM_2COMPL; break;
+      case 1:  shortIntegerMode = SIM_1COMPL; break;
+      case 0:  shortIntegerMode = SIM_UNSIGN; break;
+      default: shortIntegerMode = SIM_SIGNMT; break;
     }
-end:
-  longIntegerFree(lgInt);
+  }
 }
 
 
@@ -968,15 +974,10 @@ void fnGetDMX(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetDMX(uint16_t regist) {
-  longInteger_t lgInt;
-  if(!getRegisterAsLongInt(regist, lgInt, NULL)) {
-    goto end;
-  }
   uint32_t value;
-  longIntegerToUInt32(lgInt, value);
-  fnDenMax(value);
-end:
-  longIntegerFree(lgInt);
+  if(getRegisterAsUint32Param(regist, &value)) {
+    fnDenMax(value);
+  }
 }
 
 
@@ -988,17 +989,10 @@ void fnGetREALDF(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetREALDF                (uint16_t regist) {
-  longInteger_t lgInt;
-  if(!getRegisterAsLongInt(regist, lgInt, NULL)) {
-    goto end;
-  }
   uint32_t value;
-  longIntegerToUInt32(lgInt, value);
-  if(value <= DF_UN) {
+  if(getRegisterAsUint32Param(regist, &value) && value <= DF_UN) {
     displayFormat = value;
   }
-end:
-  longIntegerFree(lgInt);
 }
 
 
@@ -1009,15 +1003,10 @@ void fnGetNDEC(uint16_t unusedButMandatoryParameter) {
 
 
 void fnSetNDEC(uint16_t regist) {
-  longInteger_t lgInt;
-  if(!getRegisterAsLongInt(regist, lgInt, NULL)) {
-    goto end;
-  }
   uint32_t value;
-  longIntegerToUInt32(lgInt, value);
-  fnDisplayFormatDsp(value);
-end:
-  longIntegerFree(lgInt);
+  if(getRegisterAsUint32Param(regist, &value)) {
+    fnDisplayFormatDsp(value);
+  }
 }
 
 
@@ -1516,6 +1505,7 @@ void resetOtherConfigurationStuff(bool_t allowUserKeys) {
   LongPressF = RBX_F124;
   lastIntegerBase = 0;
   decodedIntegerBase = 0;
+  graMod = 0;
   timeLastOp = 0;
   timeLastOp0 = 0;
   timeLastOp1 = 0;
@@ -1661,16 +1651,6 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     for(int i=VAR_NO_ACC; i<=VAR_NO_PV; i++) {
       real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
-
-    // initialize 1 long integer reserved variable: GRAMOD
-    strLgIntHeader_t *ptr = TO_PCMEMPTR(allReservedVariables[VAR_NO_GRAMOD].header.pointerToRegisterData);
-    #if defined(OS64BIT)
-      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(8);
-      *(int64_t *)ptr = 0;
-    #else // !OS64BIT
-      (ptr++)->dataMaxLengthInBlocks = TO_BLOCKS(4);
-      *(int32_t *)ptr = 0;
-    #endif // OS64BIT
 
     // initialize 7 real34 reserved variables: ↑X, ↓X, CPERONA, ↑EST, ↓EST, ↑Y, ↓Y
     for(int i=VAR_NO_UX; i<=VAR_NO_LY; i++) {
