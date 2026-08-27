@@ -489,6 +489,15 @@ jobs:
           # because there is a HARNESS makes the tested program differ from the
           # shipped one, and the difference was once the matrix data layout.
           python3 .github/project/check-owner-build-conditionals.py --repo-root .
+      - name: Enforce every varying upstream OPTION_* guard has a Zig consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Four owners deleted the calls an OPTION_IR_PRINTING block guards, each
+          # behind a comment asserting the option is never defined. It is. The
+          # deletion compiles, links and passes every parity lane, because those
+          # owners are the ones no lane reaches.
+          python3 .github/project/check-option-guard-consumers.py
       - name: Enforce imported-tree paths are not anchored to the repo root
         shell: bash
         run: |

@@ -210,6 +210,7 @@ const ERROR_OPERATION_UNDEFINED: u8 = 13;
 const ERROR_MESSAGE_LENGTH: usize = 512;
 
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const option_vector: bool = frontier_build_options.option_vector;
 
 const LINE_NOLF: u16 = 3;
 
@@ -650,8 +651,11 @@ fn resetCursorPos() void {
     frontier_screen.setLastintegerBasetoZero();
 }
 
-// displayVectorAngle (static, OPTION_VECTOR).
+// displayVectorAngle (static). OPTION_VECTOR is undefined on every DM42 package,
+// where the C compiles this whole body away and leaves toBeAngle as the caller
+// set it, so a tagged polar vector's element renders as a plain number there.
 fn displayVectorAngle(matrix: *const real34Matrix_t, j: c_int, rows: c_int, cols: c_int, toBeAngle: *u8) void {
+    if (comptime !option_vector) return;
     if (getTagAngularMode(matrix.header.mtag) != amNone) {
         if (isMatrix3dVector(rows, cols)) {
             if (is3dVectorPolarSPH(matrix.header.mtag) and (j == 1 or j == 2)) {
@@ -669,6 +673,13 @@ fn displayVectorAngle(matrix: *const real34Matrix_t, j: c_int, rows: c_int, cols
 
 // extractVectorElement34 (static, OPTION_VECTOR).
 fn extractVectorElement34(matrix: *const real34Matrix_t, j: c_int, ii: c_int, rows: c_int, cols: c_int, element: *real34_t, toBeAngle: *u8, digits: u16, aa: *real_t, bb: *real_t, cc: *real_t) void {
+    // OPTION_VECTOR is undefined on every DM42 package. There the C's polar branch
+    // is not compiled at all and the function is only its noPolarVector tail, the
+    // rectangular copy below.
+    if (comptime !option_vector) {
+        real34Copy(&matrix.matrixElements.?[@intCast(ii)], element);
+        return;
+    }
     const is2d = isMatrix2dVector(rows, cols);
     const is3d = isMatrix3dVector(rows, cols);
     if (!is2d and !is3d) {

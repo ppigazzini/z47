@@ -1,0 +1,21 @@
+{
+ "_why": "Reviewed absences. Each entry is a claim that no owner needs to read that option, with the reason it is safe -- or, where it is not yet resolved, what a 1:1 read still has to settle. An entry is not a licence, it is a debt.",
+ "reasons": {
+  "c47Extensions/addons:OPTION_EDIT_PEM": "As OPTION_EDIT_X: same save_space_edit expression, same measured per-target values, same debt.",
+  "c47Extensions/addons:OPTION_EDIT_X": "The addons owner gates the editor helpers on a LOCAL save_space_edit = dmcp_build and old_hw rather than a passed option. Verified against the preprocessor: OPTION_EDIT_X is defined for host and DMCP5 and undefined for all four DM42 packages, which is exactly what that expression computes. The derivation is correct but it is a build fact re-derived in an owner, so it belongs in the build graph as an option; until then this records why the absence is not a divergence.",
+  "keyboard:OPTION_IR_PRINTING": "Both guards wrap printTraceX(LINE_FULL) plus a MONITOR_IRPRINT console line that is never defined. printTraceX opens with `if (comptime !ir_printing) return;`, so calling it unguarded is behaviour-identical; the only cost is a call instruction on the packages that strip the printer.",
+  "mathematics/matrix:OPTION_SLVP_POLY": "The guard chooses LINKAGE, not behaviour: `#if !defined(OPTION_SLVP_POLY) static #endif` before calculateEigenvalues, so SLVP can reach it. The Zig owner exports it either way, which costs one symbol on the packages that do not need it and changes nothing a user can observe.",
+  "saveRestoreCalcState:OPTION_IR_PRINTING": "The guard wraps the state-file restore of printerState.print_on, printer_model and delay plus its setLineDelay call. On a package without the printer upstream ignores those keys and z47 consumes them, which writes printer state nothing on that package reads. Inert as far as this audit could establish, but NOT proven inert -- a 1:1 read of the printer state machine is what would settle it.",
+  "saveRestorePrograms:OPTION_IR_PRINTING": "SUSPECTED DIVERGENCE, not a clean bill. The guard wraps the whole true arm of `if(PRTACT && lastFunc == ITM_PRINTERPROG)`, so on a package without the printer upstream runs an EMPTY arm: it neither prints nor exports, and it does not set temporaryInformation. If the Zig owner sets TI_PRINT_COMPLETE there it shows a print-complete message upstream does not. Owner is core/program/program_serialization_export; needs a 1:1 read."
+ },
+ "unmodelled": [
+  "c47Extensions/addons:OPTION_EDIT_PEM",
+  "c47Extensions/addons:OPTION_EDIT_X"
+ ],
+ "unread": [
+  "keyboard:OPTION_IR_PRINTING",
+  "mathematics/matrix:OPTION_SLVP_POLY",
+  "saveRestoreCalcState:OPTION_IR_PRINTING",
+  "saveRestorePrograms:OPTION_IR_PRINTING"
+ ]
+}
