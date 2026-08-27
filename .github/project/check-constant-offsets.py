@@ -8,11 +8,20 @@ This oracle proves every abi offset against the C ground truth in
 src/generated/constantPointers.h, so the remaining constant-blob @ptrCast sites
 can be migrated to named abi accessors safely.
 
-Two checks per abi accessor `constX() -> at(O)`:
+Two checks per binding `constX -> O`:
   1. O must be a real constant boundary in constantPointers.h (else: garbage
      offset -> hard FAIL).
   2. the C constant living at O must be name-compatible with `constX` (catches a
      valid-but-swapped offset, e.g. const_1 pointing at const_2's slot).
+
+Both run over the abi accessors AND over the offsets owners bind directly, in
+`constR(N)` / `OFF_const_X` / `offset_const_X` form (see OWNERS). The owner half
+used to be checked by nothing: --fix could remap it, but the default run read
+only abi/constants.zig and the owner tables were assumed testSuite-gated. They
+are not -- the display owner's IRFRAC constants are reached only with FLAG_IRFRAC
+set, and the corpus never sets it -- so a blob shift could move them with no lane
+able to notice. Check 2 is what makes this worth running: after a shift every
+offset is still SOME constant's boundary, so only the name join catches it.
 
 Exit 1 on any failure. Run standalone or via `zig build constant-offset-parity`.
 """
@@ -35,7 +44,9 @@ C_DEF = re.compile(r"#define\s+(const\w+)\s+\(\(real(?:34)?_t \*\)\(constants \+
 # root3on2() and the offset-named cNNNN()/qNNNN() accessors were previously skipped
 # by a `const\w+` name anchor, so a stale offset on them went undetected (root3on2
 # silently pointed at sqrt2/2 after a pin advance). See the name-check note below.
-ABI_FN = re.compile(r"pub inline fn (\w+)\(\)[^\{]*\{\s*return at3?4?\((\d+)\);", re.S)
+ABI_FN = re.compile(
+    r"pub inline fn (?P<name>\w+)\(\)[^\{]*\{\s*return at3?4?\((?P<off>\d+)\);", re.S
+)
 
 
 def normalize(name: str) -> str:
@@ -62,6 +73,38 @@ def _base(name: str) -> str:
     for matching a constant whose only change across a pin advance was its digit
     count and hence its prefix (e.g. const_fpfToMph -> const39_fpfToMph)."""
     return re.sub(r"^const(?:34|39|75|1071|2139|2075|1000)?_", "", name)
+
+
+# Owner-local constant offsets: the same C constant blob, bound in an owner by a
+# raw byte offset instead of through an abi accessor. Every pattern captures the
+# constant's NAME as well as its OFFSET, so one table serves both --fix (rewrite
+# the offset) and the check (join the name against the C and prove the offset is
+# still that constant's). Binding the two together is the point: an offset alone
+# cannot be checked, because a blob shift moves one constant onto another's
+# boundary and every offset stays "valid".
+OWNERS = {
+    "src/shell/display/display.zig": [r"const (?P<name>\w+) = constR3?4?\((?P<off>\d+)\)"],
+    "src/shell/extensions/addons.zig": [r"const (?P<name>\w+) = constR3?4?\((?P<off>\d+)\)"],
+    "src/shell/display/screen.zig": [r"const (?P<name>\w+) = constR3?4?\((?P<off>\d+)\)"],
+    "src/shell/convert/conversion_units.zig": [
+        r"const (?P<name>\w+) = constR3?4?\((?P<off>\d+)\)",
+        r"const OFF_(?P<name>\w+) = (?P<off>\d+)",
+        r"^[ \t]*(?P<off>\d+), // \d+ constFactor\w* = (?P<name>const\w+)",
+    ],
+    "src/core/numeric/command_wrappers/helpers.zig": [r"const offset_(?P<name>\w+) = (?P<off>\d+)"],
+    "src/core/numeric/special/wp34s.zig": [r"const OFF_(?P<name>\w+): u32 = (?P<off>\d+)"],
+}
+
+
+def owner_sites(root: pathlib.Path):
+    """Every (file, constant name, byte offset) an owner binds directly."""
+    out = []
+    for rel, pats in OWNERS.items():
+        text = (root / rel).read_text()
+        for pat in pats:
+            for m in re.finditer(pat, text, re.M):
+                out.append((rel, m.group("name"), int(m.group("off"))))
+    return out
 
 
 def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
@@ -102,8 +145,8 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
             unresolved.append((old, name))
         return no
 
-    def remap_group(m: re.Match, grp: int) -> str:
-        """Rewrite only capture group `grp` (a byte offset) inside match `m`."""
+    def remap_group(m: re.Match, grp: str) -> str:
+        """Rewrite only the named capture group `grp` (a byte offset) inside `m`."""
         nonlocal changed
         old = int(m.group(grp))
         no = new_off_for(old)
@@ -114,29 +157,8 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
         return m.group(0)[: s - m.start()] + str(no) + m.group(0)[e - m.start() :]
 
     # abi/constants.zig: the at(N)/at34(N) accessors (offset is group 2).
-    ABI.write_text(ABI_FN.sub(lambda m: remap_group(m, 2), ABI.read_text()))
+    ABI.write_text(ABI_FN.sub(lambda m: remap_group(m, "off"), ABI.read_text()))
 
-    # Owner-local offset tables (NOT covered by the abi oracle, testSuite-gated
-    # only): the same by-name remap, keyed on each file's offset-literal pattern.
-    OWNERS = {
-        "src/shell/display/display.zig": [r"constR3?4?\((\d+)\)"],
-        # Was src/shell/frontier_addons.zig and src/core/numeric/math_wp34s.zig.
-        # Neither has existed since an owner reshuffle well before the layout work
-        # (both are absent at d17ef5a9f under their old zig_src/ spelling too), and
-        # because the loop below read_text()s unconditionally, --fix would rewrite
-        # the earlier owners and THEN die on FileNotFoundError, leaving the tree
-        # half-remapped. Nothing noticed because --fix is a maintenance escape hatch
-        # nobody runs on a green tree.
-        "src/shell/extensions/addons.zig": [r"constR3?4?\((\d+)\)"],
-        "src/shell/display/screen.zig": [r"constR3?4?\((\d+)\)"],
-        "src/shell/convert/conversion_units.zig": [
-            r"constR3?4?\((\d+)\)",
-            r"OFF_const\w* = (\d+)",
-            r"^\s*(\d+), // \d+ constFactor",
-        ],
-        "src/core/numeric/command_wrappers/helpers.zig": [r"offset_const\w* = (\d+)"],
-        "src/core/numeric/special/wp34s.zig": [r"OFF_const51_gammaC01: u32 = (\d+)"],
-    }
     missing_owners = [rel for rel in OWNERS if not (ROOT / rel).is_file()]
     if missing_owners:
         print("check-constant-offsets: BROKEN -- owner table names files that do not exist:")
@@ -148,7 +170,7 @@ def apply_fix(old_cptr: pathlib.Path, new_ctext: str) -> int:
         p = ROOT / rel
         text = p.read_text()
         for pat in pats:
-            text = re.sub(pat, lambda m: remap_group(m, 1), text, flags=re.M)
+            text = re.sub(pat, lambda m: remap_group(m, "off"), text, flags=re.M)
         p.write_text(text)
 
     print(
@@ -239,21 +261,47 @@ def main() -> int:
         if nz in all_c_norms and nz not in c_norms[off]:
             swapped.append((zname, off, sorted(off_to_names[off])))
 
-    ok = len(accessors) - len(garbage) - len(swapped)
+    # The same two tests over the offsets owners bind directly. These used to be
+    # checked by nothing: --fix could remap them, but the default run looked only
+    # at the abi accessors and the owner tables were left to the testSuite. That
+    # fallback does not hold -- the display owner's IRFRAC constants are reached
+    # only with FLAG_IRFRAC set, which the corpus never sets -- so a blob shift
+    # moved them with no lane able to notice.
+    missing_owners = [rel for rel in OWNERS if not (ROOT / rel).is_file()]
+    if missing_owners:
+        print("check-constant-offsets: BROKEN -- owner table names files that do not exist:")
+        for rel in missing_owners:
+            print(f"  {rel}")
+        print("Refusing to report a clean gate over offsets nothing read.")
+        return 1
+    sites = owner_sites(ROOT)
+    if not sites:
+        print("check-constant-offsets: no owner offsets parsed -- regex drift?", file=sys.stderr)
+        return 1
+    for rel, zname, off in sites:
+        if off not in off_to_names:
+            garbage.append((f"{rel}:{zname}", off))
+            continue
+        nz = normalize(zname)
+        if nz in all_c_norms and nz not in c_norms[off]:
+            swapped.append((f"{rel}:{zname}", off, sorted(off_to_names[off])))
+
+    total = len(accessors) + len(sites)
+    ok = total - len(garbage) - len(swapped)
     print(
-        f"constant-offset oracle: {len(accessors)} abi accessors checked against "
-        f"{len(off_to_names)} C constant offsets"
+        f"constant-offset oracle: {len(accessors)} abi accessors + {len(sites)} owner-bound "
+        f"offsets checked against {len(off_to_names)} C constant offsets"
     )
     print(f"  matched: {ok}")
     for zname, off in garbage:
-        print(f"  GARBAGE OFFSET: abi.{zname}() -> at({off}) is not any C constant boundary")
+        print(f"  GARBAGE OFFSET: {zname} -> {off} is not any C constant boundary")
     for zname, off, cnames in swapped:
-        print(f"  NAME MISMATCH: abi.{zname}() -> at({off}) but C has {cnames} there")
+        print(f"  NAME MISMATCH: {zname} -> {off} but C has {cnames} there")
 
     if garbage or swapped:
         print(f"FAIL: {len(garbage)} garbage + {len(swapped)} mismatched offsets", file=sys.stderr)
         return 1
-    print("PASS: every abi constant offset matches the C ground truth")
+    print("PASS: every constant offset, abi and owner-bound, matches the C ground truth")
     return 0
 
 
