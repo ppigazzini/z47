@@ -1313,17 +1313,6 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
 }
 
 // macro reproductions (defines.h / registers.h / realType.h / longIntegerType.h)
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 extern fn decQuadFromInt32(r: *align(1) real34_t, v: i32) *align(1) real34_t;
 extern fn decQuadFromUInt32(r: *align(1) real34_t, v: u32) *align(1) real34_t;
 extern fn decQuadToInt32(d: *align(1) const real34_t, ctx: *realContext_t, round: c_int) i32;
@@ -1334,7 +1323,7 @@ extern fn __gmpz_cmp_si(op: [*c]const mpz_struct, v: c_long) c_int;
 const DEC_ROUND_DOWN: c_int = 5;
 
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    return stpcpy(dest, source);
+    return frontier_char_string.stringCopy(dest, source);
 }
 inline fn getRegisterShortIntegerBase(reg: calcRegister_t) u32 {
     return getRegisterTag(reg);

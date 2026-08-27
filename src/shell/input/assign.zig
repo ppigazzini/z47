@@ -243,26 +243,15 @@ extern fn calcModeNormalGui() void;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strcat(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 extern fn memset(s: ?*anyopaque, c: c_int, n: usize) ?*anyopaque;
 extern fn sprintf(buf: [*c]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn printf(fmt: [*:0]const u8, ...) c_int;
 extern fn abort() noreturn;
 extern fn fprintf(stream: ?*anyopaque, fmt: [*:0]const u8, ...) c_int;
 
-// stringCopy is `#define stringCopy(d,s) stpcpy(d,s)` (non-MINGW64 builds).
+// stringCopy is `#define stringCopy(d,s) frontier_char_string.stringCopy(d,s)` (non-MINGW64 builds).
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    return stpcpy(dest, source);
+    return frontier_char_string.stringCopy(dest, source);
 }
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));

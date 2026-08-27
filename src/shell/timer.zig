@@ -196,17 +196,6 @@ extern fn decimal128FromNumber(dst: *real34_t, src: *align(1) const real_t, ctx:
 extern fn decQuadAdd(r: *real34_t, a: *align(1) const real34_t, b: *align(1) const real34_t, ctx: *realContext_t) *real34_t;
 
 // libc.
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 
 // host-only glib externs (referenced under !dmcp_build).
 extern fn g_get_monotonic_time() i64;

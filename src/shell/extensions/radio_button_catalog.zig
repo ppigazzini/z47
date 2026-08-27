@@ -288,17 +288,6 @@ pub export var tmp: [16]u8 = undefined;
 extern fn getSystemFlag(flag: i32) bool_t;
 extern fn clearSystemFlag(flag: c_uint) void;
 extern fn getBeepVolume() u16;
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 extern fn strlen(s: [*c]const u8) usize;
 extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*:0]const u8, ...) c_int;
 
@@ -306,7 +295,7 @@ extern fn snprintf(buf: [*c]u8, n: usize, fmt: [*:0]const u8, ...) c_int;
 // Inline wrappers (the C macros)
 // ---------------------------------------------------------------------------
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    return stpcpy(dest, source);
+    return frontier_char_string.stringCopy(dest, source);
 }
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));
