@@ -318,8 +318,8 @@ pub export fn fnProgrammableMenu(unusedButMandatoryParameter: u16) callconv(.c) 
     else if (programmableMenu.itemParam[@intCast(dynamicMenuItem)] != INVALID_VARIABLE) {
         const prm: i16 = dynamicMenuItem;
         dynamicMenuItem = -1;
-        // No frontier_softmenus.popSoftmenu() here — upstream removed it (commit 5d2af9e43); popping
-        // the softmenu before runProgram corrupted the stack the program runs under.
+        // The softmenu stays on the stack: the program runs under it, and popping
+        // it here corrupts the stack that program runs against.
         frontier_lbl_gto_xeq.runProgram(0, programmableMenu.itemParam[@intCast(prm)]);
     }
     // EXIT key

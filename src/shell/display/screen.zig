@@ -854,8 +854,11 @@ const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3996)," ++ spc1 ++ "Ma
     "Dani Rau" ++ spc ++ "(9)," ++ spc1 ++ "Harald Overbeek" ++ spc ++ "(9)," ++ spc1 ++ "Will Rutherdale" ++ spc ++ "(6)," ++ spc1 ++ "Nigel Dowrick" ++ spc ++ "(4)" ++
     spc1 ++ "\n(commits 02Aug2026)";
 
-// MODELTEXT: CALCMODEL==USER_R47 ? "R47" : "C47". All z47 targets are C47 builds.
-const MODELTEXT = "C47";
+// MODELTEXT: CALCMODEL == USER_R47 ? "R47" : "C47". The model comes from the
+// passed calcmodel build option -- the R47 simulator and the R47 firmware
+// compile this owner with 66 and must name themselves R47 on the version screen,
+// where versionStr right above the disclaimer already does.
+const MODELTEXT = if (frontier_build_options.calcmodel == USER_R47) "R47" else "C47";
 const disclaimerStr: [*:0]const u8 = "  " ++ MODELTEXT ++ " firmware is free, open source and \n  neither provided nor supported by \n  SwissMicros. Press a key to continue.";
 
 // versionStr / versionStr2 / versionDateStr embed VERSION_STRING (the generated

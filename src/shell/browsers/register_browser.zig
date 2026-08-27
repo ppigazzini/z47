@@ -63,9 +63,9 @@ const FIRST_NAMED_VARIABLE: calcRegister_t = 256;
 const FIRST_RESERVED_VARIABLE: c_int = 2000;
 const LAST_RESERVED_VARIABLE: c_int = 2047;
 // defines.h computes this as (FIRST_NAMED_RESERVED_VARIABLE -
-// FIRST_RESERVED_VARIABLE), which is 31: the 26 lettered variables PLUS the
-// five RESERVED_VARIABLE_SPARE placeholders that follow them. z47 had 26 until
-// c43's own trailing comment still says 26, and is stale.
+// FIRST_RESERVED_VARIABLE), which is 31: the 26 lettered variables plus the five
+// RESERVED_VARIABLE_SPARE placeholders that follow them. The 26 in the trailing
+// comment beside that macro counts only the lettered ones.
 const NUMBER_OF_LETTERED_VARIABLES: c_int = 31;
 
 // data types (typeDefinitions.h dataType_t).

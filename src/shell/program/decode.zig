@@ -21,7 +21,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
+const frontier_print = @import("../print/print.zig");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const ir_printing: bool = frontier_build_options.ir_printing;
 
 // TO_QSPI data tables go to the executable QSPI region on old_hw DM42.
 const code_section = if (frontier_build_options.dmcp_build and frontier_build_options.old_hw)
@@ -995,7 +997,7 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                 }
                 if (nameOp[0] == 0) {
                     if (textVersion == MODE_ALIAS) {
-                        // IR_PRINTING nameAlias: never defined for any z47 build.
+                        if (comptime ir_printing) frontier_print.nameAlias(op, &nameOp);
                     } else {
                         _ = strcpy(&nameOp, if (indexOfItems[op].itemCatalogName[0] != 0) @as([*c]const u8, @ptrCast(&indexOfItems[op].itemCatalogName)) else @as([*c]const u8, @ptrCast(&indexOfItems[op].itemSoftmenuName)));
                     }
@@ -1026,7 +1028,7 @@ fn _decodeOneStep(step_arg: [*c]u8, textVersion: u16) void {
                 } else {
                     if (nameOp[0] == 0) {
                         if (textVersion == MODE_ALIAS) {
-                            // IR_PRINTING nameAlias: never defined for any z47 build.
+                            if (comptime ir_printing) frontier_print.nameAlias(op, &nameOp);
                         } else {
                             _ = strcpy(&nameOp, @ptrCast(&indexOfItems[op].itemCatalogName));
                         }

@@ -742,11 +742,18 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
 // deleteStepsFromTo (public)
 // ===========================================================================
 pub export fn deleteStepsFromTo(from: [*c]u8, to: [*c]u8) callconv(.c) void {
-    const opSize: u16 = @intCast(@intFromPtr(to) - @intFromPtr(from));
+    // `uint16_t opSize = to - from;` upstream: the span is a ptrdiff_t and C
+    // narrows it implicitly. Deleting one step keeps it small, but _clearProgram
+    // passes a whole program, and on new hardware the program region is larger
+    // than a u16 can hold. @truncate keeps the C's low bits where a checked cast
+    // would panic on the safety-checked build and truncate on ReleaseSmall, so
+    // the two targets would disagree. freeProgramBytes is the same u16 and wraps
+    // for the same reason.
+    const opSize: u16 = @truncate(@intFromPtr(to) -% @intFromPtr(from));
 
     _ = frontier_char_string.xcopy(from, to, @intCast((@intFromPtr(firstFreeProgramByte) - @intFromPtr(to)) + 2));
     firstFreeProgramByte -= opSize;
-    freeProgramBytes += opSize;
+    freeProgramBytes +%= opSize;
     scanLabelsAndPrograms();
 }
 

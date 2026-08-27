@@ -8,10 +8,12 @@ const consts = abi.constants;
 // RclOperations, DelitmOperations) and the function-local static registerLookup
 // table.
 //
-// IR_PRINTING is treated as never defined for any z47 build (matching the sibling
-// owners), so the printTraceErrorFunction diagnostic blocks are omitted. The
-// EXTRA_INFO_ON_CALC_ERROR console hints are compiled out on firmware (gated on
-// extra_info && !dmcp_build). calcModeAim/Gui, calcModeNormalGui, calcModeTamGui
+// The IR-printer traces follow the ir_printing build option, which the host and
+// the firmware packages carrying the printer both set; this owner is the only
+// caller of printTraceErrorFunction, so dropping them would leave that diagnostic
+// dead on every build. The EXTRA_INFO_ON_CALC_ERROR console hints are compiled
+// out on firmware (gated on extra_info && !dmcp_build).
+// calcModeAim/Gui, calcModeNormalGui, calcModeTamGui
 // and calcModeAimGui are no-op macros on firmware and real externs on host, gated
 // on !dmcp_build. The PC_BUILD-only forceTamAlpha block and the printf("tam.value")
 // trace are host-only. The operation tables are pure int16 -> code_section.
@@ -64,6 +66,7 @@ const frontier_items = @import("../display/items/items.zig");
 const frontier_lbl_gto_xeq = @import("../program/lbl_gto_xeq.zig");
 const frontier_manage = @import("../program/manage.zig");
 const frontier_next_step = @import("../program/next_step.zig");
+const frontier_print = @import("../print/print.zig");
 const frontier_screen = @import("../display/screen.zig");
 const frontier_softmenus = @import("../display/softmenus/softmenus.zig");
 const frontier_sort = @import("../display/sort.zig");
@@ -461,6 +464,18 @@ inline fn isR47FAM() bool {
 inline fn moreInfoErr(where: [*:0]const u8, m2: [*:0]const u8, m3: ?[*:0]const u8) void {
     if (comptime extra_info) {
         if (comptime !dmcp_build) moreInfoOnError(where, m2, m3, null);
+    }
+}
+
+// Every TAM name lookup that fails traces the refusal on the IR printer before it
+// raises the error: the quoted name that could not be resolved, printed under the
+// TAM function that asked for it. printTraceErrorFunction also leaves TAM mode, so
+// the trace is part of the refusal, not a decoration on it. errorMessage is the
+// scratch both this and the console hint below use, in that order.
+inline fn traceTamNameFailure(name: [*c]const u8) void {
+    if (comptime frontier_print.ir_printing) {
+        abi.fmtBufZ(errorMessage[0..512], "'{s}'", .{std.mem.span(name)});
+        frontier_print.printTraceErrorFunction(tam.function, errorMessage);
     }
 }
 
@@ -1326,6 +1341,7 @@ fn _tamProcessInput(item: u16) void {
                         dynamicMenuItem = -1;
                         value = if (value2 != FAILED_INDIRECTION) value2 else INVALID_VARIABLE;
                     } else {
+                        traceTamNameFailure(buffer);
                         frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
                         if (comptime extra_info) {
                             abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(buffer)});
@@ -1355,6 +1371,7 @@ fn _tamProcessInput(item: u16) void {
                 if (calcMode != CM_PEM) {
                     leaveTamModeIfEnabled();
                     if (!tam.indirect) {
+                        traceTamNameFailure(buffer);
                         frontier_error.displayCalcErrorMessage(ERROR_FUNCTION_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                         if (comptime extra_info) {
                             abi.fmtBufZ(errorMessage[0..512], "string '{s}' is neither a named label nor a function name", .{std.mem.span(buffer)});
@@ -1371,6 +1388,7 @@ fn _tamProcessInput(item: u16) void {
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER was set");
                     }
                 } else if (calcMode != CM_PEM or (tam.function != ITM_GTO and tam.mode != TM_KEY)) {
+                    traceTamNameFailure(buffer);
                     frontier_error.displayCalcErrorMessage(ERROR_LABEL_NOT_FOUND, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named label", .{std.mem.span(buffer)});
@@ -1397,6 +1415,7 @@ fn _tamProcessInput(item: u16) void {
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER system flag was set");
                     }
                 } else {
+                    traceTamNameFailure(buffer);
                     frontier_error.displayCalcErrorMessage(ERROR_UNDEF_MENU, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a menu name", .{std.mem.span(buffer)});
@@ -1414,6 +1433,7 @@ fn _tamProcessInput(item: u16) void {
                         moreInfoErr("In function _tamProcessInput:", errorMessage, "ignored since IGN1ER system flag was set");
                     }
                 } else {
+                    traceTamNameFailure(buffer);
                     frontier_error.displayCalcErrorMessage(ERROR_UNDEF_SOURCE_VAR, ERR_REGISTER_LINE, REGISTER_X);
                     if (comptime extra_info) {
                         abi.fmtBufZ(errorMessage[0..512], "string '{s}' is not a named variable", .{std.mem.span(buffer)});
