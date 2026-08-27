@@ -5,7 +5,7 @@
 // shared discrete-quantile dispatcher WP34S_qf_discrete_final used by the f
 // distribution. Exported from shell.zig under the strip_17 guard.
 //
-// Upstream strips the SAVE_SPACE_DM42_17 cluster (poisson/hyper/binomial/
+// Upstream strips the OPTION_DIST_C cluster (poisson/hyper/binomial/negBinom/
 // geometric/f) on DM42 packages 2-4, so this owner is compiled where that cluster
 // is present: the host (PC) build, DMCP5 and DM42 package 1. There it links
 // against the still-C discrete CDFs (WP34S_Cdf_Poisson2/Binomial2,

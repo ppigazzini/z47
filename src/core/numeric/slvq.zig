@@ -19,8 +19,8 @@ const const_4 = consts.const_4;
 // OPTION_SQUARE_159 is undef on every z47 build, so fnSlvq uses the standard
 // (75-digit) solveQuadraticEquation; the 159-digit solveQuadraticEquation159 is
 // still compiled (OPTION_EIGEN_159) and ported with 159-digit REAL_T_PTR
-// scratch buffers. The dead SAVE_SPACE_DM42_12 guard and the #undef'd
-// DISCRIMINANT blocks are omitted. EXTRA_INFO sprintf hints become fixed
+// scratch buffers. OPTION_SLVQ_SLVC is defined for every target built here, so
+// the body is unconditional; the #undef'd DISCRIMINANT blocks are omitted. EXTRA_INFO sprintf hints become fixed
 // moreInfoOnError strings.
 
 const runtime = @import("command_wrappers/runtime.zig");

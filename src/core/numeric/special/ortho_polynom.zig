@@ -9,8 +9,9 @@ const const__1 = consts.const__1;
 // laguerre.txt / laguerre_alpha.txt / legendre.txt / chebyshev_t.txt /
 // chebyshev_u.txt. The static getOrthoPolyParam helper stays private; the
 // fnHermite/... commands and fnOrthoPoly are exported with C linkage. The
-// SAVE_SPACE_DM42_12ORTHO gate is dead on every z47 build, so the bodies are
-// ported unconditionally. The EXTRA_INFO_ON_CALC_ERROR hints become fixed
+// OPTION_ORTHO is LIVE: upstream drops it for DMCP package 4 alone, where it
+// empties these commands rather than removing them, and each body below returns
+// immediately when option_ortho is false. Do not read the gate as dead code. The EXTRA_INFO_ON_CALC_ERROR hints become fixed
 // moreInfoOnError strings (no-op under TESTSUITE/DMCP). WP34S_OrthoPoly is the
 // Zig-ported owner in math_wp34s.zig (extern'd here). The ORTHOPOLY_*
 // kind values are verified against defines.h (H=0, HE=1, L=2, L_ALPHA=3,

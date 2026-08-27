@@ -2,7 +2,7 @@
 //
 // Zig owner for src/c47/distributions/normal.c: the Standard Normal, parametric
 // Normal and Log-Normal distribution commands plus the WP34S math borrowings.
-// The SAVE_SPACE_DM42_16 cluster is stripped on DM42 package 4 alone, so the owner
+// The OPTION_DIST_NORMAL cluster is stripped on DM42 package 4 alone, so the owner
 // is compiled on host, on DMCP5 and on DM42 packages 1-3, gated by strip_16 and
 // tagged linksection(dr.code_section) so the code runs from QSPI on the
 // flash-limited old_hw DM42. WP34S_qf_q_est (the signed Normal-quantile guess) and WP34S_Cdf_Q are

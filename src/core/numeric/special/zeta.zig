@@ -13,8 +13,8 @@ const const39_ln2 = consts.const39_ln2;
 // line-by-line translation preserving the exact order of every real_t operation
 // (zeta.txt checks results to the last ULP). Exports fnZeta and ComplexZeta with
 // C linkage; the static zeta_calc_complex / doRealZeta / doComplexZeta helpers
-// stay private. The SAVE_SPACE_DM42_12 gate is dead on every z47 build, so the
-// body is ported unconditionally.
+// stay private. OPTION_ZETA_BETA is defined for every target built here, so the
+// body is unconditional.
 
 const runtime = @import("../command_wrappers/runtime.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");

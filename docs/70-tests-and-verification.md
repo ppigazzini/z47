@@ -220,7 +220,7 @@ nothing about whether they computed the right number.
 
 A build-option conditional inside an owner is fine when it mirrors an upstream
 `#if` — z47 is a 1:1 port of a C program full of them, and `DMCP_BUILD`,
-`SAVE_SPACE_*`, `OPTION_*` and even `TESTSUITE_BUILD` (which c43 uses itself) all
+`OPTION_*` and even `TESTSUITE_BUILD` (which c43 uses itself) all
 have to be mirrored. It is a defect when it exists only because z47 has a harness.
 
 That distinction is not academic. An owner compiled

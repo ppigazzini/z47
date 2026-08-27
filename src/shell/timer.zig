@@ -16,9 +16,9 @@ const consts = abi.constants;
 // g_get_real_time) are used, only referenced under !dmcp_build. calcModeNormalGui
 // is a no-op macro on firmware (and would be on a keyboard-less sim) and a real
 // extern on the GTK sim, so it is gated. DM42_POWERMARKS and
-// SAVE_SPACE_DM42_20_TIMER are never defined for the frontier compile, matching
-// a host build; those guarded bodies are kept (the !SAVE_SPACE bodies) /
-// omitted (the powerMarkerMsF calls) accordingly.
+// OPTION_STOPWATCH is defined for every target built here, so the stopwatch
+// bodies it guards are kept; DM42_POWERMARKS is never defined, so the
+// powerMarkerMsF calls are omitted.
 //
 // timer.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.

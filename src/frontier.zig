@@ -26,8 +26,8 @@ const f_dist = @import("shell/distributions/f.zig");
 const t_dist = @import("shell/distributions/t.zig");
 
 // Per-package distribution strip flags, injected by the build (default: keep
-// everything). Mirror upstream's SAVE_SPACE_DM42_17B (cauchy/weibull/logistic/
-// exponential) and SAVE_SPACE_DM42_17C (pareto/uniform) guards so flash-limited
+// everything). They are the inverses of upstream's OPTION_DIST_B (cauchy/chi2/
+// expo/logistic/t/weibull) and OPTION_DIST_D (gev/pareto/uniform), so flash-limited
 // firmware packages compile those distribution owners out of the shared object.
 const dr = @import("shell/distributions/distribution_runtime.zig");
 const frontier_build_options = @import("frontier_build_options");
@@ -720,8 +720,8 @@ pub export fn mimRestore() callconv(.c) void {
     matrix_lifecycle.restore();
 }
 
-// Cauchy/Weibull/Logistic/Exponential are stripped upstream under
-// SAVE_SPACE_DM42_17B; Pareto/Uniform under SAVE_SPACE_DM42_17C. On packages
+// Cauchy/Weibull/Logistic/Exponential go with OPTION_DIST_B; Gev/Pareto/Uniform
+// with OPTION_DIST_D, and upstream drops each on the packages that undefine it. On packages
 // that strip a cluster the Zig owner must compile to an empty stub so its code
 // (and its pulled-in math helpers) does not consume flash. The comptime guard
 // makes the owner call unreachable when stripped, so the owner functions are not
@@ -872,7 +872,7 @@ pub export fn fnGeometricI(unused_but_mandatory_parameter: u16) linksection(dr.c
 }
 
 // Shared discrete-quantile dispatcher (geometric.c). Exported with C linkage so
-// the still-C f distribution links against it where the SAVE_SPACE_DM42_17
+// the still-C f distribution links against it where the OPTION_DIST_C
 // cluster is kept; on DM42 (strip_17) the body is empty and the owner is elided.
 pub export fn WP34S_qf_discrete_final(
     dist: u16,
@@ -903,7 +903,7 @@ pub export fn fnPoissonI(unused_but_mandatory_parameter: u16) linksection(dr.cod
     if (comptime !strip_17) poisson.poissonI(unused_but_mandatory_parameter);
 }
 
-// Poisson helpers reached by still-C cluster members where SAVE_SPACE_DM42_17 is
+// Poisson helpers reached by still-C cluster members where OPTION_DIST_C is
 // kept (host, DMCP5): the geometric dispatcher (Cdf2), the f distribution (Pdf),
 // and the binomial/hyper/negBinom quantiles (normal_moment_approx). Stubbed with
 // the cluster on DM42.
@@ -935,7 +935,7 @@ pub export fn fnBinomialI(unused_but_mandatory_parameter: u16) linksection(dr.co
     if (comptime !strip_17) binomial.binomialI(unused_but_mandatory_parameter);
 }
 
-// Binomial helpers reached by still-C cluster members where SAVE_SPACE_DM42_17 is
+// Binomial helpers reached by still-C cluster members where OPTION_DIST_C is
 // kept: the geometric dispatcher / f-distribution Newton solver (Cdf2) and the f
 // distribution (Pdf). Stubbed with the cluster on DM42.
 pub export fn WP34S_Cdf_Binomial2(x: *const binomial.real_t, p0: *const binomial.real_t, n: *const binomial.real_t, res: *binomial.real_t, ctx: *binomial.realContext_t) linksection(dr.code_section) callconv(.c) void {
@@ -962,7 +962,7 @@ pub export fn fnNegBinomialI(unused_but_mandatory_parameter: u16) linksection(dr
     if (comptime !strip_17) neg_binom.negBinomialI(unused_but_mandatory_parameter);
 }
 
-// NegBinomial helpers reached by still-C cluster members where SAVE_SPACE_DM42_17
+// NegBinomial helpers reached by still-C cluster members where OPTION_DIST_C
 // is kept: the geometric dispatcher / f-distribution Newton solver (cdf2) and the
 // f distribution (pdf). Stubbed with the cluster on DM42.
 pub export fn cdf_NegBinomial2(x: *const neg_binom.real_t, p0: *const neg_binom.real_t, r: *const neg_binom.real_t, res: *neg_binom.real_t, ctx: *neg_binom.realContext_t) linksection(dr.code_section) callconv(.c) void {
@@ -990,7 +990,7 @@ pub export fn fnHypergeometricI(unused_but_mandatory_parameter: u16) linksection
 }
 
 // Hypergeometric helpers reached by still-C cluster members where
-// SAVE_SPACE_DM42_17 is kept: the geometric dispatcher / f-distribution Newton
+// OPTION_DIST_C is kept: the geometric dispatcher / f-distribution Newton
 // solver (cdf2) and the f distribution (pdf). Stubbed with the cluster on DM42.
 pub export fn cdf_Hypergeometric2(x: *const hyper.real_t, k0: *const hyper.real_t, n: *const hyper.real_t, n0: *const hyper.real_t, res: *hyper.real_t, ctx: *hyper.realContext_t) linksection(dr.code_section) callconv(.c) void {
     if (comptime !strip_17) hyper.cdfHypergeometric2(x, k0, n, n0, res, ctx);

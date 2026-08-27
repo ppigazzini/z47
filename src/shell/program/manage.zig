@@ -14,9 +14,8 @@
 // fnClPAll through the `frontier` (../shell.zig) import. This owner also provides
 // z47_frontier_program_current_program_in_ram, defined below as a pub fn.
 //
-// SAVE_SPACE_DM42_10 is never defined for the frontier object (no build option for
-// it; defines.h #undef's it), so the !defined(SAVE_SPACE_DM42_10) bodies of
-// scanLabelsAndPrograms and fnPem are ported in full.
+// manage.c carries no build-option guard, so the bodies of scanLabelsAndPrograms
+// and fnPem are ported in full.
 //
 // The fnPem #if defined(DMCP_BUILD) "skip long processing" guard wraps the per-line
 // body in an extra condition on firmware; ported via comptime dmcp_build. The

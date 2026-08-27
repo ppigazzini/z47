@@ -2,7 +2,7 @@
 //
 // Zig owner for src/c47/distributions/poisson.c: the Poisson distribution
 // commands (fnPoissonP/L/R/I) and the WP34S math borrowings. Like the other
-// SAVE_SPACE_DM42_17 cluster members it is compiled where that cluster is kept
+// OPTION_DIST_C cluster members it is compiled where that cluster is kept
 // (host, DMCP5 and DM42 package 1) and stubbed on DM42 packages 2-4 via strip_17.
 //
 // Three helpers are exported with C linkage because still-C cluster members

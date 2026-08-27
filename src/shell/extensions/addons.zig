@@ -1084,7 +1084,7 @@ inline fn setVectorRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
 }
 
 // ===========================================================================
-// SAVE_SPACE-gated helpers (file-static in C).
+// OPTION_EDIT_X-gated helpers (file-static in C).
 // ===========================================================================
 
 // Both this and _shortIntegerToString sit inside the OPTION_EDIT_X block, so the
@@ -1192,7 +1192,7 @@ fn _shortIntegerToString(regist: calcRegister_t, displayString: [*c]u8) callconv
     return;
 }
 
-// !SAVE_SPACE_DM42_22_EDIT1
+// OPTION_EDIT_X
 fn _hmsTimeToReal() void {
     var i: i16 = 0;
     var j: i16 = 0;
@@ -1225,7 +1225,7 @@ fn _hmsTimeToReal() void {
     }
 }
 
-// !SAVE_SPACE_DM42_22_EDIT1
+// OPTION_EDIT_X
 fn _real34ToNim(real34: *align(1) const real34_t, nimInput: [*c]u8, nimDisplay: [*c]u8) void {
     var i: u16 = undefined;
     const grpGroupingLeftOld = grpGroupingLeft;

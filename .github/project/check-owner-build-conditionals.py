@@ -22,7 +22,7 @@ that is full of `#if`, and mirroring those is the job. A build-option conditiona
 in an owner is:
 
   * ALLOWED when upstream has the corresponding `#if` -- platform (DMCP_BUILD,
-    OLD_HW), feature stripping (SAVE_SPACE_*, OPTION_*), diagnostics
+    OLD_HW), feature stripping (OPTION_*), diagnostics
     (EXTRA_INFO_ON_CALC_ERROR), and TESTSUITE_BUILD, which c43 uses itself (its
     random.c seeds 0xDeadBeef under it, and z47's owner mirrors that).
 

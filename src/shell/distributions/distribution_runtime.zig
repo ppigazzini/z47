@@ -119,7 +119,7 @@ pub extern fn WP34S_SinhCosh(x: *const real_t, sinh_out: ?*real_t, cosh_out: ?*r
 
 // Other discrete CDFs reached through the shared qf_discrete_final dispatcher
 // (geometric owner); these remain in C as parity oracles, present wherever the
-// SAVE_SPACE_DM42_17 cluster is kept (host, DMCP5).
+// OPTION_DIST_C cluster is kept (host, DMCP5).
 pub extern fn WP34S_Cdf_Poisson2(x: *const real_t, lambda: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn WP34S_Cdf_Binomial2(x: *const real_t, p0: *const real_t, n: *const real_t, res: *real_t, real_context: *realContext_t) void;
 pub extern fn cdf_NegBinomial2(x: *const real_t, p0: *const real_t, r: *const real_t, res: *real_t, real_context: *realContext_t) void;
