@@ -209,6 +209,14 @@ step "[6g2d/11] owners do not change behaviour when they are being tested"
 python3 .github/project/check-owner-build-conditionals.py --self-test >/dev/null
 python3 .github/project/check-owner-build-conditionals.py --repo-root .
 
+step "[6g2e/11] every varying upstream OPTION_* guard has a Zig consumer"
+# Four owners deleted the calls an OPTION_IR_PRINTING block guards, each behind a
+# comment asserting the option is never defined. It is. A deleted call compiles,
+# links and passes every parity lane, because those owners are the ones no lane
+# reaches -- so the only thing that can catch it is asking whether anybody reads
+# the option at all.
+python3 .github/project/check-option-guard-consumers.py
+
 step "[10e/11] every parity lane the build declares is actually run"
 # Enumerates the lanes from `zig build --help` and diffs them against the battery,
 # because "they are all in there" was a claim checked by reading and it was wrong
