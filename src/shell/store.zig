@@ -1030,9 +1030,8 @@ pub export fn fnStoreIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 // ===========================================================================
-// fn42AlphaStore (42S ASTO) — NEW upstream op (master fd83b4a4). Additive/
-// unreached: no items.c dispatch wiring yet. Stores up to 6 bytes of the alpha
-// register as a string into `regist`.
+// fn42AlphaStore — the 42S ASTO op, dispatched from the 42ASTO item. Stores up to
+// 6 bytes of the alpha register as a string into `regist`.
 // ===========================================================================
 const regStringData = abi.registerString;
 

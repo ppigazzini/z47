@@ -2,8 +2,9 @@ const std = @import("std");
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for src/c47/display.c: the number/value -> display-string formatter
-// and the SHOW renderer. Faithful, line-by-line port of every public function:
-// the fnDisplayFormat* setters, exponent/sup/sub number formatting,
+// and the SHOW renderer. Faithful, line-by-line port of every public function
+// except the fnDisplayFormat* setters (see the note beside their omission below):
+// exponent/sup/sub number formatting,
 // real34/complex34/angle34 -> display string (FIX/SCI/ENG/ALL/SIG/UN modes with
 // IRFRAC fraction substitution and digit grouping), fraction / short-integer /
 // long-integer / date / time / matrix / vector -> display string, the
@@ -860,9 +861,10 @@ inline fn moreInfoOnErr(where: [*c]const u8, hint: [*c]const u8, displayString: 
 }
 
 // NOTE: the eight fnDisplayFormat* setters and fnDisplayFormatReset are NOT
-// ported here. frontier.zig (the host hub) already owns and exports the
-// fnDisplayFormat* family; re-exporting the display.c copies here would collide
-// with those exports, so they are intentionally omitted.
+// ported here. display_format.zig owns the shared setter body (fnDisplayFormatReset
+// folded into it) and exports the seven non-time setters; frontier.zig exports
+// fnDisplayFormatTime over that same body. Re-exporting the display.c copies here
+// would collide with those exports, so they are intentionally omitted.
 
 // ===========================================================================
 // exponentToDisplayString / supNumberToDisplayString / subNumberToDisplayString

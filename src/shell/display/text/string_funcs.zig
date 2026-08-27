@@ -2,16 +2,19 @@
 const consts = abi.constants;
 const const34_1e6 = consts.const34_1e6;
 //
-// Zig owner for src/c47/stringFuncs.c: the alpha-string commands aLENG?,
-// a->x, x->a, aPOS?, aRR, aRL, aSR and aSL. This is a faithful, line-by-line
+// Zig owner for src/c47/stringFuncs.c: the whole alpha-string command set --
+// aLENG?, a->x, x->a, aPOS?, aRR, aRL, aSR, aSL, aIP, the OPTION_ASTRING
+// case/slice/reverse/trim ops (aLOWER, aUPPER, aLEFT, aMID, aRIGHT, aREV,
+// aTRIM), the upper<->lower glyph map, and the HP-42S alpha-register wrappers
+// that run those ops against alphaRegister. This is a faithful, line-by-line
 // port of the C. The long-integer paths go straight to the GMP __gmpz_*
 // entry points (mpz_*/longInteger* are header macros/static inlines), the
 // real34 compare/convert paths reuse the registerValueConversions owner's
 // exported converters, and stringByteLength is reproduced inline as
 // (int32_t)strlen() exactly like charString.h.
 //
-// stringFuncs.c is not reachable from the testSuite; verification is by
-// build/link across every target plus the boundary gates.
+// testSuite-reachable: the shared suite drives these commands directly, so a
+// behaviour change here moves the oracle's pass count.
 
 const std = @import("std");
 const print_register = @import("../../print/print_register.zig");
@@ -188,7 +191,7 @@ inline fn realSetPositiveSign(v: *real_t) void {
 }
 
 // ===========================================================================
-// trimLeadingSpace (new in real master): drop a single leading space in place.
+// trimLeadingSpace: drop a single leading space in place.
 // Used by addition's addStri{Real,Cplx} display formatting.
 pub export fn trimLeadingSpace(stringToTrim: [*c]u8) callconv(.c) void {
     if (stringToTrim[0] == ' ') {
@@ -329,10 +332,9 @@ pub export fn fnXToAlpha(regist: u16) callconv(.c) void { // new version, simila
     }
 }
 
-// fnXToAlphaOld (deprecated x→α, items opcode XtoALPHA_OLD=1645) —
-// master fd83b4a4 kept the old behaviour under this name (identical to the
-// historical fnXToAlpha body above). The NEW master fnXToAlpha (ATOX) is a
-// separate deferred port; until then opcode 2785 also runs the old logic.
+// fnXToAlphaOld (items opcode XtoALPHA_OLD): the deprecated x→α. Unlike
+// fnXToAlpha it appends nothing to a destination register: it lifts the stack
+// and leaves the one or two character bytes as the whole string in X.
 pub export fn fnXToAlphaOld(unusedButMandatoryParameter: u16) callconv(.c) void { // deprecated version, backward compatibility only
     _ = unusedButMandatoryParameter;
     var lgInt: longInteger_t = undefined;
@@ -761,9 +763,8 @@ pub export fn fnAlphaSL(regist: u16) callconv(.c) void {
 }
 
 // ===========================================================================
-// HP-42S alpha-register operations (real master). These run against the
-// dedicated alphaRegister (c47.c global) and, for now, are additive exports
-// that the pinned testSuite never reaches (no items.c dispatch yet).
+// HP-42S alpha-register operations. These run against the dedicated
+// alphaRegister (c47.c global) rather than a caller-named register.
 // ===========================================================================
 extern var alphaRegister: u16;
 
@@ -879,7 +880,7 @@ pub export fn fn42AlphaRotate(unusedButMandatoryParameter: u16) callconv(.c) voi
     longIntegerFree(&lgInt[0]);
 }
 
-// fnClearAlpha (new in real master): reset a register to an empty string.
+// fnClearAlpha: reset a register to an empty string.
 pub export fn fnClearAlpha(regist: u16) callconv(.c) void {
     reallocateRegister(@intCast(regist), dtString, 1, amNone);
     regString(@intCast(regist))[0] = 0;
@@ -965,7 +966,7 @@ extern var grpGroupingLeft: u8;
 extern const addition: [NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS][NUMBER_OF_DATA_TYPES_FOR_CALCULATIONS]Fn0;
 extern fn integerPartReal(mode: c_int) void;
 
-// fnAlphaIP (new in real master): append the integer part of X to a register as a string.
+// fnAlphaIP: append the integer part of X to a register as a string.
 pub export fn fnAlphaIP(regist: u16) callconv(.c) void {
     const regC: calcRegister_t = @intCast(regist);
 
@@ -1024,10 +1025,10 @@ pub export fn fn42Aip(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 // ===========================================================================
-// HP-42S-style string case/slice/reverse/trim ops (new in real master).
-// Faithful port of stringFuncs.c. stringFuncs.c is fully owned here, so the
-// pre-existing static helpers _doXToAlpha and _readDestinationRegister (used
-// only by fnAlphaTrim) are ported as file-local fns too.
+// HP-42S-style string case/slice/reverse/trim ops. stringFuncs.c is fully owned
+// here, so its file-static helpers _doXToAlpha (reached from fnXToAlpha,
+// fnAlphaPos and fnAlphaTrim) and _readDestinationRegister (reached from
+// fnXToAlpha and _doXToAlpha) are file-local fns here too.
 // ===========================================================================
 
 // defines.h string-function selectors.

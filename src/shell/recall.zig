@@ -748,7 +748,7 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
     } else {
         var zero: longInteger_t = undefined;
         __gmpz_init(&zero[0]); // longIntegerInit
-        defer __gmpz_clear(&zero[0]); // longIntegerFree — leak fix (master fd83b4a4)
+        defer __gmpz_clear(&zero[0]); // longIntegerFree, on the saveLastX early return too
 
         if (!saveLastX()) {
             return;
@@ -784,9 +784,9 @@ pub export fn fnRecallIJ(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 // ===========================================================================
-// fn42AlphaRecall (42S ARCL) — NEW upstream op (master fd83b4a4). Additive/
-// unreached: no items.c dispatch wiring yet. Appends `regist` to the alpha
-// register via the type-dispatched addition[][] table, then restores X/Y.
+// fn42AlphaRecall — the 42S ARCL op, dispatched from the 42ARCL item. Appends
+// `regist` to the alpha register via the type-dispatched addition[][] table, then
+// restores X/Y.
 // ===========================================================================
 pub export fn fn42AlphaRecall(regist: u16) callconv(.c) void {
     if (frontier_store.regInRange(regist)) {

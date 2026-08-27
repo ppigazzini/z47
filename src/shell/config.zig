@@ -43,9 +43,10 @@ const display_format = @import("display/display_format.zig");
 // (offsets from dep/DMCP_SDK/dmcp/lft_ifc.h). SET_ST(STAT_PGM_END) writes the
 // fixed-address sdb.calc_state word (SDB_BASE). PC_BUILD-only code is host-only.
 // Dead code (VERBOSE_LEVEL == -1 printf blocks, /* */-commented bodies,
-// MONITOR_VOLTAGE_INTEGRATOR) is skipped. The per-package SAVE_SPACE_DM42_* guards
-// are never defined for the shared frontier object, so fnSetHP35/fnSetJM/fnSetRJ
-// and addTestPrograms bodies are compiled in full.
+// MONITOR_VOLTAGE_INTEGRATOR) is skipped. defines.h defines OPTION_HP35 and
+// OPTION_DEVPROFILES for every z47 build -- host and DMCP alike, since every DMCP
+// package is TWO_FILE_PGM and the block common to packages 1-4 defines both -- so
+// the fnSetHP35 / fnSetJM / fnSetRJ bodies are compiled in full.
 
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
@@ -259,7 +260,11 @@ const VAR_NO_LY: usize = 47;
 // 65535 is excluded throughout because it is the C47_NULL pointer value.
 const RAM_SIZE_IN_BLOCKS: u32 = if (dmcp_build and old_hw) 16384 else 65534;
 const NUMBER_OF_GLOBAL_REGISTERS: usize = 137;
-const MAX_FREE_REGIONS: usize = 200;
+// defines.h caps the free list at 50 on the DM42, which has ~64Kb of user RAM,
+// and at 200 everywhere else. Only the second arm is live below -- the DM42 is
+// the build where freeMemoryRegions is a static array and is not malloc'd -- but
+// the constant carries both, so it cannot drift from c47.zig's copy.
+const MAX_FREE_REGIONS: usize = if (dmcp_build and old_hw) 50 else 200;
 const BYTES_PER_BLOCK: u32 = 4;
 const BPB: u5 = 2;
 const REAL34_SIZE_IN_BLOCKS: u32 = 4;
@@ -614,7 +619,7 @@ extern var currentSubroutineLevelData: [*c]subroutineLevelHeader_t;
 extern var currentLocalFlags: [*c]abi.LocalFlags;
 extern var currentLocalRegisters: [*c]abi.RegisterHeader;
 extern var userKeyLabel: [*c]u8;
-// assign.c's NULL-tolerant reader for userKeyLabel (added at the 6559a9c59 pin).
+// assign.c's NULL-tolerant reader for userKeyLabel.
 extern fn getUserKeyLabelString(n: i16) [*c]u8;
 extern var savedStatisticalSumsPointer: ?*anyopaque;
 extern var statisticalSumsPointer: [*c]abi.Real;
@@ -1281,7 +1286,9 @@ fn Sett(grp: i16) void {
 const xxx: i32 = -10001;
 
 // ===========================================================================
-// Profile presets. SAVE_SPACE_DM42_* never defined here, so bodies are full.
+// Profile presets. Upstream wraps fnSetHP35 in OPTION_HP35 && OPTION_DEVPROFILES
+// and fnSetJM / fnSetRJ in OPTION_DEVPROFILES; both are defined for every z47
+// build, so the bodies are full.
 // ===========================================================================
 pub export fn fnSetHP35(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
@@ -1973,7 +1980,9 @@ const msg2 = [_]nstr2{
 };
 
 // ===========================================================================
-// addTestPrograms (file-local). SAVE_SPACE_DM42_14 never defined here.
+// addTestPrograms (file-local). Upstream's definition carries no build guard; the
+// call site in doFnReset does -- TESTSUITE_BUILD always, else OPTION_SAMPLEPGMS
+// with the loadTestPrograms flag. Both are build options here.
 // ===========================================================================
 // The "no test programs" state: an empty program area holding just the .END.
 // marker. Upstream writes this inline on the file-open failure of each branch;
@@ -2008,7 +2017,7 @@ fn addTestPrograms() void {
     // pushes it over and fails the link outright. Installing the trap-panic
     // namespace on frontier.zig does not help; the growth survives it. The bounds
     // below are explicit tests rather than a backstop, so they hold without it.
-    const numberOfBytesForTheTestPrograms: u32 = toBytes(toBlocks(24000)); // upstream 90b263136: 22000 -> 24000
+    const numberOfBytesForTheTestPrograms: u32 = toBytes(toBlocks(24000));
     var numberOfBytesUsed: u32 = 0;
 
     resizeProgramMemory(@intCast(toBlocks(numberOfBytesForTheTestPrograms)));
