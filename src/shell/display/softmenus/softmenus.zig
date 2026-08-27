@@ -776,19 +776,8 @@ extern fn getRegisterTag(regist: calcRegister_t) u32;
 // getRegisterAngularMode(reg) = getRegisterTag(reg) & amAngleMask (macro).
 const amAngleMask: u32 = 15;
 // stringCopy is a macro for stpcpy (returns pointer to terminating NUL of dst).
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    return stpcpy(dst, src);
+    return frontier_char_string.stringCopy(dst, src);
 }
 extern fn moreInfoOnError(m1: [*c]const u8, m2: [*c]const u8, m3: [*c]const u8, m4: [*c]const u8) void;
 extern fn reallocateRegister(regist: calcRegister_t, dataType: u32, dataSizeWithoutDataLenBlocks: u16, tag: u32) void;

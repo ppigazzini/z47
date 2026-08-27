@@ -399,17 +399,6 @@ const STD_CURSOR = "\xa4\x27";
 // ---------------------------------------------------------------------------
 // Function externs (linkable everywhere)
 // ---------------------------------------------------------------------------
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn strlen(s: [*c]const u8) usize;
 extern fn strchr(s: [*c]const u8, c: c_int) [*c]u8;
@@ -440,7 +429,7 @@ extern fn calcModeAimGui() void;
 
 // stringCopy = stpcpy (non-MINGW64).
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    return stpcpy(dest, source);
+    return frontier_char_string.stringCopy(dest, source);
 }
 inline fn stringByteLength(s: [*c]const u8) i32 {
     return @intCast(strlen(s));

@@ -988,6 +988,22 @@ fn stringCopyWindows(dest: [*c]u8, source: [*c]const u8) callconv(.c) [*c]u8 {
     const p: [*c]u8 = @ptrCast(xcopy(dest, source, l + 1));
     return p + @as(usize, l);
 }
+
+// charString.h's stringCopy for every owner that copies a string and wants the
+// pointer to the terminator back. Upstream has one of these -- a macro to libc
+// stpcpy, or the MINGW function above -- so the port has one too; libc's is not
+// reachable on the freestanding targets, hence the loop.
+pub fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
+    var d = dest;
+    var s = source;
+    while (s[0] != 0) {
+        d[0] = s[0];
+        d += 1;
+        s += 1;
+    }
+    d[0] = 0;
+    return d;
+}
 comptime {
     if (builtin.target.os.tag == .windows) {
         @export(&stringCopyWindows, .{ .name = "stringCopy", .linkage = .strong });

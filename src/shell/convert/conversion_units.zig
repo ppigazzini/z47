@@ -31,6 +31,7 @@ const FLAG_SPCRES: i32 = 0x8017;
 
 const abi = @import("abi"); // shared ABI bindings
 const label_truncate = @import("../../core/text/label_truncate.zig"); // std-only label arrow truncation
+const frontier_char_string = @import("../display/text/char_string.zig");
 const frontier_addons = @import("../extensions/addons.zig");
 const frontier_date_time = @import("date_time.zig");
 const frontier_error = @import("../error.zig");
@@ -856,19 +857,8 @@ inline fn stringByteLength(str: [*c]const u8) i32 {
     return @intCast(strlen(str));
 }
 // stringCopy is a macro for stpcpy (returns pointer to dst's terminating NUL).
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
 inline fn stringCopy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    return stpcpy(dst, src);
+    return frontier_char_string.stringCopy(dst, src);
 }
 fn truncateAtArrow(label: [*c]u8) void {
     label_truncate.truncateAtArrow(label, STD_RIGHT_ARROW, STD_LEFT_ARROW);

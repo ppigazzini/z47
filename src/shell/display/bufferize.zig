@@ -985,20 +985,9 @@ extern fn isDyadicFunction(item: u16) bool;
 extern fn stringToInt16(str: [*c]const u8) i16;
 extern fn stringToInt32(str: [*c]const u8) i32;
 extern fn toInt32(str: [*c]const u8) i32;
-// stringCopy(dest, source) = stpcpy(dest, source) (charString.h, non-MINGW64).
-fn stpcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8 {
-    var d = dst;
-    var s = src;
-    while (s[0] != 0) {
-        d[0] = s[0];
-        d += 1;
-        s += 1;
-    }
-    d[0] = 0;
-    return d;
-}
+// stringCopy(dest, source) = frontier_char_string.stringCopy(dest, source) (charString.h, non-MINGW64).
 inline fn stringCopy(dest: [*c]u8, source: [*c]const u8) [*c]u8 {
-    return stpcpy(dest, source);
+    return frontier_char_string.stringCopy(dest, source);
 }
 // stringToReal34(source, destination) = decQuadFromString(destination, source, &ctxtReal34).
 extern fn decQuadFromString(r: *align(1) real34_t, str: [*c]const u8, ctx: *realContext_t) *align(1) real34_t;
