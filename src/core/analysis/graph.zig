@@ -14,9 +14,8 @@ const consts = abi.constants;
 //
 // Faithful, line-by-line port of the C. graph_eqn, complexSolver,
 // fnComplexSolver, fnPlot, initialize_function and the body of fnEqSolvGraph sit
-// inside matrix.c's OPTION_GRAPHICS, and graph_plotmem plus plotarrow/plotdelta/
-// plotint inside OPTION_MOREGRAPHICS. Both options are on by default and
-// re-defined for DMCP packages 1-4; their only #undef is in the
+// inside graph.c's own OPTION_GRAPHICS blocks. That option is defined by default
+// and re-defined for DMCP packages 1-4; its only #undef is in the
 // !TWO_FILE_PGM && !NEW_HW block, which no target z47 builds reaches. So
 // everything here is ported unconditionally. The PC_BUILD-gated diagnostics
 // that carry SIDE EFFECTS (lastErrorCode resets in initialize_function /
@@ -31,7 +30,7 @@ const consts = abi.constants;
 
 const runtime = @import("solve_runtime.zig");
 const solve_build_options = @import("solve_build_options");
-const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_build_options.is_dmcp_build;
+const is_dmcp_build: bool = solve_build_options.is_dmcp_build;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -422,7 +421,7 @@ extern var eqnDrawLhsOnly: bool;
 
 // DMCP firmware: lcd_refresh is a ROM jump-table call (matches the lblGtoXeq
 // owner trampoline; offset 48 in both lft_ifc.h files).
-const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+const dm42_pkg_xip: bool = solve_build_options.dm42_pkg_xip;
 const library_fn_base: usize = if (dm42_pkg_xip) 0x08000201 else 0x08000301;
 inline fn lcdRefresh() void {
     if (comptime is_dmcp_build) {

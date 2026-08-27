@@ -5,14 +5,15 @@ const abi = @import("abi");
 // Heavy/cold solver owners (tvm, sumprod) run from executable QSPI (XIP) on the
 // flash-limited DM42 old_hw firmware to keep main FLASH free; host/dmcp5/macOS
 // keep the normal section (no-op there). Same mechanism as the math owners.
-const dm42_pkg_xip = @hasDecl(solve_build_options, "dm42_pkg_xip") and solve_build_options.dm42_pkg_xip;
+const dm42_pkg_xip: bool = solve_build_options.dm42_pkg_xip;
 
 /// defines.h's OPTION_INFSUMS: the infinity sum and the early stop it carries. The
 /// plain programmable sum and product are outside it. Enabled by default and
 /// #undef'd in the same DM42 TWO_FILE block as OPTION_XFN_1000 and OPTION_SLVP_POLY
-/// (400 bytes of flash), so it is off for exactly the same builds. Absent from a
-/// harness's options => on, matching the host default.
-pub const option_infsums = !@hasDecl(solve_build_options, "option_infsums") or solve_build_options.option_infsums;
+/// (400 bytes of flash), so it is off for exactly the same builds. Every consumer
+/// of this module gets the option from the one build-options producer, so it is
+/// read straight rather than defaulted.
+pub const option_infsums: bool = solve_build_options.option_infsums;
 
 /// defines.h's OPTION_TVM_FORMULAS: tvm.c's analytical closed forms and the
 /// fnTvmVar arm that tries them before the iterative solver. #undef'd for DM42

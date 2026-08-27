@@ -23,7 +23,7 @@ const solve_build_options = @import("solve_build_options");
 
 // hal/gui.h: calcModeAimGui() is a no-op macro on DMCP builds (and when the sim
 // has no on-screen keyboard); only the on-screen-keyboard host links the real fn.
-const is_dmcp_build = @hasDecl(solve_build_options, "is_dmcp_build") and solve_build_options.is_dmcp_build;
+const is_dmcp_build: bool = solve_build_options.is_dmcp_build;
 
 // defines.h's OPTION_SLVP_POLY: the polynomial-roots family. It gates V->EQ here
 // exactly as it gates SLVP itself; the DM42 packages drop both.

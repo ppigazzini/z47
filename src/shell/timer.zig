@@ -15,10 +15,12 @@ const consts = abi.constants;
 // + verified offset); on host the glib helpers (g_get_monotonic_time /
 // g_get_real_time) are used, only referenced under !dmcp_build. calcModeNormalGui
 // is a no-op macro on firmware (and would be on a keyboard-less sim) and a real
-// extern on the GTK sim, so it is gated. DM42_POWERMARKS and
-// OPTION_STOPWATCH is defined for every target built here, so the stopwatch
-// bodies it guards are kept; DM42_POWERMARKS is never defined, so the
-// powerMarkerMsF calls are omitted.
+// extern on the GTK sim, so it is gated. OPTION_STOPWATCH is defined for every
+// target built here -- the one #undef of it sits in a defines.h block reachable
+// only when neither TWO_FILE_PGM nor NEW_HW is set, and every firmware package
+// sets one of them -- so the stopwatch bodies it guards are kept.
+// DM42_POWERMARKS is defined and then immediately undefined, so the
+// powerMarkerMsF calls it guards are omitted.
 //
 // timer.c is not reachable from the testSuite; verification is by build/link
 // across every target plus the boundary gates.

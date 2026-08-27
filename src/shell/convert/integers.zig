@@ -213,7 +213,12 @@ fn WP34S_calc_overflow(xv: u64, yv: u64, neg: i32) i32 {
         }
         return 0;
     }
-    frontier_error.displayBugScreen("WP34S_calc_overflow: bad shortIntegerMode");
+    // commonBugScreenMessages[bugMsgValueFor], the shared row the other
+    // short-integer-mode bug screens use:
+    // "In function %s:%d is an unexpected value for %s!". The row carries the
+    // offending mode, so the screen names it.
+    abi.fmtBufZ(errorMessage[0..ERROR_MESSAGE_LENGTH], "In function {s}:{d} is an unexpected value for {s}!", .{ "WP34S_calc_overflow", @as(c_int, shortIntegerMode), "shortIntegerMode" });
+    frontier_error.displayBugScreen(errorMessage);
     return 0;
 }
 

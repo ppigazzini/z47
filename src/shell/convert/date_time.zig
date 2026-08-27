@@ -37,6 +37,7 @@ else
     ".text";
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+const old_hw: bool = frontier_build_options.old_hw;
 const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 
 // ---------------------------------------------------------------------------
@@ -265,12 +266,17 @@ extern fn sprintf(buf: [*]u8, fmt: [*:0]const u8, ...) c_int;
 extern fn strcpy(dst: [*]u8, src: [*:0]const u8) [*c]u8;
 extern fn strcat(dst: [*]u8, src: [*:0]const u8) [*c]u8;
 
+// rtc_read/rtc_write are DMCP-ROM jump-table entries (lft_ifc.h,
+// LIBRARY_FN_BASE + 204 / + 208). The table base differs per board -- 0x08000201
+// on the DM42 (old_hw) and 0x08000301 on the DMCP5 one -- so it is selected from
+// the passed build option, never assumed.
+const LIBRARY_FN_BASE: usize = if (old_hw) 0x08000201 else 0x08000301;
 const rtc_read: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
-    @ptrFromInt(0x08000201 + 204)
+    @ptrFromInt(LIBRARY_FN_BASE + 204)
 else
     undefined;
 const rtc_write: *const fn (*tm_t, *dt_t) callconv(.c) void = if (dmcp_build)
-    @ptrFromInt(0x08000201 + 208)
+    @ptrFromInt(LIBRARY_FN_BASE + 208)
 else
     undefined;
 
