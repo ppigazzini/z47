@@ -328,7 +328,8 @@ pub export fn fnVarMnu(labelIn: u16) callconv(.c) void {
     }
 }
 
-// fn42VarMnu (42S variable menu) — NEW upstream op (master fd83b4a4).
+// fn42VarMnu: fnVarMnu with varMenu42 set, which makes MNU_MVAR render the
+// 42S variable-menu layout instead of the C47 one.
 pub export fn fn42VarMnu(labelIn: u16) callconv(.c) void {
     const resolved = frontier_manage.findProgramLabel(labelIn, "In function fn42VarMnu:");
     if (resolved == INVALID_VARIABLE) {

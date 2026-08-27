@@ -161,9 +161,10 @@ fn applyModeSelection(ctx: *PlotStatContext) void {
     }
 }
 
-// The firmware lane blits the framebuffer. refreshLcd is C47's own full refresh,
-// which also blinks the cursor, steps the function-name counter and re-reads the
-// clock -- none of which upstream does at this point.
+// The DMCP split upstream draws here: the firmware lane blits the framebuffer
+// through the SDK's lcd_refresh, the host lane goes through C47's own full
+// refresh, which also blinks the cursor, steps the function-name counter and
+// re-reads the clock.
 fn refreshPlotLcd() void {
     if (comptime dmcp_build) {
         frontier_graphs.lcd_refresh();

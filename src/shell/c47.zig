@@ -6,12 +6,12 @@
 // critical: a wrong type/size/order silently corrupts the calculator. Every
 // global is defined here exactly ONCE with the EXACT C type, EXACT initializer
 // and (for the TO_QSPI arrays) the right section. Then the public functions:
-// convertKeyCode (always) and program_main (DMCP only).
+// convertKeyCode and program_main, both DMCP only.
 //
 // Struct sizes/alignments and the glyphNotFound / pcg32 init bytes were probed
 // against the C build (realContext_t 28/4, subroutineLevels_t 4/2,
 // subroutineLevelHeader_t 12/2, localFlags_t 4/4, font_t 8/8, glyph_t 24/8,
-// printerState_t 16/4, tamState_t 26/2, normKey_t 20/2, calcKey_t 18/2,
+// printerState_t 16/4, tamState_t 28/2, normKey_t 20/2, calcKey_t 18/2,
 // userMenuItem_t 20/2, programmableMenu_t 332/2, registerHeader_t 4/4,
 // freeMemoryRegion_t 4/2, softmenuStack_t 8/2, pcg32_random_t 16/8,
 // real_t 60/4, real34_t 16/4).
@@ -48,9 +48,10 @@ const USER_R47: u8 = 66;
 const USER_R47f_g: u8 = 61;
 const USER_C47: u8 = 46;
 // CALCMODEL is the per-build model selector (upstream's compile-time -DCALCMODEL).
-// The host C47 sim + testSuite pass USER_C47 (46); the host R47 sim and the DMCP
-// firmware pass USER_R47 (66). Seeding calcModel from it (below) is what makes the
-// R47 sim's startup render isR47FAM()=true before c47-gtk.c re-sets calcModel.
+// The host C47 sim, the testSuite and the C47 firmware pass USER_C47 (46); the
+// host R47 sim and the r47 firmware targets pass USER_R47 (66). Seeding calcModel
+// from it (below) is what makes the R47 sim's startup render isR47FAM() true
+// before the GTK host layer re-sets calcModel.
 const CALCMODEL: u8 = @import("frontier_build_options").calcmodel;
 
 // ---------------------------------------------------------------------------
@@ -118,7 +119,7 @@ pub export var lastI: u16 = 0;
 pub export var lastJ: u16 = 0;
 pub export var lastFunc: i16 = 0;
 pub export var lastParam: i16 = 0;
-pub export var lastTemp: [16]u8 = undefined;
+pub export var lastTemp: [16]u8 = std.mem.zeroes([16]u8);
 
 // PC_BUILD-only globals (host only).
 comptime {
@@ -241,10 +242,14 @@ pub export var aimBuffer: ?[*]u8 = null;
 pub export var nimBufferDisplay: ?[*]u8 = null;
 pub export var tamBuffer: ?[*]u8 = null;
 pub export var userKeyLabel: ?[*]u8 = null;
-pub export var asmBuffer: [5]u8 = undefined;
-pub export var oldTime: [8]u8 = undefined;
-pub export var dateTimeString: [12]u8 = undefined;
-pub export var displayValueX: [DISPLAY_VALUE_LEN]u8 = undefined;
+// C gives these static-storage arrays an all-zero initial image, and consumers
+// depend on it: statusBar.c reads oldTime[0] == 0 as "no time drawn yet" before
+// anything writes the buffer, and saveRestoreBackup.c writes the whole of it to
+// the backup file. `undefined` would leave that first read on undefined bytes.
+pub export var asmBuffer: [5]u8 = std.mem.zeroes([5]u8);
+pub export var oldTime: [8]u8 = std.mem.zeroes([8]u8);
+pub export var dateTimeString: [12]u8 = std.mem.zeroes([12]u8);
+pub export var displayValueX: [DISPLAY_VALUE_LEN]u8 = std.mem.zeroes([DISPLAY_VALUE_LEN]u8);
 pub export var gapItemLeft: u16 = 0;
 pub export var gapItemRight: u16 = 0;
 pub export var gapItemRadix: u16 = 0;
@@ -487,23 +492,14 @@ const std = @import("std");
 // convertKeyCode and program_main, plus the DMCP-only globals backToDMCP /
 // nextTimerRefresh / nextScreenRefresh / wp43KbdLayout, exist only on firmware.
 //
-// The frontier Zig object is built ONCE and shared by the C47 and R47 firmware
-// links, so the upstream `#if CALCMODEL == USER_R47` compile-time selection in
-// convertKeyCode is reproduced as a RUNTIME branch on the calcModel global --
-// matching the established pattern in the other ported owners (kbdStd, isR47FAM)
-// and giving each firmware variant its correct mapping. calcModel boots to
-// USER_C47 here and is overwritten at state load (saveRestoreCalcState.c).
+// The frontier object is built per firmware variant, and the r47 targets pass
+// calcmodel = USER_R47 (build/firmware.zig), so upstream's `#if CALCMODEL ==
+// USER_R47` selection in convertKeyCode and program_main stays COMPILE-TIME here.
+// It must: convertKeyCode maps the physical DMCP key codes of the board the image
+// was built for, while calcModel is a user-selectable keyboard LAYOUT that
+// fnKeysManagement rewrites at runtime. Branching that mapping on calcModel would
+// re-map the hardware the moment a user picked the other family's layout.
 const dmcp = struct {
-    const USER_R47f_g_v: u8 = 61;
-    const USER_R47bk_fg_v: u8 = 62;
-    const USER_R47fg_bk_v: u8 = 63;
-    const USER_R47fg_g_v: u8 = 64;
-
-    fn isR47FAM() bool {
-        return calcModel == USER_R47f_g_v or calcModel == USER_R47bk_fg_v or
-            calcModel == USER_R47fg_bk_v or calcModel == USER_R47fg_g_v;
-    }
-
     // DMCP-only globals.
     var backToDMCP: bool_t = false;
     var nextTimerRefresh: u32 = 0;
@@ -664,7 +660,7 @@ const dmcp = struct {
     const key_to_alpha_table: *[*:0]const u8 = @ptrFromInt(SDB_ADDR + 8);
 
     pub fn convertKeyCode(key_in: c_int) callconv(.c) c_int {
-        return keycode_remap.remapKey(key_in, isR47FAM(), wp43KbdLayout);
+        return keycode_remap.remapKey(key_in, CALCMODEL == USER_R47, wp43KbdLayout);
     }
 
     pub fn program_main() callconv(.c) void {
@@ -850,8 +846,10 @@ const dmcp = struct {
                 btnFnReleased(&charKey);
             } else if (key == 0) {
                 btnReleased(&charKey);
-                // Faithful to upstream: compares the RUNTIME calcModel to the
-                // raw USER_C47 / USER_R47 enumerators (c47.c lines 1191-1193).
+                // Faithful to upstream: this one compares the RUNTIME calcModel
+                // to the raw USER_C47 / USER_R47 enumerators, not to CALCMODEL,
+                // because it is the selected LAYOUT that decides which two key
+                // codes cancel the f shift in PEM.
                 if (calcMode == CM_PEM_v and shiftF != false and ((calcModel == USER_C47_v and ((charKey[0] == '1' and charKey[1] == '7') or (charKey[0] == '2' and charKey[1] == '2'))) or (calcModel == USER_R47_v and ((charKey[0] == '2' and charKey[1] == '2') or (charKey[0] == '2' and charKey[1] == '7'))))) {
                     shiftF = false;
                     refreshScreen(74);

@@ -448,7 +448,7 @@ pub export fn calcModeNim(unusedButMandatoryParameter: u16) callconv(.c) void {
 }
 
 // ---------------------------------------------------------------------------
-// checkHP macro (defines.h:2225):
+// checkHP macro (defines.h):
 // (significantDigits <= 16 && displayStack == 1 && exponentLimit == 99 &&
 //  Input_Default == ID_DP && (calcMode == CM_NORMAL || calcMode == CM_NIM))
 // ---------------------------------------------------------------------------

@@ -27,10 +27,8 @@ const const_1 = consts.const_1;
 //   * MONITOR_CLRSCR: #undef'd -> dead, omitted.
 //   * USECURVES: #undef'd -> plotline3 collapses to plotline2(); the spline
 //     helpers evalHermite/ifAnyMax are dead and omitted.
-//   * SAVE_SPACE_DM42_13GRF: defined only for the old-DM42 single-file (non-QSPI)
-//     C build, which the Zig owners do not model (no build option). The LIVE
-//     `#if !defined(SAVE_SPACE_DM42_13GRF)` bodies are ported in full, matching
-//     the sibling graphs owner.
+//   * OPTION_GRAPHICS: defined for every package this owner is built into, so
+//     every block it guards is LIVE and ported.
 //   * EXTRA_INFO_ON_CALC_ERROR==1 only on host & not dmcp: the moreInfoOnError
 //     console hints are host-only (gated on extra_info && !dmcp_build).
 //   * USEFLOATING == useFLOAT (0): both `if(USEFLOATING==useREAL4)` and
@@ -1268,6 +1266,11 @@ pub export fn plotPointGeneric(xn: i16, yn: i16, xo: i16, yo: i16, PLOT_CROSS: b
     }
 }
 
+// int32 plot-point count narrowed to the uint16 the C stores it in.
+inline fn pointCount(n: i32) u16 {
+    return @truncate(@as(u32, @bitCast(n)));
+}
+
 // horOffsetR 109+5 ; autoinc 19 ; autoshift -4 ; horOffset 1
 const horOffsetR: i32 = 109 + 5;
 const autoinc: i32 = 19;
@@ -1297,10 +1300,13 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
         (plotStatMx[0] == 'D' and drawMxN() >= 2) or
         (plotStatMx[0] == 'H' and statMxN() >= 3))
     {
+        // The C assigns an int32 count to a uint16 and takes whatever the
+        // narrowing leaves, exactly as drawline's NN does; a checked cast would
+        // instead abort the plot on a count the C merely wraps.
         switch (plotStatMx[0]) {
-            'S' => numberOfPlotPoints = @intCast(frontier_real_type.realToInt32C47(@alignCast(SIGMA_N()), null)),
-            'D' => numberOfPlotPoints = @intCast(drawMxN()),
-            'H' => numberOfPlotPoints = @intCast(statMxN()),
+            'S' => numberOfPlotPoints = pointCount(frontier_real_type.realToInt32C47(@alignCast(SIGMA_N()), null)),
+            'D' => numberOfPlotPoints = pointCount(drawMxN()),
+            'H' => numberOfPlotPoints = pointCount(statMxN()),
             else => {},
         }
 
@@ -1499,7 +1505,7 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             grphNumFormatter(&ss, "(", realToDoubleVal(x_max), 2, "");
             grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
             _ = strcat(&tt, padEquals(&tmpbuf, &ss));
-            var n: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 2 - 3 - 2 - @as(i32, frontier_char_string.stringWidth(&tt, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 - 3 + autoshift), vmNormal, 0, 0);
+            var n: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(160 - 2 - 3 - 2 - @as(i32, frontier_char_string.stringWidth(&tt, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 - 3 + autoshift), vmNormal, 0, 0);
             grphNumFormatter(&ss, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, n + 3, yLine(autoinc * @as(i32, index) - 3 + autoshift + 2), vmNormal, 0, 0);
             index += 1;
@@ -1514,24 +1520,24 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
             grphNumFormatter(&ss, "", lB, 3, "");
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, STD_DOWN_ARROW ++ "BIN" ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "", hB, 3, "");
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, STD_UP_ARROW ++ "BIN" ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "", nB, 3, "");
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "nBINS" ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
             grphNumFormatter(&ss, "", (hB - lB) / nB, 3, "");
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "Width" ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
@@ -1551,6 +1557,14 @@ pub export fn graphPlotstat(selection: u16) callconv(.c) void {
 
 inline fn yLine(off: i32) u32 {
     return @bitCast(Y_POSITION_OF_REGISTER_Z_LINE + off);
+}
+
+// showString takes an unsigned x. Upstream anchors right-aligned text by
+// subtracting the measured string width from a fixed column, which goes negative
+// as soon as the number is wider than the anchor; C converts that int to
+// uint32_t modularly and the text simply lands off-screen. Wrap, never trap.
+inline fn showX(x: i32) u32 {
+    return @bitCast(x);
 }
 
 fn scalePlusInfinity() void {
@@ -1764,7 +1778,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
     if (isValidDraw) {
         if (softmenuMenuItem0() != -MNU_PLOT_SCATR) {
             abi.fmtBufZ(&ss, "{d}", .{@as(c_uint, NN)});
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
             abi.fmtBufZ(&ss, STD_SPACE_PUNCTUATION ++ STD_SPACE_PUNCTUATION ++ "n=", .{});
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 2 + autoshift), vmNormal, 0, 0);
             index += 1;
@@ -1772,20 +1786,20 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 
         if (orOrtho(selection) != CF_ORTHOGONAL_FITTING) {
             grphNumFormatter(&ss, "", a0, 3, "");
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_0 ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             grphNumFormatter(&ss, "", a1, 3, "");
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_1 ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             if (selection == CF_PARABOLIC_FITTING or selection == CF_GAUSS_FITTING or selection == CF_CAUCHY_FITTING) {
                 grphNumFormatter(&ss, "", a2, 3, "");
-                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
                 _ = strcpy(&ss, "a" ++ STD_SUB_2 ++ "=");
                 _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
                 index += 1;
@@ -1793,7 +1807,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
 
             var tmpBuf: [100]u8 = undefined;
             _ = strcpy(&ss, formatCore(rr, 5, false, &tmpBuf, 50));
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "r" ++ STD_SUP_2 ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             index += 1;
@@ -1802,7 +1816,7 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
             const ssw: u16 = @intCast(frontier_screen.showStringEnhanced(padEquals(&tmpbuf, &ss), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, @intFromBool(NO_LF)));
             grphNumFormatter(&tt, radixProcess(&tmpbuf, "#"), realToDoubleVal(y_max), 2, ")");
             const ttw: u16 = @intCast(frontier_screen.showStringEnhanced(padEquals(&tmpbuf, &tt), &standardFont, 0, 0, vmNormal, 0, 0, NO_compress, NO_raise, NO_Show, NO_Bold, @intFromBool(NO_LF)));
-            var nn: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(160 - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
+            var nn: u32 = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(160 - 3 - 2 - @as(i32, ssw) - @as(i32, ttw)), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
             _ = frontier_screen.showString(padEquals(&tmpbuf, &tt), &standardFont, nn + 3, yLine(autoinc * @as(i32, index) + autoshift + 2), vmNormal, 0, 0);
             index += 1;
             grphNumFormatter(&ss, "(", realToDoubleVal(x_min), 2, "");
@@ -1813,25 +1827,25 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
         } else { // ORTHOF
             var tmpBuf: [100]u8 = undefined;
             _ = strcpy(&ss, formatCore(a0, 3, false, &tmpBuf, 50));
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_0 ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, formatCore(ssa0, 3, false, &tmpBuf, 50));
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "    " ++ STD_PLUS_MINUS);
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 4 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, formatCore(a1, 3, false, &tmpBuf, 50));
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "a" ++ STD_SUB_1 ++ "=");
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
 
             _ = strcpy(&ss, formatCore(ssa1, 3, false, &tmpBuf, 50));
-            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
+            _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             _ = strcpy(&ss, "    " ++ STD_PLUS_MINUS);
             _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) - 1 + autoshift), vmNormal, 0, 0);
             index += 1;
@@ -1843,13 +1857,13 @@ fn drawline(selection: u16, RR: *real_t, SMI: *real_t, aa0: *real_t, aa1: *real_
                     _ = strcpy(&ss, "  | n < 30");
                 }
 
-                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, 0, 0);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, 0, 0);
                 _ = strcpy(&ss, "s" ++ STD_SUB_m ++ STD_SUB_i ++ "=");
                 _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 1 + autoshift), vmNormal, 0, 0);
                 index += 1;
             } else {
                 _ = strcpy(&ss, formatCore(rr, 3, false, &tmpBuf, 50));
-                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
+                _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, showX(horOffsetR - @as(i32, frontier_char_string.stringWidth(&ss, &standardFont, false, false))), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
                 _ = strcpy(&ss, "r" ++ STD_SUP_2 ++ "=");
                 _ = frontier_screen.showString(padEquals(&tmpbuf, &ss), &standardFont, @intCast(horOffset), yLine(autoinc * @as(i32, index) + 2 + autoshift), vmNormal, 0, 0);
                 index += 1;

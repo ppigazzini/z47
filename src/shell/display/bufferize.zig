@@ -1073,8 +1073,11 @@ const reg34 = abi.registerReal34;
 const regImag34 = abi.registerImag34;
 const regShortInteger = abi.registerShortInteger;
 const regString = abi.registerString;
+// TO_BLOCKS rounds its byte count up to the next 4-byte block and hands the
+// uint32_t result to reallocateRegister's uint16_t block-count parameter, which
+// keeps only the low 16 bits.
 inline fn toBlocks(n: u32) u16 {
-    return @intCast((n + (BYTES_PER_BLOCK - 1)) >> BPB);
+    return @truncate((n +% (BYTES_PER_BLOCK - 1)) >> BPB);
 }
 const BPB: u5 = 2;
 const BYTES_PER_BLOCK: u32 = 1 << BPB;
@@ -2791,9 +2794,8 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
                 var jj: i16 = 0;
                 addChar[0] = 0;
                 if (addChar0[0] == 0) {
-                    // "=" is no longer blocked here: upstream undid the 2024 block
-                    // (91b248e03) when equals came back into the EQN UI, so an equation
-                    // can be typed with both sides and Draw plots the left one.
+                    // "=" is not filtered out here: an equation can be typed with
+                    // both sides, and Draw plots the left one.
                     _ = stringCopy(&addChar, &indexOfItems[item].itemSoftmenuName);
                     if ((indexOfItems[item].itemSoftmenuName[0] != 0) and (indexOfItems[item].status & EIM_STATUS) == EIM_ENABLED) {
                         if (isDyadicFunction(item)) {
@@ -2989,10 +2991,9 @@ pub export fn addItemToBuffer(item_in: u16) callconv(.c) void {
 // saveForUndo paths are skipped. This runs the same close/commit the label runs;
 // returns true if the caller must return immediately (NIM closed and left
 // CM_NIM), false to fall through to the shared post-switch display processing
-// (the `break :sw` path, same as ITM_PERIOD). The earlier port mistranslated the
-// goto as `break :addItemToNimBuffer_exit`, which exited the function and skipped
-// closeNim() — so base-entry shortcuts (B/D/H/I/OCT, base-digit completion) never
-// committed the number to X.
+// (the `break :sw` path, same as ITM_PERIOD). The caller must not skip the
+// closeNim() this performs: it is what commits a base-entry shortcut
+// (B/D/H/I/OCT, base-digit completion) to X.
 fn nimExitCloseFromGoto() bool {
     screenUpdatingMode &= ~@as(u8, SCRUPD_SKIP_STACK_ONE_TIME);
     closeNim();

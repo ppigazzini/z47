@@ -11,11 +11,14 @@ const std = @import("std");
 // graph_plotmem, and fnStatList. Faithful, line-by-line port.
 //
 // PUB EXPORT FNS (public C symbols):
-//   graphResetCommon, graph_reset, fnClGrf, fnPline, fnPcros, fnPplus, fnPbox,
-//   fnPcurve, fnPintg, fnPdiff, fnPrms, fnPMzoom, fnPlotZoom, fnPvect, fnPNvect,
-//   fnScale, fnPshade, fnComplexPlot, fnPx, fnPy, fnPlotReset, fnPlotSQ,
-//   fnListXY, fnPlotStatAdv, graph_text, graph_Include0, graph_plotmem,
-//   fnStatList.
+//   graphResetCommon, graph_reset, fnClGrf, fnPline, fnP2line, fnPcros, fnPplus,
+//   fnPbox, fnPcurve, fnPintg, fnPdiff, fnPrms, fnPMzoom, fnPlotZoom, fnPvect,
+//   fnPNvect, fnScale, fnPshade, fnComplexPlot, fnPx, fnPy, fnPlotReset,
+//   fnPlotSQ, fnListXY, fnPlotStatAdv, graph_text, graph_Include0,
+//   graph_plotmem, fnStatList.
+//
+// fnPlotf is the one graphs.c function this file does NOT own: it sits with the
+// equation-graph entry point it calls, in the solver graph owner.
 //
 // PUB EXPORT VARS (file-scope C globals defined in graphs.c):
 //   invalid_intg, invalid_diff, invalid_rms (bool_t), x_min, x_max, y_min, y_max
@@ -37,8 +40,11 @@ const std = @import("std");
 // firmware and a real GTK symbol on host.
 //
 // BUILD-CONFIG (probed in src/c47/defines.h for the standard frontier build):
-//   * SAVE_SPACE_DM42_13GRF_JM is NOT defined -> the big `#if !defined(...)`
-//     body of graph_plotmem is LIVE (kept).
+//   * OPTION_MOREGRAPHICS IS defined -> the whole body of graph_plotmem, plus
+//     plotarrow / plotdelta / plotint and the tabDelta / tabDeltaInt tables they
+//     read, are LIVE (kept). defines.h only undefines it in the
+//     `!TWO_FILE_PGM && !NEW_HW` branch, and TWO_FILE_PGM is defined for every
+//     build that is not NEW_HW, so that branch is unreachable.
 //   * LOW_GRAPH_ACC IS defined -> the ctxtReal34/39/51/75.digits twiddle blocks
 //     in graph_plotmem are LIVE (kept).
 //   * MONITOR_CLRSCR / STATDEBUG / STATDEBUG_VERBOSE are undef'd -> all those
@@ -798,6 +804,15 @@ fn plotarrow(xo: i16, yo: i16, xn: i16, yn: i16) void {
 // call, not the offset before it.
 inline fn fToI16(v: f32) i16 {
     return @intFromFloat(@trunc(v));
+}
+
+/// The clipping edge distance, as the C's `int16_t dY = abs(...)` produces it:
+/// abs() runs in int and the store into int16 truncates. The unclipped row comes
+/// from screen_window_y_nolimit_r, which itself wraps out of the int16 range, so
+/// a row of -32768 makes the distance 32768 and it must wrap back to -32768 here
+/// rather than trap on the safety-checked builds.
+inline fn absToI16(v: i32) i16 {
+    return @truncate(if (v < 0) -%v else v);
 }
 
 // ===========================================================================
@@ -1608,7 +1623,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                     }
                 }
 
-                x = frontier_plotstat.grf_x(@intCast(ix)); // float x stays for the overlay maths above
+                x = frontier_plotstat.grf_x(@intCast(ix)); // float x stays for the RMS overlay maths below
                 frontier_plotstat.grf_x_r(@intCast(ix), &xr); // xr = grf_x(ix)
                 frontier_plotstat.grf_y_r(@intCast(ix), &yr); // yr = grf_y(ix)
             } else { // _VECT
@@ -1668,7 +1683,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             if (!bothOutOfScreen01) {
                 // Coming in from bottom - BOTH positive and negative slopes
                 if (outOfScreen0 and !outOfScreen1 and yN0 >= SCREEN_HEIGHT_GRAPH) {
-                    const dY: i16 = @intCast(@abs(@as(i32, SCREEN_HEIGHT_GRAPH) - 1 - @as(i32, yN0)));
+                    const dY: i16 = absToI16(@as(i32, SCREEN_HEIGHT_GRAPH) - 1 - @as(i32, yN0));
                     if (yN1 != yN0) {
                         const dxN: f32 = @abs((@as(f32, @floatFromInt(dY)) * @as(f32, @floatFromInt(@as(i32, xN1) - @as(i32, xo)))) / @as(f32, @floatFromInt(@as(i32, yN1) - @as(i32, yN0))));
                         xo = @intCast(@as(i32, xo) + @as(i32, fToI16(dxN)));
@@ -1678,7 +1693,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                 }
                 // Coming in from top - BOTH positive and negative slopes
                 else if (outOfScreen0 and !outOfScreen1 and yN0 < minN_y) {
-                    const dY: i16 = @intCast(@abs(@as(i32, yN0) - @as(i32, minN_y)));
+                    const dY: i16 = absToI16(@as(i32, yN0) - @as(i32, minN_y));
                     if (yN1 != yN0) {
                         const dxN: f32 = @abs((@as(f32, @floatFromInt(dY)) * @as(f32, @floatFromInt(@as(i32, xN1) - @as(i32, xo)))) / @as(f32, @floatFromInt(@as(i32, yN1) - @as(i32, yN0))));
                         xo = @intCast(@as(i32, xo) + @as(i32, fToI16(dxN)));
@@ -1692,7 +1707,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             if ((yN1 > yN0 and xN1 > xo and yN1 >= SCREEN_HEIGHT_GRAPH and !bothOutOfScreen01 and outOfScreen1 and !outOfScreen0) or
                 (yN1 < yN0 and xN1 > xo and yN0 >= SCREEN_HEIGHT_GRAPH and !bothOutOfScreen01 and !outOfScreen1 and outOfScreen0))
             {
-                const dY: i16 = @intCast(@abs(@as(i32, SCREEN_HEIGHT_GRAPH) - 1 - @as(i32, yN0)));
+                const dY: i16 = absToI16(@as(i32, SCREEN_HEIGHT_GRAPH) - 1 - @as(i32, yN0));
                 if (yN1 == yN0) {
                     continue; // Skip horizontal lines
                 }
@@ -1704,7 +1719,7 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
             else if ((yN1 < yN0 and xN1 > xo and yN1 < minN_y and !bothOutOfScreen01 and outOfScreen1 and !outOfScreen0) or
                 (yN1 > yN0 and xN1 > xo and yN0 < minN_y and !bothOutOfScreen01 and !outOfScreen1 and outOfScreen0))
             {
-                const dY: i16 = @intCast(@abs(@as(i32, yN0) - @as(i32, minN_y)));
+                const dY: i16 = absToI16(@as(i32, yN0) - @as(i32, minN_y));
                 if (yN1 == yN0) {
                     continue; // Skip horizontal lines
                 }
@@ -1748,16 +1763,17 @@ pub export fn graph_plotmem() linksection(code_section) callconv(.c) void {
                         const yNintg: i16 = frontier_plotstat.screenY(@as(f64, inty));
                         const xAvg: i16 = @intCast((@as(i32, xN0) + @as(i32, xN1)) >> 1);
 
-                        // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6
-                        // (absolute pixel gap), not the old (xN1-xN0) >= 6.
+                        // The test is on the absolute column gap, so a sample that
+                        // steps right to left gets the same integral sign as one
+                        // stepping left to right.
                         if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
                             plotint(xAvg, yNintg);
                         } else {
                             frontier_plotstat.plotrect(xAvg - 1, yNintg - 1, xAvg + 1, yNintg + 1);
                         }
 
-                        // Upstream master fixed the precedence to abs((int16_t)(xN1-xN0)) >= 6/4
-                        // (absolute pixel gap), not the old (xN1-xN0) >= 6/4.
+                        // Both arms draw the same two rules; the 6 and the 4 only
+                        // separate a gap wide enough for the sign from a narrow one.
                         if (@abs(@as(i32, xN1) - @as(i32, xN0)) >= 6) {
                             frontier_plotstat.plotline1(xN1, yNintg, xAvg + 2, yNintg);
                             frontier_plotstat.plotline1(xAvg - 2, yNintg, xN0, yNintg);
