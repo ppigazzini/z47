@@ -131,6 +131,7 @@ const LAST_ITEM: u32 = 3244;
 // ---------------------------------------------------------------------------
 extern var tmpString: [*c]u8;
 extern var tmpStringLabelOrVariableName: [*c]u8;
+const frontier_decode = @import("decode.zig");
 extern var firstFreeProgramByte: [*c]u8;
 extern var beginOfCurrentProgram: [*c]u8;
 extern var errorMessage: [*c]u8;
@@ -250,24 +251,6 @@ fn _clearVar(regist: calcRegister_t) void {
     }
 }
 
-// ===========================================================================
-// Static helpers
-// ===========================================================================
-// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
-// this local copy carries the same clamp so a corrupt step's length byte cannot
-// read past the program region.
-fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    var stringLength: u8 = stringAddress[0];
-    const nameStart: [*c]u8 = stringAddress + 1;
-    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
-        stringLength = 0;
-    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
-        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
-    }
-    _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
-    tmpStringLabelOrVariableName[stringLength] = 0;
-}
-
 fn _indirectRegister(paramAddress: [*c]u8) void {
     const opParam: u8 = paramAddress[0];
     if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Local register from .00 to .98
@@ -278,7 +261,7 @@ fn _indirectRegister(paramAddress: [*c]u8) void {
 }
 
 fn _indirectVariable(stringAddress: [*c]u8) void {
-    _getStringLabelOrVariableName(stringAddress);
+    frontier_decode.getStringLabelOrVariableName(stringAddress);
     const regist: calcRegister_t = findOrAllocateNamedVariable(tmpStringLabelOrVariableName);
     _clearVar(regist);
 }
@@ -376,7 +359,7 @@ fn _processOp(paramAddress_arg: [*c]u8, op: u16, paramMode: u16) void {
             if (opParam <= LAST_LOCAL_REGISTER_IN_KS_CODE) { // Global 00..99, Lettered X..K, or Local .00..98
                 _clearVar(regKStoC(opParam));
             } else if (opParam == STRING_LABEL_VARIABLE) {
-                _getStringLabelOrVariableName(paramAddress);
+                frontier_decode.getStringLabelOrVariableName(paramAddress);
                 _clearVar(findOrAllocateNamedVariable(tmpStringLabelOrVariableName));
             } else if (paramMode == PARAM_COMPARE and (opParam == VALUE_0 or opParam == VALUE_1)) {
                 // nothing to do

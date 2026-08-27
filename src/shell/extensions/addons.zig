@@ -32,8 +32,8 @@
 //   * OPTION_EDIT_X / OPTION_EDIT_PEM are `#undef`'d by every DM42 defines.h
 //     block (the TWO_FILE_PGM packages 1-4 and the single-file old-hardware one),
 //     and stay defined for host (sim/test) and for the NEW_HW dmcp5. They gate the
-//     full fnEdit body plus the _getStringLabelOrVariableName / _fractionToString
-//     / _shortIntegerToString / _hmsTimeToReal / _real34ToNim helpers, so
+//     full fnEdit body plus the _fractionToString / _shortIntegerToString /
+//     _hmsTimeToReal / _real34ToNim helpers, so
 //     `save_space_edit` below is `dmcp_build and old_hw` and the helpers sit
 //     behind `if (comptime !save_space_edit)`.
 //   * OPTION_VECTOR / OPTION_ELEC gate the stk<->mx converters + vecCreate[] table.
@@ -1087,22 +1087,6 @@ inline fn setVectorRegisterPolarMode(reg: calcRegister_t, pm: u32) void {
 // SAVE_SPACE-gated helpers (file-static in C).
 // ===========================================================================
 
-// !SAVE_SPACE_DM42_23_EDIT2
-// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
-// this local copy carries the same clamp so a corrupt step's length byte cannot
-// read past the program region.
-fn _getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    const p = stringAddress + 1;
-    var stringLength: u8 = stringAddress[0];
-    if (@intFromPtr(p) >= @intFromPtr(firstFreeProgramByte)) {
-        stringLength = 0;
-    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(p)) {
-        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(p));
-    }
-    _ = frontier_char_string.xcopy(tmpStringLabelOrVariableName, p, stringLength);
-    tmpStringLabelOrVariableName[stringLength] = 0;
-}
-
 // Both this and _shortIntegerToString sit inside the OPTION_EDIT_X block, so the
 // packages that strip it (dmcp_build and old_hw, the reduced fnEdit) emit no code
 // for them: the two call sites are already comptime-dead there, and the C symbol
@@ -1657,7 +1641,7 @@ fn editPemLiteral(opParam_in: u8, opParam2: u8, grpGroupingLeftOld: *u8, grpGrou
     const isDate: bool = (opParam == STRING_DATE);
 
     if ((opParam == STRING_REAL34) or (opParam == STRING_COMPLEX34)) {
-        _getStringLabelOrVariableName(&currentStep[2]);
+        frontier_decode.getStringLabelOrVariableName(&currentStep[2]);
         _ = strcpy(tempBuffer, tmpStringLabelOrVariableName);
     } else {
         grpGroupingLeftOld.* = grpGroupingLeft;

@@ -329,20 +329,19 @@ inline fn groupRightDisabled() bool {
 // ===========================================================================
 // Static helpers
 // ===========================================================================
-fn getStringLabelOrVariableName(stringAddress: [*c]u8) void {
-    var stringLength: u8 = stringAddress[0];
+// decode.c declares this in decode.h and the step decoders in lblGtoXeq.c,
+// clcvar.c, programmableMenu.c and addons.c all call THIS one. It is public for
+// the same reason: one reader of a step's name means one clamp to maintain.
+//
+// The length byte is taken from the program step on trust. A corrupt step can
+// claim a name longer than the bytes that remain in program memory, so
+// boundProgramNameLength cuts it to firstFreeProgramByte before xcopy reads the
+// name; without that a damaged imported program would read past the program
+// region. A name starting at or past firstFreeProgramByte has no valid bytes at
+// all and reads nothing.
+pub fn getStringLabelOrVariableName(stringAddress: [*c]u8) void {
     const nameStart: [*c]u8 = stringAddress + 1;
-    // The length byte is taken from the program step on trust. A corrupt step can
-    // claim a name longer than the bytes that remain in program memory, so clamp
-    // it to firstFreeProgramByte before xcopy reads the name; without this a
-    // damaged imported program would read past the program region. When the name
-    // would start at or past firstFreeProgramByte there are no valid bytes left,
-    // so read nothing rather than skipping the clamp and reading unbounded.
-    if (@intFromPtr(nameStart) >= @intFromPtr(firstFreeProgramByte)) {
-        stringLength = 0;
-    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart)) {
-        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(nameStart));
-    }
+    const stringLength = program_step_opcode.boundProgramNameLength(@ptrCast(nameStart), stringAddress[0], @ptrCast(firstFreeProgramByte));
     _ = frontier_char_string.xcopy(@ptrCast(tmpStringLabelOrVariableName), @ptrCast(nameStart), stringLength);
     tmpStringLabelOrVariableName[stringLength] = 0;
 }

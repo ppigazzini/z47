@@ -109,8 +109,18 @@ const STD_SUP_3 = "\xa1\x63";
 const STD_SUP_4 = "\xa1\x64";
 const STD_CROSS = "\x80\xd7";
 
-// LINEBREAK: defines.h selects "\n" for PC_BUILD+LINUX, "\n\r" for firmware.
-const LINEBREAK = if (dmcp_build) "\n\r" else "\n";
+// LINEBREAK: defines.h picks the separator per host OS -- "\n" on Linux, "\n\r"
+// on Windows, "\r\n" on macOS -- and "\n\r" on firmware. The clipboard and CSV
+// text this owner builds is read by a host text editor, so the host's own
+// convention is the whole point of the macro; collapsing it to "\n" would hand
+// Windows and macOS users a single-line file.
+const LINEBREAK = if (dmcp_build)
+    "\n\r"
+else switch (@import("builtin").target.os.tag) {
+    .windows => "\n\r",
+    .macos => "\r\n",
+    else => "\n",
+};
 
 // CLIPSTR: 30000 on host (PC_BUILD), TMP_STR_LENGTH (2560) on firmware.
 const CLIPSTR: usize = if (dmcp_build) 2560 else 30000;

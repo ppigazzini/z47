@@ -4,8 +4,8 @@
 // fnKeyGto / fnKeyXeq (the KEY?GTO/KEY?XEQ program-step handlers),
 // fnProgrammableMenu, fnClearMenu and keyGto / keyXeq (which build the
 // programmable softmenu captions from register X). This is a faithful,
-// line-by-line port of the C. The file-static helpers (_getStringLabelOrVariableName,
-// _indirectRegister, _indirectVariable, _get2ndParamOfKey, _setCaption) are
+// line-by-line port of the C. The file-static helpers (_indirectRegister,
+// _indirectVariable, _get2ndParamOfKey, _setCaption) are
 // reproduced as private Zig fns; regKStoC forwards to the shared band remap in
 // ks_register_remap; the EXTRA_INFO sprintf/moreInfoOnError diagnostics are
 // gated on extra_info.
@@ -104,6 +104,7 @@ const STD_RIGHT_ARROW = "\xa1\x92";
 // Globals
 // ---------------------------------------------------------------------------
 extern var tmpStringLabelOrVariableName: [*c]u8;
+const frontier_decode = @import("decode.zig");
 extern var firstFreeProgramByte: [*c]u8;
 extern var tmpString: [*c]u8;
 extern var currentStep: [*c]u8;
@@ -179,24 +180,6 @@ inline fn copyRegisterStringTo(dest: [*c]u8, regist: calcRegister_t) void {
 }
 
 // ===========================================================================
-// _getStringLabelOrVariableName (static in the C)
-// ===========================================================================
-// Upstream shares the bounded decoder in decode.c (getStringLabelOrVariableName);
-// this local copy carries the same clamp so a corrupt step's length byte cannot
-// read past the program region.
-fn _getStringLabelOrVariableName(stringAddress_arg: [*c]u8) void {
-    const stringAddress = stringAddress_arg + 1;
-    var stringLength: u8 = stringAddress_arg[0];
-    if (@intFromPtr(stringAddress) >= @intFromPtr(firstFreeProgramByte)) {
-        stringLength = 0;
-    } else if (stringLength > @intFromPtr(firstFreeProgramByte) - @intFromPtr(stringAddress)) {
-        stringLength = @intCast(@intFromPtr(firstFreeProgramByte) - @intFromPtr(stringAddress));
-    }
-    _ = frontier_char_string.xcopy(tmpStringLabelOrVariableName, stringAddress, stringLength);
-    tmpStringLabelOrVariableName[stringLength] = 0;
-}
-
-// ===========================================================================
 // _indirectRegister (static in the C)
 // ===========================================================================
 fn _indirectRegister(paramAddress: [*c]u8) u16 {
@@ -216,7 +199,7 @@ fn _indirectRegister(paramAddress: [*c]u8) u16 {
 // _indirectVariable (static in the C)
 // ===========================================================================
 fn _indirectVariable(stringAddress: [*c]u8) u16 {
-    _getStringLabelOrVariableName(stringAddress);
+    frontier_decode.getStringLabelOrVariableName(stringAddress);
     const regist: calcRegister_t = findNamedVariable(tmpStringLabelOrVariableName);
     if (regist != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
         const realParam: i16 = indirectAddressing(regist, INDPM_REGISTER, 0, 99, false);
@@ -244,7 +227,7 @@ fn _get2ndParamOfKey(paramAddress_arg: [*c]u8) u16 {
     if (opParam <= 109) { // Local label from 00 to 99 or from A to J
         return opParam;
     } else if ((opParam == STRING_LABEL_VARIABLE) or (opParam == LOCAL_LABEL_VARIABLE)) {
-        _getStringLabelOrVariableName(paramAddress);
+        frontier_decode.getStringLabelOrVariableName(paramAddress);
         const label: calcRegister_t = frontier_manage.findNamedLabel(tmpStringLabelOrVariableName, opParam);
         if (label != @as(calcRegister_t, @bitCast(INVALID_VARIABLE))) {
             return @bitCast(label);
