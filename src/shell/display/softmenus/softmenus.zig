@@ -1714,7 +1714,12 @@ fn _dynmenuConstructMVars(mIdx: i16) void {
     _ = memset(tmpString, 0, TMP_STR_LENGTH);
 
     if (currentMvarLabel != INVALID_VARIABLE) {
-        _dynmenuConstructMVarsFromPgm(@intCast(currentMvarLabel - FIRST_LABEL), &numberOfBytes, &numberOfVars);
+        // Wrapping subtraction, because currentMvarLabel is restored from the
+        // state file and any value below FIRST_LABEL reaches here. The C widens
+        // to int and narrows back at the uint16_t parameter, so a low label
+        // arrives as a huge index that the callee's numberOfLabels bound then
+        // rejects; a checked subtraction would trap instead.
+        _dynmenuConstructMVarsFromPgm(currentMvarLabel -% FIRST_LABEL, &numberOfBytes, &numberOfVars);
     } else if ((currentSolverStatus & SOLVER_STATUS_USES_FORMULA) != 0) {
         var bufPtr: [*c]u8 = tmpString;
         const errorCode: u8 = lastErrorCode;
@@ -2421,10 +2426,8 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
     } else {
         abi.fmtCStr(tmpS, "{s}", .{@as([*:0]const u8, tmpSS)});
     }
-    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), tmpSS_via(tmpS));
-}
-inline fn tmpSS_via(tmpS: [*c]u8) [*c]const u8 {
-    return tmpS;
+    // tmpS, not tmpSS: the short-number case above prefixed it with a space.
+    _ = stringCopy(@ptrCast(showText + @as(usize, @intCast(stringByteLength(showText)))), tmpS);
 }
 inline fn cmodNonNeg(n: i32, d: i32) i32 {
     return softmenu_math.cmodNonNeg(n, d);
@@ -3267,11 +3270,14 @@ pub export fn showSoftmenuCurrentPart() callconv(.c) void {
                     } else if (softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_ALPHA) and calcMode == CM_PEM and @rem(@as(i32, item), 10000) == ITM_ASSIGN) {
                         // do nothing
                     } else if (item > 0 and indexOfItems[@intCast(@rem(@as(i32, item), 10000))].itemSoftmenuName[0] != 0) {
-                        if (frontier_conversion_units.isItemConversion(@intCast(@rem(@as(i32, item), 10000)))) {
+                        // The whole item, not item % 10000: an item carrying a
+                        // line-suppression offset is deliberately not a member of
+                        // the conversion-pair table and renders as a plain key.
+                        if (frontier_conversion_units.isItemConversion(item)) {
                             // The softkey text for a fixed-menu conversion pair, including the
                             // HPCONV swap. indexOfItems no longer carries the second text part.
                             var www: [64]u8 = undefined;
-                            frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(@intCast(@rem(@as(i32, item), 10000)), &www);
+                            frontier_conversion_units.fullConvSoftMenuItemNameInclHPCONV(item, &www);
                             showSoftkey2(1, &www, x, y - @as(i16, @intCast(@divTrunc(currentFirstItem, 6))), vmNormal, @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 2), @intFromBool(@divTrunc(@as(i32, item), 10000) == 0 or @divTrunc(@as(i32, item), 10000) == 1), showCb, showValue, &showText, 0);
                         } else {
                             if ((softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_FCNS_EIM) or softmenu[@intCast(m)].menuItem == -%@as(i16, MNU_CONST)) or

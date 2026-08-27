@@ -18,10 +18,10 @@ const print_register = @import("print_register.zig");
 // OPTION_IR_PRINTING gating: print.c's infrared engine is one
 // `#if defined(OPTION_IR_PRINTING)` block spanning print.c:7-1941, and each
 // fnP_* entry point below it repeats the guard around its own body. defines.h
-// defines the option by default (defines.h:72) and keeps it for the host
+// defines the option by default (defines.h:73) and keeps it for the host
 // (PC_BUILD) and for the NEW_HW dmcp5 firmware; inside the TWO_FILE_PGM package
-// blocks it is `#undef`'d for DM42 packages 1 and 3 (defines.h:199, :231) and
-// `#define`'d again for packages 2 and 4 (defines.h:215, :252). The IR path is
+// blocks it is `#undef`'d for DM42 packages 1 and 3 (defines.h:200, :232) and
+// `#define`'d again for packages 2 and 4 (defines.h:216, :253). The IR path is
 // therefore live on host, dmcp5 and DM42 packages 2 and 4, and dead only on DM42
 // packages 1 and 3 -- a per-package answer no target-shape expression can
 // restate, so it is read from the build option.

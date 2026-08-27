@@ -29,12 +29,13 @@
 // not re-exported.
 //
 // Build matrix (defines.h):
-//   * SAVE_SPACE_DM42_22_EDIT1 / SAVE_SPACE_DM42_23_EDIT2 are defined for every
-//     DM42 "TWO_FILE" package (dmcp_build and old_hw, incl. the default `dmcp`
-//     pkg4); off for host (sim/test) and dmcp5. They gate the reduced fnEdit body
-//     plus the _getStringLabelOrVariableName / _fractionToString / _shortIntegerToString
-//     / _hmsTimeToReal / _real34ToNim helpers. Gated `if (comptime !(dmcp_build and
-//     old_hw))`.
+//   * OPTION_EDIT_X / OPTION_EDIT_PEM are `#undef`'d by every DM42 defines.h
+//     block (the TWO_FILE_PGM packages 1-4 and the single-file old-hardware one),
+//     and stay defined for host (sim/test) and for the NEW_HW dmcp5. They gate the
+//     full fnEdit body plus the _getStringLabelOrVariableName / _fractionToString
+//     / _shortIntegerToString / _hmsTimeToReal / _real34ToNim helpers, so
+//     `save_space_edit` below is `dmcp_build and old_hw` and the helpers sit
+//     behind `if (comptime !save_space_edit)`.
 //   * OPTION_VECTOR / OPTION_ELEC gate the stk<->mx converters + vecCreate[] table.
 //     Both are build options; the converters need (option_vector OR option_elec).
 //     fnExchangeStkToMx is OPTION_VECTOR-only.
@@ -71,8 +72,8 @@ const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const option_vector: bool = frontier_build_options.option_vector;
 const option_elec: bool = frontier_build_options.option_elec;
 
-// SAVE_SPACE_DM42_22_EDIT1 / SAVE_SPACE_DM42_23_EDIT2 are set for the DM42
-// TWO_FILE packages (dmcp_build and old_hw); off for host and dmcp5.
+// True where upstream drops OPTION_EDIT_X / OPTION_EDIT_PEM: every DM42 build
+// (dmcp_build and old_hw). Host and dmcp5 keep both and so keep the full editor.
 const save_space_edit: bool = dmcp_build and old_hw;
 
 // DMCP ROM trampoline base (lft_ifc.h offsets; base differs old_hw / new_hw).

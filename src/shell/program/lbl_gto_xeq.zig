@@ -8,9 +8,10 @@
 // decode parameters and literals. Exercised by src/testSuite/tests/programs.txt
 // (part of the 9530-test suite), so `zig build test` verifies correctness.
 //
-// Faithful, line-by-line port of the C. The IR_PRINTING and
-// PC_BUILD+DEBUG_EXECUTE blocks in executeOneStep are omitted (never defined for
-// any z47 build). The DMCP_BUILD key-poll block in runProgram is firmware-only
+// Faithful, line-by-line port of the C. executeOneStep's per-step TRACE line is
+// gated on the ir_printing build option, as the C gates it on OPTION_IR_PRINTING;
+// the PC_BUILD+DEBUG_EXECUTE console trace beside it is not built here. The
+// DMCP_BUILD key-poll block in runProgram is firmware-only
 // (gated on dmcp_build); the host uses refreshLcd. The EXTRA_INFO hints build
 // their text into errorMessage and interpolate the same values the C sprintf
 // does; the tmpString sprintf bug-paths are dropped (their control flow is a
@@ -22,6 +23,8 @@ const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
 const dmcp_build: bool = frontier_build_options.dmcp_build;
+const ir_printing: bool = frontier_build_options.ir_printing;
+const frontier_print = @import("../print/print.zig");
 
 // ---------------------------------------------------------------------------
 // Types
@@ -1168,13 +1171,15 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
         step += 1;
     }
 
-    // Stop before the switch below, which indexes indexOfItems[op].
+    // Stop before the trace below and the switch, both of which index indexOfItems[op].
     if (op >= LAST_ITEM and op != 0x7fff) { // 0x7fff is .END., handled by its own case
         frontier_error.displayCalcErrorMessage(ERROR_UNDEFINED_OPCODE, ERR_REGISTER_LINE, REGISTER_X);
         return 0;
     }
 
-    // IR_PRINTING and PC_BUILD+DEBUG_EXECUTE blocks omitted (never defined).
+    // TRACE mode prints the step it is about to run. The PC_BUILD+DEBUG_EXECUTE
+    // console trace beside it in the C is not built here.
+    if (comptime ir_printing) frontier_print.printTrace(@bitCast(op), NOPARAM);
 
     switch (op) {
         ITM_GTO, ITM_XEQ, ITM_BACK, ITM_CASE, ITM_SKIP => {

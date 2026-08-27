@@ -1042,8 +1042,8 @@ pub export fn showRealMatrix(matrix: *const real34Matrix_t, prefixWidth: i16, re
 pub export fn getRealMatrixColumnWidths(matrix: *const real34Matrix_t, prefixWidth: i16, font: *const font_t, colWidthPtr: [*c]i16, rPadWidthPtr: [*c]i16, digitsPtr: *i16, maxColsIn: u16, allElementsInColAreIntegersPtr: [*c]bool_t) callconv(.c) i16 {
     var tmpStringL = std.mem.zeroes([200]u8);
     const colVector = matrix.header.matrixColumns == 1 and matrix.header.matrixRows > 1;
-    const rows: c_int = if (colVector) 1 else matrix.header.matrixColumns; // note: see below
-    _ = rows;
+    // A column vector is laid out as one row, so the row count collapses to 1 and
+    // the element count moves into the column count below.
     const rowsReal: c_int = if (colVector) 1 else matrix.header.matrixRows;
     const actualCols: c_int = if (colVector) matrix.header.matrixRows else matrix.header.matrixColumns;
     const cols: c_int = if (actualCols > @as(c_int, maxColsIn)) @as(c_int, maxColsIn) else actualCols;
@@ -1536,7 +1536,10 @@ pub export fn getComplexMatrixColumnWidths(matrix: *const complex34Matrix_t, pre
                 rPadWidth_iPtr[i * MATRIX_MAX_COLUMNS + j] = 0;
                 c34sign = false;
                 if (!polarMode) {
-                    c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].imag);
+                    // The sign the imaginary column budgets a '-' for is the
+                    // element's REAL part, the same one the real column tested:
+                    // the width rule keys both halves off the leading sign.
+                    c34sign = real34IsNegative(&matrix.matrixElements.?[(i + sRow) * @as(usize, @intCast(actualCols)) + j + sCol].real);
                     real34SetPositiveSign(&c34Val.imag);
                 }
                 frontier_display.real34ToDisplayString(&c34Val.imag, if (polarMode) @as(u32, @bitCast(@as(i32, angleMode))) else amNone, &tmpStringL, font, maxWidth, if (displayFormat == DF_ALL) @as(i16, @intCast(k)) else 15, @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), LIMITIRFRAC);
@@ -1940,14 +1943,21 @@ pub fn z47_frontier_matrix_add_item_to_nim_buffer(item: i16) void {
 var saved_is_complex: bool_t = false;
 var saved_re: real34_t = undefined;
 var saved_im: real34_t = undefined;
+// The cell the run started on. mimRunFunction reads the cursor once, before the
+// function it dispatches gets a chance to move it, and every later read and write
+// of the run addresses that same cell.
+var saved_i: i16 = 0;
+var saved_j: i16 = 0;
 
 pub fn z47_frontier_matrix_open_is_complex() bool {
     return getRegisterDataType(@bitCast(matrixIndex)) == dtComplex34Matrix;
 }
 
 pub fn z47_frontier_matrix_capture_selected_before() void {
-    const i: i16 = getIRegisterAsInt(true);
-    const j: i16 = getJRegisterAsInt(true);
+    saved_i = getIRegisterAsInt(true);
+    saved_j = getJRegisterAsInt(true);
+    const i: i16 = saved_i;
+    const j: i16 = saved_j;
     saved_is_complex = z47_frontier_matrix_open_is_complex();
     const idx: usize = @intCast(@as(c_int, i) * @as(c_int, openMatrixMIMPointer.header.matrixColumns) + @as(c_int, j));
 
@@ -1968,8 +1978,8 @@ pub fn z47_frontier_matrix_recheck_open_is_complex() void {
 }
 
 pub fn z47_frontier_matrix_load_selected_into_register_x() void {
-    const i: i16 = getIRegisterAsInt(true);
-    const j: i16 = getJRegisterAsInt(true);
+    const i: i16 = saved_i;
+    const j: i16 = saved_j;
     var re: real34_t = undefined;
     var im: real34_t = undefined;
     const isComplex = saved_is_complex;
@@ -2027,8 +2037,8 @@ pub fn z47_frontier_matrix_convert_register_x_short_to_real34() void {
 }
 
 pub fn z47_frontier_matrix_apply_register_x_to_selected() bool {
-    const i: i16 = getIRegisterAsInt(true);
-    const j: i16 = getJRegisterAsInt(true);
+    const i: i16 = saved_i;
+    const j: i16 = saved_j;
     // Same capture the read used, so both halves address the matrix the editor
     // was opened on.
     const isComplex = saved_is_complex;
@@ -2070,8 +2080,8 @@ pub fn z47_frontier_matrix_restore_saved_selected_if_x_and_not_converted() void 
         return;
     }
 
-    const i: i16 = getIRegisterAsInt(true);
-    const j: i16 = getJRegisterAsInt(true);
+    const i: i16 = saved_i;
+    const j: i16 = saved_j;
 
     if (saved_is_complex) {
         var linkedMatrix: complex34Matrix_t = undefined;

@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
-// Zig owner for src/c47/c47Extensions/jm.c: fnSigmaAssign (assign the +NRM key),
-// flipPolar, fnJM (the ELEC RPN-program dispatcher) plus the PC-only telltale
-// helpers jm_show_calc_state / jm_show_comment. This is a faithful, line-by-line
-// port of the C.
+// Zig owner for src/c47/c47Extensions/jm.c: fnSigmaAssign (assign the +NRM key)
+// plus the PC-only telltale helpers jm_show_calc_state / jm_show_comment. This is
+// a faithful, line-by-line port of the C.
+//
+// flipPolar, fnJM and nprimes below have no upstream definition and no caller:
+// jm.h declares fnJM, no C translation unit defines it and no item dispatches to
+// it, and the three-phase ELEC commands live in mathematics/elec.c, ported in
+// src/shell/elec.zig. They are kept only so the `fnJM` extern in
+// src/shell/display/items/items.zig still resolves.
 //
 // fnJM's body is gated on OPTION_ELEC: upstream defines.h enables it for the host
-// build and for DMCP package 3 / DMCP5, and #undef's it for the flash-limited
-// DMCP packages 1, 2 and 4. The frontier object is compiled once per package, so
-// the gate is carried through the frontier_build_options.option_elec flag (set by
-// firmware.zig's frontierDistributionStrip). When OPTION_ELEC is off the function
-// is the empty "item 255 is NOP" stub, exactly like the C.
+// build and for DMCP packages 1 and 3 / DMCP5, and #undef's it for the
+// flash-limited DMCP packages 2 and 4. The frontier object is compiled once per
+// package, so the gate is carried through the frontier_build_options.option_elec
+// flag (set by firmware.zig's frontierDistributionStrip). When OPTION_ELEC is off
+// the function is the empty "item 255 is NOP" stub, exactly like the C.
 //
 // jm_show_calc_state / jm_show_comment are #if PC_BUILD in the C and the
 // PC_BUILD_TELLTALE / PC_BUILD_VERBOSE2 inner blocks are never enabled for the z47
@@ -238,7 +243,7 @@ inline fn moreInfoOnErr(m1: [*:0]const u8, m2: [*:0]const u8) void {
 }
 
 // ---------------------------------------------------------------------------
-// nprimes — defined in jm.c (uint16_t nprimes = 0).
+// nprimes: no upstream definition and no reader anywhere in the tree.
 // ---------------------------------------------------------------------------
 pub export var nprimes: u16 = 0;
 
