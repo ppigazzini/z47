@@ -253,7 +253,7 @@
             regist += FIRST_RESERVED_VARIABLE + NUMBER_OF_LETTERED_VARIABLES;
           }
 
-          if(regist <= LAST_RESERVED_VARIABLE) { // Named variables
+          if(regist <= LAST_RESERVED_VARIABLE && allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName[0] != 0) { // Named variables; a retired slot has no name and no data
             sprintf(tmpString, "%s:", (char *)allReservedVariables[regist - FIRST_RESERVED_VARIABLE].reservedVariableName + 1);
 
             // variable name
