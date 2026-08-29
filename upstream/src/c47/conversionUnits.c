@@ -337,6 +337,12 @@ TO_QSPI const fInMim_t MimFunctionsType3Conv[NUM_CONVERT_PAIRS] =
     {ITM_K100KtoMGEUK   },
     {ITM_MIKtoK100K     },
     {ITM_K100KtoMIK     },
+    {ITM_DEGtoMIL       },
+    {ITM_MILtoDEG       },
+    {ITM_DEGtoARCSEC    },
+    {ITM_ARCSECtoDEG    },
+    {ITM_DEGtoMRAD      },
+    {ITM_MRADtoDEG      },
      // do mimRunFunction(item, indexOfItems[item].param);
    };
 
@@ -712,6 +718,12 @@ TO_QSPI static const convPair_t convertPairs[NUM_CONVERT_PAIRS] = {             
   { ITM_K100KtoMGEUK     /* 2867 */, ITM_MGEUKtoK100K     , ITM_MGEUKtoK100K   , +0 , UT_EVECON                   },
   { ITM_MIKtoK100K       /* 2868 */, ITM_K100KtoMIK       , ITM_NULL           , +0 , UT_EVECON                   },
   { ITM_K100KtoMIK       /* 2869 */, ITM_MIKtoK100K       , ITM_MIKtoK100K     , +0 , UT_EVECON                   },
+  { ITM_DEGtoMIL         /* 2870 */, ITM_MILtoDEG         , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_MILtoDEG         /* 2871 */, ITM_DEGtoMIL         , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_DEGtoARCSEC      /* 2872 */, ITM_ARCSECtoDEG      , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_ARCSECtoDEG      /* 2873 */, ITM_DEGtoARCSEC      , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_DEGtoMRAD        /* 2874 */, ITM_MRADtoDEG        , ITM_NULL           , -3 , UT_ANGLE                    },
+  { ITM_MRADtoDEG        /* 2875 */, ITM_DEGtoMRAD        , ITM_DEGtoRAD       , +0 , UT_ANGLE                    },
 };
 
 static const convPair_t *findPair(int16_t input) {                              // binary search; NULL if not found
@@ -1073,6 +1085,9 @@ TO_QSPI static const real_t * const conversionFactors[constFactorEND] = {
     [constFactorMgeusK100K]   = const39_MgeusToK100K,
     [constFactorMgeukK100K]   = const39_MgeukToK100K,
     [constFactorMikK100K]     = const39_MikToK100K, /* 169 */
+    [constFactorDegMil]       = const39_DegToMil,
+    [constFactorDegArcsec]    = const_3600,
+    [constFactorDegMrad]      = const39_DegToMrad,  /* 172 */
   };
 
 

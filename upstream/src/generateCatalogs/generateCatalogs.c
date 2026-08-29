@@ -31,7 +31,8 @@ static int sortItems(void const *a, void const *b)  {
 
 
 void sortOneCatalog(const char *menuName, int catalogType, int16_t generationType) {
-  bool onlyEIM     = (strcmp(menuName, "FCNS_EIM") == 0);
+  bool_t onlyEIM = (strcmp(menuName, "FCNS_EIM") == 0);
+  bool_t isFCNS  = (strcmp(menuName, "FCNS") == 0);
 
   #if defined(DEBUG)
     printf("Generating catalog %s\n", menuName);
@@ -40,7 +41,17 @@ void sortOneCatalog(const char *menuName, int catalogType, int16_t generationTyp
 
   numberOfItems = 0;
   for(item=1; item<LAST_ITEM; item++) {
-    if((indexOfItems[item].status & CAT_STATUS) == catalogType && strcmp(indexOfItems[item].itemCatalogName, "CATALOG")  && strcmp(indexOfItems[item].itemCatalogName, "MENU") && strcmp(indexOfItems[item].itemCatalogName, "MENUS")) { // CATALOG, MENU and MENUS are not in another catalog
+    bool_t include = (catalogType == CAT_MENU
+                        ?    strcmp(indexOfItems[item].itemCatalogName, "MENU") 
+                          && strcmp(indexOfItems[item].itemCatalogName, "UMENU")
+                          && strcmp(indexOfItems[item].itemCatalogName, "VAR")
+                          && strcmp(indexOfItems[item].itemCatalogName, "PROG")
+
+                        :    strcmp(indexOfItems[item].itemCatalogName, "CATALOG") 
+                          && (strcmp(indexOfItems[item].itemCatalogName, "MENU") || isFCNS) // ensure MENU is not excluded from FCNS
+                          && strcmp(indexOfItems[item].itemCatalogName, "MENUS") // CATALOG, MENU and MENUS are not in another catalog
+                     );
+    if((indexOfItems[item].status & CAT_STATUS) == catalogType && include) {
       if(   generationType == GENERATION_FOR_DMCP
          || generationType == GENERATION_FOR_BOTH
          || (generationType == GENERATION_FOR_PC )) {

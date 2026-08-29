@@ -16,6 +16,7 @@ const runtime = @import("../command_wrappers/runtime.zig");
 
 const std_plus_minus = "\x80\xb1"; // STD_PLUS_MINUS
 const std_infinity = "\xa2\x1e"; // STD_INFINITY
+const std_sup_x = "\xa4\x99"; // STD_SUP_x
 const math_command_wrappers = @import("../command_wrappers.zig");
 const math_comparison_reals = @import("../compare/comparison_reals.zig");
 const math_division_cells = @import("../arithmetic/division_cells.zig");
@@ -82,6 +83,10 @@ inline fn realCopy(source: *const real_t, destination: *real_t) void {
 inline fn realDivideRemainder(operand1: *const real_t, operand2: *const real_t, res: *real_t, ctxt: *realContext_t) void {
     _ = decNumberRemainder(res, operand1, operand2, ctxt);
 }
+extern fn decNumberCopyAbs(res: *real_t, source: *const real_t) *real_t;
+inline fn realCopyAbs(source: *const real_t, destination: *real_t) void {
+    _ = decNumberCopyAbs(destination, source);
+}
 const realIsPositive = math_real_predicates.realIsPositive;
 inline fn realSetPositiveSign(source: *real_t) void {
     source.bits &= ~@as(@TypeOf(source.bits), 0x80);
@@ -91,6 +96,8 @@ inline fn realSetNegativeSign(source: *real_t) void {
 }
 
 // Complex helpers.
+const lnComplex = runtime.lnComplex;
+const expComplex = math_command_wrappers.expComplex;
 
 // Cross-domain power helper (power.c owner).
 
@@ -158,192 +165,256 @@ inline fn getRegisterShortIntegerBase(reg: runtime.calcRegister_t) u32 {
 }
 
 // ===========================================================================
+// cpxXthRoot: find R such that R^X == Y
+//
+// Cases with no solution
+// 1) X is pure imaginary and |yImag| > e^|xImag|, i.e. i-th root of 25i
+// 2) xReal^2 + xImag^2 < |xReal|, also depending on Y being typically around
+//    the negative real axis, i.e. the 0.5th root of -2
+//
+// exp(Log Y / X) is a root only when its imaginary part lands in [-pi, pi]. An
+// r whose argument falls outside does NOT satisfy r^X = Y. Adding 2*pi*k to
+// Arg Y before the division shifts Im into the strip when a suitable integer k
+// exists -- and when no k does, Y has no X-th root.
+//
+// Im is linear in k, so the valid branches are exactly the integers in an
+// interval. k = 0 is picked whenever it is valid (~99% of calls), otherwise the
+// valid k closest to 0 is picked.
+//
+// The strip is tested CLOSED instead of the mathematically correct half-open
+// ]-pi, pi]. Technically wrong, but it lets the X = -1 case through, and on the
+// border of the roots' existence it may produce a wrong answer.
+//
+// If the residue cleanup below wants the result to be a negative real, i.e.
+// -pi rad, it is not a possible root: xrooty(-5i, 0.5) is the 0.5th root of
+// 5<-pi/2, which squares to 25<-pi; -pi is outside (-pi, pi], so add 2pi to get
+// 25<+pi = -25, and -25^0.5 = 5i != -5i, so not a root.
+//
+// Returns true with r in rReal/rImag; false when no such r exists.
+// ===========================================================================
+fn cpxXthRoot(yReal: *const real_t, yImag: *const real_t, xReal: *const real_t, xImag: *const real_t, rReal: *real_t, rImag: *real_t, realContext: *realContext_t) linksection(runtime.code_section) bool {
+    var x2: real_t = undefined;
+    var lnYReal: real_t = undefined;
+    var lnYImag: real_t = undefined;
+    var lnRReal: real_t = undefined;
+    var lnRImag: real_t = undefined;
+    var k: real_t = undefined;
+    var step: real_t = undefined;
+
+    if (realIsZero(xReal) and realIsZero(xImag)) { // r^0 = 1 whatever r is
+        if (runtime.realCompareEqual(yReal, const_1()) and realIsZero(yImag)) {
+            realSetOne(rReal);
+            realSetZero(rImag);
+            return true;
+        }
+        return false;
+    }
+
+    if (realIsZero(yReal) and realIsZero(yImag)) { // 0^X = 0 needs Re X > 0
+        if (math_comparison_reals.realCompareGreaterThan(xReal, const_0())) {
+            realSetZero(rReal);
+            realSetZero(rImag);
+            return true;
+        }
+        return false;
+    }
+
+    lnComplex(yReal, yImag, &lnYReal, &lnYImag, realContext);
+    realMultiply(xReal, xReal, &x2, realContext);
+    realFMA(xImag, xImag, &x2, &x2, realContext); // |X|^2
+
+    realMultiply(xReal, &lnYImag, &lnRImag, realContext);
+    if (!realIsZero(xImag)) { // a real X would make this 0*inf = NaN for an infinite Y
+        realMultiply(xImag, &lnYReal, &lnRReal, realContext);
+        runtime.realSubtract(&lnRImag, &lnRReal, &lnRImag, realContext);
+    }
+    realDivide(&lnRImag, &x2, &lnRImag, realContext); // Im(Log Y / X), branch 0
+
+    if (runtime.realIsSpecial(&lnRImag)) {
+        return false; // Arg r runs off: an infinite Y with a complex X, or NaN in
+    }
+    realSetZero(&k);
+
+    if (runtime.realCompareAbsGreaterThan(&lnRImag, consts.const39_pi())) { // branch 0 is out
+        if (realIsZero(xReal)) {
+            return false; // Im does not depend on k
+        }
+
+        realCopyAbs(xReal, &step);
+        realMultiply(&step, consts.const39_2pi(), &step, realContext);
+        realDivide(&step, &x2, &step, realContext); // k steps for Im
+
+        // Steps to bring |Im| back to at most pi.
+        realCopyAbs(&lnRImag, &k);
+        runtime.realSubtract(&k, consts.const39_pi(), &k, realContext);
+        realDivide(&k, &step, &k, realContext);
+        runtime.realToIntegralValue(&k, &k, runtime.DEC_ROUND_CEILING, realContext); // at least 1
+
+        const imWasPositive = realIsPositive(&lnRImag);
+        if (imWasPositive) {
+            realChangeSign(&step);
+        }
+        realFMA(&k, &step, &lnRImag, &lnRImag, realContext);
+        if (runtime.realCompareAbsGreaterThan(&lnRImag, consts.const39_pi())) {
+            return false; // no k gives a valid root
+        }
+
+        if (imWasPositive == realIsPositive(xReal)) {
+            realChangeSign(&k);
+        }
+        realMultiply(&k, consts.const39_2pi(), &k, realContext); // k*2*pi
+    }
+
+    realAdd(&lnYImag, &k, &lnRReal, realContext);
+    realMultiply(xImag, &lnRReal, &lnRReal, realContext);
+    realFMA(xReal, &lnYReal, &lnRReal, &lnRReal, realContext);
+    realDivide(&lnRReal, &x2, &lnRReal, realContext); // Re(Log r)
+
+    if (realIsInfinite(&lnRReal)) {
+        realPolarToRectangular(if (realIsPositive(&lnRReal)) const_plusInfinity() else const_0(), &lnRImag, rReal, rImag, realContext);
+    } else {
+        expComplex(&lnRReal, &lnRImag, rReal, rImag, realContext);
+    }
+
+    // Remove residue due to going through polar form and back
+    realCopyAbs(&lnRImag, &k);
+    if (runtime.realCompareEqual(&k, consts.const39_pi())) {
+        if (realIsNegative(&lnRImag) and !(realIsZero(xImag) and realIsAnInteger(xReal))) {
+            return false; // exp gives Arg r = +pi, so this r is not a root
+        }
+        realSetZero(rImag);
+    } else if (runtime.realCompareEqual(&k, consts.const39_piOn2())) {
+        realSetZero(rReal);
+    }
+
+    return true;
+}
+
+// ===========================================================================
 // xthRootComplex: (a+ib) ^ (1/(c+id))
 // ===========================================================================
 fn xthRootComplex(aa: *const real_t, bb: *const real_t, cc: *const real_t, dd: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) void {
-    var theta: real_t = undefined;
-    var a: real_t = undefined;
-    var b: real_t = undefined;
-    var c: real_t = undefined;
-    var d: real_t = undefined;
+    var rReal: real_t = undefined;
+    var rImag: real_t = undefined;
 
-    realCopy(aa, &a);
-    realCopy(bb, &b);
-    realCopy(cc, &c);
-    realCopy(dd, &d);
-
-    if (realIsInfinite(&a) or realIsInfinite(&b)) { // an infinite base carries an angle, which PowerComplex() turns by 1/x
-        var er: real_t = undefined;
-        var ei: real_t = undefined;
-        var rr: real_t = undefined;
-        var ri: real_t = undefined;
-
-        if (realIsZero(&c) and realIsZero(&d)) { // a 0th root is not defined
-            convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
-            return;
-        }
-
-        math_division_cells.divComplexComplex(const_1(), const_0(), &c, &d, &er, &ei, realContext);
-        if (realIsZero(&er) and realIsZero(&ei)) { // an infinite order leaves y^0, indeterminate for an infinite base
-            convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
-            return;
-        }
-
-        _ = math_power.PowerComplex(&a, &b, &er, &ei, &rr, &ri, realContext);
-        convertComplexToResultRegister(&rr, &ri, REGISTER_X);
+    // X = 0 is not tested here: cpxXthRoot does that.
+    if (!getSystemFlag(FLAG_SPCRES) and (realIsNaN(aa) or realIsNaN(bb) or realIsNaN(cc) or realIsNaN(dd))) {
+        convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
         return;
     }
 
-    if (!getSystemFlag(FLAG_SPCRES)) {
-        if (realIsZero(&c) and realIsZero(&d)) {
-            displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-            moreInfoOnError("In function xthRootComplex: 0th Root is not defined!", null, null, null);
-            return;
+    if (cpxXthRoot(aa, bb, cc, dd, &rReal, &rImag, realContext)) {
+        convertComplexToResultRegister(&rReal, &rImag, REGISTER_X);
+        return;
+    }
+
+    // Y has no X-th root at all -- not "none on the branch we looked at". The
+    // branches searched are branches of Log Y, and every one of them was ruled
+    // out. This is a real answer, not a failure to compute: Y = (-8) with
+    // X = 0.5 asks for an R whose square root is -8, and no complex number has
+    // that.
+    if (getSystemFlag(FLAG_SPCRES)) {
+        if (runtime.getRegisterDataType(REGISTER_X) == runtime.dtComplex34 or runtime.getRegisterDataType(REGISTER_Y) == runtime.dtComplex34) {
+            convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
         } else {
-            if (realIsNaN(&a) or realIsNaN(&b) or realIsNaN(&c) or realIsNaN(&d)) {
-                convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
-                return;
-            }
+            convertRealToResultRegister(const_NaN(), REGISTER_X, amNone); // real in, real NaN out
         }
+    } else {
+        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnError("In function xthRootComplex:", "Y has no X-th root: no R satisfies R" ++ std_sup_x ++ " = Y", null, null);
     }
-
-    if (realIsZero(&a) and realIsZero(&b) and !realIsZero(&c)) {
-        convertComplexToResultRegister(const_0(), const_0(), REGISTER_X);
-        return;
-    }
-
-    math_division_cells.divRealComplex(const_1(), &c, &d, &c, &d, realContext);
-
-    // From power.c
-    realRectangularToPolar(&a, &b, &a, &theta, realContext);
-    WP34S_Ln(&a, &a, realContext);
-    realMultiply(&a, &d, &b, realContext);
-    realFMA(&theta, &c, &b, &b, realContext);
-    realChangeSign(&theta);
-    realMultiply(&a, &c, &a, realContext);
-    realFMA(&theta, &d, &a, &a, realContext);
-    math_command_wrappers.realExp(&a, &c, realContext);
-    realPolarToRectangular(const_1(), &b, &a, &b, realContext);
-    realMultiply(&c, &b, &d, realContext);
-    realMultiply(&c, &a, &c, realContext);
-
-    convertComplexToResultRegister(&c, &d, REGISTER_X);
 }
 
 // ===========================================================================
 // xthRootReal: y^(1/x)
 // ===========================================================================
-pub export fn xthRootReal(yy: *real_t, xx: *real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
+pub export fn xthRootReal(yy: *const real_t, xx: *const real_t, realContext: *realContext_t) linksection(runtime.code_section) callconv(.c) void {
     var r: real_t = undefined;
     var o: real_t = undefined;
     var x: real_t = undefined;
     var y: real_t = undefined;
-    var telltale: u8 = undefined;
+    var haveResult = false;
 
     realCopy(xx, &x);
     realCopy(yy, &y);
 
-    telltale = 0;
     if (getSystemFlag(FLAG_SPCRES)) {
         //0
         if (((realIsZero(&y) and (math_comparison_reals.realCompareGreaterEqual(&x, const_0()) or (realIsInfinite(&x) and realIsPositive(&x))))) or ((realIsInfinite(&y) and realIsPositive(&y)) and (realCompareLessThan(&x, const_0()) and (!realIsInfinite(&x))))) {
-            telltale += 1;
+            haveResult = true;
             realSetZero(&o);
         }
 
         //1
         if (((math_comparison_reals.realCompareGreaterEqual(&y, const_0()) or (realIsInfinite(&y) and realIsPositive(&y))) and realIsInfinite(&x))) {
-            telltale += 2;
+            haveResult = true;
             realSetOne(&o);
         }
 
         //inf
-        if ((realIsZero(&y) and (realCompareLessThan(&x, const_0()) and (!realIsInfinite(&x)))) or ((realIsInfinite(&y) and realIsPositive(&y)) and (math_comparison_reals.realCompareGreaterEqual(&x, const_0()) and (!realIsInfinite(&x))))) {
-            telltale += 4;
+        if ((!realIsInfinite(&x)) // x finite, common to both cases
+        and ((realIsZero(&y) and realCompareLessThan(&x, const_0())) // (y=0.)    AND (-inf < x < 0)
+            or ((realIsInfinite(&y) and realIsPositive(&y)) and math_comparison_reals.realCompareGreaterEqual(&x, const_0())))) // (y=+inf)  AND (0 <= x < inf)
+        {
+            haveResult = true;
             realSetPlusInfinity(&o);
         }
 
         //NaN
         realDivideRemainder(&x, const_2(), &r, realContext);
-        // (y=-inf) AND (x is even > 0) has a complex root when CPXRES is set, so the NaN arm keeps !CPXRES.
-        if ((realIsNaN(&x) or realIsNaN(&y)) or ((realCompareLessThan(&y, const_0()) or (realIsInfinite(&y) and realIsNegative(&y))) and (realIsInfinite(&x))) or ((realCompareLessThan(&y, const_0()) and (!realIsInfinite(&y)) and (!realIsAnInteger(&x)))) or ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x)) and !runtime.getFlag(FLAG_CPXRES))) {
-            telltale += 8;
+        // With CPXRES set a negative base with a non-integer root order falls through to
+        // xthRootComplex instead: it has a perfectly good complex root whenever |x| >= 1,
+        // e.g. (-8) with x = 1.5. Same for (y=-inf) with an even x > 0.
+        if ((realIsNaN(&x) or realIsNaN(&y)) or ((realCompareLessThan(&y, const_0()) or (realIsInfinite(&y) and realIsNegative(&y))) and (realIsInfinite(&x))) or ((realCompareLessThan(&y, const_0()) and (!realIsInfinite(&y)) and (!realIsAnInteger(&x)) and (!runtime.getFlag(FLAG_CPXRES)))) or ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0())) and !runtime.getFlag(FLAG_CPXRES))) {
+            haveResult = true;
             realSetNaN(&o);
         }
 
         //-inf
-        realAdd(&x, const_1(), &r, realContext);
-        realDivideRemainder(&r, const_2(), &r, realContext);
-        if ((realIsInfinite(&y) and realIsNegative(&y)) and (realIsZero(&r) and math_comparison_reals.realCompareGreaterThan(&x, const_0()) and realIsAnInteger(&x))) {
-            telltale += 16;
+        // r still holds x mod 2; only an odd integer leaves +-1
+        if ((realIsInfinite(&y) and realIsNegative(&y)) and (runtime.realCompareAbsEqual(&r, const_1()) and math_comparison_reals.realCompareGreaterThan(&x, const_0()))) {
+            haveResult = true;
             realSetMinusInfinity(&o);
-        }
-
-        if (telltale != 0) {
-            convertRealToResultRegister(&o, REGISTER_X, amNone);
-            return;
         }
     } else { // not DANGER
         if (realIsZero(&x)) {
             displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
             moreInfoOnError("In function xthRootReal: 0th Root is not defined!", null, null, null);
             return;
+        }
+        if (realIsNaN(&x) or realIsNaN(&y)) {
+            haveResult = true;
+            realSetNaN(&o);
+        }
+    }
+
+    if (!haveResult) {
+        if (realIsPositive(&y)) { // positive base, no problem, get the power function y^(1/x)
+            realDivide(const_1(), &x, &x, realContext);
+            math_power.PowerReal(&y, &x, &o, realContext);
         } else {
-            if (realIsNaN(&x) or realIsNaN(&y)) {
-                convertRealToResultRegister(const_NaN(), REGISTER_X, amNone);
+            // negative base and odd exp: the root is real.
+            realDivideRemainder(&x, const_2(), &r, realContext);
+            if (runtime.realCompareAbsEqual(&r, const_1())) {
+                realDivide(const_1(), &x, &x, realContext);
+
+                realSetPositiveSign(&y);
+                math_power.PowerReal(&y, &x, &o, realContext);
+                realSetNegativeSign(&o);
+            } else {
+                // even exp, or neither odd nor even i.e. not integer: complex either way
+                if (!runtime.getFlag(FLAG_CPXRES)) {
+                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
+                    moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", null, null);
+                    return;
+                }
+                xthRootComplex(&y, const_0(), &x, const_0(), realContext);
                 return;
             }
         }
     }
 
-    if (realIsPositive(&y)) { // positive base, no problem, get the power function y^(1/x)
-        realDivide(const_1(), &x, &x, realContext);
-
-        math_power.PowerReal(&y, &x, &x, realContext);
-        convertRealToResultRegister(&x, REGISTER_X, amNone);
-        return;
-    } // fall through, but returned
-    else {
-        if (realIsNegative(&y)) {
-            realDivideRemainder(&x, const_2(), &r, realContext);
-            if (realIsZero(&r)) { // negative base and even exp
-                if (!runtime.getFlag(FLAG_CPXRES)) {
-                    displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-                    moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", null, null);
-                    return;
-                } else {
-                    xthRootComplex(&y, const_0(), &x, const_0(), realContext);
-                }
-            } // fall through after Root CC
-            else {
-                realAdd(&x, const_1(), &r, realContext);
-                realDivideRemainder(&r, const_2(), &r, realContext);
-                if (realIsZero(&r)) { // negative base and odd exp
-                    realDivide(const_1(), &x, &x, realContext);
-
-                    realSetPositiveSign(&y);
-                    math_power.PowerReal(&y, &x, &x, realContext);
-                    realSetNegativeSign(&x);
-
-                    convertRealToResultRegister(&x, REGISTER_X, amNone);
-                    return;
-                } // fall though, but returned
-                else { // neither odd nor even, i.e. not integer
-                    if (!runtime.getFlag(FLAG_CPXRES)) {
-                        displayCalcErrorMessage(ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, ERR_REGISTER_LINE, REGISTER_X);
-                        moreInfoOnError("In function xthRootReal:", "cannot do complex xthRoots when CPXRES is not set", null, null);
-                        return;
-                    } else {
-                        xthRootComplex(&y, const_0(), &x, const_0(), realContext);
-                    }
-                }
-            } // fall through
-        } else {
-            if (realIsZero(&y)) {
-                convertRealToResultRegister(if (realIsZero(&x)) const_NaN() else const_1(), REGISTER_X, amNone);
-            } // fall through, but returned
-        }
-    }
+    convertRealToResultRegister(&o, REGISTER_X, amNone);
 }
 
 // ===========================================================================
@@ -465,6 +536,14 @@ fn doXthRootCplx() linksection(runtime.code_section) callconv(.c) void {
     var d: real_t = undefined;
 
     if (!runtime.getRegisterAsComplex(REGISTER_Y, &a, &b) or !runtime.getRegisterAsComplex(REGISTER_X, &c, &d)) {
+        return;
+    }
+
+    // An infinite Y used to answer inf + inf i whatever the direction. That is
+    // only right for Arg Y = pi/4; crootComplex now derives the direction from
+    // Arg Y like sqrt does. The 0th root of an infinity keeps its own answer.
+    if ((realIsInfinite(&a) or realIsInfinite(&b)) and realIsZero(&c) and realIsZero(&d)) {
+        convertComplexToResultRegister(const_NaN(), const_NaN(), REGISTER_X);
         return;
     }
 

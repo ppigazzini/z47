@@ -298,21 +298,15 @@ pub fn lnCplx() callconv(.c) void {
         return;
     }
 
-    if (runtime.realIsZero(&x_real) and runtime.realIsZero(&x_imag)) {
-        if (!runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
-            runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
-            if (runtime.extra_info_on_calc_error) {
-                runtime.moreInfoOnError("In function lnCplx:", "cannot calculate Ln(0)", null, null);
-            }
-            return;
+    if (runtime.realIsZero(&x_real) and runtime.realIsZero(&x_imag) and !runtime.getSystemFlag(runtime.FLAG_SPCRES)) {
+        runtime.displayCalcErrorMessage(runtime.ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN, runtime.ERR_REGISTER_LINE, runtime.REGISTER_X);
+        if (runtime.extra_info_on_calc_error) {
+            runtime.moreInfoOnError("In function lnCplx:", "cannot calculate Ln(0)", null, null);
         }
-
-        copyReal(&x_real, runtime.z47_math_wrappers_const_minus_infinity());
-        runtime.realSetZero(&x_imag);
-    } else {
-        ln_complex_owned.lnComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39);
+        return;
     }
 
+    ln_complex_owned.lnComplex(&x_real, &x_imag, &x_real, &x_imag, &runtime.ctxtReal39); // Ln(0) gives -inf + 0i in there
     runtime.convertComplexToResultRegister(&x_real, &x_imag, runtime.REGISTER_X);
 }
 
