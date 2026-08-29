@@ -18,7 +18,7 @@
 
 const std = @import("std");
 
-pub const NUM_CONVERT_PAIRS = 324;
+pub const NUM_CONVERT_PAIRS = 330;
 
 pub const ConvPair = struct {
     item: i16,
@@ -355,6 +355,12 @@ const convert_pairs = [NUM_CONVERT_PAIRS]ConvPair{
     .{ .item = 2867, .partner = 2866, .unity = 2866, .exponent = 0, .type = 16 },
     .{ .item = 2868, .partner = 2869, .unity = 0, .exponent = 0, .type = 16 },
     .{ .item = 2869, .partner = 2868, .unity = 2868, .exponent = 0, .type = 16 },
+    .{ .item = 2870, .partner = 2871, .unity = 0, .exponent = 0, .type = 0 },
+    .{ .item = 2871, .partner = 2870, .unity = 0, .exponent = 0, .type = 0 },
+    .{ .item = 2872, .partner = 2873, .unity = 0, .exponent = 0, .type = 0 },
+    .{ .item = 2873, .partner = 2872, .unity = 0, .exponent = 0, .type = 0 },
+    .{ .item = 2874, .partner = 2875, .unity = 0, .exponent = -3, .type = 13 }, // DEGtoMRAD: mrad is 10^-3 rad, UT_ANGLE
+    .{ .item = 2875, .partner = 2874, .unity = 2096, .exponent = 0, .type = 13 }, // MRADtoDEG: unity DEGtoRAD,  UT_ANGLE
 };
 
 /// Binary search the item-sorted table; null if `input` is not a conversion item.

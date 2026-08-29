@@ -176,8 +176,9 @@ Out: EC=0 FL_SPCRES=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Cplx:"1.000037
 In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=LonI:"-8" RX=Real:"3.0001"
 Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3.0001" RX=Real:"NaN"
 
+;with CPXRES set, a negative base with a non-integer root order no longer short circuits to NaN: the complex root exists and is returned
 In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=LonI:"-8" RX=Real:"3.0001"
-Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Cplx:"1.00003735208855474924886094379853260879592566656801255076 i 1.73197588482374908266877029538840985947306162932517277753"
 ;-->All 4 tests ^^
 In: FL_CPXRES=0 FL_SPCRES=0
 
@@ -222,8 +223,9 @@ Out: EC=0 FL_SPCRES=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Cplx:"1.000037
 In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=ShoI:"-8#10" RX=Real:"3.0001"
 Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3.0001" RX=Real:"NaN"
 
+;with CPXRES set, a negative base with a non-integer root order no longer short circuits to NaN: the complex root exists and is returned
 In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=ShoI:"-8#10" RX=Real:"3.0001"
-Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Cplx:"1.00003735208855474924886094379853260879592566656801255076 i 1.73197588482374908266877029538840985947306162932517277753"
 In: FL_CPXRES=0 FL_SPCRES=0
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=ShoI:"8#10" RX=Real:"2.0001"
@@ -338,8 +340,9 @@ Out: EC=0 FL_SPCRES=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Cplx:"1.000037
 In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"-8" RX=Real:"3.0001"
 Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3.0001" RX=Real:"NaN"
 
+;with CPXRES set, a negative base with a non-integer root order no longer short circuits to NaN: the complex root exists and is returned
 In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-8" RX=Real:"3.0001"
-Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Real:"3.0001" RX=Cplx:"1.00003735208855474924886094379853260879592566656801255076 i 1.73197588482374908266877029538840985947306162932517277753"
 ;-->All 4 tests ^^
 In: FL_CPXRES=0 FL_SPCRES=0
 
@@ -388,8 +391,14 @@ Out: EC=0 FL_SPCRES=1 FL_ASLIFT=1 RL=Cplx:"3.0001 i 0" RX=Cplx:"1.00003735208855
 ;-->All 4 tests ^^
 In: FL_CPXRES=0 FL_SPCRES=0
 
+;the 0th root of 1: every r satisfies r^0 = 1, so 1 is as good an answer as
+;any and crootComplex returns it rather than refusing. Any other Y still has
+;no 0th root and errors out below.
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"1 i 0" RX=Cplx:"0 i 0"
-Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Cplx:"1 i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0 i 0" RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"2 i 0" RX=Cplx:"0 i 0"
+Out: EC=1 FL_CPXRES=0 FL_ASLIFT=0 RY=Cplx:"2 i 0" RX=Cplx:"0 i 0"
 
 In:  FL_ASLIFT=0 FL_CPXRES=0 RY=Cplx:"NaN i 0" RX=Cplx:"NaN i 0"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"NaN i 0" RX=Cplx:"NaN i NaN"
@@ -518,6 +527,696 @@ Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=CxMa:"M2,3[1,23.1406926327792
 ;=======================================
 In:  AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RY=CxMa:"M2,3[-1,0i-1,2i-1,-3i2,4i3,-5i-4]" RX=Cplx:"0i1"
 Out: EC=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0i1" RX=CxMa:"M2,3[23.1406926327792690057290863679485473803,0.207879576350761908546955619834978770034,0.436084089641886390324521296483396451163i-0.453269239475994377948195489177736603734,3.65471447293299920050044213017415876365i-12.32261746741907919337063408363484183110,-0.07352174987390250352660863454605274852i-1.90171162679334310157591584149147785286,-0.0239372318218603676082252489922805915547i-0.0814051528676698143939329000233136823137]"
+
+
+;=======================================================================
+; croot: u such that u^x == y on the principal branch
+;
+; The old code evaluated exp(Log y / x) and returned it whatever came
+; out. That is only a root when the result's argument lands in ]-pi, pi];
+; otherwise raising it back to the power x does NOT give y. The cases
+; below are the ones where old and new disagree.
+;=======================================================================
+In: FL_CPXRES=0 FL_SPCRES=0
+
+;---------------------------------------
+; Negative base, non-integer root order: the root exists, so with CPXRES
+; set it must be returned rather than short circuited to NaN
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-8" RX=Real:"1.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1.5" RX=Cplx:"-1.99999999999999999999999999999999999999 i 3.46410161513775458705489268301174473390"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=1 RY=Real:"-8" RX=Real:"1.5"
+Out: EC=0 FL_SPCRES=0 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1.5" RX=Cplx:"-1.99999999999999999999999999999999999999 i 3.46410161513775458705489268301174473390"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-8" RX=Real:"-1.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"-1.5" RX=Cplx:"-0.125000000000000000000000000000000000000 i -0.216506350946109661690930792688234045869"
+
+;---------------------------------------
+; |x| < 1 with a negative base: no u has -8 as its principal x-th power,
+; so the honest answer is "no root". The old code returned 64 here when
+; the same numbers were entered as complex.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-8" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"0.5" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=0 FL_CPXRES=1 RY=Real:"-8" RX=Real:"0.5"
+Out: EC=1 FL_SPCRES=0 FL_CPXRES=1 FL_ASLIFT=0 RY=Real:"-8" RX=Real:"0.5"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-8 i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i 0" RX=Cplx:"NaN i NaN"
+
+;---------------------------------------
+; Arg y is exactly pi, so Im lands exactly on the ]-pi, pi] boundary and
+; no error bound can decide it. The root is nevertheless -8, and it must
+; not be refused.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-8 i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i 0" RX=Cplx:"-8 i 0"
+
+;---------------------------------------
+; Im(Log y / x) lands exactly on -pi. exp puts such an r on the negative
+; real axis, whose argument is +pi, so raising it back gives -y, not y.
+; Only x = -1 survives: there +pi is reached by another branch of the same
+; r, so the answer is right anyway.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i -5" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i 0" RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 5" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.5 i 0" RX=Cplx:"-25 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i -5" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-0.5 i 0" RX=Cplx:"-0.04 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-5 i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-1 i 0" RX=Cplx:"-0.2 i 0"
+
+;---------------------------------------
+; A branch other than k = 0 carries the root. Here Im(Log y / x) = -4.56
+; for k = 0, well outside [-pi, pi]: the old code returned exp of that
+; anyway, which is not a root of anything. Branches k = 3 through k = 12
+; are all valid; k = 3 is the one nearest the principal value.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"100" RX=Cplx:"0.1 i 1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"0.1 i 1" RX=Cplx:"-181149718.475428818263688087253912919712 i -87128213.4012492547386243541726553524840"
+
+;---------------------------------------
+; Long Integer operands reach croot through doXthRootLonI, which hands
+; down a 75 digit context rather than the 39 digit one every other caller
+; uses. Negative base with an even exponent is the way in: the odd-integer
+; shortcut does not apply, so it falls through to the complex path.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=LonI:"-8" RX=LonI:"4"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=LonI:"4" RX=Cplx:"1.18920711500272106671749997056047591529 i 1.18920711500272106671749997056047591529"
+
+;---------------------------------------
+; Y = -inf: the odd/even split decides between -inf and NaN. These are the
+; SPCRES rules that had no coverage at all.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"3" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"5" RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"4"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"4" RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"NaN"
+
+;---------------------------------------
+; An exponent so large that x+1 rounds back to x. Odd/even must still be
+; decided from x mod 2 alone: 1e39 is even, so the root is complex, not the
+; real -1 that testing (x+1) mod 2 would give here.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-8" RX=Real:"1e39"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Real:"1e39" RX=Cplx:"1 i 3.14159265358979323846264338327950288420E-39"
+
+;---------------------------------------
+; No branch works: y genuinely has no x-th root
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0.009542653696473535 i -0.09396307300255191" RX=Cplx:"0.207491395289921 i 0.34502122908192784"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-149.67393630404587 i 457.7725603429668" RX=Cplx:"-0.541013796872441 i -0.3924367258869333"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+;---------------------------------------
+; Ordinary complex cases, unchanged by the new branch logic
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"3 i -3" RX=Cplx:"5 i 2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1.18188972919679812681159941122206645647 i -0.283074224124952258117999301756745443353"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 2" RX=Cplx:"0.01 i 10"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1.16737249999045985528418870277198479786 i -0.0808615997781796085524258175216184564070"
+
+In: FL_CPXRES=0 FL_SPCRES=0
+
+;---------------------------------------
+; Answers that land exactly on an axis come back clean, not with the residue
+; the polar round trip leaves behind. Arg Y = pi here, so Im(Log r) is exactly
+; pi/2 and the real part is provably zero rather than merely small.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=LonI:"-8" RX=LonI:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 2.82842712474619009760337744841939615711"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 2" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"1 i 0" RX=Cplx:"0 i 2"
+
+;---------------------------------------
+; Y = 0 with X = inf matches both the "0" and the "1" rule in the SPCRES
+; table. The rules are evaluated in sequence and the LAST match wins, so the
+; answer is 1: 1/inf = 0 and Y^0 = 1. Turning that section into else-if would
+; let the "0" rule win instead and give 0.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"inf" RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=0 RY=Real:"0" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"-inf" RX=Real:"1"
+
+;---------------------------------------
+; An infinite Y no longer answers inf + inf i regardless of direction. Arg Y
+; decides, exactly as C99 and sqrtComplex do: a finite imaginary part next to
+; an infinite real part means Arg Y = 0, so the root points along the real
+; axis. -inf turns Arg Y into pi and the root becomes pure imaginary.
+;---------------------------------------
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 1" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i inf" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 0" RX=Cplx:"inf i inf"
+
+;a negative root order sends the infinite modulus to zero instead
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"-2 i 0" RX=Cplx:"0 i 0"
+
+;a complex X spins Arg r off to infinity: no answer to stand behind
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"2 i 1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RL=Cplx:"2 i 1" RX=Cplx:"NaN i NaN"
+
+;=======================================================================
+; Full special-value matrix, both entry points, SPCRES and CPXRES set.
+; Captured against the behaviour in place before any unification of the
+; special-case handling, so a rewrite can be measured against something
+; known rather than against memory.
+;=======================================================================
+
+;--- real entry point
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"0" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"1" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"2.000000000000000000000000000000000"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0.5000000000000000000000000000000000"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1.414213562373095048801688724209698"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0.7071067811865475244008443621048490"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1.259921049894873164767210607278228"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0.7937005259840997373758528196361541"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"4.000000000000000000000000000000000"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0.2500000000000000000000000000000000"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"2" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-2.000000000000000000000000000000000"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-0.5000000000000000000000000000000000"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 1.414213562373095048801688724209698"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i -0.7071067811865475244008443621048490"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-1.259921049894873164767210607278228"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-0.7937005259840997373758528196361541"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-2" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"1"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"inf" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"   ;upstream: an even order over -inf goes complex when CPXRES is set
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"-0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"-inf" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"-1"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"-2"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"-3"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"-0.5"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"-inf"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Real:"NaN" RX=Real:"NaN"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Real:"NaN"
+
+;--- complex entry point
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"0 i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"1 i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"2.000000000000000000000000000000000 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.5000000000000000000000000000000000 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1.414213562373095048801688724209698 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.7071067811865475244008443621048490 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"1.259921049894873164767210607278228 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.7937005259840997373758528196361541 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"4.000000000000000000000000000000000 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.2500000000000000000000000000000000 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"2 i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-2.000000000000000000000000000000000 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-0.5000000000000000000000000000000000 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 1.414213562373095048801688724209698"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i -0.7071067811865475244008443621048490"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.6299605249474365823836053036391142 i 1.091123635971721403560072614189809"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0.3968502629920498686879264098180771 i -0.6873648184993013131917395984430061"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-2 i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"inf i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"-inf i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"inf i inf"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"0 i 0"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"-inf i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"0 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"-1 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"-2 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"-3 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"-0.5 i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"-inf i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
+
+In:  FL_ASLIFT=0 FL_SPCRES=1 FL_CPXRES=1 RY=Cplx:"NaN i 0" RX=Cplx:"NaN i 0"
+Out: EC=0 FL_SPCRES=1 FL_CPXRES=1 FL_ASLIFT=1 RX=Cplx:"NaN i NaN"
 
 
 ;=========================================================

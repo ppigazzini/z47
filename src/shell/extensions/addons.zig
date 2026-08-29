@@ -544,21 +544,21 @@ inline fn SEPARATOR_RIGHT() [*c]const u8 {
 const constR = abi.constants.cstRAligned;
 const constR34 = abi.constants.cst34;
 const const_0 = constR(1708);
-const const_1 = constR(5304);
-const const_1on2 = constR(5028);
-const const_1on4 = constR(4980);
-const const39_root3on2 = constR(5220);
-const const39_rt3 = constR(6168);
-const const_1e_16 = constR(4740);
-const const_1e_24 = constR(4728);
-const const_10p9__1 = constR(6048);
+const const_1 = constR(5376);
+const const_1on2 = constR(5100);
+const const_1on4 = constR(5052);
+const const39_root3on2 = constR(5292);
+const const39_rt3 = constR(6240);
+const const_1e_16 = constR(4812);
+const const_1e_24 = constR(4800);
+const const_10p9__1 = constR(6120);
 const const39_pi = constR(1848);
-const const34_10 = constR34(17376);
-const const34_60 = constR34(17488);
-const const34_100 = constR34(17504);
-const const34_3600 = constR34(17632);
-const const34_0 = constR34(17152);
-const const34_24 = constR34(17424);
+const const34_10 = constR34(17448);
+const const34_60 = constR34(17560);
+const const34_100 = constR34(17576);
+const const34_3600 = constR34(17704);
+const const34_0 = constR34(17224);
+const const34_24 = constR34(17496);
 
 // ===========================================================================
 // C-arrays bound by address (NOT pointer-typed externs).

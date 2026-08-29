@@ -1505,16 +1505,20 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
 }
 
 // Snapshot of a register's value, type and tag, for code that has to put a register back the way it found
-// it. saveRegisterSnapshot takes the copy and restoreRegisterSnapshot writes it back and frees the long
-// integer it owns, so the pair is used once. Types outside the switch below are not captured, so screen the
-// register before taking a snapshot.
+// it. saveRegisterSnapshot takes the copy and restoreRegisterSnapshot writes it back and frees what it
+// owns, so the pair is used once. Every data type is captured: the four whose value fits the fields below
+// are held there, and a string, a date, a matrix of either kind and a configuration are held as a copy of
+// the register's own blocks.
 //
 // The two real34 slots carry an explicit alignment because the ABI binding
 // cannot: real34_t is decQuad, a union over `uint64_t longs[2]`, so C aligns it
 // to 8 and lays the struct out t@0, r@8, i@24, li@40, siVal@56, siBase@64,
-// tag@68. abi.Real34 is a byte array with alignment 1, which would pack r@1 and
-// i@17 -- seven and seven bytes off, for a struct C translation units also
-// declare (mathematics/compare.c and solver/differentiate.c).
+// tag@68, mem@72. abi.Real34 is a byte array with alignment 1, which would pack
+// r@1 and i@17 -- seven and seven bytes off, for a struct C translation units
+// also declare (mathematics/compare.c and solver/differentiate.c). Everything
+// up to and including mem sits at the same offset on both word sizes; `blocks`
+// follows the pointer, so the firmware's 32-bit ARM puts it at 76 where a
+// 64-bit host puts it at 80.
 pub const snap_t = extern struct {
     t: u8 = 0,
     r: real34_t align(8) = undefined,
@@ -1523,26 +1527,40 @@ pub const snap_t = extern struct {
     siVal: u64 = 0,
     siBase: u32 = 0,
     tag: u32 = 0,
+    mem: ?*anyopaque = null, // the block copy, null when the value is held in the fields above
+    blocks: u16 = 0, // its size, 0 when there is none
 };
 
 comptime {
     std.debug.assert(@offsetOf(snap_t, "r") == 8);
     std.debug.assert(@offsetOf(snap_t, "i") == 24);
     std.debug.assert(@offsetOf(snap_t, "li") == 40);
+    std.debug.assert(@offsetOf(snap_t, "mem") == 72);
+    std.debug.assert(@offsetOf(snap_t, "blocks") == 72 + @sizeOf(?*anyopaque));
 }
 
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
+extern fn setRegisterDataPointer(regist: calcRegister_t, mem_ptr: ?*const anyopaque) void;
+extern fn getRegisterFullSizeInBlocks(regist: calcRegister_t) u16;
+// freeRegisterData(regist) is a C macro over freeC47Blocks; reproduce it.
+inline fn freeRegisterData(regist: calcRegister_t) void {
+    freeC47Blocks(getRegisterDataPointer(regist), getRegisterFullSizeInBlocks(regist));
+}
+extern fn allocC47Blocks(size_in_blocks: usize) ?*anyopaque;
+extern fn freeC47Blocks(ptr: ?*anyopaque, size_in_blocks: usize) void;
 extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: ?*u32) bool;
 extern fn setRegisterDataType(regist: calcRegister_t, data_type: u32, tag: u32) void;
 
 pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void {
+    s.mem = null;
+    s.blocks = 0;
     s.t = @truncate(getRegisterDataType(reg)); // dataType_t into snap_t's uint8_t, as C narrows it
     switch (@as(u32, s.t)) {
         dtComplex34 => {
             real34Copy(reg34(reg), &s.r);
             real34Copy(regImag34(reg), &s.i);
         },
-        dtReal34, dtTime => {
+        dtReal34, dtTime, dtDate => {
             real34Copy(reg34(reg), &s.r);
             real34SetZero(&s.i);
         },
@@ -1552,7 +1570,16 @@ pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c)
         dtShortInteger => {
             _ = getRegisterAsRawShortInt(reg, &s.siVal, &s.siBase);
         },
-        else => {},
+        // a string, a matrix of either kind and a configuration are a block of data of their own size, so the blocks are copied whole
+        else => {
+            s.blocks = getRegisterFullSizeInBlocks(reg);
+            s.mem = allocC47Blocks(s.blocks);
+            if (s.mem != null) {
+                _ = xcopy(s.mem, getRegisterDataPointer(reg), toBytes(s.blocks));
+            } else {
+                s.blocks = 0;
+            }
+        },
     }
     s.tag = getRegisterTag(reg);
 }
@@ -1565,7 +1592,7 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
             real34Copy(&s.i, regImag34(reg));
             real34Copy(&s.r, reg34(reg));
         },
-        dtReal34, dtTime => {
+        dtReal34, dtTime, dtDate => {
             reallocateRegister(reg, s.t, REAL34_SIZE_IN_BLOCKS, s.tag);
             real34Copy(&s.r, reg34(reg));
         },
@@ -1585,7 +1612,16 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
             data.* = s.siVal;
             setRegisterTag(reg, s.siBase); // setRegisterShortIntegerBase(reg, base) macro
         },
-        else => {},
+        // the blocks the save took a copy of go back as they were, and the register's own blocks are freed first whatever it holds now
+        else => {
+            if (s.mem != null) {
+                freeRegisterData(reg);
+                setRegisterDataPointer(reg, allocC47Blocks(s.blocks));
+                _ = xcopy(getRegisterDataPointer(reg), s.mem, toBytes(s.blocks));
+                freeC47Blocks(s.mem, s.blocks);
+                s.mem = null;
+            }
+        },
     }
     setRegisterDataType(reg, s.t, s.tag);
 }

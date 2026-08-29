@@ -1491,6 +1491,8 @@ bool_t getRegisterAsRealAngle(calcRegister_t reg, real_t *val, angularMode_t *xA
 }
 
 void saveRegisterSnapshot(calcRegister_t reg, snap_t *s) {
+  s->mem = NULL;
+  s->blocks = 0;
   switch(s->t = getRegisterDataType(reg)) {
     case dtComplex34:
       real34Copy(REGISTER_REAL34_DATA(reg), &s->r);
@@ -1498,6 +1500,7 @@ void saveRegisterSnapshot(calcRegister_t reg, snap_t *s) {
       break;
     case dtReal34:
     case dtTime:
+    case dtDate:
       real34Copy(REGISTER_REAL34_DATA(reg), &s->r);
       real34SetZero(&s->i);
       break;
@@ -1506,6 +1509,16 @@ void saveRegisterSnapshot(calcRegister_t reg, snap_t *s) {
       break;
     case dtShortInteger:
       getRegisterAsRawShortInt(reg, &s->siVal, &s->siBase);
+      break;
+    default: // a string, a matrix of either kind and a configuration are a block of data of their own size, so the blocks are copied whole
+      s->blocks = getRegisterFullSizeInBlocks(reg);
+      s->mem = allocC47Blocks(s->blocks);
+      if(s->mem) {
+        xcopy(s->mem, getRegisterDataPointer(reg), TO_BYTES(s->blocks));
+      }
+      else {
+        s->blocks = 0;
+      }
       break;
   }
   s->tag = getRegisterTag(reg);
@@ -1521,6 +1534,7 @@ void restoreRegisterSnapshot(calcRegister_t reg, snap_t *s) {
       break;
     case dtReal34:
     case dtTime:
+    case dtDate:
       reallocateRegister(reg, s->t, REAL34_SIZE_IN_BLOCKS, s->tag);
       real34Copy(&s->r, REGISTER_REAL34_DATA(reg));
       break;
@@ -1532,6 +1546,15 @@ void restoreRegisterSnapshot(calcRegister_t reg, snap_t *s) {
       reallocateRegister(reg, dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s->siBase);
       *(REGISTER_SHORT_INTEGER_DATA(reg))=s->siVal;
       setRegisterShortIntegerBase(reg, s->siBase);
+      break;
+    default: // the blocks the save took a copy of go back as they were, and the register's own blocks are freed first whatever it holds now
+      if(s->mem) {
+        freeRegisterData(reg);
+        setRegisterDataPointer(reg, allocC47Blocks(s->blocks));
+        xcopy(getRegisterDataPointer(reg), s->mem, TO_BYTES(s->blocks));
+        freeC47Blocks(s->mem, s->blocks);
+        s->mem = NULL;
+      }
       break;
   }
   setRegisterDataType(reg, s->t, s->tag);

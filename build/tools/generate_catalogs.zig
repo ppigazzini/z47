@@ -135,6 +135,7 @@ pub fn main(init: std.process.Init) !void {
 fn emitMenu(file: *c.FILE, menu_name: []const u8, catalog_type: u16, generation_type: GenerationType) !void {
     const declaration_indent = if (generation_type == .both) "" else "  ";
     const only_eim = std.mem.eql(u8, menu_name, "FCNS_EIM");
+    const is_fcns = std.mem.eql(u8, menu_name, "FCNS");
 
     try writePrint(file, "{s}  TO_QSPI const int16_t menu_{s}[] = {{\n", .{ declaration_indent, menu_name });
 
@@ -147,9 +148,18 @@ fn emitMenu(file: *c.FILE, menu_name: []const u8, catalog_type: u16, generation_
         const entry_name = cString(&entry.itemCatalogName);
 
         if ((entry.status & cat_status) != catalog_type) continue;
-        // CATALOG, MENU and MENUS are not in another catalog: they are the way in.
-        if (std.mem.eql(u8, entry_name, "CATALOG") or std.mem.eql(u8, entry_name, "MENU") or
-            std.mem.eql(u8, entry_name, "MENUS")) continue;
+        const include = if (catalog_type == cat_menu)
+            // the MENUS catalog is the list of menus, so the four that open something
+            // other than a menu stay out of it
+            !(std.mem.eql(u8, entry_name, "MENU") or std.mem.eql(u8, entry_name, "UMENU") or
+                std.mem.eql(u8, entry_name, "VAR") or std.mem.eql(u8, entry_name, "PROG"))
+        else
+            // CATALOG, MENU and MENUS are not in another catalog: they are the way in.
+            // MENU is the one exception, kept in FCNS so it is reachable by name.
+            !(std.mem.eql(u8, entry_name, "CATALOG") or
+                (std.mem.eql(u8, entry_name, "MENU") and !is_fcns) or
+                std.mem.eql(u8, entry_name, "MENUS"));
+        if (!include) continue;
         if (only_eim and (entry.status & eim_status) != eim_enabled) continue;
 
         if (number_of_items == max_number_of_items) return error.TooManyItems;

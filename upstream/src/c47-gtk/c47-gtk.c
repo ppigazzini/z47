@@ -356,7 +356,9 @@
         printf("%s47 --e, %s47 -e <commands>: see --exec,                  ┴ e.g. ./t47 --exec 'nim 3; nim -4; xeq yˣ'\n", cc, cc);
         printf("%s47 --headless            : suppress GTK interface startup\n", cc);
         printf("%s47 --snapskiprefresh     : prevents refresh spoiling the graphic screens for DSL snap\n", cc);
-        printf("%s47 --dslcommands         : produce T47 ops table in %s\n", cc, dslOpsFileName);
+        #if defined(HAVE_T47_DSL)
+          printf("%s47 --dslcommands         : produce T47 ops table in %s\n", cc, dslOpsFileName);
+        #endif
         #if defined(_WIN32)
           printf("\nExample for command line operation: \n  %s47.exe --headless --script res/SCRIPTS/example.t47\n", cc);
           printf(  "Cmd returns the prompt before output ends. Run via 'start /wait %s47.exe ...' or pipe '| more' to prevent that.\n\n", cc);
@@ -530,9 +532,14 @@
 
     // Run --exec command if given, before any script handling.
     if(scriptCommand != NULL) {
-      initDSL();
-      int ret = executeCommand(scriptCommand);
-      cleanupDSL();
+      #if defined(HAVE_T47_DSL)
+        initDSL();
+        int ret = executeCommand(scriptCommand);
+        cleanupDSL();
+      #else
+        printf("This build has no T47 DSL: dep/jimtcl was missing when the build was configured.\n");
+        int ret = 1;
+      #endif
       readyToExit();
       return ret;
     }
@@ -542,9 +549,14 @@
       if(scriptFile == NULL) {
         scriptFile = "-";
       }
-      initDSL();
-      int ret = executeScript(scriptFile);
-      cleanupDSL();
+      #if defined(HAVE_T47_DSL)
+        initDSL();
+        int ret = executeScript(scriptFile);
+        cleanupDSL();
+      #else
+        printf("This build has no T47 DSL: dep/jimtcl was missing when the build was configured.\n");
+        int ret = 1;
+      #endif
       readyToExit();
       return ret;
     }

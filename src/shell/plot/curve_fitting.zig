@@ -164,7 +164,7 @@ extern fn fnStatSMI(SMI: *real_t) void;
 
 extern fn realExp(rhs: *align(1) const real_t, res: *real_t, set: *realContext_t) void;
 extern fn realPower(base: *align(1) const real_t, exponent: *align(1) const real_t, result: *real_t, real_context: *realContext_t) void;
-extern fn xthRootReal(yy: *real_t, xx: *real_t, real_context: *realContext_t) void;
+extern fn xthRootReal(yy: *const real_t, xx: *const real_t, real_context: *realContext_t) void;
 extern fn WP34S_Ln(x: *align(1) const real_t, res: *real_t, realContext: *realContext_t) void;
 
 extern fn realCompareGreaterThan(a: *align(1) const real_t, b: *align(1) const real_t) bool;

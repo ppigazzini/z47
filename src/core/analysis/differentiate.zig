@@ -387,10 +387,10 @@ extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) 
 const mpz_struct = abi.Mpz;
 // registerValueConversions.h's snap_t. real34_t is decQuad, a union over
 // `uint64_t longs[2]`, so C aligns the two real slots to 8 and the struct reads
-// t@0, r@8, i@24, li@40, siVal@56, siBase@64, tag@68. The ABI binding for a
-// real34 is a byte array with alignment 1, so the two slots need the alignment
-// spelled out or they land seven bytes early -- and the owner that writes this
-// struct, register_conversions.zig, declares it the same way.
+// t@0, r@8, i@24, li@40, siVal@56, siBase@64, tag@68, mem@72, blocks@80. The ABI
+// binding for a real34 is a byte array with alignment 1, so the two slots need
+// the alignment spelled out or they land seven bytes early -- and the owner that
+// writes this struct, register_conversions.zig, declares it the same way.
 const snap_t = extern struct {
     t: u8 = 0,
     r: real34_t align(8) = undefined,
@@ -399,6 +399,8 @@ const snap_t = extern struct {
     siVal: u64 = 0,
     siBase: u32 = 0,
     tag: u32 = 0,
+    mem: ?*anyopaque = null,
+    blocks: u16 = 0,
 };
 
 // libc string helpers

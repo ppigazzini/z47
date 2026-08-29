@@ -591,8 +591,8 @@ TO_QSPI const int16_t menu_ConvS[]        = {
 
 TO_QSPI const int16_t menu_ConvAng[]        = {
                                                     ITM_DEGtoRAD,             ITM_RADtoDEG,             ITM_DEGtoGRAD,            ITM_GRADtoDEG,            ITM_GRADtoRAD,            ITM_RADtoGRAD,
-                                                    ITM_RPMtoDEGPS,           ITM_DEGPStoRPM,           ITM_RPMtoRADPS,           ITM_RADPStoRPM,           ITM_DEGPStoRADPS,         ITM_RADPStoDEGPS,
-                                                    ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL,                 ITM_NULL};
+                                                    ITM_DEGtoMRAD,            ITM_MRADtoDEG,            ITM_DEGtoARCSEC,          ITM_ARCSECtoDEG,          ITM_DEGtoMIL,             ITM_MILtoDEG,
+                                                    ITM_RPMtoDEGPS,           ITM_DEGPStoRPM,           ITM_RPMtoRADPS,           ITM_RADPStoRPM,           ITM_DEGPStoRADPS,         ITM_RADPStoDEGPS};
 
 TO_QSPI const int16_t menu_ConvHum[]        = {
                                                     ITM_FURtoM,               ITM_MtoFUR,               ITM_FTNtoS,               ITM_StoFTN,               ITM_FPFtoMPS,             ITM_MPStoFPF,
@@ -3484,10 +3484,10 @@ void showSoftmenuCurrentPart(void) {
               menu++;
             }
 
-            if(item == -MNU_ASN_N && calcModel == USER_C47) {
+            if(item == -MNU_ASN_N && calcModel == USER_C47 && !(softmenu[m].menuItem == -MNU_MENU || softmenu[m].menuItem == -MNU_MENUS)) {
               showSoftkey(STD_SIGMA "+ KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
-            else if(item == -MNU_ASN_N && isR47FAM) {
+            else if(item == -MNU_ASN_N && isR47FAM  && !(softmenu[m].menuItem == -MNU_MENU || softmenu[m].menuItem == -MNU_MENUS)) {
               showSoftkey(STD_BOX " KEY", x, y-currentFirstItem/6, vmReverse, true, true, NOVAL, NOVAL, NOTEXT);
             }
             else if(item == -MNU_HOME || item == -MNU_PFN ) {  //softmenu[menu].menuItem == 0, or does not exist

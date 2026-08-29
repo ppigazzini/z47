@@ -130,8 +130,8 @@
   int getRegisterAsLongIntQuiet(calcRegister_t reg, longInteger_t val, bool_t *fractional);
 
   // Snapshot of a register's value, type and tag, for code that has to put a register back the way it found it. saveRegisterSnapshot takes the copy and
-  // restoreRegisterSnapshot writes it back and frees the long integer it owns, so the pair is used once. Types outside the switch are not captured, so screen the
-  // register before taking a snapshot.
+  // restoreRegisterSnapshot writes it back and frees what it owns, so the pair is used once. Every data type is captured: the four whose value fits the
+  // fields below are held there, and a string, a date, a matrix of either kind and a configuration are held as a copy of the register's own blocks.
   typedef struct {
     uint8_t t;
     real34_t r, i;
@@ -139,6 +139,8 @@
     uint64_t siVal;
     uint32_t siBase;
     uint32_t tag;
+    void     *mem;    // the block copy, NULL when the value is held in the fields above
+    uint16_t blocks;  // its size, 0 when there is none
   } snap_t;
 
   void saveRegisterSnapshot(calcRegister_t reg, snap_t *s);

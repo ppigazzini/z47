@@ -1521,6 +1521,7 @@ pub fn implementation(comptime runtime: type) type {
                                         runtime.setSystemFlag(runtime.FLAG_ASLIFT);
                                         runtime.temporaryInformation = runtime.TI_STORCL;
                                         runtime.lastParam = runtime.currentRegisterBrowserScreen;
+                                        runtime.updateMatrixHeightCache(); // the browser calls fnRecall direct, so nothing else sets the height for a matrix
                                     } else if (ITM_0 <= item and item <= ITM_9) {
                                         if (runtime.rbr1stDigit) {
                                             runtime.rbr1stDigit = false;

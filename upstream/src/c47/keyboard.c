@@ -2997,6 +2997,7 @@ RELEASE_END:
                   setSystemFlag(FLAG_ASLIFT);
                   temporaryInformation = TI_STORCL;
                   lastParam = currentRegisterBrowserScreen;
+                  updateMatrixHeightCache();                                                  // the browser calls fnRecall direct, so nothing else sets the height for a matrix
                 }
                 else if(ITM_0 <= item && item <= ITM_9) {
                   if(rbr1stDigit) {

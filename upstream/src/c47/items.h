@@ -2972,6 +2972,13 @@
 #define ITM_MIKtoK100K              2868
 #define ITM_K100KtoMIK              2869
 
+#define ITM_DEGtoMIL                2870
+#define ITM_MILtoDEG                2871
+#define ITM_DEGtoARCSEC             2872
+#define ITM_ARCSECtoDEG             2873
+#define ITM_DEGtoMRAD               2874
+#define ITM_MRADtoDEG               2875
+
 //==============================================================================
          // CONV step 4/6 of ADDING to CONV    [grep for "add conversion items to CONV menu"]
          // =================================================================================
@@ -2980,12 +2987,6 @@
          // It is best to only add CONV items incrementally, without re-using old available slots, to keep the tables sorted incrementally
          // Next Step: CONV step 5/6 in src/c47/items.c.
 //==============================================================================
-#define ITM_2870                    2870 // General items / any items spare (CONV spare)
-#define ITM_2871                    2871 // General items / any items spare (CONV spare)
-#define ITM_2872                    2872 // General items / any items spare (CONV spare)
-#define ITM_2873                    2873 // General items / any items spare (CONV spare)
-#define ITM_2874                    2874 // General items / any items spare (CONV spare)
-#define ITM_2875                    2875 // General items / any items spare (CONV spare)
 #define ITM_2876                    2876 // General items / any items spare (CONV spare)
 #define ITM_2877                    2877 // General items / any items spare (CONV spare)
 #define ITM_2878                    2878 // General items / any items spare (CONV spare)

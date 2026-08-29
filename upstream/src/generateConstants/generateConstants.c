@@ -386,6 +386,9 @@ void generateAllConstants(void) {
          generateConstant("In4ToMm4",      11, EXACT,  "+416231.4256"                                                 ); // mm^4   = InchToMm^4                                         // uses InchToMm; terminates
          generateConstant("In6ToMm6",      16, EXACT,  "+268535866.540096"                                            ); // mm^6   = InchToMm^6                                         // uses InchToMm; terminates
 
+         generateConstant("DegToMil",      39, APPROX, "+1.777777777777777777777777777777777777777777777777777778e+01"); // mil    = deg × 6400 / 360                                   // NATO/artillery mil, 6400 per revolution
+         generateConstant("DegToMrad",     39, APPROX, "+1.745329251994329576923690768488612713442871888541725456e+01"); // mrad   = deg × pi / 180 × 1000                              // true milliradian, 2 pi per revolution
+
          generateConstant("_108",           3, EXACT,  "-108"                                                         );
          generateConstant("_4",             1, EXACT,  "-4"                                                           );
          generateConstant("_1",             1, EXACT,  "-1"                                                           );
