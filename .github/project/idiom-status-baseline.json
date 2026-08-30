@@ -1,10 +1,10 @@
 {
   "totals": {
-    "extern_struct_files": 16,
+    "extern_struct_files": 15,
     "cptr_files": 108,
-    "ptrcast_sites": 1406,
-    "callconv_c_sites": 2977,
-    "extern_fn_sites": 3644,
+    "ptrcast_sites": 1400,
+    "callconv_c_sites": 2979,
+    "extern_fn_sites": 3645,
     "printf_family_files": 54,
     "anyopaque_files": 90,
     "off_offset_sites": 77,
