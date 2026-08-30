@@ -668,6 +668,8 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
     default:
         fnSwapX(regist);
         compareTypeError(regist);
+        restoreRegisterSnapshot(REGISTER_X, &snap1);
+        restoreRegisterSnapshot(regist, &snap2);
         return;
   }
   if(regist != TEMP_REGISTER_1) {
@@ -735,6 +737,8 @@ static void almostEqualScalar(uint16_t regist, const uint16_t test) {
       default:
           fnSwapX(regist);
           compareTypeError(regist);
+          restoreRegisterSnapshot(REGISTER_X, &snap1);
+          restoreRegisterSnapshot(regist, &snap2);
           return;
     }
     fnSwapX(regist);

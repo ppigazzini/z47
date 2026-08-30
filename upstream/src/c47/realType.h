@@ -22,10 +22,20 @@
   #define CPLX_T_PTR(name)             cplx_t _ ## name ## _data; cplx_t *const name=&_ ## name ## _data
 
   // malloc/free version
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 3) > 4) || (defined __clang__ && __clang_major__ >= 3)
+  // Self freeing
+  void auto_free(void *p);
+  #define REAL_T_ALLOC(name, digits)   uint32_t *_ ## name ## _data __attribute__((cleanup(auto_free)))=malloc(REAL_SIZE_IN_BYTES(digits)); \
+                                       real_t *name=(real_t *)_ ## name ## _data
+  #define REAL_T_FREE(name, digits)
+  #define CPLX_T_ALLOC(name)           cplx_t *name __attribute__((cleanup(auto_free)))=(cplx_t *)malloc(sizeof(cplx_t))
+  #define CPLX_T_FREE(name)
+#else
   #define REAL_T_ALLOC(name, digits)   uint32_t *_ ## name ## _data=malloc(REAL_SIZE_IN_BYTES(digits)); real_t *const name=(real_t *)_ ## name ## _data
   #define REAL_T_FREE(name, digits)    free(name)
   #define CPLX_T_ALLOC(name)           cplx_t *const name=(cplx_t *)malloc(sizeof(cplx_t))
   #define CPLX_T_FREE(name)            free(name)
+#endif  // (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 3) > 4) || (defined __clang__ && __clang_major__ >= 3)
 
   // allocC47Blocks/freeC47Blocks version
   //#define REAL_T_ALLOC(name, digits)   real_t * const name=(real_t *)allocC47Blocks(REAL_SIZE_IN_BLOCKS(digits))

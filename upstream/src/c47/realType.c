@@ -27,6 +27,16 @@
   #error DECDPUN must be 3
 #endif
 
+#if (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 3) > 4) || (defined __clang__ && __clang_major__ >= 3)
+  // Self freeing
+void auto_free(void *p) {
+  void *q = *(void**)p;
+  if (q != NULL)
+    free(q);
+}
+#endif  // (defined __GNUC__ && __GNUC__ + (__GNUC_MINOR__ >= 3) > 4) || (defined __clang__ && __clang_major__ >= 3)
+
+  
 static uint64_t realToInt(const real_t *r, uint64_t magnitudeLimit, enum rounding round, bool_t *error) {
   real_t integer;
   int32_t i;

@@ -53,7 +53,6 @@ extern fn badTypeError(reg: calcRegister_t) void;
 extern fn compareString(stra: [*c]const u8, strb: [*c]const u8, comparison_type: i32) i32;
 extern fn getRegisterAsAnyRealQuiet(reg: calcRegister_t, val: *runtime.real_t) bool;
 extern fn getRegisterAsComplexOrAnyReal(reg: calcRegister_t, r: *runtime.real_t, i: *runtime.real_t, cmplx: *bool) bool;
-extern fn getRegisterAsRawShortInt(reg: calcRegister_t, val: *u64, base: *u32) bool;
 extern fn convertShortIntegerRegisterToReal34Register(source: calcRegister_t, destination: calcRegister_t) void;
 extern fn convertComplex34MatrixRegisterToComplex34Matrix(regist: calcRegister_t, matrix: *runtime.complex34Matrix_t) void;
 extern fn fnSwapX(regist: u16) void;
@@ -647,84 +646,22 @@ fn almostEqualMatrix(regist: u16) void {
     }
 }
 
-const Snapshot = struct {
-    t: u8,
-    tag: u32,
-    r: runtime.real34_t,
-    i: runtime.real34_t,
-    li: runtime.mpz_struct,
-    si_val: u64,
-    si_base: u32,
-};
-
-// SNAPVAL: the long/short integer cases read REGISTER_X regardless of reg,
-// faithfully mirroring the upstream macro.
-fn snapValue(reg: calcRegister_t, s: *Snapshot) void {
-    // Upstream SNAPVAL: snapshot from `reg` (the passed register, not always X --
-    // the old macro hardcoded REGISTER_X for the integer cases, a bug fixed in
-    // 2026), covering dtTime alongside dtReal34, and saving the register tag so
-    // RESTOREVAL can reallocate/retag correctly.
-    s.t = @truncate(runtime.getRegisterDataType(reg));
-    switch (@as(u32, s.t)) {
-        runtime.dtComplex34 => {
-            s.r = @as(*const runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).*;
-            s.i = @as(*const runtime.real34_t, @ptrCast(runtime.registerImag34Ptr(reg))).*;
-        },
-        runtime.dtReal34, runtime.dtTime => {
-            s.r = @as(*const runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).*;
-            _ = decQuadZero(&s.i);
-        },
-        runtime.dtLongInteger => {
-            _ = runtime.getRegisterAsLongInt(reg, &s.li, null);
-        },
-        runtime.dtShortInteger => {
-            _ = getRegisterAsRawShortInt(reg, &s.si_val, &s.si_base);
-        },
-        else => {},
-    }
-    s.tag = runtime.getRegisterTag(reg);
-}
-
-// defines.h: SHORT_INTEGER_SIZE_IN_BLOCKS 2 (2 blocks = 8 bytes = 64 bits).
-const SHORT_INTEGER_SIZE_IN_BLOCKS: u16 = 2;
-
-fn restoreValue(reg: calcRegister_t, s: *Snapshot) void {
-    // Upstream RESTOREVAL (compare.c) now REALLOCATES reg to the snapshot's type
-    // and size before writing back: after the comparison reg may hold a different
-    // type (hence a smaller allocation) than the snapshot, so a direct copy would
-    // overflow the register's data block and corrupt the heap. reallocateRegister
-    // also sets reg's data type + tag, standing in for the trailing
-    // setRegisterDataType(reg, s.t, s.tag).
-    switch (@as(u32, s.t)) {
-        runtime.dtComplex34 => {
-            runtime.reallocateRegister(reg, runtime.dtComplex34, runtime.COMPLEX34_SIZE_IN_BLOCKS, s.tag);
-            @as(*runtime.real34_t, @ptrCast(runtime.registerImag34Ptr(reg))).* = s.i;
-            @as(*runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).* = s.r;
-        },
-        runtime.dtReal34, runtime.dtTime => {
-            runtime.reallocateRegister(reg, s.t, runtime.REAL34_SIZE_IN_BLOCKS, s.tag);
-            @as(*runtime.real34_t, @ptrCast(runtime.registerReal34Ptr(reg))).* = s.r;
-        },
-        runtime.dtLongInteger => {
-            runtime.convertLongIntegerToLongIntegerRegister(&s.li, reg);
-            runtime.__gmpz_clear(&s.li);
-        },
-        runtime.dtShortInteger => {
-            runtime.reallocateRegister(reg, runtime.dtShortInteger, SHORT_INTEGER_SIZE_IN_BLOCKS, s.si_base);
-            runtime.registerShortIntegerPtr(reg).* = s.si_val;
-            runtime.setRegisterTag(reg, s.si_base);
-        },
-        else => {},
-    }
-}
+// compare.c takes its snapshot through registerValueConversions.h's
+// saveRegisterSnapshot/restoreRegisterSnapshot rather than through a macro pair
+// of its own, so every data type is captured -- including dtDate and the ones
+// held as a copy of the register's own blocks, which the macro pair dropped.
+// The struct is abi.RegisterSnapshot, shared with the owner that writes it.
+const snap_t = abi.RegisterSnapshot;
+extern fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void;
+extern fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c) void;
 
 fn almostEqualScalar(regist: u16, type_pair: u16) void {
-    var snap1: Snapshot = undefined;
-    var snap2: Snapshot = undefined;
+    var snap1: snap_t = undefined;
+    var snap2: snap_t = undefined;
 
     // Snapshot real values before rounding
-    snapValue(runtime.REGISTER_X, &snap1);
-    snapValue(asRegister(regist), &snap2);
+    saveRegisterSnapshot(runtime.REGISTER_X, &snap1);
+    saveRegisterSnapshot(asRegister(regist), &snap2);
 
     switch (type_pair) {
         typePair(runtime.dtComplex34, runtime.dtComplex34),
@@ -792,6 +729,8 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
         else => {
             fnSwapX(regist);
             compareTypeError(asRegister(regist));
+            restoreRegisterSnapshot(runtime.REGISTER_X, &snap1);
+            restoreRegisterSnapshot(asRegister(regist), &snap2);
             return;
         },
     }
@@ -862,6 +801,8 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
             else => {
                 fnSwapX(regist);
                 compareTypeError(asRegister(regist));
+                restoreRegisterSnapshot(runtime.REGISTER_X, &snap1);
+                restoreRegisterSnapshot(asRegister(regist), &snap2);
                 return;
             },
         }
@@ -870,8 +811,8 @@ fn almostEqualScalar(regist: u16, type_pair: u16) void {
 
     compareRegisters(regist, COMPARE_MODE_EQUAL);
 
-    restoreValue(runtime.REGISTER_X, &snap1);
-    restoreValue(asRegister(regist), &snap2);
+    restoreRegisterSnapshot(runtime.REGISTER_X, &snap1);
+    restoreRegisterSnapshot(asRegister(regist), &snap2);
 }
 
 pub export fn z47_math_wrappers_legacy_fnXAlmostEqual(regist: u16) callconv(.c) void {

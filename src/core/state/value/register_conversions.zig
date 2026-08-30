@@ -788,11 +788,14 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 // buffers are 1436 bytes each, 2872 of this function's 2936 byte
                 // frame; from the heap the frame falls to 64 bytes. 2139 cannot be
                 // raised to 6147: the type alone overruns the stack.
+                // REAL_T_ALLOC now hands the buffer to __attribute__((cleanup)), so
+                // the C frees it on leaving this scope however it leaves; defer is
+                // the same contract, and free(null) is the no-op C relies on too.
                 const reducedAngleBuf = mallocReal2139();
+                defer free(reducedAngleBuf);
                 const reducedAngleBuf2 = mallocReal2139();
+                defer free(reducedAngleBuf2);
                 if (reducedAngleBuf == null or reducedAngleBuf2 == null) {
-                    free(reducedAngleBuf);
-                    free(reducedAngleBuf2);
                     displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, REGISTER_X);
                     return;
                 }
@@ -808,8 +811,6 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                     displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
                     moreInfoOnError("In function longIntegerAngleReduction:", "Invalid integer size for angle reduction in radians: exponent too large.");
                     mpz_clear(&angle);
-                    free(reducedAngleTmp);
-                    free(reducedAngleTmp2);
                     return;
                 }
 
@@ -818,8 +819,6 @@ fn longIntegerAngleReduction(regist: calcRegister_t, angularMode: angularMode_t,
                 WP34S_Mod(reducedAngleTmp, const6147_2pi(), reducedAngleTmp2, &c);
                 realPlus(reducedAngleTmp2, reducedAngle, &ctxtReal75);
                 mpz_clear(&angle);
-                free(reducedAngleTmp);
-                free(reducedAngleTmp2);
                 return;
             },
             else => { // amNone
@@ -1504,40 +1503,12 @@ pub export fn getRegisterAsRealAngle(reg: calcRegister_t, val: *real_t, xAngular
     return true;
 }
 
-// Snapshot of a register's value, type and tag, for code that has to put a register back the way it found
-// it. saveRegisterSnapshot takes the copy and restoreRegisterSnapshot writes it back and frees what it
-// owns, so the pair is used once. Every data type is captured: the four whose value fits the fields below
-// are held there, and a string, a date, a matrix of either kind and a configuration are held as a copy of
-// the register's own blocks.
-//
-// The two real34 slots carry an explicit alignment because the ABI binding
-// cannot: real34_t is decQuad, a union over `uint64_t longs[2]`, so C aligns it
-// to 8 and lays the struct out t@0, r@8, i@24, li@40, siVal@56, siBase@64,
-// tag@68, mem@72. abi.Real34 is a byte array with alignment 1, which would pack
-// r@1 and i@17 -- seven and seven bytes off, for a struct C translation units
-// also declare (mathematics/compare.c and solver/differentiate.c). Everything
-// up to and including mem sits at the same offset on both word sizes; `blocks`
-// follows the pointer, so the firmware's 32-bit ARM puts it at 76 where a
-// 64-bit host puts it at 80.
-pub const snap_t = extern struct {
-    t: u8 = 0,
-    r: real34_t align(8) = undefined,
-    i: real34_t align(8) = undefined,
-    li: mpz_struct = undefined,
-    siVal: u64 = 0,
-    siBase: u32 = 0,
-    tag: u32 = 0,
-    mem: ?*anyopaque = null, // the block copy, null when the value is held in the fields above
-    blocks: u16 = 0, // its size, 0 when there is none
-};
-
-comptime {
-    std.debug.assert(@offsetOf(snap_t, "r") == 8);
-    std.debug.assert(@offsetOf(snap_t, "i") == 24);
-    std.debug.assert(@offsetOf(snap_t, "li") == 40);
-    std.debug.assert(@offsetOf(snap_t, "mem") == 72);
-    std.debug.assert(@offsetOf(snap_t, "blocks") == 72 + @sizeOf(?*anyopaque));
-}
+// snap_t is abi.RegisterSnapshot: the shared layout the three owners that touch a
+// register snapshot -- this one, compare's register_compare.zig and the solver's
+// differentiate.zig -- all read, so the struct cannot fork between them.
+// saveRegisterSnapshot takes the copy and restoreRegisterSnapshot writes it back
+// and frees what it owns, so the pair is used once.
+pub const snap_t = abi.RegisterSnapshot;
 
 extern fn getRegisterDataPointer(regist: calcRegister_t) ?*anyopaque;
 extern fn setRegisterDataPointer(regist: calcRegister_t, mem_ptr: ?*const anyopaque) void;
@@ -1578,6 +1549,7 @@ pub export fn saveRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(.c)
                 _ = xcopy(s.mem, getRegisterDataPointer(reg), toBytes(s.blocks));
             } else {
                 s.blocks = 0;
+                displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE); // the value is not captured, so the restore would put back nothing
             }
         },
     }
@@ -1612,14 +1584,22 @@ pub export fn restoreRegisterSnapshot(reg: calcRegister_t, s: *snap_t) callconv(
             data.* = s.siVal;
             setRegisterTag(reg, s.siBase); // setRegisterShortIntegerBase(reg, base) macro
         },
-        // the blocks the save took a copy of go back as they were, and the register's own blocks are freed first whatever it holds now
+        // the blocks the save took a copy of go back as they were, and the register's own blocks are freed whatever it holds now
         else => {
-            if (s.mem != null) {
-                freeRegisterData(reg);
-                setRegisterDataPointer(reg, allocC47Blocks(s.blocks));
-                _ = xcopy(getRegisterDataPointer(reg), s.mem, toBytes(s.blocks));
-                freeC47Blocks(s.mem, s.blocks);
+            if (s.mem) |mem| {
+                // taken before the register's own blocks go, so a refusal leaves the register with the value it has now
+                const data_ptr = allocC47Blocks(s.blocks);
+                if (data_ptr) |dest| {
+                    freeRegisterData(reg);
+                    setRegisterDataPointer(reg, dest);
+                    _ = xcopy(dest, mem, toBytes(s.blocks));
+                }
+                freeC47Blocks(mem, s.blocks);
                 s.mem = null;
+                if (data_ptr == null) {
+                    displayCalcErrorMessage(ERROR_RAM_FULL, ERR_REGISTER_LINE, NIM_REGISTER_LINE);
+                    return; // the register keeps the type and the value it has now
+                }
             }
         },
     }

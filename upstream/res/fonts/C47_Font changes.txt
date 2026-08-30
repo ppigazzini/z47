@@ -518,3 +518,37 @@ Added QRNZ to NUM font
 
 2026-08-18
   Re-ordered the new glyphs above (same date) to be in Unicode sequence in fonts
+
+2026-08-29
+  Add to Tiny font, on its 32-unit pixel grid, inserted in Unicode sequence (the numeric and standard fonts have all three):
+     U+2113   ℓ           Script small l                 (the litre, L and mL: SHOW's tiny page drew a box)
+                          the l's stem with the o's bowl top closed over it as the loop and the comma's hook as the foot
+     U+2E33   ⸳           Raised dot                     (the radix of a half exponent, m^0.5, on the same page)
+                          the period lifted three rows to the superscript baseline, as the numeric font places it
+     U+2E34   ⸴           Raised comma                   (the same with the comma radix)
+                          the comma lifted the same way
+  Advance 192 like every tiny glyph. Nothing else in the font changed; the raster differs only in the three new records.
+  NUMBER_OF_GLYPH_ROWS 284 -> 285: the 0x2E30 row is new to the tiny font.
+
+2026-08-30
+  Add to NumBold font, on its 32-unit pixel grid at the font's own weight (4 px stems, the 16-row x-height and the 29-row capital body),
+  inserted in Unicode sequence: the ten glyphs the units draw that fell back to the regular numeric glyph under BOLD:
+     U+00B0   °           Degree sign                    (°C °F °R, the angle unit)   the regular ring at the bold stroke, 12 px
+     U+00B5   µ           Micro sign                     (the typed alias)            the bold u's stems and the regular µ's tail, the left stem five rows below the baseline
+     U+03A9   Ω           Greek capital omega            (ohm)                        the bold O's bowl with the legs and feet of the regular Ω
+     U+03BC   μ           Greek small mu                 (the micro prefix)           the same glyph as U+00B5
+     U+2113   ℓ           Script small l                 (L, mL)                      the regular ℓ with every stroke one pixel wider
+     U+242D   ᐭ           UK mark                        (gal UK and the seven others) the regular mark with three-pixel stems in the same 16 px box
+     U+242E   ᐮ           US mark                        (gal US, acre, the survey foot) the same
+     U+24D1   ⓑ           Subscript B                    (eV/k_B)                     the regular letter with three-pixel stems, 8 px
+     U+24D4   ⓔ           Subscript e                    (hp_E)                       the same, 8 px
+     U+24DC   ⓜ           Subscript m                    (hp_M)                       the same, 11 px
+  Advance as the regular glyph carries. Nothing else in the font changed; the raster differs only in the ten new records.
+  NUMBER_OF_GLYPH_ROWS 285 -> 290: five glyph rows new to the NumBold font.
+
+2026-08-30
+  U+2113   ℓ   Change tinyfont liter glyph
+
+2026-08-30
+  Added to Num Bold font:
+    U+2073   E              Outline E
