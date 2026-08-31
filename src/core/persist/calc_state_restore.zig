@@ -83,6 +83,7 @@ const C47_NULL: u16 = 65535;
 const TMP_STR_LENGTH: usize = 2560;
 const AIM_BUFFER_LENGTH: usize = 1024;
 const ERROR_MESSAGE_LENGTH: usize = 512;
+const MAX_LABEL_NAME_LENGTH: usize = 14;
 const MAX_DENMAX: u32 = 9999;
 
 const LM_ALL: u16 = 0;
@@ -183,7 +184,6 @@ extern fn strlen(s: [*c]const u8) usize;
 extern fn strcmp(a: [*c]const u8, b: [*c]const u8) c_int;
 extern fn strcpy(dst: [*c]u8, src: [*c]const u8) [*c]u8;
 extern fn memset(dst: ?*anyopaque, val: c_int, n: usize) ?*anyopaque;
-extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
 extern fn utf8ToStringWithLength(utf8: [*c]const u8, str: [*c]u8, maxBytes: usize) void;
 extern fn findOrAllocateNamedVariable(name: [*c]const u8) i16;
 extern fn allocateLocalRegisters(num: u16) void;
@@ -825,7 +825,8 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
                 !(load_mode == LM_NAMED_VARIABLES and is_stats_or_histo))
             {
                 const varName: [*c]u8 = errorMessage + strlen(errorMessage) + 1;
-                utf8ToString(errorMessage, varName);
+                // A long name must not decode over the type string in aimBuffer.
+                utf8ToStringWithLength(errorMessage, varName, MAX_LABEL_NAME_LENGTH + 1);
                 regist = findOrAllocateNamedVariable(varName);
                 if (regist != INVALID_VARIABLE) {
                     codec.restoreRegister(regist, aimBuffer, tmpString, loaded_version);

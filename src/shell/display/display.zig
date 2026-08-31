@@ -3709,53 +3709,66 @@ fn dispM(regist: u16, prefix: [*c]u8) void {
     }
 }
 
-fn prepLongintIntoLines(last: *i16, src: *i16, dest: *i16, fontToUse: *const font_t, maxWidth: i16, numberOfLines: i16, startingLine_p: *i16) void {
+// `src` is errorMessage for a number and the register's own data for a string. A
+// string is not grouped: it takes no separator allowance, no eat-back, and its
+// terminator prints as the closing quote.
+fn prepIntoLines(src: [*c]const u8, grouped: bool, last: i16, source_p: *i16, fontToUse: *const font_t, maxWidth: i16, numberOfLines: i16, startingLine_arg: i16) void {
     // checktmpStringSep(SEP, a): previous 2 bytes != double-byte sep, prev byte
     // != single-byte sep, prev 2 bytes != STD_SPACE_FIGURE
     var SEP: [*c]const u8 = SEPARATOR_LEFT();
     var GRPWID: i8 = @intCast(GROUPWIDTH_LEFT());
     var GRP_DISABLED: bool = GROUPLEFT_DISABLED();
 
-    if (strchr(errorMessage, '.') != null or strstr(errorMessage, RADIX34_MARK_STRING()) != null) {
+    if (strchr(src, '.') != null or strstr(src, RADIX34_MARK_STRING()) != null) {
         SEP = SEPARATOR_RIGHT();
         GRPWID = @intCast(GROUPWIDTH_RIGHT());
         GRP_DISABLED = GROUPRIGHT_DISABLED();
     }
-    const Width_0: i16 = frontier_char_string.stringWidth(SEP, fontToUse, true, true);
+    const Width_0: i16 = if (grouped) frontier_char_string.stringWidth(SEP, fontToUse, true, true) else 0;
 
     var d: i16 = undefined;
-    dest.* = 0;
+    var dest: i16 = 0;
     var sourceReturn: i16 = 0;
     d = 0;
     while (d <= numberOfLines * SHOWLineSize) : (d += SHOWLineSize) {
         tmpString[@intCast(d)] = 0;
     }
-    d = startingLine_p.* * SHOWLineSize;
-    while (d <= (startingLine_p.* + (numberOfLines - 1 + 1)) * SHOWLineSize) : (d += SHOWLineSize) {
-        const dCounter: i16 = d - startingLine_p.* * SHOWLineSize;
-        dest.* = dCounter;
+    d = startingLine_arg * SHOWLineSize;
+    while (d <= (startingLine_arg + (numberOfLines - 1 + 1)) * SHOWLineSize) : (d += SHOWLineSize) {
+        const dCounter: i16 = d - startingLine_arg * SHOWLineSize;
+        dest = dCounter;
+        if (!grouped and dCounter == 0 and source_p.* == 0) {
+            // A string leads its first page with the register name and the opening quote.
+            _ = frontier_char_string.xcopy(tmpString, tmpString + 2100, @intCast(stringByteLength(tmpString + 2100) + 1));
+            dest += @intCast(stringByteLength(tmpString));
+            tmpString[@intCast(dest)] = '\'';
+            dest += 1;
+            tmpString[@intCast(dest)] = 0;
+        }
 
-        while ((src.* < last.*) and (dest.* < @as(i16, @intCast(TMP_STR_LENGTH)) - 6)) {
-            tmpString[@intCast(dest.*)] = errorMessage[@intCast(src.*)];
-            var bytesToAdd: i32 = 1;
+        // The slot bounds the line as well as the width.
+        while ((source_p.* < last) and (dest < @as(i16, @intCast(TMP_STR_LENGTH)) - 6) and (dest - dCounter < SHOWLineSize - 2)) {
+            const byte = src[@intCast(source_p.*)];
+            tmpString[@intCast(dest)] = if (byte != 0) byte else '\'';
+            var bytesToAdd: i16 = 1;
 
-            if ((tmpString[@intCast(dest.*)] & 0x80) != 0) {
-                dest.* += 1;
-                src.* += 1;
-                tmpString[@intCast(dest.*)] = errorMessage[@intCast(src.*)];
+            if ((tmpString[@intCast(dest)] & 0x80) != 0) {
+                dest += 1;
+                source_p.* += 1;
+                tmpString[@intCast(dest)] = src[@intCast(source_p.*)];
                 bytesToAdd = 2;
             }
-            dest.* += 1;
-            tmpString[@intCast(dest.*)] = 0;
-            src.* += 1;
+            dest += 1;
+            tmpString[@intCast(dest)] = 0;
+            source_p.* += 1;
 
             const currentWidth: i16 = frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(dCounter)), fontToUse, true, true);
             const allowedWidth: i16 = maxWidth - (if (dCounter == 0) @as(i16, 0) else Width_0);
 
             if (currentWidth >= allowedWidth) {
-                dest.* -= @intCast(bytesToAdd);
-                src.* -= @intCast(bytesToAdd);
-                tmpString[@intCast(dest.*)] = 0;
+                dest -= bytesToAdd;
+                source_p.* -= bytesToAdd;
+                tmpString[@intCast(dest)] = 0;
                 break;
             }
         }
@@ -3764,34 +3777,34 @@ fn prepLongintIntoLines(last: *i16, src: *i16, dest: *i16, fontToUse: *const fon
         while (true) {
             const c2 = cnt;
             cnt -%= 1;
-            if (!(c2 != 0 and src.* < last.* and !GRP_DISABLED)) break;
-            // checktmpStringSep(SEP, *dest)
-            const a = dest.*;
+            if (!(c2 != 0 and source_p.* < last and grouped and !GRP_DISABLED)) break;
+            // checktmpStringSep(SEP, dest)
+            const a = dest;
             const isSep =
                 (SEP[1] != 1 and tmpString[@intCast(a - 2)] == SEP[0] and tmpString[@intCast(a - 1)] == SEP[1]) or
                 (SEP[1] == 1 and tmpString[@intCast(a - 1)] == SEP[0]) or
                 (tmpString[@intCast(a - 2)] == STD_SPACE_FIGURE[0] and tmpString[@intCast(a - 1)] == STD_SPACE_FIGURE[1]);
             if (!isSep) {
-                dest.* -= 1;
-                src.* -= 1;
+                dest -= 1;
+                source_p.* -= 1;
             } else {
-                dest.* -= 1;
-                src.* -= 1;
+                dest -= 1;
+                source_p.* -= 1;
                 if ((SEP[0] & 0x80) != 0 and SEP[1] != 1) {
-                    dest.* -= 1;
-                    src.* -= 1;
+                    dest -= 1;
+                    source_p.* -= 1;
                 }
                 break;
             }
         }
 
-        tmpString[@intCast(dest.*)] = 0;
-        if (d == (startingLine_p.* + (numberOfLines - 1)) * SHOWLineSize) {
-            sourceReturn = src.*;
+        tmpString[@intCast(dest)] = 0;
+        if (d == (startingLine_arg + (numberOfLines - 1)) * SHOWLineSize) {
+            sourceReturn = source_p.*;
         }
     }
 
-    src.* = sourceReturn;
+    source_p.* = sourceReturn;
 }
 
 fn showShortIntegerLine(showRegis_p: calcRegister_t, tag: i16, startOffset: i16, numLines: i16, showName: bool) void {
@@ -3844,13 +3857,10 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
     const savedDisplayFormatDigits = displayFormatDigits;
     const ssf0: u64 = systemFlags0;
     const ssf1: u64 = systemFlags1;
-    var thereIsANextLine: bool = undefined;
     var dest: i16 = 0;
     var last: i16 = 0;
     var d: i16 = undefined;
     var i: i16 = undefined;
-    var offset: i16 = undefined;
-    var bytesProcessed: i16 = undefined;
     var aa: i16 = undefined;
     var bb: i16 = undefined;
     var cc: i16 = undefined;
@@ -3886,6 +3896,20 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
                         source = 0;
                         IntShowMode = SHOWTNY;
                     }
+                }
+            } else if (getRegisterDataType(@intCast(showRegis)) == dtString) {
+                // A string pages on source alone, one screen at a time: big, then
+                // standard, then tiny.
+                if (IntShowMode == SHOWTNY) {
+                    source = 0;
+                    IntShowMode = SHOWAUTO;
+                } else if (IntShowMode != SHOWSML) {
+                    source = 0;
+                    IntShowMode = SHOWSML;
+                } else if (source > @as(i16, @intCast(stringByteLength(regString(@intCast(showRegis)))))) {
+                    // source passes the length only once the closing quote is printed
+                    source = 0;
+                    IntShowMode = SHOWTNY;
                 }
             }
         },
@@ -4205,49 +4229,46 @@ pub export fn fnC47Show(fnShow_param: u16) callconv(.c) void {
             dateToDisplayString(@intCast(showRegis), tmpString + @as(usize, @intCast(stringByteLength(tmpString + 2100))));
             break :blk_switch;
         } else if (selection == dtString) {
-            SHOW_reset();
-            temporaryInformation = TI_SHOW_REGISTER_BIG;
-            offset = 0;
-            thereIsANextLine = true;
-            bytesProcessed = 2100;
-            _ = strcat(tmpString + 2100, "'");
-            _ = strcat(tmpString + 2100, regString(@intCast(showRegis)));
-            _ = strcat(tmpString + 2100, "'");
-            while (thereIsANextLine) {
-                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(offset)), tmpString + @as(usize, @intCast(bytesProcessed)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(bytesProcessed))) + 1));
-                thereIsANextLine = false;
-                const strw = frontier_screen.stringAfterPixelsC47(tmpString + @as(usize, @intCast(offset)), stdnumEnlarge, nocompress, @intCast(SCREEN_WIDTH - 1), 0, 1);
-                if (strw[0] != 0) {
-                    strw[0] = 0;
-                    thereIsANextLine = true;
+            const strData = regString(@intCast(showRegis));
+            last = @intCast(stringByteLength(strData) + 1); // one past the string, where the terminator prints as the closing quote
+
+            if (IntShowMode == SHOWAUTO) { // the big font keeps the string up to four lines
+                temporaryInformation = TI_SHOW_REGISTER_BIG;
+                numberOfLines = 4;
+                prepIntoLines(strData, false, last, &source, &numericFont, SCREEN_WIDTH, numberOfLines, 0);
+                if (tmpString[@intCast(numberOfLines * SHOWLineSize)] == 0) {
+                    break :blk_switch;
                 }
-                bytesProcessed += @intCast(stringByteLength(tmpString + @as(usize, @intCast(offset))));
-                offset += SHOWLineSize;
-                tmpString[@intCast(offset)] = 0;
-            }
-            if (offset <= 4 * SHOWLineSize) {
-                break :blk_switch;
+                source = 0;
+                IntShowMode = SHOWSML;
             }
 
-            SHOW_reset();
-            temporaryInformation = TI_SHOW_REGISTER_SMALL;
-            offset = 0;
-            thereIsANextLine = true;
-            bytesProcessed = 2100;
-            _ = strcat(tmpString + 2100, "'");
-            _ = strcat(tmpString + 2100, regString(@intCast(showRegis)));
-            _ = strcat(tmpString + 2100, "'");
-            while (thereIsANextLine) {
-                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(offset)), tmpString + @as(usize, @intCast(bytesProcessed)), @intCast(stringByteLength(tmpString + @as(usize, @intCast(bytesProcessed))) + 1));
-                thereIsANextLine = false;
-                const remainingString = frontier_char_string.stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, SCREEN_WIDTH, false, true);
-                if (remainingString[0] != 0) {
-                    remainingString[0] = 0;
-                    thereIsANextLine = true;
+            if (IntShowMode == SHOWSML) {
+                temporaryInformation = TI_SHOW_REGISTER_SMALL;
+                numberOfLines = 10;
+                prepIntoLines(strData, false, last, &source, &standardFont, SCREEN_WIDTH, numberOfLines, 0);
+            } else {
+                temporaryInformation = TI_SHOW_REGISTER_TINY;
+                numberOfLines = 20; // 21 are drawn, but a 21st run-over slot sits past tmpString; 20 lines take 1180 glyphs
+                prepIntoLines(strData, false, last, &source, &tinyFont, SCREEN_WIDTH, numberOfLines, 0);
+            }
+
+            if (tmpString[@intCast(numberOfLines * SHOWLineSize)] != 0) {
+                // More to come: the last visible line ends in an ellipsis and R/S brings the next page.
+                const pageFont = if (temporaryInformation == TI_SHOW_REGISTER_SMALL) &standardFont else &tinyFont;
+                d = (numberOfLines - 1) * SHOWLineSize;
+                i = @intCast(stringByteLength(tmpString + @as(usize, @intCast(d))));
+                while (i > 0 and (i > SHOWLineSize - 7 or
+                    frontier_char_string.stringWidth(tmpString + @as(usize, @intCast(d)), pageFont, true, true) +
+                        frontier_char_string.stringWidth(STD_ELLIPSIS, pageFont, true, true) >= SCREEN_WIDTH))
+                {
+                    i = frontier_char_string.stringPrevGlyph(tmpString + @as(usize, @intCast(d)), i);
+                    tmpString[@intCast(d + i)] = 0;
+                    // A glyph the ellipsis displaces is printed again on the next page.
+                    source = frontier_char_string.stringPrevGlyph(strData, source);
                 }
-                bytesProcessed += @intCast(stringByteLength(tmpString + @as(usize, @intCast(offset))));
-                offset += SHOWLineSize;
-                tmpString[@intCast(offset)] = 0;
+                _ = frontier_char_string.xcopy(tmpString + @as(usize, @intCast(d + i)), STD_ELLIPSIS, 2);
+                tmpString[@intCast(d + i + 2)] = 0;
             }
             break :blk_switch;
         } else if (selection == dtConfig) {
@@ -4303,13 +4324,11 @@ fn fnC47Show_longIntBody(last: *i16, dest: *i16, numberOfLines: *i16) void {
                 numberOfLines.* = 6;
                 startingLine = 0;
                 const sourcemem: i16 = source;
-                const destmem: i16 = dest.*;
-                prepLongintIntoLines(last, &source, dest, &numericFont, SCREEN_WIDTH, numberOfLines.*, &startingLine);
+                prepIntoLines(errorMessage, true, last.*, &source, &numericFont, SCREEN_WIDTH, numberOfLines.*, startingLine);
                 if (tmpString[@intCast(numberOfLines.* * SHOWLineSize)] == 0) {
                     break :blk_li;
                 }
                 source = sourcemem;
-                dest.* = destmem;
                 IntShowMode = SHOWSML;
             } else {
                 IntShowMode = SHOWSML;
@@ -4320,7 +4339,7 @@ fn fnC47Show_longIntBody(last: *i16, dest: *i16, numberOfLines: *i16) void {
             SHOW_reset();
             temporaryInformation = TI_SHOW_REGISTER_SMALL;
             numberOfLines.* = 10;
-            prepLongintIntoLines(last, &source, dest, &standardFont, SCREEN_WIDTH, numberOfLines.*, &startingLine);
+            prepIntoLines(errorMessage, true, last.*, &source, &standardFont, SCREEN_WIDTH, numberOfLines.*, startingLine);
             if (tmpString[0] != 0) {
                 // goto goBreak1
                 fnC47Show_goBreak1(numberOfLines.*);
@@ -4338,7 +4357,7 @@ fn fnC47Show_longIntBody(last: *i16, dest: *i16, numberOfLines: *i16) void {
             temporaryInformation = TI_SHOW_REGISTER_TINY;
             numberOfLines.* = @intCast(minI(21, SHOWLineMax));
             startingLine = 0;
-            prepLongintIntoLines(last, &source, dest, &tinyFont, SCREEN_WIDTH, numberOfLines.*, &startingLine);
+            prepIntoLines(errorMessage, true, last.*, &source, &tinyFont, SCREEN_WIDTH, numberOfLines.*, startingLine);
             fnC47Show_goBreak1(numberOfLines.*);
         }
     }

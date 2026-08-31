@@ -27,6 +27,9 @@ const dtComplex34Matrix: u32 = 7;
 const dtShortInteger: u32 = 8;
 const dtConfig: u32 = 9;
 
+// defines.h
+const MAX_NUMBER_OF_GLYPHS_IN_STRING: u16 = 508;
+
 // angular modes
 const amRadian: u8 = 0;
 const amGrad: u8 = 1;
@@ -213,7 +216,7 @@ extern fn reallocateRegister(regist: i16, data_type: u32, data_size: u16, tag: u
 extern fn decQuadFromString(dst: [*c]u8, src: [*c]const u8, ctx: *OpaqueCtx) [*c]u8;
 extern fn convertLongIntegerToLongIntegerRegister(li: *const MpzStruct, regist: i16) void;
 extern fn convertUInt64ToShortIntegerRegister(sign: i16, value: u64, base: u32, regist: i16) void;
-extern fn utf8ToString(utf8: [*c]const u8, str: [*c]u8) void;
+extern fn utf8ToStringWithLength(utf8: [*c]const u8, str: [*c]u8, maxBytes: usize) void;
 extern fn xcopy(dst: ?*anyopaque, src: ?*const anyopaque, nbytes: u32) ?*anyopaque;
 const displayBugScreen = abi.host.showBugScreen; // routed through the host-callback boundary
 extern fn __gmpz_init(li: *MpzStruct) void;
@@ -726,9 +729,16 @@ pub fn restoreRegister(regist: i16, type_str: [*c]u8, value_in: [*c]u8, loaded_v
         convertLongIntegerToLongIntegerRegister(&li, regist);
         __gmpz_clear(&li);
     } else if (strcmpEq(type_str, "Stri")) {
-        utf8ToString(value, errorMessage);
-        const len: i32 = @as(i32, @intCast(strlen(errorMessage))) + 1;
-        reallocateRegister(regist, dtString, @intCast((@as(u32, @intCast(len)) + 3) >> 2), amNone);
+        // A file cannot decode past the longest legal string.
+        utf8ToStringWithLength(value, errorMessage, MAX_NUMBER_OF_GLYPHS_IN_STRING * 2 + 1);
+        var len: usize = 0;
+        var glyphs: u16 = 0;
+        while (glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING and errorMessage[len] != 0) : (glyphs += 1) {
+            len += if (errorMessage[len] & 0x80 != 0) 2 else 1;
+        }
+        errorMessage[len] = 0; // more glyphs than a register takes are cut on a glyph boundary
+        len += 1;
+        reallocateRegister(regist, dtString, @intCast((len + 3) >> 2), amNone);
         _ = xcopy(regStringData(regist), errorMessage, @intCast(len));
     } else if (strcmpEq(type_str, "ShoI")) {
         const sign: i16 = if (value[0] == '-') 1 else 0;

@@ -2040,6 +2040,21 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
         return x;
     }
 
+    // A standard font glyph replacing one the tiny font lacks is halved in both
+    // axes, so it draws at mini 1 whatever miniC says.
+    var mini: u8 = miniC;
+    if (font == &tinyFont and frontier_fonts.findGlyphExact(font, charCode) < 0) {
+        // findGlyph aliases a tiny font miss to glyph 0, so the exact probe is the
+        // one that finds the gap.
+        const stdId = frontier_fonts.findGlyphExact(&standardFont, charCode);
+        if (stdId >= 0 and standardFont.glyphsPtr()[@intCast(stdId)].colsGlyph > 0) {
+            // Only a glyph with ink is worth compressing; leaving blanks alone keeps
+            // the number separators.
+            font = &standardFont;
+            mini = 1;
+        }
+    }
+
     var enlarge: bool_t = 0;
     if (combinationFonts == stdnumEnlarge or combinationFonts == numHalf) {
         if (maxiC == 1 and font == &numericFont) {
@@ -2106,9 +2121,9 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
     const doubling: u16 = if (numDouble) (if (checkHP()) DOUBLING_A else 6) else DOUBLINGBASEX;
 
     const rep_enlarge: bool = numDouble or (enlarge != 0 and combinationFonts != 0);
-    const yNewMaxDx: u32 = @intCast((if (rep_enlarge) @as(i32, 2) else 1) * ((@as(i32, @intCast(@as(u32, g.rowsAboveGlyph) + g.rowsGlyph + g.rowsBelowGlyph)) >> @intCast(miniC)) - (if (rep_enlarge) @as(i32, 4) else 0)));
+    const yNewMaxDx: u32 = @intCast((if (rep_enlarge) @as(i32, 2) else 1) * ((@as(i32, @intCast(@as(u32, g.rowsAboveGlyph) + g.rowsGlyph + g.rowsBelowGlyph)) >> @intCast(mini)) - (if (rep_enlarge) @as(i32, 4) else 0)));
     if (noShow == 0 and noPreClear == 0) {
-        lcd_fill_rect(x, @intCast(maxI(0, yy)), @as(u32, @intCast(@as(i32, @intCast(@as(u32, @intCast(doubling)) * ((xGlyph + g.colsGlyph + endingCols) >> @intCast(miniC)))) >> 3)), @intCast(maxI(0, @as(i32, @intCast(yNewMaxDx)) + (if (yy < 0) yy else 0))), if (videoMode == vmNormal) LCD_SET_VALUE else LCD_EMPTY_VALUE);
+        lcd_fill_rect(x, @intCast(maxI(0, yy)), @as(u32, @intCast(@as(i32, @intCast(@as(u32, @intCast(doubling)) * ((xGlyph + g.colsGlyph + endingCols) >> @intCast(mini)))) >> 3)), @intCast(maxI(0, @as(i32, @intCast(yNewMaxDx)) + (if (yy < 0) yy else 0))), if (videoMode == vmNormal) LCD_SET_VALUE else LCD_EMPTY_VALUE);
     }
     if (displaymode == numHalf) {
         y +%= @bitCast(@divTrunc(@as(i32, g.rowsAboveGlyph) * REDUCT_A(), REDUCT_B()) * (if (rep_enlarge) @as(i32, 2) else 1));
@@ -2135,16 +2150,16 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
             if (col % 8 == 0) {
                 byte = data[0];
                 data += 1;
-                if (miniC != 0) {
+                if (mini != 0) {
                     byte = @bitCast(@as(u8, @bitCast(byte)) | (@as(u8, @bitCast(byte)) << 1));
                 }
             }
 
             if (byte & @as(i8, @bitCast(@as(u8, 0x80))) != 0 and noShow == 0) {
-                const x1: u32 = x +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% col)) >> @intCast(miniC)) >> 3);
+                const x1: u32 = x +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% col)) >> @intCast(mini)) >> 3);
                 var x2: u32 = x1;
-                // min(u32 yNewMaxDx, (y-y0)>>miniC) -> (int32_t) -> yy + it -> max(0,.) -> min(SCREEN_HEIGHT-1,.)
-                const rowOff: u32 = (y -% y0) >> @intCast(miniC);
+                // min(u32 yNewMaxDx, (y-y0)>>mini) -> (int32_t) -> yy + it -> max(0,.) -> min(SCREEN_HEIGHT-1,.)
+                const rowOff: u32 = (y -% y0) >> @intCast(mini);
                 const yMin1: u32 = @min(yNewMaxDx, rowOff);
                 const yMin2: u32 = @min(yNewMaxDx, rowOff +% 1);
                 const y1: u32 = @intCast(minI(SCREEN_HEIGHT - 1, maxI(0, yy +% @as(i32, @bitCast(yMin1)))));
@@ -2173,7 +2188,7 @@ pub export fn showGlyphCode(charCode_in: u16, font_in: *const font_t, x_in: u32,
             y +%= 1;
         }
     }
-    return x +% boldString +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% g.colsGlyph +% endingCols)) >> @intCast(miniC)) >> 3);
+    return x +% boldString +% (((@as(u32, @intCast(doubling)) *% (xGlyph +% g.colsGlyph +% endingCols)) >> @intCast(mini)) >> 3);
 }
 
 pub export fn showGlyph(ch: [*c]const u8, font: *const font_t, x: u32, y: u32, videoMode: videoMode_t, showLeadingCols: bool_t, showEndingCols: bool_t, noPreClear: bool_t) callconv(.c) u32 {

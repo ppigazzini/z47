@@ -84,6 +84,8 @@ extern var Input_Default: u8;
 extern var calcMode: u8;
 extern var errorMessage: [*c]u8;
 extern const numericFont: font_t;
+extern const standardFont: font_t;
+extern const tinyFont: font_t;
 extern var glyphNotFound: glyph_t;
 extern const commonBugScreenMessages: [NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_OF_EACH_BUG_SCREEN_MESSAGE]u8;
 
@@ -281,6 +283,9 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
     var glyphId: i16 = undefined;
     var glyph: ?*const glyph_t = null;
     var firstChar: bool_t = true;
+    // A standard-font glyph standing in for one the tiny font lacks is halved, so
+    // its columns shift by one more than the doubling's own three.
+    var shift: u5 = 3;
     const doubling: u16 = doublingNumeric(font);
 
     while (str[@intCast(ch)] != 0) {
@@ -296,9 +301,25 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
         }
 
         if (charCode != 1) {
-            glyphId = frontier_fonts.findGlyph(font, charCode);
+            var glyphFont = font;
+            shift = 3;
+            glyphId = if (font == &tinyFont) frontier_fonts.findGlyphExact(font, charCode) else frontier_fonts.findGlyph(font, charCode);
+            if (glyphId < 0 and font == &tinyFont) {
+                // The tiny font lacks this glyph, so the standard font's is halved,
+                // exactly as showGlyphCode draws it.
+                const stdId = frontier_fonts.findGlyphExact(&standardFont, charCode);
+                if (stdId >= 0 and standardFont.glyphsPtr()[@intCast(stdId)].colsGlyph > 0) {
+                    // Only a glyph with ink is worth compressing; a blank keeps the
+                    // tiny font's own width.
+                    glyphFont = &standardFont;
+                    glyphId = stdId;
+                    shift = 4;
+                } else {
+                    glyphId = 0; // the tiny font's own first glyph, which findGlyph returned before
+                }
+            }
             if (glyphId >= 0) {
-                glyph = &font.glyphsPtr()[@intCast(glyphId)];
+                glyph = &glyphFont.glyphsPtr()[@intCast(glyphId)];
             } else if (glyphId == -1) {
                 frontier_fonts.generateNotFoundGlyph(-1, charCode);
                 glyph = &glyphNotFound;
@@ -318,14 +339,14 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
                 return;
             }
 
-            numPixels += @intCast((@as(u32, doubling) * (@as(u32, glyph.?.colsGlyph) + @as(u32, glyph.?.colsAfterGlyph))) >> 3);
+            numPixels += @intCast((@as(u32, doubling) * (@as(u32, glyph.?.colsGlyph) + @as(u32, glyph.?.colsAfterGlyph))) >> shift);
             if (firstChar) {
                 firstChar = false;
                 if (withLeadingEmptyRows) {
-                    numPixels += @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsBeforeGlyph)) >> 3);
+                    numPixels += @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsBeforeGlyph)) >> shift);
                 }
             } else {
-                numPixels += @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsBeforeGlyph)) >> 3);
+                numPixels += @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsBeforeGlyph)) >> shift);
             }
 
             if (resultStr != null) {
@@ -339,7 +360,7 @@ fn calculateStringWidth(str: [*c]const u8, font: *const font_t, withLeadingEmpty
     }
 
     if (glyph != null and withEndingEmptyRows == false) {
-        numPixels -= @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsAfterGlyph)) >> 3);
+        numPixels -= @intCast((@as(u32, doubling) * @as(u32, glyph.?.colsAfterGlyph)) >> shift);
         if (resultStr != null and numPixels <= width.*) {
             if (resultStr.?.*[0] & 0x80 != 0) {
                 resultStr.?.* += 2;
