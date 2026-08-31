@@ -235,6 +235,7 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
   int16_t ch, numPixels, glyphId;
   const glyph_t *glyph;
   bool_t  firstChar;
+  uint8_t shift = 3;                                                             //JM 4 while a standard font glyph replaces one the tiny font lacks
   #if defined(GENERATE_CATALOGS)
     uint16_t doubling = false;
   #else //GENERATE_CATALOGS
@@ -271,9 +272,22 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
       }                                       //JM ^^
 */
     if(charCode != 1u) {                          //If the special ASCII 01, then skip the width and font not found portions
-      glyphId = findGlyph(font, charCode);
+      const font_t *glyphFont = font;
+      shift = 3;
+      glyphId = (font == &tinyFont) ? findGlyphExact(font, charCode) : findGlyph(font, charCode);
+      if(glyphId < 0 && font == &tinyFont) {      //JM the tiny font lacks this glyph, so the standard font one is halved, exactly as showGlyphCode draws it
+        int16_t stdId = findGlyphExact(&standardFont, charCode);
+        if(stdId >= 0 && standardFont.glyphs[stdId].colsGlyph > 0) {   //only a glyph with ink is worth compressing; a blank keeps the tiny font's own width
+          glyphFont = &standardFont;
+          glyphId = stdId;
+          shift = 4;
+        }
+        else {
+          glyphId = 0;                            //the tiny font's own first glyph is used, which is what findGlyph returned before
+        }
+      }
       if(glyphId >= 0) {
-        glyph = (font->glyphs) + glyphId;
+        glyph = (glyphFont->glyphs) + glyphId;
       }
       else if(glyphId == -1) {
         generateNotFoundGlyph(-1, charCode);
@@ -300,15 +314,15 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
       return;
     }
 
-      numPixels += (doubling*(glyph->colsGlyph + glyph->colsAfterGlyph)) >> 3;
+      numPixels += (doubling*(glyph->colsGlyph + glyph->colsAfterGlyph)) >> shift;
       if(firstChar) {
         firstChar = false;
         if(withLeadingEmptyRows) {
-          numPixels += (doubling*(glyph->colsBeforeGlyph)) >> 3;
+          numPixels += (doubling*(glyph->colsBeforeGlyph)) >> shift;
         }
       }
       else {
-        numPixels += (doubling*(glyph->colsBeforeGlyph)) >> 3;
+        numPixels += (doubling*(glyph->colsBeforeGlyph)) >> shift;
       }
 
       if(resultStr != NULL) { // for stringAfterPixels
@@ -323,7 +337,7 @@ static void _calculateStringWidth(const char *str, const font_t *font, bool_t wi
   }
 
   if(glyph != NULL && withEndingEmptyRows == false) {
-    numPixels -= (doubling*(glyph->colsAfterGlyph)) >> 3;
+    numPixels -= (doubling*(glyph->colsAfterGlyph)) >> shift;
     if(resultStr != NULL && numPixels <= *width) { // for stringAfterPixels
       if((**resultStr) & 0x80) {
         *resultStr += 2;

@@ -1617,9 +1617,15 @@ int64_t stringToInt64(const char *str) {
 
     else if(strcmp(type, "Stri") == 0) {
       int32_t len;
+      int16_t glyphs;
 
-      utf8ToString((uint8_t *)value, errorMessage);
-      len = stringByteLength(errorMessage) + 1;
+      utf8ToStringWithLength((uint8_t *)value, errorMessage, MAX_NUMBER_OF_GLYPHS_IN_STRING * 2 + 1);  //a file cannot decode past the longest legal string
+      len = 0;
+      for(glyphs = 0; glyphs < MAX_NUMBER_OF_GLYPHS_IN_STRING && errorMessage[len] != 0; glyphs++) {
+        len += (errorMessage[len] & 0x80) ? 2 : 1;
+      }
+      errorMessage[len] = 0;                                                                            //more glyphs than a register takes are cut on a glyph boundary
+      len++;
       reallocateRegister(regist, dtString, TO_BLOCKS(len), amNone);
       xcopy(REGISTER_STRING_DATA(regist), errorMessage, len);
     }
@@ -1991,7 +1997,7 @@ int64_t stringToInt64(const char *str) {
             debugPrintf(20, "B", tmpString);
           #endif //LOADDEBUG
           char *varName = errorMessage + strlen(errorMessage) + 1;
-          utf8ToString((uint8_t *)errorMessage, varName);
+          utf8ToStringWithLength((uint8_t *)errorMessage, varName, MAX_LABEL_NAME_LENGTH + 1);  //a long name must not decode over the type string in aimBuffer
           regist = findOrAllocateNamedVariable(varName);
           if(regist != INVALID_VARIABLE) {
             restoreRegister(regist, aimBuffer, tmpString);
