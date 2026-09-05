@@ -164,6 +164,8 @@ const Y_POSITION_OF_ERR_LINE: i16 = 60;
 const Y_POSITION_OF_TRUE_FALSE_LINE: i16 = 60;
 const STANDARD_FONT_HEIGHT: i16 = 22;
 const SOFTMENU_HEIGHT: u8 = 23;
+// The first row of the three softkey rows, where fnMenuDump and SNAPMENU start.
+const Y_POSITION_OF_MENU_TOP: i16 = SCREEN_HEIGHT - @as(i16, SOFTMENU_HEIGHT) * 3;
 const LCD_LINE_BUF_SIZE: usize = 54;
 const LCD_SET_VALUE: c_int = 0;
 const LCD_EMPTY_VALUE: c_int = 255;
@@ -347,7 +349,7 @@ const ITM_dotD: i16 = 1741;
 const ITM_HASH_JM: i16 = 1872;
 const ITM_toINT: i16 = 1687;
 const ITM_CLRMOD: i16 = 2005;
-const LAST_ITEM: i16 = 3244;
+const LAST_ITEM: i16 = 3349;
 const MNU_DYNAMIC: i16 = 3052;
 const FIRST_CONSTANT: i16 = 128;
 const LAST_CONSTANT: i16 = 212;
@@ -839,20 +841,31 @@ const STD_o_DIARESIS = "\x80\xf6";
 const STD_delta = "\x83\xb4";
 const STD_SUB_d = "\xa4\x9f";
 const STD_e_ACUTE = "\x80\xe9";
-// The contributor roll under whoStr1, in the tiny font. Commit counts as of the
-// 02Aug2026 upstream snapshot this pin carries. Upstream states the recount
-// rule with the string: non-merge commits only, author aliases merged per
-// person, Robbert Jan is doc-only and carries no count; each total is code
-// commits plus the manual c47-wiki repo plus c47-wiki page edits.
-const whoStr2: [*:0]const u8 = "Jaco Mostert" ++ spc ++ "(3996)," ++ spc1 ++ "Martin Lorang" ++ spc ++ "(1382)," ++ spc1 ++ "Robbert Jan van Meenen" ++ spc ++ "(doc)," ++ spc1 ++
-    "MihailJP" ++ spc ++ "(1093)," ++ spc1 ++ "Ralf Ahlbrink" ++ spc ++ "(459)," ++ spc1 ++ "Paul Dale" ++ spc ++ "(449)," ++ spc1 ++ "Didier Lachieze" ++ spc ++ "(277)," ++ spc1 ++
-    "Walter Bonin" ++ spc ++ "(270)," ++ spc1 ++ "Benjamin Titmus" ++ spc ++ "(215)," ++ spc1 ++ "Hartmut Bromkamp" ++ spc ++ "(187)," ++ spc1 ++
-    "Pasquale Pigazzini" ++ spc ++ "(161)," ++ spc1 ++ "Mike Leffel" ++ spc ++ "(107)," ++ spc1 ++ "David Emerson" ++ spc ++ "(69)," ++ spc1 ++ "Warren Young" ++ spc ++ "(68)," ++ spc1 ++
-    "Bj" ++ STD_o_DIARESIS ++ "rn Jadelius" ++ spc ++ "(47)," ++ spc1 ++ "Philippe Martens" ++ spc ++ "(46)," ++ spc1 ++ "Marcel Dan" ++ spc ++ "(37)," ++ spc1 ++
-    "H" ++ STD_a_RING ++ "kon Hansen" ++ spc ++ "(36)," ++ spc1 ++ "Gert Menke" ++ spc ++ "(31)," ++ spc1 ++ "John Boydon" ++ spc ++ "(29)," ++ spc1 ++ "Michael Peter" ++ spc ++ "(28)," ++ spc1 ++
-    "Ian Abbott" ++ spc ++ "(21)," ++ spc1 ++ "R" ++ STD_e_ACUTE ++ "my Trotin" ++ spc ++ "(19)," ++ spc1 ++ "fridlmue" ++ spc ++ "(17)," ++ spc1 ++ "A. Vosough" ++ spc ++ "(16)," ++ spc1 ++
-    "Dani Rau" ++ spc ++ "(9)," ++ spc1 ++ "Harald Overbeek" ++ spc ++ "(9)," ++ spc1 ++ "Will Rutherdale" ++ spc ++ "(6)," ++ spc1 ++ "Nigel Dowrick" ++ spc ++ "(4)" ++
-    spc1 ++ "\n(commits 02Aug2026)";
+// The contributor roll under whoStr1, in the tiny font, as of the 04Sep2026
+// upstream snapshot this pin carries. Upstream states the recount rule with the
+// string: coders are non-merge commits plus the unmerged branches, doccers the
+// manual c47-wiki repo plus c47-wiki page edits, and testers and porters are not
+// tracked in git at all. The bands are commit counts -- 400+, 100+, and the plain
+// band for the rest -- with the most commits first inside each band.
+const whoStr2: [*:0]const u8 = "Coders 400+ :" ++ spc1 ++ "Jaco Mostert," ++ spc1 ++ "Martin Lorang," ++ spc1 ++ "MihailJP," ++ spc1 ++ "Paul Dale." ++
+    "\n" ++
+    "Coders 100+ :" ++ spc1 ++ "Didier Lachieze," ++ spc1 ++ "Walter Bonin," ++ spc1 ++ "Benjamin Titmus," ++ spc1 ++ "   Pasquale Pigazzini," ++ spc1 ++
+    "David Emerson." ++
+    "\n" ++
+    "Coders      :" ++ spc1 ++ "Warren Young," ++ spc1 ++ "Bj" ++ STD_o_DIARESIS ++ "rn Jadelius," ++ spc1 ++ "Ralf Ahlbrink," ++ spc1 ++ "      Philippe Martens," ++ spc1 ++
+    "Gert Menke," ++ spc1 ++ "John Boydon," ++ spc1 ++ "Ian Abbott," ++ spc1 ++ "R" ++ STD_e_ACUTE ++ "my      Trotin," ++ spc1 ++ "fridlmue," ++ spc1 ++ "Dani Rau," ++ spc1 ++
+    "Harald Overbeek," ++ spc1 ++ "Will Rutherdale," ++ spc1 ++ "  Nigel Dowrick," ++ spc1 ++ "Sviatoslav Feshchenko," ++ spc1 ++ "H" ++ STD_a_RING ++ "kon Hansen." ++
+    "\n" ++
+    "Doccers 400+:" ++ spc1 ++ "Robbert Jan van Meenen," ++ spc1 ++ "Ralf Ahlbrink." ++
+    "\n" ++
+    "Doccers     :" ++ spc1 ++ "Hartmut Bromkamp," ++ spc1 ++ "Mike Leffel," ++ spc1 ++ "Jaco Mostert," ++ spc1 ++ "Marcel Dan," ++ spc1 ++
+    "H" ++ STD_a_RING ++ "kon Hansen," ++ spc1 ++ "Michael Peter," ++ spc1 ++ "A. Vosough," ++ spc1 ++ "Will Rutherdale," ++ spc1 ++ "Martin Lorang," ++ spc ++
+    "Warren Young," ++ spc ++ "Philippe Martens." ++ spc ++
+    "Testers:" ++ spc ++ "Barry Mead." ++ spc1 ++
+    "Porters:" ++ spc1 ++ "Marcel Dan" ++ spc ++ "(iOS, Android, Web)," ++ spc1 ++ "paletochen" ++ spc ++ "(Android)," ++ spc1 ++
+    "Pasquale Pigazzini" ++ spc ++ "(Android)." ++
+    "\n" ++
+    "(commits 04Sep2026)";
 
 // MODELTEXT: CALCMODEL == USER_R47 ? "R47" : "C47". The model comes from the
 // passed calcmodel build option -- the R47 simulator and the R47 firmware
@@ -3424,9 +3437,9 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
     if (temporaryInformation == TI_VECTORCOMP_3DSPH and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         if (getSystemFlag(FLAG_3DPHYS) != 0) {
             switch (regist) {
-                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{STD_rho}),
-                REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s} ] =", .{ STD_phi_m, @as([*:0]const u8, _e2()) }),
-                REGISTER_X => abi.fmtCStr(prefix, "[  {s}{s}{s}] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
+                REGISTER_Z => abi.fmtCStr(prefix, "[r  ] =", .{}),
+                REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e2()) }),
+                REGISTER_X => abi.fmtCStr(prefix, "[  {s}{s}{s}] =", .{ STD_phi_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
                 else => {},
             }
         } else {
@@ -3438,11 +3451,20 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
             }
         }
     } else if (temporaryInformation == TI_VECTORCOMP_3DCYL and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
-        switch (regist) {
-            REGISTER_Z => abi.fmtCStr(prefix, "[r  ] =", .{}),
-            REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
-            REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{@as([*:0]const u8, e2())}),
-            else => {},
+        if (getSystemFlag(FLAG_3DPHYS) != 0) {
+            switch (regist) {
+                REGISTER_Z => abi.fmtCStr(prefix, "[{s}  ] =", .{STD_rho}),
+                REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_phi_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
+                REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{@as([*:0]const u8, e2())}),
+                else => {},
+            }
+        } else {
+            switch (regist) {
+                REGISTER_Z => abi.fmtCStr(prefix, "[r  ] =", .{}),
+                REGISTER_Y => abi.fmtCStr(prefix, "[ {s}{s}{s} ] =", .{ STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) }),
+                REGISTER_X => abi.fmtCStr(prefix, "[  {s}] =", .{@as([*:0]const u8, e2())}),
+                else => {},
+            }
         }
     } else if (temporaryInformation == TI_VECTORCOMP_3DRECT and getRegisterDataType(regist) == dtReal34 and regist >= REGISTER_X and regist <= REGISTER_Z) {
         switch (regist) {
@@ -3467,9 +3489,9 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
         if (getVectorRegisterPolarMode(regist) == amPolarSPH) {
             if (getSystemFlag(FLAG_3DPHYS) != 0) {
                 if (shrt != 0) {
-                    abi.fmtCStr(prefix, "{s}{s}{s}", .{ STD_rho, STD_phi_m, STD_theta_m });
+                    abi.fmtCStr(prefix, "{s}{s}{s}", .{ "r", STD_theta_m, STD_phi_m });
                 } else {
-                    abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}{s}]" ++ STD_SUB_P, .{ STD_rho, interspace, STD_phi_m, @as([*:0]const u8, _e2()), interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) });
+                    abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}{s}]" ++ STD_SUB_P, .{ "r", interspace, STD_theta_m, @as([*:0]const u8, _e2()), interspace, STD_phi_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()) });
                 }
             } else {
                 if (shrt != 0) {
@@ -3479,10 +3501,18 @@ pub export fn tiVector(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16
                 }
             }
         } else if (getVectorRegisterPolarMode(regist) == amPolarCYL) {
-            if (shrt != 0) {
-                abi.fmtCStr(prefix, "{s}{s}{s}", .{ "r", STD_theta_m, @as([*:0]const u8, e2()) });
+            if (getSystemFlag(FLAG_3DPHYS) != 0) {
+                if (shrt != 0) {
+                    abi.fmtCStr(prefix, "{s}{s}{s}", .{ STD_rho, STD_phi_m, @as([*:0]const u8, e2()) });
+                } else {
+                    abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}]" ++ STD_SUB_P, .{ STD_rho, interspace, STD_phi_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()), interspace, @as([*:0]const u8, e2()) });
+                }
             } else {
-                abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}]", .{ "r", interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()), interspace, @as([*:0]const u8, e2()) });
+                if (shrt != 0) {
+                    abi.fmtCStr(prefix, "{s}{s}{s}", .{ "r", STD_theta_m, @as([*:0]const u8, e2()) });
+                } else {
+                    abi.fmtCStr(prefix, "[{s}{s}{s}{s}{s}{s}{s}]" ++ STD_SUB_M, .{ "r", interspace, STD_theta_m, @as([*:0]const u8, _e0()), @as([*:0]const u8, _e1()), interspace, @as([*:0]const u8, e2()) });
+                }
             }
         } else {
             if (shrt != 0) {
@@ -3879,8 +3909,8 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
             if (regist == REGISTER_X) {
                 clearScreenOld(0, 1, 1); // clear before the blank menu goes up: the MNU_SHOW guards in _selectiveClearScreen skip the graph rects
                 _ = frontier_softmenus.showSoftmenu(-MNU_SHOW);
-                _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 30 - 3), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
-                _ = showStringEnhanced(whoStr2, &tinyFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 50 - 27), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                _ = showStringEnhanced(whoStr1, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_T_LINE) + 30 - 25), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                _ = showStringEnhanced(whoStr2, &tinyFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) + 50 - 62), vmNormal, 1, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
                 screenUpdatingMode |= SCRUPD_MANUAL_MENU;
             }
             if (regist == REGISTER_T or regist == REGISTER_Z or regist == REGISTER_Y or regist == REGISTER_X) {
@@ -6216,7 +6246,15 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
 
         _ = fwrite("BM", 1, 2, bmp);
 
-        var uint32: u32 = (@as(u32, @intCast(SCREEN_WIDTH)) / 8 * @as(u32, @intCast(SCREEN_HEIGHT))) + 610;
+        // The band this capture writes, taken before the reset below, so every
+        // fwrite here uses the one pair of rows.
+        const yFirst = snapRowFirst;
+        const yLast = snapRowLast;
+        const yRows: u32 = @intCast(yLast - yFirst + 1);
+        snapRowFirst = 0;
+        snapRowLast = SCREEN_HEIGHT - 1;
+
+        var uint32: u32 = (@as(u32, @intCast(SCREEN_WIDTH)) / 8 * yRows) + 610;
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = 0;
         _ = fwrite(&uint32, 1, 4, bmp);
@@ -6226,7 +6264,7 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         _ = fwrite(&uint32, 1, 4, bmp);
         uint32 = @intCast(SCREEN_WIDTH);
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = @intCast(SCREEN_HEIGHT);
+        uint32 = yRows;
         _ = fwrite(&uint32, 1, 4, bmp);
         var uint16: u16 = 0x0001;
         _ = fwrite(&uint16, 1, 2, bmp);
@@ -6234,7 +6272,9 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         _ = fwrite(&uint16, 1, 2, bmp);
         uint32 = 0;
         _ = fwrite(&uint32, 1, 4, bmp);
-        uint32 = 0x000030c0;
+        // Size of the bitmap data including padding: a row is 50 bytes of pixels
+        // and 2 of padding, 52 in all, which is 0x30c0 over the whole screen.
+        uint32 = (@as(u32, @intCast(SCREEN_WIDTH)) / 8 + 2) * yRows;
         _ = fwrite(&uint32, 1, 4, bmp);
         // Horizontal and vertical print resolution: 2835 pixels/m (72 dpi), so
         // sim and hardware screen dumps produce byte-identical BMPs.
@@ -6275,8 +6315,8 @@ pub export fn fnScreenDump(unusedButMandatoryParameter: u16) callconv(.c) void {
         uint16 = 0;
         uint32 = 0;
         var uint8: u8 = undefined;
-        var y: i32 = SCREEN_HEIGHT - 1;
-        while (y >= 0) : (y -= 1) {
+        var y: i32 = yLast;
+        while (y >= yFirst) : (y -= 1) {
             var x: i32 = 0;
             while (x < SCREEN_WIDTH) : (x += 1) {
                 uint8 = @bitCast(@as(u8, @bitCast(uint8)) << 1);
@@ -6531,6 +6571,12 @@ pub export fn fnClDisplay(unusedButMandatoryParameter: u16) callconv(.c) void {
     }
 }
 
+// The band fnScreenDump writes, in screen rows: the whole screen unless SNAPMENU
+// or SNAPX sets the pair. fnScreenDump consumes it, as it consumes
+// _ioFileNameOverride, so the capture after a banded one is the whole screen again.
+var snapRowFirst: i32 = 0;
+var snapRowLast: i32 = SCREEN_HEIGHT - 1;
+
 pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     _ = unused_but_mandatory_parameter;
 
@@ -6567,4 +6613,22 @@ pub export fn fnSNAP(unused_but_mandatory_parameter: u16) callconv(.c) void {
     if (comptime testsuite_build) {
         frontier_date_time.testClockFrozen = false;
     }
+}
+
+// SNAPMENU writes the softkey menu band alone, rows 171 to 239 -- the band
+// fnMenuDump writes for --dumpMenus1. Everything else is SNAP, the file names included.
+pub export fn fnSNAPMENU(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime dmcp_build) return;
+    snapRowFirst = Y_POSITION_OF_MENU_TOP;
+    snapRowLast = SCREEN_HEIGHT - 1;
+    fnSNAP(unused_but_mandatory_parameter);
+}
+
+// SNAPX writes the band above the menu, rows 132 to 170 -- the register X line in
+// the big bold numericFont. Everything else is SNAP, the file names and the TSV included.
+pub export fn fnSNAPX(unused_but_mandatory_parameter: u16) callconv(.c) void {
+    if (comptime dmcp_build) return;
+    snapRowFirst = Y_POSITION_OF_REGISTER_X_LINE;
+    snapRowLast = Y_POSITION_OF_MENU_TOP - 1;
+    fnSNAP(unused_but_mandatory_parameter);
 }

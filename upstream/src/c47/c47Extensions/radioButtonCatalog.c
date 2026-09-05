@@ -92,6 +92,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_CLK24,            TF_H24,                 RB_TF},  //SetSetting          /*   76 */ //fnTimeFormat
   {ITM_BEGINP,           FN_BEG,                 RB_TV},  //SetSetting
   {ITM_ENDP,             FN_END,                 RB_TV},  //SetSetting
+  {ITM_PMT_Beg,          FLAG_ENDPMT,            CB_JC},  //SetSetting
 
   {ITM_USER_C47,         USER_C47,               RB_KY},  //SetSetting
   {ITM_USER_DM42,        USER_DM42,              RB_KY},  //SetSetting
@@ -515,6 +516,8 @@ int8_t fnCbIsSet(int16_t item) {
                               clearSystemFlag(FLAG_FGLNLIM);
                             }
                             break;
+
+                          case FLAG_ENDPMT:       cb_param = !getSystemFlag(FLAG_ENDPMT);             break;
 
                           #if defined(INLINE_TEST)
                             case JC_ITM_TST:       cb_param = testEnabled;                            break;

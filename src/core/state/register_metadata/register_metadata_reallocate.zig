@@ -61,6 +61,12 @@ pub fn copySourceRegisterToDestRegister(source_register: runtime.calcRegister_t,
         memory_owned.bytesFromBlocks(source_full_size),
     );
     descriptor_owned.setRegisterTag(normalized_dest, descriptor_owned.getRegisterTag(normalized_source));
+
+    if (dest_register == runtime.RESERVED_VARIABLE_IPONA or dest_register == runtime.RESERVED_VARIABLE_IP) {
+        runtime.tvmSyncIp(dest_register);
+    } else if (dest_register == runtime.RESERVED_VARIABLE_PPERONA or dest_register == runtime.RESERVED_VARIABLE_CPERONA) {
+        runtime.tvmSyncIp(runtime.RESERVED_VARIABLE_IPONA); // the frequency moved, so the pair is recomputed from the annual rate every menu holds
+    }
 }
 
 pub fn reallocateRegister(reg: runtime.calcRegister_t, data_type: u32, data_size_without_data_len_blocks: u16, tag: u32) void {

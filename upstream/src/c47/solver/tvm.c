@@ -980,6 +980,94 @@ void fnTvmVar(uint16_t variable) {
 
 
 
+void tvmSyncIp(calcRegister_t written) {                      // automatic I%/a <-> i% coupling in 39 digits. i% is the engine's own rate per period: iA/pperA, and
+  real_t v, pperA, cperA, r, t;                               // (1 + (iA/100)/pperA/r)^r - 1 when r = cperA/pperA differs from 1, the same expression tvmEquation uses
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA), &pperA);
+  real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA), &cperA);
+  if(realIsZero(&pperA)) {                                    // no payment frequency to convert with: leave the partner as it stands
+    return;
+  }
+  realDivide(&cperA, &pperA, &r, &ctxtReal39);
+  if(written == RESERVED_VARIABLE_IPONA) {
+    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA), &v);
+    realDivide(&v, &pperA, &v, &ctxtReal39);
+    if(!(realIsZero(&r) || realCompareEqual(const_1, &r))) {
+      realDivide(&v, const_100, &v, &ctxtReal39);
+      realDivide(&v, &r, &v, &ctxtReal39);
+      WP34S_Ln1P(&v, &t, &ctxtReal39);
+      realMultiply(&t, &r, &t, &ctxtReal39);
+      WP34S_ExpM1(&t, &v, &ctxtReal39);
+      realMultiply(&v, const_100, &v, &ctxtReal39);
+    }
+    realToReal34(&v, REGISTER_REAL34_DATA(RESERVED_VARIABLE_IP));
+  }
+  else {
+    real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IP), &v);
+    if(!(realIsZero(&r) || realCompareEqual(const_1, &r))) {   // invert the above: iA = 100 * pperA * r * ((1 + i)^(1/r) - 1)
+      realDivide(&v, const_100, &v, &ctxtReal39);
+      WP34S_Ln1P(&v, &t, &ctxtReal39);
+      realDivide(&t, &r, &t, &ctxtReal39);
+      WP34S_ExpM1(&t, &v, &ctxtReal39);
+      realMultiply(&v, &r, &v, &ctxtReal39);
+      realMultiply(&v, const_100, &v, &ctxtReal39);
+    }
+    realMultiply(&v, &pperA, &v, &ctxtReal39);
+    realToReal34(&v, REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA));
+  }
+}
+
+void fnClrTvm(uint16_t unusedButMandatoryParameter) {         // CLRTVM: clears only the TVM variables n, I%/a, i%, PV, PMT, FV
+  const calcRegister_t tvmVars[] = { RESERVED_VARIABLE_NPPER, RESERVED_VARIABLE_IPONA, RESERVED_VARIABLE_IP, RESERVED_VARIABLE_PV, RESERVED_VARIABLE_PMT, RESERVED_VARIABLE_FV };
+  for(uint_fast8_t i = 0; i < nbrOfElements(tvmVars); i++) {   // a reserved variable is permanently dtReal34, so no reallocateRegister is needed or accepted here
+    real34SetZero(REGISTER_REAL34_DATA(tvmVars[i]));
+  }
+}
+
+void fnRstTvm(uint16_t unusedButMandatoryParameter) {         // RSTTVM: CLRTVM plus pp/a = cp/a = 12 and Beg cleared (ENDPMT set)
+  fnClrTvm(NOPARAM);
+  int32ToReal34(12, REGISTER_REAL34_DATA(RESERVED_VARIABLE_PPERONA));
+  int32ToReal34(12, REGISTER_REAL34_DATA(RESERVED_VARIABLE_CPERONA));
+  setSystemFlag(FLAG_ENDPMT);
+  fnRefreshState();
+}
+
+void fnTvmBegToggle(uint16_t unusedButMandatoryParameter) {   // Beg softkey: toggles begin mode, the inverse of ENDPMT
+  if(getSystemFlag(FLAG_ENDPMT)) {
+    clearSystemFlag(FLAG_ENDPMT);
+  }
+  else {
+    setSystemFlag(FLAG_ENDPMT);
+  }
+  fnRefreshState();
+}
+
+void fnTvmVarIp(uint16_t unusedButMandatoryParameter) {       // i% softkey: the rate per period. The engine holds I%/a, so a store goes to i% and the sync writes I%/a; a solve
+  real_t v;                                                   // runs the engine on I%/a, whose write syncs i%, and the answer line takes i% itself rather than converting X a second time
+  ensureTvmContext();
+  if(currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE || programRunStop == PGM_RUNNING || programRunStop == PGM_PAUSED || testing) {
+    fnTvmVar(RESERVED_VARIABLE_IPONA);
+    if(lastErrorCode == ERROR_NONE) {
+      real34ToReal(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IP), &v);
+      reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+      convertRealToReal34ResultRegister(&v, REGISTER_X);
+      currentSolverVariable = RESERVED_VARIABLE_IP;                  // the answer line names i%, not the annual rate the engine solved
+    }
+  }
+  else {
+    fnToReal(NOPARAM);
+    if(lastErrorCode == ERROR_NONE) {
+      currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
+      currentSolverVariable = RESERVED_VARIABLE_IP;
+      tvmIKnown = false;
+      reallyRunFunction(ITM_STO, RESERVED_VARIABLE_IP);
+      currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+      temporaryInformation = TI_SOLVER_VARIABLE;
+    }
+    adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+    setSystemFlag(FLAG_ASLIFT);
+  }
+}
+
 void fnTvmBeginMode(uint16_t unusedButMandatoryParameter) {
   clearSystemFlag(FLAG_ENDPMT);
 }
@@ -1042,6 +1130,7 @@ void fnEffToI(uint16_t unusedButMandatoryParameter) {
     realMultiply(&tmp, &cperA, &tmp, &ctxtReal39);
 
     realToReal34(&tmp, REGISTER_REAL34_DATA(RESERVED_VARIABLE_IPONA));
+    tvmSyncIp(RESERVED_VARIABLE_IPONA);
     reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
     convertRealToReal34ResultRegister(&tmp, REGISTER_X);
 

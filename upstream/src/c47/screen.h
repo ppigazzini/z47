@@ -27,6 +27,10 @@
 
   void     fnScreenDump                       (uint16_t unusedButMandatoryParameter);
   void     fnSNAP                             (uint16_t unusedButMandatoryParameter);
+  #if defined(PC_BUILD)
+    void   fnSNAPMENU                         (uint16_t unusedButMandatoryParameter);
+    void   fnSNAPX                            (uint16_t unusedButMandatoryParameter);
+  #endif // PC_BUILD
 
 
   void       fnClLcd                          (uint16_t clear_mode);

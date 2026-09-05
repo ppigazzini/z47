@@ -208,12 +208,13 @@ DenMaX,                              xxx,        64,                            
 TVMIKnown,                           xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIKnown
 TVMIChanges,                         xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,                    // Clear flag TVMIChanges
 //TVM,                               n/a,        Reset,                          HP35,            JM,                   RJ,                     C47,             DefltSB,         TVM,
-RESERVED_VARIABLE_LX,                xxx,        -10,                            xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
-RESERVED_VARIABLE_UX,                xxx,        10,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
-RESERVED_VARIABLE_LY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
-RESERVED_VARIABLE_UY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_LX,                xxx,        -10,                            xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+RESERVED_VARIABLE_UX,                xxx,        10,                             xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+RESERVED_VARIABLE_LY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
+RESERVED_VARIABLE_UY,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 RESERVED_VARIABLE_FV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_IPONA,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
+RESERVED_VARIABLE_IP,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_NPPER,             xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_PMT,               xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
 RESERVED_VARIABLE_PV,                xxx,        0,                              xxx,             xxx,                  xxx,                    xxx,             xxx,             0,
@@ -368,6 +369,7 @@ void Sett(int16_t grp) {
         case RESERVED_VARIABLE_UY     :
         case RESERVED_VARIABLE_FV     :
         case RESERVED_VARIABLE_IPONA  :
+        case RESERVED_VARIABLE_IP     :
         case RESERVED_VARIABLE_NPPER  :
         case RESERVED_VARIABLE_PMT    :
         case RESERVED_VARIABLE_PV     :
@@ -925,6 +927,9 @@ void fnSetADM(uint16_t regist) {
   if(getRegisterAsUint32Param(regist, &value) && value < nbrOfElements(admToAngularMode)) {
     fnAngularMode(admToAngularMode[value]);
   }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  }
 }
 
 
@@ -960,7 +965,13 @@ void fnSetISM(uint16_t regist) {
       case 2:  shortIntegerMode = SIM_2COMPL; break;
       case 1:  shortIntegerMode = SIM_1COMPL; break;
       case 0:  shortIntegerMode = SIM_UNSIGN; break;
-      default: shortIntegerMode = SIM_SIGNMT; break;
+      case -1: shortIntegerMode = SIM_SIGNMT; break;                                             // the four values shortIntegerModeValue() returns
+      default: {
+        if(lastErrorCode == ERROR_NONE) {
+          displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+        }
+        break;
+      }
     }
   }
 }
@@ -976,7 +987,10 @@ void fnGetDMX(uint16_t unusedButMandatoryParameter) {
 void fnSetDMX(uint16_t regist) {
   uint32_t value;
   if(getRegisterAsUint32Param(regist, &value)) {
-    fnDenMax(value);
+    fnDenMax(value > MAX_DENMAX ? MAX_DENMAX : value);                                           // fnDenMax takes a uint16_t, so an unbounded value wraps into range instead of clamping
+  }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
   }
 }
 
@@ -993,6 +1007,9 @@ void fnSetREALDF                (uint16_t regist) {
   if(getRegisterAsUint32Param(regist, &value) && value <= DF_UN) {
     displayFormat = value;
   }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+  }
 }
 
 
@@ -1005,7 +1022,10 @@ void fnGetNDEC(uint16_t unusedButMandatoryParameter) {
 void fnSetNDEC(uint16_t regist) {
   uint32_t value;
   if(getRegisterAsUint32Param(regist, &value)) {
-    fnDisplayFormatDsp(value);
+    fnDisplayFormatDsp(value > DSP_MAX ? DSP_MAX : value);                                       // fnDisplayFormatDsp takes a uint16_t, so an unbounded value wraps into range instead of clamping
+  }
+  else if(lastErrorCode == ERROR_NONE) {
+    displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
   }
 }
 
@@ -1461,8 +1481,9 @@ void fnShowVersion(uint16_t option) {  //KEYS VERSION LOADED
 }
 
 
-void fnResetTVM (uint16_t unusedButMandatoryParameter) {
-  Sett(_TVM);
+void fnClearAllFin (uint16_t unusedButMandatoryParameter) {
+  Sett(_TVM);                                                                 // the whole FIN group: the TVM variables and i%, pp/a, cp/a, Beg, the amortisation range and the solver's known flags
+  fnRefreshState();
 }
 
 
@@ -1647,13 +1668,8 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     xcopy(kbd_usr, kbd_std, sizeof(kbd_std));
     //setLongPressFg(calcModel, (calcModel == USER_R47bk_fg ? -MNU_MyMenu : -MNU_HOME));
 
-    // initialize 9 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, and PV
-    for(int i=VAR_NO_ACC; i<=VAR_NO_PV; i++) {
-      real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
-    }
-
-    // initialize 7 real34 reserved variables: ↑X, ↓X, CPERONA, ↑EST, ↓EST, ↑Y, ↓Y
-    for(int i=VAR_NO_UX; i<=VAR_NO_LY; i++) {
+    // initialize 17 real34 reserved variables: ACC, ↑Lim, ↓Lim, FV, i%/a, NPPER, PPER/a, PMT, PV, i%, ↑X, ↓X, CPERONA, ↑EST, ↓EST, ↑Y, ↓Y
+    for(int i=VAR_NO_ACC; i<=VAR_NO_LY; i++) {
       real34SetZero((real34_t *)TO_PCMEMPTR(allReservedVariables[i].header.pointerToRegisterData));
     }
 

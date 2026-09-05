@@ -70,12 +70,14 @@ fn tryToPolar2Real34Pair() bool {
                     0,
             );
             runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+            runtime.temporaryInformation = runtime.TI_VECTOR;
             return true;
         }
 
         if (runtime.isRegisterMatrix2dVector(runtime.REGISTER_X)) {
             runtime.setVectorRegisterPolarMode(runtime.REGISTER_X, runtime.amPolar);
             runtime.setVectorRegisterAngularMode(runtime.REGISTER_X, runtime.currentAngularMode);
+            runtime.temporaryInformation = runtime.TI_VECTOR;
             return true;
         }
     }

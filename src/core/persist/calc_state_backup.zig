@@ -59,6 +59,10 @@ extern fn ioFileWrite(buffer: ?*const anyopaque, size: u32) void;
 extern fn decNumberToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // realToString
 extern fn decQuadToString(src: [*c]const u8, dst: [*c]u8) [*c]u8; // real34ToString
 extern fn decQuadIsInfinite(src: [*c]const u8) u32; // real34IsInfinite
+extern fn decQuadZero(dst: [*c]u8) [*c]u8; // real34SetZero
+// The restored I%/a is the annual rate; tvm.zig converts it into the per-period i%.
+const RESERVED_VARIABLE_IPONA: i16 = 2035;
+extern fn tvmSyncIp(written: i16) void;
 const DECINF: u8 = 0x40; // decNumberIsInfinite(dn) = (dn->bits & DECINF) != 0; bits@8
 const real_t = opaque {}; // decNumber; range globals hold a *real_t (see graphs.zig)
 // REAL_SIZE_IN_BYTES(34) = 10 + sizeof(decNumberUnit=2) * (REAL_MAX_DIGITS(34)=39 / DECDPUN=3) = 36.
@@ -1064,6 +1068,10 @@ pub fn restoreCalc() void {
         const oldGramod: u32 = @as(*align(4) const u32, @ptrFromInt(gramodSlot + @sizeOf(StrLgIntHeader))).*;
         graMod = if (oldGramod <= 3) @intCast(oldGramod) else 0;
         @memset(@as([*]u8, @ptrFromInt(gramodSlot))[0..REAL34_SIZE_IN_BYTES], 0);
+        // Block 36 is now i%. A memset leaves bytes a decQuad does not read as zero,
+        // so encode a real zero there, then derive i% from the restored I%/a.
+        _ = decQuadZero(@ptrFromInt(gramodSlot));
+        tvmSyncIp(RESERVED_VARIABLE_IPONA);
     }
     // The size argument is what stops the reader writing off the end, so it is the room the destination
     // has, the way every other call here passes a sizeof(). These writes cannot leave their table whatever

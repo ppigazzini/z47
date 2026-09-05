@@ -51,6 +51,7 @@ const RESERVED_VARIABLE_NPPER: u16 = 2036;
 const RESERVED_VARIABLE_PPERONA: u16 = 2037;
 const RESERVED_VARIABLE_PMT: u16 = 2038;
 const RESERVED_VARIABLE_PV: u16 = 2039;
+const RESERVED_VARIABLE_IP: u16 = 2040;
 const RESERVED_VARIABLE_CPERONA: u16 = 2043;
 
 const FLAG_ENDPMT: u32 = 0xc029;
@@ -351,6 +352,8 @@ extern fn getRegisterAsRealQuiet(reg: calcRegister_t, val: *real_t) bool;
 extern fn getFlag(flag: u16) bool;
 extern fn getSystemFlag(sf: i32) bool;
 extern fn setSystemFlag(sf: c_uint) void;
+extern fn clearSystemFlag(sf: c_uint) void;
+extern fn fnRefreshState() void;
 extern fn saveForUndo() void;
 extern fn liftStack() void;
 extern fn fnToReal(unused: u16) void;
@@ -1105,6 +1108,112 @@ pub export fn fnTvmVar(variable: u16) linksection(runtime.code_section) callconv
 }
 
 // ===========================================================================
+// I%/a <-> i% coupling
+// ===========================================================================
+// i% is the engine's own rate per period, iA/pperA, and
+// (1 + (iA/100)/pperA/r)^r - 1 when r = cperA/pperA differs from 1 -- the same
+// expression tvmEquation uses. `written` names the half that was just stored, so
+// the other half is the one recomputed. All of it runs in 39 digits.
+pub export fn tvmSyncIp(written: calcRegister_t) linksection(runtime.code_section) callconv(.c) void {
+    var v: real_t = undefined;
+    var pperA: real_t = undefined;
+    var cperA: real_t = undefined;
+    var r: real_t = undefined;
+    var t: real_t = undefined;
+    real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_PPERONA), &pperA);
+    real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_CPERONA), &cperA);
+    if (realIsZero(&pperA)) { // no payment frequency to convert with: leave the partner as it stands
+        return;
+    }
+    realDivide(&cperA, &pperA, &r, &ctxtReal39);
+    if (written == RESERVED_VARIABLE_IPONA) {
+        real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_IPONA), &v);
+        realDivide(&v, &pperA, &v, &ctxtReal39);
+        if (!(realIsZero(&r) or realCompareEqual(const_1(), &r))) {
+            realDivide(&v, const_100(), &v, &ctxtReal39);
+            realDivide(&v, &r, &v, &ctxtReal39);
+            WP34S_Ln1P(&v, &t, &ctxtReal39);
+            realMultiply(&t, &r, &t, &ctxtReal39);
+            WP34S_ExpM1(&t, &v, &ctxtReal39);
+            realMultiply(&v, const_100(), &v, &ctxtReal39);
+        }
+        realToReal34(&v, registerReal34Ptr(RESERVED_VARIABLE_IP));
+    } else {
+        real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_IP), &v);
+        if (!(realIsZero(&r) or realCompareEqual(const_1(), &r))) { // invert the above: iA = 100 * pperA * r * ((1 + i)^(1/r) - 1)
+            realDivide(&v, const_100(), &v, &ctxtReal39);
+            WP34S_Ln1P(&v, &t, &ctxtReal39);
+            realDivide(&t, &r, &t, &ctxtReal39);
+            WP34S_ExpM1(&t, &v, &ctxtReal39);
+            realMultiply(&v, &r, &v, &ctxtReal39);
+            realMultiply(&v, const_100(), &v, &ctxtReal39);
+        }
+        realMultiply(&v, &pperA, &v, &ctxtReal39);
+        realToReal34(&v, registerReal34Ptr(RESERVED_VARIABLE_IPONA));
+    }
+}
+
+// CLRTVM: clears only the TVM variables n, I%/a, i%, PV, PMT, FV.
+pub export fn fnClrTvm(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    const tvmVars = [_]u16{ RESERVED_VARIABLE_NPPER, RESERVED_VARIABLE_IPONA, RESERVED_VARIABLE_IP, RESERVED_VARIABLE_PV, RESERVED_VARIABLE_PMT, RESERVED_VARIABLE_FV };
+    for (tvmVars) |v| { // a reserved variable is permanently dtReal34, so no reallocateRegister is needed or accepted here
+        real34SetZero(registerReal34Ptr(v));
+    }
+}
+
+// RSTTVM: CLRTVM plus pp/a = cp/a = 12 and Beg cleared (ENDPMT set).
+pub export fn fnRstTvm(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    fnClrTvm(NOPARAM);
+    _ = decQuadFromInt32(registerReal34Ptr(RESERVED_VARIABLE_PPERONA), 12);
+    _ = decQuadFromInt32(registerReal34Ptr(RESERVED_VARIABLE_CPERONA), 12);
+    setSystemFlag(FLAG_ENDPMT);
+    fnRefreshState();
+}
+
+// Beg softkey: toggles begin mode, the inverse of ENDPMT.
+pub export fn fnTvmBegToggle(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    if (getSystemFlag(FLAG_ENDPMT)) {
+        clearSystemFlag(FLAG_ENDPMT);
+    } else {
+        setSystemFlag(FLAG_ENDPMT);
+    }
+    fnRefreshState();
+}
+
+// i% softkey: the rate per period. The engine holds I%/a, so a store goes to i%
+// and the sync writes I%/a; a solve runs the engine on I%/a, whose write syncs
+// i%, and the answer line takes i% itself rather than converting X a second time.
+pub export fn fnTvmVarIp(unusedButMandatoryParameter: u16) linksection(runtime.code_section) callconv(.c) void {
+    _ = unusedButMandatoryParameter;
+    var v: real_t = undefined;
+    ensureTvmContext();
+    if ((currentSolverStatus & SOLVER_STATUS_READY_TO_EXECUTE) != 0 or programRunStop == PGM_RUNNING or programRunStop == PGM_PAUSED or testing) {
+        fnTvmVar(RESERVED_VARIABLE_IPONA);
+        if (lastErrorCode == ERROR_NONE) {
+            real34ToReal(registerReal34Ptr(RESERVED_VARIABLE_IP), &v);
+            reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
+            convertRealToReal34ResultRegister(&v, REGISTER_X);
+            currentSolverVariable = RESERVED_VARIABLE_IP; // the answer line names i%, not the annual rate the engine solved
+        }
+    } else {
+        fnToReal(NOPARAM);
+        if (lastErrorCode == ERROR_NONE) {
+            currentSolverStatus |= SOLVER_STATUS_TVM_APPLICATION;
+            currentSolverVariable = RESERVED_VARIABLE_IP;
+            tvmIKnown = false;
+            reallyRunFunction(ITM_STO, RESERVED_VARIABLE_IP);
+            currentSolverStatus |= SOLVER_STATUS_READY_TO_EXECUTE;
+            temporaryInformation = TI_SOLVER_VARIABLE;
+        }
+        adjustResult(REGISTER_X, false, false, REGISTER_X, -1, -1);
+        setSystemFlag(FLAG_ASLIFT);
+    }
+}
+
+// ===========================================================================
 // fnEff / fnEffToI
 // ===========================================================================
 // Error surface: the finance-command cores return an out-of-range error instead
@@ -1178,6 +1287,7 @@ fn fnEffToICore() TvmError!void {
         realMultiply(&tmp, &cperA, &tmp, &ctxtReal39);
 
         realToReal34(&tmp, registerReal34Ptr(RESERVED_VARIABLE_IPONA));
+        tvmSyncIp(RESERVED_VARIABLE_IPONA);
         reallocateRegister(REGISTER_X, dtReal34, 0, amNone);
         convertRealToReal34ResultRegister(&tmp, REGISTER_X);
 

@@ -922,11 +922,13 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     if(backupVersion >= 1020) {
       restoreStateValue(&graMod,                         sizeof(graMod),                                              "graMod",                         "uint8");
     }
-    else { // pre-1020 backups: GRAMOD as a long integer reserved variable in the ram image, offset 36: take its value over, convert, then clear
+    else { // pre-1020 backups: GRAMOD as a long integer reserved variable in the ram image, take its value over, convert, then clear
       strLgIntHeader_t *ptr = TO_PCMEMPTR(36);
       uint32_t oldGramod = *(uint32_t *)(ptr + 1);
       graMod = (oldGramod <= 3) ? oldGramod : 0;
       memset(TO_PCMEMPTR(36), 0, REAL34_SIZE_IN_BYTES);
+      real34SetZero(REGISTER_REAL34_DATA(RESERVED_VARIABLE_IP));     // Old GRAMOD slot now is i%: give it a real zero, then derive it from the restored I%/a
+      tvmSyncIp(RESERVED_VARIABLE_IPONA);
     }
     // The size argument is what stops the reader writing off the end, so it is the room the destination has, the way every other call here passes a sizeof().
     // These writes cannot leave their table whatever count the file carries.

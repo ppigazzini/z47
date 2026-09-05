@@ -103,6 +103,15 @@ pub extern fn getDataTypeName(data_type: u16, with_article: bool, pad_with_blank
 // has nothing to add and "" where it wants the blank line.
 pub extern fn moreInfoOnError(m1: [*:0]const u8, m2: ?[*:0]const u8, m3: ?[*:0]const u8, m4: ?[*:0]const u8) void;
 
+// The TVM engine keeps I%/a and i% in step, so a store into either half -- or into
+// the payment or compounding frequency the conversion between them uses -- has to
+// recompute the partner. tvm.zig owns the arithmetic.
+pub const RESERVED_VARIABLE_IPONA: calcRegister_t = 2035;
+pub const RESERVED_VARIABLE_PPERONA: calcRegister_t = 2037;
+pub const RESERVED_VARIABLE_IP: calcRegister_t = 2040;
+pub const RESERVED_VARIABLE_CPERONA: calcRegister_t = 2043;
+pub extern fn tvmSyncIp(written: calcRegister_t) void;
+
 pub fn globalDescriptor(reg: calcRegister_t) register_descriptor_t {
     return descriptor_storage.globalDescriptor(reg);
 }
