@@ -1139,10 +1139,9 @@ static void tsvfnClear(void) {
 }
 
 /**
- * snap [<basename>] - Wrap SNAP, producing basename.bmp and
- *                     basename.REGS.TSV output files.
+ * snapAnyCmd - The body of snap, snapmenu and snapx.  The capture function decides which band of the screen is written, and the file names are the same for all three.
  */
-static int snapCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+static int snapAnyCmd(int argc, Jim_Obj *const *argv, void (*capture)(uint16_t)) {
   if(argc > 1) {
     const char *baseName = Jim_String(argv[1]);
     char bmpFileName[C47_PATH_MAX];
@@ -1156,12 +1155,33 @@ static int snapCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
     tsvfnSet(regsPath);
   }
 
-  fnSNAP(0);
+  capture(0);
   if(argc > 1) {
     tsvfnClear();
   }
 
   return JIM_OK;
+}
+
+/**
+ * snap [<basename>] - Wrap SNAP, the whole screen.  With a name it produces basename.bmp and basename.REGS.TSV, and without one the dated file name is used instead.
+ */
+static int snapCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  return snapAnyCmd(argc, argv, fnSNAP);
+}
+
+/**
+ * snapmenu [<basename>] - Wrap SNAPMENU, the softkey menu band alone, which is the band --dumpMenus1 writes.  The output files are named exactly as snap names them.
+ */
+static int snapmenuCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  return snapAnyCmd(argc, argv, fnSNAPMENU);
+}
+
+/**
+ * snapx [<basename>] - Wrap SNAPX, the band above the menu, which is the register X line in the big bold numericFont.  Output file names are exactly as snap writes them.
+ */
+static int snapxCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  return snapAnyCmd(argc, argv, fnSNAPX);
 }
 
 /**
@@ -1312,6 +1332,8 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "expreg", expregCmd, NULL, NULL);
   Jim_CreateCommand(interp, "expnrg", expnrgCmd, NULL, NULL);
   Jim_CreateCommand(interp, "snap",   snapCmd,   NULL, NULL);
+  Jim_CreateCommand(interp, "snapmenu", snapmenuCmd, NULL, NULL);
+  Jim_CreateCommand(interp, "snapx",  snapxCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "tsvfn",  tsvfnCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "var",    varCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "xeq",    xeqCmd,    NULL, NULL);

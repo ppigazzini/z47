@@ -406,6 +406,7 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 1943, .param = 230, .radioButton = 138 },
     .{ .itemNr = 1415, .param = 242, .radioButton = 148 },
     .{ .itemNr = 1459, .param = 243, .radioButton = 148 },
+    .{ .itemNr = 1448, .param = 49193, .radioButton = 142 },
     .{ .itemNr = 1959, .param = 46, .radioButton = 157 },
     .{ .itemNr = 1916, .param = 45, .radioButton = 157 },
     .{ .itemNr = 1964, .param = 66, .radioButton = 157 },
@@ -747,6 +748,8 @@ pub export fn fnCbIsSet(item: i16) callconv(.c) i8 {
                                     clearSystemFlag(FLAG_FGLNLIM);
                                 }
                             },
+                            // The Beg softkey shows set while ENDPMT is clear: it is begin mode, the flag's inverse.
+                            FLAG_ENDPMT => cb_param = !getSystemFlag(FLAG_ENDPMT),
                             // INLINE_TEST (JC_ITM_TST) is never defined for any z47 build.
                             else => {},
                         }

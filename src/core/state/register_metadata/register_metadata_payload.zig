@@ -2,19 +2,17 @@ const descriptor_owned = @import("register_metadata_descriptor.zig");
 const runtime = @import("register_metadata_runtime.zig");
 const stack_runtime = @import("../runtime/stack_runtime.zig");
 
-pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque, type_reg: *runtime.calcRegister_t) bool {
+pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *?*anyopaque) bool {
     var descriptor: runtime.register_descriptor_t = 0;
 
     if (reg <= runtime.LAST_GLOBAL_REGISTER) {
         data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.globalDescriptor(reg));
-        type_reg.* = reg;
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_NAMED_VARIABLE) {
         if (runtime.tryGetNamedDescriptor(reg, &descriptor)) {
             data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            type_reg.* = @intCast(reg - runtime.FIRST_NAMED_VARIABLE);
             return data_ptr.* != null;
         }
         return false;
@@ -22,14 +20,12 @@ pub fn tryGetDataPointerForMaxLengthGet(reg: runtime.calcRegister_t, data_ptr: *
 
     if (reg <= runtime.LAST_RESERVED_VARIABLE) {
         data_ptr.* = descriptor_owned.dataPointerFromDescriptor(runtime.reservedDescriptor(reg));
-        type_reg.* = @intCast(reg - runtime.FIRST_RESERVED_VARIABLE);
         return data_ptr.* != null;
     }
 
     if (reg <= runtime.LAST_LOCAL_REGISTER) {
         if (runtime.tryGetLocalDescriptor(reg, &descriptor)) {
             data_ptr.* = descriptor_owned.dataPointerFromDescriptor(descriptor);
-            type_reg.* = reg;
             return data_ptr.* != null;
         }
     }
@@ -114,17 +110,10 @@ fn matrixMaxLengthInBlocks(data_ptr: ?*const anyopaque, data_type: u32) u16 {
 /// `TO_BLOCKS(rows * columns * <element>_SIZE_IN_BYTES)` -- it does NOT go through
 /// `getRegisterMaxDataLengthInBlocks`.
 ///
-/// The distinction is not cosmetic. Upstream's
-/// `getRegisterMaxDataLengthInBlocks` decrements `regist` into an index for the
-/// NAMED-VARIABLE lookup and then re-reads the data type with that decremented
-/// value -- so for a named variable it asks a GLOBAL register what type it is, and
-/// a named matrix falls through the matrix branch and returns the raw packed
-/// header word instead of the element count. z47 reproduces that faithfully,
-/// because it is c43's behaviour. Reusing it HERE did not: copying the 1x1 named
-/// matrix `Mat_A` asked reallocateRegister for 4097 blocks instead of 4, taking
-/// 16376 blocks out of a 232788-block pool in one call. Nothing saw it, because
-/// the resulting descriptor still looked correct once the matrix header was
-/// re-initialised to 1x1.
+/// The distinction is not cosmetic. `getRegisterMaxDataLengthInBlocks` reports the
+/// PAYLOAD room recorded in the header, which for a matrix is the element count its
+/// rows and columns imply; this reads the same figure straight off the header, and
+/// neither is the FULL size that counts the header itself.
 pub fn copyPayloadSizeWithoutHeader(source_reg: runtime.calcRegister_t, data_type: u32) ?u16 {
     return switch (data_type) {
         runtime.dtLongInteger,
@@ -252,9 +241,11 @@ pub fn setRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t, max_data_le
 
 pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
     var data_ptr: ?*anyopaque = null;
-    var type_reg = reg;
+    // Read here: the branches below reduce `reg` into an index off its band's
+    // boundary, so the data type has to be taken from the register as named.
+    const data_type = descriptor_owned.getRegisterDataType(reg);
 
-    if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr, &type_reg)) {
+    if (!tryGetDataPointerForMaxLengthGet(reg, &data_ptr)) {
         var descriptor: runtime.register_descriptor_t = 0;
 
         if (reg <= runtime.LAST_NAMED_VARIABLE and runtime.numberOfNamedVariables == 0) {
@@ -297,7 +288,6 @@ pub fn getRegisterMaxDataLengthInBlocks(reg: runtime.calcRegister_t) u16 {
         return 0;
     }
 
-    const data_type = descriptor_owned.getRegisterDataType(type_reg);
     if (data_type == runtime.dtReal34Matrix or data_type == runtime.dtComplex34Matrix) {
         return matrixMaxLengthInBlocks(data_ptr, data_type);
     }

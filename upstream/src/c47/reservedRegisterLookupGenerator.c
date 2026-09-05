@@ -51,6 +51,7 @@ struct {
   {{6, 'P', 'P', 'E', 'R', '/', 'a'}, "RESERVED_VARIABLE_PPERONA" },
   {{3, 'P', 'M', 'T',  0,   0,   0 }, "RESERVED_VARIABLE_PMT" },
   {{2, 'P', 'V',  0,   0,   0,   0 }, "RESERVED_VARIABLE_PV" },
+  {{2, 'i', '%',  0,   0,   0,   0 }, "RESERVED_VARIABLE_IP" },
   {{3, 161, 145, 'X',  0,   0,   0 }, "RESERVED_VARIABLE_UX" },
   {{3, 161, 147, 'X',  0,   0,   0 }, "RESERVED_VARIABLE_LX" },
   {{6, 'C', 'P', 'E', 'R', '/', 'a'}, "RESERVED_VARIABLE_CPERONA" },

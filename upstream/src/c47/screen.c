@@ -65,20 +65,31 @@ bool_t blockMonitoring = false;
                                        "Walter" spc "DE.";
 
   //Recount: non-merge commits only, author aliases merged per person, Robbert Jan is doc-only and carries no count.
-  //  code   git rev-list --no-merges <base>, plus Over_score alone from live origin branches not in <base>, less any whose git patch-id is already in <base>.
+  //  code   git rev-list --no-merges <base>, plus Over_score and Sviatoslav from live origin branches not in <base>, less any whose git patch-id is already in <base>.
   //  manual GitLab h2x/c47-wiki repo, every branch, unique by commit id.
   //  pages  GitLab h2x/c47-wiki project events, target_type WikiPage::Meta, by author.
   //  Each total is the sum of the three.
-  //non-merge commits: c43 00.109.04.00b0.RC2 2563e080 plus Martin's unmerged branches, c47-wiki manual repo, c47-wiki page edits
-  TO_QSPI static const char whoStr2[] = "Jaco Mostert" spc "(3996)," spc1 "Martin Lorang" spc "(1382)," spc1 "Robbert Jan van Meenen" spc "(doc)," spc1
-                                       "MihailJP" spc "(1093)," spc1 "Ralf Ahlbrink" spc "(459)," spc1 "Paul Dale" spc "(449)," spc1 "Didier Lachieze" spc "(277)," spc1
-                                       "Walter Bonin" spc "(270)," spc1 "Benjamin Titmus" spc "(215)," spc1 "Hartmut Bromkamp" spc "(187)," spc1
-                                       "Pasquale Pigazzini" spc "(161)," spc1 "Mike Leffel" spc "(107)," spc1 "David Emerson" spc "(69)," spc1 "Warren Young" spc "(68)," spc1
-                                       "Bj" STD_o_DIARESIS "rn Jadelius" spc "(47)," spc1 "Philippe Martens" spc "(46)," spc1 "Marcel Dan" spc "(37)," spc1
-                                       "H" STD_a_RING "kon Hansen" spc "(36)," spc1 "Gert Menke" spc "(31)," spc1 "John Boydon" spc "(29)," spc1 "Michael Peter" spc "(28)," spc1
-                                       "Ian Abbott" spc "(21)," spc1 "R" STD_e_ACUTE "my Trotin" spc "(19)," spc1 "fridlmue" spc "(17)," spc1 "A. Vosough" spc "(16)," spc1
-                                       "Dani Rau" spc "(9)," spc1 "Harald Overbeek" spc "(9)," spc1 "Will Rutherdale" spc "(6)," spc1 "Nigel Dowrick" spc "(4)"
-                                       spc1 "\n(commits 02Aug2026)";
+  //Coders: c43 00.109.04.00a3.Internal f3ae371 plus the unmerged branches. Doccers: c47-wiki manual repo plus c47-wiki page edits. Testers and porters are not tracked in git.
+  //Bands are commit counts: 400+ over four hundred, 100+ over one hundred, the plain band the rest. Within a band, most commits first.
+  TO_QSPI static const char whoStr2[] = "Coders 400+ :" spc1 "Jaco Mostert," spc1 "Martin Lorang," spc1 "MihailJP," spc1 "Paul Dale."
+                                       "\n"
+                                       "Coders 100+ :" spc1 "Didier Lachieze," spc1 "Walter Bonin," spc1 "Benjamin Titmus," spc1 "   Pasquale Pigazzini," spc1
+                                       "David Emerson."
+                                       "\n"
+                                       "Coders      :" spc1 "Warren Young," spc1 "Bj" STD_o_DIARESIS "rn Jadelius," spc1 "Ralf Ahlbrink," spc1 "      Philippe Martens," spc1
+                                       "Gert Menke," spc1 "John Boydon," spc1 "Ian Abbott," spc1 "R" STD_e_ACUTE "my      Trotin," spc1 "fridlmue," spc1 "Dani Rau," spc1
+                                       "Harald Overbeek," spc1 "Will Rutherdale," spc1 "  Nigel Dowrick," spc1 "Sviatoslav Feshchenko," spc1 "H" STD_a_RING "kon Hansen."
+                                       "\n"
+                                       "Doccers 400+:" spc1 "Robbert Jan van Meenen," spc1 "Ralf Ahlbrink."
+                                       "\n"
+                                       "Doccers     :" spc1 "Hartmut Bromkamp," spc1 "Mike Leffel," spc1 "Jaco Mostert," spc1 "Marcel Dan," spc1
+                                       "H" STD_a_RING "kon Hansen," spc1 "Michael Peter," spc1 "A. Vosough," spc1 "Will Rutherdale," spc1 "Martin Lorang," spc
+                                       "Warren Young," spc "Philippe Martens." spc
+                                       "Testers:" spc "Barry Mead." spc1
+                                       "Porters:" spc1 "Marcel Dan" spc "(iOS, Android, Web)," spc1 "paletochen" spc "(Android)," spc1
+                                       "Pasquale Pigazzini" spc "(Android)."
+                                       "\n"
+                                       "(commits 04Sep2026)";
 
 
 
@@ -2690,9 +2701,9 @@ void createSubstrings(uint8_t number) {
     if(temporaryInformation == TI_VECTORCOMP_3DSPH && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Z) {   //3D Components SPH
       if(getSystemFlag(FLAG_3DPHYS)) {
         switch(regist) {
-          case REGISTER_Z: {snprintf(prefix, 50, "[%s  ] =",        STD_rho);                          break;}
-          case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s ] =",      STD_phi_m, _e2());                 break;}
-          case REGISTER_X: {snprintf(prefix, 50, "[  %s%s%s] =",    STD_theta_m, _e0(), _e1());        break;}
+          case REGISTER_Z: {snprintf(prefix, 50, "[r  ] =");                                           break;}
+          case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s ] =",      STD_theta_m, _e2());               break;}
+          case REGISTER_X: {snprintf(prefix, 50, "[  %s%s%s] =",    STD_phi_m, _e0(), _e1());          break;}
           default:;
         }
       } else {
@@ -2706,11 +2717,20 @@ void createSubstrings(uint8_t number) {
     }
 
     else if(temporaryInformation == TI_VECTORCOMP_3DCYL && getRegisterDataType(regist) == dtReal34 && regist >= REGISTER_X && regist <= REGISTER_Z) {   //3D Components CYL
-      switch(regist) {
-        case REGISTER_Z: {snprintf(prefix, 50, "[r  ] =");                                             break;}
-        case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s%s ] =", STD_theta_m, _e0(), _e1());             break;}
-        case REGISTER_X: {snprintf(prefix, 50, "[  %s] =",     e2());                                  break;}
-        default:;
+      if(getSystemFlag(FLAG_3DPHYS)) {
+        switch(regist) {
+          case REGISTER_Z: {snprintf(prefix, 50, "[%s  ] =",     STD_rho);                             break;}
+          case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s%s ] =", STD_phi_m, _e0(), _e1());             break;}
+          case REGISTER_X: {snprintf(prefix, 50, "[  %s] =",     e2());                                break;}
+          default:;
+        }
+      } else {
+        switch(regist) {
+          case REGISTER_Z: {snprintf(prefix, 50, "[r  ] =");                                           break;}
+          case REGISTER_Y: {snprintf(prefix, 50, "[ %s%s%s ] =", STD_theta_m, _e0(), _e1());           break;}
+          case REGISTER_X: {snprintf(prefix, 50, "[  %s] =",     e2());                                break;}
+          default:;
+        }
       }
     }
 
@@ -2743,10 +2763,10 @@ void createSubstrings(uint8_t number) {
       if(getVectorRegisterPolarMode(regist) == amPolarSPH) {  //3D
         if(getSystemFlag(FLAG_3DPHYS)) {
           if(shrt) {
-            snprintf(prefix, 50, "%s%s%s", STD_rho, STD_phi_m, STD_theta_m);   // [rho phi_z th_xy] PHYS
+            snprintf(prefix, 50, "%s%s%s", "r", STD_theta_m, STD_phi_m);   // [r th_z phi_xy] PHYS
           }
           else {
-            snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_P, STD_rho, interspace, STD_phi_m, _e2(), interspace, STD_theta_m, _e0(), _e1());   // [rho phi_z th_xy] PHYS
+            snprintf(prefix, 50, "[%s%s%s%s%s%s%s%s]" STD_SUB_P, "r", interspace, STD_theta_m, _e2(), interspace, STD_phi_m, _e0(), _e1());   // [r th_z phi_xy] PHYS
           }
         }
         else {
@@ -2759,11 +2779,21 @@ void createSubstrings(uint8_t number) {
         }
       }
       else if(getVectorRegisterPolarMode(regist) == amPolarCYL) {
-        if(shrt) {
-          snprintf(prefix, SCREEN_WIDTH, "%s%s%s", "r", STD_theta_m, e2());                       // [r th_xy z]
+        if(getSystemFlag(FLAG_3DPHYS)) {
+          if(shrt) {
+            snprintf(prefix, SCREEN_WIDTH, "%s%s%s", STD_rho, STD_phi_m, e2());                       // [rho phi_xy z] PHYS
+          }
+          else {
+            snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]" STD_SUB_P, STD_rho, interspace, STD_phi_m, _e0(), _e1(), interspace, e2());                       // [rho phi_xy z] PHYS
+          }
         }
         else {
-          snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]", "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());                       // [r th_xy z]
+          if(shrt) {
+            snprintf(prefix, SCREEN_WIDTH, "%s%s%s", "r", STD_theta_m, e2());                       // [r th_xy z]
+          }
+          else {
+            snprintf(prefix, SCREEN_WIDTH, "[%s%s%s%s%s%s%s]" STD_SUB_M, "r", interspace, STD_theta_m, _e0(), _e1(), interspace, e2());                       // [r th_xy z]
+          }
         }
       }
       else {
@@ -3332,8 +3362,8 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
         if(regist == REGISTER_X) {
           clearScreenOld(!clrStatusBar, clrRegisterLines, clrSoftkeys);   //clear before the blank menu goes up: the MNU_SHOW guards in _selectiveClearScreen skip the graph rects
           showSoftmenu(-MNU_SHOW);
-          showStringEnhanced(whoStr1, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE +30 - 3, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
-          showStringEnhanced(whoStr2, &tinyFont,     1, Y_POSITION_OF_REGISTER_X_LINE +50 -27, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+          showStringEnhanced(whoStr1, &standardFont, 1, Y_POSITION_OF_REGISTER_T_LINE +30 -25, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+          showStringEnhanced(whoStr2, &tinyFont,     1, Y_POSITION_OF_REGISTER_X_LINE +50 -62, vmNormal, true, true, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
           screenUpdatingMode |=  SCRUPD_MANUAL_MENU;
         } 
         if(regist == REGISTER_T || regist == REGISTER_Z || regist == REGISTER_Y || regist == REGISTER_X) {
@@ -6297,6 +6327,12 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
   }
 
 
+#if defined(PC_BUILD)
+  static int32_t snapRowFirst = 0;                    // the band fnScreenDump() writes, in screen rows, the whole screen unless SNAPMENU or SNAPX sets the pair,
+  static int32_t snapRowLast  = SCREEN_HEIGHT - 1;    // and consumes it there, as it consumes _ioFileNameOverride, so the capture after a banded one is the whole screen
+#endif // PC_BUILD
+
+
 // SNAP details compiled during the rationalization of TI, and DAT prints on SNAP
 // ACCESS FROM:   Ctrl+S, SNAP key, SNAP softkey, R47 longpress EXIT, DSL snap, PRLCD with PRTACT clear.
 // WRITERS:       fnScreenDump on PC, standardScreenDump on DMCP. The GTK mockup calls fnScreenDump too.
@@ -6343,6 +6379,24 @@ void fnSNAP(uint16_t unusedButMandatoryParameter) {
 }
 
 
+#if defined(PC_BUILD)
+  // SNAPMENU writes the softkey menu band alone, rows 171 to 239, the band fnMenuDump() writes for --dumpMenus1. Everything else is SNAP, the file names included.
+  void fnSNAPMENU(uint16_t unusedButMandatoryParameter) {
+    snapRowFirst = Y_POSITION_OF_MENU_TOP;
+    snapRowLast  = SCREEN_HEIGHT - 1;
+    fnSNAP(unusedButMandatoryParameter);
+  }
+
+
+  // SNAPX writes the band above the menu, the register X line in the big bold numericFont, rows 132 to 170. Everything else is SNAP, the file names and the TSV included.
+  void fnSNAPX(uint16_t unusedButMandatoryParameter) {
+    snapRowFirst = Y_POSITION_OF_REGISTER_X_LINE;
+    snapRowLast  = Y_POSITION_OF_MENU_TOP - 1;
+    fnSNAP(unusedButMandatoryParameter);
+  }
+#endif // PC_BUILD
+
+
 void fnScreenDump(uint16_t unusedButMandatoryParameter) {
   #if defined(PC_BUILD)
     paintDateTimeForCapture();
@@ -6352,9 +6406,15 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     time_t rawTime;
     struct tm *timeInfo;
     int32_t x, y;
+    int32_t yFirst = snapRowFirst;                    // the band this capture writes, taken before the reset that follows, so every fwrite here uses the one pair of rows
+    int32_t yLast  = snapRowLast;
+    int32_t yRows  = yLast - yFirst + 1;
     uint32_t uint32;
     uint16_t uint16;
     uint8_t  uint8;
+
+    snapRowFirst = 0;
+    snapRowLast  = SCREEN_HEIGHT - 1;
 
     time(&rawTime);
     timeInfo = localtime(&rawTime);
@@ -6385,7 +6445,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
 
     fwrite("BM", 1, 2, bmp);        // Offset 0x00  0  BMP header
 
-    uint32 = (SCREEN_WIDTH/8 * SCREEN_HEIGHT) + 610;
+    uint32 = (SCREEN_WIDTH/8 * yRows) + 610;
     fwrite(&uint32, 1, 4, bmp);     // Offset 0x02  2  File size
 
     uint32 = 0;
@@ -6400,7 +6460,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     uint32 = SCREEN_WIDTH;
     fwrite(&uint32, 1, 4, bmp);     // Offset 0x12 18  Bitmap width
 
-    uint32 = SCREEN_HEIGHT;
+    uint32 = yRows;
     fwrite(&uint32, 1, 4, bmp);     // Offset 0x16 22  Bitmap height
 
     uint16 = 0x0001;
@@ -6412,7 +6472,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     uint32 = 0;
     fwrite(&uint32, 1, 4, bmp);     // Offset 0x1e 30  Compression
 
-    uint32 = 0x000030c0;
+    uint32 = (SCREEN_WIDTH/8 + 2) * yRows;   // 0x30c0 for the whole screen, the literal this replaces; the row is 50 bytes of pixels and 2 of padding, 52 in all
     fwrite(&uint32, 1, 4, bmp);     // Offset 0x22 34  Size of bitmap data (including padding)
 
     uint32 = 0x00000b13; // 2835 pixels/m (72 dpi), same as DMCP standardScreenDump so sim and hardware BMPs compare identical. Was 0x1a7c = 6780 pixels/m, chosen for life-size printing: 400 px / 6780 px/m = 59.0 mm, the physical LCD width
@@ -6461,7 +6521,7 @@ void fnScreenDump(uint16_t unusedButMandatoryParameter) {
     // Offset 0x82  bit map data
     uint16 = 0;
     uint32 = 0;
-    for(y=SCREEN_HEIGHT-1; y>=0; y--) {
+    for(y=yLast; y>=yFirst; y--) {
       for(x=0; x<SCREEN_WIDTH; x++) {
         uint8 <<= 1;
         if(lcd_buffer_pixel_on((uint32_t)x, (uint32_t)y)) {

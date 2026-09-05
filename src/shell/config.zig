@@ -252,8 +252,6 @@ const FIRST_RESERVED_VARIABLE: u16 = 2000;
 const LAST_RESERVED_VARIABLE: u16 = 2047;
 
 const VAR_NO_ACC: usize = 31;
-const VAR_NO_PV: usize = 39;
-const VAR_NO_UX: usize = 41;
 const VAR_NO_LY: usize = 47;
 
 // defines.h: 16384 blocks on DM42 (DMCP without NEW_HW), 65534 everywhere else.
@@ -284,6 +282,8 @@ const dtReal34Matrix: u32 = 6;
 const ERROR_RAM_FULL: u8 = 11;
 const DF_ALL: u8 = 0;
 const DF_UN: u32 = 5;
+const DSP_MAX: u32 = 19;
+const MAX_DENMAX: u32 = 9999;
 
 const DEC_INIT_DECQUAD: c_int = 128;
 const DEC_INIT_DECSINGLE: c_int = 32;
@@ -451,12 +451,13 @@ const Settings = [_]i32{
     120,  -10001, 64,     -10001, 120,    999,    64,     -10001, -10001,
     121,  -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
     122,  -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
-    2042, -10001, -10,    -10001, -10001, -10001, -10001, -10001, 0,
-    2041, -10001, 10,     -10001, -10001, -10001, -10001, -10001, 0,
-    2047, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
-    2046, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
+    2042, -10001, -10,    -10001, -10001, -10001, -10001, -10001, -10001,
+    2041, -10001, 10,     -10001, -10001, -10001, -10001, -10001, -10001,
+    2047, -10001, 0,      -10001, -10001, -10001, -10001, -10001, -10001,
+    2046, -10001, 0,      -10001, -10001, -10001, -10001, -10001, -10001,
     2034, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
     2035, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
+    2040, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
     2036, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
     2038, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
     2039, -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
@@ -582,6 +583,7 @@ const RESERVED_VARIABLE_LY: i32 = 2047;
 const RESERVED_VARIABLE_UY: i32 = 2046;
 const RESERVED_VARIABLE_FV: i32 = 2034;
 const RESERVED_VARIABLE_IPONA: i32 = 2035;
+const RESERVED_VARIABLE_IP: i32 = 2040;
 const RESERVED_VARIABLE_NPPER: i32 = 2036;
 const RESERVED_VARIABLE_PMT: i32 = 2038;
 const RESERVED_VARIABLE_PV: i32 = 2039;
@@ -1259,6 +1261,7 @@ fn Sett(grp: i16) void {
                 RESERVED_VARIABLE_UY,
                 RESERVED_VARIABLE_FV,
                 RESERVED_VARIABLE_IPONA,
+                RESERVED_VARIABLE_IP,
                 RESERVED_VARIABLE_NPPER,
                 RESERVED_VARIABLE_PMT,
                 RESERVED_VARIABLE_PV,
@@ -1602,7 +1605,11 @@ pub export fn fnSetADM(regist: u16) callconv(.c) void {
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
         if (adm_encoding.angularModeFromAdm(value)) |angularMode| {
             frontend_settings.fnAngularMode(angularMode);
+        } else if (lastErrorCode == ERROR_NONE) {
+            frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
         }
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     }
 }
 
@@ -1632,7 +1639,10 @@ pub export fn fnSetISM(regist: u16) callconv(.c) void {
             2 => shortIntegerMode = SIM_2COMPL,
             1 => shortIntegerMode = SIM_1COMPL,
             0 => shortIntegerMode = SIM_UNSIGN,
-            else => shortIntegerMode = SIM_SIGNMT,
+            -1 => shortIntegerMode = SIM_SIGNMT, // the four values shortIntegerModeValue() returns
+            else => if (lastErrorCode == ERROR_NONE) {
+                frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
+            },
         }
     }
 }
@@ -1645,7 +1655,9 @@ pub export fn fnGetDMX(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnSetDMX(regist: u16) callconv(.c) void {
     var value: u32 = undefined;
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
-        frontier_fractions.fnDenMax(@intCast(value & 0xFFFF));
+        frontier_fractions.fnDenMax(@intCast(@min(value, MAX_DENMAX))); // fnDenMax takes a u16, so an unbounded value would wrap into range instead of clamping
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     }
 }
 
@@ -1658,6 +1670,8 @@ pub export fn fnSetREALDF(regist: u16) callconv(.c) void {
     var value: u32 = undefined;
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value) and value <= DF_UN) {
         displayFormat = @intCast(value);
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     }
 }
 
@@ -1669,7 +1683,9 @@ pub export fn fnGetNDEC(unusedButMandatoryParameter: u16) callconv(.c) void {
 pub export fn fnSetNDEC(regist: u16) callconv(.c) void {
     var value: u32 = undefined;
     if (frontier_register_value_conversions.getRegisterAsUint32Param(regist, &value)) {
-        display_format.fnDisplayFormatDsp(@intCast(value & 0xFFFF));
+        display_format.fnDisplayFormatDsp(@intCast(@min(value, DSP_MAX))); // fnDisplayFormatDsp takes a u16, so an unbounded value would wrap into range instead of clamping
+    } else if (lastErrorCode == ERROR_NONE) {
+        frontier_error.displayCalcErrorMessage(ERROR_OUT_OF_RANGE, ERR_REGISTER_LINE, REGISTER_X);
     }
 }
 
@@ -1698,7 +1714,7 @@ fn strBuf(comptime s: []const u8) [30]u8 {
     return b;
 }
 
-const LAST_ITEM: u16 = 3244;
+const LAST_ITEM: u16 = 3349;
 
 pub export fn getConfirmationTiId() callconv(.c) u16 {
     var id: u16 = 0;
@@ -1872,9 +1888,10 @@ pub export fn fnShowVersion(option: u16) callconv(.c) void {
     screenUpdatingMode &= ~(SCRUPD_MANUAL_STACK | SCRUPD_SKIP_STACK_ONE_TIME);
 }
 
-pub export fn fnResetTVM(unusedButMandatoryParameter: u16) callconv(.c) void {
+pub export fn fnClearAllFin(unusedButMandatoryParameter: u16) callconv(.c) void {
     _ = unusedButMandatoryParameter;
     Sett(_TVM);
+    frontier_radio_button_catalog.fnRefreshState();
 }
 
 pub export fn defaultStatusBar() callconv(.c) void {
@@ -2194,17 +2211,10 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         // USER_KRESET path below copies all 37 entries.
         _ = frontier_char_string.xcopy(kbd_usr, kbdStd(), @sizeOf([*c]const calcKey_t));
 
-        // 9 real34 reserved variables: ACC..PV
+        // 17 real34 reserved variables: ACC, ULim, LLim, FV, I%/a, NPPER, PPER/a,
+        // PMT, PV, i%, UX, LX, CPER/a, UEST, LEST, UY, LY
         {
             var i: usize = VAR_NO_ACC;
-            while (i <= VAR_NO_PV) : (i += 1) {
-                real34SetZero(reservedReal34(i));
-            }
-        }
-
-        // 7 real34 reserved variables: UX..LY
-        {
-            var i: usize = VAR_NO_UX;
             while (i <= VAR_NO_LY) : (i += 1) {
                 real34SetZero(reservedReal34(i));
             }

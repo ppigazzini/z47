@@ -115,7 +115,7 @@ Func: fnSetRJ
 Out: EC=0
 Func: fnSetJM
 Out: EC=0
-Func: fnResetTVM
+Func: fnClearAllFin
 Out: EC=0
 Func: fnMenuGapL
 Out: EC=0

@@ -106,7 +106,7 @@ fn clampOneShortIntegerRegister(regist: stack_runtime.calcRegister_t) void {
 // Indirect-addressing support: constants, runtime globals, and the long-integer
 // boundary used by the ported indirectAddressing resolver below.
 const FLAG_W: i16 = 224;
-const INVALID_MENU: i16 = 3244; // items.h: LAST_ITEM
+const INVALID_MENU: i16 = 3349; // items.h: LAST_ITEM
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_ENTER_NEW_NAME: u8 = 26;
 const ERROR_UNDEF_SOURCE_VAR: u8 = 36;
@@ -269,7 +269,7 @@ pub export const varDescr: [reserved_variable_count]reserved_variable_desc_t = .
     desc(" Pay periods YR ="),
     desc(" Payment ="),
     desc(" Present Value ="),
-    desc(""),
+    desc(" Interest per period ="),
     desc(""),
     desc(""),
     desc(" Compounding periods YR ="),
@@ -339,7 +339,7 @@ pub const allReservedVariables: [reserved_variable_count]reserved_variable_heade
     makeReserved(24, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(6, 'P', 'P', 'E', 'R', '/', 'a', 0)),
     makeReserved(28, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 'P', 'M', 'T', 0, 0, 0, 0)),
     makeReserved(32, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(2, 'P', 'V', 0, 0, 0, 0, 0)),
-    makeReserved(C47_NULL, 0, 0, 0, 1, regName(0, 0, 0, 0, 0, 0, 0, 0)), // VAR_NO_SPARE6: GRAMOD removed, slot spare
+    makeReserved(36, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(2, 'i', '%', 0, 0, 0, 0, 0)),
     makeReserved(40, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 161, 145, 'X', 0, 0, 0, 0)),
     makeReserved(44, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(3, 161, 147, 'X', 0, 0, 0, 0)),
     makeReserved(48, @intCast(dtReal34), @intCast(stack_runtime.amNone), 0, 0, regName(6, 'C', 'P', 'E', 'R', '/', 'a', 0)),

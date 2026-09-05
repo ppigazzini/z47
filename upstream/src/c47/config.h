@@ -37,7 +37,7 @@ void     grpGroupingHexBinDefault     (void);
 void     fnMenuGapL                   (uint16_t unusedButMandatoryParameter);
 void     fnMenuGapRX                  (uint16_t unusedButMandatoryParameter);
 void     fnMenuGapR                   (uint16_t unusedButMandatoryParameter);
-void     fnResetTVM                   (uint16_t unusedButMandatoryParameter);
+void     fnClearAllFin                (uint16_t unusedButMandatoryParameter);
 
 /********************************************//**
  * \brief Sets the integer mode

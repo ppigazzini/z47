@@ -47,8 +47,16 @@ In: V2038=Real:"-1215.3333333333333333333333333333333333333333333333333333333333
 In: V2034=Real:"0"
 In: V2037=Real:"12"
 In: V2043=Real:"12"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"4.373218372310086835354687826497751"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"4.373218372310086835354687826497751" V2040=Real:"0.3644348643591739029462239855414792"
 ;Python check iteration: 4.373218372310086835354687826497753
+;i% is the synced partner of I%/a: 4.373218372310086835354687826497751 / 12 = 0.36443486435917390294622398554147925, half even to 34 digits
+
+;The i% key on the state #P1b leaves: the engine solves I%/a and the answer in X is the period rate. i% and I%/a stay in step through tvmSyncIp.
+;This case has no In: line of its own ON PURPOSE. Like every solve case here it reaches its root from the state the case above leaves, so it must stay
+;directly under #P1b. Move it, or change #P1b, and it solves a different problem while still reporting no failure.
+Func: fnTvmVarIp
+In: AM=RAD FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"1.01E+04"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"4.373218372310086835354687826497751" V2040=Real:"0.3644348643591739029462239855414792" RX=Real:"0.3644348643591739029462239855414792"
 
 
 ;Duncan's TVM problems, #2 part1;    N=360, i%/a=15, PV=100000, PMT=??, FV=0, pp/a=12, cp/a=12; Expected answer = -1264.444021565043387690640169724623
@@ -161,8 +169,9 @@ In: V2038=Real:"-30"
 In: V2034=Real:"400"
 In: V2037=Real:"1"
 In: V2043=Real:"1"
-Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"14.43587132807995697420470129887705"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 V2035=Real:"14.43587132807995697420470129887705" V2040=Real:"14.43587132807995697420470129887705"
 ;Python 14.43587132807995697420470129887704 55108819
+;i% is the synced partner of I%/a. pp/a is 1 here, so the period is the year and i% carries the same number as I%/a
 
 ;Duncan's TVM problems, #P5b with bias;    N=10, i%/a=??, PV=50, PMT=-30, FV=400, pp/a=1, cp/a=1; Expected answer = 53.17221326838472431046024137437116
 Func: fnTvmVar(2035)   ;RESERVED_VARIABLE_IPONA
@@ -992,4 +1001,3 @@ Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-593.5996882777677726704400818637916"
 Func: fnAmortBal
 In: AM=RAD FL_ASLIFT=1 FL_CPXRES=0 FL_ENDPMT=0
 Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RX=Real:"-3.694512097382730823235749296393496E-29"
-

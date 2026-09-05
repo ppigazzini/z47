@@ -1235,7 +1235,7 @@
 #define VAR_NO_PPERONA 37
 #define VAR_NO_PMT     38
 #define VAR_NO_PV      39
-#define VAR_NO_SPARE6  40 // removed
+#define VAR_NO_IP      40
 #define VAR_NO_UX      41
 #define VAR_NO_LX      42
 #define VAR_NO_CPERONA 43
@@ -1380,7 +1380,7 @@ enum REG_NUMBERS { // C program register codes
   RESERVED_VARIABLE_PPERONA,                             //2037
   RESERVED_VARIABLE_PMT,                                 //2038
   RESERVED_VARIABLE_PV,                                  //2039
-  RESERVED_VARIABLE_SPARE6,                              //2040
+  RESERVED_VARIABLE_IP,                                  //2040
   RESERVED_VARIABLE_UX,                                  //2041
   RESERVED_VARIABLE_LX,                                  //2042
   RESERVED_VARIABLE_CPERONA,                             //2043
@@ -1525,6 +1525,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 
 #define NUMBER_OF_DYNAMIC_SOFTMENUS               22
 #define SOFTMENU_HEIGHT                           23
+#define Y_POSITION_OF_MENU_TOP                   (SCREEN_HEIGHT - SOFTMENU_HEIGHT*3) // 171, first row of the three softkey rows, where fnMenuDump() and SNAPMENU start
 
 
 // Status bar updating mode

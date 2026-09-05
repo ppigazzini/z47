@@ -57,11 +57,13 @@ void fnToPolar2(uint16_t unusedButMandatoryParameter) {
       setVectorRegisterPolarMode(REGISTER_X,
         ((getVectorRegisterPolarMode(REGISTER_X) == 0) ? amPolarSPH : (getVectorRegisterPolarMode(REGISTER_X) == amPolarSPH) ? amPolarCYL : (getVectorRegisterPolarMode(REGISTER_X) == amPolarCYL) ? amPolarSPH : 0 ));
       setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      temporaryInformation = TI_VECTOR;
       return;
     }
     else if(isRegisterMatrix2dVector(REGISTER_X)) {
       setVectorRegisterPolarMode(REGISTER_X, amPolar);
       setVectorRegisterAngularMode(REGISTER_X, currentAngularMode);
+      temporaryInformation = TI_VECTOR;
       return;
     }
   }
