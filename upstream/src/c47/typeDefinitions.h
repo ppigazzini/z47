@@ -801,6 +801,21 @@ typedef struct {
 
 
 /**
+ * \struct forLoop_t
+ * One running FOR structure. The loop's own end value and increment are not here: they are in the two local registers localRegisterBase names, so they carry any
+ * type a counter may be. A localStepNumber of 0, which no program step has, marks the row free.
+ */
+typedef struct {
+  uint16_t counterRegister;    ///< Register the loop counts in
+  uint16_t localStepNumber;    ///< Where the FOR stands in its program, as currentLocalStepNumber counts
+  uint16_t localRegisterBase;  ///< First of the two local registers holding the end value and the increment
+  uint16_t programNumber;      ///< Program the FOR is in
+  uint8_t  stepDescends;       ///< FOR_STEP_DESCENDS and FOR_TOP_TESTED, the two bits of structured.h
+  uint8_t  subroutineLevel;    ///< Subroutine level the loop opened in
+} forLoop_t;
+
+
+/**
  * \enum namedLabels_t
  */
 typedef enum {

@@ -523,6 +523,7 @@
   extern uint16_t               freeProgramBytes;
   extern uint16_t               firstDisplayedLocalStepNumber;
   extern uint16_t               numberOfLabels;
+  extern uint16_t               numberOfStructureLabels;
   extern uint16_t               numberOfPrograms;
   extern uint16_t               numberOfNamedVariables;
   extern uint16_t               currentLocalStepNumber;

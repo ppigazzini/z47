@@ -60,6 +60,15 @@ pub fn loadProgram() void {
     }
 
     runtime.temporaryInformation = runtime.TI_PROGRAM_LOADED;
+
+    if (comptime runtime.option_structured_pgm) {
+        if (runtime.systemFlag(runtime.FLAG_AUTOVALID)) {
+            runtime.fnValid(runtime.NOPARAM); // the load leaves its own program open, so the setting numbers and checks it here, as it does on leaving the program editor
+            if (runtime.lastErrorCode == runtime.ERROR_NONE) { // VALID clears the confirmation as it leaves, so put it back; where it found a fault that message stands instead
+                runtime.temporaryInformation = runtime.TI_PROGRAM_LOADED;
+            }
+        }
+    }
 }
 
 pub export fn fnSaveProgram(label: u16) void {

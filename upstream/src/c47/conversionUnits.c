@@ -343,6 +343,12 @@ TO_QSPI const fInMim_t MimFunctionsType3Conv[NUM_CONVERT_PAIRS] =
     {ITM_ARCSECtoDEG    },
     {ITM_DEGtoMRAD      },
     {ITM_MRADtoDEG      },
+    {ITM_MWtoDBM        },
+    {ITM_DBMtoMW        },
+    {ITM_WtoDBW         },
+    {ITM_DBWtoW         },
+    {ITM_VtoDBV         },
+    {ITM_DBVtoV         },
      // do mimRunFunction(item, indexOfItems[item].param);
    };
 
@@ -724,6 +730,12 @@ TO_QSPI static const convPair_t convertPairs[NUM_CONVERT_PAIRS] = {             
   { ITM_ARCSECtoDEG      /* 2873 */, ITM_DEGtoARCSEC      , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
   { ITM_DEGtoMRAD        /* 2874 */, ITM_MRADtoDEG        , ITM_NULL           , -3 , UT_ANGLE                    },
   { ITM_MRADtoDEG        /* 2875 */, ITM_DEGtoMRAD        , ITM_DEGtoRAD       , +0 , UT_ANGLE                    },
+  { ITM_MWtoDBM          /* 2880 */, ITM_DBMtoMW          , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_DBMtoMW          /* 2881 */, ITM_MWtoDBM          , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_WtoDBW           /* 2885 */, ITM_DBWtoW           , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_DBWtoW           /* 2886 */, ITM_WtoDBW           , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_VtoDBV           /* 2887 */, ITM_DBVtoV           , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
+  { ITM_DBVtoV           /* 2888 */, ITM_VtoDBV           , ITM_NULL           , +0 , UT_NOT_CONFIGURABLE         },
 };
 
 static const convPair_t *findPair(int16_t input) {                              // binary search; NULL if not found

@@ -46,6 +46,7 @@ upstream
 BUILD.md
 dist
 distS
+glyphs_standardFont_1of3.png
 res/DATA/TestData.d47
 res/PACKAGES.md
 res/PROGRAMS
@@ -71,6 +72,8 @@ src/c47/mathematics/elec.h
 src/c47/mathematics/slvp.c
 src/c47/mathematics/slvp.h
 src/c47/printing
+src/c47/programming/structured.c
+src/c47/programming/structured.h
 src/c47/reservedRegisterLookup.h
 src/c47/reservedRegisterLookupGenerator.c
 src/c47/saveRestoreBackup.c

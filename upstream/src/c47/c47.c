@@ -267,6 +267,7 @@ uint16_t               freeProgramBytes;
 uint16_t               glyphRow[NUMBER_OF_GLYPH_ROWS];
 uint16_t               firstDisplayedLocalStepNumber;
 uint16_t               numberOfLabels;
+uint16_t               numberOfStructureLabels;
 uint16_t               numberOfPrograms;
 uint16_t               numberOfNamedVariables;
 uint16_t               currentLocalStepNumber;

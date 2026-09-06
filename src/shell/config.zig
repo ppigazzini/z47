@@ -448,6 +448,9 @@ const Settings = [_]i32{
     3,    0,      32841,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    0,      32842,  -10001, -10001, -10001, -10001, -10001, -10001,
     3,    1,      -10001, -10001, 32842,  32842,  -10001, -10001, -10001,
+    // FLAG_AUTOVALID (32880) set on Reset, JM, RJ and C47: VALID runs by itself on
+    // leaving the program editor.
+    3,    1,      32880,  -10001, 32880,  32880,  32880,  -10001, -10001,
     120,  -10001, 64,     -10001, 120,    999,    64,     -10001, -10001,
     121,  -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
     122,  -10001, 0,      -10001, -10001, -10001, -10001, -10001, 0,
@@ -2110,7 +2113,7 @@ fn addTestPrograms() void {
         _ = printf("freeProgramBytes = %u\n", @as(c_uint, freeProgramBytes));
 
         frontier_manage.scanLabelsAndPrograms();
-        leavePem();
+        _ = leavePem(); // addTestPrograms discards the answer: it is not the user leaving the editor
         _ = printf("freeProgramBytes = %u\n", @as(c_uint, freeProgramBytes));
     }
 }
@@ -2122,7 +2125,7 @@ extern fn fopen(path: [*:0]const u8, mode: [*:0]const u8) ?*anyopaque;
 extern fn fread(ptr: *anyopaque, size: usize, nmemb: usize, stream: *anyopaque) usize;
 extern fn fclose(stream: *anyopaque) c_int;
 extern fn exit(code: c_int) noreturn;
-extern fn leavePem() void;
+extern fn leavePem() bool;
 
 // ===========================================================================
 // fnReset / doFnReset (public) — test-reachable reset machinery.

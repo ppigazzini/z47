@@ -306,6 +306,49 @@ void printProgram(uint16_t mode, uint16_t unused) {
   (void)unused;
 }
 
+// --- the calculator around the STRUCT set -----------------------------------
+// The lane drives the file writers, not the structures. calcMode is CM_NORMAL so
+// the three writers are never on the editor's refusal path, and no program the
+// lane builds holds a structure: every predicate below answers for a program that
+// has none, which is what makes the two implementations comparable. Both sides
+// read the SAME stubs, so a case that did carry a structure would still be
+// comparing c43's walk against the Zig owner's.
+uint8_t calcMode = CM_NORMAL;
+uint8_t lastErrorCode = ERROR_NONE;
+
+bool_t checkOpCodeOfStep(const uint8_t *step, uint16_t op) {
+  if(step == NULL) {
+    return false;
+  }
+  if(op < 128) {
+    return step[0] == op;
+  }
+  return step[0] == ((op >> 8) | 0x80) && step[1] == (op & 0xff);
+}
+
+void fnValid(uint16_t unusedButMandatoryParameter) {
+  (void)unusedButMandatoryParameter;
+}
+
+bool_t structProgramHasUnnumbered(void) {
+  return false;
+}
+
+bool_t structDisplayOutdent(uint8_t *step) {
+  (void)step;
+  return false;
+}
+
+bool_t structStepOpensIndent(uint8_t *step) {
+  (void)step;
+  return false;
+}
+
+bool_t structStepClosesIndent(uint8_t *step) {
+  (void)step;
+  return false;
+}
+
 // --- seeding and capture ---------------------------------------------------
 
 void programSerializationParityReset(void) {

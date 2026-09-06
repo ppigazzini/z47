@@ -195,6 +195,7 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.option_xfn_1000 = false; // !OPTION_XFN_1000: no 1000-digit XFN entries
     opts.option_slvp_poly = false; // !OPTION_SLVP_POLY: no SLVP softkey
     opts.option_infsums = false; // !OPTION_INFSUMS: no infinity-sum items
+    opts.option_structured_pgm = false; // !OPTION_STRUCTURED_PGM: the STRUCT items report that this hardware cannot run them
     const pkg = dmcp_package orelse return opts;
     // Each strip_* below is the inverse of the matching upstream OPTION_*, which
     // is an include flag: defined means the feature is compiled in, and its
@@ -276,6 +277,9 @@ fn calcStateBoardOptions(base: calc_state.RuntimeObjectOptions) calc_state.Runti
     // !OPTION_XFN_1000: registerToSaveString falls through the XFN arm to the
     // standard data-type branch, and restoreRegister offers no "RXFN" branch.
     opts.option_xfn_1000 = false;
+    // !OPTION_STRUCTURED_PGM: backup.cfg carries no forLoopTable block, and a
+    // load has no running FOR structure to clear.
+    opts.option_structured_pgm = false;
     return opts;
 }
 
@@ -463,6 +467,7 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
         .old_hw = true, // DM42: quarter-size pool, read by leavePem
+        .option_structured_pgm = false, // !OPTION_STRUCTURED_PGM: no VALID to run on the way out of the editor
         // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
         // hints out; match that to stay faithful.
         .extra_info_on_calc_error = false,
@@ -509,6 +514,7 @@ pub fn registerSteps(
         .omit_frame_pointer = true,
         .error_tracing = false,
         .old_hw = true, // DM42: quarter-size pool, read by leavePem
+        .option_structured_pgm = false, // !OPTION_STRUCTURED_PGM: no VALID to run on the way out of the editor
         .is_r47 = true,
         // Firmware is DMCP_BUILD, where upstream compiles the EXTRA_INFO console
         // hints out; match that to stay faithful.
@@ -548,6 +554,7 @@ pub fn registerSteps(
     const dmcp5r47_calc_state_objects = calc_state.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5r47", firmware_r47_calc_state_options);
     var dmcp_program_serialization_options = firmware_program_serialization_options;
     dmcp_program_serialization_options.old_hw = true; // DM42: quarter-size pool
+    dmcp_program_serialization_options.option_structured_pgm = false; // !OPTION_STRUCTURED_PGM: nothing to refuse, to validate, or to indent
     const dmcp_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp), firmware_leaf_optimize, "dmcp", dmcp_program_serialization_options);
     const dmcp5_program_serialization_objects = program_serialization.addRuntimeObjectsWithOptions(b, resolveFirmwareTarget(b, .dmcp5), firmware_leaf_optimize, "dmcp5", firmware_program_serialization_options);
     // The frontier object embeds package-specific distribution stubbing, so it

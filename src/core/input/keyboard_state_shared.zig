@@ -958,7 +958,20 @@ pub fn implementation(comptime runtime: type) type {
             return primary == runtime.ITM_SHIFTf or primary == runtime.ITM_SHIFTg or primary == runtime.KEY_fg;
         }
 
-        pub fn leavePem() void {
+        // False when the editor must stay open. AVALID validates here, on the way out
+        // of PEM, rather than on a menu closing: there are only two ways out and this
+        // is both of them, so the numbers go in once and a fault holds the user in the
+        // editor on the offending step.
+        pub fn leavePem() bool {
+            if (comptime runtime.option_structured_pgm) {
+                if (runtime.getSystemFlag(runtime.FLAG_AUTOVALID)) {
+                    runtime.fnValid(runtime.NOPARAM);
+                    if (runtime.lastErrorCode != runtime.ERROR_NONE) {
+                        return false;
+                    }
+                }
+            }
+
             // keyboard.c leavePem (2309-2334): push programs to the end of RAM.
             if (runtime.freeProgramBytes >= 4) {
                 const byte_diff: usize = @intFromPtr(runtime.ram + runtime.RAM_SIZE_IN_BLOCKS) - @intFromPtr(runtime.beginOfProgramMemory);
@@ -986,6 +999,7 @@ pub fn implementation(comptime runtime: type) type {
                     runtime.defineCurrentProgramFromCurrentStep();
                 }
             }
+            return true;
         }
 
         pub fn processAimInput(item: i16) void {
@@ -1623,9 +1637,10 @@ pub fn implementation(comptime runtime: type) type {
 
                                 runtime.CM_PEM => {
                                     if (item == runtime.ITM_PR) {
-                                        leavePem();
-                                        runtime.calcModeNormal();
-                                        runtime.extractPFNMenus();
+                                        if (leavePem()) { // a VALID fault holds the editor open on the offending step
+                                            runtime.calcModeNormal();
+                                            runtime.extractPFNMenus(); // exit menus immediately when coming out of PEM
+                                        }
                                         runtime.keyActionProcessed = true;
                                         runtime.screenUpdatingMode = runtime.SCRUPD_AUTO;
                                     } else if (item == runtime.ITM_OFF) {
@@ -2154,7 +2169,9 @@ pub fn implementation(comptime runtime: type) type {
                     }
 
                     runtime.aimBuffer[0] = 0;
-                    leavePem();
+                    if (!leavePem()) { // a VALID fault holds the editor open on the offending step
+                        break :pem;
+                    }
                     runtime.calcModeNormal();
                     runtime.saveForUndo();
                     if (runtime.lastErrorCode == runtime.ERROR_RAM_FULL) {

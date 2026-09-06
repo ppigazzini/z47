@@ -149,6 +149,7 @@ const FLAG_TOPHEX: c_uint = 32856;
 const FLAG_LARGELI: c_uint = 32838;
 const FLAG_ERPN: c_uint = 32837;
 const FLAG_M_ALL: c_uint = 32882;
+const FLAG_AUTOVALID: c_uint = 32880;
 const FLAG_CPXMULT: c_uint = 32836;
 const FLAG_PFX_ALL: c_uint = 32841;
 
@@ -886,7 +887,10 @@ pub fn restoreOneSection(load_mode: u16, s: u16, n: u16, d: u16, allow_user_keys
             // The angular mode annunciator is on per default.
             if (loaded_version < 10000026) setSystemFlag(FLAG_SBadm); // C saveRestoreCalcState.c:1741-1743
             // Inclusive of this version, set the M.ALL.
-            if (loaded_version < 10000027) setSystemFlag(FLAG_M_ALL);
+            if (loaded_version < 10000027) {
+                setSystemFlag(FLAG_M_ALL);
+                setSystemFlag(FLAG_AUTOVALID); // VALID runs by itself on leaving the program editor per default
+            }
             if (getSystemFlag(@intCast(FLAG_FRACT))) {
                 setSystemFlag(FLAG_FRACT);
             } else if (getSystemFlag(@intCast(FLAG_IRFRAC))) {

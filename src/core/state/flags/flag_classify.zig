@@ -61,6 +61,7 @@ pub fn needsRefreshState(system_flag: u16) bool {
         0x806e, // FLAG_PSHADE
         0x8072, // FLAG_M_ALL
         0x8073, // FLAG_PL_2L
+        0x8070, // FLAG_AUTOVALID
         => true,
         else => false,
     };

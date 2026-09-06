@@ -155,6 +155,7 @@ TO_QSPI const radiocb_t indexOfRadioCbEepromItems[] = {
   {ITM_SH_LONGPRESS,     FLAG_SH_LONGPRESS,      CB_JC},  //
   {ITM_DREAL,            FLAG_DREAL       ,      CB_JC},  //
   {ITM_CPXMULT,          FLAG_CPXMULT,           CB_JC},  //
+  {ITM_AUTOVALID,        FLAG_AUTOVALID,         CB_JC},  //SetSetting
 
 
   {CHR_case,             JC_UC,                  CB_JC},  //
@@ -307,7 +308,8 @@ TO_QSPI const uint16_t systemFlagParams[] = {  // CB_JC CHECK BOX System flags c
   FLAG_FGGR,
   FLAG_3DPHYS,
   FLAG_3DXYZ,
-  FLAG_TRACE
+  FLAG_TRACE,
+  FLAG_AUTOVALID
 };
 
 

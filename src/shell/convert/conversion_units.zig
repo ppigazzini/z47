@@ -803,6 +803,12 @@ const MimFunctionsType3Conv = [NUM_CONVERT_PAIRS]fInMim_t{
     .{ .itemNr = 2873 }, // ITM_ARCSECtoDEG
     .{ .itemNr = 2874 }, // ITM_DEGtoMRAD
     .{ .itemNr = 2875 }, // ITM_MRADtoDEG
+    .{ .itemNr = 2880 }, // ITM_MWtoDBM
+    .{ .itemNr = 2881 }, // ITM_DBMtoMW
+    .{ .itemNr = 2885 }, // ITM_WtoDBW
+    .{ .itemNr = 2886 }, // ITM_DBWtoW
+    .{ .itemNr = 2887 }, // ITM_VtoDBV
+    .{ .itemNr = 2888 }, // ITM_DBVtoV
 };
 
 // The pair table, findPair, and the lookup predicates now live in

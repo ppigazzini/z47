@@ -15,6 +15,12 @@ pub const RuntimeObjectOptions = struct {
     // OLD_HW selects the DM42 memory pool size, which is a quarter of the one
     // every other target uses.
     old_hw: bool = false,
+    // OPTION_STRUCTURED_PGM: the exported and stored program is refused while a
+    // structure carries no partner number, a load runs VALID under AVALID, and the
+    // listing indents a structure's body (OPTION_STRUCT_INDENT, which structured.h
+    // defines inside the same guard). Upstream #undef's it in the block common to
+    // DMCP packages 1-4, so no DM42 package has it; DMCP5 and host do.
+    option_structured_pgm: bool = true,
     strip: ?bool = null,
     unwind_tables: ?std.builtin.UnwindTables = null,
     stack_protector: ?bool = null,
@@ -54,6 +60,7 @@ fn addRuntimeObject(
     module.addImport("abi", abi_module);
     const build_options = b.addOptions();
     build_options.addOption(bool, "state_old_hw", options.old_hw);
+    build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     module.addOptions("program_serialization_build_options", build_options);
     // The DMCP ROM shim is shared by the calc-state and program-serialization
     // owners, so it is a REGISTERED module: directory-free, letting each owner

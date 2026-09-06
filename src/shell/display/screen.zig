@@ -4308,11 +4308,18 @@ fn refreshRegisterDataDispatch(regist_p: *calcRegister_t, origRegist: calcRegist
 
     if (lastErrorCode != 0 and regist == errorMessageRegisterLine) {
         if (frontier_char_string.stringWidth(errMsg(lastErrorCode), &standardFont, true, true) <= SCREEN_WIDTH - 1) {
+            const errorY: i16 = @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6);
+            const overLapPossible = (calcMode == CM_PEM); // the message lands on the program listing, so it is spaced and boxed like the function name
+            const pad: [*:0]const u8 = if (overLapPossible) " " else "";
+
             if (lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-                abi.fmtBufZ(tmpString[0..2560], "{s}: {s}", .{ errMsgRow(lastErrorCode), std.mem.span(@as([*:0]const u8, errorMessage)) });
-                _ = showString(tmpString, &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
+                abi.fmtBufZ(tmpString[0..2560], "{s}{s}: {s}{s}", .{ std.mem.span(pad), errMsgRow(lastErrorCode), std.mem.span(@as([*:0]const u8, errorMessage)), std.mem.span(pad) });
             } else {
-                _ = showString(errMsg(lastErrorCode), &standardFont, 1, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, regist - REGISTER_X) + 6), vmNormal, 1, 1);
+                abi.fmtBufZ(tmpString[0..2560], "{s}{s}{s}", .{ std.mem.span(pad), errMsgRow(lastErrorCode), std.mem.span(pad) });
+            }
+            const errWidth = showString(tmpString, &standardFont, 1, @intCast(errorY), vmNormal, 1, 1);
+            if (overLapPossible) {
+                frontier_plotstat.plotrect(1, errorY, @intCast(errWidth), errorY + STANDARD_FONT_HEIGHT - 1);
             }
         } else {
             if (comptime extra_info) {

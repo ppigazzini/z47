@@ -1,4 +1,5 @@
 const io_owned = @import("program_serialization_io.zig");
+const build_options = @import("program_serialization_build_options");
 const line_parse = @import("abi").line_parse; // shared std-only line match / integer parse
 
 pub const FILE_OK: c_int = 1;
@@ -7,6 +8,23 @@ pub const BACKUP_FORMAT: u8 = 0;
 pub const PROGRAM_VERSION: u32 = 1;
 pub const OLDEST_COMPATIBLE_PROGRAM_VERSION: u32 = 1;
 pub const ITM_END: u16 = 1458;
+pub const ITM_LBL: u16 = 1;
+
+// OPTION_STRUCTURED_PGM, and with it OPTION_STRUCT_INDENT, which structured.h
+// defines inside the same guard: the listing indents a structure's body, and a
+// program carrying an unnumbered structure is refused rather than written.
+pub const option_structured_pgm: bool = build_options.option_structured_pgm;
+pub const option_struct_indent: bool = option_structured_pgm;
+pub const XPORTP_STRUCT_INDENT: i8 = 2; // spaces a structure indents its body by in an exported listing
+pub const XPORTP_MAX_STRUCT_LEVELS: i8 = 99; // a file has no width limit, so this is effectively no limit
+
+// structured.c's predicates. They answer for every build; without the option they
+// report that there is nothing to indent and nothing to refuse.
+pub extern fn structDisplayOutdent(step: [*c]u8) u8;
+pub extern fn structStepOpensIndent(step: [*c]u8) u8;
+pub extern fn structStepClosesIndent(step: [*c]u8) u8;
+pub extern fn structProgramHasUnnumbered() u8;
+pub extern fn fnValid(unusedButMandatoryParameter: u16) void;
 pub const TI_NO_INFO: u8 = 0;
 pub const TI_SAVED: u8 = 32;
 pub const TI_PROGRAM_LOADED: u8 = 86;
@@ -25,6 +43,9 @@ pub extern var currentProgramNumber: u16;
 pub extern var numberOfPrograms: u16;
 pub extern var numberOfLabels: u16;
 pub extern var temporaryInformation: u8;
+pub extern var calcMode: u8;
+pub extern var lastErrorCode: u8;
+pub const CM_PEM: u8 = 3;
 
 pub extern fn resizeProgramMemory(newSizeInBlocks: u16) void;
 pub extern fn defineCurrentProgramFromCurrentStep() void;
@@ -76,6 +97,14 @@ fn isAtEndOfProgramZ(step: [*c]const u8) bool {
     return step[0] == ITM_END_HIGH and step[1] == ITM_END_LOW;
 }
 
+pub inline fn displayOperationUndefined() void {
+    io_owned.displayOperationUndefined();
+}
+
+pub inline fn displayStructureNotNumbered() void {
+    io_owned.displayStructureNotNumbered();
+}
+
 pub inline fn checkPower() bool {
     return io_owned.checkPower();
 }
@@ -111,6 +140,9 @@ pub inline fn writeU8Line(value: u8) void {
 pub const TI_PRINT_COMPLETE: u8 = 136;
 pub const EXPORT_VERSION: u32 = 3;
 pub const FLAG_PRTACT: i32 = 0xc020;
+pub const FLAG_AUTOVALID: i32 = 0x8070; // VALID runs by itself on leaving the program editor
+pub const NOPARAM: u16 = 9876;
+pub const ERROR_NONE: u8 = 0;
 pub const ITM_PRINTERPROG: i16 = 1713;
 /// print.h's `list` argument: PROG lists a program, ALPHA lists the alpha register.
 pub const PROG: bool = false;
@@ -239,6 +271,17 @@ pub inline fn setDynamicMenuItemNone() void {
 
 pub inline fn goToLastProgram() void {
     io_owned.goToLastProgram();
+}
+
+/// checkOpCodeOfStep for a two-byte op: the 0x80 marker is part of the match.
+pub inline fn checkOpCodeOfStep(step: [*c]const u8, op: u16) bool {
+    if (step == null) {
+        return false;
+    }
+    if (op < 128) {
+        return step[0] == op;
+    }
+    return step[0] == ((op >> 8) | 0x80) and step[1] == (op & 0xff);
 }
 
 pub inline fn isAtEndOfProgram(step: [*c]const u8) bool {

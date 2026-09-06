@@ -433,7 +433,16 @@ uint8_t  opParam   = *(uint8_t *)(paramAddress++);
     }
 
     case PARAM_SKIP_BACK: {
-      sprintf(tmpString, "%s %03u", op, opParam);
+      if(structOpHasNumber(opCode)) { // a STRUCT number reads as subscript digits joined to the name, IF₁, and not numbered reads as IF₀
+        char digits[4];
+
+        sprintf(digits, "%u", opParam);
+        strcpy(tmpString, op);
+        strcpy(tmpString + stringByteLength(op), stringToSub(digits));
+      }
+      else {
+        sprintf(tmpString, "%s %03u", op, opParam);
+      }
       break;
     }
 

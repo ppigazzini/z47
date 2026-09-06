@@ -360,6 +360,21 @@ pub const LabelList = extern struct {
     instructionPointer: [*c]u8,
 };
 
+/// One running FOR structure (forLoop_t, typeDefinitions.h). The loop's end value
+/// and increment are not here: they live in the two local registers
+/// localRegisterBase names, so they carry any type a counter may be. A
+/// localStepNumber of 0, which no program step has, marks the row free. Four
+/// uint16 and two uint8 pack to 10 bytes on every target, which is the layout
+/// backup.cfg's forLoopTable block is written with.
+pub const ForLoop = extern struct {
+    counterRegister: u16,
+    localStepNumber: u16,
+    localRegisterBase: u16,
+    programNumber: u16,
+    stepDescends: u8,
+    subroutineLevel: u8,
+};
+
 /// Program entry (programList_t, typeDefinitions.h): begin step + instruction ptr.
 pub const ProgramList = extern struct {
     step: i32,
@@ -520,6 +535,9 @@ comptime {
         std.debug.assert(@offsetOf(PrinterState, "printer_model") == 8);
         std.debug.assert(@offsetOf(PrinterState, "delay") == 12);
     }
+    std.debug.assert(@sizeOf(ForLoop) == 10);
+    std.debug.assert(@alignOf(ForLoop) == 2);
+    std.debug.assert(@offsetOf(ForLoop, "stepDescends") == 8);
     std.debug.assert(@sizeOf(MatrixHeader) == 4);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "matrixColumns") == 12);
     std.debug.assert(@bitOffsetOf(MatrixHeader, "mtag") == 24);

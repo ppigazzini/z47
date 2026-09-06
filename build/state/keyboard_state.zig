@@ -30,6 +30,11 @@ pub const RuntimeObjectOptions = struct {
     // OLD_HW selects the DM42 memory pool size, which leavePem uses to find the
     // end of RAM. A quarter of what every other target gets.
     old_hw: bool = false,
+    // OPTION_STRUCTURED_PGM: leavePem runs VALID on the way out of the program
+    // editor when AVALID is set, and holds the editor open on a fault. Upstream
+    // #undef's the option in the block common to DMCP packages 1-4, so no DM42
+    // package has it; DMCP5 and host do. Defaults true (host).
+    option_structured_pgm: bool = true,
     // Build this object with SanitizerCoverage
     // trace-pc-guard so report-zig-coverage.sh can resolve the keyboard-state Zig
     // owner lines the host coverage harness executes. Measurement-only: set ONLY
@@ -103,6 +108,7 @@ fn addRuntimeObjectWithIncludeDir(
     const kb_build_options = b.addOptions();
     kb_build_options.addOption(bool, "is_r47", options.is_r47);
     kb_build_options.addOption(bool, "state_old_hw", options.old_hw);
+    kb_build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     // The testSuite compiles with EXTRA_INFO_ON_CALC_ERROR forced to 0, as the
     // firmware does; keep the owner's diagnostics out of both.
     kb_build_options.addOption(bool, "extra_info_on_calc_error", options.extra_info_on_calc_error and

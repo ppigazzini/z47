@@ -119,6 +119,14 @@ pub const RuntimeObjectOptions = struct {
     // product stay either way. Same block again, so the same per-target answer.
     // Defaults true (host).
     option_infsums: bool = true,
+    // OPTION_STRUCTURED_PGM gates the STRUCT programming set: IF/ELSE/ENDIF,
+    // DO/WHILE/ENDDO, REPEAT/UNTIL, FOR/NEXT, VALID and CLSTRUC. Same "common to
+    // packages 1-4" block again, so the same per-target answer: the items exist in
+    // every build, but without the option they only report that the hardware cannot
+    // run them. Defaults true (host). OPTION_STRUCT_INDENT, which structured.h
+    // defines inside the same guard, is this option: PEM and the exported listing
+    // indent a structure's body exactly when the structures are compiled in.
+    option_structured_pgm: bool = true,
     // OPTION_TVM_AMORT gates menu_AMORT and screen.c's amort temporary-information
     // lines. Upstream defines it for every DMCP package as well as for DMCP5 and
     // host; its only #undef is in the legacy single-file block, which needs
@@ -228,6 +236,7 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_infsums", options.option_infsums);
+    build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // owners and the C half of the same executable agree on which build this is:

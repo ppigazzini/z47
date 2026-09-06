@@ -266,6 +266,11 @@ void exportCStructure(const char *fontsPath, const char *ttfName) {
         colsGlyph += colsBeforeGlyph;
         colsBeforeGlyph = 0;
       }
+      // FreeType hinting adds a part column past the filled area. In U+25EE the fill reaches the advance, so the bitmap comes back one column wider than it.
+      if(colsAfterGlyph < 0) {
+        colsGlyph += colsAfterGlyph;
+        colsAfterGlyph = 0;
+      }
       #if defined(DEBUG)
         printf("Columns: Bef=%2d Col=%2d Aft=%2d\n", colsBeforeGlyph, colsGlyph, colsAfterGlyph);
       #endif // DEBUG

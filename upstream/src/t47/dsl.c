@@ -217,10 +217,10 @@ static bool_t registerCatFn(Jim_Interp *interp, const char *name, void *idx, cha
   if(compareString(name, name, CMP_NAME) != 0) {
     return FALSE;  // not a "name"
   }
-  static const char *exprCommands[] = {"+", "-", "*", "/", "%", NULL};
+  static const char *exprCommands[] = {"+", "-", "*", "/", "%", "IF", "WHILE", "FOR", NULL};
   for(int i = 0; exprCommands[i] != NULL; ++i) {
     if(strcmp(cmdName, exprCommands[i]) == 0) {
-      return FALSE;  // do not shadow Jim expr arithmetic commands
+      return FALSE;  // do not shadow Jim expr arithmetic or control commands (lowercasing happens below); xeq IF etc. still reaches the STRUCT ops
     }
   }
   for(int i = 0; cmdName[i]; ++i) {
@@ -1054,6 +1054,21 @@ static int savestCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
 }
 
 /**
+ * iofile <filename> - Set the one-shot file name override and call nothing, so the next file function reached by
+ * key press or by item takes that name instead of the chooser. The file commands below set it for themselves.
+ */
+static int iofileCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  if(argc != 2) {
+    Jim_SetResultString(interp, "iofile: usage: iofile <filename>", -1);
+    return JIM_ERR;
+  }
+
+  strncpy(_ioFileNameOverride, Jim_String(argv[1]), C47_PATH_MAX - 1);
+  _ioFileNameOverride[C47_PATH_MAX - 1] = '\0';
+  return JIM_OK;
+}
+
+/**
  * impreg [<filename>] - Import a data (.d47) register file, IMPORTr with a filename override so the
  * GTK file chooser is bypassed in headless runs. Mirrors loadst.
  */
@@ -1328,6 +1343,7 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "reg",    regCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "readp",  readpCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "savest", savestCmd, NULL, NULL);
+  Jim_CreateCommand(interp, "iofile", iofileCmd, NULL, NULL);
   Jim_CreateCommand(interp, "impreg", impregCmd, NULL, NULL);
   Jim_CreateCommand(interp, "expreg", expregCmd, NULL, NULL);
   Jim_CreateCommand(interp, "expnrg", expnrgCmd, NULL, NULL);

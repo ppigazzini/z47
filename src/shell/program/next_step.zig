@@ -35,6 +35,7 @@ const frontier_decode = @import("decode.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_manage = @import("manage.zig");
+const frontier_structured = @import("structured.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("../display/screen.zig");
 const frontier_store = @import("../store.zig");
@@ -409,6 +410,10 @@ pub export fn fnBst(unusedButMandatoryParameter: u16) callconv(.c) void {
     _bstInPem();
     if (calcMode != CM_PEM) {
         defineCurrentStep();
+        if (frontier_structured.structStepIsIfOrWhile(currentStep) != 0 and currentLocalStepNumber > 1) { // a test and its IF or WHILE run as one action, so stepping back goes over the pair
+            currentLocalStepNumber -= 1;
+            defineCurrentStep();
+        }
         _showStep();
     }
 }

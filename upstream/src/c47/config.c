@@ -200,7 +200,7 @@ BINGRP,                              xxx,        _gprbin,                       
 3,                                   0,          FLAG_PFX_ALL,                   xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   0,          FLAG_DREAL,                     xxx,             xxx,                  xxx,                    xxx,             xxx,             xxx,
 3,                                   1,          xxx,                            xxx,             FLAG_DREAL,           FLAG_DREAL,             xxx,             xxx,             xxx,
-
+3,                                   1,          FLAG_AUTOVALID,                 xxx,             FLAG_AUTOVALID,       FLAG_AUTOVALID,         FLAG_AUTOVALID,  xxx,             xxx,
 
 
 DenMaX,                              xxx,        64,                             xxx,             120,                  999,                    64,              xxx,             xxx,
@@ -1342,7 +1342,7 @@ void addTestPrograms(void) {
     printf("freeProgramBytes = %u\n", freeProgramBytes);
 
     scanLabelsAndPrograms();
-    leavePem();
+    (void)leavePem();
     printf("freeProgramBytes = %u\n", freeProgramBytes);
     //listPrograms();
     //listLabelsAndPrograms();

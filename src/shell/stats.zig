@@ -47,6 +47,11 @@ const abi = @import("abi"); // shared ABI bindings
 const frontier_error = @import("error.zig");
 const frontier_graph_text = @import("plot/graph_text.zig");
 const frontier_real_type = @import("real_type.zig");
+
+// clearRegisterLine lives in the screen owner. Reached by its C-ABI symbol, as
+// stats.c reaches it through the header: importing that owner would close an
+// @import cycle across shell/display.
+extern fn clearRegisterLine(regist: calcRegister_t, clearTop: bool, clearBottom: bool) void;
 const frontier_register_value_conversions = @import("register_value_conversions.zig");
 const real_t = abi.Real;
 const real34_t = abi.Real34;
@@ -87,6 +92,7 @@ const ERROR_NOT_ENOUGH_MEMORY_FOR_NEW_MATRIX: u8 = 39;
 const REGISTER_X: calcRegister_t = 100;
 const REGISTER_Y: calcRegister_t = 101;
 const REGISTER_Z: calcRegister_t = 102;
+const REGISTER_T: calcRegister_t = 103;
 const FIRST_NAMED_VARIABLE: u16 = 256;
 const INVALID_VARIABLE: calcRegister_t = 2199;
 const ERR_REGISTER_LINE: calcRegister_t = REGISTER_Z;
@@ -683,6 +689,8 @@ pub export fn calcSigma(maxOffset: u16) callconv(.c) void {
         var x: real_t = undefined;
         var y: real_t = undefined;
         var aa: [100]u8 = undefined;
+        clearRegisterLine(REGISTER_Z, true, true); // printStatus below clears the T line for every row it draws, so blank Z and T once
+        clearRegisterLine(REGISTER_T, true, true); //   here, before the first one, and nothing of what is on screen is cut in half
         var i: u16 = 0;
         while (@as(i32, i) < @as(i32, rows) - @as(i32, maxOffset)) : (i += 1) {
             abi.fmtBufZ(&aa, "{s}{s} ({d} of {d})", .{ std.mem.span(@as([*:0]const u8, @ptrCast(errorMessageOf(RECALC_SUMS)))), std.mem.span(@as([*c]const u8, @ptrCast(&statMx))), @as(u32, i), @as(u32, @bitCast(@as(i32, rows) - @as(i32, maxOffset))) });

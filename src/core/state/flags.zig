@@ -84,6 +84,7 @@ const flip_flags = [_]u16{
     runtime.FLAG_FGGR,
     runtime.FLAG_TRACE,
     runtime.FLAG_NORM,
+    runtime.FLAG_AUTOVALID,
     0x8069, // FLAG_BOLD
     0x806a, // FLAG_SIGZEROS
 };

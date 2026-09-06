@@ -363,6 +363,10 @@ void fnBst(uint16_t unusedButMandatoryParameter) {
   _bstInPem();
   if(calcMode != CM_PEM) {
     defineCurrentStep();
+    if(structStepIsIfOrWhile(currentStep) && currentLocalStepNumber > 1) { // a test and its IF or WHILE run as one action, so stepping back goes over the pair
+      currentLocalStepNumber--;
+      defineCurrentStep();
+    }
     _showStep();
   }
 }

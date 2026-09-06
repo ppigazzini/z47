@@ -11,6 +11,11 @@ const build_options = @import("calc_state_build_options");
 const calc_state = @import("calc_state.zig");
 const calc_state_restore = @import("calc_state_restore.zig");
 const state_old_hw: bool = build_options.state_old_hw;
+// OPTION_STRUCTURED_PGM: the running FOR structures are saved with the calculator,
+// so a loop survives a power cycle. A build without the structures has no table.
+const option_structured_pgm: bool = build_options.option_structured_pgm;
+const FOR_MAX_LOOPS: u32 = if (state_old_hw) 4 else 18;
+const FOR_LOOP_TABLE_BYTES: u32 = FOR_MAX_LOOPS * 10; // sizeof(forLoop_t) is 10 on every target
 // backup.cfg is the simulator's own state store: upstream wraps the whole file
 // in `#if defined(PC_BUILD)`, and its two entry points are reached only from the
 // GTK shell. Compiling the bodies out on firmware keeps several hundred bytes of
@@ -189,6 +194,11 @@ extern var thereIsSomethingToUndo: [1]u8;
 extern var freeProgramBytes: [2]u8;
 extern var firstDisplayedLocalStepNumber: [2]u8;
 extern var numberOfLabels: [2]u8;
+extern var numberOfStructureLabels: [2]u8;
+extern var forLoopTable: [FOR_LOOP_TABLE_BYTES]u8;
+// structured.c owns the table; a restore clears it first so a file written before
+// the structures leaves no loop running.
+extern fn forClearLoops() void;
 extern var numberOfPrograms: [2]u8;
 extern var currentLocalStepNumber: [2]u8;
 extern var currentProgramNumber: [2]u8;
@@ -463,6 +473,9 @@ pub fn saveCalc() void {
     sv(&oldTime[0], 8, "oldTime", "hexDump");
     sv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
     sv(&softmenuStack[0], 64, "softmenuStack", "hexDump");
+    if (comptime option_structured_pgm) {
+        sv(&forLoopTable[0], FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
+    }
     sv(&kbd_usr[0], 666, "kbd_usr", "hexDump");
     sv(&userMenuItems[0], 360, "userMenuItems", "hexDump");
     sv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
@@ -558,6 +571,7 @@ pub fn saveCalc() void {
     sv(&freeProgramBytes[0], 2, "freeProgramBytes", "uint16");
     sv(&firstDisplayedLocalStepNumber[0], 2, "firstDisplayedLocalStepNumber", "uint16");
     sv(&numberOfLabels[0], 2, "numberOfLabels", "uint16");
+    sv(&numberOfStructureLabels[0], 2, "numberOfStructureLabels", "uint16");
     sv(&numberOfPrograms[0], 2, "numberOfPrograms", "uint16");
     sv(&currentLocalStepNumber[0], 2, "currentLocalStepNumber", "uint16");
     sv(&currentProgramNumber[0], 2, "currentProgramNumber", "uint16");
@@ -923,6 +937,7 @@ const MNU_HOME: i16 = 3070;
 const FLAG_SIGZEROS: c_uint = 32874; // 0x806A
 const FLAG_SBadm: c_uint = 32879; // 0x806F
 const FLAG_M_ALL: c_uint = 32882; // 0x8072
+const FLAG_AUTOVALID: c_uint = 32880; // 0x8070
 const FLAG_BASE_MYM: c_uint = 0x805C;
 const FLAG_G_DOUBLETAP: c_uint = 0x805D;
 const FLAG_BASE_HOME: c_uint = 0x805E;
@@ -1125,6 +1140,10 @@ pub fn restoreCalc() void {
     rv(&oldTime[0], 8, "oldTime", "hexDump");
     rv(&dateTimeString[0], 12, "dateTimeString", "hexDump");
     rv(&softmenuStack[0], 64, "softmenuStack", "hexDump");
+    if (comptime option_structured_pgm) {
+        forClearLoops(); // a file without the keyword below then leaves no loop running
+        rv(&forLoopTable[0], FOR_LOOP_TABLE_BYTES, "forLoopTable", "hexDump");
+    }
     rv(&kbd_usr[0], 666, "kbd_usr", "hexDump");
     rv(&userMenuItems[0], 360, "userMenuItems", "hexDump");
     rv(&userAlphaItems[0], 360, "userAlphaItems", "hexDump");
@@ -1230,6 +1249,7 @@ pub fn restoreCalc() void {
     rv(&freeProgramBytes[0], 2, "freeProgramBytes", "uint16");
     rv(&firstDisplayedLocalStepNumber[0], 2, "firstDisplayedLocalStepNumber", "uint16");
     rv(&numberOfLabels[0], 2, "numberOfLabels", "uint16");
+    rv(&numberOfStructureLabels[0], 2, "numberOfStructureLabels", "uint16");
     rv(&numberOfPrograms[0], 2, "numberOfPrograms", "uint16");
     rv(&currentLocalStepNumber[0], 2, "currentLocalStepNumber", "uint16");
     rv(&currentProgramNumber[0], 2, "currentProgramNumber", "uint16");
@@ -1371,7 +1391,10 @@ pub fn restoreCalc() void {
     if (backupVersion < 1014) setLongPressFg(calcModel, -MNU_HOME);
     if (backupVersion < 1015) setSystemFlag(FLAG_SIGZEROS); // SIGZEROS is on per default
     if (backupVersion < 1017) setSystemFlag(FLAG_SBadm); // the angular mode annunciator is on per default
-    if (backupVersion < 1018) setSystemFlag(FLAG_M_ALL); // inclusive of this version, set the M.ALL
+    if (backupVersion < 1018) {
+        setSystemFlag(FLAG_M_ALL); // inclusive of this version, set the M.ALL
+        setSystemFlag(FLAG_AUTOVALID);
+    }
     if (backupVersion < 1019) { // menu items renumbered into one block: move the stored menu links
         calc_state_restore.convertOldMenuNumbers();
         // lastFunc and its param are cleared where the menu items were replaced.

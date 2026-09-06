@@ -1660,6 +1660,36 @@ Item: ITM_MRADtoDEG
 In:  RX=Real:"1"
 Out: EC=0 RX=Real:"0.05729577951308232087679815481410517"
 
+; T2880_MWtoDBM
+Item: ITM_MWtoDBM
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; T2881_DBMtoMW
+Item: ITM_DBMtoMW
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"1.258925411794167210423954106395801"
+
+; T2885_WtoDBW
+Item: ITM_WtoDBW
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; T2886_DBWtoW
+Item: ITM_DBWtoW
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"1.258925411794167210423954106395801"
+
+; T2887_VtoDBV
+Item: ITM_VtoDBV
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; T2888_DBVtoV
+Item: ITM_DBVtoV
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"1.122018454301963435591038946477906"
+
 ;============================ pass 2 ============================
 
 ; T220_CtoF
@@ -3311,3 +3341,33 @@ Out: EC=0 RX=Real:"17.45329251994329576923690768488613"
 Item: ITM_MRADtoDEG
 In:  RX=Real:"1"
 Out: EC=0 RX=Real:"0.05729577951308232087679815481410517"
+
+; T2880_MWtoDBM
+Item: ITM_MWtoDBM
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; T2881_DBMtoMW
+Item: ITM_DBMtoMW
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"1.258925411794167210423954106395801"
+
+; T2885_WtoDBW
+Item: ITM_WtoDBW
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; T2886_DBWtoW
+Item: ITM_DBWtoW
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"1.258925411794167210423954106395801"
+
+; T2887_VtoDBV
+Item: ITM_VtoDBV
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"0"
+
+; T2888_DBVtoV
+Item: ITM_DBVtoV
+In:  RX=Real:"1"
+Out: EC=0 RX=Real:"1.122018454301963435591038946477906"

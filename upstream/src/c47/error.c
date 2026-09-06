@@ -91,14 +91,14 @@ TO_QSPI const char commonBugScreenMessages[NUMBER_OF_BUG_SCREEN_MESSAGES][SIZE_O
   ENTRY(e064, "No string in alpha register") /*  64 */ \
   ENTRY(e065, "No equation defined") /*  65 */ \
   ENTRY(e066, "Nesting too deep") /*  66 */ \
-  ENTRY(e067, "") /*  67 */ \
-  ENTRY(e068, "") /*  68 */ \
-  ENTRY(e069, "") /*  69 */ \
-  ENTRY(e070, "") /*  70 */ \
-  ENTRY(e071, "") /*  71 */ \
-  ENTRY(e072, "") /*  72 */ \
-  ENTRY(e073, "") /*  73 */ \
-  ENTRY(e074, "") /*  74 */ \
+  ENTRY(e067, "IF/WHILE/UNTIL condition missing") /*  67 */ \
+  ENTRY(e068, "Not available on this hardware") /*  68 */ \
+  ENTRY(e069, "Structure not numbered (do VALID)") /*  69 */ \
+  ENTRY(e070, "Structure invalid") /*  70 */ \
+  ENTRY(e071, "NEXT not found") /*  71 */ \
+  ENTRY(e072, "NEXT without FOR") /*  72 */ \
+  ENTRY(e073, "Invalid counter register") /*  73 */ \
+  ENTRY(e074, "Step of zero") /*  74 */ \
   ENTRY(e075, "") /*  75 */ \
   ENTRY(e076, "") /*  76 */ \
   ENTRY(e077, "") /*  77 */ \

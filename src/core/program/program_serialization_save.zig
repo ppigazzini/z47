@@ -14,6 +14,10 @@ pub fn saveAllPrograms() void {
     if (comptime !runtime.is_host_build) {
         return;
     }
+    if (runtime.calcMode == runtime.CM_PEM) { // it selects each program itself, so it needs the same refusal the two writers make
+        runtime.displayOperationUndefined();
+        return;
+    }
 
     const saved_current_local_step_number = runtime.currentLocalStepNumber;
     const saved_current_program_number = runtime.currentProgramNumber;
@@ -45,6 +49,10 @@ pub fn saveAllPrograms() void {
 }
 
 pub fn saveProgramToPath(label: u16, path: c_int) void {
+    if (runtime.calcMode == runtime.CM_PEM) { // as in exportProgram: selectProgram reaches fnGoto, which inserts a GTO step while the editor is open
+        runtime.displayOperationUndefined();
+        return;
+    }
     if (runtime.checkPower()) {
         return;
     }
@@ -55,6 +63,15 @@ pub fn saveProgramToPath(label: u16, path: c_int) void {
     // the save CONTINUES with whatever program is current. Gating the save on it
     // was a z47 divergence the frozen oracle could not see.
     runtime.selectProgram(label);
+
+    // A program holding a 0 can be neither stored nor run; VALID puts the numbers
+    // in. The developer bulk export writes whatever is in memory and is not the user
+    // storing one program, so it is not refused.
+    if (path != runtime.ioPathSaveAllPrograms and runtime.structProgramHasUnnumbered() != 0) {
+        runtime.displayStructureNotNumbered();
+        saved_position.restore();
+        return;
+    }
 
     const ret = runtime.openSaveProgram(path);
     if (ret != runtime.FILE_OK) {

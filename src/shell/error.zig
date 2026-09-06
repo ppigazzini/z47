@@ -270,14 +270,14 @@ const errorMessageTexts = [NUMBER_OF_ERROR_CODES][]const u8{
     "No string in alpha register", // 64  ERROR_NO_STRING_IN_ALPHA_REGISTER (42S alpha ops)
     "No equation defined", // 65  ERROR_NO_EQUATION_DEFINED
     "Nesting too deep", // 66  ERROR_NESTING_TOO_DEEP
-    "", // 67
-    "", // 68
-    "", // 69
-    "", // 70
-    "", // 71
-    "", // 72
-    "", // 73
-    "", // 74
+    "IF/WHILE/UNTIL condition missing", // 67  ERROR_IF_WHILE_CONDITION_MISSING
+    "Not available on this hardware", // 68  ERROR_NOT_AVAILABLE_HERE
+    "Structure not numbered (do VALID)", // 69  ERROR_STRUCTURE_NOT_NUMBERED
+    "Structure invalid", // 70  ERROR_STRUCTURE_INVALID
+    "NEXT not found", // 71  ERROR_NEXT_NOT_FOUND
+    "NEXT without FOR", // 72  ERROR_NEXT_WITHOUT_FOR
+    "Invalid counter register", // 73  ERROR_INVALID_COUNTER_REGISTER
+    "Step of zero", // 74  ERROR_STEP_OF_ZERO
     "", // 75
     "", // 76
     "", // 77

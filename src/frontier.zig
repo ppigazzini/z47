@@ -102,6 +102,7 @@ comptime {
     _ = @import("shell/matrix_editor/matrix_editor.zig");
     _ = @import("shell/plot/graphs.zig");
     _ = @import("shell/program/manage.zig");
+    _ = @import("shell/program/structured.zig");
     _ = @import("shell/input/tam.zig");
     _ = @import("shell/input/assign.zig");
     _ = @import("shell/display/statusbar/status_bar.zig");

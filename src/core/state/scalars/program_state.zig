@@ -8,6 +8,7 @@
 // and initialisers are byte-identical, so every extern consumer resolves as before.
 
 pub export var numberOfLabels: u16 = 0; // count of program labels
+pub export var numberOfStructureLabels: u16 = 0; // count of STRUCT jump targets, held in labelList after every real label so label indices never move
 pub export var programRunStop: u8 = 0; // program run/stop status; polled in the long-computation loops
 pub export var numberOfNamedVariables: u16 = 0; // count of user named variables
 pub export var currentProgramNumber: u16 = 0; // the current program
