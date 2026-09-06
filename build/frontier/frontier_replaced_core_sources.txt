@@ -48,6 +48,7 @@ programming/lblGtoXeq.c
 programming/manage.c
 programming/nextStep.c
 programming/programmableMenu.c
+programming/structured.c
 printing/print.c
 printing/printerFont8.c
 printing/martelFonts.c

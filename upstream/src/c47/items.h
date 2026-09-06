@@ -2991,15 +2991,15 @@
 #define ITM_2877                    2877 // General items / any items spare (reserved: Units, Pa→kPa)
 #define ITM_2878                    2878 // General items / any items spare (reserved: Units, kWh→J)
 #define ITM_2879                    2879 // General items / any items spare (reserved: Units, J→kWh)
-#define ITM_2880                    2880 // General items / any items spare (CONV spare)
-#define ITM_2881                    2881 // General items / any items spare (CONV spare)
+#define ITM_MWtoDBM                 2880
+#define ITM_DBMtoMW                 2881
 #define ITM_PGMDRV                  2882
 #define ITM_F1DRV                   2883
 #define ITM_F2DRV                   2884
-#define ITM_2885                    2885 // General items / any items spare (CONV spare)
-#define ITM_2886                    2886 // General items / any items spare (CONV spare)
-#define ITM_2887                    2887 // General items / any items spare (CONV spare)
-#define ITM_2888                    2888 // General items / any items spare (CONV spare)
+#define ITM_WtoDBW                  2885
+#define ITM_DBWtoW                  2886
+#define ITM_VtoDBV                  2887
+#define ITM_DBVtoV                  2888
 #define ITM_2889                    2889 // General items / any items spare (CONV spare)
 #define ITM_2890                    2890 // General items / any items spare (CONV spare)
 #define ITM_2891                    2891 // General items / any items spare (CONV spare)
@@ -3032,26 +3032,26 @@
 #define ITM_2918                    2918 // General items / any items spare (CONV spare)
 #define ITM_2919                    2919 // General items / any items spare (CONV spare)
 
-#define ITM_2920                    2920 // General items / any items spare (reserved: STRUCT, IF)
-#define ITM_2921                    2921 // General items / any items spare (reserved: STRUCT, ELSE)
-#define ITM_2922                    2922 // General items / any items spare (reserved: STRUCT, ENDIF)
-#define ITM_2923                    2923 // General items / any items spare (reserved: STRUCT, the STRUCT menu)
-#define ITM_2924                    2924 // General items / any items spare (reserved: STRUCT, DO)
-#define ITM_2925                    2925 // General items / any items spare (reserved: STRUCT, WHILE)
-#define ITM_2926                    2926 // General items / any items spare (reserved: STRUCT, ENDDO)
-#define ITM_2927                    2927 // General items / any items spare (reserved: STRUCT, FOR)
-#define ITM_2928                    2928 // General items / any items spare (reserved: STRUCT, NEXT)
-#define ITM_2929                    2929 // General items / any items spare (reserved: STRUCT, FORx)
-#define ITM_2930                    2930 // General items / any items spare (reserved: STRUCT, NEXTx)
-#define ITM_2931                    2931 // General items / any items spare (reserved: STRUCT, VALID)
-#define ITM_2932                    2932 // General items / any items spare (reserved: STRUCT, AUTOVALID)
-#define ITM_2933                    2933 // General items / any items spare (reserved: STRUCT, FORYX)
-#define ITM_2934                    2934 // General items / any items spare (reserved: STRUCT, FORYXx)
-#define ITM_2935                    2935 // General items / any items spare (reserved: STRUCT, REPEAT)
-#define ITM_2936                    2936 // General items / any items spare (reserved: STRUCT, UNTIL)
-#define ITM_2937                    2937 // General items / any items spare (reserved: STRUCT, spare)
-#define ITM_2938                    2938 // General items / any items spare (reserved: STRUCT, spare)
-#define ITM_2939                    2939 // General items / any items spare (reserved: STRUCT, spare)
+#define ITM_IF                      2920 // STRUCT programming
+#define ITM_ELSE                    2921 // STRUCT programming
+#define ITM_ENDIF                   2922 // STRUCT programming
+#define MNU_STRUCTPGM               2923 // STRUCT programming
+#define ITM_DO                      2924 // STRUCT programming
+#define ITM_WHILE                   2925 // STRUCT programming
+#define ITM_ENDDO                   2926 // STRUCT programming
+#define ITM_FOR                     2927 // STRUCT programming
+#define ITM_NEXT                    2928 // STRUCT programming
+#define ITM_FORx                    2929 // STRUCT programming, the form of FOR that VALID has not passed
+#define ITM_NEXTx                   2930 // STRUCT programming, the form of NEXT that VALID has not passed
+#define ITM_VALID                   2931 // STRUCT programming
+#define ITM_AUTOVALID               2932 // STRUCT programming
+#define ITM_FORYX                   2933 // STRUCT programming, the FOR that is given a start and an end and works out its own step
+#define ITM_FORYXx                  2934 // STRUCT programming, the form of FORyx that VALID has not passed
+#define ITM_REPEAT                  2935 // STRUCT programming, the loop that tests at the end
+#define ITM_UNTIL                   2936 // STRUCT programming, its test and closer
+#define ITM_CLSTRUC                 2937 // STRUCT programming
+#define ITM_FORTOP                  2938 // STRUCT programming, the FOR that compares before the first pass
+#define ITM_FORTOPx                 2939 // STRUCT programming, the form of FORTOP that VALID has not passed
 #define ITM_2940                    2940 // General items / any items spare (reserved: STRUCT, spare)
 #define ITM_2941                    2941 // General items / any items spare (reserved: STRUCT, spare)
 #define ITM_2942                    2942 // General items / any items spare (reserved: STRUCT, spare)

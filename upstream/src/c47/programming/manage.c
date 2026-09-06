@@ -124,20 +124,28 @@ void scanLabelsAndPrograms(void) {
   // a corrupt length and must not be walked, or findNextStep reads out of bounds.
   uint8_t * const programRegionEnd = (uint8_t *)(ram + RAM_SIZE_IN_BLOCKS);
 
-  freeC47Blocks(labelList, TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
+  freeC47Blocks(labelList, TO_BLOCKS(sizeof(labelList_t)) * (numberOfLabels + numberOfStructureLabels));
   freeC47Blocks(programList, TO_BLOCKS(sizeof(programList_t)) * numberOfPrograms);
 
   numberOfLabels = 0;
+  numberOfStructureLabels = 0;
   numberOfPrograms = 1;
   while(!isAtEndOfPrograms(step)) { // .END.
-    if(*step == ITM_LBL) { // LBL
-      numberOfLabels++;
-    }
+    // The step is validated before it is counted, matching the order of the filling pass below. Both passes therefore count the same steps, and the structure
+    // section starts at the same index in each.
     nextStep = findNextStep(step);
     if(nextStep == NULL || nextStep <= step || nextStep >= programRegionEnd) {
       lastErrorCode = ERROR_UNDEFINED_OPCODE; // this step and everything after it are dropped
       break;
     }
+    if(*step == ITM_LBL) { // LBL
+      numberOfLabels++;
+    }
+  #if defined(OPTION_STRUCTURED_PGM)
+    else if(structStepIsJumpTarget(step)) { // a STRUCT branch end or loop top is a jump target too
+      numberOfStructureLabels++;
+    }
+  #endif // OPTION_STRUCTURED_PGM
     if(isAtEndOfProgram(step)) { // END
       if(!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
         numberOfPrograms++;
@@ -146,7 +154,9 @@ void scanLabelsAndPrograms(void) {
     step = nextStep;
   }
 
-  labelList = allocC47Blocks(TO_BLOCKS(sizeof(labelList_t)) * numberOfLabels);
+  // The STRUCT branch ends go in the same table, after every real label. Appending them keeps every existing label index unchanged, which matters
+  // because a key assignment holds an index and a menu entry is built from one.
+  labelList = allocC47Blocks(TO_BLOCKS(sizeof(labelList_t)) * (numberOfLabels + numberOfStructureLabels));
   if(labelList == NULL) {
     // unlikely
     lastErrorCode = ERROR_RAM_FULL;
@@ -159,6 +169,11 @@ void scanLabelsAndPrograms(void) {
     lastErrorCode = ERROR_RAM_FULL;
     return;
   }
+
+  #if defined(OPTION_STRUCTURED_PGM)
+    uint16_t structureLabel = numberOfLabels; // the structure section starts where the real labels end, so it fills from there
+  #endif // OPTION_STRUCTURED_PGM
+
 
   numberOfLabels = 0;
   step = beginOfProgramMemory;
@@ -190,6 +205,17 @@ void scanLabelsAndPrograms(void) {
       labelList[numberOfLabels].instructionPointer = nextStep;
       numberOfLabels++;
     }
+  #if defined(OPTION_STRUCTURED_PGM)
+    // A build that cannot run the structures never looks these entries up, so it does not carry them: at 24 bytes each they are what a program full
+    // of structures would exhaust the table with.
+    else if(structStepIsJumpTarget(step)) { // a STRUCT jump target: labelPointer holds its number, the op code sits two bytes before it
+      labelList[structureLabel].program = numberOfPrograms;
+      labelList[structureLabel].step = -stepNumber;
+      labelList[structureLabel].labelPointer = step + 2;
+      labelList[structureLabel].instructionPointer = nextStep;
+      structureLabel++;
+    }
+  #endif // OPTION_STRUCTURED_PGM
 
     if(isAtEndOfProgram(step)) { // END
       if(!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
@@ -216,6 +242,12 @@ void scanLabelsAndPrograms(void) {
 void deleteStepsFromTo(uint8_t *from, uint8_t *to) {
   uint16_t opSize = to - from;
 
+  // The structures left behind can be paired wrongly now, so VALID numbers them again. This runs before the bytes move: afterwards the program that
+  // followed has taken this address, and clearing then would strip a program the user never touched.
+  if(structRangeHasNumbered(from, to)) {
+    structClearProgramNumbers();
+    forClearChecked();
+  }
   xcopy(from, to, (firstFreeProgramByte - to) + 2);
   firstFreeProgramByte -= opSize;
   freeProgramBytes += opSize;
@@ -489,7 +521,10 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     uint16_t line, firstLine;
     uint16_t stepsThatWouldBeDisplayed = 7;
     uint8_t *step, *nextStep;
-    bool_t lblOrEnd, lblOrEndOrXeq, gto;
+    bool_t lblOrEnd;
+    #if !defined(OPTION_STRUCT_INDENT)
+      bool_t lblOrEndOrXeq, gto;
+    #endif // !OPTION_STRUCT_INDENT
     bool_t inTamMode = tam.mode && programList[currentProgramNumber - 1].step > 0;
     uint16_t numberOfSteps = getNumberOfSteps();
     uint16_t linesOfCurrentStep = 1;
@@ -536,6 +571,20 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
     }
 
     int lineOffset = 0, lineOffsetTam = 0;
+    int pemIndent = 0;
+    #if defined(OPTION_STRUCT_INDENT)
+      // The editor draws the columns the exported listing writes, one indent being PEM_STRUCT_INDENT spaces and a space ten pixels. The window can open inside a
+      // structure, so the levels above it are counted before the first line is laid out. The count runs to any depth; only the drawn column is clamped.
+      int8_t structLevel = 0, drawLevel = 0;
+      for(uint8_t *scanStep = programList[currentProgramNumber - 1].instructionPointer; scanStep != NULL && scanStep < firstDisplayedStep; scanStep = findNextStep(scanStep)) {
+        if(structStepClosesIndent(scanStep) && structLevel > 0) {
+          structLevel--;
+        }
+        if(structStepOpensIndent(scanStep)) {
+          structLevel++;
+        }
+      }
+    #endif // OPTION_STRUCT_INDENT
 
     for(line=firstLine; line<7; line++) {
       nextStep = findNextStep(step);
@@ -555,9 +604,25 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         if( !(!runningOnSimOrUSB && !emptyKeyBuffer() && key_empty() == 1) ||(firstDisplayedStepNumber + line - lineOffset == currentStepNumber)) {
       #endif
 
-      lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step) || checkOpCodeOfStep(step, ITM_XEQ);
-      lblOrEnd =      checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
-      gto = checkOpCodeOfStep(step, ITM_GTO);
+      #if defined(OPTION_STRUCT_INDENT)
+        // The left margin holds the first label of the program, END and .END., and nothing else. Every other step hangs one indent in, later labels with them.
+        lblOrEnd =      (checkOpCodeOfStep(step, ITM_LBL) && firstDisplayedLocalStepNumber + line - lineOffset + lineOffsetTam == 1)
+                     || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
+      #else // OPTION_STRUCT_INDENT
+        lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step) || checkOpCodeOfStep(step, ITM_XEQ);
+        lblOrEnd =      checkOpCodeOfStep(step, ITM_LBL) || isAtEndOfProgram(step) || isAtEndOfPrograms(step);
+        gto = checkOpCodeOfStep(step, ITM_GTO);
+      #endif // OPTION_STRUCT_INDENT
+      #if defined(OPTION_STRUCT_INDENT)
+        if(structStepClosesIndent(step) && structLevel > 0) {
+          structLevel--;         // the body ends here, so the closer prints on the column its opener printed on
+        }
+        // ELSE and WHILE come back one indent to their opener's column, which is the outdent the exported listing takes from its name table. The outdent comes off the
+        // level, not off the column, so a clamped ELSE lands on its opener's column instead of one left of it.
+        drawLevel = structLevel - (structStepOnOpenerColumn(step) && structLevel > 0 ? 1 : 0);
+        // PEM_MAX_STRUCT_LEVELS is what the 400 pixel screen has room for, so anything deeper draws in that column rather than running the step off the right edge.
+        pemIndent = 10 * PEM_STRUCT_INDENT * (drawLevel > PEM_MAX_STRUCT_LEVELS ? PEM_MAX_STRUCT_LEVELS : drawLevel);
+      #endif // OPTION_STRUCT_INDENT
       if(programList[currentProgramNumber - 1].step > 0) {
         if((!pemCursorIsZerothStep && firstDisplayedStepNumber + line - lineOffset == currentStepNumber + 1) || (line == 1 && tam.mode && pemCursorIsZerothStep)) {
           tamOverPemYPos = Y_POSITION_OF_REGISTER_T_LINE + 21 * line;
@@ -626,7 +691,7 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
       int numberOfExtraLines = 0;
       int offset = 0;
       const char *endStr = NULL;
-      while(offset <= 1500 && (*(endStr = stringAfterPixels(tmpString + offset, &standardFont, 337, false, false)) != 0)) {
+      while(offset <= 1500 && (*(endStr = stringAfterPixels(tmpString + offset, &standardFont, 337 - pemIndent, false, false)) != 0)) { // the step is drawn pemIndent further right, so that much less of it fits the line
         int lineByteLength = endStr - (tmpString + offset);
         numberOfExtraLines++;
         xcopy(tmpString + offset + 300, tmpString + offset + lineByteLength, stringByteLength(endStr) + 1);
@@ -638,15 +703,24 @@ void fnPem(uint16_t unusedButMandatoryParameter) {
         linesOfCurrentStep += numberOfExtraLines;
       }
 
-      showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEndOrXeq ? 42 : gto ? 82 : 62), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+      #if defined(OPTION_STRUCT_INDENT)
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEnd ? 42 : 42 + 10 * PEM_STRUCT_INDENT) + pemIndent, Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+      #else // OPTION_STRUCT_INDENT
+        showString(tmpString, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * line) + (lblOrEndOrXeq ? 42 : gto ? 82 : 62), Y_POSITION_OF_REGISTER_T_LINE + 21 * line, vmNormal,  false, false);
+      #endif // OPTION_STRUCT_INDENT
       offset = 300;
       while(numberOfExtraLines && line <= 5) {
         line++;
-        showString(tmpString + offset, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * (line)) + 62, Y_POSITION_OF_REGISTER_T_LINE + 21 * (line), vmNormal,  false, false);
+        showString(tmpString + offset, &standardFont, pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * (line)) + 62 + pemIndent, Y_POSITION_OF_REGISTER_T_LINE + 21 * (line), vmNormal,  false, false);
         numberOfExtraLines--;
         offset += 300;
         lineOffset++;
       }
+      #if defined(OPTION_STRUCT_INDENT)
+        if(structStepOpensIndent(step)) {
+          structLevel++;         // the body steps below stand one level further in
+        }
+      #endif // OPTION_STRUCT_INDENT
       if(isAtEndOfProgram(step)) {
         programListEnd = true;
         if(*nextStep == 255 && *(nextStep + 1) == 255) {
@@ -703,6 +777,9 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   //printf("\n");fflush(stdout);
   int16_t _dynamicMenuItem = dynamicMenuItem;
   uint16_t globalStepNumber;
+  // Read before the copy loop below moves dat. The top bit of the first byte is what says the op takes two bytes: a one byte op followed by its
+  // operand byte is two bytes long as well, and reading that pair as one op turns x= ? A into IF.
+  const uint16_t insertedOp = ((dat[0] & 0x80) && size >= 2) ? (uint16_t)(dat[1] + ((dat[0] & 0x7f) << 8)) : dat[0];
 
   if(freeProgramBytes < size) {
     uint8_t *oldBeginOfProgramMemory = beginOfProgramMemory;
@@ -724,10 +801,9 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
 
 
 
-  #define tmpA (dat[1]+((dat[0] & 0x7F) << 8))    //convert codes for v3>xyz and xyz>v3 respecting 3D_PHYS
-  uint16_t tmpB = 0;
-  if(size == 2 && (tmpA == ITM_STKtoV3 || tmpA == ITM_V3toSTK)) {
-    switch(tmpA) {
+  uint16_t tmpB = 0;    //convert codes for v3>xyz and xyz>v3 respecting 3D_PHYS
+  if(size == 2 && (insertedOp == ITM_STKtoV3 || insertedOp == ITM_V3toSTK)) { // the size keeps the two bytes written here and the caller's size in step
+    switch(insertedOp) {
       case ITM_STKtoV3 : tmpB = getSystemFlag(FLAG_3DPHYS) == false ? ITM_STKtoV3_M : ITM_STKtoV3_P; break;
       case ITM_V3toSTK : tmpB = getSystemFlag(FLAG_3DPHYS) == false ? ITM_V3toSTK_M : ITM_V3toSTK_P; break;
       default:;
@@ -735,8 +811,8 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
     *(currentStep++) = (tmpB >> 8) | 0x80;
     *(currentStep++) = tmpB & 0x00FF;
   }
-  else if(size == 2 && (tmpA == ITM_toPOL2 || tmpA == ITM_toREC2)) {  // convert >RECT and >POLAR to the relevant ones, respecting RP_HP
-    tmpB = ITM_toPOL_HP + (tmpA - ITM_toPOL2) + (getSystemFlag(FLAG_HPRP) ? 0 : 2);
+  else if(size == 2 && (insertedOp == ITM_toPOL2 || insertedOp == ITM_toREC2)) {  // convert >RECT and >POLAR to the relevant ones, respecting RP_HP
+    tmpB = ITM_toPOL_HP + (insertedOp - ITM_toPOL2) + (getSystemFlag(FLAG_HPRP) ? 0 : 2);
     *(currentStep++) = (tmpB >> 8) | 0x80;
     *(currentStep++) = tmpB & 0x00FF;
   }
@@ -752,6 +828,12 @@ static void _insertInProgram(const uint8_t *dat, uint16_t size) {
   endOfCurrentProgram     += size;
   globalStepNumber = currentLocalStepNumber + programList[currentProgramNumber - 1].step - 1;
   scanLabelsAndPrograms();
+  if(structOpHasNumber(insertedOp)) { // a numbered step joining the program repairs nothing, so VALID numbers them all again
+    structClearProgramNumbers();
+  }
+  if(insertedOp == ITM_FORx || insertedOp == ITM_NEXTx || insertedOp == ITM_FORYXx || insertedOp == ITM_FORTOPx) { // a FOR or a NEXT joining the program unchecks the ones already there
+    forClearChecked();
+  }
   dynamicMenuItem = -1;
   goToGlobalStep(globalStepNumber);
   dynamicMenuItem = _dynamicMenuItem;
@@ -1387,13 +1469,22 @@ static void _pemCloseAngleInput(int item) {
   }
 }
 
-void insertStepInProgram(const int16_t func) {
+void insertStepInProgram(const int16_t newFunc) {
                                 #if defined(DEBUG_PGM)
                                   print_caller(NULL);
                                 #endif
+  // A FOR or a NEXT enters in the form VALID has not passed, as a new partner number enters as 00. VALID has to run before the program will.
+  const int16_t func = structNotCheckedOp(newFunc);
   uint32_t opBytes = (func >= 128) ? 2 : 1;
 
   if(func == ITM_END) {
+    #if defined(OPTION_STRUCTURED_PGM)
+      // The split leaves the steps above the END behind, out of the editor's reach and out of AVALID's on the way out. AVALID checks them here instead, and holds the
+      // END back on a fault, as it holds the editor on one.
+      if(getSystemFlag(FLAG_AUTOVALID) && !structEndSplitsWell()) {
+        return;
+      }
+    #endif // OPTION_STRUCTURED_PGM
     firstDisplayedLocalStepNumber = 0;
   }
 
@@ -1736,7 +1827,8 @@ void insertStepInProgram(const int16_t func) {
     }
 
     case PTP_SKIP_BACK: {
-        tmpString[opBytes    ] = (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : tam.value);
+        // A new partner number enters as 00 and nothing prompts for one: VALID puts the numbers in. SKIP and BACK still take the value typed.
+        tmpString[opBytes    ] = structOpHasNumber(func) ? 0 : (tam.dot ? tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE : tam.value);
         _insertInProgram((uint8_t *)tmpString, opBytes + 1);
       break;
     }

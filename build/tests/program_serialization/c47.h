@@ -58,6 +58,10 @@ typedef struct Z47ProgramSerializationGtkWidget GtkWidget;
 #include "../../../upstream/src/c47/typeDefinitions.h"
 #include "../../../upstream/src/c47/hal/io.h"
 #include "../../../upstream/src/c47/programming/nextStep.h"
+// The STRUCT set: saveRestorePrograms.c refuses a program whose structures carry
+// no partner number, runs VALID after a load, and lays its listing out with the
+// three indent predicates. c43's own header, not a copy of it.
+#include "../../../upstream/src/c47/programming/structured.h"
 #include "../../../upstream/src/c47/fonts.h"
 
 // ---------------------------------------------------------------------------
@@ -85,6 +89,8 @@ extern tamState_t tam;
 extern int16_t dynamicMenuItem;
 extern uint8_t temporaryInformation;
 extern int16_t lastFunc;
+extern uint8_t calcMode;
+extern uint8_t lastErrorCode;
 
 // The step grammar the pre-load screening pass reads. NOT a reference: it is
 // shared INPUT, read identically by c43's `_screenFileStep` and by the Zig
@@ -115,6 +121,7 @@ void goToGlobalStep(int32_t step);
 void fnGoto(uint16_t label);
 uint16_t findNamedLabel(const char *labelName, uint8_t labelType);
 uint8_t boundProgramNameLength(const uint8_t *nameStart, uint8_t claimed);
+bool_t checkOpCodeOfStep(const uint8_t *step, uint16_t op);
 void resizeProgramMemory(uint16_t newSizeInBlocks);
 bool_t isAtEndOfProgram(const uint8_t *step);
 uint32_t getFreeRamMemory(void);

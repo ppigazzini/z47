@@ -85,6 +85,15 @@ pub const ITM_Yex: u16 = 1650;
 pub const ITM_Zex: u16 = 1651;
 pub const ITM_INTEGRAL: u16 = 1700;
 pub const ITM_INTEGRAL_YX: u16 = 1690;
+// The three FOR openers name their counter, which may be a variable that does not
+// exist yet, exactly as SOLVE and the integrators name theirs.
+pub const ITM_FOR: u16 = 2927;
+pub const ITM_FORYX: u16 = 2933;
+pub const ITM_FORTOP: u16 = 2938;
+
+// A running FOR counts in a register, and deleting a named variable moves every
+// variable above it down one. structured.c owns the table those loops live in.
+pub extern fn forAdjustCountersAfterVariableDelete(deletedVariable: u16) void;
 pub const ITM_PLTf: u16 = 2734;
 pub const ITM_F1DRV: u16 = 2883;
 pub const ITM_F2DRV: u16 = 2884;

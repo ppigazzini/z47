@@ -75,6 +75,7 @@ const ERROR_ARG_EXCEEDS_FUNCTION_DOMAIN: u8 = 1;
 const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_BAD_INPUT: u8 = 53;
+const ERROR_STEP_OF_ZERO: u8 = 74;
 
 const FLAG_SOLVING: u32 = 0xc026;
 const FLAG_CPXRES: u16 = 0x8004;
@@ -330,8 +331,14 @@ fn _programmableSumProd(label: u16, prod: bool_t, early: ?*EarlyAbort) linksecti
     loop = @bitCast(longIntegerModuloUInt(&iLoop[0], @bitCast(@as(i32, 0x7FFFFFFF))));
     longIntegerFree(&iLoop[0]);
 
-    if (!real34CompareEqual(&loopTo, &counter) and
-        (real34IsZero(&loopStep) or
+    var moved: real34_t = undefined;
+
+    real34Add(&counter, &loopStep, &moved); // the counter plus the step, against the counter, which is the test the FOR structure makes
+    if (real34CompareEqual(&moved, &counter)) { // a step of zero, and a step too small for the counter's digits, are the same fault
+        displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);
+        moreInfoOnError("In function _programmableSumProd:", "Counter will not move", null, null);
+    } else if (!real34CompareEqual(&loopTo, &counter) and
+        (real34IsZero(&loopStep) or // unreachable, leave a backup in case input filtering change
             (real34CompareGreaterThan(&loopTo, &counter) and real34CompareLessEqual(&loopStep, const34_0())) or
             (real34CompareLessThan(&loopTo, &counter) and real34CompareGreaterEqual(&loopStep, const34_0()))))
     {

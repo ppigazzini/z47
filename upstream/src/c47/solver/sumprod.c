@@ -83,7 +83,7 @@
     int32_t       loop = 0;
     int16_t       finished = 0;
     real_t        resultX, resultXi, resultR, resultRi;
-    real34_t      loopStep, loopTo, counter, compare, sign, rLoop;
+    real34_t      loopStep, loopTo, counter, compare, sign, rLoop, moved;
     bool_t        changedOverToComplex = false;
     longInteger_t iLoop;
     fnToReal(NOPARAM);
@@ -106,8 +106,16 @@
     loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
     longIntegerFree(iLoop);
 
-    if( !real34CompareEqual(&loopTo, &counter) &&
-        (  real34IsZero(&loopStep) ||
+    real34Add(&counter, &loopStep, &moved);                 // the counter plus the step, against the counter, which is the test the FOR structure makes
+    if(real34CompareEqual(&moved, &counter)) {              // a step of zero, and a step too small for the counter's digits, are the same fault
+      displayCalcErrorMessage(ERROR_STEP_OF_ZERO, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
+        sprintf(errorMessage, "Counter will not move");
+        moreInfoOnError("In function _programmableSumProd:", errorMessage, NULL, NULL);
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+    }
+    else if( !real34CompareEqual(&loopTo, &counter) &&
+        (  real34IsZero(&loopStep) ||                         // unreachable, leave a backup in case input filtering change
           (real34CompareGreaterThan(&loopTo, &counter) && real34CompareLessEqual(&loopStep, const34_0)) ||
           (real34CompareLessThan(&loopTo, &counter) && real34CompareGreaterEqual(&loopStep, const34_0))
         )

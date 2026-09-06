@@ -71,11 +71,32 @@ const indents = [_]IndentRow{
     indentRow("ISE", false, 0, 2),
     indentRow("ISZ", false, 0, 2),
     indentRow("ISG", false, 0, 2),
+} ++ (if (runtime.option_struct_indent) [_]IndentRow{
+    // [STRUCT]
+    indentRow("IF", false, 0, 0), // an opener stands at the column of the step above it and its body two columns in; see struct_level below
+    indentRow("ELSE", false, -2, 0), // ELSE and WHILE stand on their opener's column while the count still holds the body in
+    indentRow("ENDIF", false, 0, 0),
+    indentRow("ENDDO", false, 0, 0), // before END below, which it would otherwise match
+    indentRow("WHILE", false, -2, 0),
+    indentRow("DOT", false, 0, 0), // the dot product, listed here only so the DO row below does not claim it: the compare takes a prefix
+    indentRow("DO", false, 0, 0),
+    indentRow("NEXTP", false, 0, 0), // the next prime, listed here only so the NEXT row below does not claim it, the same prefix case as DOT
+    indentRow("NEXT", false, 0, 0),
+    indentRow("FOR", false, 0, 0),
+    indentRow("REPEAT", false, 0, 0),
+    indentRow("UNTIL", false, 0, 0),
+} else [_]IndentRow{}) ++ [_]IndentRow{
     // [P.FN1]
     indentRow("LBL", true, -2, 0),
+} ++ (if (runtime.option_struct_indent) [_]IndentRow{
+    indentRow("GTO", false, 0, 0),
+    indentRow("XEQ", false, 0, 0),
+    indentRow("RTN", false, 0, 0),
+} else [_]IndentRow{
     indentRow("GTO", false, -2, 0),
     indentRow("XEQ", false, -2, 0),
     indentRow("RTN", false, -2, 0),
+}) ++ [_]IndentRow{
     indentRow("END", false, -2, 0),
     indentRow(".END.", false, -2, 0),
 };
@@ -162,6 +183,7 @@ pub fn programExportListing() void {
 
     var add_next_line_indent: i8 = 0;
     var last_command_found: i16 = 0;
+    var struct_level: i8 = 0;
 
     var line: u16 = first_line;
     while (line < 9999) : (line += 1) {
@@ -169,8 +191,18 @@ pub fn programExportListing() void {
 
         runtime.decodeStepForExport(step);
 
-        var indent: i8 = 2;
+        // Every step hangs one indent in; only the first LBL, END and .END. take the
+        // outdent from the table above and stand on the left margin.
+        var indent: i8 = if (runtime.option_struct_indent) runtime.XPORTP_STRUCT_INDENT else 2;
         var new_line = false;
+        if (comptime runtime.option_struct_indent) {
+            if (runtime.structStepClosesIndent(step) != 0 and struct_level > 0) {
+                struct_level -= 1; // the body ends here, so the closer prints on the column its opener printed on
+            }
+            if (add_next_line_indent != 0 and runtime.structDisplayOutdent(step) != 0) {
+                add_next_line_indent = 0; // the STRUCT tokens take their own column even directly after a test; asked by opcode, since a name compare here is a prefix match
+            }
+        }
         if (add_next_line_indent == 0) {
             last_command_found = findIndents(&new_line, &indent, &add_next_line_indent);
         } else {
@@ -182,6 +214,15 @@ pub fn programExportListing() void {
                 indent +%= add_next_line_indent;
             }
             add_next_line_indent = 0;
+        }
+        if (comptime runtime.option_struct_indent) {
+            if (line != 1 and runtime.checkOpCodeOfStep(step, runtime.ITM_LBL)) {
+                indent +%= runtime.XPORTP_STRUCT_INDENT; // only the first label of the program stands on the left margin; every label below it hangs with the ordinary steps
+            }
+            indent +%= runtime.XPORTP_STRUCT_INDENT * (if (struct_level > runtime.XPORTP_MAX_STRUCT_LEVELS) runtime.XPORTP_MAX_STRUCT_LEVELS else struct_level);
+            if (runtime.structStepOpensIndent(step) != 0) {
+                struct_level += 1; // the body steps below stand one level further in
+            }
         }
 
         if (indent > 0) {
@@ -258,6 +299,10 @@ fn exportProgramToPath(path: c_int) void {
 /// the printer active and PRPROG the invoking command, the listing goes to the
 /// IR printer instead of to a file.
 pub fn exportProgram(label: u16, path: c_int) void {
+    if (runtime.calcMode == runtime.CM_PEM) { // selectProgram below reaches fnGoto, which inserts a GTO step rather than moving while the editor is open
+        runtime.displayOperationUndefined();
+        return;
+    }
     const saved_position = runtime.EditorPosition.save();
 
     if (runtime.checkPower()) {
@@ -265,6 +310,16 @@ pub fn exportProgram(label: u16, path: c_int) void {
     }
 
     runtime.selectProgram(label);
+
+    // A program holding a 0 can be neither stored nor run; VALID puts the numbers in.
+    // The developer bulk export writes whatever is in memory and is not the user
+    // exporting one program, so it is not refused.
+    if (path != runtime.ioPathExportRTFAllPrograms and runtime.structProgramHasUnnumbered() != 0) {
+        runtime.displayStructureNotNumbered();
+        saved_position.restore();
+        return;
+    }
+
     if (runtime.systemFlag(runtime.FLAG_PRTACT) and runtime.lastFunction() == runtime.ITM_PRINTERPROG) {
         runtime.printProgramListing(runtime.PROG, 0);
         runtime.temporaryInformation = runtime.TI_PRINT_COMPLETE;

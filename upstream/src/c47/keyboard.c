@@ -2342,7 +2342,18 @@ RELEASE_END:
     }
 
 
-  void leavePem(void) {
+  // False when the editor must stay open. AVALID validates here, on the way out of PEM, rather than on a menu closing: there are only two ways out and this is both of
+  // them, so the numbers go in once and a fault holds the user in the editor on the offending step.
+  bool_t leavePem(void) {
+    #if defined(OPTION_STRUCTURED_PGM)
+      if(getSystemFlag(FLAG_AUTOVALID)) {
+        fnValid(NOPARAM);
+        if(lastErrorCode != ERROR_NONE) {
+          return false;
+        }
+      }
+    #endif // OPTION_STRUCTURED_PGM
+
     if(freeProgramBytes >= 4) { // Push the programs to the end of RAM
       uint32_t newProgramSize = (uint32_t)((uint8_t *)(ram + RAM_SIZE_IN_BLOCKS) - beginOfProgramMemory) - (freeProgramBytes & 0xfffc);
       uint16_t localStepNumber = currentLocalStepNumber;
@@ -2367,6 +2378,7 @@ RELEASE_END:
         defineCurrentProgramFromCurrentStep();
       }
     }
+    return true;
   }
 
   void processKeyAction(int16_t item) {
@@ -3124,10 +3136,11 @@ RELEASE_END:
 
               case CM_PEM: {
                 if(item == ITM_PR) {
-                  leavePem();
-                  calcModeNormal();
-                  //exit menus immediately when coming out of PEM
-                  extractPFNMenus();
+                  if(leavePem()) { // a VALID fault holds the editor open on the offending step
+                    calcModeNormal();
+                    //exit menus immediately when coming out of PEM
+                    extractPFNMenus();
+                  }
                   keyActionProcessed = true;
                   screenUpdatingMode = SCRUPD_AUTO;
                 }
@@ -3898,7 +3911,9 @@ void fnKeyExit(uint16_t unusedButMandatoryParameter) {
 
 
         aimBuffer[0] = 0;
-        leavePem();
+        if(!leavePem()) { // a VALID fault holds the editor open on the offending step
+          break;
+        }
         calcModeNormal();
                     #if defined(DEBUGUNDO)
                       printf(">>> saveForUndo from fnKeyExitB\n");

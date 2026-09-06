@@ -3808,13 +3808,19 @@ static void displayLRtemporaryInformation(char *prefix1, char *prefix2, char *pr
 
         if(lastErrorCode != 0 && regist == errorMessageRegisterLine) {
           if(stringWidth(errorMessageOf(lastErrorCode), &standardFont, true, true) <= SCREEN_WIDTH - 1) {
-            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
-              sprintf(tmpString, "%s: %s", errorMessageOf(lastErrorCode), errorMessage);
+            const int16_t errorY = Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6;
+            const bool_t overLapPossible = (calcMode == CM_PEM);  // the message lands on the program listing, so it is spaced and boxed like the function name
+            const char * const pad = overLapPossible ? " " : "";
 
-              showString(tmpString, &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+            if(lastErrorCode == ERROR_RESERVED_VARIABLE_NAME) {
+              sprintf(tmpString, "%s%s: %s%s", pad, errorMessageOf(lastErrorCode), errorMessage, pad);
             }
             else {
-              showString(errorMessageOf(lastErrorCode), &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE - REGISTER_LINE_HEIGHT*(regist - REGISTER_X) + 6, vmNormal, true, true);
+              sprintf(tmpString, "%s%s%s", pad, errorMessageOf(lastErrorCode), pad);
+            }
+            w = showString(tmpString, &standardFont, 1, errorY, vmNormal, true, true);
+            if(overLapPossible) {
+              plotrect(1, errorY, w, errorY + STANDARD_FONT_HEIGHT - 1);
             }
           }
           else {

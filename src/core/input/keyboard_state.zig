@@ -32,8 +32,8 @@ pub export fn processAimInput(item: i16) callconv(.c) void {
 // leavePem and checkKeyShifts have no DMCP `#ifdef` divergence (C and shared.*
 // identical across lanes, reaching only lane-independent program-memory / flag
 // helpers), so they are exported for ALL lanes. Host is unchanged.
-pub export fn leavePem() callconv(.c) void {
-    shared.leavePem();
+pub export fn leavePem() callconv(.c) runtime.bool_t {
+    return shared.leavePem();
 }
 
 pub export fn checkKeyShifts(data: [*c]const u8) callconv(.c) runtime.bool_t {

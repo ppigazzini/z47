@@ -44,7 +44,6 @@
 10000024 // 2026-06-21 FLAG_SIGIP
 10000025 // 2026-07-03 FLAG_PDIFF PINTG PRMS PSHADE
 10000026 // 2026-07-14 FLAG_SBadm
-10000027 // 2026-08-17 FLAG_M_ALL
 10000028 // 2026-08-16 Menu items renumbered into one block; 10000027 is taken on release branch 4.00a2
 10000029 // 2026-08-25 GRAMOD moved from the reserved variable table to the graMod global
 
@@ -2094,6 +2093,7 @@ int64_t stringToInt64(const char *str) {
         }
         if(loadedVersion < 10000027) { // inclusive of this version, set the M.ALL
           setSystemFlag(FLAG_M_ALL);
+          setSystemFlag(FLAG_AUTOVALID); //VALID runs by itself on leaving the program editor per default
         }
 
         // Ensure valid relations between FLAG_FRACT, FLAG_IRFRAC and FLAG_IRFRQ
@@ -2965,6 +2965,8 @@ void doLoad(uint16_t loadMode, uint16_t s, uint16_t n, uint16_t d, uint16_t load
       return;
     }
   }
+
+  forClearLoops(); // a state file carries no running FOR structure
 
   if(loadMode == LM_ALL) {
     while(currentSubroutineLevel > 0) {

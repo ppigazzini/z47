@@ -51,6 +51,12 @@ const frontier_conversion_units = @import("../convert/conversion_units.zig");
 const frontier_date_time = @import("../convert/date_time.zig");
 const frontier_display = @import("../display/display.zig");
 const frontier_items = @import("../display/items/items.zig");
+const frontier_structured = @import("structured.zig");
+
+// stringToSub lives in the radio-button catalog owner. Reached by its C-ABI symbol,
+// as decode.c reaches it through the header: importing that owner would close an
+// @import cycle across shell/display.
+extern fn stringToSub(showText: [*c]const u8) [*c]u8;
 const frontier_next_step = @import("next_step.zig");
 const realContext_t = abi.RealContext;
 const font_t = abi.Font;
@@ -577,7 +583,15 @@ fn decodeOp(paramAddress_arg: [*c]u8, opCode: u16, op: [*c]const u8, paramMode: 
         },
 
         PARAM_SKIP_BACK => {
-            abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>3}", .{ std.mem.span(op), @as(u32, opParam) });
+            if (frontier_structured.structOpHasNumber(opCode) != 0) { // a STRUCT number reads as subscript digits joined to the name, IF1, and not numbered reads as IF0
+                var digits: [4]u8 = undefined;
+
+                abi.fmtBufZ(digits[0..4], "{d}", .{@as(u32, opParam)});
+                _ = stringCopy(tmpString, op);
+                _ = stringCopy(tmpString + @as(usize, @intCast(stringByteLength(op))), stringToSub(&digits));
+            } else {
+                abi.fmtBufZ(tmpString[0..2560], "{s} {d:0>3}", .{ std.mem.span(op), @as(u32, opParam) });
+            }
         },
 
         PARAM_SHUFFLE => {

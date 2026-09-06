@@ -1,17 +1,17 @@
 {
   "totals": {
     "extern_struct_files": 15,
-    "cptr_files": 108,
+    "cptr_files": 109,
     "ptrcast_sites": 1400,
-    "callconv_c_sites": 2986,
-    "extern_fn_sites": 3649,
-    "printf_family_files": 54,
+    "callconv_c_sites": 3023,
+    "extern_fn_sites": 3696,
+    "printf_family_files": 55,
     "anyopaque_files": 90,
     "off_offset_sites": 77,
     "constants_blob_sites": 1,
-    "qspi_section_files": 25
+    "qspi_section_files": 26
   },
-  "owner_count": 414,
+  "owner_count": 415,
   "seam_totals": {
     "extern_struct_files": 2,
     "cptr_files": 0,

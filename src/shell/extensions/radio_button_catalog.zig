@@ -463,6 +463,7 @@ pub export const indexOfRadioCbEepromItems linksection(code_section) = [_]radioc
     .{ .itemNr = 2039, .param = 32830, .radioButton = 142 },
     .{ .itemNr = 1899, .param = 32842, .radioButton = 142 },
     .{ .itemNr = 1798, .param = 32836, .radioButton = 142 },
+    .{ .itemNr = 2932, .param = 32880, .radioButton = 142 }, // ITM_AUTOVALID / FLAG_AUTOVALID, SetSetting
     .{ .itemNr = 1858, .param = 198, .radioButton = 142 },
     .{ .itemNr = 2191, .param = 214, .radioButton = 142 },
     .{ .itemNr = 1985, .param = 32857, .radioButton = 142 },
@@ -602,6 +603,7 @@ pub export const systemFlagParams linksection(code_section) = [_]u16{
     32869, // FLAG_3DPHYS
     32870, // FLAG_3DXYZ
     32787, // FLAG_TRACE
+    32880, // FLAG_AUTOVALID
 };
 
 // ===========================================================================

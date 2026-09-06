@@ -131,6 +131,7 @@ src/shell/store.zig
 src/shell/stats.zig
 src/shell/program/clcvar.zig
 src/shell/program/next_step.zig
+src/shell/program/structured.zig
 src/shell/program/decode.zig
 src/shell/plot/curve_fitting.zig
 src/shell/display/input.zig

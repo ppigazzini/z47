@@ -1052,7 +1052,8 @@ void stringToRTF(const char *str, char *ascii) {
            if((a1==(uint8_t)(STD_SUP_0   [0]) && (a2>=(uint8_t)(STD_SUP_0   [1]) && a2<=(uint8_t)(STD_SUP_9  [1]))) ) {supsub = +1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUP_0 [1]);}
       else if((a1==(uint8_t)(STD_SUP_a   [0]) && (a2>=(uint8_t)(STD_SUP_a   [1]) && a2<=(uint8_t)(STD_SUP_z  [1]))) ) {supsub = +1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUP_a [1]);}
       else if((a1==(uint8_t)(STD_SUP_A   [0]) && (a2>=(uint8_t)(STD_SUP_A   [1]) && a2<=(uint8_t)(STD_SUP_Z  [1]))) ) {supsub = +1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUP_A [1]);}
-      else if((a1==(uint8_t)(STD_SUB_0   [0]) && (a2>=(uint8_t)(STD_SUB_0   [1]) && a2<=(uint8_t)(STD_SUB_9  [1]))) ) {supsub = -1; bb[0] = ('0'+a2)-(uint8_t)(STD_SUB_0 [1]);}
+      // A subscript DIGIT falls through to the escape below and stays the character U+2080 to U+2089, the one the screen shows. The sub control word is styling, so a
+      // plain-text reading of the export drops it and the STRUCT partner number reads as IF1 instead of the subscript the PEM listing shows.
       else if((a1==(uint8_t)(STD_SUB_a   [0]) && (a2>=(uint8_t)(STD_SUB_a   [1]) && a2<=(uint8_t)(STD_SUB_z  [1]))) ) {supsub = -1; bb[0] = ('a'+a2)-(uint8_t)(STD_SUB_a [1]);}
       else if((a1==(uint8_t)(STD_SUB_A   [0]) && (a2>=(uint8_t)(STD_SUB_A   [1]) && a2<=(uint8_t)(STD_SUB_Z  [1]))) ) {supsub = -1; bb[0] = ('A'+a2)-(uint8_t)(STD_SUB_A [1]);}
 //      else if((a1==(uint8_t)(STD_BASE_0  [0]) && (a2==(uint8_t)(STD_BASE_0  [1])                                 )) ) {                        *ascii = ('0');}

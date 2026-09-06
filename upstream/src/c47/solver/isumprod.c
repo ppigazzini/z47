@@ -46,16 +46,23 @@
     }
     loop = (int32_t)longIntegerModuloUInt(iLoop, (int32_t)(0x7FFFFFFF));
 
-    if(longIntegerCompare(loopTo, iCounter) != 0 &&
-        (longIntegerIsZero(loopStep) ||
-          (longIntegerCompare(loopTo, iCounter) > 0 && longIntegerCompareUInt(loopStep, 0) <=0) ||
-          (longIntegerCompare(loopTo, iCounter) < 0 && longIntegerCompareUInt(loopStep, 0) >=0) )
+    if(longIntegerIsZero(loopStep) ||                    // a zero step stands on its own: it repeats the first term whatever the two ends are
+        (longIntegerCompare(loopTo, iCounter) != 0 &&
+          ( (longIntegerCompare(loopTo, iCounter) > 0 && longIntegerCompareUInt(loopStep, 0) <=0) ||
+            (longIntegerCompare(loopTo, iCounter) < 0 && longIntegerCompareUInt(loopStep, 0) >=0) ) )
     ) {
-      displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
       #if (EXTRA_INFO_ON_CALC_ERROR == 1)
-        sprintf(errorMessage, "Counter will not count to destination");
+        sprintf(errorMessage, longIntegerIsZero(loopStep) ? "Counter will not move" : "Counter will not count to destination");
+      #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      displayCalcErrorMessage(longIntegerIsZero(loopStep) ? ERROR_STEP_OF_ZERO : ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+      #if (EXTRA_INFO_ON_CALC_ERROR == 1)
         moreInfoOnError("In function _programmableiSumProd:", errorMessage, NULL, NULL);
       #endif // (EXTRA_INFO_ON_CALC_ERROR == 1)
+      longIntegerFree(resultLi);                         // the error path frees the five long integers as well, since it returns without reaching the else
+      longIntegerFree(iLoop);
+      longIntegerFree(iCounter);
+      longIntegerFree(loopTo);
+      longIntegerFree(loopStep);
     }
     else {
       ++currentSolverNestingDepth;

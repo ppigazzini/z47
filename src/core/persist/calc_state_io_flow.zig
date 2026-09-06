@@ -83,6 +83,8 @@ pub fn doLoad(load_mode: u16, s: u16, n: u16, d: u16, load_type: u16) void {
         return;
     }
 
+    runtime.forClearLoops(); // a state file carries no running FOR structure
+
     if (load_mode == runtime.LM_ALL) {
         runtime.unwindAllSubroutines();
     }

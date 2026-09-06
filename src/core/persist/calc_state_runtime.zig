@@ -119,6 +119,9 @@ pub inline fn unwindAllSubroutines() void {
     io_owned.unwindAllSubroutines();
 }
 
+// structured.c owns the running FOR structures; a state file carries none.
+pub extern fn forClearLoops() void;
+
 pub inline fn readLine(buffer: []u8) void {
     io_owned.readLineInto(buffer.ptr, buffer.len);
 }

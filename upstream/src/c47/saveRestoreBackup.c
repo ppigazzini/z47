@@ -22,8 +22,6 @@
 1010     // Change constant format in equation, adding a # prefix
 1011     // Added reserve variables UY, LY, UEST, LEST.
 1016     // Graph defaults changing from float to real
-1017     // FLAG_SBadm
-1018     // FLAG_M_ALL
 1019     // 2026-08-16 Menu items renumbered into one block; 1017 and 1018 are taken on release branch 4.00a2
 */
 
@@ -292,6 +290,9 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(oldTime,                         sizeof(oldTime),                                             "oldTime",                        "hexDump");
     saveStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
     saveStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
+    #if defined(OPTION_STRUCTURED_PGM)
+    saveStateValue(forLoopTable,                    sizeof(forLoopTable),                                        "forLoopTable",                   "hexDump");
+    #endif // OPTION_STRUCTURED_PGM
     saveStateValue(globalRegister,                  sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS,       "globalRegister",                 "hexDump");
     saveStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     saveStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
@@ -398,6 +399,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     saveStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
     saveStateValue(&numberOfLabels,                 sizeof(numberOfLabels),                                      "numberOfLabels",                 "uint16");
+    saveStateValue(&numberOfStructureLabels,        sizeof(numberOfStructureLabels),                             "numberOfStructureLabels",        "uint16");
     saveStateValue(&numberOfPrograms,               sizeof(numberOfPrograms),                                    "numberOfPrograms",               "uint16");
     saveStateValue(&currentLocalStepNumber,         sizeof(currentLocalStepNumber),                              "currentLocalStepNumber",         "uint16");
     saveStateValue(&currentProgramNumber,           sizeof(currentProgramNumber),                                "currentProgramNumber",           "uint16");
@@ -976,6 +978,10 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(oldTime,                         sizeof(oldTime),                                             "oldTime",                        "hexDump");
     restoreStateValue(dateTimeString,                  sizeof(dateTimeString),                                      "dateTimeString",                 "hexDump");
     restoreStateValue(softmenuStack,                   sizeof(softmenuStack),                                       "softmenuStack",                  "hexDump");
+    #if defined(OPTION_STRUCTURED_PGM)
+    forClearLoops(); // a file without the keyword below then leaves no loop running
+    restoreStateValue(forLoopTable,                    sizeof(forLoopTable),                                        "forLoopTable",                   "hexDump");
+    #endif // OPTION_STRUCTURED_PGM
     restoreStateValue(globalRegister,                  sizeof(registerHeader_t) * NUMBER_OF_GLOBAL_REGISTERS,       "globalRegister",                 "hexDump");
     restoreStateValue(kbd_usr,                         sizeof(kbd_usr),                                             "kbd_usr",                        "hexDump");
     restoreStateValue(userMenuItems,                   sizeof(userMenuItems),                                       "userMenuItems",                  "hexDump");
@@ -1098,6 +1104,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     restoreStateValue(&freeProgramBytes,               sizeof(freeProgramBytes),                                    "freeProgramBytes",               "uint16");
     restoreStateValue(&firstDisplayedLocalStepNumber,  sizeof(firstDisplayedLocalStepNumber),                       "firstDisplayedLocalStepNumber",  "uint16");
     restoreStateValue(&numberOfLabels,                 sizeof(numberOfLabels),                                      "numberOfLabels",                 "uint16");
+    restoreStateValue(&numberOfStructureLabels,        sizeof(numberOfStructureLabels),                             "numberOfStructureLabels",        "uint16");
     restoreStateValue(&numberOfPrograms,               sizeof(numberOfPrograms),                                    "numberOfPrograms",               "uint16");
     restoreStateValue(&currentLocalStepNumber,         sizeof(currentLocalStepNumber),                              "currentLocalStepNumber",         "uint16");
     restoreStateValue(&currentProgramNumber,           sizeof(currentProgramNumber),                                "currentProgramNumber",           "uint16");
@@ -1283,6 +1290,7 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     }
     if(backupVersion < 1018) {
       setSystemFlag(FLAG_M_ALL); // inclusive of this version, set the M.ALL
+      setSystemFlag(FLAG_AUTOVALID);
     }
     if(backupVersion < 1019) {                                                   // menu items renumbered into one block: move the stored menu links
       convertOldMenuNumbers();

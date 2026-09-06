@@ -28,11 +28,19 @@
 
 const std = @import("std");
 const program_clear = @import("program_clear.zig");
+const frontier_structured = @import("structured.zig");
 const builtin = @import("builtin");
 const frontier_build_options = @import("frontier_build_options");
 const dmcp_build: bool = frontier_build_options.dmcp_build;
 const old_hw: bool = frontier_build_options.old_hw;
 const extra_info: bool = frontier_build_options.extra_info_on_calc_error;
+const option_structured_pgm: bool = frontier_build_options.option_structured_pgm;
+// structured.h defines OPTION_STRUCT_INDENT inside the OPTION_STRUCTURED_PGM guard,
+// so the editor indents a structure's body exactly when the structures are compiled
+// in; without it the columns are those of the build before STRUCT.
+const option_struct_indent: bool = option_structured_pgm;
+const PEM_STRUCT_INDENT: i32 = 2; // spaces a structure indents its body by in the editor
+const PEM_MAX_STRUCT_LEVELS: i8 = 4; // levels the editor indents; deeper structures all share that column, the 400 pixel screen being the limit
 
 const code_section = if (dmcp_build and old_hw)
     ".qspi_data"
@@ -134,6 +142,13 @@ const PTP_LITERAL: u16 = 6656;
 const PTP_REM: u16 = 7168;
 const PTP_SKIP_BACK: u16 = 4608;
 
+// The forms of FOR and NEXT that VALID has not passed; a new one joining the
+// program unchecks the ones already there.
+const ITM_FORx: u16 = 2929;
+const ITM_NEXTx: u16 = 2930;
+const ITM_FORYXx: u16 = 2934;
+const ITM_FORTOPx: u16 = 2939;
+
 const CAT_STATUS: u16 = 240;
 const CAT_FNCT: u16 = 16;
 const CNST_BEYOND_250: u8 = 250;
@@ -215,6 +230,7 @@ const FLAG_NUMLOCK: c_uint = 32835;
 const FLAG_USER: c_uint = 32788;
 const FLAG_3DPHYS: i32 = 32869;
 const FLAG_HPRP: i32 = 32811;
+const FLAG_AUTOVALID: i32 = 32880;
 
 // angular modes (currentAngularMode is a c_int enum)
 const amRadian: c_int = 0;
@@ -360,7 +376,8 @@ extern var endOfCurrentProgram: [*c]u8; // uint8_t *endOfCurrentProgram;
 // and the C semantics (a plain void*->T* cast).
 extern var labelList: [*c]align(4) labelList_t; // labelList_t *labelList;
 extern var programList: [*c]align(4) programList_t; // programList_t *programList;
-extern var numberOfLabels: u16; // uint16_t numberOfLabels;
+extern var numberOfLabels: u16;
+extern var numberOfStructureLabels: u16; // uint16_t numberOfLabels;
 extern var numberOfPrograms: u16; // uint16_t numberOfPrograms;
 extern var currentProgramNumber: u16; // uint16_t currentProgramNumber;
 extern var currentLocalStepNumber: u16; // uint16_t currentLocalStepNumber;
@@ -636,10 +653,11 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     // bounds. (uint8_t *)(ram + RAM_SIZE_IN_BLOCKS).
     const programRegionEnd: [*c]u8 = ramEnd();
 
-    freeC47Blocks(labelList, toBlocks(@sizeOf(labelList_t)) * numberOfLabels);
+    freeC47Blocks(labelList, toBlocks(@sizeOf(labelList_t)) * (numberOfLabels +% numberOfStructureLabels));
     freeC47Blocks(programList, toBlocks(@sizeOf(programList_t)) * numberOfPrograms);
 
     numberOfLabels = 0;
+    numberOfStructureLabels = 0;
     numberOfPrograms = 1;
     // numberOfLabels and numberOfPrograms are uint16_t globals the C increments
     // without a bound: a crafted program can carry more steps than they hold and
@@ -647,13 +665,20 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
     // walk the state file controls -- the same reason freeProgramBytes below
     // uses @truncate/-%.
     while (!isAtEndOfPrograms(step)) { // .END.
-        if (step[0] == ITM_LBL) { // LBL
-            numberOfLabels +%= 1;
-        }
+        // The step is validated before it is counted, matching the order of the
+        // filling pass below. Both passes therefore count the same steps, and the
+        // structure section starts at the same index in each.
         nextStep = frontier_next_step.findNextStep(step);
         if (nextStep == null or @intFromPtr(nextStep) <= @intFromPtr(step) or @intFromPtr(nextStep) >= @intFromPtr(programRegionEnd)) {
             lastErrorCode = ERROR_UNDEFINED_OPCODE; // this step and everything after it are dropped
             break;
+        }
+        if (step[0] == ITM_LBL) { // LBL
+            numberOfLabels +%= 1;
+        } else if (comptime option_structured_pgm) {
+            if (frontier_structured.structStepIsJumpTarget(step) != 0) { // a STRUCT branch end or loop top is a jump target too
+                numberOfStructureLabels +%= 1;
+            }
         }
         if (isAtEndOfProgram(step)) { // END
             if (!isAtEndOfPrograms(nextStep)) { // .END. following END is not the start of a new program
@@ -663,7 +688,10 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
         step = nextStep;
     }
 
-    labelList = @ptrCast(@alignCast(allocC47Blocks(toBlocks(@sizeOf(labelList_t)) * numberOfLabels)));
+    // The STRUCT branch ends go in the same table, after every real label.
+    // Appending them keeps every existing label index unchanged, which matters
+    // because a key assignment holds an index and a menu entry is built from one.
+    labelList = @ptrCast(@alignCast(allocC47Blocks(toBlocks(@sizeOf(labelList_t)) * (numberOfLabels +% numberOfStructureLabels))));
     if (labelList == null) {
         // unlikely
         lastErrorCode = ERROR_RAM_FULL;
@@ -676,6 +704,8 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
         lastErrorCode = ERROR_RAM_FULL;
         return;
     }
+
+    var structureLabel: u16 = numberOfLabels; // the structure section starts where the real labels end, so it fills from there
 
     numberOfLabels = 0;
     step = beginOfProgramMemory;
@@ -704,6 +734,17 @@ pub export fn scanLabelsAndPrograms() callconv(.c) void {
 
             labelList[numberOfLabels].instructionPointer = nextStep;
             numberOfLabels +%= 1;
+        } else if (comptime option_structured_pgm) {
+            // A build that cannot run the structures never looks these entries up, so
+            // it does not carry them: at 24 bytes each they are what a program full of
+            // structures would exhaust the table with.
+            if (frontier_structured.structStepIsJumpTarget(step) != 0) { // a STRUCT jump target: labelPointer holds its number, the op code sits two bytes before it
+                labelList[structureLabel].program = @bitCast(numberOfPrograms);
+                labelList[structureLabel].step = -@as(i32, @intCast(stepNumber));
+                labelList[structureLabel].labelPointer = step + 2;
+                labelList[structureLabel].instructionPointer = nextStep;
+                structureLabel +%= 1;
+            }
         }
 
         if (isAtEndOfProgram(step)) { // END
@@ -750,6 +791,14 @@ pub export fn deleteStepsFromTo(from: [*c]u8, to: [*c]u8) callconv(.c) void {
     // for the same reason.
     const opSize: u16 = @truncate(@intFromPtr(to) -% @intFromPtr(from));
 
+    // The structures left behind can be paired wrongly now, so VALID numbers them
+    // again. This runs before the bytes move: afterwards the program that followed
+    // has taken this address, and clearing then would strip a program the user never
+    // touched.
+    if (frontier_structured.structRangeHasNumbered(from, to) != 0) {
+        frontier_structured.structClearProgramNumbers();
+        frontier_structured.forClearChecked();
+    }
     _ = frontier_char_string.xcopy(from, to, @intCast((@intFromPtr(firstFreeProgramByte) - @intFromPtr(to)) + 2));
     firstFreeProgramByte -= opSize;
     freeProgramBytes +%= opSize;
@@ -1003,6 +1052,9 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
     var step: [*c]u8 = undefined;
     var nextStep: [*c]u8 = undefined;
     var lblOrEnd: bool_t = undefined;
+    // Only the build without OPTION_STRUCT_INDENT lays the columns out from these
+    // two; with the indent on, every step but the first label and the ENDs hangs at
+    // one indent whatever it is.
     var lblOrEndOrXeq: bool_t = undefined;
     var gto: bool_t = undefined;
     const inTamMode: bool_t = (tam.mode != 0) and programList[currentProgramNumber - 1].step > 0;
@@ -1051,6 +1103,24 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
 
     var lineOffset: i32 = 0;
     var lineOffsetTam: i32 = 0;
+    var pemIndent: i32 = 0;
+    // The editor draws the columns the exported listing writes, one indent being
+    // PEM_STRUCT_INDENT spaces and a space ten pixels. The window can open inside a
+    // structure, so the levels above it are counted before the first line is laid
+    // out. The count runs to any depth; only the drawn column is clamped.
+    var structLevel: i8 = 0;
+    var drawLevel: i8 = 0;
+    if (comptime option_struct_indent) {
+        var scanStep: [*c]u8 = programList[currentProgramNumber - 1].instructionPointer;
+        while (scanStep != null and @intFromPtr(scanStep) < @intFromPtr(firstDisplayedStep)) : (scanStep = frontier_next_step.findNextStep(scanStep)) {
+            if (frontier_structured.structStepClosesIndent(scanStep) != 0 and structLevel > 0) {
+                structLevel -= 1;
+            }
+            if (frontier_structured.structStepOpensIndent(scanStep) != 0) {
+                structLevel += 1;
+            }
+        }
+    }
 
     line = firstLine;
     while (line < 7) : (line += 1) {
@@ -1072,9 +1142,31 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
             true;
 
         if (doBody) {
-            lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) or isAtEndOfProgram(step) or isAtEndOfPrograms(step) or checkOpCodeOfStep(step, ITM_XEQ);
-            lblOrEnd = checkOpCodeOfStep(step, ITM_LBL) or isAtEndOfProgram(step) or isAtEndOfPrograms(step);
-            gto = checkOpCodeOfStep(step, ITM_GTO);
+            if (comptime option_struct_indent) {
+                // The left margin holds the first label of the program, END and .END.,
+                // and nothing else. Every other step hangs one indent in, later labels
+                // with them.
+                lblOrEnd = (checkOpCodeOfStep(step, ITM_LBL) and @as(i32, firstDisplayedLocalStepNumber) + @as(i32, line) - lineOffset + lineOffsetTam == 1) or
+                    isAtEndOfProgram(step) or isAtEndOfPrograms(step);
+            } else {
+                lblOrEndOrXeq = checkOpCodeOfStep(step, ITM_LBL) or isAtEndOfProgram(step) or isAtEndOfPrograms(step) or checkOpCodeOfStep(step, ITM_XEQ);
+                lblOrEnd = checkOpCodeOfStep(step, ITM_LBL) or isAtEndOfProgram(step) or isAtEndOfPrograms(step);
+                gto = checkOpCodeOfStep(step, ITM_GTO);
+            }
+            if (comptime option_struct_indent) {
+                if (frontier_structured.structStepClosesIndent(step) != 0 and structLevel > 0) {
+                    structLevel -= 1; // the body ends here, so the closer prints on the column its opener printed on
+                }
+                // ELSE and WHILE come back one indent to their opener's column, which is
+                // the outdent the exported listing takes from its name table. The outdent
+                // comes off the level, not off the column, so a clamped ELSE lands on its
+                // opener's column instead of one left of it.
+                drawLevel = structLevel - @as(i8, if (frontier_structured.structStepOnOpenerColumn(step) != 0 and structLevel > 0) 1 else 0);
+                // PEM_MAX_STRUCT_LEVELS is what the 400 pixel screen has room for, so
+                // anything deeper draws in that column rather than running the step off
+                // the right edge.
+                pemIndent = 10 * PEM_STRUCT_INDENT * @as(i32, if (drawLevel > PEM_MAX_STRUCT_LEVELS) PEM_MAX_STRUCT_LEVELS else drawLevel);
+            }
             if (programList[currentProgramNumber - 1].step > 0) {
                 if ((!pemCursorIsZerothStep and @as(i32, @intCast(firstDisplayedStepNumber)) + @as(i32, line) - lineOffset == @as(i32, @intCast(currentStepNumber)) + 1) or (line == 1 and tam.mode != 0 and pemCursorIsZerothStep)) {
                     tamOverPemYPos = @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line));
@@ -1151,7 +1243,8 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
             var offset: i32 = 0;
             var endStr: [*c]const u8 = undefined;
             while (offset <= 1500) {
-                endStr = frontier_char_string.stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, 337, false, false);
+                // the step is drawn pemIndent further right, so that much less of it fits the line
+                endStr = frontier_char_string.stringAfterPixels(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(337 - pemIndent), false, false);
                 if (endStr[0] == 0) break;
                 const lineByteLength: i32 = @intCast(@intFromPtr(endStr) - @intFromPtr(tmpString + @as(usize, @intCast(offset))));
                 numberOfExtraLines += 1;
@@ -1164,14 +1257,23 @@ pub export fn fnPem(unusedButMandatoryParameter: u16) callconv(.c) void {
                 linesOfCurrentStep += @intCast(numberOfExtraLines);
             }
 
-            _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEndOrXeq) @as(i32, 42) else if (gto) @as(i32, 82) else @as(i32, 62))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+            if (comptime option_struct_indent) {
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEnd) @as(i32, 42) else 42 + 10 * PEM_STRUCT_INDENT) + pemIndent), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+            } else {
+                _ = frontier_screen.showString(tmpString, &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + (if (lblOrEndOrXeq) @as(i32, 42) else if (gto) @as(i32, 82) else @as(i32, 62))), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+            }
             offset = 300;
             while (numberOfExtraLines != 0 and line <= 5) {
                 line += 1;
-                _ = frontier_screen.showString(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 62), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
+                _ = frontier_screen.showString(tmpString + @as(usize, @intCast(offset)), &standardFont, @intCast(pemLeftOffset(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)) + 62 + pemIndent), @intCast(Y_POSITION_OF_REGISTER_T_LINE + 21 * @as(i32, line)), vmNormal, 0, 0);
                 numberOfExtraLines -= 1;
                 offset += 300;
                 lineOffset += 1;
+            }
+            if (comptime option_struct_indent) {
+                if (frontier_structured.structStepOpensIndent(step) != 0) {
+                    structLevel += 1; // the body steps below stand one level further in
+                }
             }
             if (isAtEndOfProgram(step)) {
                 programListEnd = true;
@@ -1246,6 +1348,10 @@ fn _insertInProgram(dat_in: [*c]const u8, size: u16) void {
     var dat = dat_in;
     const _dynamicMenuItem = dynamicMenuItem;
     var globalStepNumber: u16 = undefined;
+    // Read before the copy loop below moves dat. The top bit of the first byte is
+    // what says the op takes two bytes: a one byte op followed by its operand byte
+    // is two bytes long as well, and reading that pair as one op turns x= ? A into IF.
+    const insertedOp: u16 = if ((dat[0] & 0x80) != 0 and size >= 2) @as(u16, dat[1]) + (@as(u16, dat[0] & 0x7f) << 8) else dat[0];
 
     if (freeProgramBytes < size) {
         const oldBeginOfProgramMemory = beginOfProgramMemory;
@@ -1266,11 +1372,9 @@ fn _insertInProgram(dat_in: [*c]const u8, size: u16) void {
         }
     }
 
-    // tmpA = dat[1] + ((dat[0] & 0x7F) << 8)
-    const tmpA: u16 = @as(u16, dat[1]) + (@as(u16, dat[0] & 0x7F) << 8);
-    var tmpB: u16 = 0;
-    if (size == 2 and (tmpA == ITM_STKtoV3 or tmpA == ITM_V3toSTK)) {
-        switch (tmpA) {
+    var tmpB: u16 = 0; // convert codes for v3>xyz and xyz>v3 respecting 3D_PHYS
+    if (size == 2 and (insertedOp == ITM_STKtoV3 or insertedOp == ITM_V3toSTK)) { // the size keeps the two bytes written here and the caller's size in step
+        switch (insertedOp) {
             ITM_STKtoV3 => tmpB = if (getSystemFlag(FLAG_3DPHYS) == false) ITM_STKtoV3_M else ITM_STKtoV3_P,
             ITM_V3toSTK => tmpB = if (getSystemFlag(FLAG_3DPHYS) == false) ITM_V3toSTK_M else ITM_V3toSTK_P,
             else => {},
@@ -1279,8 +1383,8 @@ fn _insertInProgram(dat_in: [*c]const u8, size: u16) void {
         currentStep += 1;
         currentStep[0] = @intCast(tmpB & 0x00FF);
         currentStep += 1;
-    } else if (size == 2 and (tmpA == ITM_toPOL2 or tmpA == ITM_toREC2)) {
-        tmpB = ITM_toPOL_HP + (tmpA - ITM_toPOL2) + (if (getSystemFlag(FLAG_HPRP)) @as(u16, 0) else @as(u16, 2));
+    } else if (size == 2 and (insertedOp == ITM_toPOL2 or insertedOp == ITM_toREC2)) { // convert >RECT and >POLAR to the relevant ones, respecting RP_HP
+        tmpB = ITM_toPOL_HP + (insertedOp - ITM_toPOL2) + (if (getSystemFlag(FLAG_HPRP)) @as(u16, 0) else @as(u16, 2));
         currentStep[0] = @intCast((tmpB >> 8) | 0x80);
         currentStep += 1;
         currentStep[0] = @intCast(tmpB & 0x00FF);
@@ -1300,6 +1404,12 @@ fn _insertInProgram(dat_in: [*c]const u8, size: u16) void {
     endOfCurrentProgram += size;
     globalStepNumber = @intCast(@as(i32, currentLocalStepNumber) + programList[currentProgramNumber - 1].step - 1);
     scanLabelsAndPrograms();
+    if (frontier_structured.structOpHasNumber(insertedOp) != 0) { // a numbered step joining the program repairs nothing, so VALID numbers them all again
+        frontier_structured.structClearProgramNumbers();
+    }
+    if (insertedOp == ITM_FORx or insertedOp == ITM_NEXTx or insertedOp == ITM_FORYXx or insertedOp == ITM_FORTOPx) { // a FOR or a NEXT joining the program unchecks the ones already there
+        frontier_structured.forClearChecked();
+    }
     dynamicMenuItem = -1;
     frontier_lbl_gto_xeq.goToGlobalStep(globalStepNumber);
     dynamicMenuItem = _dynamicMenuItem;
@@ -1927,10 +2037,22 @@ fn _pemCloseAngleInput(item: c_int) void {
 // ===========================================================================
 // insertStepInProgram (public)
 // ===========================================================================
-pub export fn insertStepInProgram(func: i16) callconv(.c) void {
+pub export fn insertStepInProgram(newFunc: i16) callconv(.c) void {
+    // A FOR or a NEXT enters in the form VALID has not passed, as a new partner
+    // number enters as 00. VALID has to run before the program will.
+    const func: i16 = @bitCast(frontier_structured.structNotCheckedOp(@bitCast(newFunc)));
     const opBytes: u32 = if (func >= 128) 2 else 1;
 
     if (func == ITM_END) {
+        if (comptime option_structured_pgm) {
+            // The split leaves the steps above the END behind, out of the editor's
+            // reach and out of AVALID's on the way out. AVALID checks them here
+            // instead, and holds the END back on a fault, as it holds the editor on
+            // one.
+            if (getSystemFlag(FLAG_AUTOVALID) and frontier_structured.structEndSplitsWell() == 0) {
+                return;
+            }
+        }
         firstDisplayedLocalStepNumber = 0;
     }
 
@@ -2211,7 +2333,9 @@ pub export fn insertStepInProgram(func: i16) callconv(.c) void {
             // nothing to do here
         },
         PTP_SKIP_BACK => {
-            tmpString[opBytes] = @intCast(if (tam.dot) tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE else tam.value);
+            // A new partner number enters as 00 and nothing prompts for one: VALID
+            // puts the numbers in. SKIP and BACK still take the value typed.
+            tmpString[opBytes] = if (frontier_structured.structOpHasNumber(@bitCast(func)) != 0) 0 else @intCast(if (tam.dot) tam.value + FIRST_LOCAL_REGISTER_IN_KS_CODE else tam.value);
             _insertInProgram(tmpString, @intCast(opBytes + 1));
         },
         else => {

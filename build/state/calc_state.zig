@@ -29,6 +29,12 @@ pub const RuntimeObjectOptions = struct {
     // common to DMCP packages 1-4, so no DM42 package writes or reads that form;
     // DMCP5 and host do. Defaults true to match a host build.
     option_xfn_1000: bool = true,
+    // OPTION_STRUCTURED_PGM gates the STRUCT halves of the two save/restore
+    // owners: the forLoopTable block backup.cfg carries, and the forClearLoops a
+    // load makes so no FOR structure survives the file. Same "common to packages
+    // 1-4" block as OPTION_XFN_1000, so the same per-target answer. Defaults true
+    // to match a host build.
+    option_structured_pgm: bool = true,
     // EXTRA_INFO_ON_CALC_ERROR, for the scalar-state owners this object carries
     // through its core_state module. 0 on firmware and in the testSuite; default
     // true mirrors a host build.
@@ -100,6 +106,7 @@ fn addRuntimeObject(
     // one "dmcp5"/"dmcp5r47"; host names are NEW_HW.
     build_options.addOption(bool, "state_old_hw", std.mem.indexOf(u8, name_prefix, "dmcp") != null and std.mem.indexOf(u8, name_prefix, "dmcp5") == null);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
+    build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
     // EXTRA_INFO_ON_CALC_ERROR, for the owners rooted in this object. defines.h
     // forces it to 0 for DMCP_BUILD -- which DMCP5 defines as well as the DM42 --
     // and again for TESTSUITE_BUILD; the testSuite shares the sim's target, so

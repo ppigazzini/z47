@@ -46,6 +46,7 @@ const frontier_debug = @import("../debug.zig");
 const frontier_error = @import("../error.zig");
 const frontier_items = @import("../display/items/items.zig");
 const frontier_manage = @import("manage.zig");
+const frontier_structured = @import("structured.zig");
 const frontier_next_step = @import("next_step.zig");
 const frontier_register_value_conversions = @import("../register_value_conversions.zig");
 const frontier_screen = @import("../display/screen.zig");
@@ -177,6 +178,18 @@ const ITM_END: u16 = 1458;
 const ITM_LBLQ: u16 = 1503;
 const ITM_RTNP1: u16 = 1579;
 const ITM_SKIP: u16 = 1603;
+
+// The STRUCT tokens executeOneStep places the step pointer for itself.
+const ITM_IF: u16 = 2920;
+const ITM_ELSE: u16 = 2921;
+const ITM_ENDIF: u16 = 2922;
+const ITM_DO: u16 = 2924;
+const ITM_WHILE: u16 = 2925;
+const ITM_ENDDO: u16 = 2926;
+const ITM_NEXT: u16 = 2928;
+const ITM_REPEAT: u16 = 2935;
+const ITM_UNTIL: u16 = 2936;
+const ITM_FORTOP: u16 = 2938;
 const ITM_SOLVE: u16 = 1608;
 const ITM_42STRING: u16 = 2775;
 const ITM_42APPEND: u16 = 2776;
@@ -743,7 +756,7 @@ pub export fn fnReturn(skip: u16) callconv(.c) void {
 // ===========================================================================
 // cleanLocalFlagsAndRegisters
 // ===========================================================================
-pub fn cleanLocalFlagsAndRegisters() void {
+pub export fn cleanLocalFlagsAndRegisters() callconv(.c) void {
     if (cur().numberOfLocalRegisters > 0) {
         allocateLocalRegisters(0);
     }
@@ -1148,6 +1161,7 @@ inline fn stringToLongInteger(source: [*c]const u8, radix: i32, destination: *mp
 // ===========================================================================
 pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
     var step = step_arg;
+    const stepBegin = step_arg;
     var op: u16 = undefined;
 
     op = step[0];
@@ -1182,6 +1196,29 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
             return 0;
         },
 
+        ITM_IF, //  2920
+        ITM_ELSE, //  2921
+        ITM_ENDIF, //  2922
+        ITM_DO, //  2924
+        ITM_WHILE, //  2925
+        ITM_ENDDO, //  2926
+        ITM_REPEAT, //  2935
+        ITM_UNTIL, //  2936
+        => {
+            _executeOp(step, op, PARAM_SKIP_BACK); // each carries the number of its structure, an operand type with no indirect form
+            return -1;
+        },
+
+        ITM_NEXT => { //  2928
+            _executeOp(step, op, PARAM_REGISTER); // NEXT places the step pointer itself, back to its FOR on a further pass and past itself on the last one
+            return -1;
+        },
+
+        ITM_FORTOP => { //  2938
+            _executeOp(step, op, PARAM_REGISTER); // FORTOP places the step pointer itself, into the body or past its NEXT when the start is already past the end
+            return -1;
+        },
+
         0x7fff => { // .END.
             screenUpdatingMode = SCRUPD_AUTO;
             fnReturn(0);
@@ -1198,7 +1235,9 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                     return 0;
                 }
                 lastErrorCode = ERROR_NONE;
-                return 2;
+                // A STRUCT token next takes the step: an IF or WHILE reports the missing
+                // condition, and the other four must not be skipped.
+                return if (frontier_structured.structNoLegacySkip(stepBegin) != 0) 1 else 2;
             } else {
                 return 1;
             }
@@ -1267,7 +1306,25 @@ pub export fn executeOneStep(step_arg: [*c]u8) callconv(.c) i16 {
                 },
             }
             // IR_PRINTING trace block omitted.
-            return if (temporaryInformation == TI_FALSE) 2 else 1;
+            if (temporaryInformation != TI_TRUE and temporaryInformation != TI_FALSE) { // not a test, so the legacy rule below does not apply
+                return 1;
+            }
+            const fusedOp = frontier_structured.structFusedOp(stepBegin);
+            if (fusedOp == 0) {
+                // The legacy rule: a false test skips the step after it. A STRUCT token
+                // is never skipped, since a skipped ENDDO or ELSE breaks the structure
+                // with no message. There is no IF or WHILE after this step, so only the
+                // other four have to be asked about.
+                return if (temporaryInformation == TI_FALSE and frontier_structured.structStepIsJumpTarget(frontier_next_step.findNextStep(stepBegin)) == 0) 2 else 1;
+            }
+            // A test with IF or WHILE directly after it runs as one action: that step
+            // executes on this pass, from here. Nothing runs between the two steps, so
+            // the answer passes straight to it. An IF or WHILE reached any other way has
+            // no answer and stops with the error.
+            currentStep = frontier_next_step.findNextStep(stepBegin);
+            currentLocalStepNumber +%= 1;
+            _executeOp(currentStep + 2, fusedOp, PARAM_SKIP_BACK); // both are two-byte op codes, so the number is the third byte
+            return -1;
         },
     }
 }

@@ -71,6 +71,7 @@
 #define OPTION_EDIT_PEM                //                   // Number/parameter editing in PEM
 #define OPTION_DEVPROFILES             //                   // Dev profile shortcuts (JM, RJ, HP35)
 #define OPTION_IR_PRINTING             //                   // Enable printing everywhere
+#define OPTION_STRUCTURED_PGM          //                   // STRUCT: IF/ELSE/ENDIF, DO/WHILE/ENDDO, FOR/NEXT, REPEAT/UNTIL; 63 nesting levels, 18 FOR loops, 255 numbers
 
 #undef  OPTION_VECTOR_EDIT  //NOT AN OPTION. TEST, TO REMOVE, TO PHASE OUT. Enable vector editing in matrix editor: to be removed altogether?
 
@@ -282,6 +283,7 @@
             #undef  OPTION_VECTOR        // ✓ 13672 bytes // Vector 12952 saving if ELEC is not in; 9568 saving if ELEC is in
             #undef  OPTION_SLVP_POLY     // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
             #undef  OPTION_INFSUMS       // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
+            #undef  OPTION_STRUCTURED_PGM// ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
     #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_DATAFILE              // ✓  2112 bytes // Without register/variable .d47 export & import
 
@@ -818,7 +820,15 @@
 #define ERROR_NO_STRING_IN_ALPHA_REGISTER         64
 #define ERROR_NO_EQUATION_DEFINED                 65
 #define ERROR_NESTING_TOO_DEEP                    66
-#define LAST_ERROR_MESSAGE                        66
+#define ERROR_IF_WHILE_CONDITION_MISSING          67
+#define ERROR_NOT_AVAILABLE_HERE                  68
+#define ERROR_STRUCTURE_NOT_NUMBERED              69
+#define ERROR_STRUCTURE_INVALID                   70
+#define ERROR_NEXT_NOT_FOUND                      71
+#define ERROR_NEXT_WITHOUT_FOR                    72
+#define ERROR_INVALID_COUNTER_REGISTER            73
+#define ERROR_STEP_OF_ZERO                        74
+#define LAST_ERROR_MESSAGE                        74
 
 //Status output messages for time consuming tasks, to keep user informed
 #define LOADING_STATE_FILE                       100

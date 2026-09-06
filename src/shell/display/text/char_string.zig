@@ -864,7 +864,6 @@ pub export fn stringToRTF(strIn: [*c]const u8, asciiIn: [*c]u8) callconv(.c) voi
         .sup_digit = .{ .lead = STD_SUP_0[0], .lo = STD_SUP_0[1], .hi = STD_SUP_9[1] },
         .sup_lower = .{ .lead = STD_SUP_a[0], .lo = STD_SUP_a[1], .hi = STD_SUP_z[1] },
         .sup_upper = .{ .lead = STD_SUP_A[0], .lo = STD_SUP_A[1], .hi = STD_SUP_Z[1] },
-        .sub_digit = .{ .lead = STD_SUB_0[0], .lo = STD_SUB_0[1], .hi = STD_SUB_9[1] },
         .sub_lower = .{ .lead = STD_SUB_a[0], .lo = STD_SUB_a[1], .hi = STD_SUB_z[1] },
         .sub_upper = .{ .lead = STD_SUB_A[0], .lo = STD_SUB_A[1], .hi = STD_SUB_Z[1] },
     };

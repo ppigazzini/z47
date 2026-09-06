@@ -9,6 +9,7 @@ const built_for_r47: bool = keyboard_state_build_options.is_r47;
 // TESTSUITE_BUILD, so on those lanes neither the sprintf into errorMessage nor
 // the moreInfoOnError call is compiled.
 pub const extra_info_on_calc_error: bool = keyboard_state_build_options.extra_info_on_calc_error;
+pub const option_structured_pgm: bool = keyboard_state_build_options.option_structured_pgm;
 const std = @import("std");
 const solver_status = @import("solver_status.zig"); // std-only solver equation-mode predicates
 const builtin = @import("builtin");
@@ -63,6 +64,7 @@ pub const CM_ASN_BROWSER: u8 = 17;
 pub const CM_LISTXY: u8 = 18;
 
 pub const FLAG_USER: i32 = 32788; // probed (was a stale 43 in the original scaffold)
+pub const FLAG_AUTOVALID: i32 = 32880; // VALID runs by itself on leaving the program editor
 pub const FLAG_FRACT: u32 = 0x8007;
 pub const FLAG_IRFRAC: u32 = 0x8047;
 pub const FLAG_IRFRQ: i32 = 0xc048;
@@ -447,6 +449,7 @@ pub extern fn currentSoftmenuScrolls() bool_t;
 pub extern fn closeNim() void;
 pub extern fn closeAim() void;
 pub extern fn fnBst(unused: u16) void;
+pub extern fn fnValid(unused: u16) void;
 pub extern fn fnSst(unused: u16) void;
 pub extern fn refreshLcd(unused_data: ?*anyopaque) c_int; // gboolean refreshLcd(gpointer) on PC_BUILD
 pub extern fn fnPlotStat(unused: u16) void;

@@ -201,6 +201,7 @@ programming/lblGtoXeq	shell/program/lbl_gto_xeq	port	symbol
 programming/manage	core/program/program_serialization_io;shell/program/manage;shell/program/program_clear;shell/program/program_step_opcode	port	symbol
 programming/nextStep	shell/program/next_step;shell/program/program_step_width	port	symbol
 programming/programmableMenu	shell/program/programmable_menu	port	symbol
+programming/structured	shell/program/structured	port	symbol
 realType	core/state/value/real_special_values;core/state/value/register_conversions	port	symbol
 recall	shell/recall	port	symbol
 registerValueConversions	abi/sci_format;core/state/value/register_conversions;shell/register_value_conversions	port	symbol

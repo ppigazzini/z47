@@ -402,6 +402,7 @@ pub fn deleteVariable(regist: u16) void {
         } else if (runtime.graphVariabl1 > register and runtime.graphVariabl1 <= runtime.LAST_NAMED_VARIABLE) {
             runtime.graphVariabl1 -= 1;
         }
+        runtime.forAdjustCountersAfterVariableDelete(@bitCast(register));
         return;
     }
 
@@ -594,6 +595,9 @@ pub fn isFunctionAllowingNewVariable(op: u16) bool {
         runtime.ITM_Tex,
         runtime.ITM_INTEGRAL,
         runtime.ITM_INTEGRAL_YX,
+        runtime.ITM_FOR,
+        runtime.ITM_FORYX,
+        runtime.ITM_FORTOP,
         => true,
         else => false,
     };

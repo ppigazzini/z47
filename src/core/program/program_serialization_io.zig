@@ -33,6 +33,8 @@ const ERROR_RAM_FULL: u8 = 11;
 const ERROR_INVALID_CORRUPTED_DATA: u8 = 18;
 const ERROR_CANNOT_READ_FILE: u8 = 35;
 const ERROR_CANNOT_WRITE_FILE: u8 = 55;
+const ERROR_OPERATION_UNDEFINED: u8 = 13;
+const ERROR_STRUCTURE_NOT_NUMBERED: u8 = 69;
 
 const C47_NULL: u32 = 65535;
 
@@ -341,6 +343,19 @@ pub fn displayRamFullError() void {
 
 pub fn displayCorruptedDataError() void {
     displayCalcErrorMessage(ERROR_INVALID_CORRUPTED_DATA, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+// The refusal the three file writers make while the program editor is open:
+// selecting a program reaches fnGoto, which inserts a GTO step there instead of
+// moving.
+pub fn displayOperationUndefined() void {
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+}
+
+// A program holding a 0 partner number, or a FOR or NEXT that VALID has not
+// passed, can be neither stored nor run.
+pub fn displayStructureNotNumbered() void {
+    displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
 }
 
 pub fn getFreeRamMemoryBytes() u32 {

@@ -211,10 +211,16 @@ fn exportFont(
         var cols_before_glyph: i32 = @divTrunc(@as(i32, @intCast(glyph_slot.*.metrics.horiBearingX)), 64);
         var cols_glyph: i32 = @intCast(glyph_slot.*.bitmap.width);
         const hori_advance: i32 = @divTrunc(@as(i32, @intCast(glyph_slot.*.metrics.horiAdvance)), 64);
-        const cols_after_glyph: i32 = hori_advance - cols_before_glyph - cols_glyph;
+        var cols_after_glyph: i32 = hori_advance - cols_before_glyph - cols_glyph;
         if (cols_before_glyph < 0) {
             cols_glyph += cols_before_glyph;
             cols_before_glyph = 0;
+        }
+        // FreeType hinting adds a part column past the filled area. In U+25EE the fill
+        // reaches the advance, so the bitmap comes back one column wider than it.
+        if (cols_after_glyph < 0) {
+            cols_glyph += cols_after_glyph;
+            cols_after_glyph = 0;
         }
 
         var rows_above_glyph: i32 = ascender_pixels - @divTrunc(@as(i32, @intCast(glyph_slot.*.metrics.horiBearingY)), 64);

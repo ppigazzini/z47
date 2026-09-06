@@ -90,6 +90,7 @@ const ERROR_LABEL_NOT_FOUND: u8 = 6;
 const ERROR_OUT_OF_RANGE: u8 = 8;
 const ERROR_INVALID_DATA_TYPE_FOR_OP: u8 = 24;
 const ERROR_BAD_INPUT: u8 = 53;
+const ERROR_STEP_OF_ZERO: u8 = 74;
 
 const FLAG_SOLVING: u32 = 0xc026;
 
@@ -171,13 +172,19 @@ fn _programmableiSumProd(label: u16, prod: bool_t) linksection(runtime.code_sect
     }
     loop = @bitCast(longIntegerModuloUInt(&iLoop[0], @bitCast(@as(i32, 0x7FFFFFFF))));
 
-    if (longIntegerCompare(&loopTo[0], &iCounter[0]) != 0 and
-        (longIntegerIsZero(&loopStep[0]) or
-            (longIntegerCompare(&loopTo[0], &iCounter[0]) > 0 and longIntegerCompareUInt(&loopStep[0], 0) <= 0) or
-            (longIntegerCompare(&loopTo[0], &iCounter[0]) < 0 and longIntegerCompareUInt(&loopStep[0], 0) >= 0)))
+    const stepIsZero = longIntegerIsZero(&loopStep[0]);
+    if (stepIsZero or // a zero step stands on its own: it repeats the first term whatever the two ends are
+        (longIntegerCompare(&loopTo[0], &iCounter[0]) != 0 and
+            ((longIntegerCompare(&loopTo[0], &iCounter[0]) > 0 and longIntegerCompareUInt(&loopStep[0], 0) <= 0) or
+                (longIntegerCompare(&loopTo[0], &iCounter[0]) < 0 and longIntegerCompareUInt(&loopStep[0], 0) >= 0))))
     {
-        displayCalcErrorMessage(ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
-        runtime.moreInfoOnError("In function _programmableiSumProd:", "Counter will not count to destination", null, null);
+        displayCalcErrorMessage(if (stepIsZero) ERROR_STEP_OF_ZERO else ERROR_BAD_INPUT, ERR_REGISTER_LINE, REGISTER_X);
+        runtime.moreInfoOnError("In function _programmableiSumProd:", if (stepIsZero) "Counter will not move" else "Counter will not count to destination", null, null);
+        longIntegerFree(&resultLi[0]); // the error path frees the five long integers as well, since it returns without reaching the else
+        longIntegerFree(&iLoop[0]);
+        longIntegerFree(&iCounter[0]);
+        longIntegerFree(&loopTo[0]);
+        longIntegerFree(&loopStep[0]);
     } else {
         currentSolverNestingDepth += 1;
         setSystemFlag(FLAG_SOLVING);

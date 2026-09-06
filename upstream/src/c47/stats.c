@@ -395,6 +395,8 @@ void calcSigma(uint16_t maxOffset) {
       const uint16_t rows = stats.header.matrixRows, cols = stats.header.matrixColumns;
       real_t x, y;
       char aa[100];
+      clearRegisterLine(REGISTER_Z, true, true);                                 // printStatus below clears the T line for every row it draws, so blank Z and T once
+      clearRegisterLine(REGISTER_T, true, true);                                 //   here, before the first one, and nothing of what is on screen is cut in half
       for(uint16_t i = 0; i < rows - maxOffset; i++) {
         sprintf(aa, "%s%s (%u of %u)", errorMessageOf(RECALC_SUMS), statMx, i, rows - maxOffset);
         printStatus(0, aa, timed);

@@ -18,7 +18,7 @@
 
 const std = @import("std");
 
-pub const NUM_CONVERT_PAIRS = 330;
+pub const NUM_CONVERT_PAIRS = 336;
 
 pub const ConvPair = struct {
     item: i16,
@@ -361,6 +361,12 @@ const convert_pairs = [NUM_CONVERT_PAIRS]ConvPair{
     .{ .item = 2873, .partner = 2872, .unity = 0, .exponent = 0, .type = 0 },
     .{ .item = 2874, .partner = 2875, .unity = 0, .exponent = -3, .type = 13 }, // DEGtoMRAD: mrad is 10^-3 rad, UT_ANGLE
     .{ .item = 2875, .partner = 2874, .unity = 2096, .exponent = 0, .type = 13 }, // MRADtoDEG: unity DEGtoRAD,  UT_ANGLE
+    .{ .item = 2880, .partner = 2881, .unity = 0, .exponent = 0, .type = 0 }, // MWtoDBM
+    .{ .item = 2881, .partner = 2880, .unity = 0, .exponent = 0, .type = 0 }, // DBMtoMW
+    .{ .item = 2885, .partner = 2886, .unity = 0, .exponent = 0, .type = 0 }, // WtoDBW
+    .{ .item = 2886, .partner = 2885, .unity = 0, .exponent = 0, .type = 0 }, // DBWtoW
+    .{ .item = 2887, .partner = 2888, .unity = 0, .exponent = 0, .type = 0 }, // VtoDBV
+    .{ .item = 2888, .partner = 2887, .unity = 0, .exponent = 0, .type = 0 }, // DBVtoV
 };
 
 /// Binary search the item-sorted table; null if `input` is not a conversion item.

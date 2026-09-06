@@ -220,11 +220,32 @@
     {"ISE",    0,  0, +2},
     {"ISZ",    0,  0, +2},
     {"ISG",    0,  0, +2},
+    //[STRUCT]
+#if defined(OPTION_STRUCT_INDENT)
+    {"IF",     0,  0,  0}, // an opener stands at the column of the step above it and its body two columns in; see structLevel in fnPExport below
+    {"ELSE",   0, -2,  0}, // ELSE and WHILE stand on their opener's column while the count still holds the body in
+    {"ENDIF",  0,  0,  0},
+    {"ENDDO",  0,  0,  0}, // before END below, which it would otherwise match
+    {"WHILE",  0, -2,  0},
+    {"DOT",    0,  0,  0}, // the dot product, listed here only so the DO row below does not claim it: the compare takes a prefix
+    {"DO",     0,  0,  0},
+    {"NEXTP",  0,  0,  0}, // the next prime, listed here only so the NEXT row below does not claim it, the same prefix case as DOT
+    {"NEXT",   0,  0,  0},
+    {"FOR",    0,  0,  0},
+    {"REPEAT", 0,  0,  0},
+    {"UNTIL",  0,  0,  0},
+#endif // OPTION_STRUCT_INDENT
     //[P.FN1]
     {"LBL",    1, -2,  0},
+#if defined(OPTION_STRUCT_INDENT)
+    {"GTO",    0,  0,  0},
+    {"XEQ",    0,  0,  0},
+    {"RTN",    0,  0,  0},
+#else // OPTION_STRUCT_INDENT
     {"GTO",    0, -2,  0},
     {"XEQ",    0, -2,  0},
     {"RTN",    0, -2,  0},
+#endif // OPTION_STRUCT_INDENT
     {"END",    0, -2,  0},
     {".END.",  0, -2,  0},
 
@@ -301,6 +322,9 @@ void fnPExport(void) {
     int8_t  indent;
     bool_t  newLine;
     int8_t  addnextLineIndent = 0;
+    #if defined(OPTION_STRUCT_INDENT)
+      int8_t  structLevel = 0;
+    #endif // OPTION_STRUCT_INDENT
     int16_t lastCommandFound = 0;
 
 
@@ -312,8 +336,20 @@ void fnPExport(void) {
       decodeOneStep_XPORT(step);
       //printf("§§=%s",tmpString);
 
-      indent = 2;
+      #if defined(OPTION_STRUCT_INDENT)
+        indent = XPORTP_STRUCT_INDENT; // every step hangs one indent in; only the first LBL, END and .END. take the outdent below and stand on the left margin
+      #else // OPTION_STRUCT_INDENT
+        indent = 2;
+      #endif // OPTION_STRUCT_INDENT
       newLine = false;
+      #if defined(OPTION_STRUCT_INDENT)
+        if(structStepClosesIndent(step) && structLevel > 0) {
+          structLevel--;         // the body ends here, so the closer prints on the column its opener printed on
+        }
+        if(addnextLineIndent != 0 && structDisplayOutdent(step)) {
+          addnextLineIndent = 0; // the STRUCT tokens take their own column even directly after a test; asked by opcode, since a name compare here is a prefix match
+        }
+      #endif // OPTION_STRUCT_INDENT
       if(addnextLineIndent == 0) {
         lastCommandFound = findIndents(&newLine, &indent, &addnextLineIndent); //uses tmpString as inpur
       }
@@ -325,6 +361,15 @@ void fnPExport(void) {
         }
         addnextLineIndent = 0;
       }
+      #if defined(OPTION_STRUCT_INDENT)
+        if(line != 1 && checkOpCodeOfStep(step, ITM_LBL)) {
+          indent += XPORTP_STRUCT_INDENT; // only the first label of the program stands on the left margin; every label below it hangs with the ordinary steps
+        }
+        indent += XPORTP_STRUCT_INDENT * (structLevel > XPORTP_MAX_STRUCT_LEVELS ? XPORTP_MAX_STRUCT_LEVELS : structLevel);
+        if(structStepOpensIndent(step)) {
+          structLevel++;         // the body steps below stand one level further in
+        }
+      #endif // OPTION_STRUCT_INDENT
 
 
 //MAKE THIS MORE EFFICIENT!
@@ -497,6 +542,10 @@ static void _restoreEditorPosition(const editorPosition_t *position) {
 
 void _exportProgram(uint16_t label, ioFilePath_t path) {
     editorPosition_t savedPosition;
+    if(calcMode == CM_PEM) { // _selectProgram below reaches fnGoto, which inserts a GTO step rather than moving while the editor is open
+      displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+      return;
+    }
     _saveEditorPosition(&savedPosition);
 
     #if defined(DMCP_BUILD)
@@ -507,6 +556,15 @@ void _exportProgram(uint16_t label, ioFilePath_t path) {
     #endif // DMCP_BUILD
 
     _selectProgram(label);
+
+    // A program holding a 0 can be neither stored nor run; VALID puts the numbers in. The developer bulk export writes whatever is in memory and is
+    // not the user exporting one program, so it is not refused.
+    if(path != ioPathExportRTFAllPrograms && structProgramHasUnnumbered()) {
+      displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+      _restoreEditorPosition(&savedPosition);
+      return;
+    }
+
     if((getSystemFlag(FLAG_PRTACT)) && (lastFunc == ITM_PRINTERPROG)) {     // If printer active and command is to print program then print to IR printer
     #if defined(OPTION_IR_PRINTING)
       printProgram(PROG, 0);
@@ -529,6 +587,10 @@ void fnExportProgram(uint16_t label) {
 
 
 void _saveProgram(uint16_t label, ioFilePath_t path) {
+    if(calcMode == CM_PEM) { // as in _exportProgram above: _selectProgram reaches fnGoto, which inserts a GTO step while the editor is open
+      displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+      return;
+    }
     uint32_t programVersion = PROGRAM_VERSION;
     //char tmpString[3000];           //The concurrent use of the global tmpString
     //                                //as target does not work while the source is at
@@ -548,6 +610,14 @@ void _saveProgram(uint16_t label, ioFilePath_t path) {
     _saveEditorPosition(&savedPosition);
 
     _selectProgram(label);
+
+    // A program holding a 0 can be neither stored nor run; VALID puts the numbers in. The developer bulk export writes whatever is in memory and is
+    // not the user storing one program, so it is not refused.
+    if(path != ioPathSaveAllPrograms && structProgramHasUnnumbered()) {
+      displayCalcErrorMessage(ERROR_STRUCTURE_NOT_NUMBERED, ERR_REGISTER_LINE, REGISTER_X);
+      _restoreEditorPosition(&savedPosition);
+      return;
+    }
 
     ret = ioFileOpen(path, ioModeWrite);
 
@@ -602,6 +672,10 @@ void fnSaveProgram(uint16_t label) {
 
 
 void fnSaveAllPrograms(uint16_t unusedButMandatoryParameter) {
+  if(calcMode == CM_PEM) { // it selects each program itself, so it needs the same refusal the two above make
+    displayCalcErrorMessage(ERROR_OPERATION_UNDEFINED, ERR_REGISTER_LINE, REGISTER_X);
+    return;
+  }
   #if defined(PC_BUILD)
     const uint16_t savedCurrentLocalStepNumber = currentLocalStepNumber;
     uint16_t savedCurrentProgramNumber = currentProgramNumber;
@@ -759,4 +833,13 @@ void fnLoadProgram(uint16_t unusedButMandatoryParameter) {
     }
 
     temporaryInformation = TI_PROGRAM_LOADED;
+
+    #if defined(OPTION_STRUCTURED_PGM)
+      if(getSystemFlag(FLAG_AUTOVALID)) {
+        fnValid(NOPARAM); // the load leaves its own program open, so the setting numbers and checks it here, as it does on leaving the program editor
+        if(lastErrorCode == ERROR_NONE) { // VALID clears the confirmation as it leaves, so put it back; where it found a fault that message stands instead
+          temporaryInformation = TI_PROGRAM_LOADED;
+        }
+      }
+    #endif // OPTION_STRUCTURED_PGM
 }
