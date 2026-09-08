@@ -2166,6 +2166,10 @@ bool_t nimWhenButtonPressed = false;                  //PHM eRPN 2021-07
         fnTimerStop(TO_3S_CTFF);
         hideFunctionName();
 
+        if(item == ITM_NOP) {                                                   //the long press has run out to its NOP stage, so the key changes nothing and in CM_PEM adds no step
+          goto RELEASE_END;
+        }
+
         bool_t Norm_Key_00_released = !getSystemFlag(FLAG_USER) && (keyStateCode == 0) && (keyCode == Norm_Key_00_key) && Norm_Key_00.used && (!(lastIntegerBase >= 2 && getSystemFlag(FLAG_TOPHEX)));
 
         char *funcParam = (Norm_Key_00_released ? Norm_Key_00.funcParam : (char *)getUserKeyLabelString(keyCode * 6 + keyStateCode));
@@ -2725,8 +2729,12 @@ RELEASE_END:
                       printf("Switch - default: processKeyAction: calcMode=%d itemToBeAssigned=%d item=%d SHOWMODE=%u\n", calcMode, itemToBeAssigned, item, SHOWMODE);
                     #endif //PC_BUILD
           if(calcMode == CM_ASSIGN && itemToBeAssigned != 0 && item == ITM_USERMODE) {
+            uint16_t cnt = SOFTMENU_STACK_SIZE - 1;  // popSoftmenu() re-pushes HOME under FLAG_BASE_HOME, so the condition alone never ends
             while(softmenuStack[0].softmenuId > 1) {
               popSoftmenu();
+              if(cnt-- == 0) {
+                break;
+              }
             }
             if(previousCalcMode == CM_AIM) {
               softmenuStack[0].softmenuId = 1;

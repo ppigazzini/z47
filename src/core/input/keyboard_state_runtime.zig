@@ -844,6 +844,9 @@ pub const ITM_TIMER_R_S: i16 = 1786;
 pub const ITM_TIMER_RCL: i16 = 1779;
 pub const ITM_SIGMAPLUS: i16 = 433;
 pub const ITM_ADD: i16 = 95;
+pub const ITM_SUB: i16 = 96;
+pub const ITM_MULT: i16 = 98;
+pub const ITM_DIV: i16 = 99;
 // Lettered-register items (ITM_A=550 .. ITM_Z=575 already declared).
 pub const ITM_D: i16 = 553;
 pub const ITM_E: i16 = 554;
