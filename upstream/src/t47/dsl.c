@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <unistd.h>
 
 // Name of the output file written by --dslcommands
 const char *dslOpsFileName = "t47-op-commands.txt";
@@ -1027,6 +1028,80 @@ static int pressCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
   return JIM_OK;
 }
 
+static int snapAnyCmd(int argc, Jim_Obj *const *argv, void (*capture)(uint16_t));
+
+/**
+ * hold <keycode> <ms> [<basename>] - Hold a key down for <ms> milliseconds, then release it. Only "@k NN" and F1..F6 are held; the shifts and the ASCII
+ * injections have no separate press and release. The GTK main loop is what services the timers in a GUI run, so the wait below calls
+ * refreshTimer() itself every 5 ms, which is the same period c47-gtk.c uses. This is what makes the long press ladder reachable headless.
+ * A basename captures the screen while the key is still down, which is the only way to read the command preview a long press paints.
+ */
+static int holdCmd(Jim_Interp *interp, int argc, Jim_Obj *const *argv) {
+  static bool_t timersConfigured = false;
+  long ms;
+
+  if(!timersConfigured) {                    // the same list c47-gtk.c installs; a headless run returns before it and leaves every callback pointer unset
+    fnTimerReset();
+    fnTimerConfig(TO_FG_LONG, refreshFn, TO_FG_LONG);
+    fnTimerConfig(TO_CL_LONG, refreshFn, TO_CL_LONG);
+    fnTimerConfig(TO_FG_TIMR, refreshFn, TO_FG_TIMR);
+    fnTimerConfig(TO_FN_LONG, refreshFn, TO_FN_LONG);
+    fnTimerConfig(TO_FN_EXEC, execFnTimeout, 0);
+    fnTimerConfig(TO_3S_CTFF, shiftCutoff, TO_3S_CTFF);
+    fnTimerConfig(TO_CL_DROP, fnTimerDummy1, TO_CL_DROP);
+    fnTimerConfig(TO_TIMER_APP, execTimerApp, 0);
+    fnTimerConfig(TO_ASM_ACTIVE, refreshFn, TO_ASM_ACTIVE);
+    timersConfigured = true;
+  }
+
+  if(argc != 3 && argc != 4) {
+    Jim_SetResultString(interp, "hold: expected <keycode> <milliseconds> [<basename>]", -1);
+    return JIM_ERR;
+  }
+  if(Jim_GetLong(interp, argv[2], &ms) != JIM_OK) {
+    return JIM_ERR;
+  }
+
+  const char *keyCode = Jim_String(argv[1]);
+  bool_t fnKey = (keyCode[0] == 'F' && keyCode[1] >= '1' && keyCode[1] <= '6' && keyCode[2] == '\0');
+
+  if(!fnKey && strncmp(keyCode, "@k ", 3) != 0) {
+    Jim_SetResultFormatted(interp, "hold: '%s' is not F1..F6 or \"@k NN\"", keyCode);
+    return JIM_ERR;
+  }
+
+  const char *data = fnKey ? keyCode + 1 : keyCode + 3;
+
+  if(fnKey) {
+    btnFnClickedP(NULL, (gpointer)data);
+  }
+  else {
+    btnClickedP(NULL, (gpointer)data);
+  }
+
+  for(long elapsed = 0; elapsed < ms; elapsed += 5) {
+    usleep(5000);
+    refreshTimer(NULL);
+    if(elapsed % SCREEN_REFRESH_PERIOD == 0) {          // the second GTK timeout of a GUI run, which is what expires the command preview
+      refreshLcd(NULL);
+    }
+  }
+
+  if(argc == 4) {
+    Jim_Obj *snapArgv[2] = {argv[0], argv[3]};
+    snapAnyCmd(2, snapArgv, fnSNAP);
+  }
+
+  if(fnKey) {
+    btnFnClickedR(NULL, (gpointer)data);
+  }
+  else {
+    btnClickedR(NULL, (gpointer)data);
+  }
+
+  return JIM_OK;
+}
+
 /**
  * loadst [<filename>] - Load state from file
  */
@@ -1335,6 +1410,7 @@ void initDSL(void) {
   Jim_CreateCommand(interp, "asn",    asnCmd,    NULL, NULL);
   Jim_CreateCommand(interp, "catfn",  catfnCmd,  NULL, NULL);
   Jim_CreateCommand(interp, "flag",   flagCmd,   NULL, NULL);
+  Jim_CreateCommand(interp, "hold",   holdCmd,   NULL, NULL);
   Jim_CreateCommand(interp, "item",   itemCmd,   NULL, NULL);
   Jim_CreateCommand(interp, "loadst", loadstCmd, NULL, NULL);
   Jim_CreateCommand(interp, "menu",   menuCmd,   NULL, NULL);

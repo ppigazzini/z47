@@ -573,6 +573,12 @@ fn btnReleasedHost(not_used: ?*anyopaque, event: ?*anyopaque, data: ?*anyopaque)
             runtime.fnTimerStop(runtime.TO_3S_CTFF);
             runtime.hideFunctionName();
 
+            // The long press ran out to its NOP stage: the key changes nothing,
+            // and in CM_PEM it must not add a step.
+            if (item == runtime.ITM_NOP) {
+                break :rel;
+            }
+
             const Norm_Key_00_released = !runtime.getSystemFlag(runtime.FLAG_USER) and (runtime.keyStateCode == 0) and (@as(i16, runtime.currentKeyCode) == runtime.normKey00Key()) and runtime.Norm_Key_00.used and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX));
 
             var funcParam: [*c]u8 = if (Norm_Key_00_released) &runtime.Norm_Key_00.funcParam else runtime.getUserKeyLabelString(@intCast(keyCode * 6 + runtime.keyStateCode));
@@ -1388,8 +1394,8 @@ pub export fn Check_MultiPresses(result: [*c]i16, key_no: i8) callconv(.c) void 
     var tmpg: i16 = 0;
     var tmpg_: i16 = if (usr) runtime.kbd_usr[ki].gShifted else runtime.kbdStdAt(ki).gShifted;
 
-    if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM) and runtime.tam.mode == 0) {
-        if (((key_no >= 0 and key_no < 15) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124)) or ((tmpp_ == runtime.ITM_DRG and tmpf_ == runtime.ITM_USERMODE)) or (tmpp_ == runtime.ITM_XEQ and tmpf_ == runtime.ITM_AIM)) {
+    if ((runtime.calcMode == runtime.CM_NORMAL or runtime.calcMode == runtime.CM_NIM or (runtime.calcMode == runtime.CM_PEM and !runtime.getSystemFlag(runtime.FLAG_ALPHA))) and runtime.tam.mode == 0) {
+        if (((key_no >= 0 and key_no < 15) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124)) or ((tmpp_ == runtime.ITM_DRG and tmpf_ == runtime.ITM_USERMODE)) or (tmpp_ == runtime.ITM_XEQ and tmpf_ == runtime.ITM_AIM) or ((tmpp_ == runtime.ITM_ADD or tmpp_ == runtime.ITM_SUB or tmpp_ == runtime.ITM_MULT or tmpp_ == runtime.ITM_DIV) and (runtime.LongPressM == runtime.RBX_M1234 or runtime.LongPressM == runtime.RBX_M124))) {
             if (!runtime.shiftF and !runtime.shiftG and !(runtime.lastIntegerBase >= 2 and runtime.getSystemFlag(runtime.FLAG_TOPHEX) and key_no >= 0 and key_no <= 5)) {
                 lp1 = tmpf_;
                 tmpf = tmpf_;

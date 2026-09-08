@@ -1329,8 +1329,15 @@ pub fn implementation(comptime runtime: type) type {
 
                     else => {
                         if (runtime.calcMode == runtime.CM_ASSIGN and runtime.itemToBeAssigned != 0 and item == runtime.ITM_USERMODE) {
+                            // popSoftmenu() re-pushes HOME under FLAG_BASE_HOME, so the
+                            // condition alone never ends: bound the pops by the stack depth.
+                            var cnt: u16 = runtime.softmenuStack.len - 1;
                             while (runtime.softmenuStack[0].softmenuId > 1) {
                                 runtime.popSoftmenu();
+                                if (cnt == 0) {
+                                    break;
+                                }
+                                cnt -= 1;
                             }
                             if (runtime.previousCalcMode == runtime.CM_AIM) {
                                 runtime.softmenuStack[0].softmenuId = 1;
