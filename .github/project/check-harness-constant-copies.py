@@ -248,7 +248,9 @@ def main() -> int:
     # fresh checkout has the include root but not the header.
     generated_header = upstream_path(repo, "src/generated/constantPointers.h")
     if not generated_header.is_file():
-        return missing(f"{generated_header.relative_to(repo).as_posix()} absent -- run `zig build constants`")
+        return missing(
+            f"{generated_header.relative_to(repo).as_posix()} absent -- run `zig build constants`"
+        )
 
     headers = tracked_headers(repo)
     if not headers:
