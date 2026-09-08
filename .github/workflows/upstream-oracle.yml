@@ -224,10 +224,14 @@ jobs:
           mapfile -t imported_roots < <(bash .github/project/check-source-ownership.sh list-imported-roots)
           git ls-files -s -- "${imported_roots[@]}" > upstream-source.index
       - id: upload_source_index
-        # A CreateArtifact timeout is a transient artifact-service failure, not a
-        # verdict on this job: it happens before any bytes are sent and after every
-        # build, test and parity step has already passed. Tolerate the first attempt
-        # and retry once; if the retry fails too, the job fails as it always did.
+        # An artifact-service failure is not a verdict on this job: it lands after
+        # every build, test and parity step has already passed. Tolerate the first
+        # attempt and retry once; if the retry fails too, the job fails as it always
+        # did. The retry uploads under a -retry name because a first attempt that
+        # dies at FinalizeArtifact leaves the original name CLAIMED but unfinalized,
+        # and `overwrite` cannot clear it: overwrite deletes what ListArtifacts
+        # returns, which never includes an unfinalized artifact, while CreateArtifact
+        # still refuses the name with a 409.
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -237,7 +241,7 @@ jobs:
         if: steps.upload_source_index.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: upstream-source-index
+          name: upstream-source-index-retry
           path: upstream-source.index
           overwrite: true
 
@@ -939,10 +943,14 @@ jobs:
             cp "$generated_artifact" "$proof_dir/$generated_artifact"
           done < <(bash .github/project/workflow-imported-root-paths.sh generated-artifacts)
       - id: upload_linux_release
-        # A CreateArtifact timeout is a transient artifact-service failure, not a
-        # verdict on this job: it happens before any bytes are sent and after every
-        # build, test and parity step has already passed. Tolerate the first attempt
-        # and retry once; if the retry fails too, the job fails as it always did.
+        # An artifact-service failure is not a verdict on this job: it lands after
+        # every build, test and parity step has already passed. Tolerate the first
+        # attempt and retry once; if the retry fails too, the job fails as it always
+        # did. The retry uploads under a -retry name because a first attempt that
+        # dies at FinalizeArtifact leaves the original name CLAIMED but unfinalized,
+        # and `overwrite` cannot clear it: overwrite deletes what ListArtifacts
+        # returns, which never includes an unfinalized artifact, while CreateArtifact
+        # still refuses the name with a 409.
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -954,16 +962,20 @@ jobs:
         if: steps.upload_linux_release.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.linux_package_meta.outputs.artifact_name }}
+          name: ${{ steps.linux_package_meta.outputs.artifact_name }}-retry
           path: ci-artifacts/release/
           if-no-files-found: error
           retention-days: 14
           overwrite: true
       - id: upload_linux_generated
-        # A CreateArtifact timeout is a transient artifact-service failure, not a
-        # verdict on this job: it happens before any bytes are sent and after every
-        # build, test and parity step has already passed. Tolerate the first attempt
-        # and retry once; if the retry fails too, the job fails as it always did.
+        # An artifact-service failure is not a verdict on this job: it lands after
+        # every build, test and parity step has already passed. Tolerate the first
+        # attempt and retry once; if the retry fails too, the job fails as it always
+        # did. The retry uploads under a -retry name because a first attempt that
+        # dies at FinalizeArtifact leaves the original name CLAIMED but unfinalized,
+        # and `overwrite` cannot clear it: overwrite deletes what ListArtifacts
+        # returns, which never includes an unfinalized artifact, while CreateArtifact
+        # still refuses the name with a 409.
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -973,7 +985,7 @@ jobs:
         if: steps.upload_linux_generated.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: linux-host-parity-artifacts
+          name: linux-host-parity-artifacts-retry
           path: ci-artifacts/generated/
           overwrite: true
 
@@ -1192,10 +1204,14 @@ jobs:
           artifact_name=${{ steps.linux_firmware_meta.outputs.artifact_name }}
           EOF
       - id: upload_linux_firmware
-        # A CreateArtifact timeout is a transient artifact-service failure, not a
-        # verdict on this job: it happens before any bytes are sent and after every
-        # build, test and parity step has already passed. Tolerate the first attempt
-        # and retry once; if the retry fails too, the job fails as it always did.
+        # An artifact-service failure is not a verdict on this job: it lands after
+        # every build, test and parity step has already passed. Tolerate the first
+        # attempt and retry once; if the retry fails too, the job fails as it always
+        # did. The retry uploads under a -retry name because a first attempt that
+        # dies at FinalizeArtifact leaves the original name CLAIMED but unfinalized,
+        # and `overwrite` cannot clear it: overwrite deletes what ListArtifacts
+        # returns, which never includes an unfinalized artifact, while CreateArtifact
+        # still refuses the name with a 409.
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1207,7 +1223,7 @@ jobs:
         if: steps.upload_linux_firmware.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}
+          name: ${{ steps.linux_firmware_meta.outputs.artifact_name }}-retry
           path: ci-artifacts/firmware/
           if-no-files-found: error
           retention-days: 14
@@ -1439,10 +1455,14 @@ jobs:
           artifact_name=${{ steps.macos_package_meta.outputs.artifact_name }}
           EOF
       - id: upload_macos_release
-        # A CreateArtifact timeout is a transient artifact-service failure, not a
-        # verdict on this job: it happens before any bytes are sent and after every
-        # build, test and parity step has already passed. Tolerate the first attempt
-        # and retry once; if the retry fails too, the job fails as it always did.
+        # An artifact-service failure is not a verdict on this job: it lands after
+        # every build, test and parity step has already passed. Tolerate the first
+        # attempt and retry once; if the retry fails too, the job fails as it always
+        # did. The retry uploads under a -retry name because a first attempt that
+        # dies at FinalizeArtifact leaves the original name CLAIMED but unfinalized,
+        # and `overwrite` cannot clear it: overwrite deletes what ListArtifacts
+        # returns, which never includes an unfinalized artifact, while CreateArtifact
+        # still refuses the name with a 409.
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1454,7 +1474,7 @@ jobs:
         if: steps.upload_macos_release.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.macos_package_meta.outputs.artifact_name }}
+          name: ${{ steps.macos_package_meta.outputs.artifact_name }}-retry
           path: ci-artifacts/release/
           if-no-files-found: error
           retention-days: 14
@@ -1923,10 +1943,14 @@ jobs:
             smoke_launcher r47.cmd
           )
       - id: upload_windows_release
-        # A CreateArtifact timeout is a transient artifact-service failure, not a
-        # verdict on this job: it happens before any bytes are sent and after every
-        # build, test and parity step has already passed. Tolerate the first attempt
-        # and retry once; if the retry fails too, the job fails as it always did.
+        # An artifact-service failure is not a verdict on this job: it lands after
+        # every build, test and parity step has already passed. Tolerate the first
+        # attempt and retry once; if the retry fails too, the job fails as it always
+        # did. The retry uploads under a -retry name because a first attempt that
+        # dies at FinalizeArtifact leaves the original name CLAIMED but unfinalized,
+        # and `overwrite` cannot clear it: overwrite deletes what ListArtifacts
+        # returns, which never includes an unfinalized artifact, while CreateArtifact
+        # still refuses the name with a 409.
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1938,7 +1962,7 @@ jobs:
         if: steps.upload_windows_release.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ steps.windows_package_meta.outputs.artifact_name }}
+          name: ${{ steps.windows_package_meta.outputs.artifact_name }}-retry
           path: ci-artifacts/release/
           if-no-files-found: error
           retention-days: 14
