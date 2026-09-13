@@ -859,7 +859,9 @@ void assignToUserMenu(uint16_t position) {
     _assignItem(&userMenus[currentUserMenu].menuItem[position]);
   }
   cachedDynamicMenu = 0;
-  refreshScreen(22);
+  if(!bulkAssign) {                //a whole menu being filled repaints once at the end, from the caller that filled it, instead of once for every position written
+    refreshScreen(22);
+  }
 }
 
 

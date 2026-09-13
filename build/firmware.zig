@@ -196,6 +196,7 @@ fn frontierDistributionStrip(base: frontier.RuntimeObjectOptions, dmcp_package: 
     opts.option_slvp_poly = false; // !OPTION_SLVP_POLY: no SLVP softkey
     opts.option_infsums = false; // !OPTION_INFSUMS: no infinity-sum items
     opts.option_structured_pgm = false; // !OPTION_STRUCTURED_PGM: the STRUCT items report that this hardware cannot run them
+    opts.option_algdep = false; // !OPTION_ALGDEP: x->POLY and V->SUM=0 bind itemToBeCoded, leave the POLY menu and are struck out
     const pkg = dmcp_package orelse return opts;
     // Each strip_* below is the inverse of the matching upstream OPTION_*, which
     // is an include flag: defined means the feature is compiled in, and its
@@ -255,6 +256,7 @@ fn mathematicsPackageOptions(base: math_command_wrappers.RuntimeObjectOptions, d
     opts.option_vector = false;
     opts.option_xfn_1000 = false;
     opts.option_slvp_poly = false;
+    opts.option_algdep = false;
     opts.option_cubic_159 = false;
     opts.option_eigen_159 = false;
     // Settled per package. ELLIPTIC survives in package 2 alone; BESSEL, ORTHO

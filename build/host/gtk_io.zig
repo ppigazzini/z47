@@ -392,18 +392,6 @@ pub fn ioEof(handle: ?*anyopaque) c_int {
     return 1;
 }
 
-pub fn ioFileRemove(path: c_int, error_number: ?*u32) c_int {
-    var filename: [400]u8 = @splat(0);
-    const ret = ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) return ret;
-
-    const result = remove(&filename);
-    if (result == -1 and error_number != null) {
-        error_number.?.* = @intCast(std.c._errno().*);
-    }
-    return if (result != -1) FILE_OK else FILE_ERROR;
-}
-
 pub fn showWarning(string: [*c]u8) void {
     const dialog = gtk_message_dialog_new(
         @ptrCast(parentWindow()),

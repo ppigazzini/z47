@@ -8,6 +8,7 @@ Which of the 5 files (PACKAGE 1 ... PACKAGE 4 or dmcp5) do I load?
 ## Long answer
 
 On the DM42n there is sufficient flash storage, so there is no package choice to make: all functions are always available.  
+Some features are carried only by **dmcp5** and by the simulator, because they do not fit any of the four original-DM42 packages: the 1000 digit X.FN engine, the 2D/3D vector conversions, the 159 digit cubic, quadratic and eigenvalue paths, and **x→POLY / V→Σ=0**, the algebraic number identification commands (3,896 bytes).  
 **dmcp5** is the full C47 firmware and is the correct and only option. It does not fit on the original DM42.
 
 On the original DM42, flash space is constrained. To make C47 fit, the firmware is built in four mutually exclusive variants:

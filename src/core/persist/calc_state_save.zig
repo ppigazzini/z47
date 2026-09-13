@@ -162,6 +162,7 @@ extern var PLOT_AXIS: u8;
 extern var PLOT_ZMY: i8;
 extern var firstDayOfWeek: u8;
 extern var firstWeekOfYearDay: u8;
+extern var retainedPageFirstItem: [2]i16; // NUMBER_OF_RETAINED_PAGE_MENUS
 
 // Section-framing scratch buffer; mirrors the `char *tmpString = malloc(3000)`
 // that doSave and fnSaveDataRegisters each own upstream (deliberately distinct
@@ -506,6 +507,12 @@ pub fn writeSaveSections() void {
     saveField("PLOT_ZMY", "%u\n", .{cu(@as(u8, @bitCast(PLOT_ZMY)))});
     saveField("firstDayOfWeek", "%u\n", .{cu(firstDayOfWeek)});
     saveField("firstWeekOfYearDay", "%u\n", .{cu(firstWeekOfYearDay)});
+    abi.fmtCStr(b(), "retainedPageFirstItem\n", .{});
+    save(b());
+    for (retainedPageFirstItem, 0..) |first_item, n| { // one firstItem per entry of retainedPageMenu[], space separated on one line
+        abi.fmtCStr(b(), "{d}{s}", .{ first_item, if (n == retainedPageFirstItem.len - 1) "\n" else " " });
+        save(b());
+    }
 
     {
         const pdelay = @as(*const u16, @ptrCast(@alignCast(&printerState[12]))).*;

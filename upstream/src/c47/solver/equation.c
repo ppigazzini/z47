@@ -490,7 +490,7 @@ void showEquation(uint16_t equationId, uint16_t startAt, uint16_t cursorAt, bool
     *cursorShown = false;
     *rightEllipsis = false;
 
-    for(uint32_t i = 0; i < 7; ++i) {
+    for(uint32_t i = 0; i < 7 && *tmpPtr != 0; ++i) {
       tmpPtr += ((*tmpPtr) & 0x80) ? 2 : 1;
       if(*tmpPtr == ':') {
         inLabel = (startAt <= (i + 1));
@@ -1417,7 +1417,7 @@ void parseEquation(uint16_t equationId, uint16_t parseMode, char *buffer, char *
    // }
   }
 
-  for(uint32_t i = 0; i < 7; ++i) {
+  for(uint32_t i = 0; i < 7 && *strPtr != 0; ++i) {
     strPtr += ((*strPtr) & 0x80) ? 2 : 1;
     if(*strPtr == ':') {
       labeled = true;

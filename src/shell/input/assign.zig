@@ -138,7 +138,7 @@ const NOT_CONFIRMED: u16 = 9878;
 const NOPARAM: u16 = 9876;
 const INVALID_VARIABLE: i16 = 2199;
 const FIRST_LABEL: i16 = 2200;
-const LAST_ITEM: i32 = 3349;
+const LAST_ITEM: i32 = 3481;
 const CAT_STATUS: u16 = 240;
 const CAT_FNCT: u16 = 16;
 
@@ -177,6 +177,7 @@ extern var calcMode: u8;
 extern var previousCalcMode: u8;
 extern var itemToBeAssigned: i16;
 extern var cachedDynamicMenu: i16;
+extern var bulkAssign: bool_t;
 extern var aimBuffer: [*c]u8;
 extern var tmpString: [*c]u8;
 extern var tamBuffer: [*c]u8;
@@ -995,7 +996,9 @@ pub export fn assignToUserMenu(position: u16) callconv(.c) void {
         _assignItem(@ptrCast(&userMenus[currentUserMenu].menuItem[position]));
     }
     cachedDynamicMenu = 0;
-    frontier_screen.refreshScreen(22);
+    if (!bulkAssign) { // a whole menu being filled repaints once at the end, from the caller that filled it, instead of once for every position written
+        frontier_screen.refreshScreen(22);
+    }
 }
 
 // ===========================================================================

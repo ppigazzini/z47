@@ -98,7 +98,7 @@ const vmNormal: c_int = 0;
 
 const STD_ELLIPSIS = "\xa0\x26";
 
-const LAST_ITEM: u32 = 3349;
+const LAST_ITEM: u32 = 3481;
 
 // ---------------------------------------------------------------------------
 // Constant blob

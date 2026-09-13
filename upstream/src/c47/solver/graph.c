@@ -1228,8 +1228,12 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
 
       jumpedBack = false;
       // x = max(x_min, min(x_max, x))
-      if(realCompareGreaterThan(x, x_max_r)) realCopy(x_max_r, x);
-      if(realCompareLessThan(x, x_min_r)) realCopy(x_min_r, x);
+      if(realCompareGreaterThan(x, x_max_r)) {
+        realCopy(x_max_r, x);
+      }
+      if(realCompareLessThan(x, x_min_r)) {
+        realCopy(x_min_r, x);
+      }
 
       convertRealToReal34RegisterPush(x, REGISTER_X);
       execute_rpn_function_graphAcc();
@@ -1262,7 +1266,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
 
 
 
-// === > === > === > Begin of skip and jump section  
+// === > === > === > Begin of skip and jump section
 
       // Calculate gradient and detect anomalies
       if(count > 0) {
@@ -1797,7 +1801,7 @@ bool_t detectTrueDiscontinuityWithAsymptote(const real_t *y0, const real_t *y1, 
         #endif // GRAPHDEBUG
       }
 
-// < === < === < === End of skip and jump section  
+// < === < === < === End of skip and jump section
 
 
       // Add point to plot (skip if in high-res buffering mode or jumped back)

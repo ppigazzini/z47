@@ -12,8 +12,55 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   DEBIAN_FRONTEND: noninteractive
 
+# ---------------------------------------------------------------------------
+# Path gating
+#
+# docs/ now holds two document trees: the application notes and, since the
+# manual moved here, a 260 page book that changes far more often than the
+# firmware. Without a gate a chapter typo runs a macOS build.
+#
+# GitLab's `changes:` matcher is union only, with no negation, so the gate
+# has to be a positive include list of what really builds the firmware
+# rather than an exclusion of docs/. Add a path here when a new one starts
+# feeding a build.
+#
+# A tag always builds everything, whatever changed: `upload` and `release`
+# take the artefacts of these jobs, so a skipped build would publish an
+# incomplete release.
+# ---------------------------------------------------------------------------
+.firmware-source-changes: &firmware-source-changes
+  - src/**/*
+  - res/**/*
+  - dep/**/*
+  - subprojects/**/*
+  - tools/**/*
+  - LIBRARY/**/*
+  - PROGRAMS/**/*
+  - Makefile
+  - meson.build
+  - meson_options.txt
+  - tag2ver.py
+  - .gitlab-ci.yml
+
+.firmware-rules: &firmware-rules
+  - if: $CI_COMMIT_TAG
+  - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    changes: *firmware-source-changes
+  - if: $CI_COMMIT_BRANCH
+    changes: *firmware-source-changes
+
+# The owner's manual. TeX Live and nothing else: no Python, no pixi, no
+# database, and no clone of this repository for the fonts, because
+# res/fonts/ is in the tree the job already has.
+.manual-source-changes: &manual-source-changes
+  - docs/manual/**/*
+  - docs/styles/**/*
+  - docs/refdb47/data/**/*
+  - .gitlab-ci.yml
+
 macOS:
   stage: build
+  rules: *firmware-rules
   image: macos-26-xcode-26
   script:
     - HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install ccache ninja python@3.9 gtk+3 gmp pulseaudio xlsxio
@@ -41,6 +88,7 @@ macOS:
 
 linux:
   stage: build
+  rules: *firmware-rules
   before_script:
     - *linux-script-before
     - apt-get install -qq -y libpulse-dev
@@ -55,6 +103,7 @@ linux:
 
 windows:
   stage: build
+  rules: *firmware-rules
   script:
     - C:\msys64\msys2_shell.cmd -defterm -ucrt64 -no-start -here -c "make dist_windows"
   artifacts:
@@ -66,6 +115,7 @@ windows:
 
 dmcp:
   stage: build
+  rules: *firmware-rules
   before_script:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
@@ -80,6 +130,7 @@ dmcp:
 
 dmcp5:
   stage: build
+  rules: *firmware-rules
   before_script:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
@@ -94,6 +145,7 @@ dmcp5:
 
 dmcp5r47:
   stage: build
+  rules: *firmware-rules
   before_script:
     - *linux-script-before
     - apt-get install -qq -y gcc-arm-none-eabi
@@ -108,6 +160,7 @@ dmcp5r47:
 
 testSuite:
   stage: build
+  rules: *firmware-rules
   before_script:
     - *linux-script-before
   script:
@@ -117,11 +170,31 @@ testSuite:
 
 codeDocs:
   stage: build
+  rules: *firmware-rules
   before_script:
     - *linux-script-before
     - apt-get install -qq -y doxygen python3-sphinx python3-breathe furo
   script:
     - make docs
+
+manual:
+  stage: build
+  image: texlive/texlive:latest
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: *manual-source-changes
+    - if: $CI_COMMIT_BRANCH
+      changes: *manual-source-changes
+  script:
+    - make -C docs/manual pdf
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - docs/manual/C47_R47_calc.pdf
+  tags:
+    - saas-linux-small-amd64
 
 upload:
   stage: upload

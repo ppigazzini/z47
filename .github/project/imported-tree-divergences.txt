@@ -18,6 +18,16 @@
 # Published application notes and their sources: 101 MiB, two thirds of the whole
 # tracked tree, read by nothing in the build or CI. Read them upstream.
 docs/appnotes
+# The owner's manual (LaTeX sources, its build and its contributor notes), the
+# RefDB47 reference tables with their two checkers, the LaTeX style files the
+# manual and the appnotes share, and the two migration notes that brought them
+# in. Same class as the appnotes: documents, read by nothing in the build, the
+# test corpus or CI, and upstream gates its own manual job on these paths alone.
+docs/manual
+docs/refdb47
+docs/styles
+docs/appnote-checker-findings.md
+docs/manual-migration-proposal.md
 # Hardware-lab and benchmark harnesses: bench rigs for physical DM42 units.
 tools/hwtest
 tools/bench

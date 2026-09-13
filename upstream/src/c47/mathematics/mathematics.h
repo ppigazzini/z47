@@ -11,6 +11,7 @@
   #include "10pow.h"
   #include "addition.h"
   #include "agm.h"
+  #include "algdep.h"
   #include "arccos.h"
   #include "arccosh.h"
   #include "arcsin.h"

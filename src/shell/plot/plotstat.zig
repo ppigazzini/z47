@@ -360,6 +360,7 @@ extern fn decNumberSubtract(res: *real_t, a: *align(1) const real_t, b: *align(1
 extern fn decNumberDivide(res: *real_t, a: *align(1) const real_t, b: *align(1) const real_t, ctx: *realContext_t) *real_t;
 extern fn decNumberFromInt32(res: *real_t, source: i32) *real_t;
 extern fn realSetZero(v: *real_t) void;
+extern fn realSetOne(v: *real_t) void;
 extern fn realCompareLessThan(a: *align(1) const real_t, b: *align(1) const real_t) bool_t;
 extern fn realToInt32C47(r: *align(1) const real_t, err: ?*bool_t) i32;
 inline fn realCopy(src: *align(1) const real_t, dst: *real_t) void {
@@ -589,7 +590,7 @@ pub export fn statGraphReset() callconv(.c) void {
     clearSystemFlag(FLAG_SHOWX);
     clearSystemFlag(FLAG_PLINE);
     realSetZero(y_min);
-    realCopy(const_1(), y_max);
+    realSetOne(y_max);
 }
 
 // ===========================================================================
@@ -1110,6 +1111,46 @@ fn checkWidthWithPrefix(itemName: [*c]const u8, numStr: [*c]const u8, max_width:
 }
 
 // ===========================================================================
+// dropRadixMark (static)
+// ===========================================================================
+// atoi on the exponent tail: leading blanks, an optional sign, then digits.
+fn atoiTail(text: []const u8) i32 {
+    var i: usize = 0;
+    while (i < text.len and (text[i] == ' ' or (text[i] >= 0x09 and text[i] <= 0x0d))) : (i += 1) {}
+    var negative = false;
+    if (i < text.len and (text[i] == '-' or text[i] == '+')) {
+        negative = text[i] == '-';
+        i += 1;
+    }
+    var value: i32 = 0;
+    while (i < text.len and text[i] >= '0' and text[i] <= '9') : (i += 1) {
+        value = value * 10 + @as(i32, text[i] - '0');
+    }
+    return if (negative) -value else value;
+}
+
+// On a narrow key the radix mark of 1.2E6 is the one glyph that will not fit. The same number with the mantissa digits shifted left and the exponent taken down by the
+// same count needs no mark: 12E5. Second choice only, tried after the marked form has been refused, so a key with room for 1.2E6 still draws it.
+fn dropRadixMark(str: [*c]u8) void {
+    const text = std.mem.span(@as([*:0]u8, @ptrCast(str)));
+    const decimal_pos = std.mem.indexOfScalar(u8, text, '.') orelse return;
+    const e_pos = std.mem.indexOfScalarPos(u8, text, decimal_pos, 'E') orelse return;
+    if (e_pos == decimal_pos + 1) {
+        return;
+    }
+    const shift = e_pos - decimal_pos - 1; // the digits that stood after the mark, and how far the exponent comes down
+    const exponent = atoiTail(text[e_pos + 1 ..]) - @as(i32, @intCast(shift));
+    const left = decimal_pos;
+    var mantissa: [40]u8 = undefined;
+    if (exponent == 0 or left + shift >= mantissa.len) {
+        return; // 12E0 says nothing a plain 12 does not
+    }
+    @memcpy(mantissa[0..left], text[0..left]);
+    @memcpy(mantissa[left .. left + shift], text[decimal_pos + 1 .. decimal_pos + 1 + shift]);
+    abi.fmtCStr(str, "{s}E{d}", .{ mantissa[0 .. left + shift], exponent });
+}
+
+// ===========================================================================
 // cleanupTrailingZeros (static)
 // ===========================================================================
 fn cleanupTrailingZeros(str: [*c]u8) void {
@@ -1149,15 +1190,19 @@ pub export fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemN
         return done(buf, savedDisplayFormatDigits, saveddisplayFormat, ovrENG);
     }
     realLog10(&real, &reall10, &ctxtReal39);
-    if (frontier_real_type.realToInt32C47(&reall10, null) < digits) {
-        displayFormat = DF_SF;
-        displayFormatDigits = @intCast(digits);
-    } else {
-        displayFormat = DF_FIX;
-        displayFormatDigits = 0;
-    }
+    const exp10: i32 = frontier_real_type.realToInt32C47(&reall10, null);
     var ddd: c_int = 8;
     while (ddd >= 2) : (ddd -= 1) {
+        if (exp10 < digits) { // the integer part fits the significant count, so SIG runs the whole ladder here
+            displayFormat = DF_SF; // and ends on one digit at ddd 2, the same floor the SCI arm below has
+            displayFormatDigits = @intCast(@min(digits, ddd - 2));
+        } else if (exp10 < ddd) {
+            displayFormat = DF_FIX; // the whole integer fits in ddd digits, so it is written out with no ten exponent
+            displayFormatDigits = 0;
+        } else { // ddd digits cannot hold the number, so real34ToDisplayString2 leaves its FIX block and
+            displayFormat = DF_SF; // prints the SCI form, whose mantissa length is displayFormatDigits. FIX has no
+            displayFormatDigits = @intCast(@min(digits, ddd - 2)); // such count, and its 0 gave that form one digit: 1234567 as 1E6. SF is the mode that
+        } // holds one. The ladder ends on that same single digit at ddd 2, so nothing that used to fit stops fitting
         updateDisplayValueX = true;
         displayValueX[0] = 0;
         frontier_display.real34ToDisplayString(real34, amNone, buf, &standardFont, if (digitswidthLimit == 0) 60 else @intCast(digitswidthLimit), @intCast(ddd), @intFromBool(LIMITEXP), @intFromBool(!FRONTSPACE), NOIRFRAC);
@@ -1165,6 +1210,11 @@ pub export fn formatDoubleWidth(real34: *align(1) real34_t, digits: c_int, itemN
         _ = strcpy(buf, &displayValueX);
         cleanupTrailingZeros(buf);
 
+        if (checkWidthWithPrefix(itemName, buf, @intCast(actual_max_width)) != 0) {
+            success.* = false;
+            return done(buf, savedDisplayFormatDigits, saveddisplayFormat, ovrENG);
+        }
+        dropRadixMark(buf); // the marked form was refused, so offer the same digits without the mark
         if (checkWidthWithPrefix(itemName, buf, @intCast(actual_max_width)) != 0) {
             success.* = false;
             return done(buf, savedDisplayFormatDigits, saveddisplayFormat, ovrENG);

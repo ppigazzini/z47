@@ -259,6 +259,7 @@ inline fn stringToReal(source: [*:0]const u8, destination: *real_t, ctxt: *realC
 }
 
 extern fn realSetOne(value: *real_t) void;
+extern fn realSetNegativeOne(value: *real_t) void;
 extern fn realSetZero(value: *real_t) void;
 extern fn realSetNaN(value: *real_t) void;
 extern fn realCompareEqual(number1: *align(1) const real_t, number2: *align(1) const real_t) bool;
@@ -375,14 +376,14 @@ fn doubleExp(x: *const real_t, exp: *real_t, expm1: *real_t, realContext: *realC
     var v: real_t = undefined;
     var w: real_t = undefined;
 
-    _ = decNumberExp(exp, x, realContext);
+    realExp(x, exp, realContext);
 
     // Code from WP34S_ExpM1 to get accurate result for e^x-1
     realSubtract(exp, const_1(), &v, realContext);
     if (realIsZero(&v)) { // |x| is very little
         realCopy(x, expm1);
     } else if (realCompareEqual(&v, const__1())) {
-        realCopy(const__1(), expm1);
+        realSetNegativeOne(expm1);
     } else if (realCompareAbsLessThan(x, const_1on10())) {
         realMultiply(&v, x, &w, realContext);
         WP34S_Ln(exp, &v, realContext);
@@ -430,11 +431,11 @@ fn calculateEffectiveRate(iPercentPerYear: *const real_t, compoundPerYear: *cons
     var temp: real_t = undefined;
     var exponent: real_t = undefined;
 
-    if (decNumberIsZero(compoundPerYear)) {
+    if (realIsZero(compoundPerYear)) {
         err.* = tvmRangeError(6);
         return;
     }
-    if (decNumberIsZero(paymentPerYear)) {
+    if (realIsZero(paymentPerYear)) {
         err.* = tvmRangeError(5);
         return;
     }
@@ -443,7 +444,7 @@ fn calculateEffectiveRate(iPercentPerYear: *const real_t, compoundPerYear: *cons
     realDivide(&ic, compoundPerYear, &ic, ctxtTvm());
 
     realSubtract(compoundPerYear, paymentPerYear, &temp, ctxtTvm());
-    if (decNumberIsZero(&temp)) {
+    if (realIsZero(&temp)) {
         realCopy(&ic, ip);
         err.* = 0;
         return;
@@ -558,7 +559,7 @@ fn calculatePMT(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const re
     var denominator: real_t = undefined;
     var err: c_int = 0;
 
-    if (decNumberIsZero(npper)) {
+    if (realIsZero(npper)) {
         return tvmRangeError(2);
     }
 
@@ -591,7 +592,7 @@ fn calculatePMT(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const re
     realFMA(&ip, p, const_1(), &temp2, ctxtTvm());
     realMultiply(&temp2, &temp3, &denominator, ctxtTvm());
 
-    if (decNumberIsZero(&denominator)) {
+    if (realIsZero(&denominator)) {
         return tvmRangeError(0);
     }
 
@@ -618,7 +619,7 @@ fn calculateNPPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const 
     }
 
     if (realCompareAbsLessThan(&ip, const_1e_37())) {
-        if (decNumberIsZero(pmt)) {
+        if (realIsZero(pmt)) {
             return tvmRangeError(0);
         }
         realAdd(pv, fv, &temp1, ctxtTvm());
@@ -627,8 +628,8 @@ fn calculateNPPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const 
         return 0;
     }
 
-    if (decNumberIsZero(pmt)) {
-        if (decNumberIsZero(pv)) {
+    if (realIsZero(pmt)) {
+        if (realIsZero(pv)) {
             return tvmRangeError(7);
         }
 
@@ -642,7 +643,7 @@ fn calculateNPPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const 
         WP34S_Ln(&ratio, &lnRatio, ctxtTvm());
         WP34S_Ln1P(&ip, &lnBase, ctxtTvm());
 
-        if (decNumberIsZero(&lnBase)) {
+        if (realIsZero(&lnBase)) {
             return tvmRangeError(0);
         }
 
@@ -658,7 +659,7 @@ fn calculateNPPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const 
     realMultiply(pv, &ip, &temp1, ctxtTvm());
     realFMA(pmt, &temp2, &temp1, &b, ctxtTvm());
 
-    if (decNumberIsZero(&b)) {
+    if (realIsZero(&b)) {
         return tvmRangeError(0);
     }
 
@@ -671,7 +672,7 @@ fn calculateNPPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const 
     WP34S_Ln(&ratio, &lnRatio, ctxtTvm());
     WP34S_Ln1P(&ip, &lnBase, ctxtTvm());
 
-    if (decNumberIsZero(&lnBase)) {
+    if (realIsZero(&lnBase)) {
         return tvmRangeError(0);
     }
 
@@ -691,18 +692,18 @@ fn calculatePPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const r
     var ratio: real_t = undefined;
     var ip_effective: real_t = undefined;
 
-    if (decNumberIsZero(compoundPerYear)) {
+    if (realIsZero(compoundPerYear)) {
         return tvmRangeError(6);
     }
 
     realDivide(iPercentPerYear, const_100(), &ic, ctxtTvm());
     realDivide(&ic, compoundPerYear, &ic, ctxtTvm());
 
-    if (decNumberIsZero(pmt)) {
-        if (decNumberIsZero(pv)) {
+    if (realIsZero(pmt)) {
+        if (realIsZero(pv)) {
             return tvmRangeError(7);
         }
-        if (decNumberIsZero(npper)) {
+        if (realIsZero(npper)) {
             return tvmRangeError(2);
         }
 
@@ -746,7 +747,7 @@ fn calculatePPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const r
     }
     WP34S_Ln1P(&ip_effective, &lnTarget, ctxtTvm());
 
-    if (decNumberIsZero(&lnTarget)) {
+    if (realIsZero(&lnTarget)) {
         return tvmRangeError(0);
     }
 
@@ -774,15 +775,15 @@ fn calculateCPER(pv: *const real_t, fv: *const real_t, iPercentPerYear: *const r
     var iterations: c_int = 0;
     const maxIterations: c_int = 100;
 
-    if (decNumberIsZero(paymentPerYear)) {
+    if (realIsZero(paymentPerYear)) {
         return tvmRangeError(5);
     }
 
-    if (decNumberIsZero(pmt)) {
-        if (decNumberIsZero(pv)) {
+    if (realIsZero(pmt)) {
+        if (realIsZero(pv)) {
             return tvmRangeError(7);
         }
-        if (decNumberIsZero(npper)) {
+        if (realIsZero(npper)) {
             return tvmRangeError(2);
         }
 
@@ -1391,7 +1392,7 @@ pub export fn tvmEquation(variable: calcRegister_t, ioVal: *real_t, derivative: 
                 switch (variableU) {
                     RESERVED_VARIABLE_PMT => realCopy(&nPer, deriv), // df/dPMT = N
                     RESERVED_VARIABLE_PV => realSetOne(deriv), // df/dPV = 1
-                    RESERVED_VARIABLE_FV => realCopy(const__1(), deriv), // df/dFV = -1
+                    RESERVED_VARIABLE_FV => realSetNegativeOne(deriv), // df/dFV = -1
                     RESERVED_VARIABLE_NPPER => realCopy(&pmt, deriv), // df/dN = PMT
                     else => realSetNaN(deriv), // IPONA: NaN -> Brent fallback
                 }

@@ -382,6 +382,9 @@ pub inline fn uInt32ToReal(source: u32, destination: *align(1) real_t) void {
 pub inline fn realSetOne(r: *align(1) real_t) void {
     _ = decNumberFromInt32(r, 1);
 }
+pub inline fn realSetNegativeOne(r: *align(1) real_t) void {
+    _ = decNumberFromInt32(r, -1);
+}
 pub inline fn realSetZero(r: *align(1) real_t) void {
     _ = decNumberFromInt32(r, 0);
 }
@@ -960,7 +963,7 @@ pub export fn WP34S_ExpM1(x: *align(1) const real_t, res: *align(1) real_t, real
     if (realIsZero(&v)) { // |x| is very little
         realCopy(x, res);
     } else if (math_comparison_reals.realCompareEqual(&v, @alignCast(const__1()))) {
-        realCopy(const__1(), res);
+        realSetNegativeOne(res);
     } else if (math_comparison_reals.realCompareAbsLessThan(@alignCast(x), @alignCast(const_1on10()))) {
         realMultiply(&v, x, &w, realContext);
         WP34S_Ln(&u, &v, realContext);

@@ -66,6 +66,7 @@ mathematics/10pow	core/numeric/command_wrappers;core/numeric/powerlog/powlog_pow
 mathematics/2pow	core/numeric/command_wrappers;core/numeric/powerlog/powlog_power	port	symbol
 mathematics/addition	core/numeric/arithmetic/addition_cells;core/numeric/arithmetic/dispatch_command	port	symbol
 mathematics/agm	core/numeric/special/agm	port	symbol
+mathematics/algdep	core/numeric/algdep	port	symbol
 mathematics/arccos	core/numeric/trig/inverse_trig_command;core/numeric/trig/inverse_trig_complex_command;core/numeric/trig/inverse_trig_real_command;core/numeric/trig/real_trig	port	symbol
 mathematics/arccosh	core/numeric/trig/inverse_trig_command;core/numeric/trig/inverse_trig_complex_command;core/numeric/trig/inverse_trig_real_command	port	symbol
 mathematics/arcsin	core/numeric/trig/inverse_trig_command;core/numeric/trig/inverse_trig_complex_command;core/numeric/trig/inverse_trig_real_command;core/numeric/trig/real_trig	port	symbol

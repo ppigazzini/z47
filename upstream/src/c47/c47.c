@@ -54,6 +54,7 @@ bool_t                 lastProgramListEnd;
 bool_t                 programListEnd;
 bool_t                 pemCursorIsZerothStep;
 bool_t                 skippedStackLines = false;
+bool_t                 bulkAssign = false;
 bool_t                 iterations = false;
 bool_t                 explicitTaylorIterVisibilitySelection = false;
 
@@ -194,6 +195,7 @@ int16_t                lineTWidth;
 int16_t                rbrRegister;
 int16_t                catalog;
 int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+int16_t                retainedPageFirstItem[NUMBER_OF_RETAINED_PAGE_MENUS];
 int16_t                lastKeyItemDetermined = 0;
 bool_t                 lastUserMode = false;         //used in btnReleased and btnFnReleased
 int16_t                lastItem = 0;                 //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP

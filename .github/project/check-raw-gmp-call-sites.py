@@ -65,7 +65,24 @@ ALLOWED_FILES = {
 # Individual sites that are raw for a stated reason. Keyed "path:line" is deliberately
 # NOT used -- a line number rots on the next edit. Keyed by path plus the exact call
 # text, so the reason survives a move and dies with the call.
-ALLOWED_SITES: dict[tuple[str, str], str] = {}
+ALLOWED_SITES: dict[tuple[str, str], str] = {
+    # c43's algdep.c calls the raw operations. Every lattice entry is bounded by
+    # ALGDEP_SCALE (30 digits) and ALGDEP_MAX_DEGREE (10): the Gram determinants run
+    # to about 2*ALGDEP_SCALE digits whatever the degree, N^10 of a 34 digit input is
+    # 340, and the reduction is cut off by ALGDEP_GUARD. Nothing approaches
+    # MAX_LONG_INTEGER_SIZE_IN_BITS, and the checked operator's overflow error would
+    # be a refusal upstream never raises. One wrapper per operation is the whole
+    # raw surface of that owner.
+    ("src/core/numeric/algdep.zig", "__gmpz_mul(rop, op1, op2);"): (
+        "c43's algdep.c lattice, bounded by ALGDEP_SCALE and ALGDEP_MAX_DEGREE; the one raw mul"
+    ),
+    ("src/core/numeric/algdep.zig", "__gmpz_add(rop, op1, op2);"): (
+        "c43's algdep.c lattice, bounded by ALGDEP_SCALE and ALGDEP_MAX_DEGREE; the one raw add"
+    ),
+    ("src/core/numeric/algdep.zig", "__gmpz_sub(rop, op1, op2);"): (
+        "c43's algdep.c lattice, bounded by ALGDEP_SCALE and ALGDEP_MAX_DEGREE; the one raw sub"
+    ),
+}
 
 CALL_RE = re.compile(r"(?:^|[^\w.])(?:(\w+)\.)?(__gmpz_|mpz_)(mul|add|sub)\s*\(")
 ALIAS_RE = re.compile(r"^\s*(?:pub\s+)?const\s+mpz_(?:mul|add|sub)\s*=")

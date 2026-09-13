@@ -237,7 +237,8 @@ static void Sigma_u_k(const real_t *nu, const real_t *t_r, const real_t *t_i, in
            if(WP34S_RelativeError(res_r, &prev_r, &tmp, realContext) && WP34S_RelativeError(res_i, &prev_i, &tmp, realContext)) {
              break;
            }
-           realCopy(res_r, &prev_r), realCopy(res_i, &prev_i);
+           realCopy(res_r, &prev_r);
+           realCopy(res_i, &prev_i);
          }
 
          // for the next iteration

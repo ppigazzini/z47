@@ -460,24 +460,6 @@ pub export fn ioEof() callconv(.c) c_int {
     return @intFromBool(file.fptr == file.obj.objsize);
 }
 
-pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int {
-    var filename: [40]u8 = @splat(0);
-
-    sysDiskWriteEnable(1);
-    const ret = _ioFileNameFromFilePath(path, &filename);
-    if (ret != FILE_OK) {
-        sysDiskWriteEnable(0);
-        return ret;
-    }
-
-    const result = fileUnlink(&filename);
-    if (result != 0 and error_number != null) {
-        error_number.?.* = result;
-    }
-    sysDiskWriteEnable(0);
-    return if (result == 0) FILE_OK else FILE_ERROR;
-}
-
 pub export fn save_statefile(fpath: [*c]const u8, fname: [*c]const u8, data: ?*anyopaque) callconv(.c) c_int {
     lcdPuts("Saving state ...");
     lcdPuts(fname);

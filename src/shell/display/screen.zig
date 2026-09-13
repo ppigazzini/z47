@@ -62,6 +62,11 @@ const testsuite_build: bool = frontier_build_options.is_testsuite_build;
 // defined for every DM42 package as well as for DMCP5 and host; the only #undef
 // is in the legacy single-file block z47 never builds.
 const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
+// OPTION_ALGDEP gates the X-line rendering of the polynomial x->POLY recovered.
+// #undef'd in the block common to DM42 packages 1-4; DMCP5 and host keep it.
+const option_algdep: bool = frontier_build_options.option_algdep;
+// The relation x->POLY recovered, rendered as x^3 - x - 1 (algdep.h). Empty until a search succeeded.
+extern fn algdepPolynomialString() callconv(.c) [*:0]const u8;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -349,7 +354,7 @@ const ITM_dotD: i16 = 1741;
 const ITM_HASH_JM: i16 = 1872;
 const ITM_toINT: i16 = 1687;
 const ITM_CLRMOD: i16 = 2005;
-const LAST_ITEM: i16 = 3349;
+const LAST_ITEM: i16 = 3481;
 const MNU_DYNAMIC: i16 = 3052;
 const FIRST_CONSTANT: i16 = 128;
 const LAST_CONSTANT: i16 = 212;
@@ -565,6 +570,7 @@ const TI_INACCURATE: u8 = 48;
 const TI_UNDO_DISABLED: u8 = 49;
 const TI_SOLVER_VARIABLE: u8 = 51;
 const TI_DERIV_STEP: u8 = 144;
+const TI_ALGDEP_POLY: u8 = 147;
 const TI_ACC: u8 = 53;
 const TI_ULIM: u8 = 54;
 const TI_LLIM: u8 = 55;
@@ -3378,8 +3384,10 @@ pub export fn _displayIJ(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i
     jji = lastJ;
     if (iii == 0xFFFF or jji == 0xFFFF) {
         bb = @intFromBool(frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_I, &iir) and frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_J, &jjr));
-        iii = @bitCast(frontier_real_type.realToUint32C47(&iir, null));
-        jji = @bitCast(frontier_real_type.realToUint32C47(&jjr, null));
+        if (bb != 0) { // a refused I stops the `and` before the second call, so jjr is unwritten too
+            iii = @bitCast(frontier_real_type.realToUint32C47(&iir, null));
+            jji = @bitCast(frontier_real_type.realToUint32C47(&jjr, null));
+        }
     } else {
         bb = 1;
     }
@@ -3644,7 +3652,9 @@ const dRT_coordMode = [_][*:0]const u8{ "RECT", "POLAR", "RECT", "RECT", "SPH", 
 pub export fn _displayRegType(regist: calcRegister_t, prefix: [*c]u8, prefixWidth: *i16) callconv(.c) void {
     if (regist == REGISTER_X) {
         var t: real_t = undefined;
-        _ = frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_X, &t);
+        if (!frontier_register_value_conversions.getRegisterAsRealQuiet(REGISTER_X, &t)) { // the decode below needs t, and a type the conversion refuses, a date or a string, leaves it unwritten
+            return;
+        }
         const typeIdx: i32 = frontier_real_type.realToInt32C47(&t, null);
         realMultiply(&t, const_1000, &t, &ctxtReal39);
         const subCode: i32 = frontier_real_type.realToInt32C47(&t, null) - 1000 * typeIdx;
@@ -3728,46 +3738,100 @@ fn displayTrueFalse(regist: calcRegister_t) bool_t {
 
 const BASEMODE_OFFSET_X: i32 = 2;
 const BASEMODE_OFFSET_Y: i32 = 2;
+
+fn _showBaseModeLine(rowReg: calcRegister_t, text: [*c]const u8, prefix: [*c]const u8, enhanced: bool) void {
+    const lineY: i32 = @as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, rowReg - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0);
+    const rightEdge: i32 = if (enhanced) @as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0) else SCREEN_WIDTH;
+    const firstCol: bool = if (enhanced) fontForShortInteger == &tinyFont else false;
+    const textWidth: i32 = frontier_char_string.stringWidth(text, fontForShortInteger.?, firstCol, true);
+    const prefixFits: bool = textWidth + frontier_char_string.stringWidth(prefix, &standardFont, false, true) <= rightEdge;
+
+    if (lastErrorCode == 0 and prefixFits) {
+        _ = showString(prefix, &standardFont, @intCast(if (rowReg == REGISTER_T) BASEMODE_OFFSET_X else 0), @intCast(lineY + (if (rowReg == REGISTER_T) BASEMODE_OFFSET_Y else 0)), vmNormal, 0, 1);
+    }
+    if (enhanced) {
+        _ = showStringEnhanced(text, fontForShortInteger.?, @intCast(if (prefixFits) rightEdge - textWidth - 3 else (if (isShiftOffset()) @as(i32, 10) else 0)), @intCast(lineY), vmNormal, @intFromBool(firstCol), 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+    } else {
+        _ = showString(text, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - textWidth), @intCast(lineY), vmNormal, 0, 1);
+    }
+}
+
+fn _baseModeBaseT() u8 {
+    return if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u8, 16) else 1) else dispBase; // base 1 is BCD, #10
+}
+
+fn _baseModeNextBase(skip: u8) u8 {
+    const order = [3]u8{ 10, 16, 2 };
+    const baseX = getRegisterShortIntegerBase(if (calcMode == CM_NIM) REGISTER_Y else REGISTER_X);
+    const baseT = _baseModeBaseT();
+
+    for (order) |base| {
+        if (base != skip and base != baseX and base != baseT) {
+            return base;
+        }
+    }
+    return 0;
+}
+
+fn _baseModeBaseZ() u8 {
+    const baseX = getRegisterShortIntegerBase(if (calcMode == CM_NIM) REGISTER_Y else REGISTER_X);
+
+    if (_baseModeBaseT() != 16) { // base 16 always shows, on T where dBASE puts it there and on Z otherwise
+        return 16;
+    }
+    if (displayStackSHOIDISP == 3 and baseX != 2) { // with T on 16 and three rows, Z takes base 2 and the Y line below it takes the value base
+        return 2;
+    }
+    return _baseModeNextBase(0);
+}
+
+fn _baseModeBaseY() u8 {
+    return _baseModeNextBase(_baseModeBaseZ());
+}
+
+fn _baseModeLinesBelowT() u8 {
+    if (displayStackSHOIDISP <= 1 or _baseModeBaseZ() == 0) {
+        return 0;
+    }
+    if (displayStackSHOIDISP == 2 or _baseModeBaseY() == 0) { // the Y row has no base of its own to show, so it goes back to the stack
+        return 1;
+    }
+    return 2;
+}
+
 pub export fn displayBaseMode(regist: calcRegister_t) callconv(.c) void {
     const Register_X: calcRegister_t = if (calcMode == CM_NIM) REGISTER_Y else REGISTER_X;
 
+    // Use the top part of the screen for HEX and BIN (SHOIDISP):
+    //   screen row     dSI=1         dSI=2                  dSI=3
+    //   T              dBASE or 16   dBASE or 16            dBASE or 16
+    //   Z              stack Z       16, else 10, else 2    16, else 2, else 10
+    //   Y              stack Y       stack Y                10, else 16, else 2
+    //   X              own base      own base               own base
+    // Base 16 always shows, on T where dBASE puts it there and on Z otherwise. Every other row skips a base that X, that T, or that the row above it shows,
+    // and goes back to the stack where 10, 16 and 2 are all shown already.
     if (BASEMODEREGISTERX() and regist == REGISTER_X and lastErrorCode == 0) {
         if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
             // Reg Pos Y
             if (displayStack == 1 and calcMode != CM_NIM) {
-                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, if (dispBase == 0) 10 else 16);
-                if (lastErrorCode == 0 and frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true) + frontier_char_string.stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-                    _ = showString("  X: ", &standardFont, 0, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Y - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
-                }
-                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Y - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseY());
+                _showBaseModeLine(REGISTER_Y, tmpString, "  X: ", false);
             }
             // reg pos Z
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2) {
-                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, if (displayStack == 1) 2 else (if (dispBase == 0) @as(u8, 10) else 16));
-                if (lastErrorCode == 0 and frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true) + frontier_char_string.stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-                    _ = showString("  X: ", &standardFont, 0, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Z - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
-                }
-                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_Z - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseZ());
+                _showBaseModeLine(REGISTER_Z, tmpString, "  X: ", false);
             }
             // reg pos T
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) {
-                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u8, 16) else 1) else dispBase);
-                if (lastErrorCode == 0 and frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true) + frontier_char_string.stringWidth("  X: ", &standardFont, false, true) <= SCREEN_WIDTH) {
-                    _ = showString("  X: ", &standardFont, @intCast(0 + BASEMODE_OFFSET_X), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) + BASEMODE_OFFSET_Y), vmNormal, 0, 1);
-                }
-                _ = showString(tmpString, fontForShortInteger.?, @intCast(@as(i32, SCREEN_WIDTH) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, false, true)), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, 0, 1);
+                frontier_display.shortIntegerToDisplayString(Register_X, tmpString, 1, _baseModeBaseT());
+                _showBaseModeLine(REGISTER_T, tmpString, "  X: ", false);
             }
         } else if (getRegisterDataType(REGISTER_X) == dtLongInteger and solverEstimatesUsed == 0) {
             // longinteger in pos T
             if ((displayStack == 1 and calcMode != CM_NIM) or displayStack == 2 or displayStack == 3) {
-                frontier_display.longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, if (dispBase == 0) (if (getSystemFlag(FLAG_BCD) == 0) @as(u32, 16) else 1) else dispBase, @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0)));
-                const printFirstCol: bool_t = @intFromBool(fontForShortInteger == &tinyFont);
-                const printWillFit: bool_t = @intFromBool(frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, printFirstCol != 0, true) + frontier_char_string.stringWidth("  X:" ++ STD_INTEGER_Z ++ ": ", &standardFont, false, true) <= SCREEN_WIDTH - (if (isShiftOffset()) @as(i32, 10) else 0));
-                const xoff: u32 = if (printWillFit != 0) @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0) - frontier_char_string.stringWidth(tmpString, fontForShortInteger.?, printFirstCol != 0, true) - 3) else (if (isShiftOffset()) @as(u32, 10) else 0);
-                if (lastErrorCode == 0 and printWillFit != 0) {
-                    _ = showString("  X:" ++ STD_INTEGER_Z ++ ": ", &standardFont, @intCast(0 + BASEMODE_OFFSET_X), @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0) + BASEMODE_OFFSET_Y), vmNormal, 0, 1);
-                }
-                _ = showStringEnhanced(tmpString, fontForShortInteger.?, xoff, @intCast(@as(i32, Y_POSITION_OF_REGISTER_X_LINE) - @as(i32, REGISTER_LINE_HEIGHT) * @as(i32, REGISTER_T - REGISTER_X) + (if (fontForShortInteger == &standardFont) @as(i32, 6) else 0)), vmNormal, printFirstCol, 1, NO_compress, NO_raise, DO_Show, NO_Bold, DO_LF);
+                frontier_display.longIntegerToHexDisplayString(REGISTER_X, tmpString, 1, _baseModeBaseT(), @intCast(@as(i32, SCREEN_WIDTH) - (if (isShiftOffset()) @as(i32, 10) else 0)));
+                _showBaseModeLine(REGISTER_T, tmpString, "  X:" ++ STD_INTEGER_Z ++ ": ", true);
             }
         }
 
@@ -3850,8 +3914,8 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
 
     if (BASEMODEREGISTERX() and !SHOWMODE() and displayStack != 4 - displayStackSHOIDISP) {
         if (getRegisterDataType(REGISTER_X) == dtShortInteger) {
-            fnDisplayStack(4 - displayStackSHOIDISP);
-        } else {
+            fnDisplayStack(3 - _baseModeLinesBelowT());
+        } else if (DBASEMODE()) { // the long integer base line is drawn only under DBASEMODE, so give up the T row only then
             fnDisplayStack(3);
         }
     } else {
@@ -4040,6 +4104,13 @@ fn _refreshRegisterLine(regist_in: calcRegister_t, restoreRegisterT: bool_t) voi
         } else if (temporaryInformation == TI_DATA_LOADED and regist == REGISTER_X) {
             abi.fmtBufZ(&prefix, "{s}", .{errMsgRow(TI_Data_file_loaded)});
             displayTemporaryInformationOnX(&prefix);
+        }
+        // The relation reads as a polynomial rather than a column of coefficients; the coefficients themselves are in X.
+        // Holds the X line until the next keypress clears the temporary information and the coefficient vector reappears.
+        // displayTemporaryInformationOnX is not usable here: it draws only when X holds a real34, and the matrix form is
+        // exactly the case where reading the relation as a polynomial matters.
+        else if (option_algdep and temporaryInformation == TI_ALGDEP_POLY and regist == REGISTER_X) {
+            _ = showString(algdepPolynomialString(), &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         } else if (temporaryInformation == TI_UNDO_DISABLED and regist == REGISTER_X) {
             _ = showString(errMsg(ERROR_TI_UNDO_FAILED), &standardFont, 1, Y_POSITION_OF_REGISTER_X_LINE + 6, vmNormal, 1, 1);
         }
@@ -6002,9 +6073,6 @@ fn _refreshNormalScreen() void {
     }
     if ((screenUpdatingMode & (SCRUPD_MANUAL_MENU | SCRUPD_SKIP_MENU_ONE_TIME)) == 0) {
         frontier_softmenus.showSoftmenuCurrentPart();
-        if (comptime dmcp_build) {
-            lcd_refresh_dma(); // If this is not here, menu generation is not reliable, and presses are missed.
-        }
     } else {
         // The stack clear and the X line take the top rows of the menu, so draw
         // them again when the menu itself is not drawn.
@@ -6015,6 +6083,10 @@ fn _refreshNormalScreen() void {
     }
 
     frontier_status_bar.refreshStatusBar();
+
+    if (comptime dmcp_build) {
+        lcd_refresh_dma(); // the whole repaint reaches the display, not only the menu: a screen drawn with the menu suppressed never left the buffer
+    }
 
     // RETURN_NORMAL:
     screenUpdatingMode |= SCRUPD_MANUAL_STATUSBAR | SCRUPD_MANUAL_STACK | SCRUPD_MANUAL_MENU;

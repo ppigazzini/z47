@@ -21,7 +21,7 @@
 
 
  // Create context for this module only
- static decContext ctxtTvm42;
+ static realContext_t ctxtTvm42;
  static inline void ensureTvmContext(void) {
    if(ctxtTvm42.digits == 0) {
      ctxtTvm42 = ctxtReal39;
@@ -46,7 +46,7 @@
 static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t *realContext) {
   real_t v, w;
 
-  decNumberExp(exp, x, realContext);
+  realExp(x, exp, realContext);
 
   // Code from WP34S_ExpM1 to get accurate result for e^x-1
   realSubtract(exp, const_1, &v, realContext);
@@ -54,7 +54,7 @@ static void doubleExp(const real_t *x, real_t *exp, real_t *expm1, realContext_t
     realCopy(x, expm1);
   }
   else if(realCompareEqual(&v, const__1)) {
-    realCopy(const__1, expm1);
+    realSetNegativeOne(expm1);
   }
   else if(realCompareAbsLessThan(x, const_1on10)) {
     realMultiply(&v, x, &w, realContext);
@@ -103,11 +103,11 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
   real_t ic, temp, exponent;
 
   // Check for zero frequencies
-  if(decNumberIsZero((decNumber *)compoundPerYear)) {
+  if(realIsZero(compoundPerYear)) {
     *error = tvmRangeError(6);
     return;
   }
-  if(decNumberIsZero((decNumber *)paymentPerYear)) {
+  if(realIsZero(paymentPerYear)) {
     *error = tvmRangeError(5);
     return;
   }
@@ -118,7 +118,7 @@ static void calculateEffectiveRate(const real_t *iPercentPerYear,
 
   // When CPER/a = PPER/a, ip = ic (shortcut)
   realSubtract(compoundPerYear, paymentPerYear, &temp, &ctxtTvm);
-  if(decNumberIsZero((decNumber *)&temp)) {
+  if(realIsZero(&temp)) {
     realCopy(&ic, ip);
     *error = 0;
     return;
@@ -274,7 +274,7 @@ int calculatePMT(const real_t *pv,
   int error = 0;
 
   // Check for zero periods
-  if(decNumberIsZero((decNumber *)npper)) {
+  if(realIsZero(npper)) {
     return tvmRangeError(2);
   }
 
@@ -317,7 +317,7 @@ int calculatePMT(const real_t *pv,
   realMultiply(&temp2, &temp3, &denominator, &ctxtTvm);
 
   // Check for zero denominator
-  if(decNumberIsZero((decNumber *)&denominator)) {
+  if(realIsZero(&denominator)) {
     return tvmRangeError(0);
   }
 
@@ -353,7 +353,7 @@ int calculateNPPER(const real_t *pv,
   // Check if ip ≈ 0 (use special formula)
   if(realCompareAbsLessThan(&ip, const_1e_37)) {
     // Case 3: NPPER = -(PV + FV) / PMT
-    if(decNumberIsZero((decNumber *)pmt)) {
+    if(realIsZero(pmt)) {
       return tvmRangeError(0);
     }
     realAdd(pv, fv, &temp1, &ctxtTvm);
@@ -363,10 +363,10 @@ int calculateNPPER(const real_t *pv,
   }
 
   // Check if PMT = 0 (simple compound interest)
-  if(decNumberIsZero((decNumber *)pmt)) {
+  if(realIsZero(pmt)) {
     // Case 1: NPPER = ln(-FV/PV) / ln(1+ip)
     // Check for PV = 0 before division
-    if(decNumberIsZero((decNumber *)pv)) {
+    if(realIsZero(pv)) {
       return tvmRangeError(7);
     }
 
@@ -382,7 +382,7 @@ int calculateNPPER(const real_t *pv,
     WP34S_Ln1P(&ip, &lnBase, &ctxtTvm);
 
     // Check for zero denominator (should not happen for valid ip, but check anyway)
-    if(decNumberIsZero((decNumber *)&lnBase)) {
+    if(realIsZero(&lnBase)) {
       return tvmRangeError(0);
     }
 
@@ -403,7 +403,7 @@ int calculateNPPER(const real_t *pv,
   realFMA(pmt, &temp2, &temp1, &b, &ctxtTvm);
 
   // Check for zero denominator
-  if(decNumberIsZero((decNumber *)&b)) {
+  if(realIsZero(&b)) {
     return tvmRangeError(0);
   }
 
@@ -420,7 +420,7 @@ int calculateNPPER(const real_t *pv,
   WP34S_Ln1P(&ip, &lnBase, &ctxtTvm);
 
   // Check for zero denominator
-  if(decNumberIsZero((decNumber *)&lnBase)) {
+  if(realIsZero(&lnBase)) {
     return tvmRangeError(0);
   }
 
@@ -449,7 +449,7 @@ int calculatePPER(const real_t *pv,
   real_t ip_effective;
 
   // Check for zero compounding frequency
-  if(decNumberIsZero((decNumber *)compoundPerYear)) {
+  if(realIsZero(compoundPerYear)) {
     return tvmRangeError(6);
   }
 
@@ -460,12 +460,12 @@ int calculatePPER(const real_t *pv,
   // Calculate effective interest rate ip from the TVM parameters
   // For PMT = 0 (simple compound interest): ip = (-FV/PV)^(1/NPPER) - 1
 
-  if(decNumberIsZero((decNumber *)pmt)) {
+  if(realIsZero(pmt)) {
     // Simple case: compound interest only
-    if(decNumberIsZero((decNumber *)pv)) {
+    if(realIsZero(pv)) {
       return tvmRangeError(7);
     }
-    if(decNumberIsZero((decNumber *)npper)) {
+    if(realIsZero(npper)) {
       return tvmRangeError(2);
     }
 
@@ -520,7 +520,7 @@ int calculatePPER(const real_t *pv,
   }
   WP34S_Ln1P(&ip_effective, &lnTarget, &ctxtTvm);
 
-  if(decNumberIsZero((decNumber *)&lnTarget)) {
+  if(realIsZero(&lnTarget)) {
     return tvmRangeError(0);
   }
 
@@ -556,17 +556,17 @@ int calculateCPER(const real_t *pv,
   const int maxIterations = 100;
 
   // Check for zero payment frequency
-  if(decNumberIsZero((decNumber *)paymentPerYear)) {
+  if(realIsZero(paymentPerYear)) {
     return tvmRangeError(5);
   }
 
   // Calculate effective interest rate per payment period (ip)
-  if(decNumberIsZero((decNumber *)pmt)) {
+  if(realIsZero(pmt)) {
     // Simple case: compound interest only
-    if(decNumberIsZero((decNumber *)pv)) {
+    if(realIsZero(pv)) {
       return tvmRangeError(7);
     }
-    if(decNumberIsZero((decNumber *)npper)) {
+    if(realIsZero(npper)) {
       return tvmRangeError(2);
     }
 
@@ -1262,7 +1262,7 @@ void tvmEquation(calcRegister_t variable, real_t *ioVal, real_t *derivative) {
       switch(variable) {
         case RESERVED_VARIABLE_PMT:   realCopy(&nPer,    derivative); break;  // df/dPMT = N
         case RESERVED_VARIABLE_PV:    realSetOne( derivative);        break;  // df/dPV = 1
-        case RESERVED_VARIABLE_FV:    realCopy(const__1, derivative); break;  // df/dFV = -1
+        case RESERVED_VARIABLE_FV:    realSetNegativeOne(derivative); break;  // df/dFV = -1
         case RESERVED_VARIABLE_NPPER: realCopy(&pmt,     derivative); break;  // df/dN = PMT
         default:                      realSetNaN(derivative);         break;  // IPONA: NaN -> Brent fallback
       }

@@ -30,7 +30,7 @@ const ITM_NOP: u16 = 1542;
 const NOPARAM: u16 = 9876;
 const StrLgIntHeader = abi.StrLgIntHeader;
 const REAL34_SIZE_IN_BYTES: usize = 16;
-const BACKUP_VERSION: u32 = 1020; // C saveRestoreBackup.c:14 (GRAMOD moved from the reserved variable table to the graMod global)
+const BACKUP_VERSION: u32 = 1023; // C saveRestoreBackup.c:14 (retainedPageFirstItem[], the page each retained-page softmenu reopens on; lastCatalogPosition[] written as hexDump, every catalog; 1021 and 1022 are taken on FIN-12C, 1021 also on units/algebra)
 const INVALID_VARIABLE: i16 = 2199;
 const CM_CONFIRMATION: u8 = 11;
 const USER_C47: u16 = 46;
@@ -180,7 +180,8 @@ extern var lastIntegerBase: [4]u8;
 extern var c47MemInBlocks: [8]u8;
 extern var gmpMemInBytes: [8]u8;
 extern var catalog: [2]u8;
-extern var lastCatalogPosition: [46]u8;
+extern var lastCatalogPosition: [48]u8; // int16[NUMBER_OF_CATALOGS], 24 catalogs; a hexDump writes the whole array, so the size is the C's sizeof
+extern var retainedPageFirstItem: [4]u8; // int16[NUMBER_OF_RETAINED_PAGE_MENUS]
 extern var displayValueX: [80]u8;
 extern var pcg32_global: [16]u8;
 extern var exponentLimit: [2]u8;
@@ -557,7 +558,8 @@ pub fn saveCalc() void {
     sv(&c47MemInBlocks[0], 8, "c47MemInBlocks", "uint64");
     sv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
     sv(&catalog[0], 2, "catalog", "int16");
-    sv(&lastCatalogPosition[0], 46, "lastCatalogPosition", "int16");
+    sv(&lastCatalogPosition[0], 48, "lastCatalogPosition", "hexDump");
+    sv(&retainedPageFirstItem[0], 4, "retainedPageFirstItem", "hexDump");
     sv(&displayValueX[0], 80, "displayValueX", "hexDump");
     sv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
     sv(&exponentLimit[0], 2, "exponentLimit", "int16");
@@ -1230,12 +1232,15 @@ pub fn restoreCalc() void {
     rv(&gmpMemInBytes[0], 8, "gmpMemInBytes", "uint64");
     rv(&catalog[0], 2, "catalog", "int16");
     if (backupVersion < 1012) { // the FNCS_EIM catalog was added at 1012
-        rv(&lastCatalogPosition[0], 46 - 4, "lastCatalogPosition", "int16");
+        rv(&lastCatalogPosition[0], 48 - 4, "lastCatalogPosition", "int16");
         lastCatalogPosition[22 * 2] = 0;
         lastCatalogPosition[22 * 2 + 1] = 0;
+    } else if (backupVersion < 1023) { // int16 wrote element 0 only
+        rv(&lastCatalogPosition[0], 48, "lastCatalogPosition", "int16");
     } else {
-        rv(&lastCatalogPosition[0], 46, "lastCatalogPosition", "int16");
+        rv(&lastCatalogPosition[0], 48, "lastCatalogPosition", "hexDump");
     }
+    rv(&retainedPageFirstItem[0], 4, "retainedPageFirstItem", "hexDump");
     rv(&displayValueX[0], 80, "displayValueX", "hexDump");
     rv(&pcg32_global[0], 16, "pcg32_global", "hexDump");
     rv(&exponentLimit[0], 2, "exponentLimit", "int16");

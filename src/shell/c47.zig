@@ -34,6 +34,7 @@ const NUMBER_OF_GLOBAL_REGISTERS = 137;
 const MAX_FREE_REGIONS = if (dmcp_build and old_hw) 50 else 200;
 const MAX_ALLOCATED_REGIONS = 5000;
 const NUMBER_OF_CATALOGS = 24;
+const NUMBER_OF_RETAINED_PAGE_MENUS = 2; // defines.h: the softmenus that reopen on their last page, TVM and UNITCONV
 const NUMBER_OF_GLYPH_ROWS = 291; // defines.h. Sizes the exported glyphRow[] global that C declares as glyphRow[NUMBER_OF_GLYPH_ROWS].
 const SOFTMENU_STACK_SIZE = 8;
 const DISPLAY_VALUE_LEN = 80;
@@ -164,6 +165,9 @@ pub export var lastProgramListEnd: bool_t = false;
 pub export var programListEnd: bool_t = false;
 pub export var pemCursorIsZerothStep: bool_t = false;
 pub export var skippedStackLines: bool_t = false;
+// A whole user menu being filled (createHOME, createPFN) repaints once from the
+// caller instead of once per position assignToUserMenu writes.
+pub export var bulkAssign: bool_t = false;
 pub export var iterations: bool_t = false;
 pub export var explicitTaylorIterVisibilitySelection: bool_t = false;
 
@@ -333,6 +337,9 @@ pub export var lineTWidth: i16 = 0;
 pub export var rbrRegister: i16 = 0;
 // catalog moved to the base kernel (engine/kernel/calc_globals.zig).
 pub export var lastCatalogPosition: [NUMBER_OF_CATALOGS]i16 = std.mem.zeroes([NUMBER_OF_CATALOGS]i16);
+// The page each retained-page softmenu (softmenus.c's retainedPageMenu[]) reopens
+// on, whatever FLAG_MNUp1 says; backup.cfg and the state file carry it.
+pub export var retainedPageFirstItem: [NUMBER_OF_RETAINED_PAGE_MENUS]i16 = std.mem.zeroes([NUMBER_OF_RETAINED_PAGE_MENUS]i16);
 pub export var lastKeyItemDetermined: i16 = 0;
 pub export var lastUserMode: bool_t = false;
 pub export var lastItem: i16 = 0;

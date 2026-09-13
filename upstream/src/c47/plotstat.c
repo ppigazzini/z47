@@ -34,7 +34,7 @@ void statGraphReset(void){
   clearSystemFlag(FLAG_SHOWX);
   clearSystemFlag(FLAG_PLINE);
   realSetZero(y_min);
-  realCopy(const_1, y_max);
+  realSetOne(y_max);
 }
 
 
@@ -1012,6 +1012,28 @@ char * smallE(char *output, const char * ss) {
   }
 
 
+  // On a narrow key the radix mark of 1.2E6 is the one glyph that will not fit. The same number with the mantissa digits shifted left and the exponent taken down by the
+  // same count needs no mark: 12E5. Second choice only, tried after the marked form has been refused, so a key with room for 1.2E6 still draws it.
+  static void dropRadixMark(char* str) {
+    char* decimal_pos = strchr(str, '.');
+    char* e_pos       = decimal_pos ? strchr(decimal_pos, 'E') : NULL;
+    if(e_pos == NULL || e_pos == decimal_pos + 1) {
+      return;
+    }
+    const int shift    = (int)(e_pos - decimal_pos) - 1;                                    // the digits that stood after the mark, and how far the exponent comes down
+    const int exponent = atoi(e_pos + 1) - shift;
+    const int left     = (int)(decimal_pos - str);
+    char      mantissa[40];
+    if(exponent == 0 || left + shift >= (int)sizeof(mantissa)) {
+      return;                                                                               // 12E0 says nothing a plain 12 does not
+    }
+    memcpy(mantissa, str, left);
+    memcpy(mantissa + left, decimal_pos + 1, shift);
+    mantissa[left + shift] = 0;
+    sprintf(str, "%sE%d", mantissa, exponent);
+  }
+
+
 //success flag set if convertion was done and maxwidth is NOT overreached. Additionally ?? is output when no conversion is done.
 char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* success, int actual_max_width, char* buf, int digitswidthLimit) {
     uint8_t savedDisplayFormatDigits = displayFormatDigits;
@@ -1041,15 +1063,21 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
       goto done;
     }
     realLog10(&real, &reall10, &ctxtReal39);
-    if(realToInt32C47(&reall10, NULL) < digits) {
-      displayFormat = DF_SF;
-      displayFormatDigits = digits;
-    }
-    else {
-      displayFormat = DF_FIX;
-      displayFormatDigits = 0;
-    }
+    const int32_t exp10 = realToInt32C47(&reall10, NULL);
     for(int ddd = 8; ddd >= 2; ddd--) {
+      if(exp10 < digits) {                                                       // the integer part fits the significant count, so SIG runs the whole ladder here
+        displayFormat = DF_SF;                                                   // and ends on one digit at ddd 2, the same floor the SCI arm below has
+        displayFormatDigits = min(digits, ddd - 2);
+      }
+      else if(exp10 < ddd) {
+        displayFormat = DF_FIX;                                                  // the whole integer fits in ddd digits, so it is written out with no ten exponent
+        displayFormatDigits = 0;
+      }
+      else {                                                                     // ddd digits cannot hold the number, so real34ToDisplayString2 leaves its FIX block and
+        displayFormat = DF_SF;                                                   // prints the SCI form, whose mantissa length is displayFormatDigits. FIX has no
+        displayFormatDigits = min(digits, ddd - 2);                              // such count, and its 0 gave that form one digit: 1234567 as 1E6. SF is the mode that
+      }                                                                          // holds one. The ladder ends on that same single digit at ddd 2, so nothing that used
+                                                                                 // to fit stops fitting
       updateDisplayValueX = true;
       displayValueX[0] = 0;
       real34ToDisplayString(real34, amNone, buf, &standardFont, digitswidthLimit == 0 ? 60 : digitswidthLimit, ddd, LIMITEXP, !FRONTSPACE, NOIRFRAC);
@@ -1057,6 +1085,11 @@ char* formatDoubleWidth(real34_t *real34, int digits, char* itemName, bool_t* su
       strcpy(buf, displayValueX);
       cleanupTrailingZeros(buf);
 
+      if(checkWidthWithPrefix(itemName, buf, actual_max_width)) {
+         *success = false;
+         goto done;
+      }
+      dropRadixMark(buf);                                                        // the marked form was refused, so offer the same digits without the mark
       if(checkWidthWithPrefix(itemName, buf, actual_max_width)) {
          *success = false;
          goto done;

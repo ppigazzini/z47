@@ -3,6 +3,8 @@ const builtin = @import("builtin");
 const abi = @import("abi");
 const load_owned = @import("calc_state_load.zig");
 const runtime = @import("calc_state_runtime.zig");
+const rom = @import("dmcp_rom");
+const calc_state_build_options = @import("calc_state_build_options");
 const save_owned = @import("calc_state_save.zig");
 const restore_owned = @import("calc_state_restore.zig");
 
@@ -294,8 +296,66 @@ comptime {
 }
 pub export var aimBuffer1: [AIM_BUFFER_1_LENGTH]u8 = std.mem.zeroes([AIM_BUFFER_1_LENGTH]u8);
 
+// hal/io.h: the state file and its autosave twin, by model, under SAVFILES.
+const USER_R47: u16 = 66;
+const SAVE_DIR = "SAVFILES";
+const SAVE_FILE = if (calc_state_build_options.calc_model_user_id == USER_R47) "R47.sav" else "C47.sav";
+const AUTO_SAVE_FILE = if (calc_state_build_options.calc_model_user_id == USER_R47) "R47auto.sav" else "C47auto.sav";
+const NOT_CONFIRMED: u16 = 9878; // items.h
+const ERROR_IO: u8 = 17;
+const REGISTER_X: i16 = 100;
+const ERR_REGISTER_LINE: i16 = 102; // REGISTER_Z
+// FatFs FRESULT: a file or a path that is not there is not an error for a delete.
+const FR_OK: c_uint = 0;
+const FR_NO_FILE: c_uint = 4;
+const FR_NO_PATH: c_uint = 5;
+extern fn setConfirmationMode(handler: *const fn (u16) callconv(.c) void) void;
+extern fn displayCalcErrorMessage(error_code: u8, err_message_register_line: i16, err_register_line: i16) void;
+extern fn moreInfoOnError(msg1: [*:0]const u8, msg2: ?[*:0]const u8, msg3: ?[*:0]const u8, msg4: ?[*:0]const u8) void;
+extern var errorMessage: [*:0]u8;
+extern fn remove(pathname: [*:0]const u8) c_int;
+// errno, by the libc's own accessor: this object is compiled without a libc
+// dependency of its own, so std.c's accessor is out of reach, while the plain
+// extern resolves in the executable that links it.
+const errnoLocation = switch (builtin.os.tag) {
+    .windows => struct {
+        extern fn _errno() *c_int;
+    }._errno,
+    .macos, .ios, .tvos, .watchos, .visionos => struct {
+        extern fn __error() *c_int;
+    }.__error,
+    else => struct {
+        extern fn __errno_location() *c_int;
+    }.__errno_location,
+};
+
 pub export fn fnDeleteBackup(confirmation: u16) void {
-    _ = confirmation;
+    if (confirmation == NOT_CONFIRMED) {
+        setConfirmationMode(&fnDeleteBackup);
+    } else if (comptime is_dmcp_build) {
+        _ = rom.sys_disk_write_enable(1);
+        var result = rom.f_unlink(SAVE_DIR ++ "\\" ++ SAVE_FILE);
+        if (result != FR_OK and result != FR_NO_FILE and result != FR_NO_PATH) {
+            displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+        }
+        result = rom.f_unlink(SAVE_DIR ++ "\\" ++ AUTO_SAVE_FILE);
+        if (result != FR_OK and result != FR_NO_FILE and result != FR_NO_PATH) {
+            displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+        }
+        _ = rom.sys_disk_write_enable(0);
+    } else {
+        const result = remove(SAVE_DIR ++ "/" ++ SAVE_FILE);
+        if (result == -1) {
+            const e: c_int = errnoLocation().*;
+            if (e != @intFromEnum(std.c.E.NOENT)) {
+                displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
+                if (comptime calc_state_build_options.extra_info_on_calc_error) {
+                    abi.fmtCStr(errorMessage, "removing the backup failed with error code {d}", .{e});
+                    moreInfoOnError("In function fnDeleteBackup:", errorMessage, null, null);
+                }
+            }
+        }
+    }
 }
 
 pub export fn fnLoadedFile(unused_but_mandatory_parameter: u16) void {

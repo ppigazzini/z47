@@ -284,15 +284,6 @@ pub export fn ioEof() callconv(.c) c_int {
     return feof(_ioFileHandle);
 }
 
-pub export fn ioFileRemove(path: c_int, errorNumber: ?*u32) callconv(.c) c_int {
-    const filename = ioFileNameFromFilePath(path) orelse return FILE_ERROR;
-    const result = remove(filename);
-    if (result == -1 and errorNumber != null) {
-        errorNumber.?.* = @intCast(std.c._errno().*);
-    }
-    return if (result != -1) FILE_OK else FILE_ERROR;
-}
-
 pub export fn show_warning(str: [*:0]const u8) callconv(.c) void {
     _ = printf("Warning: %s\n", str);
 }

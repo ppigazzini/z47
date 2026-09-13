@@ -452,7 +452,7 @@ void Sett(int16_t grp) {
     if(!isR47FAM) {
       fnKeysManagement(ITM_RIBBON_C47PL);
     } else {
-      fnKeysManagement(ITM_RIBBON_R47PL);      
+      fnKeysManagement(ITM_RIBBON_R47PL);
     }
 
     itemToBeAssigned = ITM_op_j;
@@ -738,7 +738,7 @@ uint8_t boundShortIntegerWordSize(uint8_t wordSize) {
 
 void updateShortIntegerMasks(void) {
   // Derive the word-size-dependent short-integer bit masks from the current shortIntegerWordSize. fnSetWordSize uses this when the size changes interactively;
-  // code that assigns shortIntegerWordSize directly (state-file restore, which stores neither mask) must call it too, so that shortIntegerMask and 
+  // code that assigns shortIntegerWordSize directly (state-file restore, which stores neither mask) must call it too, so that shortIntegerMask and
   // shortIntegerSignBit stay consistent with the word size.
   if(shortIntegerWordSize == 64) {
     shortIntegerMask    = -1;
@@ -1759,7 +1759,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     int32ToReal(-10, x_min);
     int32ToReal(10, x_max);
     realSetZero(y_min);
-    realCopy(const_1, y_max);
+    realSetOne(y_max);
 
 
 
@@ -1824,6 +1824,7 @@ void doFnReset(uint16_t confirmation, bool_t autoSav) {
     tam.mode = 0;
     catalog = CATALOG_NONE;
     memset(lastCatalogPosition, 0, NUMBER_OF_CATALOGS * sizeof(lastCatalogPosition[0]));
+    memset(retainedPageFirstItem, 0, NUMBER_OF_RETAINED_PAGE_MENUS * sizeof(retainedPageFirstItem[0]));
     lastDenominator = 4;
     temporaryInformation = TI_RESET;
 

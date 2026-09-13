@@ -1888,7 +1888,7 @@ void WP34S_ExpM1(const real_t *x, real_t *res, realContext_t *realContext) {
     realCopy(x, res);
   }
   else if(realCompareEqual(&v, const__1)) {
-    realCopy(const__1, res);
+    realSetNegativeOne(res);
   }
   else if(realCompareAbsLessThan(x, const_1on10)) {
     realMultiply(&v, x, &w, realContext);

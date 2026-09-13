@@ -352,6 +352,7 @@ const PGM_STOPPED: u8 = 0;
 const PGM_WAITING: u8 = 2;
 
 const NUMBER_OF_CATALOGS: usize = 24;
+const NUMBER_OF_RETAINED_PAGE_MENUS: usize = 2; // defines.h: TVM and UNITCONV reopen on their last page
 const CATALOG_NONE: i16 = 0;
 const SOFTMENU_STACK_SIZE: usize = 8;
 
@@ -680,6 +681,7 @@ extern var globalFlags: [8]u16;
 extern var systemFlags0: u64;
 extern var systemFlags1: u64;
 extern var lastCatalogPosition: [NUMBER_OF_CATALOGS]i16;
+extern var retainedPageFirstItem: [NUMBER_OF_RETAINED_PAGE_MENUS]i16;
 extern var userMenuItems: [18]userMenuItem_t;
 extern var userAlphaItems: [18]userMenuItem_t;
 extern var lastStateFileOpened: [stateFileNameVarLength + 12]u8;
@@ -1717,7 +1719,7 @@ fn strBuf(comptime s: []const u8) [30]u8 {
     return b;
 }
 
-const LAST_ITEM: u16 = 3349;
+const LAST_ITEM: u16 = 3481;
 
 pub export fn getConfirmationTiId() callconv(.c) u16 {
     var id: u16 = 0;
@@ -2311,7 +2313,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         int32ToReal(-10, x_min);
         int32ToReal(10, x_max);
         frontier_real_type.realSetZero(y_min);
-        realCopy(consts.const_1(), y_max);
+        frontier_real_type.realSetOne(y_max);
 
         systemFlags0 = 0;
         systemFlags1 = 0;
@@ -2372,6 +2374,7 @@ pub export fn doFnReset(confirmation: u16, autoSav: bool_t) callconv(.c) void {
         tam_mode_set(0);
         catalog = CATALOG_NONE;
         _ = memset(&lastCatalogPosition, 0, NUMBER_OF_CATALOGS * @sizeOf(i16));
+        _ = memset(&retainedPageFirstItem, 0, NUMBER_OF_RETAINED_PAGE_MENUS * @sizeOf(i16));
         lastDenominator = 4;
         temporaryInformation = TI_RESET;
 

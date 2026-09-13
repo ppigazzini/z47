@@ -7,7 +7,7 @@
 
 #include "c47.h"
 
-bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zero) {
+bool_t realExpLimitCheck(const real_t *x, real_t *res, const real_t *zeroOrNegativeOne) {
   if(realIsSpecial(x)) {
     if(realIsInfinite(x)) {
 inf:
@@ -15,7 +15,7 @@ inf:
         realSetPlusInfinity(res);
       }
       else {
-        realCopy(zero, res);
+        realCopy(zeroOrNegativeOne, res);
       }
     }
     else {

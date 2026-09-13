@@ -6,6 +6,15 @@
 ;   Desc_suffix: text following the test case description (until the next 'Desc_suffix')
 ;   In:   specifies the input parameters
 ;   Out:  specifies the expected output values
+;   Acc:  correct significant digits required of every case that follows in this file,
+;         until the next Acc: line. Defaults to 30. An Out: line may carry ACC=<n> to
+;         set the floor for that line alone.
+;         Lower it only where a build reaches fewer digits and is still right: a solver
+;         instead of a closed formula, or 75 internal digits instead of 159. It never
+;         changes the expected value, which stays the mathematically correct one, so
+;         the case keeps testing the answer rather than recording the output.
+;         Measure the floor, do not guess it: ./testSuite --report-accuracy <list file>
+;         prints the digits every comparison actually reached.
 ;
 ;   FL_n  Flag n from 0 to 112, A,B,C,D,I,J,K,L,T,X,Y,Z, or name: 0 or 1
 ;   IM    Integer Mode: 1COMPL, 2COMPL, UNSIGN or SIGNMT
@@ -506,6 +515,11 @@ serialize_cov
 graphs_cov
 
 realtodouble_cov
+
+algdep_cov
+algfunc_gen
+algfunc_cub
+algfunc_fp
 
 nested_cov
 

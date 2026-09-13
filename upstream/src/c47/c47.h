@@ -308,6 +308,7 @@
   extern bool_t                 programListEnd;
   extern bool_t                 pemCursorIsZerothStep;
   extern bool_t                 skippedStackLines;
+  extern bool_t                 bulkAssign;
   extern bool_t                 iterations;
   extern bool_t                 explicitTaylorIterVisibilitySelection;
 
@@ -458,6 +459,7 @@
   extern int16_t                rbrRegister;
   extern int16_t                catalog;
   extern int16_t                lastCatalogPosition[NUMBER_OF_CATALOGS];
+  extern int16_t                retainedPageFirstItem[NUMBER_OF_RETAINED_PAGE_MENUS];
   extern int16_t                lastKeyItemDetermined;
   extern bool_t                 lastUserMode;                 //used in btnReleased and btnFnReleased
   extern int16_t                lastItem;                     //used in btnReleased, for CM_ASN_BROWSER and SHOW/SCREENDUMP

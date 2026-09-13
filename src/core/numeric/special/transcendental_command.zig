@@ -26,9 +26,9 @@ fn realAbsLessThan(lhs: *const runtime.real_t, rhs: *const runtime.real_t) bool 
     return !runtime.realCompareAbsEqual(lhs, rhs) and !runtime.realCompareAbsGreaterThan(lhs, rhs);
 }
 
-fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zero: *const runtime.real_t) void {
+fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zeroOrNegativeOne: *const runtime.real_t) void {
     if (runtime.realIsNegative(x)) {
-        copyReal(result, zero);
+        copyReal(result, zeroOrNegativeOne);
     } else {
         copyReal(result, runtime.z47_math_wrappers_const_plus_infinity());
     }
@@ -37,11 +37,11 @@ fn setExpLimitResult(x: *const runtime.real_t, result: *runtime.real_t, zero: *c
 pub fn realExpLimitCheck(
     x: *const runtime.real_t,
     result: *runtime.real_t,
-    zero: *const runtime.real_t,
+    zeroOrNegativeOne: *const runtime.real_t,
 ) bool {
     if (runtime.realIsSpecial(x)) {
         if (runtime.realIsInfinite(x)) {
-            setExpLimitResult(x, result, zero);
+            setExpLimitResult(x, result, zeroOrNegativeOne);
         } else {
             runtime.realSetNaN(result);
         }
@@ -49,7 +49,7 @@ pub fn realExpLimitCheck(
     }
 
     if (runtime.realCompareAbsGreaterThan(x, runtime.z47_math_wrappers_const_2e6())) {
-        setExpLimitResult(x, result, zero);
+        setExpLimitResult(x, result, zeroOrNegativeOne);
         return false;
     }
 
@@ -206,7 +206,7 @@ pub fn expM1Complex(
 
     if (runtime.realIsZero(imag)) {
         if (runtime.realIsInfinite(real) and runtime.realIsNegative(real)) {
-            copyReal(res_real, runtime.z47_math_wrappers_const_minus_1());
+            runtime.realSetNegativeOne(res_real);
             runtime.realSetZero(res_imag);
             return;
         }

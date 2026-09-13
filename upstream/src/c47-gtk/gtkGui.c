@@ -917,11 +917,9 @@ returnKeyReleasedFalse:
   ) {
      if(event->keyval >= GDK_KEY_A && event->keyval <= GDK_KEY_F) {
        addItemToBuffer(ITM_A + event->keyval - GDK_KEY_A); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
-     } else
-     if(event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_f) {
+     } else if(event->keyval >= GDK_KEY_a && event->keyval <= GDK_KEY_f) {
        addItemToBuffer(ITM_A + event->keyval - GDK_KEY_a); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
-     } else
-     if(event->keyval == GDK_KEY_numbersign) {
+     } else if(event->keyval == GDK_KEY_numbersign) {
        addItemToBuffer(ITM_HASH_JM); screenUpdatingMode = SCRUPD_AUTO; refreshScreen(3); return false;
      }
   }

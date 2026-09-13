@@ -245,6 +245,12 @@ inline fn realSetZero(r: *align(1) real_t) void {
     r.digits = 1;
     r.lsu[0] = 0;
 }
+inline fn realLn(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+    _ = decNumberLn(res, operand, ctxt);
+}
+inline fn realExp(operand: *align(1) const real_t, res: *align(1) real_t, ctxt: *realContext_t) void {
+    _ = decNumberExp(res, operand, ctxt);
+}
 inline fn realToString(source: *align(1) const real_t, destination: [*]u8) void {
     _ = decNumberToString(source, destination);
 }
@@ -1037,15 +1043,15 @@ fn doXfn(registerNo: calcRegister_t, function: c_int, functionType: c_int, funct
                 convertAngleFromTo(paramX, amRadian, currentAngularMode, &c);
             },
             ITM_LN_XFN => {
-                _ = decNumberLn(paramX, paramX, &c);
+                realLn(paramX, paramX, &c);
             },
             ITM_LOG_XFN => {
-                _ = decNumberLn(paramX, paramX, &c);
-                _ = decNumberLn(paramTemp, const_10(), &c);
+                realLn(paramX, paramX, &c);
+                realLn(const_10(), paramTemp, &c);
                 realDivide(paramX, paramTemp, paramX, &c);
             },
             ITM_EXP_XFN => {
-                _ = decNumberExp(paramX, paramX, &c);
+                realExp(paramX, paramX, &c);
             },
             ITM_10X_XFN => {
                 realPower(const_10(), paramX, paramX, &c);
