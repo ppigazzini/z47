@@ -11,7 +11,7 @@
 
 // This is used for the backup.cfg simulator backup file
 // The variable backupVersion is used in the connection
-#define BACKUP_VERSION                     1020     // GRAMOD moved from the reserved variable table to the graMod global
+#define BACKUP_VERSION                     1023     // retainedPageFirstItem[], the page each retained-page softmenu reopens on; lastCatalogPosition[] written as hexDump, every catalog; 1021 and 1022 are taken on FIN-12C, 1021 also on units/algebra
 /*
 1004     // Replace Norm_Key_00_VAR by the structure Norm_Key_00;
 1005     // 2024-09-06 Remove superfluous reporting when old cfg file items are not found in new files
@@ -23,6 +23,7 @@
 1011     // Added reserve variables UY, LY, UEST, LEST.
 1016     // Graph defaults changing from float to real
 1019     // 2026-08-16 Menu items renumbered into one block; 1017 and 1018 are taken on release branch 4.00a2
+1023     // 2026-09-11 retainedPageFirstItem[] added, the page each retained-page softmenu reopens on; lastCatalogPosition[] written as hexDump, every catalog; 1021 and 1022 are taken on FIN-12C, 1021 also on units/algebra
 */
 
 #define backupFileName (CALCMODEL == USER_C47 ? "backup.cfg" : "backupR47.cfg")
@@ -385,7 +386,8 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
     saveStateValue(&c47MemInBlocks,                 sizeof(c47MemInBlocks),                                      "c47MemInBlocks",                 "uint64");
     saveStateValue(&gmpMemInBytes,                  sizeof(gmpMemInBytes),                                       "gmpMemInBytes",                  "uint64");
     saveStateValue(&catalog,                        sizeof(catalog),                                             "catalog",                        "int16");
-    saveStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
+    saveStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "hexDump");
+    saveStateValue(retainedPageFirstItem,           sizeof(retainedPageFirstItem),                               "retainedPageFirstItem",          "hexDump");
     saveStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     saveStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
     saveStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");
@@ -1086,9 +1088,13 @@ static void convertOldMatrixHeaderToNewMatrixHeader(calcRegister_t regist) {
       restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition) - 4,                             "lastCatalogPosition",            "int16");
       lastCatalogPosition[22 /* MNU_FNCS_EIM */]  = 0;
     }
-    else {
+    else if(backupVersion < 1023) {                                               // int16 wrote element 0 only
       restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "int16");
     }
+    else {
+      restoreStateValue(&lastCatalogPosition,            sizeof(lastCatalogPosition),                                 "lastCatalogPosition",            "hexDump");
+    }
+    restoreStateValue(retainedPageFirstItem,           sizeof(retainedPageFirstItem),                               "retainedPageFirstItem",          "hexDump");
     restoreStateValue(displayValueX,                   sizeof(displayValueX),                                       "displayValueX",                  "hexDump");
     restoreStateValue(&pcg32_global,                   sizeof(pcg32_global),                                        "pcg32_global",                   "hexDump");
     restoreStateValue(&exponentLimit,                  sizeof(exponentLimit),                                       "exponentLimit",                  "int16");

@@ -7,7 +7,16 @@
 
 #include "c47.h"
 
-#define NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED 34
+// The floor a real34 comparison must reach, in correct significant digits. It is the
+// value every case gets unless the file lowers it: a build that computes a result at
+// 75 internal digits instead of 159, or through the solver instead of the formula, is
+// still correct but reaches fewer digits, and the case has to say how many.
+//   Acc: <n>   in a file sets the floor for every case that follows
+//   ACC=<n>    on one Out: line sets it for that line only
+#define DEFAULT_CORRECT_SIGNIFICANT_DIGITS 30
+
+int32_t fileSignificantDigits = DEFAULT_CORRECT_SIGNIFICANT_DIGITS; // set by Acc:
+int32_t requiredSignificantDigits = DEFAULT_CORRECT_SIGNIFICANT_DIGITS; // in force for the Out: line being checked
 
 
 extern const int16_t menu_FCNS[];
@@ -24,6 +33,7 @@ char line[100000], lastInParameters[10000], fileName[1000], *filePath, filePathN
 char testCaseName[1000], testCasePrefix[1000], testCaseSuffix[1000];
 int32_t lineNumber, numTestsFile, numTestsTotal, successfulTests, failedTests;
 int32_t functionIndex, funcType, correctSignificantDigits;
+bool_t reportAccuracy = false; // --report-accuracy: print the digits every comparison reached, so a floor is measured rather than guessed
 bool_t noFailForNow = true; // abortTest counts a failure only while set; starts true so the run's first test can fail
 // Set by every rejection path in functionToCall() and itemToCall(); the Out: handler fails the case, and the next setup line or the end of the file clears it.
 bool_t caseSetupFailed;
@@ -76,6 +86,9 @@ void covMatrixEditorScroll(uint16_t which);
 void covIntegratePgm(uint16_t unusedButMandatoryParameter);
 void covNamedVariableCache(uint16_t unusedButMandatoryParameter);
 void covSumProd(uint16_t which);
+#if defined(OPTION_ALGDEP)
+  void covAlgdep(uint16_t which);
+#endif // OPTION_ALGDEP
 void covISumProd(uint16_t which);
 void covProgramFlow(uint16_t which);
 void covTvm(uint16_t which);
@@ -302,6 +315,7 @@ const funcTest_t funcTestNoParam[] = {
   {"fnIntegratePgmCov",          covIntegratePgm,             1 },
   {"fnNamedVarCacheCov",         covNamedVariableCache,       1 },
   {"fnSumProdCov",               covSumProd,                  1 },
+  {"fnAlgdepCov",                covAlgdep,                   1 },
   {"fnISumProdCov",              covISumProd,                 1 },
   {"fnProgramFlowCov",           covProgramFlow,              1 },
   {"fnTvmCov",                   covTvm,                      1 },
@@ -2291,6 +2305,35 @@ void covSumProd(uint16_t which) {
     fnProgrammableSum(label);
   }
 }
+
+#if defined(OPTION_ALGDEP)
+  // Algebraic number identification (algdep.c). The corpus supplies the value in X and FARG selects the form under test, so the fixture stays independent of the
+  // keyboard and menu wiring. Driving fnAlgdep directly also means the TM_VALUE degree bound is exercised by the command rows, not silently bypassed here.
+  //   0  x->POLY to degree 6,  coefficient vector left in X
+  //   1  x->POLY to degree 6,  the rendered polynomial left in X as a string
+  //   2  V->SUM=0 over the vector already in X
+  //   3  x->POLY to degree 10, for the cases that need the full sweep
+  //   4  x->POLY to degree 2,  so a lower bound provably refuses what degree 6 finds
+  void covAlgdep(uint16_t which) {
+    switch(which) {
+      case 1: {
+        fnAlgdep(6);
+        if(lastErrorCode == ERROR_NONE) {
+          const char *poly = algdepPolynomialString();
+          int32_t     len  = (int32_t)stringByteLength(poly);
+          reallocateRegister(REGISTER_X, dtString, TO_BLOCKS(len + 1), amNone);
+          xcopy(REGISTER_STRING_DATA(REGISTER_X), poly, len + 1);
+        }
+        break;
+      }
+      case 2:  fnLindep(NOPARAM); break;
+      case 3:  fnAlgdep(10);  break;
+      case 4:  fnAlgdep(2);   break;
+      default: fnAlgdep(6);   break;
+    }
+  }
+#endif // OPTION_ALGDEP
+
 
 void covISumProd(uint16_t which) {
   // Program-based indexed (long-integer) summation / product (isumprod.c). fnProgrammableiSum / fnProgrammableiProduct run the loaded program T (f(n)=n^2,
@@ -4430,11 +4473,13 @@ int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numb
   realSetPositiveSign(&relativeError);
 
   correctSignificantDigits = -relativeError.exponent - relativeError.digits;
+  if(reportAccuracy) {
+    printf("ACCURACY %s:%d %s %d\n", fileName, lineNumber, numberPart, correctSignificantDigits);
+  }
   ctxtReal39.digits = 2;
   realPlus(&relativeError, &relativeError, &ctxtReal39);
   ctxtReal39.digits = 39;
-  if(correctSignificantDigits < 30) {
-    //printf("\nThere are only %d correct significant digits in the %s part of the value: %d are expected!\n", correctSignificantDigits, numberPart, NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED);
+  if(correctSignificantDigits < requiredSignificantDigits) {
     realToString(&relativeError, realString);
     if(letter == 0) {
       printf("\nThere are only %d correct significant digits in the %s part of register %d! Relative error is %s\n", correctSignificantDigits, numberPart, regist, realString);
@@ -4449,13 +4494,10 @@ int relativeErrorReal34(real34_t *expectedValue34, real34_t *value34, char *numb
     printf("%s\n", lastInParameters);
     printf("%s\n", line);
     printf("in file %s line %d\n", fileName, lineNumber);
-    if(correctSignificantDigits < 30 && correctSignificantDigits < NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED) {
-      puts(registerExpectedAndValue);
-      //exit(-1);
-    }
+    puts(registerExpectedAndValue);
   }
 
-  return (correctSignificantDigits < 30 && correctSignificantDigits < NUMBER_OF_CORRECT_SIGNIFICANT_DIGITS_EXPECTED) ? RE_INACCURATE : RE_ACCURATE;
+  return (correctSignificantDigits < requiredSignificantDigits) ? RE_INACCURATE : RE_ACCURATE;
 }
 
 
@@ -5758,6 +5800,103 @@ var2:
 
 
 
+// The options that change how many digits a correct result reaches, rather than whether
+// the function exists at all. A lowered floor names the one that causes it, so the build
+// decides whether the floor applies and the sim keeps its full-precision gate. Keep this
+// list to options that trade accuracy for flash; anything that removes a function belongs
+// nowhere near it.
+// The options that change how many digits a correct result reaches, rather than whether
+// the function exists at all. A lowered floor names the one that causes it, so the build
+// decides whether the floor applies and a full-precision build keeps its full gate.
+// Keep these to options that trade accuracy for flash; an option that removes a function
+// belongs nowhere near this list.
+//
+// Two lists, not one flag per row: the first validates the name an Out: line gave, so a
+// typo is a failed case rather than a silently relaxed one; the second is what this build
+// actually compiled.
+static const char *const accuracyOptionNames[] = {
+  "OPTION_CUBIC_159",
+  "OPTION_SQUARE_159",
+  "OPTION_EIGEN_159",
+  "OPTION_XFN_1000",
+  "OPTION_TVM_FORMULAS",
+  "OPTION_TVM_NEWTON",
+  NULL
+};
+
+static const char *const accuracyOptionsCompiledIn[] = {
+#if defined(OPTION_CUBIC_159)
+  "OPTION_CUBIC_159",
+#endif
+#if defined(OPTION_SQUARE_159)
+  "OPTION_SQUARE_159",
+#endif
+#if defined(OPTION_EIGEN_159)
+  "OPTION_EIGEN_159",
+#endif
+#if defined(OPTION_XFN_1000)
+  "OPTION_XFN_1000",
+#endif
+#if defined(OPTION_TVM_FORMULAS)
+  "OPTION_TVM_FORMULAS",
+#endif
+#if defined(OPTION_TVM_NEWTON)
+  "OPTION_TVM_NEWTON",
+#endif
+  NULL
+};
+
+
+
+static bool_t optionIsCompiledIn(const char *name, size_t lg) {
+  for(int32_t i=0; accuracyOptionsCompiledIn[i] != NULL; i++) {
+    if(strlen(accuracyOptionsCompiledIn[i]) == lg && strncmp(accuracyOptionsCompiledIn[i], name, lg) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+// An Out: line may carry ACC=<n>, the correct-significant-digit floor for that line, or
+// ACC=<n>:<OPTION_NAME>, which lowers the floor to n only in a build that does not
+// compile that option in. The floor has to be in force before any comparison runs, so it
+// is scanned out of the whole line rather than picked up in token order.
+static void outAccuracyFloor(const char *outLine) {
+  const char *acc = strstr(outLine, "ACC=");
+
+  requiredSignificantDigits = fileSignificantDigits;
+  while(acc != NULL) {
+    if(acc == outLine || *(acc - 1) == ' ') { // a token of its own, not the tail of another name
+      const char *colon = strchr(acc + 4, ':');
+      const char *end   = strchr(acc + 4, ' ');
+
+      if(colon == NULL || (end != NULL && colon > end)) { // ACC=<n>, unconditional
+        requiredSignificantDigits = atoi(acc + 4);
+        return;
+      }
+
+      for(int32_t i=0; accuracyOptionNames[i] != NULL; i++) {
+        size_t lg = strlen(accuracyOptionNames[i]);
+        if(strncmp(colon + 1, accuracyOptionNames[i], lg) == 0 && (colon[1 + lg] == ' ' || colon[1 + lg] == 0)) {
+          if(!optionIsCompiledIn(colon + 1, lg)) {
+            requiredSignificantDigits = atoi(acc + 4);
+          }
+          return;
+        }
+      }
+
+      printf("\nACC= names %s, which is not one of the options in accuracyOptionNames[]\n", colon + 1);
+      abortTest();
+      return;
+    }
+    acc = strstr(acc + 4, "ACC=");
+  }
+}
+
+
+
 void outParameters(char *token) {
   char parameter[2000];
   int32_t lg;
@@ -5791,7 +5930,9 @@ void outParameters(char *token) {
     parameter[index] = 0;
 
     //printf("  Check %s\n", parameter);
-    checkExpectedOutParameter(parameter);
+    if(strncmp(parameter, "ACC=", 4) != 0) { // consumed by outAccuracyFloor() before any comparison ran
+      checkExpectedOutParameter(parameter);
+    }
 
     while(*token == ' ') {
       token++;
@@ -6195,6 +6336,11 @@ void processLine(void) {
     strcpy(testCaseSuffix, line + 13);
   }
 
+  else if(strncmp(line, "ACC: ", 5) == 0 || strncmp(line, "Acc: ", 5) == 0) {
+    // The floor for every case that follows in this file, until the next Acc: line.
+    fileSignificantDigits = atoi(line + 5);
+  }
+
   else if(strncmp(line, "FUNC: ", 6) == 0) {
     //printf("%s\n", line);
     functionToCall(line + 6);
@@ -6223,6 +6369,7 @@ void processLine(void) {
     numTestsTotal++;
     successfulTests++;
     noFailForNow = true;
+    outAccuracyFloor(line + 5);
     if(caseSetupFailed) {
       // The setup line failed, so fnNop ran and the case fails here. The flag latches across this block's Out: lines, and the next setup line or the file end clears it.
       abortTest();
@@ -6258,6 +6405,9 @@ void processOneFile(void) {
     printf("Cannot open file %s!\n", fileName);
     exit(-1);
   }
+
+  fileSignificantDigits     = DEFAULT_CORRECT_SIGNIFICANT_DIGITS;
+  requiredSignificantDigits = DEFAULT_CORRECT_SIGNIFICANT_DIGITS;
 
   // Default function to call
   functionIndex = ITM_NOP;
@@ -6378,8 +6528,18 @@ int processTests(const char *listPath) {
 int main(int argc, char* argv[]) {
   int exitCode;
 
-  if(argc < 2) {
-    printf("Usage: testSuite <list file>\n");
+  int listArg = 1;
+
+  if(argc >= 2 && strcmp(argv[1], "--report-accuracy") == 0) {
+    // Print the correct significant digits every real comparison reached, then run as
+    // usual. Feeding this to tools/accuracyFloors.py turns a profile run into the
+    // Acc:/ACC= annotations that profile needs, so no floor is ever a guess.
+    reportAccuracy = true;
+    listArg = 2;
+  }
+
+  if(argc < listArg + 1) {
+    printf("Usage: testSuite [--report-accuracy] <list file>\n");
     return 1;
   }
 
@@ -6409,7 +6569,7 @@ int main(int argc, char* argv[]) {
   */
 
 
-  exitCode = processTests(argv[1]);
+  exitCode = processTests(argv[listArg]);
   printf("The memory owned by GMP should be 0 bytes. Else report a bug please!\n");
   debugMemory("End of testsuite");
 

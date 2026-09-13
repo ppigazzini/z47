@@ -84,6 +84,7 @@
   //uint64_t realToUint64C47     (const real_t *r);
   void     realSetZero         (real_t *r);
   void     realSetOne          (real_t *r);
+  void     realSetNegativeOne  (real_t *r);
   void     realSetNaN          (real_t *r);
   void     realSetPlusInfinity (real_t *r);
   void     realSetMinusInfinity(real_t *r);
@@ -164,6 +165,7 @@
   #define realIsPositive(source)                                 (((TO_REAL_T(source)->bits) & 0x80) == 0x00)
   #define realIsSpecial(source)                                  decNumberIsSpecial       (TO_REAL_T(source))
   #define realIsZero(source)                                     decNumberIsZero          (TO_REAL_T(source))
+  #define realLn(operand, res, ctxt)                             decNumberLn              (TO_REAL_T(res), TO_REAL_T(operand), ctxt)
   #define realMinus(operand, res, ctxt)                          decNumberMinus           (TO_REAL_T(res), TO_REAL_T(operand), ctxt)
   #define realMultiply(operand1, operand2, res, ctxt)            decNumberMultiply        (TO_REAL_T(res), TO_REAL_T(operand1), TO_REAL_T(operand2), ctxt)
   #define realNextToward(from, toward, res, ctxt)                decNumberNextToward      (TO_REAL_T(res), TO_REAL_T(from),     TO_REAL_T(toward),   ctxt)

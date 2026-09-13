@@ -2,6 +2,7 @@
 
 #include <gmp.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "math_wrappers_test_runtime.h"
@@ -3532,6 +3533,28 @@ void realSetZero(real_t *value) {
 
 void realSetOne(real_t *value) {
   setFakeReal(value, 1, 0);
+}
+
+void realSetNegativeOne(real_t *value) {
+  setFakeReal(value, -1, 0);
+}
+
+// algdep.zig shares this object and links these at load: the lattice frame comes
+// from the register arena and the result is a fresh matrix register. No lane of
+// this harness drives x->POLY or V->SUM=0 (the full-core testSuite does), so a
+// heap block stands in for the arena and a new matrix is refused.
+void *allocC47Blocks(size_t sizeInBlocks) {
+  return malloc(sizeInBlocks * 4);
+}
+
+void freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks) {
+  (void)sizeInBlocks;
+  free(pcMemPtr);
+}
+
+bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, bool_t complex) {
+  (void)regist; (void)rows; (void)cols; (void)complex;
+  return false;
 }
 
 bool_t getSystemFlag(int32_t flag) {

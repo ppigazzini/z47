@@ -626,6 +626,7 @@ extern var PLOT_AXIS: u8;
 extern var PLOT_ZMY: i8;
 extern var firstDayOfWeek: u8;
 extern var firstWeekOfYearDay: u8;
+extern var retainedPageFirstItem: [2]i16; // NUMBER_OF_RETAINED_PAGE_MENUS
 
 // printerState fields are enum-typed; set each through an enum-free trampoline.
 extern var printerState: [16]u8; // {print_on@0:u8, printer_model@8, delay@12:u16}
@@ -1504,7 +1505,12 @@ fn applyConfigField(loaded_version: u32, allow_user_keys: bool, saved_calc_model
         PLOT_AXIS = @intFromBool(text.toUint8(tmpString) != 0);
     } else if (cmpName(ab, "PLOT_ZMY")) {
         PLOT_ZMY = @bitCast(text.toUint8(tmpString));
-    } else if (matchU8("firstDayOfWeek", &firstDayOfWeek)) {} else if (matchU8("firstWeekOfYearDay", &firstWeekOfYearDay)) {} else if (cmpName(ab, "printerOn")) {
+    } else if (matchU8("firstDayOfWeek", &firstDayOfWeek)) {} else if (matchU8("firstWeekOfYearDay", &firstWeekOfYearDay)) {} else if (cmpName(ab, "retainedPageFirstItem")) {
+        var str: [*c]u8 = tmpString;
+        for (&retainedPageFirstItem) |*first_item| { // a line with fewer values than retainedPageMenu[] gives 0, the first page, for the others
+            str = text.toInt16NextWord(str, first_item);
+        }
+    } else if (cmpName(ab, "printerOn")) {
         setPrinterOn(text.toUint8(tmpString));
     } else if (cmpName(ab, "printerModel")) {
         setPrinterModel(text.toUint8(tmpString));

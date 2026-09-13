@@ -87,20 +87,6 @@ int ioEof(void) {
 }
 
 
-int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
-  assert(_ioFileHandle == NULL);
-  const char *filename = _ioFileNameFromFilePath(path);
-  if(!filename) {
-    return FILE_ERROR;
-  }
-  int result = remove(filename);
-  if(result == -1 && errorNumber != NULL) {
-    *errorNumber = errno;
-  }
-  return (result != -1 ? FILE_OK : FILE_ERROR);
-}
-
-
 void show_warning(char *str) {
   printf("Warning: %s\n", str);
 }

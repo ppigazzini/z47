@@ -50,10 +50,6 @@ pub export fn ioEof() callconv(.c) c_int {
     return gtk_io_owned.ioEof(io_file_handle);
 }
 
-pub export fn ioFileRemove(path: c_int, error_number: ?*u32) callconv(.c) c_int {
-    return gtk_io_owned.ioFileRemove(path, error_number);
-}
-
 pub export fn show_warning(string: [*c]u8) callconv(.c) void {
     gtk_io_owned.showWarning(string);
 }

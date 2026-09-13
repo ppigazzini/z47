@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 //
 // Zig owner for the real_t special-value setters from src/c47/realType.c:
-// realSetZero / realSetOne / realSetNaN / realSetPlusInfinity /
-// realSetMinusInfinity. These construct a real_t directly from its decNumber
+// realSetZero / realSetOne / realSetNegativeOne / realSetNaN /
+// realSetPlusInfinity / realSetMinusInfinity. These construct a real_t directly from its decNumber
 // coefficient/exponent/bits fields with no runtime coupling -- they touch only
 // the caller's real_t, so they belong in the headless base kernel rather than
 // the shell. The int-conversion helpers that share realType.c stay on the shell
@@ -29,6 +29,13 @@ pub export fn realSetZero(r: *real_t) callconv(.c) void {
 
 pub export fn realSetOne(r: *real_t) callconv(.c) void {
     r.bits = 0;
+    r.exponent = 0;
+    r.digits = 1;
+    r.lsu[0] = 1;
+}
+
+pub export fn realSetNegativeOne(r: *real_t) callconv(.c) void {
+    r.bits = DECNEG;
     r.exponent = 0;
     r.digits = 1;
     r.lsu[0] = 1;
@@ -66,6 +73,13 @@ test "realSetZero/One seed a finite coefficient with clear flag bits" {
     try testing.expectEqual(@as(i32, 1), r.digits);
 
     realSetOne(&r);
+    try testing.expectEqual(@as(u8, 0), r.bits);
+    try testing.expectEqual(@as(u16, 1), r.lsu[0]);
+
+    realSetNegativeOne(&r);
+    try testing.expectEqual(DECNEG, r.bits);
+    try testing.expectEqual(@as(i32, 0), r.exponent);
+    try testing.expectEqual(@as(i32, 1), r.digits);
     try testing.expectEqual(@as(u8, 0), r.bits);
     try testing.expectEqual(@as(u16, 1), r.lsu[0]);
 }

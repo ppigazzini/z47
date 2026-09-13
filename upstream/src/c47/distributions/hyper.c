@@ -165,11 +165,17 @@
   void pdf_Hypergeometric(const real_t *x, const real_t *k0, const real_t *n, const real_t *n0, real_t *res, realContext_t *realContext) {
     real_t a, b, c, q;
 
-    realCopy(k0, &a), realCopy(x, &b), logCyxReal(&a, &b, &q, realContext);     // K C k
-    realSubtract(n0, k0, &a, realContext), realSubtract(n, x, &b, realContext);
-    logCyxReal(&a, &b, &c, realContext), realAdd(&q, &c, &q, realContext);       // (N-K) C (n-k)
-    realCopy(n0, &a), realCopy(n, &b);
-    logCyxReal(&a, &b, &c, realContext), realSubtract(&q, &c, &q, realContext);  // N C n
+    realCopy(k0, &a);
+    realCopy(x, &b);
+    logCyxReal(&a, &b, &q, realContext);     // K C k
+    realSubtract(n0, k0, &a, realContext);
+    realSubtract(n, x, &b, realContext);
+    logCyxReal(&a, &b, &c, realContext);
+    realAdd(&q, &c, &q, realContext);       // (N-K) C (n-k)
+    realCopy(n0, &a);
+    realCopy(n, &b);
+    logCyxReal(&a, &b, &c, realContext);
+    realSubtract(&q, &c, &q, realContext);  // N C n
     realExp(&q, res, realContext);
   }
 
@@ -182,12 +188,18 @@
     cvgTol.exponent -= realContext->digits - 2;
 
     // (n C (k+1)) ((N-n) C (K-k-1)) / (N C K)
-    realCopy(n, &a), realAdd(x, const_1, &b, realContext);
+    realCopy(n, &a);
+    realAdd(x, const_1, &b, realContext);
     logCyxReal(&a, &b, &binomPart, realContext);                                                // n C (k+1)
-    realSubtract(n0, n, &a, realContext), realSubtract(k0, x, &b, realContext), realSubtract(&b, const_1, &b, realContext);
-    logCyxReal(&a, &b, &c, realContext), realAdd(&binomPart, &c, &binomPart, realContext);      // (N-n) C (K-k-1)
-    realCopy(n0, &a), realCopy(k0, &b);
-    logCyxReal(&a, &b, &c, realContext), realSubtract(&binomPart, &c, &binomPart, realContext); // N C K
+    realSubtract(n0, n, &a, realContext);
+    realSubtract(k0, x, &b, realContext);
+    realSubtract(&b, const_1, &b, realContext);
+    logCyxReal(&a, &b, &c, realContext);
+    realAdd(&binomPart, &c, &binomPart, realContext);      // (N-n) C (K-k-1)
+    realCopy(n0, &a);
+    realCopy(k0, &b);
+    logCyxReal(&a, &b, &c, realContext);
+    realSubtract(&binomPart, &c, &binomPart, realContext); // N C K
 
     // generalized hypergeometric function 3F2
     realSetOne(&a1);
@@ -217,12 +229,23 @@
       }
 
       signHgp = realIsNegative(&a1) ^ realIsNegative(&a2) ^ realIsNegative(&a3) ^ realIsNegative(&b1) ^ realIsNegative(&b2);
-      realCopyAbs(&a1, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
-      realCopyAbs(&a2, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
-      realCopyAbs(&a3, &a), WP34S_Ln(&a, &a, realContext), realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
-      realCopyAbs(&b1, &a), WP34S_Ln(&a, &a, realContext), realSubtract(&hypergeomPart, &a, &hypergeomPart, realContext);
-      realCopyAbs(&b2, &a), WP34S_Ln(&a, &a, realContext), realSubtract(&hypergeomPart, &a, &hypergeomPart, realContext);
-      WP34S_Ln(&i, &a, realContext), realSubtract(&hypergeomPart, &a, &hypergeomPart, realContext);
+      realCopyAbs(&a1, &a);
+      WP34S_Ln(&a, &a, realContext);
+      realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
+      realCopyAbs(&a2, &a);
+      WP34S_Ln(&a, &a, realContext);
+      realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
+      realCopyAbs(&a3, &a);
+      WP34S_Ln(&a, &a, realContext);
+      realAdd(&hypergeomPart, &a, &hypergeomPart, realContext);
+      realCopyAbs(&b1, &a);
+      WP34S_Ln(&a, &a, realContext);
+      realSubtract(&hypergeomPart, &a, &hypergeomPart, realContext);
+      realCopyAbs(&b2, &a);
+      WP34S_Ln(&a, &a, realContext);
+      realSubtract(&hypergeomPart, &a, &hypergeomPart, realContext);
+      WP34S_Ln(&i, &a, realContext);
+      realSubtract(&hypergeomPart, &a, &hypergeomPart, realContext);
 
       realAdd(&binomPart, &hypergeomPart, &a, realContext);
       realExp(&a, &a, realContext);

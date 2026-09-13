@@ -127,6 +127,12 @@ pub const RuntimeObjectOptions = struct {
     // defines inside the same guard, is this option: PEM and the exported listing
     // indent a structure's body exactly when the structures are compiled in.
     option_structured_pgm: bool = true,
+    // OPTION_ALGDEP gates the algebraic number identification pair, x->POLY and
+    // V->SUM=0: the two items bind fnAlgdep and fnLindep and carry CAT_FNCT, the
+    // POLY menu shows them, savedspace() strikes them out without it, and the
+    // display draws the recovered polynomial on the X line. Same "common to
+    // packages 1-4" block again, so the same per-target answer. Defaults true (host).
+    option_algdep: bool = true,
     // OPTION_TVM_AMORT gates menu_AMORT and screen.c's amort temporary-information
     // lines. Upstream defines it for every DMCP package as well as for DMCP5 and
     // host; its only #undef is in the legacy single-file block, which needs
@@ -237,6 +243,7 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
     build_options.addOption(bool, "option_infsums", options.option_infsums);
     build_options.addOption(bool, "option_structured_pgm", options.option_structured_pgm);
+    build_options.addOption(bool, "option_algdep", options.option_algdep);
     build_options.addOption(bool, "option_tvm_amort", options.option_tvm_amort);
     // Passed in by whoever also hands the C sources -DTESTSUITE_BUILD, so the Zig
     // owners and the C half of the same executable agree on which build this is:

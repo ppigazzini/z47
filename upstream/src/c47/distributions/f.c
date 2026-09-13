@@ -207,7 +207,8 @@ void WP34S_Qf_F(const real_t *x, const real_t *d1, const real_t *d2, real_t *res
     realSubtract(&s, const_1, &s, realContext);
   }
   realDivide(const_1, &s, &s, realContext);
-  realCopy(&s, &reg1), realCopy(&r, &reg2);
+  realCopy(&s, &reg1);
+  realCopy(&r, &reg2);
   realAdd(&r, &s, &r, realContext);
   realDivide(const_2, &r, &r, realContext);
   realMultiply(&p, &p, &s, realContext);

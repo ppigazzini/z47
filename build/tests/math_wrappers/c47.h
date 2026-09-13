@@ -553,6 +553,10 @@ bool_t realIsAnInteger(const real_t *x);
 void realSetNaN(real_t *value);
 void realSetZero(real_t *value);
 void realSetOne(real_t *value);
+void realSetNegativeOne(real_t *value);
+void *allocC47Blocks(size_t sizeInBlocks);
+void freeC47Blocks(void *pcMemPtr, size_t sizeInBlocks);
+bool_t initMatrixRegister(calcRegister_t regist, uint16_t rows, uint16_t cols, bool_t complex);
 void divRealComplex(const real_t *numer,
                     const real_t *denom_real,
                     const real_t *denom_imag,

@@ -13,7 +13,7 @@ void expM1Complex(const real_t *real, const real_t *imag, real_t *resReal, real_
 
   if(realIsZero(imag)) {
     if(realIsInfinite(real) && realIsNegative(real)) {
-      realCopy(const__1, resReal);
+      realSetNegativeOne(resReal);
       realSetZero(resImag);
       return;
     }

@@ -1314,7 +1314,7 @@ pub export fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64,
             convertLongIntegerRegisterToLongInteger(reg, &ival);
             if (comptime is32) {
                 const d32: [*]u32 = @ptrCast(ival._mp_d);
-                u64v = d32[0];
+                u64v = if (ival._mp_size == 0) 0 else d32[0];
                 if (absI(ival._mp_size) > 1) {
                     u64v |= @as(u64, d32[1]) << 32;
                 }
@@ -1322,7 +1322,7 @@ pub export fn getRegisterAsShortInt(reg: calcRegister_t, sign: *bool, val: *u64,
                 u64v &= shortIntegerMask;
             } else {
                 const d64: [*]u64 = @ptrCast(ival._mp_d);
-                u64v = d64[0] & shortIntegerMask;
+                u64v = (if (ival._mp_size == 0) 0 else d64[0]) & shortIntegerMask;
                 of = absI(ival._mp_size) > 1 or (u64v & shortIntegerMask) != u64v;
             }
             sign.* = longIntegerIsNegative(&ival);

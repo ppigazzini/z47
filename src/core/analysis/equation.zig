@@ -112,7 +112,7 @@ const REAL34_SIZE_IN_BYTES: usize = 16;
 
 const FIRST_CONSTANT: u32 = 128; // CST_01
 const LAST_CONSTANT: u32 = 212; // CST_84
-const LAST_ITEM: u32 = 3349;
+const LAST_ITEM: u32 = 3481;
 const EIM_STATUS: u16 = 0x0100;
 const EIM_ENABLED: u16 = 1 << 8;
 
@@ -851,7 +851,7 @@ pub export fn showEquation(equationId: u16, startAt: u16, cursorAt: u16, dryRun:
 
         {
             var i: u32 = 0;
-            while (i < 7) : (i += 1) {
+            while (i < 7 and tmpPtr[0] != 0) : (i += 1) {
                 tmpPtr += if ((tmpPtr[0] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
                 if (tmpPtr[0] == ':') {
                     inLabel = (startAt <= (i + 1));
@@ -1688,7 +1688,7 @@ pub export fn parseEquation(equationId: u16, parseMode: u16, buffer: [*c]u8, mva
 
     {
         var i: u32 = 0;
-        while (i < 7) : (i += 1) {
+        while (i < 7 and strPtr[0] != 0) : (i += 1) {
             strPtr += if ((strPtr[0] & 0x80) != 0) @as(usize, 2) else @as(usize, 1);
             if (strPtr[0] == ':') {
                 labeled = true;

@@ -146,12 +146,18 @@ def build_probe_and_dump(zig, tmp):
         src_lines, r"#define PER_\b", r"#if defined\(USECURVES\)", inclusive=False
     )
     # The per-OPTION macro blocks that resolve a row's func/param/status when the option
-    # is off (S18_* for OPTION_XFN_1000, INF_* for OPTION_INFSUMS). They sit contiguously
-    # between the USECURVES guard and the banner that opens the table, so take the whole
-    # region rather than naming each block: OPTION_INFSUMS arrived with the c66d6567b pin
-    # and a per-block list would have left the probe with an undeclared identifier again.
+    # is off (ALG_* for OPTION_ALGDEP, S18_* for OPTION_XFN_1000, INF_* for OPTION_INFSUMS).
+    # They sit contiguously between the USECURVES guard and the banner that opens the
+    # table, so take the whole region rather than naming each block: OPTION_INFSUMS
+    # arrived with the c66d6567b pin and a per-block list would have left the probe with
+    # an undeclared identifier again. The region opens at the first `#if defined(OPTION_`
+    # after the USECURVES guard, not at a named option: OPTION_ALGDEP arrived with the
+    # 019203dec pin ABOVE the XFN block, and a start anchored on OPTION_XFN_1000 lost it.
+    usecurves = next(
+        i for i, line in enumerate(src_lines) if re.search(r"#if defined\(USECURVES\)", line)
+    )
     optionm = extract_block(
-        src_lines, r"#if defined\(OPTION_XFN_1000\)", r"^//=====", inclusive=False
+        src_lines[usecurves:], r"^#if defined\(OPTION_", r"^//=====", inclusive=False
     )
     probe = [
         "#include <stdio.h>",

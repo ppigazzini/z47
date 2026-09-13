@@ -78,6 +78,7 @@ const realIsZero = runtime.realIsZero;
 const realIsNegative = runtime.realIsNegative;
 const realSetZero = runtime.realSetZero;
 const realSetOne = runtime.realSetOne;
+const realSetNegativeOne = runtime.realSetNegativeOne;
 const realSetNaN = runtime.realSetNaN;
 const realChangeSign = runtime.realChangeSign;
 const realSetPositiveSign = runtime.realSetPositiveSign;
@@ -677,7 +678,7 @@ fn _ellipticFE_lambda_mu(phi: *const real_t, psi: *const real_t, m: *const real_
         }
 
         if (realIsZero(&cot2Lambda) and realIsZero(&cot2LambdaI)) {
-            realCopy(const__1Off(), mu);
+            realSetNegativeOne(mu);
         } else {
             realFMA(&tan2Phi, &cot2Lambda, const__1Off(), mu, realContext);
         }
@@ -694,7 +695,7 @@ fn _ellipticFE_lambda_mu(phi: *const real_t, psi: *const real_t, m: *const real_
         _ = math_inverse_trig_command.ArctanComplex(lambda, lambdaI, lambda, lambdaI, realContext);
 
         if (realIsZero(&cot2Lambda) and realIsZero(&cot2LambdaI)) {
-            realCopy(const__1Off(), mu);
+            realSetNegativeOne(mu);
             realSetZero(muI);
         } else {
             realFMA(&tan2Phi, &cot2Lambda, const__1Off(), mu, realContext);

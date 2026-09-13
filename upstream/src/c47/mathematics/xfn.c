@@ -982,17 +982,17 @@ static void replaceSeparatorWithFigureSpace(char *displayString) {              
         }
 
         case ITM_LN_XFN: {
-          decNumberLn(paramX, paramX, &c);
+          realLn(paramX, paramX, &c);
           break;
         }
         case ITM_LOG_XFN: {
-          decNumberLn(paramX, paramX, &c);
-          decNumberLn(paramTemp, const_10, &c);
+          realLn(paramX, paramX, &c);
+          realLn(const_10, paramTemp, &c);
           realDivide(paramX, paramTemp, paramX, &c);
           break;
         }
         case ITM_EXP_XFN: {
-          decNumberExp(paramX, paramX, &c);
+          realExp(paramX, paramX, &c);
           break;
         }
         case ITM_10X_XFN: {

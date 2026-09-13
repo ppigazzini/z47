@@ -172,26 +172,6 @@ int ioEof(void) {
 }
 
 
-
-int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
-  static char filename[40];
-  uint8_t ret;
-  assert(!_ioWriteEnabled && !_ioReadEnabled);
-  FRESULT result;
-  sys_disk_write_enable(1);
-  ret = _ioFileNameFromFilePath(path, filename);
-  if(ret != FILE_OK) {
-    return ret;
-  }
-  result = f_unlink(filename);
-  if(result != FR_OK && errorNumber != NULL) {
-    *errorNumber = result;
-  }
-  sys_disk_write_enable(0);
-  return (result == FR_OK ? FILE_OK : FILE_ERROR);
-}
-
-//
 int save_statefile(const char * fpath, const char * fname, void * data) {
 
   lcd_puts(t24, "Saving state ...");

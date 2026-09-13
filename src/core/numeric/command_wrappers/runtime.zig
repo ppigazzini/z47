@@ -47,6 +47,13 @@ pub const option_vector = build_options.option_vector;
 /// `#if !defined(OPTION_EIGEN) #undef OPTION_SLVP_POLY` dependency adds nothing:
 /// every target that drops OPTION_EIGEN is already one of those.
 pub const option_slvp_poly = build_options.option_slvp_poly;
+
+/// defines.h's OPTION_ALGDEP: x->POLY and V->SUM=0, algebraic number
+/// identification by exact-integer LLL over the GMP already linked for PRIME
+/// and FACTORS. Enabled by default and #undef'd in the block common to DM42
+/// packages 1-4 (3896 bytes of flash), so DMCP5 and host keep it and no DM42
+/// package does; the two items exist there and refuse cleanly.
+pub const option_algdep = build_options.option_algdep;
 pub const code_section = if (dm42_pkg_xip)
     ".qspi_data"
 else if (@import("builtin").target.os.tag == .macos)
@@ -841,6 +848,7 @@ pub extern fn fnMatrixSquareRoot(unused_but_mandatory_parameter: u16) void;
 pub extern fn realSetNaN(value: *real_t) void;
 pub extern fn realSetZero(value: *real_t) void;
 pub extern fn realSetOne(value: *real_t) void;
+pub extern fn realSetNegativeOne(value: *real_t) void;
 pub extern fn realPower(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerReal(base: *const real_t, exponent: *const real_t, result: *real_t, real_context: *realContext_t) void;
 pub extern fn PowerComplex(base_real: *const real_t, base_imag: *const real_t, exponent_real: *const real_t, exponent_imag: *const real_t, result_real: *real_t, result_imag: *real_t, real_context: *realContext_t) u8;

@@ -6,7 +6,7 @@ owns, and where the Zig port boundary now sits.
 Read this page first. The rest of the set assumes the ownership split and the
 current upstream pin are already clear.
 
-Audit basis: 2026-08-27, upstream pin `d9f9304be`, Zig `0.16.0` stable.
+Audit basis: 2026-09-13, upstream pin `019203dec`, Zig `0.16.0` stable.
 
 ## At A Glance
 
@@ -23,7 +23,7 @@ Audit basis: 2026-08-27, upstream pin `d9f9304be`, Zig `0.16.0` stable.
   `https://gitlab.com/rpncalculators/c43.git`. The GitLab path still uses the
   historical `c43` name even though the project identifies itself as C47.
 - The imported upstream working tree is mounted under `upstream/`, pinned at
-  commit `aef442e4dce5098f5d4efe19af7cf5cf2863365b` (verified fact from
+  commit `019203dec5c884c0b25f66e2eaebc568cdb8a81e` (verified fact from
   `.github/project/upstream-pin.env`).
 - `build.zig` is the canonical maintained build entrypoint.
 

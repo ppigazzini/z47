@@ -1199,6 +1199,12 @@ void doSave(uint16_t saveType) {
         sprintf(tmpString, "PLOT_ZMY\n%"                   PRIu8  "\n",     PLOT_ZMY);                     save(tmpString, strlen(tmpString));
         sprintf(tmpString, "firstDayOfWeek\n%"             PRIu8  "\n",     firstDayOfWeek);               save(tmpString, strlen(tmpString));
         sprintf(tmpString, "firstWeekOfYearDay\n%"         PRIu8  "\n",     firstWeekOfYearDay);           save(tmpString, strlen(tmpString));
+        sprintf(tmpString, "retainedPageFirstItem\n");
+        save(tmpString, strlen(tmpString));
+        for(int n = 0; n < NUMBER_OF_RETAINED_PAGE_MENUS; n++) {                                           // one firstItem per entry of retainedPageMenu[], space separated on one line
+          sprintf(tmpString, "%" PRId16 "%s", retainedPageFirstItem[n], (n == NUMBER_OF_RETAINED_PAGE_MENUS - 1) ? "\n" : " ");
+          save(tmpString, strlen(tmpString));
+        }
         sprintf(tmpString, "printerOn\n%"                  PRIu8  "\n",     printerState.print_on);        save(tmpString, strlen(tmpString));
         sprintf(tmpString, "printerModel\n%"               PRIu8  "\n",     printerState.printer_model);   save(tmpString, strlen(tmpString));
         sprintf(tmpString, "printerLineDelay\n%"           PRIu16 "\n",     printerState.delay);           save(tmpString, strlen(tmpString));
@@ -2765,6 +2771,12 @@ int64_t stringToInt64(const char *str) {
           else if(strcmp(aimBuffer, "PLOT_ZMY"                    ) == 0) { PLOT_ZMY              = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstDayOfWeek"              ) == 0) { firstDayOfWeek        = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "firstWeekOfYearDay"          ) == 0) { firstWeekOfYearDay    = toUint8(tmpString); }
+          else if(strcmp(aimBuffer, "retainedPageFirstItem"       ) == 0) {
+            str = tmpString;
+            for(int n = 0; n < NUMBER_OF_RETAINED_PAGE_MENUS; n++) {                                     // a line with fewer values than retainedPageMenu[] gives 0, the first page, for the others
+              str = toInt16_next_word(str, &retainedPageFirstItem[n]);
+            }
+          }
         #if defined(OPTION_IR_PRINTING)
           else if(strcmp(aimBuffer, "printerOn"                   ) == 0) { printerState.print_on = toUint8(tmpString); }
           else if(strcmp(aimBuffer, "printerModel"                ) == 0) { printerState.printer_model    = toUint8(tmpString); }
@@ -3221,17 +3233,17 @@ void fnDeleteBackup(uint16_t confirmation) {
     #if defined(DMCP_BUILD)
       FRESULT result;
       sys_disk_write_enable(1);
-      result = f_unlink("SAVFILES\\C47.sav");
+      result = f_unlink(SAVE_DIR "\\" SAVE_FILE);
       if(result != FR_OK && result != FR_NO_FILE && result != FR_NO_PATH) {
         displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
       }
-      result = f_unlink("SAVFILES\\C47auto.sav");
+      result = f_unlink(SAVE_DIR "\\" AUTO_SAVE_FILE);
       if(result != FR_OK && result != FR_NO_FILE && result != FR_NO_PATH) {
         displayCalcErrorMessage(ERROR_IO, ERR_REGISTER_LINE, REGISTER_X);
       }
       sys_disk_write_enable(0);
     #else // !DMCP_BUILD
-      int result = remove("SAVFILES/C47.sav");
+      int result = remove(SAVE_DIR "/" SAVE_FILE);
       if(result == -1) {
         int e = errno;
         if(e != ENOENT) {

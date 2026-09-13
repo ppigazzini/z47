@@ -42,6 +42,7 @@
 #define OPTION_VECTOR                  //                   // 2D 3D vector conversions; vector swaps; display TI for vector
 #define OPTION_ASTRING                 //                   // Alpha string functions: aMID aLEFT aRIGHT aTRIM aREV aLOWER aUPPER
 #define OPTION_DATAFILE                //                   // Register/variable export & import to .d47 files: EXPstk/ltr/nrg/reg/xfnx, IMPORTr
+#define OPTION_ALGDEP                  //                   // x->POLY, V->SUM=0 (algebraic number identification by exact-integer LLL; uses the GMP already linked for PRIME/FACTORS)
 #define OPTION_PRIME                   //                   // ISPRIME, NEXTPRIME (primality tests)
 #define OPTION_FACTOR                  //                   // FACTORS, M.FACT, EULPHI, SIGMA, NumTh menu (GMP factorisation; requires OPTION_PRIME)
 #define OPTION_EIGEN                   //                   // EIGVAL, EIGVEC, M.QR, MSQRT (eigen/QR/matrix-sqrt; keeps LU/determinant/inverse)
@@ -284,6 +285,7 @@
             #undef  OPTION_SLVP_POLY     // ✓  2024 bytes // SLVP general polynomial roots (companion matrix through the EIGEN QR solver)
             #undef  OPTION_INFSUMS       // ?   400 bytes // Infinity sum with the early stop; the plain programmable sum and product stay
             #undef  OPTION_STRUCTURED_PGM// ✓  5873 bytes // The DM42 can include STRUCT at 10 nesting levels, 4 FOR loops, and 10 IF, 10 DO and 10 REPEAT numbers
+            #undef  OPTION_ALGDEP        // ✓  3896 bytes // Without x->POLY, V->SUM=0 algebraic number identification
     #define OPTION_TVM_AMORT             // ✓  1648 bytes // Use additional AMORT in tvm
     #define OPTION_DATAFILE              // ✓  2112 bytes // Without register/variable .d47 export & import
 
@@ -1949,6 +1951,9 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define TI_DATA_LOADED                           142
 #define TI_DATA_SAVED                            143
 #define TI_DERIV_STEP                            144
+// 145 and 146 are left free on purpose for !1643. These are only distinct ids, so starting at 147 costs nothing and means no merge order has to renumber
+// anything.
+#define TI_ALGDEP_POLY                           147
 
 #define SET_TI_TRUE_FALSE(condition)               do { temporaryInformation = TI_FALSE + (condition); } while(0) // TI_TRUE must be TI_FALSE + 1
 
@@ -1983,6 +1988,7 @@ static inline uint8_t regCtoKS(const int16_t regC) {
 #define CATALOG_FCNS_EIM                          22
 #define CATALOG_USRMENU                           23
 #define NUMBER_OF_CATALOGS                        24
+#define NUMBER_OF_RETAINED_PAGE_MENUS              2
 
 // String comparison type
 #define CMP_BINARY                                 0

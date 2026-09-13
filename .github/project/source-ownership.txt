@@ -74,6 +74,8 @@ src/c47/mathematics/slvp.h
 src/c47/printing
 src/c47/programming/structured.c
 src/c47/programming/structured.h
+src/c47/mathematics/algdep.c
+src/c47/mathematics/algdep.h
 src/c47/reservedRegisterLookup.h
 src/c47/reservedRegisterLookupGenerator.c
 src/c47/saveRestoreBackup.c
@@ -81,6 +83,10 @@ src/c47/saveRestoreBackup.h
 src/generated/constantsVerification.txt
 src/t47
 src/testSuite/hal/print_ir.c
+src/testSuite/tests/algdep_cov.txt
+src/testSuite/tests/algfunc_cub.txt
+src/testSuite/tests/algfunc_fp.txt
+src/testSuite/tests/algfunc_gen.txt
 src/testSuite/tests/angleConv.txt
 src/testSuite/tests/bits_cov.txt
 src/testSuite/tests/checkval_cov.txt

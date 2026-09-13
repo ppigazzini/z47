@@ -510,7 +510,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
     }
 
     if(realIsZero(&cot2Lambda) && realIsZero(&cot2LambdaI)) {
-      realCopy(const__1, mu);
+      realSetNegativeOne(mu);
     }
     else {
       realFMA(&tan2Phi, &cot2Lambda, const__1, mu, realContext);
@@ -530,7 +530,7 @@ static void _ellipticFE_lambda_mu(const real_t *phi, const real_t *psi, const re
     ArctanComplex(lambda, lambdaI, lambda, lambdaI, realContext);
 
     if(realIsZero(&cot2Lambda) && realIsZero(&cot2LambdaI)) {
-      realCopy(const__1, mu);
+      realSetNegativeOne(mu);
       realSetZero(muI);
     }
     else {

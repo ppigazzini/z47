@@ -68,6 +68,11 @@ const strip_elliptic: bool = frontier_build_options.strip_elliptic;
 const option_xfn_1000: bool = frontier_build_options.option_xfn_1000;
 const option_tvm_amort: bool = frontier_build_options.option_tvm_amort;
 const option_slvp_poly: bool = frontier_build_options.option_slvp_poly;
+// OPTION_ALGDEP blanks x->POLY and V->SUM=0 on the packages without the option, so
+// POLY renders with those keys empty; the menu itself stays, it carries SLVQ SLVC.
+// savedspace() strikes the two items out on the same builds. #undef'd in the
+// block common to DM42 packages 1-4; DMCP5 and host keep it.
+const option_algdep: bool = frontier_build_options.option_algdep;
 // OPTION_EIGEN blanks EIGVEC, EIGVAL, M.QR and MSQRT; LU stays. Package 3 is the
 // only DM42 package that keeps it.
 const option_eigen: bool = frontier_build_options.option_eigen;
@@ -160,6 +165,7 @@ const AC_UPPER = 0;
 const AIM_REGISTER_LINE = 100;
 const CATALOG_AINT = 5;
 const CATALOG_NONE = 0;
+const NUMBER_OF_RETAINED_PAGE_MENUS = 2; // defines.h
 const CAT_CNST = 48;
 const CAT_MENU = 32;
 const CAT_MNUH = 176;
@@ -210,7 +216,7 @@ const FLAG_HPCONV = 32834;
 const FLAG_IGN1ER = 32804;
 const FLAG_US = 32853;
 const FLAG_VMDISP = 49191;
-const INVALID_MENU = 3349; // items.h: LAST_ITEM
+const INVALID_MENU = 3481; // items.h: LAST_ITEM
 const INVALID_VARIABLE = 2199;
 const ITM_10X_XFN = 2570;
 const ITM_1ONX_XFN = 2562;
@@ -400,7 +406,7 @@ const ITM_WEIBLU = 1270;
 const ITM_XTHROOT_XFN = 2584;
 const ITM_YYX = 1665;
 const ITM_YY_DFLT = 2550;
-const LAST_ITEM = 3349;
+const LAST_ITEM = 3481;
 const MB_FALSE = 4;
 const MB_TRUE = 5;
 const MNU_1STDERIV = 2997;
@@ -488,6 +494,7 @@ const MNU_T = 2989;
 const MNU_TAMFLAG = 2948;
 const MNU_TIMERF = 3130;
 const MNU_TIMES = 3131;
+const MNU_TVM = 3136;
 const MNU_UNIFORM = 2990;
 const MNU_UNITCONV = 3137;
 const MNU_VAR = 3138;
@@ -670,6 +677,7 @@ const userMenuItems = @extern([*c]userMenuItem_t, .{ .name = "userMenuItems" });
 const userAlphaItems = @extern([*c]userMenuItem_t, .{ .name = "userAlphaItems" });
 extern var labelList: [*c]labelList_t;
 const lastCatalogPosition = @extern([*c]i16, .{ .name = "lastCatalogPosition" });
+const retainedPageFirstItem = @extern([*c]i16, .{ .name = "retainedPageFirstItem" });
 // KEY_X is const int[7] (C int = c_int), not int16_t.
 const KEY_X = @extern([*c]const c_int, .{ .name = "KEY_X" });
 
@@ -705,6 +713,7 @@ extern var currentFormula: u16;
 extern var solverEstimatesUsed: bool_t;
 extern var compressString: u8;
 extern var itemToBeAssigned: i16;
+extern var bulkAssign: bool_t;
 extern var last_CM: u8;
 extern var alphaCase: u8;
 extern var calcModel: u8;
@@ -838,7 +847,8 @@ const menu_ADV linksection(code_section) = [_]i16{ 1672, 1671, 2734, -3118, 1608
 // The polynomial menu that SLVP's old slot now opens: the three polynomial solvers,
 // the coefficient vector rendered as equation text, and the stack<->vector traffic
 // the coefficients arrive by. ADV_SLVP is ITM_SLVP or ITM_NULL, as in menu_ADV.
-const menu_POLY linksection(code_section) = [_]i16{ 1604, 1555, (if (option_slvp_poly) @as(i16, 1965) else 0), 1969, 2496, 1968, 0, 0, 0, 0, 0, 0, 2702, 2703, 1966, 1967, 1970, 2498 };
+// x->POLY and V->SUM=0, the identification pair, take the f row; fF3 stays reserved for the EQ->V inverse.
+const menu_POLY linksection(code_section) = [_]i16{ 1604, 1555, (if (option_slvp_poly) @as(i16, 1965) else 0), 1969, 2496, 1968, (if (option_algdep) @as(i16, 1971) else 0), (if (option_algdep) @as(i16, 1972) else 0), 0, 0, 0, 0, 2702, 2703, 1966, 1967, 1970, 2498 };
 const menu_AIMCATALOG linksection(code_section) = [_]i16{ -3089, -3004, -3009, -3010, -3007, 1958 };
 const menu_ALPHA linksection(code_section) = [_]i16{ -3004, -3009, -3010, -3007, 1952, 1953, -3089, 2420, 2419, 1411, 1954, 1955, 1858, 2029, 2191, 1729, 1926, 1928 };
 const menu_ALPHA_OMEGA linksection(code_section) = [_]i16{ 602, 603, 604, 605, 606, 1810, 607, 608, 609, 610, 612, 613, 614, 615, 616, 617, 618, 1809, 619, 620, 620, 621, 622, 624, 625, 626, 627, 1811, 0, 0, 0, 0, 0, 0, 0, 0, 611, 0, 0, 623, 0, 0 };
@@ -896,7 +906,7 @@ const menu_Eim linksection(code_section) = [_]i16{ 999, 2383, 832, 1000, 995, 99
 const menu_Ellipt linksection(code_section) = [_]i16{ 1682, 1683, 1684, 1726, 1727, 1728, 2104, 2105, 1584, 1763, 1764, 1765, 2599, 2598, 2395, 115, 116, 119 };
 const menu_Expon linksection(code_section) = [_]i16{ 1218, 0, 1219, 1220, 0, 1221, 0, 0, 0, 0, 0, 0, 2321, 0, 0, 0, 0, 0 };
 const menu_F linksection(code_section) = [_]i16{ 1223, 0, 1224, 1225, 0, 1226, 0, 0, 0, 0, 0, 0, 2322, 2323, 0, 0, 0, 0 };
-pub export const menu_FCNS linksection(code_section) = [_]i16{ 2053, 1987, 67, 1836, 1404, 73, 1406, 2594, 2593, 64, 1837, 2587, 2585, 2589, 1822, 1820, 1818, 2624, 2588, 1821, 1819, 1817, 2586, 62, 2786, 2787, 2777, 2779, 2780, 2778, 2788, 2789, 2790, 1527, 2795, 2796, 2791, 2792, 2798, 2776, 2797, 2793, 2775, 2595, 1838, 2683, 1835, 1986, 2044, 2764, 2763, 1408, 1409, 1410, 1308, 1584, 124, 2396, 81, 82, 83, 85, 84, 86, 416, 1411, 1775, 1814, 2932, 2018, 2395, 1412, 2720, 1895, 1413, 1985, 1988, 406, 1414, 1415, 1310, 1435, 1831, 1208, 1209, 1210, 1211, 1416, 2153, 2051, 1734, 405, 2202, 1417, 2004, 1767, 2377, 2378, 1851, 1418, 1304, 1213, 1214, 1215, 1216, 407, 1730, 87, 1756, 110, 97, 1420, 2771, 1421, 1452, 2033, 1942, 1943, 2772, 1423, 2239, 1424, 1427, 2005, 1402, 1428, 2937, 2240, 41, 2773, 1429, 2525, 2706, 207, 1683, 49, 1848, 2526, 1431, 56, 1433, 74, 75, 1434, 1936, 1937, 1798, 1856, 2371, 2370, 1436, 2710, 26, 2493, 1437, 2492, 1438, 1440, 1689, 1441, 1442, 1443, 1833, 1444, 91, 1445, 1419, 1780, 1455, 2241, 1425, 1426, 2242, 1876, 1877, 2767, 2766, 1474, 2606, 2607, 2608, 2609, 1865, 2043, 2551, 2110, 2770, 1558, 1453, 1684, 2924, 1449, 2373, 2372, 1873, 37, 1544, 8, 2006, 9, 1573, 1450, 10, 1862, 1899, 1451, 2397, 1454, 1911, 1439, 2404, 1776, 1456, 1457, 1816, 2921, 1458, 2926, 2922, 1459, 1460, 1951, 1461, 35, 57, 1463, 1464, 1465, 1466, 1467, 1853, 1468, 22, 65, 1469, 1298, 2758, 2760, 1218, 1219, 1220, 1221, 2761, 2759, 1470, 2757, 1575, 1727, 1764, 1731, 1477, 409, 1722, 2128, 20, 396, 398, 397, 2154, 1481, 2124, 112, 2059, 1897, 2058, 1472, 42, 1473, 1935, 88, 2136, 2133, 2927, 2938, 2933, 94, 2126, 2158, 1223, 24, 1744, 1896, 1864, 2132, 21, 399, 401, 400, 2131, 2135, 2129, 2125, 2127, 2134, 2130, 1763, 1224, 1225, 1226, 1893, 2883, 2884, 1732, 1303, 89, 1478, 1479, 1228, 1229, 1230, 1231, 1282, 1283, 1284, 1285, 1480, 2742, 2741, 2, 1797, 1834, 2195, 1766, 1790, 1791, 1483, 1793, 1484, 1859, 1854, 1839, 2052, 1792, 2152, 1233, 1234, 1235, 1236, 1306, 1688, 1686, 1889, 1891, 1890, 1887, 2115, 100, 1632, 2111, 2920, 1485, 2762, 2528, 2530, 92, 1486, 2123, 43, 2120, 25, 93, 2113, 2155, 2157, 2156, 2056, 5, 6, 2765, 1606, 2119, 7, 2118, 2122, 2116, 2112, 2114, 2121, 2117, 1487, 1488, 1489, 1754, 1755, 1490, 1491, 1781, 1825, 2147, 2148, 2149, 2150, 1492, 1493, 1494, 1495, 1471, 1863, 2008, 1498, 1958, 1499, 2039, 77, 1501, 1726, 2104, 1677, 1502, 68, 1, 1503, 90, 1857, 1504, 1238, 1239, 1240, 1241, 1299, 2083, 120, 2398, 417, 1505, 1506, 69, 1507, 1508, 1614, 1509, 1510, 1511, 1512, 2388, 1552, 1513, 1514, 1515, 71, 1300, 1243, 1244, 1245, 1246, 72, 2662, 2663, 2664, 1905, 1516, 2689, 1517, 2684, 419, 420, 27, 1518, 103, 1528, 1519, 1520, 2408, 104, 1840, 421, 1924, 102, 1521, 1496, 1944, 1945, 1523, 1524, 1796, 1861, 2730, 2509, 2510, 2713, 2714, 2478, 2739, 2367, 2506, 2712, 2365, 1525, 1526, 1739, 2737, 1529, 1530, 2513, 2385, 2507, 2715, 2514, 1531, 1532, 1533, 2726, 2364, 1534, 1535, 1536, 1537, 1538, 1646, 2511, 2512, 2366, 1539, 2508, 2515, 2727, 113, 1541, 2105, 2041, 2598, 402, 28, 1248, 1249, 1250, 1251, 2769, 2768, 2622, 2620, 106, 2928, 107, 2705, 1542, 403, 2690, 1253, 1254, 1255, 1256, 123, 2621, 2399, 2721, 435, 1832, 23, 1543, 2405, 1827, 1828, 1829, 2623, 1830, 1795, 125, 1301, 1852, 2716, 2717, 1305, 38, 50, 2882, 1546, 2732, 1547, 1548, 2203, 2040, 2734, 2852, 2042, 1448, 1550, 1551, 1258, 1259, 1260, 1261, 1946, 1553, 1302, 33, 1948, 2020, 1888, 1291, 1292, 1293, 1294, 1287, 1288, 1289, 1290, 1556, 1557, 1675, 1559, 51, 1561, 1562, 1563, 1564, 2249, 2728, 2482, 2483, 2484, 52, 53, 54, 2224, 55, 1432, 1462, 2141, 2137, 1565, 1566, 1567, 2369, 2368, 1949, 1560, 1554, 2935, 1568, 1309, 1570, 2527, 2529, 418, 2001, 1956, 411, 410, 2524, 122, 121, 2019, 2549, 1678, 2497, 1574, 1307, 1868, 1869, 2139, 1917, 2002, 1957, 413, 412, 1577, 1403, 1578, 4, 1579, 2142, 2138, 2140, 1970, 1580, 1581, 1582, 1583, 29, 1569, 39, 40, 1585, 1586, 2389, 2387, 408, 1549, 1587, 1950, 2197, 1588, 423, 424, 1841, 1589, 1592, 1597, 111, 1742, 1855, 1866, 2050, 1600, 1601, 1602, 76, 1500, 1540, 78, 66, 2400, 1603, 1999, 414, 1555, 1965, 1604, 1605, 1758, 1607, 1405, 1682, 1608, 1940, 30, 2000, 2038, 415, 1938, 1939, 1609, 1736, 1446, 1610, 44, 1611, 1612, 1613, 70, 1622, 1615, 2250, 2729, 2485, 2486, 2487, 45, 46, 47, 48, 1430, 1545, 2692, 31, 1617, 1618, 1815, 1447, 1591, 1596, 1593, 1594, 1595, 1598, 1599, 79, 80, 1619, 1620, 1621, 1623, 1624, 34, 1263, 2691, 2402, 1966, 1968, 1264, 1265, 1266, 2401, 1843, 1625, 1626, 1627, 1723, 2601, 2602, 2603, 2604, 1867, 1628, 1629, 2936, 426, 2477, 2491, 2490, 2494, 2703, 2476, 2489, 2481, 2480, 2479, 1967, 2931, 1630, 2531, 2532, 1631, 101, 2198, 2200, 2201, 2199, 1969, 2498, 1824, 1633, 1268, 1269, 1270, 1271, 2925, 1634, 1635, 2505, 2501, 2503, 2502, 2504, 1636, 1590, 1933, 1638, 1639, 1637, 2003, 1643, 1640, 1826, 1743, 2570, 2562, 58, 59, 2565, 2573, 2564, 2566, 2563, 2580, 2559, 2576, 2582, 3, 2223, 2569, 1641, 1746, 2078, 2567, 2568, 2077, 1653, 2074, 1654, 2577, 2578, 2575, 404, 126, 1576, 2571, 2075, 2076, 2079, 2556, 1747, 2557, 2558, 2583, 2572, 2574, 1616, 2560, 1642, 2584, 63, 2561, 2420, 2419, 108, 1644, 2554, 2555, 2579, 2785, 127, 36, 16, 17, 11, 15, 12, 18, 19, 13, 2851, 2850, 14, 2082, 1648, 1812, 1647, 1649, 60, 2475, 2495, 2550, 1919, 2237, 1665, 1650, 425, 1762, 2702, 2474, 2488, 1681, 1931, 1842, 2496, 1651, 1823, 2774, 2541, 1652, 2543, 2540, 1932, 1655, 2539, 2542, 1656, 1657, 1658, 1659, 2538, 2544, 1660, 1661, 1663, 1662, 1664, 1813, 1666, 1693, 1667, 1668, 1669, 1670, 1765, 2599, 1671, 1728, 1673, 2409, 2410, 2412, 2718, 2411, 2413, 444, 447, 443, 442, 446, 1672, 2719, 1674, 436, 438, 439, 451, 449, 457, 458, 441, 454, 452, 450, 453, 448, 437, 440, 455, 456, 445, 433, 434, 2386, 1278, 1279, 1280, 1281, 1273, 1274, 1275, 1276, 1679, 1704, 1705, 95, 32, 96, 98, 1680, 1701, 1909, 1910, 99, 2470, 115, 116, 117, 1871, 1872, 118, 1849, 1983, 1981, 119, 1691, 1850, 1984, 1982, 2471, 1789, 1788, 1694, 1703, 1702, 105, 2704, 2472, 1695, 1696, 1697, 1698, 1692, 1699, 61, 1794, 2755, 1700, 1690, 1706, 1745, 1708, 1799, 2695, 1710, 1711, 2693, 1712, 2688, 2687, 1713, 1714, 1715, 1716, 2696, 1718, 1719, 1676, 2694, 1707, 2682, 1720, 2697, 422 };
+pub export const menu_FCNS linksection(code_section) = [_]i16{ 2053, 1987, 67, 1836, 1404, 73, 1406, 2594, 2593, 64, 1837, 2587, 2585, 2589, 1822, 1820, 1818, 2624, 2588, 1821, 1819, 1817, 2586, 62, 2786, 2787, 2777, 2779, 2780, 2778, 2788, 2789, 2790, 1527, 2795, 2796, 2791, 2792, 2798, 2776, 2797, 2793, 2775, 2595, 1838, 2683, 1835, 1986, 2044, 2764, 2763, 1408, 1409, 1410, 1308, 1584, 124, 2396, 81, 82, 83, 85, 84, 86, 416, 1411, 1775, 1814, 2932, 2018, 2395, 1412, 2720, 1895, 1413, 1985, 1988, 406, 1414, 1415, 1310, 1435, 1831, 1208, 1209, 1210, 1211, 1416, 2153, 2051, 1734, 405, 2202, 1417, 2004, 1767, 2377, 2378, 1851, 1418, 1304, 1213, 1214, 1215, 1216, 407, 1730, 87, 1756, 110, 97, 1420, 2771, 1421, 1452, 2033, 1942, 1943, 2772, 1423, 2239, 1424, 1427, 2005, 1402, 1428, 2937, 2240, 41, 2773, 1429, 2525, 2706, 207, 1683, 49, 1848, 2526, 1431, 56, 1433, 74, 75, 1434, 1936, 1937, 1798, 1856, 2371, 2370, 1436, 2710, 26, 2493, 1437, 2492, 1438, 1440, 1689, 1441, 1442, 1443, 1833, 1444, 91, 1445, 1419, 1780, 1455, 2241, 1425, 1426, 2242, 1876, 1877, 2767, 2766, 1474, 2606, 2607, 2608, 2609, 1865, 2043, 2551, 2110, 2770, 1558, 1453, 1684, 2924, 1449, 2373, 2372, 1873, 37, 1544, 8, 2006, 9, 1573, 1450, 10, 1862, 1899, 1451, 2397, 1454, 1911, 1439, 2404, 1776, 1456, 1457, 1816, 2921, 1458, 2926, 2922, 1459, 1460, 1951, 1461, 35, 57, 1463, 1464, 1465, 1466, 1467, 1853, 1468, 22, 65, 1469, 1298, 2758, 2760, 1218, 1219, 1220, 1221, 2761, 2759, 1470, 2757, 1575, 1727, 1764, 1731, 1477, 409, 1722, 2128, 20, 396, 398, 397, 2154, 1481, 2124, 112, 2059, 1897, 2058, 1472, 42, 1473, 1935, 88, 2136, 2133, 2927, 2938, 2933, 94, 2126, 2158, 1223, 24, 1744, 1896, 1864, 2132, 21, 399, 401, 400, 2131, 2135, 2129, 2125, 2127, 2134, 2130, 1763, 1224, 1225, 1226, 1893, 2883, 2884, 1732, 1303, 89, 1478, 1479, 1228, 1229, 1230, 1231, 1282, 1283, 1284, 1285, 1480, 2742, 2741, 2, 1797, 1834, 2195, 1766, 1790, 1791, 1483, 1793, 1484, 1859, 1854, 1839, 2052, 1792, 2152, 1233, 1234, 1235, 1236, 1306, 1688, 1686, 1889, 1891, 1890, 1887, 2115, 100, 1632, 2111, 2920, 1485, 2762, 2528, 2530, 92, 1486, 2123, 43, 2120, 25, 93, 2113, 2155, 2157, 2156, 2056, 5, 6, 2765, 1606, 2119, 7, 2118, 2122, 2116, 2112, 2114, 2121, 2117, 1487, 1488, 1489, 1754, 1755, 1490, 1491, 1781, 1825, 2147, 2148, 2149, 2150, 1492, 1493, 1494, 1495, 1471, 1863, 2008, 1498, 1958, 1499, 2039, 77, 1501, 1726, 2104, 1677, 1502, 68, 1, 1503, 90, 1857, 1504, 1238, 1239, 1240, 1241, 1299, 2083, 120, 2398, 417, 1505, 1506, 69, 1507, 1508, 1614, 1509, 1510, 1511, 1512, 2388, 1552, 1513, 1514, 1515, 71, 1300, 1243, 1244, 1245, 1246, 72, 2662, 2663, 2664, 1905, 1516, 2689, 1517, 2684, 419, 420, 27, 1518, 103, 1528, 1519, 1520, 2408, 104, 1840, 421, 1924, 102, 1521, 1496, 1944, 1945, 1523, 1524, 1796, 1861, 2730, 2509, 2510, 2713, 2714, 2478, 2739, 2367, 2506, 2712, 2365, 1525, 1526, 1739, 2737, 1529, 1530, 2513, 2385, 2507, 2715, 2514, 1531, 1532, 1533, 2726, 2364, 1534, 1535, 1536, 1537, 1538, 1646, 2511, 2512, 2366, 1539, 2508, 2515, 2727, 113, 1541, 2105, 2041, 2598, 402, 28, 1248, 1249, 1250, 1251, 2769, 2768, 2622, 2620, 106, 2928, 107, 2705, 1542, 403, 2690, 1253, 1254, 1255, 1256, 123, 2621, 2399, 2721, 435, 1832, 23, 1543, 2405, 1827, 1828, 1829, 2623, 1830, 1795, 125, 1301, 1852, 2716, 2717, 1305, 38, 50, 2882, 1546, 2732, 1547, 1548, 2203, 2040, 2734, 2852, 2042, 1448, 1550, 1551, 1258, 1259, 1260, 1261, 1946, 1553, 1302, 33, 1948, 2020, 1888, 1291, 1292, 1293, 1294, 1287, 1288, 1289, 1290, 1556, 1557, 1675, 1559, 51, 1561, 1562, 1563, 1564, 2249, 2728, 2482, 2483, 2484, 52, 53, 54, 2224, 55, 1432, 1462, 2141, 2137, 1565, 1566, 1567, 2369, 2368, 1949, 1560, 1554, 2935, 1568, 1309, 1570, 2527, 2529, 418, 2001, 1956, 411, 410, 2524, 122, 121, 2019, 2549, 1678, 2497, 1574, 1307, 1868, 1869, 2139, 1917, 2002, 1957, 413, 412, 1577, 1403, 1578, 4, 1579, 2142, 2138, 2140, 1970, 1580, 1581, 1582, 1583, 29, 1569, 39, 40, 1585, 1586, 2389, 2387, 408, 1549, 1587, 1950, 2197, 1588, 423, 424, 1841, 1589, 1592, 1597, 111, 1742, 1855, 1866, 2050, 1600, 1601, 1602, 76, 1500, 1540, 78, 66, 2400, 1603, 1999, 414, 1555, 1965, 1604, 1605, 1758, 1607, 1405, 1682, 1608, 1940, 30, 2000, 2038, 415, 1938, 1939, 1609, 1736, 1446, 1610, 44, 1611, 1612, 1613, 70, 1622, 1615, 2250, 2729, 2485, 2486, 2487, 45, 46, 47, 48, 1430, 1545, 2692, 31, 1617, 1618, 1815, 1447, 1591, 1596, 1593, 1594, 1595, 1598, 1599, 79, 80, 1619, 1620, 1621, 1623, 1624, 34, 1263, 2691, 2402, 1966, 1968, 1264, 1265, 1266, 2401, 1843, 1625, 1626, 1627, 1723, 2601, 2602, 2603, 2604, 1867, 1628, 1629, 2936, 426, 2477, 2491, 2490, 2494, 2703, 2476, 2489, 2481, 2480, 2479, 1967, 2931, 1630, 2531, 2532, 1631, 101, 2198, 2200, 2201, 2199, 1969, 2498, 1972, 1824, 1633, 1268, 1269, 1270, 1271, 2925, 1634, 1635, 2505, 2501, 2503, 2502, 2504, 1636, 1590, 1933, 1638, 1639, 1637, 2003, 1643, 1640, 1826, 1743, 2570, 2562, 58, 59, 2565, 2573, 2564, 2566, 2563, 2580, 2559, 2576, 2582, 3, 2223, 2569, 1641, 1746, 2078, 2567, 2568, 2077, 1653, 2074, 1654, 2577, 2578, 2575, 404, 126, 1576, 2571, 2075, 2076, 2079, 2556, 1747, 2557, 2558, 2583, 2572, 2574, 1616, 2560, 1642, 2584, 63, 2561, 2420, 2419, 108, 1644, 2554, 1971, 2555, 2579, 2785, 127, 36, 16, 17, 11, 15, 12, 18, 19, 13, 2851, 2850, 14, 2082, 1648, 1812, 1647, 1649, 60, 2475, 2495, 2550, 1919, 2237, 1665, 1650, 425, 1762, 2702, 2474, 2488, 1681, 1931, 1842, 2496, 1651, 1823, 2774, 2541, 1652, 2543, 2540, 1932, 1655, 2539, 2542, 1656, 1657, 1658, 1659, 2538, 2544, 1660, 1661, 1663, 1662, 1664, 1813, 1666, 1693, 1667, 1668, 1669, 1670, 1765, 2599, 1671, 1728, 1673, 2409, 2410, 2412, 2718, 2411, 2413, 444, 447, 443, 442, 446, 1672, 2719, 1674, 436, 438, 439, 451, 449, 457, 458, 441, 454, 452, 450, 453, 448, 437, 440, 455, 456, 445, 433, 434, 2386, 1278, 1279, 1280, 1281, 1273, 1274, 1275, 1276, 1679, 1704, 1705, 95, 32, 96, 98, 1680, 1701, 1909, 1910, 99, 2470, 115, 116, 117, 1871, 1872, 118, 1849, 1983, 1981, 119, 1691, 1850, 1984, 1982, 2471, 1789, 1788, 1694, 1703, 1702, 105, 2704, 2472, 1695, 1696, 1697, 1698, 1692, 1699, 61, 1794, 2755, 1700, 1690, 1706, 1745, 1708, 1799, 2695, 1710, 1711, 2693, 1712, 2688, 2687, 1713, 1714, 1715, 1716, 2696, 1718, 1719, 1676, 2694, 1707, 2682, 1720, 2697, 422 };
 const menu_FCNS_EIM linksection(code_section) = [_]i16{ 62, 81, 82, 83, 85, 84, 86, 1775, 1416, 1417, 87, 49, 1431, 74, 75, 1466, 1467, 65, 1472, 88, 1478, 1479, 1483, 1484, 100, 1485, 68, 1505, 1506, 69, 1508, 71, 72, 103, 104, 102, 50, 1550, 1566, 122, 76, 1500, 1540, 78, 79, 80, 1623, 1627, 1635, 1636, 1637, 63, 108, 1664, 1670, 105, 61, 1706 };
 const menu_FIN linksection(code_section) = [_]i16{ 433, 1697, 1695, 1666, 1699, 1696, 434, 436, 435, 1743, 0, 0, 1429, 1698, 1692, 1693, -3021, -3136 };
 const menu_FLAGS linksection(code_section) = [_]i16{ 111, 21, 112, 1610, 20, 110, 400, 399, 401, 398, 397, 396, 0, 0, 0, 0, 0, 1421 };
@@ -1236,6 +1246,7 @@ const MNU_TAMALPHA = 2946;
 const STD_WCOMMA: [*:0]const u8 = "\xa7\x88";
 
 const DO_compress = 1;
+const nocompress = 0; // screen.h
 const NO_raise = 0;
 const NO_Show = 1;
 const DO_Show = 0;
@@ -1362,6 +1373,18 @@ pub fn z47_frontier_dynamic_menu_item() i16 {
 // Forward declarations (static in C).
 // (Zig resolves these automatically since all live in this file.)
 
+// Softmenus that reopen on the page last shown, regardless of FLAG_MNUp1. cfg and state files write retainedPageFirstItem[]. A new softmenu is added at the end.
+const retainedPageMenu linksection(code_section) = [NUMBER_OF_RETAINED_PAGE_MENUS]i16{ -MNU_TVM, -MNU_UNITCONV };
+
+fn retainedPageSlot(menuItem: i16) ?*i16 {
+    for (retainedPageMenu, 0..) |menu_item, i| {
+        if (menu_item == menuItem) {
+            return &retainedPageFirstItem[i];
+        }
+    }
+    return null;
+}
+
 pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
     var i: i16 = 0;
     var numItems: i16 = 0;
@@ -1406,6 +1429,9 @@ pub export fn fnOpenMenu(menuArg: u16) callconv(.c) void {
             lastCatalogPosition[@intCast(catalog)] = if (getSystemFlag(FLAG_US) != 0) 18 else 0;
         } else {
             lastCatalogPosition[@intCast(catalog)] = @intCast(18 * (mpn - 1));
+        }
+        if (retainedPageSlot(-%@as(i16, @bitCast(menuArg)))) |retainedPage| {
+            retainedPage.* = lastCatalogPosition[@intCast(catalog)]; // MENU sets the page a retained-page softmenu reopens on
         }
         showSoftmenu(-%@as(i16, @bitCast(menuArg)));
         lastCatalogPosition[CATALOG_NONE] = 0;
@@ -2389,7 +2415,9 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
         } else {
             var convertedRealPerfectly: bool_t = undefined;
             var tmpBuf: [100]u8 = undefined;
-            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 2 - 4, &tmpBuf, 60));
+            // 400 / 6 is the key. trimKey cuts the right hand side, the value, off any drawn string of 66 px or more, and the narrowest key takes one column of frame inside
+            // that, so 65 is the limit. Measured over 576 keys, the subscript form drawn is never wider than the string tested here.
+            _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 1, &tmpBuf, 60));
             if (tmpS[0] == '?' or strchr(tmpS, 'E') != null) {
                 switch (itemMod) {
                     VAR_ULIM, VAR_LLIM, VAR_UEST, VAR_LEST => {
@@ -2409,13 +2437,17 @@ fn placeSubscript(itemNr: i16, flt: bool_t, tmpF: f32, itemName: [*c]u8, tmpS: [
                     },
                     else => {},
                 }
-                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 2 - 4, &tmpBuf, 60));
+                _ = strcpy(tmpS, frontier_plotstat.formatDoubleWidth(REGISTER_REAL34_DATA(@intCast(indexOfItems[@intCast(itemMod)].param)), 4, itemName, @ptrCast(&convertedRealPerfectly), 400 / 6 - 1, &tmpBuf, 60));
             }
         }
     }
 
     _ = frontier_plotstat.radixProcess(tmpSS, tmpS);
-    if (stringByteLength(tmpSS) < 4) {
+    // for very short numerics, add one space, and only where the key still holds it: the width tests above were made on the value without this space, and a key already at
+    // the limit would lose the value to trimKey.
+    var padded: [128]u8 = undefined;
+    abi.fmtBufZ(&padded, "{s}\xa0\x04{s}", .{ @as([*:0]const u8, itemName), @as([*:0]const u8, tmpSS) });
+    if (stringByteLength(tmpSS) < 4 and frontier_screen.stringWidthC47(&padded, stdNoEnlarge, @intFromBool(nocompress == 0), 0, 0) < (400 / 6 - 1)) {
         abi.fmtCStr(tmpS, "\xa0\x04{s}", .{@as([*:0]const u8, tmpSS)});
     } else {
         abi.fmtCStr(tmpS, "{s}", .{@as([*:0]const u8, tmpSS)});
@@ -2728,6 +2760,13 @@ pub export fn savedspace(itemNr: i16) callconv(.c) bool_t {
     }
     // !OPTION_PRIME strikes out ITM_NEXTP and ITM_PRIME. OPTION_PRIME is defined
     // for every target z47 builds, so that cluster is empty and is omitted.
+    // !OPTION_ALGDEP strikes out ITM_XtoPOLY and ITM_VtoSUM0.
+    if (comptime !option_algdep) {
+        switch (itemNr) {
+            1971, 1972 => return 1,
+            else => {},
+        }
+    }
     if (comptime strip_elliptic) {
         switch (itemNr) {
             -3055, 1682, 1683, 1684, 1726, 1727, 1728, 1584, 1763, 1764, 1765, 2104, 2105, 2599, 2598, 2395 => return 1,
@@ -3417,6 +3456,7 @@ fn pushSoftmenu(softmenuId: i16) void {
 
     softmenuStack[0].softmenuId = softmenuId;
     softmenuStack[0].firstItem = lastCatalogPosition[@intCast(catalog)];
+    lastCatalogPosition[CATALOG_NONE] = 0; // a page taken from the stack above is for this softmenu only, not for the next one pushed
     softmenuStack[0].userMenuId = userMenuId;
     softmenuStack[0].calcMode = calcMode;
 
@@ -3425,6 +3465,13 @@ fn pushSoftmenu(softmenuId: i16) void {
             ((menu(1) == -%@as(i16, MNU_MENUS) or menu(1) == -%@as(i16, MNU_USRMENUS)) and menu(2) == -%@as(i16, MNU_CATALOG))))
     {
         softmenuStack[0].firstItem = if (getSystemFlag(FLAG_US) != 0) 18 else 0;
+    }
+
+    if (retainedPageSlot(softmenu[@intCast(softmenuId)].menuItem)) |retainedPage| {
+        const numItems: i16 = if (softmenuId < NUMBER_OF_DYNAMIC_SOFTMENUS) dynamicSoftmenu[@intCast(softmenuId)].numItems else softmenu[@intCast(softmenuId)].numItems;
+        if (retainedPage.* >= 0 and retainedPage.* < numItems) { // a retained-page softmenu opens on its own last page, whatever FLAG_MNUp1 is; a page it does not have is ignored
+            softmenuStack[0].firstItem = retainedPage.*;
+        }
     }
 
     doRefreshSoftMenu = 1;
@@ -3489,6 +3536,7 @@ pub export fn createHOME() callconv(.c) bool_t {
             return 0;
         }
     }
+    bulkAssign = 1;
     var ii: u16 = 0;
     while (ii < 18) : (ii += 1) {
         itemToBeAssigned = ITM_ENTER;
@@ -3502,6 +3550,7 @@ pub export fn createHOME() callconv(.c) bool_t {
         last_CM = 240;
         frontier_assign.assignToUserMenu(ii);
     }
+    bulkAssign = 0;
     screenUpdatingMode = SCRUPD_AUTO;
     frontier_screen.refreshScreen(170);
     itemToBeAssigned = itemToBeAssignedMeM;
@@ -3517,6 +3566,7 @@ pub export fn createPFN() callconv(.c) bool_t {
             return 0;
         }
     }
+    bulkAssign = 1;
     var ii: u16 = 0;
     while (ii < 18) : (ii += 1) {
         itemToBeAssigned = ITM_ENTER;
@@ -3530,6 +3580,7 @@ pub export fn createPFN() callconv(.c) bool_t {
         last_CM = 240;
         frontier_assign.assignToUserMenu(ii);
     }
+    bulkAssign = 0;
     screenUpdatingMode = SCRUPD_AUTO;
     frontier_screen.refreshScreen(171);
     itemToBeAssigned = itemToBeAssignedMeM;
@@ -3817,6 +3868,10 @@ pub export fn setCatalogLastPos() callconv(.c) void {
         lastCatalogPosition[CATALOG_aint] = softmenuStack[0].firstItem;
     } else if (catalog == CATALOG_aint) {
         lastCatalogPosition[CATALOG_AINT] = softmenuStack[0].firstItem;
+    }
+
+    if (retainedPageSlot(softmenu[@intCast(softmenuStack[0].softmenuId)].menuItem)) |retainedPage| { // menuUp() and menuDown() call this after every page change
+        retainedPage.* = softmenuStack[0].firstItem;
     }
 }
 

@@ -1,0 +1,279 @@
+;*****************************************************************************
+;** Coverage: algebraic number identification (algdep.c).                    **
+;** fnAlgdepCov drives fnAlgdep / fnLindep directly rather than through the  **
+;** x->POLY and V->SUM=0 items, so the fixture is independent of the         **
+;** keyboard and menu wiring. FARG selects the form under test:              **
+;**   0  x->POLY  to degree 6,  coefficient vector left in X                 **
+;**   1  x->POLY  to degree 6,  rendered polynomial left in X as a string    **
+;**   2  V->SUM=0 over the vector already in X                               **
+;**   3  x->POLY  to degree 10                                               **
+;**   4  x->POLY  to degree 2                                                **
+;**                                                                          **
+;** The coefficient vector is a ROW, HIGHEST DEGREE FIRST: the convention    **
+;** SLVP, SLVQ and SLVC read, so SLVC consumes the result as it stands, and  **
+;** for a quadratic v3->zyx lands a, b, c in Z, Y, X as SLVQ reads them.     **
+;** V->SUM=0 returns a row too, whichever way its input vector lay.          **
+;**                                                                          **
+;** THE REFUSALS MATTER MORE THAN THE IDENTIFICATIONS. A confident wrong     **
+;** polynomial is worse than no answer, so pi and e are asserted to raise    **
+;** ERROR_NO_ROOT_FOUND (20) rather than return something plausible. The     **
+;** guard is the margin rule in trySingleDegree : a candidate is reported    **
+;** only when the residual beats a random integer combination of the same    **
+;** height by ALGDEP_MARGIN digits more than the relation costs to write     **
+;** down. That rule was measured at zero false positives over 400 pseudo-    **
+;** random 34 digit values swept to degree 6.                                **
+;**                                                                          **
+;** Every input below is a 34 digit decimal, which is what a register holds. **
+;** The envelope follows (d+1)*log10(H) <= 26: degree 2 to height ~1e8,      **
+;** degree 4 to ~1e5, degree 8 to ~1e2. Cases outside it must refuse.        **
+;*****************************************************************************
+In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64 AM=RAD
+
+
+;-----------------------------------------------------------------------------
+; Identification, quadratic. The minimal polynomial, not a multiple of it:
+; the sweep runs degree upward and stops at the first verified hit.
+;-----------------------------------------------------------------------------
+
+; golden ratio -> x^2 - x - 1
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.618033988749894848204586834365638"
+Out: EC=0 RX=ReMa:"M1,3[1,-1,-1]"
+
+; silver ratio 1 + sqrt(2) -> x^2 - 2x - 1
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"2.414213562373095048801688724209698"
+Out: EC=0 RX=ReMa:"M1,3[1,-2,-1]"
+
+; sqrt(2) -> x^2 - 2
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.414213562373095048801688724209698"
+Out: EC=0 RX=ReMa:"M1,3[1,0,-2]"
+
+
+;-----------------------------------------------------------------------------
+; Identification, cubic and quartic.
+;-----------------------------------------------------------------------------
+
+; plastic number -> x^3 - x - 1, the real root of the smallest Pisot number
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.324717957244746025960908854478097"
+Out: EC=0 RX=ReMa:"M1,4[1,0,-1,-1]"
+
+; 2^(1/3) -> x^3 - 2
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.259921049894873164767210607278228"
+Out: EC=0 RX=ReMa:"M1,4[1,0,0,-2]"
+
+; sqrt(2) + sqrt(3) -> x^4 - 10x^2 + 1. Sparse and palindromic: the zero odd
+; coefficients have to land in the right slots either way round.
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"3.146264369941972342329135065715570"
+Out: EC=0 RX=ReMa:"M1,5[1,0,-10,0,1]"
+
+
+;-----------------------------------------------------------------------------
+; Degree 1. A rational is an algebraic number of degree one and must be found
+; as such, before degree 2 can fit it with a reducible multiple.
+;-----------------------------------------------------------------------------
+
+; 0.75 -> 4x - 3, residual identically zero
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"0.75"
+Out: EC=0 RX=ReMa:"M1,2[4,-3]"
+
+
+;-----------------------------------------------------------------------------
+; Refusals. The characteristic failure of this feature is a confident wrong
+; answer, so these carry more weight than the identifications above.
+;-----------------------------------------------------------------------------
+
+; pi is transcendental: no integer polynomial has it as a root, at any degree
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"3.141592653589793238462643383279503"
+Out: EC=20
+
+; e likewise
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"2.718281828459045235360287471352662"
+Out: EC=20
+
+; sqrt(2)+sqrt(3)+sqrt(5) is degree 8 of height 960. Writing that relation down
+; costs 9*log10(960) ~= 27 of the 34 digits available, which leaves less than
+; the 8 digit margin, so the engine must refuse even at the full sweep. This is
+; the envelope boundary: a MARGINAL refusal, as against pi's emphatic one.
+Func: fnAlgdepCov
+In:  FARG=3 RX=Real:"5.382332347441762038738308734446"
+Out: EC=20
+
+; the degree bound is real, not decorative: degree 2 must refuse what degree 6
+; finds, on the very same input (compare the plastic number case above)
+Func: fnAlgdepCov
+In:  FARG=4 RX=Real:"1.324717957244746025960908854478097"
+Out: EC=20
+
+
+;-----------------------------------------------------------------------------
+; Rendered polynomial. Exercises the edges that make a printer look amateur:
+; a unit coefficient is suppressed except as the constant term, the degree 1
+; exponent is implied, and a zero coefficient contributes no term at all.
+;-----------------------------------------------------------------------------
+
+; degree 1, both coefficients written out
+Func: fnAlgdepCov
+In:  FARG=1 RX=Real:"0.75"
+Out: EC=0 RX=Stri:"4x - 3"
+
+
+;-----------------------------------------------------------------------------
+; V->SUM=0. The same lattice, but the column carries the vector entries rather
+; than the powers of one value.
+;-----------------------------------------------------------------------------
+
+; (1, sqrt2, 1+sqrt2) satisfies 1 + sqrt2 - (1+sqrt2) = 0
+Func: fnAlgdepCov
+In:  FARG=2 RX=ReMa:"M3,1[1,1.414213562373095048801688724209698,2.414213562373095048801688724209698]"
+Out: EC=0 RX=ReMa:"M1,3[1,1,-1]"
+
+; ln 2, ln 3, ln 6 as the LN key returns them: ln 2 + ln 3 - ln 6 = 0, the AN0031 worked
+; example, margin 31
+Func: fnAlgdepCov
+In:  FARG=2 RX=ReMa:"M1,3[0.6931471805599453094172321214581766,1.098612288668109691395245236922526,1.791759469228055000812477358380702]"
+Out: EC=0 RX=ReMa:"M1,3[1,1,-1]" RY=Real:"31"
+
+; a vector with no small integer relation must refuse
+Func: fnAlgdepCov
+In:  FARG=2 RX=ReMa:"M3,1[1,3.141592653589793238462643383279503,2.718281828459045235360287471352662]"
+Out: EC=20
+
+
+;-----------------------------------------------------------------------------
+; Stack and register discipline. The command consumes X, so LASTx must carry
+; the input, and the margin reported in Y is the whole basis for trusting the 
+; answer: if the acceptance rule ever drifts, these are what catch it.
+;-----------------------------------------------------------------------------
+
+; golden ratio: coefficients in X, margin in Y, input preserved in LASTx
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.618033988749894848204586834365638"
+Out: EC=0 RX=ReMa:"M1,3[1,-1,-1]" RY=Real:"31" RL=Real:"1.618033988749894848204586834365638"
+
+; plastic number margin
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.324717957244746025960908854478097"
+Out: EC=0 RY=Real:"29"
+
+
+;-----------------------------------------------------------------------------
+; Negative and small inputs. -phi satisfies x^2 + x - 1, a different polynomial
+; from phi's, so a sign mishandled anywhere shows up here rather than silently.
+;-----------------------------------------------------------------------------
+
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"-1.618033988749894848204586834365638"
+Out: EC=0 RX=ReMa:"M1,3[1,1,-1]"
+
+; a half is degree 1: 2x - 1
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"0.5"
+Out: EC=0 RX=ReMa:"M1,2[2,-1]"
+
+; an integer is degree 1 with unit leading coefficient: x - 7
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"7"
+Out: EC=0 RX=ReMa:"M1,2[1,-7]"
+
+
+;-----------------------------------------------------------------------------
+; Magnitude budget. A relation costs d*log10|x| digits before any coefficient
+; is written, so a value of huge magnitude is provably outside the envelope and
+; is refused without reducing a lattice at all.
+;-----------------------------------------------------------------------------
+
+Func: fnAlgdepCov
+In:  FARG=3 RX=Real:"1e400"
+Out: EC=20
+
+Func: fnAlgdepCov
+In:  FARG=3 RX=Real:"1e-400"
+Out: EC=20
+
+
+;-----------------------------------------------------------------------------
+; V->SUM=0 edges: the smallest vector it accepts, and one that is over length.
+;-----------------------------------------------------------------------------
+
+; (1, 0.5) satisfies 1*1 - 2*0.5 = 0
+Func: fnAlgdepCov
+In:  FARG=2 RX=ReMa:"M2,1[1,0.5]"
+Out: EC=0 RX=ReMa:"M1,2[1,-2]"
+
+; a row vector must work exactly as a column vector does
+Func: fnAlgdepCov
+In:  FARG=2 RX=ReMa:"M1,2[1,0.5]"
+Out: EC=0 RX=ReMa:"M1,2[1,-2]"
+
+; 12 elements is past the 11 the lattice can hold
+Func: fnAlgdepCov
+In:  FARG=2 RX=ReMa:"M12,1[1,2,3,4,5,6,7,8,9,10,11,12]"
+Out: EC=8
+
+;-----------------------------------------------------------------------------
+; Rendered polynomial, superscript path. The exponent is a two byte STD_SUP_*
+; glyph, the exponent 1 is implied and never printed, and a unit coefficient is
+; suppressed everywhere except as the constant term. All three appear here.
+;-----------------------------------------------------------------------------
+
+Func: fnAlgdepCov
+In:  FARG=1 RX=Real:"1.618033988749894848204586834365638"
+Out: EC=0 RX=Stri:"x¡b - x - 1"
+
+;-----------------------------------------------------------------------------
+; Zero is the root of x. Its candidate row scores a typical size of zero, which
+; is indistinguishable from an empty row, so it is answered before the sweep.
+;-----------------------------------------------------------------------------
+
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"0"
+Out: EC=0 RX=ReMa:"M1,2[1,0]" RY=Real:"34"
+
+
+;-----------------------------------------------------------------------------
+; The engine returns the SIMPLEST relation consistent with the digits supplied,
+; which is what integer relation detection means: a value close to a simple
+; number is reported as that number, and the margin is what says how much of 
+; the input actually backed the answer. These two pin that behaviour, because a
+; reader who does not expect it will read the result as a wrong answer.
+;   phi to full precision           -> margin 31, a real identification
+;   1 + 1e-13, i.e. 14 digits       -> x - 1 at margin 11, correctly marginal
+;-----------------------------------------------------------------------------
+
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.0000000000001"
+Out: EC=0 RX=ReMa:"M1,2[1,-1]" RY=Real:"11"
+
+Func: fnAlgdepCov
+In:  FARG=0 RX=Real:"1.5000000000000001"
+Out: EC=0 RX=ReMa:"M1,2[2,-3]" RY=Real:"14"
+
+
+;-----------------------------------------------------------------------------
+; SDIGS must not touch the coefficients. The result writes bypass adjustResult
+; on purpose: its rsdRema rounding at SD=6 would turn the exact -9876543 below
+; into -9876540 with no error and no warning. These pin the bypass, so a later
+; "make it idiomatic" adjustResult call fails here instead of on a calculator.
+; The root is (9876543 + sqrt(9876543^2 + 4))/2 to 34 digits -> x^2-9876543x-1.
+;-----------------------------------------------------------------------------
+
+Func: fnAlgdepCov
+In:  SD=6 FARG=0 RX=Real:"9876543.000000101250002151561507749"
+Out: EC=0 SD=6 RX=ReMa:"M1,3[1,-9876543,-1]" RY=Real:"10"
+
+Func: fnAlgdepCov
+In:  SD=6 FARG=2 RX=ReMa:"M2,1[1,1234567]"
+Out: EC=0 SD=6 RX=ReMa:"M1,2[1234567,-1]"
+
+; back to unrounded, and the baseline identification still stands
+Func: fnAlgdepCov
+In:  SD=0 FARG=0 RX=Real:"1.618033988749894848204586834365638"
+Out: EC=0 SD=0 RX=ReMa:"M1,3[1,-1,-1]"

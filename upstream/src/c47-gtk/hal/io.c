@@ -292,21 +292,6 @@ int ioEof(void) {
 }
 
 
-int ioFileRemove(ioFilePath_t path, uint32_t *errorNumber) {
-  assert(_ioFileHandle == NULL);
-  static char filename[C47_PATH_MAX];
-  int ret = _ioFileNameFromFilePath(path, filename);
-  if(ret != FILE_OK) {
-    return ret;
-  }
-  int result = remove(filename);
-  if(result == -1 && errorNumber != NULL) {
-    *errorNumber = errno;
-  }
-  return (result != -1 ? FILE_OK : FILE_ERROR);
-}
-
-
 void show_warning(char *string) {
   // No GUI: gtk_dialog_run has no window to run on, so the terminal is the only place a warning can go.
   if(headlessMode) {

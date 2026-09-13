@@ -96,6 +96,7 @@ mathematics/linpol.c
 mathematics/cross.c
 mathematics/dot.c
 mathematics/agm.c
+mathematics/algdep.c
 mathematics/bessel.c
 mathematics/beta.c
 mathematics/cpyx.c

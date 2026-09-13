@@ -33,9 +33,9 @@ int8_t    PLOT_ZMY = 0;
 
 void graphResetCommon() {
   realSetZero(x_min);
-  realCopy(const_1, x_max);
+  realSetOne(x_max);
   realSetZero(y_min);
-  realCopy(const_1, y_max);
+  realSetOne(y_max);
 
   clearSystemFlag(FLAG_CPXPLOT);
   clearSystemFlag(FLAG_SHOWY);
@@ -261,8 +261,7 @@ void fnPshade (uint16_t unusedButMandatoryParameter) {
 void fnComplexPlot (uint16_t mode) {
   if(mode == ITM_CPXPLOT) {
     flipSystemFlag(FLAG_CPXPLOT);
-  } else
-  if(mode == ITM_IMPLOT) {
+  } else if(mode == ITM_IMPLOT) {
     flipSystemFlag(FLAG_IMPLOT);
   }
   fnEqSolvGraph(EQ_PLOT_LU);
@@ -318,9 +317,9 @@ void fnPlotSQ(uint16_t unusedButMandatoryParameter) {
     else {
       previousCalcMode = calcMode;
 
-// Removed due to interfering and unneccesry statusbar clear befoire the user can program SNAP after PLOTf. 
+// Removed due to interfering and unneccesry statusbar clear befoire the user can program SNAP after PLOTf.
 //      0.5 % chance that removing it might cause remaining hourglass on the wrong side of screen.
-//      LEaving this comment and original for a while to monitor performance. 
+//      LEaving this comment and original for a while to monitor performance.
 //      clearScreenOld(clrStatusBar, !clrRegisterLines, !clrSoftkeys); //Change over hourglass to the left side
 
     }
@@ -1181,14 +1180,12 @@ void graph_plotmem(void) {
 /**/        convertDoubleToReal(sy, &yr, &ctxtReal39); // yr = sy
 /**/        if(realCompareLessThan(&xr, x_min)) {                          // if(sx < x_min) x_min = sx
 /**/          realCopy(&xr, x_min);
-/**/        } else
-/**/        if(realCompareGreaterThan(&xr, x_max)) {                       // else if(sx > x_max) x_max = sx
+/**/        } else if(realCompareGreaterThan(&xr, x_max)) {                // else if(sx > x_max) x_max = sx
 /**/          realCopy(&xr, x_max);
 /**/        }
 /**/        if(realCompareLessThan(&yr, y_min)) {                          // if(sy < y_min) y_min = sy
 /**/          realCopy(&yr, y_min);
-/**/        } else
-/**/        if(realCompareGreaterThan(&yr, y_max)) {                       // else if(sy > y_max) y_max = sy
+/**/        } else if(realCompareGreaterThan(&yr, y_max)) {                // else if(sy > y_max) y_max = sy
 /**/          realCopy(&yr, y_max);
 /**/        }
 /**/        if(exitKeyWaiting()) {

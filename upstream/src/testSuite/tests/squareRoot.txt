@@ -8,6 +8,13 @@
 In: FL_SPCRES=0 FL_CPXRES=0 SD=0 RMODE=0 IM=2compl SS=4 WS=64
 Func: fnSquareRoot
 
+; A closed formula reaches every digit of the register, so the floor for this file is the
+; full 34. The 34th digit of root two is the final 8 of 1.414213562373095048801688724209698;
+; a build off by one unit there passes at the default of 30 and fails here.
+ACC: 34
+In:  AM=DEG FL_ASLIFT=0 FL_CPXRES=0 RX=Real:"2"
+Out: EC=0 FL_CPXRES=0 FL_ASLIFT=1 RL=Real:"2" RX=Real:"1.41421356237309504880168872420969807856967187537694807317668"
+
 
 
 ;=======================================

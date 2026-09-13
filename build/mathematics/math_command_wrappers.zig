@@ -82,6 +82,10 @@ pub const RuntimeObjectOptions = struct {
     // OPTION_EIGEN is out, which adds nothing: every target that drops EIGEN has
     // already dropped SLVP with the block.
     option_slvp_poly: bool = true,
+    // OPTION_ALGDEP gates algdep.c whole: fnAlgdep and fnLindep are empty stubs
+    // and algdepPolynomialString() is "" without it. #undef'd in the block common
+    // to DM42 packages 1-4 (3896 bytes of flash); DMCP5 and host keep it.
+    option_algdep: bool = true,
     // OPTION_CUBIC_159 and OPTION_EIGEN_159 raise the internal working precision
     // of SLVC and of the eigen solver to 159 digits, which is what makes 34-digit
     // input accurate; slvc.c, slvq.c, matrix.c, squareRoot.c, cubeRoot.c,
@@ -172,6 +176,7 @@ pub fn addBuildOptions(
     build_options.addOption(bool, "trig_result_cache", !options.old_hw);
     build_options.addOption(bool, "option_xfn_1000", options.option_xfn_1000);
     build_options.addOption(bool, "option_slvp_poly", options.option_slvp_poly);
+    build_options.addOption(bool, "option_algdep", options.option_algdep);
     build_options.addOption(bool, "option_cubic_159", options.option_cubic_159);
     build_options.addOption(bool, "option_eigen_159", options.option_eigen_159);
     build_options.addOption(bool, "option_elliptic", options.option_elliptic);

@@ -82,6 +82,7 @@ ALLOWED: dict[str, str] = {
     "calc_model_user_id": "CALCMODEL",
     "is_r47": "CALCMODEL -- the C47 vs R47 model split",
     "option_slvp_poly": "OPTION_SLVP_POLY",
+    "option_algdep": "OPTION_ALGDEP",
     "option_elliptic": "OPTION_ELLIPTIC",
     "option_bessel": "OPTION_BESSEL",
     "option_ortho": "OPTION_ORTHO",

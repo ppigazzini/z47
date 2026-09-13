@@ -171,7 +171,7 @@ const NOIRFRAC: c_int = 0; // irfracOption_t
 const multiply_param: u16 = 0; // typeDefinitions.h: multiply = 0
 const divide_param: u16 = 0x8000; // typeDefinitions.h: divide = 0x8000
 
-const LAST_ITEM: u32 = 3349;
+const LAST_ITEM: u32 = 3481;
 
 // STD_* glyph strings (fonts.h).
 const STD_RIGHT_ARROW = "\xa1\x92";

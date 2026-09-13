@@ -467,9 +467,9 @@ pub export fn graphResetCommon() callconv(.c) void {
     // Reset the plot window to upstream's 0..1 default. Without this every plot
     // entered autoscale carrying the previous plot's range.
     realSetZero(x_min);
-    realCopy(consts.const_1(), x_max);
+    realSetOne(x_max);
     realSetZero(y_min);
-    realCopy(consts.const_1(), y_max);
+    realSetOne(y_max);
 
     clearSystemFlag(FLAG_CPXPLOT);
     clearSystemFlag(FLAG_SHOWY);
